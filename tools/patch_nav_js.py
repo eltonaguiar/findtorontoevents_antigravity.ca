@@ -52,6 +52,8 @@ def patch_js():
 
     # 6.5. Remove orphaned " 2XKO Frame Data"]}), if present (left by previous patch; causes double comma)
     content = content.replace('" 2XKO Frame Data"]}),,(0,t.jsxs)("a",{href:"/2xko"', '(0,t.jsxs)("a",{href:"/2xko"')
+    # 6.6. Fix double comma after Mental Health (breaks NETWORK menu; only 2 items show)
+    content = content.replace('" Mental Health Resources"]}),,(0,t.jsxs)("a",{href:"/2xko"', '" Mental Health Resources"]}),(0,t.jsxs)("a",{href:"/2xko"')
 
     # 7. Reorder 2XKO to bottom (before Event System Settings) — DISABLED: causes bracket/syntax issues; 2XKO stays in NETWORK as link (fixed by 2b2).
     # match_2xko = re.search(r'\(0,t\.jsxs\)\("a",\{href:"/2xko",.*?" 2XKO Frame Data"\]\}\),', content)
@@ -67,6 +69,42 @@ def patch_js():
         content = content.replace(old_p + ',', new_details_start)
         content = content.replace('children:"\uD83D\uDC8E"})," FAVCREATORS"', 'children:"\u2B50"})," FAVCREATORS"')
         content = content.replace('" FAVCREATORS"]}),', '" FAVCREATORS"]})]})]}),')
+
+    # 8a. Flat-structure chunk: move 2XKO and Mental Health after FAVCREATORS (Mental Health just above 2XKO).
+    if '" FAVCREATORS"]' in content and '(0,t.jsxs)("details",{open:!0,className:"group/nav-section"' not in content:
+        two_xko_link = '(0,t.jsxs)("a",{href:"/2xko",className:"w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-purple-500/20 text-purple-200 hover:text-white transition-all border border-transparent hover:border-purple-500/30 overflow-hidden",onClick:()=>r(!1),children:[(0,t.jsx)("span",{className:"text-lg",children:"\uD83C\uDFAE"})," 2XKO Frame Data"]}),'
+        # Remove 2XKO from between Windows Fixer and Mental Health (regex: any emoji encoding in chunk)
+        remove_2xko_after_fixer = re.compile(
+            r'(" Windows (?:Boot )?Fixer"\]\}\)),(\(0,t\.jsxs\)\("a",\{href:"/2xko",.*?" 2XKO Frame Data"\]\}\),)(\(0,t\.jsxs\)\("a",\{href:"/MENTALHEALTHRESOURCES/")',
+            re.DOTALL,
+        )
+        content = remove_2xko_after_fixer.sub(r'\1,\3', content, count=1)
+        # Capture and remove Mental Health from between Windows Fixer and Find Stocks so we can insert it above 2XKO
+        # Chunk has " Windows Fixer"]}),  (0,t.jsxs)("a",{href:"/MENTALHEALTHRESOURCES/"... " Mental Health Resources"]}),  (no extra ),)
+        mental_health_re = re.compile(
+            r'(" Windows (?:Boot )?Fixer"\]\}\)),\s*((\(0,t\.jsxs\)\("a",\{href:"/MENTALHEALTHRESOURCES/".*?" Mental Health Resources"\]\}\),))',
+            re.DOTALL,
+        )
+        mh_match = mental_health_re.search(content)
+        mh_link = mh_match.group(2) if mh_match else None
+        if mh_match:
+            content = mental_health_re.sub(r'\1,', content, count=1)
+        # Insert Mental Health right after FAVCREATORS (below FAVCREATORS, above 2XKO) when chunk has FAVCREATORS then 2XKO
+        fav_then_2xko_re = re.compile(
+            r'(" FAVCREATORS"\]\}\)),\s*\((0,t\.jsxs\)\("a",\{href:"/2xko",)',
+        )
+        if mh_link and fav_then_2xko_re.search(content):
+            content = fav_then_2xko_re.sub(
+                r'\1,' + mh_link + r',(\2',
+                content,
+                count=1,
+            )
+        fav_then_double_comma = '" FAVCREATORS"]}),,(0,t.jsxs)("button",{onClick:()=>{o(!0),r(!1)},'
+        insert_after_fav = (mh_link + ',' if mh_link else '') + two_xko_link
+        if fav_then_double_comma in content:
+            content = content.replace(fav_then_double_comma, '" FAVCREATORS"]}),' + insert_after_fav + '(0,t.jsxs)("button",{onClick:()=>{o(!0),r(!1)},')
+        # If we already have 2XKO after FAVCREATORS but duplicate still after Windows Fixer, remove duplicate
+        content = remove_2xko_after_fixer.sub(r'\1,\3', content, count=1)
 
     # 8b. Move Data Management to bottom: remove from current position, insert collapsible block before 2XKO (second Contact Support / gaming controller).
     data_mgmt_inner = '(0,t.jsxs)("div",{className:"px-4 py-2 grid grid-cols-2 gap-2",children:[(0,t.jsxs)("button",{onClick:()=>x("json"),className:"p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 flex flex-col items-center gap-1 transition-all group overflow-hidden",title:"Export as JSON",children:[(0,t.jsx)("span",{className:"text-xl group-hover:scale-110 transition-transform",children:"\uD83D\uDCE6"}),(0,t.jsx)("span",{className:"text-[9px] font-black uppercase tracking-wider",children:"JSON"})]}),(0,t.jsxs)("button",{onClick:()=>x("csv"),className:"p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 flex flex-col items-center gap-1 transition-all group overflow-hidden",title:"Export as CSV",children:[(0,t.jsx)("span",{className:"text-xl group-hover:scale-110 transition-transform",children:"\uD83D\uDCCA"}),(0,t.jsx)("span",{className:"text-[9px] font-black uppercase tracking-wider",children:"CSV"})]}),(0,t.jsxs)("button",{onClick:()=>x("ics"),className:"p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 flex flex-col items-center gap-1 transition-all group col-span-2 overflow-hidden",title:"Export Calendar File (.ics)",children:[(0,t.jsx)("span",{className:"text-xl group-hover:scale-110 transition-transform",children:"\uD83D\uDCC5"}),(0,t.jsx)("span",{className:"text-[9px] font-black uppercase tracking-wider",children:"Calendar (ICS)"})]})]}),(0,t.jsxs)("button",{onClick:()=>{c.current?.click()},className:"w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-white/5 text-[var(--text-2)] hover:text-white transition-all overflow-hidden",children:[(0,t.jsx)("span",{className:"text-lg",children:"\uD83D\uDCE5"})," Import Collection"]}),(0,t.jsx)("input",{type:"file",ref:c,onChange:e=>{let t=e.target.files?.[0];if(!t)return;let a=new FileReader;a.onload=e=>{try{let a=e.target?.result;if(t.name.endsWith(".json")){let e=JSON.parse(a);Array.isArray(e)&&(n(e),alert(`Successfully imported ${e.length} events!`))}else alert("Only JSON import is currently supported.")}catch(e){console.error("Import failed",e),alert("Failed to parse file.")}},a.readAsText(t)},className:"hidden",accept:".json"})'

@@ -30,10 +30,11 @@ jobs:
         run: |
           mkdir -p site
           cp index.html site/
+          cp index4.html site/ 2>/dev/null || true
           cp -r next site/
           cp -r _next site/ 2>/dev/null || true
           cp -r data site/
-          cp favicon.ico site/ 2>/dev/null || true
+          if [ -f favicon.ico ]; then cp favicon.ico site/; elif [ -f favcreators/docs/favicon.ico ]; then cp favcreators/docs/favicon.ico site/favicon.ico; elif [ -f favcreators/favicon.ico ]; then cp favcreators/favicon.ico site/favicon.ico; fi
           touch site/.nojekyll
           if [ -d favcreators/docs ]; then
             mkdir -p site/fc
@@ -42,10 +43,11 @@ jobs:
 
       - name: Rewrite asset base path for GitHub Pages
         run: |
-          # Project Pages are served at /REPO_NAME/ so assets must use that prefix
+          # Project Pages are served at /REPO_NAME/ so assets must use that prefix (local source unchanged)
           for f in $(find site -name '*.html'); do
             sed -i "s|\"/next|\"$PAGES_BASE/next|g" "$f"
             sed -i "s|'/next|'$PAGES_BASE/next|g" "$f"
+            sed -i "s|href=\"/favicon.ico\"|href=\"$PAGES_BASE/favicon.ico\"|g" "$f"
           done
 
       - name: Upload Pages artifact
