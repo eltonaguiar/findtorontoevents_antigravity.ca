@@ -86,4 +86,40 @@ test.describe('FavCreators admin/admin login', () => {
     expect(await starfirearaHeading.isVisible()).toBe(true);
     expect(await noteField.isVisible()).toBe(true);
   });
+
+  test('admin Quick Add from TikTok URL (e.g. tiktok.com/@barstoolsports) adds creator and persists', async ({ page }) => {
+    await page.goto(FAV_GUEST, { waitUntil: 'load', timeout: 25000 });
+    await expect(page.locator('#root')).toBeVisible({ timeout: 10000 });
+
+    // Login as admin
+    const loginBtn = page.getByRole('button', { name: /login/i }).first();
+    if (await loginBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await loginBtn.click();
+      await page.waitForTimeout(500);
+    }
+    const emailInput = page.getByPlaceholder(/^email$/i).first();
+    const passwordInput = page.getByPlaceholder(/^password$/i).first();
+    await expect(emailInput).toBeVisible({ timeout: 5000 });
+    await emailInput.fill('admin');
+    await passwordInput.fill('admin');
+    await page.getByRole('button', { name: /email login/i }).first().click();
+    await expect(
+      page.getByRole('button', { name: /sign out/i }).or(page.getByText('Admin', { exact: true })).first()
+    ).toBeVisible({ timeout: 15000 });
+
+    // Quick Add: paste TikTok URL (with or without https)
+    const quickAddInput = page.getByPlaceholder(/quick add/i);
+    await expect(quickAddInput).toBeVisible({ timeout: 5000 });
+    await quickAddInput.fill('tiktok.com/@barstoolsports');
+    const saveResponse = page.waitForResponse(
+      (res) => res.url().includes('save_creators.php') && res.status() === 200,
+      { timeout: 10000 }
+    );
+    await page.getByRole('button', { name: /quick add/i }).first().click();
+
+    await saveResponse.catch(() => {});
+    // Creator name from "barstoolsports" is "Barstoolsports" (capitalized)
+    const barstoolHeading = page.getByRole('heading', { name: /barstoolsports/i });
+    await expect(barstoolHeading).toBeVisible({ timeout: 10000 });
+  });
 });

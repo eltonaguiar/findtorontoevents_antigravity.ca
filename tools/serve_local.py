@@ -25,6 +25,7 @@ PORT = 5173  # Main site at http://localhost:5173/ ; FavCreators at http://local
 _SCRIPT_DIR = Path(__file__).resolve().parent
 _WORKSPACE_ROOT = _SCRIPT_DIR.parent
 FAVCREATORS_DOCS_ROOT = _WORKSPACE_ROOT / "favcreators" / "docs"
+FAVCREATORS_CREATORS_JSON = _WORKSPACE_ROOT / "data" / "favcreators_creators.json"
 
 def _send_json(handler, obj):
     out = json.dumps(obj).encode("utf-8")
@@ -64,9 +65,26 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
             _send_json(self, {"status": "success", "message": "Note saved (local mock)"})
             return
 
-        # Mock save_creators.php – admin/guest list persistence (no MySQL locally)
+        # Mock save_creators.php – persist creators per user_id to JSON file (admin=0, guests see it)
         if "save_creators" in path or path.endswith("save_creators.php"):
-            consume_body()
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(length).decode("utf-8", "replace") if length else "{}"
+                data = json.loads(body) if body else {}
+                user_id = int(data.get("user_id", 0))
+                creators = data.get("creators", [])
+                # Load existing, update one user's list, write back
+                all_data = {}
+                if FAVCREATORS_CREATORS_JSON.is_file():
+                    try:
+                        all_data = json.loads(FAVCREATORS_CREATORS_JSON.read_text(encoding="utf-8"))
+                    except (json.JSONDecodeError, OSError):
+                        pass
+                all_data[str(user_id)] = creators
+                FAVCREATORS_CREATORS_JSON.parent.mkdir(parents=True, exist_ok=True)
+                FAVCREATORS_CREATORS_JSON.write_text(json.dumps(all_data, indent=2), encoding="utf-8")
+            except Exception:
+                pass
             _send_json(self, {"status": "success"})
             return
 
@@ -134,8 +152,15 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
                 return
             if "get_my_creators.php" in path:
                 qs = parse_qs(parsed.query)
-                # Return empty list so app can merge with INITIAL_DATA; or could read from a local file
-                _send_json(self, {"creators": []})
+                user_id = int(qs.get("user_id", [0])[0]) if qs else 0
+                creators = []
+                if FAVCREATORS_CREATORS_JSON.is_file():
+                    try:
+                        all_data = json.loads(FAVCREATORS_CREATORS_JSON.read_text(encoding="utf-8"))
+                        creators = all_data.get(str(user_id), [])
+                    except (json.JSONDecodeError, OSError):
+                        pass
+                _send_json(self, {"creators": creators})
                 return
             if "login.php" in path:
                 _send_json(self, {"error": "Use POST to login"})
