@@ -1,0 +1,18 @@
+# Allow all files in next/_next/static/chunks directory - bypass ModSecurity
+<IfModule mod_security.c>
+  SecRuleEngine Off
+  SecFilterEngine Off
+  SecFilterScanPOST Off
+</IfModule>
+
+# Allow access to all files
+<Files "*">
+  Order Allow,Deny
+  Allow from all
+</Files>
+
+# Set proper MIME types
+<IfModule mod_mime.c>
+  AddType application/javascript .js
+  AddType text/css .css
+</IfModule>

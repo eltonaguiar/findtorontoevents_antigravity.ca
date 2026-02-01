@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2XKO Frame Data - Champion Frame Data Summary</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        header {
+            margin-bottom: 30px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .info-box h3 {
+            margin-top: 0;
+            color: #1976d2;
+            font-size: 1.1em;
+        }
+        
+        .info-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .info-box li {
+            margin: 5px 0;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .last-updated {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .update-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .update-status.loading {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .update-status.success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .update-status.error {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .filter-group label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9em;
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+            background: white;
+            transition: border-color 0.3s;
+        }
+        
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .champion-quick-select {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .champion-btn {
+            padding: 8px 16px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            color: #555;
+            transition: all 0.3s;
+        }
+        
+        .champion-btn:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            color: #667eea;
+        }
+        
+        .champion-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .champion-view {
+            margin-top: 20px;
+        }
+        
+        .champion-header-detail {
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .champion-name-detail {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .back-to-all {
+            display: inline-block;
+            margin-bottom: 15px;
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #555;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .back-to-all:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .move-section {
+            margin-bottom: 40px;
+        }
+        
+        .move-section-title {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .frame-data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.95em;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .frame-data-table th {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            border: 1px solid #1a1f2e;
+        }
+        
+        .frame-data-table td {
+            padding: 10px 15px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .frame-data-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .frame-data-table tr:hover {
+            background: #e8f0ff;
+        }
+        
+        .champion-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .champion-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            background: white;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+        
+        .champion-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+        
+        .champion-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .champion-name {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .move-count {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .move-name-cell {
+            min-width: 200px;
+        }
+        
+        .move-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+        
+        .input-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+            font-size: 0.85em;
+            align-items: center;
+        }
+        
+        .input-fgc {
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        
+        .input-glyph {
+            background: #764ba2;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            font-size: 1em;
+        }
+        
+        .input-keyboard {
+            background: #f0f0f0;
+            color: #2c3e50;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        
+        .input-keys {
+            font-size: 0.85em;
+            color: #059669;
+            background: #d1fae5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-family: 'Courier New', monospace;
+            margin-left: 4px;
+        }
+        
+        .tooltip-icon {
+            font-size: 0.7em;
+            cursor: help;
+            margin-left: 4px;
+            opacity: 0.7;
+        }
+        
+        th {
+            position: relative;
+            cursor: help;
+        }
+        
+        th:hover {
+            background: #f0f0f0;
+        }
+        
+        .input-fgc {
+            position: relative;
+            cursor: help;
+        }
+        
+        .input-fgc:hover::after {
+            content: "FGC Notation: Fighting game notation (5L = standing Light, 2M = crouching Medium, 6S1 = forward Special 1)";
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background: #333;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            z-index: 1000;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+        
+        .input-glyph {
+            position: relative;
+            cursor: help;
+        }
+        
+        .input-glyph:hover::after {
+            content: "Input Glyph: Visual representation of the move input with directional arrows";
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background: #333;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            z-index: 1000;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+        
+        .input-keyboard {
+            position: relative;
+            cursor: help;
+        }
+        
+        .input-keyboard:hover::after {
+            content: "Keyboard Button: The button name (Light, Medium, Heavy, Special 1, Special 2)";
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background: #333;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            z-index: 1000;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+        
+        .input-keys {
+            position: relative;
+            cursor: help;
+        }
+        
+        .input-keys:hover::after {
+            content: "Keyboard Keys: Actual keys to press on keyboard (J=Light, K=Medium, L=Heavy, M=Special 1, ,=Special 2, WASD=directions)";
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background: #333;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            z-index: 1000;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+        
+        .frame-value {
+            font-family: 'Courier New', monospace;
+            color: #555;
+        }
+        
+        .positive {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .negative {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .neutral {
+            color: #666;
+        }
+        
+        .loading-container {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #999;
+        }
+        
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            background: #5568d3;
+        }
+        
+        .refresh-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        @media (max-width: 768px) {
+            .champion-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 2XKO Frame Data</h1>
+            <p class="subtitle">Comprehensive Champion Frame Data Summary</p>
+        </header>
+        
+        <div class="info-box">
+            <h3>📚 Frame Data Guide</h3>
+            <ul>
+                <li><strong>Startup:</strong> Frames until the move becomes active (lower = faster). A 6f startup move is very fast!</li>
+                <li><strong>On Hit:</strong> Frame advantage when the move connects. Positive numbers mean you can continue your combo. Negative means the opponent can act first.</li>
+                <li><strong>On Block:</strong> Frame advantage when blocked. Positive = safe to use, negative = punishable (opponent can hit you back).</li>
+                <li><strong>Recovery:</strong> Frames after the move ends before you can act again. Lower recovery = faster recovery.</li>
+                <li><strong>FGC Notation:</strong> Fighting game notation like "5L" (standing Light), "2M" (crouching Medium), "6S1" (forward Special 1). Numbers represent directions on a numpad (5=neutral, 2=down, 6=forward).</li>
+                <li><strong>Keyboard Keys:</strong> Default 2XKO controls - J=Light, K=Medium, L=Heavy, M=Special 1, ,=Special 2, WASD for directions.</li>
+            </ul>
+        </div>
+        
+        <div class="status-bar">
+            <div>
+                <button class="refresh-btn" id="refreshBtn">🔄 Refresh Data</button>
+            </div>
+            <div class="last-updated">
+                Last updated: <span id="lastUpdated">Never</span>
+            </div>
+            <div class="update-status" id="updateStatus">Ready</div>
+        </div>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <label for="championFilter">Champion</label>
+                <select id="championFilter">
+                    <option value="">All Champions</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="moveTypeFilter">Move Type</label>
+                <select id="moveTypeFilter">
+                    <option value="">All Moves</option>
+                    <option value="normal">Normals</option>
+                    <option value="special">Specials</option>
+                    <option value="super">Supers</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="searchFilter">Search Move</label>
+                <input type="text" id="searchFilter" placeholder="Search moves...">
+            </div>
+        </div>
+        
+        <div id="championQuickSelect" class="champion-quick-select" style="display: none;"></div>
+        
+        <div id="content">
+            <div class="loading-container">
+                <div class="spinner"></div>
+                <p>Loading frame data...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GITHUB_REPO = 'eltonaguiar/2XKOFRAMEDATA';
+        const GITHUB_BASE = `https://raw.githubusercontent.com/${GITHUB_REPO}/main`;
+        const STORAGE_KEY = '2xko_frame_data';
+        const LAST_UPDATE_KEY = '2xko_last_update';
+        const UPDATE_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+        
+        let frameData = null;
+        let filteredData = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            loadFrameData();
+        });
+        
+        function setupEventListeners() {
+            document.getElementById('refreshBtn').addEventListener('click', () => {
+                forceRefresh();
+            });
+            
+            document.getElementById('championFilter').addEventListener('change', applyFilters);
+            document.getElementById('moveTypeFilter').addEventListener('change', applyFilters);
+            document.getElementById('searchFilter').addEventListener('input', applyFilters);
+        }
+        
+        async function loadFrameData() {
+            const lastUpdate = localStorage.getItem(LAST_UPDATE_KEY);
+            const now = Date.now();
+            
+            // Check if we need to update
+            if (!lastUpdate || (now - parseInt(lastUpdate)) > UPDATE_INTERVAL) {
+                await fetchFromGitHub();
+            } else {
+                // Load from cache
+                const cached = localStorage.getItem(STORAGE_KEY);
+                if (cached) {
+                    try {
+                        frameData = JSON.parse(cached);
+                        updateLastUpdated(parseInt(lastUpdate));
+                        renderFrameData();
+                    } catch (e) {
+                        console.error('Error parsing cached data:', e);
+                        await fetchFromGitHub();
+                    }
+                } else {
+                    await fetchFromGitHub();
+                }
+            }
+        }
+        
+        async function forceRefresh() {
+            const btn = document.getElementById('refreshBtn');
+            btn.disabled = true;
+            btn.textContent = '🔄 Refreshing...';
+            setUpdateStatus('loading', 'Updating...');
+            
+            await fetchFromGitHub(true);
+            
+            btn.disabled = false;
+            btn.textContent = '🔄 Refresh Data';
+        }
+        
+        async function fetchFromGitHub(force = false) {
+            setUpdateStatus('loading', 'Loading...');
+            
+            try {
+                // Try to fetch from various possible file formats
+                const possibleFiles = [
+                    'frame-data.json',
+                    'data.json',
+                    'framedata.json',
+                    'champions.json',
+                    'index.json'
+                ];
+                
+                let data = null;
+                let error = null;
+                
+                // First, try direct access to frame-data.json (most reliable)
+                try {
+                    console.log(`Fetching from: ${GITHUB_BASE}/frame-data.json`);
+                    const directResponse = await fetch(`${GITHUB_BASE}/frame-data.json`, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                        },
+                        cache: force ? 'no-cache' : 'default'
+                    });
+                    if (directResponse.ok) {
+                        const text = await directResponse.text();
+                        try {
+                            data = JSON.parse(text);
+                            console.log('✅ Successfully loaded frame-data.json');
+                            console.log(`Champions: ${data.champions?.length || 0}`);
+                            console.log(`Total moves: ${data.champions?.reduce((sum, c) => sum + (c.moves?.length || 0), 0) || 0}`);
+                        } catch (parseError) {
+                            console.error('Failed to parse JSON:', parseError);
+                        }
+                    } else {
+                        console.log(`Direct fetch failed: ${directResponse.status} ${directResponse.statusText}`);
+                    }
+                } catch (e) {
+                    console.error('Direct fetch error:', e);
+                }
+                
+                // If direct fetch failed, try API method
+                if (!data) {
+                    try {
+                        const repoResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents`);
+                        if (repoResponse.ok) {
+                            const files = await repoResponse.json();
+                            const jsonFiles = files.filter(f => f.name.endsWith('.json'));
+                            
+                            if (jsonFiles.length > 0) {
+                                // Try the first JSON file found
+                                const fileUrl = jsonFiles[0].download_url;
+                                const fileResponse = await fetch(fileUrl);
+                                if (fileResponse.ok) {
+                                    data = await fileResponse.json();
+                                    console.log(`✅ Loaded via API: ${jsonFiles[0].name}`);
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.log('Could not fetch from API, trying direct files...');
+                    }
+                }
+                
+                // If API method failed, try direct file access
+                if (!data) {
+                    // First try frame-data.json directly (most reliable)
+                    try {
+                        console.log(`Fetching from: ${GITHUB_BASE}/frame-data.json`);
+                        const directResponse = await fetch(`${GITHUB_BASE}/frame-data.json`, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                            },
+                            cache: force ? 'no-cache' : 'default'
+                        });
+                        if (directResponse.ok) {
+                            const text = await directResponse.text();
+                            try {
+                                data = JSON.parse(text);
+                                console.log('✅ Successfully loaded frame-data.json');
+                                console.log(`Champions: ${data.champions?.length || 0}`);
+                                console.log(`Total moves: ${data.champions?.reduce((sum, c) => sum + (c.moves?.length || 0), 0) || 0}`);
+                            } catch (parseError) {
+                                console.error('Failed to parse JSON:', parseError);
+                            }
+                        } else {
+                            console.log(`Direct fetch failed: ${directResponse.status} ${directResponse.statusText}`);
+                        }
+                    } catch (e) {
+                        console.error('Direct fetch error:', e);
+                    }
+                    
+                    // If still no data, try other filenames
+                    if (!data) {
+                        for (const filename of possibleFiles) {
+                            if (filename === 'frame-data.json') continue; // Already tried
+                            try {
+                                const response = await fetch(`${GITHUB_BASE}/${filename}`, {
+                                    method: 'GET',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                    },
+                                    cache: 'no-cache'
+                                });
+                                if (response.ok) {
+                                    const text = await response.text();
+                                    try {
+                                        data = JSON.parse(text);
+                                        console.log(`✅ Successfully loaded ${filename}`);
+                                        break;
+                                    } catch (parseError) {
+                                        console.error(`Failed to parse ${filename}:`, parseError);
+                                    }
+                                } else {
+                                    console.log(`Failed to fetch ${filename}: ${response.status} ${response.statusText}`);
+                                }
+                            } catch (e) {
+                                console.error(`Error fetching ${filename}:`, e);
+                                error = e;
+                            }
+                        }
+                    }
+                }
+                
+                if (data) {
+                    frameData = normalizeData(data);
+                    console.log('Data normalized:', frameData);
+                    console.log('Champions:', frameData.champions?.length || 0);
+                    if (frameData.champions && frameData.champions.length > 0) {
+                        console.log('First champion:', frameData.champions[0].name, 'moves:', frameData.champions[0].moves?.length || 0);
+                    }
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(frameData));
+                    localStorage.setItem(LAST_UPDATE_KEY, Date.now().toString());
+                    updateLastUpdated(Date.now());
+                    setUpdateStatus('success', 'Updated');
+                    renderFrameData();
+                } else {
+                    // Check if repository exists but is empty
+                    const repoResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents`);
+                    if (repoResponse.ok) {
+                        const files = await repoResponse.json();
+                        const hasJsonFiles = files.some(f => f.name.endsWith('.json'));
+                        if (!hasJsonFiles) {
+                            throw new Error('Repository exists but contains no JSON files. Please add frame data JSON file to the repository.');
+                        }
+                    }
+                    throw new Error('No data file found. Please ensure frame data is stored as JSON in the repository (e.g., frame-data.json, data.json, or champions.json).');
+                }
+            } catch (error) {
+                console.error('Error fetching frame data:', error);
+                setUpdateStatus('error', 'Update Failed');
+                showError('Failed to load frame data. Using cached data if available.');
+                
+                // Try to use cached data as fallback
+                const cached = localStorage.getItem(STORAGE_KEY);
+                if (cached) {
+                    try {
+                        frameData = JSON.parse(cached);
+                        renderFrameData();
+                    } catch (e) {
+                        showError('No cached data available. Please check the repository.');
+                    }
+                }
+            }
+        }
+        
+        function normalizeData(data) {
+            // Handle different possible data structures
+            if (Array.isArray(data)) {
+                // If it's an array, assume it's an array of champions
+                return { champions: data };
+            } else if (data.champions) {
+                // Already in expected format
+                return data;
+            } else if (typeof data === 'object') {
+                // Try to convert object to array format
+                const champions = Object.keys(data).map(key => ({
+                    name: key,
+                    ...data[key]
+                }));
+                return { champions };
+            }
+            
+            return { champions: [] };
+        }
+        
+        function renderFrameData() {
+            if (!frameData || !frameData.champions || frameData.champions.length === 0) {
+                document.getElementById('content').innerHTML = `
+                    <div class="empty-state">
+                        <h3>No Frame Data Available</h3>
+                        <p>The repository may be empty or the data format is not recognized.</p>
+                        <p><strong>Expected format:</strong> JSON file with a "champions" array or array of champion objects.</p>
+                        <div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
+                            <h4 style="margin-bottom: 10px;">Example JSON Structure:</h4>
+                            <pre style="background: white; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 0.85em;"><code>{
+  "champions": [
+    {
+      "name": "Ekko",
+      "moves": [
+        {
+          "name": "5L",
+          "startup": 6,
+          "onHit": 0,
+          "onBlock": -2,
+          "recovery": 10,
+          "type": "normal"
+        }
+      ]
+    }
+  ]
+}</code></pre>
+                            <p style="margin-top: 15px; font-size: 0.9em;">
+                                <strong>To add data:</strong> Upload a JSON file (e.g., <code>frame-data.json</code>) to the 
+                                <a href="https://github.com/eltonaguiar/2XKOFRAMEDATA" target="_blank">GitHub repository</a>.
+                            </p>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('championQuickSelect').style.display = 'none';
+                return;
+            }
+            
+            // Populate champion filter
+            const championFilter = document.getElementById('championFilter');
+            const currentValue = championFilter.value;
+            championFilter.innerHTML = '<option value="">All Champions</option>';
+            
+            // Populate quick select buttons
+            const quickSelect = document.getElementById('championQuickSelect');
+            quickSelect.innerHTML = '';
+            
+            frameData.champions.forEach(champ => {
+                const championName = champ.name || champ.champion || 'Unknown';
+                
+                // Add to dropdown
+                const option = document.createElement('option');
+                option.value = championName;
+                option.textContent = championName;
+                championFilter.appendChild(option);
+                
+                // Add to quick select
+                const btn = document.createElement('button');
+                btn.className = 'champion-btn';
+                btn.textContent = championName;
+                btn.addEventListener('click', () => {
+                    championFilter.value = championName;
+                    applyFilters();
+                });
+                quickSelect.appendChild(btn);
+            });
+            
+            if (currentValue) {
+                championFilter.value = currentValue;
+            }
+            
+            quickSelect.style.display = 'flex';
+            applyFilters();
+        }
+        
+        function applyFilters() {
+            if (!frameData || !frameData.champions) {
+                console.log('No frame data available');
+                return;
+            }
+            
+            console.log('applyFilters called, champions:', frameData.champions.length);
+            
+            const championFilter = document.getElementById('championFilter').value;
+            const moveTypeFilter = document.getElementById('moveTypeFilter').value;
+            const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+            
+            filteredData = frameData.champions.filter(champ => {
+                // Champion filter
+                if (championFilter && (champ.name || champ.champion) !== championFilter) {
+                    return false;
+                }
+                
+                // Search filter
+                if (searchFilter) {
+                    const moves = champ.moves || champ.frameData || [];
+                    const hasMatch = moves.some(move => {
+                        const moveName = (move.name || move.move || '').toLowerCase();
+                        return moveName.includes(searchFilter);
+                    });
+                    if (!hasMatch) return false;
+                }
+                
+                return true;
+            });
+            
+            console.log('Filtered champions:', filteredData.length);
+            displayChampions(filteredData, moveTypeFilter, searchFilter);
+        }
+        
+        function selectChampion(championName) {
+            document.getElementById('championFilter').value = championName;
+            applyFilters();
+        }
+        
+        function displayChampions(champions, moveTypeFilter, searchFilter) {
+            console.log('displayChampions called with:', champions.length, 'champions');
+            if (champions.length === 0) {
+                document.getElementById('content').innerHTML = `
+                    <div class="empty-state">
+                        <h3>No Champions Match Your Filters</h3>
+                        <p>Try adjusting your filter criteria.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // If only one champion selected, show detailed wiki-style view
+            if (champions.length === 1) {
+                console.log('Displaying single champion detail:', champions[0].name);
+                console.log('Moves count:', champions[0].moves?.length || 0);
+                displayChampionDetail(champions[0], moveTypeFilter, searchFilter);
+                return;
+            }
+            
+            // Multiple champions - show grid view
+            const html = champions.map(champ => {
+                const championName = champ.name || champ.champion || 'Unknown';
+                let moves = champ.moves || champ.frameData || [];
+                const totalMoves = moves.length;
+                
+                console.log(`Champion: ${championName}, Total moves: ${totalMoves}`);
+                
+                // Apply move type filter
+                if (moveTypeFilter) {
+                    moves = moves.filter(move => {
+                        const type = (move.type || move.category || '').toLowerCase();
+                        return type.includes(moveTypeFilter);
+                    });
+                }
+                
+                // Apply search filter
+                if (searchFilter) {
+                    moves = moves.filter(move => {
+                        const moveName = (move.name || move.move || '').toLowerCase();
+                        return moveName.includes(searchFilter);
+                    });
+                }
+                
+                if (moves.length === 0 && (moveTypeFilter || searchFilter)) {
+                    return '';
+                }
+                
+                return `
+                    <div class="champion-card" onclick="selectChampion('${escapeHtml(championName)}')">
+                        <div class="champion-card-header">
+                            <div class="champion-name">${escapeHtml(championName)}</div>
+                            <div class="move-count">${totalMoves} move${totalMoves !== 1 ? 's' : ''}</div>
+                        </div>
+                        <p style="color: #666; font-size: 0.9em;">Click to view full frame data</p>
+                    </div>
+                `;
+            }).filter(card => card.trim() !== '').join('');
+            
+            console.log('Generated HTML length:', html.length);
+            console.log('HTML preview:', html.substring(0, 200));
+            
+            if (html === '' || html.trim() === '') {
+                console.log('No HTML generated, showing empty state');
+                document.getElementById('content').innerHTML = `
+                    <div class="empty-state">
+                        <h3>No Champions Match Your Filters</h3>
+                        <p>Try adjusting your filter criteria.</p>
+                    </div>
+                `;
+            } else {
+                console.log('Setting content HTML with champion grid');
+                const contentDiv = document.getElementById('content');
+                contentDiv.innerHTML = `
+                    <div class="champion-grid">
+                        ${html}
+                    </div>
+                `;
+                console.log('Content set, children:', contentDiv.children.length);
+            }
+        }
+        
+        function displayChampionDetail(champ, moveTypeFilter, searchFilter) {
+            const championName = champ.name || champ.champion || 'Unknown';
+            let allMoves = champ.moves || champ.frameData || [];
+            console.log(`displayChampionDetail: ${championName}, moves: ${allMoves.length}`);
+            
+            // Group moves by type
+            const movesByType = {
+                normal: [],
+                special: [],
+                super: [],
+                other: []
+            };
+            
+            allMoves.forEach(move => {
+                const type = (move.type || move.category || '').toLowerCase();
+                if (type.includes('normal') || type.includes('light') || type.includes('medium') || type.includes('heavy')) {
+                    movesByType.normal.push(move);
+                } else if (type.includes('special')) {
+                    movesByType.special.push(move);
+                } else if (type.includes('super') || type.includes('ult')) {
+                    movesByType.super.push(move);
+                } else {
+                    movesByType.other.push(move);
+                }
+            });
+            
+            // Apply filters
+            Object.keys(movesByType).forEach(type => {
+                let moves = movesByType[type];
+                
+                if (moveTypeFilter && type !== moveTypeFilter && !moveTypeFilter.includes(type)) {
+                    moves = [];
+                }
+                
+                if (searchFilter) {
+                    moves = moves.filter(move => {
+                        const moveName = (move.name || move.move || '').toLowerCase();
+                        return moveName.includes(searchFilter);
+                    });
+                }
+                
+                movesByType[type] = moves;
+            });
+            
+            // Build sections HTML
+            const sections = [];
+            
+            if (movesByType.normal.length > 0) {
+                sections.push({
+                    title: 'Normals',
+                    moves: movesByType.normal
+                });
+            }
+            
+            if (movesByType.special.length > 0) {
+                sections.push({
+                    title: 'Specials',
+                    moves: movesByType.special
+                });
+            }
+            
+            if (movesByType.super.length > 0) {
+                sections.push({
+                    title: 'Supers',
+                    moves: movesByType.super
+                });
+            }
+            
+            if (movesByType.other.length > 0) {
+                sections.push({
+                    title: 'Other',
+                    moves: movesByType.other
+                });
+            }
+            
+            const sectionsHtml = sections.map(section => {
+                const movesHtml = section.moves.map(move => {
+                    const moveName = move.name || move.move || 'Unknown';
+                    const input = move.input || move.inputNotation || '';
+                    const inputGlyph = move.inputGlyph || '';
+                    const keyboardButton = move.keyboardButton || getKeyboardButtonFromInput(input || moveName);
+                    const startup = move.startup || move.start || '-';
+                    const onHit = move.onHit || move.hit || move.hitAdvantage || '-';
+                    const onBlock = move.onBlock || move.block || move.blockAdvantage || '-';
+                    const recovery = move.recovery || move.recoveryFrames || '-';
+                    const damage = move.damage || move.dmg || '-';
+                    const guard = move.guard || move.blockType || '-';
+                    
+                    // Build input display - prioritize user-friendly formats (glyph/keyboard) over cryptic FGC notation
+                    const keyboardInput = move.keyboardInput || '';
+                    let inputDisplay = '';
+                    
+                    // Always show input information - prioritize user-friendly formats
+                    const parts = [];
+                    
+                    // Show keyboard keys first (most user-friendly)
+                    if (keyboardInput) {
+                        parts.push(`<span class="input-keys" title="Keyboard keys to press">⌨️ ${escapeHtml(keyboardInput)}</span>`);
+                    }
+                    
+                    // Show keyboard button name (user-friendly)
+                    if (keyboardButton) {
+                        parts.push(`<span class="input-keyboard">${escapeHtml(keyboardButton)}</span>`);
+                    }
+                    
+                    // Show input glyph (visual representation)
+                    if (inputGlyph) {
+                        parts.push(`<span class="input-glyph">${escapeHtml(inputGlyph)}</span>`);
+                    }
+                    
+                    // Show FGC notation last (for advanced users) - only if no user-friendly format exists
+                    if (input && (!keyboardInput && !keyboardButton && !inputGlyph)) {
+                        parts.push(`<span class="input-fgc">${escapeHtml(input)}</span>`);
+                    } else if (input && parts.length === 0) {
+                        // Fallback: if nothing else exists, show input
+                        parts.push(`<span class="input-fgc">${escapeHtml(input)}</span>`);
+                    }
+                    
+                    if (parts.length > 0) {
+                        inputDisplay = `<div class="input-display">${parts.join(' ')}</div>`;
+                    }
+                    
+                    return `
+                        <tr>
+                            <td class="move-name-cell">
+                                <div class="move-name">${escapeHtml(moveName)}</div>
+                                ${inputDisplay}
+                            </td>
+                            <td class="frame-value">${formatFrame(startup)}</td>
+                            <td class="frame-value ${getFrameClass(onHit)}">${formatFrame(onHit)}</td>
+                            <td class="frame-value ${getFrameClass(onBlock)}">${formatFrame(onBlock)}</td>
+                            <td class="frame-value">${formatFrame(recovery)}</td>
+                            ${damage !== '-' ? `<td class="frame-value">${escapeHtml(damage)}</td>` : '<td>-</td>'}
+                            ${guard !== '-' ? `<td class="frame-value">${escapeHtml(guard)}</td>` : '<td>-</td>'}
+                        </tr>
+                    `;
+                }).join('');
+                
+                const hasExtraCols = section.moves.some(m => (m.damage || m.dmg) || (m.guard || m.blockType));
+                const headerCols = hasExtraCols 
+                    ? '<th>Move</th><th title="Startup: Frames until the move becomes active (lower = faster)">Startup <span class="tooltip-icon">ℹ️</span></th><th title="On Hit: Frame advantage when the move connects (positive = you can continue, negative = opponent can act first)">On Hit <span class="tooltip-icon">ℹ️</span></th><th title="On Block: Frame advantage when blocked (positive = safe, negative = punishable)">On Block <span class="tooltip-icon">ℹ️</span></th><th title="Recovery: Frames after the move ends before you can act again">Recovery <span class="tooltip-icon">ℹ️</span></th><th title="Damage: How much health the move removes">Damage <span class="tooltip-icon">ℹ️</span></th><th title="Guard: What blocking positions can guard this (L=Low, H=High, A=Air, U=Unblockable)">Guard <span class="tooltip-icon">ℹ️</span></th>'
+                    : '<th>Move</th><th title="Startup: Frames until the move becomes active (lower = faster)">Startup <span class="tooltip-icon">ℹ️</span></th><th title="On Hit: Frame advantage when the move connects (positive = you can continue, negative = opponent can act first)">On Hit <span class="tooltip-icon">ℹ️</span></th><th title="On Block: Frame advantage when blocked (positive = safe, negative = punishable)">On Block <span class="tooltip-icon">ℹ️</span></th><th title="Recovery: Frames after the move ends before you can act again">Recovery <span class="tooltip-icon">ℹ️</span></th>';
+                
+                return `
+                    <div class="move-section">
+                        <h2 class="move-section-title">${section.title}</h2>
+                        <table class="frame-data-table">
+                            <thead>
+                                <tr>
+                                    ${headerCols}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${movesHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('content').innerHTML = `
+                <div class="champion-view">
+                    <a href="#" class="back-to-all" onclick="event.preventDefault(); document.getElementById('championFilter').value=''; applyFilters();">← Back to All Champions</a>
+                    <div class="champion-header-detail">
+                        <div class="champion-name-detail">${escapeHtml(championName)}</div>
+                        <div style="color: #666;">Frame Data</div>
+                    </div>
+                    ${sectionsHtml || '<div class="empty-state"><p>No moves match your filters.</p></div>'}
+                </div>
+            `;
+            
+            // Update active button
+            document.querySelectorAll('.champion-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === championName) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+        
+        function formatFrame(value) {
+            if (value === null || value === undefined || value === '-') return '-';
+            const num = parseInt(value);
+            if (isNaN(num)) return value;
+            return num > 0 ? `+${num}` : num.toString();
+        }
+        
+        function getFrameClass(value) {
+            if (value === null || value === undefined || value === '-') return 'neutral';
+            const num = parseInt(value);
+            if (isNaN(num)) return 'neutral';
+            if (num > 0) return 'positive';
+            if (num < 0) return 'negative';
+            return 'neutral';
+        }
+        
+        function getKeyboardButtonFromInput(input) {
+            if (!input) return '';
+            
+            // Extract button from FGC notation
+            const buttonMatch = input.match(/([LMH]|S[12]|T)$/i);
+            if (buttonMatch) {
+                const btn = buttonMatch[1].toUpperCase();
+                const mapping = {
+                    'L': 'Light',
+                    'M': 'Medium',
+                    'H': 'Heavy',
+                    'S1': 'Special 1',
+                    'S2': 'Special 2',
+                    'T': 'Tag'
+                };
+                return mapping[btn] || btn;
+            }
+            
+            // Check if it's a named move that might indicate the button
+            const nameLower = input.toLowerCase();
+            if (nameLower.includes('light') || nameLower.includes('l')) return 'Light';
+            if (nameLower.includes('medium') || nameLower.includes('m')) return 'Medium';
+            if (nameLower.includes('heavy') || nameLower.includes('h')) return 'Heavy';
+            if (nameLower.includes('special 1') || nameLower.includes('s1')) return 'Special 1';
+            if (nameLower.includes('special 2') || nameLower.includes('s2')) return 'Special 2';
+            
+            return '';
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function setUpdateStatus(status, text) {
+            const statusEl = document.getElementById('updateStatus');
+            statusEl.className = `update-status ${status}`;
+            statusEl.textContent = text;
+        }
+        
+        function updateLastUpdated(timestamp) {
+            const date = new Date(timestamp);
+            const formatted = date.toLocaleString();
+            document.getElementById('lastUpdated').textContent = formatted;
+        }
+        
+        function showError(message) {
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div class="error-message">
+                    <strong>Error:</strong> ${escapeHtml(message)}
+                </div>
+            `;
+        }
+        
+        // Auto-refresh check on page load
+        window.addEventListener('focus', () => {
+            const lastUpdate = localStorage.getItem(LAST_UPDATE_KEY);
+            if (lastUpdate) {
+                const now = Date.now();
+                if ((now - parseInt(lastUpdate)) > UPDATE_INTERVAL) {
+                    fetchFromGitHub();
+                }
+            }
+        });
+        
+        // Make selectChampion available globally
+        window.selectChampion = selectChampion;
+    </script>
+</body>
+</html>

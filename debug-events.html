@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Debug Events</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 24px; }
+      .meta { color: #555; margin-bottom: 12px; }
+      .err { color: #b00020; white-space: pre-wrap; }
+      .ok { color: #0a7a0a; }
+      ul { padding-left: 18px; }
+      li { margin: 6px 0; }
+      code { background: #f2f2f2; padding: 2px 6px; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <h1>Debug Events</h1>
+    <div class="meta">Fetching <code>/events.json</code> and rendering event titles…</div>
+    <div id="status"></div>
+    <ul id="list"></ul>
+
+    <script>
+      (async function () {
+        const statusEl = document.getElementById('status');
+        const listEl = document.getElementById('list');
+
+        function setStatusOk(msg) {
+          statusEl.className = 'ok';
+          statusEl.textContent = msg;
+        }
+
+        function setStatusErr(msg) {
+          statusEl.className = 'err';
+          statusEl.textContent = msg;
+        }
+
+        try {
+          const res = await fetch('/events.json', { cache: 'no-store' });
+          if (!res.ok) {
+            setStatusErr(`Fetch failed: ${res.status} ${res.statusText}`);
+            return;
+          }
+
+          const data = await res.json();
+          const events = Array.isArray(data) ? data : (Array.isArray(data?.events) ? data.events : []);
+
+          listEl.innerHTML = '';
+          for (const e of events) {
+            const li = document.createElement('li');
+            const title = e?.title ?? '(missing title)';
+            const date = e?.date ? ` — ${e.date}` : '';
+            li.textContent = `${title}${date}`;
+            listEl.appendChild(li);
+          }
+
+          setStatusOk(`Loaded ${events.length} event(s).`);
+          if (!events.length) {
+            setStatusErr('Loaded 0 events. JSON parsed but list was empty. Check the JSON shape/content.');
+          }
+        } catch (err) {
+          setStatusErr(String(err && err.stack ? err.stack : err));
+        }
+      })();
+    </script>
+  </body>
+</html>

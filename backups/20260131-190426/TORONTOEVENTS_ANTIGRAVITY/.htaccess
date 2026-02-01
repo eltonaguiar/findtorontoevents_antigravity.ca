@@ -1,0 +1,17 @@
+# Force this directory to serve its own index.html (do not rewrite to root).
+# Prevents ChunkLoadError when server would otherwise serve root index with wrong chunk paths.
+DirectoryIndex index3.html
+# Explicit rewrite: request for this directory -> index.html (in case DirectoryIndex is overridden)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^_next/(.*)$ next/$1 [L]
+  RewriteRule ^$ index3.html [L]
+</IfModule>
+# Disable caching for index so browsers always get the latest (matching _next chunks).
+<IfModule mod_headers.c>
+  <FilesMatch "index2\.html$|index\.html$|index3\.html$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+</IfModule>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Mental Health Resources Link</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .test {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .success { border-left: 4px solid #4CAF50; }
+        .error { border-left: 4px solid #f44336; }
+        code {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Mental Health Resources Link Verification</h1>
+    
+    <div class="test">
+        <h2>Test 1: Check HTML Source</h2>
+        <p>1. Open: <code>https://findtorontoevents.ca/TORONTOEVENTS_ANTIGRAVITY/index.html</code></p>
+        <p>2. Right-click → View Page Source (Ctrl+U)</p>
+        <p>3. Press Ctrl+F and search for: <code>Mental Health Resources</code></p>
+        <p><strong>Expected:</strong> Should find the link in the HTML</p>
+    </div>
+
+    <div class="test">
+        <h2>Test 2: Check JavaScript Bundle</h2>
+        <p>1. Open DevTools (F12) → Network tab</p>
+        <p>2. Refresh the page</p>
+        <p>3. Look for JavaScript files in <code>/TORONTOEVENTS_ANTIGRAVITY/_next/static/chunks/</code></p>
+        <p>4. Check the file names - they should have new hashes (not <code>238f16cb145b78e2.js</code>)</p>
+        <p><strong>Expected:</strong> New bundle hashes like <code>eb574947d1528630.js</code></p>
+    </div>
+
+    <div class="test">
+        <h2>Test 3: Direct HTML Check</h2>
+        <p>If "Mental Health Resources" is NOT in the page source:</p>
+        <ul>
+            <li>✅ Server is caching old HTML</li>
+            <li>✅ Need to clear server/CDN cache</li>
+            <li>✅ Or wait 10-15 minutes for cache to expire</li>
+        </ul>
+        <p>If "Mental Health Resources" IS in the page source but not visible:</p>
+        <ul>
+            <li>✅ Browser is loading old JavaScript bundles</li>
+            <li>✅ Clear browser cache completely</li>
+            <li>✅ Check Network tab for which JS files are loading</li>
+        </ul>
+    </div>
+
+    <div class="test success">
+        <h2>✅ Confirmed in Build</h2>
+        <p>The Mental Health Resources link IS in:</p>
+        <ul>
+            <li>✅ Source code (QuickNav.tsx)</li>
+            <li>✅ Built HTML (static)</li>
+            <li>✅ JavaScript bundles</li>
+            <li>✅ Deployed to FTP</li>
+        </ul>
+        <p><strong>The issue is server-side caching.</strong></p>
+    </div>
+
+    <script>
+        console.log('Verification page loaded');
+        console.log('If you see this, the server is serving files correctly');
+    </script>
+</body>
+</html>

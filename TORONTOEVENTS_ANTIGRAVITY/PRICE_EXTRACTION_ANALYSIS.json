@@ -1,0 +1,122 @@
+{
+  "summary": {
+    "totaleventsaffected": 1003,
+    "percentagemissingprices": 80,
+    "severity": "critical",
+    "total_events": 1248,
+    "events_with_prices": 245,
+    "free_events": 166,
+    "last_updated": "2026-01-26T22:30:00Z"
+  },
+  "root_causes": [
+    {
+      "cause": "AllEvents.in events not following Eventbrite links to extract prices from original source",
+      "affectedeventcount": 702,
+      "evidence": "84% of AllEvents.in events (702/838) show 'See Tickets'. AllEvents.in scraper was only extracting prices from AllEvents.in pages, not following links to Eventbrite where most events originate. Many AllEvents.in events are aggregations pointing to Eventbrite pages.",
+      "status": "FIXED - Code updated to follow Eventbrite links (committed 2026-01-26)"
+    },
+    {
+      "cause": "Eventbrite events not fully enriched with comprehensive price extraction",
+      "affectedeventcount": 288,
+      "evidence": "74% of Eventbrite events (288/388) show 'See Tickets'. Only 100/388 Eventbrite events (26%) have prices. Remaining events still have 'See Tickets' from initial scrape before enrichment was implemented.",
+      "status": "IN PROGRESS - Batch enrichment script created, 50/388 events enriched (13%)"
+    },
+    {
+      "cause": "Stale data in events.json - events scraped before comprehensive extraction was implemented",
+      "affectedeventcount": 1003,
+      "evidence": "80% of all events (1003/1248) show 'See Tickets'. Most events in data/events.json were scraped before the comprehensive price extraction features were fully implemented and tested. Last scraper run was before AllEvents.in → Eventbrite link following was added.",
+      "status": "REQUIRES ACTION - Full scraper run needed to apply new extraction logic"
+    },
+    {
+      "cause": "Minor sources (Narcity, Thursday, Toronto Dating Hub) have no price extraction logic",
+      "affectedeventcount": 13,
+      "evidence": "100% of events from Narcity (1), Thursday (5), Thursday/Fatsoma (6), and Toronto Dating Hub (1) show 'See Tickets'. These sources don't have price extraction implemented.",
+      "status": "LOW PRIORITY - Small volume, can be addressed later"
+    }
+  ],
+  "recommended_fixes": [
+    {
+      "fix_id": "FIX-001",
+      "action": "Run full scraper to apply AllEvents.in → Eventbrite link following logic",
+      "priority": "immediate",
+      "estimated_effort": "low",
+      "steps": [
+        "Deploy updated AllEvents.in scraper code (already committed)",
+        "Run full scraper: npm run scrape",
+        "Monitor logs for 'Found Eventbrite link' messages",
+        "Verify AllEvents.in events now show prices instead of 'See Tickets'"
+      ],
+      "status": "READY - Code deployed, awaiting scraper run"
+    },
+    {
+      "fix_id": "FIX-002",
+      "action": "Complete batch enrichment of remaining Eventbrite events",
+      "priority": "high",
+      "estimated_effort": "medium",
+      "steps": [
+        "Continue batch enrichment: npx tsx scripts/enrich-all-eventbrite-events.ts 50 100",
+        "Process remaining 286 Eventbrite events in batches of 50",
+        "Monitor enrichment success rate",
+        "Verify price extraction improvements"
+      ],
+      "status": "IN PROGRESS - 50/388 events enriched (13%)"
+    },
+    {
+      "fix_id": "FIX-003",
+      "action": "Schedule regular scraper runs via GitHub Actions",
+      "priority": "high",
+      "estimated_effort": "low",
+      "steps": [
+        "Verify GitHub Actions workflow is active (.github/workflows/scrape-events.yml)",
+        "Confirm workflow runs every 6 hours",
+        "Monitor workflow success rate",
+        "Set up alerts for scraper failures"
+      ],
+      "status": "CONFIGURED - Workflow exists, needs verification"
+    },
+    {
+      "fix_id": "FIX-004",
+      "action": "Add price validation and fallback logic",
+      "priority": "medium",
+      "estimated_effort": "medium",
+      "steps": [
+        "Add validation: reject events with 'See Tickets' if price extraction failed",
+        "Implement fallback: try multiple extraction methods before giving up",
+        "Add logging: track which events fail price extraction and why",
+        "Create monitoring dashboard for price extraction success rate"
+      ],
+      "status": "PENDING"
+    }
+  ],
+  "validation_steps": [
+    "Query 50 random events from data/events.json; count how many show prices vs 'See Tickets'",
+    "Filter by source (Eventbrite, AllEvents.in) and verify price extraction rates per source",
+    "Check enrichment logs for 'Found Eventbrite link' and 'Extracted price from Eventbrite' messages",
+    "Compare before/after: Run scraper, then re-check price coverage percentage",
+    "Test 'Nearby Me' feature with postal codes to ensure location filtering works with price data",
+    "Monitor user feedback and conversion metrics after fixes are deployed"
+  ],
+  "recent_changes": [
+    {
+      "date": "2026-01-26",
+      "change": "Implemented AllEvents.in → Eventbrite link following logic",
+      "impact": "AllEvents.in events will now extract prices from original Eventbrite pages when links are found"
+    },
+    {
+      "date": "2026-01-26",
+      "change": "Added comprehensive price extraction (minPrice, maxPrice, ticketTypes) for Eventbrite",
+      "impact": "Eventbrite events can now show price ranges and all ticket tiers"
+    },
+    {
+      "date": "2026-01-26",
+      "change": "Created batch enrichment script for existing Eventbrite events",
+      "impact": "Can retroactively enrich existing events with comprehensive price data"
+    }
+  ],
+  "next_actions": [
+    "IMMEDIATE: Run full scraper to apply AllEvents.in → Eventbrite link following",
+    "HIGH: Continue batch enrichment of remaining 286 Eventbrite events",
+    "MEDIUM: Set up monitoring for price extraction success rate",
+    "LOW: Add price validation to reject events without prices (optional)"
+  ]
+}

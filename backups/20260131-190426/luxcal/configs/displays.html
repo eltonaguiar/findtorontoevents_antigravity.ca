@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LuxCal Displays</title>
+<meta name="description" content="LuxCal web calendar - a LuxSoft product">
+<meta name="keywords" content="LuxSoft, LuxCal, LuxCal web calendar">
+<meta name="author" content="Roel Buining">
+<meta name="robots" content="nofollow">
+<link rel="icon" href="lcal.ico">
+<style type="text/css">
+* {padding:0; margin:0;}
+body {font:14px arial, sans-serif; background:#FFFFFF; color:#304050;}
+a {text-decoration:none; cursor:pointer;}
+h1 {font-size:1.5em; text-shadow:grey 0.2em 0.3em 0.2em;}
+h3 {margin:20px 0 10px 0; font-size:1.4em;}
+h4 {margin:40px 0 0 0; font-size:1.3em;}
+h5 {margin:20px 0 0 0; font-size:1.2em;}
+h6 {margin:10px 0 0 0; font-size:1.0em; text-decoration:underline;}
+p { margin:6px 0; text-align:justify; }
+ul, ol {margin:0 20px;}
+li ol {list-style-type:lower-alpha;}
+li {margin:6px 0;}
+code {display:table; line-height:1.5; background:#FFFFFF;}
+.floatR {float:right;}
+.center {text-align:center;}
+.redFlag {color:#DD3300;}
+header {padding:10px; background:#F2F2F2;}
+div.totop {position:fixed; bottom:40px; right:30px; font-size:3.0em;}
+div.totop a {color:#7777CC}
+div.totop a:hover {color:#DD3300;}
+div.navBar {
+	position:absolute; top:48px; left:0; right:0;
+	padding:0 1%;
+	background:#90FFFF;
+	padding:2px 10px;
+	border:1px #A0A0A0;
+	border-style:solid none;
+	line-height:20px;
+	vertical-align:middle;
+	text-align:center;
+	font:bold 1.4em arial,sans-serif;
+}
+div.content {
+	position:absolute; top:100px; right:0px; bottom:50px; left:0px;
+	padding:0 4%;
+	overflow:auto;
+}
+div.endBar {
+	position:absolute; left:0; right:0; bottom:10px;
+	padding:0 1%;
+	background:#90FFFF;
+	text-align:right;
+	border:1px #A0A0A0;
+	border-style:solid none;
+	font-size:0.8em;
+}
+.LuxSoft {font:italic bold 1.1em arial,sans-serif; color:#AA0066;}
+</style>
+</head>
+
+<body>
+<header>
+<h1 class="floatR">a LuxSoft product</h1>
+<h1>LuxCal Event calendar</h1>
+</header>
+<div class="navBar">LuxCal Displays User Guide</div>
+<div class="content">
+<a id="top"></a><div class="totop"><a href="#top">▲</a></div>
+<h4>Table of Content</h4>
+<ol style="margin:0 40px">
+<li><p><a href="#lbl-1">Introduction</a></p></li>
+<li><p><a href="#lbl-2">Specialties of display 0</a></p></li>
+<li><p><a href="#lbl-3">Specialties of display 1 - 3</a></p></li>
+<li><p><a href="#lbl-4">Tailoring the display's configuration settings</a></p></li>
+<li><p><a href="#lbl-5">How to embed displays in your web page</a></p></li>
+<li><p><a href="#lbl-6">Explanation of the general configuration settings used by most displays</a></p></li>
+</ol>
+<br>
+
+<a id="lbl-1"></a><h4>1. Introduction</h4>
+<p>LuxCal displays are single-file programs meant to create a dedicated events 
+listing of the upcoming events in your calendar.
+Displays work out-of-the-box and are highly configurable in an easy way. They 
+must be located in the root folder of the LuxCal calendar.
+Directly after installing or upgrading the calendar you can browse with your 
+browser to the file and see the result. An example of the URL for for instance 
+display1: www.yoursite.xxx/calendar/display1.php.</p>
+<p>There are currently 4 different displays available:</p>
+<ul>
+<li>display 0: A mini-calendar showing exactly one month</li>
+<li>display 1 and 2: Event listing of the upcoming events, meant to be embedded 
+in in a web page (via an iframe)</li>
+<li>display 3: Event listing of the upcoming events, meant to be viewed on a 
+narrow width display, like a smart phone in portrait position.</li>
+</ul>
+<br>
+<p><b>IMPORTANT</b>: To avoid losing your changes when upgrading the calendar, 
+tailoring the configuration settings of displays should NOT be done in the 
+displayX.php files in the calendar root, but should be done as described in 
+section 4 hereafter.</p>
+
+<a id="lbl-2"></a><h4>2. Specialties of display 0</h4>
+<ul>
+<li>This display shows one calendar month; events are represented by mini-squares 
+  or symbols (if defined in the event categories), which cn be hovered to show 
+	the event details</li>
+<li>Visitors can skip to next/previous month.</li>
+<li>Visitors can open the full-size calendar by clicking the month+year button in 
+  the mini-calendar's header.</li>
+<li>If in the calendar public users have been given post rights, users can add 
+  events by clicking in a day cell and can edit an event by clicking on the 
+	event symbol.</li>
+<li>If Extra Field 2 contains a URL, clicking on the event symbol will open this 
+  URL in a new window.</li>
+<li>Depending on the selected month, the number of displayed weeks can vary. The 
+  height of the mini calendar will automatically be adjusted.</li>
+<li>Since the mini calendar will normally be embedded in an iframe, the hover box 
+  with event details cannot pass the iframe borders.</li>
+</ul>
+
+<a id="lbl-3"></a><h4>3. Specialties of display 1 - 3</h4>
+<ul>
+<li>Events can be filtered on various criteria (event categories, event owner user 
+  IDs, event owner user group IDs, text in venue field).</li>
+<li>The event head and body are highly configurable.</li>
+<li>Optionally users can log in. When logged in, the settings of the group to 
+  which the user belongs apply.</li>
+<li>Images in extra field 1 are floated left and images in extra field 2 are 
+  floated right. If in the same extra fields 1 or 2 a URL is found, then the 
+	corresponding image will become a hyper-link to this URL. Note: This only 
+	works if Extra Field 1 (4) and Extra Field 2 (5) are not present in the in the 
+	$evtBody setting.</li>
+<li>If in the full calendar public users or logged in users have been given post 
+  rights, they can add events by clicking a date and can edit an event by 
+	clicking its title.</li>
+<li>Optionally a PDF button to download a PDF file with upcoming events can be 
+  added to the display header (not in display3).</li>
+<li>Display3 has been specially designed for narrow displays, like smart phones in 
+  portrait position.</li>
+</ul>
+
+<a id="lbl-4"></a><h4>4. Tailoring the display's configuration settings</h4>
+<p>Displays have a section with default configuration settings, specifying for 
+example which events should be shown and defining the graphical user interface 
+(lay-out, colors, fonts, etc.). The most important configuration settings are 
+explanation at the end of this document.</p>
+
+<p>You can change the default configuration settings in the following ways:</p>
+<ul>
+<li>by copying one of the display .cnf files from the "samples" folder to the 
+'configs' folder and tailor the settings in this file. Thereafter in the link to 
+the displayX.php file add the parameter "cnf" with the configuration file name 
+(without extension). Example: <kbd>src="display1.php?cnf=display1a"</kbd>.</li>
+<li>If in the link the cnf parameter is omitted, the display will look for a file 
+with the same name as the displayX.php file and with extension .cnf. Example: 
+"display1.cnf". If present, the display will take the configuration settings 
+from this file.</li>
+<li>If in its turn this file is not present, the display will be shown with its 
+default configuration.</li>
+</ul>
+<p>So if you are using only one displayX.php, then copying the configuration file, 
+with the same name as the displayX.php and extension .cnf, from the "samples" 
+folder to the "configs" folder and editing the settings will do.</p>
+<p>If you are using multiple displays of the same type (e.g. a display 1 with 
+birthdays and a display 1 (the same) with all other events, then you can copy a 
+configuration file for this display from the "samples" folder to the "configs" 
+folder and make a tailored copy for each of your multiple displays.</p>
+
+<a id="lbl-5"></a><h4>5. How to embed displays in your web page</h4>
+<p>Displays have been designed to be shown in a limited space, they are best viewed 
+on a narrow-width display (for instance a smart phone) or in a narrow-width 
+iframe integrated in your website.</p>
+<h6>Example:</h6>
+<p>Integrated in your web page:</p>
+<kbd>&nbsp;&nbsp;&lt;iframe class="display" src="calendar/display1.php"&gt;&lt;/iframe&gt;</kbd>
+<p>In your style sheet:</p>
+<kbd>&nbsp;&nbsp;iframe.display {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;width:450px;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;height:550px;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;overflow:hidden;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;border:1px solid grey;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;border-radius:5px;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;box-shadow:5px 5px 5px #888;<br>
+&nbsp;&nbsp;}</kbd>
+<p>Optionally displays can be called with a URL parameter ?cats=comma-separated-category-ID-list. In this case only events in the specified categories will be 
+shown, provided that the specified category is part of the category ID list in the 
+display configuration. In this way you can have the same display multiple times in 
+your web pages, each showing events in different categories.</p>
+
+<a id="lbl-6"></a><h4>6. Explanation of the general configuration settings used by most displays</h4>
+
+<h6>Set Start and End Date</h6>
+<ul>
+<li><kbd>$fromDate</kbd> and <kbd>$tillDate</kbd><br>
+Possible values: A fixed date (yyyy-mm-dd), or one of the keywords DAY, WEEK, MONTH, YEAR, optionally followed by an offset<br>
+Examples $fromDate: "2018-01-28" | "DAY-2": today - 2 days | "WEEK": start of this week | "MONTH+1": start of next month | "YEAR": start of this year<br>
+Examples $tillDate: "2018-06-14" | "DAY+2": today + 2 days | "MONTH": end of this month | "MONTH+1": end of next month | "YEAR": end of this year<br>
+default: $fromDate = "DAY";<br>
+default: $tillDate = "MONTH+1";</li>
+</ul>
+
+<h6>General Settings</h6>
+<ul>
+<li><kbd>$calID = "";</kbd><br>
+Calendar ID. If there are multiple calendars in use, here you can specify which calendar to use. E.g. "mycal". When this setting is left blank (""), the calendar currently in use will be taken.</li>
+
+<li><kbd>$calName = "*";</kbd><br>
+Header text of the display. E.g. "Upcoming events". If an asterisk ("*") is specified, the calendar title will be the header text. When left blank (""), no header will be displayed.</li>
+
+<li><kbd>$login = 1;</kbd><br>
+Show user name and login button in right upper corner. When set to 0, visitors will not be able to log in and events will be shown according to the settings in the user group of the Public Access user. When set to 1, a login button will be shown at the right upper corner. A not (yet) logged in user will see events according to the settings in the user group of the Public Access user. A logged in user will see events according to the settings in his/her user group.
+If $login = 1 and the public user has no rights, the display will open directly with the login form. When a user logs in, he will automatically be remembered during the number of days specified on the Settings page of the calendar, under 'User Accounts'.</li>
+
+<li><kbd>$logMsg = "No account yet? Contact the calendar administrator";</kbd><br>
+Message shown at the top of the log in page. Only relevant if $login = 1.</li>
+
+<li><kbd>$pdfBut = 1;</kbd><br>
+Show PDF file download button in right upper corner (0: no, 1: yes).</li>
+
+<li><kbd>$pdfCnf = "pdf1";</kbd><br>
+Name of configuration file, without extension, for the creation of the PDF file when the PDF button is clicked; blank (""): use default.</li>
+
+<li><kbd>$sortD = 0;</kbd><br>
+Event sorting on dates; 0: ascending, 1: descending.</li>
+
+<li><kbd>$maxDays = 0;</kbd><br>
+Max. number of days to show; 0: no maximum.</li>
+
+<li><kbd>$futEvts = 0;</kbd><br>
+Show ongoing and future events only (0: no, 1: yes). Note: This setting overrules the "from date" and sets it to "DAY". As soon as the date and end time of an event have not passed the event will not be shown anymore.</li>
+
+<li><kbd>$evtHead = '#t #c#/owner: #o';</kbd><br>
+Event head template. The combination of the # and the subsequent character will be replaced by the corresponding value, as follows: #t: times, #e: event title, #c: event title - category color, #u: event title - owner group color, #o: event owner, #a: age (see note below) #/: new line. All other characters in the template will be part of the event head.<br>The #a key will be replaced by the age of the person if the following conditions are met: For the category of the event the Repeat field is set to "every year" and somewhere in the event's description field the year of birth in parentheses is present in the format 'yyyy'. E.g. (1989), (2001).<br>For #a (age) the | character can be used to create an age section; if within this section the #a-parameter results in an empty string, the whole section will be omitted. For instance "|Age: #a|".
+</li>
+
+<li><kbd>$evtBody = '12345';</kbd><br>
+List of event fields to show. Each number represents an event field, as follows: 1: venue, 2: category, 3: description, 4: Extra field 1, 5: Extra field 2, 6: Email notification data (if requested), 7: Date/time added edited, 8: Attached pdf, image or video files as hyperlink). The order of the events fields corresponds to the order of the numbers.</li> 
+
+<li><kbd>$evtWin = 1;</kbd><br>
+On click open event window (0: no, 1: yes). Explanation:
+If "yes" and the user has no post rights, when clicking an event title the event report window with all event details will open.
+If "yes" and the user has post rights, when clicking an event title the Edit Event window will open and when clicking a date an Add Event window will open for that date and when clicking the calendar title an Add Event window will open with a blank date. So in this case the visitor can edit and add events, in accordance with the visitor's group settings.</li>
+
+<li><kbd>$recOnce = 0;</kbd><br>
+For recurring events, show only one (the next) occurrence (0: all, 1: next only).</li>
+
+<li><kbd>$mulOnce = 0;</kbd><br>
+For multi-day events, show only one (the next) occurrence (0: all, 1: next only).</li>
+
+<li><kbd>$maxImgH = 80;</kbd><br>
+Maximum height of images (in pixels).</li>
+
+<li><kbd>$noEvents = "No events";</kbd><br>
+Message shown when there are no upcoming events to show.</li>
+</ul>
+<br>
+<h5>&nbsp;- End of LuxCal Displays User Guide -</h5>
+<br>
+</div>
+<div class="endBar">
+	design 2020 - powered by <a href="https://www.luxsoft.eu"><span class="LuxSoft">LuxSoft</span></a>
+</div>
+<br>&nbsp;
+</body>
+</html>

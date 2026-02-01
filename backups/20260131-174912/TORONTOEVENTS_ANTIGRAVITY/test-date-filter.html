@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Date Filter Test</title>
+</head>
+<body>
+    <h1>Testing UTC Date Filter Logic</h1>
+    <div id="results"></div>
+    <script>
+        const testDate = '2026-01-25T17:00:00.000Z';
+        const eventDate = new Date(testDate);
+        const today = new Date();
+        
+        const isToday = eventDate.getUTCFullYear() === today.getUTCFullYear() &&
+                       eventDate.getUTCMonth() === today.getUTCMonth() &&
+                       eventDate.getUTCDate() === today.getUTCDate();
+        
+        const results = `
+            <p><strong>Test Date:</strong> ${testDate}</p>
+            <p><strong>Event UTC Date:</strong> ${eventDate.getUTCDate()}</p>
+            <p><strong>Event UTC Month:</strong> ${eventDate.getUTCMonth()}</p>
+            <p><strong>Event UTC Year:</strong> ${eventDate.getUTCFullYear()}</p>
+            <p><strong>Today UTC Date:</strong> ${today.getUTCDate()}</p>
+            <p><strong>Today UTC Month:</strong> ${today.getUTCMonth()}</p>
+            <p><strong>Today UTC Year:</strong> ${today.getUTCFullYear()}</p>
+            <p><strong>Is Today?</strong> ${isToday ? 'YES ✓' : 'NO ✗'}</p>
+            <p><strong>Current Browser Time:</strong> ${new Date().toString()}</p>
+        `;
+        
+        document.getElementById('results').innerHTML = results;
+    </script>
+</body>
+</html>

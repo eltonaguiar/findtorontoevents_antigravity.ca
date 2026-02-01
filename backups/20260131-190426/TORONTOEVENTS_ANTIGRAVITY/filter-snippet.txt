@@ -1,0 +1,13 @@
+    const singleDayEvents = validEvents.filter(e => {
+        if (!isMultiDay(e)) {
+            const eventDate = new Date(e.date);
+            // If Today filter is active, show events from last hour onwards
+            if (dateFilter === 'today') {
+                const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+                return eventDate >= oneHourAgo;
+            }
+            // Otherwise only future events
+            return eventDate >= now;
+        }
+        return false;
+    });

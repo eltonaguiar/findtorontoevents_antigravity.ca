@@ -1,0 +1,34 @@
+        // CRITICAL: Enrich with REAL times from individual event pages
+        const today = new Date();
+        const tomorrow = new Date();
+        tomorrow.setDate(today.getDate() + 1);
+        
+        // Format as YYYY-MM-DD for comparison with date-only strings
+        const todayStr = today.toISOString().split('T')[0];
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+        
+        const events ToEnrich = uniqueEvents.filter(e => {
+            // Match both full ISO dates and date-only strings
+            const dateStr = e.date;
+            return dateStr.startsWith(todayStr) || dateStr.startsWith(tomorrowStr);
+        });
+        
+        console.log(`Enriching ${eventsToEnrich.length} today/tomorrow events with real times (${todayStr}, ${tomorrowStr})...`);
+        let successCount = 0;
+        for (const event of eventsToEnrich) {
+            const realTime = await EventbriteDetailScraper.fetchRealEventTime(event.url);
+            if (realTime) {
+                event.date = realTime;
+                successCount++;
+                console.log(`  ✓ Updated: ${event.title.substring(0, 50)} -> ${realTime}`);
+            }
+            await new Promise(resolve => setTimeout(resolve, 300)); // Rate limit
+        }
+        console.log(`Enrichment complete: ${successCount}/${eventsToEnrich.length} events updated with real times`);
+
+        return {
+            events: uniqueEvents,
+            errors
+        };
+    }
+}

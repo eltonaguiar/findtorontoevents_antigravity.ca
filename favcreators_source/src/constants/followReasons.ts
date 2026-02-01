@@ -1,0 +1,8 @@
+export const FOLLOW_REASON_TAGS = [
+  "LOVE THEIR LIVE STREAMS",
+  "LOVE THEIR CONTENT",
+  "COMEDY",
+  "EDU",
+  "MUSIC",
+  "INSPIRING",
+];

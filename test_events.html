@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Events Loading</title>
+    <script>
+        async function loadEvents() {
+            try {
+                console.log('Attempting to load events...');
+                const response = await fetch('http://localhost:9000/events.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const events = await response.json();
+                console.log(`Successfully loaded ${events.length} events`);
+                document.getElementById('status').textContent = `Loaded ${events.length} events successfully`;
+                
+                // Display first few events
+                const eventsList = document.getElementById('events');
+                eventsList.innerHTML = events.slice(0, 5).map(event => `
+                    <div style="margin-bottom: 10px; padding: 10px; border: 1px solid #ccc;">
+                        <h3>${event.title}</h3>
+                        <p>Date: ${new Date(event.date).toLocaleString()}</p>
+                        <p>Location: ${event.location}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading events:', error);
+                document.getElementById('status').textContent = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Events Loading Test</h1>
+    <button onclick="loadEvents()">Load Events</button>
+    <div id="status">Click button to load events</div>
+    <div id="events"></div>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LuxCal Calendar PDF Print Feature</title>
+<meta name="description" content="LuxCal web calendar - a LuxSoft product">
+<meta name="keywords" content="LuxSoft, LuxCal, LuxCal web calendar">
+<meta name="author" content="Roel Buining">
+<meta name="robots" content="nofollow">
+<link rel="icon" href="lcal.ico">
+<style type="text/css">
+* {padding:0; margin:0;}
+body {font:14px arial, sans-serif; background:#FFFFFF; color:#304050;}
+a {text-decoration:none; cursor:pointer;}
+h1 {font-size:1.5em; text-shadow:grey 0.2em 0.3em 0.2em;}
+h3 {margin:20px 0 10px 0; font-size:1.4em;}
+h4 {margin:40px 0 0 0; font-size:1.3em;}
+h5 {margin:20px 0 0 0; font-size:1.2em;}
+h6 {margin:10px 0 0 0; font-size:1.0em; text-decoration:underline;}
+p { margin:6px 0; text-align:justify; }
+ul, ol {margin:0 20px;}
+li ol {list-style-type:lower-alpha;}
+li {margin:6px 0;}
+code {display:table; line-height:1.5; background:#FFFFFF;}
+.floatR {float:right;}
+.center {text-align:center;}
+.redFlag {color:#DD3300;}
+header {padding:10px; background:#F2F2F2;}
+div.totop {position:fixed; bottom:40px; right:30px; font-size:3.0em;}
+div.totop a {color:#7777CC}
+div.totop a:hover {color:#DD3300;}
+div.navBar {
+	position:absolute; top:48px; left:0; right:0;
+	padding:0 1%;
+	background:#90FFFF;
+	padding:2px 10px;
+	border:1px #A0A0A0;
+	border-style:solid none;
+	line-height:20px;
+	vertical-align:middle;
+	text-align:center;
+	font:bold 1.4em arial,sans-serif;
+}
+div.content {
+	position:absolute; top:100px; right:0px; bottom:50px; left:0px;
+	padding:0 4%;
+	overflow:auto;
+}
+div.endBar {
+	position:absolute; left:0; right:0; bottom:10px;
+	padding:0 1%;
+	background:#90FFFF;
+	text-align:right;
+	border:1px #A0A0A0;
+	border-style:solid none;
+	font-size:0.8em;
+}
+.LuxSoft {font:italic bold 1.1em arial,sans-serif; color:#AA0066;}
+</style>
+</head>
+
+<body>
+<header>
+<h1 class="floatR">a LuxSoft product</h1>
+<h1>LuxCal Event calendar</h1>
+</header>
+<div class="navBar">LuxCal Calendar PDF Print Feature User Guide</div>
+<div class="content">
+<a id="top"></a><div class="totop"><a href="#top">▲</a></div>
+<h4>Table of Content</h4>
+<ol style="margin:0 40px">
+<li><p><a href="#lbl-1">Introduction</a></p></li>
+<li><p><a href="#lbl-2">Tailoring the PDF's configuration settings</a></p></li>
+<li><p><a href="#lbl-3">Explanation of the PDF configuration settings</a></p></li>
+</ol>
+<br>
+
+<a id="lbl-1"></a><h4>1. Introduction</h4>
+<p>In the LuxCal calendar the PDF Print feature can be selected via the side-menu. 
+When using LuxCal displays (see displays.txt), a PDF button in the header of the 
+display can be enabled in the configuration settings of the display.</p>
+<p>When the user selects the PDF menu item or button, a PDF dialog is opened where 
+the user can specify the PDF print format (Portrait or Landscape) and a start and 
+end time.
+Active selections in the calendar (e.g. via the Options Panel or restrictions 
+via the user group) are also applied by the PDF print feature.</p>
+
+<a id="lbl-2"></a><h4>2. Tailoring the PDF's configuration settings</h4>
+<p>The PDF creation scripts have a section with default configuration settings, 
+specifying for the header and footer of the PDF print, the event title lay-out, 
+the event fields to be printed and defining the graphical user interface colors.
+The most important configuration settings are explanation at the end of this 
+document.</p>
+
+<h6>Changing the PDF settings for the full calendar</h6>
+<p>You can change the default PDF configuration settings by copying the file 
+pdf.cnf in the "samples" folder to the 'configs' folder and by tailoring the 
+settings in this file.</p>
+
+<h6>Changing the PDF settings for the displays</h6>
+<p>Copy the pdfX.cnf file in the "samples" folder to the 'configs' folder, rename 
+the file and tailor the settings in this file and in the parent display specify 
+the file name (without extension) in the display's $pdfCnf setting.</p>
+<p>If you are using multiple displays and want to tailor the PDF settings for each 
+display individually, repeat the above for each display.</p>
+
+<a id="lbl-3"></a><h4>3. Explanation of the PDF configuration settings</h4>
+<ul>
+<li><kbd>$calID = "";</kbd><br>
+Calendar ID. If there are multiple calendars in use, here you can specify which calendar to use. E.g. "mycal". When this setting is left blank (""), the default calendar will be taken.</li>
+
+<li><kbd>$pageHdr = "#c - Upcoming Events";</kbd><br>
+Page header text of the PDF file. E.g. "Upcoming events". If #c is part of the text, the it will be replaced by the calendar title.</li>
+
+<li><kbd>$pageFtr = "#p>page #n>#u #d";</kbd><br>
+Page footer template (#p: period, #n: page number, #d: date/time printed, u: user name (if logged in), >: tab (left > center > right))</li>
+
+<li><kbd>$sortD = 0;</kbd><br>
+Event sorting on dates; 0: ascending, 1: descending.</li>
+
+<li><kbd>$maxDays = 0;</kbd><br>
+Max. number of days to show; 0: no maximum.</li>
+
+<li><kbd>$evtHead = '#c owner: #o';</kbd><br>
+Event head template. The combination of the # and the subsequent character will be replaced by the corresponding value, as follows: #e: event title, #c: event title - category color, #u: event title - owner group color, #o: event owner. All other characters in the template will be part of the event head.</li>
+
+<li><kbd>$evtBody = '123';</kbd><br>
+List of event fields to show. Each number represents an event field, as follows: 1: venue, 2: category, 3: description, 4: Extra field 1, 5: Extra field 2, 6: Email notification data (if requested), 7: Date/time added edited), 8: attachments. The order of the events fields corresponds to the order of the numbers in $evtBody.</li>
+
+<li><kbd>$hdStyle = '';</kbd><br>
+Event head style ('' (empty): normal, 'B': bold, 'I': italic, 'U': underline).</li>
+</ul>
+<br>
+<h5>&emsp;- End of the PDF Print Feature User Guide -</h5>
+<br>
+</div>
+<div class="endBar">
+	&copy; 2025 - powered by <a href="https://www.luxsoft.eu"><span class="LuxSoft">LuxSoft</span></a>
+</div>
+<br>&nbsp;
+</body>
+</html>
