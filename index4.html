@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Find Toronto Events | Backup Landing (JSON Menu)</title>
+  <meta name="description" content="Backup landing page with configurable JSON-driven menu. Edit data/menu4.json to change nav without rebuilding." />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="next/_next/static/chunks/cd9d6741b3ff3a25.css" />
+  <style>
+    /* Force no blur anywhere - highest specificity and runtime cleanup */
+    body.menu4-backup,
+    body.menu4-backup .menu4-main-wrap,
+    body.menu4-backup .menu4-main-wrap *,
+    body.menu4-backup .fixed-ui-layer,
+    body.menu4-backup .fixed-ui-layer *,
+    body.menu4-backup #menu4-overlay,
+    body.menu4-backup #menu4-overlay *,
+    body.menu4-backup #menu4-drawer,
+    body.menu4-backup #menu4-drawer *,
+    body.menu4-backup #menu4-toggle,
+    body.menu4-backup #menu4-toggle *,
+    body.menu4-backup [class*="backdrop-blur"],
+    body.menu4-backup [class*="backdrop-filter"] {
+      filter: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    #menu4-overlay,
+    #menu4-drawer,
+    #menu4-toggle {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    #menu4-overlay,
+    #menu4-drawer {
+      background-color: var(--surface-0) !important;
+    }
+    #menu4-overlay {
+      background-color: #0b0b0b !important;
+      opacity: 0;
+    }
+    #menu4-overlay.open {
+      opacity: 1;
+    }
+    #menu4-drawer::before,
+    #menu4-drawer::after,
+    #menu4-overlay::before,
+    #menu4-overlay::after {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      filter: none !important;
+      background: transparent !important;
+      content: none !important;
+    }
+    select,
+    option {
+      background-color: #0b0b0b;
+      color: #f8fafc;
+    }
+    select:focus,
+    select:active {
+      color: #f8fafc;
+    }
+    /* Overlay when closed: fully hidden */
+    #menu4-overlay { opacity: 0; pointer-events: none; visibility: hidden; transition: opacity 0.2s, visibility 0.2s; }
+    #menu4-overlay.open { opacity: 1; pointer-events: auto; visibility: visible; }
+    .menu4-drawer { transform: translateX(-100%); background: var(--surface-0); }
+    .menu4-drawer.open { transform: translateX(0); }
+  </style>
+</head>
+<body class="menu4-backup inter_5972bc34-module__OU16Qa__className">
+  <div class="app-bg-wrapper bg-nebula"></div>
+
+  <!-- Fixed UI: hamburger + overlay + drawer -->
+  <div class="fixed-ui-layer relative z-[200]">
+    <button type="button" id="menu4-toggle" class="fixed top-6 left-6 z-[200] p-3 bg-black/60 border border-white/10 rounded-2xl shadow-2xl hover:bg-[var(--pk-500)] text-white transition-all group group/nav" title="Quick Navigation">
+      <div class="flex flex-col gap-1.5 w-6 items-center justify-center">
+        <span class="w-full h-0.5 bg-white rounded-full group-hover/nav:w-4 transition-all"></span>
+        <span class="w-full h-0.5 bg-white rounded-full group-hover/nav:w-6 transition-all"></span>
+        <span class="w-full h-0.5 bg-white rounded-full group-hover/nav:w-4 transition-all"></span>
+      </div>
+    </button>
+
+    <div id="menu4-drawer" class="menu4-drawer fixed top-0 left-0 h-full w-[300px] max-w-[90vw] border-r border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-transform duration-300 flex flex-col z-[260]">
+      <div class="p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-[var(--pk-900)] to-transparent">
+        <h2 class="text-xl font-black uppercase tracking-tighter text-white"><span class="text-[var(--pk-500)]">Quick</span> Nav</h2>
+        <button type="button" id="menu4-close" class="p-2 hover:bg-white/10 rounded-full transition-colors">✕</button>
+      </div>
+      <nav id="menu4-container" class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-2">
+        <p class="px-4 py-2 text-[var(--text-2)]">Loading menu…</p>
+      </nav>
+      <div class="p-4 border-t border-white/5 bg-black/20">
+        <p class="text-[10px] text-[var(--text-3)] text-center opacity-50">Antigravity Systems v0.5.2 (backup)</p>
+        <p class="text-[8px] text-[var(--text-3)] text-center opacity-30 mt-1">Menu from data/menu4.json</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content (backup landing + events) -->
+  <div class="menu4-main-wrap font-size-md density-normal relative z-0 min-h-screen" style="scale:var(--webpage-scale,1);transform-origin:top center;width:100%">
+    <main class="min-h-screen">
+      <header class="relative py-20 px-6 text-center overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-[var(--pk-900)] to-[var(--surface-0)] opacity-50 -z-10"></div>
+        <h1 class="text-5xl md:text-7xl font-extrabold mb-4 tracking-tight glow-text">Toronto Events <span class="text-2xl md:text-3xl text-[var(--pk-300)]">v0.5.2</span></h1>
+        <p class="text-lg text-[var(--text-2)] max-w-2xl mx-auto">Backup landing page. Menu is loaded from <code class="bg-white/10 px-1 rounded">data/menu4.json</code> — edit that file to change the nav without rebuilding.</p>
+        <p class="text-sm text-[var(--text-3)] mt-2">Last updated: Feb 2025</p>
+        <p class="mt-3 text-[10px] text-[var(--text-3)] opacity-70">Events not loading? <a href="/index4.html" class="text-[var(--pk-400)] hover:text-[var(--pk-300)] underline">try here</a></p>
+      </header>
+      <div class="max-w-7xl mx-auto px-4 py-6">
+        <p class="text-[var(--text-2)]">Quick Nav (top-left) is rendered from <strong>data/menu4.json</strong>. Edit that JSON and refresh to change the menu — no build required.</p>
+      </div>
+      <div class="max-w-7xl mx-auto px-4 py-8">
+        <h2 class="text-2xl font-bold text-white mb-4">Upcoming Events</h2>
+        <div id="events-filters" class="flex flex-wrap items-center gap-3 mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
+          <input type="text" id="events-search" placeholder="Search events…" class="flex-1 min-w-[160px] px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-[var(--text-3)] focus:border-[var(--pk-500)] focus:outline-none text-sm" />
+          <select id="events-category" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:border-[var(--pk-500)] focus:outline-none text-sm">
+            <option value="">All categories</option>
+          </select>
+          <select id="events-date" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:border-[var(--pk-500)] focus:outline-none text-sm">
+            <option value="">Any date</option>
+            <option value="today">Today</option>
+            <option value="weekend">This weekend</option>
+            <option value="week">This week</option>
+          </select>
+          <label class="flex items-center gap-2 text-sm text-[var(--text-2)] cursor-pointer">
+            <input type="checkbox" id="events-free" class="rounded border-white/20 bg-white/5 text-[var(--pk-500)] focus:ring-[var(--pk-500)]" />
+            <span>Free only</span>
+          </label>
+          <label class="flex items-center gap-2 text-sm text-[var(--text-2)] cursor-pointer">
+            <input type="checkbox" id="events-hide-soldout" class="rounded border-white/20 bg-white/5 text-[var(--pk-500)] focus:ring-[var(--pk-500)]" />
+            <span>Hide sold out</span>
+          </label>
+          <select id="events-sort" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:border-[var(--pk-500)] focus:outline-none text-sm">
+            <option value="date">Sort by date</option>
+            <option value="title">Sort by title</option>
+            <option value="newest">Newest first</option>
+          </select>
+        </div>
+        <div id="events-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <p class="col-span-full text-[var(--text-2)]">Loading events…</p>
+        </div>
+      </div>
+      <footer class="border-t border-white/10 py-12 px-6 text-center">
+        <div class="pt-8 grid grid-cols-2 md:grid-cols-3 gap-4 justify-center">
+          <a class="text-[10px] font-black uppercase tracking-widest text-[var(--text-3)] hover:text-white transition-colors" href="/">Event discovery</a>
+          <a class="text-[10px] font-black uppercase tracking-widest text-[var(--text-3)] hover:text-white transition-colors" href="/findstocks">Stock analysis</a>
+          <a class="text-[10px] font-black uppercase tracking-widest text-[var(--text-3)] hover:text-white transition-colors" href="/fc/#/guest">FAVCREATORS</a>
+          <a class="text-[10px] font-black uppercase tracking-widest text-[var(--text-3)] hover:text-white transition-colors" href="/2xko">2XKO data</a>
+          <a class="text-[10px] font-black uppercase tracking-widest text-[var(--text-3)] hover:text-white transition-colors" href="/WINDOWSFIXER/">Boot Fixer</a>
+        </div>
+        <p class="pt-8 opacity-30 text-[9px] font-bold uppercase tracking-[0.4em] text-[var(--text-3)]">Backup page • Antigravity Systems</p>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+(function () {
+  function stripBlur(root) {
+    if (!root) return;
+    var nodes = root.querySelectorAll('[class*="backdrop-blur"], [class*="backdrop-filter"], #menu4-overlay, #menu4-drawer, #menu4-toggle');
+    nodes.forEach(function (el) {
+      if (el.classList) {
+        Array.from(el.classList).forEach(function (cls) {
+          if (cls.indexOf('backdrop-blur') !== -1 || cls.indexOf('backdrop-filter') !== -1) {
+            el.classList.remove(cls);
+          }
+        });
+      }
+      el.style.backdropFilter = 'none';
+      el.style.webkitBackdropFilter = 'none';
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { stripBlur(document.body); });
+  } else {
+    stripBlur(document.body);
+  }
+})();
+
+(function () {
+  var pathBase = (function () {
+    var p = window.location.pathname;
+    return (p.replace(/\/[^/]*$/, '/') || '/');
+  })();
+  var MENU_JSON = pathBase + 'data/menu4.json';
+  var COLOR_CLASS = {
+    blue: 'hover:bg-blue-500/20 text-blue-200 hover:text-white border-transparent hover:border-blue-500/30',
+    green: 'hover:bg-green-500/20 text-green-200 hover:text-white border-transparent hover:border-green-500/30',
+    yellow: 'hover:bg-yellow-500/20 text-yellow-200 hover:text-white border-transparent hover:border-yellow-500/30',
+    amber: 'hover:bg-amber-500/20 text-amber-200 hover:text-white border-transparent hover:border-amber-500/30',
+    orange: 'hover:bg-orange-500/20 text-orange-200 hover:text-white border-transparent hover:border-orange-500/30',
+    rose: 'hover:bg-rose-500/20 text-rose-200 hover:text-white border-transparent hover:border-rose-500/30',
+    red: 'hover:bg-red-500/20 text-red-200 hover:text-white border-transparent hover:border-red-500/30',
+    purple: 'hover:bg-purple-500/20 text-purple-200 hover:text-white border-transparent hover:border-purple-500/30'
+  };
+
+  function enforceNoBlur() {
+    var nodes = document.querySelectorAll('*');
+    nodes.forEach(function (el) {
+      var style = window.getComputedStyle(el);
+      if (style.backdropFilter && style.backdropFilter !== 'none') {
+        el.style.backdropFilter = 'none';
+        el.style.webkitBackdropFilter = 'none';
+      }
+      if (style.filter && style.filter.indexOf('blur(') !== -1) {
+        el.style.filter = 'none';
+      }
+    });
+  }
+
+  function openMenu() {
+    document.getElementById('menu4-drawer').classList.add('open');
+    enforceNoBlur();
+  }
+  function closeMenu() {
+    document.getElementById('menu4-drawer').classList.remove('open');
+    enforceNoBlur();
+  }
+
+  document.getElementById('menu4-toggle').addEventListener('click', openMenu);
+  document.getElementById('menu4-close').addEventListener('click', closeMenu);
+  document.addEventListener('click', function (e) {
+    var drawer = document.getElementById('menu4-drawer');
+    var toggle = document.getElementById('menu4-toggle');
+    if (!drawer.classList.contains('open')) return;
+    if (drawer.contains(e.target) || toggle.contains(e.target)) return;
+    closeMenu();
+  });
+
+  function renderItem(item) {
+    var colorClass = (item.color && COLOR_CLASS[item.color]) ? COLOR_CLASS[item.color] : 'hover:bg-white/5 text-[var(--text-2)] hover:text-white border-transparent';
+    var baseLink = 'w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all border overflow-hidden ';
+    var baseBtn = 'w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all overflow-hidden ';
+
+    if (item.type === 'link' && item.href) {
+      var a = document.createElement('a');
+      a.className = baseLink + colorClass;
+      a.href = item.href;
+      if (item.title) a.title = item.title;
+      a.innerHTML = (item.icon ? '<span class="text-lg">' + escapeHtml(item.icon) + '</span>' : '') + '<span class="flex-1 truncate">' + escapeHtml(item.label) + '</span>';
+      return a;
+    }
+
+    if (item.type === 'button') {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      if (item.divider) {
+        btn.className = 'w-full text-center px-4 py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-[var(--pk-400)]/60 hover:text-[var(--pk-400)] transition-all border border-dashed border-white/5 hover:border-[var(--pk-500)]/30 mt-4 group';
+        btn.innerHTML = '<span class="opacity-20 group-hover:opacity-100 transition-opacity">---</span> ' + escapeHtml(item.label) + ' <span class="opacity-20 group-hover:opacity-100 transition-opacity">---</span>';
+      } else if (item.grid) {
+        btn.className = 'p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 flex flex-col items-center gap-1 transition-all group overflow-hidden' + (item.span2 ? ' col-span-2' : '');
+        btn.title = item.label;
+        btn.innerHTML = (item.icon ? '<span class="text-xl group-hover:scale-110 transition-transform">' + escapeHtml(item.icon) + '</span>' : '') + '<span class="text-[9px] font-black uppercase tracking-wider">' + escapeHtml(item.shortLabel || item.label) + '</span>';
+      } else {
+        btn.className = baseBtn + (item.highlight ? ' bg-[var(--pk-500)] text-white font-bold' : item.pulse ? ' bg-[var(--pk-500)]/20 text-white font-bold hover:bg-[var(--pk-500)] transition-all border border-[var(--pk-500)]/30 mt-2 shadow-lg animate-pulse' : ' hover:bg-white/5 text-[var(--text-2)] hover:text-white');
+        btn.innerHTML = (item.icon ? '<span class="text-lg">' + escapeHtml(item.icon) + '</span>' : '') + '<span class="flex-1 truncate">' + escapeHtml(item.label) + '</span>' + (item.badge !== undefined ? '<span class="bg-black/30 px-2 py-0.5 rounded text-[10px] font-mono">' + escapeHtml(String(item.badge)) + '</span>' : '');
+      }
+      return btn;
+    }
+
+    if (item.type === 'support') {
+      var div = document.createElement('div');
+      div.className = 'px-4 py-4 m-2 bg-white/5 rounded-xl border border-white/5 space-y-2';
+      div.innerHTML = '<p class="text-[9px] font-bold text-[var(--text-3)] uppercase leading-tight">Manual Uplink:</p><div class="text-[11px] font-mono text-white select-all break-all">' + escapeHtml(item.email) + '<span class="text-[var(--pk-500)]">@</span>' + escapeHtml(item.domain) + '</div>' + (item.note ? '<p class="text-[8px] text-[var(--text-3)] opacity-40 italic">' + escapeHtml(item.note) + '</p>' : '');
+      return div;
+    }
+
+    return null;
+  }
+
+  function escapeHtml(s) {
+    var div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  function renderSection(section, index) {
+    var wrap = document.createElement('div');
+    wrap.className = index === 0 ? 'space-y-1' : 'space-y-1 pt-4 border-t border-white/5';
+
+    if (section.collapsible && section.label) {
+      var details = document.createElement('details');
+      details.className = 'group/nav-section';
+      if (String(section.label).toLowerCase() === 'network') {
+        details.open = true;
+      }
+      var summary = document.createElement('summary');
+      summary.className = 'px-4 py-2 text-[10px] font-black uppercase text-[var(--pk-300)] tracking-widest opacity-60 cursor-pointer list-none flex items-center justify-between hover:opacity-100 transition-opacity';
+      summary.innerHTML = escapeHtml(section.label) + ' <span class="group-open/nav-section:rotate-180 transition-transform">▼</span>';
+      details.appendChild(summary);
+      var inner = document.createElement('div');
+      inner.className = 'space-y-1 mt-1';
+      (section.items || []).forEach(function (item) {
+        var el = renderItem(item);
+        if (el) inner.appendChild(el);
+      });
+      details.appendChild(inner);
+      wrap.appendChild(details);
+      return wrap;
+    }
+
+    if (section.label) {
+      var p = document.createElement('p');
+      p.className = 'px-4 py-2 text-[10px] font-black uppercase text-[var(--pk-300)] tracking-widest opacity-60';
+      p.textContent = section.label;
+      wrap.appendChild(p);
+    }
+
+    var hasGrid = (section.items || []).some(function (i) { return i.grid; });
+    if (hasGrid) {
+      var grid = document.createElement('div');
+      grid.className = 'px-4 py-2 grid grid-cols-2 gap-2';
+      (section.items || []).filter(function (i) { return i.grid; }).forEach(function (item) {
+        var el = renderItem(item);
+        if (el) grid.appendChild(el);
+      });
+      wrap.appendChild(grid);
+      (section.items || []).filter(function (i) { return !i.grid; }).forEach(function (item) {
+        var el = renderItem(item);
+        if (el) wrap.appendChild(el);
+      });
+    } else {
+      (section.items || []).forEach(function (item) {
+        var el = renderItem(item);
+        if (el) wrap.appendChild(el);
+      });
+    }
+    return wrap;
+  }
+
+  function loadMenu() {
+    var container = document.getElementById('menu4-container');
+    fetch(MENU_JSON).then(function (r) {
+      if (!r.ok) throw new Error('Menu fetch ' + r.status);
+      return r.json();
+    }).then(function (data) {
+      container.innerHTML = '';
+      (data.sections || []).forEach(function (section, index) {
+        container.appendChild(renderSection(section, index));
+      });
+      if (data.title) {
+        var h2 = document.querySelector('#menu4-drawer h2');
+        if (h2) h2.innerHTML = '<span class="text-[var(--pk-500)]">Quick</span> ' + escapeHtml(data.title.replace(/^Quick\s*/i, ''));
+      }
+    }).catch(function (err) {
+      container.innerHTML = '<p class="px-4 py-2 text-red-300">Could not load menu: ' + escapeHtml(err.message) + '. Check <code>data/menu4.json</code>.</p>';
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadMenu);
+  } else {
+    loadMenu();
+  }
+})();
+
+(function () {
+  var pathBase = (function () {
+    var p = window.location.pathname;
+    return (p.replace(/\/[^/]*$/, '/') || '/');
+  })();
+  var EVENTS_SOURCES = [pathBase + 'next/events.json', pathBase + 'events.json', pathBase + 'data/events.json'];
+  var MAX_EVENTS = 48;
+  var allEvents = [];
+
+  function escapeHtml(s) {
+    if (s == null) return '';
+    var div = document.createElement('div');
+    div.textContent = String(s);
+    return div.innerHTML;
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    try {
+      var d = new Date(dateStr);
+      return isNaN(d.getTime()) ? dateStr : d.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    } catch (e) { return dateStr; }
+  }
+
+  function renderEventCard(ev) {
+    var card = document.createElement('div');
+    card.className = 'relative h-[320px] w-full';
+    var url = (ev.url || '').trim() || '#';
+    var title = escapeHtml(ev.title || 'Event');
+    var location = escapeHtml(ev.location || '');
+    var dateStr = formatDate(ev.date);
+    var price = escapeHtml(ev.price || '');
+    var desc = (ev.description || '').trim();
+    if (desc.length > 120) desc = desc.slice(0, 117) + '...';
+    desc = escapeHtml(desc);
+    card.innerHTML =
+      '<div class="absolute inset-x-0 top-0 h-full rounded-xl shadow-lg border border-white/10 overflow-hidden glass-panel">' +
+      '  <div class="p-4 flex-1 flex flex-col h-full">' +
+      '    <div class="flex justify-between items-start mb-3">' +
+      '      <span class="text-[10px] font-bold uppercase text-[var(--pk-400)]">' + (ev.categories && ev.categories[0] ? escapeHtml(ev.categories[0]) : 'Event') + '</span>' +
+      '      ' + (ev.isFree ? '<span class="text-[10px] font-bold text-emerald-400">Free</span>' : '') + '' +
+      '    </div>' +
+      '    <h3 class="font-bold text-white line-clamp-2 mb-2 leading-tight">' + title + '</h3>' +
+      (dateStr ? '<p class="text-[11px] text-[var(--text-2)] mb-1">' + dateStr + '</p>' : '') +
+      (location ? '<p class="text-[11px] text-[var(--text-3)] line-clamp-1 mb-2">' + location + '</p>' : '') +
+      (desc ? '<p class="text-[12px] text-[var(--text-2)] line-clamp-2 flex-1">' + desc + '</p>' : '') +
+      '    <div class="mt-auto pt-3 flex items-center justify-between gap-2">' +
+      (price ? '<span class="text-[11px] text-[var(--pk-300)]">' + price + '</span>' : '<span></span>') +
+      '      <a href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer" class="px-3 py-2 rounded-xl bg-[var(--pk-500)] hover:bg-[var(--pk-400)] text-white text-xs font-bold transition-all">Details</a>' +
+      '    </div>' +
+      '  </div>' +
+      '</div>';
+    return card;
+  }
+
+  function normalizeCategory(value) {
+    var s = String(value || '').trim();
+    if (!s) return '';
+    if (s.toLowerCase() === 'dating') return 'Dating';
+    return s;
+  }
+
+  function getCategories(list) {
+    var set = {};
+    list.forEach(function (ev) {
+      var cats = [].concat(ev.categories || [], ev.tags || []);
+      cats.forEach(function (c) {
+        var norm = normalizeCategory(c);
+        if (norm) set[norm] = true;
+      });
+      if (cats.length === 0) set['General'] = true;
+    });
+    if (set['Dating'] === undefined) {
+      list.forEach(function (ev) {
+        var tags = ev.tags || [];
+        if (tags.some(function (t) { return normalizeCategory(t) === 'Dating'; })) set['Dating'] = true;
+      });
+    }
+    return Object.keys(set).sort();
+  }
+
+  function isSoldOut(ev) {
+    if (ev == null) return false;
+    if (ev.isSoldOut === true || ev.soldOut === true) return true;
+    if (Array.isArray(ev.tickets) && ev.tickets.some(function (t) { return t && t.soldOut === true; })) return true;
+    var desc = (ev.description || '').toLowerCase();
+    return desc.indexOf('sold out') !== -1;
+  }
+
+  function isSameDay(a, b) {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+
+  function isWeekend(d) {
+    var day = d.getDay();
+    return day === 0 || day === 6;
+  }
+
+  function isThisWeek(d, now) {
+    var start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+    var end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+    return d >= start && d <= end;
+  }
+
+  function filterAndSort(list, search, category, dateFilter, freeOnly, hideSoldOut, sortBy) {
+    var out = list.slice();
+    if (search) {
+      var q = search.toLowerCase().trim();
+      out = out.filter(function (ev) {
+        var t = (ev.title || '').toLowerCase();
+        var d = (ev.description || '').toLowerCase();
+        var loc = (ev.location || '').toLowerCase();
+        return t.indexOf(q) !== -1 || d.indexOf(q) !== -1 || loc.indexOf(q) !== -1;
+      });
+    }
+    if (category) {
+      out = out.filter(function (ev) {
+        var cats = [].concat(ev.categories || [], ev.tags || []).map(normalizeCategory);
+        return cats.indexOf(category) !== -1 || (category === 'General' && cats.length === 0);
+      });
+    }
+    if (dateFilter) {
+      var now = new Date();
+      out = out.filter(function (ev) {
+        if (!ev.date) return false;
+        var d = new Date(ev.date);
+        if (isNaN(d.getTime())) return false;
+        if (dateFilter === 'today') return isSameDay(d, now);
+        if (dateFilter === 'weekend') return isWeekend(d) && d >= now;
+        if (dateFilter === 'week') return isThisWeek(d, now) && d >= now;
+        return true;
+      });
+    }
+    if (freeOnly) {
+      out = out.filter(function (ev) { return ev.isFree === true; });
+    }
+    if (hideSoldOut) {
+      out = out.filter(function (ev) { return !isSoldOut(ev); });
+    }
+    if (sortBy === 'title') {
+      out.sort(function (a, b) { return (a.title || '').localeCompare(b.title || ''); });
+    } else if (sortBy === 'newest') {
+      out.sort(function (a, b) {
+        var da = new Date(a.lastUpdated || a.date || 0).getTime();
+        var db = new Date(b.lastUpdated || b.date || 0).getTime();
+        return db - da;
+      });
+    } else {
+      out.sort(function (a, b) {
+        var da = new Date(a.date || 0).getTime();
+        var db = new Date(b.date || 0).getTime();
+        return da - db;
+      });
+    }
+    return out;
+  }
+
+  function renderFiltered() {
+    var grid = document.getElementById('events-grid');
+    var searchEl = document.getElementById('events-search');
+    var categoryEl = document.getElementById('events-category');
+    var dateEl = document.getElementById('events-date');
+    var freeEl = document.getElementById('events-free');
+    var hideSoldOutEl = document.getElementById('events-hide-soldout');
+    var sortEl = document.getElementById('events-sort');
+    if (!grid) return;
+    var search = searchEl ? searchEl.value : '';
+    var category = categoryEl ? categoryEl.value : '';
+    var dateFilter = dateEl ? dateEl.value : '';
+    var freeOnly = freeEl ? freeEl.checked : false;
+    var hideSoldOut = hideSoldOutEl ? hideSoldOutEl.checked : false;
+    var sortBy = sortEl ? sortEl.value : 'date';
+    var list = filterAndSort(allEvents, search, category, dateFilter, freeOnly, hideSoldOut, sortBy);
+    grid.innerHTML = '';
+    var n = Math.min(MAX_EVENTS, list.length);
+    for (var j = 0; j < n; j++) {
+      grid.appendChild(renderEventCard(list[j]));
+    }
+    if (n === 0) {
+      grid.innerHTML = '<p class="col-span-full text-[var(--text-2)]">No events match your filters.</p>';
+    }
+  }
+
+  function loadEvents() {
+    var grid = document.getElementById('events-grid');
+    var categoryEl = document.getElementById('events-category');
+    if (!grid) return;
+    function trySource(i) {
+      if (i >= EVENTS_SOURCES.length) {
+        grid.innerHTML = '<p class="col-span-full text-amber-300">Could not load events. Check next/events.json, events.json, or data/events.json (relative to this page).</p>';
+        return;
+      }
+      fetch(EVENTS_SOURCES[i]).then(function (r) {
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      }).then(function (data) {
+        var list = Array.isArray(data) ? data : (data.events || data.items || []);
+        allEvents = list;
+        var cats = getCategories(list);
+        if (categoryEl) {
+          var idx = categoryEl.selectedIndex;
+          categoryEl.innerHTML = '<option value="">All categories</option>';
+          cats.forEach(function (c) {
+            var opt = document.createElement('option');
+            opt.value = c;
+            opt.textContent = c;
+            categoryEl.appendChild(opt);
+          });
+        }
+        renderFiltered();
+      }).catch(function () { trySource(i + 1); });
+    }
+    trySource(0);
+  }
+
+  function bindFilters() {
+    ['events-search', 'events-category', 'events-date', 'events-free', 'events-hide-soldout', 'events-sort'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener(id === 'events-search' ? 'input' : 'change', renderFiltered);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { loadEvents(); bindFilters(); });
+  } else {
+    loadEvents();
+    bindFilters();
+  }
+})();
+  </script>
+</body>
+</html>

@@ -7,8 +7,15 @@ test('inspect FavCreators link behavior', async ({ page }) => {
     console.log('Navigating to https://findtorontoevents.ca/...');
     await page.goto('https://findtorontoevents.ca/', { waitUntil: 'networkidle' });
     
-    // Wait for page to fully load
-    await page.waitForTimeout(2000);
+    // Wait for page to fully load and JavaScript to execute
+    await page.waitForTimeout(5000);
+    
+    // Wait for navigation component to be ready
+    try {
+        await page.waitForSelector('nav, [class*="nav"]', { timeout: 5000 });
+    } catch (e) {
+        console.log('Navigation selector not found, continuing...');
+    }
     
     // Find all links containing "favcreators" or "FAVCREATORS"
     console.log('\n--- Finding all FavCreators links ---');
@@ -90,15 +97,17 @@ test('inspect FavCreators link behavior', async ({ page }) => {
     const response = await page.goto('https://findtorontoevents.ca/next/_next/static/chunks/a2ac3a6616d60872.js');
     if (response) {
         const jsContent = await response.text();
-        const wrongUrlMatches = jsContent.match(/href:"\/favcreators\/"/g);
-        const correctUrlMatches = jsContent.match(/href:"\/favcreators\/#\/guest"/g);
-        console.log(`Wrong URL matches (href:"/favcreators/"): ${wrongUrlMatches ? wrongUrlMatches.length : 0}`);
-        console.log(`Correct URL matches (href:"/favcreators/#/guest"): ${correctUrlMatches ? correctUrlMatches.length : 0}`);
+        // Host returns 500 for /favcreators/; correct URL is /fc/#/guest
+        const wrongUrlMatches1 = jsContent.match(/href:"\/favcreators\/"/g);
+        const wrongUrlMatches2 = jsContent.match(/href:"\/favcreators\/#\/guest"/g);
+        const correctUrlMatches = jsContent.match(/href:"\/fc\/#\/guest"/g);
+        console.log(`Wrong URL (href:"/favcreators/"): ${wrongUrlMatches1 ? wrongUrlMatches1.length : 0}`);
+        console.log(`Wrong URL (href:"/favcreators/#/guest"): ${wrongUrlMatches2 ? wrongUrlMatches2.length : 0}`);
+        console.log(`Correct URL (href:"/fc/#/guest"): ${correctUrlMatches ? correctUrlMatches.length : 0}`);
         
-        if (wrongUrlMatches && wrongUrlMatches.length > 0) {
-            console.error('❌ FOUND WRONG URL IN JS CHUNK!');
-            // Find context around the wrong URL
-            const wrongIndex = jsContent.indexOf('href:"/favcreators/"');
+        if ((wrongUrlMatches1 && wrongUrlMatches1.length > 0) || (wrongUrlMatches2 && wrongUrlMatches2.length > 0)) {
+            console.error('❌ FOUND WRONG URL IN JS CHUNK! Should be /fc/#/guest');
+            const wrongIndex = jsContent.indexOf('href:"/favcreators/');
             if (wrongIndex > -1) {
                 const context = jsContent.substring(Math.max(0, wrongIndex - 100), Math.min(jsContent.length, wrongIndex + 200));
                 console.log('Context:', context);
@@ -109,13 +118,13 @@ test('inspect FavCreators link behavior', async ({ page }) => {
     // Try clicking a link and see where it goes
     console.log('\n--- Testing link click behavior ---');
     try {
-        const clickableLink = page.locator('a[href*="favcreators"]').first();
+        const clickableLink = page.locator('a[href*="fc"][href*="guest"], a[href*="favcreators"]').first();
         if (await clickableLink.isVisible()) {
             const hrefBefore = await clickableLink.getAttribute('href');
             console.log(`Link href before click: ${hrefBefore}`);
             
-            // Set up navigation listener
-            const navigationPromise = page.waitForURL('**/favcreators/**', { timeout: 5000 }).catch(() => null);
+            // Set up navigation listener (correct URL is /fc/#/guest)
+            const navigationPromise = page.waitForURL('**/fc/**', { timeout: 5000 }).catch(() => null);
             await clickableLink.click();
             const finalUrl = await navigationPromise;
             

@@ -1,79 +1,71 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!--t9zQv5tlF0cw5EL1JFoOR-->
 <html lang="en">
 
 <head>
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1" name="viewport" />
   <script>
+    // Help events loader resolve base: app uses getAssetPrefix() + "/events.json".
+    // Scripts are at /next/_next/..., so prefix is "/next". Set before app runs.
     window.__NEXT_ASSET_PREFIX__ = "/next";
     window.__EVENTS_JSON_PATH__ = "/next/events.json";
+    // Intercept fetch so any request for events.json uses /next/events.json with fallbacks (align with sister project).
+    // Fallback order: /next/events.json, /events.json, /data/events.json.
     (function () {
+      var eventsSources = ["/next/events.json", "/events.json", "/data/events.json"];
       var f = window.fetch;
       if (typeof f === "function") {
         window.fetch = function (input, opts) {
           var url = typeof input === "string" ? input : (input && input.url);
-          if (url && (url.indexOf("events.json") !== -1)) {
-            var sources = [
-              "/next/events.json",
-              "/events.json",
-              "/data/events.json",
-              "https://raw.githubusercontent.com/eltonaguiar/findtorontoevents.ca/main/next/events.json"
-            ];
-
-            function tryFetch(index) {
-              if (index >= sources.length) {
-                console.error("❌ [DIAGNOSTIC] All event sources failed.");
-                return Promise.reject("All sources failed");
-              }
-
-              var currentSource = sources[index];
-              return f.call(this, currentSource, opts).then(function (response) {
-                if (!response.ok) throw new Error("Status " + response.status);
-
-                var clone = response.clone();
-                return clone.json().then(function (data) {
-                  var events = data.events || data;
-                  console.log("✅ [DIAGNOSTIC] Success using: " + currentSource + ". Raw count:", events.length);
-                  window.__RAW_EVENTS__ = events;
-
-                  // Diagnostic check for filtering
-                  setTimeout(function () {
-                    var rendered = document.querySelectorAll('[class*="event-card"], [class*="EventCard"]').length;
-                    if (rendered === 0 && events.length > 0) {
-                      console.error("⚠️ [DIAGNOSTIC] Data exists but NO cards rendered. Possible reasons: Hydration fail or strict filters.");
-                    } else if (rendered > 0) {
-                      console.log("✅ [DIAGNOSTIC] Successfully rendered " + rendered + " event cards.");
-                    }
-                  }, 5000);
-
-                  return response;
-                }).catch(function (e) {
-                  console.warn("⚠️ [DIAGNOSTIC] Failed to parse " + currentSource + ". Trying next...");
-                  return tryFetch(index + 1);
-                });
-              }).catch(function (e) {
-                console.warn("⚠️ [DIAGNOSTIC] " + currentSource + " unreachable (" + e.message + "). Trying next...");
-                return tryFetch(index + 1);
+          if (url && (url === "/events.json" || url.endsWith("/events.json") || url.indexOf("events.json") !== -1)) {
+            var self = this;
+            function tryNext(idx) {
+              if (idx >= eventsSources.length) return f.apply(self, arguments);
+              return f.call(self, eventsSources[idx], opts).then(function (r) {
+                return r.ok ? r : tryNext(idx + 1);
               });
             }
-
-            return tryFetch(0);
+            return tryNext(0);
           }
           return f.apply(this, arguments);
         };
       }
       var oldXHR = window.XMLHttpRequest;
-      window.XMLHttpRequest = function () {
+      function newXHR() {
         var realXHR = new oldXHR();
         var oldOpen = realXHR.open;
         realXHR.open = function (method, url) {
-          if (url && (url.indexOf("events.json") !== -1)) {
+          if (url && (url === "/events.json" || url.endsWith("/events.json") || url.indexOf("events.json") !== -1)) {
             url = "/next/events.json";
           }
           return oldOpen.apply(this, [method, url]);
         };
         return realXHR;
-      };
+      }
+      window.XMLHttpRequest = newXHR;
+    })();
+    // Menu fix: any link to /favcreators/ returns 500 on host. Redirect to /fc/#/guest and rewrite hrefs.
+    (function () {
+      function fixFavcreatorsLink(a) {
+        var h = a.getAttribute('href');
+        if (h && h.toLowerCase().indexOf('favcreators') !== -1) {
+          a.setAttribute('href', '/fc/#/guest');
+        }
+      }
+      document.addEventListener('click', function (e) {
+        var a = e.target && e.target.closest && e.target.closest('a[href*="favcreators"]');
+        if (a) {
+          e.preventDefault();
+          window.location.href = '/fc/#/guest';
+        }
+      }, true);
+      function runFix() {
+        document.querySelectorAll('a[href*="favcreators"]').forEach(fixFavcreatorsLink);
+      }
+      if (document.body) runFix();
+      document.addEventListener('DOMContentLoaded', runFix);
+      var ob = typeof MutationObserver !== 'undefined' && new MutationObserver(runFix);
+      if (ob && document.body) ob.observe(document.body, { childList: true, subtree: true });
     })();
   </script>
   <link as="font" crossorigin="" href="/next/_next/static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2" rel="preload"
@@ -117,15 +109,19 @@
     name="twitter:description" />
   <link href="/favicon.ico" rel="icon" sizes="256x256" type="image/x-icon" />
   <script>
-    window.addEventListener('load', function () {
+    // Load AdSense only on production (skip on localhost to avoid console noise and sodar/postMessage errors)
+    (function () {
+      var h = window.location.hostname || '';
+      if (h === '127.0.0.1' || h === 'localhost' || h === '') return;
       try {
         var script = document.createElement('script');
         script.async = true;
         script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7893721225790912';
         script.crossOrigin = 'anonymous';
+        script.onerror = function () { /* optional */ };
         document.head.appendChild(script);
-      } catch (e) { }
-    });
+      } catch (e) {}
+    })();
   </script>
   <script nomodule="" src="/next/_next/static/chunks/a6dad97d9634a72d.js"></script>
 </head>
@@ -178,11 +174,11 @@
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-amber-500/20 text-amber-200 hover:text-white transition-all border border-transparent hover:border-amber-500/30 overflow-hidden"
                   href="/MOVIESHOWS/"><span class="text-lg">🎬</span> Movies &amp; TV</a>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-orange-500/20 text-orange-200 hover:text-white transition-all border border-transparent hover:border-orange-500/30 overflow-hidden"
-                  href="/favcreators/#/guest"><span class="text-lg">⭐</span> Favorite Creators</a>
+                  href="/fc/#/guest"><span class="text-lg">⭐</span> Favorite Creators</a>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-rose-500/20 text-rose-200 hover:text-white transition-all border border-transparent hover:border-rose-500/30 overflow-hidden"
-                  href="/favcreators/#/guest"><span class="text-lg">💎</span> FAVCREATORS</a>
+                  href="/fc/#/guest" title="FavCreators guest / login"><span class="text-lg">⭐</span> FAVCREATORS</a>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-red-500/20 text-red-200 hover:text-white transition-all border border-transparent hover:border-red-500/30 overflow-hidden"
-                  href="/favcreators/#/guest"><span class="text-lg">🔴</span> are your favorite creators live?</a>
+                  href="/fc/#/guest"><span class="text-lg">🔴</span> are your favorite creators live?</a>
               </div>
             </details>
             <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-purple-500/20 text-purple-200 hover:text-white transition-all border border-transparent hover:border-purple-500/30 overflow-hidden"
@@ -268,6 +264,7 @@
         <p class="text-lg text-[var(--text-2)] max-w-2xl mx-auto">The curated feed of what's happening in the city.
           Updated daily.</p>
         <p class="text-sm text-[var(--text-3)] mt-2">Last updated: Jan 31 Fix</p>
+        <p class="mt-3 text-[10px] text-[var(--text-3)] opacity-70">Events not loading? <a href="/index4.html" class="text-[var(--pk-400)] hover:text-[var(--pk-300)] underline">try here</a></p>
       </header>
       <div class="max-w-7xl mx-auto px-4">
         <div class="jsx-1dee1fec6bde20e8 windows-fixer-promo">
@@ -295,7 +292,7 @@
             <div class="jsx-1b9a23bd3fa6c640 flex items-center gap-3 transition-all duration-500 opacity-60 grayscale">
               <div
                 class="jsx-1b9a23bd3fa6c640 w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-lg animate-pulse-slow">
-                <span class="jsx-1b9a23bd3fa6c640 text-xl">💎</span>
+                <span class="jsx-1b9a23bd3fa6c640 text-xl">⭐</span>
               </div>
               <div
                 class="jsx-1b9a23bd3fa6c640 transition-all duration-500 override-overflow max-w-0 opacity-0 overflow-hidden">
@@ -305,7 +302,7 @@
                 </div>
               </div><a
                 class="jsx-1b9a23bd3fa6c640 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap"
-                href="/favcreators/#/guest" rel="noopener noreferrer" target="_blank">Open App →</a>
+                href="/fc/#/guest" rel="noopener noreferrer" target="_blank">Open App →</a>
             </div>
           </div>
         </div>
@@ -681,7 +678,7 @@
           <a class="text-[10px] font-black uppercase tracking-widest text-[var(--text-3)] hover:text-white transition-colors"
             href="/findstocks">Stock analysis</a>
           <a class="text-[10px] font-black uppercase tracking-widest text-[var(--text-3)] hover:text-white transition-colors"
-            href="/favcreators/#/guest">FAVCREATORS</a>
+            href="/fc/#/guest">FAVCREATORS</a>
           <a class="text-[10px] font-black uppercase tracking-widest text-[var(--text-3)] hover:text-white transition-colors"
             href="/2xko">2XKO data</a>
           <a class="text-[10px] font-black uppercase tracking-widest text-[var(--text-3)] hover:text-white transition-colors"
@@ -699,6 +696,34 @@
   <script>self.__next_f.push([1, "b:{}\nc:\"$0:f:0:1:1:children:0:props:children:0:props:serverProvidedParams:params\"\n"])</script>
   <script>self.__next_f.push([1, "11:[[\"$\",\"meta\",\"0\",{\"charSet\":\"utf-8\"}],[\"$\",\"meta\",\"1\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"}]]\n"])</script>
   <script>self.__next_f.push([1, "15:I[27201,[\"/next/_next/static/chunks/ff1a16fafef87110.js\",\"/next/_next/static/chunks/7c4eddd014120b50.js\"],\"IconMark\"]\nf:null\n"])</script>
+  <script>
+    (function () {
+      function injectFallbackLink() {
+        if (document.getElementById('index4-link')) return;
+        var wrap = document.createElement('div');
+        wrap.id = 'index4-link';
+        wrap.style.cssText = 'position:fixed;top:5rem;right:1.5rem;z-index:9999;background:rgba(0,0,0,0.6);padding:0.4rem 0.75rem;border-radius:0.75rem;border:1px solid rgba(255,255,255,0.15);';
+        wrap.innerHTML = '<a href="/index4.html" style="font-size:11px;color:#f472b6;text-decoration:underline;white-space:nowrap;">Events not loading? try here</a>';
+        document.body.appendChild(wrap);
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', injectFallbackLink);
+      } else {
+        injectFallbackLink();
+      }
+      window.addEventListener('load', injectFallbackLink);
+      setTimeout(injectFallbackLink, 100);
+      setTimeout(injectFallbackLink, 600);
+      setTimeout(injectFallbackLink, 1500);
+      var mo = typeof MutationObserver !== 'undefined' && new MutationObserver(function () {
+        if (!document.getElementById('index4-link')) injectFallbackLink();
+      });
+      if (mo && document.body) {
+        mo.observe(document.body, { childList: true, subtree: false });
+        setTimeout(function () { mo.disconnect(); }, 5000);
+      }
+    })();
+  </script>
   <script>self.__next_f.push([1, "13:[[\"$\",\"title\",\"0\",{\"children\":\"Find Toronto Events | Dating, Activities \u0026 Things to Do This Weekend\"}],[\"$\",\"meta\",\"1\",{\"name\":\"description\",\"content\":\"Your ultimate guide to Toronto events, dating meetups, and activities. Discover the best things to do in Toronto, from GTA happenings to mingle events and weekend plans.\"}],[\"$\",\"meta\",\"2\",{\"name\":\"keywords\",\"content\":\"Toronto Events,Toronto Dating,Toronto Activities,Things to do in Toronto,Toronto Calendar,GTA Happenings,Toronto Mingle,What's On Toronto\"}],[\"$\",\"meta\",\"3\",{\"property\":\"og:title\",\"content\":\"Find Toronto Events | Dating, Activities \u0026 Things to Do This Weekend\"}],[\"$\",\"meta\",\"4\",{\"property\":\"og:description\",\"content\":\"Your ultimate guide to Toronto events, dating meetups, and activities. Discover the best things to do in Toronto this weekend.\"}],[\"$\",\"meta\",\"5\",{\"property\":\"og:site_name\",\"content\":\"Find Toronto Events\"}],[\"$\",\"meta\",\"6\",{\"property\":\"og:locale\",\"content\":\"en_CA\"}],[\"$\",\"meta\",\"7\",{\"property\":\"og:type\",\"content\":\"website\"}],[\"$\",\"meta\",\"8\",{\"name\":\"twitter:card\",\"content\":\"summary\"}],[\"$\",\"meta\",\"9\",{\"name\":\"twitter:title\",\"content\":\"Find Toronto Events | Dating, Activities \u0026 Things to Do This Weekend\"}],[\"$\",\"meta\",\"10\",{\"name\":\"twitter:description\",\"content\":\"Your ultimate guide to Toronto events, dating meetups, and activities. Discover the best things to do in Toronto this weekend.\"}],[\"$\",\"link\",\"11\",{\"rel\":\"icon\",\"href\":\"/favicon.ico?favicon.0b3bf435.ico\",\"sizes\":\"256x256\",\"type\":\"image/x-icon\"}],[\"$\",\"$L15\",\"12\",{}]]\n"])</script>
 </body>
 

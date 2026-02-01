@@ -18,18 +18,21 @@ def fix_favcreators_urls():
         with open(file_path, 'r', encoding='utf-8', errors='surrogateescape') as f:
             content = f.read()
         
-        # Count occurrences
-        wrong_matches = re.findall(r'href:"/favcreators/"', content)
-        correct_matches = re.findall(r'href:"/favcreators/#/guest"', content)
-        print(f"  Wrong URL (href:\"/favcreators/\"): {len(wrong_matches)}")
-        print(f"  Correct URL (href:\"/favcreators/#/guest\"): {len(correct_matches)}")
+        # Count occurrences (correct URL on host is /fc/#/guest; /favcreators/ returns 500)
+        wrong1 = re.findall(r'href:"/favcreators/"', content)
+        wrong2 = re.findall(r'href:"/favcreators/#/guest"', content)
+        correct_matches = re.findall(r'href:"/fc/#/guest"', content)
+        print(f"  Wrong (href:\"/favcreators/\"): {len(wrong1)}")
+        print(f"  Wrong (href:\"/favcreators/#/guest\"): {len(wrong2)}")
+        print(f"  Correct (href:\"/fc/#/guest\"): {len(correct_matches)}")
         
-        # Fix wrong URLs
-        if len(wrong_matches) > 0:
-            content = content.replace('href:"/favcreators/"', 'href:"/favcreators/#/guest"')
+        # Fix wrong URLs to /fc/#/guest
+        if wrong1 or wrong2:
+            content = content.replace('href:"/favcreators/#/guest"', 'href:"/fc/#/guest"')
+            content = content.replace('href:"/favcreators/"', 'href:"/fc/#/guest"')
             with open(file_path, 'w', encoding='utf-8', errors='surrogateescape') as f:
                 f.write(content)
-            print(f"  ✅ Fixed {len(wrong_matches)} wrong URL(s)")
+            print(f"  ✅ Fixed wrong URL(s) to /fc/#/guest")
         else:
             print(f"  OK: No wrong URLs found")
 

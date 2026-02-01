@@ -1,0 +1,14 @@
+# tdotevent.ca - correct .htaccess (fixes redirect to /services/users/... path)
+# Upload this file as .htaccess to the document root of tdotevent.ca
+
+RewriteEngine On
+# CRITICAL: Base must be / so the site is served at https://tdotevent.ca/
+# Do NOT use the server filesystem path here (e.g. /services/users/.../tdotevent.ca/)
+RewriteBase /
+
+# If the internal path ever gets exposed, send users back to the site root
+RewriteRule ^services/users/ / [R=301,L]
+
+# Serve index.html for the site root
+DirectoryIndex index.html
+RewriteRule ^$ index.html [L]

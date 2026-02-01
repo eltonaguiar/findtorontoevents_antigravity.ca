@@ -1,0 +1,32 @@
+RewriteEngine On
+RewriteBase /
+
+# Redirect exposed internal server path to canonical root (info disclosure fix)
+RewriteRule ^services/users/ / [R=301,L]
+
+# Proxy JS chunks through PHP to bypass ModSecurity
+# These rules MUST come BEFORE the compatibility rewrite rules below
+RewriteRule ^(_next/static/chunks/.*\.js)$ js-proxy-v2.php?file=$1 [QSA,L]
+RewriteRule ^(next/_next/static/chunks/.*\.js)$ js-proxy-v2.php?file=$1 [QSA,L]
+
+# Route all other _next/static requests directly
+RewriteRule ^_next/static/ - [L]
+
+RewriteRule ^$ index.html [R=301,L]
+
+<IfModule mod_rewrite.c>
+ RewriteEngine On
+
+ # Alias: support /Favcreators/ URLs while files live under /favcreators/docs/
+ RewriteRule ^Favcreators$ favcreators/docs/index.html [L]
+ RewriteRule ^Favcreators/(.*)$ favcreators/docs/$1 [L]
+ RewriteRule ^favcreators$ favcreators/docs/index.html [L]
+ RewriteRule ^favcreators/(.*)$ favcreators/docs/$1 [L]
+
+ # Compatibility: some builds reference assets under /next/_next/... but the exported assets live under /_next/...
+ # NOTE: This runs AFTER the proxy rules above, so JS files are handled by the proxy first
+ RewriteRule ^next/_next/(.*)$ _next/$1 [L]
+
+ # Compatibility: some builds may reference /next/static/... while export uses /_next/static/...
+ RewriteRule ^next/static/(.*)$ _next/static/$1 [L]
+</IfModule>

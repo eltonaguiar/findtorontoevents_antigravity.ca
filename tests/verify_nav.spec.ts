@@ -16,8 +16,8 @@ test('verify sidebar navigation links', async ({ page }) => {
     if (isFavVisible) {
         const href = await favLink.getAttribute('href');
         console.log('FavCreators HREF:', href);
-        if (href !== '/favcreators/#/guest') {
-            console.error('FAIL: FavCreators link is ' + href + ', expected /favcreators/#/guest');
+        if (href !== '/fc/#/guest') {
+            console.error('FAIL: FavCreators link is ' + href + ', expected /fc/#/guest');
         } else {
             console.log('PASS: FavCreators link is correct.');
         }

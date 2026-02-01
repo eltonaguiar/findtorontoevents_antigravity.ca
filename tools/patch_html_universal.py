@@ -4,21 +4,23 @@ import re
 def update_html_content(content, file_path):
     modified = False
     
-    # 1. Fix Sidebar Link (Basic Replace)
-    if 'href="/favcreators/"' in content:
-        content = content.replace('href="/favcreators/"', 'href="/favcreators/#/guest"')
+    # 1. Fix Sidebar Link (Basic Replace) - host returns 500 for /favcreators/; use /fc/#/guest
+    if 'href="/favcreators/"' in content or 'href="/favcreators/#/guest"' in content:
+        content = content.replace('href="/favcreators/#/guest"', 'href="/fc/#/guest"')
+        content = content.replace('href="/favcreators/"', 'href="/fc/#/guest"')
         modified = True
         print(f"  Fixed Sidebar Link (Relative) in {file_path}")
         
-    if 'href="https://findtorontoevents.ca/favcreators/"' in content:
-        content = content.replace('href="https://findtorontoevents.ca/favcreators/"', 'href="/favcreators/#/guest"')
+    if 'href="https://findtorontoevents.ca/favcreators/"' in content or 'href="https://findtorontoevents.ca/favcreators/#/guest"' in content:
+        content = content.replace('href="https://findtorontoevents.ca/favcreators/#/guest"', 'href="/fc/#/guest"')
+        content = content.replace('href="https://findtorontoevents.ca/favcreators/"', 'href="/fc/#/guest"')
         modified = True
         print(f"  Fixed Sidebar Link (Absolute) in {file_path}")
 
 
     # 2. Add 'Live Status' Link in Sidebar
     # Look for the FavCreators link we just fixed
-    fav_link_pattern = r'(<a href="/favcreators/#/guest".*?</a>)'
+    fav_link_pattern = r'(<a href="/fc/#/guest".*?</a>|<a href="/favcreators/#/guest".*?</a>)'
     if 'are your favorite creators live?' not in content:
         # Define the new link HTML
         # We need to guess the class style from the existing link
@@ -34,7 +36,7 @@ def update_html_content(content, file_path):
         # Add the new link after it.
         
         new_link = (
-            '<a href="/favcreators/#/guest" '
+            '<a href="/fc/#/guest" '
             'class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-pink-500/20 text-pink-200 hover:text-white transition-all border border-transparent hover:border-pink-500/30 overflow-hidden">'
             '<span class="text-lg">🔴</span> Are they live?</a>'
         )
@@ -48,7 +50,7 @@ def update_html_content(content, file_path):
             link_class = class_match.group(1) if class_match else ""
             
             # Construct strict new link
-            to_insert = f'<a href="/favcreators/#/guest" class="{link_class}"><span class="text-lg">🔴</span> are your favorite creators live?</a>'
+            to_insert = f'<a href="/fc/#/guest" class="{link_class}"><span class="text-lg">🔴</span> are your favorite creators live?</a>'
             return original + to_insert
 
         content, count = re.subn(fav_link_pattern, insert_live_link, content)
@@ -88,7 +90,7 @@ def update_html_content(content, file_path):
             fav_block = fav_block.replace('Trailers, Now Playing Toronto', 'Live Status &amp; More')
             
             # Replace Link
-            fav_block = re.sub(r'href="[^"]+"', 'href="/favcreators/#/guest"', fav_block)
+            fav_block = re.sub(r'href="[^"]+"', 'href="/fc/#/guest"', fav_block)
             
             # Insert BEFORE the Movies Block (so it's higher up? Or After?)
             # usage: windows(top) -> ? -> movies(bottom).

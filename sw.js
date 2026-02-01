@@ -1,23 +1,13 @@
-// Service Worker to strip query parameters from JS/CSS requests
-self.addEventListener('fetch', function(event) {
-  const url = new URL(event.request.url);
-  
-  // Strip query parameters from _next static assets
-  if (url.pathname.includes('/_next/static/') || url.pathname.includes('/next/_next/static/')) {
-    if (url.search) {
-      url.search = '';
-      event.respondWith(fetch(url.toString()));
-      return;
-    }
-  }
-  
-  event.respondWith(fetch(event.request));
-});
-
-self.addEventListener('install', function(event) {
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', function(event) {
-  event.waitUntil(self.clients.claim());
-});
+// Service Worker - pass through all requests (do NOT strip ?v= from _next assets)
+// Stripping ?v= caused "Preloaded but not used" and stale chunk loads; see FIX_SUMMARY.md / fix-toronto-events skill.
+self.addEventListener('fetch', function(event) {
+  event.respondWith(fetch(event.request));
+});
+
+self.addEventListener('install', function(event) {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', function(event) {
+  event.waitUntil(self.clients.claim());
+});

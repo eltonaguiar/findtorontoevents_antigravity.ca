@@ -3,7 +3,12 @@
   "private": true,
   "scripts": {
     "test:events": "playwright test events-loading.spec.ts",
-    "test:events:ui": "playwright test events-loading.spec.ts --ui"
+    "test:events:ui": "playwright test events-loading.spec.ts --ui",
+    "verify:local": "playwright test events-loading.spec.ts tests/no_js_errors.spec.ts",
+    "verify:remote": "node tools/verify_remote_site.js",
+    "verify:remote:playwright": "playwright test tests/verify_remote_site.spec.ts",
+    "verify:remote:fallback": "node tools/verify_remote_site_fallback.js",
+    "compare:local-vs-remote": "node tools/compare_local_vs_remote.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",

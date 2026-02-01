@@ -1,6 +1,6 @@
 <?php
 // Proxy script to serve JavaScript files and bypass ModSecurity
-$file = $_GET['file'] ?? '';
+$file = isset($_GET['file']) ? $_GET['file'] : '';
 if (empty($file)) {
     http_response_code(404);
     exit;
