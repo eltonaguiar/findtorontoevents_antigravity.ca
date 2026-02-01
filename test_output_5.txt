@@ -1,0 +1,71 @@
+
+Running 4 tests using 1 worker
+
+  Ô£ÿ  1 events-loading.spec.ts:19:7 ÔÇ║ Events loading at http://127.0.0.1:123/ ÔÇ║ page loads and events grid exists (5.2s)
+  Ô£ÿ  2 events-loading.spec.ts:25:7 ÔÇ║ Events loading at http://127.0.0.1:123/ ÔÇ║ React app shows real event cards (links to events) (5.8s)
+  Ô£ô  3 events-loading.spec.ts:34:7 ÔÇ║ Events loading at http://127.0.0.1:123/ ÔÇ║ full UI has filter/search (GLOBAL FEED or search bar) (787ms)
+  Ô£ô  4 events-loading.spec.ts:41:7 ÔÇ║ Events loading at http://127.0.0.1:123/ ÔÇ║ no critical JS errors in console (2.8s)
+
+
+  1) events-loading.spec.ts:19:7 ÔÇ║ Events loading at http://127.0.0.1:123/ ÔÇ║ page loads and events grid exists 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('#events-grid')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('#events-grid')[22m
+
+
+      20 |     await page.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
+      21 |     const grid = page.locator(EVENTS_GRID);
+    > 22 |     await expect(grid).toBeVisible();
+         |                        ^
+      23 |   });
+      24 |
+      25 |   test('React app shows real event cards (links to events)', async ({ page }) => {
+        at E:\findtorontoevents_antigravity.ca\events-loading.spec.ts:22:24
+
+    attachment #1: screenshot (image/png) ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    test-results\events-loading-Events-load-27204-oads-and-events-grid-exists\test-failed-1.png
+    ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+    Error Context: test-results\events-loading-Events-load-27204-oads-and-events-grid-exists\error-context.md
+
+  2) events-loading.spec.ts:25:7 ÔÇ║ Events loading at http://127.0.0.1:123/ ÔÇ║ React app shows real event cards (links to events) 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('#events-grid')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('#events-grid')[22m
+
+
+      26 |     await page.goto(BASE + '/', { waitUntil: 'networkidle' });
+      27 |     const grid = page.locator(EVENTS_GRID);
+    > 28 |     await expect(grid).toBeVisible();
+         |                        ^
+      29 |     const eventLinks = grid.locator('a[href*="http"]');
+      30 |     await expect(eventLinks.first()).toBeVisible({ timeout: REACT_LOAD_WAIT_MS });
+      31 |     expect(await eventLinks.count()).toBeGreaterThan(0);
+        at E:\findtorontoevents_antigravity.ca\events-loading.spec.ts:28:24
+
+    attachment #1: screenshot (image/png) ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    test-results\events-loading-Events-load-63848-vent-cards-links-to-events-\test-failed-1.png
+    ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+    Error Context: test-results\events-loading-Events-load-63848-vent-cards-links-to-events-\error-context.md
+
+  2 failed
+    events-loading.spec.ts:19:7 ÔÇ║ Events loading at http://127.0.0.1:123/ ÔÇ║ page loads and events grid exists 
+    events-loading.spec.ts:25:7 ÔÇ║ Events loading at http://127.0.0.1:123/ ÔÇ║ React app shows real event cards (links to events) 
+  2 passed (17.8s)

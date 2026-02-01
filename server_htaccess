@@ -1,0 +1,15 @@
+RewriteEngine On
+RewriteRule ^_next/static/ - [L]
+RewriteRule ^$ /index.html [R=301,L]
+
+
+<IfModule mod_rewrite.c>
+ RewriteEngine On
+
+ # Compatibility: some builds reference assets under /next/_next/... but the exported assets live under /_next/...
+ RewriteRule ^next/_next/(.*)$ _next/$1 [L]
+
+ # Compatibility: some builds may reference /next/static/... while export uses /_next/static/...
+ RewriteRule ^next/static/(.*)$ _next/static/$1 [L]
+</IfModule>
+
