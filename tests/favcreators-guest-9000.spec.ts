@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-const GUEST_URL = 'http://localhost:9000/fc/#/guest';
+const GUEST_URL = (process.env.BASE_URL || 'http://localhost:5173') + '/fc/#/guest';
 
-test.describe('FavCreators guest at localhost:9000', () => {
+test.describe('FavCreators guest at /fc/#/guest', () => {
   test('guest page loads (built app from docs)', async ({ page }) => {
     const res = await page.goto(GUEST_URL, { waitUntil: 'domcontentloaded', timeout: 15000 });
     expect(res?.status()).toBe(200);

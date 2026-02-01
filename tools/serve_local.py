@@ -14,17 +14,25 @@ JS/CSS file from disk.
   python -m http.server 9000   # wrong – returns PHP source, site broken
 """
 from http.server import HTTPServer, SimpleHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, unquote
 import os
 import json
 from pathlib import Path
 
-PORT = 9000
+PORT = 5173  # Main site at http://localhost:5173/ ; FavCreators at http://localhost:5173/fc/
 
 # Favcreators built app: absolute path so it works regardless of cwd
 _SCRIPT_DIR = Path(__file__).resolve().parent
 _WORKSPACE_ROOT = _SCRIPT_DIR.parent
 FAVCREATORS_DOCS_ROOT = _WORKSPACE_ROOT / "favcreators" / "docs"
+
+def _send_json(handler, obj):
+    out = json.dumps(obj).encode("utf-8")
+    handler.send_response(200)
+    handler.send_header("Content-Type", "application/json; charset=utf-8")
+    handler.send_header("Content-Length", str(len(out)))
+    handler.end_headers()
+    handler.wfile.write(out)
 
 class CORSRequestHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
@@ -39,8 +47,36 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
-        # Handle login.php (same path as live PHP); Python 3 calls this for POST
-        path = (self.path.split("?")[0] if "?" in self.path else self.path).rstrip("/") or "/"
+        raw = (self.path.split("?")[0] if "?" in self.path else self.path).strip()
+        path = (unquote(raw).rstrip("/") or "/")
+
+        def consume_body():
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                if length:
+                    self.rfile.read(length)
+            except Exception:
+                pass
+
+        # Mock save_note.php (no PHP locally) – return JSON so "Save" note doesn't throw
+        if "save_note" in path or path.endswith("save_note.php"):
+            consume_body()
+            _send_json(self, {"status": "success", "message": "Note saved (local mock)"})
+            return
+
+        # Mock save_creators.php – admin/guest list persistence (no MySQL locally)
+        if "save_creators" in path or path.endswith("save_creators.php"):
+            consume_body()
+            _send_json(self, {"status": "success"})
+            return
+
+        # Mock creators/bulk – admin bulk update (no backend locally)
+        if "creators/bulk" in path or path.rstrip("/").endswith("creators/bulk"):
+            consume_body()
+            _send_json(self, {"status": "success"})
+            return
+
+        # Handle login.php (same path as live PHP)
         if path not in ("/favcreators/api/login.php", "/fc/api/login.php") and not path.endswith("api/login.php"):
             self.send_response(404)
             self.end_headers()
@@ -78,7 +114,42 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         raw_path = parsed.path
-        path = (raw_path.rstrip("/") or "/")
+        path = (unquote(raw_path).rstrip("/") or "/")
+
+        # Handle get_notes.php first (any path containing it) so Starfireara note is retrievable in tests
+        if "get_notes.php" in path:
+            qs = parse_qs(parsed.query)
+            user_id = int(qs.get("user_id", [0])[0]) if qs else 0
+            if user_id == 0:
+                _send_json(self, {"6": "Guest default note for Starfireara (local mock)"})
+            else:
+                _send_json(self, {})
+            return
+
+        # Intercept other API paths so we never serve PHP as static files
+        is_favcreators_api = path.startswith("/fc/api/") or path.startswith("/favcreators/api/")
+        if is_favcreators_api and (path.endswith(".php") or "creators/" in path):
+            if "get_me.php" in path:
+                _send_json(self, {"user": {"id": 0, "email": "admin", "role": "admin", "provider": "admin", "display_name": "Admin"}})
+                return
+            if "get_my_creators.php" in path:
+                qs = parse_qs(parsed.query)
+                # Return empty list so app can merge with INITIAL_DATA; or could read from a local file
+                _send_json(self, {"creators": []})
+                return
+            if "login.php" in path:
+                _send_json(self, {"error": "Use POST to login"})
+                return
+
+        # Root only: serve main site index.html (Toronto Events). Do not match /fc or /favcreators.
+        if (raw_path == "/" or raw_path == "" or raw_path == "/index.html") and not raw_path.startswith("/fc") and not raw_path.startswith("/favcreators"):
+            index_html = (_WORKSPACE_ROOT / "index.html").resolve()
+            if index_html.is_file() and str(index_html).startswith(str(_WORKSPACE_ROOT.resolve())):
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(index_html.read_bytes())
+                return
 
         # FavCreators (built): serve from favcreators/docs at /fc/ and /favcreators/ for local
         docs_index = FAVCREATORS_DOCS_ROOT / "index.html"
@@ -92,9 +163,12 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
                         self.wfile.write(docs_index.read_bytes())
                         return
                 else:
-                    # /fc/xxx or /favcreators/xxx → serve from docs/xxx
+                    # /fc/xxx or /favcreators/xxx → serve from docs/xxx (except api/* – handled above)
                     sub = raw_path[len(prefix + "/"):].lstrip("/")
-                if ".." not in sub:
+                if sub.startswith("api/"):
+                    # API paths are mocked above; do not serve PHP files
+                    pass
+                elif ".." not in sub:
                     try:
                         local = (FAVCREATORS_DOCS_ROOT / sub.replace("/", os.sep)).resolve()
                         local.relative_to(FAVCREATORS_DOCS_ROOT.resolve())
@@ -187,12 +261,12 @@ def main():
     os.chdir(workspace_root)
 
     print("=" * 60)
-    print("Local server with PROXY MIMIC (chunk URLs -> real JS/CSS)")
+    print("Local server: main site at root, FavCreators at /fc/")
     print("Do NOT use 'python -m http.server' – it returns PHP source.")
     print("=" * 60)
-    print(f"Starting server at http://127.0.0.1:{PORT} and http://localhost:{PORT}")
-    print(f"Serving from: {workspace_root}")
-    print(f"FavCreators (built): /favcreators/ and /favcreators/#/guest -> {FAVCREATORS_DOCS_ROOT}")
+    print(f"  Main page (index.html):  http://localhost:{PORT}/")
+    print(f"  FavCreators:            http://localhost:{PORT}/fc/  or  http://localhost:{PORT}/fc/#/guest")
+    print(f"  Serving from:           {workspace_root}")
     print("Press Ctrl+C to stop.")
     print()
 

@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 
-const BASE = 'http://localhost:9000';
+const BASE = process.env.BASE_URL || 'http://localhost:5173';
 const EVENTS_GRID = '#events-grid';
 const REACT_LOAD_WAIT_MS = 25000; // wait for React app to load and render (no fallback)
 
-test.describe('Events loading at http://localhost:9000/', () => {
+test.describe('Events loading at local root (main site)', () => {
   test('page loads and events grid exists', async ({ page }) => {
     await page.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
     const grid = page.locator(EVENTS_GRID);

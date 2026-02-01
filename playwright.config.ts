@@ -7,6 +7,7 @@ export default defineConfig({
   testDir: '.',
   testMatch: [
     /(?:^|\/)events-loading\.spec\.ts$/,
+    /(?:^|\/)tests\/local_root_main_site\.spec\.ts$/,
     /(?:^|\/)tests\/favcreators-guest-9000\.spec\.ts$/,
     /(?:^|\/)tests\/favcreators-admin-login\.spec\.ts$/,
     /(?:^|\/)tests\/verify_remote_site\.spec\.ts$/,
@@ -22,14 +23,14 @@ export default defineConfig({
     ? undefined
     : {
         command: 'python tools/serve_local.py',
-        url: 'http://localhost:9000/',
+        url: 'http://localhost:5173/',
         reuseExistingServer: !process.env.CI,
         timeout: 30000,
       },
   use: {
     baseURL: isRemoteVerify
       ? process.env.VERIFY_REMOTE_URL || 'https://findtorontoevents.ca'
-      : 'http://localhost:9000',
+      : 'http://localhost:5173',
     headless: true,
     viewport: { width: 1280, height: 720 },
     ignoreHTTPSErrors: true,

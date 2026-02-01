@@ -5,7 +5,7 @@
  */
 import { test, expect } from '@playwright/test';
 
-const BASE = process.env.BASE_URL || 'http://localhost:9000';
+const BASE = process.env.BASE_URL || 'http://localhost:5173';
 
 test('nav menu has no favcreators link; all point to /fc/#/guest', async ({
   page,

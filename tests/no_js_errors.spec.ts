@@ -8,7 +8,7 @@
  */
 import { test, expect } from '@playwright/test';
 
-const BASE = process.env.BASE_URL || 'http://localhost:9000';
+const BASE = process.env.BASE_URL || 'http://localhost:5173';
 const CHUNK_PATH = '/next/_next/static/chunks/a2ac3a6616d60872.js';
 
 test('page loads with zero JavaScript errors', async ({ page, request }) => {
