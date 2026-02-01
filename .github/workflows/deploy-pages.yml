@@ -1,0 +1,65 @@
+# Deploy findtorontoevents antigravity to GitHub Pages (project site)
+# Site URL: https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Project Pages URL is https://<user>.github.io/<repo>/ so base path is /<repo>
+      PAGES_BASE: /${{ github.event.repository.name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare site directory
+        run: |
+          mkdir -p site
+          cp index.html site/
+          cp -r next site/
+          cp -r _next site/ 2>/dev/null || true
+          cp -r data site/
+          cp favicon.ico site/ 2>/dev/null || true
+          touch site/.nojekyll
+          if [ -d favcreators/docs ]; then
+            mkdir -p site/fc
+            cp -r favcreators/docs/* site/fc/
+          fi
+
+      - name: Rewrite asset base path for GitHub Pages
+        run: |
+          # Project Pages are served at /REPO_NAME/ so assets must use that prefix
+          for f in $(find site -name '*.html'); do
+            sed -i "s|\"/next|\"$PAGES_BASE/next|g" "$f"
+            sed -i "s|'/next|'$PAGES_BASE/next|g" "$f"
+          done
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
