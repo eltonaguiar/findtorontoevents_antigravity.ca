@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>Event Statistics | Find Toronto Events</title>
+  <meta name="description" content="Statistics and metrics for Find Toronto Events - see how many events are being tracked, sources, and sync history." />
+  <link href="/favicon.ico" rel="icon" sizes="256x256" type="image/x-icon" />
+  <meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control" />
+  <style>
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #111111;
+      --bg-card: #1a1a1a;
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0a0;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --border: #2a2a2a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      padding: 40px 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, var(--accent), #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent);
+      text-decoration: none;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover {
+      color: var(--accent-hover);
+    }
+
+    .about-section {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 40px;
+      border: 1px solid var(--border);
+    }
+
+    .about-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      color: var(--text-primary);
+    }
+
+    .about-section p {
+      color: var(--text-secondary);
+      margin-bottom: 15px;
+    }
+
+    .about-section .highlight {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .wip-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-top: 10px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+
+    .stat-icon {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .stat-card.loading .stat-value {
+      color: var(--text-secondary);
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pulls-table {
+      background: var(--bg-card);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+
+    .pulls-table table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .pulls-table th,
+    .pulls-table td {
+      padding: 14px 20px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .pulls-table th {
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pulls-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .pulls-table tr:hover td {
+      background: rgba(99, 102, 241, 0.05);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .status-badge.success {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--success);
+    }
+
+    .status-badge.partial {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+    }
+
+    .sources-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .source-card {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 16px 20px;
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .source-name {
+      font-weight: 500;
+    }
+
+    .source-count {
+      background: var(--bg-secondary);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      color: var(--accent);
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .error-message {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-secondary);
+    }
+
+    footer {
+      text-align: center;
+      padding: 40px 20px;
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-text {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+      }
+
+      .pulls-table {
+        overflow-x: auto;
+      }
+
+      .pulls-table table {
+        min-width: 600px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <a href="/" class="back-link">← Back to Events</a>
+
+    <header>
+      <h1>📊 Event Statistics</h1>
+      <p class="subtitle">Tracking Toronto events from multiple sources</p>
+    </header>
+
+    <section class="about-section">
+      <h2>About Find Toronto Events</h2>
+      <p>
+        Our mission is to help you <span class="highlight">quickly see all Toronto Events in one place</span>. 
+        We aggregate events from multiple sources across the city, making it easy to discover concerts, meetups, 
+        festivals, dating events, and more without having to check dozens of different websites.
+      </p>
+      <p>
+        The platform automatically pulls events from various sources and presents them in a clean, filterable interface. 
+        Whether you're looking for free activities, weekend plans, or specific types of events, we've got you covered.
+      </p>
+      <div class="wip-badge">
+        🚧 Work in Progress — Not fully automated yet
+      </div>
+    </section>
+
+    <div id="error-container"></div>
+
+    <div class="stats-grid">
+      <div class="stat-card loading" id="stat-total">
+        <div class="stat-icon">📋</div>
+        <div class="stat-value" id="total-events">--</div>
+        <div class="stat-label">Total Events Tracked</div>
+      </div>
+      <div class="stat-card loading" id="stat-upcoming">
+        <div class="stat-icon">📅</div>
+        <div class="stat-value" id="upcoming-events">--</div>
+        <div class="stat-label">Upcoming Events</div>
+      </div>
+      <div class="stat-card loading" id="stat-free">
+        <div class="stat-icon">🎁</div>
+        <div class="stat-value" id="free-events">--</div>
+        <div class="stat-label">Free Events</div>
+      </div>
+      <div class="stat-card loading" id="stat-syncs">
+        <div class="stat-icon">🔄</div>
+        <div class="stat-value" id="total-syncs">--</div>
+        <div class="stat-label">Total Syncs</div>
+      </div>
+    </div>
+
+    <h2 class="section-title">📡 Event Sources</h2>
+    <div class="sources-grid" id="sources-container">
+      <div class="no-data"><div class="loading-spinner"></div> Loading sources...</div>
+    </div>
+
+    <h2 class="section-title">🕐 Recent Sync History</h2>
+    <div class="pulls-table" id="pulls-container">
+      <div class="no-data"><div class="loading-spinner"></div> Loading sync history...</div>
+    </div>
+
+    <h2 class="section-title">🏷️ Categories</h2>
+    <div class="sources-grid" id="categories-container">
+      <div class="no-data"><div class="loading-spinner"></div> Loading categories...</div>
+    </div>
+
+    <footer>
+      <p class="footer-text">
+        Built with ❤️ for Toronto • <a href="/">Find Toronto Events</a> • 
+        <a href="mailto:support@findtorontoevents.ca">Contact Support</a>
+      </p>
+      <p class="footer-text" style="margin-top: 10px;">
+        Antigravity Systems v0.5.2
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    const API_BASE = '/fc/api';
+
+    async function loadStats() {
+      try {
+        const response = await fetch(`${API_BASE}/events_get_stats.php`);
+        if (!response.ok) throw new Error('Failed to fetch stats');
+        
+        const data = await response.json();
+        if (!data.ok) throw new Error(data.error || 'Unknown error');
+
+        // Update stat cards
+        updateStat('total-events', data.total_events || 0, 'stat-total');
+        updateStat('upcoming-events', data.upcoming_events || 0, 'stat-upcoming');
+        updateStat('free-events', data.free_events || 0, 'stat-free');
+        updateStat('total-syncs', data.recent_pulls ? data.recent_pulls.length : 0, 'stat-syncs');
+
+        // Update sources
+        renderSources(data.sources || []);
+
+        // Update pulls history
+        renderPulls(data.recent_pulls || []);
+
+        // Update categories
+        renderCategories(data.categories || []);
+
+      } catch (error) {
+        console.error('Error loading stats:', error);
+        showError('Unable to load statistics. The database may not be set up yet. ' + error.message);
+        
+        // Show fallback data from events.json
+        loadFallbackStats();
+      }
+    }
+
+    async function loadFallbackStats() {
+      try {
+        const response = await fetch('/events.json');
+        if (!response.ok) return;
+        
+        const events = await response.json();
+        if (!Array.isArray(events)) return;
+
+        const now = new Date();
+        const upcoming = events.filter(e => new Date(e.date) >= now);
+        const free = events.filter(e => e.isFree);
+
+        updateStat('total-events', events.length, 'stat-total');
+        updateStat('upcoming-events', upcoming.length, 'stat-upcoming');
+        updateStat('free-events', free.length, 'stat-free');
+        updateStat('total-syncs', 'N/A', 'stat-syncs');
+
+        // Count sources
+        const sourceCounts = {};
+        events.forEach(e => {
+          const source = e.source || 'Unknown';
+          sourceCounts[source] = (sourceCounts[source] || 0) + 1;
+        });
+
+        const sources = Object.entries(sourceCounts)
+          .map(([source, count]) => ({ source, count }))
+          .sort((a, b) => b.count - a.count);
+
+        renderSources(sources);
+
+        // Count categories
+        const catCounts = {};
+        events.forEach(e => {
+          const cats = e.categories || [];
+          cats.forEach(c => {
+            catCounts[c] = (catCounts[c] || 0) + 1;
+          });
+        });
+
+        const categories = Object.entries(catCounts)
+          .map(([category, count]) => ({ category, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 15);
+
+        renderCategories(categories);
+
+        document.getElementById('pulls-container').innerHTML = 
+          '<div class="no-data">Sync history not available (database not set up)</div>';
+
+      } catch (e) {
+        console.error('Fallback stats failed:', e);
+      }
+    }
+
+    function updateStat(elementId, value, cardId) {
+      const el = document.getElementById(elementId);
+      const card = document.getElementById(cardId);
+      if (el) el.textContent = typeof value === 'number' ? value.toLocaleString() : value;
+      if (card) card.classList.remove('loading');
+    }
+
+    function renderSources(sources) {
+      const container = document.getElementById('sources-container');
+      if (!sources || sources.length === 0) {
+        container.innerHTML = '<div class="no-data">No source data available</div>';
+        return;
+      }
+
+      container.innerHTML = sources.map(s => `
+        <div class="source-card">
+          <span class="source-name">${escapeHtml(s.source || 'Unknown')}</span>
+          <span class="source-count">${s.count.toLocaleString()}</span>
+        </div>
+      `).join('');
+    }
+
+    function renderPulls(pulls) {
+      const container = document.getElementById('pulls-container');
+      if (!pulls || pulls.length === 0) {
+        container.innerHTML = '<div class="no-data">No sync history available</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Events</th>
+              <th>Source</th>
+              <th>Status</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pulls.map(p => `
+              <tr>
+                <td>${formatDate(p.timestamp)}</td>
+                <td>${p.events_count.toLocaleString()}</td>
+                <td>${escapeHtml(p.source || 'manual')}</td>
+                <td><span class="status-badge ${p.status}">${p.status}</span></td>
+                <td>${escapeHtml(p.notes || '-')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function renderCategories(categories) {
+      const container = document.getElementById('categories-container');
+      if (!categories || categories.length === 0) {
+        container.innerHTML = '<div class="no-data">No category data available</div>';
+        return;
+      }
+
+      container.innerHTML = categories.map(c => `
+        <div class="source-card">
+          <span class="source-name">${escapeHtml(c.category || 'Unknown')}</span>
+          <span class="source-count">${c.count.toLocaleString()}</span>
+        </div>
+      `).join('');
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      const d = new Date(dateStr);
+      return d.toLocaleString('en-CA', { 
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function showError(message) {
+      const container = document.getElementById('error-container');
+      container.innerHTML = `<div class="error-message">⚠️ ${escapeHtml(message)}</div>`;
+    }
+
+    // Load stats on page load
+    document.addEventListener('DOMContentLoaded', loadStats);
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,946 @@
+<!DOCTYPE html><!--t9zQv5tlF0cw5EL1JFoOR-->
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <script>
+    // Help events loader resolve base: app uses getAssetPrefix() + "/events.json".
+    // Scripts are at /next/_next/..., so prefix is "/next". Set before app runs.
+    window.__NEXT_ASSET_PREFIX__ = "/next";
+    window.__EVENTS_JSON_PATH__ = "/next/events.json";
+    // Intercept fetch so any request for events.json uses /next/events.json with fallbacks (align with sister project).
+    // Fallback order: /next/events.json, /events.json, /data/events.json.
+    (function () {
+      var eventsSources = ["/next/events.json", "/events.json", "/data/events.json"];
+      var f = window.fetch;
+      if (typeof f === "function") {
+        window.fetch = function (input, opts) {
+          var url = typeof input === "string" ? input : (input && input.url);
+          if (url && (url === "/events.json" || url.endsWith("/events.json") || url.indexOf("events.json") !== -1)) {
+            var self = this;
+            function tryNext(idx) {
+              if (idx >= eventsSources.length) return f.apply(self, arguments);
+              return f.call(self, eventsSources[idx], opts).then(function (r) {
+                return r.ok ? r : tryNext(idx + 1);
+              });
+            }
+            return tryNext(0);
+          }
+          return f.apply(this, arguments);
+        };
+      }
+      var oldXHR = window.XMLHttpRequest;
+      function newXHR() {
+        var realXHR = new oldXHR();
+        var oldOpen = realXHR.open;
+        realXHR.open = function (method, url) {
+          if (url && (url === "/events.json" || url.endsWith("/events.json") || url.indexOf("events.json") !== -1)) {
+            url = "/next/events.json";
+          }
+          return oldOpen.apply(this, [method, url]);
+        };
+        return realXHR;
+      }
+      window.XMLHttpRequest = newXHR;
+    })();
+    // Menu fix: any link to /favcreators/ returns 500 on host. Redirect to /fc/#/guest and rewrite hrefs.
+    (function () {
+      function fixFavcreatorsLink(a) {
+        var h = a.getAttribute('href');
+        if (h && h.toLowerCase().indexOf('favcreators') !== -1) {
+          a.setAttribute('href', '/fc/#/guest');
+        }
+      }
+      document.addEventListener('click', function (e) {
+        var a = e.target && e.target.closest && e.target.closest('a[href*="favcreators"]');
+        if (a) {
+          e.preventDefault();
+          window.location.href = '/fc/#/guest';
+        }
+      }, true);
+      function runFix() {
+        document.querySelectorAll('a[href*="favcreators"]').forEach(fixFavcreatorsLink);
+      }
+      if (document.body) runFix();
+      document.addEventListener('DOMContentLoaded', runFix);
+      var ob = typeof MutationObserver !== 'undefined' && new MutationObserver(runFix);
+      if (ob && document.body) ob.observe(document.body, { childList: true, subtree: true });
+    })();
+  </script>
+  <link as="font" crossorigin="" href="/next/_next/static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2" rel="preload"
+    type="font/woff2" />
+  <link rel="preload" href="/next/_next/static/chunks/cd9d6741b3ff3a25.css" as="style" />
+  <link data-precedence="next" href="/next/_next/static/chunks/cd9d6741b3ff3a25.css" rel="stylesheet" />
+  <link as="script" fetchpriority="low" href="/next/_next/static/chunks/628f1cf8c6948755.js" rel="preload" />
+  <script async="" src="/next/_next/static/chunks/806bdb8e4a6a9b95.js"></script>
+  <script async="" src="/next/_next/static/chunks/43a0077a15b1a098.js"></script>
+  <script async="" src="/next/_next/static/chunks/dde2c8e6322d1671.js"></script>
+  <script async="" src="/next/_next/static/chunks/turbopack-03e217c852f3e99c.js"></script>
+  <script async="" src="/next/_next/static/chunks/a2ac3a6616d60872.js"></script>
+  <script async="" src="/next/_next/static/chunks/ff1a16fafef87110.js"></script>
+  <script async="" src="/next/_next/static/chunks/7c4eddd014120b50.js"></script>
+  <script async="" src="/next/_next/static/chunks/f1a9dd578dc871d3.js"></script>
+  <script async="" src="/next/_next/static/chunks/afe53b3593ec888c.js"></script>
+  <script async="" src="/next/_next/static/chunks/1bbf7aa8dcc742fe.js"></script>
+  <meta content="" name="next-size-adjust" />
+  <meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control" />
+  <meta content="no-cache" http-equiv="Pragma" />
+  <meta content="0" http-equiv="Expires" />
+  <meta content="notranslate" name="google" />
+  <title>Find Toronto Events | Dating, Activities &amp; Things to Do This Weekend</title>
+  <meta
+    content="Your ultimate guide to Toronto events, dating meetups, and activities. Discover the best things to do in Toronto, from GTA happenings to mingle events and weekend plans."
+    name="description" />
+  <meta
+    content="Toronto Events,Toronto Dating,Toronto Activities,Things to do in Toronto,Toronto Calendar,GTA Happenings,Toronto Mingle,What's On Toronto"
+    name="keywords" />
+  <meta content="Find Toronto Events | Dating, Activities &amp; Things to Do This Weekend" property="og:title" />
+  <meta
+    content="Your ultimate guide to Toronto events, dating meetups, and activities. Discover the best things to do in Toronto this weekend."
+    property="og:description" />
+  <meta content="Find Toronto Events" property="og:site_name" />
+  <meta content="en_CA" property="og:locale" />
+  <meta content="website" property="og:type" />
+  <meta content="summary" name="twitter:card" />
+  <meta content="Find Toronto Events | Dating, Activities &amp; Things to Do This Weekend" name="twitter:title" />
+  <meta
+    content="Your ultimate guide to Toronto events, dating meetups, and activities. Discover the best things to do in Toronto this weekend."
+    name="twitter:description" />
+  <link href="/favicon.ico" rel="icon" sizes="256x256" type="image/x-icon" />
+  <style>
+    /* Promo banners: 4 sibling max-w-7xl divs - stack vertically (one on top of another) */
+    main > div.max-w-7xl.mx-auto.px-4:has(.promo-banner) { display: block; margin-bottom: 0.5rem; }
+    /* Icon links: aligned grid and hover (sibling max-w-7xl divs with .promo-banner; restored: data-promo-grid) */
+    main > div.max-w-7xl.mx-auto.px-4:has(.promo-banner),
+    [data-promo-grid="true"] { align-items: center; }
+    main > div.max-w-7xl.mx-auto.px-4:has(.promo-banner) .promo-banner:hover .opacity-60,
+    [data-promo-grid="true"] .promo-banner:hover .opacity-60 { opacity: 1 !important; }
+    main > div.max-w-7xl.mx-auto.px-4:has(.promo-banner) .promo-banner:hover .grayscale,
+    [data-promo-grid="true"] .promo-banner:hover .grayscale { filter: none !important; }
+    main > div.max-w-7xl.mx-auto.px-4:has(.promo-banner) > *,
+    [data-promo-grid="true"] > * {
+      display: flex !important;
+      align-items: center !important;
+      min-width: 0 !important;
+    }
+    main .promo-banner {
+      display: flex !important;
+      align-items: center !important;
+    }
+    main .promo-banner { margin: 0; padding: 0; }
+    main > div.max-w-7xl.mx-auto.px-4:has(.promo-banner) [class*="-promo"],
+    [data-promo-grid="true"] [class*="-promo"],
+    main [class*="-promo"] {
+      display: flex !important;
+      align-items: center !important;
+      min-height: 48px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    /* Normalize row height, padding, alignment and icon/button size so all promo rows align (fix vertical misalignment) */
+    main > div.max-w-7xl.mx-auto.px-4:has(.promo-banner) .promo-banner,
+    main .promo-banner {
+      margin: 0 !important;
+      padding: 0 !important;
+      height: 48px !important;
+      min-height: 48px !important;
+    }
+    main > div.max-w-7xl.mx-auto.px-4:has(.promo-banner) .promo-banner > div,
+    main .promo-banner > div {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      height: 48px !important;
+      min-height: 48px !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      line-height: 1.25 !important;
+      gap: 0.75rem !important;
+    }
+    main > div.max-w-7xl.mx-auto.px-4:has(.promo-banner) .promo-banner > div > div:first-of-type,
+    main .promo-banner > div > div:first-of-type {
+      width: 2.5rem !important;
+      height: 2.5rem !important;
+      min-width: 2.5rem !important;
+      min-height: 2.5rem !important;
+      flex-shrink: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    main > div.max-w-7xl.mx-auto.px-4:has(.promo-banner) .promo-banner > div > div.override-overflow,
+    main .promo-banner > div > div.override-overflow {
+      flex-shrink: 0 !important;
+      width: 0 !important;
+      min-width: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    main > div.max-w-7xl.mx-auto.px-4:has(.promo-banner) .promo-banner a,
+    main > div.max-w-7xl.mx-auto.px-4:has(.promo-banner) .promo-banner button,
+    main .promo-banner a,
+    main .promo-banner button {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      height: 2rem !important;
+      min-height: 2rem !important;
+      padding: 0.375rem 0.75rem !important;
+      line-height: 1.25 !important;
+      margin: 0 !important;
+      box-sizing: border-box !important;
+      -webkit-appearance: none !important;
+      appearance: none !important;
+    }
+  </style>
+  <style id="force-banners">
+    /* FORCE ALL 4 BANNERS - Override React */
+    .windows-fixer-promo,
+    .favcreators-promo,
+    .movieshows-promo,
+    .stocks-promo {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      height: auto !important;
+      overflow: visible !important;
+      position: relative !important;
+    }
+
+    /* Ensure parent containers don't hide them */
+    .windows-fixer-promo > *,
+    .favcreators-promo > *,
+    .movieshows-promo > *,
+    .stocks-promo > * {
+      display: block !important;
+      visibility: visible !important;
+    }
+
+    /* Banner spacing */
+    .max-w-7xl:has(.promo-banner) {
+      margin-bottom: 1rem !important;
+    }
+
+    /* Hover effects */
+    .promo-banner:hover .flex.items-center {
+      opacity: 1 !important;
+      filter: grayscale(0) !important;
+    }
+    .promo-banner:hover .override-overflow {
+      max-width: 300px !important;
+      opacity: 1 !important;
+    }
+  </style>
+  <script>
+    // Load AdSense only on production (skip on localhost to avoid console noise and sodar/postMessage errors)
+    (function () {
+      var h = window.location.hostname || '';
+      if (h === '127.0.0.1' || h === 'localhost' || h === '') return;
+      try {
+        var script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7893721225790912';
+        script.crossOrigin = 'anonymous';
+        script.onerror = function () { /* optional */ };
+        document.head.appendChild(script);
+      } catch (e) {}
+    })();
+  </script>
+  <script nomodule="" src="/next/_next/static/chunks/a6dad97d9634a72d.js"></script>
+</head>
+
+<body class="inter_5972bc34-module__OU16Qa__className">
+  <div hidden=""><!--$--><!--/$--></div>
+  <div class="app-bg-wrapper bg-nebula"></div>
+  <div class="fixed-ui-layer relative z-[200]"><button
+      class="fixed top-6 left-6 z-[200] p-3 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl hover:bg-[var(--pk-500)] text-white transition-all group group/nav"
+      title="Quick Navigation">
+      <div class="flex flex-col gap-1.5 w-6 items-center justify-center"><span
+          class="w-full h-0.5 bg-white rounded-full group-hover/nav:w-4 transition-all"></span><span
+          class="w-full h-0.5 bg-white rounded-full group-hover/nav:w-6 transition-all"></span><span
+          class="w-full h-0.5 bg-white rounded-full group-hover/nav:w-4 transition-all"></span></div>
+    </button>
+    <div
+      class="fixed inset-0 z-[250] bg-black/80 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none">
+      <div
+        class="fixed top-0 left-0 h-full w-[300px] max-w-[90vw] bg-[var(--surface-0)]/95 backdrop-blur-xl border-r border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] transform transition-transform duration-300 flex flex-col -translate-x-full">
+        <div
+          class="p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-[var(--pk-900)] to-transparent">
+          <h2 class="text-xl font-black uppercase tracking-tighter text-white"><span
+              class="text-[var(--pk-500)]">Quick</span> Nav</h2><button
+            class="p-2 hover:bg-white/10 rounded-full transition-colors">✕</button>
+        </div>
+        <nav class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-2">
+          <div class="space-y-1">
+            <p class="px-4 py-2 text-[10px] font-black uppercase text-[var(--pk-300)] tracking-widest opacity-60">
+              Platform</p><button
+              class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all bg-[var(--pk-500)] text-white font-bold"><span
+                class="text-lg">🌐</span> Global Feed</button><button
+              class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 bg-[var(--pk-500)]/20 text-white font-bold hover:bg-[var(--pk-500)] transition-all border border-[var(--pk-500)]/30 mt-2 shadow-lg animate-pulse"><span
+                class="text-lg">📧</span> Contact Support</button>
+          </div>
+          <div class="space-y-1 pt-4 border-t border-white/5">
+            <details class="group/nav-section">
+              <summary
+                class="px-4 py-2 text-[10px] font-black uppercase text-[var(--pk-300)] tracking-widest opacity-60 cursor-pointer list-none flex items-center justify-between hover:opacity-100 transition-opacity">
+                NETWORK <span class="group-open/nav-section:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div class="space-y-1 mt-1">
+                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-blue-500/20 text-blue-200 hover:text-white transition-all duration-200 border border-transparent hover:border-blue-500/30 overflow-hidden"
+                  href="/WINDOWSFIXER/"
+                  title="Fixes boot issues such as EFI corrupt, winload.efi missing, or INACCESSIBLE_BOOT_DEVICE."><span
+                    class="text-lg">🛠️</span> Windows Boot Fixer</a>
+                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-yellow-500/20 text-yellow-200 hover:text-white transition-all border border-transparent hover:border-yellow-500/30 overflow-hidden"
+                  href="/findstocks"><span class="text-lg">📈</span> Find Stocks</a>
+                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-amber-500/20 text-amber-200 hover:text-white transition-all border border-transparent hover:border-amber-500/30 overflow-hidden"
+                  href="/MOVIESHOWS/"><span class="text-lg">🎬</span> Movies &amp; TV</a>
+                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-orange-500/20 text-orange-200 hover:text-white transition-all border border-transparent hover:border-orange-500/30 overflow-hidden"
+                  href="/fc/#/guest"><span class="text-lg">⭐</span> Favorite Creators</a>
+                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-rose-500/20 text-rose-200 hover:text-white transition-all border border-transparent hover:border-rose-500/30 overflow-hidden"
+                  href="/fc/#/guest" title="FavCreators guest / login"><span class="text-lg">⭐</span> FAVCREATORS</a>
+                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-red-500/20 text-red-200 hover:text-white transition-all border border-transparent hover:border-red-500/30 overflow-hidden"
+                  href="/fc/#/guest"><span class="text-lg">🔴</span> are your favorite creators live?</a>
+                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-green-500/20 text-green-200 hover:text-white transition-all duration-200 border border-transparent hover:border-green-500/30 overflow-hidden"
+                  href="/MENTALHEALTHRESOURCES/"><span class="text-lg">🌟</span> Mental Health Resources</a>
+                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-purple-500/20 text-purple-200 hover:text-white transition-all border border-transparent hover:border-purple-500/30 overflow-hidden"
+                  href="/2xko"><span class="text-lg">🎮</span> 2XKO Frame Data</a>
+              </div>
+            </details>
+            <button
+              class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-white/5 text-[var(--text-2)] hover:text-white transition-all overflow-hidden">
+              <span class="text-lg">⚙️</span> Event System Settings</button>
+            <div class="space-y-1 pt-4 border-t border-white/5">
+              <p class="px-4 py-2 text-[10px] font-black uppercase text-[var(--pk-300)] tracking-widest opacity-60">Data
+                Management</p>
+              <div class="px-4 py-2 grid grid-cols-2 gap-2"><button
+                  class="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 flex flex-col items-center gap-1 transition-all group overflow-hidden"
+                  title="Export as JSON"><span class="text-xl group-hover:scale-110 transition-transform">📦</span><span
+                    class="text-[9px] font-black uppercase tracking-wider">JSON</span></button><button
+                  class="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 flex flex-col items-center gap-1 transition-all group overflow-hidden"
+                  title="Export as CSV"><span class="text-xl group-hover:scale-110 transition-transform">📊</span><span
+                    class="text-[9px] font-black uppercase tracking-wider">CSV</span></button><button
+                  class="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 flex flex-col items-center gap-1 transition-all group col-span-2 overflow-hidden"
+                  title="Export Calendar File (.ics)"><span
+                    class="text-xl group-hover:scale-110 transition-transform">📅</span><span
+                    class="text-[9px] font-black uppercase tracking-wider">Calendar (ICS)</span></button></div><button
+                class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-white/5 text-[var(--text-2)] hover:text-white transition-all overflow-hidden"><span
+                  class="text-lg">📥</span> Import Collection</button><input accept=".json" class="hidden" type="file" />
+            </div>
+            <button
+              class="w-full text-center px-4 py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-[var(--pk-400)]/60 hover:text-[var(--pk-400)] transition-all border border-dashed border-white/5 hover:border-[var(--pk-500)]/30 mt-4 group">
+              <span class="opacity-20 group-hover:opacity-100 transition-opacity">---</span> 📧 Contact Support <span
+                class="opacity-20 group-hover:opacity-100 transition-opacity">---</span>
+            </button>
+          </div>
+          <div class="space-y-1 pt-4 border-t border-white/5">
+            <p class="px-4 py-2 text-[10px] font-black uppercase text-[var(--pk-300)] tracking-widest opacity-60">
+              PERSONAL</p><button
+              class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:bg-white/5 text-[var(--text-2)] hover:text-white"><span
+                class="text-lg">♥</span><span class="flex-1 truncate">My Collection</span><span
+                class="bg-black/30 px-2 py-0.5 rounded text-[10px] font-mono">0</span></button>
+          </div>
+          <div class="space-y-1 pt-4 border-t border-white/5">
+            <p class="px-4 py-2 text-[10px] font-black uppercase text-[var(--pk-300)] tracking-widest opacity-60">
+              Support</p>
+            <div class="px-4 py-4 m-2 bg-white/5 rounded-xl border border-white/5 space-y-2">
+              <p class="text-[9px] font-bold text-[var(--text-3)] uppercase leading-tight">Manual Uplink:</p>
+              <div class="text-[11px] font-mono text-white select-all break-all">support<span
+                  class="text-[var(--pk-500)]">@</span>findtorontoevents.ca</div>
+              <p class="text-[8px] text-[var(--text-3)] opacity-40 italic">Response: 24-48h</p>
+            </div>
+          </div>
+        </nav>
+        <div class="p-4 border-t border-white/5 bg-black/20">
+          <p class="text-[10px] text-[var(--text-3)] text-center opacity-50">Antigravity Systems v0.5.2</p>
+          <p class="text-[8px] text-[var(--text-3)] text-center opacity-30 mt-1" data-version="2026-01-29-parallel-fix"
+            style="display:none">Build: 2026-01-29-parallel-fix</p>
+        </div>
+      </div>
+    </div>
+    <div class="fixed top-6 right-6 z-[200] flex gap-3 pointer-events-none"><button
+        class="pointer-events-auto px-4 py-3 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl hover:bg-[var(--pk-500)] text-white transition-all group overflow-hidden flex items-center gap-2"
+        title="System Configuration (Top Right)">
+        <div class="flex items-center gap-2 px-1"><span
+            class="text-xl group-hover:rotate-90 transition-transform duration-500">⚙️</span><span
+            class="text-[10px] font-black uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-all">Config</span>
+        </div>
+      </button></div>
+    <div class="fixed bottom-6 right-6 z-[200]"><button aria-label="Open Settings"
+        class="w-16 h-16 rounded-full glass-panel flex items-center justify-center transition-all duration-500 shadow-2xl hover:shadow-[0_0_40px_rgba(var(--pk-500-rgb),0.6)] hover:scale-125 text-[var(--pk-300)] animate-pulse"
+        title="Configuration Settings (Always Accessible)"><svg class="w-9 h-9" fill="none" stroke="currentColor"
+          viewbox="0 0 24 24">
+          <path
+            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+            stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+          <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+          </path>
+        </svg></button></div>
+  </div>
+  <div class="font-size-md density-normal relative z-0 min-h-screen"
+    style="scale:var(--webpage-scale);transform-origin:top center;width:100%">
+    <main class="min-h-screen">
+      <header class="relative py-20 px-6 text-center overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-[var(--pk-900)] to-[var(--surface-0)] opacity-50 -z-10">
+        </div>
+        <h1 class="text-5xl md:text-7xl font-extrabold mb-4 tracking-tight glow-text">Toronto Events <span
+            class="text-2xl md:text-3xl text-[var(--pk-300)]">v0.5.2</span></h1>
+        <p class="text-lg text-[var(--text-2)] max-w-2xl mx-auto">The curated feed of what's happening in the city.
+          Updated daily.</p>
+        <p class="text-sm text-[var(--text-3)] mt-2" suppresshydrationwarning="true">Last updated: Jan 31 Fix</p>
+        <p class="mt-3 text-[10px] text-[var(--text-3)] opacity-70" suppresshydrationwarning="true">Events not loading? <a href="/index4.html" class="text-[var(--pk-400)] hover:text-[var(--pk-300)] underline">try here</a></p>
+      </header>
+      <div class="max-w-7xl mx-auto px-4" suppressHydrationWarning>
+        <div class="jsx-1dee1fec6bde20e8 windows-fixer-promo">
+          <div class="jsx-1dee1fec6bde20e8 promo-banner">
+            <div class="jsx-1dee1fec6bde20e8 flex items-center gap-3 transition-all duration-500 opacity-60 grayscale">
+              <div
+                class="jsx-1dee1fec6bde20e8 w-10 h-10 rounded-full bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center shadow-lg animate-pulse-slow">
+                <span class="jsx-1dee1fec6bde20e8 text-xl">🛠️</span>
+              </div>
+              <div
+                class="jsx-1dee1fec6bde20e8 transition-all duration-500 override-overflow max-w-0 opacity-0 overflow-hidden">
+                <div class="jsx-1dee1fec6bde20e8 flex flex-col whitespace-nowrap"><span
+                    class="jsx-1dee1fec6bde20e8 text-sm font-bold text-white">System Issues?</span><span
+                    class="jsx-1dee1fec6bde20e8 text-[10px] text-[var(--text-2)]">Try Windows Boot Fixer</span></div>
+              </div><button
+                class="jsx-1dee1fec6bde20e8 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap"
+                type="button" onclick="window.location.href='/WINDOWSFIXER/'">Learn More</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="max-w-7xl mx-auto px-4" suppressHydrationWarning>
+        <div class="jsx-1b9a23bd3fa6c640 favcreators-promo">
+          <div class="jsx-1b9a23bd3fa6c640 promo-banner">
+            <div class="jsx-1b9a23bd3fa6c640 flex items-center gap-3 transition-all duration-500 opacity-60 grayscale">
+              <div
+                class="jsx-1b9a23bd3fa6c640 w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-lg animate-pulse-slow">
+                <span class="jsx-1b9a23bd3fa6c640 text-xl">💎</span>
+              </div>
+              <div
+                class="jsx-1b9a23bd3fa6c640 transition-all duration-500 override-overflow max-w-0 opacity-0 overflow-hidden">
+                <div class="jsx-1b9a23bd3fa6c640 flex flex-col whitespace-nowrap"><span
+                    class="jsx-1b9a23bd3fa6c640 text-sm font-bold text-white">Fav Creators</span><span
+                    class="jsx-1b9a23bd3fa6c640 text-[10px] text-[var(--text-2)]">Live Status &amp; More</span>
+                </div>
+              </div><a
+                class="jsx-1b9a23bd3fa6c640 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap"
+                href="/fc/#/guest" rel="noopener noreferrer" target="_blank">Open App →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="max-w-7xl mx-auto px-4" suppressHydrationWarning>
+        <div class="jsx-1b9a23bd3fa6c640 movieshows-promo">
+          <div class="jsx-1b9a23bd3fa6c640 promo-banner">
+            <div class="jsx-1b9a23bd3fa6c640 flex items-center gap-3 transition-all duration-500 opacity-60 grayscale">
+              <div
+                class="jsx-1b9a23bd3fa6c640 w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg animate-pulse-slow">
+                <span class="jsx-1b9a23bd3fa6c640 text-xl">🎬</span>
+              </div>
+              <div
+                class="jsx-1b9a23bd3fa6c640 transition-all duration-500 override-overflow max-w-0 opacity-0 overflow-hidden">
+                <div class="jsx-1b9a23bd3fa6c640 flex flex-col whitespace-nowrap"><span
+                    class="jsx-1b9a23bd3fa6c640 text-sm font-bold text-white">Movies &amp; TV</span><span
+                    class="jsx-1b9a23bd3fa6c640 text-[10px] text-[var(--text-2)]">Trailers, Now Playing Toronto</span>
+                </div>
+              </div><a
+                class="jsx-1b9a23bd3fa6c640 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap"
+                href="/MOVIESHOWS/" rel="noopener noreferrer" target="_blank">Open App →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="max-w-7xl mx-auto px-4" suppressHydrationWarning>
+        <div class="jsx-1b9a23bd3fa6c640 stocks-promo">
+          <div class="jsx-1b9a23bd3fa6c640 promo-banner">
+            <div class="jsx-1b9a23bd3fa6c640 flex items-center gap-3 transition-all duration-500 opacity-60 grayscale">
+              <div
+                class="jsx-1b9a23bd3fa6c640 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg animate-pulse-slow">
+                <span class="jsx-1b9a23bd3fa6c640 text-xl">📈</span>
+              </div>
+              <div
+                class="jsx-1b9a23bd3fa6c640 transition-all duration-500 override-overflow max-w-0 opacity-0 overflow-hidden">
+                <div class="jsx-1b9a23bd3fa6c640 flex flex-col whitespace-nowrap"><span
+                    class="jsx-1b9a23bd3fa6c640 text-sm font-bold text-white">Stocks</span><span
+                    class="jsx-1b9a23bd3fa6c640 text-[10px] text-[var(--text-2)]">Research &amp; Portfolio</span>
+                </div>
+              </div><a
+                class="jsx-1b9a23bd3fa6c640 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap"
+                href="/findstocks" rel="noopener noreferrer" target="_blank">Open App →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="max-w-7xl mx-auto px-4 py-6">
+        <div class="ad-container mb-8"><ins class="adsbygoogle" data-ad-client="ca-pub-7893721225790912"
+            data-ad-format="horizontal" data-ad-slot="1234567890" data-full-width-responsive="true"
+            style="display:block"></ins></div>
+      </div>
+      <div class="max-w-7xl mx-auto px-4 py-20">
+        <div id="events-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div class="relative h-[320px] w-full">
+            <div
+              class="absolute inset-x-0 top-0 h-full rounded-xl shadow-lg border border-white/10 overflow-hidden glass-panel animate-pulse">
+              <div class="p-4 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-3">
+                  <div class="w-14 h-16 bg-white/10 rounded-lg"></div>
+                  <div class="w-20 h-6 bg-white/10 rounded-full"></div>
+                </div>
+                <div class="space-y-2 mb-4">
+                  <div class="h-4 bg-white/10 rounded w-3/4"></div>
+                  <div class="h-4 bg-white/10 rounded w-1/2"></div>
+                </div>
+                <div class="mt-auto pt-4 space-y-2">
+                  <div class="h-3 bg-white/10 rounded w-24"></div>
+                  <div class="h-3 bg-white/10 rounded w-32"></div>
+                </div>
+              </div>
+              <div class="p-4 pt-0 grid grid-cols-2 gap-2">
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+              </div>
+            </div>
+          </div>
+          <div class="relative h-[320px] w-full">
+            <div
+              class="absolute inset-x-0 top-0 h-full rounded-xl shadow-lg border border-white/10 overflow-hidden glass-panel animate-pulse">
+              <div class="p-4 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-3">
+                  <div class="w-14 h-16 bg-white/10 rounded-lg"></div>
+                  <div class="w-20 h-6 bg-white/10 rounded-full"></div>
+                </div>
+                <div class="space-y-2 mb-4">
+                  <div class="h-4 bg-white/10 rounded w-3/4"></div>
+                  <div class="h-4 bg-white/10 rounded w-1/2"></div>
+                </div>
+                <div class="mt-auto pt-4 space-y-2">
+                  <div class="h-3 bg-white/10 rounded w-24"></div>
+                  <div class="h-3 bg-white/10 rounded w-32"></div>
+                </div>
+              </div>
+              <div class="p-4 pt-0 grid grid-cols-2 gap-2">
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+              </div>
+            </div>
+          </div>
+          <div class="relative h-[320px] w-full">
+            <div
+              class="absolute inset-x-0 top-0 h-full rounded-xl shadow-lg border border-white/10 overflow-hidden glass-panel animate-pulse">
+              <div class="p-4 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-3">
+                  <div class="w-14 h-16 bg-white/10 rounded-lg"></div>
+                  <div class="w-20 h-6 bg-white/10 rounded-full"></div>
+                </div>
+                <div class="space-y-2 mb-4">
+                  <div class="h-4 bg-white/10 rounded w-3/4"></div>
+                  <div class="h-4 bg-white/10 rounded w-1/2"></div>
+                </div>
+                <div class="mt-auto pt-4 space-y-2">
+                  <div class="h-3 bg-white/10 rounded w-24"></div>
+                  <div class="h-3 bg-white/10 rounded w-32"></div>
+                </div>
+              </div>
+              <div class="p-4 pt-0 grid grid-cols-2 gap-2">
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+              </div>
+            </div>
+          </div>
+          <div class="relative h-[320px] w-full">
+            <div
+              class="absolute inset-x-0 top-0 h-full rounded-xl shadow-lg border border-white/10 overflow-hidden glass-panel animate-pulse">
+              <div class="p-4 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-3">
+                  <div class="w-14 h-16 bg-white/10 rounded-lg"></div>
+                  <div class="w-20 h-6 bg-white/10 rounded-full"></div>
+                </div>
+                <div class="space-y-2 mb-4">
+                  <div class="h-4 bg-white/10 rounded w-3/4"></div>
+                  <div class="h-4 bg-white/10 rounded w-1/2"></div>
+                </div>
+                <div class="mt-auto pt-4 space-y-2">
+                  <div class="h-3 bg-white/10 rounded w-24"></div>
+                  <div class="h-3 bg-white/10 rounded w-32"></div>
+                </div>
+              </div>
+              <div class="p-4 pt-0 grid grid-cols-2 gap-2">
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+              </div>
+            </div>
+          </div>
+          <div class="relative h-[320px] w-full">
+            <div
+              class="absolute inset-x-0 top-0 h-full rounded-xl shadow-lg border border-white/10 overflow-hidden glass-panel animate-pulse">
+              <div class="p-4 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-3">
+                  <div class="w-14 h-16 bg-white/10 rounded-lg"></div>
+                  <div class="w-20 h-6 bg-white/10 rounded-full"></div>
+                </div>
+                <div class="space-y-2 mb-4">
+                  <div class="h-4 bg-white/10 rounded w-3/4"></div>
+                  <div class="h-4 bg-white/10 rounded w-1/2"></div>
+                </div>
+                <div class="mt-auto pt-4 space-y-2">
+                  <div class="h-3 bg-white/10 rounded w-24"></div>
+                  <div class="h-3 bg-white/10 rounded w-32"></div>
+                </div>
+              </div>
+              <div class="p-4 pt-0 grid grid-cols-2 gap-2">
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+              </div>
+            </div>
+          </div>
+          <div class="relative h-[320px] w-full">
+            <div
+              class="absolute inset-x-0 top-0 h-full rounded-xl shadow-lg border border-white/10 overflow-hidden glass-panel animate-pulse">
+              <div class="p-4 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-3">
+                  <div class="w-14 h-16 bg-white/10 rounded-lg"></div>
+                  <div class="w-20 h-6 bg-white/10 rounded-full"></div>
+                </div>
+                <div class="space-y-2 mb-4">
+                  <div class="h-4 bg-white/10 rounded w-3/4"></div>
+                  <div class="h-4 bg-white/10 rounded w-1/2"></div>
+                </div>
+                <div class="mt-auto pt-4 space-y-2">
+                  <div class="h-3 bg-white/10 rounded w-24"></div>
+                  <div class="h-3 bg-white/10 rounded w-32"></div>
+                </div>
+              </div>
+              <div class="p-4 pt-0 grid grid-cols-2 gap-2">
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+              </div>
+            </div>
+          </div>
+          <div class="relative h-[320px] w-full">
+            <div
+              class="absolute inset-x-0 top-0 h-full rounded-xl shadow-lg border border-white/10 overflow-hidden glass-panel animate-pulse">
+              <div class="p-4 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-3">
+                  <div class="w-14 h-16 bg-white/10 rounded-lg"></div>
+                  <div class="w-20 h-6 bg-white/10 rounded-full"></div>
+                </div>
+                <div class="space-y-2 mb-4">
+                  <div class="h-4 bg-white/10 rounded w-3/4"></div>
+                  <div class="h-4 bg-white/10 rounded w-1/2"></div>
+                </div>
+                <div class="mt-auto pt-4 space-y-2">
+                  <div class="h-3 bg-white/10 rounded w-24"></div>
+                  <div class="h-3 bg-white/10 rounded w-32"></div>
+                </div>
+              </div>
+              <div class="p-4 pt-0 grid grid-cols-2 gap-2">
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+              </div>
+            </div>
+          </div>
+          <div class="relative h-[320px] w-full">
+            <div
+              class="absolute inset-x-0 top-0 h-full rounded-xl shadow-lg border border-white/10 overflow-hidden glass-panel animate-pulse">
+              <div class="p-4 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-3">
+                  <div class="w-14 h-16 bg-white/10 rounded-lg"></div>
+                  <div class="w-20 h-6 bg-white/10 rounded-full"></div>
+                </div>
+                <div class="space-y-2 mb-4">
+                  <div class="h-4 bg-white/10 rounded w-3/4"></div>
+                  <div class="h-4 bg-white/10 rounded w-1/2"></div>
+                </div>
+                <div class="mt-auto pt-4 space-y-2">
+                  <div class="h-3 bg-white/10 rounded w-24"></div>
+                  <div class="h-3 bg-white/10 rounded w-32"></div>
+                </div>
+              </div>
+              <div class="p-4 pt-0 grid grid-cols-2 gap-2">
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+              </div>
+            </div>
+          </div>
+          <div class="relative h-[320px] w-full">
+            <div
+              class="absolute inset-x-0 top-0 h-full rounded-xl shadow-lg border border-white/10 overflow-hidden glass-panel animate-pulse">
+              <div class="p-4 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-3">
+                  <div class="w-14 h-16 bg-white/10 rounded-lg"></div>
+                  <div class="w-20 h-6 bg-white/10 rounded-full"></div>
+                </div>
+                <div class="space-y-2 mb-4">
+                  <div class="h-4 bg-white/10 rounded w-3/4"></div>
+                  <div class="h-4 bg-white/10 rounded w-1/2"></div>
+                </div>
+                <div class="mt-auto pt-4 space-y-2">
+                  <div class="h-3 bg-white/10 rounded w-24"></div>
+                  <div class="h-3 bg-white/10 rounded w-32"></div>
+                </div>
+              </div>
+              <div class="p-4 pt-0 grid grid-cols-2 gap-2">
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+              </div>
+            </div>
+          </div>
+          <div class="relative h-[320px] w-full">
+            <div
+              class="absolute inset-x-0 top-0 h-full rounded-xl shadow-lg border border-white/10 overflow-hidden glass-panel animate-pulse">
+              <div class="p-4 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-3">
+                  <div class="w-14 h-16 bg-white/10 rounded-lg"></div>
+                  <div class="w-20 h-6 bg-white/10 rounded-full"></div>
+                </div>
+                <div class="space-y-2 mb-4">
+                  <div class="h-4 bg-white/10 rounded w-3/4"></div>
+                  <div class="h-4 bg-white/10 rounded w-1/2"></div>
+                </div>
+                <div class="mt-auto pt-4 space-y-2">
+                  <div class="h-3 bg-white/10 rounded w-24"></div>
+                  <div class="h-3 bg-white/10 rounded w-32"></div>
+                </div>
+              </div>
+              <div class="p-4 pt-0 grid grid-cols-2 gap-2">
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+              </div>
+            </div>
+          </div>
+          <div class="relative h-[320px] w-full">
+            <div
+              class="absolute inset-x-0 top-0 h-full rounded-xl shadow-lg border border-white/10 overflow-hidden glass-panel animate-pulse">
+              <div class="p-4 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-3">
+                  <div class="w-14 h-16 bg-white/10 rounded-lg"></div>
+                  <div class="w-20 h-6 bg-white/10 rounded-full"></div>
+                </div>
+                <div class="space-y-2 mb-4">
+                  <div class="h-4 bg-white/10 rounded w-3/4"></div>
+                  <div class="h-4 bg-white/10 rounded w-1/2"></div>
+                </div>
+                <div class="mt-auto pt-4 space-y-2">
+                  <div class="h-3 bg-white/10 rounded w-24"></div>
+                  <div class="h-3 bg-white/10 rounded w-32"></div>
+                </div>
+              </div>
+              <div class="p-4 pt-0 grid grid-cols-2 gap-2">
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+              </div>
+            </div>
+          </div>
+          <div class="relative h-[320px] w-full">
+            <div
+              class="absolute inset-x-0 top-0 h-full rounded-xl shadow-lg border border-white/10 overflow-hidden glass-panel animate-pulse">
+              <div class="p-4 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-3">
+                  <div class="w-14 h-16 bg-white/10 rounded-lg"></div>
+                  <div class="w-20 h-6 bg-white/10 rounded-full"></div>
+                </div>
+                <div class="space-y-2 mb-4">
+                  <div class="h-4 bg-white/10 rounded w-3/4"></div>
+                  <div class="h-4 bg-white/10 rounded w-1/2"></div>
+                </div>
+                <div class="mt-auto pt-4 space-y-2">
+                  <div class="h-3 bg-white/10 rounded w-24"></div>
+                  <div class="h-3 bg-white/10 rounded w-32"></div>
+                </div>
+              </div>
+              <div class="p-4 pt-0 grid grid-cols-2 gap-2">
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+                <div class="h-10 bg-white/10 rounded-xl"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="ad-container my-8"><ins class="adsbygoogle" data-ad-client="ca-pub-7893721225790912"
+            data-ad-format="auto" data-ad-slot="0987654321" data-full-width-responsive="true"
+            style="display:block"></ins></div>
+      </div>
+      <script
+        type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Find Toronto Events","url":"https://www.findtorontoevents.ca","potentialAction":{"@type":"SearchAction","target":"https://www.findtorontoevents.ca/?q={search_term_string}","query-input":"required name=search_term_string"},"description":"The ultimate calendar for Toronto dating events, social mixers, and things to do this weekend."}</script>
+      <section class="max-w-7xl mx-auto px-6 py-12 border-t border-white/5 text-[var(--text-2)]">
+        <div class="grid md:grid-cols-2 gap-12">
+          <article>
+            <h2 class="text-2xl font-bold text-white mb-4">Discover the Best Things to Do in Toronto This Weekend</h2>
+            <p class="mb-4 text-sm leading-relaxed">Looking for <strong>Things to do in Toronto</strong>? Our curated
+              calendar is updated daily to bring you the best <strong>GTA Happenings</strong>. Whether you're searching
+              for "What's On Toronto" guides or specific <strong>Toronto Activities</strong>, we categorize events to
+              help you find exactly what fits your vibe.</p>
+            <p class="text-sm leading-relaxed">From underground concert venues to high-energy festivals, our
+              <strong>Toronto Calendar</strong> covers it all. We specifically highlight <strong>Best things to do in
+                Toronto this weekend</strong> so you never miss out on the action.
+            </p>
+          </article>
+          <article>
+            <h2 class="text-2xl font-bold text-white mb-4">Toronto Dating &amp; Social Mixers</h2>
+            <p class="mb-4 text-sm leading-relaxed">Finding it hard to meet new people? Check out our dedicated section
+              for <strong>Toronto Dating events</strong> and <strong>Toronto Mingle</strong> opportunities. We aggregate
+              the top singles nights, speed dating, and social mixers designed to help <strong>Toronto Friends</strong>
+              connect.</p>
+            <p class="text-sm leading-relaxed">Stop endlessly swiping. Our feed prioritizes real-world connection
+              events, from casual "Toronto Mingle" meetups to professional networking. If you're looking to <strong>Find
+                Toronto Events</strong> that spark genuine connection, you're in the right place.</p>
+          </article>
+        </div>
+      </section>
+      <footer class="py-12 text-center text-[var(--text-3)] border-t border-white/5 space-y-4">
+        <div class="flex justify-center gap-6"><a
+            class="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border border-white/10"
+            href="#">🔝 Back to Top</a></div>
+        <div class="opacity-50 text-xs">
+          <p>Built with ❤️ for Toronto</p>
+          <p class="mt-1">v0.5.2<!-- -->-tactical-geotime-fixed</p>
+        </div>
+      </footer>
+    </main><!--$--><!--/$-->
+    <footer class="mt-20 py-20 border-t border-white/5 text-center bg-black/20 backdrop-blur-sm" id="global-footer">
+      <div class="max-w-xl mx-auto space-y-8 px-6">
+        <div class="space-y-4">
+          <h3 class="text-xl font-black uppercase tracking-widest text-white/80">Support Node</h3>
+          <p class="text-xs text-[var(--text-3)] font-medium leading-relaxed">Encountered a glitch in the event stream
+            or have a venue to suggest? Our uplink is open for manual transmissions.</p>
+          <div class="flex flex-col items-center gap-3">
+            <div
+              class="group relative px-6 py-4 bg-white/5 border border-white/10 rounded-2xl transition-all hover:bg-white/10 hover:border-[var(--pk-500)]/30 shadow-2xl">
+              <span class="text-[10px] font-black uppercase text-[var(--pk-400)] block mb-1">Secure Uplink</span>
+              <div class="flex items-center gap-2 font-mono text-sm text-white select-all"><span>support</span><span
+                  class="text-[var(--pk-500)]">@</span><span>findtorontoevents.ca</span></div>
+            </div>
+            <p class="text-[9px] font-bold uppercase tracking-tighter text-white/20">Automated responses active •
+              Response time: 24-48h</p>
+          </div>
+        </div>
+        <div class="pt-8 border-t border-white/5 grid grid-cols-2 md:grid-cols-3 gap-4">
+          <a class="text-[10px] font-black uppercase tracking-widest text-[var(--text-3)] hover:text-white transition-colors"
+            href="/">Event discovery</a>
+          <a class="text-[10px] font-black uppercase tracking-widest text-[var(--text-3)] hover:text-white transition-colors"
+            href="/findstocks">Stock analysis</a>
+          <a class="text-[10px] font-black uppercase tracking-widest text-[var(--text-3)] hover:text-white transition-colors"
+            href="/fc/#/guest">FAVCREATORS</a>
+          <a class="text-[10px] font-black uppercase tracking-widest text-[var(--text-3)] hover:text-white transition-colors"
+            href="/2xko">2XKO data</a>
+          <a class="text-[10px] font-black uppercase tracking-widest text-[var(--text-3)] hover:text-white transition-colors"
+            href="/WINDOWSFIXER/">Boot Fixer</a>
+        </div>
+        <div class="pt-8 opacity-30 text-[9px] font-bold uppercase tracking-[0.4em] text-[var(--text-3)]">Built for
+          Toronto • Antigravity Systems v0.5.0</div>
+      </div>
+    </footer>
+  </div>
+  <script async="" id="_R_" src="/next/_next/static/chunks/628f1cf8c6948755.js"></script>
+  <script>(self.__next_f = self.__next_f || []).push([0])</script>
+  <script>self.__next_f.push([1, "1:\"$Sreact.fragment\"\n2:I[11093,[\"/next/_next/static/chunks/a2ac3a6616d60872.js\"],\"SettingsProvider\"]\n3:I[49830,[\"/next/_next/static/chunks/a2ac3a6616d60872.js\"],\"default\"]\n4:I[40625,[\"/next/_next/static/chunks/a2ac3a6616d60872.js\"],\"default\"]\n5:I[8517,[\"/next/_next/static/chunks/a2ac3a6616d60872.js\"],\"default\"]\n6:I[39756,[\"/next/_next/static/chunks/ff1a16fafef87110.js\",\"/next/_next/static/chunks/7c4eddd014120b50.js\"],\"default\"]\n7:I[37457,[\"/next/_next/static/chunks/ff1a16fafef87110.js\",\"/next/_next/static/chunks/7c4eddd014120b50.js\"],\"default\"]\n8:I[6329,[\"/next/_next/static/chunks/a2ac3a6616d60872.js\"],\"default\"]\n9:I[47257,[\"/next/_next/static/chunks/ff1a16fafef87110.js\",\"/next/_next/static/chunks/7c4eddd014120b50.js\"],\"ClientPageRoot\"]\na:I[52683,[\"/next/_next/static/chunks/a2ac3a6616d60872.js\",\"/next/_next/static/chunks/f1a9dd578dc871d3.js\",\"/next/_next/static/chunks/afe53b3593ec888c.js\",\"/next/_next/static/chunks/1bbf7aa8dcc742fe.js\"],\"default\"]\nd:I[97367,[\"/next/_next/static/chunks/ff1a16fafef87110.js\",\"/next/_next/static/chunks/7c4eddd014120b50.js\"],\"OutletBoundary\"]\ne:\"$Sreact.suspense\"\n10:I[97367,[\"/next/_next/static/chunks/ff1a16fafef87110.js\",\"/next/_next/static/chunks/7c4eddd014120b50.js\"],\"ViewportBoundary\"]\n12:I[97367,[\"/next/_next/static/chunks/ff1a16fafef87110.js\",\"/next/_next/static/chunks/7c4eddd014120b50.js\"],\"MetadataBoundary\"]\n14:I[68027,[],\"default\"]\n:HL[\"/next/_next/static/chunks/cd9d6741b3ff3a25.css\",\"style\"]\n:HL[\"/next/_next/static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2\",\"font\",{\"crossOrigin\":\"\",\"type\":\"font/woff2\"}]\n"])</script>
+  <script>self.__next_f.push([1, "0:{\"P\":null,\"b\":\"t9zQv5tlF0cw5EL1JFoOR\",\"c\":[\"\",\"\"],\"q\":\"\",\"i\":false,\"f\":[[[\"\",{\"children\":[\"__PAGE__\",{}]},\"$undefined\",\"$undefined\",true],[[\"$\",\"$1\",\"c\",{\"children\":[[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/next/_next/static/chunks/cd9d6741b3ff3a25.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-0\",{\"src\":\"/next/_next/static/chunks/a2ac3a6616d60872.js\",\"async\":true,\"nonce\":\"$undefined\"}]],[\"$\",\"html\",null,{\"lang\":\"en\",\"children\":[[\"$\",\"head\",null,{\"children\":[[\"$\",\"meta\",null,{\"httpEquiv\":\"Cache-Control\",\"content\":\"no-cache, no-store, must-revalidate\"}],[\"$\",\"meta\",null,{\"httpEquiv\":\"Pragma\",\"content\":\"no-cache\"}],[\"$\",\"meta\",null,{\"httpEquiv\":\"Expires\",\"content\":\"0\"}],[\"$\",\"meta\",null,{\"name\":\"google\",\"content\":\"notranslate\"}],[\"$\",\"script\",null,{\"dangerouslySetInnerHTML\":{\"__html\":\"\\n              // Load AdSense asynchronously with error handling\\n              (function() {\\n                try {\\n                  var script = document.createElement('script');\\n                  script.async = true;\\n                  script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7893721225790912';\\n                  script.crossOrigin = 'anonymous';\\n                  script.onerror = function() {\\n                    // Silently handle AdSense load errors - ads are optional\\n                    console.warn('AdSense script failed to load (this is OK if ads are disabled or network is restricted)');\\n                  };\\n                  document.head.appendChild(script);\\n                } catch (e) {\\n                  console.warn('AdSense script initialization failed:', e);\\n                }\\n              })();\\n            \"}}]]}],[\"$\",\"body\",null,{\"className\":\"inter_5972bc34-module__OU16Qa__className\",\"children\":[\"$\",\"$L2\",null,{\"children\":[\"$\",\"$L3\",null,{\"nav\":[\"$\",\"$L4\",null,{}],\"settingsModal\":[\"$\",\"$L5\",null,{}],\"children\":[[\"$\",\"$L6\",null,{\"parallelRouterKey\":\"children\",\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L7\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":[[[\"$\",\"title\",null,{\"children\":\"404: This page could not be found.\"}],[\"$\",\"div\",null,{\"style\":{\"fontFamily\":\"system-ui,\\\"Segoe UI\\\",Roboto,Helvetica,Arial,sans-serif,\\\"Apple Color Emoji\\\",\\\"Segoe UI Emoji\\\"\",\"height\":\"100vh\",\"textAlign\":\"center\",\"display\":\"flex\",\"flexDirection\":\"column\",\"alignItems\":\"center\",\"justifyContent\":\"center\"},\"children\":[\"$\",\"div\",null,{\"children\":[[\"$\",\"style\",null,{\"dangerouslySetInnerHTML\":{\"__html\":\"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}\"}}],[\"$\",\"h1\",null,{\"className\":\"next-error-h1\",\"style\":{\"display\":\"inline-block\",\"margin\":\"0 20px 0 0\",\"padding\":\"0 23px 0 0\",\"fontSize\":24,\"fontWeight\":500,\"verticalAlign\":\"top\",\"lineHeight\":\"49px\"},\"children\":404}],[\"$\",\"div\",null,{\"style\":{\"display\":\"inline-block\"},\"children\":[\"$\",\"h2\",null,{\"style\":{\"fontSize\":14,\"fontWeight\":400,\"lineHeight\":\"49px\",\"margin\":0},\"children\":\"This page could not be found.\"}]}]]}]}]],[]],\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"}],[\"$\",\"$L8\",null,{}]]}]}]}]]}]]}],{\"children\":[[\"$\",\"$1\",\"c\",{\"children\":[[\"$\",\"$L9\",null,{\"Component\":\"$a\",\"serverProvidedParams\":{\"searchParams\":{},\"params\":{},\"promises\":[\"$@b\",\"$@c\"]}}],[[\"$\",\"script\",\"script-0\",{\"src\":\"/next/_next/static/chunks/f1a9dd578dc871d3.js\",\"async\":true,\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-1\",{\"src\":\"/next/_next/static/chunks/afe53b3593ec888c.js\",\"async\":true,\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-2\",{\"src\":\"/next/_next/static/chunks/1bbf7aa8dcc742fe.js\",\"async\":true,\"nonce\":\"$undefined\"}]],[\"$\",\"$Ld\",null,{\"children\":[\"$\",\"$e\",null,{\"name\":\"Next.MetadataOutlet\",\"children\":\"$@f\"}]}]]}],{},null,false,false]},null,false,false],[\"$\",\"$1\",\"h\",{\"children\":[null,[\"$\",\"$L10\",null,{\"children\":\"$L11\"}],[\"$\",\"div\",null,{\"hidden\":true,\"children\":[\"$\",\"$L12\",null,{\"children\":[\"$\",\"$e\",null,{\"name\":\"Next.Metadata\",\"children\":\"$L13\"}]}]}],[\"$\",\"meta\",null,{\"name\":\"next-size-adjust\",\"content\":\"\"}]]}],false]],\"m\":\"$undefined\",\"G\":[\"$14\",[]],\"S\":true}\n"])</script>
+  <script>self.__next_f.push([1, "b:{}\nc:\"$0:f:0:1:1:children:0:props:children:0:props:serverProvidedParams:params\"\n"])</script>
+  <script>self.__next_f.push([1, "11:[[\"$\",\"meta\",\"0\",{\"charSet\":\"utf-8\"}],[\"$\",\"meta\",\"1\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"}]]\n"])</script>
+  <script>self.__next_f.push([1, "15:I[27201,[\"/next/_next/static/chunks/ff1a16fafef87110.js\",\"/next/_next/static/chunks/7c4eddd014120b50.js\"],\"IconMark\"]\nf:null\n"])</script>
+  <script>
+    (function () {
+      function injectFallbackLink() {
+        if (document.getElementById('index4-link')) return;
+        var wrap = document.createElement('div');
+        wrap.id = 'index4-link';
+        wrap.style.cssText = 'position:fixed;top:5rem;right:1.5rem;z-index:9999;background:rgba(0,0,0,0.6);padding:0.4rem 0.75rem;border-radius:0.75rem;border:1px solid rgba(255,255,255,0.15);';
+        wrap.innerHTML = '<a href="/index4.html" style="font-size:11px;color:#f472b6;text-decoration:underline;white-space:nowrap;">Events not loading? try here</a>';
+        document.body.appendChild(wrap);
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', injectFallbackLink);
+      } else {
+        injectFallbackLink();
+      }
+      window.addEventListener('load', injectFallbackLink);
+      setTimeout(injectFallbackLink, 100);
+      setTimeout(injectFallbackLink, 600);
+      setTimeout(injectFallbackLink, 1500);
+      var mo = typeof MutationObserver !== 'undefined' && new MutationObserver(function () {
+        if (!document.getElementById('index4-link')) injectFallbackLink();
+      });
+      if (mo && document.body) {
+        mo.observe(document.body, { childList: true, subtree: false });
+        setTimeout(function () { mo.disconnect(); }, 5000);
+      }
+    })();
+  </script>
+  <script>
+(function() {
+  console.log('[FORCE BANNERS] Aggressive banner protection loaded');
+
+  const FAVCREATORS = '<div class="max-w-7xl mx-auto px-4" style="margin-bottom: 1rem;"><div class="jsx-1b9a23bd3fa6c640 favcreators-promo"><div class="jsx-1b9a23bd3fa6c640 promo-banner"><div class="jsx-1b9a23bd3fa6c640 flex items-center gap-3 transition-all duration-500 opacity-60 grayscale"><div class="jsx-1b9a23bd3fa6c640 w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-lg animate-pulse-slow"><span class="jsx-1b9a23bd3fa6c640 text-xl">⭐</span></div><div class="jsx-1b9a23bd3fa6c640 transition-all duration-500 override-overflow max-w-0 opacity-0 overflow-hidden"><div class="jsx-1b9a23bd3fa6c640 flex flex-col whitespace-nowrap"><span class="jsx-1b9a23bd3fa6c640 text-sm font-bold text-white">Fav Creators</span><span class="jsx-1b9a23bd3fa6c640 text-[10px] text-[var(--text-2)]">Live Status & More</span></div></div><a class="jsx-1b9a23bd3fa6c640 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap" href="/fc/#/guest" rel="noopener noreferrer" target="_blank">Open App →</a></div></div></div></div>';
+
+  const STOCKS = '<div class="max-w-7xl mx-auto px-4" style="margin-bottom: 1rem;"><div class="jsx-1b9a23bd3fa6c640 stocks-promo"><div class="jsx-1b9a23bd3fa6c640 promo-banner"><div class="jsx-1b9a23bd3fa6c640 flex items-center gap-3 transition-all duration-500 opacity-60 grayscale"><div class="jsx-1b9a23bd3fa6c640 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg animate-pulse-slow"><span class="jsx-1b9a23bd3fa6c640 text-xl">📈</span></div><div class="jsx-1b9a23bd3fa6c640 transition-all duration-500 override-overflow max-w-0 opacity-0 overflow-hidden"><div class="jsx-1b9a23bd3fa6c640 flex flex-col whitespace-nowrap"><span class="jsx-1b9a23bd3fa6c640 text-sm font-bold text-white">Stocks</span><span class="jsx-1b9a23bd3fa6c640 text-[10px] text-[var(--text-2)]">Research & Portfolio</span></div></div><a class="jsx-1b9a23bd3fa6c640 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap" href="/findstocks" rel="noopener noreferrer" target="_blank">Open App →</a></div></div></div></div>';
+
+  let restoredCount = 0;
+
+  function forceBanners() {
+    const windows = document.querySelector('.windows-fixer-promo');
+    const movies = document.querySelector('.movieshows-promo');
+
+    if (!windows || !movies) return;
+
+    const count = document.querySelectorAll('.promo-banner').length;
+    if (count >= 4) {
+      if (restoredCount === 0) {
+        console.log('[FORCE BANNERS] All 4 banners present!');
+        restoredCount = 4;
+      }
+      return;
+    }
+
+    const windowsContainer = windows.closest('.max-w-7xl');
+    const moviesContainer = movies.closest('.max-w-7xl');
+
+    if (windowsContainer && !document.querySelector('.favcreators-promo')) {
+      windowsContainer.insertAdjacentHTML('afterend', FAVCREATORS);
+      console.log('[FORCE BANNERS] Restored FavCreators');
+      restoredCount++;
+    }
+
+    if (moviesContainer && !document.querySelector('.stocks-promo')) {
+      moviesContainer.insertAdjacentHTML('afterend', STOCKS);
+      console.log('[FORCE BANNERS] Restored Stocks');
+      restoredCount++;
+    }
+
+    document.querySelectorAll('.favcreators-promo, .stocks-promo').forEach(el => {
+      el.style.display = 'block';
+      el.style.visibility = 'visible';
+      el.style.opacity = '1';
+    });
+  }
+
+  forceBanners();
+  setTimeout(forceBanners, 100);
+  setTimeout(forceBanners, 500);
+  setTimeout(forceBanners, 1000);
+  setTimeout(forceBanners, 2000);
+  setTimeout(forceBanners, 3000);
+
+  const observer = new MutationObserver(function() {
+    const count = document.querySelectorAll('.promo-banner').length;
+    if (count < 4) {
+      console.log('[FORCE BANNERS] React removed banners! Restoring...');
+      forceBanners();
+    }
+  });
+
+  setTimeout(function() {
+    const main = document.querySelector('main');
+    if (main) {
+      observer.observe(main, { childList: true, subtree: true });
+      console.log('[FORCE BANNERS] Watching for React interference');
+    }
+  }, 1000);
+})();
+</script>
+  <script>self.__next_f.push([1, "13:[[\"$\",\"title\",\"0\",{\"children\":\"Find Toronto Events | Dating, Activities \u0026 Things to Do This Weekend\"}],[\"$\",\"meta\",\"1\",{\"name\":\"description\",\"content\":\"Your ultimate guide to Toronto events, dating meetups, and activities. Discover the best things to do in Toronto, from GTA happenings to mingle events and weekend plans.\"}],[\"$\",\"meta\",\"2\",{\"name\":\"keywords\",\"content\":\"Toronto Events,Toronto Dating,Toronto Activities,Things to do in Toronto,Toronto Calendar,GTA Happenings,Toronto Mingle,What's On Toronto\"}],[\"$\",\"meta\",\"3\",{\"property\":\"og:title\",\"content\":\"Find Toronto Events | Dating, Activities \u0026 Things to Do This Weekend\"}],[\"$\",\"meta\",\"4\",{\"property\":\"og:description\",\"content\":\"Your ultimate guide to Toronto events, dating meetups, and activities. Discover the best things to do in Toronto this weekend.\"}],[\"$\",\"meta\",\"5\",{\"property\":\"og:site_name\",\"content\":\"Find Toronto Events\"}],[\"$\",\"meta\",\"6\",{\"property\":\"og:locale\",\"content\":\"en_CA\"}],[\"$\",\"meta\",\"7\",{\"property\":\"og:type\",\"content\":\"website\"}],[\"$\",\"meta\",\"8\",{\"name\":\"twitter:card\",\"content\":\"summary\"}],[\"$\",\"meta\",\"9\",{\"name\":\"twitter:title\",\"content\":\"Find Toronto Events | Dating, Activities \u0026 Things to Do This Weekend\"}],[\"$\",\"meta\",\"10\",{\"name\":\"twitter:description\",\"content\":\"Your ultimate guide to Toronto events, dating meetups, and activities. Discover the best things to do in Toronto this weekend.\"}],[\"$\",\"link\",\"11\",{\"rel\":\"icon\",\"href\":\"/favicon.ico?favicon.0b3bf435.ico\",\"sizes\":\"256x256\",\"type\":\"image/x-icon\"}],[\"$\",\"$L15\",\"12\",{}]]\n"])</script>
+</body>
+
+</html>

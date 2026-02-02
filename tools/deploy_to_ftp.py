@@ -143,6 +143,89 @@ def deploy_favcreators(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
     return True
 
 
+def deploy_favcreators_api(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload favcreators/public/api/ to fc/api/ (PHP + .env.example + initial_creators.json). Tables are auto-created via ensure_tables.php."""
+    local_api = WORKSPACE / "favcreators" / "public" / "api"
+    if not local_api.is_dir():
+        print("  Skip FavCreators API (favcreators/public/api not found)")
+        return True
+    remotes = [
+        "findtorontoevents.ca/fc/api",
+        "fc/api",
+    ]
+    if main_remote_base:
+        remotes.extend([f"{main_remote_base}/fc/api"])
+    for remote in remotes:
+        print(f"  Uploading FavCreators API to {remote}/ ...")
+        n = _upload_tree(ftp, local_api, remote)
+        print(f"    -> {n} files")
+    return True
+
+
+def deploy_events_api(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload api/events/ to /fc/events-api/ (PHP endpoints for events database)."""
+    local_api = WORKSPACE / "api" / "events"
+    if not local_api.is_dir():
+        print("  Skip Events API (api/events not found)")
+        return True
+    # Deploy to /fc/events-api/ where PHP is confirmed working
+    remotes = [
+        "findtorontoevents.ca/fc/events-api",
+        "fc/events-api",
+    ]
+    if main_remote_base:
+        remotes.extend([f"{main_remote_base}/fc/events-api"])
+    for remote in remotes:
+        print(f"  Uploading Events API to {remote}/ ...")
+        n = _upload_tree(ftp, local_api, remote)
+        print(f"    -> {n} files")
+    return True
+
+
+def deploy_api_auth(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload api/ (google_auth, google_callback, auth_db_config, .htaccess) to /api/ for main-site login."""
+    auth_files = [
+        "google_auth.php",
+        "google_callback.php",
+        "auth_db_config.php",
+        ".htaccess",
+    ]
+    remotes = [
+        "findtorontoevents.ca/api",
+        "api",
+    ]
+    if main_remote_base:
+        remotes.extend([f"{main_remote_base}/api"])
+    for remote in remotes:
+        print(f"  Uploading API auth to {remote}/ ...")
+        ftp.cwd("/")
+        _ensure_dir(ftp, remote)
+        for name in auth_files:
+            local_path = WORKSPACE / "api" / name
+            if local_path.is_file():
+                _upload_file(ftp, local_path, f"{remote}/{name}")
+    return True
+
+
+def deploy_stats_page(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload stats/ to /stats/ (statistics page)."""
+    local_stats = WORKSPACE / "stats"
+    if not local_stats.is_dir():
+        print("  Skip Stats page (stats/ not found)")
+        return True
+    remotes = [
+        "findtorontoevents.ca/stats",
+        "stats",
+    ]
+    if main_remote_base:
+        remotes.extend([f"{main_remote_base}/stats"])
+    for remote in remotes:
+        print(f"  Uploading Stats page to {remote}/ ...")
+        n = _upload_tree(ftp, local_stats, remote)
+        print(f"    -> {n} files")
+    return True
+
+
 def main() -> None:
     host = _env("FTP_SERVER") or _env("FTP_HOST")
     user = _env("FTP_USER")
@@ -153,8 +236,16 @@ def main() -> None:
         print("Set FTP_SERVER (or FTP_HOST), FTP_USER, FTP_PASS in environment.")
         raise SystemExit(1)
 
+    # If remote_path is e.g. findtorontoevents.ca/findevents, also deploy to root (findtorontoevents.ca)
+    # so https://findtorontoevents.ca/ serves the updated site, not just /findevents/
+    parent_root = ""
+    if remote_path.rstrip("/").count("/") >= 1:
+        parent_root = "/".join(remote_path.rstrip("/").split("/")[:-1])
+
     print(f"Deploy to FTP: {host}")
     print(f"Remote path: {remote_path}")
+    if parent_root:
+        print(f"Also deploy to root: {parent_root}/ (so site is live at domain root)")
     print()
 
     try:
@@ -164,13 +255,37 @@ def main() -> None:
 
             print(f"Uploading main site to {remote_path}/ ...")
             deploy_main_site(ftp, remote_path)
+            if parent_root:
+                print(f"Uploading main site to {parent_root}/ (domain root) ...")
+                deploy_main_site(ftp, parent_root)
             print()
 
             print("Uploading FavCreators to /fc/ (guest + admin/admin) ...")
             deploy_favcreators(ftp, remote_path)
             print()
 
+            print("Uploading FavCreators API to /fc/api/ (PHP, ensure_tables, seed) ...")
+            deploy_favcreators_api(ftp, remote_path)
+            print()
+
+            print("Uploading API auth to /api/ (Google login for main site) ...")
+            deploy_api_auth(ftp, parent_root or remote_path)
+            print()
+
+            print("Uploading Events API to /api/events/ (PHP endpoints for events DB) ...")
+            deploy_events_api(ftp, remote_path)
+            print()
+
+            print("Uploading Stats page to /stats/ ...")
+            deploy_stats_page(ftp, remote_path)
+            print()
+
         print("Deploy complete.")
+        print()
+        print("Post-deploy steps for Events API:")
+        print("  1. Setup tables: https://findtorontoevents.ca/fc/events-api/setup_tables.php")
+        print("  2. Sync events: https://findtorontoevents.ca/fc/events-api/sync_events.php")
+        print("  3. View stats: https://findtorontoevents.ca/stats/")
     except Exception as e:
         print(f"Deploy failed: {e}")
         raise SystemExit(1)

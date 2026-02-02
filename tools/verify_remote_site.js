@@ -27,15 +27,26 @@ function runPlaywright() {
       VERIFY_REMOTE: '1',
     };
     if (!env.VERIFY_REMOTE_URL) env.VERIFY_REMOTE_URL = 'https://findtorontoevents.ca';
-    const child = spawn(
-      process.platform === 'win32' ? 'npx.cmd' : 'npx',
-      ['playwright', 'test', REMOTE_SPEC, '--reporter=line'],
-      {
-        cwd: ROOT,
-        env,
-        stdio: 'inherit',
-      }
-    );
+    let child;
+    try {
+      child = spawn(
+        process.platform === 'win32' ? 'npx.cmd' : 'npx',
+        ['playwright', 'test', REMOTE_SPEC, '--reporter=line'],
+        {
+          cwd: ROOT,
+          env,
+          stdio: 'inherit',
+        }
+      );
+    } catch (err) {
+      console.warn('Playwright spawn failed:', err.message || err.code);
+      resolve(false);
+      return;
+    }
+    child.on('error', (err) => {
+      console.warn('Playwright error:', err.message || err.code);
+      resolve(false);
+    });
     child.on('close', (code) => resolve(code === 0));
   });
 }

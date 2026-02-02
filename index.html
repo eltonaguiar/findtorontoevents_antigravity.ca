@@ -834,7 +834,1378 @@
   }, 1000);
 })();
 </script>
+
+<!-- Multi-Source Event Enhancement -->
+<style id="multi-source-styles">
+  .multi-source-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.9), rgba(139, 92, 246, 0.9));
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+  }
+  .multi-source-badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.6);
+  }
+  .multi-source-panel {
+    position: absolute;
+    top: 40px;
+    right: 8px;
+    left: 8px;
+    background: rgba(20, 20, 30, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 12px;
+    z-index: 50;
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  }
+  .multi-source-panel.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .multi-source-panel-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .source-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    margin-bottom: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    text-decoration: none;
+    color: white;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+  .source-link:hover {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: rgba(99, 102, 241, 0.4);
+  }
+  .source-link:last-child {
+    margin-bottom: 0;
+  }
+  .source-link-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .source-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+  }
+  .source-price {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  .source-link-arrow {
+    font-size: 14px;
+    color: rgba(99, 102, 241, 0.8);
+  }
+  .source-link.primary {
+    border-color: rgba(34, 197, 94, 0.4);
+    background: rgba(34, 197, 94, 0.1);
+  }
+  .source-link.primary .source-name::after {
+    content: ' ★';
+    color: #22c55e;
+    font-size: 10px;
+  }
   
+  /* Quick View Modal Multi-Source Section */
+  .quickview-multi-source {
+    margin-top: 20px;
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 12px;
+  }
+  .quickview-multi-source-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .quickview-multi-source-icon {
+    font-size: 22px;
+  }
+  .quickview-multi-source-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #a5b4fc;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .quickview-multi-source-count {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    margin-left: auto;
+    background: rgba(99, 102, 241, 0.3);
+    padding: 3px 8px;
+    border-radius: 10px;
+  }
+  .quickview-source-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .quickview-source-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    gap: 12px;
+  }
+  .quickview-source-item:hover {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: rgba(99, 102, 241, 0.4);
+    transform: translateX(4px);
+  }
+  .quickview-source-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+  }
+  .quickview-source-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+  }
+  .quickview-source-url {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 280px;
+  }
+  .quickview-source-price {
+    font-size: 12px;
+    color: #22c55e;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  .quickview-source-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  .quickview-source-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+  }
+</style>
+<script>
+(function() {
+  console.log('[MULTI-SOURCE] Initializing multi-source event enhancement');
+  
+  // Cache for multi-source event data
+  let multiSourceEvents = {};
+  let dataLoaded = false;
+  
+  // Load multi-source data from API
+  async function loadMultiSourceData() {
+    try {
+      const response = await fetch('/fc/api/events_get_sources.php?all=1');
+      if (!response.ok) throw new Error('API error');
+      const data = await response.json();
+      if (data.ok && data.events) {
+        multiSourceEvents = data.events;
+        dataLoaded = true;
+        console.log('[MULTI-SOURCE] Loaded ' + Object.keys(multiSourceEvents).length + ' events with multiple sources');
+        // Re-process existing cards
+        processEventCards();
+      }
+    } catch (e) {
+      console.warn('[MULTI-SOURCE] Failed to load multi-source data:', e);
+    }
+  }
+  
+  // Find event ID from a card element
+  function findEventId(card) {
+    // Try to find the event URL or ID from the card
+    const links = card.querySelectorAll('a[href*="allevents"], a[href*="eventbrite"], a[href*="tickets"]');
+    for (const link of links) {
+      const href = link.href;
+      // Try to extract event ID from URL
+      const match = href.match(/\/([a-f0-9]{32})/i) || href.match(/events\/(\d+)/);
+      if (match) return match[1];
+    }
+    // Try data attributes
+    if (card.dataset.eventId) return card.dataset.eventId;
+    // Try to find ID in hidden elements
+    const hiddenId = card.querySelector('[data-event-id]');
+    if (hiddenId) return hiddenId.dataset.eventId;
+    return null;
+  }
+  
+  // Match event by title
+  function findEventByTitle(titleText) {
+    if (!titleText || !dataLoaded) return null;
+    const normalizedTitle = titleText.toLowerCase().trim();
+    
+    for (const [eventId, eventData] of Object.entries(multiSourceEvents)) {
+      const eventTitle = (eventData.title || '').toLowerCase().trim();
+      // Exact match or close match
+      if (eventTitle === normalizedTitle) return eventData;
+      // Partial match (80% of words match)
+      const titleWords = normalizedTitle.split(/\s+/);
+      const eventWords = eventTitle.split(/\s+/);
+      const commonWords = titleWords.filter(w => eventWords.includes(w));
+      if (commonWords.length / Math.max(titleWords.length, eventWords.length) > 0.7) {
+        return eventData;
+      }
+    }
+    return null;
+  }
+  
+  // Add multi-source badge and panel to a card
+  function enhanceCard(card, eventData) {
+    if (card.dataset.multiSourceEnhanced) return;
+    card.dataset.multiSourceEnhanced = 'true';
+    
+    const sources = eventData.sources || [];
+    if (sources.length < 2) return;
+    
+    // Ensure card has relative positioning
+    const computedStyle = window.getComputedStyle(card);
+    if (computedStyle.position === 'static') {
+      card.style.position = 'relative';
+    }
+    
+    // Create badge
+    const badge = document.createElement('div');
+    badge.className = 'multi-source-badge';
+    badge.innerHTML = '🎫 ' + sources.length + ' Sources';
+    badge.title = 'View all ticket sources';
+    
+    // Create panel
+    const panel = document.createElement('div');
+    panel.className = 'multi-source-panel';
+    panel.innerHTML = '<div class="multi-source-panel-title">🎫 Available Sources</div>' +
+      sources.map(function(s) {
+        const isPrimary = s.is_primary ? ' primary' : '';
+        const priceText = s.price && s.price !== '' ? s.price : 'View';
+        return '<a class="source-link' + isPrimary + '" href="' + escapeHtml(s.source_url) + '" target="_blank" rel="noopener noreferrer">' +
+          '<div class="source-link-left">' +
+          '<span class="source-name">' + escapeHtml(s.source_name) + '</span>' +
+          '<span class="source-price">' + escapeHtml(priceText) + '</span>' +
+          '</div>' +
+          '<span class="source-link-arrow">→</span>' +
+          '</a>';
+      }).join('');
+    
+    // Toggle panel on badge click
+    badge.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      panel.classList.toggle('visible');
+    });
+    
+    // Close panel when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!panel.contains(e.target) && !badge.contains(e.target)) {
+        panel.classList.remove('visible');
+      }
+    });
+    
+    card.appendChild(badge);
+    card.appendChild(panel);
+    console.log('[MULTI-SOURCE] Enhanced card with ' + sources.length + ' sources');
+  }
+  
+  function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+  
+  // Process all event cards on the page
+  function processEventCards() {
+    if (!dataLoaded) return;
+    
+    // Find event cards - look for typical card structures
+    const cards = document.querySelectorAll('[class*="glass-panel"]:not(.animate-pulse), [class*="event-card"], [class*="EventCard"]');
+    
+    cards.forEach(function(card) {
+      if (card.dataset.multiSourceEnhanced) return;
+      
+      // Find title in card
+      const titleEl = card.querySelector('h2, h3, [class*="title"], [class*="Title"]');
+      if (!titleEl) return;
+      
+      const titleText = titleEl.textContent;
+      const eventData = findEventByTitle(titleText);
+      
+      if (eventData && eventData.sources && eventData.sources.length >= 2) {
+        enhanceCard(card, eventData);
+      }
+    });
+  }
+  
+  // Enhance Quick View modal with multi-source section
+  function enhanceQuickViewModal(modal) {
+    if (modal.dataset.multiSourceEnhanced) return;
+    
+    // Find the event title in the modal - look for various patterns
+    let titleEl = modal.querySelector('h1, h2, h3');
+    if (!titleEl) {
+      // Try finding any element with a title-like class
+      titleEl = modal.querySelector('[class*="title" i], [class*="name" i], [class*="heading" i]');
+    }
+    if (!titleEl) return;
+    
+    const titleText = titleEl.textContent.trim();
+    console.log('[MULTI-SOURCE] Found modal title:', titleText);
+    
+    const eventData = findEventByTitle(titleText);
+    
+    if (!eventData || !eventData.sources || eventData.sources.length < 2) {
+      console.log('[MULTI-SOURCE] No multi-source data for:', titleText);
+      return;
+    }
+    
+    modal.dataset.multiSourceEnhanced = 'true';
+    const sources = eventData.sources;
+    
+    // Create the multi-source section
+    const section = document.createElement('div');
+    section.className = 'quickview-multi-source';
+    section.innerHTML = 
+      '<div class="quickview-multi-source-header">' +
+        '<span class="quickview-multi-source-icon">🎫</span>' +
+        '<span class="quickview-multi-source-title">Multiple Sources Found</span>' +
+        '<span class="quickview-multi-source-count">' + sources.length + ' sources</span>' +
+      '</div>' +
+      '<div class="quickview-source-list">' +
+        sources.map(function(s, index) {
+          const priceText = s.price && s.price !== '' ? s.price : 'View Event';
+          const urlDisplay = s.source_url ? s.source_url.replace(/^https?:\/\//, '').substring(0, 40) + '...' : '';
+          return '<div class="quickview-source-item">' +
+            '<div class="quickview-source-info">' +
+              '<span class="quickview-source-name">' + escapeHtml(s.source_name) + (s.is_primary ? ' ★' : '') + '</span>' +
+              '<span class="quickview-source-url">' + escapeHtml(urlDisplay) + '</span>' +
+              (s.price ? '<span class="quickview-source-price">' + escapeHtml(priceText) + '</span>' : '') +
+            '</div>' +
+            '<a class="quickview-source-btn" href="' + escapeHtml(s.source_url) + '" target="_blank" rel="noopener noreferrer">' +
+              'View →' +
+            '</a>' +
+          '</div>';
+        }).join('') +
+      '</div>';
+    
+    // Find the best place to insert: after price, before buttons, or at end
+    // Look for VIEW FULL EVENT PAGE button's parent
+    const viewFullBtn = modal.querySelector('a[href*="allevents"], a[href*="eventbrite"], button:contains("VIEW FULL"), a:contains("VIEW FULL")');
+    if (viewFullBtn && viewFullBtn.parentElement) {
+      viewFullBtn.parentElement.insertBefore(section, viewFullBtn);
+    } else {
+      // Find any button container at the bottom
+      const buttons = modal.querySelectorAll('button, a[class*="btn"]');
+      if (buttons.length > 0) {
+        const lastButton = buttons[buttons.length - 1];
+        if (lastButton.parentElement) {
+          lastButton.parentElement.insertBefore(section, lastButton.parentElement.firstChild);
+        }
+      } else {
+        // Just append to modal
+        modal.appendChild(section);
+      }
+    }
+    
+    console.log('[MULTI-SOURCE] Enhanced Quick View modal with ' + sources.length + ' sources');
+  }
+  
+  // Global function to enhance any visible Quick View modals
+  function enhanceVisibleModals() {
+    if (!dataLoaded) return;
+    
+    // Look for VIEW FULL EVENT PAGE text which indicates Quick View is open
+    const viewFullButtons = document.querySelectorAll('a, button');
+    let quickViewOpen = false;
+    let eventTitle = null;
+    
+    for (const btn of viewFullButtons) {
+      const text = btn.textContent || '';
+      if (text.includes('VIEW FULL EVENT PAGE')) {
+        quickViewOpen = true;
+        // Find the event title - look for nearby h1, h2, h3
+        let parent = btn.parentElement;
+        for (let i = 0; i < 10 && parent; i++) {
+          const titleEl = parent.querySelector('h1, h2, h3');
+          if (titleEl && titleEl.textContent) {
+            eventTitle = titleEl.textContent.trim();
+            break;
+          }
+          parent = parent.parentElement;
+        }
+        break;
+      }
+    }
+    
+    // Get or create the floating sources panel
+    let floatingPanel = document.getElementById('multi-source-floating-panel');
+    
+    if (quickViewOpen && eventTitle) {
+      console.log('[MULTI-SOURCE] Quick View detected for:', eventTitle);
+      const eventData = findEventByTitle(eventTitle);
+      
+      if (eventData && eventData.sources && eventData.sources.length >= 2) {
+        const sources = eventData.sources;
+        
+        if (!floatingPanel) {
+          floatingPanel = document.createElement('div');
+          floatingPanel.id = 'multi-source-floating-panel';
+          floatingPanel.style.cssText = 
+            'position: fixed; bottom: 20px; left: 20px; z-index: 10000; ' +
+            'background: linear-gradient(135deg, rgba(30, 30, 46, 0.98) 0%, rgba(45, 45, 68, 0.98) 100%); ' +
+            'border: 1px solid rgba(99, 102, 241, 0.4); border-radius: 16px; ' +
+            'padding: 16px; min-width: 280px; max-width: 350px; ' +
+            'backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6); ' +
+            'font-family: system-ui, sans-serif;';
+          document.body.appendChild(floatingPanel);
+        }
+        
+        floatingPanel.innerHTML = 
+          '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">' +
+            '<span style="font-size: 22px;">🎫</span>' +
+            '<span style="font-size: 14px; font-weight: 700; color: #a5b4fc; text-transform: uppercase; letter-spacing: 0.5px;">Multiple Sources</span>' +
+            '<span style="font-size: 11px; color: rgba(255,255,255,0.5); margin-left: auto; background: rgba(99, 102, 241, 0.3); padding: 3px 8px; border-radius: 10px;">' + sources.length + ' sources</span>' +
+          '</div>' +
+          '<div style="display: flex; flex-direction: column; gap: 10px;">' +
+            sources.map(function(s) {
+              const priceText = s.price && s.price !== '' ? s.price : 'View';
+              return '<a href="' + escapeHtml(s.source_url) + '" target="_blank" rel="noopener noreferrer" ' +
+                'style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; ' +
+                'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; ' +
+                'text-decoration: none; color: white; transition: all 0.2s ease;" ' +
+                'onmouseover="this.style.background=\'rgba(99, 102, 241, 0.2)\';this.style.borderColor=\'rgba(99, 102, 241, 0.4)\';this.style.transform=\'translateX(4px)\'" ' +
+                'onmouseout="this.style.background=\'rgba(0,0,0,0.3)\';this.style.borderColor=\'rgba(255,255,255,0.1)\';this.style.transform=\'none\'">' +
+                '<div style="display: flex; flex-direction: column; gap: 2px;">' +
+                  '<span style="font-size: 13px; font-weight: 600;">' + escapeHtml(s.source_name) + (s.is_primary ? ' ★' : '') + '</span>' +
+                  '<span style="font-size: 11px; color: #22c55e; font-weight: 500;">' + escapeHtml(priceText) + '</span>' +
+                '</div>' +
+                '<span style="color: rgba(99, 102, 241, 0.8); font-size: 16px;">→</span>' +
+              '</a>';
+            }).join('') +
+          '</div>';
+        
+        floatingPanel.style.display = 'block';
+        console.log('[MULTI-SOURCE] Showing floating panel with ' + sources.length + ' sources');
+      } else if (floatingPanel) {
+        floatingPanel.style.display = 'none';
+      }
+    } else if (floatingPanel) {
+      floatingPanel.style.display = 'none';
+    }
+  }
+  
+  // Process modals that appear
+  function processModals() {
+    if (!dataLoaded) return;
+    
+    // First, try the global enhancer which looks for Quick View content
+    enhanceVisibleModals();
+    
+    // Also look for modal/dialog elements
+    const modals = document.querySelectorAll(
+      '[role="dialog"], [class*="modal"], [class*="Modal"], [class*="dialog"], [class*="Dialog"], ' +
+      '[class*="popup"], [class*="Popup"], [class*="quickview"], [class*="QuickView"], [class*="quick-view"]'
+    );
+    
+    modals.forEach(function(modal) {
+      // Skip if already enhanced or if it's a backdrop
+      if (modal.dataset.multiSourceEnhanced) return;
+      if (modal.classList.contains('opacity-0') || modal.classList.contains('pointer-events-none')) return;
+      
+      // Check if modal is visible
+      const style = window.getComputedStyle(modal);
+      if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') return;
+      
+      enhanceQuickViewModal(modal);
+    });
+  }
+  
+  // Set up mutation observer to watch for new cards AND modals
+  function setupObserver() {
+    const observer = new MutationObserver(function(mutations) {
+      let shouldProcess = false;
+      let shouldProcessModals = false;
+      
+      mutations.forEach(function(mutation) {
+        if (mutation.addedNodes.length > 0) {
+          shouldProcess = true;
+          // Check if any added node could be a modal
+          mutation.addedNodes.forEach(function(node) {
+            if (node.nodeType === 1) { // Element node
+              const classList = node.classList ? Array.from(node.classList).join(' ').toLowerCase() : '';
+              const role = node.getAttribute ? node.getAttribute('role') : '';
+              if (classList.includes('modal') || classList.includes('dialog') || 
+                  classList.includes('popup') || classList.includes('quickview') ||
+                  classList.includes('quick-view') || role === 'dialog') {
+                shouldProcessModals = true;
+              }
+              // Also check children for modals
+              if (node.querySelector && node.querySelector('[role="dialog"], [class*="modal"], [class*="quickview"]')) {
+                shouldProcessModals = true;
+              }
+            }
+          });
+        }
+      });
+      
+      if (shouldProcess && dataLoaded) {
+        // Debounce processing
+        clearTimeout(window._multiSourceTimeout);
+        window._multiSourceTimeout = setTimeout(function() {
+          processEventCards();
+          processModals();
+        }, 200);
+      }
+      
+      if (shouldProcessModals && dataLoaded) {
+        // Process modals with shorter delay
+        clearTimeout(window._modalTimeout);
+        window._modalTimeout = setTimeout(processModals, 100);
+      }
+    });
+    
+    const main = document.querySelector('main') || document.body;
+    observer.observe(main, { childList: true, subtree: true });
+    
+    // Also observe body for modals that appear outside main
+    if (main !== document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+    
+    console.log('[MULTI-SOURCE] Observer active (cards + modals)');
+  }
+  
+  // Initialize
+  loadMultiSourceData();
+  
+  // Process cards after delays to catch React hydration
+  setTimeout(processEventCards, 1000);
+  setTimeout(processEventCards, 2000);
+  setTimeout(processEventCards, 4000);
+  
+  // Also process modals periodically in case they open
+  setTimeout(processModals, 1500);
+  setTimeout(processModals, 3000);
+  
+  // Track which event the user clicked Quick View for
+  let lastClickedEventTitle = null;
+  
+  // Listen for clicks on Quick View buttons to trigger modal enhancement
+  document.addEventListener('click', function(e) {
+    const target = e.target;
+    const text = target.textContent || '';
+    const isQuickViewBtn = text.toLowerCase().includes('quick view') || 
+                           (target.closest && target.closest('button[class*="quick"]'));
+    
+    if (isQuickViewBtn) {
+      console.log('[MULTI-SOURCE] Quick View button clicked, scheduling modal enhancement');
+      
+      // Try to find the event title from the card
+      let card = target.closest && target.closest('article, [class*="card"], [class*="panel"]');
+      if (card) {
+        const titleEl = card.querySelector('h1, h2, h3');
+        if (titleEl) {
+          lastClickedEventTitle = titleEl.textContent.trim();
+          console.log('[MULTI-SOURCE] Clicked event title:', lastClickedEventTitle);
+        }
+      }
+      
+      // Process modals after a short delay to let the modal appear
+      setTimeout(function() { showFloatingPanelForEvent(lastClickedEventTitle); }, 100);
+      setTimeout(function() { showFloatingPanelForEvent(lastClickedEventTitle); }, 300);
+      setTimeout(function() { showFloatingPanelForEvent(lastClickedEventTitle); }, 500);
+      setTimeout(processModals, 100);
+      setTimeout(processModals, 300);
+    }
+  }, true);
+  
+  // Show floating panel for a specific event
+  function showFloatingPanelForEvent(eventTitle) {
+    if (!eventTitle || !dataLoaded) return;
+    
+    console.log('[MULTI-SOURCE] Attempting to show panel for:', eventTitle);
+    const eventData = findEventByTitle(eventTitle);
+    
+    if (!eventData || !eventData.sources || eventData.sources.length < 2) {
+      console.log('[MULTI-SOURCE] No multi-source data for this event');
+      return;
+    }
+    
+    const sources = eventData.sources;
+    let floatingPanel = document.getElementById('multi-source-floating-panel');
+    
+    if (!floatingPanel) {
+      floatingPanel = document.createElement('div');
+      floatingPanel.id = 'multi-source-floating-panel';
+      floatingPanel.style.cssText = 
+        'position: fixed; top: 100px; right: 20px; z-index: 100000; ' +
+        'background: linear-gradient(135deg, rgba(30, 30, 46, 0.98) 0%, rgba(45, 45, 68, 0.98) 100%); ' +
+        'border: 1px solid rgba(99, 102, 241, 0.4); border-radius: 16px; ' +
+        'padding: 16px; min-width: 280px; max-width: 350px; ' +
+        'backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6); ' +
+        'font-family: system-ui, sans-serif; animation: slideInRight 0.3s ease;';
+      document.body.appendChild(floatingPanel);
+      
+      // Add animation keyframes if not already present
+      if (!document.getElementById('multi-source-animation-styles')) {
+        const animStyle = document.createElement('style');
+        animStyle.id = 'multi-source-animation-styles';
+        animStyle.textContent = '@keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }';
+        document.head.appendChild(animStyle);
+      }
+    }
+    
+    floatingPanel.innerHTML = 
+      '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">' +
+        '<span style="font-size: 22px;">🎫</span>' +
+        '<span style="font-size: 14px; font-weight: 700; color: #a5b4fc; text-transform: uppercase; letter-spacing: 0.5px;">Multiple Sources</span>' +
+        '<span style="font-size: 11px; color: rgba(255,255,255,0.5); margin-left: auto; background: rgba(99, 102, 241, 0.3); padding: 3px 8px; border-radius: 10px;">' + sources.length + ' found</span>' +
+        '<button id="close-floating-panel" style="background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 16px;">✕</button>' +
+      '</div>' +
+      '<div style="display: flex; flex-direction: column; gap: 10px;">' +
+        sources.map(function(s) {
+          const priceText = s.price && s.price !== '' ? s.price : 'View';
+          return '<a href="' + escapeHtml(s.source_url) + '" target="_blank" rel="noopener noreferrer" ' +
+            'style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; ' +
+            'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; ' +
+            'text-decoration: none; color: white; transition: all 0.2s ease;" ' +
+            'onmouseover="this.style.background=\'rgba(99, 102, 241, 0.2)\';this.style.borderColor=\'rgba(99, 102, 241, 0.4)\';this.style.transform=\'translateX(4px)\'" ' +
+            'onmouseout="this.style.background=\'rgba(0,0,0,0.3)\';this.style.borderColor=\'rgba(255,255,255,0.1)\';this.style.transform=\'none\'">' +
+            '<div style="display: flex; flex-direction: column; gap: 2px;">' +
+              '<span style="font-size: 13px; font-weight: 600;">' + escapeHtml(s.source_name) + (s.is_primary ? ' ★' : '') + '</span>' +
+              '<span style="font-size: 11px; color: #22c55e; font-weight: 500;">' + escapeHtml(priceText) + '</span>' +
+            '</div>' +
+            '<span style="color: rgba(99, 102, 241, 0.8); font-size: 16px;">→</span>' +
+          '</a>';
+        }).join('') +
+      '</div>';
+    
+    floatingPanel.style.display = 'block';
+    
+    // Add close button handler
+    const closeBtn = document.getElementById('close-floating-panel');
+    if (closeBtn) {
+      closeBtn.onclick = function() {
+        floatingPanel.style.display = 'none';
+      };
+    }
+    
+    console.log('[MULTI-SOURCE] Showing floating panel with ' + sources.length + ' sources');
+  }
+  
+  // Hide floating panel when Close button is clicked or modal closes
+  document.addEventListener('click', function(e) {
+    const target = e.target;
+    const text = target.textContent || '';
+    if (text.toLowerCase() === 'close') {
+      const floatingPanel = document.getElementById('multi-source-floating-panel');
+      if (floatingPanel) {
+        setTimeout(function() { floatingPanel.style.display = 'none'; }, 100);
+      }
+    }
+  });
+  
+  // Set up observer after DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupObserver);
+  } else {
+    setupObserver();
+  }
+})();
+</script>
+
+<!-- Multi-Day Filter and Near Me Feature -->
+<style id="event-filter-styles">
+  /* Filter Controls Container */
+  .custom-filter-controls {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  
+  /* Filter Toggle Button */
+  .filter-toggle-btn {
+    background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 50px;
+    padding: 12px 20px;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+  }
+  .filter-toggle-btn:hover {
+    background: linear-gradient(135deg, #2d2d44 0%, #3d3d5c 100%);
+    border-color: rgba(99, 102, 241, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(99, 102, 241, 0.3);
+  }
+  .filter-toggle-btn.active {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    border-color: #818cf8;
+  }
+  
+  /* Near Me Panel */
+  .near-me-panel {
+    background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 16px;
+    padding: 16px;
+    color: white;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(20px);
+    min-width: 280px;
+    display: none;
+  }
+  .near-me-panel.visible {
+    display: block;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .near-me-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .near-me-input-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .near-me-input {
+    flex: 1;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: white;
+    font-size: 14px;
+    outline: none;
+  }
+  .near-me-input:focus {
+    border-color: #6366f1;
+  }
+  .near-me-input::placeholder {
+    color: rgba(255,255,255,0.4);
+  }
+  
+  .near-me-btn {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  .near-me-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+  }
+  .near-me-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  .near-me-location-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 10px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .near-me-location-btn:hover {
+    background: rgba(255,255,255,0.2);
+  }
+  
+  .near-me-status {
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 8px;
+  }
+  .near-me-status.active {
+    color: #22c55e;
+  }
+  .near-me-status.error {
+    color: #ef4444;
+  }
+  
+  .distance-select {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: white;
+    font-size: 14px;
+    outline: none;
+    width: 100%;
+    margin-top: 8px;
+    cursor: pointer;
+  }
+  .distance-select option {
+    background: #1e1e2e;
+    color: white;
+  }
+  
+  /* Multi-day filter indicator */
+  .multi-day-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(245, 158, 11, 0.2);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #fbbf24;
+    margin-left: 8px;
+  }
+  
+  /* Distance indicator on cards */
+  .distance-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #22c55e;
+    margin-left: 8px;
+  }
+  
+  /* Hidden multi-day events by default */
+  .event-card-hidden {
+    display: none !important;
+  }
+</style>
+
+<script>
+(function() {
+  console.log('[FILTERS] Initializing multi-day filter and near me features');
+  
+  // State
+  let showMultiDayEvents = false;
+  let userLocation = null;
+  let maxDistance = 10; // km
+  let filterActive = false;
+  
+  // Toronto postal code to coordinate mapping (approximate centers)
+  const postalCodeCoords = {
+    'M5': { lat: 43.6532, lng: -79.3832, name: 'Downtown Toronto' },
+    'M4': { lat: 43.6764, lng: -79.3400, name: 'East Toronto' },
+    'M6': { lat: 43.6614, lng: -79.4388, name: 'West Toronto' },
+    'M3': { lat: 43.7490, lng: -79.4940, name: 'North York West' },
+    'M2': { lat: 43.7770, lng: -79.4170, name: 'North York' },
+    'M1': { lat: 43.7731, lng: -79.2578, name: 'Scarborough' },
+    'M9': { lat: 43.6438, lng: -79.5597, name: 'Etobicoke' },
+    'M8': { lat: 43.7100, lng: -79.5400, name: 'North Etobicoke' },
+    'L4': { lat: 43.7715, lng: -79.4877, name: 'Vaughan/North York' },
+    'L5': { lat: 43.5890, lng: -79.6441, name: 'Mississauga' },
+    'L6': { lat: 43.5980, lng: -79.6540, name: 'Brampton/Mississauga' },
+    'L3': { lat: 43.8561, lng: -79.3370, name: 'Markham' },
+    'L7': { lat: 43.5400, lng: -79.8800, name: 'Oakville/Milton' },
+  };
+  
+  // Known venue coordinates (extended)
+  const venueCoords = {
+    'nathan phillips square': { lat: 43.6525, lng: -79.3832 },
+    'sankofa square': { lat: 43.6561, lng: -79.3802 },
+    'yonge-dundas square': { lat: 43.6561, lng: -79.3802 },
+    'toronto city hall': { lat: 43.6534, lng: -79.3841 },
+    'harbourfront centre': { lat: 43.6388, lng: -79.3822 },
+    'ontario place': { lat: 43.6283, lng: -79.4139 },
+    'exhibition place': { lat: 43.6355, lng: -79.4176 },
+    'fort york': { lat: 43.6389, lng: -79.4030 },
+    'distillery district': { lat: 43.6503, lng: -79.3596 },
+    'queens park': { lat: 43.6624, lng: -79.3913 },
+    'high park': { lat: 43.6465, lng: -79.4637 },
+    'mel lastman square': { lat: 43.7676, lng: -79.4137 },
+    'scarborough civic centre': { lat: 43.7731, lng: -79.2578 },
+    'bmo field': { lat: 43.6332, lng: -79.4186 },
+    'rogers centre': { lat: 43.6414, lng: -79.3894 },
+    'scotiabank arena': { lat: 43.6435, lng: -79.3791 },
+    'roy thomson hall': { lat: 43.6466, lng: -79.3864 },
+    'massey hall': { lat: 43.6545, lng: -79.3787 },
+    'aga khan museum': { lat: 43.7257, lng: -79.3323 },
+    'rom': { lat: 43.6677, lng: -79.3948 },
+    'royal ontario museum': { lat: 43.6677, lng: -79.3948 },
+    'ago': { lat: 43.6536, lng: -79.3925 },
+    'art gallery of ontario': { lat: 43.6536, lng: -79.3925 },
+    'cn tower': { lat: 43.6426, lng: -79.3871 },
+    'casa loma': { lat: 43.6780, lng: -79.4094 },
+    'st. lawrence market': { lat: 43.6487, lng: -79.3715 },
+    'kensington market': { lat: 43.6547, lng: -79.4005 },
+    'eaton centre': { lat: 43.6544, lng: -79.3807 },
+    'ripley\'s aquarium': { lat: 43.6424, lng: -79.3860 },
+    'toronto zoo': { lat: 43.8175, lng: -79.1853 },
+  };
+  
+  // Calculate distance between two coordinates (Haversine formula)
+  function calculateDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+  
+  // Extract coordinates from location text
+  function getLocationCoords(locationText, titleText) {
+    if (!locationText) return null;
+    const combined = (locationText + ' ' + (titleText || '')).toLowerCase();
+    
+    // Check venue names
+    for (const [venue, coords] of Object.entries(venueCoords)) {
+      if (combined.includes(venue)) {
+        return coords;
+      }
+    }
+    
+    // Check for address patterns with street numbers
+    const addressMatch = combined.match(/(\d+)\s+[\w\s]+(?:st|street|ave|avenue|blvd|boulevard|rd|road|dr|drive)/i);
+    if (addressMatch) {
+      // Return downtown Toronto as approximate for addresses
+      return { lat: 43.6532, lng: -79.3832 };
+    }
+    
+    // Default to downtown Toronto for generic "Toronto" locations
+    if (combined.includes('toronto')) {
+      return { lat: 43.6532, lng: -79.3832 };
+    }
+    
+    return null;
+  }
+  
+  // Parse postal code
+  function parsePostalCode(input) {
+    const cleaned = input.toUpperCase().replace(/\s/g, '');
+    const prefix = cleaned.substring(0, 2);
+    
+    if (postalCodeCoords[prefix]) {
+      return postalCodeCoords[prefix];
+    }
+    
+    // Try first 3 characters
+    const prefix3 = cleaned.substring(0, 3);
+    for (const [code, coords] of Object.entries(postalCodeCoords)) {
+      if (prefix3.startsWith(code)) {
+        return coords;
+      }
+    }
+    
+    return null;
+  }
+  
+  // Check if event is multi-day
+  function isMultiDayEvent(event) {
+    // Check is_multi_day flag
+    if (event.is_multi_day || event.isMultiDay) return true;
+    
+    // Check if end_date exists and is different from start date
+    if (event.end_date || event.endDate) {
+      const start = new Date(event.date).toDateString();
+      const end = new Date(event.end_date || event.endDate).toDateString();
+      return start !== end;
+    }
+    
+    // Check title for multi-day indicators
+    const title = (event.title || '').toLowerCase();
+    const multiDayKeywords = ['festival', 'week', 'weekend', 'days', 'exhibition', 'exhibit', 'runs until', 'through'];
+    return multiDayKeywords.some(keyword => title.includes(keyword));
+  }
+  
+  // Create filter controls UI
+  function createFilterControls() {
+    const container = document.createElement('div');
+    container.className = 'custom-filter-controls';
+    container.id = 'custom-filter-controls';
+    
+    // Near Me Panel
+    const nearMePanel = document.createElement('div');
+    nearMePanel.className = 'near-me-panel';
+    nearMePanel.innerHTML = `
+      <div class="near-me-title">📍 Find Events Near Me</div>
+      <div class="near-me-input-group">
+        <input type="text" class="near-me-input" id="postal-code-input" placeholder="Enter postal code (e.g., M5V)" />
+        <button class="near-me-location-btn" id="use-location-btn" title="Use my current location">📍</button>
+      </div>
+      <button class="near-me-btn" id="apply-location-btn" style="width: 100%">Apply Location Filter</button>
+      <select class="distance-select" id="distance-select">
+        <option value="2">Within 2 km</option>
+        <option value="5">Within 5 km</option>
+        <option value="10" selected>Within 10 km</option>
+        <option value="25">Within 25 km</option>
+        <option value="50">Within 50 km</option>
+        <option value="0">Any distance</option>
+      </select>
+      <div class="near-me-status" id="near-me-status"></div>
+    `;
+    
+    // Near Me Toggle Button
+    const nearMeBtn = document.createElement('button');
+    nearMeBtn.className = 'filter-toggle-btn';
+    nearMeBtn.id = 'near-me-toggle';
+    nearMeBtn.innerHTML = '📍 Near Me';
+    
+    // Multi-Day Toggle Button
+    const multiDayBtn = document.createElement('button');
+    multiDayBtn.className = 'filter-toggle-btn';
+    multiDayBtn.id = 'multiday-toggle';
+    multiDayBtn.innerHTML = '📅 Show Multi-Day Events';
+    
+    container.appendChild(nearMePanel);
+    container.appendChild(nearMeBtn);
+    container.appendChild(multiDayBtn);
+    
+    document.body.appendChild(container);
+    
+    // Event listeners
+    nearMeBtn.addEventListener('click', function() {
+      nearMePanel.classList.toggle('visible');
+    });
+    
+    multiDayBtn.addEventListener('click', function() {
+      showMultiDayEvents = !showMultiDayEvents;
+      multiDayBtn.classList.toggle('active', showMultiDayEvents);
+      multiDayBtn.innerHTML = showMultiDayEvents ? '📅 Hide Multi-Day Events' : '📅 Show Multi-Day Events';
+      applyFilters();
+    });
+    
+    document.getElementById('use-location-btn').addEventListener('click', function() {
+      const statusEl = document.getElementById('near-me-status');
+      statusEl.textContent = 'Getting your location...';
+      statusEl.className = 'near-me-status';
+      
+      if (!navigator.geolocation) {
+        statusEl.textContent = 'Geolocation not supported by your browser';
+        statusEl.className = 'near-me-status error';
+        return;
+      }
+      
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          userLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          statusEl.textContent = '✓ Location detected';
+          statusEl.className = 'near-me-status active';
+          document.getElementById('postal-code-input').value = '';
+          console.log('[FILTERS] User location:', userLocation);
+        },
+        function(error) {
+          statusEl.textContent = 'Could not get location: ' + error.message;
+          statusEl.className = 'near-me-status error';
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    });
+    
+    document.getElementById('apply-location-btn').addEventListener('click', function() {
+      const postalInput = document.getElementById('postal-code-input').value.trim();
+      const statusEl = document.getElementById('near-me-status');
+      
+      if (postalInput) {
+        const coords = parsePostalCode(postalInput);
+        if (coords) {
+          userLocation = coords;
+          statusEl.textContent = '✓ Using ' + (coords.name || 'postal code area');
+          statusEl.className = 'near-me-status active';
+        } else {
+          statusEl.textContent = 'Invalid postal code. Try M5V, L4K, etc.';
+          statusEl.className = 'near-me-status error';
+          return;
+        }
+      }
+      
+      if (!userLocation) {
+        statusEl.textContent = 'Please enter a postal code or use your location';
+        statusEl.className = 'near-me-status error';
+        return;
+      }
+      
+      maxDistance = parseInt(document.getElementById('distance-select').value) || 0;
+      filterActive = true;
+      nearMeBtn.classList.add('active');
+      nearMePanel.classList.remove('visible');
+      applyFilters();
+    });
+    
+    document.getElementById('distance-select').addEventListener('change', function() {
+      maxDistance = parseInt(this.value) || 0;
+      if (filterActive && userLocation) {
+        applyFilters();
+      }
+    });
+    
+    // Close panel when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!container.contains(e.target)) {
+        nearMePanel.classList.remove('visible');
+      }
+    });
+  }
+  
+  // Apply all filters to event cards
+  function applyFilters() {
+    console.log('[FILTERS] Applying filters - showMultiDay:', showMultiDayEvents, 'location:', userLocation, 'maxDistance:', maxDistance);
+    
+    const cards = document.querySelectorAll('[class*="glass-panel"]:not(.animate-pulse), [class*="event-card"], [class*="EventCard"]');
+    let hiddenCount = 0;
+    let shownCount = 0;
+    
+    cards.forEach(function(card) {
+      // Get event data from card
+      const titleEl = card.querySelector('h2, h3, [class*="title"], [class*="Title"]');
+      const locationEl = card.querySelector('[class*="location"], [class*="Location"]');
+      
+      if (!titleEl) return;
+      
+      const title = titleEl.textContent || '';
+      const location = locationEl ? locationEl.textContent : '';
+      
+      // Try to find event in raw events data
+      let eventData = null;
+      if (window.__RAW_EVENTS__) {
+        eventData = window.__RAW_EVENTS__.find(function(e) {
+          const eTitle = (e.title || '').toLowerCase();
+          const cardTitle = title.toLowerCase();
+          return eTitle === cardTitle || 
+                 eTitle.includes(cardTitle.substring(0, 20)) || 
+                 cardTitle.includes(eTitle.substring(0, 20));
+        });
+      }
+      
+      let shouldShow = true;
+      
+      // Multi-day filter
+      if (!showMultiDayEvents) {
+        const isMultiDay = eventData ? isMultiDayEvent(eventData) : false;
+        if (isMultiDay) {
+          shouldShow = false;
+          
+          // Add multi-day indicator if not exists
+          if (!card.querySelector('.multi-day-indicator')) {
+            const indicator = document.createElement('span');
+            indicator.className = 'multi-day-indicator';
+            indicator.innerHTML = '📅 Multi-Day';
+            titleEl.appendChild(indicator);
+          }
+        }
+      }
+      
+      // Location filter
+      if (shouldShow && filterActive && userLocation && maxDistance > 0) {
+        const eventCoords = eventData ? 
+          (eventData.lat && eventData.lng ? { lat: eventData.lat, lng: eventData.lng } : getLocationCoords(eventData.location, eventData.title)) :
+          getLocationCoords(location, title);
+        
+        if (eventCoords) {
+          const distance = calculateDistance(userLocation.lat, userLocation.lng, eventCoords.lat, eventCoords.lng);
+          
+          if (distance > maxDistance) {
+            shouldShow = false;
+          } else {
+            // Add distance indicator
+            const existingIndicator = card.querySelector('.distance-indicator');
+            if (existingIndicator) {
+              existingIndicator.textContent = '📍 ' + distance.toFixed(1) + ' km';
+            } else {
+              const indicator = document.createElement('span');
+              indicator.className = 'distance-indicator';
+              indicator.innerHTML = '📍 ' + distance.toFixed(1) + ' km';
+              titleEl.appendChild(indicator);
+            }
+          }
+        }
+      }
+      
+      // Apply visibility
+      if (shouldShow) {
+        card.classList.remove('event-card-hidden');
+        shownCount++;
+      } else {
+        card.classList.add('event-card-hidden');
+        hiddenCount++;
+      }
+    });
+    
+    console.log('[FILTERS] Shown:', shownCount, 'Hidden:', hiddenCount);
+  }
+  
+  // Initialize
+  function init() {
+    createFilterControls();
+    
+    // Apply initial filters after events load
+    setTimeout(applyFilters, 2000);
+    setTimeout(applyFilters, 4000);
+    
+    // Re-apply filters when new cards are added
+    const observer = new MutationObserver(function(mutations) {
+      let shouldApply = false;
+      mutations.forEach(function(mutation) {
+        if (mutation.addedNodes.length > 0) {
+          shouldApply = true;
+        }
+      });
+      if (shouldApply) {
+        clearTimeout(window._filterTimeout);
+        window._filterTimeout = setTimeout(applyFilters, 300);
+      }
+    });
+    
+    const main = document.querySelector('main') || document.body;
+    observer.observe(main, { childList: true, subtree: true });
+  }
+  
+  // Start when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+<!-- Sign-in link: injected after hydration to avoid React #418 replacing it (see docs/HYDRATION_SSR_RULEBOOK.md) -->
+<script>
+(function(){
+  function injectSignIn() {
+    var btn = document.querySelector('button[title="System Configuration (Top Right)"]');
+    if (btn) {
+      if (!(btn.previousElementSibling && btn.previousElementSibling.getAttribute('href') === '/api/google_auth.php?return_to=/')) {
+        var parent = btn.parentElement;
+        if (parent && parent.classList.contains('fixed')) {
+          parent.classList.add('items-center');
+          var a = document.createElement('a');
+          a.href = '/api/google_auth.php?return_to=/';
+          a.className = 'pointer-events-auto px-4 py-3 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl hover:bg-[var(--pk-500)] text-white transition-all group overflow-hidden flex items-center gap-2 no-underline';
+          a.title = 'Sign in with Google (same account for FavCreators)';
+          a.innerHTML = '<span class="text-xl">\uD83D\uDD12</span><span class="text-[10px] font-black uppercase tracking-tighter opacity-80 group-hover:opacity-100 transition-all">Sign in</span>';
+          parent.insertBefore(a, btn);
+        }
+      }
+    }
+    var personalHeading = null;
+    var ps = document.querySelectorAll('nav p');
+    for (var i = 0; i < ps.length; i++) { if (ps[i].textContent.trim() === 'PERSONAL') { personalHeading = ps[i]; break; } }
+    if (personalHeading && !document.getElementById('injected-nav-signin')) {
+      var section = personalHeading.closest('.space-y-1') || personalHeading.parentElement;
+      var firstBtn = section ? section.querySelector('a[href*="google_auth"], button') : null;
+      if (section && firstBtn && !section.querySelector('a[href*="google_auth"]')) {
+        var navLink = document.createElement('a');
+        navLink.id = 'injected-nav-signin';
+        navLink.href = '/api/google_auth.php?return_to=/';
+        navLink.className = 'w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:bg-blue-500/20 text-blue-200 hover:text-white border border-transparent hover:border-blue-500/30 overflow-hidden no-underline';
+        navLink.setAttribute('title', 'Sign in with Google');
+        navLink.innerHTML = '<span class="text-lg">\uD83D\uDD12</span><span class="flex-1">Sign in with Google</span>';
+        section.insertBefore(navLink, firstBtn);
+      }
+    }
+  }
+  function scheduleInjection() {
+    injectSignIn();
+    setTimeout(injectSignIn, 500);
+    setTimeout(injectSignIn, 1500);
+    setTimeout(injectSignIn, 3000);
+    setTimeout(injectSignIn, 5000);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function(){ scheduleInjection(); });
+  } else {
+    scheduleInjection();
+  }
+  window.addEventListener('load', function(){ scheduleInjection(); });
+})();
+</script>
 
 </body>
 

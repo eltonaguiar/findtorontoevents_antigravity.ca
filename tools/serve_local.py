@@ -12,14 +12,25 @@ JS/CSS file from disk.
 
   python tools/serve_local.py   # correct – proxy mimic active
   python -m http.server 9000   # wrong – returns PHP source, site broken
+
+  To use REAL MySQL (not mock): set FAVCREATORS_API_PROXY to your live site so /fc/api/
+  is proxied to the live PHP (which reads from the real database).
+  Example: FAVCREATORS_API_PROXY=https://findtorontoevents.ca python tools/serve_local.py
+  The live site must have working MySQL (db_config.php / MYSQL_* env on server).
 """
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs, unquote
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError, URLError
 import os
 import json
 from pathlib import Path
 
-PORT = 5173  # Main site at http://localhost:5173/ ; FavCreators at http://localhost:5173/fc/
+PORT = int(os.environ.get("PORT", "5173"))  # Main site at http://localhost:PORT/ ; FavCreators at /fc/
+
+# When set, proxy /fc/api/ and /favcreators/api/ to this host so the app uses REAL MySQL (live PHP).
+# Example: FAVCREATORS_API_PROXY=https://findtorontoevents.ca
+API_PROXY = os.environ.get("FAVCREATORS_API_PROXY", "").strip().rstrip("/")
 
 # Favcreators built app: absolute path so it works regardless of cwd
 _SCRIPT_DIR = Path(__file__).resolve().parent
@@ -35,6 +46,41 @@ def _send_json(handler, obj):
     handler.end_headers()
     handler.wfile.write(out)
 
+
+def _proxy_to_remote(handler, method, path, query_string, body=None):
+    """Proxy request to API_PROXY so the app gets real MySQL data from live PHP."""
+    url = f"{API_PROXY}{path}"
+    if query_string:
+        url += "?" + query_string
+    try:
+        req_headers = {"User-Agent": "findtorontoevents-serve_local/1"}
+        if body and method == "POST":
+            req_headers["Content-Type"] = "application/json"
+        req = Request(url, data=body.encode("utf-8") if body else None, method=method, headers=req_headers)
+        with urlopen(req, timeout=15) as resp:
+            handler.send_response(resp.status)
+            ct = resp.headers.get("Content-Type")
+            if ct:
+                handler.send_header("Content-Type", ct)
+            data = resp.read()
+            handler.send_header("Content-Length", str(len(data)))
+            handler.end_headers()
+            handler.wfile.write(data)
+    except HTTPError as e:
+        handler.send_response(e.code)
+        handler.send_header("Content-Type", "application/json")
+        body_err = json.dumps({"error": str(e)}).encode("utf-8")
+        handler.send_header("Content-Length", str(len(body_err)))
+        handler.end_headers()
+        handler.wfile.write(body_err)
+    except (URLError, OSError) as e:
+        handler.send_response(502)
+        handler.send_header("Content-Type", "application/json")
+        body_err = json.dumps({"error": f"Proxy failed: {e}"}).encode("utf-8")
+        handler.send_header("Content-Length", str(len(body_err)))
+        handler.end_headers()
+        handler.wfile.write(body_err)
+
 class CORSRequestHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -48,10 +94,32 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
-        raw = (self.path.split("?")[0] if "?" in self.path else self.path).strip()
+        parsed = urlparse(self.path)
+        raw = (parsed.path or "/").strip()
         path = (unquote(raw).rstrip("/") or "/")
+        query_string = parsed.query or ""
 
         def consume_body():
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                if length:
+                    return self.rfile.read(length).decode("utf-8", "replace")
+            except Exception:
+                pass
+            return None
+
+        # Proxy to live site so app uses REAL MySQL (not mock)
+        if API_PROXY and (path.startswith("/fc/api/") or path.startswith("/favcreators/api/")):
+            body = consume_body() if "Content-Length" in self.headers else None
+            if body is None and self.headers.get("Content-Length"):
+                try:
+                    body = self.rfile.read(int(self.headers.get("Content-Length", 0))).decode("utf-8", "replace")
+                except Exception:
+                    body = None
+            _proxy_to_remote(self, "POST", path, query_string, body=body)
+            return
+
+        def consume_body_only():
             try:
                 length = int(self.headers.get("Content-Length", 0))
                 if length:
@@ -61,7 +129,7 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
 
         # Mock save_note.php (no PHP locally) – return JSON so "Save" note doesn't throw
         if "save_note" in path or path.endswith("save_note.php"):
-            consume_body()
+            consume_body_only()
             _send_json(self, {"status": "success", "message": "Note saved (local mock)"})
             return
 
@@ -90,7 +158,7 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
 
         # Mock creators/bulk – admin bulk update (no backend locally)
         if "creators/bulk" in path or path.rstrip("/").endswith("creators/bulk"):
-            consume_body()
+            consume_body_only()
             _send_json(self, {"status": "success"})
             return
 
@@ -133,6 +201,12 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
         parsed = urlparse(self.path)
         raw_path = parsed.path
         path = (unquote(raw_path).rstrip("/") or "/")
+        query_string = parsed.query or ""
+
+        # Proxy to live site so app retrieves from REAL MySQL (not mock)
+        if API_PROXY and (path.startswith("/fc/api/") or path.startswith("/favcreators/api/")):
+            _proxy_to_remote(self, "GET", path, query_string)
+            return
 
         # Handle get_notes.php first (any path containing it) so Starfireara note is retrievable in tests
         if "get_notes.php" in path:
@@ -147,6 +221,16 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
         # Intercept other API paths so we never serve PHP as static files
         is_favcreators_api = path.startswith("/fc/api/") or path.startswith("/favcreators/api/")
         if is_favcreators_api and (path.endswith(".php") or "creators/" in path):
+            if "status.php" in path:
+                _send_json(self, {
+                    "ok": True,
+                    "db": "connected",
+                    "read_ok": True,
+                    "notes_count": 1,
+                    "starfireara_note": "Guest default note for Starfireara (local mock)",
+                    "get_notes_sample": {"6": "Guest default note for Starfireara (local mock)"},
+                })
+                return
             if "get_me.php" in path:
                 _send_json(self, {"user": {"id": 0, "email": "admin", "role": "admin", "provider": "admin", "display_name": "Admin"}})
                 return
@@ -289,13 +373,29 @@ def main():
     print("Local server: main site at root, FavCreators at /fc/")
     print("Do NOT use 'python -m http.server' – it returns PHP source.")
     print("=" * 60)
+    if API_PROXY:
+        print(f"  API PROXY: /fc/api/ -> {API_PROXY} (REAL MySQL from live site)")
+    else:
+        print(f"  API mocks (notes, list, login): /fc/api/ get_me, get_notes, get_my_creators, save_note, save_creators, creators/bulk")
     print(f"  Main page (index.html):  http://localhost:{PORT}/")
-    print(f"  FavCreators:            http://localhost:{PORT}/fc/  or  http://localhost:{PORT}/fc/#/guest")
-    print(f"  Serving from:           {workspace_root}")
+    print(f"  FavCreators:             http://localhost:{PORT}/fc/  or  http://localhost:{PORT}/fc/#/guest")
+    print(f"  Serving from:            {workspace_root}")
+    if not API_PROXY:
+        print(f"  To use REAL MySQL: set FAVCREATORS_API_PROXY=https://findtorontoevents.ca then restart.")
+    print(f"  Verify API: open http://localhost:{PORT}/fc/api/get_notes.php?user_id=0 — you should see JSON.")
     print("Press Ctrl+C to stop.")
     print()
 
-    server = HTTPServer(('127.0.0.1', PORT), CORSRequestHandler)
+    try:
+        server = HTTPServer(('127.0.0.1', PORT), CORSRequestHandler)
+    except OSError as e:
+        if e.errno == 98 or "Address already in use" in str(e) or "WinError 10048" in str(e):
+            print(f"ERROR: Port {PORT} is already in use. Another server is running on {PORT}.")
+            print("  Stop that server (e.g. npx serve, Vite, or another Python process), then run this script again.")
+            print(f"  Or use a different port: PORT=5174 python tools/serve_local.py")
+            raise SystemExit(1) from e
+        raise
+
     try:
         server.serve_forever()
     except KeyboardInterrupt:

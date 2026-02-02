@@ -3,7 +3,11 @@ import { test, expect } from '@playwright/test';
 /**
  * FavCreators admin login: username admin, password admin (no spaces).
  * login.php returns a user with provider "admin" without DB (backdoor).
- * If navigation times out, start the server first: python tools/serve_local.py
+ *
+ * For get_notes/notes tests to pass, the API must return JSON (not PHP source).
+ * Start the mock server first: python tools/serve_local.py (from project root).
+ * Then run: npx playwright test tests/favcreators-admin-login.spec.ts
+ * Or set CI=1 to have Playwright start serve_local automatically.
  */
 const BASE = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173';
 const FAV_GUEST = `${BASE}/fc/#/guest`;
@@ -85,6 +89,46 @@ test.describe('FavCreators admin/admin login', () => {
     // Always assert Starfireara name and note field are present (retrieval of creator and note UI works)
     expect(await starfirearaHeading.isVisible()).toBe(true);
     expect(await noteField.isVisible()).toBe(true);
+  });
+
+  /**
+   * Verifies that the backend (get_notes.php) returns a database entry for Starfireara's personal note
+   * and that the app displays it. Requires serve_local on 5173 (Playwright starts it when CI=1).
+   * Mock: user_id=0 returns {"6": "Guest default note for Starfireara (local mock)"}.
+   */
+  test('retrieve database entry: Starfireara personal note from get_notes.php', async ({ page }) => {
+    const expectedNote = 'Guest default note for Starfireara (local mock)';
+
+    // Capture get_notes.php response when the app fetches it (listener must be set before navigation)
+    const getNotesPromise = page.waitForResponse(
+      (res) => res.url().includes('get_notes.php') && res.status() === 200,
+      { timeout: 25000 }
+    );
+
+    await page.goto(FAV_GUEST, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await expect(page.locator('#root')).toBeVisible({ timeout: 15000 });
+
+    const response = await getNotesPromise;
+    const text = await response.text();
+    let body: Record<string, string>;
+    try {
+      body = JSON.parse(text) as Record<string, string>;
+    } catch {
+      throw new Error(
+        `get_notes.php returned non-JSON (got ${text.slice(0, 80)}...). ` +
+          'Run: python tools/serve_local.py (from project root) on port 5173.'
+      );
+    }
+
+    // Assert backend returned the database entry for Starfireara (creator id "6")
+    expect(body).toHaveProperty('6');
+    expect(body['6']).toBe(expectedNote);
+
+    // Assert the app displays the retrieved note in the personal note field
+    const noteField = page.locator('#note-6');
+    await noteField.scrollIntoViewIfNeeded().catch(() => {});
+    await expect(noteField).toBeVisible({ timeout: 10000 });
+    await expect(noteField).toHaveValue(expectedNote, { timeout: 8000 });
   });
 
   test('admin Quick Add from TikTok URL (e.g. tiktok.com/@barstoolsports) adds creator and persists', async ({ page }) => {
