@@ -1,0 +1,23 @@
+# Enable rewrite engine
+RewriteEngine On
+
+# Make URLs case-insensitive
+# Redirect /movieshows2 to /MOVIESHOWS2
+RewriteCond %{REQUEST_URI} ^/movieshows2(/.*)?$ [NC]
+RewriteCond %{REQUEST_URI} !^/MOVIESHOWS2(/.*)?$
+RewriteRule ^(.*)$ /MOVIESHOWS2/$1 [R=301,L]
+
+# Handle play.html case variations
+RewriteCond %{REQUEST_URI} ^/MOVIESHOWS2/play\.html$ [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ /MOVIESHOWS2/play.html [L]
+
+# Default document
+DirectoryIndex index.html
+
+# Enable CORS for API calls
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type"
+</IfModule>
