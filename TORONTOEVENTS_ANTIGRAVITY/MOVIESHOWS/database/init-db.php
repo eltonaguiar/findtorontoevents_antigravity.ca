@@ -21,7 +21,7 @@ echo "✓ Database connection successful!\n\n";
 
 // Read and execute schema
 echo "Creating database schema...\n";
-$schemaFile = __DIR__ . '/../database/schema.sql';
+$schemaFile = __DIR__ . '/schema.sql';
 
 if (!file_exists($schemaFile)) {
     die("✗ Schema file not found: $schemaFile\n");
