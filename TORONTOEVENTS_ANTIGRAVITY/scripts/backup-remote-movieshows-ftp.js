@@ -18,9 +18,9 @@ async function backupRemoteFiles() {
     try {
         console.log('🔗 Connecting to FTP server...');
         await client.access({
-            host: process.env.FTP_SERVER,
-            user: process.env.FTP_USERNAME,
-            password: process.env.FTP_PASSWORD,
+            host: 'ftps2.50webs.com',
+            user: 'ejaguiar1',
+            password: '$a^FzN7BqKapSQMsZxD&^FeTJ',
             secure: false
         });
 
