@@ -13,7 +13,7 @@ const API_URL = 'https://findtorontoevents.ca/MOVIESHOWS/api';
 
 const MOVIES_PER_YEAR = 200;
 const START_YEAR = 2026;
-const END_YEAR = 2020; // Go back to 2020
+const END_YEAR = 2015; // Extended to 2015 for comprehensive catalog
 
 /**
  * Discover popular movies for a specific year
