@@ -155,7 +155,7 @@ function createMovie($pdo)
         }
     }
 
-    sendJson(['id' => $movieId, 'message' => 'Movie created successfully'], 201);
+    sendJson(array('id' => $movieId, 'message' => 'Movie created successfully'), 201);
 }
 
 /**
@@ -226,7 +226,7 @@ function updateMovie($pdo, $movieId)
     $stmt = $pdo->prepare($sql);
     $stmt->execute($values);
 
-    sendJson(['message' => 'Movie updated successfully']);
+    sendJson(array('message' => 'Movie updated successfully'));
 }
 
 /**
@@ -242,5 +242,5 @@ function deleteMovie($pdo, $movieId)
         sendError('Movie not found', 404);
     }
 
-    sendJson(['message' => 'Movie deleted successfully']);
+    sendJson(array('message' => 'Movie deleted successfully'));
 }
