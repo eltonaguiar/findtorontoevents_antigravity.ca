@@ -8,7 +8,7 @@
 define('DB_HOST', 'localhost'); // Update if different
 define('DB_NAME', 'ejaguiar1_tvmoviestrailers');
 define('DB_USER', 'ejaguiar1_tvmoviestrailers');
-define('DB_PASS', 'tvmoviestrailers1');
+define('DB_PASS', 'tvmoviestrailers');
 define('DB_CHARSET', 'utf8mb4');
 
 // CORS headers for API access
@@ -27,9 +27,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
  * Get database connection
  * @return PDO|null
  */
-function getDbConnection() {
+function getDbConnection()
+{
     static $pdo = null;
-    
+
     if ($pdo === null) {
         try {
             $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
@@ -39,21 +40,22 @@ function getDbConnection() {
                 PDO::ATTR_EMULATE_PREPARES => false,
                 PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci"
             ];
-            
+
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
         } catch (PDOException $e) {
             error_log("Database connection failed: " . $e->getMessage());
             return null;
         }
     }
-    
+
     return $pdo;
 }
 
 /**
  * Send JSON response
  */
-function sendJson($data, $statusCode = 200) {
+function sendJson($data, $statusCode = 200)
+{
     http_response_code($statusCode);
     echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit();
@@ -62,7 +64,8 @@ function sendJson($data, $statusCode = 200) {
 /**
  * Send error response
  */
-function sendError($message, $statusCode = 500, $details = null) {
+function sendError($message, $statusCode = 500, $details = null)
+{
     $response = ['error' => $message];
     if ($details !== null) {
         $response['details'] = $details;
@@ -73,7 +76,8 @@ function sendError($message, $statusCode = 500, $details = null) {
 /**
  * Get request body as JSON
  */
-function getRequestBody() {
+function getRequestBody()
+{
     $body = file_get_contents('php://input');
     return json_decode($body, true);
 }

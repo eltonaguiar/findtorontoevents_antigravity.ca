@@ -14,6 +14,28 @@ function getUserId()
 }
 
 /**
+ * Get movie trailers
+ */
+function getMovieTrailers($pdo, $movieId)
+{
+    $sql = "SELECT * FROM trailers WHERE movie_id = ? AND is_active = TRUE ORDER BY priority DESC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$movieId]);
+    return $stmt->fetchAll();
+}
+
+/**
+ * Get movie thumbnails
+ */
+function getMovieThumbnails($pdo, $movieId)
+{
+    $sql = "SELECT * FROM thumbnails WHERE movie_id = ? ORDER BY is_primary DESC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$movieId]);
+    return $stmt->fetchAll();
+}
+
+/**
  * Get user's queue
  */
 function getQueue($pdo, $userId)
