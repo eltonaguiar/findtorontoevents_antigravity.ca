@@ -9,6 +9,7 @@ Usage:
   python tools/trigger_and_watch_scrape_workflow.py          # trigger and wait
   python tools/trigger_and_watch_scrape_workflow.py --trigger # trigger only (no wait)
   python tools/trigger_and_watch_scrape_workflow.py --watch   # wait for latest run only
+  python tools/trigger_and_watch_scrape_workflow.py --watch --run-id 21611695045  # monitor specific run
 """
 import os
 import sys
@@ -51,7 +52,12 @@ def trigger(token: str) -> None:
     print("Workflow triggered.")
 
 
-def get_latest_run(token: str) -> dict | None:
+def get_run(token: str, run_id: int) -> Optional[dict]:
+    url = f"{API_BASE}/actions/runs/{run_id}"
+    return _req("GET", url, token)
+
+
+def get_latest_run(token: str) -> Optional[dict]:
     url = f"{API_BASE}/actions/workflows/{WORKFLOW_ID}/runs?per_page=1"
     data = _req("GET", url, token)
     runs = data.get("workflow_runs", [])
@@ -62,6 +68,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Trigger and/or watch Scrape events workflow")
     parser.add_argument("--trigger", action="store_true", help="Only trigger; do not wait")
     parser.add_argument("--watch", action="store_true", help="Only wait for latest run (do not trigger)")
+    parser.add_argument("--run-id", type=int, default=None, help="Monitor specific run ID (e.g. 21611695045)")
     parser.add_argument("--poll", type=int, default=15, help="Poll interval in seconds (default 15)")
     args = parser.parse_args()
 
@@ -86,17 +93,22 @@ def main() -> int:
         print("GITHUB_TOKEN required to poll run status.", file=sys.stderr)
         return 1
 
+    def poll_run(run_id: Optional[int] = None) -> Optional[dict]:
+        if run_id is not None:
+            return get_run(token, run_id)
+        return get_latest_run(token)
+
+    target_run_id = args.run_id
     print("Waiting for run to complete...")
     while True:
-        run = get_latest_run(token)
+        run = poll_run(target_run_id)
         if not run:
             print("No run found.", file=sys.stderr)
             return 1
         status = run.get("status")
         conclusion = run.get("conclusion")
-        run_id = run.get("id")
         run_url = run.get("html_url", "")
-        print(f"  Run #{run.get('run_number', '?')} status={status} conclusion={conclusion or '-'}")
+        print(f"  Run #{run.get('run_number', '?')} (id={run.get('id')}) status={status} conclusion={conclusion or '-'}")
 
         if status == "completed":
             print(f"Result: {conclusion or 'unknown'}")
