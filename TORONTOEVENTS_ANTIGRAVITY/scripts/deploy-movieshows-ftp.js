@@ -30,15 +30,37 @@ async function deployFiles() {
         });
 
         console.log('✅ Connected to FTP server\n');
+
+        // Ensure directories exist
+        console.log('📁 Ensuring directories exist...');
+        try {
+            await client.ensureDir(`${REMOTE_BASE}/api`);
+            await client.ensureDir(`${REMOTE_BASE}/database`);
+            console.log('✅ Directories ready\n');
+        } catch (err) {
+            console.log('⚠️  Directory creation skipped (may already exist)\n');
+        }
+
         console.log('📤 Deploying files...\n');
 
         for (const file of FILES_TO_DEPLOY) {
             const localPath = path.join(LOCAL_BASE, file.local);
             console.log(`📁 Uploading: ${file.local}`);
-            console.log(`   → ${file.remote}`);
+            console.log(`   Local:  ${localPath}`);
+            console.log(`   Remote: ${file.remote}`);
 
-            await client.uploadFrom(localPath, file.remote);
-            console.log('   ✅ Uploaded\n');
+            try {
+                await client.uploadFrom(localPath, file.remote);
+                console.log('   ✅ Uploaded successfully\n');
+            } catch (uploadErr) {
+                console.error(`   ❌ Failed: ${uploadErr.message}`);
+                console.log(`   Trying alternative path...\n`);
+
+                // Try without leading slash
+                const altRemote = file.remote.replace(/^\//, '');
+                await client.uploadFrom(localPath, altRemote);
+                console.log('   ✅ Uploaded successfully (alternative path)\n');
+            }
         }
 
         console.log('🎉 All files deployed successfully!');
@@ -49,6 +71,7 @@ async function deployFiles() {
 
     } catch (error) {
         console.error('❌ Deployment failed:', error.message);
+        console.error('Full error:', error);
         throw error;
     } finally {
         client.close();
