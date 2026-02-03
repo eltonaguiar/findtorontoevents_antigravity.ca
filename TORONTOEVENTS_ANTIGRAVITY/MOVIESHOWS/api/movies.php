@@ -78,7 +78,7 @@ function getMovie($pdo, $movieId)
 {
     $sql = "SELECT * FROM movies WHERE id = ?";
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([$movieId]);
+    $stmt->execute(array($movieId));
     $movie = $stmt->fetch();
 
     if (!$movie) {
@@ -98,7 +98,7 @@ function getMovieTrailers($pdo, $movieId)
 {
     $sql = "SELECT * FROM trailers WHERE movie_id = ? AND is_active = 1 ORDER BY priority DESC, view_count DESC";
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([$movieId]);
+    $stmt->execute(array($movieId));
     return $stmt->fetchAll();
 }
 
@@ -109,7 +109,7 @@ function getMovieThumbnails($pdo, $movieId)
 {
     $sql = "SELECT * FROM thumbnails WHERE movie_id = ? AND is_active = 1 ORDER BY priority DESC";
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([$movieId]);
+    $stmt->execute(array($movieId));
     return $stmt->fetchAll();
 }
 
@@ -205,7 +205,7 @@ function updateMovie($pdo, $movieId)
     $data = getRequestBody();
 
     $fields = [];
-    $values = [];
+    $values = array();
 
     $allowedFields = ['title', 'type', 'release_year', 'genre', 'description', 'tmdb_id', 'imdb_id', 'source'];
 
@@ -236,7 +236,7 @@ function deleteMovie($pdo, $movieId)
 {
     $sql = "DELETE FROM movies WHERE id = ?";
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([$movieId]);
+    $stmt->execute(array($movieId));
 
     if ($stmt->rowCount() === 0) {
         sendError('Movie not found', 404);
