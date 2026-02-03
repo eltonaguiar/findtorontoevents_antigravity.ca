@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieShows - Watch Movies & TV Shows</title>
+    <link rel="icon" href="/MOVIESHOWS/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .user-section {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-info {
+            display: none;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info.logged-in {
+            display: flex;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Login Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            opacity: 0.6;
+        }
+
+        .close-modal:hover {
+            opacity: 1;
+        }
+
+        /* Movie Grid */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 2rem;
+        }
+
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .movie-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .movie-poster {
+            width: 100%;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .movie-info {
+            padding: 1rem;
+        }
+
+        .movie-title {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .movie-year {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+        }
+
+        .favorite-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .favorite-btn:hover {
+            background: rgba(102, 126, 234, 0.8);
+            transform: scale(1.1);
+        }
+
+        .favorite-btn.active {
+            color: #ff6b6b;
+        }
+
+        /* Video Player */
+        .player-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .player-modal.active {
+            display: flex;
+        }
+
+        .player-content {
+            width: 90%;
+            max-width: 1200px;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .player-header {
+            padding: 1rem 2rem;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .player-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .movies-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 1rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">🎬 MovieShows</div>
+        <div class="user-section">
+            <div class="user-info" id="userInfo">
+                <span id="userName">Guest</span>
+                <button class="btn btn-secondary" onclick="logout()">Logout</button>
+            </div>
+            <button class="btn" id="loginBtn" onclick="showLogin()">Login</button>
+        </div>
+    </header>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeLogin()">×</button>
+            <h2 class="modal-title">Welcome Back</h2>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="loginEmail" required placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="loginPassword" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">Login</button>
+                <p style="text-align: center; margin-top: 1rem; color: rgba(255, 255, 255, 0.6); font-size: 0.85rem;">
+                    Demo: Use email "admin" and password "admin"
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Video Player Modal -->
+    <div class="player-modal" id="playerModal">
+        <div class="player-content">
+            <div class="player-header">
+                <h3 class="player-title" id="playerTitle">Movie Title</h3>
+                <button class="btn btn-secondary" onclick="closePlayer()">Close</button>
+            </div>
+            <div class="video-container" id="videoContainer">
+                <!-- YouTube iframe will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h2 class="section-title">🔥 Trending Now</h2>
+        <div class="movies-grid" id="moviesGrid">
+            <!-- Movies will be loaded here -->
+        </div>
+
+        <h2 class="section-title">❤️ My Favorites</h2>
+        <div class="movies-grid" id="favoritesGrid">
+            <!-- Favorites will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        // Sample movie data (in production, this would come from TMDB API)
+        const sampleMovies = [
+            { id: 1, title: "The Lord of the Rings: The Two Towers", year: 2002, poster: "https://image.tmdb.org/t/p/w500/5VTN0pR8gcqV3EPUHHfMGnJYN9L.jpg", trailer: "LbfMDwc4azU" },
+            { id: 2, title: "Shelter", year: 2024, poster: "https://image.tmdb.org/t/p/w500/9bETBzKdJXICkdXV0U5gGaIKpSx.jpg", trailer: "dQw4w9WgXcQ" },
+            { id: 3, title: "28 Years Later: The Bone Temple", year: 2025, poster: "https://image.tmdb.org/t/p/w500/qYzFWNmVlqfMXNJtIHBfqTmWXBl.jpg", trailer: "dQw4w9WgXcQ" },
+            { id: 4, title: "Dracula", year: 2025, poster: "https://image.tmdb.org/t/p/w500/9bETBzKdJXICkdXV0U5gGaIKpSx.jpg", trailer: "dQw4w9WgXcQ" },
+            { id: 5, title: "Mercy", year: 2024, poster: "https://image.tmdb.org/t/p/w500/qYzFWNmVlqfMXNJtIHBfqTmWXBl.jpg", trailer: "dQw4w9WgXcQ" },
+            { id: 6, title: "Sand Hole", year: 2024, poster: "https://image.tmdb.org/t/p/w500/5VTN0pR8gcqV3EPUHHfMGnJYN9L.jpg", trailer: "dQw4w9WgXcQ" },
+        ];
+
+        let currentUser = null;
+        let favorites = [];
+        let guestScrollCount = 0;
+        const MAX_GUEST_SCROLLS = 500;
+
+        // Track scrolling for guest users
+        let lastScrollTop = 0;
+        window.addEventListener('scroll', function () {
+            if (!currentUser) {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                if (Math.abs(scrollTop - lastScrollTop) > 100) { // Count significant scrolls
+                    guestScrollCount++;
+                    localStorage.setItem('movieshows_guest_scrolls', guestScrollCount);
+                    lastScrollTop = scrollTop;
+
+                    // Show login prompt after 500 scrolls
+                    if (guestScrollCount >= MAX_GUEST_SCROLLS) {
+                        showGuestLimitModal();
+                    }
+                }
+            }
+        });
+
+        // Show guest limit modal
+        function showGuestLimitModal() {
+            if (confirm(`🎬 You've scrolled ${MAX_GUEST_SCROLLS} times!\n\n✨ Create a free account to:\n• Save unlimited favorites\n• Continue browsing\n• Get personalized recommendations\n\nWould you like to login now?`)) {
+                showLogin();
+            }
+        }
+
+        // Check if user is logged in
+        function checkAuth() {
+            const savedUser = localStorage.getItem('movieshows_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                updateUI();
+            } else {
+                // Load guest scroll count
+                const savedScrolls = localStorage.getItem('movieshows_guest_scrolls');
+                guestScrollCount = savedScrolls ? parseInt(savedScrolls) : 0;
+            }
+            loadFavorites();
+        }
+
+        // Update UI based on auth state
+        function updateUI() {
+            const loginBtn = document.getElementById('loginBtn');
+            const userInfo = document.getElementById('userInfo');
+            const userName = document.getElementById('userName');
+
+            if (currentUser) {
+                loginBtn.style.display = 'none';
+                userInfo.classList.add('logged-in');
+                userName.textContent = currentUser.display_name || currentUser.email;
+            } else {
+                loginBtn.style.display = 'block';
+                userInfo.classList.remove('logged-in');
+            }
+        }
+
+        // Show login modal
+        function showLogin() {
+            document.getElementById('loginModal').classList.add('active');
+        }
+
+        // Close login modal
+        function closeLogin() {
+            document.getElementById('loginModal').classList.remove('active');
+        }
+
+        // Handle login
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch('/fc/api/login.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.user) {
+                    currentUser = data.user;
+                    localStorage.setItem('movieshows_user', JSON.stringify(currentUser));
+                    guestScrollCount = 0;
+                    localStorage.removeItem('movieshows_guest_scrolls');
+                    updateUI();
+                    closeLogin();
+                    loadFavorites();
+                    alert('✅ Login successful!');
+                } else {
+                    alert('❌ ' + (data.error || 'Login failed'));
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('❌ Login failed. Please try again.');
+            }
+        }
+
+        // Logout
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('movieshows_user');
+            favorites = [];
+            localStorage.removeItem('movieshows_favorites');
+            updateUI();
+            renderMovies();
+            renderFavorites();
+            alert('👋 Logged out successfully');
+        }
+
+        // Toggle favorite
+        function toggleFavorite(movieId) {
+            if (!currentUser) {
+                alert('Please login to save favorites!');
+                showLogin();
+                return;
+            }
+
+            const index = favorites.indexOf(movieId);
+            if (index > -1) {
+                favorites.splice(index, 1);
+            } else {
+                favorites.push(movieId);
+            }
+
+            saveFavorites();
+            renderMovies();
+            renderFavorites();
+        }
+
+        // Save favorites to localStorage (in production, this would be API call)
+        function saveFavorites() {
+            if (currentUser) {
+                localStorage.setItem(`movieshows_favorites_${currentUser.id}`, JSON.stringify(favorites));
+            }
+        }
+
+        // Load favorites from localStorage
+        function loadFavorites() {
+            if (currentUser) {
+                const saved = localStorage.getItem(`movieshows_favorites_${currentUser.id}`);
+                favorites = saved ? JSON.parse(saved) : [];
+            } else {
+                favorites = [];
+            }
+            renderFavorites();
+        }
+
+        // Play movie
+        function playMovie(movie) {
+            document.getElementById('playerTitle').textContent = movie.title;
+            document.getElementById('videoContainer').innerHTML = `
+                <iframe 
+                    src="https://www.youtube.com/embed/${movie.trailer}?autoplay=1" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+            `;
+            document.getElementById('playerModal').classList.add('active');
+        }
+
+        // Close player
+        function closePlayer() {
+            document.getElementById('playerModal').classList.remove('active');
+            document.getElementById('videoContainer').innerHTML = '';
+        }
+
+        // Render movies
+        function renderMovies() {
+            const grid = document.getElementById('moviesGrid');
+            grid.innerHTML = sampleMovies.map(movie => `
+                <div class="movie-card">
+                    <button class="favorite-btn ${favorites.includes(movie.id) ? 'active' : ''}" 
+                            onclick="event.stopPropagation(); toggleFavorite(${movie.id})">
+                        ${favorites.includes(movie.id) ? '❤️' : '🤍'}
+                    </button>
+                    <img src="${movie.poster}" alt="${movie.title}" class="movie-poster" 
+                         onclick="playMovie(${JSON.stringify(movie).replace(/"/g, '&quot;')})">
+                    <div class="movie-info" onclick="playMovie(${JSON.stringify(movie).replace(/"/g, '&quot;')})">
+                        <div class="movie-title">${movie.title}</div>
+                        <div class="movie-year">${movie.year}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render favorites
+        function renderFavorites() {
+            const grid = document.getElementById('favoritesGrid');
+            const favoriteMovies = sampleMovies.filter(m => favorites.includes(m.id));
+
+            if (favoriteMovies.length === 0) {
+                grid.innerHTML = '<p style="color: rgba(255, 255, 255, 0.5); grid-column: 1/-1; text-align: center; padding: 2rem;">No favorites yet. Click the heart icon to add movies!</p>';
+            } else {
+                grid.innerHTML = favoriteMovies.map(movie => `
+                    <div class="movie-card">
+                        <button class="favorite-btn active" 
+                                onclick="event.stopPropagation(); toggleFavorite(${movie.id})">
+                            ❤️
+                        </button>
+                        <img src="${movie.poster}" alt="${movie.title}" class="movie-poster" 
+                             onclick="playMovie(${JSON.stringify(movie).replace(/"/g, '&quot;')})">
+                        <div class="movie-info" onclick="playMovie(${JSON.stringify(movie).replace(/"/g, '&quot;')})">
+                            <div class="movie-title">${movie.title}</div>
+                            <div class="movie-year">${movie.year}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Initialize
+        checkAuth();
+        renderMovies();
+        renderFavorites();
+
+        console.log('%c🎬 MovieShows v2.0', 'font-size: 20px; font-weight: bold; color: #667eea;');
+        console.log('%cFree tier with login & playlists!', 'font-size: 14px; color: #4ade80;');
+    </script>
+</body>
+
+</html>

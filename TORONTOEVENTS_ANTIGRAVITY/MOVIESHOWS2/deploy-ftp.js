@@ -23,12 +23,16 @@ async function deploy() {
         console.log('✅ In MOVIESHOWS2 directory!\n');
 
         console.log('📤 Uploading index.html...');
-        const localFile = path.join(__dirname, 'index.html');
-        await client.uploadFrom(localFile, 'index.html');
+        await client.uploadFrom(path.join(__dirname, 'index.html'), 'index.html');
+        console.log('✅ index.html uploaded!\n');
 
-        console.log('✅ Upload complete!\n');
+        console.log('📤 Uploading play.html...');
+        await client.uploadFrom(path.join(__dirname, 'play.html'), 'play.html');
+        console.log('✅ play.html uploaded!\n');
+
         console.log('🎉 Deployment successful!');
         console.log('🌐 Live at: https://findtorontoevents.ca/MOVIESHOWS2/\n');
+        console.log('🎬 Player at: https://findtorontoevents.ca/MOVIESHOWS2/play.html\n');
 
     } catch (err) {
         console.error('❌ Error:', err.message);
