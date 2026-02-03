@@ -130,13 +130,13 @@ function createMovie($pdo)
     $stmt = $pdo->prepare($sql);
     $stmt->execute(array(
         $data['title'],
-        $data['type'] ?? 'movie',
-        $data['release_year'] ?? null,
-        $data['genre'] ?? null,
-        $data['description'] ?? null,
-        $data['tmdb_id'] ?? null,
-        $data['imdb_id'] ?? null,
-        $data['source'] ?? 'manual'
+        isset($data['type']) ? $data['type'] : 'movie',
+        isset($data['release_year']) ? $data['release_year'] : null,
+        isset($data['genre']) ? $data['genre'] : null,
+        isset($data['description']) ? $data['description'] : null,
+        isset($data['tmdb_id']) ? $data['tmdb_id'] : null,
+        isset($data['imdb_id']) ? $data['imdb_id'] : null,
+        isset($data['source']) ? $data['source'] : 'manual'
     ));
 
     $movieId = $pdo->lastInsertId();
