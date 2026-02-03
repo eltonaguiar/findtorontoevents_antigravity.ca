@@ -46,3 +46,10 @@ jobs:
             git commit -m "chore: update events from scraper (GitHub Actions)"
             git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" HEAD:main
           fi
+
+      # Reset workspace so checkout action's post step doesn't fail with git 128
+      - name: Restore workspace for checkout post
+        if: always()
+        run: |
+          git checkout --detach ${{ github.sha }}
+          git reset --hard ${{ github.sha }}
