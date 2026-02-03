@@ -367,7 +367,19 @@
         <div class="stat-value" id="total-syncs">--</div>
         <div class="stat-label">Total Syncs</div>
       </div>
+      <div class="stat-card loading" id="stat-month">
+        <div class="stat-icon">📆</div>
+        <div class="stat-value" id="events-this-month">--</div>
+        <div class="stat-label" id="month-label">Events this month</div>
+      </div>
+      <div class="stat-card loading" id="stat-today">
+        <div class="stat-icon">📍</div>
+        <div class="stat-value" id="events-today">--</div>
+        <div class="stat-label" id="today-label">Events today</div>
+      </div>
     </div>
+
+    <p class="last-updated" id="last-updated-line" style="margin-top: 12px; margin-bottom: 24px; color: var(--text-secondary); font-size: 0.9rem;"></p>
 
     <h2 class="section-title">📡 Event Sources</h2>
     <div class="sources-grid" id="sources-container">
@@ -411,6 +423,15 @@
         updateStat('upcoming-events', data.upcoming_events || 0, 'stat-upcoming');
         updateStat('free-events', data.free_events || 0, 'stat-free');
         updateStat('total-syncs', data.recent_pulls ? data.recent_pulls.length : 0, 'stat-syncs');
+        updateStat('events-this-month', data.events_this_month ?? 0, 'stat-month');
+        updateStat('events-today', data.events_today ?? 0, 'stat-today');
+        const monthLabel = document.getElementById('month-label');
+        if (monthLabel) monthLabel.textContent = 'Events this month (' + (data.month_label || '') + ')';
+        const todayLabel = document.getElementById('today-label');
+        if (todayLabel) todayLabel.textContent = 'Events today (' + (data.today_label || '') + ')';
+
+        // Last updated & source
+        renderLastUpdated(data.last_updated, data.update_source);
 
         // Update sources
         renderSources(data.sources || []);
@@ -446,6 +467,36 @@
         updateStat('upcoming-events', upcoming.length, 'stat-upcoming');
         updateStat('free-events', free.length, 'stat-free');
         updateStat('total-syncs', 'N/A', 'stat-syncs');
+
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+        const todayStr = now.toISOString().slice(0, 10);
+        const thisMonth = events.filter(e => {
+          const d = new Date(e.date);
+          return d >= monthStart && d <= monthEnd;
+        });
+        const todayCount = events.filter(e => e.date && e.date.slice(0, 10) === todayStr).length;
+        const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        const monthLabel = monthNames[now.getMonth()] + ' ' + now.getFullYear();
+        const todayLabel = monthNames[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+        updateStat('events-this-month', thisMonth.length, 'stat-month');
+        updateStat('events-today', todayCount, 'stat-today');
+        const ml = document.getElementById('month-label');
+        if (ml) ml.textContent = 'Events this month (' + monthLabel + ')';
+        const tl = document.getElementById('today-label');
+        if (tl) tl.textContent = 'Events today (' + todayLabel + ')';
+
+        try {
+          const metaRes = await fetch('/last_update.json');
+          if (metaRes.ok) {
+            const meta = await metaRes.json();
+            renderLastUpdated(meta.timestamp, meta.source);
+          } else {
+            renderLastUpdated(null, null);
+          }
+        } catch (_) {
+          renderLastUpdated(null, null);
+        }
 
         // Count sources
         const sourceCounts = {};
@@ -552,6 +603,21 @@
           <span class="source-count">${c.count.toLocaleString()}</span>
         </div>
       `).join('');
+    }
+
+    function renderLastUpdated(timestamp, source) {
+      const el = document.getElementById('last-updated-line');
+      if (!el) return;
+      const sourceLabel = source ? source.replace(/_/g, ' ') : '';
+      if (timestamp && sourceLabel) {
+        const d = new Date(timestamp);
+        el.textContent = 'Last updated: ' + d.toLocaleString('en-CA', { dateStyle: 'medium', timeStyle: 'short' }) + ' · Source: ' + escapeHtml(sourceLabel);
+      } else if (timestamp) {
+        const d = new Date(timestamp);
+        el.textContent = 'Last updated: ' + d.toLocaleString('en-CA', { dateStyle: 'medium', timeStyle: 'short' });
+      } else {
+        el.textContent = 'Last updated: — · Source: —';
+      }
     }
 
     function formatDate(dateStr) {

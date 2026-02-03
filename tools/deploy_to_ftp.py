@@ -25,6 +25,19 @@ from pathlib import Path
 _SCRIPT_DIR = Path(__file__).resolve().parent
 WORKSPACE = _SCRIPT_DIR.parent
 
+# Load workspace .env so FTP_* are set when not in shell (e.g. Cursor run)
+_env_file = WORKSPACE / ".env"
+if _env_file.exists():
+    for line in _env_file.read_text().splitlines():
+        line = line.strip()
+        if line and not line.startswith("#") and "=" in line:
+            k, _, v = line.partition("=")
+            k, v = k.strip(), v.strip()
+            if k and os.environ.get(k) in (None, ""):
+                os.environ.setdefault(k, v)
+    if "FTP_SERVER" not in os.environ and os.environ.get("FTP_HOST"):
+        os.environ.setdefault("FTP_SERVER", os.environ["FTP_HOST"])
+
 # Default remote path (site under findevents subfolder)
 DEFAULT_REMOTE_PATH = "findtorontoevents.ca/findevents"
 
@@ -113,6 +126,10 @@ def deploy_main_site(ftp: ftplib.FTP, remote_base: str) -> bool:
     ev_next = WORKSPACE / "next" / "events.json"
     if ev_next.is_file():
         _upload_file(ftp, ev_next, f"{remote_base}/next/events.json")
+    # last_update.json (stats page: last updated time + source)
+    lu = WORKSPACE / "last_update.json"
+    if lu.is_file():
+        _upload_file(ftp, lu, f"{remote_base}/last_update.json")
     # next/_next/
     next_next = WORKSPACE / "next" / "_next"
     if next_next.is_dir():

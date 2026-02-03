@@ -19,7 +19,7 @@ import sys
 import argparse
 import requests
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Add parent directory to path for imports
 SCRIPT_DIR = Path(__file__).parent
@@ -45,23 +45,57 @@ def save_events(events: list, events_path: Path):
     print(f"Saved {len(events)} events to {events_path}")
 
 
-def sync_to_database(events: list, api_base: str = "https://findtorontoevents.ca/fc/api"):
-    """Sync events to the remote database via API"""
+def normalize_event_for_sync(event: dict) -> dict:
+    """Ensure event has id (string), title, and API field names for sync."""
+    import hashlib
+    e = dict(event)
+    if not e.get("id") or not isinstance(e.get("id"), str):
+        raw = f"{e.get('title', '')}|{e.get('date', '')}|{e.get('source', '')}"
+        e["id"] = hashlib.md5(raw.encode()).hexdigest()
+    if "isFree" not in e and "is_free" in e:
+        e["isFree"] = e["is_free"]
+    if "priceAmount" not in e and "price_amount" in e:
+        e["priceAmount"] = e["price_amount"]
+    return e
+
+
+def sync_to_database(events: list, api_base: str = "https://findtorontoevents.ca/fc/api", chunk_size: int = 150):
+    """Sync events to the remote database via API. Uses chunked POST to avoid 412/large-body limits."""
     sync_url = f"{api_base}/events_sync.php"
+    events = [normalize_event_for_sync(e) for e in events]
+    total = len(events)
     
     try:
-        print(f"Syncing {len(events)} events to database...")
-        response = requests.post(
-            sync_url,
-            json={"events": events},
-            headers={"Content-Type": "application/json"},
-            timeout=60
-        )
-        response.raise_for_status()
-        
-        result = response.json()
-        print(f"Sync result: {result}")
-        return result
+        print(f"Syncing {total} events to database (chunk_size={chunk_size})...")
+        if total <= chunk_size:
+            response = requests.post(
+                sync_url,
+                json={"events": events, "source": "api_post"},
+                headers={"Content-Type": "application/json"},
+                timeout=120
+            )
+            response.raise_for_status()
+            result = response.json()
+            print(f"Sync result: {result}")
+            return result
+        # Chunked sync: each chunk creates one pull and upserts its events
+        last_result = None
+        for i in range(0, total, chunk_size):
+            chunk = events[i : i + chunk_size]
+            print(f"  Sending chunk {i // chunk_size + 1} ({len(chunk)} events)...")
+            response = requests.post(
+                sync_url,
+                json={"events": chunk, "source": "api_post"},
+                headers={"Content-Type": "application/json"},
+                timeout=120
+            )
+            response.raise_for_status()
+            last_result = response.json()
+            if not last_result.get("ok"):
+                print(f"  Chunk failed: {last_result}")
+                return last_result
+        print(f"Sync complete. Last result: {last_result}")
+        return last_result
     except Exception as e:
         print(f"Error syncing to database: {e}")
         return None
@@ -157,6 +191,9 @@ def main():
         existing_lookup[key] = i
     
     for event in new_events:
+        # API expects isFree; scrapers use is_free
+        if "isFree" not in event and "is_free" in event:
+            event["isFree"] = event["is_free"]
         key = (scraper.normalize_title(event.get("title", "")), event.get("date", "")[:10])
         
         if key in existing_lookup:
@@ -192,6 +229,17 @@ def main():
     # Save merged events
     print("\nSaving events...")
     save_events(merged, events_path)
+
+    # Write last_update.json for stats page (last updated date/time and source)
+    update_source = os.environ.get("EVENTS_UPDATE_SOURCE", "cursor")
+    last_update = {
+        "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "source": update_source,
+    }
+    last_update_path = PROJECT_ROOT / "last_update.json"
+    with open(last_update_path, "w", encoding="utf-8") as f:
+        json.dump(last_update, f, indent=2)
+    print(f"Wrote {last_update_path} (source={update_source})")
     
     # Sync to database if requested
     if args.sync:
