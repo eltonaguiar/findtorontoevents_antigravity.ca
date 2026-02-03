@@ -68,7 +68,7 @@ function getAllMovies($pdo)
         $movie['thumbnails'] = getMovieThumbnails($pdo, $movie['id']);
     }
 
-    sendJson(['movies' => $movies, 'count' => count($movies)]);
+    sendJson(array('movies' => $movies, 'count' => count($movies)));
 }
 
 /**
