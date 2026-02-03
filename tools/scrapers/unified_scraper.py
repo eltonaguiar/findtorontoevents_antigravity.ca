@@ -17,6 +17,13 @@ try:
     from .nathan_phillips_square import NathanPhillipsSquareScraper
     from .sankofa_square import SankofaSquareScraper
     from .city_of_toronto import CityOfTorontoEventsScraper
+    from .unity_maps import UnityMapsScraper
+    from .allevents_calendar import AllEventsCalendarScraper
+    from .toronto_events_weekly import TorontoEventsWeeklyScraper
+    from .american_arenas import AmericanArenasScraper
+    from .creative_code_sheet import CreativeCodeSheetScraper
+    from .lightmorning_calendar import LightMorningCalendarScraper
+    from .sofiaadelgiudice_notion import SofiaAdelGiudiceNotionScraper
 except ImportError:
     # Allow running as standalone
     import sys
@@ -25,6 +32,13 @@ except ImportError:
     from nathan_phillips_square import NathanPhillipsSquareScraper
     from sankofa_square import SankofaSquareScraper
     from city_of_toronto import CityOfTorontoEventsScraper
+    from unity_maps import UnityMapsScraper
+    from allevents_calendar import AllEventsCalendarScraper
+    from toronto_events_weekly import TorontoEventsWeeklyScraper
+    from american_arenas import AmericanArenasScraper
+    from creative_code_sheet import CreativeCodeSheetScraper
+    from lightmorning_calendar import LightMorningCalendarScraper
+    from sofiaadelgiudice_notion import SofiaAdelGiudiceNotionScraper
 
 
 class UnifiedTorontoScraper:
@@ -38,6 +52,13 @@ class UnifiedTorontoScraper:
             NathanPhillipsSquareScraper(),
             SankofaSquareScraper(),
             CityOfTorontoEventsScraper(),
+            UnityMapsScraper(),
+            AllEventsCalendarScraper(),
+            TorontoEventsWeeklyScraper(),
+            AmericanArenasScraper(),
+            CreativeCodeSheetScraper(),
+            LightMorningCalendarScraper(),
+            SofiaAdelGiudiceNotionScraper(),
         ]
         self.seen_titles: Set[str] = set()
     
