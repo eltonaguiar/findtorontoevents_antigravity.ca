@@ -30,6 +30,10 @@ async function deploy() {
         await client.uploadFrom(path.join(__dirname, 'play.html'), 'play.html');
         console.log('✅ play.html uploaded!\n');
 
+        console.log('📤 Uploading .htaccess...');
+        await client.uploadFrom(path.join(__dirname, '.htaccess'), '.htaccess');
+        console.log('✅ .htaccess uploaded!\n');
+
         console.log('🎉 Deployment successful!');
         console.log('🌐 Live at: https://findtorontoevents.ca/MOVIESHOWS2/\n');
         console.log('🎬 Player at: https://findtorontoevents.ca/MOVIESHOWS2/play.html\n');
