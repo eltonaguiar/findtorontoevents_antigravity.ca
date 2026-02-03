@@ -339,6 +339,11 @@
         The platform automatically pulls events from various sources and presents them in a clean, filterable interface. 
         Whether you're looking for free activities, weekend plans, or specific types of events, we've got you covered.
       </p>
+      <p>
+        <strong>How events get here:</strong> A daily job (GitHub Actions) runs the scraper, updates <code>events.json</code>, and pushes to GitHub. 
+        The web app loads the latest events from the repo (e.g. <code>/next/events.json</code> or <code>/events.json</code>). 
+        The line below shows when we last ran and how many <em>new</em> vs <em>modified</em> events that run found.
+      </p>
       <div class="wip-badge">
         🚧 Work in Progress — Not fully automated yet
       </div>
@@ -379,7 +384,8 @@
       </div>
     </div>
 
-    <p class="last-updated" id="last-updated-line" style="margin-top: 12px; margin-bottom: 24px; color: var(--text-secondary); font-size: 0.9rem;"></p>
+    <p class="last-updated" id="last-updated-line" style="margin-top: 12px; margin-bottom: 4px; color: var(--text-secondary); font-size: 0.9rem;"></p>
+    <p class="last-updated" id="todays-run-line" style="margin-bottom: 24px; color: var(--text-secondary); font-size: 0.9rem;"></p>
 
     <h2 class="section-title">📡 Event Sources</h2>
     <div class="sources-grid" id="sources-container">
@@ -409,10 +415,14 @@
 
   <script>
     const API_BASE = '/fc/api';
+    const EVENTS_ROUTER = '/fc/events-router.php';
 
     async function loadStats() {
       try {
-        const response = await fetch(`${API_BASE}/events_get_stats.php`);
+        let response = await fetch(`${API_BASE}/events_get_stats.php`);
+        if (response.status === 412) {
+          response = await fetch(`${EVENTS_ROUTER}?e=get_stats`);
+        }
         if (!response.ok) throw new Error('Failed to fetch stats');
         
         const data = await response.json();
@@ -432,6 +442,14 @@
 
         // Last updated & source
         renderLastUpdated(data.last_updated, data.update_source);
+        setTodaysRun(data.new_count, data.modified_count);
+
+        // Fetch last_update.json for today's run (new/modified) if API didn't provide it
+        fetch('/last_update.json').then(r => r.ok ? r.json() : {}).then(meta => {
+          if ((data.new_count == null && data.modified_count == null) && (meta.new_count != null || meta.modified_count != null)) {
+            setTodaysRun(meta.new_count, meta.modified_count);
+          }
+        }).catch(() => {});
 
         // Update sources
         renderSources(data.sources || []);
@@ -491,11 +509,14 @@
           if (metaRes.ok) {
             const meta = await metaRes.json();
             renderLastUpdated(meta.timestamp, meta.source);
+            setTodaysRun(meta.new_count, meta.modified_count);
           } else {
             renderLastUpdated(null, null);
+            setTodaysRun(null, null);
           }
         } catch (_) {
           renderLastUpdated(null, null);
+          setTodaysRun(null, null);
         }
 
         // Count sources
@@ -617,6 +638,21 @@
         el.textContent = 'Last updated: ' + d.toLocaleString('en-CA', { dateStyle: 'medium', timeStyle: 'short' });
       } else {
         el.textContent = 'Last updated: — · Source: —';
+      }
+    }
+
+    function setTodaysRun(newCount, modifiedCount) {
+      const el = document.getElementById('todays-run-line');
+      if (!el) return;
+      const hasNew = newCount != null && newCount !== '';
+      const hasMod = modifiedCount != null && modifiedCount !== '';
+      if (hasNew || hasMod) {
+        const parts = [];
+        if (hasNew) parts.push(newCount + ' new');
+        if (hasMod) parts.push(modifiedCount + ' modified');
+        el.textContent = "Today's run: " + parts.join(', ') + " events.";
+      } else {
+        el.textContent = '';
       }
     }
 

@@ -43,4 +43,8 @@ $env:GITHUB_TOKEN = 'your_pat'
 
 ## Workflow file
 
-- `.github/workflows/scrape-events.yml` – installs `requests beautifulsoup4 lxml` explicitly (no file path), verifies scraper imports, then runs `python tools/scrape_and_sync_events.py`.
+- `.github/workflows/scrape-events.yml` – installs `requests beautifulsoup4 lxml` explicitly (no file path), verifies scraper imports, then runs `python tools/scrape_and_sync_events.py`. Runs **daily** on schedule (12:00 UTC) and on manual trigger; pushes updated `events.json` and `last_update.json` to `main` so the web app pulls the latest events.
+
+## Submodule exception (STOCKSUNIFY)
+
+- **STOCKSUNIFY** is a [git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules) pointing at [github.com/eltonaguiar/stocksunify](https://github.com/eltonaguiar/stocksunify). The scrape workflow does not use it; it only updates events. To avoid the checkout action’s post step failing (git 128), the workflow removes the broken STOCKSUNIFY entry from `.gitmodules` after checkout. The STOCKSUNIFY code lives in the repo at `STOCKSUNIFY/` (and may also be under `TORONTOEVENTS_ANTIGRAVITY/STOCKS`). This is an exception for CI only.

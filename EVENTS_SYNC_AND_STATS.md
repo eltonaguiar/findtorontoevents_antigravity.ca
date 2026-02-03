@@ -45,11 +45,23 @@
   https://findtorontoevents.ca/fc/api/events_find_duplicates.php  
   Builds title index and links same-event rows from different sources.
 
+## ModSecurity 412 workaround (no host change)
+
+If requests to `/fc/api/events_*.php` return **412 Precondition Failed** (denied by modsecurity):
+
+1. **fc/api/.htaccess** disables ModSecurity for that directory (SecRuleEngine Off / SecFilterEngine Off). Some hosts allow this in .htaccess.
+2. **Router fallback:** `/fc/events-router.php?e=<endpoint>` runs the same PHP via a single file (e.g. `?e=status`, `?e=get_stats`, `?e=sync`). The stats page and tools try the direct API first and use the router on 412.
+
+Use the router directly if needed:  
+`GET /fc/events-router.php?e=get_stats`  
+`GET /fc/events-router.php?e=status`  
+`GET or POST /fc/events-router.php?e=sync`
+
 ## Summary
 
 | Step | Action |
 |------|--------|
 | 1 | Set EVENTS_MYSQL_PASSWORD on server (env or fc/api/.env.events). |
-| 2 | GET https://findtorontoevents.ca/fc/api/events_setup_tables.php (once). |
-| 3 | GET https://findtorontoevents.ca/fc/api/events_sync.php (after each deploy of events.json). |
+| 2 | GET https://findtorontoevents.ca/fc/api/events_setup_tables.php or .../fc/events-router.php?e=setup_tables (once). |
+| 3 | GET https://findtorontoevents.ca/fc/api/events_sync.php or .../fc/events-router.php?e=sync (after each deploy of events.json). |
 | 4 | View https://findtorontoevents.ca/stats/ and run `python tools/verify_events_sync.py`. |

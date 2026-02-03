@@ -2155,58 +2155,304 @@
   }
 })();
 </script>
-<!-- Sign-in link: injected after hydration to avoid React #418 replacing it (see docs/HYDRATION_SSR_RULEBOOK.md) -->
+<!-- Sign-in modal: INJECTED by script so it survives React hydration (same as island). -->
 <script>
 (function(){
-  function injectSignIn() {
-    var btn = document.querySelector('button[title="System Configuration (Top Right)"]');
-    if (btn) {
-      if (!(btn.previousElementSibling && btn.previousElementSibling.getAttribute('href') === '/api/google_auth.php?return_to=/')) {
-        var parent = btn.parentElement;
-        if (parent && parent.classList.contains('fixed')) {
-          parent.classList.add('items-center');
-          var a = document.createElement('a');
-          a.href = '/api/google_auth.php?return_to=/';
-          a.className = 'pointer-events-auto px-4 py-3 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl hover:bg-[var(--pk-500)] text-white transition-all group overflow-hidden flex items-center gap-2 no-underline';
-          a.title = 'Sign in with Google (same account for FavCreators)';
-          a.innerHTML = '<span class="text-xl">\uD83D\uDD12</span><span class="text-[10px] font-black uppercase tracking-tighter opacity-80 group-hover:opacity-100 transition-all">Sign in</span>';
-          parent.insertBefore(a, btn);
+  var fcApi = 'https://findtorontoevents.ca/fc/api';
+  var authUrl = fcApi + '/google_auth.php?return_to=' + encodeURIComponent(window.location.pathname || '/');
+  var modalHtml = '<div id="signin-modal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);align-items:center;justify-content:center;"><div id="signin-modal-box" style="position:relative;background:rgba(20,20,32,0.98);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:40px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.5);"><button type="button" id="signin-modal-close" aria-label="Close" style="position:absolute;top:16px;right:16px;background:transparent;border:none;color:rgba(255,255,255,0.7);font-size:24px;cursor:pointer;padding:8px;line-height:1;">&times;</button><div id="signin-form-view"><h2 style="color:#fff;font-size:24px;font-weight:800;margin:0 0 24px;text-align:center;">Sign in</h2><p style="color:rgba(255,255,255,0.6);font-size:14px;margin:0 0 20px;text-align:center;">Same account for Toronto Events and FavCreators.</p><button type="button" id="signin-google-btn" style="width:100%;padding:14px 20px;background:#fff;color:#333;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15);"><svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button><div style="text-align:center;color:rgba(255,255,255,0.4);font-size:12px;margin:16px 0;">or use email</div><input type="email" id="signin-email" placeholder="Email" style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;margin-bottom:12px;font-size:14px;box-sizing:border-box;" /><input type="password" id="signin-password" placeholder="Password" style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;margin-bottom:16px;font-size:14px;box-sizing:border-box;" /><button type="button" id="signin-email-btn" style="width:100%;padding:14px;background:linear-gradient(135deg,#a855f7,#8b5cf6);color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;font-size:14px;">Email login</button><div id="signin-error" style="margin-top:16px;padding:12px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:8px;color:#fca5a5;font-size:12px;display:none;"></div></div><div id="signin-signed-in-view" style="display:none;"><h2 style="color:#fff;font-size:24px;font-weight:800;margin:0 0 24px;text-align:center;">Account</h2><p id="signin-signed-in-as" style="color:rgba(255,255,255,0.8);font-size:14px;margin:0 0 20px;text-align:center;"></p><div id="signin-debug-toggle" style="display:none;margin-bottom:16px;"><label style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.7);font-size:12px;cursor:pointer;"><input type="checkbox" id="signin-debug-cb" /> Debug logging (database)</label></div><button type="button" id="signin-signout-btn" style="width:100%;padding:14px;background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid rgba(239,68,68,0.4);border-radius:12px;font-weight:700;cursor:pointer;font-size:14px;">Sign out</button></div></div></div>';
+
+  function ensureSignInModal() {
+    if (document.getElementById('signin-modal')) return;
+    var wrap = document.createElement('div');
+    wrap.innerHTML = modalHtml;
+    var modal = wrap.firstElementChild;
+    if (modal) {
+      document.body.appendChild(modal);
+      var box = document.getElementById('signin-modal-box');
+      var closeBtn = document.getElementById('signin-modal-close');
+      var googleBtn = document.getElementById('signin-google-btn');
+      var emailBtn = document.getElementById('signin-email-btn');
+      var emailInput = document.getElementById('signin-email');
+      var passwordInput = document.getElementById('signin-password');
+      var errorDiv = document.getElementById('signin-error');
+      if (closeBtn) closeBtn.onclick = closeSignInModal;
+      if (modal) modal.onclick = function(e) { if (e.target === modal) closeSignInModal(); };
+      if (box) box.onclick = function(e) { e.stopPropagation(); };
+      if (googleBtn) googleBtn.onclick = function() { window.location.href = authUrl; };
+      if (emailBtn) emailBtn.onclick = function() {
+        var email = emailInput ? emailInput.value.trim() : '';
+        var password = passwordInput ? passwordInput.value : '';
+        if (!email || !password) { if (errorDiv) { errorDiv.textContent = 'Please enter email and password.'; errorDiv.style.display = 'block'; } return; }
+        emailBtn.disabled = true;
+        if (errorDiv) errorDiv.style.display = 'none';
+        fetch(fcApi + '/login.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ email: email, password: password }) })
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.error) {
+              if (window.__fc_debug_log) window.__fc_debug_log('login_failure', { reason: data.error });
+              if (errorDiv) { errorDiv.textContent = data.error; errorDiv.style.display = 'block'; } emailBtn.disabled = false;
+            } else {
+              if (window.__fc_debug_log) window.__fc_debug_log('login_success', { user_id: data.user ? data.user.id : null, provider: 'email' });
+              if (data.user) window.__fc_logged_in_user__ = data.user;
+              window.location.href = 'https://findtorontoevents.ca/fc/';
+            }
+          })
+          .catch(function() {
+            if (window.__fc_debug_log) window.__fc_debug_log('login_failure', { reason: 'network' });
+            if (errorDiv) { errorDiv.textContent = 'Cannot reach login. Try again.'; errorDiv.style.display = 'block'; } emailBtn.disabled = false;
+          });
+      };
+      if (passwordInput) passwordInput.onkeydown = function(e) { if (e.key === 'Enter') emailBtn && emailBtn.click(); };
+      var signoutBtn = document.getElementById('signin-signout-btn');
+      if (signoutBtn) signoutBtn.onclick = signOut;
+      var debugCb = document.getElementById('signin-debug-cb');
+      if (debugCb) debugCb.onchange = function() {
+        fetch(fcApi + '/debug_toggle.php', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: debugCb.checked }) })
+          .then(function(r) { return r.json(); })
+          .then(function(d) { window.__fc_debug_log_enabled__ = !!d.debug_log_enabled; })
+          .catch(function() {});
+      };
+    }
+  }
+  function closeSignInModal() {
+    var m = document.getElementById('signin-modal');
+    if (m) { m.style.display = 'none'; m.style.pointerEvents = 'none'; }
+  }
+  function signOut() {
+    fetch(fcApi + '/logout.php', { method: 'POST', credentials: 'include' })
+      .then(function() {
+        window.__fc_logged_in_user__ = null;
+        window.__fc_debug_log_enabled__ = false;
+        closeSignInModal();
+        try { window.dispatchEvent(new Event('fc-logout')); } catch(e) {}
+      })
+      .catch(function() { closeSignInModal(); });
+  }
+  function openSignInModal() {
+    fetch(fcApi + '/get_me.php', { credentials: 'include' })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        ensureSignInModal();
+        var m = document.getElementById('signin-modal');
+        if (m && !document.body.contains(m)) document.body.appendChild(m);
+        if (!m) { ensureSignInModal(); m = document.getElementById('signin-modal'); }
+        var formView = document.getElementById('signin-form-view');
+        var signedInView = document.getElementById('signin-signed-in-view');
+        var signedInAs = document.getElementById('signin-signed-in-as');
+        var debugToggle = document.getElementById('signin-debug-toggle');
+        var debugCb = document.getElementById('signin-debug-cb');
+        if (data && data.user && data.user.id != null) {
+          window.__fc_logged_in_user__ = data.user;
+          window.__fc_debug_log_enabled__ = !!(data.debug_log_enabled);
+          if (formView) formView.style.display = 'none';
+          if (signedInView) { signedInView.style.display = 'block'; }
+          if (signedInAs) signedInAs.textContent = 'Signed in as ' + (data.user.display_name || data.user.email || 'User');
+          var isAdmin = data.user.role === 'admin';
+          if (debugToggle) { debugToggle.style.display = isAdmin ? 'block' : 'none'; }
+          if (debugCb) { debugCb.checked = window.__fc_debug_log_enabled__; }
+        } else {
+          window.__fc_logged_in_user__ = null;
+          window.__fc_debug_log_enabled__ = false;
+          if (formView) formView.style.display = 'block';
+          if (signedInView) signedInView.style.display = 'none';
         }
-      }
-    }
-    var personalHeading = null;
-    var ps = document.querySelectorAll('nav p');
-    for (var i = 0; i < ps.length; i++) { if (ps[i].textContent.trim() === 'PERSONAL') { personalHeading = ps[i]; break; } }
-    if (personalHeading && !document.getElementById('injected-nav-signin')) {
-      var section = personalHeading.closest('.space-y-1') || personalHeading.parentElement;
-      var firstBtn = section ? section.querySelector('a[href*="google_auth"], button') : null;
-      if (section && firstBtn && !section.querySelector('a[href*="google_auth"]')) {
-        var navLink = document.createElement('a');
-        navLink.id = 'injected-nav-signin';
-        navLink.href = '/api/google_auth.php?return_to=/';
-        navLink.className = 'w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:bg-blue-500/20 text-blue-200 hover:text-white border border-transparent hover:border-blue-500/30 overflow-hidden no-underline';
-        navLink.setAttribute('title', 'Sign in with Google');
-        navLink.innerHTML = '<span class="text-lg">\uD83D\uDD12</span><span class="flex-1">Sign in with Google</span>';
-        section.insertBefore(navLink, firstBtn);
-      }
-    }
+        var err = document.getElementById('signin-error');
+        if (m) { m.style.display = 'flex'; m.style.pointerEvents = 'auto'; m.style.alignItems = 'center'; m.style.justifyContent = 'center'; }
+        if (err) { err.style.display = 'none'; err.textContent = ''; }
+      })
+      .catch(function() {
+        ensureSignInModal();
+        var m = document.getElementById('signin-modal');
+        if (m && !document.body.contains(m)) document.body.appendChild(m);
+        var formView = document.getElementById('signin-form-view');
+        var signedInView = document.getElementById('signin-signed-in-view');
+        if (formView) formView.style.display = 'block';
+        if (signedInView) signedInView.style.display = 'none';
+        if (m) { m.style.display = 'flex'; m.style.pointerEvents = 'auto'; m.style.alignItems = 'center'; m.style.justifyContent = 'center'; }
+      });
   }
-  function scheduleInjection() {
-    injectSignIn();
-    setTimeout(injectSignIn, 500);
-    setTimeout(injectSignIn, 1500);
-    setTimeout(injectSignIn, 3000);
-    setTimeout(injectSignIn, 5000);
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function(){ scheduleInjection(); });
-  } else {
-    scheduleInjection();
-  }
-  window.addEventListener('load', function(){ scheduleInjection(); });
+  window.openSignInModal = openSignInModal;
+  window.closeSignInModal = closeSignInModal;
+  function run() { ensureSignInModal(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+  else run();
+  window.addEventListener('load', run);
+  setInterval(ensureSignInModal, 3000);
 })();
 </script>
-
+<!-- Sign-in island: button opens modal or goes to /fc/ when already logged in -->
+<script>
+(function(){
+  var fcApi = 'https://findtorontoevents.ca/fc/api';
+  var baseIslandStyle = 'position:fixed;top:1.5rem;right:calc(1.5rem + 80px);z-index:9999;display:flex !important;align-items:center;pointer-events:none;visibility:visible !important;opacity:1 !important;';
+  var btnStyle = 'pointer-events:auto;display:inline-flex;align-items:center;gap:0.5rem;padding:0.75rem 1rem;background:rgba(0,0,0,0.4);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.1);border-radius:1rem;color:#fff;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);cursor:pointer;font-family:inherit;text-decoration:none;';
+  function getIslandHtml() {
+    if (window.__fc_logged_in_user__) {
+      return '<div id="signin-island" style="' + baseIslandStyle + '"><a href="https://findtorontoevents.ca/fc/" style="' + btnStyle + '"><span style="font-size:1.25rem">\uD83D\uDD12</span><span>Account</span></a></div>';
+    }
+    return '<div id="signin-island" style="' + baseIslandStyle + '"><button type="button" style="' + btnStyle + '"><span style="font-size:1.25rem">\uD83D\uDD12</span><span>Sign in</span></button></div>';
+  }
+  function ensureSignInIsland() {
+    var existing = document.getElementById('signin-island');
+    if (existing) {
+      var link = existing.querySelector('a[href*="/fc/"]');
+      var btn = existing.querySelector('button');
+      if (window.__fc_logged_in_user__ && btn && !link) {
+        existing.parentNode.removeChild(existing);
+      } else if (!window.__fc_logged_in_user__ && link) {
+        existing.parentNode.removeChild(existing);
+      } else return;
+    }
+    var wrap = document.createElement('div');
+    wrap.innerHTML = getIslandHtml();
+    var island = wrap.firstElementChild;
+    if (island) {
+      document.body.appendChild(island);
+      var btn = island.querySelector('button');
+      if (btn) {
+        btn.onclick = function() { window.openSignInModal && window.openSignInModal(); };
+        btn.onmouseover = function() { this.style.background = '#6366f1'; };
+        btn.onmouseout = function() { this.style.background = 'rgba(0,0,0,0.4)'; };
+      }
+    }
+  }
+  function run() {
+    ensureSignInIsland();
+    setTimeout(ensureSignInIsland, 500);
+    setTimeout(ensureSignInIsland, 1500);
+    setTimeout(ensureSignInIsland, 3000);
+    setTimeout(ensureSignInIsland, 6000);
+    setTimeout(ensureSignInIsland, 10000);
+  }
+  function init() {
+    fetch(fcApi + '/get_me.php', { credentials: 'include' })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data.user && data.user.id != null) {
+          window.__fc_logged_in_user__ = data.user;
+          window.__fc_debug_log_enabled__ = !!(data.debug_log_enabled);
+          var uid = data.user.id;
+          fetch(fcApi + '/get_my_events.php?user_id=' + uid, { credentials: 'include' })
+            .then(function(r2) { return r2.json(); })
+            .then(function(d) {
+              var events = (d && d.events) ? d.events : [];
+              function inject() {
+                if (window.__fc_import_events__ && Array.isArray(events) && events.length > 0) {
+                  window.__fc_import_events__(events);
+                  return;
+                }
+                setTimeout(inject, 200);
+              }
+              inject();
+            })
+            .catch(function() {});
+        } else {
+          window.__fc_debug_log_enabled__ = false;
+        }
+        run();
+      })
+      .catch(function() { run(); });
+  }
+  window.addEventListener('fc-logout', function() { ensureSignInIsland(); });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+  window.addEventListener('load', init);
+  setInterval(ensureSignInIsland, 3000);
+})();
+</script>
+<!-- Sign-in in nav (sidebar): button opens same modal -->
+<script>
+(function(){
+  function injectNavSignIn() {
+    if (document.getElementById('injected-nav-signin')) return;
+    var ps = document.querySelectorAll('nav p');
+    var personalHeading = null;
+    for (var i = 0; i < ps.length; i++) { if (ps[i].textContent.trim() === 'PERSONAL') { personalHeading = ps[i]; break; } }
+    if (!personalHeading) return;
+    var section = personalHeading.closest('.space-y-1') || personalHeading.parentElement;
+    var firstBtn = section ? section.querySelector('button') : null;
+    if (!section || !firstBtn || section.querySelector('#injected-nav-signin')) return;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'injected-nav-signin';
+    btn.className = 'w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:bg-blue-500/20 text-blue-200 hover:text-white border border-transparent hover:border-blue-500/30 overflow-hidden';
+    btn.title = 'Sign in';
+    btn.innerHTML = '<span class="text-lg">\uD83D\uDD12</span><span class="flex-1">Sign in</span>';
+    btn.onclick = function() { window.openSignInModal && window.openSignInModal(); };
+    section.insertBefore(btn, firstBtn);
+  }
+  function run() { injectNavSignIn(); setTimeout(injectNavSignIn, 1500); setTimeout(injectNavSignIn, 4000); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+  else run();
+  window.addEventListener('load', run);
+})();
+</script>
+<!-- Debug logging: when admin has debug_log_enabled, send events to ejaguiar1_debuglog -->
+<script>
+(function(){
+  var fcApi = 'https://findtorontoevents.ca/fc/api';
+  window.__fc_debug_log = function(eventType, payload) {
+    if (!window.__fc_debug_log_enabled__) return;
+    try {
+      fetch(fcApi + '/debug_log.php', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ event_type: eventType, payload: payload || {} }) }).catch(function() {});
+    } catch(e) {}
+  };
+  document.addEventListener('click', function(e) {
+    if (!window.__fc_debug_log_enabled__) return;
+    var a = e.target && (e.target.closest ? e.target.closest('a[href]') : (e.target.tagName === 'A' ? e.target : null));
+    if (a && a.href && (a.href.indexOf('eventbrite') !== -1 || a.href.indexOf('/event') !== -1 || a.href.indexOf('ticket') !== -1)) {
+      window.__fc_debug_log('event_clicked', { href: a.href.substring(0, 200) });
+    }
+  }, true);
+})();
+</script>
+<!-- Bridge: when app dispatches toronto-event-saved we persist to server and show "Saved to DB" or error -->
+<script>
+(function(){
+  var fcApi = 'https://findtorontoevents.ca/fc/api';
+  function showToast(msg, isError) {
+    var id = 'saved-events-toast';
+    var el = document.getElementById(id);
+    if (el) el.remove();
+    el = document.createElement('div');
+    el.id = id;
+    el.setAttribute('style', 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);z-index:100000;padding:0.75rem 1.5rem;border-radius:1rem;font-size:0.875rem;font-weight:700;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);' + (isError ? 'background:#dc2626;color:#fff;' : 'background:rgba(34,197,94,0.9);color:#fff;'));
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(function() { if (el.parentNode) el.remove(); }, 3500);
+  }
+  window.addEventListener('toronto-event-saved', function(e) {
+    var user = window.__fc_logged_in_user__;
+    var event = e && e.detail && e.detail.event ? e.detail.event : (e.detail || e);
+    var added = e && e.detail && typeof e.detail.added === 'boolean' ? e.detail.added : true;
+    if (window.__fc_debug_log) window.__fc_debug_log('heart_click', { user_id: user ? user.id : null, event_id: event ? event.id : null, has_user: !!(user && user.id), added: added });
+    if (!user || !user.id) return;
+    if (!event || !event.id) return;
+    if (added === false) return;
+    fetch(fcApi + '/save_events.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ user_id: user.id, action: 'add', event: event })
+    })
+    .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+    .then(function(result) {
+      if (result.ok && result.data && result.data.status === 'success') {
+        showToast('Saved to DB');
+        if (window.__fc_debug_log) window.__fc_debug_log('save_event_success', { event_id: event.id });
+      } else {
+        showToast(result.data && result.data.error ? result.data.error : 'Failed to save event', true);
+        if (window.__fc_debug_log) window.__fc_debug_log('save_event_failure', { event_id: event.id, error: result.data && result.data.error ? result.data.error : 'unknown' });
+      }
+    })
+    .catch(function(err) {
+      showToast('Failed to save event', true);
+      if (window.__fc_debug_log) window.__fc_debug_log('save_event_failure', { event_id: event.id, error: 'network' });
+    });
+  });
+})();
+</script>
 </body>
 
 </html>
