@@ -84,9 +84,65 @@ CREATE TABLE IF NOT EXISTS sync_log (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Insert initial content sources
-INSERT INTO content_sources (name, type, is_active) VALUES
-    ('cineplex_toronto', 'scraper', TRUE),
-    ('youtube_api', 'api', TRUE),
-    ('tmdb_api', 'api', TRUE),
-    ('manual_entry', 'manual', TRUE)
+INSERT INTO content_sources (name, type, base_url, is_active) VALUES
+('cineplex', 'scraper', 'https://www.cineplex.com', TRUE),
+('tmdb', 'api', 'https://www.themoviedb.org', TRUE),
+('youtube', 'api', 'https://www.youtube.com', TRUE),
+('manual', 'manual', NULL, TRUE)
 ON DUPLICATE KEY UPDATE name=name;
+
+-- ============================================================================
+-- USER AUTHENTICATION & QUEUE MANAGEMENT TABLES
+-- ============================================================================
+
+-- User queues table
+CREATE TABLE IF NOT EXISTS user_queues (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    movie_id INT NOT NULL,
+    position INT NOT NULL,
+    watched BOOLEAN DEFAULT FALSE,
+    watch_count INT DEFAULT 0,
+    last_watched_at TIMESTAMP NULL,
+    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
+    INDEX idx_user_queue (user_id, position),
+    INDEX idx_user_movie (user_id, movie_id),
+    UNIQUE KEY unique_user_movie (user_id, movie_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- User preferences table
+CREATE TABLE IF NOT EXISTS user_preferences (
+    user_id INT PRIMARY KEY,
+    rewatch_enabled BOOLEAN DEFAULT TRUE,
+    auto_play BOOLEAN DEFAULT TRUE,
+    sound_on_scroll BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Shared playlists table
+CREATE TABLE IF NOT EXISTS shared_playlists (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    share_code VARCHAR(20) UNIQUE NOT NULL,
+    user_id INT NOT NULL,
+    title VARCHAR(255),
+    description TEXT,
+    is_public BOOLEAN DEFAULT FALSE,
+    view_count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NULL,
+    INDEX idx_share_code (share_code),
+    INDEX idx_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Playlist items table
+CREATE TABLE IF NOT EXISTS playlist_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    playlist_id INT NOT NULL,
+    movie_id INT NOT NULL,
+    position INT NOT NULL,
+    FOREIGN KEY (playlist_id) REFERENCES shared_playlists(id) ON DELETE CASCADE,
+    FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
+    INDEX idx_playlist (playlist_id, position)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
