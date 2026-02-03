@@ -34,6 +34,9 @@ jobs:
           cp -r next site/
           cp -r _next site/ 2>/dev/null || true
           cp -r data site/
+          if [ -f events.json ]; then cp events.json site/; fi
+          if [ -f last_update.json ]; then cp last_update.json site/; fi
+          if [ -d stats ]; then cp -r stats site/; fi
           if [ -f favicon.ico ]; then cp favicon.ico site/; elif [ -f favcreators/docs/favicon.ico ]; then cp favcreators/docs/favicon.ico site/favicon.ico; elif [ -f favcreators/favicon.ico ]; then cp favcreators/favicon.ico site/favicon.ico; fi
           touch site/.nojekyll
           if [ -d favcreators/docs ]; then
