@@ -19,8 +19,43 @@ header('Content-Type: application/json; charset=utf-8');
 
 // Handle preflight requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
+    header('HTTP/1.1 200 OK');
     exit();
+}
+
+// Polyfill for http_response_code (PHP 5.4+)
+if (!function_exists('http_response_code')) {
+    function http_response_code($code = NULL)
+    {
+        static $current_code = 200;
+
+        if ($code !== NULL) {
+            switch ($code) {
+                case 200:
+                    $text = 'OK';
+                    break;
+                case 201:
+                    $text = 'Created';
+                    break;
+                case 400:
+                    $text = 'Bad Request';
+                    break;
+                case 404:
+                    $text = 'Not Found';
+                    break;
+                case 500:
+                    $text = 'Internal Server Error';
+                    break;
+                default:
+                    $text = 'Unknown';
+                    break;
+            }
+            header("HTTP/1.1 $code $text");
+            $current_code = $code;
+        }
+
+        return $current_code;
+    }
 }
 
 /**
