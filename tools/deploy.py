@@ -47,13 +47,11 @@ def deploy():
             upload_dir(ftp, '_next', 'findtorontoevents.ca/_next')
             upload_dir(ftp, '_next', 'findtorontoevents.ca/next/_next')
         
-        # 2. Upload main files
+        # 2. Upload main files (only under findtorontoevents.ca/, never FTP root)
         files = [
             ('index.html', 'findtorontoevents.ca/index.html'),
-            ('index.html', 'index.html'),
             ('events.json', 'findtorontoevents.ca/next/events.json'),
             ('events.json', 'findtorontoevents.ca/events.json'),
-            ('events.json', 'events.json'),
             ('BREAK_FIX.MD', 'findtorontoevents.ca/BREAK_FIX.MD')
         ]
         

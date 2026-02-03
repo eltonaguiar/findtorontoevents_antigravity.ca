@@ -1,5 +1,5 @@
 """
-Deploy .htaccess to FTP root and findtorontoevents.ca/
+Deploy .htaccess to findtorontoevents.ca/ only (never FTP account root).
 """
 import os
 import ftplib
@@ -20,9 +20,9 @@ def deploy_htaccess():
         print(f"ERROR: File not found: {local_file}")
         return False
     
-    print("Deploying .htaccess to disable JS proxy...")
+    print("Deploying .htaccess to findtorontoevents.ca/ ...")
     
-    remote_paths = ['.', 'findtorontoevents.ca']
+    remote_paths = ['findtorontoevents.ca']
     try:
         with ftplib.FTP(host) as ftp:
             ftp.login(user=user, passwd=password)

@@ -10,7 +10,7 @@ Uses environment variables:
   FTP_SERVER  (or FTP_HOST) - FTP hostname
   FTP_USER    - FTP username
   FTP_PASS    - FTP password
-  FTP_REMOTE_PATH         - Remote path (default: findtorontoevents.ca/findevents)
+  FTP_REMOTE_PATH         - Remote path (default: findtorontoevents.ca)
 
 Run from project root:
   set FTP_SERVER=... FTP_USER=... FTP_PASS=...
@@ -28,8 +28,8 @@ from pathlib import Path
 _SCRIPT_DIR = Path(__file__).resolve().parent
 WORKSPACE = _SCRIPT_DIR.parent
 
-# Default remote path
-DEFAULT_REMOTE_PATH = "findtorontoevents.ca/findevents"
+# Default remote path: site under findtorontoevents.ca/ (never FTP account root)
+DEFAULT_REMOTE_PATH = "findtorontoevents.ca"
 
 
 def _env(key: str, fallback: str = "") -> str:
@@ -100,11 +100,8 @@ def deploy_events_api(ftp: ftplib.FTP, remote_base: str) -> bool:
         print("  Skip Events API (api/events not found)")
         return False
     
-    # Deploy to /fc/events-api/ where PHP is confirmed working
-    remotes = [
-        "findtorontoevents.ca/fc/events-api",
-        "fc/events-api",
-    ]
+    # Deploy to findtorontoevents.ca/fc/events-api/ only (never to bare path at FTP root)
+    remotes = ["findtorontoevents.ca/fc/events-api"]
     if remote_base:
         remotes.append(f"{remote_base}/fc/events-api")
     
@@ -116,16 +113,14 @@ def deploy_events_api(ftp: ftplib.FTP, remote_base: str) -> bool:
 
 
 def deploy_stats_page(ftp: ftplib.FTP, remote_base: str) -> bool:
-    """Upload stats/ to remote_base/stats/"""
+    """Upload stats/ to remote_base/stats/ (never to bare 'stats' at FTP root)."""
     local_stats = WORKSPACE / "stats"
     if not local_stats.is_dir():
         print("  Skip Stats page (stats/ not found)")
         return False
     
-    remotes = [
-        f"{remote_base}/stats",
-        "findtorontoevents.ca/stats",
-    ]
+    remotes = [f"{remote_base}/stats", "findtorontoevents.ca/stats"]
+    remotes = list(dict.fromkeys(remotes))  # dedupe if remote_base is findtorontoevents.ca
     
     for remote in remotes:
         print(f"  Uploading Stats page to {remote}/ ...")

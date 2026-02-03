@@ -2,15 +2,15 @@
 """
 Deploy Toronto Events + FavCreators to FTP (full set — no partial deploy).
 
-Uploads to FTP_REMOTE_PATH: index.html, .htaccess, events.json, next/events.json,
-next/_next/ (entire tree); then FavCreators to /fc/. See DEPLOYMENT_NOTES.md for
-dependency-check and verify-after-deploy rules.
+Uploads to FTP_REMOTE_PATH only (never to FTP account root). Puts index.html,
+.htaccess, events.json, last_update.json, next/_next/, stats/, fc/, api/ under
+findtorontoevents.ca/ (or findtorontoevents.ca/findevents if set). See DEPLOYMENT_NOTES.md.
 
 Uses environment variables:
   FTP_SERVER  (or FTP_HOST) - FTP hostname
   FTP_USER    - FTP username
   FTP_PASS    - FTP password
-  FTP_REMOTE_PATH         - Remote path (default: findtorontoevents.ca/findevents)
+  FTP_REMOTE_PATH         - Remote path (default: findtorontoevents.ca)
 
 Run from project root:
   set FTP_SERVER=... FTP_USER=... FTP_PASS=...
@@ -38,8 +38,8 @@ if _env_file.exists():
     if "FTP_SERVER" not in os.environ and os.environ.get("FTP_HOST"):
         os.environ.setdefault("FTP_SERVER", os.environ["FTP_HOST"])
 
-# Default remote path (site under findevents subfolder)
-DEFAULT_REMOTE_PATH = "findtorontoevents.ca/findevents"
+# Default remote path: site lives under findtorontoevents.ca/ (never upload to FTP account root)
+DEFAULT_REMOTE_PATH = "findtorontoevents.ca"
 
 
 def _env(key: str, fallback: str = "") -> str:
@@ -119,13 +119,13 @@ def deploy_main_site(ftp: ftplib.FTP, remote_base: str) -> bool:
     ht = WORKSPACE / ".htaccess"
     if ht.is_file():
         _upload_file(ftp, ht, f"{remote_base}/.htaccess")
-    # events.json
+    # events.json (canonical); upload to both root and next/ so frontend (loads /next/events.json) gets all sources
     ev = WORKSPACE / "events.json"
     if ev.is_file():
         _upload_file(ftp, ev, f"{remote_base}/events.json")
-    ev_next = WORKSPACE / "next" / "events.json"
-    if ev_next.is_file():
-        _upload_file(ftp, ev_next, f"{remote_base}/next/events.json")
+        _upload_file(ftp, ev, f"{remote_base}/next/events.json")
+    elif (WORKSPACE / "next" / "events.json").is_file():
+        _upload_file(ftp, WORKSPACE / "next" / "events.json", f"{remote_base}/next/events.json")
     # last_update.json (stats page: last updated time + source)
     lu = WORKSPACE / "last_update.json"
     if lu.is_file():
@@ -146,13 +146,10 @@ def deploy_favcreators(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
     if not local_docs.is_dir():
         print("  Skip FavCreators (favcreators/docs not found)")
         return True
-    # Deploy to /fc/ only (path "fc" avoids host 500 that /favcreators/ triggers)
-    remotes = [
-        "findtorontoevents.ca/fc",
-        "fc",
-    ]
+    # Deploy to findtorontoevents.ca/fc/ only (never to bare "fc" at FTP root)
+    remotes = ["findtorontoevents.ca/fc"]
     if main_remote_base:
-        remotes.extend([f"{main_remote_base}/fc"])
+        remotes.append(f"{main_remote_base}/fc")
     for remote in remotes:
         print(f"  Uploading FavCreators to {remote}/ ...")
         n = _upload_tree(ftp, local_docs, remote)
@@ -166,12 +163,9 @@ def deploy_favcreators_api(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
     if not local_api.is_dir():
         print("  Skip FavCreators API (favcreators/public/api not found)")
         return True
-    remotes = [
-        "findtorontoevents.ca/fc/api",
-        "fc/api",
-    ]
+    remotes = ["findtorontoevents.ca/fc/api"]
     if main_remote_base:
-        remotes.extend([f"{main_remote_base}/fc/api"])
+        remotes.append(f"{main_remote_base}/fc/api")
     for remote in remotes:
         print(f"  Uploading FavCreators API to {remote}/ ...")
         n = _upload_tree(ftp, local_api, remote)
@@ -185,13 +179,10 @@ def deploy_events_api(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
     if not local_api.is_dir():
         print("  Skip Events API (api/events not found)")
         return True
-    # Deploy to /fc/events-api/ where PHP is confirmed working
-    remotes = [
-        "findtorontoevents.ca/fc/events-api",
-        "fc/events-api",
-    ]
+    # Deploy to findtorontoevents.ca/fc/events-api/ only (never to bare path at FTP root)
+    remotes = ["findtorontoevents.ca/fc/events-api"]
     if main_remote_base:
-        remotes.extend([f"{main_remote_base}/fc/events-api"])
+        remotes.append(f"{main_remote_base}/fc/events-api")
     for remote in remotes:
         print(f"  Uploading Events API to {remote}/ ...")
         n = _upload_tree(ftp, local_api, remote)
@@ -207,12 +198,9 @@ def deploy_api_auth(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
         "auth_db_config.php",
         ".htaccess",
     ]
-    remotes = [
-        "findtorontoevents.ca/api",
-        "api",
-    ]
+    remotes = ["findtorontoevents.ca/api"]
     if main_remote_base:
-        remotes.extend([f"{main_remote_base}/api"])
+        remotes.append(f"{main_remote_base}/api")
     for remote in remotes:
         print(f"  Uploading API auth to {remote}/ ...")
         ftp.cwd("/")
@@ -230,12 +218,10 @@ def deploy_stats_page(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
     if not local_stats.is_dir():
         print("  Skip Stats page (stats/ not found)")
         return True
-    remotes = [
-        "findtorontoevents.ca/stats",
-        "stats",
-    ]
+    # Deploy to findtorontoevents.ca/stats/ only (never to bare "stats" at FTP root)
+    remotes = ["findtorontoevents.ca/stats"]
     if main_remote_base:
-        remotes.extend([f"{main_remote_base}/stats"])
+        remotes.append(f"{main_remote_base}/stats")
     for remote in remotes:
         print(f"  Uploading Stats page to {remote}/ ...")
         n = _upload_tree(ftp, local_stats, remote)
@@ -253,16 +239,16 @@ def main() -> None:
         print("Set FTP_SERVER (or FTP_HOST), FTP_USER, FTP_PASS in environment.")
         raise SystemExit(1)
 
-    # If remote_path is e.g. findtorontoevents.ca/findevents, also deploy to root (findtorontoevents.ca)
-    # so https://findtorontoevents.ca/ serves the updated site, not just /findevents/
+    # If remote_path is e.g. findtorontoevents.ca/findevents, also deploy main site to parent findtorontoevents.ca/ so the domain root serves the site.
+    # All uploads stay under findtorontoevents.ca/ (never to FTP account root).
     parent_root = ""
     if remote_path.rstrip("/").count("/") >= 1:
         parent_root = "/".join(remote_path.rstrip("/").split("/")[:-1])
 
     print(f"Deploy to FTP: {host}")
-    print(f"Remote path: {remote_path}")
+    print(f"Remote path: {remote_path} (all files under this or {parent_root or remote_path}, never FTP root)")
     if parent_root:
-        print(f"Also deploy to root: {parent_root}/ (so site is live at domain root)")
+        print(f"Also deploying main site to: {parent_root}/ (domain root)")
     print()
 
     try:

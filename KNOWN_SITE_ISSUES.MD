@@ -48,6 +48,23 @@ This document tracks known issues for **findtorontoevents.ca** and related pages
 
 ---
 
+## My saved events / Sign-in
+
+### 4. My saved events don’t persist after clearing cookies or re-login
+
+**Status:** Partially fixed (save to DB + feedback; load from DB on refresh not yet wired).
+
+- “Save to My Events” **Implemented:** When a **logged-in** user clicks the heart to save an event, the app now: (1) dispatches `toronto-event-saved` (React chunk patched to do this when adding to saved list); (2) the bridge in `index.html` persists the event via `POST /fc/api/save_events.php` and shows **"Saved to DB"** on success or an **error message** on failure.
+- **Still pending:** On page load/refresh, "My Events" is still populated from React state/localStorage only. Loading saved events from `get_my_events.php` when the user is logged in is not yet implemented.
+
+### 5. Already signed-in user clicking Sign in sees form again
+
+**Status:** Fixed.
+
+- When the user is already logged in (session or `get_me.php` returns a user), clicking “Sign in” now **redirects to /fc/** instead of showing the sign-in form. The top-right button shows “Account” and links to /fc/ when logged in. Email login now sets a PHP session so `get_me.php` works.
+
+---
+
 ## Adding or Updating Issues
 
 - **Title:** Short, descriptive.

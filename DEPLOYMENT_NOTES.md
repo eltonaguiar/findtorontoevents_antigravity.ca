@@ -27,15 +27,25 @@ Before running any deploy script or one-off upload:
 2. **Ensure the deploy script (or upload list) includes every dependency.** If the script only uploads one file, either extend the script or run additional uploads so the full set is deployed.
 3. **If the page is served from multiple paths** (e.g. `/index4.html` and `/findevents/index4.html`), deploy the **same full set** to both locations (e.g. under domain root and under `findevents/`).
 
-## 3. Verify after deploy
+## 3. Verify after deploy (and check for JS errors)
 
 After every deploy:
 
-1. **Load the deployed URL** in a browser (or run `npm run verify:remote` for the main site).
-2. **Check:** page loads, no 404s in Network tab, no console errors (e.g. "Could not load menu", "Could not load events"), styles and data load.
-3. **If anything fails:** fix missing or wrong paths, redeploy the affected files, and verify again.
+1. **Run remote verification** so the live site is checked for load, events, and **no JavaScript errors**:
+   - **Recommended:** `npm run verify:remote` (runs Playwright tests against the live site, including "no critical JS errors in console").
+   - Or: `VERIFY_REMOTE=1 npx playwright test tests/verify_remote_site.spec.ts`
+2. **Check:** page loads, no 404s in Network tab, **no SyntaxError / ChunkLoadError in console**, events and styles load.
+3. **If anything fails:** fix (e.g. chunk syntax, missing files), redeploy the affected files, and verify again.
 
-Do not consider a deploy "done" until this verification passes.
+Do not consider a deploy "done" until this verification passes. A broken chunk (e.g. `a2ac3a6616d60872.js`) will cause "Uncaught SyntaxError" and break the events page; the Playwright test catches this.
+
+## 3b. Check for JS errors before deploy (optional but recommended)
+
+Before deploying changes that touch the main React chunk or `index.html`:
+
+1. **Local verification:** `npm run verify:local` (runs Playwright against local server; includes `no_js_errors.spec.ts`).
+2. **Or** start the local server (`python tools/serve_local.py`), open the page, and confirm the browser console has no SyntaxError or critical errors.
+3. **Chunk edits:** If you patched `next/_next/static/chunks/a2ac3a6616d60872.js` (or `_next/static/chunks/...`), ensure braces and parentheses are balanced so the script parses. One missing `}` or `)` can cause "missing ) after argument list" or "Unexpected token" and break the events page after deploy.
 
 ## 4. Scripts and references
 

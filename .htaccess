@@ -1,8 +1,22 @@
+# findtorontoevents.ca — document root .htaccess
 RewriteEngine On
 RewriteBase /
 
+# API: do NOT rewrite — let api/*.php run (Google OAuth, etc.). Must come before any catch-all.
+RewriteRule ^api/ - [L]
+
 # Redirect exposed internal server path to canonical root (info disclosure fix)
 RewriteRule ^services/users/ / [R=301,L]
+
+# Stats page at /stats (root): serve stats/index.html
+RewriteRule ^stats/?$ stats/index.html [L]
+
+# Redirect legacy/alias URLs to stats (events count, sources, summary)
+RewriteRule ^debug/?$ /stats/ [R=301,L]
+RewriteRule ^info/?$ /stats/ [R=301,L]
+RewriteRule ^details/?$ /stats/ [R=301,L]
+RewriteRule ^events/?$ /stats/ [R=301,L]
+RewriteRule ^events_summary/?$ /stats/ [R=301,L]
 
 # Chunk JS: serve directly from next/_next/ (ModSecurity bypass via next/_next/static/chunks/.htaccess)
 # Proxy rewrite disabled – proxy was timing out

@@ -19,16 +19,18 @@ if (file_exists($envFile) && is_readable($envFile)) {
     }
 }
 
-$get = function ($keys, $default) {
+function _auth_db_get($keys, $default) {
     foreach ((array) $keys as $k) {
         $v = getenv($k);
         if ($v !== false && $v !== '') return $v;
         if (isset($_ENV[$k]) && (string) $_ENV[$k] !== '') return (string) $_ENV[$k];
     }
     return $default;
-};
+}
 
-$servername = $get(array('FC_MYSQL_HOST', 'MYSQL_HOST'), 'localhost');
-$username   = $get(array('FC_MYSQL_USER', 'MYSQL_USER'), 'ejaguiar1_favcreators');
-$password   = $get(array('FC_MYSQL_PASSWORD', 'MYSQL_PASSWORD'), '');
-$dbname     = $get(array('FC_MYSQL_DATABASE', 'MYSQL_DATABASE'), 'ejaguiar1_favcreators');
+// Reads env / api/.env first; defaults below used when PHP doesn't see server env (e.g. cPanel).
+// FavCreators DB: ejaguiar1_favcreators / Solid-Kitten-92-Brave-Vessel
+$servername = _auth_db_get(array('FC_MYSQL_HOST', 'MYSQL_HOST'), 'localhost');
+$username   = _auth_db_get(array('FC_MYSQL_USER', 'MYSQL_USER'), 'ejaguiar1_favcreators');
+$password   = _auth_db_get(array('DB_PASS_SERVER_FAVCREATORS', 'FC_MYSQL_PASSWORD', 'MYSQL_PASSWORD'), 'Solid-Kitten-92-Brave-Vessel');
+$dbname     = _auth_db_get(array('DB_NAME_SERVER_FAVCREATORS', 'FC_MYSQL_DATABASE', 'MYSQL_DATABASE'), 'ejaguiar1_favcreators');
