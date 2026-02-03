@@ -128,7 +128,7 @@ function createMovie($pdo)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([
+    $stmt->execute(array(
         $data['title'],
         $data['type'] ?? 'movie',
         $data['release_year'] ?? null,
@@ -137,7 +137,7 @@ function createMovie($pdo)
         $data['tmdb_id'] ?? null,
         $data['imdb_id'] ?? null,
         $data['source'] ?? 'manual'
-    ]);
+    ));
 
     $movieId = $pdo->lastInsertId();
 
@@ -204,10 +204,10 @@ function updateMovie($pdo, $movieId)
 {
     $data = getRequestBody();
 
-    $fields = [];
+    $fields = array();
     $values = array();
 
-    $allowedFields = ['title', 'type', 'release_year', 'genre', 'description', 'tmdb_id', 'imdb_id', 'source'];
+    $allowedFields = array('title', 'type', 'release_year', 'genre', 'description', 'tmdb_id', 'imdb_id', 'source');
 
     foreach ($allowedFields as $field) {
         if (isset($data[$field])) {
