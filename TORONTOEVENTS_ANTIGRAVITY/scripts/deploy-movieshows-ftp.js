@@ -10,9 +10,13 @@ const REMOTE_BASE = '/findtorontoevents.ca/MOVIESHOWS';
 const LOCAL_BASE = 'E:/findtorontoevents_antigravity.ca/TORONTOEVENTS_ANTIGRAVITY';
 
 const FILES_TO_DEPLOY = [
+    // API Files
+    { local: 'MOVIESHOWS/api/db-config.php', remote: `${REMOTE_BASE}/api/db-config.php` },
+    { local: 'MOVIESHOWS/api/movies.php', remote: `${REMOTE_BASE}/api/movies.php` },
     { local: 'MOVIESHOWS/api/queue.php', remote: `${REMOTE_BASE}/api/queue.php` },
     { local: 'MOVIESHOWS/api/preferences.php', remote: `${REMOTE_BASE}/api/preferences.php` },
     { local: 'MOVIESHOWS/api/playlists.php', remote: `${REMOTE_BASE}/api/playlists.php` },
+    // Database Files
     { local: 'database/schema.sql', remote: `${REMOTE_BASE}/database/schema.sql` }
 ];
 
