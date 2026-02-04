@@ -11,7 +11,7 @@ async function deployPopulateScript() {
         await client.access({
             host: 'ftps2.50webs.com',
             user: 'ejaguiar1',
-            password: 'CxH1Uh*#0QkIVg@KxgMZXn7Hp',
+            password: '$a^FzN7BqKapSQMsZxD&^FeTJ',
             secure: false
         });
 

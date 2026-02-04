@@ -43,13 +43,49 @@ try {
     die("Database Error: " . $e->getMessage() . "\n");
 }
 
+function fetchURL($url)
+{
+    // Try cURL first
+    if (function_exists('curl_init')) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        $response = curl_exec($ch);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($response === false) {
+            echo "cURL Error: $error\n";
+            return false;
+        }
+        return $response;
+    }
+
+    // Fallback to file_get_contents
+    if (ini_get('allow_url_fopen')) {
+        $response = @file_get_contents($url);
+        if ($response === false) {
+            echo "file_get_contents failed\n";
+            return false;
+        }
+        return $response;
+    }
+
+    echo "Error: Neither cURL nor allow_url_fopen is available\n";
+    return false;
+}
+
 function inspectDatabase($pdo)
 {
     echo "=== DATABASE INSPECTION ===\n\n";
 
     // Get total count
     $stmt = $pdo->query("SELECT COUNT(*) as total FROM movies");
-    $total = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $total = $result['total'];
     echo "Total records: $total\n\n";
 
     // Get counts by year and type
@@ -89,8 +125,9 @@ function populateFromTMDB($pdo, $apiKey, $year, $type, $limit)
 
     // Check existing count
     $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM movies WHERE release_year = ? AND type = ?");
-    $stmt->execute([$year, $type]);
-    $existing = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+    $stmt->execute(array($year, $type));
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $existing = $result['count'];
     echo "Existing: $existing items\n";
 
     if ($existing >= $limit) {
@@ -114,7 +151,7 @@ function populateFromTMDB($pdo, $apiKey, $year, $type, $limit)
         echo "Fetching page $page... ";
         flush();
 
-        $response = @file_get_contents($url);
+        $response = fetchURL($url);
         if ($response === false) {
             echo "FAILED\n";
             break;
@@ -135,7 +172,7 @@ function populateFromTMDB($pdo, $apiKey, $year, $type, $limit)
 
             // Check if already exists
             $checkStmt = $pdo->prepare("SELECT id FROM movies WHERE tmdb_id = ? AND type = ?");
-            $checkStmt->execute([$tmdbId, $type]);
+            $checkStmt->execute(array($tmdbId, $type));
             if ($checkStmt->fetch()) {
                 continue; // Skip duplicates
             }
@@ -150,7 +187,7 @@ function populateFromTMDB($pdo, $apiKey, $year, $type, $limit)
                 VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
             ");
 
-            $insertStmt->execute([$title, $type, $genre, $description, $year, $rating, $tmdbId]);
+            $insertStmt->execute(array($title, $type, $genre, $description, $year, $rating, $tmdbId));
             $inserted++;
             $pageInserted++;
         }
