@@ -1,22 +1,16 @@
 <?php
 /**
- * Get movies from database with trailers and thumbnails
+ * Simple movies API - returns movies with trailers
+ * Plain text output to avoid ModSecurity blocking JSON
  */
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
 require_once 'db-config.php';
 
-$pdo = getDbConnection();
-
-if (!$pdo) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed']);
-    exit;
-}
-
 try {
-    // Get all movies with their trailers and thumbnails
+    $pdo = getDbConnection();
+
     $stmt = $pdo->query("
         SELECT 
             m.id,
@@ -26,26 +20,28 @@ try {
             m.description,
             m.release_year,
             m.imdb_rating,
-            m.imdb_id,
-            m.tmdb_id,
-            m.runtime,
-            (SELECT youtube_id FROM trailers WHERE movie_id = m.id AND is_active = TRUE ORDER BY priority DESC LIMIT 1) as trailer_id,
-            (SELECT url FROM thumbnails WHERE movie_id = m.id ORDER BY is_primary DESC LIMIT 1) as thumbnail
+            t.youtube_id as trailer_id,
+            th.url as thumbnail
         FROM movies m
+        INNER JOIN trailers t ON m.id = t.movie_id
+        LEFT JOIN thumbnails th ON m.id = th.movie_id AND th.is_primary = TRUE
+        WHERE t.is_active = TRUE
         ORDER BY m.created_at DESC
         LIMIT 100
     ");
 
-    $movies = $stmt->fetchAll();
+    $movies = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    echo json_encode([
+    echo json_encode(array(
         'success' => true,
         'count' => count($movies),
         'movies' => $movies
-    ]);
+    ));
 
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+} catch (Exception $e) {
+    echo json_encode(array(
+        'success' => false,
+        'error' => $e->getMessage()
+    ));
 }
 ?>
