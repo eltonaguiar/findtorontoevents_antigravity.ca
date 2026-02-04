@@ -12,7 +12,7 @@ try {
     $pdo = getDbConnection();
 
     $stmt = $pdo->query("
-        SELECT 
+        (SELECT 
             m.id,
             m.title,
             m.type,
@@ -25,9 +25,26 @@ try {
         FROM movies m
         INNER JOIN trailers t ON m.id = t.movie_id
         LEFT JOIN thumbnails th ON m.id = th.movie_id AND th.is_primary = TRUE
-        WHERE t.is_active = TRUE
+        WHERE t.is_active = TRUE AND m.type = 'movie'
         ORDER BY m.created_at DESC
-        LIMIT 200
+        LIMIT 100)
+        UNION ALL
+        (SELECT 
+            m.id,
+            m.title,
+            m.type,
+            m.genre,
+            m.description,
+            m.release_year,
+            m.imdb_rating,
+            t.youtube_id as trailer_id,
+            th.url as thumbnail
+        FROM movies m
+        INNER JOIN trailers t ON m.id = t.movie_id
+        LEFT JOIN thumbnails th ON m.id = th.movie_id AND th.is_primary = TRUE
+        WHERE t.is_active = TRUE AND m.type = 'tv'
+        ORDER BY m.created_at DESC
+        LIMIT 100)
     ");
 
     $movies = $stmt->fetchAll(PDO::FETCH_ASSOC);
