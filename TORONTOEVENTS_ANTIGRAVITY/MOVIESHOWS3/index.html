@@ -215,6 +215,31 @@
             padding: 80px 20px 20px;
         }
 
+        .browse-close {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 101;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .browse-close:hover {
+            background: rgba(0, 0, 0, 0.8);
+            transform: scale(1.1);
+        }
+
         .browse-view.active {
             opacity: 1;
             pointer-events: auto;
@@ -245,6 +270,35 @@
             border-radius: 12px;
             overflow: hidden;
             background: rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+        .movie-card-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            z-index: 10;
+        }
+
+        .movie-card-add-queue {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .movie-card-add-queue:hover {
+            background: rgba(0, 0, 0, 0.95);
+            transform: scale(1.1);
         }
 
         .movie-card:hover {
@@ -392,7 +446,7 @@
             position: fixed;
             right: 16px;
             bottom: 100px;
-            z-index: 30;
+            z-index: 15;
             display: flex;
             flex-direction: column;
             gap: 16px;
@@ -583,10 +637,144 @@
         .unmute-btn:active {
             transform: scale(0.95);
         }
+
+        /* Mute Overlay Modal */
+        .mute-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            border: 2px solid #ff4444;
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -45%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        .mute-overlay.hidden {
+            display: none;
+        }
+
+        .mute-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .mute-heading {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 24px;
+        }
+
+        .enable-sound-btn {
+            background: linear-gradient(135deg, #ff4444 0%, #ff6b6b 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 20px rgba(255, 68, 68, 0.4);
+        }
+
+        .enable-sound-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(255, 68, 68, 0.6);
+        }
+
+        .enable-sound-btn:active {
+            transform: translateY(0);
+        }
+
+        .keyboard-hint {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+
+        .keyboard-hint kbd {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-family: monospace;
+            font-weight: 600;
+            color: white;
+        }
+
+        /* Persistent Bottom-Left Unmute Button */
+        .persistent-unmute-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 50;
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(255, 68, 68, 0.4);
+        }
+
+        .persistent-unmute-btn:hover {
+            background: #ff6b6b;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(255, 68, 68, 0.6);
+        }
+
+        .persistent-unmute-btn:active {
+            transform: translateY(0);
+        }
+
+        .persistent-unmute-btn.hidden {
+            display: none;
+        }
     </style>
 </head>
 
 <body>
+    <!-- Mute Overlay Modal -->
+    <div class="mute-overlay hidden" id="muteOverlay">
+        <div class="mute-icon">🔇</div>
+        <div class="mute-heading">Audio is Muted</div>
+        <button class="enable-sound-btn" onclick="enableSound()">
+            🔊 TAP TO ENABLE SOUND
+        </button>
+        <div class="keyboard-hint">or press <kbd>M</kbd> key</div>
+    </div>
+
+    <!-- Persistent Bottom-Left Unmute Button -->
+    <button class="persistent-unmute-btn hidden" id="persistentUnmuteBtn" onclick="enableSound()">
+        🔇 Click to Unmute
+    </button>
+
     <!-- Hamburger Menu -->
     <button class="hamburger-btn" onclick="toggleMenu()">
         <div class="hamburger-icon">
@@ -636,9 +824,10 @@
 
     <!-- Browse/Catalog View -->
     <div class="browse-view" id="browseView">
+        <button class="browse-close" onclick="toggleBrowse()">✕</button>
         <div class="browse-header">
             <h1>Browse All Movies & TV Shows</h1>
-            <p style="opacity: 0.7;">Click any title to start watching</p>
+            <p style="opacity: 0.7;">Click any title to start watching or add to queue</p>
         </div>
         <div class="browse-grid" id="browseGrid"></div>
     </div>
@@ -653,6 +842,11 @@
         <div class="queue-content" id="queueContent">
             <p style="opacity: 0.5; text-align: center; padding: 20px;">Your queue is empty<br><small>Click ➕ to add
                     movies</small></p>
+        </div>
+        <div id="queueUpNext"
+            style="padding: 16px; border-top: 1px solid rgba(255, 255, 255, 0.1); background: rgba(245, 158, 11, 0.1); display: none;">
+            <div style="font-size: 12px; opacity: 0.7; margin-bottom: 8px;">UP NEXT</div>
+            <div id="queueUpNextContent"></div>
         </div>
     </div>
 
@@ -716,12 +910,17 @@
         function renderBrowseGrid() {
             const grid = document.getElementById('browseGrid');
             grid.innerHTML = filteredMovies.map((movie, index) => `
-                <div class="movie-card" onclick="playMovieFromBrowse(${index})">
-                    <img src="${movie.thumbnail || 'https://placehold.co/200x300/1a1a1a/666?text=' + encodeURIComponent(movie.title)}" alt="${escapeHtml(movie.title)}" onerror="this.src='https://placehold.co/200x300/1a1a1a/666?text=No+Image'">
-                    <div class="movie-card-info">
-                        <div class="movie-card-title">${escapeHtml(movie.title)}</div>
-                        <div class="movie-card-meta">
-                            ${movie.release_year || ''} ${movie.imdb_rating ? '⭐ ' + movie.imdb_rating : ''}
+                <div class="movie-card">
+                    <div class="movie-card-actions">
+                        <button class="movie-card-add-queue" onclick="event.stopPropagation(); addToQueueFromBrowse(${index});" title="Add to Queue">➕</button>
+                    </div>
+                    <div onclick="playMovieFromBrowse(${index})" style="cursor: pointer;">
+                        <img src="${movie.thumbnail || 'https://placehold.co/200x300/1a1a1a/666?text=' + encodeURIComponent(movie.title)}" alt="${escapeHtml(movie.title)}" onerror="this.src='https://placehold.co/200x300/1a1a1a/666?text=No+Image'">
+                        <div class="movie-card-info">
+                            <div class="movie-card-title">${escapeHtml(movie.title)}</div>
+                            <div class="movie-card-meta">
+                                ${movie.release_year || ''} ${movie.imdb_rating ? '⭐ ' + movie.imdb_rating : ''}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -729,7 +928,14 @@
         }
 
         function playMovieFromBrowse(index) {
-            // Close browse view first
+            // Stop ALL currently playing videos first
+            document.querySelectorAll('.video-card iframe').forEach(iframe => {
+                if (iframe.src.includes('autoplay=1')) {
+                    iframe.src = iframe.src.replace(/autoplay=1/, 'autoplay=0');
+                }
+            });
+
+            // Close browse view
             document.getElementById('browseView').classList.remove('active');
 
             // Wait for transition, then scroll
@@ -739,6 +945,24 @@
                     behavior: 'smooth'
                 });
             }, 350);
+        }
+
+        function addToQueueFromBrowse(index) {
+            const movie = filteredMovies[index];
+
+            if (movie && !myQueue.find(m => m.id === movie.id)) {
+                myQueue.push(movie);
+                localStorage.setItem('movieQueue', JSON.stringify(myQueue));
+                document.getElementById('queueCount').textContent = myQueue.length;
+                alert(`✅ Added "${movie.title}" to queue`);
+
+                // Update queue if it's open
+                if (document.getElementById('queuePanel').classList.contains('active')) {
+                    renderQueue();
+                }
+            } else if (movie) {
+                alert('Already in queue!');
+            }
         }
 
         function addToQueue() {
@@ -760,6 +984,49 @@
             localStorage.setItem('movieQueue', JSON.stringify(myQueue));
             document.getElementById('queueCount').textContent = myQueue.length;
             renderQueue();
+        }
+
+        function renderQueue() {
+            const queueContent = document.getElementById('queueContent');
+            const upNextSection = document.getElementById('queueUpNext');
+            const upNextContent = document.getElementById('queueUpNextContent');
+
+            if (myQueue.length === 0) {
+                queueContent.innerHTML = '<p style="opacity: 0.5; text-align: center; padding: 20px;">Your queue is empty<br><small>Click \u2795 to add movies</small></p>';
+                upNextSection.style.display = 'none';
+                return;
+            }
+
+            // Render queue items
+            queueContent.innerHTML = myQueue.map(movie => `
+                <div class="queue-item">
+                    <img src="${movie.thumbnail || 'https://placehold.co/60x90/1a1a1a/666?text=' + encodeURIComponent(movie.title)}" alt="${escapeHtml(movie.title)}" onerror="this.src='https://placehold.co/60x90/1a1a1a/666?text=No+Image'">
+                    <div class="queue-item-info">
+                        <div class="queue-item-title">${escapeHtml(movie.title)}</div>
+                        <div class="queue-item-meta">
+                            ${movie.release_year || ''} ${movie.imdb_rating ? '\u2b50 ' + movie.imdb_rating : ''}
+                        </div>
+                    </div>
+                    <button class="queue-item-remove" onclick="removeFromQueue(${movie.id})">\u2716</button>
+                </div>
+            `).join('');
+
+            // Show "Up Next" - the first item in queue
+            if (myQueue.length > 0) {
+                const nextMovie = myQueue[0];
+                upNextContent.innerHTML = `
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <img src="${nextMovie.thumbnail || 'https://placehold.co/60x90/1a1a1a/666?text=' + encodeURIComponent(nextMovie.title)}" alt="${escapeHtml(nextMovie.title)}" style="width: 50px; height: 75px; object-fit: cover; border-radius: 6px;" onerror="this.src='https://placehold.co/60x90/1a1a1a/666?text=No+Image'">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px;">${escapeHtml(nextMovie.title)}</div>
+                            <div style="font-size: 12px; opacity: 0.7;">${nextMovie.release_year || ''} ${nextMovie.imdb_rating ? '\u2b50 ' + nextMovie.imdb_rating : ''}</div>
+                        </div>
+                    </div>
+                `;
+                upNextSection.style.display = 'block';
+            } else {
+                upNextSection.style.display = 'none';
+            }
         }
 
         function likeMovie() {
@@ -860,8 +1127,10 @@
             card.className = 'video-card';
             card.dataset.index = index;
 
-            // All videos start with autoplay=1 for scroll detection
-            const youtubeUrl = `https://www.youtube.com/embed/${movie.trailer_id}?autoplay=1&mute=1&controls=0&playsinline=1&loop=1&playlist=${movie.trailer_id}&modestbranding=1&rel=0&enablejsapi=1`;
+            // Only the FIRST video starts with autoplay=1, all others start with autoplay=0
+            // The Intersection Observer will change autoplay=0 to autoplay=1 when scrolling
+            const autoplayValue = index === 0 ? 1 : 0;
+            const youtubeUrl = `https://www.youtube.com/embed/${movie.trailer_id}?autoplay=${autoplayValue}&mute=1&controls=0&playsinline=1&loop=1&playlist=${movie.trailer_id}&modestbranding=1&rel=0&enablejsapi=1`;
 
             card.innerHTML = `
                 <div class="video-wrapper">
@@ -900,7 +1169,7 @@
             return card;
         }
 
-        let isMuted = true;
+        let videoMuteStates = {}; // Track mute state per video
         let hasUserInteracted = false;
 
         function startPlayback(index) {
@@ -919,16 +1188,75 @@
         }
 
         function toggleMute(index) {
-            isMuted = !isMuted;
-            const btn = document.querySelector(`#player-${index}`).parentElement.querySelector('.unmute-btn');
-            btn.textContent = isMuted ? '🔇' : '🔊';
+            // Toggle mute state for this specific video
+            const currentMuteState = videoMuteStates[index] !== undefined ? videoMuteStates[index] : true;
+            videoMuteStates[index] = !currentMuteState;
 
-            // Update all iframes
-            document.querySelectorAll('iframe').forEach((iframe, i) => {
+            const btn = document.querySelector(`#player-${index}`).parentElement.querySelector('.unmute-btn');
+            btn.textContent = videoMuteStates[index] ? '🔇' : '🔊';
+
+            // Update ONLY the current video's iframe
+            const iframe = document.getElementById(`player-${index}`);
+            if (iframe) {
                 const currentUrl = iframe.src;
-                iframe.src = currentUrl.replace(/mute=[01]/, `mute=${isMuted ? 1 : 0}`);
-            });
+                iframe.src = currentUrl.replace(/mute=[01]/, `mute=${videoMuteStates[index] ? 1 : 0}`);
+            }
+
+            // Update overlay visibility
+            updateMuteOverlay();
         }
+
+        function enableSound() {
+            // Unmute all videos
+            const allIframes = document.querySelectorAll('iframe');
+            allIframes.forEach((iframe, index) => {
+                videoMuteStates[index] = false;
+                const currentUrl = iframe.src;
+                iframe.src = currentUrl.replace(/mute=1/, 'mute=0');
+
+                // Update the unmute button for this video
+                const btn = iframe.parentElement.querySelector('.unmute-btn');
+                if (btn) {
+                    btn.textContent = '🔊';
+                }
+            });
+
+            // Hide the mute overlay and persistent button
+            document.getElementById('muteOverlay').classList.add('hidden');
+            document.getElementById('persistentUnmuteBtn').classList.add('hidden');
+        }
+
+        function showMuteOverlay() {
+            // Show the mute overlay modal
+            document.getElementById('muteOverlay').classList.remove('hidden');
+            document.getElementById('persistentUnmuteBtn').classList.remove('hidden');
+        }
+
+        function updateMuteOverlay() {
+            // Check if any video is unmuted
+            const anyUnmuted = Object.values(videoMuteStates).some(state => state === false);
+
+            if (anyUnmuted) {
+                // Hide overlay if any video is unmuted
+                document.getElementById('muteOverlay').classList.add('hidden');
+                document.getElementById('persistentUnmuteBtn').classList.add('hidden');
+            } else {
+                // Show overlay if all videos are muted
+                showMuteOverlay();
+            }
+        }
+
+        // Keyboard shortcut: M key to enable sound
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'm' || e.key === 'M') {
+                enableSound();
+            }
+        });
+
+        // Show mute overlay on page load after a short delay
+        setTimeout(() => {
+            showMuteOverlay();
+        }, 1000);
 
         // Intersection Observer for autoplay on scroll
         function setupScrollAutoplay() {
@@ -941,34 +1269,50 @@
             let currentlyPlaying = null;
 
             const observer = new IntersectionObserver((entries) => {
+                // Find the most visible video
+                let mostVisible = null;
+                let highestRatio = 0;
+
                 entries.forEach(entry => {
-                    const iframe = entry.target.querySelector('iframe');
-                    const index = entry.target.dataset.index;
-
                     if (entry.isIntersecting && entry.intersectionRatio >= 0.75) {
-                        // This video is in view - play it
-                        if (currentlyPlaying !== index) {
-                            console.log(`Playing video ${index}`);
-
-                            // Force reload iframe to trigger autoplay
-                            const currentSrc = iframe.src;
-                            if (!currentSrc.includes('autoplay=1')) {
-                                iframe.src = currentSrc.replace(/autoplay=[01]/, 'autoplay=1');
-                            } else {
-                                // Force reload to restart
-                                iframe.src = iframe.src;
-                            }
-
-                            currentlyPlaying = index;
-                        }
-                    } else if (currentlyPlaying === index) {
-                        // Video scrolled out of view - pause it
-                        const pauseSrc = iframe.src.replace(/autoplay=1/, 'autoplay=0');
-                        if (pauseSrc !== iframe.src) {
-                            iframe.src = pauseSrc;
+                        if (entry.intersectionRatio > highestRatio) {
+                            highestRatio = entry.intersectionRatio;
+                            mostVisible = entry;
                         }
                     }
                 });
+
+                // If we found a visible video, play ONLY that one
+                if (mostVisible) {
+                    const iframe = mostVisible.target.querySelector('iframe');
+                    const index = mostVisible.target.dataset.index;
+
+                    if (currentlyPlaying !== index) {
+                        console.log(`Playing video ${index}`);
+
+                        // FIRST: Pause ALL other videos
+                        document.querySelectorAll('.video-card').forEach(card => {
+                            const cardIndex = card.dataset.index;
+                            if (cardIndex !== index) {
+                                const cardIframe = card.querySelector('iframe');
+                                if (cardIframe && cardIframe.src.includes('autoplay=1')) {
+                                    cardIframe.src = cardIframe.src.replace(/autoplay=1/, 'autoplay=0');
+                                }
+                            }
+                        });
+
+                        // THEN: Play the new video
+                        const currentSrc = iframe.src;
+                        if (!currentSrc.includes('autoplay=1')) {
+                            iframe.src = currentSrc.replace(/autoplay=[01]/, 'autoplay=1');
+                        } else {
+                            // Force reload to restart
+                            iframe.src = iframe.src;
+                        }
+
+                        currentlyPlaying = index;
+                    }
+                }
             }, options);
 
             // Observe all video cards
@@ -984,10 +1328,12 @@
                     if (firstIframe) {
                         console.log('Force playing first video');
                         firstIframe.src = firstIframe.src; // Reload to trigger autoplay
+                        currentlyPlaying = '0';
                     }
                 }
             }, 1000);
         }
+
 
         function escapeHtml(text) {
             const div = document.createElement('div');
