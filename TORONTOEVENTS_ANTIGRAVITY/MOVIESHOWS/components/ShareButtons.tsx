@@ -70,7 +70,7 @@ export function ShareButtons({ url, title, description = '' }: ShareButtonsProps
             </div>
 
             <div className="share-actions">
-                {navigator.share && (
+                {typeof navigator.share === 'function' && (
                     <button onClick={handleShare} className="share-native">
                         📤 Share
                     </button>

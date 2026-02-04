@@ -26,7 +26,9 @@ export class PerformanceMonitor {
                     const entries = list.getEntries();
                     const lastEntry = entries[entries.length - 1] as any;
                     this.metrics.lcp = lastEntry.renderTime || lastEntry.loadTime;
-                    this.reportMetric('LCP', this.metrics.lcp);
+                    if (this.metrics.lcp !== undefined) {
+                        this.reportMetric('LCP', this.metrics.lcp);
+                    }
                 });
                 lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
             } catch (e) {
