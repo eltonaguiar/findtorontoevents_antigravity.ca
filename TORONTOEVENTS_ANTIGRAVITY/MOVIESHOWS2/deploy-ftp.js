@@ -18,9 +18,15 @@ async function deploy() {
 
         console.log('✅ Connected!\n');
 
-        console.log('📁 Navigating to /findtorontoevents.ca/MOVIESHOWS2...');
-        await client.cd('/findtorontoevents.ca/MOVIESHOWS2');
-        console.log('✅ In MOVIESHOWS2 directory!\n');
+        console.log('📁 Creating /findtorontoevents.ca/movieshows2 directory...');
+        try {
+            await client.ensureDir('/findtorontoevents.ca/movieshows2');
+            console.log('✅ Directory ready!\n');
+        } catch (e) {
+            console.log('Directory might already exist, continuing...\n');
+        }
+
+        await client.cd('/findtorontoevents.ca/movieshows2');
 
         console.log('📤 Uploading index.html...');
         await client.uploadFrom(path.join(__dirname, 'index.html'), 'index.html');
@@ -30,13 +36,25 @@ async function deploy() {
         await client.uploadFrom(path.join(__dirname, 'play.html'), 'play.html');
         console.log('✅ play.html uploaded!\n');
 
+        console.log('📤 Uploading app.html (main TikTok-style interface)...');
+        await client.uploadFrom(path.join(__dirname, 'app.html'), 'app.html');
+        console.log('✅ app.html uploaded!\n');
+
         console.log('📤 Uploading .htaccess...');
         await client.uploadFrom(path.join(__dirname, '.htaccess'), '.htaccess');
         console.log('✅ .htaccess uploaded!\n');
 
+        console.log('📤 Uploading favicon.ico...');
+        await client.uploadFrom(path.join(__dirname, 'favicon.ico'), 'favicon.ico');
+        console.log('✅ favicon.ico uploaded!\n');
+
+        console.log('📁 Uploading _next directory...');
+        await client.uploadFromDir(path.join(__dirname, '_next'), '_next');
+        console.log('✅ _next directory uploaded!\n');
+
         console.log('🎉 Deployment successful!');
-        console.log('🌐 Live at: https://findtorontoevents.ca/MOVIESHOWS2/\n');
-        console.log('🎬 Player at: https://findtorontoevents.ca/MOVIESHOWS2/play.html\n');
+        console.log('🌐 Live at: https://findtorontoevents.ca/movieshows2/\n');
+        console.log('🎬 TikTok-style player: https://findtorontoevents.ca/movieshows2/app.html\n');
 
     } catch (err) {
         console.error('❌ Error:', err.message);
