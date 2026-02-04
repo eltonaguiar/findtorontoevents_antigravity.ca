@@ -20,6 +20,192 @@
             height: 100vh;
         }
 
+        /* Hamburger Menu */
+        .hamburger-btn {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 200;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .hamburger-btn:hover {
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .hamburger-icon {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 24px;
+        }
+
+        .hamburger-icon span {
+            width: 100%;
+            height: 2px;
+            background: white;
+            border-radius: 2px;
+        }
+
+        .menu-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 250;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .menu-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .menu-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 300px;
+            max-width: 90vw;
+            background: rgba(24, 24, 24, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 251;
+            transform: translateX(-100%);
+            transition: transform 0.3s;
+        }
+
+        .menu-panel.active {
+            transform: translateX(0);
+        }
+
+        .menu-header {
+            padding: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: linear-gradient(to right, rgba(245, 158, 11, 0.5), transparent);
+        }
+
+        .menu-header h2 {
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+        .menu-header h2 span {
+            color: #f59e0b;
+        }
+
+        .menu-close {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .menu-content {
+            padding: 16px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .menu-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .menu-link.active {
+            background: rgba(245, 158, 11, 0.2);
+        }
+
+        /* Top Controls */
+        .top-controls {
+            position: fixed;
+            top: 16px;
+            left: 80px;
+            right: 16px;
+            z-index: 50;
+            display: flex;
+            gap: 12px;
+        }
+
+        .filter-group {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 4px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            border-radius: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .filter-btn.active {
+            background: white;
+            color: black;
+        }
+
+        /* Sidebar Actions */
+        .sidebar-actions {
+            position: fixed;
+            right: 16px;
+            bottom: 100px;
+            z-index: 30;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .action-btn {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            padding: 12px;
+            cursor: pointer;
+            color: white;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-btn:hover {
+            background: rgba(0, 0, 0, 0.6);
+        }
+
         #container {
             height: 100vh;
             overflow-y: scroll;
@@ -36,18 +222,12 @@
             width: 100%;
             position: relative;
             scroll-snap-align: start;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             background: #000;
         }
 
         .video-wrapper {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
         }
 
         .video-wrapper iframe {
@@ -60,11 +240,10 @@
             position: absolute;
             bottom: 0;
             left: 0;
-            right: 0;
+            right: 100px;
             padding: 20px;
             background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
             z-index: 10;
-            pointer-events: none;
         }
 
         .movie-title {
@@ -92,41 +271,6 @@
             font-size: 14px;
             line-height: 1.4;
             opacity: 0.9;
-            max-width: 600px;
-        }
-
-        .loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            font-size: 20px;
-        }
-
-        .error {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .error-icon {
-            font-size: 60px;
-            margin-bottom: 20px;
-        }
-
-        .error-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .error-message {
-            font-size: 16px;
-            opacity: 0.7;
         }
 
         .genre-tags {
@@ -142,17 +286,83 @@
             border-radius: 20px;
             font-size: 12px;
         }
+
+        .loading,
+        .error {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .error-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 
 <body>
+    <!-- Hamburger Menu -->
+    <button class="hamburger-btn" onclick="toggleMenu()">
+        <div class="hamburger-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </button>
+
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+    <div class="menu-panel" id="menuPanel">
+        <div class="menu-header">
+            <h2><span>Movie</span>Shows</h2>
+            <button class="menu-close" onclick="toggleMenu()">✕</button>
+        </div>
+        <div class="menu-content">
+            <a href="https://findtorontoevents.ca/" class="menu-link">
+                <span>🎉</span> Toronto Events
+            </a>
+            <a href="/MOVIESHOWS3/" class="menu-link active">
+                <span>🎬</span> Movies & TV
+            </a>
+            <a href="https://findtorontoevents.ca/FAVCREATORS_TRACKER/" class="menu-link">
+                <span>⭐</span> FavCreators
+            </a>
+        </div>
+    </div>
+
+    <!-- Top Controls -->
+    <div class="top-controls">
+        <div class="filter-group">
+            <button class="filter-btn active">All (39)</button>
+            <button class="filter-btn">Movies</button>
+            <button class="filter-btn">TV Shows</button>
+        </div>
+    </div>
+
+    <!-- Sidebar Actions -->
+    <div class="sidebar-actions">
+        <button class="action-btn" title="Like">❤️</button>
+        <button class="action-btn" title="Save">🔖</button>
+        <button class="action-btn" title="Share">🔗</button>
+    </div>
+
+    <!-- Video Container -->
     <div id="container">
         <div class="loading">Loading movies...</div>
     </div>
 
     <script>
         const API_URL = '/MOVIESHOWS3/api/get-movies.php';
-        const container = document.getElementById('container');
+
+        function toggleMenu() {
+            document.getElementById('menuOverlay').classList.toggle('active');
+            document.getElementById('menuPanel').classList.toggle('active');
+        }
 
         async function loadMovies() {
             try {
@@ -164,9 +374,10 @@
                 }
 
                 if (!data.movies || data.movies.length === 0) {
-                    throw new Error('No movies with trailers found in database');
+                    throw new Error('No movies with trailers found');
                 }
 
+                const container = document.getElementById('container');
                 container.innerHTML = '';
 
                 data.movies.forEach((movie, index) => {
@@ -176,15 +387,12 @@
 
                 console.log(`✅ Loaded ${data.movies.length} movies`);
             } catch (error) {
-                console.error('Error loading movies:', error);
-                container.innerHTML = `
+                console.error('Error:', error);
+                document.getElementById('container').innerHTML = `
                     <div class="error">
                         <div class="error-icon">⚠️</div>
-                        <div class="error-title">Error Loading Movies</div>
-                        <div class="error-message">${error.message}</div>
-                        <div class="error-message" style="margin-top: 20px;">
-                            Database has ${error.message.includes('No movies') ? '0' : '?'} movies with trailers
-                        </div>
+                        <h2>Error Loading Movies</h2>
+                        <p>${error.message}</p>
                     </div>
                 `;
             }
@@ -193,7 +401,6 @@
         function createMovieCard(movie, index) {
             const card = document.createElement('div');
             card.className = 'video-card';
-            card.dataset.index = index;
 
             const autoplay = index === 0 ? 1 : 0;
             const youtubeUrl = `https://www.youtube.com/embed/${movie.trailer_id}?autoplay=${autoplay}&mute=1&controls=0&playsinline=1&loop=1&playlist=${movie.trailer_id}&modestbranding=1&rel=0`;
@@ -232,7 +439,6 @@
             return div.innerHTML;
         }
 
-        // Load movies on page load
         loadMovies();
     </script>
 </body>
