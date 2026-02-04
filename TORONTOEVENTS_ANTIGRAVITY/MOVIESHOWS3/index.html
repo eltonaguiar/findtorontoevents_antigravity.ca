@@ -715,14 +715,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 15;
+            z-index: 25;
             cursor: pointer;
             transition: opacity 0.3s;
-        }
-
-        .play-overlay.hidden {
             opacity: 0;
             pointer-events: none;
+        }
+
+        .play-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .play-button {
@@ -735,6 +737,7 @@
             justify-content: center;
             font-size: 40px;
             transition: transform 0.2s;
+            color: #000;
         }
 
         .play-button:hover {
@@ -745,8 +748,8 @@
         .unmute-btn {
             position: absolute;
             bottom: 80px;
-            right: 20px;
-            z-index: 20;
+            left: 20px;
+            z-index: 10;
             background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(12px);
             border: 2px solid rgba(255, 255, 255, 0.3);
@@ -984,6 +987,7 @@
             outline: none;
             margin-top: 10px;
             -webkit-appearance: none;
+            appearance: none;
         }
 
         .delay-slider::-webkit-slider-thumb {
@@ -1337,6 +1341,11 @@
             filteredMovies = type === 'all' ? allMovies : allMovies.filter(m => m.type === type);
             renderMovies(filteredMovies);
 
+            // Re-setup scroll autoplay after rendering new videos
+            setTimeout(() => {
+                setupScrollAutoplay();
+            }, 100);
+
             // Update browse grid if open
             if (document.getElementById('browseView').classList.contains('active')) {
                 renderBrowseGrid();
@@ -1542,20 +1551,48 @@
         function playMovieFromBrowse(index) {
             // Stop ALL currently playing videos first
             document.querySelectorAll('.video-card iframe').forEach(iframe => {
-                if (iframe.src.includes('autoplay=1')) {
-                    iframe.src = iframe.src.replace(/autoplay=1/, 'autoplay=0');
+                const currentSrc = iframe.src;
+                if (currentSrc && currentSrc.includes('autoplay=1')) {
+                    // Remove src to stop playback
+                    iframe.src = '';
+                    // Restore with autoplay=0 after a tiny delay
+                    setTimeout(() => {
+                        iframe.src = currentSrc.replace(/autoplay=1/, 'autoplay=0');
+                    }, 50);
                 }
             });
 
             // Close browse view
             document.getElementById('browseView').classList.remove('active');
 
-            // Wait for transition, then scroll
+            // Wait for transition, then scroll and trigger playback
             setTimeout(() => {
-                document.getElementById('container').scrollTo({
+                const container = document.getElementById('container');
+                container.scrollTo({
                     top: index * window.innerHeight,
                     behavior: 'smooth'
                 });
+
+                // Use scrollend event for reliable timing (works with DevTools closed)
+                const handleScrollEnd = () => {
+                    const targetIframe = document.getElementById(`player-${index}`);
+                    if (targetIframe) {
+                        const currentSrc = targetIframe.src;
+                        if (!currentSrc.includes('autoplay=1')) {
+                            targetIframe.src = currentSrc.replace(/autoplay=[01]/, 'autoplay=1');
+                        }
+                    }
+
+                    // Show mute overlay if all videos are muted
+                    updateMuteOverlay();
+                };
+
+                // Use scrollend event if supported, otherwise fallback to timeout
+                if ('onscrollend' in container) {
+                    container.addEventListener('scrollend', handleScrollEnd, { once: true });
+                } else {
+                    setTimeout(handleScrollEnd, 800);
+                }
             }, 350);
         }
 
@@ -1754,7 +1791,7 @@
                         loading="${index < 3 ? 'eager' : 'lazy'}"
                     ></iframe>
                     ${index === 0 ? `
-                        <div class="play-overlay" id="play-overlay-${index}" onclick="startPlayback(${index})">
+                        <div class="play-overlay visible" id="play-overlay-${index}" onclick="startPlayback(${index})">
                             <div class="play-button">▶</div>
                         </div>
                     ` : ''}
@@ -1788,7 +1825,7 @@
             hasUserInteracted = true;
             const overlay = document.getElementById(`play-overlay-${index}`);
             if (overlay) {
-                overlay.classList.add('hidden');
+                overlay.classList.remove('visible');
                 setTimeout(() => overlay.remove(), 300);
             }
 
@@ -1902,13 +1939,23 @@
                     if (currentlyPlaying !== index) {
                         console.log(`Playing video ${index}`);
 
-                        // FIRST: Pause ALL other videos
+                        // FIRST: STOP ALL other videos by removing their src completely, then restoring with autoplay=0
                         document.querySelectorAll('.video-card').forEach(card => {
                             const cardIndex = card.dataset.index;
                             if (cardIndex !== index) {
                                 const cardIframe = card.querySelector('iframe');
-                                if (cardIframe && cardIframe.src.includes('autoplay=1')) {
-                                    cardIframe.src = cardIframe.src.replace(/autoplay=1/, 'autoplay=0');
+                                if (cardIframe) {
+                                    // Store the current src
+                                    const currentSrc = cardIframe.src;
+                                    // Only stop if it's currently playing
+                                    if (currentSrc.includes('autoplay=1')) {
+                                        // Remove src to stop playback
+                                        cardIframe.src = '';
+                                        // Restore with autoplay=0 after a tiny delay
+                                        setTimeout(() => {
+                                            cardIframe.src = currentSrc.replace(/autoplay=1/, 'autoplay=0');
+                                        }, 50);
+                                    }
                                 }
                             }
                         });

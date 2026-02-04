@@ -26,8 +26,7 @@ try {
         INNER JOIN trailers t ON m.id = t.movie_id
         LEFT JOIN thumbnails th ON m.id = th.movie_id AND th.is_primary = TRUE
         WHERE t.is_active = TRUE AND m.type = 'movie'
-        ORDER BY m.created_at DESC
-        LIMIT 100)
+        ORDER BY m.created_at DESC)
         UNION ALL
         (SELECT 
             m.id,
@@ -43,8 +42,7 @@ try {
         INNER JOIN trailers t ON m.id = t.movie_id
         LEFT JOIN thumbnails th ON m.id = th.movie_id AND th.is_primary = TRUE
         WHERE t.is_active = TRUE AND m.type = 'tv'
-        ORDER BY m.created_at DESC
-        LIMIT 100)
+        ORDER BY m.created_at DESC)
     ");
 
     $movies = $stmt->fetchAll(PDO::FETCH_ASSOC);
