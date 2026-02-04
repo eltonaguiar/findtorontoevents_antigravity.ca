@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MovieShows v2 - Enterprise Platform Demo</title>
-    <link rel="icon" href="/MOVIESHOWS/favicon.ico">
+    <title>MovieShows - Discover Movies & TV</title>
     <style>
         * {
             margin: 0;
@@ -14,639 +13,227 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
-            color: #ffffff;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* Header */
-        .header {
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 1rem 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .version-badge {
-            display: inline-block;
-            background: rgba(102, 126, 234, 0.2);
-            border: 1px solid rgba(102, 126, 234, 0.3);
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            margin-left: 0.5rem;
-            font-weight: 600;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .nav-link {
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-            position: relative;
-        }
-
-        .nav-link:hover {
-            color: #667eea;
-        }
-
-        .tooltip {
-            position: relative;
-            cursor: help;
-        }
-
-        .tooltip-text {
-            visibility: hidden;
-            width: 280px;
-            background: rgba(0, 0, 0, 0.95);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
             color: #fff;
-            text-align: center;
-            border-radius: 8px;
-            padding: 0.75rem;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -140px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 0.85rem;
-            border: 1px solid rgba(102, 126, 234, 0.3);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            height: 100vh;
         }
 
-        .tooltip-text::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: rgba(0, 0, 0, 0.95) transparent transparent transparent;
+        #container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scrollbar-width: none;
         }
 
-        .tooltip:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
+        #container::-webkit-scrollbar {
+            display: none;
         }
 
-        /* Hero Section */
-        .hero {
-            padding: 4rem 2rem;
-            text-align: center;
-            background: linear-gradient(180deg, rgba(102, 126, 234, 0.1) 0%, transparent 100%);
-        }
-
-        .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 900;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero p {
-            font-size: 1.25rem;
-            color: rgba(255, 255, 255, 0.7);
-            max-width: 800px;
-            margin: 0 auto 2rem;
-        }
-
-        .stats {
+        .video-card {
+            height: 100vh;
+            width: 100%;
+            position: relative;
+            scroll-snap-align: start;
             display: flex;
+            align-items: center;
             justify-content: center;
-            gap: 3rem;
-            margin-top: 3rem;
+            background: #000;
         }
 
-        .stat {
-            text-align: center;
+        .video-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
 
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .video-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
         }
 
-        .stat-label {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
+        .info-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+            z-index: 10;
+            pointer-events: none;
         }
 
-        /* Features Grid */
-        .features {
-            max-width: 1400px;
-            margin: 4rem auto;
-            padding: 0 2rem;
+        .movie-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
         }
 
-        .section-title {
-            font-size: 2rem;
-            font-weight: 900;
-            margin-bottom: 2rem;
-            text-align: center;
+        .movie-meta {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
         }
 
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .feature-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 2rem;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .feature-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(102, 126, 234, 0.5);
-            transform: translateY(-4px);
-            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
-        }
-
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .feature-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-        }
-
-        .feature-description {
-            color: rgba(255, 255, 255, 0.7);
-            line-height: 1.6;
-        }
-
-        .feature-badge {
-            display: inline-block;
-            background: rgba(102, 126, 234, 0.2);
-            border: 1px solid rgba(102, 126, 234, 0.3);
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            margin-top: 1rem;
+        .meta-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
             font-weight: 600;
         }
 
-        /* Pricing Section */
-        .pricing {
-            max-width: 1400px;
-            margin: 6rem auto;
-            padding: 0 2rem;
+        .movie-description {
+            font-size: 14px;
+            line-height: 1.4;
+            opacity: 0.9;
+            max-width: 600px;
         }
 
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .pricing-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 2.5rem;
-            text-align: center;
-            transition: all 0.3s;
-        }
-
-        .pricing-card.featured {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-            border-color: #667eea;
-            transform: scale(1.05);
-        }
-
-        .pricing-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3);
-        }
-
-        .plan-name {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-
-        .plan-price {
-            font-size: 3rem;
-            font-weight: 900;
-            margin-bottom: 0.5rem;
-        }
-
-        .plan-period {
-            color: rgba(255, 255, 255, 0.6);
-            margin-bottom: 2rem;
-        }
-
-        .plan-features {
-            list-style: none;
-            margin-bottom: 2rem;
-            text-align: left;
-        }
-
-        .plan-features li {
-            padding: 0.75rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        .loading {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            justify-content: center;
+            height: 100vh;
+            font-size: 20px;
         }
 
-        .plan-features li::before {
-            content: "✓";
-            color: #4ade80;
-            font-weight: 900;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 1rem;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
-        }
-
-        /* Footer */
-        .footer {
-            background: rgba(0, 0, 0, 0.5);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 3rem 2rem;
-            margin-top: 6rem;
+        .error {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 20px;
             text-align: center;
         }
 
-        .footer-content {
-            max-width: 1400px;
-            margin: 0 auto;
+        .error-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
         }
 
-        .footer-links {
+        .error-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .error-message {
+            font-size: 16px;
+            opacity: 0.7;
+        }
+
+        .genre-tags {
             display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-bottom: 2rem;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
         }
 
-        .footer-link {
-            color: rgba(255, 255, 255, 0.6);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .footer-link:hover {
-            color: #667eea;
-        }
-
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-
-            .stats {
-                flex-direction: column;
-                gap: 2rem;
-            }
-
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .pricing-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .pricing-card.featured {
-                transform: scale(1);
-            }
+        .genre-tag {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
         }
     </style>
 </head>
 
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                🎬 MovieShows
-                <span class="version-badge">v2.0 Enterprise</span>
-            </div>
-            <nav class="nav-links">
-                <a href="/MOVIESHOWS/" class="nav-link tooltip">
-                    v1.0 (Original)
-                    <span class="tooltip-text">
-                        Check out the original TikTok-style trailer discovery app at /MOVIESHOWS
-                    </span>
-                </a>
-                <a href="#features" class="nav-link">Features</a>
-                <a href="#pricing" class="nav-link">Pricing</a>
-                <a href="https://findtorontoevents.ca/" class="nav-link">Toronto Events</a>
-            </nav>
-        </div>
-    </header>
-
-    <!-- Hero Section -->
-    <section class="hero">
-        <h1>Enterprise-Grade Streaming Platform</h1>
-        <p>
-            Complete monetization stack with subscriptions, payments, analytics, and enterprise features.
-            Built with 126 production-ready components.
-        </p>
-
-        <div class="stats">
-            <div class="stat">
-                <div class="stat-number">126</div>
-                <div class="stat-label">Updates Complete</div>
-            </div>
-            <div class="stat">
-                <div class="stat-number">31.5%</div>
-                <div class="stat-label">Platform Progress</div>
-            </div>
-            <div class="stat">
-                <div class="stat-number">60+</div>
-                <div class="stat-label">Components</div>
-            </div>
-            <div class="stat">
-                <div class="stat-number">24K+</div>
-                <div class="stat-label">Lines of Code</div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section id="features" class="features">
-        <h2 class="section-title">🚀 Platform Capabilities</h2>
-
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">💰</div>
-                <h3 class="feature-title">Complete Monetization</h3>
-                <p class="feature-description">
-                    4-tier subscription system (Free, Basic, Premium, Enterprise) with Stripe/PayPal integration,
-                    revenue analytics, and MRR tracking.
-                </p>
-                <span class="feature-badge">Updates 101-110</span>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">🏢</div>
-                <h3 class="feature-title">Enterprise Features</h3>
-                <p class="feature-description">
-                    SSO authentication, multi-tenant architecture, white-label solutions, team management, and API
-                    marketplace.
-                </p>
-                <span class="feature-badge">Updates 121-126</span>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">⚡</div>
-                <h3 class="feature-title">Advanced Infrastructure</h3>
-                <p class="feature-description">
-                    GraphQL API, WebSocket real-time, CDN integration, load balancing, microservices, and event-driven
-                    architecture.
-                </p>
-                <span class="feature-badge">Updates 111-120</span>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">📊</div>
-                <h3 class="feature-title">Business Analytics</h3>
-                <p class="feature-description">
-                    Revenue dashboard, A/B testing, user analytics, performance monitoring, and comprehensive reporting.
-                </p>
-                <span class="feature-badge">Updates 61-70</span>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">🎯</div>
-                <h3 class="feature-title">Referral & Affiliate</h3>
-                <p class="feature-description">
-                    Complete referral program with $10 rewards, 20% affiliate commission tracking, and gift
-                    subscriptions.
-                </p>
-                <span class="feature-badge">Updates 107-109</span>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">🌍</div>
-                <h3 class="feature-title">Global Ready</h3>
-                <p class="feature-description">
-                    Multi-language support (7 languages), PWA with offline mode, mobile-first design, and WCAG 2.1 AA
-                    accessibility.
-                </p>
-                <span class="feature-badge">Updates 91-96</span>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">🎬</div>
-                <h3 class="feature-title">Content Management</h3>
-                <p class="feature-description">
-                    Movies & TV shows with seasons/episodes, advanced search, personalized recommendations, and bulk
-                    import.
-                </p>
-                <span class="feature-badge">Updates 1-30</span>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">👥</div>
-                <h3 class="feature-title">Social Features</h3>
-                <p class="feature-description">
-                    User profiles, favorites, watchlists, comments, ratings, reviews, activity feeds, and social
-                    sharing.
-                </p>
-                <span class="feature-badge">Updates 31-50</span>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">🔒</div>
-                <h3 class="feature-title">Security & Compliance</h3>
-                <p class="feature-description">
-                    Enterprise SSO (OAuth2/SAML), rate limiting, API authentication, secure payments, and data
-                    encryption.
-                </p>
-                <span class="feature-badge">Updates 117-125</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- Pricing Section -->
-    <section id="pricing" class="pricing">
-        <h2 class="section-title">💎 Subscription Plans</h2>
-
-        <div class="pricing-grid">
-            <div class="pricing-card">
-                <h3 class="plan-name">Free</h3>
-                <div class="plan-price">$0</div>
-                <div class="plan-period">forever</div>
-                <ul class="plan-features">
-                    <li>Basic movie browsing</li>
-                    <li>Limited favorites (10)</li>
-                    <li>Standard quality</li>
-                    <li>Ads supported</li>
-                </ul>
-                <button class="btn">Get Started</button>
-            </div>
-
-            <div class="pricing-card">
-                <h3 class="plan-name">Basic</h3>
-                <div class="plan-price">$9</div>
-                <div class="plan-period">per month</div>
-                <ul class="plan-features">
-                    <li>Unlimited favorites</li>
-                    <li>HD quality</li>
-                    <li>No ads</li>
-                    <li>Email support</li>
-                </ul>
-                <button class="btn">Subscribe</button>
-            </div>
-
-            <div class="pricing-card featured">
-                <h3 class="plan-name">Premium</h3>
-                <div class="plan-price">$19</div>
-                <div class="plan-period">per month</div>
-                <ul class="plan-features">
-                    <li>Everything in Basic</li>
-                    <li>4K quality</li>
-                    <li>Offline downloads</li>
-                    <li>Priority support</li>
-                    <li>Advanced analytics</li>
-                </ul>
-                <button class="btn">Subscribe</button>
-            </div>
-
-            <div class="pricing-card">
-                <h3 class="plan-name">Enterprise</h3>
-                <div class="plan-price">$99</div>
-                <div class="plan-period">per month</div>
-                <ul class="plan-features">
-                    <li>Everything in Premium</li>
-                    <li>White-label solution</li>
-                    <li>SSO authentication</li>
-                    <li>API access</li>
-                    <li>Dedicated support</li>
-                    <li>Team management</li>
-                </ul>
-                <button class="btn">Contact Sales</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-links">
-                <a href="/MOVIESHOWS/" class="footer-link">Original Version (v1.0)</a>
-                <a href="https://findtorontoevents.ca/" class="footer-link">Toronto Events</a>
-                <a href="https://findtorontoevents.ca/WINDOWSFIXER/" class="footer-link">Windows Boot Fixer</a>
-                <a href="https://findtorontoevents.ca/2xko" class="footer-link">2XKO Frame Data</a>
-                <a href="mailto:support@findtorontoevents.ca" class="footer-link">Contact Support</a>
-            </div>
-            <p style="color: rgba(255, 255, 255, 0.4); font-size: 0.9rem;">
-                © 2024 MovieShows v2.0 Enterprise Platform | 126/400 Updates Complete (31.5%)
-            </p>
-            <p style="color: rgba(255, 255, 255, 0.3); font-size: 0.8rem; margin-top: 1rem;">
-                Powered by Antigravity Systems | Built with 60+ components, 24,000+ lines of code
-            </p>
-        </div>
-    </footer>
+    <div id="container">
+        <div class="loading">Loading movies...</div>
+    </div>
 
     <script>
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
+        const API_URL = '/MOVIESHOWS3/api/get-movies.php';
+        const container = document.getElementById('container');
+
+        async function loadMovies() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to load movies');
                 }
-            });
-        });
 
-        // Add click handlers to pricing buttons
-        document.querySelectorAll('.pricing-card .btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const planName = this.closest('.pricing-card').querySelector('.plan-name').textContent;
-
-                if (planName === 'Free') {
-                    // Redirect to working movie app
-                    window.location.href = 'play.html';
-                } else {
-                    alert(`🎉 ${planName} plan selected!\n\nThis is a demo. In production, this would redirect to the payment flow with Stripe/PayPal integration.`);
+                if (!data.movies || data.movies.length === 0) {
+                    throw new Error('No movies with trailers found in database');
                 }
-            });
-        });
 
-        // Add click handlers to feature cards
-        document.querySelectorAll('.feature-card').forEach(card => {
-            card.addEventListener('click', function () {
-                const title = this.querySelector('.feature-title').textContent;
-                const description = this.querySelector('.feature-description').textContent;
-                const badge = this.querySelector('.feature-badge').textContent;
+                container.innerHTML = '';
 
-                alert(`${title}\n\n${description}\n\n${badge}\n\nThis is a demo showcasing the feature. In production, this would open a detailed view with live examples.`);
-            });
-        });
+                data.movies.forEach((movie, index) => {
+                    const card = createMovieCard(movie, index);
+                    container.appendChild(card);
+                });
 
-        console.log('%c🎬 MovieShows v2.0 Enterprise Platform', 'font-size: 20px; font-weight: bold; color: #667eea;');
-        console.log('%c126/400 Updates Complete (31.5%)', 'font-size: 14px; color: #4ade80;');
-        console.log('%cFeatures: 60+ components, 24K+ lines of code', 'font-size: 12px; color: #888;');
+                console.log(`✅ Loaded ${data.movies.length} movies`);
+            } catch (error) {
+                console.error('Error loading movies:', error);
+                container.innerHTML = `
+                    <div class="error">
+                        <div class="error-icon">⚠️</div>
+                        <div class="error-title">Error Loading Movies</div>
+                        <div class="error-message">${error.message}</div>
+                        <div class="error-message" style="margin-top: 20px;">
+                            Database has ${error.message.includes('No movies') ? '0' : '?'} movies with trailers
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function createMovieCard(movie, index) {
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            card.dataset.index = index;
+
+            const autoplay = index === 0 ? 1 : 0;
+            const youtubeUrl = `https://www.youtube.com/embed/${movie.trailer_id}?autoplay=${autoplay}&mute=1&controls=0&playsinline=1&loop=1&playlist=${movie.trailer_id}&modestbranding=1&rel=0`;
+
+            card.innerHTML = `
+                <div class="video-wrapper">
+                    <iframe 
+                        src="${youtubeUrl}"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                        loading="${index < 3 ? 'eager' : 'lazy'}"
+                    ></iframe>
+                </div>
+                <div class="info-overlay">
+                    <div class="movie-title">${escapeHtml(movie.title)}</div>
+                    <div class="movie-meta">
+                        ${movie.release_year ? `<span class="meta-badge">${movie.release_year}</span>` : ''}
+                        ${movie.imdb_rating ? `<span class="meta-badge">⭐ ${movie.imdb_rating}</span>` : ''}
+                        ${movie.type ? `<span class="meta-badge">${movie.type.toUpperCase()}</span>` : ''}
+                    </div>
+                    ${movie.description ? `<div class="movie-description">${escapeHtml(movie.description)}</div>` : ''}
+                    ${movie.genre ? `
+                        <div class="genre-tags">
+                            ${movie.genre.split(',').map(g => `<span class="genre-tag">${escapeHtml(g.trim())}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            return card;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load movies on page load
+        loadMovies();
     </script>
 </body>
 
