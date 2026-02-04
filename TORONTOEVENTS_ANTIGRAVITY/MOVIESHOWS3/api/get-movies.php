@@ -27,7 +27,7 @@ try {
         LEFT JOIN thumbnails th ON m.id = th.movie_id AND th.is_primary = TRUE
         WHERE t.is_active = TRUE
         ORDER BY m.created_at DESC
-        LIMIT 100
+        LIMIT 200
     ");
 
     $movies = $stmt->fetchAll(PDO::FETCH_ASSOC);
