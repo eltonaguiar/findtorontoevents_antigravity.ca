@@ -1212,9 +1212,10 @@
         // Auto-scroll settings
         let autoScrollSettings = {
             enabled: false,
-            delay: 10 // default 10 seconds
+            delay: 10 // default 10 seconds (kept for backward compatibility, but now triggers on video end)
         };
         let autoScrollTimeout = null;
+        let ytPlayers = {}; // Track YouTube player instances
 
         // Load auto-scroll settings from localStorage
         function loadAutoScrollSettings() {
@@ -1250,7 +1251,7 @@
             const delayContainer = document.getElementById('autoScrollDelayContainer');
             if (autoScrollSettings.enabled) {
                 delayContainer.style.display = 'flex';
-                console.log('Auto-scroll enabled with', autoScrollSettings.delay, 'second delay');
+                console.log('✅ Auto-scroll enabled - will scroll when video ends');
             } else {
                 delayContainer.style.display = 'none';
                 // Clear any pending auto-scroll
@@ -1258,7 +1259,7 @@
                     clearTimeout(autoScrollTimeout);
                     autoScrollTimeout = null;
                 }
-                console.log('Auto-scroll disabled');
+                console.log('❌ Auto-scroll disabled');
             }
         }
 
@@ -1267,44 +1268,62 @@
             autoScrollSettings.delay = parseInt(value);
             document.getElementById('delayValue').textContent = value;
             saveAutoScrollSettings();
-            console.log('Auto-scroll delay updated to', value, 'seconds');
+            console.log('Auto-scroll delay updated to', value, 'seconds (fallback if video end detection fails)');
         }
 
-        // Trigger auto-scroll to next video
+        // Trigger auto-scroll to next video (called when video ends)
         function triggerAutoScroll() {
             if (!autoScrollSettings.enabled) return;
 
-            // Clear any existing timeout
-            if (autoScrollTimeout) {
-                clearTimeout(autoScrollTimeout);
+            const cards = document.querySelectorAll('.video-card');
+            if (cards.length === 0) return;
+
+            // Find current playing card
+            let currentIndex = -1;
+            cards.forEach((card, index) => {
+                const rect = card.getBoundingClientRect();
+                const isInView = rect.top >= 0 && rect.top < window.innerHeight / 2;
+                if (isInView) {
+                    currentIndex = index;
+                }
+            });
+
+            // Scroll to next card
+            const nextIndex = currentIndex + 1;
+            if (nextIndex < cards.length) {
+                cards[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                console.log('🎬 Auto-scrolled to video', nextIndex + 1, '(triggered by video end)');
+            } else {
+                // Loop back to first video
+                cards[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                console.log('🔄 Auto-scrolled back to first video (triggered by video end)');
             }
+        }
 
-            // Set new timeout
-            autoScrollTimeout = setTimeout(() => {
-                const cards = document.querySelectorAll('.video-card');
-                if (cards.length === 0) return;
+        // YouTube IFrame API callback when video state changes
+        function onPlayerStateChange(event, index) {
+            // YT.PlayerState.ENDED = 0
+            if (event.data === 0) {
+                console.log(`📺 Video ${index} ended`);
+                triggerAutoScroll();
+            }
+        }
 
-                // Find current playing card
-                let currentIndex = -1;
-                cards.forEach((card, index) => {
-                    const rect = card.getBoundingClientRect();
-                    const isInView = rect.top >= 0 && rect.top < window.innerHeight / 2;
-                    if (isInView) {
-                        currentIndex = index;
+        // Initialize YouTube player for a specific iframe
+        function initYouTubePlayer(index) {
+            const iframe = document.getElementById(`player-${index}`);
+            if (!iframe || ytPlayers[index]) return; // Already initialized
+
+            try {
+                ytPlayers[index] = new YT.Player(`player-${index}`, {
+                    events: {
+                        'onStateChange': (event) => onPlayerStateChange(event, index)
                     }
                 });
-
-                // Scroll to next card
-                const nextIndex = currentIndex + 1;
-                if (nextIndex < cards.length) {
-                    cards[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    console.log('Auto-scrolled to video', nextIndex + 1);
-                } else {
-                    // Loop back to first video
-                    cards[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    console.log('Auto-scrolled back to first video');
-                }
-            }, autoScrollSettings.delay * 1000);
+                console.log(`✅ Initialized YouTube player for video ${index}`);
+            } catch (error) {
+                console.warn(`Failed to initialize YouTube player ${index}:`, error);
+            }
         }
 
         function toggleMenu() {
@@ -1971,8 +1990,10 @@
 
                         currentlyPlaying = index;
 
-                        // Trigger auto-scroll timer for next video
-                        triggerAutoScroll();
+                        // Initialize YouTube player for this video to detect when it ends
+                        if (autoScrollSettings.enabled && typeof YT !== 'undefined' && YT.Player) {
+                            initYouTubePlayer(index);
+                        }
                     }
                 }
             }, options);
@@ -2002,6 +2023,17 @@
             div.textContent = text;
             return div.innerHTML;
         }
+
+        // Load YouTube IFrame API
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        // YouTube API ready callback
+        window.onYouTubeIframeAPIReady = function () {
+            console.log('✅ YouTube IFrame API loaded');
+        };
 
         // Load movies and setup autoplay
         loadMovies().then(() => {
