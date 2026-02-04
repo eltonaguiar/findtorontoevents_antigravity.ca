@@ -1,7 +1,11 @@
 RewriteEngine On
 
-# Case-insensitive redirect for MOVIESHOWS3 only
-# This must come BEFORE the filesystem check to handle non-existent lowercase directory
+# Case-insensitive redirects for MOVIESHOWS directories
+# These must come BEFORE the filesystem check to handle non-existent lowercase directories
+RewriteCond %{REQUEST_URI} ^/movieshows2(/.*)?$ [NC]
+RewriteCond %{REQUEST_URI} !^/MOVIESHOWS2(/.*)?$
+RewriteRule ^movieshows2(/.*)?$ /MOVIESHOWS2$1 [R=301,L]
+
 RewriteCond %{REQUEST_URI} ^/movieshows3(/.*)?$ [NC]
 RewriteCond %{REQUEST_URI} !^/MOVIESHOWS3(/.*)?$
 RewriteRule ^movieshows3(/.*)?$ /MOVIESHOWS3$1 [R=301,L]

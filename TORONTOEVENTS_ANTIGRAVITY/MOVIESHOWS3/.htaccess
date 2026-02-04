@@ -1,18 +1,23 @@
-# Case-insensitive URL handling for MOVIESHOWS3
-# Redirect /movieshows3 to /MOVIESHOWS3
-
+# Enable rewrite engine
 RewriteEngine On
-RewriteBase /
 
-# Set default index file
+# Make URLs case-insensitive
+# Redirect /movieshows3 to /MOVIESHOWS3
+RewriteCond %{REQUEST_URI} ^/movieshows3(/.*)?$ [NC]
+RewriteCond %{REQUEST_URI} !^/MOVIESHOWS3(/.*)?$
+RewriteRule ^(.*)$ /MOVIESHOWS3/$1 [R=301,L]
+
+# Handle player.html case variations
+RewriteCond %{REQUEST_URI} ^/MOVIESHOWS3/player\.html$ [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ /MOVIESHOWS3/player.html [L]
+
+# Default document
 DirectoryIndex index.html
 
-# Redirect lowercase movieshows3 to uppercase MOVIESHOWS3
-RewriteCond %{REQUEST_URI} ^/movieshows3(/.*)?$ [NC]
-RewriteRule ^movieshows3(/.*)?$ /MOVIESHOWS3$1 [R=301,L]
-
-# Allow access to all files
-<FilesMatch "\.(html|php|js|css|jpg|jpeg|png|gif|ico|woff|woff2|ttf|svg)$">
-    Order allow,deny
-    Allow from all
-</FilesMatch>
+# Enable CORS for API calls
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type"
+</IfModule>
