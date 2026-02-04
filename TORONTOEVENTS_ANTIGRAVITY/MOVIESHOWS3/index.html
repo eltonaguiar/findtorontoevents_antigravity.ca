@@ -889,6 +889,123 @@
         .persistent-unmute-btn.hidden {
             display: none;
         }
+
+        /* Menu Divider */
+        .menu-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            margin: 20px 0;
+        }
+
+        /* Menu Settings */
+        .menu-settings {
+            padding: 10px 0;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .setting-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .setting-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            color: #fff;
+        }
+
+        .setting-icon {
+            font-size: 20px;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: 0.4s;
+            border-radius: 26px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked+.toggle-slider {
+            background-color: #ff4444;
+        }
+
+        .toggle-switch input:checked+.toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Delay Slider */
+        .delay-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            margin-top: 10px;
+            -webkit-appearance: none;
+        }
+
+        .delay-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ff4444;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(255, 68, 68, 0.5);
+        }
+
+        .delay-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ff4444;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 10px rgba(255, 68, 68, 0.5);
+        }
     </style>
 </head>
 
@@ -934,6 +1051,30 @@
             <a href="https://findtorontoevents.ca/FAVCREATORS_TRACKER/" class="menu-link">
                 <span>⭐</span> FavCreators
             </a>
+
+            <div class="menu-divider"></div>
+
+            <div class="menu-settings">
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span class="setting-icon">⏬</span>
+                        <span>Auto-Scroll</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoScrollToggle" onchange="toggleAutoScroll()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-item" id="autoScrollDelayContainer" style="display: none;">
+                    <div class="setting-label">
+                        <span class="setting-icon">⏱️</span>
+                        <span>Delay: <span id="delayValue">10</span>s</span>
+                    </div>
+                    <input type="range" id="autoScrollDelay" min="5" max="30" value="10" step="1"
+                        oninput="updateAutoScrollDelay(this.value)" class="delay-slider">
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1063,6 +1204,104 @@
             yearTo: null
         };
         let browseFilteredMovies = [];
+
+        // Auto-scroll settings
+        let autoScrollSettings = {
+            enabled: false,
+            delay: 10 // default 10 seconds
+        };
+        let autoScrollTimeout = null;
+
+        // Load auto-scroll settings from localStorage
+        function loadAutoScrollSettings() {
+            const saved = localStorage.getItem('autoScrollSettings');
+            if (saved) {
+                autoScrollSettings = JSON.parse(saved);
+            }
+
+            // Update UI
+            document.getElementById('autoScrollToggle').checked = autoScrollSettings.enabled;
+            document.getElementById('autoScrollDelay').value = autoScrollSettings.delay;
+            document.getElementById('delayValue').textContent = autoScrollSettings.delay;
+
+            // Show/hide delay container
+            const delayContainer = document.getElementById('autoScrollDelayContainer');
+            if (autoScrollSettings.enabled) {
+                delayContainer.style.display = 'flex';
+            } else {
+                delayContainer.style.display = 'none';
+            }
+        }
+
+        // Save auto-scroll settings to localStorage
+        function saveAutoScrollSettings() {
+            localStorage.setItem('autoScrollSettings', JSON.stringify(autoScrollSettings));
+        }
+
+        // Toggle auto-scroll on/off
+        function toggleAutoScroll() {
+            autoScrollSettings.enabled = document.getElementById('autoScrollToggle').checked;
+            saveAutoScrollSettings();
+
+            const delayContainer = document.getElementById('autoScrollDelayContainer');
+            if (autoScrollSettings.enabled) {
+                delayContainer.style.display = 'flex';
+                console.log('Auto-scroll enabled with', autoScrollSettings.delay, 'second delay');
+            } else {
+                delayContainer.style.display = 'none';
+                // Clear any pending auto-scroll
+                if (autoScrollTimeout) {
+                    clearTimeout(autoScrollTimeout);
+                    autoScrollTimeout = null;
+                }
+                console.log('Auto-scroll disabled');
+            }
+        }
+
+        // Update auto-scroll delay
+        function updateAutoScrollDelay(value) {
+            autoScrollSettings.delay = parseInt(value);
+            document.getElementById('delayValue').textContent = value;
+            saveAutoScrollSettings();
+            console.log('Auto-scroll delay updated to', value, 'seconds');
+        }
+
+        // Trigger auto-scroll to next video
+        function triggerAutoScroll() {
+            if (!autoScrollSettings.enabled) return;
+
+            // Clear any existing timeout
+            if (autoScrollTimeout) {
+                clearTimeout(autoScrollTimeout);
+            }
+
+            // Set new timeout
+            autoScrollTimeout = setTimeout(() => {
+                const cards = document.querySelectorAll('.video-card');
+                if (cards.length === 0) return;
+
+                // Find current playing card
+                let currentIndex = -1;
+                cards.forEach((card, index) => {
+                    const rect = card.getBoundingClientRect();
+                    const isInView = rect.top >= 0 && rect.top < window.innerHeight / 2;
+                    if (isInView) {
+                        currentIndex = index;
+                    }
+                });
+
+                // Scroll to next card
+                const nextIndex = currentIndex + 1;
+                if (nextIndex < cards.length) {
+                    cards[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    console.log('Auto-scrolled to video', nextIndex + 1);
+                } else {
+                    // Loop back to first video
+                    cards[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    console.log('Auto-scrolled back to first video');
+                }
+            }, autoScrollSettings.delay * 1000);
+        }
 
         function toggleMenu() {
             document.getElementById('menuOverlay').classList.toggle('active');
@@ -1684,6 +1923,9 @@
                         }
 
                         currentlyPlaying = index;
+
+                        // Trigger auto-scroll timer for next video
+                        triggerAutoScroll();
                     }
                 }
             }, options);
@@ -1717,6 +1959,7 @@
         // Load movies and setup autoplay
         loadMovies().then(() => {
             setupScrollAutoplay();
+            loadAutoScrollSettings();  // Load auto-scroll settings from localStorage
         });
     </script>
 </body>
