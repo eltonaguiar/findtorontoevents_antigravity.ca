@@ -141,13 +141,51 @@
       position: relative !important;
     }
     
-    /* Ensure parent containers don't hide them */
-    .windows-fixer-promo > *,
-    .favcreators-promo > *,
-    .movieshows-promo > *,
-    .stocks-promo > * {
+    /* Ensure parent containers don't hide them - but NOT tooltips */
+    .windows-fixer-promo > *:not(.absolute):not(.tooltip-panel),
+    .favcreators-promo > *:not(.absolute):not(.tooltip-panel),
+    .movieshows-promo > *:not(.absolute):not(.tooltip-panel),
+    .stocks-promo > *:not(.absolute):not(.tooltip-panel),
+    .promo-banner > *:not(.absolute):not(.tooltip-panel) {
       display: block !important;
       visibility: visible !important;
+    }
+    
+    /* FIX: Create proper stacking context for tooltip parent */
+    .favcreators-promo .group > .relative,
+    .stocks-promo .group > .relative,
+    .movieshows-promo .group > .relative,
+    .windows-fixer-promo .group > .relative {
+      z-index: 10 !important;
+      position: relative !important;
+    }
+    
+    /* FIX: Lower z-index for banner text so it paints behind tooltip */
+    .favcreators-promo .override-overflow,
+    .stocks-promo .override-overflow,
+    .movieshows-promo .override-overflow,
+    .windows-fixer-promo .override-overflow {
+      z-index: 1 !important;
+      position: relative !important;
+      max-width: 200px !important; /* Constrain width to prevent overlap */
+    }
+    
+    /* Tooltips should remain hidden until hover - scoped to tooltip-panel */
+    .favcreators-promo .tooltip-panel,
+    .stocks-promo .tooltip-panel,
+    .movieshows-promo .tooltip-panel,
+    .windows-fixer-promo .tooltip-panel {
+      visibility: hidden !important;
+      opacity: 0 !important;
+    }
+    
+    /* Show tooltip only on hover - scoped to tooltip-panel */
+    .favcreators-promo:hover .tooltip-panel,
+    .stocks-promo:hover .tooltip-panel,
+    .movieshows-promo:hover .tooltip-panel,
+    .windows-fixer-promo:hover .tooltip-panel {
+      visibility: visible !important;
+      opacity: 1 !important;
     }
     
     /* Banner spacing */
@@ -161,16 +199,22 @@
       filter: grayscale(0) !important;
     }
     
-    /* FIX: Expand banner text on hover */
+    /* Remove hover expansion - text stays inside banner */
+    .promo-banner .override-overflow {
+      max-width: none !important;
+      opacity: 1 !important;
+      overflow: visible !important;
+      white-space: normal !important;
+      width: auto !important;
+    }
+    
     .promo-banner:hover .override-overflow {
-      max-width: 300px !important;
+      max-width: none !important;
       opacity: 1 !important;
     }
 
-    /* FIX: Tooltip visibility on hover – Tailwind build omits group-hover:visible,
-       so we add it back scoped to .absolute (tooltip) only, NOT .override-overflow (banner text) */
-    .group:hover > .relative .absolute,
-    .group:hover .absolute[class*="z-"] {
+    /* FIX: Tooltip visibility on hover – scoped to tooltip-panel only */
+    .group:hover .tooltip-panel {
       visibility: visible !important;
       opacity: 1 !important;
     }
@@ -195,6 +239,19 @@
     /* FIX: Ensure banner text doesn't overflow into tooltip space */
     .favcreators-promo .override-overflow {
       overflow: hidden !important;
+    }
+    
+    /* FIX: Add vertical spacing between promo banners to prevent tooltip overlap */
+    .favcreators-promo,
+    .movieshows-promo,
+    .stocks-promo,
+    .windows-fixer-promo {
+      margin-bottom: 1.5rem !important;
+    }
+    
+    /* Additional spacing for Movieshows specifically to prevent FavCreators tooltip overlap */
+    .movieshows-promo {
+      margin-bottom: 2rem !important;
     }
   </style>
 
