@@ -781,6 +781,7 @@ function App() {
   const [selectedLivePlatform, setSelectedLivePlatform] = useState<string>('all');
   const [liveStatusLastUpdated, setLiveStatusLastUpdated] = useState<number | undefined>(undefined);
   const [isManualRefreshing, setIsManualRefreshing] = useState<boolean>(false);
+  const [creatorsLoadedFromApi, setCreatorsLoadedFromApi] = useState<boolean>(false);
 
   // Persist live summary visibility
   useEffect(() => {
@@ -1142,9 +1143,11 @@ function App() {
         if (list.length > 0) {
           console.log("Loaded creators from DB:", list.length);
           setCreators(ensureAvatarForCreators(list as Creator[]));
+          setCreatorsLoadedFromApi(true);
         } else if (authUser.id === 0) {
           // Admin (user_id 0): no saved list yet → show default so Quick Add additions are visible
           setCreators(INITIAL_DATA);
+          setCreatorsLoadedFromApi(true);
         }
         // Apply notes (e.g. Starfireara creator_id 6) after list is set so they are not overwritten
         try {
@@ -1404,10 +1407,12 @@ function App() {
           // Only apply guest list if user did NOT log in while we were fetching (otherwise we overwrite their list and e.g. Brunitarte disappears)
           if (!authUserRef.current || authUserRef.current.id === 0) {
             setCreators(withNotes);
+            setCreatorsLoadedFromApi(true);
           }
         } else {
           // Guest list empty or missing: still fetch notes and apply to current list (INITIAL_DATA) so Starfireara note shows
           if (!authUserRef.current || authUserRef.current.id === 0) {
+            setCreatorsLoadedFromApi(true);
             const notesRes = await fcApiFetch(`${base}/get_notes.php?user_id=0`);
             const notesText = notesRes.ok ? await notesRes.text() : "";
             if (notesText.trim()) {
@@ -1442,12 +1447,22 @@ function App() {
   // No longer checking for shared pack in URL
 
   const updateAllLiveStatuses = useCallback(async () => {
+    const creatorCount = creatorsRef.current.length;
+    console.log(`[Live Check] Starting updateAllLiveStatuses with ${creatorCount} creators`);
+    
     setIsCheckingLiveStatus(true);
-    setLiveCheckProgress({ current: 0, total: creatorsRef.current.length, currentCreator: 'Starting...' });
+    setLiveCheckProgress({ current: 0, total: creatorCount, currentCreator: 'Starting...' });
 
     try {
       // Get current creators
       const currentCreators = [...creatorsRef.current];
+      console.log(`[Live Check] Processing ${currentCreators.length} creators for live status`);
+      
+      // Warn if we're checking only the default 11 (indicates race condition)
+      if (currentCreators.length <= 11 && authUser) {
+        console.warn(`[Live Check] WARNING: Only ${currentCreators.length} creators to check for logged-in user. Expected more.`);
+      }
+      
       const updatedCreators: Creator[] = [];
 
       // Process creators sequentially with small delays to avoid overwhelming proxy
@@ -1610,7 +1625,7 @@ function App() {
       // Always set isChecking to false, even if there's an error
       setIsCheckingLiveStatus(false);
     }
-  }, [addLiveFoundToast]);
+  }, [addLiveFoundToast, authUser]);
 
   // Sync live status to database cache
   const syncLiveStatusToDatabase = useCallback(async (creatorsToSync: Creator[]) => {
@@ -1729,23 +1744,36 @@ function App() {
     // Let updateAllLiveStatuses handle it after the real check completes
   }, []);
 
-  // Auto-check live status on mount
+  // Auto-check live status on mount - wait for creators to be loaded from API
   useEffect(() => {
+    // Don't start live checking until creators are loaded from API
+    // This prevents checking only the INITIAL_DATA (11 creators) when user has more
+    if (!creatorsLoadedFromApi) {
+      console.log('[Live Check] Waiting for creators to load from API...');
+      return;
+    }
+
+    console.log(`[Live Check] Creators loaded: ${creatorsRef.current.length}. Starting live checks...`);
+
     // First load cached status from database for instant display
     loadCachedLiveStatus();
 
     // Then do a fresh check after a delay
     const timer = setTimeout(() => {
+      console.log(`[Live Check] Starting check with ${creatorsRef.current.length} creators`);
       updateAllLiveStatuses();
     }, 2000);
 
-    const interval = setInterval(updateAllLiveStatuses, 180000); // Check every 3 mins
+    const interval = setInterval(() => {
+      console.log(`[Live Check] Auto-refresh with ${creatorsRef.current.length} creators`);
+      updateAllLiveStatuses();
+    }, 180000); // Check every 3 mins
 
     return () => {
       clearTimeout(timer);
       clearInterval(interval);
     };
-  }, [updateAllLiveStatuses, loadCachedLiveStatus]);
+  }, [updateAllLiveStatuses, loadCachedLiveStatus, creatorsLoadedFromApi]);
 
   // Data Migration: Ensure all existing accounts have follower counts
   useEffect(() => {
