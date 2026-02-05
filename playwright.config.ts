@@ -23,6 +23,8 @@ export default defineConfig({
     /(?:^|\/)tests\/signin_flow_debug\.spec\.ts$/,
     /(?:^|\/)tests\/signin_login_box_location\.spec\.ts$/,
     /(?:^|\/)tests\/my_events_save_persisted\.spec\.ts$/,
+    /(?:^|\/)tests\/tooltip_overlap\.spec\.ts$/,
+    /(?:^|\/)tests\/tooltip_overlap_puppeteer\.spec\.ts$/,
   ],
   timeout: isRemoteVerify ? 60000 : 30000,
   retries: 0,
