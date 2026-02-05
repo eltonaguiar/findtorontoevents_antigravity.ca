@@ -21,7 +21,7 @@
               <div class="jsx-1b9a23bd3fa6c640 relative">
                 <a class="jsx-1b9a23bd3fa6c640 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap" href="/fc/#/guest" target="_blank">Open App →</a>
                 <div class="jsx-1b9a23bd3fa6c640 absolute top-full left-0 mt-2 w-64 p-3 bg-[var(--surface-1)] border border-white/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50" style="left: auto; right: 0;">
-                  <p class="text-xs text-[var(--text-2)] mb-2">Ever wish you could find one of your favorite creators, or track your creators latest stories/live stream status across multiple platforms? Track TikTok, Twitch, Kick & YouTube in one place so they don't get lost in your feed!</p>
+                  <p class="text-xs text-[var(--text-2)] mb-2">Track your favorite creators across TikTok, Twitch, Kick and YouTube. Never miss their live streams or stories!</p>
                   <div class="flex gap-2">
                     <a href="/fc/#/guest" target="_blank" class="text-[10px] px-2 py-1 bg-pink-500/20 text-pink-300 rounded hover:bg-pink-500/30 transition">TikTok</a>
                     <a href="/fc/#/guest" target="_blank" class="text-[10px] px-2 py-1 bg-purple-500/20 text-purple-300 rounded hover:bg-purple-500/30 transition">Twitch</a>
