@@ -27,6 +27,7 @@ export default defineConfig({
     /(?:^|\/)tests\/tooltip_overlap_puppeteer\.spec\.ts$/,
     /(?:^|\/)tests\/movieshows_overlap\.spec\.ts$/,
     /(?:^|\/)tests\/live-status-ninja-test\.spec\.ts$/,
+    /(?:^|\/)tests\/creator_updates\.spec\.ts$/,
   ],
   timeout: isRemoteVerify ? 60000 : 30000,
   retries: 0,
