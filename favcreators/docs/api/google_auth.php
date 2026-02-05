@@ -3,13 +3,16 @@
 // Initiates Google OAuth Flow (redirect to Google). No DB needed here.
 
 // Load credentials from environment or config file
-$client_id = getenv('GOOGLE_CLIENT_ID') ?: '';
+$client_id = getenv('GOOGLE_CLIENT_ID');
+if ($client_id === false || $client_id === null) {
+    $client_id = '';
+}
 
 // Must match exactly what you entered in Google Console
 $redirect_uri = 'https://findtorontoevents.ca/fc/api/google_callback.php';
 $return_to = isset($_GET['return_to']) ? $_GET['return_to'] : '/fc/';
 $return_to = preg_replace('/[^a-zA-Z0-9\/\-_.]/', '', $return_to);
-if ($return_to === '' || $return_to[0] !== '/') {
+if ($return_to === '' || !isset($return_to[0]) || $return_to[0] !== '/') {
     $return_to = '/fc/';
 }
 
