@@ -2,6 +2,12 @@
 // google_callback.php - Compatible Version (PHP 5.x/7.x)
 // Simplified without logging to avoid errors
 
+// Load config file if it exists (for local credentials)
+$config_file = dirname(__FILE__) . '/config.php';
+if (file_exists($config_file)) {
+    require_once $config_file;
+}
+
 // DB Init
 require_once dirname(__FILE__) . '/db_config.php';
 
@@ -11,8 +17,21 @@ if ($conn->connect_error) {
 }
 
 // Load credentials from environment or config file
-$client_id = getenv('GOOGLE_CLIENT_ID') ?: '';
-$client_secret = getenv('GOOGLE_CLIENT_SECRET') ?: '';
+$client_id = getenv('GOOGLE_CLIENT_ID');
+if (($client_id === false || $client_id === null || $client_id === '') && defined('GOOGLE_CLIENT_ID')) {
+    $client_id = GOOGLE_CLIENT_ID;
+}
+if ($client_id === false || $client_id === null) {
+    $client_id = '';
+}
+
+$client_secret = getenv('GOOGLE_CLIENT_SECRET');
+if (($client_secret === false || $client_secret === null || $client_secret === '') && defined('GOOGLE_CLIENT_SECRET')) {
+    $client_secret = GOOGLE_CLIENT_SECRET;
+}
+if ($client_secret === false || $client_secret === null) {
+    $client_secret = '';
+}
 $redirect_uri = 'https://findtorontoevents.ca/fc/api/google_callback.php';
 
 if (!isset($_GET['code'])) {
