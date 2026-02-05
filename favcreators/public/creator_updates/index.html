@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creator Updates | FavCreators</title>
+    <link rel="icon" type="image/svg+xml" href="/fc/vite.svg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+        }
+
+        .user-info {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .user-info .badge {
+            padding: 0.2rem 0.6rem;
+            background: rgba(168, 85, 247, 0.3);
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #c4b5fd;
+        }
+
+        .filters {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 2rem;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .filter-btn.active {
+            background: rgba(168, 85, 247, 0.3);
+            border-color: rgba(168, 85, 247, 0.5);
+            color: #fff;
+        }
+
+        .creator-filter {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: 1rem;
+        }
+
+        .creator-filter label {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .creator-filter select {
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 0.5rem;
+            color: #fff;
+            font-size: 0.9rem;
+            cursor: pointer;
+            min-width: 200px;
+        }
+
+        .creator-filter select:focus {
+            outline: none;
+            border-color: #a855f7;
+        }
+
+        .creator-filter select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+
+        .filter-info {
+            text-align: center;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            border-radius: 0.5rem;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.85rem;
+        }
+
+        .cache-indicator {
+            text-align: center;
+            padding: 0.5rem 1rem;
+            margin-bottom: 1rem;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 0.5rem;
+            color: rgba(34, 197, 94, 0.9);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .cache-info {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+            margin-left: 0.5rem;
+        }
+
+        .refreshing-indicator {
+            text-align: center;
+            padding: 0.5rem 1rem;
+            margin-bottom: 1rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 0.5rem;
+            color: rgba(59, 130, 246, 0.9);
+            font-size: 0.8rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: 1rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #a855f7;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(168, 85, 247, 0.2);
+            border-top-color: #a855f7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .updates-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .update-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            transition: all 0.2s;
+        }
+
+        .update-card:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.15);
+            transform: translateY(-2px);
+        }
+
+        .update-card.live {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .update-card.profile-only {
+            border-color: rgba(168, 85, 247, 0.3);
+            background: rgba(168, 85, 247, 0.03);
+        }
+
+        .profile-notice {
+            padding: 0.75rem 1rem;
+            background: rgba(168, 85, 247, 0.1);
+            border-radius: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            text-align: center;
+        }
+
+        .update-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .creator-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .creator-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .update-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .creator-name {
+            font-weight: 600;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+
+        .platform-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .platform-badge {
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .platform-badge.twitch { background: #9146ff; color: #fff; }
+        .platform-badge.kick { background: #53fc18; color: #000; }
+        .platform-badge.youtube { background: #ff0000; color: #fff; }
+        .platform-badge.tiktok { background: #000; color: #fff; border: 1px solid #fff; }
+        .platform-badge.instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff; }
+        .platform-badge.twitter { background: #000; color: #fff; }
+        .platform-badge.reddit { background: #ff4500; color: #fff; }
+
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.6rem;
+            background: #ef4444;
+            border-radius: 0.25rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #fff;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .live-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: #fff;
+            border-radius: 50%;
+        }
+
+        .update-content {
+            margin-left: calc(40px + 0.75rem);
+        }
+
+        .update-title {
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .update-preview {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .update-thumbnail {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .update-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .update-time {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .update-stats {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .update-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.4rem 0.8rem;
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 0.5rem;
+            color: #c4b5fd;
+            font-size: 0.8rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .update-link:hover {
+            background: rgba(168, 85, 247, 0.3);
+            color: #fff;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .empty-state a {
+            color: #a855f7;
+            text-decoration: none;
+        }
+
+        .empty-state a:hover {
+            text-decoration: underline;
+        }
+
+        .error-state {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 1rem;
+            color: #fca5a5;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #a855f7;
+        }
+
+        .refresh-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 0.5rem;
+            color: #c4b5fd;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(168, 85, 247, 0.3);
+            color: #fff;
+        }
+
+        .refresh-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #a855f7, #ec4899);
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .stats {
+                gap: 1rem;
+            }
+
+            .stat-value {
+                font-size: 1.25rem;
+            }
+
+            .update-content {
+                margin-left: 0;
+                margin-top: 0.75rem;
+            }
+
+            .update-footer {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/fc/#/guest" class="back-link">← Back to FavCreators</a>
+        
+        <header>
+            <h1>Creator Updates</h1>
+            <p class="subtitle">Latest content from creators you follow</p>
+            <div class="user-info" id="userInfo">
+                <span id="userLabel">Loading...</span>
+            </div>
+        </header>
+
+        <!-- Creator Filter -->
+        <div class="creator-filter" id="creatorFilter" style="display: none;">
+            <label for="creatorSelect">Filter by Creator:</label>
+            <select id="creatorSelect">
+                <option value="all">All Creators</option>
+            </select>
+        </div>
+
+        <div class="filters" id="filters">
+            <button class="filter-btn active" data-platform="all">All</button>
+            <button class="filter-btn" data-platform="twitch">Twitch</button>
+            <button class="filter-btn" data-platform="kick">Kick</button>
+            <button class="filter-btn" data-platform="youtube">YouTube</button>
+            <button class="filter-btn" data-platform="tiktok">TikTok</button>
+            <button class="filter-btn" data-platform="twitter">Twitter</button>
+            <button class="filter-btn" data-platform="reddit">Reddit</button>
+            <button class="filter-btn" data-platform="instagram">Instagram</button>
+        </div>
+
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stat">
+                <div class="stat-value" id="creatorsCount">0</div>
+                <div class="stat-label">Creators</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="updatesCount">0</div>
+                <div class="stat-label">Updates</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="liveCount">0</div>
+                <div class="stat-label">Live Now</div>
+            </div>
+            <button class="refresh-btn" id="refreshBtn" title="Refresh updates">🔄 Refresh</button>
+        </div>
+
+        <div class="progress-bar" id="progressBar" style="display: none;">
+            <div class="progress-bar-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+
+        <div id="content">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading your creators...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/fc/api';
+        let allUpdates = [];
+        let allCreators = [];
+        let currentFilter = 'all';
+        let currentCreatorFilter = 'all';
+        let isRefreshing = false;
+        let loggedInUserId = null;
+
+        // Platform icons (emoji fallback)
+        const platformIcons = {
+            twitch: '📺',
+            kick: '🎮',
+            youtube: '▶️',
+            tiktok: '🎵',
+            instagram: '📷',
+            twitter: '🐦',
+            reddit: '🔴'
+        };
+
+        // Format cache age for display
+        function formatCacheAge(dateStr) {
+            if (!dateStr) return 'never';
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+            
+            if (diffMins < 1) return 'just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            return `${diffDays}d ago`;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', init);
+
+        async function init() {
+            setupFilters();
+            setupCreatorFilter();
+            setupRefresh();
+            await detectUser();
+            await loadCreatorUpdates();
+        }
+
+        // Detect if user is logged in by checking session
+        async function detectUser() {
+            try {
+                const res = await fetch(`${API_BASE}/session_check.php`, {
+                    credentials: 'include'
+                });
+                const data = await res.json();
+                if (data.user_id && data.user_id > 0) {
+                    loggedInUserId = data.user_id;
+                }
+            } catch (e) {
+                // Fall back to guest if session check fails
+                console.log('Session check failed, using guest mode');
+            }
+        }
+
+        function setupFilters() {
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.platform;
+                    renderUpdates();
+                });
+            });
+        }
+
+        function setupCreatorFilter() {
+            const select = document.getElementById('creatorSelect');
+            select.addEventListener('change', () => {
+                currentCreatorFilter = select.value;
+                renderUpdates();
+            });
+        }
+
+        function populateCreatorFilter(creators) {
+            const select = document.getElementById('creatorSelect');
+            select.innerHTML = '<option value="all">All Creators</option>';
+            
+            creators.forEach(creator => {
+                const option = document.createElement('option');
+                option.value = creator.id;
+                option.textContent = creator.name;
+                select.appendChild(option);
+            });
+
+            document.getElementById('creatorFilter').style.display = 'flex';
+        }
+
+        function setupRefresh() {
+            document.getElementById('refreshBtn').addEventListener('click', () => {
+                if (!isRefreshing) {
+                    // Force full refresh
+                    loadCreatorUpdates(true);
+                }
+            });
+        }
+
+        // Load updates - first from cache (instant), then refresh in background
+        async function loadCreatorUpdates(forceRefresh = false) {
+            if (isRefreshing) return;
+            isRefreshing = true;
+
+            const content = document.getElementById('content');
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            const refreshBtn = document.getElementById('refreshBtn');
+
+            refreshBtn.disabled = true;
+
+            try {
+                const userId = loggedInUserId || 0;
+                
+                // PHASE 1: Load cached updates instantly
+                content.innerHTML = '<div class="loading"><div class="loading-spinner"></div><p>Loading cached updates...</p></div>';
+                
+                const cachedRes = await fetch(`${API_BASE}/get_cached_updates.php?user_id=${userId}`, {
+                    credentials: 'include'
+                });
+                const cachedData = await cachedRes.json();
+                
+                if (cachedData.ok) {
+                    // Extract creators from cached data for filtering
+                    const creatorsMap = new Map();
+                    cachedData.updates.forEach(u => {
+                        if (u.creator && u.creator.id) {
+                            creatorsMap.set(u.creator.id, u.creator);
+                        }
+                    });
+                    
+                    // Also fetch full creator list for the dropdown
+                    const creatorsRes = await fetch(`${API_BASE}/get_my_creators.php?user_id=${userId}`, {
+                        credentials: 'include'
+                    });
+                    const creatorsData = await creatorsRes.json();
+                    const creators = creatorsData.creators || [];
+                    allCreators = creators;
+                    
+                    document.getElementById('creatorsCount').textContent = cachedData.creators_count || creators.length;
+                    populateCreatorFilter(creators);
+                    
+                    // Update user info
+                    const userInfo = document.getElementById('userInfo');
+                    const isGuest = cachedData.is_guest;
+                    const cacheAge = cachedData.cache_stats.newest_check 
+                        ? formatCacheAge(cachedData.cache_stats.newest_check) 
+                        : 'never';
+                    userInfo.innerHTML = isGuest 
+                        ? `<span class="badge">Guest</span> <span>Default creator list</span> <span class="cache-info">Last updated: ${cacheAge}</span>`
+                        : `<span class="badge">Logged In</span> <span>User #${userId}</span> <span class="cache-info">Last updated: ${cacheAge}</span>`;
+                    
+                    // Show cached updates immediately
+                    allUpdates = cachedData.updates || [];
+                    document.getElementById('updatesCount').textContent = allUpdates.length;
+                    document.getElementById('liveCount').textContent = cachedData.cache_stats.live_count || 0;
+                    document.getElementById('stats').style.display = 'flex';
+                    
+                    if (allUpdates.length > 0) {
+                        renderUpdates();
+                        
+                        // Show "from cache" indicator
+                        const cacheIndicator = document.createElement('div');
+                        cacheIndicator.className = 'cache-indicator';
+                        cacheIndicator.innerHTML = `<span>📦 Showing ${allUpdates.length} cached updates</span>`;
+                        content.insertBefore(cacheIndicator, content.firstChild);
+                    }
+                    
+                    // PHASE 2: Refresh in background (unless we have no cached data)
+                    if (!forceRefresh && allUpdates.length > 0) {
+                        // Just show cached data, let user click Refresh for new data
+                        isRefreshing = false;
+                        refreshBtn.disabled = false;
+                        refreshBtn.innerHTML = '🔄 Refresh';
+                        return;
+                    }
+                }
+                
+                // PHASE 2: Full refresh - fetch fresh data for all accounts
+                progressBar.style.display = 'block';
+                progressFill.style.width = '0%';
+                
+                // Get creators if we don't have them
+                if (allCreators.length === 0) {
+                    const creatorsRes = await fetch(`${API_BASE}/get_my_creators.php?user_id=${userId}`, {
+                        credentials: 'include'
+                    });
+                    const creatorsData = await creatorsRes.json();
+                    if (creatorsData.error) {
+                        throw new Error(creatorsData.error);
+                    }
+                    allCreators = creatorsData.creators || [];
+                    document.getElementById('creatorsCount').textContent = allCreators.length;
+                    populateCreatorFilter(allCreators);
+                }
+                
+                // Update user info
+                const userInfo = document.getElementById('userInfo');
+                const isGuest = !loggedInUserId;
+                userInfo.innerHTML = isGuest 
+                    ? '<span class="badge">Guest</span> <span>Viewing default creator list</span>'
+                    : '<span class="badge">Logged In</span> <span>Your followed creators (User #' + loggedInUserId + ')</span>';
+
+                if (allCreators.length === 0) {
+                    content.innerHTML = `
+                        <div class="empty-state">
+                            <h3>No creators followed yet</h3>
+                            <p>Go to <a href="/fc/#/guest">FavCreators</a> to add some creators to follow!</p>
+                        </div>
+                    `;
+                    progressBar.style.display = 'none';
+                    isRefreshing = false;
+                    refreshBtn.disabled = false;
+                    return;
+                }
+                
+                const creators = allCreators;
+
+                // Step 2: Collect all social accounts
+                const accounts = [];
+                creators.forEach(creator => {
+                    if (creator.accounts && Array.isArray(creator.accounts)) {
+                        creator.accounts.forEach(account => {
+                            if (account.platform && account.username) {
+                                accounts.push({
+                                    creator: creator,
+                                    platform: account.platform.toLowerCase(),
+                                    username: account.username,
+                                    url: account.url
+                                });
+                            }
+                        });
+                    }
+                });
+
+                content.innerHTML = `<div class="loading"><div class="loading-spinner"></div><p>Fetching updates for ${accounts.length} accounts...</p></div>`;
+
+                // Step 3: Fetch status for each account (with rate limiting)
+                allUpdates = [];
+                let completed = 0;
+                const supportedPlatforms = ['twitch', 'kick', 'youtube', 'tiktok', 'instagram', 'twitter', 'reddit'];
+
+                for (const account of accounts) {
+                    if (!supportedPlatforms.includes(account.platform)) {
+                        completed++;
+                        continue;
+                    }
+
+                    try {
+                        // Use refresh_updates.php to fetch AND save to cache
+                        const creatorId = account.creator?.id || account.username;
+                        const creatorName = account.creator?.name || account.username;
+                        const statusRes = await fetch(
+                            `${API_BASE}/refresh_updates.php?platform=${encodeURIComponent(account.platform)}&user=${encodeURIComponent(account.username)}&creator_id=${encodeURIComponent(creatorId)}&creator_name=${encodeURIComponent(creatorName)}`
+                        );
+                        const statusData = await statusRes.json();
+
+                        if (statusData.ok && statusData.results && statusData.results.length > 0) {
+                            const result = statusData.results[0];
+                            if (result.ok && result.updates && result.updates.length > 0) {
+                                result.updates.forEach(update => {
+                                    allUpdates.push({
+                                        ...update,
+                                        creator: account.creator,
+                                        platform: account.platform,
+                                        username: account.username,
+                                        accountUrl: account.url
+                                    });
+                                });
+                            }
+                        }
+                    } catch (err) {
+                        console.warn(`Failed to fetch ${account.platform}/${account.username}:`, err);
+                    }
+
+                    completed++;
+                    progressFill.style.width = `${(completed / accounts.length) * 100}%`;
+
+                    // Small delay to avoid overwhelming the server
+                    await new Promise(r => setTimeout(r, 100));
+                }
+
+                // Sort by live first, then by published date
+                allUpdates.sort((a, b) => {
+                    if (a.is_live && !b.is_live) return -1;
+                    if (!a.is_live && b.is_live) return 1;
+                    const aTime = a.content_published_at ? new Date(a.content_published_at).getTime() : 0;
+                    const bTime = b.content_published_at ? new Date(b.content_published_at).getTime() : 0;
+                    return bTime - aTime;
+                });
+
+                // Update stats
+                document.getElementById('updatesCount').textContent = allUpdates.length;
+                document.getElementById('liveCount').textContent = allUpdates.filter(u => u.is_live).length;
+                document.getElementById('stats').style.display = 'flex';
+
+                renderUpdates();
+
+            } catch (error) {
+                console.error('Error loading updates:', error);
+                content.innerHTML = `
+                    <div class="error-state">
+                        <h3>Failed to load updates</h3>
+                        <p>${error.message}</p>
+                        <button class="refresh-btn" onclick="loadCreatorUpdates()">Try Again</button>
+                    </div>
+                `;
+            } finally {
+                progressBar.style.display = 'none';
+                isRefreshing = false;
+                refreshBtn.disabled = false;
+            }
+        }
+
+        function renderUpdates() {
+            const content = document.getElementById('content');
+            
+            let filtered = allUpdates;
+            
+            // Filter by platform
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(u => u.platform === currentFilter);
+            }
+            
+            // Filter by creator
+            if (currentCreatorFilter !== 'all') {
+                filtered = filtered.filter(u => u.creator && u.creator.id === currentCreatorFilter);
+            }
+
+            // Get filter description
+            let filterDesc = '';
+            if (currentFilter !== 'all' && currentCreatorFilter !== 'all') {
+                const creatorName = allCreators.find(c => c.id === currentCreatorFilter)?.name || 'Unknown';
+                filterDesc = `No ${currentFilter} updates from ${creatorName}.`;
+            } else if (currentFilter !== 'all') {
+                filterDesc = `No ${currentFilter} updates from your creators.`;
+            } else if (currentCreatorFilter !== 'all') {
+                const creatorName = allCreators.find(c => c.id === currentCreatorFilter)?.name || 'Unknown';
+                filterDesc = `No updates from ${creatorName}.`;
+            } else {
+                filterDesc = 'No recent updates from your followed creators.';
+            }
+
+            if (filtered.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No updates found</h3>
+                        <p>${filterDesc}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Show count of filtered results
+            const countInfo = filtered.length !== allUpdates.length 
+                ? `<div class="filter-info">Showing ${filtered.length} of ${allUpdates.length} updates</div>` 
+                : '';
+
+            content.innerHTML = `
+                ${countInfo}
+                <div class="updates-list">
+                    ${filtered.map(update => renderUpdateCard(update)).join('')}
+                </div>
+            `;
+        }
+
+        function renderUpdateCard(update) {
+            const creator = update.creator || {};
+            const initial = (creator.name || update.username || '?')[0].toUpperCase();
+            const avatarUrl = creator.avatarUrl || creator.avatar_url;
+            const avatarHtml = avatarUrl 
+                ? `<img src="${escapeHtml(avatarUrl)}" alt="" onerror="this.parentElement.innerHTML='${initial}'">`
+                : initial;
+
+            const isLive = update.is_live;
+            const isProfileOnly = update.update_type === 'profile' || 
+                                  (update.content_preview && update.content_preview.includes('Visit profile'));
+            const hasContent = update.content_title && 
+                               !update.content_title.includes('Profile exists but') &&
+                               !update.content_title.includes('profile active');
+
+            // For profile-only updates, show a helpful message
+            const profileMessage = isProfileOnly ? 
+                `<div class="profile-notice">📋 ${escapeHtml(update.content_preview || 'Visit profile for latest content')}</div>` : '';
+
+            return `
+                <div class="update-card ${isLive ? 'live' : ''} ${isProfileOnly ? 'profile-only' : ''}">
+                    <div class="update-header">
+                        <div class="creator-avatar">${avatarHtml}</div>
+                        <div class="update-meta">
+                            <div class="creator-name">${escapeHtml(creator.name || update.username)}</div>
+                            <div class="platform-info">
+                                <span class="platform-badge ${update.platform}">${update.platform}</span>
+                                <span>@${escapeHtml(update.username)}</span>
+                                ${isLive ? '<span class="live-badge">LIVE</span>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="update-content">
+                        ${hasContent && !isProfileOnly ? `<div class="update-title">${escapeHtml(update.content_title)}</div>` : ''}
+                        ${profileMessage}
+                        ${!isProfileOnly && update.content_preview && update.content_preview !== update.content_title && !update.content_preview.includes('Profile exists') && !update.content_preview.includes('Visit profile')
+                            ? `<div class="update-preview">${escapeHtml(update.content_preview)}</div>` 
+                            : ''}
+                        ${update.content_thumbnail ? `<img class="update-thumbnail" src="${escapeHtml(update.content_thumbnail)}" alt="" onerror="this.style.display='none'">` : ''}
+                        <div class="update-footer">
+                            <div class="update-time">${formatTime(update.content_published_at)}</div>
+                            <div class="update-stats">
+                                ${update.viewer_count > 0 ? `<span>👁 ${formatNumber(update.viewer_count)} viewers</span>` : ''}
+                                ${update.like_count > 0 ? `<span>❤️ ${formatNumber(update.like_count)}</span>` : ''}
+                                ${update.comment_count > 0 ? `<span>💬 ${formatNumber(update.comment_count)}</span>` : ''}
+                            </div>
+                            <a href="${escapeHtml(update.content_url || update.accountUrl)}" target="_blank" rel="noopener" class="update-link">
+                                ${isLive ? 'Watch Live' : isProfileOnly ? 'Visit Profile' : 'View'} →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function formatTime(dateStr) {
+            if (!dateStr) return 'Recently';
+            
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            return date.toLocaleDateString();
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

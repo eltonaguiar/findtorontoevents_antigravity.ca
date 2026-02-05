@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FavCreators Admin - Backfill Guest List</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            display: none;
+        }
+
+        #output.error {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+
+        .loading {
+            display: inline-block;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔧 FavCreators Admin Tool</h1>
+        <div class="description">
+            <p><strong>Backfill Guest List to Existing Users</strong></p>
+            <p>This tool will copy the guest list (user_id=0) to all existing users who don't have a creator list yet.
+            </p>
+            <p>This ensures that:</p>
+            <ul>
+                <li>All users start with the same default creators</li>
+                <li>Users can then customize their list (add/remove creators)</li>
+                <li>Changes are tracked in the user_lists table</li>
+            </ul>
+            <p><em>Note: Users who already have a list will be skipped.</em></p>
+        </div>
+
+        <button id="runBtn" onclick="runBackfill()">Run Backfill Script</button>
+        <span id="loading" class="loading" style="display:none;">⏳ Processing...</span>
+
+        <div id="output"></div>
+    </div>
+
+    <script>
+        async function runBackfill() {
+            const btn = document.getElementById('runBtn');
+            const loading = document.getElementById('loading');
+            const output = document.getElementById('output');
+
+            btn.disabled = true;
+            loading.style.display = 'inline-block';
+            output.style.display = 'none';
+            output.className = '';
+
+            try {
+                const response = await fetch('/fc/api/backfill_guest_list.php');
+                const text = await response.text();
+
+                output.textContent = text;
+                output.style.display = 'block';
+
+                if (!response.ok) {
+                    output.className = 'error';
+                }
+            } catch (error) {
+                output.textContent = 'Error: ' + error.message;
+                output.className = 'error';
+                output.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+
+</html>

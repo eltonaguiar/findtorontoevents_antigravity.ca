@@ -1,0 +1,408 @@
+.live-summary {
+  margin: 0 0 2rem 0;
+  background: linear-gradient(135deg, rgba(30, 30, 40, 0.95) 0%, rgba(20, 20, 30, 0.95) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.live-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s;
+}
+
+.live-summary-header:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.live-summary-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.live-pulse {
+  font-size: 1.5rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+.live-summary-title h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.live-count {
+  background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+/* Live Summary Controls (Refresh + Collapse buttons) */
+.live-summary-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Refresh Button */
+.refresh-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+}
+
+.refresh-button:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.5);
+  transform: translateY(-2px);
+}
+
+.refresh-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.refresh-button.refreshing {
+  background: rgba(99, 102, 241, 0.3);
+}
+
+.refresh-icon {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.refresh-button.refreshing .refresh-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.collapse-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.collapse-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Refresh Status Bar */
+.refresh-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.5rem;
+  font-size: 0.8rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.refresh-status-bar.checking {
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+}
+
+.refresh-status-bar.updated {
+  background: rgba(34, 197, 94, 0.1);
+  color: #86efac;
+}
+
+.refresh-status-bar.info {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.refresh-status-icon {
+  font-size: 0.9rem;
+}
+
+.refresh-status-text {
+  font-weight: 500;
+}
+
+.refresh-status-progress {
+  margin-left: auto;
+  font-family: monospace;
+  opacity: 0.8;
+}
+
+.live-summary-content {
+  padding: 0 1.5rem 1.5rem;
+}
+
+.live-section {
+  margin-bottom: 1.5rem;
+}
+
+.live-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.live-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.live-card {
+  background: linear-gradient(135deg, rgba(40, 40, 50, 0.8) 0%, rgba(30, 30, 40, 0.8) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.live-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.story-card {
+  background: linear-gradient(135deg, rgba(80, 40, 100, 0.3) 0%, rgba(60, 30, 80, 0.3) 100%);
+}
+
+.live-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.live-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.live-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.creator-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.platform-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  margin-top: 0.25rem;
+}
+
+.live-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.live-badge {
+  background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+  color: white;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  animation: pulse-badge 2s ease-in-out infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { box-shadow: 0 0 8px rgba(255, 68, 68, 0.5); }
+  50% { box-shadow: 0 0 16px rgba(255, 68, 68, 0.8); }
+}
+
+.story-badge {
+  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+  color: white;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.live-time {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+}
+
+/* Multi-platform badge styles */
+.multi-platform-badge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.platform-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.platform-separator {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+}
+
+/* Platform links */
+.platform-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.platform-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.platform-link:hover {
+  transform: translateX(4px);
+  filter: brightness(1.2);
+}
+
+/* Checking state styles */
+.no-live-message {
+  text-align: center;
+  padding: 2rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.no-live-subtext {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 0.75rem;
+  font-style: italic;
+}
+
+.checking-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 0.5rem;
+}
+
+.checking-spinner {
+  animation: spin 1.5s linear infinite;
+  display: inline-block;
+}
+
+.checking-spinner-small {
+  animation: spin 1.5s linear infinite;
+  display: inline-block;
+}
+
+.checking-subtext {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 0.5rem;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .live-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .live-summary-title h2 {
+    font-size: 1.25rem;
+  }
+  
+  .live-summary-header {
+    padding: 1rem;
+  }
+  
+  .live-summary-content {
+    padding: 0 1rem 1rem;
+  }
+  
+  .refresh-status-bar {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+  }
+  
+  .refresh-button {
+    min-width: 32px;
+    height: 32px;
+    padding: 0.375rem;
+  }
+}

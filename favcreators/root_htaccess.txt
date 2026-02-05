@@ -1,0 +1,41 @@
+# findtorontoevents.ca — document root .htaccess
+RewriteEngine On
+RewriteBase /
+
+# API: do NOT rewrite — let api/*.php run (Google OAuth, etc.). Must come before any catch-all.
+RewriteRule ^api/ - [L]
+
+# Redirect exposed internal server path to canonical root (info disclosure fix)
+RewriteRule ^services/users/ / [R=301,L]
+
+# Stats page at /stats (root): serve stats/index.html
+RewriteRule ^stats/?$ stats/index.html [L]
+
+# Redirect legacy/alias URLs to stats (events count, sources, summary)
+RewriteRule ^debug/?$ /stats/ [R=301,L]
+RewriteRule ^info/?$ /stats/ [R=301,L]
+RewriteRule ^details/?$ /stats/ [R=301,L]
+RewriteRule ^events/?$ /stats/ [R=301,L]
+RewriteRule ^events_summary/?$ /stats/ [R=301,L]
+
+# Chunk JS: serve directly from next/_next/ (ModSecurity bypass via next/_next/static/chunks/.htaccess)
+# Proxy rewrite disabled – proxy was timing out
+# RewriteRule ^(next/_next/static/chunks/.*\.js)$ js-proxy-v2.php?file=$1 [QSA,L]
+RewriteRule ^_next/static/ - [L]
+# Pass through next/_next/ so files are served from next/_next/ (not rewritten to _next/)
+RewriteRule ^next/_next/ - [L]
+
+RewriteRule ^$ index.html [R=301,L]
+
+<IfModule mod_rewrite.c>
+ # FavCreators app at /fc/ (avoids 500 on host for /favcreators/)
+ # /fc or /fc/ -> fc/index.html; /fc/anything -> fc/anything (serve static assets and api/)
+ RewriteRule ^fc/?$ fc/index.html [L]
+ RewriteRule ^fc/(.+)$ fc/$1 [L]
+
+ # Compatibility: next/_next/ is passed through above; only other next/ paths get rewritten
+ RewriteRule ^next/static/(.*)$ _next/static/$1 [L]
+
+ # Compatibility: some builds may reference /next/static/... while export uses /_next/static/...
+ RewriteRule ^next/static/(.*)$ _next/static/$1 [L]
+</IfModule>

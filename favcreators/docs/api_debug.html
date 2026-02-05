@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>API Debug - User 2 Creators</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+
+        h1 {
+            color: #4ec9b0;
+        }
+
+        pre {
+            background: #252526;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        .creator {
+            padding: 10px;
+            margin: 5px 0;
+            background: #2d2d30;
+            border-left: 3px solid #007acc;
+        }
+
+        .brunitarte {
+            border-left-color: #f48771;
+            background: #3d2d30;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 API Debug - User 2 Creators</h1>
+    <button onclick="fetchCreators()">Fetch Creators for User 2</button>
+    <div id="output"></div>
+
+    <script>
+        async function fetchCreators() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<p>Loading...</p>';
+
+            try {
+                const response = await fetch('https://findtorontoevents.ca/fc/api/get_my_creators.php?user_id=2');
+                const data = await response.json();
+
+                const count = data.creators ? data.creators.length : 0;
+                let html = `<h2>Total Creators: ${count}</h2>`;
+
+                if (data.creators) {
+                    html += '<h3>Creator List:</h3>';
+                    data.creators.forEach((creator, idx) => {
+                        const isBrunitarte = creator.name?.toLowerCase().includes('brunitarte') ||
+                            creator.id?.toLowerCase().includes('brunitarte');
+                        const className = isBrunitarte ? 'creator brunitarte' : 'creator';
+
+                        html += `<div class="${className}">`;
+                        html += `<strong>${idx + 1}. ${creator.name || 'NO NAME'}</strong><br>`;
+                        html += `ID: ${creator.id || 'NO ID'}<br>`;
+                        html += `Avatar: ${creator.avatarUrl ? 'YES' : 'NO'}<br>`;
+                        html += `Accounts: ${creator.accounts ? creator.accounts.length : 0}<br>`;
+                        if (isBrunitarte) {
+                            html += `<br><strong style="color: #f48771;">⚠️ THIS IS BRUNITARTE!</strong><br>`;
+                            html += `<pre>${JSON.stringify(creator, null, 2)}</pre>`;
+                        }
+                        html += `</div>`;
+                    });
+
+                    // Check if brunitarte exists
+                    const hasBrunitarte = data.creators.some(c =>
+                        c.name?.toLowerCase().includes('brunitarte') ||
+                        c.id?.toLowerCase().includes('brunitarte')
+                    );
+
+                    if (hasBrunitarte) {
+                        html += '<h2 style="color: #4ec9b0;">✅ Brunitarte FOUND in API response!</h2>';
+                    } else {
+                        html += '<h2 style="color: #f48771;">❌ Brunitarte NOT FOUND in API response!</h2>';
+                    }
+                }
+
+                output.innerHTML = html;
+            } catch (error) {
+                output.innerHTML = `<p style="color: #f48771;">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Auto-fetch on load
+        window.onload = fetchCreators;
+    </script>
+</body>
+
+</html>
