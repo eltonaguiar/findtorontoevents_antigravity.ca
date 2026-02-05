@@ -135,7 +135,6 @@
     .stocks-promo {
       display: block !important;
       visibility: visible !important;
-      opacity: 1 !important;
       height: auto !important;
       overflow: visible !important;
       position: relative !important;
@@ -155,13 +154,21 @@
       margin-bottom: 1rem !important;
     }
     
-    /* Hover effects */
+    /* Hover effects - allow dimmed state by default */
     .promo-banner:hover .flex.items-center {
       opacity: 1 !important;
       filter: grayscale(0) !important;
     }
     .promo-banner:hover .override-overflow {
       max-width: 300px !important;
+      opacity: 1 !important;
+    }
+    
+    /* Show tooltips on hover */
+    .group:hover .group-hover\:visible {
+      visibility: visible !important;
+    }
+    .group:hover .group-hover\:opacity-100 {
       opacity: 1 !important;
     }
   </style>
@@ -303,7 +310,13 @@
         </div>
         <h1 class="text-5xl md:text-7xl font-extrabold mb-4 tracking-tight glow-text">Toronto Events <span
             class="text-2xl md:text-3xl text-[var(--pk-300)]">v0.5.2</span></h1>
-        <p class="text-lg text-[var(--text-2)] max-w-2xl mx-auto">Your daily guide to Toronto events, dating spots, and things to do this weekend.</p>
+        <p class="text-lg text-[var(--text-2)] max-w-3xl mx-auto leading-relaxed">
+          <a href="/" class="hover:text-[var(--pk-300)] transition">Toronto daily events</a>, 
+          <a href="/fc/#/guest" class="hover:text-[var(--pk-300)] transition">track your favourite livestreamers/creators</a> so they dont get lost in your feed, 
+          <a href="/MOVIESHOWS/" class="hover:text-[var(--pk-300)] transition">find your next movie/show</a> in a scrolling interface, 
+          <a href="/WINDOWSFIXER/" class="hover:text-[var(--pk-300)] transition">fix your windows boot issues</a>, and 
+          <a href="/findstocks/" class="hover:text-[var(--pk-300)] transition">find out if someone with a supercomputer can beat the stock market</a>
+        </p>
         <p class="text-sm text-[var(--text-3)] mt-2">Updated daily • Feb 4, 2026</p>
       </header>
       <div class="max-w-7xl mx-auto px-4" suppressHydrationWarning>
@@ -352,7 +365,7 @@
                   class="jsx-1b9a23bd3fa6c640 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap"
                   href="/fc/#/guest" rel="noopener noreferrer" target="_blank">Open App →</a>
                 <div class="jsx-1b9a23bd3fa6c640 absolute top-full right-0 mt-2 w-64 p-3 bg-[var(--surface-1)] border border-white/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                  <p class="text-xs text-[var(--text-2)] mb-2">Ever wish you could find your favorite creators or track their live status across multiple platforms? Check live status, stories &amp; more.</p>
+                  <p class="text-xs text-[var(--text-2)] mb-2">Ever wish you could find one of your favorite creators, or track your creators latest stories/live stream status across multiple platforms? Track TikTok, Twitch, Kick &amp; YouTube in one place so they don't get lost in your feed!</p>
                   <div class="flex gap-2">
                     <a href="/fc/#/guest" target="_blank" class="text-[10px] px-2 py-1 bg-pink-500/20 text-pink-300 rounded hover:bg-pink-500/30 transition">TikTok</a>
                     <a href="/fc/#/guest" target="_blank" class="text-[10px] px-2 py-1 bg-purple-500/20 text-purple-300 rounded hover:bg-purple-500/30 transition">Twitch</a>
@@ -384,7 +397,7 @@
                   class="jsx-1b9a23bd3fa6c640 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap"
                   href="/MOVIESHOWS/" rel="noopener noreferrer" target="_blank">Open App →</a>
                 <div class="jsx-1b9a23bd3fa6c640 absolute top-full right-0 mt-2 w-56 p-3 bg-[var(--surface-1)] border border-white/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                  <p class="text-xs text-[var(--text-2)] mb-2">Browse trailers &amp; see what's now playing in Toronto theaters.</p>
+                  <p class="text-xs text-[var(--text-2)] mb-2">Scrolling reels interface for movie/tv series trailers, including movies in theatres!</p>
                   <div class="flex flex-col gap-1">
                     <a href="/MOVIESHOWS/" target="_blank" class="text-xs px-2 py-1.5 bg-amber-500/20 text-amber-300 rounded hover:bg-amber-500/30 transition flex justify-between">🎬 Movie Shows <span>→</span></a>
                     <a href="/movieshows2/" target="_blank" class="text-xs px-2 py-1.5 bg-orange-500/20 text-orange-300 rounded hover:bg-orange-500/30 transition flex justify-between">📺 TV Shows <span>→</span></a>
@@ -799,9 +812,9 @@
 (function() {
   console.log('[FORCE BANNERS] Aggressive banner protection loaded');
   
-  const FAVCREATORS = '<div class="max-w-7xl mx-auto px-4" style="margin-bottom: 1rem;"><div class="jsx-1b9a23bd3fa6c640 favcreators-promo"><div class="jsx-1b9a23bd3fa6c640 promo-banner"><div class="jsx-1b9a23bd3fa6c640 flex items-center gap-3 transition-all duration-500 opacity-60 grayscale"><div class="jsx-1b9a23bd3fa6c640 w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-lg animate-pulse-slow"><span class="jsx-1b9a23bd3fa6c640 text-xl">⭐</span></div><div class="jsx-1b9a23bd3fa6c640 transition-all duration-500 override-overflow max-w-0 opacity-0 overflow-hidden"><div class="jsx-1b9a23bd3fa6c640 flex flex-col whitespace-nowrap"><span class="jsx-1b9a23bd3fa6c640 text-sm font-bold text-white">Fav Creators</span><span class="jsx-1b9a23bd3fa6c640 text-[10px] text-[var(--text-2)]">Live Status & More</span></div></div><a class="jsx-1b9a23bd3fa6c640 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap" href="/fc/#/guest" rel="noopener noreferrer" target="_blank">Open App →</a></div></div></div></div>';
+  const FAVCREATORS = '<div class="max-w-7xl mx-auto px-4" style="margin-bottom: 1rem;"><div class="jsx-1b9a23bd3fa6c640 favcreators-promo"><div class="jsx-1b9a23bd3fa6c640 promo-banner"><div class="jsx-1b9a23bd3fa6c640 flex items-center gap-3 transition-all duration-500 opacity-60 grayscale hover:opacity-100 hover:grayscale-0 group"><div class="jsx-1b9a23bd3fa6c640 w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-lg animate-pulse-slow"><span class="jsx-1b9a23bd3fa6c640 text-xl">💎</span></div><div class="jsx-1b9a23bd3fa6c640 transition-all duration-500 override-overflow max-w-0 opacity-0 overflow-hidden group-hover:max-w-xs group-hover:opacity-100"><div class="jsx-1b9a23bd3fa6c640 flex flex-col whitespace-nowrap"><span class="jsx-1b9a23bd3fa6c640 text-sm font-bold text-white">Fav Creators</span><span class="jsx-1b9a23bd3fa6c640 text-[10px] text-[var(--text-2)]">Track creators across TikTok, Twitch, Kick & YouTube</span></div></div><div class="jsx-1b9a23bd3fa6c640 relative"><a class="jsx-1b9a23bd3fa6c640 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap" href="/fc/#/guest" rel="noopener noreferrer" target="_blank">Open App →</a><div class="jsx-1b9a23bd3fa6c640 absolute top-full right-0 mt-2 w-64 p-3 bg-[var(--surface-1)] border border-white/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50"><p class="text-xs text-[var(--text-2)] mb-2">Ever wish you could find one of your favorite creators, or track your creators latest stories/live stream status across multiple platforms? Track TikTok, Twitch, Kick & YouTube in one place so they don't get lost in your feed!</p><div class="flex gap-2"><a href="/fc/#/guest" target="_blank" class="text-[10px] px-2 py-1 bg-pink-500/20 text-pink-300 rounded hover:bg-pink-500/30 transition">TikTok</a><a href="/fc/#/guest" target="_blank" class="text-[10px] px-2 py-1 bg-purple-500/20 text-purple-300 rounded hover:bg-purple-500/30 transition">Twitch</a><a href="/fc/#/guest" target="_blank" class="text-[10px] px-2 py-1 bg-green-500/20 text-green-300 rounded hover:bg-green-500/30 transition">Kick</a></div></div></div></div></div></div></div>';
   
-  const STOCKS = '<div class="max-w-7xl mx-auto px-4" style="margin-bottom: 1rem;"><div class="jsx-1b9a23bd3fa6c640 stocks-promo"><div class="jsx-1b9a23bd3fa6c640 promo-banner"><div class="jsx-1b9a23bd3fa6c640 flex items-center gap-3 transition-all duration-500 opacity-60 grayscale"><div class="jsx-1b9a23bd3fa6c640 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg animate-pulse-slow"><span class="jsx-1b9a23bd3fa6c640 text-xl">📈</span></div><div class="jsx-1b9a23bd3fa6c640 transition-all duration-500 override-overflow max-w-0 opacity-0 overflow-hidden"><div class="jsx-1b9a23bd3fa6c640 flex flex-col whitespace-nowrap"><span class="jsx-1b9a23bd3fa6c640 text-sm font-bold text-white">Stocks</span><span class="jsx-1b9a23bd3fa6c640 text-[10px] text-[var(--text-2)]">Research & Portfolio</span></div></div><a class="jsx-1b9a23bd3fa6c640 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap" href="/findstocks" rel="noopener noreferrer" target="_blank">Open App →</a></div></div></div></div>';
+  const STOCKS = '<div class="max-w-7xl mx-auto px-4" style="margin-bottom: 1rem;"><div class="jsx-1b9a23bd3fa6c640 stocks-promo"><div class="jsx-1b9a23bd3fa6c640 promo-banner"><div class="jsx-1b9a23bd3fa6c640 flex items-center gap-3 transition-all duration-500 opacity-60 grayscale hover:opacity-100 hover:grayscale-0 group"><div class="jsx-1b9a23bd3fa6c640 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg animate-pulse-slow"><span class="jsx-1b9a23bd3fa6c640 text-xl">📈</span></div><div class="jsx-1b9a23bd3fa6c640 transition-all duration-500 override-overflow max-w-0 opacity-0 overflow-hidden group-hover:max-w-xs group-hover:opacity-100"><div class="jsx-1b9a23bd3fa6c640 flex flex-col whitespace-nowrap"><span class="jsx-1b9a23bd3fa6c640 text-sm font-bold text-white">Stock Ideas</span><span class="jsx-1b9a23bd3fa6c640 text-[10px] text-[var(--text-2)]">Research, picks & market insights</span></div></div><div class="jsx-1b9a23bd3fa6c640 relative"><a class="jsx-1b9a23bd3fa6c640 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap" href="/findstocks/" rel="noopener noreferrer" target="_blank">Open App →</a><div class="jsx-1b9a23bd3fa6c640 absolute top-full right-0 mt-2 w-52 p-3 bg-[var(--surface-1)] border border-white/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50"><p class="text-xs text-[var(--text-2)]">Looking for stock ideas? Browse research, daily picks, and portfolio tracking tools.</p></div></div></div></div></div></div>';
   
   let restoredCount = 0;
   
