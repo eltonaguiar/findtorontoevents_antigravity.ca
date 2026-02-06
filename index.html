@@ -129,11 +129,42 @@
     });
   </script>
   <script nomodule="" src="/next/_next/static/chunks/a6dad97d9634a72d.js"></script>  <style id="force-banners">
-    /* FORCE ALL 4 BANNERS - Override React */
-    .windows-fixer-promo,
-    .favcreators-promo,
-    .movieshows-promo,
-    .stocks-promo {
+    /* HIDE React's promo sections inside main - React will hydrate these away anyway */
+    main .windows-fixer-promo,
+    main .favcreators-promo,
+    main .movieshows-promo,
+    main .stocks-promo,
+    main #horizontal-promo-container {
+      display: none !important;
+    }
+    
+    /* Hide the template container, show the injected one */
+    #static-promo-container {
+      display: none !important;
+    }
+    #injected-promos {
+      display: block !important;
+      visibility: visible !important;
+    }
+    
+    /* Info tooltip hover styles */
+    .info-tooltip-wrapper:hover .info-tooltip-content {
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+    
+    /* Tooltip parent hover for group/info pattern */
+    .group\/info:hover .info-tooltip-content,
+    .group\/info:hover > div[class*="absolute"] {
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+    
+    /* FORCE ALL 4 BANNERS inside our injected container */
+    #injected-promos .windows-fixer-promo,
+    #injected-promos .favcreators-promo,
+    #injected-promos .movieshows-promo,
+    #injected-promos .stocks-promo {
       display: block !important;
       visibility: visible !important;
       height: auto !important;
@@ -141,12 +172,9 @@
       position: relative !important;
     }
     
-    /* Ensure parent containers don't hide them - but NOT tooltips */
-    .windows-fixer-promo > *:not(.absolute):not(.tooltip-panel),
-    .favcreators-promo > *:not(.absolute):not(.tooltip-panel),
-    .movieshows-promo > *:not(.absolute):not(.tooltip-panel),
-    .stocks-promo > *:not(.absolute):not(.tooltip-panel),
-    .promo-banner > *:not(.absolute):not(.tooltip-panel) {
+    /* Ensure content inside our promos is visible */
+    #injected-promos .promo-banner,
+    #injected-promos .promo-banner > * {
       display: block !important;
       visibility: visible !important;
     }
@@ -193,15 +221,15 @@
       margin-bottom: 1rem !important;
     }
     
-    /* Hover effects - allow dimmed state by default */
-    .promo-banner:hover .flex.items-center {
+    /* FIX: Make promo banners always visible (not just on hover) */
+    .promo-banner .flex.items-center {
       opacity: 1 !important;
       filter: grayscale(0) !important;
     }
     
-    /* Remove hover expansion - text stays inside banner */
+    /* Remove hover expansion - text stays inside banner and is always visible */
     .promo-banner .override-overflow {
-      max-width: none !important;
+      max-width: 280px !important;
       opacity: 1 !important;
       overflow: visible !important;
       white-space: normal !important;
@@ -384,8 +412,147 @@
           </path>
         </svg></button></div>
   </div>
-  <div class="font-size-md density-normal relative z-0 min-h-screen"
-    style="scale:var(--webpage-scale);transform-origin:top center;width:100%">
+  <!-- STATIC PROMO CONTAINER - Completely outside React's hydration scope -->
+  <div id="static-promo-container" class="max-w-4xl mx-auto px-4 py-6" style="display:none;">
+    <div class="grid grid-cols-2 gap-4">
+        <!-- Windows Fixer -->
+        <div class="windows-fixer-promo w-full">
+          <div class="promo-banner bg-white/5 rounded-2xl p-5 h-full">
+            <div class="flex items-center gap-4 transition-all duration-500 group">
+              <div class="w-16 h-16 rounded-full bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center shadow-lg">
+                <span class="text-3xl">🛠️</span>
+              </div>
+              <div class="transition-all duration-500">
+                <div class="flex flex-col whitespace-nowrap">
+                  <span class="text-lg font-bold text-white">System Issues?</span>
+                  <span class="text-sm text-[var(--text-2)]">Try Windows Boot Fixer</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <a href="/WINDOWSFIXER/" target="_blank" class="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-base font-bold text-white transition-all whitespace-nowrap">Learn More →</a>
+                <div class="relative group/info">
+                  <button class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-xs flex items-center justify-center cursor-pointer border-0" style="font-size:14px;">ℹ️</button>
+                  <div class="absolute left-0 mt-2 w-80 p-4 bg-[#1a1a2e] border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-300 z-[9999] text-left" style="top: 100%;">
+                    <p class="text-xs font-bold text-purple-400 mb-2">🔧 Miracle Boot - Windows Recovery Toolkit</p>
+                    <div class="space-y-2 text-xs text-[var(--text-2)]">
+                      <p>Comprehensive recovery toolkit for Windows boot issues.</p>
+                      <ul class="list-disc list-inside space-y-1 pl-1">
+                        <li><span class="text-white">💀 BSOD Fix</span> — Resolve INACCESSIBLE_BOOT_DEVICE</li>
+                        <li><span class="text-white">🔄 Boot Repair</span> — Fix corrupted bootloaders & MBR</li>
+                        <li><span class="text-white">💾 Recovery</span> — Restore Windows when it won't start</li>
+                        <li><span class="text-white">🛡️ Safe</span> — No data loss, works offline</li>
+                      </ul>
+                    </div>
+                    <p class="text-[10px] text-[var(--text-3)] mt-2 italic">Free download. Works with Windows 10/11.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Movie/TV Show Trailers -->
+        <div class="movieshows-promo w-full">
+          <div class="promo-banner bg-white/5 rounded-2xl p-5 h-full">
+            <div class="flex items-center gap-4 transition-all duration-500">
+              <div class="w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
+                <span class="text-3xl">🎬</span>
+              </div>
+              <div class="transition-all duration-500">
+                <div class="flex flex-col whitespace-nowrap">
+                  <span class="text-lg font-bold text-white">Movie/TV Show Trailers</span>
+                  <span class="text-sm text-[var(--text-2)]">Swipe through trailers — your next binge awaits</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <a class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-sm font-bold text-white transition-all whitespace-nowrap" href="/MOVIESHOWS/" target="_blank">V1 →</a>
+                <a class="px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 text-sm font-bold text-amber-300 transition-all whitespace-nowrap" href="/movieshows2/" target="_blank">V2 →</a>
+                <a class="px-3 py-1.5 rounded-full bg-orange-500/20 hover:bg-orange-500/30 text-sm font-bold text-orange-300 transition-all whitespace-nowrap" href="/MOVIESHOWS3" target="_blank">V3 →</a>
+                <div class="relative group/info">
+                  <button class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-xs flex items-center justify-center cursor-pointer border-0" style="font-size:14px;">ℹ️</button>
+                  <div class="absolute left-0 mt-2 w-80 p-4 bg-[#1a1a2e] border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-300 z-[9999] text-left" style="top: 100%;">
+                    <p class="text-xs font-bold text-amber-400 mb-2">📺 TikTok-style trailer browsing</p>
+                    <div class="space-y-2 text-xs text-[var(--text-2)]">
+                      <div class="p-2 bg-white/5 rounded-lg"><span class="font-bold text-white">V1</span> — Toronto theater info, IMDb + RT ratings, emoji reactions</div>
+                      <div class="p-2 bg-amber-500/10 rounded-lg border border-amber-500/20"><span class="font-bold text-amber-300">V2</span> — TMDB integration, genre filters, playlist export/import</div>
+                      <div class="p-2 bg-orange-500/10 rounded-lg border border-orange-500/20"><span class="font-bold text-orange-300">V3</span> — Browse & search, user accounts, likes, auto-scroll, queue</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Fav Creators -->
+        <div class="favcreators-promo w-full">
+          <div class="promo-banner bg-white/5 rounded-2xl p-5 h-full">
+            <div class="flex items-center gap-4 transition-all duration-500 group">
+              <div class="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-lg">
+                <span class="text-3xl">💎</span>
+              </div>
+              <div class="transition-all duration-500">
+                <div class="flex flex-col whitespace-nowrap">
+                  <span class="text-lg font-bold text-white">Fav Creators</span>
+                  <span class="text-sm text-[var(--text-2)]">Never miss when your favorites go live</span>
+                </div>
+              </div>
+              <div class="relative">
+                <a class="ml-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-base font-bold text-white transition-all whitespace-nowrap" href="/fc/#/guest" target="_blank">Open App →</a>
+              </div>
+              <div class="relative group/info">
+                <button class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-xs flex items-center justify-center cursor-pointer border-0" style="font-size:14px;">ℹ️</button>
+                <div class="absolute right-0 mt-2 w-80 p-4 bg-[#1a1a2e] border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-300 z-[9999] text-left" style="top: 100%;">
+                  <p class="text-xs font-bold text-pink-400 mb-2">⭐ Your creators, one dashboard</p>
+                  <div class="space-y-2 text-xs text-[var(--text-2)]">
+                    <p>Add your favorite streamers from <span class="text-pink-300">TikTok</span>, <span class="text-purple-300">Twitch</span>, <span class="text-green-300">Kick</span> & <span class="text-red-300">YouTube</span>.</p>
+                    <ul class="list-disc list-inside space-y-1 pl-1">
+                      <li><span class="text-white">🔴 Live status</span> — See who's streaming now</li>
+                      <li><span class="text-white">📱 Recent posts</span> — Latest content in one feed</li>
+                      <li><span class="text-white">🔔 All platforms</span> — Stop missing content</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Stock Ideas -->
+        <div class="stocks-promo w-full">
+          <div class="promo-banner bg-white/5 rounded-2xl p-5 h-full">
+            <div class="flex items-center gap-4 transition-all duration-500 group">
+              <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                <span class="text-3xl">📈</span>
+              </div>
+              <div class="transition-all duration-500">
+                <div class="flex flex-col whitespace-nowrap">
+                  <span class="text-lg font-bold text-white">Stock Ideas</span>
+                  <span class="text-sm text-[var(--text-2)]">AI-validated picks, updated daily</span>
+                </div>
+              </div>
+              <div class="relative">
+                <a class="ml-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-base font-bold text-white transition-all whitespace-nowrap" href="/findstocks/" target="_blank">Open App →</a>
+              </div>
+              <div class="relative group/info">
+                <button class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-xs flex items-center justify-center cursor-pointer border-0" style="font-size:14px;">ℹ️</button>
+                <div class="absolute right-0 mt-2 w-80 p-4 bg-[#1a1a2e] border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-300 z-[9999] text-left" style="top: 100%;">
+                  <p class="text-xs font-bold text-indigo-400 mb-2">📊 Beat Wall Street without a supercomputer?</p>
+                  <div class="space-y-2 text-xs text-[var(--text-2)]">
+                    <p>Daily picks from <span class="text-white">11+ algorithms</span>, AI cross-validated.</p>
+                    <ul class="list-disc list-inside space-y-1 pl-1">
+                      <li><span class="text-white">🎯 Daily picks</span> — Fresh recommendations</li>
+                      <li><span class="text-white">🧪 Regime-aware</span> — Adapts to market conditions</li>
+                      <li><span class="text-white">📉 Slippage tested</span> — Realistic execution</li>
+                    </ul>
+                  </div>
+                  <p class="text-[10px] text-[var(--text-3)] mt-2 italic">Not financial advice.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
+  <!-- React's wrapper div and main -->
+  <div class="font-size-md density-normal relative z-0 min-h-screen" style="scale:var(--webpage-scale);transform-origin:top center;width:100%">
     <main class="min-h-screen">
       <header class="relative py-20 px-6 text-center overflow-hidden">
         <div class="absolute inset-0 bg-gradient-to-b from-[var(--pk-900)] to-[var(--surface-0)] opacity-50 -z-10">
@@ -397,121 +564,164 @@
           <a href="/fc" class="hover:text-[var(--pk-300)] transition">track your favourite livestreamers/creators</a> so they dont get lost in your feed, 
           find your next <a href="/movieshows2" class="hover:text-[var(--pk-300)] transition">movie/show</a> in a scrolling interface, 
           fix your <a href="/WINDOWSFIXER/" class="hover:text-[var(--pk-300)] transition">windows boot issues</a>, and 
-          find out if someone with a supercomputer can beat the <a href="/findstocks/" class="hover:text-[var(--pk-300)] transition">stock</a> market
+          find out if someone WITHOUT a supercomputer can beat the <a href="/findstocks/" class="hover:text-[var(--pk-300)] transition">stock</a> market
         </p>
         <p class="text-sm text-[var(--text-3)] mt-2">Updated daily • Feb 4, 2026</p>
       </header>
-      <div class="max-w-7xl mx-auto px-4" suppressHydrationWarning>
-        <div class="jsx-1dee1fec6bde20e8 windows-fixer-promo">
-          <div class="jsx-1dee1fec6bde20e8 promo-banner">
-            <div class="jsx-1dee1fec6bde20e8 flex items-center gap-3 transition-all duration-500 opacity-60 grayscale hover:opacity-100 hover:grayscale-0 group">
-              <div
-                class="jsx-1dee1fec6bde20e8 w-10 h-10 rounded-full bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center shadow-lg animate-pulse-slow">
-                <span class="jsx-1dee1fec6bde20e8 text-xl">🛠️</span>
-              </div>
-              <div
-                class="jsx-1dee1fec6bde20e8 transition-all duration-500 override-overflow max-w-0 opacity-0 overflow-hidden group-hover:max-w-xs group-hover:opacity-100">
-                <div class="jsx-1dee1fec6bde20e8 flex flex-col whitespace-nowrap"><span
-                    class="jsx-1dee1fec6bde20e8 text-sm font-bold text-white">System Issues?</span><span
-                    class="jsx-1dee1fec6bde20e8 text-[10px] text-[var(--text-2)]">Try Windows Boot Fixer</span></div>
-              </div>
-              <div class="jsx-1dee1fec6bde20e8 relative">
-                <a href="/WINDOWSFIXER/" target="_blank"
-                  class="jsx-1dee1fec6bde20e8 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap">Learn
-                  More →</a>
-                <div class="jsx-1dee1fec6bde20e8 absolute top-full right-0 mt-2 w-56 p-3 bg-[var(--surface-1)] border border-white/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                  <p class="text-xs text-[var(--text-2)]">Having Windows boot issues? Check out our Windows Fixer tool to diagnose and fix common startup problems.</p>
+      <div class="max-w-4xl mx-auto px-4" id="horizontal-promo-container" suppressHydrationWarning>
+        <div class="grid grid-cols-2 gap-4 py-6">
+          <!-- Windows Fixer -->
+          <div class="jsx-1dee1fec6bde20e8 windows-fixer-promo w-full">
+            <div class="jsx-1dee1fec6bde20e8 promo-banner bg-white/5 rounded-2xl p-5 h-full">
+              <div class="jsx-1dee1fec6bde20e8 flex items-center gap-4 transition-all duration-500 group">
+                <div
+                  class="jsx-1dee1fec6bde20e8 w-16 h-16 rounded-full bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center shadow-lg animate-pulse-slow">
+                  <span class="jsx-1dee1fec6bde20e8 text-3xl">🛠️</span>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="max-w-7xl mx-auto px-4" suppressHydrationWarning>
-        <div class="jsx-1b9a23bd3fa6c640 favcreators-promo">
-          <div class="jsx-1b9a23bd3fa6c640 promo-banner">
-            <div class="jsx-1b9a23bd3fa6c640 flex items-center gap-3 transition-all duration-500 opacity-60 grayscale hover:opacity-100 hover:grayscale-0 group">
-              <div
-                class="jsx-1b9a23bd3fa6c640 w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-lg animate-pulse-slow">
-                <span class="jsx-1b9a23bd3fa6c640 text-xl">💎</span>
-              </div>
-              <div
-                class="jsx-1b9a23bd3fa6c640 transition-all duration-500 override-overflow max-w-0 opacity-0 overflow-hidden group-hover:max-w-xs group-hover:opacity-100">
-                <div class="jsx-1b9a23bd3fa6c640 flex flex-col whitespace-nowrap"><span
-                    class="jsx-1b9a23bd3fa6c640 text-sm font-bold text-white">Fav Creators</span><span
-                    class="jsx-1b9a23bd3fa6c640 text-[10px] text-[var(--text-2)]">Track creators across TikTok, Twitch, Kick &amp; YouTube</span>
+                <div
+                  class="jsx-1dee1fec6bde20e8 transition-all duration-500 override-overflow">
+                  <div class="jsx-1dee1fec6bde20e8 flex flex-col whitespace-nowrap"><span
+                      class="jsx-1dee1fec6bde20e8 text-lg font-bold text-white">System Issues?</span><span
+                      class="jsx-1dee1fec6bde20e8 text-sm text-[var(--text-2)]">Try Windows Boot Fixer</span></div>
                 </div>
-              </div>
-              <div class="jsx-1b9a23bd3fa6c640 relative">
-                <a
-                  class="jsx-1b9a23bd3fa6c640 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap"
-                  href="/fc/#/guest" rel="noopener noreferrer" target="_blank">Open App →</a>
-                <div class="jsx-1b9a23bd3fa6c640 absolute right-0 mt-2 w-72 p-4 bg-[var(--surface-1)] border border-white/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[9999]" style="top: calc(100% + 8px); max-width: 300px; line-height: 1.5; transform: translateY(0);">
-                  <p class="text-xs text-[var(--text-2)] mb-2" style="line-height: 1.5;">Track your favorite creators across TikTok, Twitch, Kick &amp; YouTube. Never miss their live streams or stories!</p>
-                  <div class="flex gap-2">
-                    <a href="/fc/#/guest" target="_blank" class="text-[10px] px-2 py-1 bg-pink-500/20 text-pink-300 rounded hover:bg-pink-500/30 transition">TikTok</a>
-                    <a href="/fc/#/guest" target="_blank" class="text-[10px] px-2 py-1 bg-purple-500/20 text-purple-300 rounded hover:bg-purple-500/30 transition">Twitch</a>
-                    <a href="/fc/#/guest" target="_blank" class="text-[10px] px-2 py-1 bg-green-500/20 text-green-300 rounded hover:bg-green-500/30 transition">Kick</a>
+                <div class="jsx-1dee1fec6bde20e8 relative">
+                  <a href="/WINDOWSFIXER/" target="_blank"
+                    class="jsx-1dee1fec6bde20e8 ml-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-base font-bold text-white transition-all whitespace-nowrap">Learn
+                    More →</a>
+                  <div class="jsx-1dee1fec6bde20e8 absolute top-full right-0 mt-2 w-56 p-3 bg-[var(--surface-1)] border border-white/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                    <p class="text-sm text-[var(--text-2)]">Having Windows boot issues? Check out our Windows Fixer tool to diagnose and fix common startup problems.</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-      <div class="max-w-7xl mx-auto px-4" suppressHydrationWarning>
-        <div class="jsx-1b9a23bd3fa6c640 movieshows-promo">
-          <div class="jsx-1b9a23bd3fa6c640 promo-banner">
-            <div class="jsx-1b9a23bd3fa6c640 flex items-center gap-3 transition-all duration-500 opacity-60 grayscale hover:opacity-100 hover:grayscale-0 group">
-              <div
-                class="jsx-1b9a23bd3fa6c640 w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg animate-pulse-slow">
-                <span class="jsx-1b9a23bd3fa6c640 text-xl">🎬</span>
-              </div>
-              <div
-                class="jsx-1b9a23bd3fa6c640 transition-all duration-500 override-overflow max-w-0 opacity-0 overflow-hidden group-hover:max-w-xs group-hover:opacity-100">
-                <div class="jsx-1b9a23bd3fa6c640 flex flex-col whitespace-nowrap"><span
-                    class="jsx-1b9a23bd3fa6c640 text-sm font-bold text-white">Movie Trailers</span><span
-                    class="jsx-1b9a23bd3fa6c640 text-[10px] text-[var(--text-2)]">What's playing in Toronto cinemas</span>
+          <!-- Movie/TV Show Trailers -->
+          <div class="jsx-1b9a23bd3fa6c640 movieshows-promo w-full">
+            <div class="jsx-1b9a23bd3fa6c640 promo-banner bg-white/5 rounded-2xl p-5 h-full">
+              <div class="jsx-1b9a23bd3fa6c640 flex items-center gap-4 transition-all duration-500 group">
+                <div
+                  class="jsx-1b9a23bd3fa6c640 w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg animate-pulse-slow">
+                  <span class="jsx-1b9a23bd3fa6c640 text-3xl">🎬</span>
                 </div>
-              </div>
-              <div class="jsx-1b9a23bd3fa6c640 relative">
-                <a
-                  class="jsx-1b9a23bd3fa6c640 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap"
-                  href="/MOVIESHOWS/" rel="noopener noreferrer" target="_blank">Open App →</a>
-                <div class="jsx-1b9a23bd3fa6c640 absolute top-full right-0 mt-2 w-56 p-3 bg-[var(--surface-1)] border border-white/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                  <p class="text-xs text-[var(--text-2)] mb-2">Scrolling reels interface for movie/tv series trailers, including movies in theatres!</p>
-                  <div class="flex flex-col gap-1">
-                    <a href="/MOVIESHOWS/" target="_blank" class="text-xs px-2 py-1.5 bg-amber-500/20 text-amber-300 rounded hover:bg-amber-500/30 transition flex justify-between">🎬 Movie Shows <span>→</span></a>
-                    <a href="/movieshows2/" target="_blank" class="text-xs px-2 py-1.5 bg-orange-500/20 text-orange-300 rounded hover:bg-orange-500/30 transition flex justify-between">📺 TV Shows <span>→</span></a>
-                    <a href="/MOVIESHOWS3" target="_blank" class="text-xs px-2 py-1.5 bg-red-500/20 text-red-300 rounded hover:bg-red-500/30 transition flex justify-between">🔥 Trending <span>→</span></a>
+                <div
+                  class="jsx-1b9a23bd3fa6c640 transition-all duration-500 override-overflow">
+                  <div class="jsx-1b9a23bd3fa6c640 flex flex-col whitespace-nowrap"><span
+                      class="jsx-1b9a23bd3fa6c640 text-lg font-bold text-white">Movie/TV Show Trailers</span><span
+                      class="jsx-1b9a23bd3fa6c640 text-sm text-[var(--text-2)]">Swipe through trailers — your next binge awaits</span>
+                  </div>
+                </div>
+                <div class="jsx-1b9a23bd3fa6c640 flex items-center gap-2 flex-wrap">
+                  <a
+                    class="jsx-1b9a23bd3fa6c640 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-sm font-bold text-white transition-all whitespace-nowrap"
+                    href="/MOVIESHOWS/" rel="noopener noreferrer" target="_blank">V1 →</a>
+                  <a
+                    class="jsx-1b9a23bd3fa6c640 px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 text-sm font-bold text-amber-300 transition-all whitespace-nowrap"
+                    href="/movieshows2/" rel="noopener noreferrer" target="_blank">V2 →</a>
+                  <a
+                    class="jsx-1b9a23bd3fa6c640 px-3 py-1.5 rounded-full bg-orange-500/20 hover:bg-orange-500/30 text-sm font-bold text-orange-300 transition-all whitespace-nowrap"
+                    href="/MOVIESHOWS3" rel="noopener noreferrer" target="_blank">V3 →</a>
+                  <!-- Info icon with tooltip -->
+                  <div class="jsx-1b9a23bd3fa6c640 relative group/info">
+                    <button class="jsx-1b9a23bd3fa6c640 w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white/70 hover:text-white transition-all flex items-center justify-center" title="Version differences">ℹ️</button>
+                    <div class="jsx-1b9a23bd3fa6c640 absolute left-0 mt-2 w-80 p-4 bg-[#1a1a2e] border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-300 z-[9999] text-left" style="top: 100%;">
+                      <p class="text-xs font-bold text-amber-400 mb-2">📺 TikTok-style trailer browsing</p>
+                      <div class="space-y-2 text-xs text-[var(--text-2)]">
+                        <div class="p-2 bg-white/5 rounded-lg">
+                          <span class="font-bold text-white">V1</span> — Toronto theater info (Cineplex/Imagine), IMDb + Rotten Tomatoes ratings, emoji reactions
+                        </div>
+                        <div class="p-2 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                          <span class="font-bold text-amber-300">V2</span> — TMDB integration, genre filtering, playlist export/import, shareable links
+                        </div>
+                        <div class="p-2 bg-orange-500/10 rounded-lg border border-orange-500/20">
+                          <span class="font-bold text-orange-300">V3</span> — Full browse &amp; search, user accounts, likes, auto-scroll on video end, personal queue
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-      <div class="max-w-7xl mx-auto px-4" suppressHydrationWarning>
-        <div class="jsx-1b9a23bd3fa6c640 stocks-promo">
-          <div class="jsx-1b9a23bd3fa6c640 promo-banner">
-            <div class="jsx-1b9a23bd3fa6c640 flex items-center gap-3 transition-all duration-500 opacity-60 grayscale hover:opacity-100 hover:grayscale-0 group">
-              <div
-                class="jsx-1b9a23bd3fa6c640 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg animate-pulse-slow">
-                <span class="jsx-1b9a23bd3fa6c640 text-xl">📈</span>
-              </div>
-              <div
-                class="jsx-1b9a23bd3fa6c640 transition-all duration-500 override-overflow max-w-0 opacity-0 overflow-hidden group-hover:max-w-xs group-hover:opacity-100">
-                <div class="jsx-1b9a23bd3fa6c640 flex flex-col whitespace-nowrap"><span
-                    class="jsx-1b9a23bd3fa6c640 text-sm font-bold text-white">Stock Ideas</span><span
-                    class="jsx-1b9a23bd3fa6c640 text-[10px] text-[var(--text-2)]">Research, picks &amp; market insights</span>
+          <!-- Fav Creators -->
+          <div class="jsx-1b9a23bd3fa6c640 favcreators-promo w-full">
+            <div class="jsx-1b9a23bd3fa6c640 promo-banner bg-white/5 rounded-2xl p-5 h-full">
+              <div class="jsx-1b9a23bd3fa6c640 flex items-center gap-4 transition-all duration-500 group">
+                <div
+                  class="jsx-1b9a23bd3fa6c640 w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-lg animate-pulse-slow">
+                  <span class="jsx-1b9a23bd3fa6c640 text-3xl">💎</span>
+                </div>
+                <div
+                  class="jsx-1b9a23bd3fa6c640 transition-all duration-500 override-overflow">
+                  <div class="jsx-1b9a23bd3fa6c640 flex flex-col whitespace-nowrap"><span
+                      class="jsx-1b9a23bd3fa6c640 text-lg font-bold text-white">Fav Creators</span><span
+                      class="jsx-1b9a23bd3fa6c640 text-sm text-[var(--text-2)]">Never miss when your favorites go live</span>
+                  </div>
+                </div>
+                <div class="jsx-1b9a23bd3fa6c640 relative group/info">
+                  <a
+                    class="jsx-1b9a23bd3fa6c640 ml-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-base font-bold text-white transition-all whitespace-nowrap"
+                    href="/fc/#/guest" rel="noopener noreferrer" target="_blank">Open App →</a>
+                </div>
+                <!-- Info icon with tooltip -->
+                <div class="jsx-1b9a23bd3fa6c640 relative group/info">
+                  <button class="jsx-1b9a23bd3fa6c640 w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white/70 hover:text-white transition-all flex items-center justify-center" title="Feature details">ℹ️</button>
+                  <div class="jsx-1b9a23bd3fa6c640 absolute right-0 mt-2 w-80 p-4 bg-[#1a1a2e] border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-300 z-[9999] text-left" style="top: 100%;">
+                    <p class="text-xs font-bold text-pink-400 mb-2">⭐ Your creators, one dashboard</p>
+                    <div class="space-y-2 text-xs text-[var(--text-2)]">
+                      <p>Add your favorite streamers and content creators from <span class="text-pink-300">TikTok</span>, <span class="text-purple-300">Twitch</span>, <span class="text-green-300">Kick</span> &amp; <span class="text-red-300">YouTube</span>.</p>
+                      <ul class="list-disc list-inside space-y-1 pl-1">
+                        <li><span class="text-white">🔴 Live status</span> — See who's streaming right now</li>
+                        <li><span class="text-white">📱 Recent posts</span> — Latest content in one feed</li>
+                        <li><span class="text-white">🔔 All platforms</span> — Stop missing content in algorithm feeds</li>
+                      </ul>
+                    </div>
+                    <div class="flex gap-2 mt-3">
+                      <span class="text-xs px-2 py-1 bg-pink-500/20 text-pink-300 rounded">TikTok</span>
+                      <span class="text-xs px-2 py-1 bg-purple-500/20 text-purple-300 rounded">Twitch</span>
+                      <span class="text-xs px-2 py-1 bg-green-500/20 text-green-300 rounded">Kick</span>
+                      <span class="text-xs px-2 py-1 bg-red-500/20 text-red-300 rounded">YouTube</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div class="jsx-1b9a23bd3fa6c640 relative">
-                <a
-                  class="jsx-1b9a23bd3fa6c640 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap"
-                  href="/findstocks/" rel="noopener noreferrer" target="_blank">Open App →</a>
-                <div class="jsx-1b9a23bd3fa6c640 absolute top-full right-0 mt-2 w-52 p-3 bg-[var(--surface-1)] border border-white/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                  <p class="text-xs text-[var(--text-2)]">Looking for stock ideas? Browse research, daily picks, and portfolio tracking tools.</p>
+            </div>
+          </div>
+          <!-- Stock Ideas -->
+          <div class="jsx-1b9a23bd3fa6c640 stocks-promo w-full">
+            <div class="jsx-1b9a23bd3fa6c640 promo-banner bg-white/5 rounded-2xl p-5 h-full">
+              <div class="jsx-1b9a23bd3fa6c640 flex items-center gap-4 transition-all duration-500 group">
+                <div
+                  class="jsx-1b9a23bd3fa6c640 w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg animate-pulse-slow">
+                  <span class="jsx-1b9a23bd3fa6c640 text-3xl">📈</span>
+                </div>
+                <div
+                  class="jsx-1b9a23bd3fa6c640 transition-all duration-500 override-overflow">
+                  <div class="jsx-1b9a23bd3fa6c640 flex flex-col whitespace-nowrap"><span
+                      class="jsx-1b9a23bd3fa6c640 text-lg font-bold text-white">Stock Ideas</span><span
+                      class="jsx-1b9a23bd3fa6c640 text-sm text-[var(--text-2)]">AI-validated picks, updated daily</span>
+                  </div>
+                </div>
+                <div class="jsx-1b9a23bd3fa6c640 relative group/info">
+                  <a
+                    class="jsx-1b9a23bd3fa6c640 ml-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-base font-bold text-white transition-all whitespace-nowrap"
+                    href="/findstocks/" rel="noopener noreferrer" target="_blank">Open App →</a>
+                </div>
+                <!-- Info icon with tooltip -->
+                <div class="jsx-1b9a23bd3fa6c640 relative group/info">
+                  <button class="jsx-1b9a23bd3fa6c640 w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white/70 hover:text-white transition-all flex items-center justify-center" title="Feature details">ℹ️</button>
+                  <div class="jsx-1b9a23bd3fa6c640 absolute right-0 mt-2 w-80 p-4 bg-[#1a1a2e] border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-300 z-[9999] text-left" style="top: 100%;">
+                    <p class="text-xs font-bold text-indigo-400 mb-2">📊 Can you beat Wall Street without a supercomputer?</p>
+                    <div class="space-y-2 text-xs text-[var(--text-2)]">
+                      <p>Daily stock picks powered by <span class="text-white">11+ open-source analysis algorithms</span>, cross-validated by AI to filter noise.</p>
+                      <ul class="list-disc list-inside space-y-1 pl-1">
+                        <li><span class="text-white">🎯 Daily picks</span> — Fresh recommendations every trading day</li>
+                        <li><span class="text-white">🧪 Regime-aware</span> — V2 engine adapts to bull/bear markets</li>
+                        <li><span class="text-white">📉 Slippage tested</span> — Realistic execution simulation</li>
+                        <li><span class="text-white">🔍 Full transparency</span> — See the research behind each pick</li>
+                      </ul>
+                    </div>
+                    <p class="text-[10px] text-[var(--text-3)] mt-2 italic">Not financial advice. For educational purposes only.</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -889,96 +1099,78 @@
   <script>self.__next_f.push([1, "11:[[\"$\",\"meta\",\"0\",{\"charSet\":\"utf-8\"}],[\"$\",\"meta\",\"1\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"}]]\n"])</script>
   <script>self.__next_f.push([1, "15:I[27201,[\"/next/_next/static/chunks/ff1a16fafef87110.js\",\"/next/_next/static/chunks/7c4eddd014120b50.js\"],\"IconMark\"]\nf:null\n"])</script>
   <script>self.__next_f.push([1, "13:[[\"$\",\"title\",\"0\",{\"children\":\"Find Toronto Events | Dating, Activities \u0026 Things to Do This Weekend\"}],[\"$\",\"meta\",\"1\",{\"name\":\"description\",\"content\":\"Your ultimate guide to Toronto events, dating meetups, and activities. Discover the best things to do in Toronto, from GTA happenings to mingle events and weekend plans.\"}],[\"$\",\"meta\",\"2\",{\"name\":\"keywords\",\"content\":\"Toronto Events,Toronto Dating,Toronto Activities,Things to do in Toronto,Toronto Calendar,GTA Happenings,Toronto Mingle,What's On Toronto\"}],[\"$\",\"meta\",\"3\",{\"property\":\"og:title\",\"content\":\"Find Toronto Events | Dating, Activities \u0026 Things to Do This Weekend\"}],[\"$\",\"meta\",\"4\",{\"property\":\"og:description\",\"content\":\"Your ultimate guide to Toronto events, dating meetups, and activities. Discover the best things to do in Toronto this weekend.\"}],[\"$\",\"meta\",\"5\",{\"property\":\"og:site_name\",\"content\":\"Find Toronto Events\"}],[\"$\",\"meta\",\"6\",{\"property\":\"og:locale\",\"content\":\"en_CA\"}],[\"$\",\"meta\",\"7\",{\"property\":\"og:type\",\"content\":\"website\"}],[\"$\",\"meta\",\"8\",{\"name\":\"twitter:card\",\"content\":\"summary\"}],[\"$\",\"meta\",\"9\",{\"name\":\"twitter:title\",\"content\":\"Find Toronto Events | Dating, Activities \u0026 Things to Do This Weekend\"}],[\"$\",\"meta\",\"10\",{\"name\":\"twitter:description\",\"content\":\"Your ultimate guide to Toronto events, dating meetups, and activities. Discover the best things to do in Toronto this weekend.\"}],[\"$\",\"link\",\"11\",{\"rel\":\"icon\",\"href\":\"/favicon.ico?favicon.0b3bf435.ico\",\"sizes\":\"256x256\",\"type\":\"image/x-icon\"}],[\"$\",\"$L15\",\"12\",{}]]\n"])</script>  <script>
+// STATIC PROMO INJECTION - Clone from template and inject after each React hydration
 (function() {
-  console.log('[FORCE BANNERS] Aggressive banner protection loaded');
+  console.log('[STATIC PROMOS] Initializing clone injection system');
   
-  const FAVCREATORS = '<div class="max-w-7xl mx-auto px-4" style="margin-bottom: 1rem;"><div class="jsx-1b9a23bd3fa6c640 favcreators-promo"><div class="jsx-1b9a23bd3fa6c640 promo-banner"><div class="jsx-1b9a23bd3fa6c640 flex items-center gap-3 transition-all duration-500 opacity-60 grayscale hover:opacity-100 hover:grayscale-0 group"><div class="jsx-1b9a23bd3fa6c640 w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-lg animate-pulse-slow"><span class="jsx-1b9a23bd3fa6c640 text-xl">💎</span></div><div class="jsx-1b9a23bd3fa6c640 transition-all duration-500 override-overflow max-w-0 opacity-0 overflow-hidden group-hover:max-w-xs group-hover:opacity-100"><div class="jsx-1b9a23bd3fa6c640 flex flex-col whitespace-nowrap"><span class="jsx-1b9a23bd3fa6c640 text-sm font-bold text-white">Fav Creators</span><span class="jsx-1b9a23bd3fa6c640 text-[10px] text-[var(--text-2)]">Track creators across TikTok, Twitch, Kick & YouTube</span></div></div><div class="jsx-1b9a23bd3fa6c640 relative"><a class="jsx-1b9a23bd3fa6c640 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap" href="/fc/#/guest" rel="noopener noreferrer" target="_blank">Open App →</a><div class="jsx-1b9a23bd3fa6c640 absolute right-0 mt-2 w-72 p-4 bg-[var(--surface-1)] border border-white/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[9999]" style="top: calc(100% + 8px); max-width: 300px; line-height: 1.5; transform: translateY(0);"><p class="text-xs text-[var(--text-2)] mb-2">Track your favorite creators across TikTok, Twitch, Kick and YouTube. Never miss their live streams or stories!</p><div class="flex gap-2"><a href="/fc/#/guest" target="_blank" class="text-[10px] px-2 py-1 bg-pink-500/20 text-pink-300 rounded hover:bg-pink-500/30 transition">TikTok</a><a href="/fc/#/guest" target="_blank" class="text-[10px] px-2 py-1 bg-purple-500/20 text-purple-300 rounded hover:bg-purple-500/30 transition">Twitch</a><a href="/fc/#/guest" target="_blank" class="text-[10px] px-2 py-1 bg-green-500/20 text-green-300 rounded hover:bg-green-500/30 transition">Kick</a></div></div></div></div></div></div></div>';
+  // Store the original template HTML
+  const templateContainer = document.getElementById('static-promo-container');
+  const PROMO_HTML = templateContainer ? templateContainer.outerHTML.replace('id="static-promo-container"', 'id="injected-promos"').replace('display:none', 'display:block') : '';
   
-  const STOCKS = '<div class="max-w-7xl mx-auto px-4" style="margin-bottom: 1rem;"><div class="jsx-1b9a23bd3fa6c640 stocks-promo"><div class="jsx-1b9a23bd3fa6c640 promo-banner"><div class="jsx-1b9a23bd3fa6c640 flex items-center gap-3 transition-all duration-500 opacity-60 grayscale hover:opacity-100 hover:grayscale-0 group"><div class="jsx-1b9a23bd3fa6c640 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg animate-pulse-slow"><span class="jsx-1b9a23bd3fa6c640 text-xl">📈</span></div><div class="jsx-1b9a23bd3fa6c640 transition-all duration-500 override-overflow max-w-0 opacity-0 overflow-hidden group-hover:max-w-xs group-hover:opacity-100"><div class="jsx-1b9a23bd3fa6c640 flex flex-col whitespace-nowrap"><span class="jsx-1b9a23bd3fa6c640 text-sm font-bold text-white">Stock Ideas</span><span class="jsx-1b9a23bd3fa6c640 text-[10px] text-[var(--text-2)]">Research, picks & market insights</span></div></div><div class="jsx-1b9a23bd3fa6c640 relative"><a class="jsx-1b9a23bd3fa6c640 ml-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all whitespace-nowrap" href="/findstocks/" rel="noopener noreferrer" target="_blank">Open App →</a><div class="jsx-1b9a23bd3fa6c640 absolute top-full right-0 mt-2 w-52 p-3 bg-[var(--surface-1)] border border-white/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50"><p class="text-xs text-[var(--text-2)]">Looking for stock ideas? Browse research, daily picks, and portfolio tracking tools.</p></div></div></div></div></div></div>';
-  
-  let restoredCount = 0;
-  
-  function forceBanners() {
-    // Find the main container where banners should go (after header)
-    const main = document.querySelector('main');
-    if (!main) return;
-    
-    const count = document.querySelectorAll('.promo-banner').length;
-    if (count >= 4) return;
-    
-    // Find insertion point - look for existing banners or the events grid
-    let insertBefore = main.querySelector('#events-grid') || 
-                       main.querySelector('.ad-container') ||
-                       main.querySelector('.max-w-7xl.py-20');
-    
-    if (!insertBefore) {
-      // Find the first max-w-7xl that's not a promo
-      const containers = main.querySelectorAll('.max-w-7xl');
-      for (const container of containers) {
-        if (!container.querySelector('.promo-banner')) {
-          insertBefore = container;
-          break;
-        }
+  function injectPromos() {
+    // Check if our injected container exists and has all 4 sections
+    let existing = document.getElementById('injected-promos');
+    if (existing) {
+      const hasAll = existing.querySelector('.windows-fixer-promo') &&
+                     existing.querySelector('.movieshows-promo') &&
+                     existing.querySelector('.favcreators-promo') &&
+                     existing.querySelector('.stocks-promo');
+      if (hasAll) {
+        // Already good, just ensure visibility
+        existing.style.display = 'block';
+        return;
       }
+      // Incomplete, remove it
+      existing.remove();
     }
     
-    if (insertBefore && !document.querySelector('.favcreators-promo')) {
-      insertBefore.insertAdjacentHTML('beforebegin', FAVCREATORS);
-      console.log('[FORCE BANNERS] Restored FavCreators');
+    // Find insertion point (after header)
+    const main = document.querySelector('main');
+    const header = main ? main.querySelector('header') : null;
+    
+    if (header && PROMO_HTML) {
+      // Inject the clone
+      header.insertAdjacentHTML('afterend', PROMO_HTML);
+      console.log('[STATIC PROMOS] Injected promo container after header');
     }
     
-    if (insertBefore && !document.querySelector('.stocks-promo')) {
-      insertBefore.insertAdjacentHTML('beforebegin', STOCKS);
-      console.log('[FORCE BANNERS] Restored Stocks');
-    }
-    
-    // Apply force-visible styles to ALL banners
-    document.querySelectorAll('.promo-banner').forEach(el => {
-      el.style.display = 'block';
-      el.style.visibility = 'visible';
-    });
-    
-    // Apply styles to parent containers too
-    document.querySelectorAll('.favcreators-promo, .stocks-promo, .windows-fixer-promo, .movieshows-promo').forEach(el => {
-      el.style.display = 'block';
-      el.style.visibility = 'visible';
-      el.style.opacity = '1';
+    // Hide React's promo sections (the broken hydrated ones)
+    document.querySelectorAll('main .windows-fixer-promo, main .movieshows-promo, main .favcreators-promo, main .stocks-promo').forEach(el => {
+      if (!el.closest('#injected-promos') && !el.closest('#static-promo-container')) {
+        el.style.cssText = 'display:none !important;';
+      }
     });
   }
   
-  // More aggressive restoration
-  function aggressiveRestore() {
-    const count = document.querySelectorAll('.promo-banner').length;
-    if (count < 4) {
-      console.log('[FORCE BANNERS] Only ' + count + ' banners found, restoring...');
-      forceBanners();
+  // Run immediately and on delays to catch React hydration
+  injectPromos();
+  [100, 300, 500, 800, 1000, 1500, 2000, 3000, 5000, 7000, 10000].forEach(delay => {
+    setTimeout(injectPromos, delay);
+  });
+  
+  // Watch for DOM changes (React hydration)
+  const observer = new MutationObserver(() => {
+    // Check if our container was removed
+    if (!document.getElementById('injected-promos')) {
+      injectPromos();
     }
-  }
-  
-  // Run immediately and frequently
-  forceBanners();
-  
-  // Run many times to catch React hydration
-  [100, 300, 500, 800, 1000, 1500, 2000, 2500, 3000, 4000, 5000, 7000, 10000].forEach(delay => {
-    setTimeout(aggressiveRestore, delay);
   });
   
-  // Keep checking every second
-  setInterval(aggressiveRestore, 2000);
-  
-  // Watch for DOM changes
-  const observer = new MutationObserver(function() {
-    setTimeout(aggressiveRestore, 50);
-  });
-  
-  // Start watching body as soon as possible
   if (document.body) {
     observer.observe(document.body, { childList: true, subtree: true });
   } else {
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', () => {
       observer.observe(document.body, { childList: true, subtree: true });
     });
   }
+  
+  // Also run on window load
+  window.addEventListener('load', () => {
+    setTimeout(injectPromos, 100);
+    setTimeout(injectPromos, 500);
+    setTimeout(injectPromos, 1000);
+    setTimeout(injectPromos, 2000);
+  });
 })();
 </script>
 
