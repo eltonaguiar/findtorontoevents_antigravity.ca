@@ -23,6 +23,8 @@ jobs:
       env:
         FC_API_BASE: 'https://findtorontoevents.ca/fc'
         FC_CHECKER_EMAIL: 'github-actions@findtorontoevents.ca'
+        FC_MAX_STREAMERS: '50'  # Check up to 50 streamers per run
+        FC_MIN_AGE_MINUTES: '60'  # Prioritize those not checked in 60 minutes
       run: |
         python .github/scripts/check_streamer_status.py
     

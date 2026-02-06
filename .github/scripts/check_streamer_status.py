@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 GitHub Actions script to check streamer live status automatically.
+Fetches ALL creators from the database, prioritizing those not checked recently.
 Updates the last_seen tracking database when streamers are found online.
 """
 
@@ -19,9 +20,12 @@ API_BASE = os.environ.get('FC_API_BASE', 'https://findtorontoevents.ca/fc')
 CHECKER_EMAIL = os.environ.get('FC_CHECKER_EMAIL', 'github-actions@findtorontoevents.ca')
 MAX_RETRIES = 3
 RETRY_DELAY = 2
+# How many streamers to check per run (GitHub Actions has time limits)
+MAX_STREAMERS_PER_RUN = int(os.environ.get('FC_MAX_STREAMERS', '50'))
+# Only check streamers not checked in the last N minutes
+MIN_AGE_MINUTES = int(os.environ.get('FC_MIN_AGE_MINUTES', '60'))
 
-# Test streamers to check (popular streamers that are often live)
-# In production, this could be fetched from a database or API
+# Fallback streamers if API fails
 DEFAULT_STREAMERS = [
     {
         "creator_id": "wtfpreston",
@@ -159,10 +163,52 @@ def update_last_seen(streamer: Dict[str, Any], status: Dict[str, Any]) -> bool:
 
 def get_streamers_from_api() -> List[Dict[str, Any]]:
     """
-    Fetch the list of streamers to check from the API.
-    Gets all creators from the guest list (user_id=0) which includes all default creators.
+    Fetch ALL streamers from the database that need checking.
+    Uses the new endpoint that prioritizes accounts not checked recently.
     """
-    # Use the existing working API endpoint for guest list
+    # Use the new endpoint that fetches all streamers, prioritized by last check time
+    url = f"{API_BASE}/api/get_all_streamers_to_check.php?limit={MAX_STREAMERS_PER_RUN}&min_age_minutes={MIN_AGE_MINUTES}"
+    
+    try:
+        result = _http_get(url, timeout=30)
+        
+        if result["status"] == 200:
+            data = result["data"]
+            if data.get("ok") and "streamers" in data:
+                streamers = data["streamers"]
+                stats = data.get("stats", {})
+                
+                log_message(f"Database stats: {stats.get('total_tracked', 0)} total tracked, "
+                           f"{stats.get('checked_last_hour', 0)} checked in last hour, "
+                           f"{stats.get('currently_live', 0)} currently live")
+                log_message(f"Fetched {len(streamers)} streamers to check (limit={MAX_STREAMERS_PER_RUN}, min_age={MIN_AGE_MINUTES}min)")
+                
+                if len(streamers) > 0:
+                    # Log first few for debugging
+                    for s in streamers[:3]:
+                        last_check = s.get('last_checked', 'never')
+                        log_message(f"  - {s['creator_name']} ({s['platform']}) - last checked: {last_check}")
+                    if len(streamers) > 3:
+                        log_message(f"  ... and {len(streamers) - 3} more")
+                    
+                    return streamers
+            
+            log_message("API returned no streamers, falling back to guest list")
+            return get_streamers_from_guest_list()
+            
+        else:
+            log_message(f"Failed to fetch streamers: HTTP {result['status']}, falling back to guest list")
+            return get_streamers_from_guest_list()
+            
+    except Exception as e:
+        log_message(f"Error fetching streamers: {str(e)}, falling back to guest list")
+        return get_streamers_from_guest_list()
+
+
+def get_streamers_from_guest_list() -> List[Dict[str, Any]]:
+    """
+    Fallback: Fetch streamers from guest list (user_id=0).
+    """
     url = f"{API_BASE}/api/get_my_creators.php?user_id=0"
     
     try:
@@ -174,12 +220,10 @@ def get_streamers_from_api() -> List[Dict[str, Any]]:
                 creators = data["creators"]
                 streamers = []
                 
-                # Convert creators to streamer format for checking
                 for creator in creators:
                     accounts = creator.get("accounts", [])
                     if isinstance(accounts, list):
                         for account in accounts:
-                            # Only check supported platforms
                             platform = account.get("platform", "").lower()
                             if platform in ["tiktok", "twitch", "kick", "youtube"]:
                                 streamers.append({
@@ -190,19 +234,15 @@ def get_streamers_from_api() -> List[Dict[str, Any]]:
                                     "url": account.get("url", "")
                                 })
                 
-                log_message(f"Fetched {len(creators)} creators with {len(streamers)} checkable accounts")
+                log_message(f"Fallback: Got {len(streamers)} streamers from guest list")
                 if len(streamers) > 0:
                     return streamers
-            
-            log_message("API returned no creators or empty list, using default list")
-            return DEFAULT_STREAMERS
-            
-        else:
-            log_message(f"Failed to fetch creators: HTTP {result['status']}, using default list")
-            return DEFAULT_STREAMERS
-            
+        
+        log_message("Fallback failed, using default list")
+        return DEFAULT_STREAMERS
+        
     except Exception as e:
-        log_message(f"Error fetching creators: {str(e)}, using default list")
+        log_message(f"Fallback error: {str(e)}, using default list")
         return DEFAULT_STREAMERS
 
 def main():
