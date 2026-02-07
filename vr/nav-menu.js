@@ -293,6 +293,8 @@
           '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRQuickWins7)VRQuickWins7.showActivity()" title="Recent activity">&#x1F4CB; Activity</button>' +
           '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRQuickWins7)VRQuickWins7.showRating()" title="Rate this zone">&#x2B50; Rate</button>' +
           '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRQuickWins7)VRQuickWins7.shareSnapshot()" title="Share this zone">&#x1F517; Share</button>' +
+          '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRCompleteness)VRCompleteness.openA11y()" title="Accessibility (Alt+A)">&#x267F; A11y</button>' +
+          '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRCompleteness)VRCompleteness.showChangelog()" title="What\'s New">&#x1F389; New</button>' +
         '</div>' +
 
         // Zone navigation
