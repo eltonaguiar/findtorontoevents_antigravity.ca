@@ -751,11 +751,11 @@ export default function LiveSummary({
                                     </div>
                                 </div>
                             )}
-
-                            {/* Recently Online Section - Show creators who were live recently */}
-                            <RecentlyOnlineSection recentlyOnline={recentlyOnline} />
                         </>
                     )}
+
+                    {/* Recently Online Section - Always visible below live/stories or no-live message */}
+                    <RecentlyOnlineSection recentlyOnline={recentlyOnline} />
                 </div>
             )}
         </div>

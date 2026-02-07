@@ -887,6 +887,8 @@ function App() {
     is_live: boolean;
   }
   const [recentlyOnline, setRecentlyOnline] = useState<RecentlyOnlineCreator[]>([]);
+  const recentlyOnlineRef = useRef<RecentlyOnlineCreator[]>([]);
+  useEffect(() => { recentlyOnlineRef.current = recentlyOnline; }, [recentlyOnline]);
   const [showLiveSummary, setShowLiveSummary] = useState<boolean>(() => {
     try {
       return localStorage.getItem('fav_creators_show_live_summary') !== 'false';
@@ -1656,7 +1658,7 @@ function App() {
     });
 
     // Prioritize recently-active creators so "Creators Live Now" populates faster
-    const recentlyOnlineIds = new Set(recentlyOnline.map((r) => r.creator_id));
+    const recentlyOnlineIds = new Set(recentlyOnlineRef.current.map((r) => r.creator_id));
     creatorsToCheck.sort((a, b) => {
       const aRecent = recentlyOnlineIds.has(a.id) ? 1 : 0;
       const bRecent = recentlyOnlineIds.has(b.id) ? 1 : 0;
@@ -1911,7 +1913,7 @@ function App() {
       // Always set isChecking to false, even if there's an error
       setIsCheckingLiveStatus(false);
     }
-  }, [addLiveFoundToast, authUser, recentlyOnline]);
+  }, [addLiveFoundToast, authUser]);
 
   // Sync live status to database cache
   const syncLiveStatusToDatabase = useCallback(async (creatorsToSync: Creator[]) => {
