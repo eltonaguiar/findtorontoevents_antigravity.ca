@@ -346,8 +346,23 @@
     var arenaState = (function() {
       try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { return {}; }
     })();
-    var playerName = arenaState.playerName || 'Guest_' + Math.floor(Math.random() * 9000 + 1000);
-    var playerId   = arenaState.playerId   || 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+    // Check for logged-in user name (Google auth / FavCreators)
+    var authUser = null;
+    try {
+      var vrAuth = sessionStorage.getItem('vr_auth_user');
+      if (vrAuth) authUser = JSON.parse(vrAuth);
+      if (!authUser) {
+        var fcAuth = sessionStorage.getItem('fc_user');
+        if (fcAuth) authUser = JSON.parse(fcAuth);
+      }
+    } catch(e) {}
+
+    var playerName = (authUser && (authUser.display_name || authUser.username))
+                     || arenaState.playerName
+                     || 'Guest_' + Math.floor(Math.random() * 9000 + 1000);
+    var playerId   = (authUser && authUser.id)
+                     || arenaState.playerId
+                     || 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
 
     // Persist playerId
     if (!arenaState.playerId) {

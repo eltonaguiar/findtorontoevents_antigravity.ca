@@ -367,8 +367,49 @@ case 'queue_count':
     ));
     break;
 
+/* ══════════════════════════════════════
+   PLAYERS_ONLINE — recent active players
+   ══════════════════════════════════════ */
+case 'players_online':
+    ttt_cleanup($conn);
+    $players = array();
+    $seen    = array();
+
+    // Recent players from matches updated in last 10 minutes
+    $sql = "
+        SELECT player_x_name AS name, status, updated_at FROM ttt_matches
+        WHERE updated_at > DATE_SUB(NOW(), INTERVAL 10 MINUTE) AND player_x_name IS NOT NULL AND player_x_name != ''
+        UNION ALL
+        SELECT player_o_name AS name, status, updated_at FROM ttt_matches
+        WHERE updated_at > DATE_SUB(NOW(), INTERVAL 10 MINUTE) AND player_o_name IS NOT NULL AND player_o_name != ''
+        ORDER BY updated_at DESC
+    ";
+    $result = $conn->query($sql);
+
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $name = $row['name'];
+            if (!$name || $name === 'Player 1' || $name === 'Player 2') continue;
+            if (isset($seen[$name])) continue;
+            $seen[$name] = true;
+
+            $isGuest = (substr($name, 0, 6) === 'Guest_');
+            $st = $row['status'];
+            $gameStatus = ($st === 'active') ? 'In Game' : (($st === 'waiting') ? 'In Lobby' : 'Finished');
+
+            $players[] = array(
+                'name'     => $name,
+                'status'   => $gameStatus,
+                'is_guest' => $isGuest ? 1 : 0
+            );
+        }
+    }
+
+    echo json_encode(array('success' => true, 'players' => $players, 'count' => count($players)));
+    break;
+
 default:
-    echo json_encode(array('error' => 'Unknown action. Use: join, poll, move, leave, rematch, queue_count'));
+    echo json_encode(array('error' => 'Unknown action. Use: join, poll, move, leave, rematch, queue_count, players_online'));
 }
 
 $conn->close();

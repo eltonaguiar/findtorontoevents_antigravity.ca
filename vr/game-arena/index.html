@@ -313,11 +313,17 @@
 
     <!-- ===== ONLINE PLAYERS AREA ===== -->
     <a-entity position="-8 1.5 2" rotation="0 45 0" id="players-panel">
-      <a-plane width="4" height="5" color="#0a0a1f" opacity="0.9" material="shader: flat">
-        <a-plane width="3.8" height="4.8" color="#111128" opacity="0.95" position="0 0 0.01" material="shader: flat"></a-plane>
+      <a-plane width="4.5" height="5.5" color="#0a0a1f" opacity="0.9" material="shader: flat">
+        <a-plane width="4.3" height="5.3" color="#111128" opacity="0.95" position="0 0 0.01" material="shader: flat"></a-plane>
       </a-plane>
-      <a-text value="PLAYERS ONLINE" align="center" width="5" color="#22c55e" position="0 2 0.05" font="mozillavr"></a-text>
-      <a-entity id="online-players" position="0 0.8 0.05"></a-entity>
+      <a-text value="PLAYERS ONLINE" align="center" width="5" color="#22c55e" position="0 2.3 0.05" font="mozillavr"></a-text>
+      <!-- Column headers -->
+      <a-text value="Player" align="left" width="2.2" color="#475569" position="-1.8 1.9 0.05"></a-text>
+      <a-text value="Account" align="center" width="2" color="#475569" position="0.2 1.9 0.05"></a-text>
+      <a-text value="Status" align="right" width="2" color="#475569" position="1.8 1.9 0.05"></a-text>
+      <!-- Divider line -->
+      <a-plane width="4" height="0.01" color="#334155" position="0 1.75 0.05" material="shader: flat"></a-plane>
+      <a-entity id="online-players" position="0 1.4 0.05"></a-entity>
     </a-entity>
 
     <!-- ===== RECENT MATCHES PANEL ===== -->
@@ -399,8 +405,20 @@
     function loadState() {
       try {
         var s = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+        // Check for logged-in user name (Google auth / FavCreators)
+        var authName = null;
+        try {
+          var vrAuth = sessionStorage.getItem('vr_auth_user');
+          if (vrAuth) { var u = JSON.parse(vrAuth); authName = u.display_name || u.username; }
+          if (!authName) {
+            var fcAuth = sessionStorage.getItem('fc_user');
+            if (fcAuth) { var u2 = JSON.parse(fcAuth); authName = u2.display_name || u2.username; }
+          }
+        } catch(e2) {}
+
         return {
-          playerName: s.playerName || 'Guest_' + Math.floor(Math.random() * 9000 + 1000),
+          playerName: authName || s.playerName || 'Guest_' + Math.floor(Math.random() * 9000 + 1000),
           wins: s.wins || 0, losses: s.losses || 0, draws: s.draws || 0,
           matches: s.matches || [],
           playerId: s.playerId || 'p_' + Date.now()
@@ -470,34 +488,120 @@
     }
 
     // ===== 3D ONLINE PLAYERS =====
+    var API_URL = '/api/ttt_match.php';
+    var cachedRealPlayers = [];
+
+    function fetchOnlinePlayers(cb) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', API_URL + '?action=players_online', true);
+      xhr.onload = function() {
+        try {
+          var data = JSON.parse(xhr.responseText);
+          if (data.success) { cachedRealPlayers = data.players || []; }
+        } catch(e) { /* ignore */ }
+        cb();
+      };
+      xhr.onerror = function() { cb(); };
+      xhr.send();
+    }
+
+    function isUserLoggedIn() {
+      try {
+        if (window.vrAuthUser) return true;
+        if (sessionStorage.getItem('vr_auth_user')) return true;
+        if (sessionStorage.getItem('fc_user')) return true;
+      } catch(e) {}
+      return false;
+    }
+
     function renderPlayers() {
-      var container = document.getElementById('online-players');
-      if (!container) return;
-      container.innerHTML = '';
-      var count = 3 + Math.floor(Math.random() * 4);
-      var shuffled = BOT_NAMES.slice().sort(function() { return Math.random() - 0.5; });
-      for (var i = 0; i < count && i < shuffled.length; i++) {
-        var y = -i * 0.5;
-        var isInGame = Math.random() > 0.6;
-        var statusColor = isInGame ? '#f59e0b' : '#22c55e';
-        var statusText = isInGame ? 'In Game' : 'In Lobby';
+      fetchOnlinePlayers(function() {
+        var container = document.getElementById('online-players');
+        if (!container) return;
+        container.innerHTML = '';
 
-        var name = document.createElement('a-text');
-        name.setAttribute('value', shuffled[i]);
-        name.setAttribute('align', 'left');
-        name.setAttribute('width', '2.8');
-        name.setAttribute('color', '#fff');
-        name.setAttribute('position', '-1.6 ' + y + ' 0');
-        container.appendChild(name);
+        // Build player list: real players first, then bots to fill
+        var players = [];
+        var seenNames = {};
 
-        var status = document.createElement('a-text');
-        status.setAttribute('value', statusText);
-        status.setAttribute('align', 'right');
-        status.setAttribute('width', '2');
-        status.setAttribute('color', statusColor);
-        status.setAttribute('position', '1.6 ' + y + ' 0');
-        container.appendChild(status);
-      }
+        // Add "me" (current user) at the top
+        var meLoggedIn = isUserLoggedIn();
+        var meIsGuest = state.playerName.indexOf('Guest_') === 0 && !meLoggedIn;
+        players.push({
+          name: state.playerName + ' (You)',
+          status: 'In Lobby',
+          isGuest: meIsGuest,
+          isReal: true
+        });
+        seenNames[state.playerName] = true;
+
+        // Add real players from API
+        for (var r = 0; r < cachedRealPlayers.length; r++) {
+          var rp = cachedRealPlayers[r];
+          if (seenNames[rp.name]) continue;
+          seenNames[rp.name] = true;
+          players.push({
+            name: rp.name,
+            status: rp.status,
+            isGuest: !!rp.is_guest,
+            isReal: true
+          });
+        }
+
+        // Fill with bots to have at least 5 entries
+        var shuffled = BOT_NAMES.slice().sort(function() { return Math.random() - 0.5; });
+        var botIdx = 0;
+        while (players.length < 5 && botIdx < shuffled.length) {
+          if (!seenNames[shuffled[botIdx]]) {
+            var isInGame = Math.random() > 0.6;
+            players.push({
+              name: shuffled[botIdx],
+              status: isInGame ? 'In Game' : 'In Lobby',
+              isGuest: true,
+              isReal: false
+            });
+          }
+          botIdx++;
+        }
+
+        // Render rows (max 8 visible)
+        var maxRows = Math.min(players.length, 8);
+        for (var i = 0; i < maxRows; i++) {
+          var p = players[i];
+          var y = -i * 0.45;
+
+          // Column 1: Player name
+          var nameEl = document.createElement('a-text');
+          var displayName = p.name.length > 14 ? p.name.substring(0, 13) + '..' : p.name;
+          nameEl.setAttribute('value', displayName);
+          nameEl.setAttribute('align', 'left');
+          nameEl.setAttribute('width', '2.4');
+          nameEl.setAttribute('color', p.isReal ? '#fff' : '#94a3b8');
+          nameEl.setAttribute('position', '-1.8 ' + y + ' 0');
+          container.appendChild(nameEl);
+
+          // Column 2: Account type (Logged In / Guest)
+          var authEl = document.createElement('a-text');
+          var authText = p.isGuest ? 'Guest' : 'Logged In';
+          var authColor = p.isGuest ? '#64748b' : '#a855f7';
+          authEl.setAttribute('value', authText);
+          authEl.setAttribute('align', 'center');
+          authEl.setAttribute('width', '2');
+          authEl.setAttribute('color', authColor);
+          authEl.setAttribute('position', '0.2 ' + y + ' 0');
+          container.appendChild(authEl);
+
+          // Column 3: Status (In Lobby / In Game)
+          var statusEl = document.createElement('a-text');
+          var statusColor = p.status === 'In Game' ? '#f59e0b' : p.status === 'In Lobby' ? '#22c55e' : '#64748b';
+          statusEl.setAttribute('value', p.status);
+          statusEl.setAttribute('align', 'right');
+          statusEl.setAttribute('width', '1.8');
+          statusEl.setAttribute('color', statusColor);
+          statusEl.setAttribute('position', '1.8 ' + y + ' 0');
+          container.appendChild(statusEl);
+        }
+      });
     }
 
     // ===== 3D RECENT MATCHES =====
