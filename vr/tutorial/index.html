@@ -471,10 +471,35 @@
       updateInputStatus();
     }
 
+    // ===== KEYBOARD SHORTCUTS (QW-010) =====
+    document.addEventListener('keydown', function (e) {
+      if (e.target.tagName === 'INPUT') return;
+      if (e.key === 's' || e.key === 'S') { advanceStep(); }
+      if (e.key === 'r' || e.key === 'R') {
+        currentStep = 0; stepProgress = {}; snapCount = 0;
+        menuOpened = false; menuClosed = false; lookTargetsSeen = {};
+        updateUI();
+      }
+      if (e.key === 'b' || e.key === 'B') {
+        if (currentStep > 0) { currentStep--; stepProgress = {}; updateUI(); }
+      }
+    });
+
     var scene = document.querySelector('a-scene');
     if (scene.hasLoaded) init();
     else scene.addEventListener('loaded', init);
   })();
+  </script>
+
+  <!-- Keyboard hints (QW-009) -->
+  <script src="/vr/keyboard-hints.js"></script>
+  <script>
+    VRKeyboardHints.register([
+      { key: 'S', desc: 'Skip current step' },
+      { key: 'B', desc: 'Go back one step' },
+      { key: 'R', desc: 'Reset tutorial' },
+      { key: 'Q/E', desc: 'Snap turn left/right' }
+    ]);
   </script>
 
   <!-- Shared scripts -->
