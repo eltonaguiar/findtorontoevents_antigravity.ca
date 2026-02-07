@@ -116,3 +116,15 @@ Seven-step interactive lesson: look around → point & click → move → telepo
 | ENH-003 | Weather crash fix | Done |
 | ENH-004 | In-VR movie playback (DOM Overlay) | Done |
 | ENH-005 | Live creator quick-join button | Done |
+| ENH-006 | Area Guide System (G key, TTS narration) | Done |
+| ENH-007 | Events Audio Announcements (today/tomorrow/weekend) | Done |
+| ENH-008 | Event Preview (inline browser in VR) | Done |
+| ENH-009 | Cross-Zone Search (Ctrl+K) | Done |
+| ENH-010 | Favorites System (star/save across zones) | Done |
+| ENH-011 | Zone Ratings (1-5 stars) | Done |
+| ENH-012 | Activity Feed (recent actions) | Done |
+| ENH-013 | Content Preloader (prefetch likely zones) | Done |
+| ENH-014 | Breadcrumb Navigation | Done |
+| ENH-015 | Quick Stats Badge (per-zone live stats) | Done |
+| ENH-016 | Share Snapshot (deep-link with state) | Done |
+| ENH-017 | Set 5 Social Features (presence, notes, bookmarks, time-theme) | Done |
