@@ -109,6 +109,7 @@ Seven-step interactive lesson: look around → point & click → move → telepo
 | `content-depth.js` | Set 14: Content Depth — scratchpad, event RSVP, genre filter, creator comparison, sector map, weather alerts, breathing exercise, news ticker, cross-zone timeline, ambient lighting sync |
 | `polish-productivity.js` | Set 15: Polish & Productivity — keyboard map, color blind modes, pomodoro timer, content tagging, multi-tab sync, QR sharing, command palette, history graph, auto-save, haptic feedback |
 | `social-rich.js` | Set 16: Social Identity & Rich Content — avatar/profile, leaderboard, event reminders, movie trivia, stock news feed, wellness journal, weather outfit, creator quiz, hub world map, progress milestones |
+| `intelligence-engage.js` | Set 17: Intelligence & Engagement — gesture shortcuts, event badges, movie ratings, creator live alerts, stock price alerts, storm tracker, habit tracker, activity feed, read-aloud, smart search |
 
 ## Testing & Deployment
 
@@ -227,3 +228,13 @@ Seven-step interactive lesson: look around → point & click → move → telepo
 | ENH-105 | Creator Discovery Quiz (3-question personality match, result persistence) | Done |
 | ENH-106 | Hub World Map (canvas globe, 6 city markers, equirectangular projection) | Done |
 | ENH-107 | Progress Milestones (6 tiers 10-150, badge toasts, usage counting) | Done |
+| ENH-108 | Gesture Shortcuts (swipe left/right/up/down, configurable actions) | Done |
+| ENH-109 | Event Category Badges (10 categories, regex classify, visual icons) | Done |
+| ENH-110 | Movie Ratings Aggregator (IMDb/RT/Metacritic, deterministic hash) | Done |
+| ENH-111 | Creator Live Alerts (watch list, simulated live check, alert history) | Done |
+| ENH-112 | Stock Price Alerts (threshold + direction, auto-fire, triggered log) | Done |
+| ENH-113 | Weather Storm Tracker (canvas radar, 3 cells, intensity colors) | Done |
+| ENH-114 | Wellness Habit Tracker (5 habits, streaks, daily history) | Done |
+| ENH-115 | Hub Activity Feed (cross-zone action log, 100-entry, time-ago display) | Done |
+| ENH-116 | Accessibility Read-Aloud (TTS selection, Ctrl+Shift+R, stop control) | Done |
+| ENH-117 | Smart Search (unified cross-zone, Ctrl+K, live results panel) | Done |

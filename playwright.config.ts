@@ -49,6 +49,7 @@ export default defineConfig({
     /(?:^|\/)tests\/vr_content_depth\.spec\.ts$/,
     /(?:^|\/)tests\/vr_polish\.spec\.ts$/,
     /(?:^|\/)tests\/vr_social_rich\.spec\.ts$/,
+    /(?:^|\/)tests\/vr_intel_engage\.spec\.ts$/,
   ],
   timeout: isRemoteVerify ? 90000 : 30000,
   retries: isRemoteVerify ? 1 : 0,

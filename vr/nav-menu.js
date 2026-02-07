@@ -309,6 +309,7 @@
           '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRPolish)VRPolish.qrSharing.show()" title="Share QR">&#x1F4F1; QR</button>' +
           '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRSocialRich)VRSocialRich.profile.open()" title="Profile">&#x1F9D1; Profile</button>' +
           '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRSocialRich)VRSocialRich.leaderboard.open()" title="Leaderboard">&#x1F3C6; Rank</button>' +
+          '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRIntelEngage)VRIntelEngage.smartSearch.open()" title="Search (Ctrl+K)">&#x1F50E; Search</button>' +
         '</div>' +
 
         // Zone navigation
