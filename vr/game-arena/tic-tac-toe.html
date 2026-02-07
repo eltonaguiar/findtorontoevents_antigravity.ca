@@ -93,6 +93,55 @@
     #win-overlay p { font-size: 1.2rem; color: #aaa; margin-bottom: 1.5rem; }
     #win-overlay .btn-bar { position: static; transform: none; }
 
+    /* Mode select overlay */
+    #mode-select {
+      position: fixed; inset: 0; z-index: 250;
+      background: rgba(5,5,20,0.92); backdrop-filter: blur(12px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: white; gap: 18px; transition: opacity 0.3s;
+    }
+    #mode-select.hidden { display: none; }
+    #mode-select h1 {
+      font-size: 2.2rem; font-weight: 900;
+      background: linear-gradient(90deg, #6366f1, #ec4899);
+      background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    #mode-select p { color: #888; font-size: 1rem; max-width: 380px; text-align: center; line-height: 1.5; }
+    .mode-btns { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+    .mode-btn {
+      padding: 16px 32px; border-radius: 14px; font-size: 16px; font-weight: 700;
+      cursor: pointer; border: 2px solid transparent; transition: all 0.2s;
+      display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 160px;
+    }
+    .mode-btn:hover { transform: translateY(-2px); }
+    .mode-btn .mode-icon { font-size: 28px; }
+    .mode-btn .mode-sub { font-size: 11px; font-weight: 400; opacity: 0.7; }
+    .mode-btn-human {
+      background: linear-gradient(135deg, #22c55e, #10b981); color: #fff;
+      border-color: rgba(34,197,94,0.5); box-shadow: 0 4px 20px rgba(34,197,94,0.3);
+    }
+    .mode-btn-human:hover { box-shadow: 0 6px 30px rgba(34,197,94,0.5); }
+    .mode-btn-ai {
+      background: rgba(99,102,241,0.15); color: #a5b4fc;
+      border-color: rgba(99,102,241,0.4);
+    }
+    .mode-btn-ai:hover { background: rgba(99,102,241,0.25); }
+    #queue-status {
+      display: none; text-align: center; padding: 12px 24px;
+      background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3);
+      border-radius: 12px; font-size: 14px; color: #86efac;
+    }
+    #queue-status .queue-dot {
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+      background: #22c55e; margin-right: 8px;
+      animation: pulse-dot 1s ease-in-out infinite;
+    }
+    @keyframes pulse-dot { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+    #queue-cancel { margin-top: 8px; background: none; border: 1px solid rgba(255,255,255,0.2);
+      color: #888; padding: 6px 16px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+    #queue-cancel:hover { color: #fff; border-color: rgba(255,255,255,0.4); }
+    #online-count { color: #64748b; font-size: 12px; }
+
     /* Toast */
     #toast-container {
       position: fixed; top: 130px; right: 16px; z-index: 9000;
@@ -118,6 +167,30 @@
     <div class="spinner"></div>
     <h1>Tic-Tac-Toe</h1>
     <p>Setting up the board...</p>
+  </div>
+
+  <!-- Mode Selection Overlay -->
+  <div id="mode-select">
+    <h1>TIC-TAC-TOE</h1>
+    <p>Play against a real human opponent across devices, or challenge the AI.</p>
+    <div id="online-count"></div>
+    <div class="mode-btns">
+      <button class="mode-btn mode-btn-human" onclick="startHumanQueue()">
+        <span class="mode-icon">&#x1F91C;</span>
+        FIND HUMAN
+        <span class="mode-sub">Cross-device matchmaking</span>
+      </button>
+      <button class="mode-btn mode-btn-ai" onclick="startAIMode()">
+        <span class="mode-icon">&#x1F916;</span>
+        PLAY vs AI
+        <span class="mode-sub">Practice offline</span>
+      </button>
+    </div>
+    <div id="queue-status">
+      <span class="queue-dot"></span>
+      <span id="queue-text">Searching for opponent...</span>
+    </div>
+    <button id="queue-cancel" style="display:none;" onclick="cancelQueue()">Cancel Search</button>
   </div>
 
   <!-- HUD -->
@@ -248,7 +321,7 @@
     <!-- Camera Rig -->
     <a-entity id="rig" position="0 1.6 2">
       <a-camera look-controls wasd-controls="acceleration: 30" fov="80">
-        <a-ring cursor="fuse: true; fuseTimeout: 1500"
+        <a-ring cursor="fuse: true; fuseTimeout: 2500"
                 raycaster="objects: .clickable; far: 20"
                 radius-inner="0.005" radius-outer="0.012"
                 color="#6366f1" shader="flat" position="0 0 -1"
@@ -265,66 +338,303 @@
   (function() {
     'use strict';
 
-    // ===== LOADING =====
+    /* ═══════════════════════════════════════════
+       CONFIG
+       ═══════════════════════════════════════════ */
+    var API_URL = '/api/ttt_match.php';
+    var STORAGE_KEY = 'gameArena';
+    var arenaState = (function() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { return {}; }
+    })();
+    var playerName = arenaState.playerName || 'Guest_' + Math.floor(Math.random() * 9000 + 1000);
+    var playerId   = arenaState.playerId   || 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+
+    // Persist playerId
+    if (!arenaState.playerId) {
+      arenaState.playerId = playerId;
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arenaState)); } catch(e) {}
+    }
+
+    /* ═══════════════════════════════════════════
+       LOADING
+       ═══════════════════════════════════════════ */
     window.addEventListener('load', function () {
       setTimeout(function () {
         var el = document.getElementById('loading');
         el.style.opacity = '0';
         setTimeout(function () { el.classList.add('hidden'); }, 500);
       }, 1000);
+      // Fetch queue count for lobby
+      fetchQueueCount();
     });
 
-    // ===== STATE =====
-    var STORAGE_KEY = 'gameArena';
-    var arenaState = (function() {
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { return {}; }
-    })();
-    var playerName = arenaState.playerName || 'You';
-
-    // Check for opponent from URL
-    var params = new URLSearchParams(window.location.search);
-    var opponentName = params.get('opponent') || 'AI';
-    var isAI = !params.get('opponent');
-
-    // Update HUD names
-    document.getElementById('name-x').textContent = playerName;
-    document.getElementById('name-o').textContent = opponentName;
-
-    // Game state
-    var board = [null, null, null, null, null, null, null, null, null];
-    var currentPlayer = 'X'; // X always goes first
-    var gameOver = false;
+    /* ═══════════════════════════════════════════
+       GAME STATE
+       ═══════════════════════════════════════════ */
+    var gameMode     = null;  // 'ai' | 'human'
+    var board        = [null,null,null,null,null,null,null,null,null];
+    var currentPlayer = 'X';
+    var gameOver     = false;
+    var myMark       = 'X';
+    var opponentName = 'AI';
     var scoreX = 0, scoreO = 0, scoreDraw = 0;
 
-    // Cell positions (matching A-Frame layout)
+    // Multiplayer state
+    var matchId      = null;
+    var pollInterval = null;
+    var queueTimeout = null;
+    var lastBoardStr = '---------';
+
     var CELL_POS = [
       { x: -1.1, y: 1.1 }, { x: 0, y: 1.1 }, { x: 1.1, y: 1.1 },
       { x: -1.1, y: 0 },   { x: 0, y: 0 },   { x: 1.1, y: 0 },
-      { x: -1.1, y: -1.1 }, { x: 0, y: -1.1 }, { x: 1.1, y: -1.1 }
+      { x: -1.1, y: -1.1 },{ x: 0, y: -1.1 },{ x: 1.1, y: -1.1 }
     ];
 
     var WIN_LINES = [
-      [0,1,2], [3,4,5], [6,7,8], // rows
-      [0,3,6], [1,4,7], [2,5,8], // cols
-      [0,4,8], [2,4,6]            // diags
+      [0,1,2], [3,4,5], [6,7,8],
+      [0,3,6], [1,4,7], [2,5,8],
+      [0,4,8], [2,4,6]
     ];
 
-    // ===== CELL CLICK HANDLER =====
+    /* ═══════════════════════════════════════════
+       API HELPERS
+       ═══════════════════════════════════════════ */
+    function apiPost(action, params, cb) {
+      var body = 'action=' + encodeURIComponent(action);
+      for (var k in params) {
+        if (params.hasOwnProperty(k)) body += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+      }
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', API_URL, true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.onload = function() {
+        try { cb(null, JSON.parse(xhr.responseText)); } catch(e) { cb(e, null); }
+      };
+      xhr.onerror = function() { cb(new Error('Network error'), null); };
+      xhr.send(body);
+    }
+
+    function apiGet(action, params, cb) {
+      var qs = '?action=' + encodeURIComponent(action);
+      for (var k in params) {
+        if (params.hasOwnProperty(k)) qs += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+      }
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', API_URL + qs, true);
+      xhr.onload = function() {
+        try { cb(null, JSON.parse(xhr.responseText)); } catch(e) { cb(e, null); }
+      };
+      xhr.onerror = function() { cb(new Error('Network error'), null); };
+      xhr.send();
+    }
+
+    /* ═══════════════════════════════════════════
+       QUEUE COUNT (lobby)
+       ═══════════════════════════════════════════ */
+    function fetchQueueCount() {
+      apiGet('queue_count', {}, function(err, data) {
+        var el = document.getElementById('online-count');
+        if (!el) return;
+        if (err || !data || !data.success) {
+          el.textContent = '';
+          return;
+        }
+        var parts = [];
+        if (data.waiting > 0) parts.push(data.waiting + ' waiting in queue');
+        if (data.active > 0)  parts.push(data.active + ' game(s) active');
+        el.textContent = parts.length > 0 ? parts.join(' · ') : 'No players in queue — be the first!';
+      });
+    }
+
+    /* ═══════════════════════════════════════════
+       MODE SELECTION
+       ═══════════════════════════════════════════ */
+    window.startHumanQueue = function() {
+      document.getElementById('queue-status').style.display = 'block';
+      document.getElementById('queue-cancel').style.display = 'inline-block';
+      document.getElementById('queue-text').textContent = 'Searching for opponent...';
+
+      apiPost('join', { player_id: playerId, player_name: playerName }, function(err, data) {
+        if (err || !data || !data.success) {
+          document.getElementById('queue-text').textContent = 'Server error — try AI mode instead.';
+          return;
+        }
+
+        matchId = data.match_id;
+        myMark  = data.mark;
+
+        if (data.matched) {
+          // Instant match!
+          opponentName = data.opponent || 'Human';
+          startHumanGame();
+        } else {
+          // Waiting in queue...
+          document.getElementById('queue-text').textContent = 'Waiting for opponent... (you are ' + myMark + ')';
+          // Poll until matched (every 1.5s, timeout after 60s)
+          var elapsed = 0;
+          pollInterval = setInterval(function() {
+            elapsed += 1500;
+            if (elapsed > 60000) {
+              clearInterval(pollInterval);
+              pollInterval = null;
+              document.getElementById('queue-text').textContent = 'No opponent found. Starting AI game...';
+              apiPost('leave', { player_id: playerId, match_id: matchId }, function(){});
+              setTimeout(function() { startAIMode(); }, 1500);
+              return;
+            }
+            apiGet('poll', { player_id: playerId, match_id: matchId }, function(err2, data2) {
+              if (err2 || !data2 || !data2.success) return;
+              if (data2.status === 'active') {
+                clearInterval(pollInterval);
+                pollInterval = null;
+                opponentName = data2.opponent || 'Human';
+                myMark = data2.my_mark;
+                startHumanGame();
+              }
+            });
+          }, 1500);
+        }
+      });
+    };
+
+    window.startAIMode = function() {
+      gameMode = 'ai';
+      opponentName = 'AI';
+      myMark = 'X';
+      hideModeSelect();
+      document.getElementById('name-x').textContent = playerName;
+      document.getElementById('name-o').textContent = 'AI';
+      resetBoardState();
+      updateTurnHUD();
+      setStatus('Your turn - Click a cell!');
+    };
+
+    window.cancelQueue = function() {
+      if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+      if (matchId) {
+        apiPost('leave', { player_id: playerId, match_id: matchId }, function(){});
+        matchId = null;
+      }
+      document.getElementById('queue-status').style.display = 'none';
+      document.getElementById('queue-cancel').style.display = 'none';
+    };
+
+    function startHumanGame() {
+      gameMode = 'human';
+      hideModeSelect();
+
+      if (myMark === 'X') {
+        document.getElementById('name-x').textContent = playerName;
+        document.getElementById('name-o').textContent = opponentName;
+      } else {
+        document.getElementById('name-x').textContent = opponentName;
+        document.getElementById('name-o').textContent = playerName;
+      }
+
+      resetBoardState();
+      currentPlayer = 'X';
+      updateTurnHUD();
+
+      var isMyTurn = (myMark === 'X');
+      setStatus(isMyTurn ? 'Your turn - Click a cell!' : 'Waiting for ' + opponentName + '...');
+
+      // Start polling for opponent moves
+      lastBoardStr = '---------';
+      startGamePolling();
+    }
+
+    function hideModeSelect() {
+      document.getElementById('mode-select').classList.add('hidden');
+    }
+
+    function showModeSelect() {
+      document.getElementById('mode-select').classList.remove('hidden');
+      document.getElementById('queue-status').style.display = 'none';
+      document.getElementById('queue-cancel').style.display = 'none';
+      fetchQueueCount();
+    }
+
+    /* ═══════════════════════════════════════════
+       GAME POLLING (human mode)
+       ═══════════════════════════════════════════ */
+    function startGamePolling() {
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(function() {
+        if (!matchId || gameOver) { clearInterval(pollInterval); pollInterval = null; return; }
+        apiGet('poll', { player_id: playerId, match_id: matchId }, function(err, data) {
+          if (err || !data || !data.success) return;
+          // Sync board state
+          if (data.board && data.board !== lastBoardStr) {
+            syncBoard(data.board);
+            lastBoardStr = data.board;
+          }
+          currentPlayer = data.current_turn;
+          updateTurnHUD();
+
+          if (data.status === 'done') {
+            clearInterval(pollInterval);
+            pollInterval = null;
+            handleServerGameEnd(data);
+          } else {
+            var isMyTurn = (data.current_turn === myMark);
+            setStatus(isMyTurn ? 'Your turn - Click a cell!' : 'Waiting for ' + opponentName + '...');
+          }
+        });
+      }, 1200);
+    }
+
+    function syncBoard(serverBoard) {
+      for (var i = 0; i < 9; i++) {
+        var serverMark = serverBoard[i] === '-' ? null : serverBoard[i];
+        if (serverMark !== null && board[i] === null) {
+          board[i] = serverMark;
+          placeMarker(i, serverMark);
+        }
+      }
+    }
+
+    function handleServerGameEnd(data) {
+      gameOver = true;
+      // Check for win line
+      for (var i = 0; i < WIN_LINES.length; i++) {
+        var line = WIN_LINES[i];
+        if (board[line[0]] && board[line[0]] === board[line[1]] && board[line[0]] === board[line[2]]) {
+          showWinLine(line);
+          break;
+        }
+      }
+
+      var result;
+      if (data.winner === 'D' || data.winner === 'A') {
+        result = 'draw';
+      } else if (data.winner === myMark) {
+        result = 'win';
+      } else {
+        result = 'loss';
+      }
+      endGame(result, data.winner);
+    }
+
+    /* ═══════════════════════════════════════════
+       CELL CLICK
+       ═══════════════════════════════════════════ */
     function setupCells() {
       document.querySelectorAll('.cell').forEach(function(cell) {
         cell.addEventListener('click', function() {
           var idx = parseInt(cell.getAttribute('data-cell'));
           handleMove(idx);
         });
-        // Hover effect
         cell.addEventListener('mouseenter', function() {
-          if (!gameOver && board[parseInt(cell.getAttribute('data-cell'))] === null && currentPlayer === 'X') {
+          var idx = parseInt(cell.getAttribute('data-cell'));
+          if (!gameOver && board[idx] === null && isMyTurnNow()) {
             cell.setAttribute('material', 'opacity', 0.8);
             cell.setAttribute('color', '#252550');
           }
         });
         cell.addEventListener('mouseleave', function() {
-          if (board[parseInt(cell.getAttribute('data-cell'))] === null) {
+          var idx = parseInt(cell.getAttribute('data-cell'));
+          if (board[idx] === null) {
             cell.setAttribute('material', 'opacity', 0.5);
             cell.setAttribute('color', '#1a1a3e');
           }
@@ -332,57 +642,69 @@
       });
     }
 
-    function handleMove(idx) {
-      if (gameOver || board[idx] !== null || currentPlayer !== 'X') return;
-
-      // Player move
-      placeMarker(idx, 'X');
-      board[idx] = 'X';
-
-      if (checkWin('X')) {
-        endGame('win', 'X');
-        return;
-      }
-      if (isBoardFull()) {
-        endGame('draw');
-        return;
-      }
-
-      // Switch to O
-      currentPlayer = 'O';
-      updateTurnHUD();
-      setStatus(opponentName + ' is thinking...');
-
-      // AI/simulated opponent move
-      setTimeout(function() {
-        if (gameOver) return;
-        var move = isAI ? getAIMove() : getAIMove(); // Both use AI logic for now
-        if (move !== -1) {
-          placeMarker(move, 'O');
-          board[move] = 'O';
-
-          if (checkWin('O')) {
-            endGame('loss', 'O');
-            return;
-          }
-          if (isBoardFull()) {
-            endGame('draw');
-            return;
-          }
-        }
-        currentPlayer = 'X';
-        updateTurnHUD();
-        setStatus('Your turn - Click a cell!');
-      }, 600 + Math.random() * 800);
+    function isMyTurnNow() {
+      if (gameMode === 'ai') return currentPlayer === 'X';
+      return currentPlayer === myMark;
     }
 
-    // ===== PLACE 3D MARKER =====
+    function handleMove(idx) {
+      if (gameOver || board[idx] !== null || !isMyTurnNow()) return;
+
+      if (gameMode === 'human') {
+        // Send move to server
+        placeMarker(idx, myMark);
+        board[idx] = myMark;
+        currentPlayer = (myMark === 'X') ? 'O' : 'X';
+        updateTurnHUD();
+        setStatus('Waiting for ' + opponentName + '...');
+
+        apiPost('move', { player_id: playerId, match_id: matchId, cell: idx }, function(err, data) {
+          if (err || !data || !data.success) {
+            setStatus('Move failed — retrying...');
+            return;
+          }
+          lastBoardStr = data.board;
+          if (data.status === 'done') {
+            if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+            handleServerGameEnd(data);
+          }
+        });
+      } else {
+        // AI mode
+        placeMarker(idx, 'X');
+        board[idx] = 'X';
+
+        if (checkWin('X')) { endGame('win', 'X'); return; }
+        if (isBoardFull()) { endGame('draw'); return; }
+
+        currentPlayer = 'O';
+        updateTurnHUD();
+        setStatus('AI is thinking...');
+
+        setTimeout(function() {
+          if (gameOver) return;
+          var move = getAIMove();
+          if (move !== -1) {
+            placeMarker(move, 'O');
+            board[move] = 'O';
+            if (checkWin('O')) { endGame('loss', 'O'); return; }
+            if (isBoardFull()) { endGame('draw'); return; }
+          }
+          currentPlayer = 'X';
+          updateTurnHUD();
+          setStatus('Your turn - Click a cell!');
+        }, 600 + Math.random() * 800);
+      }
+    }
+
+    /* ═══════════════════════════════════════════
+       3D MARKER
+       ═══════════════════════════════════════════ */
     function placeMarker(idx, mark) {
       var container = document.getElementById('marks-container');
       var pos = CELL_POS[idx];
 
       if (mark === 'X') {
-        // Create 3D X using two crossed boxes
         var xEntity = document.createElement('a-entity');
         xEntity.setAttribute('position', pos.x + ' ' + pos.y + ' 0.1');
         xEntity.innerHTML =
@@ -393,7 +715,6 @@
           '<a-light type="point" color="#6366f1" intensity="0.3" distance="2"></a-light>';
         container.appendChild(xEntity);
       } else {
-        // Create 3D O using torus
         var oEntity = document.createElement('a-entity');
         oEntity.setAttribute('position', pos.x + ' ' + pos.y + ' 0.1');
         oEntity.innerHTML =
@@ -403,7 +724,6 @@
         container.appendChild(oEntity);
       }
 
-      // Mark cell as taken (change color)
       var cell = document.querySelector('.cell[data-cell="' + idx + '"]');
       if (cell) {
         cell.setAttribute('color', mark === 'X' ? '#1a1a4e' : '#2e1a2e');
@@ -411,33 +731,16 @@
       }
     }
 
-    // ===== AI (Minimax) =====
+    /* ═══════════════════════════════════════════
+       AI ENGINE
+       ═══════════════════════════════════════════ */
     function getAIMove() {
-      // Check for winning move
-      for (var i = 0; i < 9; i++) {
-        if (board[i] === null) {
-          board[i] = 'O';
-          if (checkWinFor('O')) { board[i] = null; return i; }
-          board[i] = null;
-        }
-      }
-      // Block player win
-      for (var i = 0; i < 9; i++) {
-        if (board[i] === null) {
-          board[i] = 'X';
-          if (checkWinFor('X')) { board[i] = null; return i; }
-          board[i] = null;
-        }
-      }
-      // Take center
+      for (var i = 0; i < 9; i++) { if (board[i] === null) { board[i] = 'O'; if (checkWinFor('O')) { board[i] = null; return i; } board[i] = null; } }
+      for (var i = 0; i < 9; i++) { if (board[i] === null) { board[i] = 'X'; if (checkWinFor('X')) { board[i] = null; return i; } board[i] = null; } }
       if (board[4] === null) return 4;
-      // Take corner
-      var corners = [0, 2, 6, 8];
-      var available = corners.filter(function(c) { return board[c] === null; });
-      if (available.length > 0) return available[Math.floor(Math.random() * available.length)];
-      // Take any
-      var empty = [];
-      for (var i = 0; i < 9; i++) { if (board[i] === null) empty.push(i); }
+      var corners = [0,2,6,8]; var avail = corners.filter(function(c){return board[c]===null;});
+      if (avail.length > 0) return avail[Math.floor(Math.random() * avail.length)];
+      var empty = []; for (var i = 0; i < 9; i++) { if (board[i] === null) empty.push(i); }
       return empty.length > 0 ? empty[Math.floor(Math.random() * empty.length)] : -1;
     }
 
@@ -458,19 +761,16 @@
       return false;
     }
 
-    function isBoardFull() {
-      return board.every(function(c) { return c !== null; });
-    }
+    function isBoardFull() { return board.every(function(c) { return c !== null; }); }
 
-    // ===== WIN LINE VISUALIZATION =====
+    /* ═══════════════════════════════════════════
+       WIN LINE
+       ═══════════════════════════════════════════ */
     function showWinLine(line) {
-      var p0 = CELL_POS[line[0]];
-      var p2 = CELL_POS[line[2]];
-      var cx = (p0.x + p2.x) / 2;
-      var cy = (p0.y + p2.y) / 2;
-      var dx = p2.x - p0.x;
-      var dy = p2.y - p0.y;
-      var len = Math.sqrt(dx * dx + dy * dy) + 0.5;
+      var p0 = CELL_POS[line[0]], p2 = CELL_POS[line[2]];
+      var cx = (p0.x + p2.x) / 2, cy = (p0.y + p2.y) / 2;
+      var dx = p2.x - p0.x, dy = p2.y - p0.y;
+      var len = Math.sqrt(dx*dx + dy*dy) + 0.5;
       var angle = Math.atan2(dx, dy) * (180 / Math.PI);
 
       var winLine = document.getElementById('win-line');
@@ -481,23 +781,25 @@
       winLine.setAttribute('visible', 'true');
     }
 
-    // ===== END GAME =====
+    /* ═══════════════════════════════════════════
+       END GAME
+       ═══════════════════════════════════════════ */
     function endGame(result, winner) {
       gameOver = true;
       var overlay = document.getElementById('win-overlay');
-      var title = document.getElementById('win-title');
-      var sub = document.getElementById('win-subtitle');
+      var title   = document.getElementById('win-title');
+      var sub     = document.getElementById('win-subtitle');
 
       if (result === 'win') {
         title.textContent = 'You Win!';
         title.style.color = '#22c55e';
-        sub.textContent = 'X wins the round!';
+        sub.textContent = (gameMode === 'human') ? 'You defeated ' + opponentName + '!' : 'X wins the round!';
         scoreX++;
         recordMatch('win');
       } else if (result === 'loss') {
         title.textContent = opponentName + ' Wins!';
         title.style.color = '#ef4444';
-        sub.textContent = 'O wins the round!';
+        sub.textContent = (gameMode === 'human') ? opponentName + ' outplayed you!' : 'O wins the round!';
         scoreO++;
         recordMatch('loss');
       } else {
@@ -511,17 +813,15 @@
       updateScorePanel();
       setStatus(result === 'win' ? 'Victory!' : result === 'loss' ? 'Defeat!' : 'Draw!');
 
-      setTimeout(function() {
-        overlay.classList.add('active');
-      }, 800);
+      setTimeout(function() { overlay.classList.add('active'); }, 800);
     }
 
     function recordMatch(result) {
       try {
         var s = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-        s.wins = (s.wins || 0) + (result === 'win' ? 1 : 0);
+        s.wins   = (s.wins || 0)   + (result === 'win'  ? 1 : 0);
         s.losses = (s.losses || 0) + (result === 'loss' ? 1 : 0);
-        s.draws = (s.draws || 0) + (result === 'draw' ? 1 : 0);
+        s.draws  = (s.draws || 0)  + (result === 'draw' ? 1 : 0);
         if (!s.matches) s.matches = [];
         s.matches.push({ game: 'Tic-Tac-Toe', opponent: opponentName, result: result, time: Date.now() });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
@@ -532,60 +832,104 @@
       var sx = document.getElementById('score-x-label');
       var so = document.getElementById('score-o-label');
       var sd = document.getElementById('score-draw-label');
-      if (sx) sx.setAttribute('value', 'X (' + playerName + '): ' + scoreX);
-      if (so) so.setAttribute('value', 'O (' + opponentName + '): ' + scoreO);
+      var xName = (gameMode === 'human' && myMark === 'O') ? opponentName : playerName;
+      var oName = (gameMode === 'human' && myMark === 'O') ? playerName : opponentName;
+      if (sx) sx.setAttribute('value', 'X (' + xName + '): ' + scoreX);
+      if (so) so.setAttribute('value', 'O (' + oName + '): ' + scoreO);
       if (sd) sd.setAttribute('value', 'Draws: ' + scoreDraw);
     }
 
-    // ===== RESET =====
-    window.resetGame = function() {
-      board = [null, null, null, null, null, null, null, null, null];
+    /* ═══════════════════════════════════════════
+       RESET / QUIT
+       ═══════════════════════════════════════════ */
+    function resetBoardState() {
+      board = [null,null,null,null,null,null,null,null,null];
       currentPlayer = 'X';
       gameOver = false;
+      lastBoardStr = '---------';
 
-      // Clear marks
       var container = document.getElementById('marks-container');
       container.innerHTML = '';
 
-      // Reset cells
       document.querySelectorAll('.cell').forEach(function(cell) {
         cell.setAttribute('color', '#1a1a3e');
         cell.setAttribute('material', 'opacity', 0.5);
       });
-
-      // Hide win line
       document.getElementById('win-line').setAttribute('visible', 'false');
-
-      // Hide overlay
       document.getElementById('win-overlay').classList.remove('active');
+    }
 
-      updateTurnHUD();
-      setStatus('Your turn - Click a cell!');
-    };
-
-    window.abandonMatch = function() {
-      if (confirm('Abandon this match? It will count as a loss.')) {
-        recordMatch('loss');
-        scoreO++;
-        updateScorePanel();
-        window.location.href = '/vr/game-arena/';
+    window.resetGame = function() {
+      if (gameMode === 'human' && matchId) {
+        // Request rematch
+        apiPost('rematch', { player_id: playerId, match_id: matchId }, function(err, data) {
+          if (err || !data || !data.success) {
+            // Fallback to lobby
+            showModeSelect();
+            return;
+          }
+          if (data.rematch && data.new_match_id) {
+            matchId = data.new_match_id;
+            myMark  = data.mark;
+            document.getElementById('win-overlay').classList.remove('active');
+            startHumanGame();
+          } else {
+            // Waiting for opponent to accept rematch
+            document.getElementById('win-overlay').classList.remove('active');
+            setStatus('Waiting for ' + opponentName + ' to accept rematch...');
+            // Poll for rematch acceptance
+            var rematchPoll = setInterval(function() {
+              apiGet('poll', { player_id: playerId, match_id: matchId }, function(err2, data2) {
+                if (err2 || !data2) return;
+                if (data2.rematch_them === 1) {
+                  clearInterval(rematchPoll);
+                  // Re-check for new match
+                  apiPost('rematch', { player_id: playerId, match_id: matchId }, function(err3, data3) {
+                    if (data3 && data3.rematch && data3.new_match_id) {
+                      matchId = data3.new_match_id;
+                      myMark  = data3.mark;
+                      startHumanGame();
+                    }
+                  });
+                }
+              });
+            }, 1500);
+            // Timeout after 30s
+            setTimeout(function() { clearInterval(rematchPoll); }, 30000);
+          }
+        });
+      } else {
+        // AI mode — simple reset
+        resetBoardState();
+        updateTurnHUD();
+        setStatus('Your turn - Click a cell!');
       }
     };
 
-    // ===== HUD HELPERS =====
+    window.abandonMatch = function() {
+      if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+      if (gameMode === 'human' && matchId) {
+        apiPost('leave', { player_id: playerId, match_id: matchId }, function(){});
+        matchId = null;
+      }
+      gameOver = true;
+      gameMode = null;
+      showModeSelect();
+      resetBoardState();
+    };
+
+    /* ═══════════════════════════════════════════
+       HUD HELPERS
+       ═══════════════════════════════════════════ */
     function updateTurnHUD() {
       var hudX = document.getElementById('hud-x');
       var hudO = document.getElementById('hud-o');
       if (currentPlayer === 'X') {
-        hudX.classList.add('active');
-        hudO.classList.remove('active');
-        hudX.style.boxShadow = '0 0 20px rgba(99,102,241,0.4)';
-        hudO.style.boxShadow = 'none';
+        hudX.classList.add('active');  hudO.classList.remove('active');
+        hudX.style.boxShadow = '0 0 20px rgba(99,102,241,0.4)'; hudO.style.boxShadow = 'none';
       } else {
-        hudO.classList.add('active');
-        hudX.classList.remove('active');
-        hudO.style.boxShadow = '0 0 20px rgba(236,72,153,0.4)';
-        hudX.style.boxShadow = 'none';
+        hudO.classList.add('active');  hudX.classList.remove('active');
+        hudO.style.boxShadow = '0 0 20px rgba(236,72,153,0.4)'; hudX.style.boxShadow = 'none';
       }
     }
 
@@ -593,31 +937,22 @@
       document.getElementById('hud-status').textContent = text;
     }
 
-    // ===== INCOMING CHALLENGE TOAST =====
-    var BOT_NAMES = ['MapleLeaf99','PuckMaster','CityExplorer','NightOwlTO','LakeShoreRun','QueenWestAce'];
-    function simulateChallenge() {
-      var delay = 25000 + Math.random() * 40000;
-      setTimeout(function() {
-        var challenger = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
-        var c = document.getElementById('toast-container');
-        var t = document.createElement('div');
-        t.className = 'toast';
-        t.innerHTML = '<div class="toast-title">' + challenger + ' wants to play!</div>'
-          + '<div class="toast-msg">Tic-Tac-Toe challenge</div>'
-          + '<div class="toast-actions">'
-          + '<button class="toast-btn accept" onclick="window.location.href=\'/vr/game-arena/tic-tac-toe.html?opponent=' + encodeURIComponent(challenger) + '\'">Accept</button>'
-          + '<button class="toast-btn decline" onclick="this.closest(\'.toast\').remove()">Decline</button>'
-          + '</div>';
-        c.appendChild(t);
-        setTimeout(function() { if (t.parentNode) { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(function(){ t.remove(); }, 300); } }, 10000);
-        simulateChallenge();
-      }, delay);
-    }
+    /* ═══════════════════════════════════════════
+       CLEANUP ON UNLOAD
+       ═══════════════════════════════════════════ */
+    window.addEventListener('beforeunload', function() {
+      if (matchId && gameMode === 'human' && !gameOver) {
+        // Fire-and-forget leave
+        navigator.sendBeacon(API_URL + '?action=leave', 'player_id=' + encodeURIComponent(playerId) + '&match_id=' + matchId);
+      }
+    });
 
-    // ===== INIT =====
+    /* ═══════════════════════════════════════════
+       INIT
+       ═══════════════════════════════════════════ */
     updateScorePanel();
     setupCells();
-    simulateChallenge();
+    // Start in lobby mode — mode-select is shown by default
   })();
   </script>
 </body>

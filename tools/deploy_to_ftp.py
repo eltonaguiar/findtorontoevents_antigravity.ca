@@ -195,12 +195,14 @@ def deploy_events_api(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
 
 
 def deploy_api_auth(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
-    """Upload api/ (google_auth, google_callback, auth_db_config, .htaccess) to /api/ for main-site login."""
+    """Upload api/ (google_auth, google_callback, auth_db_config, .htaccess, ttt_match, vr_user_progress) to /api/ for main-site."""
     auth_files = [
         "google_auth.php",
         "google_callback.php",
         "auth_db_config.php",
         ".htaccess",
+        "ttt_match.php",
+        "vr_user_progress.php",
     ]
     remotes = ["findtorontoevents.ca/api"]
     if main_remote_base:
@@ -231,6 +233,19 @@ def deploy_stats_page(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
         n = _upload_tree(ftp, local_stats, remote)
         print(f"    -> {n} files")
     return True
+
+
+def deploy_vr(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload the entire vr/ directory (HTML, JS, CSS, subdirectories) to remote_base/vr/."""
+    local_vr = WORKSPACE / "vr"
+    if not local_vr.is_dir():
+        print("  Skip VR (vr/ not found)")
+        return True
+    remote = f"{main_remote_base}/vr" if main_remote_base else "findtorontoevents.ca/vr"
+    print(f"  Uploading VR to {remote}/ ...")
+    n = _upload_tree(ftp, local_vr, remote)
+    print(f"  -> {n} files under vr/")
+    return n > 0
 
 
 def main() -> None:
@@ -285,6 +300,12 @@ def main() -> None:
 
             print("Uploading Stats page to /stats/ ...")
             deploy_stats_page(ftp, remote_path)
+            print()
+
+            print("Uploading VR Hub + games to /vr/ ...")
+            deploy_vr(ftp, remote_path)
+            if parent_root:
+                deploy_vr(ftp, parent_root)
             print()
 
         print("Deploy complete.")

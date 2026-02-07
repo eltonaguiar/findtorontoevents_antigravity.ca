@@ -676,14 +676,45 @@
       });
     };
 
-    // ===== MULTIPLAYER VIA BROADCASTCHANNEL =====
+    // ===== SERVER-SIDE MATCHMAKING API =====
+    var API_URL = '/api/ttt_match.php';
+    var serverMatchId = null;
+    var serverMyMark  = null;  // 'X' or 'O' from server
+    var serverPollInterval = null;
+    var lastServerBoard = '---------';
+    var usingServer = false;  // true when playing via server API
+
+    function apiPost(action, params, cb) {
+      var body = 'action=' + encodeURIComponent(action);
+      for (var k in params) {
+        if (params.hasOwnProperty(k)) body += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+      }
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', API_URL, true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.onload = function() { try { cb(null, JSON.parse(xhr.responseText)); } catch(e) { cb(e, null); } };
+      xhr.onerror = function() { cb(new Error('Network'), null); };
+      xhr.send(body);
+    }
+
+    function apiGet(action, params, cb) {
+      var qs = '?action=' + encodeURIComponent(action);
+      for (var k in params) { if (params.hasOwnProperty(k)) qs += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]); }
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', API_URL + qs, true);
+      xhr.onload = function() { try { cb(null, JSON.parse(xhr.responseText)); } catch(e) { cb(e, null); } };
+      xhr.onerror = function() { cb(new Error('Network'), null); };
+      xhr.send();
+    }
+
+    // ===== MULTIPLAYER VIA BROADCASTCHANNEL + SERVER =====
     var channel = null;
     var peerFound = false;
     var peerReady = false;
     var waitingForPeer = false;
     var matchId = null;
-    var pendingChallengerId = null;   // human waiting while we play AI
-    var challengerAlertShown = false; // prevent stacking multiple alerts
+    var pendingChallengerId = null;
+    var challengerAlertShown = false;
 
     function setupChannel() {
       if (typeof BroadcastChannel === 'undefined') return;
@@ -694,25 +725,26 @@
 
         switch (d.type) {
           case 'looking':
-            // CASE A: We're in the lobby searching — instant match
             if (waitingForPeer && !peerFound) {
               peerFound = true;
               matchId = myId + '_' + d.senderId;
               channel.postMessage({ type: 'match_accept', senderId: myId, matchId: matchId, targetId: d.senderId });
-              startMultiplayerGame(false); // I'm O (second player)
+              // Cancel server queue if we were also waiting there
+              if (serverMatchId) {
+                apiPost('leave', { player_id: myId, match_id: serverMatchId }, function(){});
+                serverMatchId = null;
+              }
+              startMultiplayerGame(false);
               return;
             }
-            // CASE B: We're playing AI — show challenger alert
             if (gameActive && !isMultiplayer && !challengerAlertShown) {
               pendingChallengerId = d.senderId;
               showChallengerAlert();
-              // Tell them to keep waiting, we might accept
               channel.postMessage({ type: 'challenger_hold', senderId: myId, targetId: d.senderId });
             }
             break;
 
           case 'challenger_hold':
-            // The AI player acknowledged us — keep waiting
             if (d.targetId === myId && waitingForPeer) {
               document.getElementById('queue-text').textContent = 'Player found! Waiting for them to accept...';
             }
@@ -722,12 +754,16 @@
             if (d.targetId === myId && waitingForPeer && !peerFound) {
               peerFound = true;
               matchId = d.matchId;
-              startMultiplayerGame(true); // I'm X (first player)
+              if (serverMatchId) {
+                apiPost('leave', { player_id: myId, match_id: serverMatchId }, function(){});
+                serverMatchId = null;
+              }
+              startMultiplayerGame(true);
             }
             break;
 
           case 'move':
-            if (d.matchId === matchId && gameActive && !isMyTurn) {
+            if (d.matchId === matchId && gameActive && !isMyTurn && !usingServer) {
               placeMarkOnBoard(d.cell, myMark === 1 ? 2 : 1);
               isMyTurn = true;
               updateStatus();
@@ -745,7 +781,6 @@
             break;
 
           case 'challenger_left':
-            // The waiting human gave up before we accepted
             if (d.senderId === pendingChallengerId) {
               hideChallengerAlert();
             }
@@ -763,6 +798,142 @@
       };
     }
     setupChannel();
+
+    // ===== SERVER MULTIPLAYER FUNCTIONS =====
+    function joinServerQueue() {
+      apiPost('join', { player_id: myId, player_name: 'Player' }, function(err, data) {
+        if (err || !data || !data.success) return;
+        serverMatchId = data.match_id;
+        serverMyMark  = data.mark;
+
+        if (data.matched) {
+          // Instant server match!
+          if (!peerFound) {
+            peerFound = true;
+            usingServer = true;
+            startServerMultiplayerGame(data);
+          }
+        } else {
+          // Waiting — poll for match
+          var elapsed = 0;
+          serverPollInterval = setInterval(function() {
+            if (peerFound) { clearInterval(serverPollInterval); return; }
+            elapsed += 1500;
+            if (elapsed > 45000) {
+              clearInterval(serverPollInterval);
+              serverPollInterval = null;
+              if (!peerFound) {
+                apiPost('leave', { player_id: myId, match_id: serverMatchId }, function(){});
+                serverMatchId = null;
+              }
+              return;
+            }
+            apiGet('poll', { player_id: myId, match_id: serverMatchId }, function(err2, data2) {
+              if (err2 || !data2 || !data2.success) return;
+              if (data2.status === 'active' && !peerFound) {
+                clearInterval(serverPollInterval);
+                serverPollInterval = null;
+                peerFound = true;
+                usingServer = true;
+                startServerMultiplayerGame(data2);
+              }
+            });
+          }, 1500);
+        }
+      });
+    }
+
+    function startServerMultiplayerGame(data) {
+      isMultiplayer = true;
+      myMark = (data.my_mark || serverMyMark) === 'X' ? 1 : 2;
+      isMyTurn = (myMark === 1); // X goes first
+      waitingForPeer = false;
+      peerReady = false;
+      resetBoard();
+      gameActive = true;
+      lastServerBoard = '---------';
+
+      document.getElementById('lobby').style.display = 'none';
+      document.getElementById('game-board').style.display = 'flex';
+      document.getElementById('game-board').style.flexDirection = 'column';
+      document.getElementById('game-board').style.alignItems = 'center';
+      document.getElementById('game-board').style.gap = '12px';
+
+      var oppName = data.opponent || 'Human';
+      document.getElementById('opponent-info').innerHTML = 'Playing vs <span class="human">' + oppName + '</span> (online)';
+      updateStatus();
+
+      // Start polling for opponent moves
+      startServerGamePoll();
+    }
+
+    function startServerGamePoll() {
+      if (serverPollInterval) clearInterval(serverPollInterval);
+      serverPollInterval = setInterval(function() {
+        if (!serverMatchId || !gameActive) { clearInterval(serverPollInterval); return; }
+        apiGet('poll', { player_id: myId, match_id: serverMatchId }, function(err, data) {
+          if (err || !data || !data.success) return;
+          // Sync board
+          if (data.board && data.board !== lastServerBoard) {
+            syncServerBoard(data.board);
+            lastServerBoard = data.board;
+          }
+          // Check game end
+          if (data.status === 'done') {
+            clearInterval(serverPollInterval);
+            serverPollInterval = null;
+            gameActive = false;
+            var result = checkWinner();
+            if (result) {
+              if (result.line) {
+                result.line.forEach(function(idx) {
+                  document.querySelector('.cell[data-idx="' + idx + '"]').classList.add('win-cell');
+                });
+              }
+            }
+            setTimeout(function() {
+              if (data.winner === 'D' || data.winner === 'A') {
+                recordResult('draw');
+                showGameOver('DRAW!', 'A battle of equals.', 'draw');
+              } else {
+                var winMark = data.winner === 'X' ? 1 : 2;
+                if (winMark === myMark) {
+                  recordResult('win');
+                  showGameOver('YOU WIN!', 'You defeated the human!', 'win');
+                  launchConfetti();
+                } else {
+                  recordResult('loss');
+                  showGameOver('YOU LOSE!', 'The opponent got you!', 'lose');
+                }
+              }
+            }, 600);
+            return;
+          }
+          // Update turn
+          var serverTurn = data.current_turn === 'X' ? 1 : 2;
+          isMyTurn = (serverTurn === myMark);
+          updateStatus();
+        });
+      }, 1200);
+    }
+
+    function syncServerBoard(serverBoard) {
+      for (var i = 0; i < 9; i++) {
+        var sMark = serverBoard[i];
+        var localMark = board[i];
+        if (sMark !== '-' && localMark === 0) {
+          var markVal = sMark === 'X' ? 1 : 2;
+          placeMarkOnBoard(i, markVal);
+        }
+      }
+    }
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+      if (serverMatchId && usingServer && gameActive) {
+        navigator.sendBeacon(API_URL + '?action=leave', 'player_id=' + encodeURIComponent(myId) + '&match_id=' + serverMatchId);
+      }
+    });
 
     // ===== CHALLENGER ALERT SYSTEM =====
     function showChallengerAlert() {
@@ -849,20 +1020,29 @@
 
       waitingForPeer = true;
       peerFound = false;
+      usingServer = false;
 
-      // Broadcast that we're looking
+      // Broadcast locally (same-browser match)
       if (channel) {
         channel.postMessage({ type: 'looking', senderId: myId });
       }
 
-      // Wait 4 seconds for a human opponent, then fall back to AI
-      // (extra second in case someone in an AI game sees the alert)
+      // Also join server queue (cross-device match)
+      joinServerQueue();
+
+      // Wait 8 seconds for a human opponent (server or local), then fall back to AI
       setTimeout(function () {
         if (!peerFound) {
           waitingForPeer = false;
+          // Cancel server queue
+          if (serverMatchId && !usingServer) {
+            apiPost('leave', { player_id: myId, match_id: serverMatchId }, function(){});
+            serverMatchId = null;
+          }
+          if (serverPollInterval) { clearInterval(serverPollInterval); serverPollInterval = null; }
           startAIGame();
         }
-      }, 4000);
+      }, 8000);
     };
 
     // ===== START AI GAME =====
@@ -948,18 +1128,30 @@
 
       placeMarkOnBoard(idx, myMark);
 
-      // Send move to opponent if multiplayer
-      if (isMultiplayer && channel) {
+      if (isMultiplayer && usingServer && serverMatchId) {
+        // Server multiplayer — send move via API
+        var cellMark = myMark === 1 ? 'X' : 'O';
+        isMyTurn = false;
+        updateStatus();
+        apiPost('move', { player_id: myId, match_id: serverMatchId, cell: idx }, function(err, data) {
+          if (err || !data || !data.success) {
+            // Move failed — will sync on next poll
+            return;
+          }
+          if (data.board) lastServerBoard = data.board;
+        });
+      } else if (isMultiplayer && channel) {
+        // BroadcastChannel multiplayer
         channel.postMessage({ type: 'move', senderId: myId, matchId: matchId, cell: idx });
-      }
+        isMyTurn = false;
+        updateStatus();
+        if (checkGameEnd()) return;
+      } else {
+        // AI mode
+        isMyTurn = false;
+        updateStatus();
+        if (checkGameEnd()) return;
 
-      isMyTurn = false;
-      updateStatus();
-
-      if (checkGameEnd()) return;
-
-      // AI move
-      if (!isMultiplayer) {
         setTimeout(function () {
           if (!gameActive) return;
           var aiCell = getAIMove();

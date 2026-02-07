@@ -293,6 +293,7 @@
         // Utilities row (Set 7)
         '<div class="vr-nav-section-label">Tools</div>' +
         '<div class="vr-nav-util-row">' +
+          '<button class="vr-nav-util-btn" onclick="closeNavMenu();window._vrToggleHud()" title="Toggle HUD visibility (H)">' + (hudHidden ? '&#x1F441; Show HUD' : '&#x1F648; Hide HUD') + '</button>' +
           '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRQuickWins7)VRQuickWins7.openSearch()" title="Search all zones (Ctrl+K)">&#x1F50D; Search</button>' +
           '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRQuickWins7)VRQuickWins7.showActivity()" title="Recent activity">&#x1F4CB; Activity</button>' +
           '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRQuickWins7)VRQuickWins7.showRating()" title="Rate this zone">&#x2B50; Rate</button>' +
@@ -336,7 +337,7 @@
 
         // Footer
         '<div class="vr-nav-hint">' +
-          'Press <kbd>M</kbd> or <kbd>Tab</kbd> to toggle &bull; <kbd>G</kbd> Area Guide &bull; <kbd>Esc</kbd> to close' +
+          'Press <kbd>M</kbd> or <kbd>Tab</kbd> to toggle &bull; <kbd>H</kbd> Hide HUD &bull; <kbd>G</kbd> Area Guide &bull; <kbd>Esc</kbd> to close' +
         '</div>' +
       '</div>';
 
@@ -550,6 +551,14 @@
       e.preventDefault();
       toggleNavMenu();
     }
+    if (e.key === 'h' || e.key === 'H') {
+      // Don't trigger if typing in an input/textarea
+      var tag = (e.target.tagName || '').toLowerCase();
+      if (tag !== 'input' && tag !== 'textarea' && !e.target.isContentEditable) {
+        e.preventDefault();
+        toggleHud();
+      }
+    }
     if (e.key === 'Escape') closeNavMenu();
   });
 
@@ -649,6 +658,96 @@
   }
 
   /* ═══════════════════════════════════════════
+     HUD TOGGLE ("Eye" icon — hide on-screen clutter)
+     ═══════════════════════════════════════════ */
+  var hudHidden = false;
+  var HUD_HIDDEN_KEY = 'vr_hud_hidden';
+
+  // Restore preference
+  try { hudHidden = localStorage.getItem(HUD_HIDDEN_KEY) === '1'; } catch(e) {}
+
+  function getHudToggleCSS() {
+    return '\
+/* Eye toggle button */\
+#vr-hud-toggle-btn{position:fixed;bottom:16px;right:72px;width:44px;height:44px;\
+background:rgba(10,10,30,0.8);backdrop-filter:blur(8px);\
+border:1.5px solid rgba(148,163,184,0.25);border-radius:12px;\
+cursor:pointer;z-index:99998;display:flex;align-items:center;justify-content:center;\
+font-size:20px;color:#94a3b8;transition:all .25s;pointer-events:auto}\
+#vr-hud-toggle-btn:hover{border-color:rgba(0,212,255,0.5);color:#fff;background:rgba(10,10,30,0.95)}\
+#vr-hud-toggle-btn.hud-off{border-color:rgba(239,68,68,0.4);color:#ef4444}\
+#vr-hud-toggle-btn.hud-off:hover{border-color:rgba(239,68,68,0.7)}\
+.a-fullscreen #vr-hud-toggle-btn{display:none}\
+/* When HUD is hidden, hide common clutter elements */\
+body.vr-hud-hidden #score-bar,\
+body.vr-hud-hidden #hud,\
+body.vr-hud-hidden #hud-status,\
+body.vr-hud-hidden #toast-container,\
+body.vr-hud-hidden #queue-indicator,\
+body.vr-hud-hidden #difficulty-row,\
+body.vr-hud-hidden #opponent-info,\
+body.vr-hud-hidden .hud-card,\
+body.vr-hud-hidden .visited-badge,\
+body.vr-hud-hidden [id^="data-badge-"],\
+body.vr-hud-hidden #leaderboard-panel,\
+body.vr-hud-hidden #players-panel,\
+body.vr-hud-hidden #matches-panel,\
+body.vr-hud-hidden #instructions,\
+body.vr-hud-hidden #touch-zone-panel,\
+body.vr-hud-hidden #touch-panel-toggle,\
+body.vr-hud-hidden .vr-nav-util-row,\
+body.vr-hud-hidden #back-btn{display:none!important;opacity:0!important;pointer-events:none!important}\
+/* Keep essential elements visible: game board, mode select, win overlay, menu btn, eye btn */';
+  }
+
+  function createHudToggle() {
+    // Inject CSS
+    var style = document.createElement('style');
+    style.textContent = getHudToggleCSS();
+    document.head.appendChild(style);
+
+    // Create eye button
+    var btn = document.createElement('button');
+    btn.id = 'vr-hud-toggle-btn';
+    btn.title = 'Toggle HUD (H)';
+    btn.innerHTML = hudHidden ? '&#x1F648;' : '&#x1F441;'; // see-no-evil vs eye
+    if (hudHidden) btn.classList.add('hud-off');
+    btn.onclick = function() { toggleHud(); };
+    document.body.appendChild(btn);
+
+    // Apply initial state
+    if (hudHidden) document.body.classList.add('vr-hud-hidden');
+  }
+
+  function toggleHud() {
+    hudHidden = !hudHidden;
+    document.body.classList.toggle('vr-hud-hidden', hudHidden);
+    var btn = document.getElementById('vr-hud-toggle-btn');
+    if (btn) {
+      btn.innerHTML = hudHidden ? '&#x1F648;' : '&#x1F441;';
+      btn.classList.toggle('hud-off', hudHidden);
+      btn.title = hudHidden ? 'Show HUD (H)' : 'Hide HUD (H)';
+    }
+    try { localStorage.setItem(HUD_HIDDEN_KEY, hudHidden ? '1' : '0'); } catch(e) {}
+
+    // Also toggle 3D panels in A-Frame scene
+    var panels3d = ['leaderboard-panel', 'players-panel', 'matches-panel'];
+    panels3d.forEach(function(pid) {
+      var el = document.getElementById(pid);
+      if (el && el.setAttribute) {
+        try { el.setAttribute('visible', hudHidden ? 'false' : 'true'); } catch(e) {}
+      }
+    });
+    // Toggle visited badges
+    document.querySelectorAll('.visited-badge').forEach(function(b) {
+      try { b.setAttribute('visible', hudHidden ? 'false' : 'true'); } catch(e) {}
+    });
+  }
+
+  // Expose for menu
+  window._vrToggleHud = function() { toggleHud(); };
+
+  /* ═══════════════════════════════════════════
      SMOOTH ZONE TRANSITION (Quick-Win QW-004)
      ═══════════════════════════════════════════ */
   function addZoneTransition() {
@@ -681,6 +780,7 @@
   function init() {
     addZoneTransition();
     create2DMenu();
+    createHudToggle();
     var check = setInterval(function () {
       var scene = document.querySelector('a-scene');
       if (scene) {
