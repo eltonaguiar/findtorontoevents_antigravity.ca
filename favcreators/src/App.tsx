@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import "./App.css";
-import type { Creator, SocialAccount, Platform } from "./types";
+import type { Creator, SocialAccount, Platform, UserPreferences } from "./types";
+import { DEFAULT_USER_PREFERENCES, LIVE_CAPABLE_PLATFORMS } from "./types";
 import CreatorCard from "./components/CreatorCard";
 import CreatorForm from "./components/CreatorForm";
 import EditCreatorModal from "./components/EditCreatorModal";
 import MyLinkLists from "./components/MyLinkLists";
 import LiveSummary from "./components/LiveSummary";
+import ManageLiveChecks from "./components/ManageLiveChecks";
 import AdSense from "./components/AdSense";
 import BulkAvatarManager from "./components/BulkAvatarManager";
 import type { LiveCreator } from "./types";
@@ -34,6 +36,7 @@ import {
 } from "./utils/proxyFetch";
 import { fcApiFetch, getApiLog, subscribeToApiLog, clearApiLog, type ApiLogEntry } from "./utils/apiLog";
 import { getCachedLiveStatus, updateStreamerLastSeen } from "./utils/streamerLastSeen";
+import { clearLiveStates } from "./utils/avatar";
 
 // Guest mode detection
 const isGuestMode =
@@ -113,8 +116,8 @@ const checkLiveStatus = async (
   username: string,
   creatorId?: string,
 ): Promise<{ isLive: boolean; accountStatus: string; hasStory?: boolean; storyCount?: number; storyPostedAt?: number } | null> => {
-  // TLC.php supports: tiktok, twitch, kick, youtube
-  const tlcSupportedPlatforms = ["tiktok", "twitch", "kick", "youtube"];
+  // TLC.php supports: tiktok, twitch, kick, youtube, instagram, facebook
+  const tlcSupportedPlatforms = ["tiktok", "twitch", "kick", "youtube", "instagram"];
 
   // First, check cached live status for faster response (if creatorId provided)
   if (creatorId && tlcSupportedPlatforms.includes(platform)) {
@@ -188,7 +191,7 @@ const checkLiveStatus = async (
     return null;
   }
 
-  // For unsupported platforms (Instagram, etc.), return null
+  // For unsupported platforms (spotify, twitter, other), return null
   return null;
 };
 
@@ -640,6 +643,10 @@ function App() {
   const [registerPassword, setRegisterPassword] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [showLoginForm, setShowLoginForm] = useState(false);
+  
+  // Discord notification preferences: { [creatorId]: boolean }
+  const [notificationPrefs, setNotificationPrefs] = useState<Record<string, boolean>>({});
+  
   /** Debug: backend/DB connectivity so users know if notes & list persist */
   const [backendStatus, setBackendStatus] = useState<"checking" | "connected" | "disconnected">("checking");
   const [backendStatusDetail, setBackendStatusDetail] = useState<{
@@ -673,7 +680,11 @@ function App() {
         return INITIAL_DATA;
       }
       const saved = localStorage.getItem("fav_creators");
-      return saved ? ensureAvatarForCreators(JSON.parse(saved)) : INITIAL_DATA;
+      if (saved) {
+        // Clear stale live states on page load - these will be refreshed by live check
+        return clearLiveStates(ensureAvatarForCreators(JSON.parse(saved)));
+      }
+      return INITIAL_DATA;
     } catch (e) {
       console.error("Failed to parse creators from localStorage", e);
       return INITIAL_DATA;
@@ -711,6 +722,43 @@ function App() {
       }
     }
 
+    // Handle Discord OAuth callback (from hash params)
+    const hash = window.location.hash;
+    if (hash.includes('discord_linked=1')) {
+      // Discord was successfully linked - refresh user data
+      const base = getAuthBase();
+      if (base) {
+        fcApiFetch(`${base}/get_me.php`, { credentials: "include" })
+          .then(res => res.json())
+          .then(data => {
+            if (data.user) {
+              setAuthUser(data.user);
+              localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(data.user));
+            }
+          })
+          .catch(e => console.warn("Failed to refresh user after Discord link", e));
+      }
+      // Show success message with link to notifications channel
+      const discordUser = new URLSearchParams(hash.split('?')[1] || '').get('discord_user');
+      const username = discordUser ? decodeURIComponent(discordUser) : 'your account';
+      const goToChannel = window.confirm(
+        `✅ Discord linked successfully!\n\nConnected as: ${username}\n\n` +
+        `📢 Live notifications will appear in our shared #notifications channel.\n\n` +
+        `Click OK to open the Discord channel, or Cancel to stay here.`
+      );
+      if (goToChannel) {
+        window.open('https://discord.com/channels/388008137568813057/1469431505439948920', '_blank');
+      }
+      // Clean up URL
+      window.location.hash = window.location.hash.split('?')[0];
+    } else if (hash.includes('discord_error=')) {
+      const errorMatch = hash.match(/discord_error=([^&]+)/);
+      if (errorMatch) {
+        alert(`Discord link failed: ${decodeURIComponent(errorMatch[1])}`);
+      }
+      window.location.hash = window.location.hash.split('?')[0];
+    }
+
     // Also check for PHP Session (Google Auth) when auth base is configured
     const base = getAuthBase();
     if (base) {
@@ -733,10 +781,65 @@ function App() {
 
   }, []);
 
+  // Fetch notification preferences when user has Discord linked
+  useEffect(() => {
+    if (!authUser?.discord_id) {
+      setNotificationPrefs({});
+      return;
+    }
+    
+    const base = getAuthBase();
+    if (!base) return;
+    
+    fcApiFetch(`${base}/notification_prefs.php`, { credentials: "include" })
+      .then(res => res.json())
+      .then(data => {
+        if (data.ok && data.preferences) {
+          const prefs: Record<string, boolean> = {};
+          data.preferences.forEach((p: { creator_id: string; discord_notify: boolean }) => {
+            prefs[p.creator_id] = p.discord_notify;
+          });
+          setNotificationPrefs(prefs);
+        }
+      })
+      .catch(e => console.warn("Failed to fetch notification prefs:", e));
+  }, [authUser?.discord_id]);
+
+  // Handle toggling notification for a creator
+  const handleToggleNotify = useCallback(async (creatorId: string, enabled: boolean) => {
+    const base = getAuthBase();
+    if (!base) return;
+    
+    try {
+      const res = await fcApiFetch(`${base}/notification_prefs.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ creator_id: creatorId, discord_notify: enabled })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setNotificationPrefs(prev => ({ ...prev, [creatorId]: enabled }));
+      }
+    } catch (e) {
+      console.error("Failed to toggle notification:", e);
+    }
+  }, []);
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "dropdown" | "table">("list");
+  const [sortPreference, setSortPreference] = useState<"custom" | "alphabetical">(() => {
+    try {
+      const saved = localStorage.getItem("fav_creators_sort_preference");
+      if (saved === "custom" || saved === "alphabetical") return saved;
+      return "custom";
+    } catch {
+      return "custom";
+    }
+  });
+  const [draggedCreatorId, setDraggedCreatorId] = useState<string | null>(null);
   const [quickAddValue, setQuickAddValue] = useState("");
   const [autoExpandSecondaryNotes, setAutoExpandSecondaryNotes] = useState<boolean>(() => {
     try {
@@ -773,6 +876,17 @@ function App() {
   const [liveCreators, setLiveCreators] = useState<LiveCreator[]>([]);
   const [isCheckingLiveStatus, setIsCheckingLiveStatus] = useState<boolean>(true);
   const [liveCheckProgress, setLiveCheckProgress] = useState<{ current: number; total: number; currentCreator: string } | null>(null);
+  
+  // Recently Online State (creators who were recently active/live)
+  interface RecentlyOnlineCreator {
+    creator_id: string;
+    creator_name: string;
+    platform: string;
+    username: string;
+    last_seen_online: string;
+    is_live: boolean;
+  }
+  const [recentlyOnline, setRecentlyOnline] = useState<RecentlyOnlineCreator[]>([]);
   const [showLiveSummary, setShowLiveSummary] = useState<boolean>(() => {
     try {
       return localStorage.getItem('fav_creators_show_live_summary') !== 'false';
@@ -784,6 +898,81 @@ function App() {
   const [liveStatusLastUpdated, setLiveStatusLastUpdated] = useState<number | undefined>(undefined);
   const [isManualRefreshing, setIsManualRefreshing] = useState<boolean>(false);
   const [creatorsLoadedFromApi, setCreatorsLoadedFromApi] = useState<boolean>(false);
+  const [showManageLiveChecks, setShowManageLiveChecks] = useState(false);
+
+  // Post counts per creator (from creator_status_updates + creator_mentions)
+  const [creatorPostCounts, setCreatorPostCounts] = useState<Record<string, { total: number; recent: number }>>({});
+
+  // ── User Preferences (default live/follow platforms) ──
+  const PREFS_STORAGE_KEY = "fav_creators_user_preferences";
+  const [userPreferences, setUserPreferences] = useState<UserPreferences>(() => {
+    try {
+      const saved = localStorage.getItem(PREFS_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return { ...DEFAULT_USER_PREFERENCES, ...parsed };
+      }
+    } catch { /* ignore */ }
+    return { ...DEFAULT_USER_PREFERENCES };
+  });
+  const [showDefaultPlatformSettings, setShowDefaultPlatformSettings] = useState(false);
+
+  // Persist preferences to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(userPreferences));
+    } catch { /* ignore */ }
+  }, [userPreferences]);
+
+  // Sync preferences from server when user logs in
+  const loadPreferencesFromServer = useCallback(async () => {
+    if (!authUser) return;
+    try {
+      const base = await resolveAuthBase();
+      const res = await fetch(`${base}/user_preferences.php`, { credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ok && data.preferences) {
+          const merged = { ...DEFAULT_USER_PREFERENCES, ...userPreferences };
+          if (data.preferences.default_live_platforms) {
+            merged.defaultLivePlatforms = data.preferences.default_live_platforms;
+          }
+          if (data.preferences.default_follow_platforms) {
+            merged.defaultFollowPlatforms = data.preferences.default_follow_platforms;
+          }
+          setUserPreferences(merged);
+        }
+      }
+    } catch (e) {
+      console.warn("[Prefs] Failed to load preferences from server", e);
+    }
+  }, [authUser]);
+
+  // Save preferences to server
+  const savePreferencesToServer = useCallback(async (prefs: UserPreferences) => {
+    if (!authUser) return;
+    try {
+      const base = await resolveAuthBase();
+      await fetch(`${base}/user_preferences.php`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          default_live_platforms: prefs.defaultLivePlatforms,
+          default_follow_platforms: prefs.defaultFollowPlatforms,
+        }),
+      });
+    } catch (e) {
+      console.warn("[Prefs] Failed to save preferences to server", e);
+    }
+  }, [authUser]);
+
+  // Load prefs from server after auth is confirmed
+  useEffect(() => {
+    if (authUser && authChecked) {
+      void loadPreferencesFromServer();
+    }
+  }, [authUser, authChecked, loadPreferencesFromServer]);
 
   // Persist live summary visibility
   useEffect(() => {
@@ -836,25 +1025,14 @@ function App() {
     });
   }, []);
 
-  // Update liveCreators whenever creators change
-  useEffect(() => {
-    const live: LiveCreator[] = [];
-    creators.forEach(creator => {
-      creator.accounts.forEach(account => {
-        if (account.isLive || account.hasStory) {
-          live.push({
-            creator,
-            platform: account.platform,
-            accountUrl: account.url,
-            status: account.isLive ? 'live' : 'story',
-            storyCount: account.storyCount,
-            postedAt: account.storyPostedAt
-          });
-        }
-      });
-    });
-    setLiveCreators(live);
-  }, [creators]);
+  // NOTE: liveCreators is updated EXPLICITLY by:
+  //   - updateAllLiveStatuses (incremental + final)
+  //   - handleCheckCreatorStatus (single creator check)
+  //   - loadCachedLiveStatus (cache load)
+  // Do NOT derive liveCreators from creators via useEffect — that causes a race
+  // condition where avatar fetches or other async setCreators calls trigger the
+  // useEffect mid-live-check, overwriting incremental live updates with stale data
+  // (creators state doesn't have isLive flags until after the full loop).
 
 
 
@@ -1144,7 +1322,8 @@ function App() {
         const list = data.creators && Array.isArray(data.creators) ? data.creators : [];
         if (list.length > 0) {
           console.log("Loaded creators from DB:", list.length);
-          setCreators(ensureAvatarForCreators(list as Creator[]));
+          // Clear stale live states - these will be refreshed by live check
+          setCreators(clearLiveStates(ensureAvatarForCreators(list as Creator[])));
           setCreatorsLoadedFromApi(true);
         } else if (authUser.id === 0) {
           // Admin (user_id 0): no saved list yet → show default so Quick Add additions are visible
@@ -1306,6 +1485,21 @@ function App() {
     void loadUser();
   }, []);
 
+  // Sync authUser to window.__fc_logged_in_user__ so the AI assistant can detect login status
+  useEffect(() => {
+    if (authUser) {
+      (window as any).__fc_logged_in_user__ = {
+        id: authUser.id,
+        email: authUser.email,
+        display_name: authUser.display_name || authUser.email,
+        provider: authUser.provider,
+        role: (authUser as any).role || 'user',
+      };
+    } else if (authChecked) {
+      (window as any).__fc_logged_in_user__ = null;
+    }
+  }, [authUser, authChecked]);
+
   const fetchAllFollowedCreators = useCallback(async () => {
     if (authUser?.provider !== "admin") return;
     setAllFollowedLoading(true);
@@ -1408,7 +1602,8 @@ function App() {
           }
           // Only apply guest list if user did NOT log in while we were fetching (otherwise we overwrite their list and e.g. Brunitarte disappears)
           if (!authUserRef.current || authUserRef.current.id === 0) {
-            setCreators(withNotes);
+            // Clear stale live states - these will be refreshed by live check
+            setCreators(clearLiveStates(withNotes));
             setCreatorsLoadedFromApi(true);
           }
         } else {
@@ -1449,31 +1644,57 @@ function App() {
   // No longer checking for shared pack in URL
 
   const updateAllLiveStatuses = useCallback(async () => {
-    const creatorCount = creatorsRef.current.length;
-    console.log(`[Live Check] Starting updateAllLiveStatuses with ${creatorCount} creators`);
+    const allCreators = [...creatorsRef.current];
+    // Only check creators marked as live streamers (isLiveStreamer === true).
+    // Backward compat: if isLiveStreamer is undefined AND they have accounts on default live platforms, include them.
+    const defaultLivePlats = userPreferences.defaultLivePlatforms;
+    const creatorsToCheck = allCreators.filter((c) => {
+      if (c.isLiveStreamer === true) return true;
+      if (c.isLiveStreamer === false) return false;
+      // Undefined => legacy: include if they have an account on a default live platform
+      return c.accounts.some((a) => defaultLivePlats.includes(a.platform));
+    });
+
+    // Prioritize recently-active creators so "Creators Live Now" populates faster
+    const recentlyOnlineIds = new Set(recentlyOnline.map((r) => r.creator_id));
+    creatorsToCheck.sort((a, b) => {
+      const aRecent = recentlyOnlineIds.has(a.id) ? 1 : 0;
+      const bRecent = recentlyOnlineIds.has(b.id) ? 1 : 0;
+      return bRecent - aRecent; // recently-active first
+    });
+
+    const skippedCount = allCreators.length - creatorsToCheck.length;
+    const recentFirst = creatorsToCheck.filter((c) => recentlyOnlineIds.has(c.id)).length;
+    console.log(`[Live Check] Starting updateAllLiveStatuses: ${creatorsToCheck.length} to check, ${skippedCount} skipped (isLiveStreamer=false), ${recentFirst} recently-active prioritized`);
     
     setIsCheckingLiveStatus(true);
-    setLiveCheckProgress({ current: 0, total: creatorCount, currentCreator: 'Starting...' });
+    setLiveCheckProgress({ current: 0, total: creatorsToCheck.length, currentCreator: 'Starting...' });
+
+    // Dispatch event for AI assistant to pick up
+    try { window.dispatchEvent(new CustomEvent('fc-live-check-start', { detail: { total: creatorsToCheck.length } })); } catch (_) { /* ignore */ }
 
     try {
-      // Get current creators
-      const currentCreators = [...creatorsRef.current];
-      console.log(`[Live Check] Processing ${currentCreators.length} creators for live status`);
-      
       // Warn if we're checking only the default 11 (indicates race condition)
-      if (currentCreators.length <= 11 && authUser) {
-        console.warn(`[Live Check] WARNING: Only ${currentCreators.length} creators to check for logged-in user. Expected more.`);
+      if (creatorsToCheck.length <= 11 && authUser) {
+        console.warn(`[Live Check] WARNING: Only ${creatorsToCheck.length} creators to check for logged-in user. Expected more.`);
       }
       
       const updatedCreators: Creator[] = [];
 
       // Process creators sequentially with small delays to avoid overwhelming proxy
-      for (let i = 0; i < currentCreators.length; i++) {
-        const c = currentCreators[i];
+      for (let i = 0; i < creatorsToCheck.length; i++) {
+        const c = creatorsToCheck[i];
         const now = Date.now();
 
         // Update progress
-        setLiveCheckProgress({ current: i + 1, total: currentCreators.length, currentCreator: c.name });
+        setLiveCheckProgress({ current: i + 1, total: creatorsToCheck.length, currentCreator: c.name });
+
+        // Dispatch progress event for AI assistant
+        try {
+          window.dispatchEvent(new CustomEvent('fc-live-check-progress', {
+            detail: { current: i + 1, total: creatorsToCheck.length, currentCreator: c.name, percent: Math.round(((i + 1) / creatorsToCheck.length) * 100) }
+          }));
+        } catch (_) { /* ignore */ }
 
         // Add delay between creators (except first one)
         if (i > 0) {
@@ -1508,6 +1729,8 @@ function App() {
             // Show toast notification when live creator is found!
             if (liveResult.isLive) {
               addLiveFoundToast(c.name, acc.platform);
+              // Dispatch for AI assistant
+              try { window.dispatchEvent(new CustomEvent('fc-live-found', { detail: { name: c.name, platform: acc.platform, username: acc.username } })); } catch (_) { /* ignore */ }
             }
 
             // Track live status in database for faster checks & analytics
@@ -1567,7 +1790,11 @@ function App() {
         };
         updatedCreators.push(updatedCreator);
 
-        // UPDATE LIVE CREATORS LIST IN REAL-TIME
+        // UPDATE LIVE CREATORS LIST AND CREATORS STATE IN REAL-TIME
+        // This ensures LiveSummary shows live creators immediately (no waiting for loop to finish).
+        // Also update creators state so avatar/note changes don't wipe live flags.
+        setCreators((prev) => prev.map(c => c.id === updatedCreator.id ? updatedCreator : c));
+
         // Build live entries for this creator and update state immediately
         if (anyAccountLive || updatedAccounts.some((acc) => acc.hasStory)) {
           setLiveCreators((currentLiveCreators) => {
@@ -1648,7 +1875,7 @@ function App() {
 
       // Debug: Log what we're about to set
       const liveCount = updatedCreators.filter(c => c.isLive).length;
-      console.log(`[DEBUG] About to update state with ${liveCount} live creators out of ${updatedCreators.length} total`);
+      console.log(`[DEBUG] About to update state with ${liveCount} live creators out of ${updatedCreators.length} checked (${skippedCount} skipped)`);
 
       // Log specific creators that are live
       updatedCreators.filter(c => c.isLive).forEach(c => {
@@ -1656,7 +1883,9 @@ function App() {
         console.log(`[DEBUG LIVE] ${c.name} is live on:`, liveAccounts.map(a => `${a.platform} (${a.username})`));
       });
 
-      setCreators(updatedCreators);
+      // Merge checked creators back into the full list (preserve skipped creators unchanged)
+      const checkedIds = new Set(updatedCreators.map(c => c.id));
+      setCreators((prev) => prev.map(c => checkedIds.has(c.id) ? (updatedCreators.find(u => u.id === c.id) || c) : c));
 
       // Sync live status to database cache for quick retrieval
       syncLiveStatusToDatabase(updatedCreators).catch(err => {
@@ -1666,6 +1895,10 @@ function App() {
       // Update the last updated timestamp
       setLiveStatusLastUpdated(Date.now());
       setIsManualRefreshing(false);
+
+      // Dispatch completion event for AI assistant
+      const liveNames = updatedCreators.filter(c => c.isLive).map(c => ({ name: c.name, platforms: c.accounts.filter(a => a.isLive).map(a => a.platform) }));
+      try { window.dispatchEvent(new CustomEvent('fc-live-check-complete', { detail: { total: creatorsToCheck.length, liveCount: liveNames.length, liveCreators: liveNames } })); } catch (_) { /* ignore */ }
 
       // Return the updated creators for immediate use (e.g., in completion toast)
       return updatedCreators;
@@ -1678,7 +1911,7 @@ function App() {
       // Always set isChecking to false, even if there's an error
       setIsCheckingLiveStatus(false);
     }
-  }, [addLiveFoundToast, authUser]);
+  }, [addLiveFoundToast, authUser, recentlyOnline]);
 
   // Sync live status to database cache
   const syncLiveStatusToDatabase = useCallback(async (creatorsToSync: Creator[]) => {
@@ -1797,6 +2030,55 @@ function App() {
     // Let updateAllLiveStatuses handle it after the real check completes
   }, []);
 
+  // Load recently online creators (those who were live but are now offline)
+  const loadRecentlyOnline = useCallback(async () => {
+    try {
+      const base = getAuthBase();
+      if (!base) return;
+
+      // Fetch streamers who were seen online in the last 24 hours
+      const response = await fcApiFetch(`${base}/get_streamer_last_seen_public.php?since_minutes=1440`);
+      if (!response.ok) return;
+
+      const data = await response.json();
+      if (data.ok && data.streamers) {
+        // Filter to only those with last_seen_online, sort by most recent, include live ones too
+        const recentlyActive = data.streamers
+          .filter((s: any) => s.last_seen_online)
+          .sort((a: any, b: any) => {
+            // Sort by last_seen_online descending (most recent first)
+            const aTime = new Date(a.last_seen_online).getTime();
+            const bTime = new Date(b.last_seen_online).getTime();
+            return bTime - aTime;
+          });
+        
+        setRecentlyOnline(recentlyActive);
+        console.log(`[Recently Online] Loaded ${recentlyActive.length} recently active creators`);
+      }
+    } catch (e) {
+      console.warn('[Recently Online] Could not load:', e);
+    }
+  }, []);
+
+  // Fetch post counts for all creators (from creator_status_updates + creator_mentions)
+  const loadCreatorPostCounts = useCallback(async () => {
+    if (!authUser) return;
+    try {
+      const base = getAuthBase();
+      if (!base) return;
+      const res = await fcApiFetch(`${base}/get_creator_post_counts.php?user_id=${authUser.id}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.ok && data.counts) {
+        setCreatorPostCounts(data.counts);
+        const withPosts = Object.values(data.counts).filter((c: any) => c.total > 0).length;
+        console.log(`[Post Counts] Loaded counts for ${withPosts} creator(s) with posts`);
+      }
+    } catch (e) {
+      console.warn('[Post Counts] Could not load:', e);
+    }
+  }, [authUser]);
+
   // Auto-check live status on mount - wait for creators to be loaded from API
   useEffect(() => {
     // Don't start live checking until creators are loaded from API
@@ -1810,6 +2092,12 @@ function App() {
 
     // First load cached status from database for instant display
     loadCachedLiveStatus();
+
+    // Load post counts
+    loadCreatorPostCounts();
+    
+    // Also load recently online creators
+    loadRecentlyOnline();
 
     // Then do a fresh check after a delay
     const timer = setTimeout(() => {
@@ -1826,7 +2114,7 @@ function App() {
       clearTimeout(timer);
       clearInterval(interval);
     };
-  }, [updateAllLiveStatuses, loadCachedLiveStatus, creatorsLoadedFromApi]);
+  }, [updateAllLiveStatuses, loadCachedLiveStatus, loadRecentlyOnline, loadCreatorPostCounts, creatorsLoadedFromApi]);
 
   // Data Migration: Ensure all existing accounts have follower counts
   useEffect(() => {
@@ -1900,12 +2188,14 @@ function App() {
         .split(/[-_.]/)
         .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
         .join(" ");
+      const shouldCheckLive = userPreferences.defaultLivePlatforms.includes(parsedUrl.platform);
       const account: SocialAccount = {
         id: crypto.randomUUID(),
         platform: parsedUrl.platform,
         username: parsedUrl.username,
         url: parsedUrl.url,
         lastChecked: now,
+        checkLive: shouldCheckLive,
       };
       let avatarResult: string | null = null;
       try {
@@ -1927,6 +2217,7 @@ function App() {
         addedAt: now,
         lastChecked: now,
         tags: [...QUICK_ADD_DEFAULT_TAGS],
+        isLiveStreamer: shouldCheckLive,
       };
       const withAvatar = ensureAvatarUrl(newCreator);
       const newList = [withAvatar, ...creators];
@@ -1955,9 +2246,9 @@ function App() {
 
     if (!name) return;
 
-    // Auto-find logic: if no platforms specified, search all major ones
+    // Auto-find logic: if no platforms specified, use user's default follow platforms
     if (requestedPlatforms.length === 0) {
-      requestedPlatforms = ["kick", "twitch", "youtube", "tiktok", "instagram"];
+      requestedPlatforms = [...userPreferences.defaultFollowPlatforms];
     }
 
     let youtubeSearchResult: string | null = null;
@@ -1992,6 +2283,7 @@ function App() {
         username: cleanUsername,
         followers: dummyFollowers,
         lastChecked: now,
+        checkLive: userPreferences.defaultLivePlatforms.includes(platform),
       };
 
       if (platform === "kick") {
@@ -2034,6 +2326,8 @@ function App() {
       }
     }
 
+    // Mark as live streamer if any of the accounts' platforms are in the user's default live platforms
+    const hasLiveAccount = accounts.some((a) => userPreferences.defaultLivePlatforms.includes(a.platform));
     const newCreator: Creator = {
       id: crypto.randomUUID(),
       name: name
@@ -2052,6 +2346,7 @@ function App() {
       addedAt: now,
       lastChecked: now,
       tags: [...QUICK_ADD_DEFAULT_TAGS],
+      isLiveStreamer: hasLiveAccount,
     };
 
     const withAvatar = ensureAvatarUrl(newCreator);
@@ -2492,6 +2787,66 @@ function App() {
     void saveCreatorsToBackend(next);
   };
 
+  // === Creator Sort / Reorder Logic ===
+
+  /** Sorted creators: notification-enabled (bell) first, then custom order or alphabetical */
+  const sortedCreators = useMemo(() => {
+    const sorted = [...creators];
+    sorted.sort((a, b) => {
+      // 1. Notification-enabled creators always at top
+      const aNotify = notificationPrefs[a.id] ? 1 : 0;
+      const bNotify = notificationPrefs[b.id] ? 1 : 0;
+      if (aNotify !== bNotify) return bNotify - aNotify;
+
+      // 2. Within same notification tier, apply sort preference
+      if (sortPreference === "alphabetical") {
+        return a.name.localeCompare(b.name);
+      }
+
+      // 3. Custom order: preserve original array position (stable sort)
+      return 0;
+    });
+    return sorted;
+  }, [creators, sortPreference, notificationPrefs]);
+
+  /** Move a creator up or down in the master creators array (custom order). */
+  const handleMoveCreator = useCallback((creatorId: string, direction: 'up' | 'down') => {
+    setCreators(prev => {
+      const idx = prev.findIndex(c => c.id === creatorId);
+      if (idx === -1) return prev;
+      const newIdx = direction === 'up' ? idx - 1 : idx + 1;
+      if (newIdx < 0 || newIdx >= prev.length) return prev;
+      const next = [...prev];
+      [next[idx], next[newIdx]] = [next[newIdx], next[idx]];
+      void saveCreatorsToBackend(next);
+      return next;
+    });
+  }, [saveCreatorsToBackend]);
+
+  /** Drag-and-drop: move source creator to the position of target creator. */
+  const handleReorderDrop = useCallback((sourceId: string, targetId: string) => {
+    if (sourceId === targetId) return;
+    setCreators(prev => {
+      const srcIdx = prev.findIndex(c => c.id === sourceId);
+      const tgtIdx = prev.findIndex(c => c.id === targetId);
+      if (srcIdx === -1 || tgtIdx === -1) return prev;
+      const next = [...prev];
+      const [removed] = next.splice(srcIdx, 1);
+      next.splice(tgtIdx, 0, removed);
+      void saveCreatorsToBackend(next);
+      return next;
+    });
+  }, [saveCreatorsToBackend]);
+
+  /** Toggle sort preference and persist to localStorage. */
+  const handleToggleSortPreference = useCallback(() => {
+    setSortPreference(prev => {
+      const next = prev === "custom" ? "alphabetical" : "custom";
+      try { localStorage.setItem("fav_creators_sort_preference", next); } catch { /* ignore */ }
+      return next;
+    });
+  }, []);
+
   const handleSaveNote = async (id: string, note: string) => {
     try {
       if (!authUser) {
@@ -2614,6 +2969,28 @@ function App() {
     void saveCreatorsToBackend(next);
   };
 
+  /** Bulk-update isLiveStreamer and per-account checkLive from ManageLiveChecks modal.
+   *  Uses array-index matching (not accountId) to handle duplicate-ID data safely. */
+  const handleBulkLiveCheckUpdate = (
+    updates: { creatorId: string; isLiveStreamer: boolean; checkLiveAccounts: { accountId: string; checkLive: boolean }[] }[]
+  ) => {
+    const updateMap = new Map(updates.map((u) => [u.creatorId, u]));
+    const next = creators.map((c) => {
+      const upd = updateMap.get(c.id);
+      if (!upd) return c;
+      return {
+        ...c,
+        isLiveStreamer: upd.isLiveStreamer,
+        accounts: c.accounts.map((a, idx) => ({
+          ...a,
+          checkLive: idx < upd.checkLiveAccounts.length ? upd.checkLiveAccounts[idx].checkLive : a.checkLive,
+        })),
+      };
+    });
+    setCreators(next);
+    void saveCreatorsToBackend(next);
+  };
+
   const handleRemoveAccount = (creatorId: string, accountId: string) => {
     setCreators(
       creators.map((c) =>
@@ -2668,6 +3045,7 @@ function App() {
         gap: "0.5rem",
         marginBottom: "1rem",
         flexWrap: "wrap",
+        alignItems: "center",
       }}
     >
       <button
@@ -2716,6 +3094,37 @@ function App() {
       >
         Tabular View
       </button>
+
+      {/* Sort preference toggle */}
+      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "6px" }}>
+        <span style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.6)" }}>Sort:</span>
+        <button
+          type="button"
+          onClick={handleToggleSortPreference}
+          className="btn-secondary"
+          title={sortPreference === "custom"
+            ? "Currently: Custom order (drag to reorder in Table view). Click to switch to Alphabetical."
+            : "Currently: Alphabetical. Click to switch to Custom order."}
+          style={{
+            padding: "0.4rem 0.8rem",
+            fontSize: "0.8rem",
+            background: "rgb(30, 41, 59)",
+            color: "white",
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: "6px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+          }}
+        >
+          {sortPreference === "custom" ? (
+            <><span style={{ fontSize: "0.9rem" }}>&#9776;</span> Custom Order</>
+          ) : (
+            <><span style={{ fontSize: "0.9rem" }}>A&#8595;Z</span> Alphabetical</>
+          )}
+        </button>
+      </div>
     </div>
   );
 
@@ -2856,6 +3265,123 @@ function App() {
                   </div>
                   <div className="auth-user__meta">
                     {authUser.provider ? `Provider: ${authUser.provider}` : ""}
+                  </div>
+                  {/* Discord Integration */}
+                  <div style={{ marginTop: '12px', padding: '10px', backgroundColor: 'rgba(88, 101, 242, 0.1)', borderRadius: '8px', border: '1px solid rgba(88, 101, 242, 0.3)' }}>
+                    {authUser.discord_id ? (
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                          <div>
+                            <div style={{ fontSize: '0.85rem', color: '#5865F2', fontWeight: 600 }}>
+                              🔔 Discord Linked
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                              {authUser.discord_username || 'Connected'}
+                            </div>
+                          </div>
+                          <button
+                            onClick={async () => {
+                              if (!window.confirm('Unlink Discord? You will stop receiving live notifications.')) return;
+                              const base = getAuthBase();
+                              if (!base) return;
+                              try {
+                                await fcApiFetch(`${base}/discord_unlink.php`, {
+                                  method: 'POST',
+                                  credentials: 'include'
+                                });
+                                // Refresh user data
+                                const user = await fetchMe();
+                                if (user) {
+                                  setAuthUser(user);
+                                  localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(user));
+                                }
+                              } catch (e) {
+                                console.error('Failed to unlink Discord:', e);
+                              }
+                            }}
+                            style={{
+                              padding: '4px 10px',
+                              fontSize: '0.75rem',
+                              backgroundColor: 'transparent',
+                              border: '1px solid rgba(255,255,255,0.2)',
+                              borderRadius: '4px',
+                              color: 'var(--text-muted)',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Unlink
+                          </button>
+                        </div>
+                        <a
+                          href="https://discord.com/channels/388008137568813057/1469431505439948920"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: 'block',
+                            marginTop: '8px',
+                            padding: '6px 10px',
+                            fontSize: '0.75rem',
+                            backgroundColor: 'rgba(88, 101, 242, 0.3)',
+                            borderRadius: '4px',
+                            color: '#fff',
+                            textDecoration: 'none',
+                            textAlign: 'center'
+                          }}
+                        >
+                          📢 Open #notifications channel
+                        </a>
+                        <a
+                          href="#/accountability"
+                          style={{
+                            display: 'block',
+                            marginTop: '6px',
+                            padding: '6px 10px',
+                            fontSize: '0.75rem',
+                            backgroundColor: 'rgba(168, 85, 247, 0.3)',
+                            borderRadius: '4px',
+                            color: '#fff',
+                            textDecoration: 'none',
+                            textAlign: 'center'
+                          }}
+                        >
+                          🎯 Accountability Coach Dashboard
+                        </a>
+                      </div>
+                    ) : (
+                      <div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                          Link Discord to get notified when your favorite creators go live!
+                        </div>
+                        <button
+                          onClick={() => {
+                            const base = getAuthBase();
+                            if (!base) {
+                              alert('Auth not configured');
+                              return;
+                            }
+                            window.location.href = `${base}/discord_auth.php`;
+                          }}
+                          style={{
+                            padding: '8px 16px',
+                            fontSize: '0.85rem',
+                            backgroundColor: '#5865F2',
+                            border: 'none',
+                            borderRadius: '6px',
+                            color: 'white',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <svg width="20" height="15" viewBox="0 0 71 55" fill="currentColor">
+                            <path d="M60.1 4.9A58.5 58.5 0 0045.4.2a.2.2 0 00-.2.1 40.7 40.7 0 00-1.8 3.7 54 54 0 00-16.2 0A39.2 39.2 0 0025.3.3a.2.2 0 00-.2-.1 58.4 58.4 0 00-14.7 4.6.2.2 0 00-.1 0A60 60 0 00.4 43.9a.2.2 0 000 .2A58.9 58.9 0 0018 54.7a.2.2 0 00.3-.1 42.1 42.1 0 003.6-5.9.2.2 0 00-.1-.3 38.8 38.8 0 01-5.5-2.6.2.2 0 01 0-.4c.4-.3.7-.6 1.1-.9a.2.2 0 01.2 0 42 42 0 0035.8 0 .2.2 0 01.2 0l1.1.9a.2.2 0 01 0 .4 36.4 36.4 0 01-5.5 2.6.2.2 0 00-.1.3 47.2 47.2 0 003.6 5.9.2.2 0 00.2.1 58.7 58.7 0 0017.7-10.6.2.2 0 000-.2A59.5 59.5 0 0060.2 5a.2.2 0 00-.1 0zM23.7 36c-3.5 0-6.4-3.2-6.4-7.1s2.8-7.1 6.4-7.1 6.5 3.2 6.4 7.1c0 3.9-2.8 7.1-6.4 7.1zm23.6 0c-3.5 0-6.4-3.2-6.4-7.1s2.8-7.1 6.4-7.1 6.5 3.2 6.4 7.1c0 3.9-2.8 7.1-6.4 7.1z"/>
+                          </svg>
+                          Link Discord
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -3102,6 +3628,7 @@ function App() {
       {/* Live Summary - show live streams and recent stories */}
       <LiveSummary
         liveCreators={liveCreators}
+        recentlyOnline={recentlyOnline}
         onToggle={() => setShowLiveSummary(!showLiveSummary)}
         isCollapsed={!showLiveSummary}
         isChecking={isCheckingLiveStatus}
@@ -3112,8 +3639,16 @@ function App() {
         onRefresh={() => {
           setIsManualRefreshing(true);
           updateAllLiveStatuses();
+          loadRecentlyOnline();
         }}
         isRefreshing={isManualRefreshing}
+        onManageLiveChecks={() => setShowManageLiveChecks(true)}
+        liveCheckCreatorCount={creators.filter((c) => {
+          if (c.isLiveStreamer === true) return true;
+          if (c.isLiveStreamer === false) return false;
+          return c.accounts.some((a) => userPreferences.defaultLivePlatforms.includes(a.platform));
+        }).length}
+        totalCreatorCount={creators.length}
       />
 
       {/* Ad Slot 1 - Below Live Summary */}
@@ -3123,7 +3658,7 @@ function App() {
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           <input
             className="quick-add-input"
-            placeholder="Quick add: paste URL (e.g. tiktok.com/@user) or name:platforms"
+            placeholder={`Quick add: paste URL or name — defaults: ${userPreferences.defaultFollowPlatforms.join(", ")}`}
             value={quickAddValue}
             onChange={(e) => setQuickAddValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && quickAddUpdate?.type !== "loading" && void handleQuickAdd()}
@@ -3137,7 +3672,126 @@ function App() {
           >
             {quickAddUpdate?.type === "loading" ? "Adding..." : "Quick Add"}
           </button>
+          <button
+            onClick={() => setShowDefaultPlatformSettings((prev) => !prev)}
+            title="Configure default platforms"
+            style={{
+              background: showDefaultPlatformSettings ? "rgba(99, 102, 241, 0.25)" : "rgba(255,255,255,0.06)",
+              border: `1px solid ${showDefaultPlatformSettings ? "rgba(99, 102, 241, 0.5)" : "rgba(255,255,255,0.12)"}`,
+              borderRadius: "8px",
+              padding: "6px 10px",
+              cursor: "pointer",
+              fontSize: "1.1rem",
+              lineHeight: 1,
+              color: "#e2e8f0",
+              transition: "all 0.15s",
+            }}
+          >
+            {"\u2699"}
+          </button>
         </div>
+
+        {/* ── Default Platform Settings Panel ── */}
+        {showDefaultPlatformSettings && (
+          <div style={{
+            background: "rgba(15, 23, 42, 0.95)",
+            border: "1px solid rgba(99, 102, 241, 0.3)",
+            borderRadius: "10px",
+            padding: "14px 16px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px",
+          }}>
+            <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#c7d2fe", letterSpacing: "0.5px" }}>
+              DEFAULT PLATFORM SETTINGS
+            </div>
+
+            {/* Follow Platforms */}
+            <div>
+              <div style={{ fontSize: "0.78rem", color: "#94a3b8", marginBottom: "6px" }}>
+                Platforms to search when quick-adding by name:
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                {(["tiktok", "kick", "twitch", "youtube", "instagram", "spotify", "twitter"] as Platform[]).map((p) => {
+                  const active = userPreferences.defaultFollowPlatforms.includes(p);
+                  return (
+                    <button
+                      key={`follow-${p}`}
+                      onClick={() => {
+                        setUserPreferences((prev) => {
+                          const next = active
+                            ? prev.defaultFollowPlatforms.filter((x) => x !== p)
+                            : [...prev.defaultFollowPlatforms, p];
+                          const updated = { ...prev, defaultFollowPlatforms: next };
+                          void savePreferencesToServer(updated);
+                          return updated;
+                        });
+                      }}
+                      style={{
+                        padding: "4px 10px",
+                        borderRadius: "6px",
+                        border: `1px solid ${active ? "rgba(34, 197, 94, 0.4)" : "rgba(255,255,255,0.1)"}`,
+                        background: active ? "rgba(34, 197, 94, 0.15)" : "rgba(255,255,255,0.04)",
+                        color: active ? "#86efac" : "#94a3b8",
+                        fontSize: "0.8rem",
+                        cursor: "pointer",
+                        fontWeight: active ? 600 : 400,
+                        transition: "all 0.15s",
+                      }}
+                    >
+                      {active ? "\u2713 " : ""}{p.charAt(0).toUpperCase() + p.slice(1)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Live Check Platforms */}
+            <div>
+              <div style={{ fontSize: "0.78rem", color: "#94a3b8", marginBottom: "6px" }}>
+                Platforms to auto-check for <span style={{ color: "#ef4444", fontWeight: 600 }}>LIVE</span> status by default:
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                {(LIVE_CAPABLE_PLATFORMS).map((p) => {
+                  const active = userPreferences.defaultLivePlatforms.includes(p);
+                  return (
+                    <button
+                      key={`live-${p}`}
+                      onClick={() => {
+                        setUserPreferences((prev) => {
+                          const next = active
+                            ? prev.defaultLivePlatforms.filter((x) => x !== p)
+                            : [...prev.defaultLivePlatforms, p];
+                          const updated = { ...prev, defaultLivePlatforms: next };
+                          void savePreferencesToServer(updated);
+                          return updated;
+                        });
+                      }}
+                      style={{
+                        padding: "4px 10px",
+                        borderRadius: "6px",
+                        border: `1px solid ${active ? "rgba(239, 68, 68, 0.4)" : "rgba(255,255,255,0.1)"}`,
+                        background: active ? "rgba(239, 68, 68, 0.15)" : "rgba(255,255,255,0.04)",
+                        color: active ? "#fca5a5" : "#94a3b8",
+                        fontSize: "0.8rem",
+                        cursor: "pointer",
+                        fontWeight: active ? 600 : 400,
+                        transition: "all 0.15s",
+                      }}
+                    >
+                      {active ? "\u25cf " : ""}{p.charAt(0).toUpperCase() + p.slice(1)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div style={{ fontSize: "0.72rem", color: "#64748b", lineHeight: 1.4 }}>
+              These defaults apply when you Quick Add a creator by name (without specifying platforms).
+              You can always override per-creator in the Edit modal.
+            </div>
+          </div>
+        )}
         {quickAddUpdate && (
           <div
             role="status"
@@ -3422,7 +4076,7 @@ function App() {
           <>
             {/* List Mode with Headers */}
             {/* Pinned Creators Section */}
-            {creators
+            {sortedCreators
               .filter(
                 (c) =>
                   c.isPinned &&
@@ -3448,12 +4102,16 @@ function App() {
                     onRefreshAvatar={handleRefreshAvatar}
                     onEditCreator={setEditingCreator}
                     autoExpandSecondaryNotes={autoExpandSecondaryNotes}
+                    discordLinked={!!authUser?.discord_id}
+                    notifyEnabled={!!notificationPrefs[creator.id]}
+                    onToggleNotify={handleToggleNotify}
+                    postCounts={creatorPostCounts[creator.id] || null}
                   />
                 </div>
               ))}
 
             {/* Other Creators Header - only show if there are unpinned creators matching filter */}
-            {creators.some((c) =>
+            {sortedCreators.some((c) =>
               !c.isPinned &&
               (!categoryFilter || c.category === categoryFilter) &&
               c.name.toLowerCase().replace(/\s+/g, "").includes(searchQuery.toLowerCase().replace(/\s+/g, ""))
@@ -3475,7 +4133,7 @@ function App() {
 
             {/* Other Creators Grid */}
             <div className="creator-grid">
-              {creators
+              {sortedCreators
                 .filter(
                   (c) =>
                     !c.isPinned &&
@@ -3501,6 +4159,10 @@ function App() {
                     onRefreshAvatar={handleRefreshAvatar}
                     onEditCreator={setEditingCreator}
                     autoExpandSecondaryNotes={autoExpandSecondaryNotes}
+                    discordLinked={!!authUser?.discord_id}
+                    notifyEnabled={!!notificationPrefs[creator.id]}
+                    onToggleNotify={handleToggleNotify}
+                    postCounts={creatorPostCounts[creator.id] || null}
                   />
                 ))}
             </div>
@@ -3510,7 +4172,7 @@ function App() {
         {viewMode === "dropdown" && (
           /* Dropdown Filter Mode */
           <div className="creator-grid">
-            {creators
+            {sortedCreators
               .filter((c) => {
                 const search = searchQuery.toLowerCase().replace(/\s+/g, "");
                 const matchesSearch = c.name
@@ -3538,13 +4200,17 @@ function App() {
                   onRefreshAvatar={handleRefreshAvatar}
                   onEditCreator={setEditingCreator}
                   autoExpandSecondaryNotes={autoExpandSecondaryNotes}
+                  discordLinked={!!authUser?.discord_id}
+                  notifyEnabled={!!notificationPrefs[creator.id]}
+                  onToggleNotify={handleToggleNotify}
+                  postCounts={creatorPostCounts[creator.id] || null}
                 />
               ))}
           </div>
         )}
 
         {viewMode === "table" && (() => {
-          const filteredCreators = creators.filter((c) => {
+          const filteredCreators = sortedCreators.filter((c) => {
             const search = searchQuery.toLowerCase().replace(/\s+/g, "");
             const matchesSearch = c.name
               .toLowerCase()
@@ -3557,6 +4223,7 @@ function App() {
           const visibleIds = filteredCreators.map((c) => c.id);
           const allVisibleSelected =
             visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id));
+          const isCustomSort = sortPreference === "custom";
           return (
             <>
               {selectedIds.size > 0 && (
@@ -3617,10 +4284,31 @@ function App() {
                   </button>
                 </div>
               )}
+
+              {/* Reorder hint for custom sort mode */}
+              {isCustomSort && (
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "8px 12px",
+                  marginBottom: "10px",
+                  background: "rgba(99, 102, 241, 0.08)",
+                  border: "1px solid rgba(99, 102, 241, 0.2)",
+                  borderRadius: "8px",
+                  fontSize: "0.82rem",
+                  color: "rgba(255,255,255,0.7)",
+                }}>
+                  <span style={{ fontSize: "1rem" }}>&#9776;</span>
+                  <span>Drag rows or use arrow buttons to reorder. Bell-notified creators auto-sort to the top.</span>
+                </div>
+              )}
+
               <div className="table-container" style={{ overflowX: "auto" }}>
                 <table className="creator-table">
                   <thead>
                     <tr>
+                      {isCustomSort && <th style={{ width: "60px", textAlign: "center" }}>Order</th>}
                       <th style={{ width: "40px" }}>
                         <input
                           type="checkbox"
@@ -3637,8 +4325,92 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredCreators.map((creator) => (
-                      <tr key={creator.id}>
+                    {filteredCreators.map((creator, displayIdx) => {
+                      const isNotified = !!notificationPrefs[creator.id];
+                      return (
+                      <tr
+                        key={creator.id}
+                        draggable={isCustomSort}
+                        onDragStart={(e) => {
+                          if (!isCustomSort) return;
+                          setDraggedCreatorId(creator.id);
+                          e.dataTransfer.effectAllowed = 'move';
+                          // Set a minimal drag image
+                          const el = e.currentTarget;
+                          if (el) e.dataTransfer.setDragImage(el, 20, 20);
+                        }}
+                        onDragOver={(e) => {
+                          if (!isCustomSort || !draggedCreatorId) return;
+                          e.preventDefault();
+                          e.dataTransfer.dropEffect = 'move';
+                          // Highlight drop target
+                          e.currentTarget.style.borderTop = '2px solid var(--accent)';
+                        }}
+                        onDragLeave={(e) => {
+                          e.currentTarget.style.borderTop = '';
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.style.borderTop = '';
+                          if (draggedCreatorId && draggedCreatorId !== creator.id) {
+                            handleReorderDrop(draggedCreatorId, creator.id);
+                          }
+                          setDraggedCreatorId(null);
+                        }}
+                        onDragEnd={() => setDraggedCreatorId(null)}
+                        style={{
+                          opacity: draggedCreatorId === creator.id ? 0.4 : 1,
+                          cursor: isCustomSort ? 'grab' : 'default',
+                          transition: 'opacity 0.15s',
+                          ...(isNotified ? { background: 'rgba(88, 101, 242, 0.06)' } : {}),
+                        }}
+                      >
+                        {isCustomSort && (
+                          <td style={{ textAlign: "center", whiteSpace: "nowrap" }}>
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" }}>
+                              <button
+                                onClick={() => handleMoveCreator(creator.id, 'up')}
+                                disabled={displayIdx === 0}
+                                title="Move up"
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  cursor: displayIdx === 0 ? "default" : "pointer",
+                                  opacity: displayIdx === 0 ? 0.25 : 0.7,
+                                  fontSize: "0.7rem",
+                                  lineHeight: 1,
+                                  padding: "1px 4px",
+                                  color: "var(--text)",
+                                }}
+                              >
+                                &#9650;
+                              </button>
+                              <span style={{
+                                fontSize: "0.75rem",
+                                color: "rgba(255,255,255,0.35)",
+                                cursor: "grab",
+                                userSelect: "none",
+                              }} title="Drag to reorder">&#9776;</span>
+                              <button
+                                onClick={() => handleMoveCreator(creator.id, 'down')}
+                                disabled={displayIdx === filteredCreators.length - 1}
+                                title="Move down"
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  cursor: displayIdx === filteredCreators.length - 1 ? "default" : "pointer",
+                                  opacity: displayIdx === filteredCreators.length - 1 ? 0.25 : 0.7,
+                                  fontSize: "0.7rem",
+                                  lineHeight: 1,
+                                  padding: "1px 4px",
+                                  color: "var(--text)",
+                                }}
+                              >
+                                &#9660;
+                              </button>
+                            </div>
+                          </td>
+                        )}
                         <td>
                           <input
                             type="checkbox"
@@ -3647,6 +4419,7 @@ function App() {
                           />
                         </td>
                         <td style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          {isNotified && <span title="Bell notifications ON" style={{ fontSize: "0.85rem" }}>🔔</span>}
                           <img
                             src={creator.avatarUrl || buildFallbackAvatar(creator)}
                             alt=""
@@ -3766,7 +4539,8 @@ function App() {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                    );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -3794,6 +4568,7 @@ function App() {
         <EditCreatorModal
           creator={editingCreator}
           categories={categories}
+          defaultLivePlatforms={userPreferences.defaultLivePlatforms}
           onSave={(updates) => {
             handleUpdateCreator(editingCreator.id, updates);
             setEditingCreator(null);
@@ -3807,6 +4582,15 @@ function App() {
           creators={creators}
           onSave={handleBulkAvatarSave}
           onClose={() => setShowBulkAvatarManager(false)}
+        />
+      )}
+
+      {showManageLiveChecks && (
+        <ManageLiveChecks
+          creators={creators}
+          defaultLivePlatforms={userPreferences.defaultLivePlatforms}
+          onSave={handleBulkLiveCheckUpdate}
+          onClose={() => setShowManageLiveChecks(false)}
         />
       )}
 

@@ -24,6 +24,26 @@ export const ensureAvatarUrl = (creator: Creator): Creator => {
 export const ensureAvatarForCreators = (creators: Creator[]): Creator[] =>
   creators.map((creator) => ensureAvatarUrl(creator));
 
+/**
+ * Clear stale live states from creators and their accounts.
+ * Live states should be re-checked on each page load, not persisted.
+ */
+export const clearLiveStates = (creators: Creator[]): Creator[] =>
+  creators.map((creator) => ({
+    ...creator,
+    isLive: false,
+    accounts: (creator.accounts || []).map((account) => ({
+      ...account,
+      isLive: false,
+      hasStory: false,
+      storyCount: undefined,
+      storyPostedAt: undefined,
+      liveStartedAt: undefined,
+      streamTitle: undefined,
+      viewerCount: undefined,
+    })),
+  }));
+
 const buildUnavatarCandidates = (creator: Creator): string[] => {
   const candidates: string[] = [];
   for (const account of creator.accounts ?? []) {

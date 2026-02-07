@@ -42,5 +42,10 @@ export function parseSocialUrl(input: string): { platform: Platform; username: s
     if (!username) return null;
     return { platform: "twitch", username, url: `https://twitch.tv/${username}` };
   }
+  if ((host === "twitter.com" || host === "x.com") && path.length > 1) {
+    const username = path.slice(1).split("/")[0] || "";
+    if (!username) return null;
+    return { platform: "twitter", username, url: `https://twitter.com/${username}` };
+  }
   return null;
 }

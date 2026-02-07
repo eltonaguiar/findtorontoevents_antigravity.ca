@@ -1,9 +1,19 @@
 import type { LiveCreator } from '../types';
 import './LiveSummary.css';
-import React from 'react';
+import React, { useState } from 'react';
+
+interface RecentlyOnlineCreator {
+    creator_id: string;
+    creator_name: string;
+    platform: string;
+    username: string;
+    last_seen_online: string;
+    is_live: boolean;
+}
 
 interface LiveSummaryProps {
     liveCreators: LiveCreator[];
+    recentlyOnline?: RecentlyOnlineCreator[];
     onToggle: () => void;
     isCollapsed?: boolean;
     isChecking?: boolean;
@@ -13,6 +23,9 @@ interface LiveSummaryProps {
     lastUpdated?: number; // Timestamp of last live status update
     onRefresh?: () => void; // Callback to manually refresh live status
     isRefreshing?: boolean; // Whether a manual refresh is in progress
+    onManageLiveChecks?: () => void; // Open the manage live checks modal
+    liveCheckCreatorCount?: number; // Number of creators being checked
+    totalCreatorCount?: number; // Total number of creators
 }
 
 function getPlatformIcon(platform: string): string {
@@ -166,8 +179,166 @@ const PLATFORM_OPTIONS = [
     { value: 'instagram', label: '📷 Instagram' }
 ];
 
+// Recently Online Section Component with expand/collapse
+function RecentlyOnlineSection({ recentlyOnline }: { recentlyOnline: RecentlyOnlineCreator[] }) {
+    const [isExpanded, setIsExpanded] = useState(false);
+    
+    if (recentlyOnline.length === 0) return null;
+    
+    const displayCount = isExpanded ? recentlyOnline.length : 10;
+    const displayList = recentlyOnline.slice(0, displayCount);
+    const liveCount = recentlyOnline.filter(c => c.is_live).length;
+    const offlineCount = recentlyOnline.length - liveCount;
+    
+    return (
+        <div className="live-section" style={{ marginTop: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <h3 className="section-title" style={{ margin: 0 }}>⏰ Recently Active</h3>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    {liveCount > 0 && <span style={{ color: '#22c55e' }}>{liveCount} live</span>}
+                    {liveCount > 0 && offlineCount > 0 && ' · '}
+                    {offlineCount > 0 && <span>{offlineCount} offline</span>}
+                </span>
+            </div>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 12px' }}>
+                Sorted by most recently online (last 24 hours)
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {displayList.map((creator, idx) => {
+                    const platformUrl = creator.platform === 'kick'
+                        ? `https://kick.com/${creator.username}`
+                        : creator.platform === 'twitch'
+                            ? `https://twitch.tv/${creator.username}`
+                            : creator.platform === 'youtube'
+                                ? `https://youtube.com/@${creator.username}`
+                                : `https://tiktok.com/@${creator.username}`;
+                    
+                    // Parse last_seen_online date
+                    const lastSeen = new Date(creator.last_seen_online);
+                    const now = new Date();
+                    const diffMs = now.getTime() - lastSeen.getTime();
+                    const diffMins = Math.floor(diffMs / 60000);
+                    const diffHours = Math.floor(diffMins / 60);
+                    let timeAgo = '';
+                    if (diffHours > 0) {
+                        timeAgo = `${diffHours}h ago`;
+                    } else if (diffMins > 0) {
+                        timeAgo = `${diffMins}m ago`;
+                    } else {
+                        timeAgo = 'Just now';
+                    }
+
+                    return (
+                        <a
+                            key={`${creator.creator_id}-${creator.platform}-${idx}`}
+                            href={platformUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '8px 12px',
+                                backgroundColor: creator.is_live ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.03)',
+                                border: `1px solid ${creator.is_live ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.08)'}`,
+                                borderRadius: '8px',
+                                textDecoration: 'none',
+                                color: 'inherit',
+                                transition: 'all 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = creator.is_live ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.08)';
+                                e.currentTarget.style.borderColor = creator.is_live ? 'rgba(34,197,94,0.5)' : 'rgba(255,255,255,0.15)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = creator.is_live ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.03)';
+                                e.currentTarget.style.borderColor = creator.is_live ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.08)';
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                {creator.is_live && (
+                                    <span style={{
+                                        width: '8px',
+                                        height: '8px',
+                                        backgroundColor: '#22c55e',
+                                        borderRadius: '50%',
+                                        animation: 'pulse 2s infinite',
+                                    }} />
+                                )}
+                                <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>
+                                    {creator.creator_name}
+                                </span>
+                                <span
+                                    style={{
+                                        padding: '2px 6px',
+                                        backgroundColor: `${getPlatformColor(creator.platform)}25`,
+                                        color: getPlatformColor(creator.platform),
+                                        borderRadius: '4px',
+                                        fontSize: '0.7rem',
+                                        fontWeight: 600,
+                                        textTransform: 'uppercase',
+                                    }}
+                                >
+                                    {getPlatformIcon(creator.platform)} {creator.platform}
+                                </span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {creator.is_live ? (
+                                    <span style={{ 
+                                        fontSize: '0.75rem', 
+                                        fontWeight: 600, 
+                                        color: '#22c55e',
+                                        padding: '2px 8px',
+                                        backgroundColor: 'rgba(34,197,94,0.15)',
+                                        borderRadius: '4px',
+                                    }}>
+                                        LIVE NOW
+                                    </span>
+                                ) : (
+                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                        {timeAgo}
+                                    </span>
+                                )}
+                            </div>
+                        </a>
+                    );
+                })}
+            </div>
+            {recentlyOnline.length > 10 && (
+                <button
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    style={{
+                        width: '100%',
+                        marginTop: '12px',
+                        padding: '10px',
+                        backgroundColor: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '8px',
+                        color: 'var(--text-color)',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 500,
+                        transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                    }}
+                >
+                    {isExpanded 
+                        ? `Show Less ▲` 
+                        : `Show All ${recentlyOnline.length} Creators ▼`}
+                </button>
+            )}
+        </div>
+    );
+}
+
 export default function LiveSummary({
     liveCreators,
+    recentlyOnline = [],
     onToggle,
     isCollapsed = false,
     isChecking = false,
@@ -176,7 +347,10 @@ export default function LiveSummary({
     onPlatformChange,
     lastUpdated,
     onRefresh,
-    isRefreshing = false
+    isRefreshing = false,
+    onManageLiveChecks,
+    liveCheckCreatorCount,
+    totalCreatorCount,
 }: LiveSummaryProps) {
     
     // Track page load time
@@ -313,7 +487,7 @@ export default function LiveSummary({
 
             {!isCollapsed && (
                 <div className="live-summary-content">
-                    {/* Platform Filter Dropdown */}
+                    {/* Platform Filter + Manage Live Checks */}
                     <div className="platform-filter" style={{
                         marginBottom: '16px',
                         display: 'flex',
@@ -360,6 +534,49 @@ export default function LiveSummary({
                                 <span className="checking-spinner-small">⏳</span>
                                 Checking...
                             </span>
+                        )}
+                        {onManageLiveChecks && (
+                            <button
+                                onClick={onManageLiveChecks}
+                                style={{
+                                    marginLeft: 'auto',
+                                    padding: '6px 14px',
+                                    background: 'rgba(99, 102, 241, 0.15)',
+                                    border: '1px solid rgba(99, 102, 241, 0.35)',
+                                    borderRadius: '8px',
+                                    color: '#a5b4fc',
+                                    cursor: 'pointer',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 500,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    transition: 'all 0.2s ease',
+                                    whiteSpace: 'nowrap',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'rgba(99, 102, 241, 0.25)';
+                                    e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.5)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'rgba(99, 102, 241, 0.15)';
+                                    e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.35)';
+                                }}
+                                title="Choose which creators to check for live status"
+                            >
+                                <span>⚙️</span>
+                                Manage
+                                {liveCheckCreatorCount !== undefined && totalCreatorCount !== undefined && (
+                                    <span style={{
+                                        padding: '1px 6px',
+                                        background: 'rgba(99, 102, 241, 0.3)',
+                                        borderRadius: '4px',
+                                        fontSize: '0.75rem',
+                                    }}>
+                                        {liveCheckCreatorCount}/{totalCreatorCount}
+                                    </span>
+                                )}
+                            </button>
                         )}
                     </div>
 
@@ -534,6 +751,9 @@ export default function LiveSummary({
                                     </div>
                                 </div>
                             )}
+
+                            {/* Recently Online Section - Show creators who were live recently */}
+                            <RecentlyOnlineSection recentlyOnline={recentlyOnline} />
                         </>
                     )}
                 </div>

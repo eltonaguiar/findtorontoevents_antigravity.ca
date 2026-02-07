@@ -3,25 +3,39 @@ import type { Creator, SocialAccount } from "../types";
 import type { Platform } from "../types";
 import { parseSocialUrl } from "../utils/parseSocialUrl";
 import AvatarSelectorModal from "./AvatarSelectorModal";
+import { resolveAuthBase } from "../utils/auth";
 
-const PLATFORMS: Platform[] = ["youtube", "tiktok", "instagram", "kick", "twitch", "spotify", "other"];
+const PLATFORMS: Platform[] = ["youtube", "tiktok", "instagram", "kick", "twitch", "spotify", "twitter", "other"];
 
 type Row = { id: string; platform: Platform; username: string; url: string; checkLive: boolean };
+
+interface SearchResult {
+  platform: string;
+  username: string;
+  exists: boolean | null;
+  url: string;
+  display_name: string;
+  followers: number | string | null;
+  avatar_url: string;
+  error: string | null;
+}
 
 interface EditCreatorModalProps {
   creator: Creator;
   categories: string[];
+  /** Which platforms auto-get checkLive=true when adding/editing. Falls back to ["tiktok"]. */
+  defaultLivePlatforms?: Platform[];
   onSave: (updates: { category?: string; accounts: SocialAccount[]; note?: string; isLiveStreamer?: boolean; avatarUrl?: string; selectedAvatarSource?: string }) => void;
   onClose: () => void;
 }
 
-const defaultCheckLive = (platform: Platform, isLiveStreamer: boolean): boolean =>
-  isLiveStreamer && (platform === "kick" || platform === "twitch");
-
-export default function EditCreatorModal({ creator, categories, onSave, onClose }: EditCreatorModalProps) {
-  const hasKickOrTwitch = creator.accounts.some((a) => a.platform === "kick" || a.platform === "twitch");
+export default function EditCreatorModal({ creator, categories, defaultLivePlatforms, onSave, onClose }: EditCreatorModalProps) {
+  const livePlats = defaultLivePlatforms ?? ["tiktok"];
+  const defaultCheckLive = (platform: Platform, isLiveStreamer: boolean): boolean =>
+    isLiveStreamer && livePlats.includes(platform);
+  const hasDefaultLivePlatform = creator.accounts.some((a) => livePlats.includes(a.platform));
   const [isLiveStreamer, setIsLiveStreamer] = useState(
-    creator.isLiveStreamer ?? hasKickOrTwitch
+    creator.isLiveStreamer ?? hasDefaultLivePlatform
   );
   const [category, setCategory] = useState(creator.category ?? "");
   const [note, setNote] = useState(creator.note ?? creator.reason ?? "");
@@ -31,13 +45,20 @@ export default function EditCreatorModal({ creator, categories, onSave, onClose 
       platform: a.platform,
       username: a.username,
       url: a.url,
-      checkLive: a.checkLive ?? defaultCheckLive(a.platform, creator.isLiveStreamer ?? hasKickOrTwitch),
+      checkLive: a.checkLive ?? defaultCheckLive(a.platform, creator.isLiveStreamer ?? hasDefaultLivePlatform),
     }))
   );
   const [pasteUrls, setPasteUrls] = useState("");
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
   const [selectedAvatarUrl, setSelectedAvatarUrl] = useState(creator.avatarUrl || "");
   const [selectedAvatarSource, setSelectedAvatarSource] = useState(creator.selectedAvatarSource || "");
+  
+  // EZ-FIND state
+  const [ezFindUsername, setEzFindUsername] = useState("");
+  const [ezFindResults, setEzFindResults] = useState<SearchResult[]>([]);
+  const [ezFindLoading, setEzFindLoading] = useState(false);
+  const [showBulkEdit, setShowBulkEdit] = useState(false);
+  const [bulkEditText, setBulkEditText] = useState("");
 
   const updateRow = (index: number, field: "platform" | "username" | "url", value: string) => {
     setRows((prev) =>
@@ -84,6 +105,118 @@ export default function EditCreatorModal({ creator, categories, onSave, onClose 
   const handleAvatarSelect = (avatarUrl: string, source: string) => {
     setSelectedAvatarUrl(avatarUrl);
     setSelectedAvatarSource(source);
+  };
+
+  // EZ-FIND: Search for username across platforms
+  const handleEzFind = async () => {
+    if (!ezFindUsername.trim()) return;
+    setEzFindLoading(true);
+    setEzFindResults([]);
+    try {
+      const authBase = await resolveAuthBase();
+      const response = await fetch(
+        `${authBase}/search_profiles.php?username=${encodeURIComponent(ezFindUsername.trim())}`
+      );
+      const data = await response.json();
+      if (data.ok && data.results) {
+        setEzFindResults(data.results);
+      }
+    } catch (err) {
+      console.error("EZ-FIND error:", err);
+    } finally {
+      setEzFindLoading(false);
+    }
+  };
+
+  // Add a found profile to the rows
+  const addFromEzFind = (result: SearchResult) => {
+    // Check if already exists
+    const exists = rows.some(
+      (r) => r.platform === result.platform && r.username.toLowerCase() === result.username.toLowerCase()
+    );
+    if (exists) return;
+
+    setRows((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        platform: result.platform as Platform,
+        username: result.username,
+        url: result.url,
+        checkLive: defaultCheckLive(result.platform as Platform, isLiveStreamer),
+      },
+    ]);
+  };
+
+  // Add all found profiles
+  const addAllFromEzFind = () => {
+    const toAdd = ezFindResults.filter((r) => r.exists === true);
+    for (const result of toAdd) {
+      const exists = rows.some(
+        (r) => r.platform === result.platform && r.username.toLowerCase() === result.username.toLowerCase()
+      );
+      if (!exists) {
+        setRows((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            platform: result.platform as Platform,
+            username: result.username,
+            url: result.url,
+            checkLive: defaultCheckLive(result.platform as Platform, isLiveStreamer),
+          },
+        ]);
+      }
+    }
+  };
+
+  // Generate bulk edit text from current rows
+  const generateBulkText = () => {
+    return rows.map((r) => `${r.platform}:${r.username}:${r.url}`).join("\n");
+  };
+
+  // Parse bulk edit text back to rows
+  const applyBulkEdit = () => {
+    const lines = bulkEditText.split(/\r?\n/).filter((l) => l.trim());
+    const newRows: Row[] = [];
+    for (const line of lines) {
+      const parts = line.split(":");
+      if (parts.length >= 3) {
+        const platform = parts[0].trim().toLowerCase() as Platform;
+        const username = parts[1].trim();
+        const url = parts.slice(2).join(":").trim(); // URL may contain colons
+        if (PLATFORMS.includes(platform) && url) {
+          newRows.push({
+            id: crypto.randomUUID(),
+            platform,
+            username: username || "user",
+            url,
+            checkLive: defaultCheckLive(platform, isLiveStreamer),
+          });
+        }
+      }
+    }
+    if (newRows.length > 0) {
+      setRows(newRows);
+      setShowBulkEdit(false);
+    }
+  };
+
+  // Toggle bulk edit mode
+  const toggleBulkEdit = () => {
+    if (!showBulkEdit) {
+      setBulkEditText(generateBulkText());
+    }
+    setShowBulkEdit(!showBulkEdit);
+  };
+
+  // Format follower count for display
+  const formatFollowers = (count: number | string | null): string => {
+    if (count === null) return "?";
+    if (typeof count === "string") return count;
+    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
+    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
+    return count.toString();
   };
 
   const handleSave = () => {
@@ -243,7 +376,214 @@ export default function EditCreatorModal({ creator, categories, onSave, onClose 
           />
         </div>
 
-        <div style={{ marginBottom: "0.5rem", fontWeight: 600, fontSize: "0.95rem" }}>Social links</div>
+        {/* EZ-FIND Section */}
+        <div style={{ 
+          marginBottom: "1rem", 
+          padding: "12px", 
+          background: "rgba(99, 102, 241, 0.1)", 
+          border: "1px solid rgba(99, 102, 241, 0.3)",
+          borderRadius: "8px" 
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+            <span style={{ fontWeight: 600, fontSize: "0.95rem" }}>🔍 EZ-FIND</span>
+            <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Search for a username across all platforms</span>
+          </div>
+          <div style={{ display: "flex", gap: "8px", marginBottom: ezFindResults.length > 0 ? "10px" : 0 }}>
+            <input
+              type="text"
+              value={ezFindUsername}
+              onChange={(e) => setEzFindUsername(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleEzFind()}
+              placeholder="Enter username (e.g. adinross)"
+              style={{
+                flex: 1,
+                padding: "8px 12px",
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                borderRadius: "6px",
+                color: "inherit",
+                fontSize: "0.9rem",
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleEzFind}
+              disabled={ezFindLoading || !ezFindUsername.trim()}
+              style={{
+                padding: "8px 16px",
+                background: "rgba(99, 102, 241, 0.3)",
+                border: "1px solid rgba(99, 102, 241, 0.5)",
+                borderRadius: "6px",
+                color: "#a5b4fc",
+                cursor: ezFindLoading ? "wait" : "pointer",
+                fontSize: "0.9rem",
+                fontWeight: 500,
+              }}
+            >
+              {ezFindLoading ? "Searching..." : "Search"}
+            </button>
+          </div>
+          
+          {ezFindResults.length > 0 && (
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+                  Found profiles for &quot;{ezFindUsername}&quot;:
+                </span>
+                <button
+                  type="button"
+                  onClick={addAllFromEzFind}
+                  style={{
+                    padding: "4px 10px",
+                    background: "rgba(34, 197, 94, 0.2)",
+                    border: "1px solid rgba(34, 197, 94, 0.4)",
+                    borderRadius: "4px",
+                    color: "#86efac",
+                    cursor: "pointer",
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  + Add All Found
+                </button>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                {ezFindResults.map((result) => {
+                  const alreadyAdded = rows.some(
+                    (r) => r.platform === result.platform && r.username.toLowerCase() === result.username.toLowerCase()
+                  );
+                  return (
+                    <div
+                      key={result.platform}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        padding: "8px 10px",
+                        background: result.exists === true 
+                          ? "rgba(34, 197, 94, 0.1)" 
+                          : result.exists === false 
+                            ? "rgba(239, 68, 68, 0.1)" 
+                            : "rgba(255,255,255,0.05)",
+                        border: `1px solid ${
+                          result.exists === true 
+                            ? "rgba(34, 197, 94, 0.3)" 
+                            : result.exists === false 
+                              ? "rgba(239, 68, 68, 0.3)" 
+                              : "rgba(255,255,255,0.1)"
+                        }`,
+                        borderRadius: "6px",
+                        fontSize: "0.85rem",
+                      }}
+                    >
+                      <span style={{ 
+                        width: "70px", 
+                        fontWeight: 500,
+                        textTransform: "capitalize" 
+                      }}>
+                        {result.platform}
+                      </span>
+                      <span style={{ 
+                        flex: 1,
+                        color: result.exists === true ? "#86efac" : result.exists === false ? "#fca5a5" : "var(--text-muted)"
+                      }}>
+                        {result.exists === true ? "✓ Found" : result.exists === false ? "✗ Not Found" : "? Unknown"}
+                      </span>
+                      {result.followers !== null && (
+                        <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
+                          {formatFollowers(result.followers)} followers
+                        </span>
+                      )}
+                      {result.exists === true && !alreadyAdded && (
+                        <button
+                          type="button"
+                          onClick={() => addFromEzFind(result)}
+                          style={{
+                            padding: "3px 8px",
+                            background: "rgba(34, 197, 94, 0.2)",
+                            border: "1px solid rgba(34, 197, 94, 0.4)",
+                            borderRadius: "4px",
+                            color: "#86efac",
+                            cursor: "pointer",
+                            fontSize: "0.75rem",
+                          }}
+                        >
+                          + Add
+                        </button>
+                      )}
+                      {alreadyAdded && (
+                        <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Added</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+          <div style={{ fontWeight: 600, fontSize: "0.95rem" }}>Social links</div>
+          <button
+            type="button"
+            onClick={toggleBulkEdit}
+            style={{
+              padding: "4px 10px",
+              background: showBulkEdit ? "rgba(251, 191, 36, 0.2)" : "rgba(255,255,255,0.1)",
+              border: `1px solid ${showBulkEdit ? "rgba(251, 191, 36, 0.4)" : "rgba(255,255,255,0.2)"}`,
+              borderRadius: "4px",
+              color: showBulkEdit ? "#fcd34d" : "var(--text-muted)",
+              cursor: "pointer",
+              fontSize: "0.8rem",
+            }}
+          >
+            {showBulkEdit ? "← Normal Edit" : "Bulk Edit ✏️"}
+          </button>
+        </div>
+        
+        {showBulkEdit ? (
+          <div style={{ marginBottom: "1rem" }}>
+            <p style={{ margin: "0 0 8px", fontSize: "0.85rem", color: "var(--text-muted)" }}>
+              Edit all links at once. Format: <code style={{ background: "rgba(255,255,255,0.1)", padding: "2px 6px", borderRadius: "3px" }}>platform:username:url</code> (one per line)
+            </p>
+            <textarea
+              value={bulkEditText}
+              onChange={(e) => setBulkEditText(e.target.value)}
+              rows={8}
+              style={{
+                width: "100%",
+                padding: "10px",
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                borderRadius: "6px",
+                color: "inherit",
+                fontSize: "0.85rem",
+                fontFamily: "monospace",
+                resize: "vertical",
+              }}
+              placeholder="kick:adinross:https://kick.com/adinross
+youtube:adinross:https://youtube.com/@adinross
+twitch:adinross:https://twitch.tv/adinross"
+            />
+            <button
+              type="button"
+              onClick={applyBulkEdit}
+              style={{
+                marginTop: "8px",
+                padding: "8px 16px",
+                background: "rgba(34, 197, 94, 0.2)",
+                border: "1px solid rgba(34, 197, 94, 0.4)",
+                borderRadius: "6px",
+                color: "#86efac",
+                cursor: "pointer",
+                fontSize: "0.85rem",
+                fontWeight: 500,
+              }}
+            >
+              Apply Bulk Changes
+            </button>
+          </div>
+        ) : (
+          <>
         <p style={{ margin: "0 0 8px", fontSize: "0.85rem", color: "var(--text-muted)" }}>
           One link per row.{" "}
           {isLiveStreamer ? (
@@ -381,6 +721,8 @@ export default function EditCreatorModal({ creator, categories, onSave, onClose 
             Add from pasted URLs
           </button>
         </div>
+          </>
+        )}
 
         <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
           <button type="button" onClick={onClose} className="btn-secondary">

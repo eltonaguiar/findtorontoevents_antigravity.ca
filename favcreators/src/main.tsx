@@ -6,6 +6,7 @@ import "./index.css";
 import App from "./App.tsx";
 import LastDetectedContentPage from "./LastDetectedContentPage";
 import StreamerUpdatesPage from "./components/StreamerUpdatesPage";
+import AccountabilityDashboard from "./components/AccountabilityDashboard";
 
 
 const router = createHashRouter([
@@ -36,6 +37,18 @@ const router = createHashRouter([
   {
     path: "/guest/updates",
     element: <StreamerUpdatesPage />,
+  },
+  {
+    path: "/accountability",
+    element: <AccountabilityDashboard />,
+  },
+  {
+    path: "/coach",
+    element: <AccountabilityDashboard />,
+  },
+  {
+    path: "/guest/accountability",
+    element: <AccountabilityDashboard />,
   },
   {
     path: "*",

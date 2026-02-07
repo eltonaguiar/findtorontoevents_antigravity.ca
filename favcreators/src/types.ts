@@ -6,6 +6,7 @@ export type Platform =
   | "kick"
   | "twitch"
   | "spotify"
+  | "twitter"
   | "other";
 
 export interface SocialAccount {
@@ -72,3 +73,23 @@ export interface LiveCreator {
   storyCount?: number;
   postedAt?: number;
 }
+
+/** Platforms that support live-stream checking */
+export const LIVE_CAPABLE_PLATFORMS: Platform[] = ["tiktok", "kick", "twitch", "youtube", "instagram"];
+
+/** All platforms available for following / searching */
+export const ALL_FOLLOW_PLATFORMS: Platform[] = ["youtube", "tiktok", "instagram", "kick", "twitch", "spotify", "twitter"];
+
+/** User-configurable preferences that persist across sessions */
+export interface UserPreferences {
+  /** Which platforms to search when quick-adding by name only (no :platform suffix) */
+  defaultFollowPlatforms: Platform[];
+  /** Which platforms auto-get checkLive=true when adding a new creator */
+  defaultLivePlatforms: Platform[];
+}
+
+/** Factory defaults — used until the user customises */
+export const DEFAULT_USER_PREFERENCES: UserPreferences = {
+  defaultFollowPlatforms: ["tiktok", "kick", "twitch", "youtube", "instagram"],
+  defaultLivePlatforms: ["tiktok"],
+};

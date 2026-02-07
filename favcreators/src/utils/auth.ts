@@ -6,6 +6,8 @@ export type AuthUser = {
   display_name?: string;
   avatar_url?: string;
   provider?: string;
+  discord_id?: string;
+  discord_username?: string;
 };
 
 export type LoginResult = {

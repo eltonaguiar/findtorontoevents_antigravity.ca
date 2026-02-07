@@ -17,6 +17,12 @@ interface CreatorCardProps {
   onRefreshAvatar: (id: string) => Promise<void>;
   onEditCreator?: (creator: Creator) => void;
   autoExpandSecondaryNotes?: boolean;
+  // Discord notification props
+  discordLinked?: boolean;
+  notifyEnabled?: boolean;
+  onToggleNotify?: (id: string, enabled: boolean) => void;
+  // Post count data from creator_status_updates + creator_mentions
+  postCounts?: { total: number; recent: number } | null;
 }
 
 const formatRelativeTime = (timestamp?: number) => {
@@ -90,6 +96,10 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
   onRefreshAvatar,
   onEditCreator,
   autoExpandSecondaryNotes = false,
+  discordLinked = false,
+  notifyEnabled = false,
+  onToggleNotify,
+  postCounts,
 }) => {
   if (typeof onRefreshAvatar !== "function") {
     throw new Error("onRefreshAvatar prop is required in CreatorCard");
@@ -306,6 +316,34 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
         >
           {creator.isFavorite ? "⭐️" : "☆"}
         </button>
+        {discordLinked && onToggleNotify && (
+          <button
+            onClick={() => {
+              // If enabling for the first time, show privacy warning
+              if (!notifyEnabled) {
+                const confirmed = window.confirm(
+                  "📢 Heads up!\n\n" +
+                  "When this creator goes live, you'll be @mentioned in a SHARED Discord channel that other users can see.\n\n" +
+                  "This means others may see which creators you follow.\n\n" +
+                  "Enable notifications for this creator?"
+                );
+                if (!confirmed) return;
+              }
+              onToggleNotify(creator.id, !notifyEnabled);
+            }}
+            style={{
+              background: notifyEnabled ? "rgba(88, 101, 242, 0.2)" : "none",
+              border: notifyEnabled ? "1px solid rgba(88, 101, 242, 0.5)" : "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontSize: "1rem",
+              padding: "2px 4px",
+            }}
+            title={notifyEnabled ? "Discord notifications ON - click to disable" : "Enable Discord notifications when live"}
+          >
+            {notifyEnabled ? "🔔" : "🔕"}
+          </button>
+        )}
         {onEditCreator && (
           <button
             onClick={() => onEditCreator(creator)}
@@ -397,6 +435,64 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
         </div>
         <span className="health-label">{healthScore}%</span>
       </div>
+
+      {/* Post counts from creator_updates / creator_mentions */}
+      {postCounts && postCounts.total > 0 && (
+        <div
+          style={{
+            display: "flex",
+            gap: "12px",
+            marginTop: "0.5rem",
+            marginBottom: "0.25rem",
+            fontSize: "0.8rem",
+          }}
+        >
+          <a
+            href={`/fc/#/updates`}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+              padding: "3px 10px",
+              borderRadius: "6px",
+              background: "rgba(99, 102, 241, 0.12)",
+              border: "1px solid rgba(99, 102, 241, 0.25)",
+              color: "#a5b4fc",
+              textDecoration: "none",
+              fontWeight: 500,
+              transition: "filter 0.15s",
+            }}
+            title="View all posts in Updates feed"
+            onMouseEnter={(e) => { e.currentTarget.style.filter = "brightness(1.3)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.filter = ""; }}
+          >
+            📝 {postCounts.total} post{postCounts.total !== 1 ? "s" : ""}
+          </a>
+          {postCounts.recent > 0 && (
+            <a
+              href={`/fc/creator_updates/`}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+                padding: "3px 10px",
+                borderRadius: "6px",
+                background: "rgba(34, 197, 94, 0.12)",
+                border: "1px solid rgba(34, 197, 94, 0.25)",
+                color: "#86efac",
+                textDecoration: "none",
+                fontWeight: 500,
+                transition: "filter 0.15s",
+              }}
+              title="View recent posts (last 7 days)"
+              onMouseEnter={(e) => { e.currentTarget.style.filter = "brightness(1.3)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.filter = ""; }}
+            >
+              🔥 {postCounts.recent} recent
+            </a>
+          )}
+        </div>
+      )}
 
       <div className="creator-note-wrapper">
         <label htmlFor={`note-${creator.id}`}>Personal note</label>
