@@ -366,6 +366,42 @@
       .upload-box { min-width: 140px; }
     }
 
+    /* ─── Game Start Countdown ─── */
+    #game-countdown {
+      position: fixed; inset: 0; z-index: 60;
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.6); pointer-events: none;
+    }
+    #game-countdown.active { display: flex; }
+    .countdown-number {
+      font-size: 8rem; font-weight: 900; color: var(--primary);
+      text-shadow: 0 0 40px rgba(255,107,53,0.6), 0 4px 20px rgba(0,0,0,0.5);
+      animation: countPop 0.5s ease-out;
+    }
+    @keyframes countPop { from { transform: scale(2); opacity:0; } to { transform: scale(1); opacity:1; } }
+    .countdown-label {
+      font-size: 1.2rem; color: #fff; font-weight: 700; margin-top: 12px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+    }
+    .countdown-go {
+      font-size: 6rem; font-weight: 900; color: #33cc66;
+      text-shadow: 0 0 60px rgba(51,204,102,0.7);
+      animation: countPop 0.4s ease-out;
+    }
+
+    /* ─── Game Active Status Banner ─── */
+    #game-status-banner {
+      position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+      z-index: 55; display: none; padding: 10px 24px;
+      background: rgba(255,107,53,0.9); border-radius: 50px;
+      color: #fff; font-weight: 800; font-size: 0.95rem;
+      text-align: center; white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(255,107,53,0.4);
+      animation: bannerPulse 2s ease-in-out infinite;
+    }
+    #game-status-banner.active { display: block; }
+    @keyframes bannerPulse { 0%,100% { opacity:1; transform:translateX(-50%) scale(1); } 50% { opacity:0.85; transform:translateX(-50%) scale(1.03); } }
+
     /* ─── Hidden utility ─── */
     .hidden-input { display: none; }
   </style>
@@ -562,6 +598,15 @@
     <div style="margin-top:16px; font-weight:600;" id="loading-text">Starting AR...</div>
   </div>
 </div>
+
+<!-- Game Start Countdown -->
+<div id="game-countdown">
+  <div class="countdown-number" id="countdown-num">3</div>
+  <div class="countdown-label" id="countdown-label">Get ready! Point your camera at the messy area.</div>
+</div>
+
+<!-- Game Active Status Banner -->
+<div id="game-status-banner">🐜 ANTS ARE SPAWNING — Clean fast!</div>
 
 <!-- Camera feed for mobile fallback -->
 <video id="camera-feed" autoplay playsinline muted></video>
@@ -902,7 +947,7 @@
 
     ant2D.push({
       x, y, angle, speed,
-      size: 10 + Math.random() * 16,
+      size: 16 + Math.random() * 20,
       wobble: Math.random() * Math.PI * 2,
       wobbleSpeed: 3 + Math.random() * 4,
       legPhase: Math.random() * Math.PI * 2,
@@ -936,7 +981,13 @@
   }
 
   function render2DAnts() {
-    if (!antCtx || !antOverlay.width) return;
+    if (!antCtx) return;
+    // Ensure canvas matches viewport (handles resize or late init)
+    if (antOverlay.width !== window.innerWidth || antOverlay.height !== window.innerHeight) {
+      antOverlay.width = window.innerWidth;
+      antOverlay.height = window.innerHeight;
+    }
+    if (!antOverlay.width) return;
     antCtx.clearRect(0, 0, antOverlay.width, antOverlay.height);
 
     for (let i = 0; i < ant2D.length; i++) {
@@ -1147,13 +1198,25 @@
   // ──────────────────────────────────────────────
   // WebXR / Camera AR
   // ──────────────────────────────────────────────
+  function isMobilePhone() {
+    return /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }
+
+  // Detect standalone headsets (Meta Quest, etc.) — they use WebXR properly
+  function isStandaloneHeadset() {
+    const ua = navigator.userAgent;
+    return /OculusBrowser|Quest/i.test(ua);
+  }
+
   async function startAR() {
     showLoading('Starting AR...');
 
     if (!renderer) initThree();
 
-    // Try WebXR first (Meta Quest, etc.)
-    if (navigator.xr) {
+    // Only use WebXR on standalone VR/AR headsets (Meta Quest, etc.)
+    // On phones, WebXR immersive-ar hides all DOM overlays,
+    // so we always use camera feed + 2D canvas overlay on phones.
+    if (navigator.xr && isStandaloneHeadset()) {
       try {
         const supported = await navigator.xr.isSessionSupported('immersive-ar');
         if (supported) {
@@ -1166,7 +1229,7 @@
       }
     }
 
-    // Fallback: camera feed + overlay
+    // Camera feed + 2D ant overlay (phones and non-headset fallback)
     await startCameraAR();
     hideLoading();
   }
@@ -1490,11 +1553,8 @@
     } else if (state.mode === 'quick') {
       state.estMinutes = parseFloat($('#est-time').value) || 3;
       const totalSec = state.estMinutes * 60;
-      // Give user 20% more time than estimated to be fair
       state.totalTime = totalSec * 1.2;
       state.timeLeft = state.totalTime;
-      // Spawn rate: calibrated so ants reach ~80% at estimated time
-      // If user estimated 3 min, ants should reach ~80% max at 3 min
       state.maxAnts = 500;
       state.spawnRate = (state.maxAnts * 0.5) / totalSec;
     }
@@ -1504,24 +1564,66 @@
     bedSetup.classList.remove('active');
     quickSetup.classList.remove('active');
 
-    // Start AR
+    // Start AR (camera)
     await startAR();
+
+    // Show countdown BEFORE starting the game
+    await showCountdown();
 
     // Show HUD
     gameHud.classList.add('active');
     gameActions.classList.add('active');
 
+    // Show status banner
+    const banner = $('#game-status-banner');
+    banner.classList.add('active');
+    // Hide banner after 6 seconds
+    setTimeout(() => { banner.classList.remove('active'); }, 6000);
+
     // Show/hide check button depending on mode
-    $('#btn-check-progress').style.display = state.mode === 'quick' ? '' : '';
-    // In bed mode, the "check" button serves as "I'm done!" button
     if (state.mode === 'bed') {
-      $('#btn-check-progress').innerHTML = '<span>✅</span> I\'m Done!';
+      $('#btn-check-progress').innerHTML = '<span>\u2705</span> I\'m Done!';
     } else {
-      $('#btn-check-progress').innerHTML = '<span>📸</span> Check Progress';
+      $('#btn-check-progress').innerHTML = '<span>\uD83D\uDCF8</span> Check Progress';
     }
 
     // Start game loop
     startGameLoop();
+  }
+
+  function showCountdown() {
+    return new Promise((resolve) => {
+      const overlay = $('#game-countdown');
+      const numEl = $('#countdown-num');
+      const labelEl = $('#countdown-label');
+      overlay.classList.add('active');
+
+      let count = 3;
+      numEl.textContent = count;
+      numEl.className = 'countdown-number';
+      labelEl.textContent = state.mode === 'bed'
+        ? 'Point camera at your bed. Get ready to clean!'
+        : 'Point camera at the messy area. Get ready!';
+
+      const interval = setInterval(() => {
+        count--;
+        if (count > 0) {
+          numEl.textContent = count;
+          // Re-trigger animation
+          numEl.className = '';
+          void numEl.offsetWidth;
+          numEl.className = 'countdown-number';
+        } else if (count === 0) {
+          numEl.textContent = 'GO!';
+          numEl.className = 'countdown-go';
+          labelEl.textContent = '\uD83D\uDC1C Ants are spawning! Clean fast!';
+        } else {
+          clearInterval(interval);
+          overlay.classList.remove('active');
+          resolve();
+        }
+      }, 1000);
+    });
   }
 
   function endGame(won) {
@@ -1567,6 +1669,8 @@
     photoModal.classList.remove('active');
     bedSetup.classList.remove('active');
     quickSetup.classList.remove('active');
+    $('#game-countdown').classList.remove('active');
+    $('#game-status-banner').classList.remove('active');
     menuScreen.classList.remove('hidden');
   }
 
