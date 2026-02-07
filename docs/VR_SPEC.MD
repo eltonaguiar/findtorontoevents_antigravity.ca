@@ -100,6 +100,7 @@ Seven-step interactive lesson: look around → point & click → move → telepo
 | `nav-menu.js` | Global menu overlay with zone links, current-zone indicator, ambient music, clock |
 | `vr-controls.js` | Locomotion component, teleport arc visualization, rig height correction, gaze cursor |
 | `presence.js` | Cross-tab user counter via BroadcastChannel + localStorage heartbeats |
+| `scene-enhancements.js` | Set 8: 3D scene polish — portal particles, hover pulse, energy waves, screen glow, dust motes, price sparks, fireflies, sky tint, ambient motes, data badges |
 
 ## Testing & Deployment
 
@@ -128,3 +129,13 @@ Seven-step interactive lesson: look around → point & click → move → telepo
 | ENH-015 | Quick Stats Badge (per-zone live stats) | Done |
 | ENH-016 | Share Snapshot (deep-link with state) | Done |
 | ENH-017 | Set 5 Social Features (presence, notes, bookmarks, time-theme) | Done |
+| ENH-018 | Hub Portal Particle Fountains (zone-themed particles per portal) | Done |
+| ENH-019 | Hub Portal Hover Pulse (scale + glow on mouseenter) | Done |
+| ENH-020 | Hub Platform Energy Waves (concentric expanding rings) | Done |
+| ENH-021 | Movies Screen Glow (color-matched light behind screen) | Done |
+| ENH-022 | Movies Dust Motes (floating particles in projector beam) | Done |
+| ENH-023 | Stocks Price-Change Sparks (green/red burst on tick) | Done |
+| ENH-024 | Wellness Fireflies + Falling Petals (animated nature particles) | Done |
+| ENH-025 | Time-of-Day Sky Tint (ambient color shifts by clock) | Done |
+| ENH-026 | Ambient Floating Motes (zone-colored luminous dust, all zones) | Done |
+| ENH-027 | Hub Portal Data Badges (live stats floating below portals) | Done |
