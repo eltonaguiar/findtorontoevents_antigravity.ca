@@ -1274,7 +1274,7 @@
     PhotoFrame: VRPhotoFrame,
     Streak: StreakTracker,
     Sync: MultiplayerSync,
-    Haptics,
+    Haptics: HapticLibrary,
     Audio: AudioSpatializer,
     Gestures: GestureShortcuts,
     SmartHome,
