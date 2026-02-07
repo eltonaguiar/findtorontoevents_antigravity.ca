@@ -7,31 +7,23 @@
   'use strict';
 
   const MobileDetect = {
-    // Check if device is mobile
+    // Check if device is mobile - CONSERVATIVE detection
     isMobile() {
       const userAgent = navigator.userAgent || navigator.vendor || window.opera;
       
-      // Check for mobile devices
-      const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i;
+      // Primary check: mobile user agents ONLY
+      const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
       
-      // Check for touch support
+      // Must match user agent AND have touch support
       const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
       
-      // Check screen size
-      const isSmallScreen = window.innerWidth < 1024;
-      
-      return mobileRegex.test(userAgent) || (hasTouch && isSmallScreen);
+      // Desktop browsers sometimes report touch support, so we need BOTH conditions
+      return mobileRegex.test(userAgent) && hasTouch;
     },
 
     // Check if device supports VR
     supportsVR() {
       return 'xr' in navigator || 'getVRDisplays' in navigator;
-    },
-
-    // Check if in standalone mode (PWA)
-    isStandalone() {
-      return window.matchMedia('(display-mode: standalone)').matches || 
-             window.navigator.standalone === true;
     },
 
     // Get device info
@@ -42,7 +34,8 @@
         isAndroid: /Android/.test(ua),
         isSafari: /Safari/.test(ua) && !/Chrome/.test(ua),
         isChrome: /Chrome/.test(ua),
-        orientation: window.innerWidth > window.innerHeight ? 'landscape' : 'portrait'
+        orientation: window.innerWidth > window.innerHeight ? 'landscape' : 'portrait',
+        userAgent: ua
       };
     },
 
@@ -56,6 +49,12 @@
       // Don't redirect if user prefers desktop
       if (localStorage.getItem('vr-desktop-mode') === 'true') return;
       
+      // Extra safety: Double-check we're actually mobile
+      if (!this.isMobile()) {
+        console.log('[MobileDetect] Not mobile, skipping redirect');
+        return;
+      }
+      
       // Build mobile URL
       let mobileUrl = '/vr/mobile-index.html';
       
@@ -66,12 +65,22 @@
       else if (currentPath.includes('creators')) mobileUrl = '/vr/mobile-creators.html';
       else if (currentPath.includes('stocks')) mobileUrl = '/vr/mobile-stocks.html';
       
+      console.log('[MobileDetect] Redirecting to:', mobileUrl);
+      
       // Redirect
       window.location.href = mobileUrl;
     },
 
-    // Show mobile prompt
+    // Show mobile prompt (non-intrusive)
     showPrompt() {
+      // Only show on actual mobile devices that weren't auto-redirected
+      if (!this.isMobile()) return;
+      
+      // Check if already dismissed recently
+      const lastPrompt = localStorage.getItem('vr-mobile-prompt-dismissed');
+      const promptDelay = 24 * 60 * 60 * 1000; // 24 hours
+      if (lastPrompt && (Date.now() - parseInt(lastPrompt)) < promptDelay) return;
+      
       const prompt = document.createElement('div');
       prompt.id = 'mobile-prompt';
       prompt.style.cssText = `
@@ -123,38 +132,32 @@
       localStorage.setItem('vr-mobile-prompt-dismissed', Date.now().toString());
     },
 
-    // Initialize
+    // Initialize - NO AUTO REDIRECT, only manual
     init() {
-      // If vr-mobile.js is loaded, the VR pages are already mobile-enhanced — just show prompt
-      if (this.isMobile()) {
-        const lastPrompt = localStorage.getItem('vr-mobile-prompt-dismissed');
-        const promptDelay = 24 * 60 * 60 * 1000; // 24 hours
-
-        if (!lastPrompt || (Date.now() - parseInt(lastPrompt)) > promptDelay) {
-          // Show choice prompt instead of hard redirect
+      // Log detection results
+      const info = this.getDeviceInfo();
+      console.log('[MobileDetect] User Agent:', info.userAgent);
+      console.log('[MobileDetect] Is Mobile:', this.isMobile());
+      
+      // NEVER auto-redirect - only show prompt if user wants to switch
+      if (this.isMobile() && !window.location.pathname.includes('mobile')) {
+        // Wait for page to load, then show gentle prompt
+        setTimeout(() => {
           this.showPrompt();
-        }
-      } else {
-        if (window.innerWidth < 768) {
-          this.showPrompt();
-        }
+        }, 3000);
       }
-
-      window.addEventListener('resize', () => {
-        if (window.innerWidth < 768 && !document.getElementById('mobile-prompt')) {
-          this.showPrompt();
-        }
-      });
     }
   };
 
   // Expose to global scope
   window.MobileDetect = MobileDetect;
 
-  // Auto-init if not already on mobile version
+  // Initialize after page loads
   if (!window.location.pathname.includes('mobile')) {
-    document.addEventListener('DOMContentLoaded', () => {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => MobileDetect.init());
+    } else {
       MobileDetect.init();
-    });
+    }
   }
 })();
