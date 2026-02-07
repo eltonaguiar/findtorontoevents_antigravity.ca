@@ -286,6 +286,15 @@
           '</button>' +
         '</div>' +
 
+        // Utilities row (Set 7)
+        '<div class="vr-nav-section-label">Tools</div>' +
+        '<div class="vr-nav-util-row">' +
+          '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRQuickWins7)VRQuickWins7.openSearch()" title="Search all zones (Ctrl+K)">&#x1F50D; Search</button>' +
+          '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRQuickWins7)VRQuickWins7.showActivity()" title="Recent activity">&#x1F4CB; Activity</button>' +
+          '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRQuickWins7)VRQuickWins7.showRating()" title="Rate this zone">&#x2B50; Rate</button>' +
+          '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRQuickWins7)VRQuickWins7.shareSnapshot()" title="Share this zone">&#x1F517; Share</button>' +
+        '</div>' +
+
         // Zone navigation
         '<div class="vr-nav-section-label">Navigate</div>' +
         '<div class="vr-nav-zones">' + zoneHTML + '</div>' +
@@ -605,6 +614,9 @@
 .vr-nav-guide-speak{border-color:rgba(34,197,94,0.2);background:rgba(34,197,94,0.06);color:#4ade80}\
 .vr-nav-guide-speak:hover{background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.4);color:#fff}\
 .guide-btn-icon{font-size:15px}\
+.vr-nav-util-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}\
+.vr-nav-util-btn{flex:1;min-width:0;padding:6px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#94a3b8;cursor:pointer;font-size:11px;font-weight:600;transition:all .2s;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:4px}\
+.vr-nav-util-btn:hover{background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(0,212,255,0.3)}\
 .vr-nav-hint{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;font-size:11px;color:#475569}\
 .vr-nav-hint kbd{background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;font-family:monospace;color:#64748b;font-size:10px}\
 #vr-nav-floating-btn{position:fixed;bottom:16px;right:16px;width:50px;height:50px;background:linear-gradient(135deg,#00d4ff,#a855f7);border:none;border-radius:14px;cursor:pointer;z-index:99999;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,212,255,0.3);transition:all .3s;animation:vr-nav-float 3s ease-in-out infinite}\
