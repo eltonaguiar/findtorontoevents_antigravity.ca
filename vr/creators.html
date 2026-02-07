@@ -284,6 +284,111 @@
     #refresh-progress .progress-count {
       color: #22c55e; font-size: 0.72rem; font-weight: 600;
     }
+    /* Auth Panel */
+    #vr-auth-panel {
+      position: fixed; top: 10px; right: 10px; z-index: 150;
+      display: flex; gap: 8px; align-items: center;
+    }
+    #auth-user-bar {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(15,12,41,0.9); padding: 6px 12px; border-radius: 10px;
+      border: 1px solid rgba(168,85,247,0.25); backdrop-filter: blur(8px);
+    }
+
+    /* Login Overlay */
+    #vr-login-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      display: none; align-items: center; justify-content: center;
+      background: rgba(6,4,16,0.92); backdrop-filter: blur(12px);
+    }
+    #vr-login-overlay.open { display: flex; }
+    #vr-login-card {
+      width: min(92vw, 400px); background: rgba(15,12,41,0.98);
+      border: 1px solid rgba(168,85,247,0.3); border-radius: 18px;
+      padding: 28px 24px; position: relative;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+      animation: loginFadeIn 0.25s ease;
+    }
+    @keyframes loginFadeIn { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:none; } }
+    #vr-login-card h2 { margin: 0 0 4px; color: #a855f7; font-size: 1.3rem; }
+    .login-close {
+      position: absolute; top: 12px; right: 16px; background: none;
+      border: none; color: #64748b; font-size: 1.5rem; cursor: pointer;
+    }
+    .login-close:hover { color: #ef4444; }
+    #vr-login-form input {
+      width: 100%; padding: 10px 14px; margin-bottom: 10px;
+      background: rgba(30,26,60,0.8); border: 1px solid rgba(168,85,247,0.2);
+      border-radius: 10px; color: #e2e8f0; font-size: 0.95rem;
+      outline: none; box-sizing: border-box;
+    }
+    #vr-login-form input:focus { border-color: #a855f7; }
+    .login-submit {
+      width: 100%; padding: 12px; border: none; border-radius: 10px;
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      color: #fff; font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: filter 0.2s;
+    }
+    .login-submit:hover { filter: brightness(1.15); }
+
+    /* Live Menu */
+    #vr-live-menu {
+      position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+      z-index: 160;
+    }
+    #live-menu-toggle {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 18px; border-radius: 12px;
+      background: rgba(15,12,41,0.9); border: 1px solid rgba(239,68,68,0.3);
+      color: #fca5a5; cursor: pointer; font-size: 0.9rem; font-weight: 600;
+      backdrop-filter: blur(8px); transition: all 0.2s;
+    }
+    #live-menu-toggle:hover { border-color: #ef4444; background: rgba(239,68,68,0.1); }
+    #live-menu-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #ef4444; animation: live-pulse 1.5s ease-in-out infinite;
+    }
+    #live-menu-dropdown {
+      display: none; position: absolute; top: calc(100% + 8px);
+      left: 50%; transform: translateX(-50%);
+      width: min(92vw, 380px); max-height: 420px; overflow-y: auto;
+      background: rgba(15,12,41,0.98); border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      animation: loginFadeIn 0.2s ease;
+    }
+    #live-menu-dropdown.open { display: block; }
+    #live-menu-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .live-menu-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; cursor: pointer; transition: background 0.15s;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .live-menu-item:hover { background: rgba(168,85,247,0.1); }
+    .live-menu-item img {
+      width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
+      border: 2px solid #ef4444;
+    }
+    .live-menu-item .lmi-info { flex: 1; min-width: 0; }
+    .live-menu-item .lmi-name { color: #e2e8f0; font-weight: 600; font-size: 0.9rem; }
+    .live-menu-item .lmi-platform { color: #94a3b8; font-size: 0.75rem; }
+    .live-menu-item .lmi-title { color: #64748b; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lmi-actions { display: flex; gap: 6px; }
+    .lmi-watch {
+      padding: 5px 12px; border-radius: 6px; border: none;
+      background: #ef4444; color: #fff; font-size: 0.75rem;
+      font-weight: 600; cursor: pointer; white-space: nowrap;
+    }
+    .lmi-watch:hover { filter: brightness(1.15); }
+    .lmi-videos {
+      padding: 5px 10px; border-radius: 6px;
+      border: 1px solid rgba(168,85,247,0.3); background: rgba(168,85,247,0.1);
+      color: #a855f7; font-size: 0.75rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+    }
+    .lmi-videos:hover { background: rgba(168,85,247,0.2); }
   </style>
 </head>
 <body>
@@ -294,6 +399,62 @@
     <p>Loading your favorite creators...</p>
     <div class="spinner"></div>
     <p id="loading-status" style="color:#555; font-size:0.8rem; margin-top:1rem;">Fetching creators...</p>
+  </div>
+
+  <!-- Auth Login Panel -->
+  <div id="vr-auth-panel">
+    <div id="auth-user-bar" style="display:none;">
+      <img id="auth-avatar" src="" alt="" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">
+      <span id="auth-display-name" style="color:#a855f7;font-weight:600;font-size:0.85rem;"></span>
+      <span id="auth-creator-count" style="color:#64748b;font-size:0.75rem;"></span>
+      <button onclick="vrAuthLogout()" style="padding:3px 10px;border-radius:6px;border:1px solid rgba(168,85,247,0.3);background:rgba(168,85,247,0.1);color:#a855f7;cursor:pointer;font-size:0.72rem;">Logout</button>
+    </div>
+    <div id="auth-login-bar">
+      <button id="auth-toggle-btn" onclick="toggleLoginPanel()" style="padding:5px 14px;border-radius:8px;border:1px solid rgba(168,85,247,0.3);background:rgba(168,85,247,0.15);color:#a855f7;cursor:pointer;font-size:0.82rem;font-weight:600;">Login to see YOUR creators</button>
+      <span style="color:#475569;font-size:0.72rem;margin-left:6px;">Currently viewing guest list</span>
+    </div>
+  </div>
+
+  <!-- Login form overlay -->
+  <div id="vr-login-overlay">
+    <div id="vr-login-card">
+      <button class="login-close" onclick="closeLoginPanel()">&times;</button>
+      <h2>Sign in to FavCreators</h2>
+      <p style="color:#64748b;font-size:0.85rem;margin-bottom:16px;">See your personal creator list, live alerts, and recent videos.</p>
+      <form id="vr-login-form" onsubmit="return vrAuthLogin(event)">
+        <input type="email" id="login-email" placeholder="Email address" required autocomplete="email">
+        <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password">
+        <div id="login-error" style="color:#ef4444;font-size:0.8rem;margin-bottom:8px;display:none;"></div>
+        <button type="submit" class="login-submit">Sign In</button>
+      </form>
+      <div style="text-align:center;margin-top:12px;">
+        <span style="color:#475569;font-size:0.8rem;">or </span>
+        <button onclick="vrGuestMode()" style="background:none;border:none;color:#7dd3fc;cursor:pointer;font-size:0.8rem;text-decoration:underline;">Continue as Guest</button>
+      </div>
+      <div style="text-align:center;margin-top:8px;">
+        <a href="https://findtorontoevents.ca/fc/" target="_blank" style="color:#475569;font-size:0.72rem;text-decoration:none;">
+          Don't have an account? Sign up at findtorontoevents.ca/fc
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Creators Floating Menu -->
+  <div id="vr-live-menu">
+    <button id="live-menu-toggle" onclick="toggleLiveMenu()">
+      <span id="live-menu-dot"></span>
+      <span id="live-menu-label">Live Now</span>
+    </button>
+    <div id="live-menu-dropdown">
+      <div id="live-menu-header">
+        <span style="font-weight:600;color:#ef4444;">LIVE NOW</span>
+        <button onclick="toggleLiveMenu()" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:1.2rem;">&times;</button>
+      </div>
+      <div id="live-menu-list"></div>
+      <div id="live-menu-empty" style="display:none;color:#475569;font-size:0.85rem;text-align:center;padding:16px;">
+        No creators are live right now.<br>Auto-refreshes every 60s.
+      </div>
+    </div>
   </div>
 
   <a id="back-btn" href="/vr/">&#8592; Back to Hub</a>
@@ -567,10 +728,240 @@
     var currentPage = 0;
     var refreshTimer = null;
 
+    /* ── Auth State ── */
+    var vrAuthUser = null;   // { id, email, display_name, avatar_url }
+    var vrAuthUserId = 0;    // 0 = guest
+
+    /* ── Auth Functions ── */
+    function vrCheckSession() {
+      fetch(API_BASE + '/api/get_me.php', { credentials: 'include' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data && data.user && data.user.id) {
+            vrSetUser(data.user);
+          } else {
+            vrSetGuest();
+          }
+        })
+        .catch(function () { vrSetGuest(); });
+    }
+
+    function vrSetUser(user) {
+      vrAuthUser = user;
+      vrAuthUserId = user.id;
+      sessionStorage.setItem('vr_auth_user', JSON.stringify(user));
+      // Update UI
+      document.getElementById('auth-login-bar').style.display = 'none';
+      document.getElementById('auth-user-bar').style.display = 'flex';
+      var avatar = document.getElementById('auth-avatar');
+      avatar.src = user.avatar_url || (AVATAR_FALLBACK + encodeURIComponent(user.display_name || user.email));
+      document.getElementById('auth-display-name').textContent = user.display_name || user.email || 'User';
+      // Reload creators with user's list
+      fetchCreators();
+    }
+
+    function vrSetGuest() {
+      vrAuthUser = null;
+      vrAuthUserId = 0;
+      sessionStorage.removeItem('vr_auth_user');
+      document.getElementById('auth-login-bar').style.display = 'flex';
+      document.getElementById('auth-user-bar').style.display = 'none';
+    }
+
+    function vrAuthLogin(e) {
+      e.preventDefault();
+      var email = document.getElementById('login-email').value;
+      var password = document.getElementById('login-password').value;
+      var errEl = document.getElementById('login-error');
+      errEl.style.display = 'none';
+
+      fetch(API_BASE + '/api/login.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: email, password: password })
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.error) {
+          errEl.textContent = data.error;
+          errEl.style.display = 'block';
+          return;
+        }
+        if (data.user) {
+          closeLoginPanel();
+          vrSetUser(data.user);
+        }
+      })
+      .catch(function (err) {
+        errEl.textContent = 'Login failed. Check your connection.';
+        errEl.style.display = 'block';
+      });
+      return false;
+    }
+
+    function vrAuthLogout() {
+      fetch(API_BASE + '/api/logout.php', { credentials: 'include' }).catch(function () {});
+      vrSetGuest();
+      fetchCreators(); // Reload as guest
+    }
+
+    function vrGuestMode() {
+      closeLoginPanel();
+      vrSetGuest();
+    }
+
+    window.toggleLoginPanel = function () {
+      document.getElementById('vr-login-overlay').classList.add('open');
+      document.getElementById('login-email').focus();
+    };
+    window.closeLoginPanel = function () {
+      document.getElementById('vr-login-overlay').classList.remove('open');
+    };
+
+    /* ── Live Menu Functions ── */
+    var liveMenuOpen = false;
+
+    window.toggleLiveMenu = function () {
+      liveMenuOpen = !liveMenuOpen;
+      document.getElementById('live-menu-dropdown').classList.toggle('open', liveMenuOpen);
+    };
+
+    function updateLiveMenu() {
+      var liveCreators = [];
+      allCreators.forEach(function (c) {
+        (c.accounts || []).forEach(function (acc) {
+          if (acc.isLive) {
+            liveCreators.push({ creator: c, account: acc });
+          }
+        });
+      });
+
+      var countEl = document.getElementById('live-menu-label');
+      countEl.textContent = liveCreators.length > 0 ? (liveCreators.length + ' Live Now') : 'Live Now';
+
+      var dot = document.getElementById('live-menu-dot');
+      dot.style.background = liveCreators.length > 0 ? '#ef4444' : '#475569';
+      dot.style.animation = liveCreators.length > 0 ? 'live-pulse 1.5s ease-in-out infinite' : 'none';
+
+      var list = document.getElementById('live-menu-list');
+      var empty = document.getElementById('live-menu-empty');
+
+      if (liveCreators.length === 0) {
+        list.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+
+      list.innerHTML = liveCreators.map(function (lc, i) {
+        var c = lc.creator;
+        var acc = lc.account;
+        var platColor = PLATFORM_COLORS[acc.platform] || '#6b7280';
+        var title = acc.streamTitle || 'Live on ' + (PLATFORM_ICONS[acc.platform] || acc.platform);
+        var viewers = acc.viewerCount ? (acc.viewerCount.toLocaleString() + ' viewers') : '';
+        var avatarSrc = c.avatarUrl || (AVATAR_FALLBACK + encodeURIComponent(c.name));
+        var embedUrl = getEmbedUrl(acc);
+        var watchUrl = getWatchUrl(acc) || acc.url || '';
+
+        // Find YouTube account for "Videos" button
+        var ytAccount = null;
+        (c.accounts || []).forEach(function (a) {
+          if (a.platform === 'youtube' && a.username) ytAccount = a;
+        });
+
+        return '<div class="live-menu-item">' +
+          '<img src="' + avatarSrc + '" alt="' + c.name + '" onerror="this.src=\'' + AVATAR_FALLBACK + encodeURIComponent(c.name) + '\'">' +
+          '<div class="lmi-info">' +
+            '<div class="lmi-name">' + c.name + '</div>' +
+            '<div class="lmi-platform" style="color:' + platColor + '">' + (PLATFORM_ICONS[acc.platform] || acc.platform) +
+              (viewers ? ' &bull; ' + viewers : '') + '</div>' +
+            '<div class="lmi-title">' + title + '</div>' +
+          '</div>' +
+          '<div class="lmi-actions">' +
+            (embedUrl ? '<button class="lmi-watch" onclick="openStreamFromMenu(\'' + embedUrl.replace(/'/g, "\\'") + '\',\'' + c.name.replace(/'/g, "\\'") + '\',\'' + watchUrl.replace(/'/g, "\\'") + '\')">Watch</button>' : '') +
+            (ytAccount ? '<button class="lmi-videos" onclick="openCreatorVideos(\'' + ytAccount.username.replace(/'/g, "\\'") + '\',\'' + c.name.replace(/'/g, "\\'") + '\')">Videos</button>' : '') +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    window.openStreamFromMenu = function (embedUrl, name, openUrl) {
+      liveMenuOpen = false;
+      document.getElementById('live-menu-dropdown').classList.remove('open');
+      openVirtualBrowser(embedUrl, name + ' — Live', openUrl);
+    };
+
+    window.openCreatorVideos = function (handle, name) {
+      liveMenuOpen = false;
+      document.getElementById('live-menu-dropdown').classList.remove('open');
+      showVideosBrowser(handle, name);
+    };
+
+    /* ── Video Browser (recent videos for a creator) ── */
+    function showVideosBrowser(handle, creatorName) {
+      // Show the VR browser overlay with a loading state, then fetch videos
+      var browserEl = document.getElementById('vr-browser');
+      var titleEl = document.getElementById('vr-browser-title');
+      var frameEl = document.getElementById('vr-browser-frame');
+
+      titleEl.textContent = creatorName + ' — Recent Videos';
+      frameEl.src = '';
+      browserEl.classList.add('open');
+
+      // Create a video list inside the browser card
+      var card = browserEl.querySelector('.browser-card');
+      var existingList = document.getElementById('vr-video-list');
+      if (existingList) existingList.remove();
+
+      var videoList = document.createElement('div');
+      videoList.id = 'vr-video-list';
+      videoList.style.cssText = 'padding:16px;max-height:60vh;overflow-y:auto;';
+      videoList.innerHTML = '<div style="text-align:center;color:#64748b;padding:20px;">Loading videos for ' + creatorName + '...</div>';
+      card.appendChild(videoList);
+
+      frameEl.style.display = 'none'; // Hide iframe, show video list instead
+
+      fetch(API_BASE + '/api/youtube_latest.php?handle=' + encodeURIComponent(handle) + '&limit=6')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data.ok || !data.videos || data.videos.length === 0) {
+            videoList.innerHTML = '<div style="text-align:center;color:#64748b;padding:20px;">No recent videos found for ' + creatorName + '.</div>';
+            return;
+          }
+
+          videoList.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+            data.videos.map(function (v) {
+              return '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;cursor:pointer;" onclick="playVideoInBrowser(\'' + v.embed_url.replace(/'/g, "\\'") + '\',\'' + (v.title || '').replace(/'/g, "\\'") + '\')">' +
+                '<img src="' + (v.thumbnail || '') + '" alt="" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block;">' +
+                '<div style="padding:8px 10px;">' +
+                  '<div style="color:#e2e8f0;font-size:0.82rem;font-weight:500;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' + (v.title || 'Untitled') + '</div>' +
+                  '<div style="color:#64748b;font-size:0.7rem;margin-top:4px;">' + (v.views ? v.views + ' views' : '') + '</div>' +
+                '</div>' +
+              '</div>';
+            }).join('') +
+          '</div>';
+        })
+        .catch(function () {
+          videoList.innerHTML = '<div style="text-align:center;color:#64748b;padding:20px;">Could not load videos. Check your connection.</div>';
+        });
+    }
+
+    window.playVideoInBrowser = function (embedUrl, title) {
+      var frameEl = document.getElementById('vr-browser-frame');
+      var titleEl = document.getElementById('vr-browser-title');
+      var videoList = document.getElementById('vr-video-list');
+      if (videoList) videoList.style.display = 'none';
+      frameEl.style.display = 'block';
+      frameEl.src = embedUrl + '?autoplay=1';
+      titleEl.textContent = title || 'Playing Video';
+    };
+
     /* ── Fetch Creators ── */
     function fetchCreators() {
       document.getElementById('loading-status').textContent = 'Fetching creators list...';
-      fetch(API_BASE + '/api/get_my_creators.php?user_id=0')
+      var uid = vrAuthUserId || 0;
+      fetch(API_BASE + '/api/get_my_creators.php?user_id=' + uid, { credentials: uid > 0 ? 'include' : 'omit' })
         .then(function (r) {
           if (!r.ok) throw new Error(r.status);
           return r.json();
@@ -597,7 +988,8 @@
     }
 
     function fetchCreatorsFallback() {
-      fetch(API_BASE + '/api/get_my_creators.php?user_id=0')
+      var uid = vrAuthUserId || 0;
+      fetch(API_BASE + '/api/get_my_creators.php?user_id=' + uid, { credentials: uid > 0 ? 'include' : 'omit' })
         .then(function (r) { return r.json(); })
         .then(function (data) {
           allCreators = (data.creators || []).map(ensureAvatar);
@@ -685,6 +1077,11 @@
       renderCards();
       updatePagination();
       updateHUD();
+      updateLiveMenu();
+
+      // Update auth creator count
+      var countEl = document.getElementById('auth-creator-count');
+      if (countEl) countEl.textContent = '(' + allCreators.length + ' creators)';
 
       var ls = document.getElementById('loading-screen');
       ls.classList.add('fade-out');
@@ -1528,6 +1925,32 @@
         }
       }
 
+      // "Recent Videos" button for any creator with YouTube
+      var ytAccForVideos = (creator.accounts || []).find(function (a) { return a.platform === 'youtube' && a.username; });
+      if (ytAccForVideos) {
+        var vidBtn = document.createElement('button');
+        vidBtn.className = 'btn btn-secondary';
+        vidBtn.textContent = 'Recent Videos';
+        vidBtn.style.borderColor = 'rgba(255,0,0,0.3)';
+        vidBtn.style.color = '#fca5a5';
+        vidBtn.onclick = function () {
+          closeDetail();
+          showVideosBrowser(ytAccForVideos.username, creator.name || 'Creator');
+        };
+        btnsDiv.appendChild(vidBtn);
+      }
+
+      // "View on FC" button — link to the FavCreators web app
+      var fcBtn = document.createElement('a');
+      fcBtn.href = 'https://findtorontoevents.ca/fc/';
+      fcBtn.target = '_blank';
+      fcBtn.rel = 'noopener noreferrer';
+      fcBtn.className = 'btn btn-secondary';
+      fcBtn.textContent = 'View on FC';
+      fcBtn.style.borderColor = 'rgba(168,85,247,0.3)';
+      fcBtn.style.color = '#c4b5fd';
+      btnsDiv.appendChild(fcBtn);
+
       var firstUrl = (creator.accounts && creator.accounts[0]) ? creator.accounts[0].url : '#';
       var profileBtn = document.createElement('a');
       profileBtn.href = firstUrl;
@@ -1625,7 +2048,11 @@
 
     function closeVirtualBrowser() {
       vrBrowserFrame.src = '';
+      vrBrowserFrame.style.display = 'block';
       vrBrowser.classList.remove('open');
+      // Clean up video list if present
+      var vl = document.getElementById('vr-video-list');
+      if (vl) vl.remove();
     }
 
     vrBrowserClose.addEventListener('click', closeVirtualBrowser);
@@ -1755,6 +2182,7 @@
           renderCards();
           updatePagination();
           updateHUD();
+          updateLiveMenu();
 
           var liveCount = allCreators.filter(function (c) { return c._vrIsLive; }).length;
           setProgress(total, total, liveCount > 0 ? liveCount + ' creator' + (liveCount > 1 ? 's' : '') + ' live!' : 'No one live right now');
@@ -1860,7 +2288,17 @@
         vrRefresh.addEventListener('click', function () { refreshLiveStatus(); });
       }
 
-      // Start loading
+      // Check for existing session, then load creators
+      var saved = sessionStorage.getItem('vr_auth_user');
+      if (saved) {
+        try {
+          var u = JSON.parse(saved);
+          if (u && u.id) { vrAuthUser = u; vrAuthUserId = u.id; }
+        } catch (e) {}
+      }
+      // Check session on server (updates UI if logged in)
+      vrCheckSession();
+      // Start loading with current auth state (guest or cached user)
       fetchCreators();
     });
 
@@ -1896,6 +2334,7 @@
   <script src="/vr/quick-wins.js"></script>
   <script src="/vr/quick-wins-substantial.js"></script>
   <script src="/vr/quick-wins-substantial-set2.js"></script>
+  <script src="/vr/quick-wins-substantial-set3.js"></script>
 
   <!-- Comfort vignette + F1 help -->
   <script src="/vr/vr-comfort.js"></script>

@@ -37,6 +37,7 @@ export default defineConfig({
     /(?:^|\/)tests\/mental-health-resources\.spec\.ts$/,
     /(?:^|\/)tests\/vr_quick_wins\.spec\.ts$/,
     /(?:^|\/)tests\/vr_quick_wins_phase2\.spec\.ts$/,
+    /(?:^|\/)tests\/vr_creators_auth\.spec\.ts$/,
   ],
   timeout: isRemoteVerify ? 90000 : 30000,
   retries: isRemoteVerify ? 1 : 0,
