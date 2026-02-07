@@ -104,6 +104,7 @@ Seven-step interactive lesson: look around → point & click → move → telepo
 | `completeness.js` | Set 9: Production readiness — session continuity, error recovery, accessibility, onboarding, performance LOD, calendar minimap, watch history, forecast timeline, device adaptive, changelog |
 | `interaction.js` | Set 10: Immersive Interaction — events sort/save, creators follow, theater mode, movie ratings, 3D stock charts, watchlist, meditation timer, stats dashboard, achievements, sound cues |
 | `personalization.js` | Set 11: Personalization & Social — theme customizer, named playlists, event sharing, event notes, multi-city weather, creator history, notification center, stock portfolio, cross-zone pinboard, hub quick-launch |
+| `advanced-ux.js` | Set 12: Advanced UX & Immersion — data export/import, mini-map radar, dynamic weather FX, photo mode, events countdown, movie autoplay queue, creator spotlight, voice commands, usage analytics, spatial ambient audio |
 
 ## Testing & Deployment
 
@@ -172,3 +173,13 @@ Seven-step interactive lesson: look around → point & click → move → telepo
 | ENH-055 | Stocks Portfolio (simulated buy/sell, P&L tracking, auto-refresh) | Done |
 | ENH-056 | Cross-Zone Pinboard (pin items from any zone, global panel) | Done |
 | ENH-057 | Hub Quick-Launch Favorites (pinned zone shortcuts on hub) | Done |
+| ENH-058 | Data Export/Import (backup all VR data as JSON, restore from file) | Done |
+| ENH-059 | Mini-Map Radar (top-down zone map with position marker, canvas rendering) | Done |
+| ENH-060 | Dynamic Weather FX (rain/snow/fog particles driven by Open-Meteo WMO codes) | Done |
+| ENH-061 | Photo Mode (capture viewport with date/zone watermark, P key shortcut) | Done |
+| ENH-062 | Events Countdown Timer (live countdown to next upcoming event) | Done |
+| ENH-063 | Movie Autoplay Queue (add/advance queue, auto-toggle) | Done |
+| ENH-064 | Creator Spotlight (rotating featured creator, 15s auto-cycle) | Done |
+| ENH-065 | Voice Commands (speech recognition, 11 commands, V key shortcut) | Done |
+| ENH-066 | Usage Analytics Dashboard (session tracking, zone breakdown, day graph) | Done |
+| ENH-067 | Spatial Ambient Audio (zone-specific drone soundscapes, toggleable) | Done |

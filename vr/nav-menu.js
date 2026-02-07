@@ -298,6 +298,8 @@
           '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRPersonalization)VRPersonalization.themeCustomizer.openPanel()" title="Theme (Ctrl+,)">&#x1F3A8; Theme</button>' +
           '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRPersonalization)VRPersonalization.notifications.toggle()" title="Notifications">&#x1F514; Notifs</button>' +
           '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRPersonalization)VRPersonalization.pinboard.toggle()" title="Pinboard">&#x1F4CC; Pins</button>' +
+          '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRAdvancedUX)VRAdvancedUX.analytics.open()" title="Analytics">&#x1F4CA; Stats</button>' +
+          '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRAdvancedUX)VRAdvancedUX.dataExport.export()" title="Export Data">&#x1F4BE; Export</button>' +
         '</div>' +
 
         // Zone navigation
