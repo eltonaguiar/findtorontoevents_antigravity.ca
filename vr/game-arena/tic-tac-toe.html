@@ -159,6 +159,142 @@
     .toast-btn { padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
     .toast-btn.accept { background: #22c55e; color: white; }
     .toast-btn.decline { background: rgba(255,255,255,0.1); color: #aaa; }
+
+    /* ═══ Chat Panel ═══ */
+    #chat-panel {
+      position: fixed; right: 16px; top: 50%; transform: translateY(-50%);
+      width: 310px; max-height: 460px; z-index: 260;
+      background: rgba(10,10,30,0.95); backdrop-filter: blur(12px);
+      border: 1px solid rgba(99,102,241,0.4); border-radius: 16px;
+      display: none; flex-direction: column; overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    #chat-panel.open { display: flex; }
+    .chat-header {
+      padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid rgba(99,102,241,0.2); color: white; font-weight: 700; font-size: 14px;
+      flex-shrink: 0;
+    }
+    .chat-header-left { display: flex; align-items: center; gap: 8px; }
+    .chat-header button { background: none; border: none; color: #888; cursor: pointer; font-size: 16px; }
+    .chat-header button:hover { color: #fff; }
+    .chat-spec-count {
+      font-size: 11px; font-weight: 400; color: #f59e0b;
+      background: rgba(245,158,11,0.15); padding: 2px 8px; border-radius: 10px;
+    }
+    .chat-spectators-bar {
+      padding: 6px 14px; border-bottom: 1px solid rgba(99,102,241,0.15);
+      font-size: 11px; color: #888; flex-shrink: 0; max-height: 80px; overflow-y: auto;
+    }
+    .spec-item {
+      display: flex; justify-content: space-between; align-items: center; padding: 3px 0;
+    }
+    .spec-name { color: #f59e0b; }
+    .spec-badge { font-size: 10px; color: #64748b; }
+    .spec-badge.approved { color: #22c55e; }
+    .spec-approve-btn {
+      background: #22c55e; border: none; color: white; padding: 2px 10px;
+      border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: 600;
+    }
+    .spec-approve-btn:hover { background: #16a34a; }
+    #chat-messages {
+      flex: 1; overflow-y: auto; padding: 10px 14px;
+      display: flex; flex-direction: column; gap: 6px;
+      min-height: 120px;
+    }
+    .chat-msg { font-size: 12px; line-height: 1.4; word-break: break-word; }
+    .chat-msg .chat-name { font-weight: 700; margin-right: 4px; }
+    .chat-msg .chat-name.player { color: #6366f1; }
+    .chat-msg .chat-name.spectator { color: #f59e0b; }
+    .chat-msg .chat-name.system { color: #64748b; }
+    .chat-msg .chat-text { color: #ccc; }
+    .chat-msg.system-msg { color: #64748b; font-style: italic; font-size: 11px; }
+    #chat-input-area {
+      display: flex; gap: 6px; padding: 8px 12px;
+      border-top: 1px solid rgba(99,102,241,0.2); flex-shrink: 0;
+    }
+    #chat-input {
+      flex: 1; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px; padding: 7px 10px; color: white; font-size: 12px; outline: none;
+      font-family: inherit;
+    }
+    #chat-input:focus { border-color: rgba(99,102,241,0.5); }
+    #chat-send-btn {
+      padding: 7px 14px; background: linear-gradient(135deg, #6366f1, #a855f7);
+      border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer; font-size: 12px;
+    }
+    #chat-send-btn:hover { box-shadow: 0 2px 10px rgba(99,102,241,0.4); }
+    #chat-request-area {
+      display: none; padding: 8px 12px; border-top: 1px solid rgba(99,102,241,0.2);
+      text-align: center; flex-shrink: 0;
+    }
+    #chat-request-btn {
+      background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.4);
+      color: #f59e0b; padding: 7px 18px; border-radius: 8px; cursor: pointer;
+      font-weight: 600; font-size: 12px; width: 100%;
+    }
+    #chat-request-btn:hover { background: rgba(245,158,11,0.3); }
+    #chat-request-btn:disabled { opacity: 0.5; cursor: default; }
+    #chat-request-status { display: block; margin-top: 4px; color: #888; font-size: 11px; }
+
+    /* Chat toggle floating button */
+    #chat-toggle-btn {
+      position: fixed; right: 16px; bottom: 80px; z-index: 260;
+      width: 48px; height: 48px; border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      border: none; color: white; font-size: 20px; cursor: pointer;
+      box-shadow: 0 4px 15px rgba(99,102,241,0.4);
+      display: none; align-items: center; justify-content: center;
+      transition: transform 0.2s;
+    }
+    #chat-toggle-btn:hover { transform: scale(1.1); }
+    #chat-toggle-btn.has-new {
+      animation: chatPulse 0.6s ease-in-out;
+    }
+    @keyframes chatPulse { 0%,100% { box-shadow: 0 4px 15px rgba(99,102,241,0.4); } 50% { box-shadow: 0 4px 25px rgba(236,72,153,0.7); } }
+    #chat-unread {
+      position: absolute; top: -4px; right: -4px; width: 18px; height: 18px;
+      background: #ef4444; border-radius: 50%; font-size: 10px; font-weight: 700;
+      display: none; align-items: center; justify-content: center; line-height: 18px;
+    }
+
+    /* Spectator badge */
+    #spectator-badge {
+      position: fixed; top: 90px; right: 16px; z-index: 200;
+      background: rgba(10,10,30,0.88); backdrop-filter: blur(10px);
+      border: 1px solid rgba(245,158,11,0.3); border-radius: 10px;
+      padding: 6px 14px; color: #f59e0b; font-size: 13px; font-weight: 600;
+      display: none;
+    }
+
+    /* Watch mode button */
+    .mode-btn-watch {
+      background: rgba(245,158,11,0.15); color: #fbbf24;
+      border-color: rgba(245,158,11,0.4);
+    }
+    .mode-btn-watch:hover { background: rgba(245,158,11,0.25); box-shadow: 0 4px 20px rgba(245,158,11,0.3); }
+
+    /* Active games list */
+    #active-games-list {
+      display: none; width: 100%; max-width: 500px; text-align: center;
+    }
+    #active-games-list h3 { color: #f59e0b; font-size: 1.1rem; margin-bottom: 12px; }
+    .game-card {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(99,102,241,0.3);
+      border-radius: 12px; padding: 14px 20px; margin: 8px auto;
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; transition: all 0.2s; max-width: 420px; text-align: left;
+    }
+    .game-card:hover { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.5); transform: translateY(-1px); }
+    .game-card-players { color: white; font-weight: 600; font-size: 14px; }
+    .game-card-info { color: #888; font-size: 11px; margin-top: 2px; }
+    .game-card-watch { color: #f59e0b; font-weight: 700; font-size: 13px; white-space: nowrap; margin-left: 12px; }
+    #no-games-msg { color: #64748b; font-size: 14px; padding: 20px; }
+    #back-from-watch {
+      margin-top: 14px; background: none; border: 1px solid rgba(255,255,255,0.2);
+      color: #888; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-size: 13px;
+    }
+    #back-from-watch:hover { color: #fff; border-color: rgba(255,255,255,0.4); }
   </style>
 </head>
 <body>
@@ -185,6 +321,17 @@
         PLAY vs AI
         <span class="mode-sub">Practice offline</span>
       </button>
+      <button class="mode-btn mode-btn-watch" onclick="startWatchMode()">
+        <span class="mode-icon">&#x1F441;</span>
+        WATCH A GAME
+        <span class="mode-sub">Spectate live matches</span>
+      </button>
+    </div>
+    <div id="active-games-list">
+      <h3>&#x1F3AE; Live Games</h3>
+      <div id="games-list-inner"></div>
+      <div id="no-games-msg" style="display:none;">No active games right now. Check back soon!</div>
+      <button id="back-from-watch" onclick="cancelWatch()">&#x2190; Back</button>
     </div>
     <div id="queue-status">
       <span class="queue-dot"></span>
@@ -226,6 +373,36 @@
 
   <!-- Toast -->
   <div id="toast-container"></div>
+
+  <!-- Spectator badge -->
+  <div id="spectator-badge">&#x1F441; <span id="spectator-count">0</span> watching</div>
+
+  <!-- Chat toggle button -->
+  <button id="chat-toggle-btn" onclick="toggleChat()">
+    &#x1F4AC;
+    <span id="chat-unread">0</span>
+  </button>
+
+  <!-- Chat Panel -->
+  <div id="chat-panel">
+    <div class="chat-header">
+      <div class="chat-header-left">
+        <span>&#x1F4AC; Game Chat</span>
+        <span class="chat-spec-count" id="chat-spec-label"></span>
+      </div>
+      <button onclick="toggleChat()" title="Close chat">&#x2715;</button>
+    </div>
+    <div class="chat-spectators-bar" id="chat-spectators-bar" style="display:none;"></div>
+    <div id="chat-messages"></div>
+    <div id="chat-input-area">
+      <input type="text" id="chat-input" placeholder="Type a message..." maxlength="200" autocomplete="off" />
+      <button id="chat-send-btn" onclick="sendChatMessage()">Send</button>
+    </div>
+    <div id="chat-request-area">
+      <button id="chat-request-btn" onclick="requestChatPermission()">&#x1F64B; Request to Chat</button>
+      <span id="chat-request-status"></span>
+    </div>
+  </div>
 
   <!-- A-FRAME SCENE -->
   <a-scene
@@ -554,6 +731,9 @@
       var isMyTurn = (myMark === 'X');
       setStatus(isMyTurn ? 'Your turn - Click a cell!' : 'Waiting for ' + opponentName + '...');
 
+      // Enable chat for players
+      enablePlayerChat();
+
       // Start polling for opponent moves
       lastBoardStr = '---------';
       startGamePolling();
@@ -573,10 +753,24 @@
     /* ═══════════════════════════════════════════
        GAME POLLING (human mode)
        ═══════════════════════════════════════════ */
+    var specFetchCounter = 0;
+
     function startGamePolling() {
       if (pollInterval) clearInterval(pollInterval);
+      specFetchCounter = 0;
       pollInterval = setInterval(function() {
         if (!matchId || gameOver) { clearInterval(pollInterval); pollInterval = null; return; }
+
+        // Every ~5 polls (6s), also fetch full spectator list for chat panel
+        specFetchCounter++;
+        if (specFetchCounter % 5 === 0 && gameMode === 'human') {
+          apiGet('spectate_poll', { match_id: matchId }, function(err2, data2) {
+            if (!err2 && data2 && data2.success) {
+              renderSpectatorsBar(data2.spectators || [], data2.spectator_count || 0);
+            }
+          });
+        }
+
         apiGet('poll', { player_id: playerId, match_id: matchId }, function(err, data) {
           if (err || !data || !data.success) return;
           // Sync board state
@@ -586,6 +780,23 @@
           }
           currentPlayer = data.current_turn;
           updateTurnHUD();
+
+          // Update spectator count
+          if (typeof data.spectator_count !== 'undefined') {
+            var scBadge = document.getElementById('spectator-count');
+            if (scBadge) scBadge.textContent = data.spectator_count;
+          }
+
+          // Show chat request toasts from spectators
+          if (data.chat_requests && data.chat_requests.length > 0) {
+            for (var cr = 0; cr < data.chat_requests.length; cr++) {
+              var reqName = data.chat_requests[cr];
+              if (!knownChatReqs[reqName]) {
+                knownChatReqs[reqName] = true;
+                showChatRequestToast(reqName);
+              }
+            }
+          }
 
           if (data.status === 'done') {
             clearInterval(pollInterval);
@@ -658,12 +869,13 @@
     }
 
     function isMyTurnNow() {
+      if (isSpectator) return false;
       if (gameMode === 'ai') return currentPlayer === 'X';
       return currentPlayer === myMark;
     }
 
     function handleMove(idx) {
-      if (gameOver || board[idx] !== null || !isMyTurnNow()) return;
+      if (isSpectator || gameOver || board[idx] !== null || !isMyTurnNow()) return;
 
       if (gameMode === 'human') {
         // Send move to server
@@ -929,6 +1141,7 @@
       }
       gameOver = true;
       gameMode = null;
+      disableChat();
       showModeSelect();
       resetBoardState();
     };
@@ -953,11 +1166,430 @@
     }
 
     /* ═══════════════════════════════════════════
+       SPECTATOR & CHAT STATE
+       ═══════════════════════════════════════════ */
+    var isSpectator    = false;
+    var chatOpen       = false;
+    var chatPollTimer  = null;
+    var specPollTimer  = null;
+    var lastChatId     = 0;
+    var chatReqSent    = false;
+    var chatApproved   = false;
+    var chatUnread     = 0;
+    var knownChatReqs  = {};  // track which spectator chat requests we've already shown a toast for
+
+    /* ═══════════════════════════════════════════
+       WATCH MODE — list & pick active games
+       ═══════════════════════════════════════════ */
+    window.startWatchMode = function() {
+      apiGet('list_active', {}, function(err, data) {
+        if (err || !data || !data.success) return;
+        var listEl  = document.getElementById('active-games-list');
+        var inner   = document.getElementById('games-list-inner');
+        var noGames = document.getElementById('no-games-msg');
+        inner.innerHTML = '';
+
+        if (!data.games || data.games.length === 0) {
+          noGames.style.display = 'block';
+        } else {
+          noGames.style.display = 'none';
+          for (var i = 0; i < data.games.length; i++) {
+            (function(g) {
+              var card = document.createElement('div');
+              card.className = 'game-card';
+              card.innerHTML =
+                '<div><div class="game-card-players">' + htmlEsc(g.player_x) + ' vs ' + htmlEsc(g.player_o) + '</div>' +
+                '<div class="game-card-info">' + g.spectators + ' spectator(s) \u00B7 Turn: ' + g.current_turn + '</div></div>' +
+                '<div class="game-card-watch">\u25B6 WATCH</div>';
+              card.addEventListener('click', function() { joinAsSpectator(g.match_id); });
+              inner.appendChild(card);
+            })(data.games[i]);
+          }
+        }
+
+        // Show list, hide mode buttons
+        document.querySelector('.mode-btns').style.display = 'none';
+        document.getElementById('online-count').style.display = 'none';
+        listEl.style.display = 'block';
+      });
+    };
+
+    window.cancelWatch = function() {
+      document.getElementById('active-games-list').style.display = 'none';
+      document.querySelector('.mode-btns').style.display = 'flex';
+      document.getElementById('online-count').style.display = '';
+    };
+
+    function htmlEsc(str) {
+      var d = document.createElement('div');
+      d.textContent = str || '';
+      return d.innerHTML;
+    }
+
+    /* ═══════════════════════════════════════════
+       JOIN AS SPECTATOR
+       ═══════════════════════════════════════════ */
+    function joinAsSpectator(mid) {
+      apiPost('spectate_join', { spectator_id: playerId, spectator_name: playerName, match_id: mid }, function(err, data) {
+        if (err || !data || !data.success) {
+          showToast('Error', data ? data.error : 'Could not join', 4000);
+          return;
+        }
+
+        isSpectator = true;
+        matchId     = mid;
+        gameMode    = 'spectate';
+        gameOver    = false;
+
+        // Set HUD names
+        document.getElementById('name-x').textContent = data.player_x || 'Player X';
+        document.getElementById('name-o').textContent = data.player_o || 'Player O';
+        opponentName = (data.player_x || '?') + ' vs ' + (data.player_o || '?');
+
+        hideModeSelect();
+        resetBoardState();
+
+        // Sync initial board
+        if (data.board) syncBoard(data.board);
+        currentPlayer = data.current_turn;
+        updateTurnHUD();
+        setStatus('\uD83D\uDC41 Spectating \u2014 ' + opponentName);
+
+        // Show spectator UI
+        document.getElementById('spectator-badge').style.display = 'block';
+        document.getElementById('chat-toggle-btn').style.display = 'flex';
+
+        // Swap bottom buttons for spectator
+        var btns = document.getElementById('game-btns');
+        btns.innerHTML =
+          '<button class="btn btn-secondary" onclick="toggleChat()">\uD83D\uDCAC Chat</button>' +
+          '<button class="btn btn-danger" onclick="leaveSpectate()">Leave</button>' +
+          '<a class="btn btn-secondary" href="/vr/game-arena/">Back to Arena</a>';
+
+        // Show chat request instead of input
+        document.getElementById('chat-input-area').style.display = 'none';
+        document.getElementById('chat-request-area').style.display = 'block';
+
+        // Start polling
+        startSpectatorPolling();
+        startChatPolling();
+      });
+    }
+
+    /* ═══════════════════════════════════════════
+       SPECTATOR POLLING
+       ═══════════════════════════════════════════ */
+    function startSpectatorPolling() {
+      if (specPollTimer) clearInterval(specPollTimer);
+      specPollTimer = setInterval(function() {
+        if (!matchId) { clearInterval(specPollTimer); return; }
+
+        apiGet('spectate_poll', { match_id: matchId }, function(err, data) {
+          if (err || !data || !data.success) return;
+
+          if (data.board && data.board !== lastBoardStr) {
+            syncBoard(data.board);
+            lastBoardStr = data.board;
+          }
+          currentPlayer = data.current_turn;
+          updateTurnHUD();
+
+          // Update spectator count badge
+          var badge = document.getElementById('spectator-count');
+          if (badge) badge.textContent = data.spectator_count || 0;
+
+          // Check if my chat was approved
+          if (isSpectator && data.spectators) {
+            for (var s = 0; s < data.spectators.length; s++) {
+              if (data.spectators[s].name === playerName && data.spectators[s].can_chat === 1) {
+                if (!chatApproved) {
+                  chatApproved = true;
+                  document.getElementById('chat-request-area').style.display = 'none';
+                  document.getElementById('chat-input-area').style.display = 'flex';
+                  showToast('Chat Approved', 'You can now send messages!', 3000);
+                }
+                break;
+              }
+            }
+          }
+
+          // Update spectators bar in chat
+          renderSpectatorsBar(data.spectators || [], data.spectator_count || 0);
+
+          if (data.status === 'done') {
+            clearInterval(specPollTimer);
+            specPollTimer = null;
+            var winner = data.winner;
+            if (winner === 'D' || winner === 'A') {
+              setStatus('Game over \u2014 Draw!');
+            } else {
+              var winName = (winner === 'X') ? (data.player_x || 'X') : (data.player_o || 'O');
+              setStatus('Game over \u2014 ' + winName + ' wins!');
+            }
+            // Show game end in chat
+            addLocalChatMsg('System', 'system', 'Game over!');
+          }
+        });
+      }, 1200);
+    }
+
+    window.leaveSpectate = function() {
+      if (specPollTimer)  { clearInterval(specPollTimer);  specPollTimer = null; }
+      if (chatPollTimer) { clearInterval(chatPollTimer); chatPollTimer = null; }
+      if (matchId) {
+        apiPost('spectate_leave', { spectator_id: playerId, match_id: matchId }, function(){});
+      }
+      isSpectator  = false;
+      matchId      = null;
+      gameMode     = null;
+      chatOpen     = false;
+      lastChatId   = 0;
+      chatReqSent  = false;
+      chatApproved = false;
+      chatUnread   = 0;
+      knownChatReqs = {};
+
+      document.getElementById('chat-panel').classList.remove('open');
+      document.getElementById('chat-toggle-btn').style.display = 'none';
+      document.getElementById('spectator-badge').style.display = 'none';
+      document.getElementById('chat-messages').innerHTML = '';
+      document.getElementById('chat-input-area').style.display = 'flex';
+      document.getElementById('chat-request-area').style.display = 'none';
+
+      // Restore buttons
+      document.getElementById('game-btns').innerHTML =
+        '<button class="btn btn-primary" onclick="resetGame()">New Game</button>' +
+        '<button class="btn btn-danger" onclick="abandonMatch()">Abandon</button>' +
+        '<a class="btn btn-secondary" href="/vr/game-arena/">Back to Arena</a>';
+
+      showModeSelect();
+      resetBoardState();
+    };
+
+    /* ═══════════════════════════════════════════
+       CHAT — TOGGLE, SEND, POLL
+       ═══════════════════════════════════════════ */
+    window.toggleChat = function() {
+      chatOpen = !chatOpen;
+      var panel = document.getElementById('chat-panel');
+      if (chatOpen) {
+        panel.classList.add('open');
+        chatUnread = 0;
+        updateChatBadge();
+        var msgs = document.getElementById('chat-messages');
+        msgs.scrollTop = msgs.scrollHeight;
+        // Focus input if allowed
+        var inp = document.getElementById('chat-input');
+        if (inp.offsetParent !== null) inp.focus();
+      } else {
+        panel.classList.remove('open');
+      }
+    };
+
+    window.sendChatMessage = function() {
+      var inp = document.getElementById('chat-input');
+      var msg = inp.value.trim();
+      if (!msg || !matchId) return;
+      inp.value = '';
+
+      var senderType = isSpectator ? 'spectator' : 'player';
+      apiPost('chat_send', {
+        match_id: matchId,
+        sender_name: playerName,
+        sender_type: senderType,
+        message: msg
+      }, function(err, data) {
+        if (err || !data || !data.success) {
+          if (data && data.error === 'chat_not_allowed') {
+            showToast('Chat', 'Your chat request hasn\'t been approved yet.', 3000);
+          }
+        }
+      });
+    };
+
+    // Enter key sends chat
+    document.getElementById('chat-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.keyCode === 13) {
+        e.preventDefault();
+        sendChatMessage();
+      }
+    });
+
+    function startChatPolling() {
+      if (chatPollTimer) clearInterval(chatPollTimer);
+      lastChatId = 0;
+      chatPollTimer = setInterval(function() {
+        if (!matchId) { clearInterval(chatPollTimer); return; }
+        apiGet('chat_poll', { match_id: matchId, after_id: lastChatId }, function(err, data) {
+          if (err || !data || !data.success) return;
+          var msgs = data.messages || [];
+          for (var i = 0; i < msgs.length; i++) {
+            addLocalChatMsg(msgs[i].name, msgs[i].type, msgs[i].message);
+            lastChatId = msgs[i].id;
+          }
+          if (msgs.length > 0 && !chatOpen) {
+            chatUnread += msgs.length;
+            updateChatBadge();
+          }
+        });
+      }, 1500);
+    }
+
+    function addLocalChatMsg(name, type, message) {
+      var container = document.getElementById('chat-messages');
+      var div = document.createElement('div');
+      if (type === 'system') {
+        div.className = 'chat-msg system-msg';
+        div.textContent = message;
+      } else {
+        div.className = 'chat-msg';
+        var nameSpan = document.createElement('span');
+        nameSpan.className = 'chat-name ' + type;
+        nameSpan.textContent = name + ':';
+        var textSpan = document.createElement('span');
+        textSpan.className = 'chat-text';
+        textSpan.textContent = ' ' + message;
+        div.appendChild(nameSpan);
+        div.appendChild(textSpan);
+      }
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function updateChatBadge() {
+      var badge = document.getElementById('chat-unread');
+      var btn   = document.getElementById('chat-toggle-btn');
+      if (chatUnread > 0) {
+        badge.textContent = chatUnread > 9 ? '9+' : chatUnread;
+        badge.style.display = 'flex';
+        btn.classList.add('has-new');
+        setTimeout(function() { btn.classList.remove('has-new'); }, 600);
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    /* ═══════════════════════════════════════════
+       CHAT REQUEST / APPROVE (spectators)
+       ═══════════════════════════════════════════ */
+    window.requestChatPermission = function() {
+      if (chatReqSent || !matchId) return;
+      chatReqSent = true;
+      document.getElementById('chat-request-btn').disabled = true;
+      document.getElementById('chat-request-status').textContent = 'Request sent \u2014 waiting for approval...';
+
+      apiPost('chat_request', { match_id: matchId, spectator_id: playerId }, function(err, data) {
+        if (err || !data || !data.success) {
+          document.getElementById('chat-request-status').textContent = 'Error sending request.';
+          chatReqSent = false;
+          document.getElementById('chat-request-btn').disabled = false;
+        }
+      });
+    };
+
+    window.approveChatRequest = function(specName) {
+      if (!matchId) return;
+      apiPost('chat_approve', { match_id: matchId, spectator_name: specName }, function(err, data) {
+        if (err || !data || !data.success) return;
+        showToast('Chat', specName + ' can now chat', 3000);
+        // Remove the toast approval button
+        var toastEl = document.getElementById('toast-approve-' + specName.replace(/\s/g,'_'));
+        if (toastEl) toastEl.parentNode.removeChild(toastEl);
+      });
+    };
+
+    /* ═══════════════════════════════════════════
+       SPECTATORS BAR IN CHAT
+       ═══════════════════════════════════════════ */
+    function renderSpectatorsBar(spectators, count) {
+      var bar   = document.getElementById('chat-spectators-bar');
+      var label = document.getElementById('chat-spec-label');
+      if (label) label.textContent = count > 0 ? count + ' watching' : '';
+
+      if (!spectators || spectators.length === 0) {
+        bar.style.display = 'none';
+        return;
+      }
+      bar.style.display = 'block';
+      var html = '<div style="font-weight:600;margin-bottom:3px;">Spectators:</div>';
+      for (var i = 0; i < spectators.length; i++) {
+        var sp = spectators[i];
+        html += '<div class="spec-item"><span class="spec-name">' + htmlEsc(sp.name) + '</span>';
+        if (sp.can_chat === 1) {
+          html += '<span class="spec-badge approved">\u2714 Can chat</span>';
+        } else if (sp.chat_requested === 1 && !isSpectator) {
+          html += '<button class="spec-approve-btn" onclick="approveChatRequest(\'' + htmlEsc(sp.name).replace(/'/g, "\\'") + '\')">\u2714 Approve</button>';
+        } else if (sp.chat_requested === 1) {
+          html += '<span class="spec-badge">Pending...</span>';
+        }
+        html += '</div>';
+      }
+      bar.innerHTML = html;
+    }
+
+    /* ═══════════════════════════════════════════
+       TOAST HELPER
+       ═══════════════════════════════════════════ */
+    function showToast(title, msg, duration) {
+      var container = document.getElementById('toast-container');
+      var toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = '<div class="toast-title">' + htmlEsc(title) + '</div><div class="toast-msg">' + htmlEsc(msg) + '</div>';
+      container.appendChild(toast);
+      setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, duration || 5000);
+    }
+
+    function showChatRequestToast(specName) {
+      var container = document.getElementById('toast-container');
+      var safeId = 'toast-approve-' + specName.replace(/\s/g,'_');
+      var toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.id = safeId;
+      toast.innerHTML =
+        '<div class="toast-title">\uD83D\uDE4B Chat Request</div>' +
+        '<div class="toast-msg">' + htmlEsc(specName) + ' wants to chat</div>' +
+        '<div class="toast-actions">' +
+        '<button class="toast-btn accept" onclick="approveChatRequest(\'' + htmlEsc(specName).replace(/'/g, "\\'") + '\')">Approve</button>' +
+        '<button class="toast-btn decline" onclick="this.closest(\'.toast\').remove()">Ignore</button>' +
+        '</div>';
+      container.appendChild(toast);
+      // Auto-dismiss after 15s
+      setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 15000);
+    }
+
+    /* ═══════════════════════════════════════════
+       INTEGRATE CHAT/SPECTATORS INTO HUMAN GAME
+       ═══════════════════════════════════════════ */
+    function enablePlayerChat() {
+      document.getElementById('chat-toggle-btn').style.display = 'flex';
+      document.getElementById('spectator-badge').style.display = 'block';
+      document.getElementById('chat-input-area').style.display = 'flex';
+      document.getElementById('chat-request-area').style.display = 'none';
+      startChatPolling();
+    }
+
+    function disableChat() {
+      if (chatPollTimer) { clearInterval(chatPollTimer); chatPollTimer = null; }
+      if (specPollTimer) { clearInterval(specPollTimer); specPollTimer = null; }
+      document.getElementById('chat-toggle-btn').style.display = 'none';
+      document.getElementById('spectator-badge').style.display = 'none';
+      document.getElementById('chat-panel').classList.remove('open');
+      chatOpen     = false;
+      lastChatId   = 0;
+      chatUnread   = 0;
+      chatReqSent  = false;
+      chatApproved = false;
+      knownChatReqs = {};
+      document.getElementById('chat-messages').innerHTML = '';
+    }
+
+    /* ═══════════════════════════════════════════
        CLEANUP ON UNLOAD
        ═══════════════════════════════════════════ */
     window.addEventListener('beforeunload', function() {
-      if (matchId && gameMode === 'human' && !gameOver) {
-        // Fire-and-forget leave
+      if (isSpectator && matchId) {
+        navigator.sendBeacon(API_URL + '?action=spectate_leave', 'spectator_id=' + encodeURIComponent(playerId) + '&match_id=' + matchId);
+      } else if (matchId && gameMode === 'human' && !gameOver) {
         navigator.sendBeacon(API_URL + '?action=leave', 'player_id=' + encodeURIComponent(playerId) + '&match_id=' + matchId);
       }
     });

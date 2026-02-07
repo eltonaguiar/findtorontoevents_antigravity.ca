@@ -335,6 +335,16 @@
       <a-entity id="recent-matches" position="0 0.5 0.05"></a-entity>
     </a-entity>
 
+    <!-- ===== LIVE GAMES (SPECTATE) PANEL ===== -->
+    <a-entity position="6 1.5 6" rotation="0 -150 0" id="live-games-panel">
+      <a-plane width="4.5" height="4" color="#0a0a1f" opacity="0.9" material="shader: flat">
+        <a-plane width="4.3" height="3.8" color="#111128" opacity="0.95" position="0 0 0.01" material="shader: flat"></a-plane>
+      </a-plane>
+      <a-text value="LIVE GAMES" align="center" width="5" color="#f59e0b" position="0 1.5 0.05" font="mozillavr"></a-text>
+      <a-text value="Spectate active matches" align="center" width="3.5" color="#64748b" position="0 1.15 0.05"></a-text>
+      <a-entity id="live-games-entries" position="0 0.7 0.05"></a-entity>
+    </a-entity>
+
     <!-- Floating particle decorations -->
     <a-sphere position="-8 4 -8" radius="0.1" color="#6366f1" opacity="0.5"
               animation="property: position; to: -8 6 -8; dur: 4000; loop: true; dir: alternate; easing: easeInOutSine"></a-sphere>
@@ -604,6 +614,56 @@
       });
     }
 
+    // ===== 3D LIVE GAMES (SPECTATE) =====
+    function renderLiveGames() {
+      var container = document.getElementById('live-games-entries');
+      if (!container) return;
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', API_URL + '?action=list_active', true);
+      xhr.onload = function() {
+        try {
+          var data = JSON.parse(xhr.responseText);
+          container.innerHTML = '';
+          if (!data.success || !data.games || data.games.length === 0) {
+            var noGames = document.createElement('a-text');
+            noGames.setAttribute('value', 'No live games right now');
+            noGames.setAttribute('align', 'center');
+            noGames.setAttribute('width', '3');
+            noGames.setAttribute('color', '#64748b');
+            noGames.setAttribute('position', '0 0 0');
+            container.appendChild(noGames);
+            return;
+          }
+          var max = Math.min(data.games.length, 5);
+          for (var i = 0; i < max; i++) {
+            var g = data.games[i];
+            var y = -i * 0.55;
+
+            var namesEl = document.createElement('a-text');
+            var label = (g.player_x || '?') + ' vs ' + (g.player_o || '?');
+            if (label.length > 22) label = label.substring(0, 21) + '..';
+            namesEl.setAttribute('value', label);
+            namesEl.setAttribute('align', 'left');
+            namesEl.setAttribute('width', '2.5');
+            namesEl.setAttribute('color', '#fff');
+            namesEl.setAttribute('position', '-1.8 ' + y + ' 0');
+            container.appendChild(namesEl);
+
+            var infoEl = document.createElement('a-text');
+            infoEl.setAttribute('value', (g.spectators || 0) + ' watching');
+            infoEl.setAttribute('align', 'right');
+            infoEl.setAttribute('width', '2');
+            infoEl.setAttribute('color', '#f59e0b');
+            infoEl.setAttribute('position', '1.8 ' + y + ' 0');
+            container.appendChild(infoEl);
+          }
+        } catch(e) {}
+      };
+      xhr.onerror = function() {};
+      xhr.send();
+    }
+
     // ===== 3D RECENT MATCHES =====
     function renderMatches() {
       var container = document.getElementById('recent-matches');
@@ -684,8 +744,10 @@
         renderLeaderboard();
         renderPlayers();
         renderMatches();
+        renderLiveGames();
         simulateChallenge();
         setInterval(renderPlayers, 30000);
+        setInterval(renderLiveGames, 15000);
       }
       if (scene && scene.hasLoaded) onReady();
       else if (scene) scene.addEventListener('loaded', onReady);
