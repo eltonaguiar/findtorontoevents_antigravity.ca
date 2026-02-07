@@ -77,6 +77,35 @@
       }
       requestAnimationFrame(function () { overlay.style.opacity = '1'; });
     }
+
+    // Zone tooltip: floating info panel on hover
+    AFRAME.registerComponent('zone-tooltip', {
+      schema: { text: { type: 'string', default: '' }, color: { type: 'string', default: '#00d4ff' } },
+      init: function () {
+        var self = this;
+        // Create tooltip entity above the parent
+        var tip = document.createElement('a-entity');
+        tip.setAttribute('position', '0 3.8 0');
+        tip.setAttribute('visible', 'false');
+        tip.setAttribute('look-at-camera', '');
+        tip.innerHTML =
+          '<a-plane width="3.5" height="0.8" color="#0a0a1a" opacity="0.92" material="shader: flat"></a-plane>' +
+          '<a-plane width="3.5" height="0.8" color="' + this.data.color + '" opacity="0.1" material="shader: flat" position="0 0 0.003"></a-plane>' +
+          '<a-text value="' + this.data.text + '" align="center" color="' + this.data.color + '" width="4" position="0 0.1 0.01" wrap-count="30"></a-text>' +
+          '<a-text value="Click to Enter" align="center" color="#64748b" width="2.5" position="0 -0.2 0.01"></a-text>';
+        this.tip = tip;
+        this.el.appendChild(tip);
+
+        this.el.addEventListener('mouseenter', function () {
+          tip.setAttribute('visible', 'true');
+          tip.setAttribute('animation__show', 'property: scale; from: 0.5 0.5 0.5; to: 1 1 1; dur: 200; easing: easeOutBack');
+        });
+        this.el.addEventListener('mouseleave', function () {
+          tip.setAttribute('animation__hide', 'property: scale; to: 0 0 0; dur: 150; easing: easeInQuad');
+          setTimeout(function () { tip.setAttribute('visible', 'false'); }, 150);
+        });
+      }
+    });
   </script>
 
   <style>
@@ -234,7 +263,7 @@
     </a-entity>
 
     <!-- ===== ZONE 1: Toronto Events ===== -->
-    <a-entity position="-6 0 -8">
+    <a-entity position="-6 0 -8" zone-tooltip="text: Browse concerts, festivals, sports & nightlife in Toronto; color: #ff6b6b">
       <!-- Clickable box -->
       <a-box class="clickable" position="0 1.5 0" width="2.5" height="2.5" depth="0.5"
              color="#ff6b6b" opacity="0.9"
@@ -262,7 +291,7 @@
     </a-entity>
 
     <!-- ===== ZONE 2: Movies & Trailers ===== -->
-    <a-entity position="0 0 -8">
+    <a-entity position="0 0 -8" zone-tooltip="text: Watch trailers, browse showtimes & build your queue; color: #4ecdc4">
       <a-box class="clickable" position="0 1.5 0" width="2.5" height="2.5" depth="0.5"
              color="#4ecdc4" opacity="0.9"
              zone-link="url: /vr/movies.html"
@@ -286,7 +315,7 @@
     </a-entity>
 
     <!-- ===== ZONE 3: FavCreators ===== -->
-    <a-entity position="6 0 -8">
+    <a-entity position="6 0 -8" zone-tooltip="text: See who is live, join streams & watch YouTube highlights; color: #a855f7">
       <a-box class="clickable" position="0 1.5 0" width="2.5" height="2.5" depth="0.5"
              color="#a855f7" opacity="0.9"
              zone-link="url: /vr/creators.html"
@@ -310,7 +339,7 @@
     </a-entity>
 
     <!-- ===== ZONE 4: Stock Ideas ===== -->
-    <a-entity position="-6 0 8">
+    <a-entity position="-6 0 8" zone-tooltip="text: Real-time stock tickers, gainers, losers & market news; color: #22c55e">
       <a-box class="clickable" position="0 1.5 0" width="2.5" height="2.5" depth="0.5"
              color="#22c55e" opacity="0.9"
              zone-link="url: /vr/stocks-zone.html"
@@ -334,7 +363,7 @@
     </a-entity>
 
     <!-- ===== ZONE 5: Wellness & Garden ===== -->
-    <a-entity position="0 0 8">
+    <a-entity position="0 0 8" zone-tooltip="text: Guided breathing, meditation garden & wellness check-ins; color: #10b981">
       <a-box class="clickable" position="0 1.5 0" width="2.5" height="2.5" depth="0.5"
              color="#10b981" opacity="0.9"
              zone-link="url: /vr/wellness/"
@@ -361,7 +390,7 @@
     </a-entity>
 
     <!-- ===== ZONE 6: Weather ===== -->
-    <a-entity position="6 0 8">
+    <a-entity position="6 0 8" zone-tooltip="text: Live Toronto weather with seasonal VR environments; color: #06b6d4">
       <a-box class="clickable" position="0 1.5 0" width="2.5" height="2.5" depth="0.5"
              color="#06b6d4" opacity="0.9"
              zone-link="url: /vr/weather-zone.html"
@@ -385,7 +414,7 @@
     </a-entity>
 
     <!-- TUTORIAL ZONE (ENH-007) -->
-    <a-entity position="0 0 12">
+    <a-entity position="0 0 12" zone-tooltip="text: Step-by-step guide to VR controls & interactions; color: #f59e0b">
       <a-box class="clickable" position="0 1.5 0" width="2.5" height="2.5" depth="0.5"
              color="#f59e0b" opacity="0.9"
              zone-link="url: /vr/tutorial/"

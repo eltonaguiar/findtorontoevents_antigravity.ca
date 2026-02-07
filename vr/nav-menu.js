@@ -303,6 +303,8 @@
           '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRComfortIntel)VRComfortIntel.zenMode.toggle()" title="Zen Mode (Z)">&#x1F9D8; Zen</button>' +
           '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRComfortIntel)VRComfortIntel.comfortV2.open()" title="Comfort Settings">&#x1F6CB; Comfort</button>' +
           '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRComfortIntel)VRComfortIntel.customHotkeys.openEditor()" title="Custom Hotkeys">&#x2328; Keys</button>' +
+          '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRContentDepth)VRContentDepth.crossTimeline.open()" title="Timeline">&#x1F550; Timeline</button>' +
+          '<button class="vr-nav-util-btn" onclick="closeNavMenu();if(window.VRContentDepth)VRContentDepth.scratchpad.toggle()" title="Scratchpad (Ctrl+N)">&#x1F4DD; Notes</button>' +
         '</div>' +
 
         // Zone navigation

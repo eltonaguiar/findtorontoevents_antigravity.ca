@@ -106,6 +106,7 @@ Seven-step interactive lesson: look around → point & click → move → telepo
 | `personalization.js` | Set 11: Personalization & Social — theme customizer, named playlists, event sharing, event notes, multi-city weather, creator history, notification center, stock portfolio, cross-zone pinboard, hub quick-launch |
 | `advanced-ux.js` | Set 12: Advanced UX & Immersion — data export/import, mini-map radar, dynamic weather FX, photo mode, events countdown, movie autoplay queue, creator spotlight, voice commands, usage analytics, spatial ambient audio |
 | `comfort-intelligence.js` | Set 13: Comfort & Intelligence — multi-language i18n, zen mode, smart recommendations, custom hotkeys, zone transitions, daily challenges, comfort settings v2, content bookmarks, session replay, particle density control |
+| `content-depth.js` | Set 14: Content Depth — scratchpad, event RSVP, genre filter, creator comparison, sector map, weather alerts, breathing exercise, news ticker, cross-zone timeline, ambient lighting sync |
 
 ## Testing & Deployment
 
@@ -194,3 +195,13 @@ Seven-step interactive lesson: look around → point & click → move → telepo
 | ENH-075 | Content Bookmarks (add with tags, search, panel with filter) | Done |
 | ENH-076 | Session Replay (action timeline, auto-log clicks/keys, visual timeline) | Done |
 | ENH-077 | Particle Density Control (0-200% slider for all particle systems) | Done |
+| ENH-078 | Quick Notes Scratchpad (floating sticky note, Ctrl+N toggle, auto-save) | Done |
+| ENH-079 | Events RSVP System (attending/interested per event, count badge) | Done |
+| ENH-080 | Movies Genre Filter (9 genre tags, multi-select, filter event dispatch) | Done |
+| ENH-081 | Creator Comparison (side-by-side stat panel, 2-slot system) | Done |
+| ENH-082 | Stocks Sector Map (6-sector bar chart with percentages) | Done |
+| ENH-083 | Weather Alerts (severe wind/cold/heat/storm/snow from Open-Meteo) | Done |
+| ENH-084 | Wellness Breathing Exercise (inhale/hold/exhale guided cycle, visual circle) | Done |
+| ENH-085 | Hub News Ticker (scrolling headline banner, 10 headlines, auto-scroll) | Done |
+| ENH-086 | Cross-Zone Timeline (unified chronological view from all data sources) | Done |
+| ENH-087 | Ambient Lighting Sync (zone-matched A-Frame light + CSS tint overlay) | Done |
