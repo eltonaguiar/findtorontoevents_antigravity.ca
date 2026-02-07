@@ -334,6 +334,14 @@
     }
     #camera-feed.active { display: block; }
 
+    /* ─── 2D ant overlay (guaranteed visibility on mobile) ─── */
+    #ant-overlay {
+      position: fixed; inset: 0; z-index: 12;
+      display: none; width: 100%; height: 100%;
+      pointer-events: none;
+    }
+    #ant-overlay.active { display: block; }
+
     /* ─── Loading / Transition ─── */
     .loading-overlay {
       position: fixed; inset: 0; z-index: 300;
@@ -558,8 +566,11 @@
 <!-- Camera feed for mobile fallback -->
 <video id="camera-feed" autoplay playsinline muted></video>
 
-<!-- Three.js canvas -->
+<!-- Three.js canvas (for WebXR) -->
 <canvas id="ar-canvas"></canvas>
+
+<!-- 2D ant overlay (for mobile camera AR) -->
+<canvas id="ant-overlay"></canvas>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
 <!-- GAME ENGINE                                                -->
@@ -645,7 +656,8 @@
     scene = new THREE.Scene();
 
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 100);
-    camera.position.set(0, 1.2, 0);
+    camera.position.set(0, 0.4, 0);
+    camera.lookAt(0, 0, PLAY_Z_OFFSET);
 
     // Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -654,12 +666,14 @@
     dirLight.position.set(2, 4, 2);
     scene.add(dirLight);
 
-    // Ant geometry: small elongated ellipsoid
+    // Ant geometry: visible-sized for AR
     const antGeo = createAntGeometry();
     const antMat = new THREE.MeshStandardMaterial({
-      color: 0x2a1506,
-      roughness: 0.7,
-      metalness: 0.1,
+      color: 0x5a2a12,
+      roughness: 0.5,
+      metalness: 0.15,
+      emissive: 0x331100,
+      emissiveIntensity: 0.4,
     });
 
     antMesh = new THREE.InstancedMesh(antGeo, antMat, ANT_POOL);
@@ -677,19 +691,51 @@
   }
 
   function createAntGeometry() {
-    // Ant body: 3 merged spheres (head, thorax, abdomen)
-    const group = new THREE.Group();
-    const headGeo = new THREE.SphereGeometry(0.003, 6, 4);
-    const thoraxGeo = new THREE.SphereGeometry(0.004, 6, 4);
-    const abdomenGeo = new THREE.SphereGeometry(0.005, 6, 4);
+    // Build a 3-segment ant body by merging sphere geometries
+    // Head, thorax, abdomen — ~8cm total for visibility in AR
+    const head = new THREE.SphereGeometry(0.012, 8, 6);
+    head.translate(0, 0, 0.035);
 
-    // Merge into one BufferGeometry for instancing
-    // For simplicity, just use a scaled sphere + a capsule-like shape
+    const thorax = new THREE.SphereGeometry(0.016, 8, 6);
+    // thorax at origin
+
+    const abdomen = new THREE.SphereGeometry(0.022, 8, 6);
+    abdomen.translate(0, 0, -0.04);
+
+    // Merge manually
+    const geos = [head, thorax, abdomen];
+    let totalVerts = 0, totalIdx = 0;
+    geos.forEach(g => { totalVerts += g.attributes.position.count; if (g.index) totalIdx += g.index.count; });
+
+    const pos = new Float32Array(totalVerts * 3);
+    const norm = new Float32Array(totalVerts * 3);
+    const idxArr = [];
+    let vOff = 0;
+
+    geos.forEach(g => {
+      const p = g.attributes.position;
+      const n = g.attributes.normal;
+      for (let i = 0; i < p.count; i++) {
+        pos[(vOff + i) * 3]     = p.getX(i);
+        pos[(vOff + i) * 3 + 1] = p.getY(i);
+        pos[(vOff + i) * 3 + 2] = p.getZ(i);
+        norm[(vOff + i) * 3]     = n.getX(i);
+        norm[(vOff + i) * 3 + 1] = n.getY(i);
+        norm[(vOff + i) * 3 + 2] = n.getZ(i);
+      }
+      if (g.index) {
+        for (let i = 0; i < g.index.count; i++) {
+          idxArr.push(g.index.getX(i) + vOff);
+        }
+      }
+      vOff += p.count;
+    });
+
     const merged = new THREE.BufferGeometry();
-
-    // Create a simple ant shape using a capsule
-    const capsule = new THREE.CapsuleGeometry(0.003, 0.008, 4, 6);
-    return capsule;
+    merged.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    merged.setAttribute('normal', new THREE.BufferAttribute(norm, 3));
+    merged.setIndex(idxArr);
+    return merged;
   }
 
   function onResize() {
@@ -702,8 +748,10 @@
   // ──────────────────────────────────────────────
   // Ant System
   // ──────────────────────────────────────────────
-  // Play area: ants spawn on a virtual surface roughly 1.5m x 2m (bed-sized), placed in front
-  const PLAY_AREA = { x: 1.5, z: 2.0, y: 0.7 }; // width, depth, height from ground
+  // Play area: ants crawl on a virtual surface in front of the camera
+  // Closer and lower so they fill the phone screen
+  const PLAY_AREA = { x: 0.8, z: 0.8, y: 0.0 }; // width, depth, height
+  const PLAY_Z_OFFSET = -0.6; // distance in front of camera
 
   function spawnAnt() {
     if (antData.length >= ANT_POOL) return;
@@ -711,30 +759,31 @@
     // Spawn at random edge of the play area
     const edge = Math.floor(Math.random() * 4);
     let x, z;
+    const hw = PLAY_AREA.x / 2, hd = PLAY_AREA.z / 2;
     switch (edge) {
-      case 0: x = -PLAY_AREA.x / 2; z = (Math.random() - 0.5) * PLAY_AREA.z; break;
-      case 1: x = PLAY_AREA.x / 2;  z = (Math.random() - 0.5) * PLAY_AREA.z; break;
-      case 2: x = (Math.random() - 0.5) * PLAY_AREA.x; z = -PLAY_AREA.z / 2; break;
-      case 3: x = (Math.random() - 0.5) * PLAY_AREA.x; z = PLAY_AREA.z / 2;  break;
+      case 0: x = -hw; z = (Math.random() - 0.5) * PLAY_AREA.z; break;
+      case 1: x = hw;  z = (Math.random() - 0.5) * PLAY_AREA.z; break;
+      case 2: x = (Math.random() - 0.5) * PLAY_AREA.x; z = -hd; break;
+      case 3: x = (Math.random() - 0.5) * PLAY_AREA.x; z = hd;  break;
     }
 
     const ant = {
       x: x,
-      y: PLAY_AREA.y + (Math.random() - 0.5) * 0.05,
-      z: z - 1.5,  // offset: area is ~1.5m in front of user
+      y: PLAY_AREA.y + (Math.random() - 0.5) * 0.02,
+      z: z + PLAY_Z_OFFSET,
       vx: (Math.random() - 0.5) * 0.06,
       vz: (Math.random() - 0.5) * 0.06,
       rotation: Math.random() * Math.PI * 2,
-      speed: 0.02 + Math.random() * 0.04,
+      speed: 0.03 + Math.random() * 0.05,
       wobble: Math.random() * Math.PI * 2,
       wobbleSpeed: 2 + Math.random() * 3,
-      scale: 0.7 + Math.random() * 0.6,
+      scale: 1.5 + Math.random() * 2.0,
       alive: true,
       age: 0,
     };
 
-    // Direct toward center
-    const cx = 0, cz = -1.5;
+    // Direct toward center of play area
+    const cx = 0, cz = PLAY_Z_OFFSET;
     const dx = cx - ant.x, dz = cz - ant.z;
     const dist = Math.sqrt(dx * dx + dz * dz) || 1;
     ant.vx = (dx / dist) * ant.speed * (0.5 + Math.random() * 0.5);
@@ -742,6 +791,9 @@
     ant.rotation = Math.atan2(ant.vx, ant.vz);
 
     antData.push(ant);
+
+    // Also spawn a 2D ant for the overlay (mobile camera AR)
+    if (!state.useWebXR) spawn2DAnt();
   }
 
   function updateAnts(dt) {
@@ -759,13 +811,12 @@
       ant.z += ant.vz * dt + wobbleOffset * Math.sin(ant.rotation);
 
       // Slight vertical bobbing
-      ant.y = PLAY_AREA.y + Math.sin(ant.wobble * 2) * 0.002;
+      ant.y = PLAY_AREA.y + Math.sin(ant.wobble * 2) * 0.003;
 
       // Randomly change direction slightly
       if (Math.random() < 0.02) {
         ant.vx += (Math.random() - 0.5) * 0.02;
         ant.vz += (Math.random() - 0.5) * 0.02;
-        // Re-clamp speed
         const spd = Math.sqrt(ant.vx * ant.vx + ant.vz * ant.vz);
         if (spd > ant.speed * 1.5) {
           ant.vx = (ant.vx / spd) * ant.speed;
@@ -774,12 +825,12 @@
         ant.rotation = Math.atan2(ant.vx, ant.vz);
       }
 
-      // Contain within extended area
-      const bound = 1.5;
-      if (ant.x < -bound) ant.vx = Math.abs(ant.vx);
-      if (ant.x > bound)  ant.vx = -Math.abs(ant.vx);
-      if (ant.z < -3)     ant.vz = Math.abs(ant.vz);
-      if (ant.z > 0)      ant.vz = -Math.abs(ant.vz);
+      // Contain within play area bounds
+      const bx = PLAY_AREA.x * 0.8, bzMin = PLAY_Z_OFFSET - PLAY_AREA.z, bzMax = PLAY_Z_OFFSET + PLAY_AREA.z * 0.3;
+      if (ant.x < -bx) ant.vx = Math.abs(ant.vx);
+      if (ant.x > bx)  ant.vx = -Math.abs(ant.vx);
+      if (ant.z < bzMin) ant.vz = Math.abs(ant.vz);
+      if (ant.z > bzMax) ant.vz = -Math.abs(ant.vz);
 
       // Update instanced mesh
       tempPos.set(ant.x, ant.y, ant.z);
@@ -797,6 +848,200 @@
 
     antMesh.count = Math.max(antData.length, antMesh.count);
     antMesh.instanceMatrix.needsUpdate = true;
+  }
+
+  // ──────────────────────────────────────────────
+  // 2D Ant Overlay (guaranteed visible on mobile)
+  // ──────────────────────────────────────────────
+  const antOverlay = document.getElementById('ant-overlay');
+  const antCtx = antOverlay ? antOverlay.getContext('2d') : null;
+  let ant2D = [];  // 2D screen-space ant data
+
+  function init2DOverlay() {
+    if (!antOverlay) return;
+    antOverlay.width = window.innerWidth;
+    antOverlay.height = window.innerHeight;
+    antOverlay.classList.add('active');
+    ant2D = [];
+    window.addEventListener('resize', resize2DOverlay);
+  }
+
+  function resize2DOverlay() {
+    if (!antOverlay) return;
+    antOverlay.width = window.innerWidth;
+    antOverlay.height = window.innerHeight;
+  }
+
+  function stop2DOverlay() {
+    if (!antOverlay) return;
+    antOverlay.classList.remove('active');
+    ant2D = [];
+    window.removeEventListener('resize', resize2DOverlay);
+  }
+
+  function spawn2DAnt() {
+    if (!antOverlay || ant2D.length >= ANT_POOL) return;
+    const w = antOverlay.width, h = antOverlay.height;
+    if (!w || !h) return;
+
+    // Spawn from a random screen edge
+    const edge = Math.floor(Math.random() * 4);
+    let x, y;
+    switch (edge) {
+      case 0: x = -10; y = Math.random() * h; break;
+      case 1: x = w + 10; y = Math.random() * h; break;
+      case 2: x = Math.random() * w; y = -10; break;
+      case 3: x = Math.random() * w; y = h + 10; break;
+    }
+
+    // Aim toward center with some randomness
+    const cx = w / 2 + (Math.random() - 0.5) * w * 0.4;
+    const cy = h / 2 + (Math.random() - 0.5) * h * 0.4;
+    const angle = Math.atan2(cy - y, cx - x) + (Math.random() - 0.5) * 0.6;
+    const speed = 25 + Math.random() * 55;
+
+    ant2D.push({
+      x, y, angle, speed,
+      size: 10 + Math.random() * 16,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: 3 + Math.random() * 4,
+      legPhase: Math.random() * Math.PI * 2,
+    });
+  }
+
+  function update2DAnts(dt) {
+    if (!antOverlay) return;
+    const w = antOverlay.width, h = antOverlay.height;
+    for (let i = 0; i < ant2D.length; i++) {
+      const a = ant2D[i];
+      a.wobble += a.wobbleSpeed * dt;
+      a.legPhase += 14 * dt;
+
+      const wobbleAngle = a.angle + Math.sin(a.wobble) * 0.3;
+      a.x += Math.cos(wobbleAngle) * a.speed * dt;
+      a.y += Math.sin(wobbleAngle) * a.speed * dt;
+
+      // Random steering
+      if (Math.random() < 0.015) {
+        a.angle += (Math.random() - 0.5) * 1.2;
+      }
+
+      // Bounce off edges
+      const m = 30;
+      if (a.x < -m) { a.x = -m; a.angle = Math.random() * 0.8 - 0.4; }
+      if (a.x > w + m) { a.x = w + m; a.angle = Math.PI + Math.random() * 0.8 - 0.4; }
+      if (a.y < -m) { a.y = -m; a.angle = Math.PI / 2 + Math.random() * 0.8 - 0.4; }
+      if (a.y > h + m) { a.y = h + m; a.angle = -Math.PI / 2 + Math.random() * 0.8 - 0.4; }
+    }
+  }
+
+  function render2DAnts() {
+    if (!antCtx || !antOverlay.width) return;
+    antCtx.clearRect(0, 0, antOverlay.width, antOverlay.height);
+
+    for (let i = 0; i < ant2D.length; i++) {
+      draw2DAnt(ant2D[i]);
+    }
+  }
+
+  function draw2DAnt(a) {
+    const ctx = antCtx;
+    const s = a.size;
+    ctx.save();
+    ctx.translate(a.x, a.y);
+    ctx.rotate(a.angle);
+
+    // Shadow
+    ctx.globalAlpha = 0.25;
+    ctx.beginPath();
+    ctx.ellipse(0, 2, s * 0.8, s * 0.25, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#000';
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // Legs (3 pairs, animated)
+    ctx.strokeStyle = '#2a1508';
+    ctx.lineWidth = Math.max(1.5, s * 0.07);
+    ctx.lineCap = 'round';
+    for (let i = 0; i < 3; i++) {
+      const lx = (-0.3 + i * 0.3) * s;
+      const swing = Math.sin(a.legPhase + i * 2.1) * 0.4;
+      // Top legs
+      ctx.beginPath();
+      ctx.moveTo(lx, -s * 0.12);
+      ctx.quadraticCurveTo(lx + Math.cos(swing) * s * 0.15, -s * 0.4, lx - s * 0.15, -s * 0.5);
+      ctx.stroke();
+      // Bottom legs
+      ctx.beginPath();
+      ctx.moveTo(lx, s * 0.12);
+      ctx.quadraticCurveTo(lx + Math.cos(swing) * s * 0.15, s * 0.4, lx - s * 0.15, s * 0.5);
+      ctx.stroke();
+    }
+
+    // Abdomen
+    ctx.beginPath();
+    ctx.ellipse(-s * 0.42, 0, s * 0.32, s * 0.22, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#3d1c0a';
+    ctx.fill();
+    ctx.strokeStyle = '#1a0a00';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Thorax
+    ctx.beginPath();
+    ctx.ellipse(0, 0, s * 0.18, s * 0.14, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#4a2512';
+    ctx.fill();
+    ctx.stroke();
+
+    // Head
+    ctx.beginPath();
+    ctx.ellipse(s * 0.28, 0, s * 0.15, s * 0.12, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#5a2a15';
+    ctx.fill();
+    ctx.stroke();
+
+    // Eyes
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(s * 0.33, -s * 0.05, s * 0.035, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(s * 0.33, s * 0.05, s * 0.035, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#111';
+    ctx.beginPath();
+    ctx.arc(s * 0.34, -s * 0.05, s * 0.02, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(s * 0.34, s * 0.05, s * 0.02, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Antennae
+    ctx.strokeStyle = '#2a1508';
+    ctx.lineWidth = Math.max(1, s * 0.045);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(s * 0.36, -s * 0.07);
+    ctx.quadraticCurveTo(s * 0.6, -s * 0.22, s * 0.52, -s * 0.4);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(s * 0.36, s * 0.07);
+    ctx.quadraticCurveTo(s * 0.6, s * 0.22, s * 0.52, s * 0.4);
+    ctx.stroke();
+
+    // Mandibles
+    ctx.lineWidth = Math.max(1, s * 0.04);
+    ctx.beginPath();
+    ctx.moveTo(s * 0.4, -s * 0.03);
+    ctx.lineTo(s * 0.5, -s * 0.09);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(s * 0.4, s * 0.03);
+    ctx.lineTo(s * 0.5, s * 0.09);
+    ctx.stroke();
+
+    ctx.restore();
   }
 
   // ──────────────────────────────────────────────
@@ -846,8 +1091,10 @@
       endGame(false);
     }
 
-    // Render
+    // Update + render 2D overlay ants
     if (!state.useWebXR) {
+      update2DAnts(dt);
+      render2DAnts();
       renderer.render(scene, camera);
     }
   }
@@ -863,6 +1110,7 @@
     state.lastSimilarity = 0;
     state.bedDoneClicks = 0;
     antData = [];
+    ant2D = [];
     antMesh.count = 0;
     clock.start();
     lastTimestamp = performance.now();
@@ -992,6 +1240,9 @@
 
     arCanvas.classList.add('active');
     renderer.setSize(window.innerWidth, window.innerHeight);
+
+    // Start 2D ant overlay (guaranteed visible on mobile)
+    init2DOverlay();
   }
 
   function stopAR() {
@@ -1009,6 +1260,9 @@
     }
     cameraFeed.classList.remove('active');
     arCanvas.classList.remove('active');
+
+    // Stop 2D overlay
+    stop2DOverlay();
   }
 
   // ──────────────────────────────────────────────
