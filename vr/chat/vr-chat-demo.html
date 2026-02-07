@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VR Chat Components Demo</title>
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; }
+    #info {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      z-index: 1000;
+      max-width: 300px;
+    }
+    #info h2 { margin: 0 0 10px 0; font-size: 16px; }
+    #info p { margin: 5px 0; font-size: 12px; }
+    #info .key { color: #00d4ff; font-weight: bold; }
+    #controls {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      z-index: 1000;
+    }
+    button {
+      background: #00d4ff;
+      border: none;
+      padding: 8px 16px;
+      margin: 5px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover { background: #60a5fa; }
+  </style>
+</head>
+<body>
+  <div id="info">
+    <h2>🎮 VR Chat Components Demo</h2>
+    <p><span class="key">Left Grip + A:</span> Push-to-talk</p>
+    <p><span class="key">Right B (double-tap):</span> Toggle mute</p>
+    <p><span class="key">Thumbstick press:</span> Toggle chat panel</p>
+    <p><span class="key">Laser pointer:</span> Click keyboard keys</p>
+    <p><span class="key">Grab (grip):</span> Move chat panel</p>
+    <hr>
+    <p>Status: <span id="status">Initializing...</span></p>
+    <p>Voice: <span id="voice-status">Not connected</span></p>
+    <p>Chat: <span id="chat-status">Not connected</span></p>
+  </div>
+
+  <div id="controls">
+    <button onclick="testMessage()">Send Test Message</button>
+    <button onclick="toggleMute()">Toggle Mute</button>
+    <button onclick="toggleChat()">Toggle Chat Panel</button>
+    <button onclick="simulateVoice()">Simulate Voice Activity</button>
+  </div>
+
+  <a-scene vr-mode-ui="enabled: true" renderer="antialias: true; colorManagement: true">
+    <!-- Assets -->
+    <a-assets>
+      <a-mixin id="hand-mixin" hand-controls="handModelStyle: lowPoly"></a-mixin>
+    </a-assets>
+
+    <!-- Camera Rig -->
+    <a-entity id="rig" position="0 0 0">
+      <a-camera id="camera" look-controls="pointerLockEnabled: false">
+        <a-cursor fuse="true" fuse-timeout="1500" color="#00d4ff" scale="0.5 0.5 0.5"></a-cursor>
+      </a-camera>
+    </a-entity>
+
+    <!-- Environment -->
+    <a-sky color="#0f0f1a"></a-sky>
+    <a-grid helper="size: 50; divisions: 50; colorCenterLine: #00d4ff; colorGrid: #1a1a2e"></a-grid>
+
+    <!-- Floor -->
+    <a-plane position="0 0 0" rotation="-90 0 0" width="50" height="50" color="#1a1a2e"></a-plane>
+
+    <!-- Test Avatars with Voice Indicators -->
+    <a-entity id="avatar-test1" position="-2 0 -3" data-user-id="user1">
+      <a-cylinder height="1.7" radius="0.3" color="#3b82f6" position="0 0.85 0"></a-cylinder>
+      <a-sphere radius="0.25" color="#fbbf24" position="0 1.9 0"></a-sphere>
+      <!-- Voice indicator will be attached here -->
+    </a-entity>
+
+    <a-entity id="avatar-test2" position="2 0 -3" data-user-id="user2">
+      <a-cylinder height="1.7" radius="0.3" color="#ef4444" position="0 0.85 0"></a-cylinder>
+      <a-sphere radius="0.25" color="#22c55e" position="0 1.9 0"></a-sphere>
+    </a-entity>
+
+    <a-entity id="avatar-local" position="0 0 0" data-user-id="local-user">
+      <a-cylinder height="1.7" radius="0.3" color="#a855f7" position="0 0.85 0" opacity="0.5"></a-cylinder>
+    </a-entity>
+
+    <!-- Chat System -->
+    <a-entity vr-chat-system="enabled: true; hand: left"></a-entity>
+
+    <!-- Keyboard System -->
+    <a-entity vr-keyboard-system="enabled: true"></a-entity>
+
+    <!-- Voice Manager -->
+    <a-entity vr-voice-manager="enabled: true; indicatorHeight: 2.2"></a-entity>
+
+    <!-- Lighting -->
+    <a-light type="ambient" color="#ffffff" intensity="0.5"></a-light>
+    <a-light type="directional" position="5 10 5" color="#ffffff" intensity="0.8"></a-light>
+  </a-scene>
+
+  <!-- Scripts -->
+  <script src="/vr/vr-controls.js"></script>
+  <script src="/vr/chat/chat-engine.js"></script>
+  <script src="/vr/chat/voice-engine.js"></script>
+  <script src="/vr/components/vr-chat-panel.js"></script>
+  <script src="/vr/components/vr-voice-indicator.js"></script>
+  <script src="/vr/chat/virtual-keyboard.js"></script>
+  <script src="/vr/components/vr-chat-integration.js"></script>
+
+  <script>
+    // Demo/test functions
+    function updateStatus(text) {
+      document.getElementById('status').textContent = text;
+    }
+
+    function updateVoiceStatus(text) {
+      document.getElementById('voice-status').textContent = text;
+    }
+
+    function updateChatStatus(text) {
+      document.getElementById('chat-status').textContent = text;
+    }
+
+    // Initialize systems
+    document.addEventListener('DOMContentLoaded', function() {
+      updateStatus('Systems loading...');
+
+      // Simulate ChatEngine for demo
+      window.ChatEngine = {
+        sendMessage: function(text) {
+          console.log('[Demo] Message sent:', text);
+          updateChatStatus('Message sent: ' + text.substring(0, 20) + '...');
+
+          // Echo back as received message
+          setTimeout(() => {
+            ChatEngine.onMessage({
+              userId: 'user1',
+              username: 'Test User',
+              content: 'Echo: ' + text,
+              timestamp: Date.now(),
+              userInfo: { name: 'Test User', color: '#00d4ff' }
+            });
+          }, 500);
+        },
+        on: function(event, callback) {
+          this._callbacks = this._callbacks || {};
+          this._callbacks[event] = this._callbacks[event] || [];
+          this._callbacks[event].push(callback);
+        },
+        off: function(event, callback) {
+          // Remove callback
+        },
+        onMessage: function(data) {
+          if (this._callbacks && this._callbacks['onMessage']) {
+            this._callbacks['onMessage'].forEach(cb => cb(data));
+          }
+        },
+        isConnected: function() { return true; },
+        getCurrentRoom: function() { return 'demo-room'; }
+      };
+
+      // Simulate VoiceEngine for demo
+      window.VoiceEngine = {
+        isMuted: function() { return this._muted; },
+        _muted: true,
+        toggleMute: function() {
+          this._muted = !this._muted;
+          updateVoiceStatus(this._muted ? 'Muted' : 'Unmuted');
+
+          // Notify callbacks
+          if (this._callbacks && this._callbacks['voiceState']) {
+            this._callbacks['voiceState'].forEach(cb => cb({
+              peerId: 'local-user',
+              muted: this._muted,
+              speaking: false
+            }));
+          }
+
+          return this._muted;
+        },
+        setPushToTalkActive: function(active) {
+          updateVoiceStatus(active ? 'Speaking (PTT)...' : (this._muted ? 'Muted' : 'Unmuted'));
+        },
+        on: function(event, callback) {
+          this._callbacks = this._callbacks || {};
+          this._callbacks[event] = this._callbacks[event] || [];
+          this._callbacks[event].push(callback);
+        },
+        getUserInfo: function() {
+          return { id: 'local-user', displayName: 'You' };
+        },
+        getPeers: function() {
+          return [
+            { peerId: 'user1', displayName: 'Alice', muted: false },
+            { peerId: 'user2', displayName: 'Bob', muted: true }
+          ];
+        }
+      };
+
+      // Initialize VR Chat Integration
+      setTimeout(() => {
+        if (window.VRChatIntegration) {
+          VRChatIntegration.init();
+        }
+        updateStatus('Ready - Press VR button to enter VR mode');
+        updateVoiceStatus('Muted (click Toggle Mute)');
+        updateChatStatus('Connected to demo room');
+      }, 1000);
+    });
+
+    // Test functions
+    function testMessage() {
+      var messages = [
+        'Hello everyone! 👋',
+        'This VR chat is awesome! 🎉',
+        'Can you hear me? 🔊',
+        'The spatial audio works great! 🎵',
+        'Quest 3 optimizations are smooth! 🚀'
+      ];
+      var msg = messages[Math.floor(Math.random() * messages.length)];
+
+      ChatEngine.onMessage({
+        userId: 'user' + Math.floor(Math.random() * 2 + 1),
+        username: ['Alice', 'Bob'][Math.floor(Math.random() * 2)],
+        content: msg,
+        timestamp: Date.now(),
+        userInfo: { name: 'Test User', color: '#00d4ff' }
+      });
+    }
+
+    function toggleMute() {
+      if (window.VoiceEngine) {
+        VoiceEngine.toggleMute();
+      }
+    }
+
+    function toggleChat() {
+      if (window.VRChatIntegration) {
+        VRChatIntegration.toggleChatPanel();
+      }
+    }
+
+    function simulateVoice() {
+      // Simulate voice activity for demo avatars
+      var users = ['user1', 'user2'];
+      var user = users[Math.floor(Math.random() * users.length)];
+
+      // Trigger voice state change
+      if (VoiceEngine._callbacks && VoiceEngine._callbacks['voiceState']) {
+        VoiceEngine._callbacks['voiceState'].forEach(cb => cb({
+          peerId: user,
+          muted: false,
+          speaking: true,
+          volume: Math.random()
+        }));
+      }
+
+      // Stop speaking after 2 seconds
+      setTimeout(() => {
+        if (VoiceEngine._callbacks && VoiceEngine._callbacks['voiceState']) {
+          VoiceEngine._callbacks['voiceState'].forEach(cb => cb({
+            peerId: user,
+            muted: false,
+            speaking: false,
+            volume: 0
+          }));
+        }
+      }, 2000);
+    }
+
+    // Keyboard shortcut for testing
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'm' || e.key === 'M') {
+        toggleMute();
+      }
+      if (e.key === 'c' || e.key === 'C') {
+        toggleChat();
+      }
+      if (e.key === 't' || e.key === 'T') {
+        testMessage();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1097,6 +1097,31 @@
         alert('Passthrough AR requires a compatible VR headset (Quest 3, etc.)');
       }
     }
+
+    // ===== KEYBOARD SHORTCUTS (QW-007) =====
+    document.addEventListener('keydown', function (e) {
+      if (e.target.tagName === 'INPUT') return;
+      switch (e.key) {
+        case '1': var bc = document.getElementById('btn-clear'); if (bc) bc.click(); break;
+        case '2': var br = document.getElementById('btn-rain'); if (br) br.click(); break;
+        case '3': var bs = document.getElementById('btn-snow'); if (bs) bs.click(); break;
+        case '4': var bt = document.getElementById('btn-thunder'); if (bt) bt.click(); break;
+        case 'p': case 'P': if (typeof togglePassthrough === 'function') togglePassthrough(); break;
+        case 'r': case 'R': if (typeof fetchWeatherData === 'function') fetchWeatherData(); break;
+      }
+    });
+  </script>
+  <!-- Keyboard hints -->
+  <script src="/vr/keyboard-hints.js"></script>
+  <script>
+    VRKeyboardHints.register([
+      { key: '1', desc: 'Clear weather' },
+      { key: '2', desc: 'Rain mode' },
+      { key: '3', desc: 'Snow mode' },
+      { key: '4', desc: 'Thunderstorm' },
+      { key: 'P', desc: 'Passthrough AR' },
+      { key: 'R', desc: 'Refresh weather' }
+    ]);
   </script>
   <script src="/vr/presence.js"></script>
   <!-- VR Controller Support -->
@@ -1106,6 +1131,7 @@
   <script src="/vr/nav-menu.js"></script>
   <!-- VR Quick Wins -->
   <script src="/vr/quick-wins.js"></script>
+  <script src="/vr/quick-wins-substantial.js"></script>
 
   <!-- Comfort vignette + F1 help -->
   <script src="/vr/vr-comfort.js"></script>

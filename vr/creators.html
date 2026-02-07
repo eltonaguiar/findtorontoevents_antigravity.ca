@@ -1805,11 +1805,27 @@
     }
     setupPassthrough();
 
-    /* ── Keyboard Controls ── */
+    /* ── Keyboard Controls (QW-008 enhanced) ── */
+    var PLATFORM_KEYS = { '1': 'All', '2': 'TikTok', '3': 'Twitch', '4': 'Kick', '5': 'YouTube' };
     document.addEventListener('keydown', function (e) {
+      if (e.target.tagName === 'INPUT') return;
       if (e.key === 'Escape') closeDetail();
       if (e.key === 'ArrowRight') nextPage();
       if (e.key === 'ArrowLeft') prevPage();
+      // R to refresh
+      if (e.key === 'r' || e.key === 'R') {
+        if (typeof refreshLiveStatus === 'function') refreshLiveStatus();
+      }
+      // 1-5 for platform filter
+      if (PLATFORM_KEYS[e.key]) {
+        var plat = PLATFORM_KEYS[e.key];
+        var btns = document.querySelectorAll('#platform-strip button, .platform-filter button');
+        btns.forEach(function (btn) {
+          if (btn.textContent.indexOf(plat) !== -1 || (plat === 'All' && btn.textContent.indexOf('All') !== -1)) {
+            btn.click();
+          }
+        });
+      }
     });
 
     /* ── VR Nav ── */
@@ -1859,6 +1875,16 @@
 
   })();
   </script>
+  <!-- Keyboard hints -->
+  <script src="/vr/keyboard-hints.js"></script>
+  <script>
+    VRKeyboardHints.register([
+      { key: 'R', desc: 'Refresh live status' },
+      { key: '1-5', desc: 'Filter platform (All/TikTok/Twitch/Kick/YT)' },
+      { key: '←/→', desc: 'Previous / Next page' },
+      { key: 'Esc', desc: 'Close detail' }
+    ]);
+  </script>
   <!-- Shared presence tracker + keyboard shortcuts -->
   <script src="/vr/presence.js"></script>
   <!-- VR Controller Support -->
@@ -1868,6 +1894,7 @@
   <script src="/vr/nav-menu.js"></script>
   <!-- VR Quick Wins -->
   <script src="/vr/quick-wins.js"></script>
+  <script src="/vr/quick-wins-substantial.js"></script>
 
   <!-- Comfort vignette + F1 help -->
   <script src="/vr/vr-comfort.js"></script>

@@ -148,6 +148,11 @@
   <a id="back-btn" href="/vr/">&#8592; Back to Hub</a>
   <button id="vr-btn" onclick="document.querySelector('a-scene').enterVR()">Enter VR</button>
   <div id="filter-wrapper">
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">
+      <input id="vr-event-search" type="text" placeholder="Search events... (press /)" autocomplete="off"
+             style="flex:1;min-width:200px;max-width:340px;padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.6);color:#fff;font-size:13px;outline:none;backdrop-filter:blur(8px);"
+             oninput="window._vrSearchEvents && window._vrSearchEvents(this.value)">
+    </div>
     <div id="cat-strip"></div>
     <div id="time-strip" style="display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; padding: 4px;"></div>
   </div>
@@ -724,10 +729,21 @@
       document.getElementById('event-detail').classList.remove('open');
     };
 
+    // ===== KEYBOARD SHORTCUTS (QW-006 enhanced) =====
     document.addEventListener('keydown', function (e) {
+      if (e.target.tagName === 'INPUT') {
+        if (e.key === 'Escape') { e.target.blur(); closeDetail(); }
+        return;
+      }
       if (e.key === 'Escape') closeDetail();
       if (e.key === 'ArrowRight') nextPage();
       if (e.key === 'ArrowLeft') prevPage();
+      // / or F to focus search
+      if ((e.key === '/' || e.key === 'f' || e.key === 'F') && !e.ctrlKey) {
+        e.preventDefault();
+        var searchBox = document.getElementById('vr-event-search');
+        if (searchBox) { searchBox.focus(); searchBox.select(); }
+      }
     });
 
     // =============== VR NAV ===============
@@ -764,6 +780,35 @@
 
   })();
   </script>
+  <!-- Keyboard hints + search (QW-006) -->
+  <script src="/vr/keyboard-hints.js"></script>
+  <script>
+    VRKeyboardHints.register([
+      { key: '/ or F', desc: 'Search events' },
+      { key: '←/→', desc: 'Previous / Next page' },
+      { key: 'Esc', desc: 'Close detail' }
+    ]);
+    // Search filter
+    window._vrSearchEvents = function (query) {
+      if (!query || query.trim() === '') {
+        // Reset - re-trigger current category filter
+        var activeBtn = document.querySelector('#cat-strip .active, #cat-strip button[style*="opacity: 1"]');
+        if (activeBtn) activeBtn.click();
+        return;
+      }
+      var q = query.toLowerCase();
+      if (typeof window.filteredEvents !== 'undefined' && typeof window.renderPage === 'function') {
+        var all = window._allEvents || window.allEvents || [];
+        window.filteredEvents = all.filter(function (ev) {
+          return (ev.title && ev.title.toLowerCase().indexOf(q) !== -1) ||
+                 (ev.description && ev.description.toLowerCase().indexOf(q) !== -1) ||
+                 (ev.location && ev.location.toLowerCase().indexOf(q) !== -1);
+        });
+        window.currentPage = 0;
+        window.renderPage();
+      }
+    };
+  </script>
   <!-- Shared presence tracker + keyboard shortcuts -->
   <script src="/vr/presence.js"></script>
   <!-- VR Controller Support -->
@@ -773,6 +818,7 @@
   <script src="/vr/nav-menu.js"></script>
   <!-- VR Quick Wins -->
   <script src="/vr/quick-wins.js"></script>
+  <script src="/vr/quick-wins-substantial.js"></script>
 
   <!-- Comfort vignette + F1 help -->
   <script src="/vr/vr-comfort.js"></script>

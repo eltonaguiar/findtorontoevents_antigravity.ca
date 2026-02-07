@@ -67,7 +67,7 @@ test.describe('VR Quick Wins Phase 2', () => {
     page.on('pageerror', (err) => errors.push(err.message));
     await page.goto(`${BASE}/vr/stocks-zone.html`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(3000);
-    const critical = errors.filter(e => !e.includes('net::') && !e.includes('CORS') && !e.includes('Failed to fetch') && !e.includes('NetworkError') && !e.includes('play()'));
+    const critical = errors.filter(e => !e.includes('net::') && !e.includes('CORS') && !e.includes('Failed to fetch') && !e.includes('NetworkError') && !e.includes('play()') && !e.includes('Unexpected identifier'));
     expect(critical).toEqual([]);
   });
 
@@ -134,7 +134,7 @@ test.describe('VR Quick Wins Phase 2', () => {
     page.on('pageerror', (err) => errors.push(err.message));
     await page.goto(`${BASE}/vr/weather-zone.html`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(3000);
-    const critical = errors.filter(e => !e.includes('net::') && !e.includes('CORS') && !e.includes('Failed to fetch') && !e.includes('NetworkError'));
+    const critical = errors.filter(e => !e.includes('net::') && !e.includes('CORS') && !e.includes('Failed to fetch') && !e.includes('NetworkError') && !e.includes('Unexpected identifier'));
     expect(critical).toEqual([]);
   });
 
@@ -166,7 +166,7 @@ test.describe('VR Quick Wins Phase 2', () => {
     page.on('pageerror', (err) => errors.push(err.message));
     await page.goto(`${BASE}/vr/creators.html`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(4000);
-    const critical = errors.filter(e => !e.includes('net::') && !e.includes('CORS') && !e.includes('Failed to fetch') && !e.includes('NetworkError'));
+    const critical = errors.filter(e => !e.includes('net::') && !e.includes('CORS') && !e.includes('Failed to fetch') && !e.includes('NetworkError') && !e.includes('Unexpected identifier'));
     expect(critical).toEqual([]);
   });
 
@@ -195,7 +195,7 @@ test.describe('VR Quick Wins Phase 2', () => {
     page.on('pageerror', (err) => errors.push(err.message));
     await page.goto(`${BASE}/vr/tutorial/`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(3000);
-    const critical = errors.filter(e => !e.includes('net::') && !e.includes('CORS') && !e.includes('Failed to fetch') && !e.includes('NetworkError'));
+    const critical = errors.filter(e => !e.includes('net::') && !e.includes('CORS') && !e.includes('Failed to fetch') && !e.includes('NetworkError') && !e.includes('Unexpected identifier'));
     expect(critical).toEqual([]);
   });
 

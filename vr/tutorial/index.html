@@ -474,34 +474,14 @@
     // ===== KEYBOARD SHORTCUTS (QW-010) =====
     document.addEventListener('keydown', function (e) {
       if (e.target.tagName === 'INPUT') return;
-      // S = skip current step
-      if (e.key === 's' || e.key === 'S') {
-        advanceStep();
-      }
-      // R = reset tutorial
+      if (e.key === 's' || e.key === 'S') { advanceStep(); }
       if (e.key === 'r' || e.key === 'R') {
-        currentStep = 0;
-        stepProgress = {};
-        snapCount = 0;
-        menuOpened = false;
-        menuClosed = false;
-        lookTargetsSeen = {};
+        currentStep = 0; stepProgress = {}; snapCount = 0;
+        menuOpened = false; menuClosed = false; lookTargetsSeen = {};
         updateUI();
-        // Reset visual state of targets
-        document.querySelectorAll('.look-target').forEach(function (t) {
-          t.setAttribute('color', t.getAttribute('data-orig-color') || '#ff6b6b');
-        });
-        document.querySelectorAll('.click-target').forEach(function (t) {
-          t._done = false;
-        });
       }
-      // B = go back one step
       if (e.key === 'b' || e.key === 'B') {
-        if (currentStep > 0) {
-          currentStep--;
-          stepProgress = {};
-          updateUI();
-        }
+        if (currentStep > 0) { currentStep--; stepProgress = {}; updateUI(); }
       }
     });
 
@@ -511,7 +491,7 @@
   })();
   </script>
 
-  <!-- Keyboard hints -->
+  <!-- Keyboard hints (QW-009) -->
   <script src="/vr/keyboard-hints.js"></script>
   <script>
     VRKeyboardHints.register([
