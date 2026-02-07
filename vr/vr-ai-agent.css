@@ -442,6 +442,170 @@
   cursor: pointer;
 }
 
+/* ── Focus Mode Toggle Button (in panel header) ── */
+.vr-agent-focus-btn {
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  color: #67e8f9;
+  font-size: 14px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  padding: 0;
+  margin-right: 4px;
+  line-height: 1;
+}
+.vr-agent-focus-btn:hover {
+  background: rgba(6, 182, 212, 0.3);
+  border-color: rgba(6, 182, 212, 0.6);
+  color: #fff;
+}
+.vr-agent-focus-btn.active {
+  background: rgba(6, 182, 212, 0.35);
+  border-color: #06b6d4;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
+}
+
+/* ── View Mode Switcher (in panel below header) ── */
+.vr-agent-viewmode-bar {
+  display: flex;
+  gap: 4px;
+  padding: 6px 14px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.2);
+}
+.vr-agent-viewmode-btn {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: #888;
+  transition: all 0.2s;
+  font-family: inherit;
+  text-align: center;
+  white-space: nowrap;
+}
+.vr-agent-viewmode-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #bbb;
+}
+.vr-agent-viewmode-btn.active {
+  color: #fff;
+  border-color: rgba(124, 58, 237, 0.5);
+}
+.vr-agent-viewmode-btn.active[data-mode="full"] {
+  background: rgba(107, 114, 128, 0.25);
+  border-color: rgba(107, 114, 128, 0.5);
+}
+.vr-agent-viewmode-btn.active[data-mode="simple"] {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.5);
+  color: #86efac;
+}
+.vr-agent-viewmode-btn.active[data-mode="focus"] {
+  background: rgba(6, 182, 212, 0.2);
+  border-color: rgba(6, 182, 212, 0.5);
+  color: #67e8f9;
+}
+.vr-agent-viewmode-btn .mode-icon {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+/* ── Focus Mode: Hide busy UI elements ── */
+body.vr-focus-mode #help-overlay,
+body.vr-focus-mode #loading,
+body.vr-focus-mode #instructions,
+body.vr-focus-mode #vr-shortcuts-overlay,
+body.vr-focus-mode #vr-log-overlay,
+body.vr-focus-mode #mobile-ui,
+body.vr-focus-mode #vr-mode-toggle,
+body.vr-focus-mode #vr-mode-indicator,
+body.vr-focus-mode #vr-mode-selector,
+body.vr-focus-mode #movie-hud,
+body.vr-focus-mode #stock-ui,
+body.vr-focus-mode #weather-info-ui,
+body.vr-focus-mode #alerts-panel,
+body.vr-focus-mode #stats-panels,
+body.vr-focus-mode #tutorial-hud,
+body.vr-focus-mode .nav-menu-overlay,
+body.vr-focus-mode #vr-nav-menu,
+body.vr-focus-mode .vr-hud-panel,
+body.vr-focus-mode .hud-overlay,
+body.vr-focus-mode .toast-container,
+body.vr-focus-mode .zone-tooltip,
+body.vr-focus-mode #vr-agent-welcome,
+body.vr-focus-mode #vr-agent-login-btn,
+body.vr-focus-mode .vr-chat-toggle,
+body.vr-focus-mode #vr-chat-drawer,
+body.vr-focus-mode .touch-zone-panel,
+body.vr-focus-mode .category-bar,
+body.vr-focus-mode .search-bar-container,
+body.vr-focus-mode .event-pagination,
+body.vr-focus-mode .news-ticker,
+body.vr-focus-mode .forecast-cards,
+body.vr-focus-mode .clothing-advice,
+body.vr-focus-mode .feels-like-panel {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Keep only essential elements in focus mode */
+body.vr-focus-mode #vr-agent-btn,
+body.vr-focus-mode #vr-agent-panel {
+  display: flex;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+body.vr-focus-mode #vr-agent-btn {
+  display: flex !important;
+}
+
+/* Focus mode subtle border glow on agent button */
+body.vr-focus-mode #vr-agent-btn {
+  border-color: rgba(6, 182, 212, 0.6);
+  box-shadow: 0 4px 20px rgba(6, 182, 212, 0.4);
+}
+
+/* Focus mode notification badge */
+.vr-focus-badge {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  color: #67e8f9;
+  padding: 6px 18px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  z-index: 99996;
+  pointer-events: none;
+  animation: vr-focus-fade 3s ease forwards;
+}
+@keyframes vr-focus-fade {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+  75%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 /* Mobile-specific adjustments */
 @media (max-width: 600px) {
   #vr-agent-panel {

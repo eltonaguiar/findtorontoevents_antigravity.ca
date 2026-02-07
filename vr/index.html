@@ -56,7 +56,7 @@
           // Flash feedback: rapid pulse + show loading overlay
           self.el.setAttribute('animation__flash', 'property: opacity; from: 1; to: 0.3; dur: 150; dir: alternate; loop: 3');
           showZoneLoading(self.data.url);
-          setTimeout(function () { goToZone(self.data.url); }, 400);
+          setTimeout(function () { goToZone(self.data.url); }, 800);
         });
         // Hover: scale up
         this.el.addEventListener('mouseenter', function () {
@@ -442,6 +442,30 @@
                   class="clickable" zone-link="url: /vr/tutorial/"></a-cylinder>
     </a-entity>
 
+    <!-- ===== ZONE: TIC TAC TOE ===== -->
+    <a-entity position="-6 0 12" zone-tooltip="text: Multiplayer Tic Tac Toe - play humans or AI; color: #ec4899">
+      <a-box class="clickable" position="0 1.5 0" width="2.5" height="2.5" depth="0.5"
+             color="#ec4899" opacity="0.9"
+             zone-link="url: /vr/tictactoe.html"
+             animation="property: rotation; to: 0 360 0; dur: 22000; loop: true; easing: linear">
+        <a-text value="Game" align="center" position="0 0.1 0.3" width="4" color="#fff" font="mozillavr"></a-text>
+        <a-text value="TIC TAC\nTOE_READY" align="center" position="0 -0.6 0.3" width="2.5" color="#fbcfe8"></a-text>
+        <a-text value="Game" align="center" position="0 0.1 -0.3" rotation="0 180 0" width="4" color="#fff" font="mozillavr"></a-text>
+        <a-text value="TIC TAC\nTOE_READY" align="center" position="0 -0.6 -0.3" rotation="0 180 0" width="2.5" color="#fbcfe8"></a-text>
+      </a-box>
+      <a-entity position="0 -0.2 0.8" look-at-camera>
+        <a-plane class="clickable" width="1.8" height="0.5" color="#ec4899" opacity="0.9"
+                 zone-link="url: /vr/tictactoe.html"
+                 animation="property: position; from: 0 0 0; to: 0 0.08 0; dur: 1500; dir: alternate; loop: true; easing: easeInOutSine">
+          <a-text value="PLAY NOW" align="center" width="4" color="#fff" position="0 0 0.01" font="mozillavr"></a-text>
+        </a-plane>
+      </a-entity>
+      <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="1.5" radius-outer="1.6" color="#ec4899" opacity="0.5"
+              animation="property: rotation; to: -90 360 0; dur: 10000; loop: true; easing: linear"></a-ring>
+      <a-cylinder position="0 0.01 0" radius="1.5" height="0.02" color="#ec4899" opacity="0.15"
+                  class="clickable" zone-link="url: /vr/tictactoe.html"></a-cylinder>
+    </a-entity>
+
     <!-- ===== ZONE: ANT RUSH AR ===== -->
     <a-entity position="6 0 12" zone-tooltip="text: AR game - clean your space before ants swarm it!; color: #ff6b35">
       <a-box class="clickable" position="0 1.5 0" width="2.5" height="2.5" depth="0.5"
@@ -485,13 +509,14 @@
     <a-light type="point" position="-6 3 8" color="#22c55e" intensity="0.5" distance="10"></a-light>
     <a-light type="point" position="0 3 8" color="#10b981" intensity="0.6" distance="10"></a-light>
     <a-light type="point" position="6 3 8" color="#06b6d4" intensity="0.5" distance="10"></a-light>
+    <a-light type="point" position="-6 3 12" color="#ec4899" intensity="0.5" distance="10"></a-light>
     <a-light type="point" position="6 3 12" color="#ff6b35" intensity="0.5" distance="10"></a-light>
 
     <!-- Camera Rig -->
     <a-entity id="rig" position="0 1.6 0">
       <a-camera look-controls wasd-controls="acceleration: 40" fov="80">
         <!-- Gaze cursor for VR headset -->
-        <a-ring cursor="fuse: true; fuseTimeout: 1500"
+        <a-ring cursor="fuse: true; fuseTimeout: 2500"
                 raycaster="objects: .clickable; far: 30"
                 radius-inner="0.005" radius-outer="0.012"
                 color="#00d4ff" shader="flat"
@@ -582,6 +607,8 @@
           case '4': cam.setAttribute('position', '-6 1.6 5'); break;  // Stocks
           case '5': cam.setAttribute('position', '0 1.6 5'); break;   // Wellness
           case '6': cam.setAttribute('position', '6 1.6 5'); break;   // Weather
+          case '7': cam.setAttribute('position', '-6 1.6 9'); break;  // TicTacToe
+          case '8': cam.setAttribute('position', '6 1.6 9'); break;   // Ant Rush
           case '0': cam.setAttribute('position', '0 1.6 0'); break;   // Center
         }
       } catch (err) {
@@ -633,6 +660,8 @@
         { key: '4', label: 'Stocks',   color: '#22c55e', pos: '-6 1.6 5' },
         { key: '5', label: 'Wellness', color: '#10b981', pos: '0 1.6 5' },
         { key: '6', label: 'Weather',  color: '#06b6d4', pos: '6 1.6 5' },
+        { key: '7', label: 'Game',     color: '#ec4899', pos: '-6 1.6 9' },
+        { key: '8', label: 'Ant Rush', color: '#ff6b35', pos: '6 1.6 9' },
         { key: '0', label: 'Center',   color: '#ffffff', pos: '0 1.6 0' }
       ];
 

@@ -107,8 +107,70 @@
     recognition: null,
     tutorialMode: false,
     chatHistory: [],
-    pendingStopWords: ['stop', 'shut up', 'be quiet', 'silence', 'enough', 'quiet', 'hush']
+    pendingStopWords: ['stop', 'shut up', 'be quiet', 'silence', 'enough', 'quiet', 'hush'],
+    viewMode: 'full'  // 'full', 'simple', 'focus'
   };
+
+  // ════════════════════════════════════════════
+  // VIEW MODE SYSTEM (Focus / Simple / Full)
+  // ════════════════════════════════════════════
+  function getViewMode() {
+    return state.viewMode;
+  }
+
+  function setViewMode(mode) {
+    if (mode !== 'full' && mode !== 'simple' && mode !== 'focus') mode = 'full';
+    var prev = state.viewMode;
+    state.viewMode = mode;
+    try { localStorage.setItem('vr_ai_viewmode', mode); } catch (e) { /* ignore */ }
+
+    // Apply focus mode CSS class
+    document.body.classList.toggle('vr-focus-mode', mode === 'focus');
+
+    // Sync with VRModeToggle for simple/advanced
+    if (window.VRModeToggle) {
+      if (mode === 'simple') {
+        window.VRModeToggle.setMode('simple');
+      } else if (mode === 'full') {
+        window.VRModeToggle.setMode('advanced');
+      }
+      // focus mode: also set simple underneath so advanced buttons are hidden
+      if (mode === 'focus') {
+        window.VRModeToggle.setMode('simple');
+      }
+    }
+
+    // Update the view-mode bar buttons
+    updateViewModeBar();
+
+    // Show a transient notification badge
+    if (mode !== prev) {
+      showFocusBadge(mode);
+    }
+  }
+
+  function showFocusBadge(mode) {
+    var labels = { full: '\uD83C\uDFDB\uFE0F Advanced Mode — All UI visible', simple: '\uD83C\uDFAF Simple Mode — Clean UI', focus: '\uD83E\uDDD8 Focus Mode — Immersive View' };
+    var old = document.querySelector('.vr-focus-badge');
+    if (old) old.remove();
+    var badge = document.createElement('div');
+    badge.className = 'vr-focus-badge';
+    badge.textContent = labels[mode] || mode;
+    document.body.appendChild(badge);
+    setTimeout(function () { try { badge.remove(); } catch (e) { /* ignore */ } }, 3200);
+  }
+
+  function updateViewModeBar() {
+    var bar = document.getElementById('vr-agent-viewmode-bar');
+    if (!bar) return;
+    var btns = bar.querySelectorAll('.vr-agent-viewmode-btn');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle('active', btns[i].getAttribute('data-mode') === state.viewMode);
+    }
+    // Update focus button in header
+    var focusBtn = document.getElementById('vr-agent-focus-toggle');
+    if (focusBtn) focusBtn.classList.toggle('active', state.viewMode === 'focus');
+  }
 
   // ════════════════════════════════════════════
   // ZONE META — descriptions, icons, prompts
@@ -119,7 +181,7 @@
       emoji: '\uD83C\uDFE0',
       color: '#00d4ff',
       welcome: 'Welcome to the VR Hub! This is your launchpad to all zones.',
-      prompts: ['What can I do here?', 'Take me to Events', 'Show me Weather', 'Explain all icons', 'What zones are there?'],
+      prompts: ['What can I do here?', 'Take me to Events', 'Show me Weather', 'Focus mode', 'Simple mode', 'Explain all icons'],
       icons: {
         'Events Portal': 'Opens the Toronto Events explorer with 1000+ events you can filter and browse',
         'Movies Portal': 'Enter the VR Movie Theater to watch trailers and browse movies/TV shows',
@@ -387,7 +449,21 @@
     panel.innerHTML =
       '<div class="vr-agent-header">' +
         '<span class="title">\uD83E\uDD16 AI Agent <span class="zone-badge">' + meta.emoji + ' ' + meta.name + '</span></span>' +
-        '<button class="close-btn" id="vr-agent-close">&times;</button>' +
+        '<div style="display:flex;align-items:center;gap:2px;">' +
+          '<button class="vr-agent-focus-btn" id="vr-agent-focus-toggle" title="Toggle Focus Mode — hide all UI clutter">\uD83E\uDDD8</button>' +
+          '<button class="close-btn" id="vr-agent-close">&times;</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="vr-agent-viewmode-bar" id="vr-agent-viewmode-bar">' +
+        '<button class="vr-agent-viewmode-btn" data-mode="full" title="Show all UI elements">' +
+          '<span class="mode-icon">\uD83C\uDFDB\uFE0F</span>Full' +
+        '</button>' +
+        '<button class="vr-agent-viewmode-btn" data-mode="simple" title="Minimal UI — essentials only">' +
+          '<span class="mode-icon">\uD83C\uDFAF</span>Simple' +
+        '</button>' +
+        '<button class="vr-agent-viewmode-btn" data-mode="focus" title="Focus Mode — just 3D + AI">' +
+          '<span class="mode-icon">\uD83E\uDDD8</span>Focus' +
+        '</button>' +
       '</div>' +
       '<div class="vr-agent-chat" id="vr-agent-chat"></div>' +
       '<div class="vr-agent-prompts" id="vr-agent-prompts"></div>' +
@@ -420,6 +496,30 @@
     document.getElementById('vr-agent-mic').addEventListener('click', function () {
       startListening();
     });
+
+    // ── Focus Mode toggle button ──
+    document.getElementById('vr-agent-focus-toggle').addEventListener('click', function () {
+      var newMode = state.viewMode === 'focus' ? 'full' : 'focus';
+      setViewMode(newMode);
+      addMessage('agent', newMode === 'focus'
+        ? '\uD83E\uDDD8 <strong>Focus Mode</strong> enabled. All overlays and HUDs are hidden. Just you, the 3D scene, and me. Say "<strong>show ui</strong>" or click the button again to restore.'
+        : '\uD83C\uDFDB\uFE0F Back to <strong>Full Mode</strong>. All UI elements are visible again.');
+    });
+
+    // ── View Mode bar buttons ──
+    var viewModeBar = document.getElementById('vr-agent-viewmode-bar');
+    if (viewModeBar) {
+      viewModeBar.addEventListener('click', function (e) {
+        var btn = e.target.closest('.vr-agent-viewmode-btn');
+        if (!btn) return;
+        var mode = btn.getAttribute('data-mode');
+        if (mode) {
+          setViewMode(mode);
+          var modeLabels = { full: '\uD83C\uDFDB\uFE0F Full Mode — all UI elements visible', simple: '\uD83C\uDFAF Simple Mode — clean, minimal UI', focus: '\uD83E\uDDD8 Focus Mode — immersive, just 3D + AI' };
+          addMessage('agent', '<strong>View mode changed:</strong> ' + (modeLabels[mode] || mode));
+        }
+      });
+    }
 
     // ── Login Overlay ──
     createLoginOverlay();
@@ -695,6 +795,48 @@
     }
 
     updateStatus('thinking');
+
+    // ── VIEW MODE commands ──
+    // Focus / Zen mode
+    if (lower.indexOf('focus mode') !== -1 || lower.indexOf('zen mode') !== -1 || lower.indexOf('hide ui') !== -1 || lower.indexOf('hide everything') !== -1 || lower.indexOf('clean view') !== -1 || lower.indexOf('immersive mode') !== -1 || lower.indexOf('distraction') !== -1) {
+      setViewMode('focus');
+      addMessage('agent', '\uD83E\uDDD8 <strong>Focus Mode</strong> activated! All overlays, menus, and HUDs are now hidden. It\'s just you, the 3D scene, and me.<br><br>Say "<strong>show ui</strong>", "<strong>full mode</strong>", or "<strong>simple mode</strong>" to change back. You can also use the view mode buttons at the top of this panel.', true);
+      renderPrompts(['Show UI', 'Simple mode', 'Full mode', 'Help']);
+      updateStatus('idle');
+      return;
+    }
+
+    // Simple mode
+    if ((lower.indexOf('simple mode') !== -1 || lower.indexOf('simple view') !== -1 || lower.indexOf('minimal mode') !== -1 || lower.indexOf('minimal ui') !== -1 || lower.indexOf('clean mode') !== -1) && lower.indexOf('focus') === -1) {
+      setViewMode('simple');
+      addMessage('agent', '\uD83C\uDFAF <strong>Simple Mode</strong> activated! Advanced controls are hidden — only essential navigation and features remain visible.<br><br>Say "<strong>full mode</strong>" to restore everything, or "<strong>focus mode</strong>" for maximum immersion.', true);
+      renderPrompts(['Full mode', 'Focus mode', 'Help']);
+      updateStatus('idle');
+      return;
+    }
+
+    // Full / Advanced / Show UI
+    if (lower.indexOf('full mode') !== -1 || lower.indexOf('advanced mode') !== -1 || lower.indexOf('show ui') !== -1 || lower.indexOf('show everything') !== -1 || lower.indexOf('exit focus') !== -1 || lower.indexOf('normal mode') !== -1 || lower.indexOf('restore ui') !== -1 || lower.indexOf('all features') !== -1) {
+      setViewMode('full');
+      addMessage('agent', '\uD83C\uDFDB\uFE0F <strong>Full Mode</strong> restored! All UI elements, menus, and HUDs are visible again.', true);
+      renderPrompts(['Simple mode', 'Focus mode', 'Help']);
+      updateStatus('idle');
+      return;
+    }
+
+    // Mobile mode
+    if (lower.indexOf('mobile mode') !== -1 || lower.indexOf('mobile view') !== -1 || lower.indexOf('phone mode') !== -1 || lower.indexOf('touch mode') !== -1) {
+      return handleMobileMode();
+    }
+
+    // What mode / current mode
+    if ((lower.indexOf('what mode') !== -1 || lower.indexOf('current mode') !== -1 || lower.indexOf('which mode') !== -1) && (lower.indexOf('view') !== -1 || lower.indexOf('ui') !== -1 || lower.indexOf('mode') !== -1)) {
+      var modeNames = { full: '\uD83C\uDFDB\uFE0F Full / Advanced', simple: '\uD83C\uDFAF Simple / Minimal', focus: '\uD83E\uDDD8 Focus / Zen' };
+      addMessage('agent', 'Current view mode: <strong>' + (modeNames[state.viewMode] || state.viewMode) + '</strong><br><br>Available modes:<br>\u2022 <strong>Full</strong> — all UI visible<br>\u2022 <strong>Simple</strong> — essentials only<br>\u2022 <strong>Focus</strong> — just 3D + AI chatbot<br><br>Say the mode name or use the buttons at the top of this panel.', true);
+      renderPrompts(['Full mode', 'Simple mode', 'Focus mode']);
+      updateStatus('idle');
+      return;
+    }
 
     // ── Tutorial / first-time mode ──
     if (lower.indexOf('tutorial mode') !== -1 || lower.indexOf('first time mode') !== -1 || lower.indexOf('first-time mode') !== -1 || lower.indexOf('enable tutorial') !== -1) {
@@ -1531,6 +1673,37 @@
   }
 
   // ════════════════════════════════════════════
+  // HANDLER: Mobile Mode
+  // ════════════════════════════════════════════
+  function handleMobileMode() {
+    var p = location.pathname;
+    var mobileUrls = {
+      '/vr/': '/vr/mobile-index.html',
+      '/vr/index.html': '/vr/mobile-index.html',
+      '/vr/weather-zone.html': '/vr/mobile-weather.html'
+    };
+    var mobileDest = mobileUrls[p] || null;
+
+    if (p.indexOf('mobile') !== -1) {
+      addMessage('agent', 'You\'re already in a mobile-optimized page! If you want the desktop experience, try going to the <a href="/vr/">VR Hub</a>.', true);
+      renderPrompts(['Go to Hub', 'Focus mode', 'Simple mode']);
+      updateStatus('idle');
+      return;
+    }
+
+    if (mobileDest) {
+      addMessage('agent', '\uD83D\uDCF1 Switching to <strong>Mobile Mode</strong>. The page will reload with a touch-friendly layout optimized for phones and tablets.', true);
+      setTimeout(function () { window.location.href = mobileDest; }, 1500);
+    } else {
+      // No dedicated mobile page — use simple mode + focus as a fallback
+      setViewMode('simple');
+      addMessage('agent', '\uD83D\uDCF1 This zone doesn\'t have a dedicated mobile page, but I\'ve activated <strong>Simple Mode</strong> to reduce clutter. For an even cleaner view, try "<strong>focus mode</strong>".<br><br>Mobile-optimized pages are available for: <a href="/vr/mobile-index.html">Hub</a> and <a href="/vr/mobile-weather.html">Weather</a>.', true);
+      renderPrompts(['Focus mode', 'Go to Mobile Hub', 'Full mode']);
+    }
+    updateStatus('idle');
+  }
+
+  // ════════════════════════════════════════════
   // HANDLER: Help
   // ════════════════════════════════════════════
   function showHelp() {
@@ -1544,6 +1717,11 @@
     html += '<strong>Wellness:</strong> "Summarize my tasks", "Show my streaks"<br>';
     html += '<strong>Combined:</strong> "Stock insights and weather for Toronto"<br>';
     html += '<strong>Context:</strong> "Explain all icons", "Where am I?", "Summarize current context"<br>';
+    html += '<strong>View Modes:</strong><br>';
+    html += '\u2003\u2022 "<strong>Focus mode</strong>" / "Zen mode" / "Hide UI" — hides all overlays, just 3D + AI<br>';
+    html += '\u2003\u2022 "<strong>Simple mode</strong>" / "Minimal mode" — essentials only, cleaner layout<br>';
+    html += '\u2003\u2022 "<strong>Full mode</strong>" / "Show UI" — restores all UI elements<br>';
+    html += '\u2003\u2022 "<strong>Mobile mode</strong>" — switch to touch-optimized mobile layout<br>';
     html += '<strong>Tutorial:</strong> "Enable tutorial mode" to reset first-time experience<br>';
     html += '<strong>Voice:</strong> Click \uD83C\uDFA4 to talk. Say "STOP" or "SHUT UP" to silence me.<br>';
     addMessage('agent', html, true);
@@ -1588,6 +1766,19 @@
       }
     }
 
+    // Restore saved view mode
+    var savedViewMode = load('viewmode', null);
+    if (!savedViewMode) {
+      try { savedViewMode = localStorage.getItem('vr_ai_viewmode'); } catch (e) { /* ignore */ }
+    }
+    if (savedViewMode && (savedViewMode === 'simple' || savedViewMode === 'focus')) {
+      // Delay to let other components initialize first
+      setTimeout(function () { setViewMode(savedViewMode); }, 1500);
+    } else {
+      state.viewMode = 'full';
+      setTimeout(function () { updateViewModeBar(); }, 500);
+    }
+
     // Check first-time visit
     if (isFirstVisit(ZONE)) {
       // Show welcome after a short delay to let the page load
@@ -1624,7 +1815,13 @@
     getZone: function () { return ZONE; },
     isFirstVisit: isFirstVisit,
     resetTutorial: resetFirstTimeMode,
-    showLogin: showLoginOverlay
+    showLogin: showLoginOverlay,
+    // View mode API
+    setViewMode: setViewMode,
+    getViewMode: getViewMode,
+    focusMode: function () { setViewMode('focus'); },
+    simpleMode: function () { setViewMode('simple'); },
+    fullMode: function () { setViewMode('full'); }
   };
 
 })();

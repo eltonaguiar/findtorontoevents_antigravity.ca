@@ -150,11 +150,11 @@
   const GestureShortcuts = {
     gestures: {
       'swipe-up': { name: 'Quick Menu', action: () => showToast('Menu opened') },
-      'swipe-down': { name: 'Close All', action: () => this.closeAllPanels() },
+      'swipe-down': { name: 'Close All', action: () => GestureShortcuts.closeAllPanels() },
       'swipe-left': { name: 'Previous Zone', action: () => history.back() },
       'swipe-right': { name: 'Next Zone', action: () => history.forward() },
       'circle': { name: 'Reset View', action: () => window.resetPosition && window.resetPosition() },
-      'tap-twice': { name: 'Screenshot', action: () => this.takeScreenshot() }
+      'tap-twice': { name: 'Screenshot', action: () => GestureShortcuts.takeScreenshot && GestureShortcuts.takeScreenshot() }
     },
 
     init() {
@@ -201,22 +201,27 @@
       const dy = end.y - start.y;
       const dt = end.t - start.t;
       
-      if (dt > 500) return; // Too slow
+      if (dt > 400) return; // Too slow
       
-      if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 100) {
+      // Require a larger movement to prevent accidental triggers during normal mouse use
+      if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 200) {
         if (dy < 0) this.triggerGesture('swipe-up');
         else this.triggerGesture('swipe-down');
-      } else if (Math.abs(dx) > 100) {
+      } else if (Math.abs(dx) > 200) {
         if (dx < 0) this.triggerGesture('swipe-left');
         else this.triggerGesture('swipe-right');
       }
     },
 
     triggerGesture(name) {
-      const gesture = this.gestures[name];
+      // Throttle: prevent repeated gesture triggers within 1.5 seconds
+      var now = Date.now();
+      if (this._lastGesture && now - this._lastGesture < 1500) return;
+      this._lastGesture = now;
+      var gesture = this.gestures[name];
       if (gesture) {
-        gesture.action();
-        showToast(`👋 ${gesture.name}`);
+        try { gesture.action(); } catch (e) { console.warn('[VR Gesture] Error:', e); }
+        showToast('👋 ' + gesture.name);
       }
     },
 

@@ -645,7 +645,7 @@
     var cursor = cam.querySelector('[cursor]');
     if (!cursor) {
       var gazeEl = document.createElement('a-entity');
-      gazeEl.setAttribute('cursor', 'fuse: true; fuseTimeout: 1500');
+      gazeEl.setAttribute('cursor', 'fuse: true; fuseTimeout: 2500');
       gazeEl.setAttribute('raycaster', 'objects: .clickable; far: 20');
       gazeEl.setAttribute('position', '0 0 -1');
       gazeEl.innerHTML = '<a-ring radius-inner="0.01" radius-outer="0.02" color="#f59e0b" opacity="0.8" material="shader: flat"></a-ring>';
