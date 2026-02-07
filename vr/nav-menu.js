@@ -275,6 +275,17 @@
         // Section-specific actions
         sectionHTML +
 
+        // Area Guide button
+        '<div class="vr-nav-section-label">Area Guide</div>' +
+        '<div class="vr-nav-guide-row">' +
+          '<button class="vr-nav-guide-btn" onclick="closeNavMenu();if(window.VRAreaGuide)VRAreaGuide.show()" title="Learn about this zone">' +
+            '<span class="guide-btn-icon">&#x1F4D6;</span> About This Zone' +
+          '</button>' +
+          '<button class="vr-nav-guide-btn vr-nav-guide-speak" onclick="closeNavMenu();if(window.VRAreaGuide)VRAreaGuide.speakGuide()" title="Hear zone description">' +
+            '<span class="guide-btn-icon">&#x1F50A;</span> Read Aloud' +
+          '</button>' +
+        '</div>' +
+
         // Zone navigation
         '<div class="vr-nav-section-label">Navigate</div>' +
         '<div class="vr-nav-zones">' + zoneHTML + '</div>' +
@@ -295,7 +306,7 @@
 
         // Footer
         '<div class="vr-nav-hint">' +
-          'Press <kbd>M</kbd> or <kbd>Tab</kbd> to toggle &bull; <kbd>Esc</kbd> to close' +
+          'Press <kbd>M</kbd> or <kbd>Tab</kbd> to toggle &bull; <kbd>G</kbd> Area Guide &bull; <kbd>Esc</kbd> to close' +
         '</div>' +
       '</div>';
 
@@ -588,6 +599,12 @@
 .st-genre{display:block;color:#475569;font-size:10px}\
 .vr-music-credit{color:#334155;font-size:10px;margin-top:6px;text-align:center}\
 .vr-music-credit a{color:#475569;text-decoration:none}\
+.vr-nav-guide-row{display:flex;gap:6px;margin-bottom:6px}\
+.vr-nav-guide-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border-radius:10px;border:1px solid rgba(125,211,252,0.2);background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(168,85,247,0.06));color:#7dd3fc;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s}\
+.vr-nav-guide-btn:hover{background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(168,85,247,0.12));border-color:rgba(125,211,252,0.4);color:#fff}\
+.vr-nav-guide-speak{border-color:rgba(34,197,94,0.2);background:rgba(34,197,94,0.06);color:#4ade80}\
+.vr-nav-guide-speak:hover{background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.4);color:#fff}\
+.guide-btn-icon{font-size:15px}\
 .vr-nav-hint{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;font-size:11px;color:#475569}\
 .vr-nav-hint kbd{background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;font-family:monospace;color:#64748b;font-size:10px}\
 #vr-nav-floating-btn{position:fixed;bottom:16px;right:16px;width:50px;height:50px;background:linear-gradient(135deg,#00d4ff,#a855f7);border:none;border-radius:14px;cursor:pointer;z-index:99999;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,212,255,0.3);transition:all .3s;animation:vr-nav-float 3s ease-in-out infinite}\

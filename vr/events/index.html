@@ -125,9 +125,54 @@
     }
     #back-btn:hover { background: rgba(0,212,255,0.15); }
 
-    /* VR button */
-    #vr-btn {
+    /* Events Audio Bar */
+    #events-audio-bar {
       position: fixed; top: 12px; right: 12px; z-index: 150;
+      display: flex; gap: 4px; align-items: center;
+    }
+    .evt-audio-btn {
+      background: rgba(30,41,59,0.9); color: #fca5a5; border: 1px solid rgba(255,107,107,0.2);
+      padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.78rem;
+      font-weight: 600; backdrop-filter: blur(6px); transition: all 0.2s; white-space: nowrap;
+    }
+    .evt-audio-btn:hover { background: rgba(255,107,107,0.15); color: #fff; }
+    .evt-audio-btn.active { background: rgba(255,107,107,0.25); border-color: #ff6b6b; color: #fff; }
+    .evt-audio-btn.control { color: #7dd3fc; border-color: rgba(0,212,255,0.2); }
+    .evt-audio-btn.control:hover { background: rgba(0,212,255,0.15); color: #fff; }
+    .evt-audio-btn.stop-btn { color: #fca5a5; border-color: rgba(239,68,68,0.2); }
+    .evt-audio-btn.stop-btn:hover { background: rgba(239,68,68,0.15); }
+    #evt-audio-status { color: #4ade80; font-size: 0.7rem; font-weight: 600; margin-left: 4px; }
+
+    /* Event Preview Overlay */
+    #event-preview {
+      position: fixed; inset: 0; z-index: 300;
+      background: rgba(6,4,16,0.95); backdrop-filter: blur(12px);
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+    }
+    #event-preview.open { display: flex; }
+    #event-preview .preview-header {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+      width: min(96vw, 960px);
+    }
+    #event-preview .preview-title {
+      flex: 1; color: #fff; font-size: 1.1rem; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #event-preview .preview-close {
+      background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3);
+      color: #fca5a5; padding: 6px 16px; border-radius: 8px; cursor: pointer;
+      font-size: 0.85rem; font-weight: 600;
+    }
+    #event-preview .preview-close:hover { background: rgba(239,68,68,0.3); color: #fff; }
+    #event-preview iframe {
+      width: min(96vw, 960px); height: min(80vh, 700px);
+      border: 1px solid rgba(0,212,255,0.2); border-radius: 12px;
+      background: #0a0a1a;
+    }
+
+    /* VR button (moved below audio bar) */
+    #vr-btn {
+      position: fixed; top: 54px; right: 12px; z-index: 150;
       background: rgba(168,85,247,0.2); color: #a855f7; border: 2px solid #a855f7;
       padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: 700;
       font-size: 0.85rem; transition: all 0.3s;
@@ -147,6 +192,16 @@
 
   <a id="back-btn" href="/vr/">&#8592; Back to Hub</a>
   <button id="vr-btn" onclick="document.querySelector('a-scene').enterVR()">Enter VR</button>
+
+  <!-- Events Audio Announcements Bar -->
+  <div id="events-audio-bar">
+    <button class="evt-audio-btn" onclick="VRAreaGuide.announceEvents('today')" title="Hear today's events">Today</button>
+    <button class="evt-audio-btn" onclick="VRAreaGuide.announceEvents('tomorrow')" title="Hear tomorrow's events">Tomorrow</button>
+    <button class="evt-audio-btn" onclick="VRAreaGuide.announceEvents('weekend')" title="Hear weekend events">Weekend</button>
+    <button class="evt-audio-btn control" id="evt-pause-btn" onclick="window._evtTogglePause()" style="display:none">Pause</button>
+    <button class="evt-audio-btn stop-btn" id="evt-stop-btn" onclick="window._evtStopAnnounce()" style="display:none">Stop</button>
+    <span id="evt-audio-status"></span>
+  </div>
   <div id="filter-wrapper">
     <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">
       <input id="vr-event-search" type="text" placeholder="Search events... (press /)" autocomplete="off"
@@ -171,8 +226,18 @@
     <div class="desc" id="det-desc"></div>
     <div class="btns">
       <a id="det-link" href="#" target="_blank" rel="noopener" class="btn btn-primary">View Event</a>
+      <button class="btn btn-secondary" onclick="window._previewCurrentEvent()" style="background:rgba(0,212,255,0.1);color:#7dd3fc;border:1px solid rgba(0,212,255,0.2);">Preview</button>
       <button class="btn btn-secondary" onclick="closeDetail()">Close</button>
     </div>
+  </div>
+
+  <!-- Event Preview Overlay (inline browser) -->
+  <div id="event-preview">
+    <div class="preview-header">
+      <span class="preview-title" id="preview-title">Event Preview</span>
+      <button class="preview-close" onclick="window._closeEventPreview()">Close Preview</button>
+    </div>
+    <iframe id="preview-iframe" src="" sandbox="allow-scripts allow-same-origin allow-popups" allowfullscreen></iframe>
   </div>
 
   <!-- HUD -->
@@ -786,7 +851,8 @@
     VRKeyboardHints.register([
       { key: '/ or F', desc: 'Search events' },
       { key: '←/→', desc: 'Previous / Next page' },
-      { key: 'Esc', desc: 'Close detail' }
+      { key: 'G', desc: 'Area Guide' },
+      { key: 'Esc', desc: 'Close detail / preview' }
     ]);
     // Search filter
     window._vrSearchEvents = function (query) {
@@ -809,6 +875,80 @@
       }
     };
   </script>
+  <!-- Area Guide (zone info + TTS) -->
+  <script src="/vr/area-guide.js"></script>
+  <script>
+    // ===== EVENTS AUDIO ANNOUNCEMENTS =====
+    window._evtTogglePause = function () {
+      if (window.VRAreaGuide) VRAreaGuide.togglePause();
+    };
+    window._evtStopAnnounce = function () {
+      if (window.VRAreaGuide) VRAreaGuide.stopSpeaking();
+      var pauseBtn = document.getElementById('evt-pause-btn');
+      var stopBtn = document.getElementById('evt-stop-btn');
+      var statusEl = document.getElementById('evt-audio-status');
+      if (pauseBtn) pauseBtn.style.display = 'none';
+      if (stopBtn) stopBtn.style.display = 'none';
+      if (statusEl) statusEl.textContent = '';
+    };
+
+    var _origAnnounce = null;
+    var _evtTTSPollInterval = null;
+    function hookAudioControls() {
+      if (!window.VRAreaGuide) return;
+      _origAnnounce = VRAreaGuide.announceEvents;
+      VRAreaGuide.announceEvents = function (tf) {
+        _origAnnounce(tf);
+        var pauseBtn = document.getElementById('evt-pause-btn');
+        var stopBtn = document.getElementById('evt-stop-btn');
+        if (pauseBtn) pauseBtn.style.display = 'inline-block';
+        if (stopBtn) stopBtn.style.display = 'inline-block';
+        clearInterval(_evtTTSPollInterval);
+        _evtTTSPollInterval = setInterval(function () {
+          if (!speechSynthesis.speaking && !speechSynthesis.pending) {
+            clearInterval(_evtTTSPollInterval);
+            if (pauseBtn) pauseBtn.style.display = 'none';
+            if (stopBtn) stopBtn.style.display = 'none';
+            var statusEl = document.getElementById('evt-audio-status');
+            if (statusEl) statusEl.textContent = '';
+          } else {
+            var statusEl = document.getElementById('evt-audio-status');
+            var pauseBtn2 = document.getElementById('evt-pause-btn');
+            if (speechSynthesis.paused) {
+              if (statusEl) statusEl.textContent = 'Paused';
+              if (pauseBtn2) pauseBtn2.textContent = 'Resume';
+            } else {
+              if (statusEl) statusEl.textContent = 'Speaking...';
+              if (pauseBtn2) pauseBtn2.textContent = 'Pause';
+            }
+          }
+        }, 300);
+      };
+    }
+    if (window.VRAreaGuide) hookAudioControls();
+    else window.addEventListener('load', hookAudioControls);
+
+    // ===== EVENT PREVIEW (inline browser) =====
+    window._previewCurrentEvent = function () {
+      var link = document.getElementById('det-link');
+      if (!link || !link.href || link.href === '#') return;
+      var titleEl = document.getElementById('det-title');
+      document.getElementById('preview-title').textContent = titleEl ? titleEl.textContent : 'Event Preview';
+      document.getElementById('preview-iframe').src = link.href;
+      document.getElementById('event-preview').classList.add('open');
+      closeDetail();
+    };
+    window._closeEventPreview = function () {
+      document.getElementById('event-preview').classList.remove('open');
+      document.getElementById('preview-iframe').src = '';
+    };
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && document.getElementById('event-preview').classList.contains('open')) {
+        e.stopPropagation();
+        window._closeEventPreview();
+      }
+    });
+  </script>
   <!-- Shared presence tracker + keyboard shortcuts -->
   <script src="/vr/presence.js"></script>
   <!-- VR Controller Support -->
@@ -822,6 +962,8 @@
   <script src="/vr/quick-wins-substantial-set2.js"></script>
   <script src="/vr/quick-wins-substantial-set3.js"></script>
   <script src="/vr/quick-wins-substantial-set4.js"></script>
+  <script src="/vr/quick-wins-substantial-set5.js"></script>
+  <script src="/vr/quick-wins-substantial-set6.js"></script>
 
   <!-- Comfort vignette + F1 help -->
   <script src="/vr/vr-comfort.js"></script>
