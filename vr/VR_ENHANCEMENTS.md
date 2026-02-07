@@ -310,6 +310,9 @@ Based on real Meta Quest 3 user testing feedback. Prioritized by severity.
 | 20 | Tutorial Zone Controller Support (laser + locomotion) | 20 min | ✅ DONE |
 | 21 | Movies Cinema Theme Selector (Classic/IMAX/Drive-In) | 30 min | ✅ DONE |
 | 22 | Weather Interactive Forecast Cards + Detail Popup | 30 min | ✅ DONE |
+| 23 | Mobile-Friendly: Shared vr-mobile.js (joystick, topbar, action bar, responsive CSS) | 1 hour | ✅ DONE |
+| 24 | Mobile-Friendly: Updated mobile-detect.js (prompt vs hard-redirect) | 15 min | ✅ DONE |
+| 25 | Mobile-Friendly: Updated mobile-index.html zone links + added Tutorial/Hub cards | 15 min | ✅ DONE |
 
 ---
 
@@ -327,4 +330,4 @@ Each zone file just needs: `<script src="/vr/vr-controls.js"></script>`
 
 ---
 
-*Last updated: 2026-02-07 — Session 4: Zone tooltips, spatial audio, stock pedestals+popup, tutorial controllers, portal loading, cinema themes, weather forecast cards*
+*Last updated: 2026-02-07 — Session 4: Zone tooltips, spatial audio, stock pedestals+popup, tutorial controllers, portal loading, cinema themes, weather forecast cards, mobile-friendly handling*

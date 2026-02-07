@@ -125,23 +125,21 @@
 
     // Initialize
     init() {
-      // Auto-redirect if mobile
+      // If vr-mobile.js is loaded, the VR pages are already mobile-enhanced — just show prompt
       if (this.isMobile()) {
-        // Check if we should auto-redirect (only on first visit)
         const lastPrompt = localStorage.getItem('vr-mobile-prompt-dismissed');
         const promptDelay = 24 * 60 * 60 * 1000; // 24 hours
-        
+
         if (!lastPrompt || (Date.now() - parseInt(lastPrompt)) > promptDelay) {
-          this.redirect();
+          // Show choice prompt instead of hard redirect
+          this.showPrompt();
         }
       } else {
-        // Show prompt on desktop if window is small
         if (window.innerWidth < 768) {
           this.showPrompt();
         }
       }
 
-      // Listen for resize
       window.addEventListener('resize', () => {
         if (window.innerWidth < 768 && !document.getElementById('mobile-prompt')) {
           this.showPrompt();
