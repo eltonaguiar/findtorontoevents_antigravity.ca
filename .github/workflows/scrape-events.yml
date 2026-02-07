@@ -38,10 +38,10 @@ jobs:
       - name: Ensure next/ exists
         run: mkdir -p next
 
-      - name: Run scraper
+      - name: Run scraper and sync to database
         env:
           EVENTS_UPDATE_SOURCE: github_actions
-        run: python tools/scrape_and_sync_events.py
+        run: python tools/scrape_and_sync_events.py --sync
 
       - name: Verify calendar source (sofiaadelgiudice) in events.json
         run: |
@@ -72,6 +72,25 @@ jobs:
           else
             git commit -m "chore: update events from scraper (GitHub Actions)"
             git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" HEAD:main
+          fi
+
+      # Trigger the server to re-sync its database from its own events.json
+      # This is a fallback in case the --sync POST was blocked by ModSecurity (412)
+      - name: Trigger database sync via GET
+        run: |
+          echo "Triggering server-side database sync..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -A "Mozilla/5.0 (compatible; FindTorontoEvents-Sync/1.0)" \
+            "https://findtorontoevents.ca/fc/api/events_sync.php" \
+            --max-time 120)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          echo "HTTP $HTTP_CODE"
+          echo "$BODY" | python -m json.tool 2>/dev/null || echo "$BODY"
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "Database sync triggered successfully"
+          else
+            echo "::warning::Database sync returned HTTP $HTTP_CODE (non-fatal)"
           fi
 
       # Reset workspace so checkout action's post step doesn't fail with git 128

@@ -60,17 +60,44 @@ def normalize_event_for_sync(event: dict) -> dict:
 
 
 def sync_to_database(events: list, api_base: str = "https://findtorontoevents.ca/fc/api", chunk_size: int = 150):
-    """Sync events to the remote database via API. Uses chunk when needed; falls back to events-router if 412."""
+    """Sync events to the remote database via API.
+    
+    Strategy:
+    1. Try POST with chunked events (preferred - sends fresh data directly)
+    2. If POST is blocked (412 ModSecurity), fall back to GET which tells the
+       server to read its own events.json from disk and sync that instead.
+    """
     sync_url = f"{api_base}/events_sync.php"
     router_url = api_base.replace("/fc/api", "") + "/fc/events-router.php?e=sync"
     events = [normalize_event_for_sync(e) for e in events]
     total = len(events)
 
+    # Use a browser-like User-Agent to avoid ModSecurity 412 blocks
+    _HEADERS = {
+        "User-Agent": "Mozilla/5.0 (compatible; FindTorontoEvents-Sync/1.0)",
+        "Content-Type": "application/json",
+    }
+
     def _post(url: str, payload: dict):
-        r = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=120)
+        r = requests.post(url, json=payload, headers=_HEADERS, timeout=120)
         if r.status_code == 412 and url == sync_url:
-            r = requests.post(router_url, json=payload, headers={"Content-Type": "application/json"}, timeout=120)
+            r = requests.post(router_url, json=payload, headers=_HEADERS, timeout=120)
         return r
+
+    def _get_sync():
+        """Fallback: trigger GET sync which reads events.json from server disk."""
+        print("Falling back to GET-based sync (server reads its own events.json)...")
+        try:
+            r = requests.get(sync_url, headers=_HEADERS, timeout=120)
+            if r.status_code == 412:
+                r = requests.get(router_url, headers=_HEADERS, timeout=120)
+            r.raise_for_status()
+            result = r.json()
+            print(f"GET sync result: {result}")
+            return result
+        except Exception as e2:
+            print(f"GET sync also failed: {e2}")
+            return None
 
     try:
         print(f"Syncing {total} events to database (chunk_size={chunk_size})...")
@@ -93,8 +120,11 @@ def sync_to_database(events: list, api_base: str = "https://findtorontoevents.ca
         print(f"Sync complete. Last result: {last_result}")
         return last_result
     except Exception as e:
-        print(f"Error syncing to database: {e}")
-        return None
+        print(f"POST sync failed ({e}), trying GET fallback...")
+        return _get_sync()
+
+
+_BROWSER_UA = {"User-Agent": "Mozilla/5.0 (compatible; FindTorontoEvents-Sync/1.0)"}
 
 
 def run_duplicate_finder(api_base: str = "https://findtorontoevents.ca/fc/api"):
@@ -103,7 +133,7 @@ def run_duplicate_finder(api_base: str = "https://findtorontoevents.ca/fc/api"):
     
     try:
         print("Running duplicate finder...")
-        response = requests.get(url, timeout=30)
+        response = requests.get(url, headers=_BROWSER_UA, timeout=30)
         result = response.json()
         print(f"Duplicate finder result: {result}")
         return result
@@ -117,7 +147,7 @@ def get_stats(api_base: str = "https://findtorontoevents.ca/fc/api"):
     url = f"{api_base}/events_get_stats.php"
     
     try:
-        response = requests.get(url, timeout=30)
+        response = requests.get(url, headers=_BROWSER_UA, timeout=30)
         return response.json()
     except Exception as e:
         print(f"Error getting stats: {e}")
