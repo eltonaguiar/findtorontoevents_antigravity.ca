@@ -2094,12 +2094,15 @@ function initGame() {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.setClearColor(0x0a0a1a);
+  renderer.setClearColor(0x080812);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+  renderer.outputEncoding = THREE.sRGBEncoding;
   setProgress(10);
 
-  // Scene
+  // Scene — darker, more atmospheric
   scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x0a0a1a, 0.012);
+  scene.fog = new THREE.FogExp2(0x080812, 0.015);
   setProgress(20);
 
   // Camera
@@ -2107,31 +2110,50 @@ function initGame() {
   camera.position.set(0, PLAYER_HEIGHT, 0);
   setProgress(30);
 
-  // Lights
-  var ambientLight = new THREE.AmbientLight(0x404060, 0.4);
+  // Lights — cinematic, dramatic lighting
+  var ambientLight = new THREE.AmbientLight(0x202040, 0.3);
   scene.add(ambientLight);
 
-  var dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
-  dirLight.position.set(20, 40, 20);
+  // Hemisphere light for subtle sky/ground color bleed
+  var hemiLight = new THREE.HemisphereLight(0x1a1a3e, 0x0a0a0a, 0.4);
+  scene.add(hemiLight);
+
+  var dirLight = new THREE.DirectionalLight(0xccccff, 0.4);
+  dirLight.position.set(20, 50, 20);
   dirLight.castShadow = true;
-  dirLight.shadow.mapSize.width = 1024;
-  dirLight.shadow.mapSize.height = 1024;
+  dirLight.shadow.mapSize.width = 2048;
+  dirLight.shadow.mapSize.height = 2048;
   dirLight.shadow.camera.near = 1;
-  dirLight.shadow.camera.far = 100;
+  dirLight.shadow.camera.far = 120;
   dirLight.shadow.camera.left = -50;
   dirLight.shadow.camera.right = 50;
   dirLight.shadow.camera.top = 50;
   dirLight.shadow.camera.bottom = -50;
+  dirLight.shadow.bias = -0.001;
   scene.add(dirLight);
 
-  // Point lights around arena
-  var colors = [0xef4444, 0x3b82f6, 0xa855f7, 0x22c55e, 0xf59e0b, 0xec4899];
-  for (var i = 0; i < 6; i++) {
-    var pl = new THREE.PointLight(colors[i], 0.6, 30);
-    var angle = (i / 6) * Math.PI * 2;
-    pl.position.set(Math.cos(angle) * 25, 5, Math.sin(angle) * 25);
+  // Secondary fill light from opposite side
+  var fillLight = new THREE.DirectionalLight(0x334466, 0.2);
+  fillLight.position.set(-30, 20, -30);
+  scene.add(fillLight);
+
+  // Point lights around arena — dramatic colored pools
+  var lightConfigs = [
+    { color: 0xef4444, intensity: 0.8, distance: 25, pos: [0, 4, 0] },      // Center red
+    { color: 0x3b82f6, intensity: 0.5, distance: 20, pos: [-25, 4, -25] },   // Corner blue
+    { color: 0xa855f7, intensity: 0.5, distance: 20, pos: [25, 4, -25] },    // Corner purple
+    { color: 0x22c55e, intensity: 0.4, distance: 18, pos: [-25, 4, 25] },    // Corner green
+    { color: 0xf59e0b, intensity: 0.4, distance: 18, pos: [25, 4, 25] },     // Corner amber
+    { color: 0xec4899, intensity: 0.3, distance: 15, pos: [0, 6, -35] },     // Far pink
+    { color: 0x6366f1, intensity: 0.3, distance: 15, pos: [0, 6, 35] },      // Far indigo
+    { color: 0xff4400, intensity: 0.6, distance: 12, pos: [-15, 3, 0] },     // Side warm
+    { color: 0x0088ff, intensity: 0.6, distance: 12, pos: [15, 3, 0] }       // Side cool
+  ];
+  lightConfigs.forEach(function(lc) {
+    var pl = new THREE.PointLight(lc.color, lc.intensity, lc.distance);
+    pl.position.set(lc.pos[0], lc.pos[1], lc.pos[2]);
     scene.add(pl);
-  }
+  });
   setProgress(40);
 
   // Build arena
@@ -2202,30 +2224,82 @@ function initGame() {
 
     showStreakBanner('MATCH START', '#ef4444', 'Eliminate all enemies!');
     showControlsHelp();
+    setTimeout(function() { Announcer.announceMatchStart(); }, 500);
     gameLoop();
   }, 800);
 }
 
 // ─── ARENA BUILDER ──────────────────────────────────────────────────────────
 function buildArena() {
-  // Floor
+  // Floor — concrete/industrial with procedural texture
+  var floorCanvas = document.createElement('canvas');
+  floorCanvas.width = 512; floorCanvas.height = 512;
+  var fCtx = floorCanvas.getContext('2d');
+  // Base concrete color
+  fCtx.fillStyle = '#1a1a28';
+  fCtx.fillRect(0, 0, 512, 512);
+  // Add noise/grain for concrete texture
+  for (var fx = 0; fx < 512; fx += 2) {
+    for (var fy = 0; fy < 512; fy += 2) {
+      var noise = Math.random() * 15;
+      fCtx.fillStyle = 'rgba(' + (26 + noise) + ',' + (26 + noise) + ',' + (40 + noise) + ',0.5)';
+      fCtx.fillRect(fx, fy, 2, 2);
+    }
+  }
+  // Grid lines (subtle)
+  fCtx.strokeStyle = 'rgba(60,60,80,0.3)';
+  fCtx.lineWidth = 1;
+  for (var gi = 0; gi < 512; gi += 64) {
+    fCtx.beginPath(); fCtx.moveTo(gi, 0); fCtx.lineTo(gi, 512); fCtx.stroke();
+    fCtx.beginPath(); fCtx.moveTo(0, gi); fCtx.lineTo(512, gi); fCtx.stroke();
+  }
+  // Stains/marks
+  for (var si = 0; si < 8; si++) {
+    fCtx.fillStyle = 'rgba(20,15,10,' + (0.1 + Math.random() * 0.1) + ')';
+    fCtx.beginPath();
+    fCtx.arc(Math.random() * 512, Math.random() * 512, 20 + Math.random() * 40, 0, Math.PI * 2);
+    fCtx.fill();
+  }
+
+  var floorTex = new THREE.CanvasTexture(floorCanvas);
+  floorTex.wrapS = THREE.RepeatWrapping;
+  floorTex.wrapT = THREE.RepeatWrapping;
+  floorTex.repeat.set(10, 10);
+
   var floorGeo = new THREE.PlaneGeometry(ARENA_SIZE, ARENA_SIZE);
   var floorMat = new THREE.MeshStandardMaterial({
-    color: 0x1a1a2e, roughness: 0.9, metalness: 0.1
+    map: floorTex, roughness: 0.95, metalness: 0.05
   });
   var floor = new THREE.Mesh(floorGeo, floorMat);
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
   scene.add(floor);
 
-  // Grid lines on floor
-  var gridHelper = new THREE.GridHelper(ARENA_SIZE, 40, 0x222244, 0x1a1a30);
-  gridHelper.position.y = 0.01;
-  scene.add(gridHelper);
+  // Walls — industrial concrete with metal trim
+  var wallCanvas = document.createElement('canvas');
+  wallCanvas.width = 256; wallCanvas.height = 256;
+  var wCtx = wallCanvas.getContext('2d');
+  wCtx.fillStyle = '#252540';
+  wCtx.fillRect(0, 0, 256, 256);
+  // Concrete grain
+  for (var wx = 0; wx < 256; wx += 3) {
+    for (var wy = 0; wy < 256; wy += 3) {
+      var wn = Math.random() * 12;
+      wCtx.fillStyle = 'rgba(' + (37 + wn) + ',' + (37 + wn) + ',' + (64 + wn) + ',0.4)';
+      wCtx.fillRect(wx, wy, 3, 3);
+    }
+  }
+  // Horizontal seams
+  for (var hs = 32; hs < 256; hs += 64) {
+    wCtx.strokeStyle = 'rgba(0,0,0,0.3)'; wCtx.lineWidth = 2;
+    wCtx.beginPath(); wCtx.moveTo(0, hs); wCtx.lineTo(256, hs); wCtx.stroke();
+  }
+  var wallTex = new THREE.CanvasTexture(wallCanvas);
+  wallTex.wrapS = THREE.RepeatWrapping; wallTex.wrapT = THREE.RepeatWrapping;
+  wallTex.repeat.set(4, 1);
 
-  // Walls
-  var wallMat = new THREE.MeshStandardMaterial({ color: 0x252540, roughness: 0.7, metalness: 0.3 });
-  var wallHeight = 6;
+  var wallMat = new THREE.MeshStandardMaterial({ map: wallTex, roughness: 0.75, metalness: 0.2 });
+  var wallHeight = 8; // Taller walls for more enclosed feel
   var halfSize = ARENA_SIZE / 2;
 
   // 4 boundary walls
@@ -2394,85 +2468,203 @@ function createBot(index) {
   var diff = DIFF[state.difficulty];
   var pos = getRandomSpawn();
 
-  // Bot mesh: simple humanoid shape
+  // Realistic soldier model — military/tactical style (CoD inspired)
   var group = new THREE.Group();
+  var botName = BOT_NAMES[index % BOT_NAMES.length];
 
-  // Body
-  var bodyGeo = new THREE.BoxGeometry(0.6, 1.0, 0.4);
-  var botColor = new THREE.Color().setHSL((index * 0.13) % 1, 0.7, 0.5);
-  var bodyMat = new THREE.MeshStandardMaterial({ color: botColor, roughness: 0.6, transparent: true });
-  var body = new THREE.Mesh(bodyGeo, bodyMat);
-  body.position.y = 1.2;
-  body.castShadow = true;
-  group.add(body);
+  // Team colors: dark military tones with accent
+  var teamColors = [
+    { uniform: 0x2d3a2d, accent: 0x8b0000, skin: 0xc4a882 }, // Forest/dark red
+    { uniform: 0x3a3a3a, accent: 0x1a5276, skin: 0xd4a574 }, // Urban/navy
+    { uniform: 0x4a3728, accent: 0x7d6608, skin: 0xb08968 }, // Desert/gold
+    { uniform: 0x2c3e50, accent: 0x922b21, skin: 0xc9a96e }, // Tactical/crimson
+    { uniform: 0x333333, accent: 0x1e8449, skin: 0xd5b895 }, // Shadow/green
+    { uniform: 0x3d3d3d, accent: 0x6c3483, skin: 0xc4a882 }, // Stealth/purple
+    { uniform: 0x2d2d2d, accent: 0xb03a2e, skin: 0xbe9b7b }  // Night/red
+  ];
+  var tc = teamColors[index % teamColors.length];
 
-  // Head
-  var headGeo = new THREE.SphereGeometry(0.2, 8, 8);
-  var headMat = new THREE.MeshStandardMaterial({ color: 0xddccbb, roughness: 0.5 });
+  // Torso (tapered, more realistic proportions)
+  var torsoGeo = new THREE.BoxGeometry(0.55, 0.85, 0.32);
+  var torsoMat = new THREE.MeshStandardMaterial({ color: tc.uniform, roughness: 0.85, metalness: 0.05, transparent: true });
+  var torso = new THREE.Mesh(torsoGeo, torsoMat);
+  torso.position.y = 1.15;
+  torso.castShadow = true;
+  group.add(torso);
+
+  // Tactical vest / chest plate
+  var vestGeo = new THREE.BoxGeometry(0.58, 0.5, 0.36);
+  var vestMat = new THREE.MeshStandardMaterial({ color: tc.accent, roughness: 0.7, metalness: 0.1 });
+  var vest = new THREE.Mesh(vestGeo, vestMat);
+  vest.position.y = 1.25;
+  vest.castShadow = true;
+  group.add(vest);
+
+  // Belt / waist
+  var beltGeo = new THREE.BoxGeometry(0.52, 0.1, 0.3);
+  var beltMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.6 });
+  var belt = new THREE.Mesh(beltGeo, beltMat);
+  belt.position.y = 0.72;
+  group.add(belt);
+
+  // Head (more detailed)
+  var headGeo = new THREE.SphereGeometry(0.18, 12, 10);
+  var headMat = new THREE.MeshStandardMaterial({ color: tc.skin, roughness: 0.6, metalness: 0 });
   var head = new THREE.Mesh(headGeo, headMat);
-  head.position.y = 1.9;
+  head.position.y = 1.78;
   head.castShadow = true;
   group.add(head);
 
-  // Eyes (glowing)
-  var eyeGeo = new THREE.SphereGeometry(0.04, 4, 4);
-  var eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+  // Helmet (tactical)
+  var helmetGeo = new THREE.SphereGeometry(0.2, 10, 8, 0, Math.PI * 2, 0, Math.PI * 0.6);
+  var helmetMat = new THREE.MeshStandardMaterial({ color: tc.uniform, roughness: 0.5, metalness: 0.2 });
+  var helmet = new THREE.Mesh(helmetGeo, helmetMat);
+  helmet.position.y = 1.85;
+  helmet.castShadow = true;
+  group.add(helmet);
+
+  // Helmet visor/rim
+  var visorGeo = new THREE.BoxGeometry(0.38, 0.04, 0.12);
+  var visorMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3, metalness: 0.4 });
+  var visor = new THREE.Mesh(visorGeo, visorMat);
+  visor.position.set(0, 1.76, 0.12);
+  group.add(visor);
+
+  // Eyes (subtle, not glowing cartoon)
+  var eyeGeo = new THREE.SphereGeometry(0.025, 6, 6);
+  var eyeMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.2, emissive: 0x111111 });
   var leftEye = new THREE.Mesh(eyeGeo, eyeMat);
-  leftEye.position.set(-0.07, 1.92, 0.15);
+  leftEye.position.set(-0.055, 1.78, 0.15);
   group.add(leftEye);
   var rightEye = new THREE.Mesh(eyeGeo, eyeMat);
-  rightEye.position.set(0.07, 1.92, 0.15);
+  rightEye.position.set(0.055, 1.78, 0.15);
   group.add(rightEye);
 
-  // Weapon (simple barrel)
-  var gunGeo = new THREE.BoxGeometry(0.08, 0.08, 0.5);
-  var gunMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
-  var gun = new THREE.Mesh(gunGeo, gunMat);
-  gun.position.set(0.3, 1.1, 0.3);
+  // Neck
+  var neckGeo = new THREE.CylinderGeometry(0.07, 0.09, 0.12, 8);
+  var neckMat = new THREE.MeshStandardMaterial({ color: tc.skin, roughness: 0.6 });
+  var neck = new THREE.Mesh(neckGeo, neckMat);
+  neck.position.y = 1.62;
+  group.add(neck);
+
+  // Shoulders (rounded)
+  var shoulderGeo = new THREE.SphereGeometry(0.1, 8, 8);
+  var shoulderMat = new THREE.MeshStandardMaterial({ color: tc.uniform, roughness: 0.8 });
+  var leftShoulder = new THREE.Mesh(shoulderGeo, shoulderMat);
+  leftShoulder.position.set(-0.35, 1.45, 0);
+  group.add(leftShoulder);
+  var rightShoulder = new THREE.Mesh(shoulderGeo, shoulderMat);
+  rightShoulder.position.set(0.35, 1.45, 0);
+  group.add(rightShoulder);
+
+  // Upper arms
+  var upperArmGeo = new THREE.CylinderGeometry(0.07, 0.06, 0.35, 8);
+  var armMat = new THREE.MeshStandardMaterial({ color: tc.uniform, roughness: 0.8 });
+  var leftUpperArm = new THREE.Mesh(upperArmGeo, armMat);
+  leftUpperArm.position.set(-0.38, 1.2, 0);
+  leftUpperArm.castShadow = true;
+  group.add(leftUpperArm);
+  var rightUpperArm = new THREE.Mesh(upperArmGeo, armMat);
+  rightUpperArm.position.set(0.38, 1.2, 0.1);
+  rightUpperArm.rotation.x = -0.4; // Holding weapon
+  rightUpperArm.castShadow = true;
+  group.add(rightUpperArm);
+
+  // Forearms / hands (skin color)
+  var forearmGeo = new THREE.CylinderGeometry(0.05, 0.045, 0.3, 8);
+  var forearmMat = new THREE.MeshStandardMaterial({ color: tc.skin, roughness: 0.6 });
+  var leftForearm = new THREE.Mesh(forearmGeo, forearmMat);
+  leftForearm.position.set(-0.38, 0.95, 0);
+  group.add(leftForearm);
+  var rightForearm = new THREE.Mesh(forearmGeo, forearmMat);
+  rightForearm.position.set(0.38, 0.98, 0.25);
+  rightForearm.rotation.x = -0.6;
+  group.add(rightForearm);
+
+  // Upper legs (cargo pants style — thicker)
+  var upperLegGeo = new THREE.CylinderGeometry(0.1, 0.08, 0.42, 8);
+  var legMat = new THREE.MeshStandardMaterial({ color: tc.uniform, roughness: 0.85 });
+  var leftUpperLeg = new THREE.Mesh(upperLegGeo, legMat);
+  leftUpperLeg.position.set(-0.14, 0.5, 0);
+  leftUpperLeg.castShadow = true;
+  group.add(leftUpperLeg);
+  var rightUpperLeg = new THREE.Mesh(upperLegGeo, legMat);
+  rightUpperLeg.position.set(0.14, 0.5, 0);
+  rightUpperLeg.castShadow = true;
+  group.add(rightUpperLeg);
+
+  // Lower legs (boots)
+  var lowerLegGeo = new THREE.CylinderGeometry(0.07, 0.08, 0.35, 8);
+  var bootMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.5, metalness: 0.1 });
+  var leftBoot = new THREE.Mesh(lowerLegGeo, bootMat);
+  leftBoot.position.set(-0.14, 0.17, 0);
+  leftBoot.castShadow = true;
+  group.add(leftBoot);
+  var rightBoot = new THREE.Mesh(lowerLegGeo, bootMat);
+  rightBoot.position.set(0.14, 0.17, 0);
+  rightBoot.castShadow = true;
+  group.add(rightBoot);
+
+  // Weapon (detailed rifle)
+  var gunBody = new THREE.BoxGeometry(0.06, 0.08, 0.6);
+  var gunMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.3, metalness: 0.5 });
+  var gun = new THREE.Mesh(gunBody, gunMat);
+  gun.position.set(0.3, 1.08, 0.35);
+  gun.castShadow = true;
   group.add(gun);
+  // Barrel
+  var barrelGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.25, 6);
+  barrelGeo.rotateX(Math.PI / 2);
+  var barrel = new THREE.Mesh(barrelGeo, gunMat);
+  barrel.position.set(0.3, 1.1, 0.7);
+  group.add(barrel);
+  // Stock
+  var stockGeo = new THREE.BoxGeometry(0.05, 0.06, 0.2);
+  var stockMat = new THREE.MeshStandardMaterial({ color: 0x3a2a1a, roughness: 0.8 });
+  var stock = new THREE.Mesh(stockGeo, stockMat);
+  stock.position.set(0.3, 1.07, 0.0);
+  group.add(stock);
+  // Magazine
+  var magGeo = new THREE.BoxGeometry(0.04, 0.12, 0.05);
+  var mag = new THREE.Mesh(magGeo, new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.3 }));
+  mag.position.set(0.3, 0.98, 0.3);
+  group.add(mag);
 
-  // Legs (to make bot look more humanoid)
-  var legGeo = new THREE.BoxGeometry(0.15, 0.7, 0.15);
-  var legMat = new THREE.MeshStandardMaterial({ color: 0x333340, roughness: 0.7 });
-  var leftLeg = new THREE.Mesh(legGeo, legMat);
-  leftLeg.position.set(-0.15, 0.35, 0);
-  leftLeg.castShadow = true;
-  group.add(leftLeg);
-  var rightLeg = new THREE.Mesh(legGeo, legMat);
-  rightLeg.position.set(0.15, 0.35, 0);
-  rightLeg.castShadow = true;
-  group.add(rightLeg);
+  // Backpack
+  var packGeo = new THREE.BoxGeometry(0.3, 0.35, 0.15);
+  var packMat = new THREE.MeshStandardMaterial({ color: tc.uniform, roughness: 0.9 });
+  var pack = new THREE.Mesh(packGeo, packMat);
+  pack.position.set(0, 1.25, -0.22);
+  group.add(pack);
 
-  // Arms
-  var armGeo = new THREE.BoxGeometry(0.12, 0.6, 0.12);
-  var armMat = new THREE.MeshStandardMaterial({ color: botColor.clone().multiplyScalar(0.8), roughness: 0.6 });
-  var leftArm = new THREE.Mesh(armGeo, armMat);
-  leftArm.position.set(-0.42, 1.1, 0);
-  group.add(leftArm);
-  var rightArm = new THREE.Mesh(armGeo, armMat);
-  rightArm.position.set(0.42, 1.1, 0.15);
-  group.add(rightArm);
+  // Knee pads
+  var kneePadGeo = new THREE.BoxGeometry(0.08, 0.06, 0.06);
+  var kneePadMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.4 });
+  var leftKnee = new THREE.Mesh(kneePadGeo, kneePadMat);
+  leftKnee.position.set(-0.14, 0.35, 0.08);
+  group.add(leftKnee);
+  var rightKnee = new THREE.Mesh(kneePadGeo, kneePadMat);
+  rightKnee.position.set(0.14, 0.35, 0.08);
+  group.add(rightKnee);
 
-  // Name tag above bot (billboard sprite)
-  var botName = BOT_NAMES[index % BOT_NAMES.length];
+  // Name tag (smaller, more tactical)
   var nameCanvas = document.createElement('canvas');
-  nameCanvas.width = 256; nameCanvas.height = 48;
+  nameCanvas.width = 256; nameCanvas.height = 40;
   var nCtx = nameCanvas.getContext('2d');
-  nCtx.fillStyle = 'rgba(0,0,0,0.5)';
-  nCtx.roundRect ? nCtx.roundRect(0, 0, 256, 48, 8) : nCtx.fillRect(0, 0, 256, 48);
-  nCtx.fill();
-  nCtx.font = 'bold 20px Inter, sans-serif';
+  nCtx.fillStyle = 'rgba(0,0,0,0.6)';
+  nCtx.fillRect(0, 0, 256, 40);
+  nCtx.font = 'bold 18px monospace';
   nCtx.textAlign = 'center';
   nCtx.fillStyle = '#ef4444';
-  nCtx.fillText(botName, 128, 20);
-  nCtx.font = '14px Inter, sans-serif';
-  nCtx.fillStyle = '#666';
-  nCtx.fillText('BOT', 128, 40);
+  nCtx.fillText(botName, 128, 16);
+  nCtx.font = '12px monospace';
+  nCtx.fillStyle = '#888';
+  nCtx.fillText('ENEMY', 128, 34);
   var nameTex = new THREE.CanvasTexture(nameCanvas);
   var nameSpriteMat = new THREE.SpriteMaterial({ map: nameTex, transparent: true, depthWrite: false });
   var nameSprite = new THREE.Sprite(nameSpriteMat);
-  nameSprite.position.set(0, 2.6, 0);
-  nameSprite.scale.set(2, 0.4, 1);
+  nameSprite.position.set(0, 2.3, 0);
+  nameSprite.scale.set(1.8, 0.3, 1);
   group.add(nameSprite);
 
   group.position.set(pos.x, 0, pos.z);
@@ -2991,6 +3183,7 @@ function fireWeapon() {
         damage *= 2.5; // headshot
         isHeadshot = true;
         AudioSys.playHeadshot();
+        Announcer.announceHeadshot();
         showStreakBanner('HEADSHOT', '#fbbf24', '+' + Math.round(damage) + ' DMG');
       } else {
         AudioSys.playHit();
@@ -3203,6 +3396,10 @@ function killBot(bot) {
   // Audio
   AudioSys.playKill();
 
+  // Voice announcer
+  if (state.kills === 1) Announcer.announceFirstBlood();
+  Announcer.announceKillStreak(state.streak);
+
   // 50% chance to drop a weapon
   if (Math.random() < 0.5) {
     spawnWeaponDrop(bot.position);
@@ -3216,13 +3413,20 @@ function killBot(bot) {
   showXPPopup(xpGain);
 
   // Streak notifications with banners
-  if (state.streak === 3) showStreakBanner('TRIPLE KILL', '#f97316', '3 Kill Streak');
+  if (state.streak === 2) showStreakBanner('DOUBLE KILL', '#3b82f6', '2 Kill Streak');
+  else if (state.streak === 3) showStreakBanner('TRIPLE KILL', '#f97316', '3 Kill Streak');
+  else if (state.streak === 4) showStreakBanner('MULTI KILL', '#ec4899', '4 Kill Streak!');
   else if (state.streak === 5) showStreakBanner('KILLING SPREE', '#ef4444', '5 Kill Streak - Bonus XP!');
+  else if (state.streak === 6) showStreakBanner('RAMPAGE', '#dc2626', '6 Kill Streak!');
+  else if (state.streak === 7) showStreakBanner('DOMINATING', '#9333ea', '7 Kill Streak!');
   else if (state.streak === 8) showStreakBanner('UNSTOPPABLE', '#a855f7', '8 Kill Streak!');
+  else if (state.streak === 9) showStreakBanner('MEGA KILL', '#f59e0b', '9 Kill Streak!');
   else if (state.streak === 10) showStreakBanner('GODLIKE', '#fbbf24', '10 Kill Streak - LEGENDARY!');
   else if (state.streak === 15) showStreakBanner('NUCLEAR', '#ff0000', '15 KILLS - ABSOLUTE DOMINATION');
+  else if (state.streak === 20) showStreakBanner('LEGENDARY', '#fbbf24', '20 KILLS - UNBELIEVABLE!');
 
   updateHUD();
+  updateBotCountHUD();
 }
 
 function damagePlayer(damage, attackerName, attackerPos) {
@@ -3303,6 +3507,7 @@ function playerDie(killerName) {
   deathCam();
 
   showStreakBanner('ELIMINATED', '#ef4444', 'Killed by ' + killerName);
+  Announcer.announceDeath();
 
   // Respawn after delay
   setTimeout(function() {
@@ -3330,7 +3535,9 @@ function respawnPlayer() {
   });
   // Spawn protection
   activateSpawnProtection();
+  Announcer.announceRespawn();
   updateHUD();
+  updateBotCountHUD();
 }
 
 // ─── GAME LOOP ──────────────────────────────────────────────────────────────
@@ -5394,6 +5601,9 @@ gameLoop = function() {
 
   // ── First Person Weapon Viewmodel ───────────────────────────────────────
   FPWeapon.render(state.currentWeapon, state.muzzleFlashTimer > 0, state.reloading, state.ads, dt);
+
+  // ── Enemy HUD indicators (threat detection on screen edges) ────────────
+  EnemyHUD.renderEnemyIndicators(camera, state.bots, dt);
 
   // ── Render remote players on minimap ────────────────────────────────────
   if (minimapCtx && MP.roomId) {
