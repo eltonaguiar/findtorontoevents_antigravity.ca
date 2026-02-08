@@ -726,26 +726,26 @@
 </head>
 <body>
 
-<!-- ========== AGE GATE ========== -->
+<!-- ========== LOGIN GATE (replaces age gate) ========== -->
 <div id="age-gate">
   <div class="age-gate-card">
-    <div class="warning-icon">&#9888;&#65039;</div>
-    <h1>18+ Content - FPS Arena</h1>
+    <div class="warning-icon" style="font-size:3rem;margin-bottom:16px;">&#127918;</div>
+    <h1 style="background:linear-gradient(90deg,#ef4444,#f97316);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;">FPS Arena</h1>
     <p class="subtitle">
-      This first-person shooter game contains simulated violence and is restricted to users aged 18 and over.
-      You must be logged in with a verified FavCreators account to access this content.
+      First-person shooter with 6 weapons, AI bots, ranked multiplayer, grenades and more.
+      Log in with your free FavCreators account to play and track your stats.
     </p>
     <div class="login-status not-logged-in" id="login-status">
       <span id="login-status-text">Checking login status...</span>
     </div>
     <div id="age-gate-actions">
-      <button class="age-btn login-btn" id="btn-login" style="display:none" onclick="goToLogin()">Log In to FavCreators</button>
-      <button class="age-btn confirm" id="btn-confirm-age" disabled onclick="confirmAge()">I am 18+ &mdash; Enter Arena</button>
+      <button class="age-btn login-btn" id="btn-login" style="display:none" onclick="goToLogin()">Sign Up / Log In (Free)</button>
+      <button class="age-btn confirm" id="btn-confirm-age" disabled onclick="confirmAge()" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;">Enter Arena</button>
       <button class="age-btn cancel" onclick="window.location.href='/vr/game-arena/'">Go Back</button>
     </div>
     <p class="age-gate-footer">
-      By entering, you confirm you are at least 18 years old.<br>
-      This game uses the FavCreators user database for authentication.
+      Free account required to save stats and play online.<br>
+      <a href="/fc/" style="color:#6366f1;">Create your free FavCreators account &rarr;</a>
     </p>
   </div>
 </div>
@@ -839,6 +839,12 @@
   <div id="grenade-count">
     <div class="g-val" id="hud-grenades">3</div>
     <div class="g-lbl">Grenades [G]</div>
+  </div>
+
+  <!-- Bot count / enemy info -->
+  <div id="bot-count-hud" style="position:absolute;top:50px;left:50%;transform:translateX(calc(-50% - 100px));background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:4px 12px;text-align:center;pointer-events:none;">
+    <div style="font-size:9px;color:#666;text-transform:uppercase;letter-spacing:1px;">AI Enemies</div>
+    <div id="hud-bot-count" style="font-size:16px;font-weight:800;color:#ef4444;font-variant-numeric:tabular-nums;">7/7</div>
   </div>
 </div>
 
@@ -1575,6 +1581,162 @@ var AudioSys = {
   }
 };
 
+// ─── HUMAN VOICE ANNOUNCER (Web Speech Synthesis) ───────────────────────────
+var Announcer = {
+  enabled: true,
+  queue: [],
+  speaking: false,
+  lastAnnounce: 0,
+  cooldown: 1500, // ms between announcements
+
+  speak: function(text, priority) {
+    if (!this.enabled || !window.speechSynthesis) return;
+    var now = Date.now();
+    if (!priority && now - this.lastAnnounce < this.cooldown) return;
+
+    var utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 1.1;
+    utter.pitch = 0.85;
+    utter.volume = 0.8;
+
+    // Try to use a deep male voice
+    var voices = window.speechSynthesis.getVoices();
+    for (var i = 0; i < voices.length; i++) {
+      var v = voices[i];
+      if (v.name.indexOf('Male') !== -1 || v.name.indexOf('Daniel') !== -1 ||
+          v.name.indexOf('James') !== -1 || v.name.indexOf('Google UK English Male') !== -1 ||
+          v.name.indexOf('David') !== -1) {
+        utter.voice = v;
+        break;
+      }
+    }
+
+    // Cancel previous if priority
+    if (priority && window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+    }
+
+    window.speechSynthesis.speak(utter);
+    this.lastAnnounce = now;
+  },
+
+  announceKillStreak: function(streak) {
+    var announcements = {
+      2: 'Double Kill!',
+      3: 'Triple Kill!',
+      4: 'Multi Kill!',
+      5: 'Killing Spree!',
+      6: 'Rampage!',
+      7: 'Dominating!',
+      8: 'Unstoppable!',
+      9: 'Mega Kill!',
+      10: 'Godlike!',
+      15: 'Nuclear! Unbelievable!',
+      20: 'LEGENDARY!'
+    };
+    var text = announcements[streak];
+    if (text) {
+      this.speak(text, true);
+    } else if (streak > 20 && streak % 5 === 0) {
+      this.speak(streak + ' kills! Absolutely insane!', true);
+    }
+  },
+
+  announceHeadshot: function() {
+    var lines = ['Headshot!', 'Boom, headshot!', 'Right between the eyes!', 'Clean headshot!'];
+    this.speak(lines[Math.floor(Math.random() * lines.length)], false);
+  },
+
+  announceFirstBlood: function() { this.speak('First Blood!', true); },
+  announceDeath: function() { this.speak('You were eliminated.', false); },
+  announceMatchStart: function() { this.speak('Match started. Eliminate all enemies!', true); },
+  announceMatchEnd: function() { this.speak('Match over.', true); },
+  announceRespawn: function() { this.speak('Respawned. Get back in the fight!', false); },
+
+  init: function() {
+    // Pre-load voices
+    if (window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = function() { window.speechSynthesis.getVoices(); };
+    }
+  }
+};
+Announcer.init();
+
+// ─── ENEMY/ALLY HUD SYSTEM ──────────────────────────────────────────────────
+var EnemyHUD = {
+  canvas: null,
+  ctx: null,
+
+  init: function() {
+    this.canvas = document.getElementById('minimap-canvas');
+    if (this.canvas) this.ctx = this.canvas.getContext('2d');
+  },
+
+  // Draw enemy indicators on screen edges (like CoD threat detection)
+  renderEnemyIndicators: function(camera, bots, dt) {
+    if (!camera) return;
+    var indicators = [];
+    for (var i = 0; i < bots.length; i++) {
+      var bot = bots[i];
+      if (!bot.alive) continue;
+
+      var toEnemy = new THREE.Vector3().subVectors(bot.position, camera.position);
+      toEnemy.y = 0;
+      var dist = toEnemy.length();
+
+      // Only show nearby enemies (within 30 units)
+      if (dist > 30) continue;
+
+      // Project to screen direction
+      var forward = new THREE.Vector3(0, 0, -1);
+      forward.applyEuler(new THREE.Euler(0, state.yaw, 0));
+      var dot = forward.dot(toEnemy.clone().normalize());
+
+      // If behind camera, show edge indicator
+      if (dot < 0.3) {
+        var cross = new THREE.Vector3().crossVectors(forward, toEnemy.clone().normalize());
+        indicators.push({
+          side: cross.y > 0 ? 'left' : 'right',
+          dist: dist,
+          threat: dist < 10 ? 'high' : dist < 20 ? 'medium' : 'low'
+        });
+      }
+    }
+
+    // Draw threat indicators on screen edges
+    var container = document.getElementById('enemy-indicators');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'enemy-indicators';
+      container.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:87;';
+      document.body.appendChild(container);
+    }
+    container.innerHTML = '';
+    indicators.forEach(function(ind) {
+      var el = document.createElement('div');
+      var color = ind.threat === 'high' ? '#ef4444' : ind.threat === 'medium' ? '#f59e0b' : '#64748b';
+      el.style.cssText = 'position:absolute;top:50%;' + ind.side + ':8px;transform:translateY(-50%);' +
+        'width:4px;height:40px;background:' + color + ';border-radius:2px;opacity:0.7;' +
+        'box-shadow:0 0 8px ' + color + ';';
+      container.appendChild(el);
+    });
+  }
+};
+
+// ─── BOT COUNT HUD ──────────────────────────────────────────────────────────
+function updateBotCountHUD() {
+  var el = document.getElementById('hud-bot-count');
+  if (!el) return;
+  var alive = 0, total = state.bots.length;
+  for (var i = 0; i < state.bots.length; i++) {
+    if (state.bots[i].alive) alive++;
+  }
+  el.textContent = alive + '/' + total;
+  // Color based on how many alive
+  el.style.color = alive > total * 0.6 ? '#ef4444' : alive > total * 0.3 ? '#f59e0b' : '#22c55e';
+}
+
 // ─── FIRST PERSON WEAPON RENDERER ──────────────────────────────────────────
 var FPWeapon = {
   ctx: null,
@@ -1819,14 +1981,13 @@ function checkAuth() {
       if (data.logged_in && data.user_id > 0) {
         state.authenticated = true;
         state.userId = data.user_id;
+        state.userName = data.username || data.display_name || 'Player';
         statusEl.className = 'login-status logged-in';
-        statusText.innerHTML = '&#10003; Logged in as User #' + data.user_id;
+        statusText.innerHTML = '&#10003; Logged in as ' + (data.username || 'User #' + data.user_id);
         btnLogin.style.display = 'none';
         btnConfirm.disabled = false;
-        // Check if we already confirmed age this session
-        if (sessionStorage.getItem('fps_age_confirmed') === 'true') {
-          enterGame();
-        }
+        // Auto-enter if logged in (no age gate)
+        enterGame();
       } else {
         showNotLoggedIn();
       }
@@ -1837,19 +1998,22 @@ function checkAuth() {
 
   function showNotLoggedIn() {
     statusEl.className = 'login-status not-logged-in';
-    statusText.innerHTML = '&#10007; Not logged in. You must log in with a FavCreators account to play.';
+    statusText.innerHTML = 'Sign up for a free FavCreators account to play and save your stats.';
     btnLogin.style.display = 'inline-block';
     btnConfirm.disabled = true;
   }
 }
 
 window.goToLogin = function() {
-  window.location.href = FC_LOGIN_URL;
+  // Redirect to FavCreators login/signup with return URL
+  window.location.href = FC_LOGIN_URL + '?return=' + encodeURIComponent(window.location.href);
 };
 
 window.confirmAge = function() {
-  if (!state.authenticated) return;
-  sessionStorage.setItem('fps_age_confirmed', 'true');
+  if (!state.authenticated) {
+    window.goToLogin();
+    return;
+  }
   enterGame();
 };
 
