@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Shadow Arena — Fighting Game</title>
+    <meta name="description" content="Shadow Arena: A free browser-based fighting game with 6 unique fighters, customizable weapons, AI opponents, local & online multiplayer, and a ranked progression system.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+</head>
+<body>
+
+<!-- ===== TITLE SCREEN ===== -->
+<div id="title-screen" class="screen active">
+    <div class="title-bg"></div>
+    <div class="title-content">
+        <h1 class="game-title">SHADOW<br>ARENA</h1>
+        <p class="game-subtitle">Fight for Glory</p>
+        <div class="title-buttons">
+            <button id="btn-play" class="btn btn-primary">FIGHT</button>
+            <button id="btn-scores" class="btn">HIGH SCORES</button>
+            <button id="btn-profile" class="btn">PROFILE & RANK</button>
+            <button id="btn-controls" class="btn">CONTROLS</button>
+        </div>
+        <div id="gamepad-status"></div>
+    </div>
+</div>
+
+<!-- ===== MODE SELECT ===== -->
+<div id="mode-screen" class="screen">
+    <h2 class="select-header">SELECT MODE</h2>
+    <div class="mode-grid">
+        <div class="mode-card" id="btn-mode-arcade">
+            <div class="mode-icon">🤖</div>
+            <div class="mode-name">VS AI</div>
+            <div class="mode-desc">Battle against intelligent AI opponents. Choose your difficulty.</div>
+        </div>
+        <div class="mode-card" id="btn-mode-versus">
+            <div class="mode-icon">👥</div>
+            <div class="mode-name">LOCAL VS</div>
+            <div class="mode-desc">Fight a friend on the same device. Keyboard or controllers.</div>
+        </div>
+        <div class="mode-card" id="btn-mode-online">
+            <div class="mode-icon">🌐</div>
+            <div class="mode-name">ONLINE</div>
+            <div class="mode-desc">Challenge players online via peer-to-peer connection.</div>
+        </div>
+    </div>
+
+    <div class="difficulty-row" id="difficulty-selector">
+        <span style="color:#888;margin-right:10px;line-height:36px;">AI Difficulty:</span>
+        <button class="diff-btn" data-diff="easy" style="border-color:#4caf50;color:#4caf50;">ROOKIE</button>
+        <button class="diff-btn selected" data-diff="medium" style="border-color:#ff9800;color:#ff9800;">WARRIOR</button>
+        <button class="diff-btn" data-diff="hard" style="border-color:#f44336;color:#f44336;">CHAMPION</button>
+        <button class="diff-btn" data-diff="insane" style="border-color:#9c27b0;color:#9c27b0;">LEGENDARY</button>
+    </div>
+
+    <div class="nav-buttons">
+        <button id="btn-mode-back" class="btn btn-small">BACK</button>
+    </div>
+</div>
+
+<!-- ===== CHARACTER SELECT ===== -->
+<div id="char-select-screen" class="screen">
+    <h2 class="select-header" id="char-select-label">SELECT YOUR FIGHTER</h2>
+    <div class="char-grid" id="char-grid"></div>
+    <div id="char-preview-info"></div>
+    <div class="nav-buttons">
+        <button id="btn-char-back" class="btn btn-small">BACK</button>
+        <button id="btn-char-confirm" class="btn btn-small btn-gold">CONFIRM</button>
+    </div>
+</div>
+
+<!-- ===== WEAPON SELECT ===== -->
+<div id="weapon-select-screen" class="screen">
+    <h2 class="select-header" id="weapon-select-label">CHOOSE YOUR WEAPON</h2>
+    <div class="weapon-grid" id="weapon-grid"></div>
+    <div class="nav-buttons">
+        <button id="btn-weapon-back" class="btn btn-small">BACK</button>
+        <button id="btn-weapon-confirm" class="btn btn-small btn-gold">CONFIRM</button>
+    </div>
+</div>
+
+<!-- ===== STAGE SELECT ===== -->
+<div id="stage-select-screen" class="screen">
+    <h2 class="select-header">SELECT ARENA</h2>
+    <div class="stage-grid" id="stage-grid"></div>
+    <div class="nav-buttons">
+        <button id="btn-stage-back" class="btn btn-small">BACK</button>
+        <button id="btn-stage-confirm" class="btn btn-small btn-primary">START FIGHT!</button>
+    </div>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div id="game-screen" class="screen">
+    <div id="game-container">
+        <canvas id="gameCanvas" width="1280" height="720"></canvas>
+        <!-- Floating help button -->
+        <button id="btn-controls-toggle" class="controls-fab" title="Controls (F1)">?</button>
+    </div>
+    <!-- Controls overlay (shown over game) -->
+    <div id="controls-overlay" class="controls-overlay hidden">
+        <div class="controls-overlay-inner">
+            <div class="controls-overlay-header">
+                <h2>CONTROLS</h2>
+                <button id="btn-overlay-close" class="overlay-close-btn">&times;</button>
+            </div>
+            <div class="controls-overlay-body">
+                <div class="controls-overlay-grid">
+                    <div class="controls-section">
+                        <h3>KEYBOARD — P1</h3>
+                        <div class="control-row"><span>Move</span><span class="control-key">A / D</span></div>
+                        <div class="control-row"><span>Jump</span><span class="control-key">W</span></div>
+                        <div class="control-row"><span>Crouch</span><span class="control-key">S</span></div>
+                        <div class="control-row"><span>Light Attack</span><span class="control-key">J</span></div>
+                        <div class="control-row"><span>Heavy Attack</span><span class="control-key">K</span></div>
+                        <div class="control-row"><span>Special</span><span class="control-key">L</span></div>
+                        <div class="control-row"><span>Grab</span><span class="control-key">U</span></div>
+                        <div class="control-row"><span>Block</span><span class="control-key">I + back</span></div>
+                        <div class="control-row"><span>Dash</span><span class="control-key">O</span></div>
+                        <div class="control-row"><span>Taunt</span><span class="control-key">H</span></div>
+                    </div>
+                    <div class="controls-section">
+                        <h3>KEYBOARD — P2</h3>
+                        <div class="control-row"><span>Move</span><span class="control-key">← / →</span></div>
+                        <div class="control-row"><span>Jump</span><span class="control-key">↑</span></div>
+                        <div class="control-row"><span>Crouch</span><span class="control-key">↓</span></div>
+                        <div class="control-row"><span>Light Attack</span><span class="control-key">Num 1</span></div>
+                        <div class="control-row"><span>Heavy Attack</span><span class="control-key">Num 2</span></div>
+                        <div class="control-row"><span>Special</span><span class="control-key">Num 3</span></div>
+                        <div class="control-row"><span>Grab</span><span class="control-key">Num 5</span></div>
+                        <div class="control-row"><span>Block</span><span class="control-key">Num 4 + back</span></div>
+                        <div class="control-row"><span>Dash</span><span class="control-key">Num 6</span></div>
+                        <div class="control-row"><span>Taunt</span><span class="control-key">Num 0</span></div>
+                    </div>
+                    <div class="controls-section">
+                        <h3>XBOX / GAMEPAD</h3>
+                        <div class="control-row"><span>Move</span><span class="control-key">Stick / D-Pad</span></div>
+                        <div class="control-row"><span>Light Attack</span><span class="control-key">A</span></div>
+                        <div class="control-row"><span>Heavy Attack</span><span class="control-key">B</span></div>
+                        <div class="control-row"><span>Special</span><span class="control-key">X</span></div>
+                        <div class="control-row"><span>Grab</span><span class="control-key">Y</span></div>
+                        <div class="control-row"><span>Block</span><span class="control-key">LB</span></div>
+                        <div class="control-row"><span>Dash</span><span class="control-key">RB</span></div>
+                        <div class="control-row"><span>Taunt</span><span class="control-key">LT</span></div>
+                        <div class="control-row"><span>Super</span><span class="control-key">RT</span></div>
+                        <div class="control-row"><span>Pause</span><span class="control-key">Start</span></div>
+                    </div>
+                    <div class="controls-section">
+                        <h3>QUICK TIPS</h3>
+                        <div style="font-size:13px;color:#999;line-height:1.7;">
+                            <p>Chain light &rarr; heavy for combos</p>
+                            <p>Special needs 50%+ meter</p>
+                            <p>Block reduces damage 85%</p>
+                            <p>Grabs beat blocking!</p>
+                            <p>Taunt builds meter (risky)</p>
+                        </div>
+                        <div style="margin-top:12px;padding-top:10px;border-top:1px solid #333;font-size:12px;color:#666;">
+                            <p>F1 or ? button &mdash; toggle this overlay</p>
+                            <p>ESC &mdash; quit to main menu</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== RESULTS SCREEN ===== -->
+<div id="results-screen" class="screen">
+    <div id="results-content"></div>
+    <div class="nav-buttons" style="margin-top:25px;">
+        <button id="btn-results-menu" class="btn btn-small">MAIN MENU</button>
+        <button id="btn-rematch" class="btn btn-small btn-primary">REMATCH</button>
+    </div>
+</div>
+
+<!-- ===== HIGH SCORES ===== -->
+<div id="scores-screen" class="screen">
+    <h2 class="select-header">HIGH SCORES</h2>
+    <div id="scores-content"></div>
+    <div class="nav-buttons">
+        <button id="btn-scores-back" class="btn btn-small">BACK</button>
+    </div>
+</div>
+
+<!-- ===== PROFILE & RANK ===== -->
+<div id="profile-screen" class="screen">
+    <h2 class="select-header">FIGHTER PROFILE</h2>
+    <div id="profile-content"></div>
+    <div class="nav-buttons">
+        <button id="btn-profile-back" class="btn btn-small">BACK</button>
+    </div>
+</div>
+
+<!-- ===== CONTROLS ===== -->
+<div id="controls-screen" class="screen">
+    <h2 class="select-header">CONTROLS</h2>
+    <div class="controls-grid">
+        <div class="controls-section">
+            <h3>KEYBOARD — PLAYER 1</h3>
+            <div class="control-row"><span>Move Left/Right</span><span class="control-key">A / D</span></div>
+            <div class="control-row"><span>Jump</span><span class="control-key">W</span></div>
+            <div class="control-row"><span>Crouch</span><span class="control-key">S</span></div>
+            <div class="control-row"><span>Light Attack</span><span class="control-key">J</span></div>
+            <div class="control-row"><span>Heavy Attack</span><span class="control-key">K</span></div>
+            <div class="control-row"><span>Special Attack</span><span class="control-key">L</span></div>
+            <div class="control-row"><span>Grab</span><span class="control-key">U</span></div>
+            <div class="control-row"><span>Block</span><span class="control-key">I + ←</span></div>
+            <div class="control-row"><span>Dash</span><span class="control-key">O</span></div>
+            <div class="control-row"><span>Taunt</span><span class="control-key">H</span></div>
+        </div>
+        <div class="controls-section">
+            <h3>KEYBOARD — PLAYER 2</h3>
+            <div class="control-row"><span>Move Left/Right</span><span class="control-key">← / →</span></div>
+            <div class="control-row"><span>Jump</span><span class="control-key">↑</span></div>
+            <div class="control-row"><span>Crouch</span><span class="control-key">↓</span></div>
+            <div class="control-row"><span>Light Attack</span><span class="control-key">Num 1</span></div>
+            <div class="control-row"><span>Heavy Attack</span><span class="control-key">Num 2</span></div>
+            <div class="control-row"><span>Special Attack</span><span class="control-key">Num 3</span></div>
+            <div class="control-row"><span>Grab</span><span class="control-key">Num 5</span></div>
+            <div class="control-row"><span>Block</span><span class="control-key">Num 4 + →</span></div>
+            <div class="control-row"><span>Dash</span><span class="control-key">Num 6</span></div>
+            <div class="control-row"><span>Taunt</span><span class="control-key">Num 0</span></div>
+        </div>
+        <div class="controls-section">
+            <h3>XBOX CONTROLLER</h3>
+            <div class="control-row"><span>Move</span><span class="control-key">Left Stick / D-Pad</span></div>
+            <div class="control-row"><span>Jump</span><span class="control-key">↑ on stick/D-Pad</span></div>
+            <div class="control-row"><span>Crouch</span><span class="control-key">↓ on stick/D-Pad</span></div>
+            <div class="control-row"><span>Light Attack</span><span class="control-key">A Button</span></div>
+            <div class="control-row"><span>Heavy Attack</span><span class="control-key">B Button</span></div>
+            <div class="control-row"><span>Special Attack</span><span class="control-key">X Button</span></div>
+            <div class="control-row"><span>Grab</span><span class="control-key">Y Button</span></div>
+            <div class="control-row"><span>Block</span><span class="control-key">LB (Left Bumper)</span></div>
+            <div class="control-row"><span>Dash</span><span class="control-key">RB (Right Bumper)</span></div>
+            <div class="control-row"><span>Taunt</span><span class="control-key">LT (Left Trigger)</span></div>
+            <div class="control-row"><span>Super</span><span class="control-key">RT (Right Trigger)</span></div>
+            <div class="control-row"><span>Pause</span><span class="control-key">Start</span></div>
+        </div>
+        <div class="controls-section">
+            <h3>TIPS</h3>
+            <div style="font-size:14px;color:#888;line-height:1.8;">
+                <p>• Chain light attacks into heavy for combos</p>
+                <p>• Build your Special Meter by attacking and getting hit</p>
+                <p>• Press Special when meter is 50%+ for your signature move</p>
+                <p>• Block by holding back + block button — reduces damage 85%</p>
+                <p>• Grabs beat blocking — they're unblockable!</p>
+                <p>• Dash to quickly close distance or escape</p>
+                <p>• Taunt to slowly build Special Meter (risky!)</p>
+                <p>• On Meta Quest, pair an Xbox controller via Bluetooth</p>
+                <p>• Two controllers = local versus mode!</p>
+            </div>
+        </div>
+    </div>
+    <div class="nav-buttons">
+        <button id="btn-controls-back" class="btn btn-small">BACK</button>
+    </div>
+</div>
+
+<!-- ===== ONLINE LOBBY ===== -->
+<div id="online-lobby-screen" class="screen">
+    <h2 class="select-header">ONLINE BATTLE</h2>
+    <div class="online-content">
+        <p style="color:#888;margin-bottom:20px;">Create a room or join with a code to fight online.</p>
+        <button id="btn-create-room" class="btn btn-primary" style="margin-bottom:20px;">CREATE ROOM</button>
+        <div style="color:#555;margin:10px 0;">— OR —</div>
+        <input id="room-code-input" type="text" maxlength="6" placeholder="ROOM CODE" autocomplete="off">
+        <br>
+        <button id="btn-join-room" class="btn btn-gold" style="margin-top:10px;">JOIN ROOM</button>
+        <div id="online-status"></div>
+        <div class="nav-buttons">
+            <button id="btn-online-back" class="btn btn-small">BACK</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== SCRIPTS ===== -->
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

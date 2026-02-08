@@ -248,6 +248,18 @@ def deploy_vr(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
     return n > 0
 
 
+def deploy_fightgame(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload FIGHTGAME/ to /FIGHTGAME/ (Shadow Arena fighting game)."""
+    local_fg = WORKSPACE / "FIGHTGAME"
+    if not local_fg.is_dir():
+        print("  FIGHTGAME/ not found, skipping.")
+        return False
+    remote = f"{main_remote_base}/FIGHTGAME" if main_remote_base else "FIGHTGAME"
+    n = _upload_tree(ftp, local_fg, remote)
+    print(f"  Uploaded {n} files to /{remote}/")
+    return n > 0
+
+
 def main() -> None:
     host = _env("FTP_SERVER") or _env("FTP_HOST")
     user = _env("FTP_USER")
@@ -306,6 +318,12 @@ def main() -> None:
             deploy_vr(ftp, remote_path)
             if parent_root:
                 deploy_vr(ftp, parent_root)
+            print()
+
+            print("Uploading Shadow Arena to /FIGHTGAME/ ...")
+            deploy_fightgame(ftp, remote_path)
+            if parent_root:
+                deploy_fightgame(ftp, parent_root)
             print()
 
         print("Deploy complete.")

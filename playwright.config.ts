@@ -59,6 +59,8 @@ export default defineConfig({
     /(?:^|\/)tests\/weather_page\.spec\.ts$/,
     /(?:^|\/)tests\/otherstuff_popup\.spec\.ts$/,
     /(?:^|\/)tests\/ant_rush_smoke\.spec\.ts$/,
+    /(?:^|\/)tests\/fightgame_test\.spec\.ts$/,
+    /(?:^|\/)tests\/fightgame_remote\.spec\.ts$/,
   ],
   timeout: isRemoteVerify ? 90000 : 30000,
   retries: isRemoteVerify ? 1 : 0,
