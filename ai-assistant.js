@@ -1209,6 +1209,76 @@
         return;
       }
 
+      // ── GAMES — direct intent matching ──
+      if (/fps|first[- ]?person shooter|shooting game/i.test(lower)) {
+        var user = window.__fc_logged_in_user__;
+        if (user) {
+          addMessage('ai', '\uD83C\uDFAF <strong>FPS Arena</strong> — First-person shooter with 6 weapons, AI bots, ranked multiplayer, grenades, and more!<br><br>' +
+            '<a href="/vr/game-arena/fps-arena.html" target="_blank" style="color:#ef4444;font-weight:700;">Click here to play FPS Arena \u2192</a>', true);
+          if (/take me|go to|play|open|start|launch/i.test(lower)) {
+            setTimeout(function () { window.open('/vr/game-arena/fps-arena.html', '_blank'); }, 1500);
+          }
+        } else {
+          addMessage('ai', '\uD83C\uDFAF <strong>FPS Arena</strong> — Our first-person shooter with 6 weapons, AI bots, ranked PvP, and more!<br><br>' +
+            'You need a free FavCreators account to play. Sign up takes 30 seconds!<br><br>' +
+            '<a href="/fc/" target="_blank" style="color:#6366f1;font-weight:700;">Sign up / Log in to FavCreators \u2192</a><br>' +
+            '<span style="color:#64748b;font-size:11px;">After logging in, you can access FPS Arena from the Game Arena.</span>', true);
+          if (/take me|go to|play|open|start|launch/i.test(lower)) {
+            setTimeout(function () { window.open('/fc/', '_blank'); }, 1500);
+          }
+        }
+        showStopBtn(false); state.processing = false; setStatus('Ready', '#64748b');
+        return;
+      }
+      if (/fighting game|fight game|combat game|battle game|shadow arena|2xko|pvp game/i.test(lower)) {
+        addMessage('ai', '\u2694\uFE0F We have two fighting/combat experiences:<br><br>' +
+          '\u2022 <a href="/vr/game-arena/fps-arena.html" target="_blank" style="color:#ef4444;font-weight:700;">\uD83C\uDFAF FPS Arena</a> — First-person shooter, 6 weapons, AI bots & online PvP' +
+          (window.__fc_logged_in_user__ ? '' : ' <span style="color:#64748b;font-size:11px;">(login required)</span>') + '<br>' +
+          '\u2022 <a href="/2xko/" target="_blank" style="color:#a855f7;font-weight:700;">\u2694\uFE0F Shadow Arena</a> — 2D fighting game, 6 fighters, weapons & online PvP<br><br>' +
+          '<a href="/vr/game-arena/" target="_blank" style="color:#a855f7;">Browse all games in Game Arena \u2192</a>', true);
+        showStopBtn(false); state.processing = false; setStatus('Ready', '#64748b');
+        return;
+      }
+      if (/ant rush|antrush|ant game|cleaning game/i.test(lower)) {
+        addMessage('ai', '\uD83D\uDC1C <strong>Ant Rush AR</strong> — Clean your space before the ants take over! Features Bed Challenge and Quick Mode with photo-based AR.<br><br>' +
+          '<a href="/vr/ant-rush/" target="_blank" style="color:#ff6b35;font-weight:700;">Play Ant Rush \u2192</a>', true);
+        if (/take me|go to|play|open/i.test(lower)) {
+          setTimeout(function () { window.open('/vr/ant-rush/', '_blank'); }, 1500);
+        }
+        showStopBtn(false); state.processing = false; setStatus('Ready', '#64748b');
+        return;
+      }
+      if (/tic[- ]?tac[- ]?toe|noughts and crosses/i.test(lower)) {
+        addMessage('ai', '\u274C\u2B55 <strong>Tic-Tac-Toe</strong> — Classic 3x3 strategy game!<br><br>' +
+          '<a href="/vr/game-arena/tic-tac-toe.html" target="_blank" style="color:#6366f1;font-weight:700;">Play Tic-Tac-Toe \u2192</a>', true);
+        if (/take me|go to|play|open/i.test(lower)) {
+          setTimeout(function () { window.open('/vr/game-arena/tic-tac-toe.html', '_blank'); }, 1500);
+        }
+        showStopBtn(false); state.processing = false; setStatus('Ready', '#64748b');
+        return;
+      }
+      if (/soccer|shootout|penalty kick/i.test(lower) && !/event/i.test(lower)) {
+        addMessage('ai', '\u26BD <strong>Soccer Shootout</strong> — Best of 3 penalty kicks!<br><br>' +
+          '<a href="/vr/game-arena/soccer-shootout.html" target="_blank" style="color:#22c55e;font-weight:700;">Play Soccer Shootout \u2192</a>', true);
+        if (/take me|go to|play|open/i.test(lower)) {
+          setTimeout(function () { window.open('/vr/game-arena/soccer-shootout.html', '_blank'); }, 1500);
+        }
+        showStopBtn(false); state.processing = false; setStatus('Ready', '#64748b');
+        return;
+      }
+      if (/what game|which game|list.* game|all game|show.* game|available game|game.*have|game.*play|game arena/i.test(lower) && !/event/i.test(lower)) {
+        var loginNote = window.__fc_logged_in_user__ ? '' : ' <span style="color:#64748b;font-size:10px;">(login required)</span>';
+        addMessage('ai', '\uD83C\uDFAE <strong>Game Arena</strong> — We have these games:<br><br>' +
+          '\u2022 <a href="/vr/game-arena/fps-arena.html" target="_blank" style="color:#ef4444;font-weight:700;">\uD83C\uDFAF FPS Arena</a> — First-person shooter, 6 weapons, AI bots, PvP' + loginNote + '<br>' +
+          '\u2022 <a href="/2xko/" target="_blank" style="color:#a855f7;font-weight:700;">\u2694\uFE0F Shadow Arena</a> — 2D fighting game, 6 fighters<br>' +
+          '\u2022 <a href="/vr/game-arena/tic-tac-toe.html" target="_blank" style="color:#6366f1;font-weight:700;">\u274C Tic-Tac-Toe</a> — Classic 3x3 strategy<br>' +
+          '\u2022 <a href="/vr/game-arena/soccer-shootout.html" target="_blank" style="color:#22c55e;font-weight:700;">\u26BD Soccer Shootout</a> — Best of 3 penalties<br>' +
+          '\u2022 <a href="/vr/ant-rush/" target="_blank" style="color:#ff6b35;font-weight:700;">\uD83D\uDC1C Ant Rush AR</a> — AR clean-up challenge<br><br>' +
+          '<a href="/vr/game-arena/" target="_blank" style="color:#a855f7;">Open Game Arena Hub in VR \u2192</a>', true);
+        showStopBtn(false); state.processing = false; setStatus('Ready', '#64748b');
+        return;
+      }
+
       // ── NAVIGATION ──
       if (/^(go to|open|take me to|navigate to|show me) /i.test(lower)) {
         handleNavigation(lower, raw);
@@ -3786,6 +3856,20 @@
       'movies v2': '/movieshows2/',
       'movies v3': '/MOVIESHOWS3/',
       'tutorial': '/vr/tutorial/',
+      'game arena': '/vr/game-arena/',
+      'games': '/vr/game-arena/',
+      'fps arena': '/vr/game-arena/fps-arena.html',
+      'fps': '/vr/game-arena/fps-arena.html',
+      'first person shooter': '/vr/game-arena/fps-arena.html',
+      'shooting game': '/vr/game-arena/fps-arena.html',
+      'shadow arena': '/2xko/',
+      'fighting game': '/2xko/',
+      'fight game': '/2xko/',
+      '2xko': '/2xko/',
+      'ant rush': '/vr/ant-rush/',
+      'tic tac toe': '/vr/game-arena/tic-tac-toe.html',
+      'soccer shootout': '/vr/game-arena/soccer-shootout.html',
+      'soccer': '/vr/game-arena/soccer-shootout.html',
     };
 
     var urlMatch = raw.match(/(https?:\/\/[^\s]+)/i);
@@ -3815,6 +3899,11 @@
       '\u2022 "Go to VR" \u2014 VR Experience<br>' +
       '\u2022 "Go to accountability" \u2014 Dashboard<br>' +
       '\u2022 "Go to wellness" \u2014 Mental Health<br>' +
+      '<strong style="color:#ef4444;">Games:</strong><br>' +
+      '\u2022 "Take me to FPS" \u2014 FPS Arena (shooter)<br>' +
+      '\u2022 "Take me to fighting game" \u2014 Shadow Arena<br>' +
+      '\u2022 "Take me to Ant Rush" \u2014 AR game<br>' +
+      '\u2022 "What games do you have?" \u2014 Full list<br>' +
       '\u2022 "Open https://..." \u2014 Any URL</div>');
     setStatus('Ready', '#64748b');
   }

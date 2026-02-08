@@ -746,6 +746,7 @@
     document.body.classList.add('vr-entering');
 
     // Intercept link clicks for fade-out transition
+    // SKIP if page has its own confirmation dialog (game-arena uses showNavigationConfirm)
     document.addEventListener('click', function (e) {
       var link = e.target.closest('a[href]');
       if (!link) return;
@@ -753,6 +754,18 @@
       if (!href || href.charAt(0) === '#' || href.indexOf('://') !== -1) return;
       // Only intercept VR zone links
       if (href.indexOf('/vr/') !== 0 && href.indexOf('vr/') !== 0) return;
+      // If link has data-no-intercept, skip (used by confirmation dialogs)
+      if (link.hasAttribute('data-no-intercept')) return;
+      // If we are on the game-arena hub page, let the page's own confirmation handle it
+      if (window.location.pathname.indexOf('/vr/game-arena/') !== -1 && window.location.pathname.indexOf('.html') === -1) {
+        // Show the game-arena confirmation dialog if available
+        if (typeof window.showNavigationConfirm === 'function') {
+          e.preventDefault();
+          var label = link.textContent.trim() || href;
+          window.showNavigationConfirm(label, href);
+          return;
+        }
+      }
       e.preventDefault();
       document.body.classList.add('vr-leaving');
       setTimeout(function () { window.location.href = href; }, 350);
