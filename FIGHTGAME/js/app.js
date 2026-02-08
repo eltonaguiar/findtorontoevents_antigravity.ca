@@ -255,6 +255,13 @@ var App = {
                 GameAudio.setSfxVolume(savedData.settings.sfxVolume !== undefined ? savedData.settings.sfxVolume : 0.45);
                 GameAudio.setMusicVolume(savedData.settings.musicVolume !== undefined ? savedData.settings.musicVolume : 0.18);
             }
+            // Pre-load speech synthesis voices
+            if (window.speechSynthesis) {
+                speechSynthesis.getVoices();
+                if (speechSynthesis.onvoiceschanged !== undefined) {
+                    speechSynthesis.onvoiceschanged = function() { speechSynthesis.getVoices(); };
+                }
+            }
             // Resume context on first interaction
             var resumeOnce = function() {
                 GameAudio.ensureResumed();
@@ -301,6 +308,17 @@ var App = {
                 GameAudio.stopMusic();
             }
         }
+
+        // Portrait animation management
+        if (screenId === 'char-select-screen') {
+            if (window.startPortraitAnimation) startPortraitAnimation();
+            var current = this.selectingPlayer === 1 ? this.selectedChar1 : this.selectedChar2;
+            this._startPreviewAnimation(current);
+        } else {
+            if (window.stopPortraitAnimation) stopPortraitAnimation();
+            this._stopPreviewAnimation();
+        }
+
         this.currentScreen = screenId;
 
         // Show/hide canvas
@@ -472,6 +490,63 @@ var App = {
         });
     },
 
+    // === ANNOUNCER (Web Speech API) ===
+    _announceCharacter: function(name) {
+        if (!window.speechSynthesis) return;
+        if (window.GameAudio && GameAudio.isMuted()) return;
+
+        // Cancel any in-progress speech
+        speechSynthesis.cancel();
+
+        var utt = new SpeechSynthesisUtterance(name);
+        utt.rate = 0.85;    // slightly slow for dramatic effect
+        utt.pitch = 0.7;    // deeper, more imposing
+        utt.volume = 0.9;
+
+        // Try to pick a deep/dramatic voice
+        var voices = speechSynthesis.getVoices();
+        var preferred = null;
+        // Prefer male voices or voices with "Male" / "David" / "Daniel" in name
+        for (var i = 0; i < voices.length; i++) {
+            var vn = voices[i].name.toLowerCase();
+            if (vn.indexOf('david') >= 0 || vn.indexOf('daniel') >= 0 || vn.indexOf('james') >= 0 || vn.indexOf('mark') >= 0) {
+                preferred = voices[i];
+                break;
+            }
+        }
+        // Fallback: first English voice
+        if (!preferred) {
+            for (var j = 0; j < voices.length; j++) {
+                if (voices[j].lang.indexOf('en') === 0) {
+                    preferred = voices[j];
+                    break;
+                }
+            }
+        }
+        if (preferred) utt.voice = preferred;
+
+        speechSynthesis.speak(utt);
+    },
+
+    _announceText: function(text, rate, pitch) {
+        if (!window.speechSynthesis) return;
+        if (window.GameAudio && GameAudio.isMuted()) return;
+        speechSynthesis.cancel();
+        var utt = new SpeechSynthesisUtterance(text);
+        utt.rate = rate || 0.9;
+        utt.pitch = pitch || 0.8;
+        utt.volume = 0.9;
+        var voices = speechSynthesis.getVoices();
+        for (var i = 0; i < voices.length; i++) {
+            var vn = voices[i].name.toLowerCase();
+            if (vn.indexOf('david') >= 0 || vn.indexOf('daniel') >= 0 || vn.indexOf('james') >= 0) {
+                utt.voice = voices[i];
+                break;
+            }
+        }
+        speechSynthesis.speak(utt);
+    },
+
     _toggleSound: function() {
         if (!window.GameAudio) return;
         var muted = GameAudio.toggleMute();
@@ -544,29 +619,61 @@ var App = {
                                (self.selectingPlayer === 2 && self.selectedChar2 === index);
                 if (selected) card.classList.add('selected');
 
-                card.innerHTML = '<div class="char-portrait" style="background:' + c.colors.primary + ';">' +
-                    '<div class="char-icon" style="color:' + c.colors.accent + ';">' + c.name.charAt(0) + '</div>' +
-                    '</div>' +
-                    '<div class="char-name">' + c.name + '</div>' +
-                    '<div class="char-title">' + c.title + '</div>' +
-                    '<div class="char-stats">' +
+                // Portrait canvas instead of letter icon
+                var portraitDiv = document.createElement('div');
+                portraitDiv.className = 'char-portrait';
+                portraitDiv.style.background = 'transparent';
+                var portraitCanvas = document.createElement('canvas');
+                portraitCanvas.className = 'char-portrait-canvas';
+                portraitCanvas.setAttribute('data-char-index', index);
+                portraitCanvas.width = 120;
+                portraitCanvas.height = 140;
+                portraitDiv.appendChild(portraitCanvas);
+
+                card.appendChild(portraitDiv);
+
+                var nameDiv = document.createElement('div');
+                nameDiv.className = 'char-name';
+                nameDiv.textContent = c.name;
+                card.appendChild(nameDiv);
+
+                var titleDiv = document.createElement('div');
+                titleDiv.className = 'char-title';
+                titleDiv.textContent = c.title;
+                card.appendChild(titleDiv);
+
+                var statsDiv = document.createElement('div');
+                statsDiv.className = 'char-stats';
+                statsDiv.innerHTML =
                     self._statBar('SPD', c.stats.speed, c.colors.accent) +
                     self._statBar('PWR', c.stats.power, c.colors.accent) +
                     self._statBar('DEF', c.stats.defense, c.colors.accent) +
                     self._statBar('RNG', c.stats.range, c.colors.accent) +
-                    self._statBar('SPL', c.stats.special, c.colors.accent) +
-                    '</div>';
+                    self._statBar('SPL', c.stats.special, c.colors.accent);
+                card.appendChild(statsDiv);
+
+                // Initial render
+                if (window.renderCharacterPortrait) {
+                    renderCharacterPortrait(portraitCanvas, index, false);
+                }
 
                 card.addEventListener('click', function() {
                     if (self.selectingPlayer === 1) self.selectedChar1 = index;
                     else self.selectedChar2 = index;
                     self._renderCharacterGrid();
                     self._updateCharPreview(index);
+                    self._startPreviewAnimation(index);
+                    // Announcer says character name
+                    self._announceCharacter(CHARACTERS[index].name);
+                    if (window.GameAudio) GameAudio.sfx.uiConfirm();
                 });
 
                 grid.appendChild(card);
             })(i);
         }
+
+        // Start portrait animation
+        if (window.startPortraitAnimation) startPortraitAnimation();
 
         // Update preview
         var current = this.selectingPlayer === 1 ? this.selectedChar1 : this.selectedChar2;
@@ -591,6 +698,33 @@ var App = {
             '<p>' + c.description + '</p>' +
             '<p class="char-lore">' + c.lore + '</p>' +
             '<div class="special-info"><strong style="color:' + c.colors.glow + ';">Special: ' + c.specialName + '</strong><br>' + c.specialDesc + '</div>';
+
+        // Render large preview portrait
+        var previewCanvas = document.getElementById('char-preview-canvas');
+        if (previewCanvas && window.renderCharacterPortrait) {
+            previewCanvas.style.borderColor = c.colors.glow;
+            previewCanvas.style.boxShadow = '0 0 20px ' + c.colors.glow + '60';
+            renderCharacterPortrait(previewCanvas, index, true);
+        }
+    },
+
+    _previewAnimFrame: null,
+    _startPreviewAnimation: function(index) {
+        var self = this;
+        if (this._previewAnimFrame) cancelAnimationFrame(this._previewAnimFrame);
+        var canvas = document.getElementById('char-preview-canvas');
+        if (!canvas || !window.renderCharacterPortrait) return;
+        function animLoop() {
+            renderCharacterPortrait(canvas, index, true);
+            self._previewAnimFrame = requestAnimationFrame(animLoop);
+        }
+        animLoop();
+    },
+    _stopPreviewAnimation: function() {
+        if (this._previewAnimFrame) {
+            cancelAnimationFrame(this._previewAnimFrame);
+            this._previewAnimFrame = null;
+        }
     },
 
     _statBar: function(label, value, color) {
@@ -704,8 +838,24 @@ var App = {
         );
 
         this.engine.onMatchEnd = function(winner, stats) {
+            var winChar = winner === 1 ? CHARACTERS[self.selectedChar1] : CHARACTERS[self.selectedChar2];
+            self._announceText(winChar.name + ' wins!', 0.8, 0.6);
             setTimeout(function() { self._showResults(); }, 2500);
         };
+
+        this.engine.onCountdownFight = function() {
+            self._announceText('Fight!', 1.1, 0.5);
+        };
+
+        this.engine.onRoundEnd = function(winner) {
+            var winChar = winner === 1 ? CHARACTERS[self.selectedChar1] : CHARACTERS[self.selectedChar2];
+            setTimeout(function() { self._announceText('K O!', 0.7, 0.4); }, 200);
+        };
+
+        // Announce "Round X"
+        var c1 = CHARACTERS[this.selectedChar1];
+        var c2 = CHARACTERS[this.selectedChar2];
+        this._announceText(c1.name + ' versus ' + c2.name + '! Round 1!', 0.9, 0.6);
 
         this.engine.start();
     },

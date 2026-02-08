@@ -820,4 +820,108 @@ Fighter.prototype.render = function(ctx) {
     }
 };
 
+// ═══════════════════════════════════════════════════════════
+//   CHARACTER PORTRAIT RENDERER (for selection screen)
+// ═══════════════════════════════════════════════════════════
+
+window.renderCharacterPortrait = function(canvas, charIndex, animate) {
+    if (!canvas || !canvas.getContext) return;
+    var c = CHARACTERS[charIndex];
+    if (!c) return;
+    var ctx = canvas.getContext('2d');
+    var w = canvas.width;
+    var h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // Background glow
+    var bg = ctx.createRadialGradient(w / 2, h * 0.65, 8, w / 2, h * 0.65, w * 0.55);
+    bg.addColorStop(0, c.colors.glow + '40');
+    bg.addColorStop(0.6, c.colors.primary + '20');
+    bg.addColorStop(1, 'transparent');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, w, h);
+
+    // Create a fake fighter object with enough data for the draw functions
+    var t = animate ? (performance.now() / 1000) : 0;
+    var fakeFighter = {
+        character: c,
+        animTime: t,
+        state: 'idle',
+        stateTime: t,
+        hurtFlash: 0,
+        freezeTimer: 0,
+        isBlocking: false,
+        comboCount: 0,
+        rageActive: false,
+        poisonTimer: 0,
+        facingRight: true
+    };
+
+    // Idle pose
+    var pose = {
+        bodyOffsetY: Math.sin(t * 3) * 2,
+        leftArmAngle: -15 + Math.sin(t * 2) * 5,
+        rightArmAngle: 15 + Math.sin(t * 2 + 1) * 5,
+        leftLegAngle: -5 + Math.sin(t * 3) * 2,
+        rightLegAngle: 5 + Math.sin(t * 3 + Math.PI) * 2,
+        weaponAngle: 20 + Math.sin(t * 2) * 5
+    };
+
+    // Compute character height to center properly
+    var totalH = c.body.legLen + c.body.torsoH + c.body.headR * 2 + 10;
+    var scale = Math.min(w / 70, h / (totalH + 16)) * 0.85;
+
+    ctx.save();
+    ctx.translate(w / 2, h * 0.82);
+    ctx.scale(scale, scale);
+
+    // Ground shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 20, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Draw character
+    var fn = DRAW_MAP[c.id];
+    if (fn) fn(ctx, fakeFighter, pose);
+
+    ctx.restore();
+
+    // Bottom glow line
+    ctx.save();
+    var gLine = ctx.createLinearGradient(0, h - 4, w, h - 4);
+    gLine.addColorStop(0, 'transparent');
+    gLine.addColorStop(0.5, c.colors.glow + '80');
+    gLine.addColorStop(1, 'transparent');
+    ctx.strokeStyle = gLine;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, h - 2);
+    ctx.lineTo(w, h - 2);
+    ctx.stroke();
+    ctx.restore();
+};
+
+// Animation loop for all portrait canvases on the page
+window._portraitAnimFrame = null;
+window.startPortraitAnimation = function() {
+    if (window._portraitAnimFrame) return;
+    function loop() {
+        var canvases = document.querySelectorAll('.char-portrait-canvas');
+        for (var i = 0; i < canvases.length; i++) {
+            var cv = canvases[i];
+            var idx = parseInt(cv.getAttribute('data-char-index'), 10);
+            if (!isNaN(idx)) window.renderCharacterPortrait(cv, idx, true);
+        }
+        window._portraitAnimFrame = requestAnimationFrame(loop);
+    }
+    loop();
+};
+window.stopPortraitAnimation = function() {
+    if (window._portraitAnimFrame) {
+        cancelAnimationFrame(window._portraitAnimFrame);
+        window._portraitAnimFrame = null;
+    }
+};
+
 })();
