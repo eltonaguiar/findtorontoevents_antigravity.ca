@@ -255,8 +255,9 @@ function Fighter(x, y, facingRight, charIndex, weaponIndex, isPlayer) {
     this.animTime = Math.random() * 10;
     this.hurtFlash = 0;
 
-    this.width = this.character.body.shoulderW + 10;
-    this.height = this.character.body.headR * 2 + this.character.body.torsoH + this.character.body.legLen + 10;
+    var _RENDER_SCALE = 1.35;
+    this.width = (this.character.body.shoulderW + 10) * _RENDER_SCALE;
+    this.height = (this.character.body.headR * 2 + this.character.body.torsoH + this.character.body.legLen + 10) * _RENDER_SCALE;
 
     this.rageActive = false;
 }
@@ -1289,185 +1290,322 @@ AIController.prototype.getInput = function(fighter, opponent, dt) {
 // === STAGE RENDERER ===
 function renderStage(ctx, stage, time) {
     var s = STAGES[stage] || STAGES[0];
+    var cw = CONFIG.CANVAS_WIDTH, ch = CONFIG.CANVAS_HEIGHT, gy = CONFIG.GROUND_Y;
+    var sl = CONFIG.STAGE_LEFT, sr = CONFIG.STAGE_RIGHT;
 
-    // Sky gradient
-    var grad = ctx.createLinearGradient(0, 0, 0, CONFIG.CANVAS_HEIGHT);
+    // Sky gradient (richer with 3 stops)
+    var grad = ctx.createLinearGradient(0, 0, 0, ch);
     grad.addColorStop(0, s.skyColors[0]);
-    grad.addColorStop(1, s.skyColors[1]);
+    grad.addColorStop(0.6, s.skyColors[1]);
+    grad.addColorStop(1, s.groundColor);
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
+    ctx.fillRect(0, 0, cw, ch);
+
+    // Ambient particles (slow-drifting motes)
+    ctx.globalAlpha = 0.15;
+    for (var mp = 0; mp < 20; mp++) {
+        var mx = ((time * 12 + mp * 67) % cw);
+        var my = ((mp * 37 + Math.sin(time * 0.5 + mp) * 60) % (gy - 40)) + 30;
+        ctx.fillStyle = s.accentColor;
+        ctx.beginPath();
+        ctx.arc(mx, my, 1.5 + Math.sin(time + mp) * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
 
     // Stage features
     switch (s.features) {
         case 'lanterns':
-            for (var i = 0; i < 5; i++) {
-                var lx = 150 + i * 250;
-                ctx.fillStyle = 'rgba(255,100,30,0.15)';
-                ctx.beginPath();
-                ctx.arc(lx, 100, 20 + Math.sin(time * 2 + i) * 3, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = '#4a0e0e';
-                ctx.fillRect(lx - 8, 85, 16, 25);
+            for (var i = 0; i < 6; i++) {
+                var lx = 100 + i * 210;
+                // String
+                ctx.strokeStyle = '#3a1a0a'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(lx, 0); ctx.lineTo(lx, 75 + Math.sin(time * 1.5 + i) * 4); ctx.stroke();
+                // Glow halo
+                var gRad = ctx.createRadialGradient(lx, 90, 0, lx, 90, 45);
+                gRad.addColorStop(0, 'rgba(255,120,40,0.18)');
+                gRad.addColorStop(1, 'rgba(255,120,40,0)');
+                ctx.fillStyle = gRad; ctx.fillRect(lx - 45, 45, 90, 90);
+                // Lantern body
+                ctx.fillStyle = '#6a1a0a';
+                ctx.beginPath(); ctx.moveTo(lx - 10, 78 + Math.sin(time * 1.5 + i) * 4);
+                ctx.quadraticCurveTo(lx - 14, 92, lx - 10, 106);
+                ctx.lineTo(lx + 10, 106); ctx.quadraticCurveTo(lx + 14, 92, lx + 10, 78 + Math.sin(time * 1.5 + i) * 4);
+                ctx.closePath(); ctx.fill();
+                // Inner glow
+                ctx.fillStyle = 'rgba(255,180,80,' + (0.5 + Math.sin(time * 4 + i * 1.3) * 0.2) + ')';
+                ctx.beginPath(); ctx.ellipse(lx, 92, 7, 10, 0, 0, Math.PI * 2); ctx.fill();
             }
             break;
 
         case 'crowd':
-            for (var ci = 0; ci < 40; ci++) {
-                var cx = 30 + ci * 32;
-                var cy = 80 + Math.sin(time * 3 + ci * 0.5) * 3;
-                ctx.fillStyle = 'hsl(' + (ci * 37 % 360) + ',30%,25%)';
-                ctx.beginPath();
-                ctx.arc(cx, cy, 8, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillRect(cx - 5, cy + 8, 10, 15);
+            // Crowd rows (parallax-ish depth)
+            for (var row = 0; row < 3; row++) {
+                var rowY = 55 + row * 28;
+                var crowdCount = 35 + row * 5;
+                for (var ci = 0; ci < crowdCount; ci++) {
+                    var ccx = (ci * 34 + row * 12) % (cw + 20) - 10;
+                    var ccy = rowY + Math.sin(time * (2.5 + row * 0.3) + ci * 0.4) * (2 + row);
+                    var hue = (ci * 37 + row * 120) % 360;
+                    var lum = 20 + row * 5;
+                    ctx.fillStyle = 'hsl(' + hue + ',25%,' + lum + '%)';
+                    ctx.beginPath(); ctx.arc(ccx, ccy, 7 - row, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillRect(ccx - 4 + row, ccy + 6 - row, 8 - row * 2, 12 - row * 2);
+                }
             }
             break;
 
         case 'cityscape':
-            ctx.fillStyle = '#1a1a2e';
+            // Far buildings (silhouettes)
+            ctx.fillStyle = '#0d0d1a';
+            for (var fb = 0; fb < 20; fb++) {
+                var fbx = fb * 72 - 20;
+                var fbh = 60 + ((fb * 53 + 17) % 160);
+                ctx.fillRect(fbx, gy - fbh - 220, 60, fbh);
+            }
+            // Near buildings
             for (var bi = 0; bi < 15; bi++) {
-                var bx = bi * 95;
-                var bh = 100 + (bi * 47 % 200);
-                ctx.fillRect(bx, CONFIG.GROUND_Y - bh - 200, 80, bh);
-                // Windows
-                ctx.fillStyle = Math.random() > 0.7 ? '#ffcc00' : '#1a1a2e';
-                for (var wy = 0; wy < bh - 10; wy += 20) {
-                    for (var wx = 10; wx < 70; wx += 20) {
-                        if (Math.random() > 0.5) {
-                            ctx.fillStyle = 'rgba(255,200,50,' + (0.3 + Math.random() * 0.4) + ')';
-                            ctx.fillRect(bx + wx, CONFIG.GROUND_Y - bh - 200 + wy + 5, 8, 10);
+                var bx = bi * 95 - 15;
+                var bh = 100 + ((bi * 47 + 31) % 200);
+                var buildY = gy - bh - 170;
+                ctx.fillStyle = '#1a1a2e';
+                ctx.fillRect(bx, buildY, 80, bh);
+                // Window grid (deterministic)
+                for (var wy = 0; wy < bh - 10; wy += 18) {
+                    for (var wx = 8; wx < 72; wx += 16) {
+                        var winOn = ((bi * 7 + wy * 3 + wx * 11 + Math.floor(time * 0.1)) % 5) < 2;
+                        if (winOn) {
+                            ctx.fillStyle = 'rgba(255,200,60,' + (0.25 + ((bi + wy + wx) % 3) * 0.15) + ')';
+                            ctx.fillRect(bx + wx, buildY + wy + 4, 7, 9);
                         }
                     }
                 }
-                ctx.fillStyle = '#1a1a2e';
             }
-            // Neon signs
+            // Neon signs with pulsing glow
+            ctx.shadowColor = s.accentColor; ctx.shadowBlur = 15;
             ctx.fillStyle = s.accentColor;
-            ctx.globalAlpha = 0.3 + Math.sin(time * 4) * 0.2;
-            ctx.fillRect(200, CONFIG.GROUND_Y - 350, 80, 15);
-            ctx.fillRect(700, CONFIG.GROUND_Y - 280, 60, 12);
-            ctx.globalAlpha = 1;
+            ctx.globalAlpha = 0.4 + Math.sin(time * 3.5) * 0.2;
+            ctx.fillRect(180, gy - 360, 85, 14);
+            ctx.globalAlpha = 0.35 + Math.sin(time * 4.2 + 1) * 0.2;
+            ctx.fillRect(680, gy - 290, 65, 12);
+            ctx.globalAlpha = 0.3 + Math.sin(time * 2.8 + 2) * 0.15;
+            ctx.fillRect(1020, gy - 320, 70, 13);
+            ctx.shadowBlur = 0; ctx.globalAlpha = 1;
             break;
 
         case 'torches':
-            for (var ti = 0; ti < 4; ti++) {
-                var tx = 100 + ti * 350;
-                // Torch pole
-                ctx.fillStyle = '#5d4037';
-                ctx.fillRect(tx - 3, CONFIG.GROUND_Y - 200, 6, 200);
-                // Flame
-                ctx.fillStyle = 'rgba(255,150,30,' + (0.6 + Math.sin(time * 8 + ti * 2) * 0.3) + ')';
-                ctx.beginPath();
-                ctx.arc(tx, CONFIG.GROUND_Y - 210, 12 + Math.sin(time * 6 + ti) * 4, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = 'rgba(255,220,100,' + (0.4 + Math.sin(time * 10 + ti * 3) * 0.2) + ')';
-                ctx.beginPath();
-                ctx.arc(tx, CONFIG.GROUND_Y - 215, 6 + Math.sin(time * 12 + ti) * 2, 0, Math.PI * 2);
-                ctx.fill();
+            // Pillars with detail
+            for (var pd = 0; pd < 2; pd++) {
+                var px = pd === 0 ? 25 : cw - 55;
+                // Pillar gradient
+                var pGrad = ctx.createLinearGradient(px, gy - 320, px + 30, gy);
+                pGrad.addColorStop(0, '#5a4530'); pGrad.addColorStop(0.5, '#4a3520'); pGrad.addColorStop(1, '#3a2510');
+                ctx.fillStyle = pGrad;
+                ctx.fillRect(px, gy - 320, 30, 320);
+                // Carvings
+                ctx.strokeStyle = 'rgba(255,200,100,0.1)'; ctx.lineWidth = 1;
+                for (var cv = 0; cv < 6; cv++) { ctx.beginPath(); ctx.moveTo(px + 5, gy - 280 + cv * 45); ctx.lineTo(px + 25, gy - 280 + cv * 45); ctx.stroke(); }
+                // Capital
+                ctx.fillStyle = '#5a4530';
+                ctx.fillRect(px - 5, gy - 325, 40, 12);
             }
-            // Ancient pillars
-            ctx.fillStyle = '#4a3520';
-            ctx.fillRect(30, CONFIG.GROUND_Y - 300, 30, 300);
-            ctx.fillRect(CONFIG.CANVAS_WIDTH - 60, CONFIG.GROUND_Y - 300, 30, 300);
+            // Torches with fire
+            for (var ti = 0; ti < 4; ti++) {
+                var tx = 90 + ti * 340;
+                ctx.fillStyle = '#5d4037'; ctx.fillRect(tx - 3, gy - 200, 6, 200);
+                // Torch bracket
+                ctx.fillStyle = '#6d5040'; ctx.fillRect(tx - 8, gy - 205, 16, 8);
+                // Fire layers
+                for (var fl = 0; fl < 4; fl++) {
+                    var fAlpha = (0.5 - fl * 0.1) + Math.sin(time * (8 + fl * 2) + ti * 2) * 0.15;
+                    var fR = (14 - fl * 3) + Math.sin(time * (6 + fl) + ti) * 3;
+                    var fColors = ['rgba(255,80,20,' + fAlpha + ')', 'rgba(255,150,30,' + fAlpha + ')', 'rgba(255,220,80,' + fAlpha + ')', 'rgba(255,255,200,' + fAlpha + ')'];
+                    ctx.fillStyle = fColors[fl];
+                    ctx.beginPath(); ctx.ellipse(tx, gy - 212 - fl * 4, fR, fR * 1.4, 0, 0, Math.PI * 2); ctx.fill();
+                }
+            }
             break;
     }
 
-    // Ground
-    ctx.fillStyle = s.groundColor;
-    ctx.fillRect(0, CONFIG.GROUND_Y, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT - CONFIG.GROUND_Y);
+    // Ground with gradient
+    var gGrad = ctx.createLinearGradient(0, gy, 0, ch);
+    gGrad.addColorStop(0, s.groundColor);
+    gGrad.addColorStop(1, '#000');
+    ctx.fillStyle = gGrad;
+    ctx.fillRect(0, gy, cw, ch - gy);
 
-    // Ground line
+    // Ground line (accent glow)
     ctx.strokeStyle = s.accentColor;
     ctx.lineWidth = 2;
-    ctx.globalAlpha = 0.5;
-    ctx.beginPath();
-    ctx.moveTo(CONFIG.STAGE_LEFT, CONFIG.GROUND_Y);
-    ctx.lineTo(CONFIG.STAGE_RIGHT, CONFIG.GROUND_Y);
-    ctx.stroke();
+    ctx.shadowColor = s.accentColor;
+    ctx.shadowBlur = 8;
+    ctx.globalAlpha = 0.55;
+    ctx.beginPath(); ctx.moveTo(sl, gy); ctx.lineTo(sr, gy); ctx.stroke();
+    ctx.shadowBlur = 0;
     ctx.globalAlpha = 1;
 
-    // Stage walls
-    ctx.fillStyle = s.wallColor;
-    ctx.fillRect(0, 0, CONFIG.STAGE_LEFT, CONFIG.CANVAS_HEIGHT);
-    ctx.fillRect(CONFIG.STAGE_RIGHT, 0, CONFIG.CANVAS_WIDTH - CONFIG.STAGE_RIGHT, CONFIG.CANVAS_HEIGHT);
+    // Stage walls with vignette gradient
+    var wGrad1 = ctx.createLinearGradient(0, 0, sl + 20, 0);
+    wGrad1.addColorStop(0, s.wallColor); wGrad1.addColorStop(0.7, s.wallColor); wGrad1.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = wGrad1;
+    ctx.fillRect(0, 0, sl + 20, ch);
+    var wGrad2 = ctx.createLinearGradient(sr - 20, 0, cw, 0);
+    wGrad2.addColorStop(0, 'rgba(0,0,0,0)'); wGrad2.addColorStop(0.3, s.wallColor); wGrad2.addColorStop(1, s.wallColor);
+    ctx.fillStyle = wGrad2;
+    ctx.fillRect(sr - 20, 0, cw - sr + 20, ch);
+
+    // Top vignette
+    var topV = ctx.createLinearGradient(0, 0, 0, 60);
+    topV.addColorStop(0, 'rgba(0,0,0,0.35)'); topV.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = topV;
+    ctx.fillRect(0, 0, cw, 60);
 }
 
 // === HUD RENDERER ===
 function renderHUD(ctx, fighter1, fighter2, timer, round, p1Wins, p2Wins) {
-    var hudY = 20;
-    var barWidth = 400;
-    var barHeight = 28;
-    var meterHeight = 8;
+    var hudY = 16;
+    var barWidth = 420;
+    var barHeight = 26;
+    var meterHeight = 7;
+    var cw = CONFIG.CANVAS_WIDTH;
+    var halfW = cw / 2;
 
-    // P1 Health bar (left, fills right-to-left)
-    var p1BarX = 60;
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(p1BarX - 2, hudY - 2, barWidth + 4, barHeight + 4);
-    ctx.fillStyle = '#333';
-    ctx.fillRect(p1BarX, hudY, barWidth, barHeight);
-    var p1Width = (fighter1.health / fighter1.maxHealth) * barWidth;
-    var p1Color = fighter1.health > 50 ? '#2ecc71' : fighter1.health > 25 ? '#f39c12' : '#e74c3c';
-    ctx.fillStyle = p1Color;
-    ctx.fillRect(p1BarX, hudY, p1Width, barHeight);
+    // ── Health bar helper ──
+    function drawHealthBar(x, y, w, h, pct, glowColor, flipDir) {
+        // Background
+        ctx.fillStyle = '#0a0a0f';
+        ctx.fillRect(x - 3, y - 3, w + 6, h + 6);
+        // Inner dark
+        ctx.fillStyle = '#1a1a22';
+        ctx.fillRect(x, y, w, h);
+        // Health gradient
+        var fillW = pct * w;
+        if (fillW > 0) {
+            var barColor1 = pct > 0.5 ? '#22dd66' : pct > 0.25 ? '#ddaa22' : '#dd3333';
+            var barColor2 = pct > 0.5 ? '#11aa44' : pct > 0.25 ? '#aa7711' : '#aa1111';
+            var grad = ctx.createLinearGradient(x, y, x, y + h);
+            grad.addColorStop(0, barColor1);
+            grad.addColorStop(0.5, barColor2);
+            grad.addColorStop(1, barColor1);
+            ctx.fillStyle = grad;
+            if (flipDir) {
+                ctx.fillRect(x + w - fillW, y, fillW, h);
+            } else {
+                ctx.fillRect(x, y, fillW, h);
+            }
+            // Highlight streak at top
+            ctx.globalAlpha = 0.25;
+            ctx.fillStyle = '#fff';
+            if (flipDir) {
+                ctx.fillRect(x + w - fillW, y + 1, fillW, 3);
+            } else {
+                ctx.fillRect(x, y + 1, fillW, 3);
+            }
+            ctx.globalAlpha = 1;
+            // Glow on edge when low
+            if (pct < 0.25) {
+                ctx.shadowColor = '#ff2222';
+                ctx.shadowBlur = 12;
+                ctx.fillStyle = 'rgba(255,30,30,0.15)';
+                ctx.fillRect(x, y, w, h);
+                ctx.shadowBlur = 0;
+            }
+        }
+        // Border (bevelled)
+        ctx.strokeStyle = '#555';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(x - 1, y - 1, w + 2, h + 2);
+        ctx.strokeStyle = '#222';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x - 2.5, y - 2.5, w + 5, h + 5);
+    }
 
-    // P2 Health bar (right, fills left-to-right)
-    var p2BarX = CONFIG.CANVAS_WIDTH - 60 - barWidth;
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(p2BarX - 2, hudY - 2, barWidth + 4, barHeight + 4);
-    ctx.fillStyle = '#333';
-    ctx.fillRect(p2BarX, hudY, barWidth, barHeight);
-    var p2Width = (fighter2.health / fighter2.maxHealth) * barWidth;
-    var p2Color = fighter2.health > 50 ? '#2ecc71' : fighter2.health > 25 ? '#f39c12' : '#e74c3c';
-    ctx.fillStyle = p2Color;
-    ctx.fillRect(p2BarX + barWidth - p2Width, hudY, p2Width, barHeight);
+    // ── Special meter helper ──
+    function drawMeter(x, y, w, h, pct, glow, flipDir) {
+        ctx.fillStyle = '#08080f';
+        ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
+        ctx.fillStyle = '#111';
+        ctx.fillRect(x, y, w, h);
+        var mW = pct * w;
+        if (mW > 0) {
+            var ready = pct >= 0.5;
+            var mGrad = ctx.createLinearGradient(x, y, x, y + h);
+            mGrad.addColorStop(0, ready ? glow : '#444');
+            mGrad.addColorStop(1, ready ? glow : '#333');
+            ctx.fillStyle = mGrad;
+            if (flipDir) ctx.fillRect(x + w - mW, y, mW, h);
+            else ctx.fillRect(x, y, mW, h);
+            if (ready) {
+                ctx.shadowColor = glow;
+                ctx.shadowBlur = 6;
+                ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                ctx.fillRect(x, y, w, h);
+                ctx.shadowBlur = 0;
+            }
+        }
+    }
 
-    // Special meters
-    var meterY = hudY + barHeight + 6;
+    // ── Bars ──
+    var p1BarX = 55;
+    var p2BarX = cw - 55 - barWidth;
+    var p1Pct = fighter1.health / fighter1.maxHealth;
+    var p2Pct = fighter2.health / fighter2.maxHealth;
+    drawHealthBar(p1BarX, hudY, barWidth, barHeight, p1Pct, fighter1.character.colors.glow, false);
+    drawHealthBar(p2BarX, hudY, barWidth, barHeight, p2Pct, fighter2.character.colors.glow, true);
 
-    // P1 meter
-    ctx.fillStyle = '#111';
-    ctx.fillRect(p1BarX, meterY, barWidth, meterHeight);
-    var p1Meter = (fighter1.specialMeter / CONFIG.SPECIAL_METER_MAX) * barWidth;
-    ctx.fillStyle = fighter1.specialMeter >= 50 ? fighter1.character.colors.glow : '#555';
-    ctx.fillRect(p1BarX, meterY, p1Meter, meterHeight);
+    // ── Meters ──
+    var meterY = hudY + barHeight + 5;
+    drawMeter(p1BarX, meterY, barWidth, meterHeight, fighter1.specialMeter / CONFIG.SPECIAL_METER_MAX, fighter1.character.colors.glow, false);
+    drawMeter(p2BarX, meterY, barWidth, meterHeight, fighter2.specialMeter / CONFIG.SPECIAL_METER_MAX, fighter2.character.colors.glow, true);
 
-    // P2 meter
-    ctx.fillStyle = '#111';
-    ctx.fillRect(p2BarX, meterY, barWidth, meterHeight);
-    var p2Meter = (fighter2.specialMeter / CONFIG.SPECIAL_METER_MAX) * barWidth;
-    ctx.fillStyle = fighter2.specialMeter >= 50 ? fighter2.character.colors.glow : '#555';
-    ctx.fillRect(p2BarX + barWidth - p2Meter, meterY, p2Meter, meterHeight);
-
-    // Names
-    ctx.font = 'bold 16px "Rajdhani", sans-serif';
-    ctx.fillStyle = '#fff';
+    // ── Names ──
+    ctx.font = 'bold 17px "Orbitron", "Rajdhani", sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText(fighter1.character.name.toUpperCase(), p1BarX, hudY + barHeight + meterHeight + 22);
+    ctx.fillStyle = '#fff';
+    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur = 4;
+    ctx.fillText(fighter1.character.name.toUpperCase(), p1BarX, meterY + meterHeight + 18);
     ctx.textAlign = 'right';
-    ctx.fillText(fighter2.character.name.toUpperCase(), p2BarX + barWidth, hudY + barHeight + meterHeight + 22);
+    ctx.fillText(fighter2.character.name.toUpperCase(), p2BarX + barWidth, meterY + meterHeight + 18);
+    ctx.shadowBlur = 0;
 
-    // Timer
+    // ── Timer ──
     ctx.textAlign = 'center';
-    ctx.font = 'bold 42px "Rajdhani", sans-serif';
-    ctx.fillStyle = timer <= 10 ? '#e74c3c' : '#ffffff';
-    ctx.fillText(Math.ceil(timer).toString(), CONFIG.CANVAS_WIDTH / 2, hudY + 36);
+    // Timer panel background
+    ctx.fillStyle = 'rgba(10,10,18,0.85)';
+    ctx.beginPath();
+    ctx.moveTo(halfW - 42, hudY - 6);
+    ctx.lineTo(halfW + 42, hudY - 6);
+    ctx.lineTo(halfW + 36, hudY + 50);
+    ctx.lineTo(halfW - 36, hudY + 50);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    // Timer text
+    ctx.font = 'bold 44px "Orbitron", "Rajdhani", sans-serif';
+    var timeVal = Math.ceil(timer);
+    ctx.fillStyle = timer <= 10 ? '#ff3333' : '#f0f0f0';
+    if (timer <= 10) { ctx.shadowColor = '#ff0000'; ctx.shadowBlur = 12; }
+    ctx.fillText(timeVal.toString(), halfW, hudY + 40);
+    ctx.shadowBlur = 0;
 
-    // Round indicator
-    ctx.font = '14px "Rajdhani", sans-serif';
-    ctx.fillStyle = '#aaa';
-    ctx.fillText('ROUND ' + round, CONFIG.CANVAS_WIDTH / 2, hudY + 54);
+    // Round text
+    ctx.font = '12px "Orbitron", "Rajdhani", sans-serif';
+    ctx.fillStyle = '#888';
+    ctx.fillText('ROUND ' + round, halfW, hudY + 55);
 
-    // Win dots
+    // ── Win dots ──
     for (var i = 0; i < CONFIG.ROUNDS_TO_WIN; i++) {
-        ctx.fillStyle = i < p1Wins ? '#ffd700' : '#333';
-        ctx.beginPath();
-        ctx.arc(CONFIG.CANVAS_WIDTH / 2 - 30 - i * 18, hudY + 68, 5, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = i < p2Wins ? '#ffd700' : '#333';
-        ctx.beginPath();
-        ctx.arc(CONFIG.CANVAS_WIDTH / 2 + 30 + i * 18, hudY + 68, 5, 0, Math.PI * 2);
-        ctx.fill();
+        // P1
+        ctx.fillStyle = i < p1Wins ? '#ffd700' : '#2a2a2a';
+        ctx.beginPath(); ctx.arc(halfW - 28 - i * 16, hudY + 67, 5, 0, Math.PI * 2); ctx.fill();
+        if (i < p1Wins) { ctx.strokeStyle = '#ffaa00'; ctx.lineWidth = 1; ctx.stroke(); }
+        // P2
+        ctx.fillStyle = i < p2Wins ? '#ffd700' : '#2a2a2a';
+        ctx.beginPath(); ctx.arc(halfW + 28 + i * 16, hudY + 67, 5, 0, Math.PI * 2); ctx.fill();
+        if (i < p2Wins) { ctx.strokeStyle = '#ffaa00'; ctx.lineWidth = 1; ctx.stroke(); }
     }
 }
 
@@ -1498,6 +1636,8 @@ function GameEngine(canvas) {
     this.hitstopTimer = 0;
     this.screenShakeX = 0;
     this.screenShakeY = 0;
+    this.impactFlash = 0;
+    this.koSlowTimer = 0;
 
     this.gameTime = 0;
     this.lastTime = 0;
@@ -1555,6 +1695,8 @@ GameEngine.prototype.startRound = function() {
     this.hitstopTimer = 0;
     this.screenShakeX = 0;
     this.screenShakeY = 0;
+    this.impactFlash = 0;
+    this.koSlowTimer = 0;
 };
 
 GameEngine.prototype.start = function() {
@@ -1587,9 +1729,19 @@ GameEngine.prototype.update = function(dt) {
         return;
     }
 
+    // Impact flash decay
+    if (this.impactFlash > 0) this.impactFlash -= dt;
+
+    // KO slow-motion: reduce effective dt during ko slo-mo
+    if (this.koSlowTimer > 0) {
+        this.koSlowTimer -= dt;
+        dt *= 0.25; // quarter speed
+    }
+
     // Hitstop
     if (this.hitstopTimer > 0) {
         this.hitstopTimer -= dt;
+        this.particles.update(dt); // still update particles during hitstop for visual polish
         return;
     }
 
@@ -1762,30 +1914,49 @@ GameEngine.prototype._checkAttackCollisions = function(attacker, defender) {
 
         defender.takeDamage(damage, kbX, kbY, attacker);
 
-        // Effects
-        this.hitstopTimer = CONFIG.HITSTOP_DURATION / 1000;
-        this.screenShakeX = randomRange(-8, 8) * (type === 'heavy' || type === 'special' ? 2 : 1);
-        this.screenShakeY = randomRange(-5, 5) * (type === 'heavy' || type === 'special' ? 2 : 1);
+        // Effects — premium impact
+        var isHeavyHit = type === 'heavy' || type === 'special';
+        var isCritCombo = attacker.comboCount >= 5;
+        this.hitstopTimer = (isHeavyHit ? CONFIG.HITSTOP_DURATION * 1.8 : CONFIG.HITSTOP_DURATION) / 1000;
+        var shakeMult = isHeavyHit ? 2.5 : (isCritCombo ? 1.8 : 1);
+        this.screenShakeX = randomRange(-8, 8) * shakeMult;
+        this.screenShakeY = randomRange(-5, 5) * shakeMult;
+        // Impact flash (white overlay duration in seconds)
+        this.impactFlash = isHeavyHit ? 0.08 : 0.04;
+        // KO slow-motion
+        if (defender.health <= 0) { this.koSlowTimer = 0.6; }
 
-        // Hit particles
+        // Hit particles — more on heavy
         var hitX = (attacker.x + defender.x) / 2;
         var hitY = defender.y - defender.height / 2;
-        this.particles.emit(hitX, hitY, type === 'heavy' ? 15 : 8, {
+        var pCount = isHeavyHit ? 22 : 10;
+        this.particles.emit(hitX, hitY, pCount, {
             color: attacker.character.colors.glow,
-            minVX: -200, maxVX: 200,
-            minVY: -300, maxVY: -50,
-            minSize: 2, maxSize: type === 'heavy' ? 8 : 5,
-            minLife: 0.2, maxLife: 0.5
+            minVX: -250, maxVX: 250,
+            minVY: -350, maxVY: -50,
+            minSize: 2, maxSize: isHeavyHit ? 10 : 5,
+            minLife: 0.2, maxLife: isHeavyHit ? 0.7 : 0.45
         });
 
-        // White flash particles
-        this.particles.emit(hitX, hitY, 4, {
+        // White flash burst
+        this.particles.emit(hitX, hitY, isHeavyHit ? 8 : 4, {
             color: '#ffffff',
-            minVX: -100, maxVX: 100,
-            minVY: -150, maxVY: -50,
-            minSize: 3, maxSize: 6,
-            minLife: 0.1, maxLife: 0.2
+            minVX: -120, maxVX: 120,
+            minVY: -180, maxVY: -40,
+            minSize: 3, maxSize: 8,
+            minLife: 0.08, maxLife: 0.2
         });
+
+        // Spark ring on heavy
+        if (isHeavyHit) {
+            this.particles.emit(hitX, hitY, 12, {
+                color: '#ffdd44',
+                minVX: -300, maxVX: 300,
+                minVY: -300, maxVY: 300,
+                minSize: 1, maxSize: 3,
+                minLife: 0.15, maxLife: 0.35
+            });
+        }
     }
 };
 
@@ -1848,60 +2019,94 @@ GameEngine.prototype.render = function() {
         renderHUD(ctx, this.fighter1, this.fighter2, this.roundTimer, this.currentRound, this.p1Wins, this.p2Wins);
     }
 
-    // Countdown overlay
+    // Countdown overlay (dramatic)
     if (this.gameState === 'countdown') {
-        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        ctx.fillStyle = 'rgba(0,0,0,0.45)';
         ctx.fillRect(0, 0, w, h);
         ctx.textAlign = 'center';
-        ctx.font = 'bold 96px "Rajdhani", sans-serif';
-        ctx.fillStyle = this.countdownText === 'FIGHT!' ? '#ff4444' : '#ffffff';
-        ctx.shadowColor = this.countdownText === 'FIGHT!' ? '#ff0000' : '#000';
-        ctx.shadowBlur = 20;
-        ctx.fillText(this.countdownText, w / 2, h / 2 + 30);
+        var isFight = this.countdownText === 'FIGHT!';
+        ctx.font = 'bold ' + (isFight ? '110' : '100') + 'px "Orbitron", "Rajdhani", sans-serif';
+        ctx.fillStyle = isFight ? '#ff3333' : '#f0f0f0';
+        ctx.shadowColor = isFight ? '#ff0000' : '#4488ff';
+        ctx.shadowBlur = isFight ? 35 : 20;
+        ctx.fillText(this.countdownText, w / 2, h / 2 + 35);
+        // Double-shadow for depth
+        ctx.shadowColor = isFight ? '#880000' : '#002244';
+        ctx.shadowBlur = 60;
+        ctx.fillText(this.countdownText, w / 2, h / 2 + 35);
         ctx.shadowBlur = 0;
+        // Accent line
+        ctx.strokeStyle = isFight ? '#ff4444' : '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = 0.5;
+        ctx.beginPath(); ctx.moveTo(w * 0.3, h / 2 + 55); ctx.lineTo(w * 0.7, h / 2 + 55); ctx.stroke();
+        ctx.globalAlpha = 1;
     }
 
-    // Round end overlay
+    // Round end overlay (dramatic)
     if (this.gameState === 'round_end') {
-        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillStyle = 'rgba(0,0,0,0.55)';
         ctx.fillRect(0, 0, w, h);
         ctx.textAlign = 'center';
-        ctx.font = 'bold 56px "Rajdhani", sans-serif';
-        ctx.fillStyle = '#ffd700';
-        ctx.shadowColor = '#ff8800';
-        ctx.shadowBlur = 15;
         var winnerName = this.fighter2.isKO ? this.fighter1.character.name : this.fighter2.character.name;
-        ctx.fillText(winnerName.toUpperCase() + ' WINS!', w / 2, h / 2 + 15);
+        var winnerGlow = this.fighter2.isKO ? this.fighter1.character.colors.glow : this.fighter2.character.colors.glow;
+        // Winner name
+        ctx.font = 'bold 62px "Orbitron", "Rajdhani", sans-serif';
+        ctx.fillStyle = '#ffd700';
+        ctx.shadowColor = winnerGlow;
+        ctx.shadowBlur = 25;
+        ctx.fillText(winnerName.toUpperCase(), w / 2, h / 2);
         ctx.shadowBlur = 0;
+        // "WINS" subtitle
+        ctx.font = 'bold 28px "Rajdhani", sans-serif';
+        ctx.fillStyle = '#ddd';
+        ctx.fillText('WINS THE ROUND', w / 2, h / 2 + 35);
     }
 
-    // Match end overlay
+    // Match end overlay (premium results screen)
     if (this.gameState === 'match_end') {
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillStyle = 'rgba(0,0,0,0.75)';
         ctx.fillRect(0, 0, w, h);
         ctx.textAlign = 'center';
 
         var matchWinner = this.p1Wins >= CONFIG.ROUNDS_TO_WIN ? this.fighter1 : this.fighter2;
-        var playerNum = this.p1Wins >= CONFIG.ROUNDS_TO_WIN ? 1 : 2;
 
-        ctx.font = 'bold 36px "Rajdhani", sans-serif';
-        ctx.fillStyle = '#aaa';
-        ctx.fillText('MATCH OVER', w / 2, h / 2 - 80);
+        // Decorative line
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 1.5;
+        ctx.globalAlpha = 0.4;
+        ctx.beginPath(); ctx.moveTo(w * 0.25, h / 2 - 95); ctx.lineTo(w * 0.75, h / 2 - 95); ctx.stroke();
+        ctx.globalAlpha = 1;
 
-        ctx.font = 'bold 64px "Rajdhani", sans-serif';
+        ctx.font = 'bold 30px "Orbitron", "Rajdhani", sans-serif';
+        ctx.fillStyle = '#999';
+        ctx.fillText('MATCH OVER', w / 2, h / 2 - 75);
+
+        ctx.font = 'bold 68px "Orbitron", "Rajdhani", sans-serif';
         ctx.fillStyle = '#ffd700';
-        ctx.shadowColor = '#ff8800';
-        ctx.shadowBlur = 20;
-        ctx.fillText(matchWinner.character.name.toUpperCase() + ' WINS!', w / 2, h / 2 - 20);
+        ctx.shadowColor = matchWinner.character.colors.glow;
+        ctx.shadowBlur = 30;
+        ctx.fillText(matchWinner.character.name.toUpperCase(), w / 2, h / 2 - 10);
         ctx.shadowBlur = 0;
 
-        ctx.font = '24px "Rajdhani", sans-serif';
-        ctx.fillStyle = '#ccc';
-        ctx.fillText(this.p1Wins + ' - ' + this.p2Wins, w / 2, h / 2 + 20);
+        ctx.font = 'bold 26px "Rajdhani", sans-serif';
+        ctx.fillStyle = '#eee';
+        ctx.fillText('WINS!', w / 2, h / 2 + 22);
 
-        ctx.font = '20px "Rajdhani", sans-serif';
-        ctx.fillStyle = '#888';
-        ctx.fillText('Press ENTER or START to continue', w / 2, h / 2 + 60);
+        ctx.font = '22px "Rajdhani", sans-serif';
+        ctx.fillStyle = '#aaa';
+        ctx.fillText(this.p1Wins + ' \u2014 ' + this.p2Wins, w / 2, h / 2 + 50);
+
+        // Decorative line
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 1.5;
+        ctx.globalAlpha = 0.4;
+        ctx.beginPath(); ctx.moveTo(w * 0.25, h / 2 + 65); ctx.lineTo(w * 0.75, h / 2 + 65); ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        ctx.font = '18px "Rajdhani", sans-serif';
+        ctx.fillStyle = '#666';
+        ctx.fillText('Press ENTER or START to continue', w / 2, h / 2 + 85);
     }
 
     // Paused overlay
@@ -1918,6 +2123,12 @@ GameEngine.prototype.render = function() {
         ctx.font = '18px "Rajdhani", sans-serif';
         ctx.fillStyle = '#aaa';
         ctx.fillText('Press F1 or close the controls panel to resume', w / 2, h / 2 + 30);
+    }
+
+    // Impact flash overlay (white flash on heavy hit)
+    if (this.impactFlash > 0) {
+        ctx.fillStyle = 'rgba(255,255,255,' + Math.min(this.impactFlash * 8, 0.45) + ')';
+        ctx.fillRect(0, 0, w, h);
     }
 
     ctx.restore();
