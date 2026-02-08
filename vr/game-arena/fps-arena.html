@@ -781,6 +781,14 @@
       <div class="score-item"><div class="s-val streak-val" id="hud-streak">0</div><div class="s-lbl">Streak</div></div>
       <div class="score-item"><div class="s-val xp-val" id="hud-xp">0</div><div class="s-lbl">XP</div></div>
     </div>
+    <div style="margin-top:6px;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div style="font-size:9px;color:#666;text-transform:uppercase;">Next rank</div>
+        <div style="flex:1;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;">
+          <div id="hud-rank-bar" style="height:100%;background:#a855f7;width:0%;transition:width 0.5s;border-radius:2px;"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Timer -->
@@ -1067,9 +1075,22 @@
         <button class="diff-btn" data-diff="hard" onclick="setLobbyDiff('hard')">Hard</button>
         <button class="diff-btn" data-diff="insane" onclick="setLobbyDiff('insane')">Insane</button>
       </div>
+      <div id="lobby-stats" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px;margin-bottom:16px;">
+        <div style="display:flex;gap:20px;justify-content:center;text-align:center;">
+          <div><div style="font-size:20px;font-weight:800;color:#a855f7;" id="lobby-rank-display">Recruit</div><div style="font-size:10px;color:#666;text-transform:uppercase;">Rank</div></div>
+          <div><div style="font-size:20px;font-weight:800;color:#fff;" id="lobby-xp-display">0</div><div style="font-size:10px;color:#666;text-transform:uppercase;">Total XP</div></div>
+          <div><div style="font-size:20px;font-weight:800;color:#ef4444;" id="lobby-kills-display">0</div><div style="font-size:10px;color:#666;text-transform:uppercase;">Total Kills</div></div>
+          <div><div style="font-size:20px;font-weight:800;color:#64748b;" id="lobby-games-display">0</div><div style="font-size:10px;color:#666;text-transform:uppercase;">Games</div></div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-bottom:12px;">
+        <div style="font-size:12px;color:#64748b;">Match: 5 minutes | 7 AI Bots | Arena: Neon Arena</div>
+        <div style="font-size:11px;color:#475569;margin-top:4px;">Features: Weapon drops, hazard zones, grenades, pickups</div>
+      </div>
       <div class="lobby-actions">
         <button class="lobby-btn primary" onclick="startSoloGame()">Start Solo Match</button>
         <button class="lobby-btn secondary" onclick="showHighscores()">High Scores</button>
+        <button class="lobby-btn secondary" onclick="showSettings()">Settings</button>
       </div>
     </div>
 
@@ -2215,7 +2236,7 @@ function createBot(index) {
   // Body
   var bodyGeo = new THREE.BoxGeometry(0.6, 1.0, 0.4);
   var botColor = new THREE.Color().setHSL((index * 0.13) % 1, 0.7, 0.5);
-  var bodyMat = new THREE.MeshStandardMaterial({ color: botColor, roughness: 0.6 });
+  var bodyMat = new THREE.MeshStandardMaterial({ color: botColor, roughness: 0.6, transparent: true });
   var body = new THREE.Mesh(bodyGeo, bodyMat);
   body.position.y = 1.2;
   body.castShadow = true;
@@ -2245,6 +2266,50 @@ function createBot(index) {
   var gun = new THREE.Mesh(gunGeo, gunMat);
   gun.position.set(0.3, 1.1, 0.3);
   group.add(gun);
+
+  // Legs (to make bot look more humanoid)
+  var legGeo = new THREE.BoxGeometry(0.15, 0.7, 0.15);
+  var legMat = new THREE.MeshStandardMaterial({ color: 0x333340, roughness: 0.7 });
+  var leftLeg = new THREE.Mesh(legGeo, legMat);
+  leftLeg.position.set(-0.15, 0.35, 0);
+  leftLeg.castShadow = true;
+  group.add(leftLeg);
+  var rightLeg = new THREE.Mesh(legGeo, legMat);
+  rightLeg.position.set(0.15, 0.35, 0);
+  rightLeg.castShadow = true;
+  group.add(rightLeg);
+
+  // Arms
+  var armGeo = new THREE.BoxGeometry(0.12, 0.6, 0.12);
+  var armMat = new THREE.MeshStandardMaterial({ color: botColor.clone().multiplyScalar(0.8), roughness: 0.6 });
+  var leftArm = new THREE.Mesh(armGeo, armMat);
+  leftArm.position.set(-0.42, 1.1, 0);
+  group.add(leftArm);
+  var rightArm = new THREE.Mesh(armGeo, armMat);
+  rightArm.position.set(0.42, 1.1, 0.15);
+  group.add(rightArm);
+
+  // Name tag above bot (billboard sprite)
+  var botName = BOT_NAMES[index % BOT_NAMES.length];
+  var nameCanvas = document.createElement('canvas');
+  nameCanvas.width = 256; nameCanvas.height = 48;
+  var nCtx = nameCanvas.getContext('2d');
+  nCtx.fillStyle = 'rgba(0,0,0,0.5)';
+  nCtx.roundRect ? nCtx.roundRect(0, 0, 256, 48, 8) : nCtx.fillRect(0, 0, 256, 48);
+  nCtx.fill();
+  nCtx.font = 'bold 20px Inter, sans-serif';
+  nCtx.textAlign = 'center';
+  nCtx.fillStyle = '#ef4444';
+  nCtx.fillText(botName, 128, 20);
+  nCtx.font = '14px Inter, sans-serif';
+  nCtx.fillStyle = '#666';
+  nCtx.fillText('BOT', 128, 40);
+  var nameTex = new THREE.CanvasTexture(nameCanvas);
+  var nameSpriteMat = new THREE.SpriteMaterial({ map: nameTex, transparent: true, depthWrite: false });
+  var nameSprite = new THREE.Sprite(nameSpriteMat);
+  nameSprite.position.set(0, 2.6, 0);
+  nameSprite.scale.set(2, 0.4, 1);
+  group.add(nameSprite);
 
   group.position.set(pos.x, 0, pos.z);
   scene.add(group);
@@ -2652,8 +2717,17 @@ function showControlsHelp() {
 // ─── WEAPON SYSTEM ──────────────────────────────────────────────────────────
 function switchWeapon(idx) {
   if (state.reloading) return;
+  if (idx === state.currentWeapon) return;
   state.currentWeapon = idx;
   state.reloading = false;
+  // Play a subtle switch sound
+  if (AudioSys.initialized) {
+    AudioSys.resume();
+    var ctx = AudioSys.ctx; var now = ctx.currentTime;
+    var osc = ctx.createOscillator(); osc.type = 'sine'; osc.frequency.value = 300;
+    var g = ctx.createGain(); g.gain.setValueAtTime(0.1, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+    g.connect(AudioSys.masterGain); osc.connect(g); osc.start(now); osc.stop(now + 0.05);
+  }
   updateWeaponHUD();
 }
 
@@ -3974,9 +4048,21 @@ function updateHUD() {
   document.getElementById('hud-xp').textContent = state.xpThisMatch;
   document.getElementById('hud-player-name').textContent = state.userName;
 
-  var rank = getRank(state.totalXP + state.xpThisMatch);
+  var currentXP = state.totalXP + state.xpThisMatch;
+  var rank = getRank(currentXP);
   document.getElementById('hud-rank').textContent = rank.name.toUpperCase();
   document.getElementById('hud-rank').style.color = rank.color;
+
+  // Rank progress bar
+  var nextRank = getNextRank(currentXP);
+  if (nextRank) {
+    var progress = (currentXP - rank.xp) / (nextRank.xp - rank.xp) * 100;
+    document.getElementById('hud-rank-bar').style.width = Math.min(100, progress) + '%';
+    document.getElementById('hud-rank-bar').style.background = rank.color;
+  } else {
+    document.getElementById('hud-rank-bar').style.width = '100%';
+    document.getElementById('hud-rank-bar').style.background = '#fbbf24';
+  }
 
   updateWeaponHUD();
 }
@@ -4976,11 +5062,22 @@ var originalEnterGame = enterGame;
 enterGame = function() {
   document.getElementById('age-gate').classList.add('hidden');
   loadPersistentState();
+  loadSettings();
   if (state.userName === 'Player' && state.gamesPlayed === 0) {
     var n = prompt('Enter your callsign:', 'Player');
     if (n && n.trim()) state.userName = n.trim().substring(0, 20);
     savePersistentState();
   }
+  // Populate lobby stats
+  var rank = getRank(state.totalXP);
+  var rankEl = document.getElementById('lobby-rank-display');
+  if (rankEl) { rankEl.textContent = rank.name; rankEl.style.color = rank.color; }
+  var xpEl = document.getElementById('lobby-xp-display');
+  if (xpEl) xpEl.textContent = state.totalXP.toLocaleString();
+  var killsEl = document.getElementById('lobby-kills-display');
+  if (killsEl) killsEl.textContent = state.totalKills;
+  var gamesEl = document.getElementById('lobby-games-display');
+  if (gamesEl) gamesEl.textContent = state.gamesPlayed;
   document.getElementById('mp-lobby').classList.add('active');
   setupChatInput();
 };
