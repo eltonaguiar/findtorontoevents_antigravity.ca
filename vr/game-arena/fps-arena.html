@@ -1158,8 +1158,10 @@
 <!-- Back button -->
 <a id="back-btn" href="/vr/game-arena/" style="display:none">&#8592; Game Arena</a>
 
-<!-- ========== THREE.JS + Socket.io CDN ========== -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- ========== THREE.JS r152 + GLTFLoader + Socket.io CDN ========== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.0/examples/js/utils/SkeletonUtils.js"></script>
 <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
 
 <script>
@@ -1737,6 +1739,117 @@ function updateBotCountHUD() {
   el.style.color = alive > total * 0.6 ? '#ef4444' : alive > total * 0.3 ? '#f59e0b' : '#22c55e';
 }
 
+// ─── GLB SOLDIER MODEL LOADER ───────────────────────────────────────────────
+// Uses a free CC0 soldier model from Quaternius (hosted on GitHub/CDN)
+var SoldierModel = {
+  template: null,
+  animations: {},
+  loaded: false,
+  loading: false,
+  onLoadCallbacks: [],
+
+  load: function(callback) {
+    if (this.loaded) { if (callback) callback(this.template); return; }
+    if (callback) this.onLoadCallbacks.push(callback);
+    if (this.loading) return;
+    this.loading = true;
+    var self = this;
+
+    // Try multiple free model sources
+    var modelUrls = [
+      'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf/Soldier.glb',
+      'https://threejs.org/examples/models/gltf/Soldier.glb'
+    ];
+
+    var loader = new THREE.GLTFLoader();
+    var tryLoad = function(idx) {
+      if (idx >= modelUrls.length) {
+        console.warn('[SoldierModel] All model URLs failed, using fallback geometry');
+        self.loaded = true;
+        self.template = null; // Will use fallback
+        self.onLoadCallbacks.forEach(function(cb) { cb(null); });
+        self.onLoadCallbacks = [];
+        return;
+      }
+      console.log('[SoldierModel] Loading from:', modelUrls[idx]);
+      loader.load(
+        modelUrls[idx],
+        function(gltf) {
+          console.log('[SoldierModel] Loaded successfully!');
+          var model = gltf.scene;
+          model.scale.set(1, 1, 1);
+          model.traverse(function(child) {
+            if (child.isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+              // Darken the material for enemy look
+              if (child.material) {
+                child.material = child.material.clone();
+                child.material.roughness = 0.7;
+                child.material.metalness = 0.1;
+              }
+            }
+          });
+          self.template = model;
+          // Store animations
+          if (gltf.animations && gltf.animations.length > 0) {
+            self.animations.clips = gltf.animations;
+            console.log('[SoldierModel] Animations found:', gltf.animations.map(function(a) { return a.name; }));
+          }
+          self.loaded = true;
+          self.onLoadCallbacks.forEach(function(cb) { cb(model); });
+          self.onLoadCallbacks = [];
+        },
+        function(progress) {
+          if (progress.total > 0) {
+            var pct = Math.round(progress.loaded / progress.total * 100);
+            console.log('[SoldierModel] Loading: ' + pct + '%');
+          }
+        },
+        function(error) {
+          console.warn('[SoldierModel] Failed from ' + modelUrls[idx] + ':', error.message || error);
+          tryLoad(idx + 1);
+        }
+      );
+    };
+    tryLoad(0);
+  },
+
+  // Clone the template for a new bot instance
+  createInstance: function(teamColorHex) {
+    if (!this.template) return null;
+    var clone;
+    // Use SkeletonUtils.clone for proper skeleton cloning
+    if (THREE.SkeletonUtils && THREE.SkeletonUtils.clone) {
+      clone = THREE.SkeletonUtils.clone(this.template);
+    } else {
+      clone = this.template.clone();
+    }
+    // Apply team color tint
+    if (teamColorHex) {
+      var tint = new THREE.Color(teamColorHex);
+      clone.traverse(function(child) {
+        if (child.isMesh && child.material) {
+          child.material = child.material.clone();
+          // Multiply the existing color with the team tint
+          child.material.color.multiply(tint);
+        }
+      });
+    }
+    return clone;
+  },
+
+  // Create an AnimationMixer for a cloned instance
+  createMixer: function(instance) {
+    if (!instance || !this.animations.clips || this.animations.clips.length === 0) return null;
+    var mixer = new THREE.AnimationMixer(instance);
+    return mixer;
+  }
+};
+
+// Track all active animation mixers for update
+var activeMixers = [];
+
 // ─── FIRST PERSON WEAPON RENDERER ──────────────────────────────────────────
 var FPWeapon = {
   ctx: null,
@@ -2172,7 +2285,16 @@ function initGame() {
   });
   setProgress(80);
 
-  // Spawn bots
+  // Start loading GLB soldier model (async — bots will swap to it when ready)
+  SoldierModel.load(function(template) {
+    if (template) {
+      console.log('[FPS] Soldier GLB model loaded — bots will be upgraded');
+    } else {
+      console.log('[FPS] GLB model unavailable — using geometric soldiers');
+    }
+  });
+
+  // Spawn bots (initially geometric, will swap to GLB when model loads)
   spawnBots();
   setProgress(90);
 
@@ -2671,7 +2793,71 @@ function createBot(index) {
   scene.add(group);
   botMeshes.push(group);
 
-  return {
+  // Try to replace with GLB soldier model
+  var botRef = null; // Will be set below
+  if (SoldierModel.loaded && SoldierModel.template) {
+    var glbInstance = SoldierModel.createInstance(tc.accent);
+    if (glbInstance) {
+      // Remove geometric children (keep name tag)
+      var nameTag = nameSprite;
+      while (group.children.length > 0) group.remove(group.children[0]);
+      group.add(glbInstance);
+      group.add(nameTag);
+      // Setup animation
+      var mixer = SoldierModel.createMixer(glbInstance);
+      if (mixer && SoldierModel.animations.clips) {
+        // Try to find and play a run/idle animation
+        var idleClip = null, runClip = null, walkClip = null;
+        SoldierModel.animations.clips.forEach(function(clip) {
+          var n = clip.name.toLowerCase();
+          if (n.indexOf('idle') !== -1) idleClip = clip;
+          if (n.indexOf('run') !== -1) runClip = clip;
+          if (n.indexOf('walk') !== -1) walkClip = clip;
+        });
+        var defaultClip = idleClip || walkClip || runClip || SoldierModel.animations.clips[0];
+        if (defaultClip) {
+          var action = mixer.clipAction(defaultClip);
+          action.play();
+        }
+        activeMixers.push(mixer);
+        group.userData.mixer = mixer;
+        group.userData.runClip = runClip;
+        group.userData.idleClip = idleClip;
+        group.userData.walkClip = walkClip;
+      }
+      group.userData.isGLB = true;
+    }
+  } else if (!SoldierModel.loaded) {
+    // Model still loading — swap when ready
+    SoldierModel.load(function(template) {
+      if (!template || !botRef || !botRef.mesh) return;
+      var g = botRef.mesh;
+      var glbInst = SoldierModel.createInstance(tc.accent);
+      if (!glbInst) return;
+      // Preserve name tag
+      var tag = null;
+      g.children.forEach(function(c) { if (c.isSprite) tag = c; });
+      while (g.children.length > 0) g.remove(g.children[0]);
+      g.add(glbInst);
+      if (tag) g.add(tag);
+      var mx = SoldierModel.createMixer(glbInst);
+      if (mx && SoldierModel.animations.clips) {
+        var defClip = SoldierModel.animations.clips.find(function(c) { return c.name.toLowerCase().indexOf('idle') !== -1; }) || SoldierModel.animations.clips[0];
+        if (defClip) mx.clipAction(defClip).play();
+        activeMixers.push(mx);
+        g.userData.mixer = mx;
+        g.userData.isGLB = true;
+        SoldierModel.animations.clips.forEach(function(clip) {
+          var n = clip.name.toLowerCase();
+          if (n.indexOf('run') !== -1) g.userData.runClip = clip;
+          if (n.indexOf('idle') !== -1) g.userData.idleClip = clip;
+          if (n.indexOf('walk') !== -1) g.userData.walkClip = clip;
+        });
+      }
+    });
+  }
+
+  botRef = {
     index: index,
     name: BOT_NAMES[index % BOT_NAMES.length],
     mesh: group,
@@ -2689,6 +2875,7 @@ function createBot(index) {
     deaths: 0,
     xp: Math.floor(Math.random() * 3000)
   };
+  return botRef;
 }
 
 function getRandomSpawn() {
@@ -5604,6 +5791,31 @@ gameLoop = function() {
 
   // ── Enemy HUD indicators (threat detection on screen edges) ────────────
   EnemyHUD.renderEnemyIndicators(camera, state.bots, dt);
+
+  // ── Update animation mixers (for GLB soldier models) ──────────────────
+  for (var mi = 0; mi < activeMixers.length; mi++) {
+    activeMixers[mi].update(dt);
+  }
+  // Switch bot animations based on movement state
+  state.bots.forEach(function(bot) {
+    if (!bot.mesh || !bot.mesh.userData.mixer || !bot.mesh.userData.isGLB) return;
+    var mixer = bot.mesh.userData.mixer;
+    var isMoving = bot.alive && bot.moveDir && bot.moveDir.length() > 0.1;
+    var runClip = bot.mesh.userData.runClip;
+    var idleClip = bot.mesh.userData.idleClip;
+    var walkClip = bot.mesh.userData.walkClip;
+    if (!bot.mesh.userData._currentAnim) bot.mesh.userData._currentAnim = 'idle';
+    var wantAnim = isMoving ? 'run' : 'idle';
+    if (wantAnim !== bot.mesh.userData._currentAnim) {
+      bot.mesh.userData._currentAnim = wantAnim;
+      var clip = wantAnim === 'run' ? (runClip || walkClip) : (idleClip || walkClip);
+      if (clip) {
+        mixer.stopAllAction();
+        var action = mixer.clipAction(clip);
+        action.reset().fadeIn(0.2).play();
+      }
+    }
+  });
 
   // ── Render remote players on minimap ────────────────────────────────────
   if (minimapCtx && MP.roomId) {
