@@ -181,7 +181,7 @@
       emoji: '\uD83C\uDFE0',
       color: '#00d4ff',
       welcome: 'Welcome to the VR Hub! This is your launchpad to all zones.',
-      prompts: ['What can I do here?', 'Take me to Events', 'Show me Weather', 'Focus mode', 'Simple mode', 'Explain all icons'],
+      prompts: ['What can I do here?', 'Take me to Events', 'Play FPS Arena', 'What games do you have?', 'Are my streamers online?', 'Simple mode'],
       icons: {
         'Events Portal': 'Opens the Toronto Events explorer with 1000+ events you can filter and browse',
         'Movies Portal': 'Enter the VR Movie Theater to watch trailers and browse movies/TV shows',
@@ -189,6 +189,8 @@
         'Weather Portal': 'Check Toronto weather with dynamic VR weather effects',
         'Stocks Portal': 'View stock market simulations and price trackers',
         'Wellness Portal': 'Enter the Wellness Garden for breathing exercises and habit tracking',
+        'Game Arena Portal': 'Play games! FPS Arena, Tic-Tac-Toe, Soccer Shootout, and Ant Rush AR',
+        'Ant Rush Portal': 'AR game — clean your space before the ants swarm!',
         'Tutorial Portal': 'Step-by-step guide to VR controls (look, click, move, teleport)',
         'Navigation Menu (M/Tab)': 'Opens the zone menu with music player and context actions',
         'AI Agent button': 'Opens this AI assistant panel for voice and text help'
@@ -856,6 +858,87 @@
       return showContextSummary();
     }
 
+    // ── Games — direct intent matching ──
+    if (lower.indexOf('fps') !== -1 || lower.indexOf('first person shooter') !== -1 || lower.indexOf('first-person shooter') !== -1 || lower.indexOf('shooting game') !== -1) {
+      addMessage('agent', '\uD83C\uDFAF <strong>FPS Arena</strong> — Our first-person shooter with 6 weapons, AI bots, ranked multiplayer, grenades, and more!<br><br><a href="/vr/game-arena/fps-arena.html" style="color:#ef4444;font-weight:700;">Click here to play FPS Arena</a>', true);
+      renderPrompts(['Take me there', 'What weapons are there?', 'Game Arena Hub']);
+      if (lower.indexOf('take me') !== -1 || lower.indexOf('go to') !== -1 || lower.indexOf('play') !== -1 || lower.indexOf('open') !== -1 || lower.indexOf('start') !== -1) {
+        setTimeout(function () { window.location.href = '/vr/game-arena/fps-arena.html'; }, 2000);
+      }
+      updateStatus('idle');
+      return;
+    }
+    if (lower.indexOf('fighting game') !== -1 || lower.indexOf('fight game') !== -1 || lower.indexOf('combat game') !== -1 || lower.indexOf('battle game') !== -1 || lower.indexOf('pvp') !== -1) {
+      addMessage('agent', '\u2694\uFE0F We have <strong>FPS Arena</strong> — a fast-paced first-person shooter with PvP multiplayer, 6 weapons, AI bots, and ranked tiers!<br><br><a href="/vr/game-arena/fps-arena.html" style="color:#ef4444;font-weight:700;">Play FPS Arena</a> &nbsp;|&nbsp; <a href="/vr/game-arena/" style="color:#a855f7;font-weight:700;">Browse all games</a>', true);
+      renderPrompts(['Take me to FPS Arena', 'Show all games', 'What games do you have?']);
+      updateStatus('idle');
+      return;
+    }
+    if (lower.indexOf('ant rush') !== -1 || lower.indexOf('antrush') !== -1 || lower.indexOf('ant game') !== -1 || lower.indexOf('cleaning game') !== -1) {
+      addMessage('agent', '\uD83D\uDC1C <strong>Ant Rush AR</strong> — Clean your space before the ants take over! Features Bed Challenge and Quick Mode with photo-based AR.<br><br><a href="/vr/ant-rush/" style="color:#ff6b35;font-weight:700;">Click here to play Ant Rush</a>', true);
+      renderPrompts(['Take me there', 'Game Arena Hub', 'What other games?']);
+      if (lower.indexOf('take me') !== -1 || lower.indexOf('go to') !== -1 || lower.indexOf('play') !== -1 || lower.indexOf('open') !== -1) {
+        setTimeout(function () { window.location.href = '/vr/ant-rush/'; }, 2000);
+      }
+      updateStatus('idle');
+      return;
+    }
+    if (lower.indexOf('tic tac toe') !== -1 || lower.indexOf('tictactoe') !== -1 || lower.indexOf('tic-tac-toe') !== -1 || lower.indexOf('noughts and crosses') !== -1) {
+      addMessage('agent', '\u274C\u2B55 <strong>Tic-Tac-Toe</strong> — Classic 3x3 strategy game with AI opponent!<br><br><a href="/vr/game-arena/tic-tac-toe.html" style="color:#6366f1;font-weight:700;">Click here to play</a>', true);
+      renderPrompts(['Take me there', 'Game Arena Hub', 'Other games']);
+      if (lower.indexOf('take me') !== -1 || lower.indexOf('go to') !== -1 || lower.indexOf('play') !== -1) {
+        setTimeout(function () { window.location.href = '/vr/game-arena/tic-tac-toe.html'; }, 2000);
+      }
+      updateStatus('idle');
+      return;
+    }
+    if (lower.indexOf('soccer') !== -1 || lower.indexOf('shootout') !== -1 || lower.indexOf('penalty') !== -1 || lower.indexOf('football game') !== -1) {
+      addMessage('agent', '\u26BD <strong>Soccer Shootout</strong> — Best of 3 penalty kicks!<br><br><a href="/vr/game-arena/soccer-shootout.html" style="color:#22c55e;font-weight:700;">Click here to play</a>', true);
+      renderPrompts(['Take me there', 'Game Arena Hub', 'Other games']);
+      if (lower.indexOf('take me') !== -1 || lower.indexOf('go to') !== -1 || lower.indexOf('play') !== -1) {
+        setTimeout(function () { window.location.href = '/vr/game-arena/soccer-shootout.html'; }, 2000);
+      }
+      updateStatus('idle');
+      return;
+    }
+    if ((lower.indexOf('what game') !== -1 || lower.indexOf('which game') !== -1 || lower.indexOf('list game') !== -1 || lower.indexOf('all game') !== -1 || lower.indexOf('show game') !== -1 || lower.indexOf('available game') !== -1) || (lower.indexOf('game') !== -1 && lower.indexOf('arena') !== -1 && lower.indexOf('go to') === -1 && lower.indexOf('take me') === -1)) {
+      addMessage('agent', '\uD83C\uDFAE <strong>Game Arena</strong> — We have 4 games:<br><br>\u2022 <a href="/vr/game-arena/fps-arena.html" style="color:#ef4444;font-weight:700;">\uD83C\uDFAF FPS Arena</a> — First-person shooter, 6 weapons, AI bots, PvP<br>\u2022 <a href="/vr/game-arena/tic-tac-toe.html" style="color:#6366f1;font-weight:700;">\u274C Tic-Tac-Toe</a> — Classic 3x3 strategy<br>\u2022 <a href="/vr/game-arena/soccer-shootout.html" style="color:#22c55e;font-weight:700;">\u26BD Soccer Shootout</a> — Best of 3 penalties<br>\u2022 <a href="/vr/ant-rush/" style="color:#ff6b35;font-weight:700;">\uD83D\uDC1C Ant Rush AR</a> — AR clean-up challenge<br><br>Or visit the <a href="/vr/game-arena/" style="color:#a855f7;font-weight:700;">Game Arena Hub</a> to browse in VR!', true);
+      renderPrompts(['Take me to FPS Arena', 'Take me to Ant Rush', 'Take me to Game Arena']);
+      updateStatus('idle');
+      return;
+    }
+
+    // ── Favourite creators / streamers check ──
+    if (lower.indexOf('favourite creator') !== -1 || lower.indexOf('favorite creator') !== -1 || lower.indexOf('fav creator') !== -1 ||
+        lower.indexOf('favourite streamer') !== -1 || lower.indexOf('favorite streamer') !== -1 || lower.indexOf('fav streamer') !== -1 ||
+        lower.indexOf('streamer') !== -1 && lower.indexOf('online') !== -1 ||
+        lower.indexOf('creator') !== -1 && lower.indexOf('online') !== -1 ||
+        lower.indexOf('is my') !== -1 && (lower.indexOf('stream') !== -1 || lower.indexOf('creator') !== -1 || lower.indexOf('live') !== -1) ||
+        lower.indexOf('check if') !== -1 && (lower.indexOf('stream') !== -1 || lower.indexOf('creator') !== -1 || lower.indexOf('live') !== -1 || lower.indexOf('online') !== -1) ||
+        lower.indexOf('who is live') !== -1 || lower.indexOf('who\'s live') !== -1 || lower.indexOf('whos live') !== -1 ||
+        lower.indexOf('favcreator') !== -1 || lower.indexOf('fav creator') !== -1) {
+      var user = getLoggedInUser();
+      var html = '\uD83D\uDCFA <strong>FavCreators</strong> lets you track when your favourite streamers and creators go live across Twitch, YouTube, Kick, and more!<br><br>';
+      if (user) {
+        html += 'You\'re logged in! You can:<br>\u2022 <a href="/vr/creators.html" style="color:#a855f7;font-weight:700;">Check live status in VR Creators Zone</a><br>\u2022 <a href="/fc/" style="color:#6366f1;font-weight:700;">Open FavCreators Dashboard</a><br>\u2022 Add/remove creators from your watchlist';
+        renderPrompts(['Go to Creators zone', 'Who is live?', 'Open FavCreators dashboard']);
+      } else {
+        html += 'To track your streamers, you\'ll need a free FavCreators account:<br><br><a href="/fc/" style="color:#6366f1;font-weight:700;font-size:1.1em;">\u2192 Open FavCreators (free sign-up)</a><br><br>Once signed up, add your favourite creators and you\'ll always know when they go live!';
+        renderPrompts(['Take me to FavCreators', 'Login', 'What is FavCreators?']);
+      }
+      addMessage('agent', html, true);
+      updateStatus('idle');
+      return;
+    }
+
+    // ── What is FavCreators ──
+    if (lower.indexOf('what is favcreator') !== -1 || lower.indexOf('what\'s favcreator') !== -1 || lower.indexOf('favcreators') !== -1 && lower.indexOf('what') !== -1) {
+      addMessage('agent', '\uD83D\uDC8E <strong>FavCreators</strong> is our free app that tracks your favourite streamers and content creators across multiple platforms (Twitch, YouTube, Kick, etc.).<br><br>\u2022 Get notified when they go live<br>\u2022 See who\'s streaming right now<br>\u2022 Track across Twitch, YouTube, Kick & more<br>\u2022 Works in VR and on desktop/mobile<br><br><a href="/fc/" style="color:#6366f1;font-weight:700;">\u2192 Open FavCreators</a>', true);
+      renderPrompts(['Take me to FavCreators', 'Who is live?', 'Login']);
+      updateStatus('idle');
+      return;
+    }
+
     // ── Navigation ──
     if (lower.indexOf('go to ') !== -1 || lower.indexOf('take me to ') !== -1 || lower.indexOf('navigate to ') !== -1) {
       return handleNavigation(lower);
@@ -979,16 +1062,25 @@
       'stock': '/vr/stocks-zone.html', 'stocks': '/vr/stocks-zone.html', 'trading': '/vr/stocks-zone.html',
       'weather': '/vr/weather-zone.html', 'forecast': '/vr/weather-zone.html',
       'wellness': '/vr/wellness/', 'garden': '/vr/wellness/', 'breathe': '/vr/wellness/',
-      'tutorial': '/vr/tutorial/'
+      'tutorial': '/vr/tutorial/',
+      'game arena': '/vr/game-arena/', 'games': '/vr/game-arena/', 'arena': '/vr/game-arena/',
+      'fps': '/vr/game-arena/fps-arena.html', 'first person shooter': '/vr/game-arena/fps-arena.html', 'shooter': '/vr/game-arena/fps-arena.html',
+      'tic tac toe': '/vr/game-arena/tic-tac-toe.html', 'tictactoe': '/vr/game-arena/tic-tac-toe.html',
+      'soccer': '/vr/game-arena/soccer-shootout.html', 'shootout': '/vr/game-arena/soccer-shootout.html',
+      'ant rush': '/vr/ant-rush/', 'antrush': '/vr/ant-rush/',
+      'favcreator': '/fc/', 'fav creator': '/fc/', 'favourite creator': '/fc/', 'favorite creator': '/fc/'
     };
     for (var key in zones) {
       if (lower.indexOf(key) !== -1) {
-        addMessage('agent', 'Taking you to <strong>' + key + '</strong>...', true);
-        setTimeout(function () { window.location.href = zones[key]; }, 1200);
+        var displayName = key.charAt(0).toUpperCase() + key.slice(1);
+        addMessage('agent', 'Taking you to <strong>' + displayName + '</strong>...', true);
+        var dest = zones[key];
+        setTimeout(function () { window.location.href = dest; }, 1200);
         return;
       }
     }
-    addMessage('agent', 'I couldn\'t find that zone. Available zones: Hub, Events, Movies, Creators, Stocks, Weather, Wellness, Tutorial.', true);
+    addMessage('agent', 'I couldn\'t find that zone. Try: Hub, Events, Movies, Creators, Stocks, Weather, Wellness, Tutorial, Game Arena, FPS Arena, Ant Rush, Soccer Shootout, Tic-Tac-Toe, or FavCreators.', true);
+    renderPrompts(['Show all games', 'Go to Hub', 'Help']);
     updateStatus('idle');
   }
 
