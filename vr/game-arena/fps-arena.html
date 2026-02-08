@@ -635,6 +635,93 @@
       opacity: 0; transition: opacity 0.02s;
     }
     #muzzle-flash-overlay.active { opacity: 1; }
+
+    /* ========== SETTINGS PANEL ========== */
+    #settings-panel {
+      position: fixed; inset: 0; z-index: 750;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
+      display: none; align-items: center; justify-content: center;
+    }
+    #settings-panel.active { display: flex; }
+    .settings-card {
+      background: rgba(15,15,35,0.95); border: 1.5px solid rgba(59,130,246,0.3);
+      border-radius: 20px; padding: 32px; min-width: 450px; max-width: 90vw;
+      max-height: 85vh; overflow-y: auto;
+    }
+    .settings-card h2 { text-align: center; margin-bottom: 20px; color: #3b82f6; }
+    .setting-group { margin-bottom: 20px; }
+    .setting-group .sg-title {
+      font-size: 12px; color: #64748b; text-transform: uppercase;
+      letter-spacing: 1px; margin-bottom: 10px; font-weight: 600;
+    }
+    .setting-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .setting-row .sr-label { font-size: 14px; color: #ccc; }
+    .setting-row .sr-value { font-size: 13px; color: #64748b; min-width: 40px; text-align: right; }
+    .setting-row input[type="range"] {
+      width: 150px; accent-color: #3b82f6; cursor: pointer;
+    }
+    .setting-row select {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+      color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 13px;
+    }
+    .crosshair-preview {
+      width: 60px; height: 60px; background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .crosshair-preview .cp-dot { width: 4px; height: 4px; border-radius: 50%; }
+    .crosshair-preview .cp-line { position: absolute; }
+    .crosshair-preview .cp-line.v { width: 2px; height: 10px; }
+    .crosshair-preview .cp-line.h { width: 10px; height: 2px; }
+    .crosshair-preview .cp-line.t { top: 10px; left: 50%; transform: translateX(-50%); }
+    .crosshair-preview .cp-line.b { bottom: 10px; left: 50%; transform: translateX(-50%); }
+    .crosshair-preview .cp-line.l { left: 10px; top: 50%; transform: translateY(-50%); }
+    .crosshair-preview .cp-line.r { right: 10px; top: 50%; transform: translateY(-50%); }
+
+    /* ========== CONTROLS HELP ========== */
+    #controls-help {
+      position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+      padding: 12px 20px; z-index: 95; pointer-events: none;
+      display: flex; gap: 16px; font-size: 11px; color: #64748b;
+      transition: opacity 1s;
+    }
+    .ctrl-item { display: flex; align-items: center; gap: 4px; }
+    .ctrl-key {
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px; padding: 2px 6px; font-size: 10px; color: #94a3b8;
+      font-weight: 600; font-family: monospace;
+    }
+
+    /* ========== WEAPON INSPECT ========== */
+    #weapon-inspect {
+      position: fixed; inset: 0; z-index: 95;
+      pointer-events: none; display: none;
+      align-items: center; justify-content: center;
+    }
+    #weapon-inspect.active { display: flex; }
+    .inspect-info {
+      position: absolute; bottom: 200px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 12px 20px; text-align: center;
+    }
+    .inspect-info .wi-name { font-size: 16px; font-weight: 700; color: #f97316; }
+    .inspect-info .wi-type { font-size: 11px; color: #64748b; }
+    .inspect-info .wi-skin { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+
+    /* ========== SLIDE INDICATOR ========== */
+    #slide-indicator {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.6); border: 1px solid rgba(99,102,241,0.3);
+      border-radius: 8px; padding: 4px 12px; z-index: 96;
+      font-size: 11px; color: #6366f1; font-weight: 600;
+      display: none; pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -777,6 +864,107 @@
 <!-- First person weapon viewport -->
 <div id="fp-weapon"><canvas id="fp-weapon-canvas" width="400" height="300"></canvas></div>
 
+<!-- Settings Panel -->
+<div id="settings-panel">
+  <div class="settings-card">
+    <h2>Settings</h2>
+    <div class="setting-group">
+      <div class="sg-title">Controls</div>
+      <div class="setting-row">
+        <span class="sr-label">Mouse Sensitivity</span>
+        <input type="range" min="1" max="20" value="10" id="set-sensitivity" oninput="updateSetting('sensitivity', this.value)">
+        <span class="sr-value" id="set-sensitivity-val">10</span>
+      </div>
+      <div class="setting-row">
+        <span class="sr-label">ADS Sensitivity Mult</span>
+        <input type="range" min="2" max="10" value="5" id="set-ads-sens" oninput="updateSetting('adsSens', this.value)">
+        <span class="sr-value" id="set-ads-sens-val">0.5</span>
+      </div>
+    </div>
+    <div class="setting-group">
+      <div class="sg-title">Audio</div>
+      <div class="setting-row">
+        <span class="sr-label">Master Volume</span>
+        <input type="range" min="0" max="100" value="40" id="set-volume" oninput="updateSetting('volume', this.value)">
+        <span class="sr-value" id="set-volume-val">40%</span>
+      </div>
+    </div>
+    <div class="setting-group">
+      <div class="sg-title">Crosshair</div>
+      <div class="setting-row">
+        <span class="sr-label">Color</span>
+        <select id="set-crosshair-color" onchange="updateSetting('crosshairColor', this.value)">
+          <option value="rgba(255,255,255,0.7)">White</option>
+          <option value="rgba(0,255,0,0.8)">Green</option>
+          <option value="rgba(255,0,0,0.8)">Red</option>
+          <option value="rgba(0,200,255,0.8)">Cyan</option>
+          <option value="rgba(255,255,0,0.8)">Yellow</option>
+          <option value="rgba(255,100,200,0.8)">Pink</option>
+        </select>
+        <div class="crosshair-preview" id="crosshair-preview">
+          <div class="cp-dot" style="background:rgba(255,255,255,0.7)"></div>
+          <div class="cp-line v t" style="background:rgba(255,255,255,0.7)"></div>
+          <div class="cp-line v b" style="background:rgba(255,255,255,0.7)"></div>
+          <div class="cp-line h l" style="background:rgba(255,255,255,0.7)"></div>
+          <div class="cp-line h r" style="background:rgba(255,255,255,0.7)"></div>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span class="sr-label">Crosshair Size</span>
+        <input type="range" min="1" max="20" value="10" id="set-crosshair-size" oninput="updateSetting('crosshairSize', this.value)">
+        <span class="sr-value" id="set-crosshair-size-val">10</span>
+      </div>
+    </div>
+    <div class="setting-group">
+      <div class="sg-title">Display</div>
+      <div class="setting-row">
+        <span class="sr-label">Field of View</span>
+        <input type="range" min="60" max="110" value="75" id="set-fov" oninput="updateSetting('fov', this.value)">
+        <span class="sr-value" id="set-fov-val">75</span>
+      </div>
+      <div class="setting-row">
+        <span class="sr-label">Head Bob</span>
+        <select id="set-headbob" onchange="updateSetting('headbob', this.value)">
+          <option value="1">On</option>
+          <option value="0">Off</option>
+        </select>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:20px;">
+      <button class="pause-btn resume" onclick="closeSettings()">Save &amp; Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Controls Help Overlay (shown at match start, fades after 8 seconds) -->
+<div id="controls-help">
+  <div class="ctrl-item"><span class="ctrl-key">WASD</span> Move</div>
+  <div class="ctrl-item"><span class="ctrl-key">MOUSE</span> Aim</div>
+  <div class="ctrl-item"><span class="ctrl-key">LMB</span> Shoot</div>
+  <div class="ctrl-item"><span class="ctrl-key">RMB</span> ADS</div>
+  <div class="ctrl-item"><span class="ctrl-key">R</span> Reload</div>
+  <div class="ctrl-item"><span class="ctrl-key">G</span> Grenade</div>
+  <div class="ctrl-item"><span class="ctrl-key">SHIFT</span> Sprint</div>
+  <div class="ctrl-item"><span class="ctrl-key">CTRL</span> Crouch</div>
+  <div class="ctrl-item"><span class="ctrl-key">SPACE</span> Jump</div>
+  <div class="ctrl-item"><span class="ctrl-key">TAB</span> Score</div>
+  <div class="ctrl-item"><span class="ctrl-key">Q</span> Weapons</div>
+  <div class="ctrl-item"><span class="ctrl-key">F</span> Inspect</div>
+  <div class="ctrl-item"><span class="ctrl-key">ESC</span> Pause</div>
+</div>
+
+<!-- Weapon Inspect Overlay -->
+<div id="weapon-inspect">
+  <div class="inspect-info">
+    <div class="wi-name" id="inspect-name">M4 Carbine</div>
+    <div class="wi-type" id="inspect-type">Assault Rifle</div>
+    <div class="wi-skin" id="inspect-skin">Skin: Default</div>
+  </div>
+</div>
+
+<!-- Slide Indicator -->
+<div id="slide-indicator">SLIDING</div>
+
 <!-- ========== WEAPON WHEEL ========== -->
 <div id="weapon-wheel">
   <div class="weapon-wheel-ring" id="weapon-ring"></div>
@@ -795,6 +983,7 @@
     <button class="pause-btn resume" onclick="resumeGame()">Resume</button>
     <button class="pause-btn" onclick="showCustomize()">Customize Weapons</button>
     <button class="pause-btn" onclick="showHighscores()">High Scores &amp; Ranks</button>
+    <button class="pause-btn" onclick="showSettings()">Settings</button>
     <button class="pause-btn" onclick="restartMatch()">New Match</button>
     <button class="pause-btn" onclick="window.location.href='/vr/game-arena/'">Exit to Game Arena</button>
   </div>
@@ -1823,7 +2012,11 @@ function initGame() {
       AudioSys.playAmbient();
     });
 
+    // Load settings
+    loadSettings();
+
     showStreakBanner('MATCH START', '#ef4444', 'Eliminate all enemies!');
+    showControlsHelp();
     gameLoop();
   }, 800);
 }
@@ -2162,6 +2355,14 @@ function setupInput() {
       e.preventDefault();
       showTabScoreboard();
     }
+
+    // Weapon inspect
+    if (e.code === 'KeyF' && !state.reloading) startWeaponInspect();
+
+    // Slide: Sprint + Crouch
+    if ((e.code === 'ControlLeft' || e.code === 'KeyC') && state.sprinting && state.onGround && !state.sliding) {
+      startSlide();
+    }
   });
 
   document.addEventListener('keyup', function(e) {
@@ -2307,6 +2508,145 @@ function throwGrenade() {
 // ─── SCREEN SHAKE ───────────────────────────────────────────────────────────
 function addScreenShake(amount) {
   state.screenShake = Math.min(state.screenShake + amount, 1);
+}
+
+// ─── SETTINGS SYSTEM ────────────────────────────────────────────────────────
+var gameSettings = {
+  sensitivity: 10,
+  adsSens: 5,
+  volume: 40,
+  crosshairColor: 'rgba(255,255,255,0.7)',
+  crosshairSize: 10,
+  fov: 75,
+  headbob: true
+};
+
+function loadSettings() {
+  try {
+    var s = JSON.parse(localStorage.getItem('fps_settings'));
+    if (s) Object.assign(gameSettings, s);
+  } catch(e) {}
+  applySettings();
+}
+
+function saveSettings() {
+  try { localStorage.setItem('fps_settings', JSON.stringify(gameSettings)); } catch(e) {}
+}
+
+function applySettings() {
+  state.mouseSensitivity = gameSettings.sensitivity * 0.0002;
+  state.baseFov = gameSettings.fov;
+  state.targetFov = gameSettings.fov;
+  if (AudioSys.masterGain) AudioSys.masterGain.gain.value = gameSettings.volume / 100;
+}
+
+window.updateSetting = function(key, value) {
+  switch(key) {
+    case 'sensitivity':
+      gameSettings.sensitivity = parseInt(value);
+      document.getElementById('set-sensitivity-val').textContent = value;
+      state.mouseSensitivity = gameSettings.sensitivity * 0.0002;
+      break;
+    case 'adsSens':
+      gameSettings.adsSens = parseInt(value);
+      document.getElementById('set-ads-sens-val').textContent = (value / 10).toFixed(1);
+      break;
+    case 'volume':
+      gameSettings.volume = parseInt(value);
+      document.getElementById('set-volume-val').textContent = value + '%';
+      if (AudioSys.masterGain) AudioSys.masterGain.gain.value = value / 100;
+      break;
+    case 'crosshairColor':
+      gameSettings.crosshairColor = value;
+      var preview = document.getElementById('crosshair-preview');
+      preview.querySelectorAll('.cp-dot, .cp-line').forEach(function(el) { el.style.background = value; });
+      break;
+    case 'crosshairSize':
+      gameSettings.crosshairSize = parseInt(value);
+      document.getElementById('set-crosshair-size-val').textContent = value;
+      break;
+    case 'fov':
+      gameSettings.fov = parseInt(value);
+      document.getElementById('set-fov-val').textContent = value;
+      state.baseFov = gameSettings.fov;
+      break;
+    case 'headbob':
+      gameSettings.headbob = value === '1';
+      break;
+  }
+  saveSettings();
+};
+
+window.showSettings = function() {
+  document.getElementById('settings-panel').classList.add('active');
+  // Populate current values
+  document.getElementById('set-sensitivity').value = gameSettings.sensitivity;
+  document.getElementById('set-sensitivity-val').textContent = gameSettings.sensitivity;
+  document.getElementById('set-volume').value = gameSettings.volume;
+  document.getElementById('set-volume-val').textContent = gameSettings.volume + '%';
+  document.getElementById('set-fov').value = gameSettings.fov;
+  document.getElementById('set-fov-val').textContent = gameSettings.fov;
+};
+
+window.closeSettings = function() {
+  document.getElementById('settings-panel').classList.remove('active');
+  saveSettings();
+};
+
+// ─── WEAPON INSPECT ─────────────────────────────────────────────────────────
+var inspecting = false;
+
+function startWeaponInspect() {
+  if (inspecting || state.reloading) return;
+  inspecting = true;
+  var w = WEAPONS[state.currentWeapon];
+  var skinIdx = state.weaponSkins[w.id] || 0;
+  var skinName = w.skins[skinIdx] ? w.skins[skinIdx].name : 'Default';
+
+  document.getElementById('inspect-name').textContent = w.name;
+  document.getElementById('inspect-type').textContent = w.type + ' | DMG: ' + w.damage + ' | Range: ' + w.range;
+  document.getElementById('inspect-skin').textContent = 'Skin: ' + skinName;
+  document.getElementById('weapon-inspect').classList.add('active');
+
+  // Animate the FP weapon (spin it)
+  var fpEl = document.getElementById('fp-weapon');
+  fpEl.style.transition = 'transform 2s ease-in-out';
+  fpEl.style.transform = 'rotateY(360deg) translateY(-20px)';
+
+  setTimeout(function() {
+    fpEl.style.transition = 'transform 0.5s ease';
+    fpEl.style.transform = '';
+    document.getElementById('weapon-inspect').classList.remove('active');
+    inspecting = false;
+  }, 2000);
+}
+
+// ─── SLIDE MECHANIC ─────────────────────────────────────────────────────────
+state.sliding = false;
+state.slideTimer = 0;
+state.slideDir = new THREE.Vector3();
+
+function startSlide() {
+  if (state.sliding || !state.onGround) return;
+  state.sliding = true;
+  state.slideTimer = 0.6; // 0.6 second slide
+  state.crouching = true;
+  // Slide direction = current facing direction
+  state.slideDir = new THREE.Vector3(0, 0, -1);
+  state.slideDir.applyEuler(new THREE.Euler(0, state.yaw, 0));
+  state.slideDir.normalize();
+  document.getElementById('slide-indicator').style.display = 'block';
+}
+
+// ─── CONTROLS HELP ──────────────────────────────────────────────────────────
+function showControlsHelp() {
+  var el = document.getElementById('controls-help');
+  el.style.display = 'flex';
+  el.style.opacity = '1';
+  setTimeout(function() {
+    el.style.opacity = '0';
+    setTimeout(function() { el.style.display = 'none'; }, 1000);
+  }, 8000);
 }
 
 // ─── WEAPON SYSTEM ──────────────────────────────────────────────────────────
@@ -2827,6 +3167,29 @@ function gameLoop() {
 // ─── PLAYER MOVEMENT ────────────────────────────────────────────────────────
 function updatePlayerMovement(dt) {
   if (state.health <= 0) return;
+
+  // Slide update
+  if (state.sliding) {
+    state.slideTimer -= dt;
+    if (state.slideTimer <= 0) {
+      state.sliding = false;
+      state.crouching = false;
+      document.getElementById('slide-indicator').style.display = 'none';
+    } else {
+      // Apply slide velocity
+      var slideSpeed = PLAYER_SPEED * 2.2 * (state.slideTimer / 0.6);
+      camera.position.x += state.slideDir.x * slideSpeed * dt;
+      camera.position.z += state.slideDir.z * slideSpeed * dt;
+      // Clamp
+      var half = ARENA_SIZE / 2 - 0.5;
+      camera.position.x = Math.max(-half, Math.min(half, camera.position.x));
+      camera.position.z = Math.max(-half, Math.min(half, camera.position.z));
+      // Low camera
+      var slideHeight = PLAYER_HEIGHT - 0.8;
+      if (camera.position.y > slideHeight) camera.position.y = slideHeight;
+      return; // Skip normal movement during slide
+    }
+  }
 
   // Speed modifiers
   var speed = PLAYER_SPEED;
@@ -4667,9 +5030,9 @@ gameLoop = function() {
   state.weaponSwayX *= 0.9;
   state.weaponSwayY *= 0.9;
 
-  // Head bob while moving
+  // Head bob while moving (respects settings)
   var isMoving = state.keys['KeyW'] || state.keys['KeyS'] || state.keys['KeyA'] || state.keys['KeyD'];
-  if (isMoving && state.onGround && state.health > 0) {
+  if (isMoving && state.onGround && state.health > 0 && gameSettings.headbob) {
     var bobSpeed = state.sprinting ? 14 : 8;
     state.headBobTimer += dt * bobSpeed;
     state.headBobAmount = Math.min(state.headBobAmount + dt * 2, state.sprinting ? 0.8 : 0.4);
@@ -4804,8 +5167,8 @@ function updateDynamicCrosshair() {
   if (state.ads) spread -= 5;
   spread = Math.max(0, spread);
 
-  // Color based on state
-  var color = 'rgba(255,255,255,0.7)';
+  // Color based on state and settings
+  var color = gameSettings.crosshairColor || 'rgba(255,255,255,0.7)';
   if (state.ads) color = 'rgba(255,100,100,0.9)';
 
   lines.forEach(function(line) {
