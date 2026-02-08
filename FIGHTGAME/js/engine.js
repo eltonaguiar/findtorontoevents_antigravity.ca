@@ -30,24 +30,29 @@ function InputManager() {
 }
 
 InputManager.prototype.update = function() {
-    // Copy current keys to prev for just-pressed detection
-    var k;
-    for (k in this.keys) {
-        this.prevKeys[k] = this.keys[k];
-    }
-    // Poll gamepads
+    // Poll gamepads (must happen at start of frame so button states are current)
     var rawPads = navigator.getGamepads ? navigator.getGamepads() : [];
     this.gamepads = [];
     for (var i = 0; i < rawPads.length; i++) {
         if (rawPads[i]) this.gamepads.push(rawPads[i]);
     }
-    // Store prev button states
+};
+
+// Called at END of frame — snapshots current state into prev for next frame's just-pressed detection.
+// If prev is updated at the start of the frame (before input is read), async keydown events
+// that fired between frames cause keys and prevKeys to be identical, breaking isKeyJustPressed.
+InputManager.prototype.postUpdate = function() {
+    var k;
+    for (k in this.keys) {
+        this.prevKeys[k] = this.keys[k];
+    }
     for (var g = 0; g < this.gamepads.length; g++) {
-        var padId = g;
-        if (!this.prevGamepadButtons[padId]) this.prevGamepadButtons[padId] = {};
+        if (!this.prevGamepadButtons[g]) this.prevGamepadButtons[g] = {};
         var pad = this.gamepads[g];
-        for (var b = 0; b < pad.buttons.length; b++) {
-            this.prevGamepadButtons[padId][b] = pad.buttons[b].pressed;
+        if (pad) {
+            for (var b = 0; b < pad.buttons.length; b++) {
+                this.prevGamepadButtons[g][b] = pad.buttons[b].pressed;
+            }
         }
     }
 };
@@ -1711,6 +1716,7 @@ GameEngine.prototype.start = function() {
         self.lastTime = timestamp;
         self.gameTime += dt;
         self.update(dt);
+        self.input.postUpdate(); // snapshot keys/buttons for next frame's just-pressed detection
         self.render();
         requestAnimationFrame(loop);
     }
