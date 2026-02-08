@@ -245,6 +245,26 @@ var App = {
         this._pollGamepads();
 
         OnlineManager.init();
+
+        // Audio init (lazy — unlocked on first user gesture)
+        if (window.GameAudio) {
+            GameAudio.init();
+            // Load saved volume prefs
+            var savedData = ScoreManager.load();
+            if (savedData.settings) {
+                GameAudio.setSfxVolume(savedData.settings.sfxVolume !== undefined ? savedData.settings.sfxVolume : 0.45);
+                GameAudio.setMusicVolume(savedData.settings.musicVolume !== undefined ? savedData.settings.musicVolume : 0.18);
+            }
+            // Resume context on first interaction
+            var resumeOnce = function() {
+                GameAudio.ensureResumed();
+                GameAudio.startMusic('menu');
+                document.removeEventListener('click', resumeOnce);
+                document.removeEventListener('keydown', resumeOnce);
+            };
+            document.addEventListener('click', resumeOnce);
+            document.addEventListener('keydown', resumeOnce);
+        }
     },
 
     _resizeCanvas: function() {
@@ -271,6 +291,15 @@ var App = {
         }
         if (this.screens[screenId]) {
             this.screens[screenId].classList.add('active');
+        }
+
+        // Music transitions
+        if (window.GameAudio) {
+            if (screenId === 'title-screen' || screenId === 'mode-screen') {
+                GameAudio.startMusic('menu');
+            } else if (screenId === 'results-screen') {
+                GameAudio.stopMusic();
+            }
         }
         this.currentScreen = screenId;
 
@@ -384,6 +413,14 @@ var App = {
         this._bindBtn('btn-controls-toggle', function() { self._toggleControlsOverlay(); });
         this._bindBtn('btn-overlay-close', function() { self._toggleControlsOverlay(false); });
 
+        // Sound toggle button
+        var soundBtn = document.getElementById('btn-sound-toggle');
+        if (soundBtn) {
+            soundBtn.addEventListener('click', function() {
+                self._toggleSound();
+            });
+        }
+
         // Click outside overlay content to close
         var overlay = document.getElementById('controls-overlay');
         if (overlay) {
@@ -400,6 +437,11 @@ var App = {
             if (e.code === 'F1') {
                 e.preventDefault();
                 self._toggleControlsOverlay();
+                return;
+            }
+            // M = mute/unmute
+            if (e.code === 'KeyM' && !e.ctrlKey && !e.altKey) {
+                self._toggleSound();
                 return;
             }
             if (e.code === 'Enter' || e.code === 'NumpadEnter') {
@@ -428,6 +470,22 @@ var App = {
         window.addEventListener('gamepaddisconnected', function() {
             self._updateGamepadStatus();
         });
+    },
+
+    _toggleSound: function() {
+        if (!window.GameAudio) return;
+        var muted = GameAudio.toggleMute();
+        var soundBtn = document.getElementById('btn-sound-toggle');
+        var icon = document.getElementById('sound-icon');
+        if (soundBtn) {
+            if (muted) {
+                soundBtn.classList.add('muted');
+                if (icon) icon.innerHTML = '&#x1F507;'; // muted speaker
+            } else {
+                soundBtn.classList.remove('muted');
+                if (icon) icon.innerHTML = '&#x1F50A;'; // speaker
+            }
+        }
     },
 
     _controlsOverlayVisible: false,
@@ -464,7 +522,10 @@ var App = {
 
     _bindBtn: function(id, handler) {
         var el = document.getElementById(id);
-        if (el) el.addEventListener('click', handler);
+        if (el) el.addEventListener('click', function(e) {
+            if (window.GameAudio) GameAudio.sfx.uiClick();
+            handler(e);
+        });
     },
 
     // === CHARACTER SELECT ===

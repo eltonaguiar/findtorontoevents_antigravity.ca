@@ -376,6 +376,13 @@ Fighter.prototype.startAttack = function(type) {
     this._attackActive = active / CONFIG.FPS;
     this._attackRecovery = recovery / CONFIG.FPS;
     this.stateTime = 0;
+
+    // Attack whoosh SFX
+    if (window.GameAudio) {
+        if (type === 'light') GameAudio.sfx.lightAttack();
+        else if (type === 'heavy') GameAudio.sfx.heavyAttack();
+        else if (type === 'special') GameAudio.sfx.specialAttack();
+    }
 };
 
 Fighter.prototype.takeDamage = function(amount, knockbackX, knockbackY, attacker) {
@@ -395,11 +402,16 @@ Fighter.prototype.takeDamage = function(amount, knockbackX, knockbackY, attacker
     if (blocked) {
         this.blockStun = 0.2;
         this.knockbackX = knockbackX * 0.3;
+        if (window.GameAudio) GameAudio.sfx.block();
     } else {
         this.hitStun = 0.3;
         this.knockbackX = knockbackX;
         this.knockbackY = knockbackY;
         this.velY = knockbackY;
+        // CRITICAL: mark as airborne so gravity applies during launch
+        if (knockbackY < 0) {
+            this.grounded = false;
+        }
         this.state = 'hit';
         this.stateTime = 0;
         this.attackPhase = 'none';
@@ -408,10 +420,14 @@ Fighter.prototype.takeDamage = function(amount, knockbackX, knockbackY, attacker
     }
 
     // Special meter gain
+    var prevMeter = this.specialMeter;
     this.specialMeter = Math.min(CONFIG.SPECIAL_METER_MAX, this.specialMeter + CONFIG.METER_GAIN_TAKE);
     if (attacker) {
+        var aPrev = attacker.specialMeter;
         attacker.specialMeter = Math.min(CONFIG.SPECIAL_METER_MAX, attacker.specialMeter + CONFIG.METER_GAIN_DEAL);
+        if (aPrev < 50 && attacker.specialMeter >= 50 && window.GameAudio) GameAudio.sfx.meterFull();
     }
+    if (prevMeter < 50 && this.specialMeter >= 50 && window.GameAudio) GameAudio.sfx.meterFull();
 
     // Drake rage check
     if (this.character.rageMode && this.health < 30) {
@@ -423,6 +439,7 @@ Fighter.prototype.takeDamage = function(amount, knockbackX, knockbackY, attacker
         this.state = 'ko';
         this.stateTime = 0;
         this.velY = -300;
+        this.grounded = false;
     }
 };
 
@@ -470,6 +487,7 @@ Fighter.prototype.update = function(dt, input) {
     if (this.isKO) {
         this.velY += CONFIG.GRAVITY * dt;
         this.y += this.velY * dt;
+        this._applyBounds();
         if (this.y >= CONFIG.GROUND_Y) {
             this.y = CONFIG.GROUND_Y;
             this.velY = 0;
@@ -569,6 +587,7 @@ Fighter.prototype.update = function(dt, input) {
             this.dashDir = this.facingRight ? 1 : -1;
             if (input.left) this.dashDir = -1;
             if (input.right) this.dashDir = 1;
+            if (window.GameAudio) GameAudio.sfx.dash();
             return;
         }
 
@@ -625,9 +644,11 @@ Fighter.prototype.update = function(dt, input) {
             this.grounded = false;
             this.state = 'jump';
             this.usedDoubleJump = false;
+            if (window.GameAudio) GameAudio.sfx.jump();
         } else if (input.up && !this.grounded && this.canDoubleJump && !this.usedDoubleJump) {
             this.velY = CONFIG.DOUBLE_JUMP_FORCE * this.character.jumpForce;
             this.usedDoubleJump = true;
+            if (window.GameAudio) GameAudio.sfx.jump();
         }
 
         if (!this.grounded) this.state = 'jump';
@@ -648,6 +669,7 @@ Fighter.prototype._applyPhysics = function(dt) {
     this.y += this.velY * dt;
 
     // Ground collision
+    var wasAirborne = !this.grounded;
     if (this.y >= CONFIG.GROUND_Y) {
         this.y = CONFIG.GROUND_Y;
         this.velY = 0;
@@ -656,6 +678,7 @@ Fighter.prototype._applyPhysics = function(dt) {
         if (this.state === 'jump' || this.state === 'hit') {
             this.state = 'idle';
         }
+        if (wasAirborne && window.GameAudio) GameAudio.sfx.land();
     }
 
     this._applyBounds();
@@ -667,6 +690,12 @@ Fighter.prototype._applyBounds = function() {
     }
     if (this.x > CONFIG.STAGE_RIGHT - this.width / 2) {
         this.x = CONFIG.STAGE_RIGHT - this.width / 2;
+    }
+    // Prevent flying off the top of the screen
+    var minY = -50; // small buffer above visible canvas
+    if (this.y < minY) {
+        this.y = minY;
+        if (this.velY < 0) this.velY = 0; // stop upward velocity
     }
 };
 
@@ -1759,6 +1788,7 @@ GameEngine.prototype.update = function(dt) {
 
     switch (this.gameState) {
         case 'countdown':
+            var prevText = this.countdownText;
             this.countdownTimer -= dt;
             if (this.countdownTimer > 2) this.countdownText = '3';
             else if (this.countdownTimer > 1) this.countdownText = '2';
@@ -1767,7 +1797,13 @@ GameEngine.prototype.update = function(dt) {
                 this.countdownText = 'FIGHT!';
                 if (this.countdownTimer < -0.5) {
                     this.gameState = 'fighting';
+                    if (window.GameAudio) GameAudio.startMusic('fight');
                 }
+            }
+            // Play countdown beep on text change
+            if (window.GameAudio && this.countdownText !== prevText) {
+                if (this.countdownText === 'FIGHT!') GameAudio.sfx.roundStart();
+                else GameAudio.sfx.countdown(parseInt(this.countdownText));
             }
             break;
 
@@ -1822,6 +1858,10 @@ GameEngine.prototype.update = function(dt) {
                 // Check match end
                 if (this.p1Wins >= CONFIG.ROUNDS_TO_WIN || this.p2Wins >= CONFIG.ROUNDS_TO_WIN) {
                     this.gameState = 'match_end';
+                    if (window.GameAudio) {
+                        GameAudio.stopMusic();
+                        GameAudio.sfx.matchEnd();
+                    }
                     if (this.onMatchEnd) {
                         var winner = this.p1Wins >= CONFIG.ROUNDS_TO_WIN ? 1 : 2;
                         this.onMatchEnd(winner, this.matchStats);
@@ -1920,6 +1960,18 @@ GameEngine.prototype._checkAttackCollisions = function(attacker, defender) {
 
         defender.takeDamage(damage, kbX, kbY, attacker);
 
+        // Hit SFX
+        if (window.GameAudio) {
+            if (type === 'special') GameAudio.sfx.specialHit();
+            else if (type === 'heavy') GameAudio.sfx.heavyHit();
+            else if (type === 'grab') GameAudio.sfx.grabHit();
+            else GameAudio.sfx.lightHit();
+            // KO boom
+            if (defender.health <= 0) {
+                setTimeout(function() { GameAudio.sfx.ko(); }, 100);
+            }
+        }
+
         // Effects — premium impact
         var isHeavyHit = type === 'heavy' || type === 'special';
         var isCritCombo = attacker.comboCount >= 5;
@@ -1969,6 +2021,7 @@ GameEngine.prototype._checkAttackCollisions = function(attacker, defender) {
 GameEngine.prototype._endRound = function() {
     this.gameState = 'round_end';
     this.roundEndTimer = 2.5;
+    if (window.GameAudio) GameAudio.sfx.roundEnd();
 
     var winner;
     if (this.fighter1.isKO) {
