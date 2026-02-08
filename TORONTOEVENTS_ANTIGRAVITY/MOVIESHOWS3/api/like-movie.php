@@ -6,13 +6,13 @@ header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(204);
+    header('HTTP/1.0 204 No Content');
     exit;
 }
 
 // Check if user is logged in
 if (!isset($_SESSION['user'])) {
-    http_response_code(401);
+    header('HTTP/1.0 401 Unauthorized');
     echo json_encode(array('error' => 'Not authenticated'));
     exit;
 }

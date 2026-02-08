@@ -173,16 +173,19 @@
                         <div class="control-row"><span>Pause</span><span class="control-key">Start</span></div>
                     </div>
                     <div class="controls-section">
-                        <h3>QUICK TIPS</h3>
+                        <h3>COMBO & DEFENSE</h3>
                         <div style="font-size:13px;color:#999;line-height:1.7;">
-                            <p>Chain light &rarr; heavy for combos</p>
-                            <p>Special needs 50%+ meter</p>
-                            <p>Block reduces damage 85%</p>
-                            <p>Grabs beat blocking!</p>
-                            <p>Taunt builds meter (risky)</p>
+                            <p><b style="color:#44bbff">Chain:</b> Light &rarr; Heavy &rarr; Special</p>
+                            <p><b style="color:#ffaa00">Launcher:</b> Fwd + Heavy (air combo!)</p>
+                            <p><b style="color:#ffaa00">Sweep:</b> Down + Heavy (low hit)</p>
+                            <p><b style="color:#ff4444">Super:</b> RT / 2 bars meter</p>
+                            <p><b style="color:#9b59b6">Counter-Hit:</b> Hit during startup = 1.5x</p>
+                            <p><b style="color:#22dd66">Alpha Counter:</b> Special in blockstun (1 bar)</p>
+                            <p><b style="color:#ff4444">Burst:</b> Grab in hitstun (3 bars)</p>
+                            <p>Walk forward builds meter!</p>
                         </div>
-                        <div style="margin-top:12px;padding-top:10px;border-top:1px solid #333;font-size:12px;color:#666;">
-                            <p>F1 or ? button &mdash; toggle this overlay</p>
+                        <div style="margin-top:8px;padding-top:8px;border-top:1px solid #333;font-size:12px;color:#666;">
+                            <p>F1 or ? button &mdash; toggle overlay</p>
                             <p>ESC &mdash; quit to main menu</p>
                         </div>
                     </div>
@@ -265,17 +268,27 @@
             <div class="control-row"><span>Pause</span><span class="control-key">Start</span></div>
         </div>
         <div class="controls-section">
-            <h3>TIPS</h3>
+            <h3>COMBO SYSTEM</h3>
             <div style="font-size:14px;color:#888;line-height:1.8;">
-                <p>• Chain light attacks into heavy for combos</p>
-                <p>• Build your Special Meter by attacking and getting hit</p>
-                <p>• Press Special when meter is 50%+ for your signature move</p>
-                <p>• Block by holding back + block button — reduces damage 85%</p>
-                <p>• Grabs beat blocking — they're unblockable!</p>
-                <p>• Dash to quickly close distance or escape</p>
-                <p>• Taunt to slowly build Special Meter (risky!)</p>
-                <p>• On Meta Quest, pair an Xbox controller via Bluetooth</p>
-                <p>• Two controllers = local versus mode!</p>
+                <p><span style="color:#44bbff;">■</span> <b>Chain Combos:</b> Light → Heavy → Special</p>
+                <p><span style="color:#ffaa00;">■</span> <b>Launcher:</b> Forward + Heavy (sends them airborne)</p>
+                <p><span style="color:#ffaa00;">■</span> <b>Sweep:</b> Down + Heavy (low knockdown)</p>
+                <p><span style="color:#ff4444;">■</span> <b>Super:</b> RT / costs 2 bars for massive damage</p>
+                <p><span style="color:#9b59b6;">■</span> <b>Counter-Hit:</b> Hitting during startup = 1.5x damage!</p>
+            </div>
+        </div>
+        <div class="controls-section">
+            <h3>METER & DEFENSE</h3>
+            <div style="font-size:14px;color:#888;line-height:1.8;">
+                <p><span style="color:#22dd66;">■</span> <b>3-Bar Meter:</b> Builds by attacking, getting hit, walking forward</p>
+                <p><span style="color:#22dd66;">■</span> <b>Special:</b> Costs ½ bar (EX move)</p>
+                <p><span style="color:#ffaa00;">■</span> <b>Alpha Counter:</b> Special during blockstun (1 bar)</p>
+                <p><span style="color:#ff4444;">■</span> <b>Burst:</b> Grab during hitstun (3 bars — escape combos)</p>
+                <p><span style="color:#44bbff;">■</span> <b>Auto-Block:</b> Walking backward blocks automatically</p>
+                <p><span style="color:#ff4444;">■</span> <b>Guard Crush:</b> Block too many hits → stunned!</p>
+                <p>• Grabs beat blocking — unblockable!</p>
+                <p>• Taunt builds meter but leaves you open</p>
+                <p>• Walk forward to build meter (reward aggression)</p>
             </div>
         </div>
     </div>
@@ -287,17 +300,47 @@
 <!-- ===== ONLINE LOBBY ===== -->
 <div id="online-lobby-screen" class="screen">
     <h2 class="select-header">ONLINE BATTLE</h2>
-    <div class="online-content">
-        <p style="color:#888;margin-bottom:20px;">Create a room or join with a code to fight online.</p>
-        <button id="btn-create-room" class="btn btn-primary" style="margin-bottom:20px;">CREATE ROOM</button>
-        <div style="color:#555;margin:10px 0;">— OR —</div>
-        <input id="room-code-input" type="text" maxlength="6" placeholder="ROOM CODE" autocomplete="off">
-        <br>
-        <button id="btn-join-room" class="btn btn-gold" style="margin-top:10px;">JOIN ROOM</button>
-        <div id="online-status"></div>
-        <div class="nav-buttons">
-            <button id="btn-online-back" class="btn btn-small">BACK</button>
+    <div class="online-lobby-layout">
+        <div class="online-content">
+            <div class="fighter-name-row">
+                <label for="fighter-name-input">YOUR FIGHTER NAME</label>
+                <input id="fighter-name-input" type="text" maxlength="20" placeholder="Fighter_0000" autocomplete="off">
+            </div>
+            <p style="color:#888;margin-bottom:20px;">Create a room or join with a code to fight online.</p>
+            <button id="btn-create-room" class="btn btn-primary" style="margin-bottom:20px;">CREATE ROOM</button>
+            <div style="color:#555;margin:10px 0;">— OR —</div>
+            <input id="room-code-input" type="text" maxlength="6" placeholder="ROOM CODE" autocomplete="off">
+            <br>
+            <button id="btn-join-room" class="btn btn-gold" style="margin-top:10px;">JOIN ROOM</button>
+            <div id="online-status"></div>
+            <div class="nav-buttons">
+                <button id="btn-online-back" class="btn btn-small">BACK</button>
+            </div>
         </div>
+        <!-- Inline players-online for the lobby -->
+        <div class="lobby-players-panel">
+            <div class="lobby-players-header">
+                <span>&#x26A1;</span>
+                <span>PLAYERS ONLINE</span>
+                <span id="lobby-players-count" class="players-online-count">0</span>
+            </div>
+            <div id="lobby-players-list" class="lobby-players-list">
+                <div class="players-online-empty">No players online</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== PLAYERS ONLINE FLOATING PANEL (visible on title/mode screens) ===== -->
+<div id="players-online-panel" class="players-online-panel">
+    <div class="players-online-header" id="players-online-toggle">
+        <span class="players-online-icon">&#x26A1;</span>
+        <span>ONLINE</span>
+        <span id="players-online-count" class="players-online-count">0</span>
+        <span class="players-online-chevron" id="players-online-chevron">&#x25B2;</span>
+    </div>
+    <div id="players-online-list" class="players-online-list">
+        <div class="players-online-empty">No players online</div>
     </div>
 </div>
 

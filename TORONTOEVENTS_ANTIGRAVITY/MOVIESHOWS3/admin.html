@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie/TV Admin Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 { color: #58a6ff; margin-bottom: 4px; font-size: 1.6em; }
+        .subtitle { color: #8b949e; margin-bottom: 20px; font-size: 0.9em; }
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 2px; margin-bottom: 20px; border-bottom: 1px solid #30363d; }
+        .tab {
+            padding: 10px 20px; cursor: pointer; border: 1px solid transparent;
+            border-bottom: none; border-radius: 8px 8px 0 0; color: #8b949e;
+            font-size: 0.95em; transition: all 0.2s;
+        }
+        .tab:hover { color: #c9d1d9; background: #161b22; }
+        .tab.active { color: #f0f6fc; background: #161b22; border-color: #30363d; border-bottom-color: #161b22; margin-bottom: -1px; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Search */
+        .search-box {
+            display: flex; gap: 8px; margin-bottom: 20px;
+        }
+        .search-box input {
+            flex: 1; padding: 10px 14px; background: #0d1117; border: 1px solid #30363d;
+            border-radius: 6px; color: #c9d1d9; font-size: 1em; outline: none;
+        }
+        .search-box input:focus { border-color: #58a6ff; }
+        .search-box select {
+            padding: 10px; background: #161b22; border: 1px solid #30363d;
+            border-radius: 6px; color: #c9d1d9; font-size: 0.9em;
+        }
+        .search-box button, .btn {
+            padding: 10px 20px; background: #238636; color: #fff; border: none;
+            border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 600;
+        }
+        .btn:hover { background: #2ea043; }
+        .btn-blue { background: #1f6feb; }
+        .btn-blue:hover { background: #388bfd; }
+        .btn-sm { padding: 5px 12px; font-size: 0.8em; }
+        .btn-danger { background: #da3633; }
+        .btn-disabled { background: #30363d; cursor: not-allowed; color: #8b949e; }
+
+        /* Cards */
+        .section {
+            background: #161b22; border: 1px solid #30363d;
+            border-radius: 8px; padding: 20px; margin-bottom: 20px;
+        }
+        .section h2 { color: #f0f6fc; font-size: 1.1em; margin-bottom: 14px; }
+
+        /* Search Results */
+        .result-card {
+            display: flex; gap: 14px; padding: 12px; border: 1px solid #21262d;
+            border-radius: 6px; margin-bottom: 8px; transition: background 0.2s;
+        }
+        .result-card:hover { background: #1c2128; }
+        .result-card img {
+            width: 60px; height: 90px; object-fit: cover; border-radius: 4px; flex-shrink: 0;
+        }
+        .result-card .no-poster {
+            width: 60px; height: 90px; background: #21262d; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center; font-size: 0.7em;
+            color: #484f58; flex-shrink: 0;
+        }
+        .result-info { flex: 1; }
+        .result-title { font-weight: 600; color: #f0f6fc; margin-bottom: 4px; }
+        .result-meta { font-size: 0.8em; color: #8b949e; margin-bottom: 4px; }
+        .result-overview { font-size: 0.82em; color: #8b949e; line-height: 1.4; }
+        .result-actions { display: flex; align-items: center; flex-shrink: 0; }
+
+        .badge {
+            display: inline-block; padding: 2px 8px; border-radius: 12px;
+            font-size: 0.75em; font-weight: 600;
+        }
+        .badge-movie { background: #1f6feb; color: #fff; }
+        .badge-tv { background: #8957e5; color: #fff; }
+        .badge-yes { background: #238636; color: #fff; }
+        .badge-no { background: #da3633; color: #fff; }
+
+        /* Year Grid */
+        .year-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;
+        }
+        .year-card {
+            background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 14px;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .year-card:hover { border-color: #58a6ff; background: #161b22; }
+        .year-card .year-label {
+            font-size: 1.3em; font-weight: bold; color: #f0f6fc; margin-bottom: 8px;
+        }
+        .year-card .year-counts { display: flex; gap: 12px; margin-bottom: 8px; }
+        .year-card .count-item { font-size: 0.85em; }
+        .year-card .count-num { font-weight: bold; }
+        .year-bar {
+            height: 6px; background: #21262d; border-radius: 3px; overflow: hidden;
+            display: flex;
+        }
+        .year-bar .bar-movie { background: #1f6feb; }
+        .year-bar .bar-tv { background: #8957e5; }
+        .year-card .gap-indicator {
+            font-size: 0.75em; margin-top: 6px; padding: 2px 6px;
+            border-radius: 4px; display: inline-block;
+        }
+        .gap-low { background: #da3633; color: #fff; }
+        .gap-medium { background: #d29922; color: #fff; }
+        .gap-good { background: #238636; color: #fff; }
+
+        /* Status */
+        .status-bar {
+            background: #161b22; border: 1px solid #30363d; border-radius: 6px;
+            padding: 12px 16px; margin-bottom: 20px; display: flex;
+            justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+        }
+        .status-item { text-align: center; }
+        .status-num { font-size: 1.5em; font-weight: bold; color: #58a6ff; }
+        .status-label { font-size: 0.75em; color: #8b949e; }
+
+        /* Fetch controls */
+        .fetch-controls {
+            display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px;
+        }
+        .fetch-controls label { font-size: 0.85em; color: #8b949e; }
+        .fetch-controls select, .fetch-controls input[type="number"] {
+            padding: 6px 10px; background: #0d1117; border: 1px solid #30363d;
+            border-radius: 4px; color: #c9d1d9; font-size: 0.85em;
+        }
+
+        /* Output log */
+        .output-log {
+            background: #0d1117; border: 1px solid #21262d; border-radius: 6px;
+            padding: 12px; max-height: 400px; overflow-y: auto; font-family: monospace;
+            font-size: 0.82em; white-space: pre-wrap; line-height: 1.5; color: #8b949e;
+        }
+
+        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #30363d;
+            border-top-color: #58a6ff; border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .hidden { display: none; }
+
+        /* Motivation section */
+        .channel-group {
+            background: #0d1117; border: 1px solid #21262d; border-radius: 8px;
+            margin-bottom: 12px; overflow: hidden;
+        }
+        .channel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 16px; cursor: pointer; transition: background 0.2s;
+        }
+        .channel-header:hover { background: #161b22; }
+        .channel-name { font-weight: 700; color: #f0f6fc; font-size: 1em; }
+        .channel-count { font-size: 0.8em; color: #8b949e; }
+        .channel-videos { padding: 0 16px 12px; display: none; }
+        .channel-videos.expanded { display: block; }
+        .video-item {
+            display: flex; gap: 10px; align-items: center; padding: 8px;
+            border: 1px solid #21262d; border-radius: 6px; margin-bottom: 6px;
+            transition: background 0.2s;
+        }
+        .video-item:hover { background: #1c2128; }
+        .video-thumb {
+            width: 120px; height: 68px; border-radius: 4px; object-fit: cover;
+            flex-shrink: 0; background: #21262d;
+        }
+        .video-details { flex: 1; min-width: 0; }
+        .video-title { font-size: 0.88em; font-weight: 600; color: #f0f6fc; margin-bottom: 2px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .video-meta { font-size: 0.78em; color: #8b949e; }
+        .video-actions { display: flex; gap: 4px; flex-shrink: 0; }
+        .badge-short { background: #8957e5; color: #fff; }
+        .badge-long { background: #1f6feb; color: #fff; }
+        .add-video-form {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+            margin-bottom: 16px;
+        }
+        .add-video-form input, .add-video-form select {
+            padding: 8px 12px; background: #0d1117; border: 1px solid #30363d;
+            border-radius: 6px; color: #c9d1d9; font-size: 0.9em; outline: none;
+        }
+        .add-video-form input:focus { border-color: #58a6ff; }
+        .add-video-form .full-width { grid-column: 1 / -1; }
+        .export-box {
+            background: #0d1117; border: 1px solid #21262d; border-radius: 6px;
+            padding: 12px; font-family: monospace; font-size: 0.78em; color: #8b949e;
+            max-height: 300px; overflow-y: auto; white-space: pre-wrap; display: none;
+        }
+        .motivation-stats {
+            display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;
+        }
+        .motivation-stat {
+            background: #0d1117; border: 1px solid #21262d; border-radius: 6px;
+            padding: 10px 16px; text-align: center; min-width: 100px;
+        }
+        .motivation-stat .stat-val { font-size: 1.4em; font-weight: bold; color: #8957e5; }
+        .motivation-stat .stat-lbl { font-size: 0.75em; color: #8b949e; }
+        .confirm-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .confirm-box {
+            background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+            padding: 24px; max-width: 400px; text-align: center;
+        }
+        .confirm-box p { margin-bottom: 16px; color: #c9d1d9; }
+        .confirm-actions { display: flex; gap: 8px; justify-content: center; }
+
+        @media (max-width: 700px) {
+            body { padding: 10px; }
+            .year-grid { grid-template-columns: repeat(2, 1fr); }
+            .status-bar { flex-direction: column; }
+            .add-video-form { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Movie & TV Series Admin Panel</h1>
+<p class="subtitle">
+    Manage database content &bull;
+    <a href="log/">View Sync Log</a> &bull;
+    <a href="./">Back to App</a>
+</p>
+
+<!-- Status Bar -->
+<div class="status-bar" id="statusBar">
+    <div class="status-item"><div class="status-num" id="statTotal">-</div><div class="status-label">Total</div></div>
+    <div class="status-item"><div class="status-num" id="statMovies" style="color:#1f6feb">-</div><div class="status-label">Movies</div></div>
+    <div class="status-item"><div class="status-num" id="statTV" style="color:#8957e5">-</div><div class="status-label">TV Shows</div></div>
+    <div class="status-item"><div class="status-num" id="statTrailers" style="color:#3fb950">-</div><div class="status-label">Trailers</div></div>
+    <div class="status-item"><div class="status-num" id="statLastSync" style="font-size:0.9em">-</div><div class="status-label">Last Sync</div></div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+    <div class="tab active" onclick="switchTab('search')">Search & Add</div>
+    <div class="tab" onclick="switchTab('years')">Year Analysis</div>
+    <div class="tab" onclick="switchTab('fetch')">Bulk Fetch</div>
+    <div class="tab" onclick="switchTab('motivation')">Motivation</div>
+</div>
+
+<!-- Tab 1: Search -->
+<div class="tab-panel active" id="panel-search">
+    <div class="section">
+        <h2>Search TMDB for Movies/TV Series</h2>
+        <p style="color:#8b949e; font-size:0.85em; margin-bottom:12px;">
+            Search to check if a title exists in our database. If missing, you can add it directly.
+        </p>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search for a movie or TV show..." onkeydown="if(event.key==='Enter')doSearch()">
+            <select id="searchType">
+                <option value="multi">All</option>
+                <option value="movie">Movies</option>
+                <option value="tv">TV Shows</option>
+            </select>
+            <button class="btn" onclick="doSearch()">Search</button>
+        </div>
+        <div id="searchResults"></div>
+    </div>
+</div>
+
+<!-- Tab 2: Year Analysis -->
+<div class="tab-panel" id="panel-years">
+    <div class="section">
+        <h2>Content by Year - Gap Analysis</h2>
+        <p style="color:#8b949e; font-size:0.85em; margin-bottom:12px;">
+            Click a year card to fetch more content for that year. Color indicates coverage level.
+        </p>
+        <div class="year-grid" id="yearGrid"></div>
+    </div>
+
+    <!-- Year fetch panel -->
+    <div class="section hidden" id="yearFetchPanel">
+        <h2>Fetch for Year: <span id="fetchYearLabel">-</span></h2>
+        <div class="fetch-controls">
+            <label>Type:</label>
+            <select id="yearFetchType">
+                <option value="both">Both</option>
+                <option value="movie">Movies Only</option>
+                <option value="tv">TV Only</option>
+            </select>
+            <label>Pages:</label>
+            <input type="number" id="yearFetchPages" value="5" min="1" max="10" style="width:60px">
+            <button class="btn btn-blue" onclick="runYearFetch()">Fetch Now</button>
+            <span id="yearFetchSpinner" class="hidden"><span class="spinner"></span> Fetching...</span>
+        </div>
+        <div class="output-log hidden" id="yearFetchOutput"></div>
+    </div>
+</div>
+
+<!-- Tab 3: Bulk Fetch -->
+<div class="tab-panel" id="panel-fetch">
+    <div class="section">
+        <h2>Bulk Fetch - Trending & Discover</h2>
+        <p style="color:#8b949e; font-size:0.85em; margin-bottom:12px;">
+            Fetch trending or newly discovered movies/TV shows from TMDB.
+        </p>
+        <div class="fetch-controls">
+            <label>Mode:</label>
+            <select id="bulkMode">
+                <option value="trending">Trending This Week</option>
+                <option value="discover">Discover (Current Year)</option>
+            </select>
+            <label>Type:</label>
+            <select id="bulkType">
+                <option value="both">Both</option>
+                <option value="movie">Movies</option>
+                <option value="tv">TV Shows</option>
+            </select>
+            <label>Pages:</label>
+            <input type="number" id="bulkPages" value="5" min="1" max="10" style="width:60px">
+            <button class="btn" onclick="runBulkFetch()">Run Fetch</button>
+            <span id="bulkSpinner" class="hidden"><span class="spinner"></span> Fetching...</span>
+        </div>
+        <div class="output-log hidden" id="bulkOutput"></div>
+    </div>
+</div>
+
+<!-- Tab 4: Motivation -->
+<div class="tab-panel" id="panel-motivation">
+    <div class="section">
+        <h2>Motivational Videos Manager</h2>
+        <p style="color:#8b949e; font-size:0.85em; margin-bottom:16px;">
+            Manage curated motivational YouTube videos. Add new videos, remove outdated ones, and export the updated list.
+        </p>
+
+        <!-- Stats -->
+        <div class="motivation-stats" id="motivationStats"></div>
+
+        <!-- Add new video form -->
+        <div class="section" style="background:#0d1117; margin-bottom:16px;">
+            <h2 style="font-size:1em; margin-bottom:10px;">Add New Video</h2>
+            <div class="add-video-form">
+                <input type="text" id="mvYoutubeUrl" placeholder="YouTube URL or Video ID" class="full-width">
+                <input type="text" id="mvTitle" placeholder="Video title">
+                <select id="mvChannel">
+                    <option value="">Select channel...</option>
+                    <option value="__new__">+ New Channel</option>
+                </select>
+                <input type="text" id="mvNewChannel" placeholder="New channel name" class="hidden">
+                <input type="text" id="mvDuration" placeholder="Duration (e.g. 10:15)">
+                <select id="mvIsShort">
+                    <option value="false">Long-form (5+ min)</option>
+                    <option value="true">Short (&lt;5 min)</option>
+                </select>
+                <div class="full-width" style="display:flex; gap:8px; align-items:center;">
+                    <button class="btn" onclick="addMotivationVideo()">+ Add Video</button>
+                    <span id="mvAddStatus" style="font-size:0.85em;"></span>
+                </div>
+            </div>
+            <!-- Preview -->
+            <div id="mvPreview" class="hidden" style="margin-top:8px;">
+                <img id="mvPreviewThumb" style="width:200px; border-radius:6px;">
+            </div>
+        </div>
+
+        <!-- Channel list -->
+        <div id="motivationChannelList"></div>
+
+        <!-- Export -->
+        <div style="display:flex; gap:8px; margin-top:16px;">
+            <button class="btn btn-blue" onclick="exportMotivationJSON()">Export JSON</button>
+            <button class="btn" onclick="exportMotivationCode()">Export JS Code</button>
+            <button class="btn btn-blue" onclick="copyExport()">Copy to Clipboard</button>
+        </div>
+        <pre class="export-box" id="motivationExport"></pre>
+    </div>
+</div>
+
+<script>
+const AUTH_KEY = 'ms2_sync_2024_findto';
+const BASE = '';  // same directory
+
+// --- Tab switching ---
+function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+        const panels = ['search', 'years', 'fetch', 'motivation'];
+        t.classList.toggle('active', panels[i] === name);
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    if (name === 'years' && !yearDataLoaded) loadYearData();
+    if (name === 'motivation' && !motivationLoaded) loadMotivationData();
+}
+
+// --- Load stats ---
+let yearData = {};
+let yearDataLoaded = false;
+
+function loadStats() {
+    fetch(BASE + 'log/api_status.php?t=' + Date.now())
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) return;
+            document.getElementById('statTotal').textContent = data.stats.total_titles.toLocaleString();
+            document.getElementById('statMovies').textContent = data.stats.movies.toLocaleString();
+            document.getElementById('statTV').textContent = data.stats.tv_shows.toLocaleString();
+            document.getElementById('statTrailers').textContent = data.stats.active_trailers.toLocaleString();
+
+            if (data.recent_syncs && data.recent_syncs.length > 0) {
+                document.getElementById('statLastSync').textContent = data.recent_syncs[0].created_at.substring(0, 16);
+            } else {
+                document.getElementById('statLastSync').textContent = 'Never';
+            }
+
+            // Build year data
+            yearData = {};
+            data.by_year.forEach(row => {
+                const y = parseInt(row.release_year);
+                if (!yearData[y]) yearData[y] = { movie: 0, tv: 0 };
+                yearData[y][row.type] = parseInt(row.count);
+            });
+        })
+        .catch(() => {});
+}
+
+// --- Year Grid ---
+function loadYearData() {
+    yearDataLoaded = true;
+    const grid = document.getElementById('yearGrid');
+    grid.innerHTML = '';
+
+    // Target years: 2015-current+1
+    const currentYear = new Date().getFullYear();
+    const targetYears = [];
+    for (let y = currentYear + 1; y >= 2000; y--) targetYears.push(y);
+
+    // Find max for scaling bars
+    let maxTotal = 0;
+    targetYears.forEach(y => {
+        const d = yearData[y] || { movie: 0, tv: 0 };
+        maxTotal = Math.max(maxTotal, d.movie + d.tv);
+    });
+
+    targetYears.forEach(y => {
+        const d = yearData[y] || { movie: 0, tv: 0 };
+        const total = d.movie + d.tv;
+        const moviePct = maxTotal > 0 ? (d.movie / maxTotal * 100) : 0;
+        const tvPct = maxTotal > 0 ? (d.tv / maxTotal * 100) : 0;
+
+        // Gap analysis thresholds
+        let gapClass, gapText;
+        if (y > currentYear) {
+            gapClass = total < 50 ? 'gap-low' : (total < 100 ? 'gap-medium' : 'gap-good');
+            gapText = total < 50 ? 'Needs more' : (total < 100 ? 'Growing' : 'Good');
+        } else if (y >= 2015) {
+            gapClass = total < 100 ? 'gap-low' : (total < 250 ? 'gap-medium' : 'gap-good');
+            gapText = total < 100 ? 'Low - needs filling' : (total < 250 ? 'Moderate' : 'Well covered');
+        } else {
+            gapClass = total < 20 ? 'gap-low' : (total < 50 ? 'gap-medium' : 'gap-good');
+            gapText = total < 20 ? 'Sparse' : (total < 50 ? 'Some coverage' : 'Good');
+        }
+
+        const card = document.createElement('div');
+        card.className = 'year-card';
+        card.onclick = () => openYearFetch(y);
+        card.innerHTML = `
+            <div class="year-label">${y}</div>
+            <div class="year-counts">
+                <div class="count-item"><span class="count-num" style="color:#1f6feb">${d.movie}</span> movies</div>
+                <div class="count-item"><span class="count-num" style="color:#8957e5">${d.tv}</span> TV</div>
+            </div>
+            <div class="year-bar">
+                <div class="bar-movie" style="width:${moviePct}%"></div>
+                <div class="bar-tv" style="width:${tvPct}%"></div>
+            </div>
+            <div class="gap-indicator ${gapClass}">${gapText} (${total} total)</div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function openYearFetch(year) {
+    const panel = document.getElementById('yearFetchPanel');
+    panel.classList.remove('hidden');
+    document.getElementById('fetchYearLabel').textContent = year;
+    document.getElementById('yearFetchOutput').classList.add('hidden');
+    panel.scrollIntoView({ behavior: 'smooth' });
+    panel.dataset.year = year;
+}
+
+function runYearFetch() {
+    const year = document.getElementById('yearFetchPanel').dataset.year;
+    const type = document.getElementById('yearFetchType').value;
+    const pages = document.getElementById('yearFetchPages').value;
+    const spinner = document.getElementById('yearFetchSpinner');
+    const output = document.getElementById('yearFetchOutput');
+
+    spinner.classList.remove('hidden');
+    output.classList.remove('hidden');
+    output.textContent = 'Starting fetch for year ' + year + '...\n';
+
+    fetch(`${BASE}admin_fetch_year.php?key=${AUTH_KEY}&year=${year}&type=${type}&pages=${pages}`)
+        .then(r => r.text())
+        .then(text => {
+            output.textContent = text;
+            spinner.classList.add('hidden');
+            loadStats();
+            setTimeout(loadYearData, 1000);
+        })
+        .catch(err => {
+            output.textContent = 'Error: ' + err.message;
+            spinner.classList.add('hidden');
+        });
+}
+
+// --- Search ---
+function doSearch() {
+    const query = document.getElementById('searchInput').value.trim();
+    const type = document.getElementById('searchType').value;
+    const results = document.getElementById('searchResults');
+
+    if (!query) return;
+
+    results.innerHTML = '<span class="spinner"></span> Searching...';
+
+    fetch(`${BASE}admin_search.php?q=${encodeURIComponent(query)}&type=${type}`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) {
+                results.innerHTML = '<p style="color:#da3633">' + (data.error || 'Search failed') + '</p>';
+                return;
+            }
+            if (data.results.length === 0) {
+                results.innerHTML = '<p style="color:#8b949e">No results found on TMDB.</p>';
+                return;
+            }
+
+            let html = `<p style="color:#8b949e; font-size:0.85em; margin-bottom:12px;">${data.total_results} results found on TMDB</p>`;
+            data.results.forEach(item => {
+                const typeClass = item.type === 'movie' ? 'badge-movie' : 'badge-tv';
+                const inDb = item.in_database;
+                const dbBadge = inDb ?
+                    '<span class="badge badge-yes">In Database</span>' :
+                    '<span class="badge badge-no">Missing</span>';
+
+                const poster = item.poster ?
+                    `<img src="${item.poster}" alt="" loading="lazy">` :
+                    `<div class="no-poster">No Image</div>`;
+
+                const addBtn = inDb ?
+                    '<button class="btn btn-sm btn-disabled" disabled>Already Added</button>' :
+                    `<button class="btn btn-sm btn-blue" onclick="addSingle(${item.tmdb_id},'${item.type}',this)">+ Add</button>`;
+
+                html += `
+                <div class="result-card">
+                    ${poster}
+                    <div class="result-info">
+                        <div class="result-title">${escHtml(item.title)}</div>
+                        <div class="result-meta">
+                            <span class="badge ${typeClass}">${item.type}</span>
+                            ${item.year ? item.year : '?'} &bull;
+                            ${item.rating ? item.rating + '/10' : 'N/A'} &bull;
+                            ${dbBadge}
+                        </div>
+                        <div class="result-overview">${escHtml(item.overview || '')}</div>
+                    </div>
+                    <div class="result-actions">${addBtn}</div>
+                </div>`;
+            });
+            results.innerHTML = html;
+        })
+        .catch(err => {
+            results.innerHTML = '<p style="color:#da3633">Error: ' + err.message + '</p>';
+        });
+}
+
+function addSingle(tmdbId, type, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Adding...';
+    btn.className = 'btn btn-sm btn-disabled';
+
+    fetch(`${BASE}admin_add_single.php?key=${AUTH_KEY}&tmdb_id=${tmdbId}&type=${type}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                btn.textContent = 'Added!';
+                btn.className = 'btn btn-sm btn-disabled';
+                loadStats();
+            } else {
+                btn.textContent = data.error || 'Failed';
+                if (data.error === 'Already in database') {
+                    btn.className = 'btn btn-sm btn-disabled';
+                } else {
+                    btn.className = 'btn btn-sm btn-danger';
+                    btn.disabled = false;
+                    btn.onclick = () => addSingle(tmdbId, type, btn);
+                }
+            }
+        })
+        .catch(err => {
+            btn.textContent = 'Error';
+            btn.className = 'btn btn-sm btn-danger';
+        });
+}
+
+// --- Bulk Fetch ---
+function runBulkFetch() {
+    const mode = document.getElementById('bulkMode').value;
+    const type = document.getElementById('bulkType').value;
+    const pages = document.getElementById('bulkPages').value;
+    const spinner = document.getElementById('bulkSpinner');
+    const output = document.getElementById('bulkOutput');
+
+    spinner.classList.remove('hidden');
+    output.classList.remove('hidden');
+    output.textContent = 'Starting bulk fetch (' + mode + ')...\n';
+
+    fetch(`${BASE}fetch_new_content.php?key=${AUTH_KEY}&type=${type}&pages=${pages}&mode=${mode}`)
+        .then(r => r.text())
+        .then(text => {
+            output.textContent = text;
+            spinner.classList.add('hidden');
+            loadStats();
+        })
+        .catch(err => {
+            output.textContent = 'Error: ' + err.message;
+            spinner.classList.add('hidden');
+        });
+}
+
+function escHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// ========== MOTIVATION MANAGEMENT ==========
+let motivationLoaded = false;
+let motivationChannels = [];
+
+// The current hardcoded data from the main app — loaded once
+const HARDCODED_MOTIVATION = [
+    {
+        channel: 'Motiversity',
+        videos: [
+            { id: 'wnHW6o8WMas', title: 'NO EXCUSES - Best Motivational Video', duration: '10:15', isShort: false },
+            { id: '2xeW_HYdb8g', title: 'LISTEN TO THIS EVERY MORNING', duration: '10:20', isShort: false },
+            { id: '9i45VrIyNOI', title: 'WHY NOT YOU - Best Motivational Speeches', duration: '8:35', isShort: false },
+            { id: '-WRP5qXa7SU', title: 'FOCUS AND VALUE YOURSELF - Matthew McConaughey', duration: '17:40', isShort: false },
+            { id: 'LwxnZzGp-n8', title: 'FOCUS ON YOURSELF AND STAY SILENT - Tony Robbins', duration: '12:25', isShort: false },
+            { id: 'zjOS9hWVGQs', title: 'DISCIPLINE YOURSELF - Jocko Willink & David Goggins', duration: '10:00', isShort: false },
+            { id: 'U24wsr048FY', title: 'DISCIPLINE YOUR MIND - Motivational Speech', duration: '8:00', isShort: false },
+            { id: 'Wj1_NCOJ2yY', title: 'DISCIPLINE - Motivational Speech', duration: '9:00', isShort: false },
+        ]
+    },
+    {
+        channel: 'MotivationHub',
+        videos: [
+            { id: 'g-jwWYX7Jlo', title: 'DREAM - Motivational Video', duration: '15:22', isShort: false },
+            { id: 'k9zTr2MAFRg', title: 'AGAINST ALL ODDS - Elon Musk Motivation', duration: '12:10', isShort: false },
+            { id: 'Hx0VZjLvY-M', title: 'PERSISTENCE - Goggins, Jocko & Eric Thomas', duration: '15:00', isShort: false },
+            { id: '5j3S2ZuiJfc', title: 'GET UP AND GET IT DONE IN 2025 - David Goggins', duration: '19:30', isShort: false },
+        ]
+    },
+    {
+        channel: 'Ben Lionel Scott',
+        videos: [
+            { id: '26U_seo0a1g', title: 'UNBROKEN - Motivational Video', duration: '11:30', isShort: false },
+            { id: 'lsSC2vx7zFQ', title: 'HOW BAD DO YOU WANT IT? (Success)', duration: '5:37', isShort: false },
+            { id: 'x3mxjCm0aUI', title: 'CONTROL YOUR MIND - Motivational Speech', duration: '10:00', isShort: false },
+            { id: '8bUpyNYXAiI', title: 'SELF CONFIDENCE - Motivational Speech', duration: '10:00', isShort: false },
+        ]
+    },
+    {
+        channel: 'Be Inspired',
+        videos: [
+            { id: 'ft_DXwgUXB0', title: 'SELF DISCIPLINE - Featuring Will Smith', duration: '7:12', isShort: false },
+            { id: 'bth-GCGyWcU', title: 'YOU HAVE NO DISCIPLINE - Eric Thomas', duration: '8:00', isShort: false },
+        ]
+    },
+    {
+        channel: 'Fearless Motivation',
+        videos: [
+            { id: 'D0q9HIMRvtk', title: 'I DID NOT COME THIS FAR TO ONLY COME THIS FAR', duration: '4:30', isShort: false },
+            { id: 'PKBDZOPoCH0', title: 'YOU ARE HERE FOR A REASON (Goosebumps)', duration: '5:00', isShort: false },
+            { id: 'xOvts_DTrlA', title: 'THE WARRIOR MENTALITY', duration: '6:00', isShort: false },
+            { id: '9H5SWjSdgdk', title: 'NO FEAR - Best Motivational Speech', duration: '7:00', isShort: false },
+        ]
+    },
+    {
+        channel: 'Motivation2Study',
+        videos: [
+            { id: 'VSceuiPBpxY', title: 'THE MINDSET OF A WINNER - Kobe Bryant', duration: '10:00', isShort: false },
+            { id: 'YcdF_TsubxQ', title: 'NO EXCUSES - Best Video for Students', duration: '8:00', isShort: false },
+        ]
+    },
+    {
+        channel: 'Absolute Motivation',
+        videos: [
+            { id: 'TLKxdTmk-zc', title: 'THE MOST EYE OPENING 10 MINUTES - David Goggins', duration: '10:00', isShort: false },
+        ]
+    },
+    {
+        channel: 'GaryVee',
+        videos: [
+            { id: 'dp9uSNPnC34', title: "YOU'VE GOT TIME!", duration: '0:58', isShort: true },
+            { id: 'f-AyDfj-1C0', title: 'ADVICE EVERY GRADUATE NEEDS TO HEAR', duration: '0:55', isShort: true },
+            { id: '51RdAU0cOUw', title: 'CHANGE YOUR PERSPECTIVE - Gary Vaynerchuk', duration: '7:00', isShort: false },
+            { id: 'loyfrfB4UhE', title: 'FEELING LOST? TURN YOUR LIFE AROUND', duration: '8:00', isShort: false },
+        ]
+    },
+    {
+        channel: 'Evan Carmichael',
+        videos: [
+            { id: 'rePlYbzByxg', title: 'TOP 10 RULES FOR SUCCESS', duration: '12:00', isShort: false },
+            { id: 'oK28sWkfSSk', title: 'OVERCOME NEGATIVITY AND UNLOCK YOUR MIND', duration: '10:00', isShort: false },
+        ]
+    },
+    {
+        channel: 'Eric Thomas',
+        videos: [
+            { id: '7Oxz060iedY', title: 'YOU OWE YOU - Powerful Motivation', duration: '7:40', isShort: false },
+            { id: 'tTQG-xf611M', title: 'THE NEW VERSION OF YOU IN 2025', duration: '20:00', isShort: false },
+            { id: 'V5-OaWYas8U', title: 'MAKING 2025 THE BEST YEAR EVER', duration: '20:00', isShort: false },
+        ]
+    },
+    {
+        channel: 'Tony Robbins',
+        videos: [
+            { id: '0b2MtFQk_aU', title: 'ONE OF THE MOST EYE OPENING SPEECHES EVER', duration: '10:00', isShort: false },
+            { id: '2EuhFLwtR7Y', title: 'TRANSFORM YOUR LIFE WITH ONE DECISION', duration: '34:00', isShort: false },
+            { id: '8PHm_GkQ8kU', title: 'BECOME SOMEONE NOBODY THOUGHT YOU COULD BE', duration: '12:00', isShort: false },
+        ]
+    },
+    {
+        channel: 'David Goggins',
+        videos: [
+            { id: 'Emc7obS9z4s', title: 'START NOW - David Goggins', duration: '0:30', isShort: true },
+            { id: 'm5S3H1W9lnQ', title: 'IT ALL COMES DOWN TO THIS', duration: '0:45', isShort: true },
+            { id: '8rjtYOavgoo', title: 'WHAT DO YOU STAND FOR?', duration: '0:55', isShort: true },
+            { id: 'Cw0hZQ8Na_Y', title: 'GET UP AND GET IT DONE', duration: '14:00', isShort: false },
+            { id: 'b0FVTOxsWw0', title: 'A FEW MINUTES CAN CHANGE YOUR LIFE', duration: '10:00', isShort: false },
+            { id: 'd6Jefz9Mwgg', title: 'DO IT ALONE. DO IT BROKEN. DO IT SCARED.', duration: '15:00', isShort: false },
+            { id: 'EMRT4mfKTkw', title: 'SHUT UP AND DO THE WORK', duration: '10:00', isShort: false },
+        ]
+    },
+];
+
+function loadMotivationData() {
+    motivationLoaded = true;
+    // Load from localStorage if previously saved, otherwise use hardcoded
+    const saved = localStorage.getItem('admin_motivation_channels');
+    if (saved) {
+        try { motivationChannels = JSON.parse(saved); } catch(e) { motivationChannels = JSON.parse(JSON.stringify(HARDCODED_MOTIVATION)); }
+    } else {
+        motivationChannels = JSON.parse(JSON.stringify(HARDCODED_MOTIVATION));
+    }
+    renderMotivation();
+}
+
+function saveMotivation() {
+    localStorage.setItem('admin_motivation_channels', JSON.stringify(motivationChannels));
+}
+
+function renderMotivation() {
+    // Stats
+    let totalVideos = 0, totalShorts = 0, totalLong = 0;
+    motivationChannels.forEach(ch => {
+        ch.videos.forEach(v => {
+            totalVideos++;
+            if (v.isShort) totalShorts++; else totalLong++;
+        });
+    });
+
+    document.getElementById('motivationStats').innerHTML = `
+        <div class="motivation-stat"><div class="stat-val">${motivationChannels.length}</div><div class="stat-lbl">Channels</div></div>
+        <div class="motivation-stat"><div class="stat-val">${totalVideos}</div><div class="stat-lbl">Total Videos</div></div>
+        <div class="motivation-stat"><div class="stat-val" style="color:#1f6feb">${totalLong}</div><div class="stat-lbl">Long-form</div></div>
+        <div class="motivation-stat"><div class="stat-val" style="color:#3fb950">${totalShorts}</div><div class="stat-lbl">Shorts</div></div>
+    `;
+
+    // Populate channel dropdown
+    const sel = document.getElementById('mvChannel');
+    const currentVal = sel.value;
+    sel.innerHTML = '<option value="">Select channel...</option><option value="__new__">+ New Channel</option>';
+    motivationChannels.forEach(ch => {
+        const opt = document.createElement('option');
+        opt.value = ch.channel;
+        opt.textContent = ch.channel + ' (' + ch.videos.length + ')';
+        sel.appendChild(opt);
+    });
+    sel.value = currentVal;
+
+    // Render channel groups
+    const list = document.getElementById('motivationChannelList');
+    list.innerHTML = '';
+
+    motivationChannels.forEach((ch, ci) => {
+        const group = document.createElement('div');
+        group.className = 'channel-group';
+
+        const header = document.createElement('div');
+        header.className = 'channel-header';
+        header.innerHTML = `
+            <div>
+                <span class="channel-name">${escHtml(ch.channel)}</span>
+                <span class="channel-count">&nbsp; ${ch.videos.length} video${ch.videos.length !== 1 ? 's' : ''}</span>
+            </div>
+            <div style="display:flex; gap:6px; align-items:center;">
+                <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); removeChannel(${ci})" title="Remove channel">✕</button>
+                <span style="color:#484f58; font-size:0.9em;">▼</span>
+            </div>
+        `;
+        header.onclick = function() {
+            const vids = this.nextElementSibling;
+            vids.classList.toggle('expanded');
+            this.querySelector('span:last-child').textContent = vids.classList.contains('expanded') ? '▲' : '▼';
+        };
+        group.appendChild(header);
+
+        const videosDiv = document.createElement('div');
+        videosDiv.className = 'channel-videos';
+
+        ch.videos.forEach((v, vi) => {
+            const item = document.createElement('div');
+            item.className = 'video-item';
+            item.innerHTML = `
+                <img class="video-thumb" src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" alt=""
+                     onerror="this.style.display='none'">
+                <div class="video-details">
+                    <div class="video-title" title="${escHtml(v.title)}">${escHtml(v.title)}</div>
+                    <div class="video-meta">
+                        <span class="badge ${v.isShort ? 'badge-short' : 'badge-long'}">${v.isShort ? 'Short' : 'Long'}</span>
+                        ${v.duration} &bull;
+                        <a href="https://youtube.com/watch?v=${v.id}" target="_blank" style="font-size:0.9em;">Watch ↗</a>
+                    </div>
+                </div>
+                <div class="video-actions">
+                    <button class="btn btn-sm btn-danger" onclick="removeVideo(${ci}, ${vi})" title="Remove">✕</button>
+                </div>
+            `;
+            videosDiv.appendChild(item);
+        });
+
+        group.appendChild(videosDiv);
+        list.appendChild(group);
+    });
+}
+
+// Parse YouTube URL or ID
+function parseYoutubeId(input) {
+    input = input.trim();
+    // Already an ID (11 chars)
+    if (/^[\w-]{11}$/.test(input)) return input;
+    // Full URL
+    try {
+        const url = new URL(input);
+        if (url.hostname.includes('youtu.be')) return url.pathname.slice(1).split('/')[0];
+        if (url.searchParams.has('v')) return url.searchParams.get('v');
+        if (url.pathname.includes('/shorts/')) return url.pathname.split('/shorts/')[1].split('/')[0];
+    } catch(e) {}
+    return input; // Return as-is
+}
+
+// Show/hide new channel input
+document.getElementById('mvChannel').addEventListener('change', function() {
+    document.getElementById('mvNewChannel').classList.toggle('hidden', this.value !== '__new__');
+});
+
+// Auto-preview thumbnail when URL is entered
+document.getElementById('mvYoutubeUrl').addEventListener('input', function() {
+    const vid = parseYoutubeId(this.value);
+    if (vid && vid.length >= 10) {
+        document.getElementById('mvPreview').classList.remove('hidden');
+        document.getElementById('mvPreviewThumb').src = 'https://img.youtube.com/vi/' + vid + '/mqdefault.jpg';
+    } else {
+        document.getElementById('mvPreview').classList.add('hidden');
+    }
+});
+
+function addMotivationVideo() {
+    const urlInput = document.getElementById('mvYoutubeUrl');
+    const titleInput = document.getElementById('mvTitle');
+    const channelSel = document.getElementById('mvChannel');
+    const newChInput = document.getElementById('mvNewChannel');
+    const durationInput = document.getElementById('mvDuration');
+    const isShortSel = document.getElementById('mvIsShort');
+    const status = document.getElementById('mvAddStatus');
+
+    const videoId = parseYoutubeId(urlInput.value);
+    const title = titleInput.value.trim();
+    const duration = durationInput.value.trim();
+    const isShort = isShortSel.value === 'true';
+
+    // Determine channel
+    let channelName = channelSel.value === '__new__' ? newChInput.value.trim() : channelSel.value;
+
+    // Validate
+    if (!videoId) { status.textContent = '⚠ Enter a YouTube URL or ID'; status.style.color = '#d29922'; return; }
+    if (!title) { status.textContent = '⚠ Enter a video title'; status.style.color = '#d29922'; return; }
+    if (!channelName) { status.textContent = '⚠ Select or create a channel'; status.style.color = '#d29922'; return; }
+    if (!duration) { status.textContent = '⚠ Enter the duration'; status.style.color = '#d29922'; return; }
+
+    // Check for duplicates
+    for (const ch of motivationChannels) {
+        for (const v of ch.videos) {
+            if (v.id === videoId) {
+                status.textContent = '⚠ Video already exists in ' + ch.channel;
+                status.style.color = '#d29922';
+                return;
+            }
+        }
+    }
+
+    // Find or create channel
+    let channel = motivationChannels.find(c => c.channel === channelName);
+    if (!channel) {
+        channel = { channel: channelName, videos: [] };
+        motivationChannels.push(channel);
+    }
+
+    channel.videos.push({ id: videoId, title: title, duration: duration, isShort: isShort });
+    saveMotivation();
+    renderMotivation();
+
+    // Clear form
+    urlInput.value = '';
+    titleInput.value = '';
+    durationInput.value = '';
+    newChInput.value = '';
+    document.getElementById('mvPreview').classList.add('hidden');
+    status.textContent = '✓ Added "' + title + '" to ' + channelName;
+    status.style.color = '#3fb950';
+    setTimeout(() => { status.textContent = ''; }, 3000);
+}
+
+function removeVideo(channelIdx, videoIdx) {
+    const ch = motivationChannels[channelIdx];
+    const v = ch.videos[videoIdx];
+    if (!confirm('Remove "' + v.title + '" from ' + ch.channel + '?')) return;
+    ch.videos.splice(videoIdx, 1);
+    // Remove channel if empty
+    if (ch.videos.length === 0) {
+        motivationChannels.splice(channelIdx, 1);
+    }
+    saveMotivation();
+    renderMotivation();
+}
+
+function removeChannel(channelIdx) {
+    const ch = motivationChannels[channelIdx];
+    if (!confirm('Remove entire channel "' + ch.channel + '" (' + ch.videos.length + ' videos)?')) return;
+    motivationChannels.splice(channelIdx, 1);
+    saveMotivation();
+    renderMotivation();
+}
+
+function exportMotivationJSON() {
+    const box = document.getElementById('motivationExport');
+    box.style.display = 'block';
+    box.textContent = JSON.stringify(motivationChannels, null, 2);
+}
+
+function exportMotivationCode() {
+    const box = document.getElementById('motivationExport');
+    box.style.display = 'block';
+
+    let code = 'const MOTIVATION_CHANNELS = [\n';
+    motivationChannels.forEach(ch => {
+        code += '    {\n';
+        code += "        channel: '" + ch.channel.replace(/'/g, "\\'") + "',\n";
+        code += '        videos: [\n';
+        ch.videos.forEach(v => {
+            code += "            { id: '" + v.id + "', title: '" + v.title.replace(/'/g, "\\'") + "', duration: '" + v.duration + "', isShort: " + v.isShort + " },\n";
+        });
+        code += '        ]\n';
+        code += '    },\n';
+    });
+    code += '];';
+    box.textContent = code;
+}
+
+function copyExport() {
+    const box = document.getElementById('motivationExport');
+    if (!box.textContent) { exportMotivationJSON(); }
+    navigator.clipboard.writeText(box.textContent).then(() => {
+        const btn = event.target;
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = orig; }, 2000);
+    });
+}
+
+// Init
+loadStats();
+</script>
+</body>
+</html>

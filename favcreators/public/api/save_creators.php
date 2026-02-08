@@ -61,15 +61,55 @@ $creators = $deduped;
 $log_file = '/tmp/favcreators_save_log.txt';
 $log_entry = date('Y-m-d H:i:s') . " | User $user_id | Saving " . count($creators) . " creators\n";
 
-// Get current DB state before overwriting (for logging only)
+// Get current DB state before overwriting
 $check_query = $conn->query("SELECT creators FROM user_lists WHERE user_id = $user_id");
+$current_count = 0;
+$current_json = '';
 if ($check_query && $check_query->num_rows > 0) {
     $current_row = $check_query->fetch_assoc();
-    $current_creators = json_decode($current_row['creators'], true);
+    $current_json = $current_row['creators'];
+    $current_creators = json_decode($current_json, true);
     $current_count = is_array($current_creators) ? count($current_creators) : 0;
     $log_entry .= "  DB before: $current_count creators\n";
 }
-// Users can remove any creator from their own list; changes only affect their view.
+
+$new_count = count($creators);
+$log_entry .= "  New count: $new_count creators\n";
+
+// Safety check: if the new list is drastically smaller (lost >40% of creators and dropped more than 5),
+// save a backup of the current list before overwriting. This protects against stale localStorage overwrites.
+if ($current_count > 10 && $new_count > 0 && ($current_count - $new_count) > 5 && $new_count < $current_count * 0.6) {
+    $log_entry .= "  WARNING: Large drop detected ($current_count -> $new_count). Saving backup.\n";
+    // Save backup to user_lists_backup table (create if not exists)
+    $conn->query("CREATE TABLE IF NOT EXISTS user_lists_backup (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        creators LONGTEXT,
+        backed_up_at DATETIME,
+        reason VARCHAR(255)
+    )");
+    $backup_esc = $conn->real_escape_string($current_json);
+    $reason = $conn->real_escape_string("Auto-backup: list shrank from $current_count to $new_count");
+    $conn->query("INSERT INTO user_lists_backup (user_id, creators, backed_up_at, reason) VALUES ($user_id, '$backup_esc', NOW(), '$reason')");
+    // Keep only last 5 backups per user (MySQL-safe: can't subquery same table in DELETE)
+    $keep_q = $conn->query("SELECT id FROM user_lists_backup WHERE user_id = $user_id ORDER BY backed_up_at DESC LIMIT 5");
+    $keep_ids = array();
+    if ($keep_q) { while ($kr = $keep_q->fetch_assoc()) { $keep_ids[] = (int)$kr['id']; } }
+    if (count($keep_ids) > 0) {
+        $keep_str = implode(',', $keep_ids);
+        $conn->query("DELETE FROM user_lists_backup WHERE user_id = $user_id AND id NOT IN ($keep_str)");
+    }
+    $log_entry .= "  Backup saved. Proceeding with save.\n";
+}
+
+// Block completely empty saves for users who had a real list (likely a bug)
+if ($new_count === 0 && $current_count > 5) {
+    $log_entry .= "  BLOCKED: Refusing to save empty list (DB has $current_count). Likely a frontend bug.\n";
+    file_put_contents($log_file, $log_entry, FILE_APPEND);
+    echo json_encode(array('error' => 'Refusing to save empty list', 'current_count' => $current_count));
+    $conn->close();
+    exit;
+}
 
 file_put_contents($log_file, $log_entry, FILE_APPEND);
 

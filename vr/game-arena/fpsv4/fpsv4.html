@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FPSV4 — Zombie Survival | Game Arena</title>
+  <meta name="description" content="Zombie survival FPS with waves, weapons, perks, and points. How long can you survive?">
+  <link rel="stylesheet" href="fpsv4-styles.css">
+</head>
+<body>
+
+<!-- Loading Screen -->
+<div id="loading-screen">
+  <h1>FPSV4</h1>
+  <div class="subtitle">ZOMBIE SURVIVAL</div>
+  <div class="load-bar"><div class="load-bar-fill" id="load-fill"></div></div>
+  <div id="loading-tip">Aim for the head — headshots deal 2x damage and earn bonus points.</div>
+</div>
+
+<!-- Main Menu -->
+<div id="main-menu" class="hidden">
+  <div class="menu-card">
+    <h1>FPSV4</h1>
+    <div class="tagline">ZOMBIE SURVIVAL</div>
+    <button class="menu-btn primary" id="btn-play">SURVIVE</button>
+    <button class="menu-btn" id="btn-settings">SETTINGS</button>
+    <button class="menu-btn" onclick="window.location.href='/vr/game-arena/'">EXIT TO ARENA</button>
+    <div class="menu-stats">
+      <div class="menu-stat"><div class="ms-val" id="menu-best-round">0</div><div class="ms-lbl">Best Round</div></div>
+      <div class="menu-stat"><div class="ms-val" id="menu-total-kills">0</div><div class="ms-lbl">Total Kills</div></div>
+      <div class="menu-stat"><div class="ms-val" id="menu-games">0</div><div class="ms-lbl">Games</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Game Canvas -->
+<canvas id="game-canvas"></canvas>
+
+<!-- HUD -->
+<div id="hud">
+  <!-- Crosshair -->
+  <div id="crosshair">
+    <div class="ch-dot"></div>
+    <div class="ch-line top"></div>
+    <div class="ch-line bottom"></div>
+    <div class="ch-line left"></div>
+    <div class="ch-line right"></div>
+  </div>
+
+  <!-- Top center: Round + Points -->
+  <div id="hud-top-center">
+    <div class="round-display">
+      <div class="round-label">ROUND</div>
+      <div class="round-value" id="hud-round">1</div>
+    </div>
+    <div class="points-display">
+      <div class="points-label">POINTS</div>
+      <div class="points-value" id="hud-points">500</div>
+    </div>
+  </div>
+
+  <!-- Top left: Kills -->
+  <div id="hud-top-left">
+    <div class="kills-row">
+      <div class="kill-stat"><div class="ks-val kills-val" id="hud-kills">0</div><div class="ks-lbl">Kills</div></div>
+      <div class="kill-stat"><div class="ks-val headshots-val" id="hud-headshots">0</div><div class="ks-lbl">Headshots</div></div>
+    </div>
+  </div>
+
+  <!-- Bottom center: Health + Ammo -->
+  <div id="hud-bottom">
+    <div class="hud-stat">
+      <div class="label">Health</div>
+      <div class="value health-val" id="hud-health">100</div>
+      <div class="bar"><div class="bar-fill health-fill" id="health-bar" style="width:100%"></div></div>
+    </div>
+    <div class="hud-stat">
+      <div class="label">Ammo</div>
+      <div class="value ammo-val"><span id="hud-clip">8</span>/<span id="hud-reserve">32</span></div>
+    </div>
+  </div>
+
+  <!-- Bottom right: Weapon info -->
+  <div id="hud-weapon">
+    <div class="wep-name" id="hud-wep-name">M1911</div>
+    <div class="wep-type" id="hud-wep-type">Pistol</div>
+  </div>
+
+  <!-- Kill Feed -->
+  <div id="kill-feed"></div>
+
+  <!-- Minimap -->
+  <div id="minimap"><canvas id="minimap-canvas" width="130" height="130"></canvas></div>
+</div>
+
+<!-- Overlays -->
+<div id="damage-overlay"></div>
+<div id="low-health-overlay"></div>
+<div id="muzzle-flash-overlay"></div>
+<div id="hitmarker">
+  <div class="hm-line"></div><div class="hm-line"></div><div class="hm-line"></div><div class="hm-line"></div>
+</div>
+<div id="round-banner"><div class="rb-title"></div><div class="rb-sub"></div></div>
+<div id="countdown"></div>
+<div id="buy-prompt"></div>
+
+<!-- First Person Weapon Viewport -->
+<div id="fp-weapon"><canvas id="fp-weapon-canvas" width="400" height="300"></canvas></div>
+
+<!-- Pause Menu -->
+<div id="pause-menu">
+  <div class="pause-card">
+    <h2>PAUSED</h2>
+    <button class="pause-btn resume" onclick="FPSV4.GameMode.resume()">RESUME</button>
+    <button class="pause-btn" onclick="FPSV4.UI.showSettings()">SETTINGS</button>
+    <button class="pause-btn" onclick="FPSV4.GameMode.restart()">NEW GAME</button>
+    <button class="pause-btn" onclick="window.location.href='/vr/game-arena/'">EXIT</button>
+  </div>
+</div>
+
+<!-- Game Over Screen -->
+<div id="game-over">
+  <div class="go-card">
+    <h2>YOU DIED</h2>
+    <p class="go-sub" id="go-subtitle">Survived until Round 1</p>
+    <div class="go-stats">
+      <div class="go-stat"><div class="gs-val round-c" id="go-round">1</div><div class="gs-lbl">Round</div></div>
+      <div class="go-stat"><div class="gs-val kills-c" id="go-kills">0</div><div class="gs-lbl">Kills</div></div>
+      <div class="go-stat"><div class="gs-val hs-c" id="go-headshots">0</div><div class="gs-lbl">Headshots</div></div>
+      <div class="go-stat"><div class="gs-val pts-c" id="go-points">0</div><div class="gs-lbl">Points</div></div>
+    </div>
+    <div class="go-best" id="go-best"></div>
+    <button class="pause-btn resume" onclick="FPSV4.GameMode.restart()">PLAY AGAIN</button>
+    <button class="pause-btn" onclick="FPSV4.GameMode.toMenu()">MAIN MENU</button>
+  </div>
+</div>
+
+<!-- FPS Counter -->
+<div id="fps-display">FPS: <span id="fps-value">60</span></div>
+
+<!-- Three.js CDN (r128 — proven stable) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<!-- Game Modules (load order matters) -->
+<script src="fpsv4-engine.js"></script>
+<script src="fpsv4-audio.js"></script>
+<script src="fpsv4-weapons.js"></script>
+<script src="fpsv4-zombies.js"></script>
+<script src="fpsv4-gamemode.js"></script>
+<script src="fpsv4-ui.js"></script>
+
+<!-- Init -->
+<script>
+(function () {
+  'use strict';
+
+  var tips = [
+    'Aim for the head \u2014 headshots deal 2x damage and earn bonus points.',
+    'Knife kills earn 130 damage but only 50 points. Use wisely.',
+    'Zombies get faster and stronger each round. Stay moving.',
+    'Reload during the intermission \u2014 the next wave won\u2019t wait.',
+    'Listen for zombie groans to track their direction.',
+    'Sprint with SHIFT to outrun walkers, but you can\u2019t shoot while sprinting.',
+    'Every 5th round spawns a boss zombie. Prepare accordingly.'
+  ];
+  var tipEl = document.getElementById('loading-tip');
+  if (tipEl) tipEl.textContent = tips[Math.floor(Math.random() * tips.length)];
+
+  function setProgress(pct) {
+    var fill = document.getElementById('load-fill');
+    if (fill) fill.style.width = pct + '%';
+  }
+
+  // Load sequence
+  setProgress(10);
+  setTimeout(function () { setProgress(40); }, 300);
+  setTimeout(function () { setProgress(70); }, 600);
+  setTimeout(function () {
+    setProgress(100);
+    setTimeout(function () {
+      document.getElementById('loading-screen').classList.add('hidden');
+      document.getElementById('main-menu').classList.remove('hidden');
+      FPSV4.UI.updateMenuStats();
+    }, 400);
+  }, 1000);
+})();
+</script>
+
+</body>
+</html>

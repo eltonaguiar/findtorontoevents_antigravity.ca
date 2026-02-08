@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Lens Orientation Checker | Find Toronto Events</title>
+    <meta name="description" content="Check if your contact lens is the right way up. Show both sides and we compare which is correct.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#0a0a0f;--bg2:#12121a;--bgc:rgba(255,255,255,.03);--ac:#00d4ff;--ac2:#7c3aed;--ok:#10b981;--warn:#f59e0b;--bad:#ef4444;--t1:#fff;--t2:rgba(255,255,255,.7);--t3:rgba(255,255,255,.4);--brd:rgba(255,255,255,.08)}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden}
+        .bg-fx{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+        .bg-fx::before{content:'';position:absolute;width:800px;height:800px;background:radial-gradient(circle,var(--ac) 0%,transparent 70%);opacity:.05;top:-200px;right:-200px;animation:fl 20s ease-in-out infinite}
+        .bg-fx::after{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,var(--ac2) 0%,transparent 70%);opacity:.05;bottom:-100px;left:-100px;animation:fl 25s ease-in-out infinite reverse}
+        @keyframes fl{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(50px,30px) scale(1.1)}}
+        .ctn{max-width:800px;margin:0 auto;padding:2rem;position:relative;z-index:1}
+
+        .header{text-align:center;margin-bottom:1.5rem}
+        .back-link{display:inline-flex;align-items:center;gap:.5rem;color:var(--t2);text-decoration:none;font-size:.85rem;margin-bottom:1rem;transition:color .3s}.back-link:hover{color:var(--ac)}
+        h1{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--t1),var(--ac));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.35rem}
+        .subtitle{color:var(--t2);font-size:.95rem;max-width:580px;margin:0 auto}
+
+        /* Steps bar */
+        .steps-bar{display:flex;justify-content:center;gap:0;margin-bottom:2rem;flex-wrap:wrap}
+        .step-item{display:flex;align-items:center;gap:.4rem;padding:.55rem .7rem;font-size:.78rem;font-weight:600;color:var(--t3);transition:all .3s}
+        .step-item .sn{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;background:var(--bg2);border:2px solid var(--brd);transition:all .3s;flex-shrink:0}
+        .step-item.active{color:var(--ac)}.step-item.active .sn{background:linear-gradient(135deg,var(--ac),var(--ac2));border-color:var(--ac);color:#fff}
+        .step-item.done{color:var(--ok)}.step-item.done .sn{background:var(--ok);border-color:var(--ok);color:#fff}
+        .step-conn{width:24px;height:2px;background:var(--brd);align-self:center}.step-conn.done{background:var(--ok)}
+
+        /* Panels */
+        .panel{display:none;animation:fadeIn .35s ease}.panel.on{display:block}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+        .card{background:var(--bgc);border:1px solid var(--brd);border-radius:1.5rem;padding:2rem;backdrop-filter:blur(10px)}
+        .card-hd{display:flex;align-items:center;gap:.7rem;margin-bottom:1.25rem}
+        .card-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;background:linear-gradient(135deg,var(--ac),var(--ac2))}
+        .card-tl{font-size:1.15rem;font-weight:700}
+
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.8rem 1.4rem;border-radius:.7rem;font-weight:600;font-size:.88rem;cursor:pointer;border:none;transition:all .3s;font-family:inherit}
+        .btn-p{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff}.btn-p:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,212,255,.25)}
+        .btn-s{background:var(--bg2);color:var(--t1);border:1px solid var(--brd)}.btn-s:hover{background:rgba(255,255,255,.08)}
+        .btn-ok{background:var(--ok);color:#fff}.btn-bad{background:var(--bad);color:#fff}
+        .btn-lg{padding:1rem 2rem;font-size:1rem}
+        .btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+        .btn-row{display:flex;gap:.7rem;flex-wrap:wrap;justify-content:center}
+
+        /* Info boxes */
+        .info-box{background:var(--bg2);border-radius:.9rem;padding:1.15rem;margin-bottom:.9rem;border-left:4px solid var(--ac)}
+        .info-box h3{font-size:.9rem;margin-bottom:.3rem}.info-box p{font-size:.85rem;color:var(--t2);line-height:1.55}
+        .info-box.warn{border-left-color:var(--warn)}.info-box.crit{border-left-color:var(--bad)}
+
+        /* Side tag */
+        .side-tag{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1rem;border-radius:2rem;font-weight:700;font-size:.88rem;margin-bottom:1rem}
+        .side-tag.a{background:rgba(0,212,255,.12);color:var(--ac);border:1px solid rgba(0,212,255,.25)}
+        .side-tag.b{background:rgba(124,58,237,.12);color:#a78bfa;border:1px solid rgba(124,58,237,.25)}
+
+        /* Camera */
+        .vcont{position:relative;width:100%;max-width:560px;margin:0 auto;aspect-ratio:4/3;background:var(--bg2);border-radius:1rem;overflow:hidden}
+        .vcont video,.vcont img{width:100%;height:100%;object-fit:cover;display:block}
+        .vcont img{display:none;object-fit:contain;background:#000}
+        .cam-prompt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.8);text-align:center;padding:2rem;z-index:8}
+        .cam-prompt.hidden{display:none}
+        .guide-ov{position:absolute;inset:0;pointer-events:none;z-index:5}.guide-ov svg{width:100%;height:100%}.guide-ov.hidden{display:none}
+        .bri-bar{position:absolute;bottom:0;left:0;right:0;height:5px;z-index:6;background:rgba(0,0,0,.5)}
+        .bri-fill{height:100%;transition:width .3s,background .3s;border-radius:0 3px 3px 0}
+        .q-panel{background:var(--bg2);border-radius:.75rem;padding:.75rem;margin:.75rem 0}
+        .q-row{display:flex;align-items:center;justify-content:space-between;padding:.3rem 0;font-size:.78rem}
+        .q-badge{padding:.12rem .45rem;border-radius:1rem;font-size:.7rem;font-weight:700}
+        .q-badge.pass{background:rgba(16,185,129,.2);color:var(--ok)}.q-badge.warn{background:rgba(245,158,11,.2);color:var(--warn)}.q-badge.fail{background:rgba(239,68,68,.2);color:var(--bad)}
+
+        /* Timer countdown on video */
+        .countdown{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:4rem;font-weight:800;color:rgba(255,255,255,.8);text-shadow:0 2px 20px rgba(0,0,0,.7);z-index:10;display:none}
+        .countdown.on{display:block;animation:cdPop .4s ease}
+        @keyframes cdPop{from{transform:translate(-50%,-50%) scale(1.5);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+
+        /* Results */
+        .res-card{padding:2rem;border-radius:1rem;text-align:center;margin:1rem auto;max-width:600px}
+        .res-card.correct{background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(16,185,129,.05));border:2px solid var(--ok)}
+        .res-card.incorrect{background:linear-gradient(135deg,rgba(239,68,68,.2),rgba(239,68,68,.05));border:2px solid var(--bad)}
+        .res-card.uncertain{background:linear-gradient(135deg,rgba(245,158,11,.2),rgba(245,158,11,.05));border:2px solid var(--warn)}
+        .res-icon{font-size:3.5rem;margin-bottom:.4rem}.res-title{font-size:1.3rem;font-weight:700;margin-bottom:.4rem}
+        .res-desc{color:var(--t2);margin-bottom:.75rem;line-height:1.6;font-size:.9rem}
+        .conf-bar{height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;margin:.6rem 0}.conf-fill{height:100%;border-radius:4px;transition:width .6s ease}
+        .conf-text{font-size:.78rem;color:var(--t3)}
+
+        /* Side-by-side comparison */
+        .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.25rem}
+        .compare-box{background:var(--bg2);border-radius:.75rem;padding:1rem;text-align:center}
+        .compare-box h4{font-size:.75rem;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem}
+        .compare-box img,.compare-box canvas{width:100%;border-radius:.5rem;margin-bottom:.4rem;max-height:180px;object-fit:contain;background:#000}
+        .compare-box .verdict{font-weight:700;font-size:.95rem;margin-bottom:.15rem}
+        .compare-box .score-val{font-size:.78rem;color:var(--t3)}
+        .compare-box.winner{border:2px solid var(--ok)}.compare-box.loser{border:2px solid var(--bad);opacity:.7}
+
+        /* Factor rows */
+        .factors{text-align:left;background:var(--bg2);border-radius:.75rem;padding:1rem;margin-top:1rem}
+        .factors h4{font-size:.75rem;color:var(--t3);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em}
+        .f-row{display:flex;align-items:center;justify-content:space-between;padding:.3rem 0;font-size:.8rem;border-bottom:1px solid var(--brd)}.f-row:last-child{border-bottom:none}
+        .f-name{color:var(--t2)}.f-val{font-weight:600}.f-val.good{color:var(--ok)}.f-val.bad{color:var(--bad)}.f-val.neutral{color:var(--warn)}
+
+        /* Taco optional section */
+        .optional-section{border:1px dashed var(--brd);border-radius:1rem;padding:1.25rem;margin-top:1.5rem;text-align:center}
+        .optional-section h3{font-size:.9rem;margin-bottom:.5rem;color:var(--t2)}
+
+        /* Detection feedback banner */
+        .detect-fb{border-radius:.75rem;padding:.85rem 1rem;margin:.75rem 0;display:none;align-items:flex-start;gap:.6rem;font-size:.85rem;line-height:1.5;animation:fadeIn .3s ease}
+        .detect-fb.ok{display:flex;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:var(--ok)}
+        .detect-fb.fail{display:flex;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--bad)}
+        .detect-fb .df-icon{font-size:1.2rem;flex-shrink:0;margin-top:.05rem}
+        .detect-fb .df-body h4{font-weight:700;font-size:.85rem;margin-bottom:.15rem}
+        .detect-fb .df-body p{font-size:.8rem;opacity:.85}
+        .detect-fb .df-body ul{margin:.3rem 0 0 1rem;font-size:.78rem;opacity:.8}
+        .detect-fb .df-body ul li{margin-bottom:.15rem}
+
+        .spinner{width:36px;height:36px;border:3px solid var(--brd);border-top-color:var(--ac);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto .75rem}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        /* Medical disclaimer */
+        .disclaimer{background:linear-gradient(135deg,rgba(239,68,68,.12),rgba(239,68,68,.04));border:1px solid rgba(239,68,68,.25);border-radius:1rem;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;align-items:flex-start;gap:.65rem;font-size:.82rem;line-height:1.55;color:var(--t2)}
+        .disclaimer .d-icon{font-size:1.3rem;flex-shrink:0;margin-top:.05rem}
+        .disclaimer strong{color:var(--bad);font-weight:700}
+        .disclaimer a{color:var(--ac);text-decoration:underline;text-underline-offset:2px}
+
+        /* Nav pane */
+        .nav-pane{background:var(--bg2);border:1px solid var(--brd);border-radius:1rem;padding:.65rem .85rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;font-size:.8rem}
+        .nav-pane a{color:var(--t2);text-decoration:none;padding:.35rem .65rem;border-radius:.5rem;transition:all .2s;display:inline-flex;align-items:center;gap:.3rem;white-space:nowrap}
+        .nav-pane a:hover{background:rgba(255,255,255,.08);color:var(--ac)}
+        .nav-pane .nav-sep{color:var(--brd);font-size:.7rem;user-select:none}
+        .nav-pane .nav-cur{color:var(--ac);font-weight:600;padding:.35rem .65rem}
+
+        /* Disclaimer gate overlay */
+        .gate-overlay{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto}
+        .gate-overlay.hidden{display:none}
+        .gate-box{max-width:640px;width:100%;background:var(--bg2);border:1px solid var(--brd);border-radius:1.5rem;padding:2.5rem;position:relative;animation:fadeIn .4s ease}
+        .gate-box .gate-icon{font-size:3rem;text-align:center;margin-bottom:.75rem}
+        .gate-box h2{text-align:center;font-size:1.5rem;font-weight:800;margin-bottom:.35rem}
+        .gate-box .gate-sub{text-align:center;color:var(--t2);font-size:.9rem;margin-bottom:1.5rem}
+        .gate-terms{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:1rem;padding:1.25rem;margin-bottom:1.5rem;max-height:300px;overflow-y:auto;font-size:.85rem;line-height:1.65;color:var(--t2)}
+        .gate-terms h3{color:var(--bad);font-size:.9rem;margin-bottom:.5rem}
+        .gate-terms ul{margin:.5rem 0 .5rem 1.25rem}.gate-terms li{margin-bottom:.35rem}
+        .gate-terms strong{color:var(--t1)}
+        .gate-check{display:flex;align-items:flex-start;gap:.6rem;margin-bottom:1.25rem;cursor:pointer;padding:.75rem;border-radius:.75rem;border:1px solid var(--brd);transition:all .3s}
+        .gate-check:hover{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.15)}
+        .gate-check input{margin-top:.2rem;accent-color:var(--ac);width:18px;height:18px;flex-shrink:0}
+        .gate-check label{font-size:.88rem;color:var(--t2);cursor:pointer;line-height:1.5}
+        .gate-check label strong{color:var(--t1)}
+        .gate-accepted-info{text-align:center;padding:.75rem;border-radius:.75rem;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);margin-bottom:1rem;font-size:.82rem;color:var(--ok);display:none}
+        .gate-loading{text-align:center;padding:2rem;color:var(--t3);font-size:.9rem}
+        .gate-loading .spinner{margin-bottom:.5rem}
+
+        .footer{text-align:center;padding:2rem;color:var(--t3);font-size:.78rem}.footer a{color:var(--ac);text-decoration:none}
+
+        /* Guide comparison in setup */
+        .gg{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.75rem}
+        .gi{text-align:center;padding:1rem;border-radius:.75rem}
+        .gi.ok{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2)}.gi.bad{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2)}
+        .gi .gl{font-weight:700;font-size:.9rem;margin-bottom:.2rem}.gi.ok .gl{color:var(--ok)}.gi.bad .gl{color:var(--bad)}
+        .gi .gd{font-size:.78rem;color:var(--t2);line-height:1.4}
+
+        @media(max-width:640px){.ctn{padding:1rem}h1{font-size:1.4rem}.card{padding:1.25rem}.compare-grid,.gg{grid-template-columns:1fr}.step-item{padding:.35rem .3rem;font-size:.68rem}.step-item .sl{display:none}.step-conn{width:14px}}
+    </style>
+</head>
+<body>
+<!-- ====== DISCLAIMER GATE (blocks tool until accepted) ====== -->
+<div class="gate-overlay" id="disclaimer-gate">
+    <div class="gate-box">
+        <div class="gate-icon">&#x2696;&#xFE0F;</div>
+        <h2>Important Disclaimer</h2>
+        <p class="gate-sub">Please read and accept before using this tool</p>
+
+        <div id="gate-loading" class="gate-loading">
+            <div class="spinner"></div>
+            <p>Checking acceptance status...</p>
+        </div>
+
+        <div id="gate-form" style="display:none">
+            <div class="gate-terms">
+                <h3>&#x26A0;&#xFE0F; Medical Disclaimer &amp; Terms of Use</h3>
+                <p>By using the Contact Lens Orientation Checker, you acknowledge and agree to the following:</p>
+                <ul>
+                    <li><strong>Not Medical Advice.</strong> This tool is for <strong>informational and educational purposes only</strong>. It is not a medical device and does not provide medical advice, diagnosis, or treatment.</li>
+                    <li><strong>No Substitute for Professional Care.</strong> This tool does <strong>not replace</strong> consultation with a licensed optometrist, ophthalmologist, or other qualified eye care professional. Always verify contact lens orientation with your eye care provider.</li>
+                    <li><strong>Accuracy Not Guaranteed.</strong> Results are based on image analysis algorithms that may produce <strong>incorrect results</strong> due to lighting conditions, camera quality, lens type, or other factors. Do not rely solely on this tool.</li>
+                    <li><strong>Risk Acknowledgment.</strong> Inserting a contact lens incorrectly can cause <strong>discomfort, eye irritation, corneal damage, or infection</strong>. If you experience any discomfort, redness, tearing, or vision changes, <strong>remove the lens immediately</strong> and seek professional medical attention.</li>
+                    <li><strong>Your Responsibility.</strong> You use this tool entirely at your own risk. The developers and operators of this tool accept <strong>no liability</strong> for any injury, damage, or loss arising from its use.</li>
+                    <li><strong>Privacy.</strong> Your acceptance of this disclaimer is recorded (timestamp, anonymous identifier) as evidence of informed consent. No personal identifying information is stored beyond your browser fingerprint.</li>
+                </ul>
+            </div>
+
+            <label class="gate-check" for="accept-cb">
+                <input type="checkbox" id="accept-cb">
+                <label for="accept-cb"><strong>I have read, understand, and accept</strong> the above disclaimer. I understand this tool is not medical advice and I use it at my own risk. I will consult an eye care professional if I have any doubts about my contact lens orientation.</label>
+            </label>
+
+            <div class="btn-row">
+                <button class="btn btn-p btn-lg" id="accept-btn" disabled style="width:100%">&#x2705; Accept &amp; Continue</button>
+            </div>
+            <p style="text-align:center;margin-top:.75rem;font-size:.75rem;color:var(--t3)">Your acceptance will be saved so you won't need to accept again on this device.</p>
+        </div>
+
+        <div id="gate-already" class="gate-accepted-info"></div>
+    </div>
+</div>
+
+<div class="bg-fx"></div>
+<div class="ctn">
+    <!-- Navigation Pane -->
+    <nav class="nav-pane">
+        <a href="/">&#x1F3E0; Home</a>
+        <span class="nav-sep">|</span>
+        <a href="/weather/">&#x1F324;&#xFE0F; Weather</a>
+        <span class="nav-sep">|</span>
+        <a href="/fc/#/guest">&#x1F48E; Fav Creators</a>
+        <span class="nav-sep">|</span>
+        <a href="/findstocks/">&#x1F4C8; Stocks</a>
+        <span class="nav-sep">|</span>
+        <a href="/MENTALHEALTHRESOURCES/">&#x1F9E0; Mental Health</a>
+        <span class="nav-sep">|</span>
+        <a href="/MOVIESHOWS3/">&#x1F3AC; Movies</a>
+        <span class="nav-sep">|</span>
+        <a href="/vr/">&#x1F97D; VR</a>
+        <span class="nav-sep">|</span>
+        <span class="nav-cur">&#x1F441;&#xFE0F; Lens Checker</span>
+    </nav>
+
+    <!-- Medical Disclaimer -->
+    <div class="disclaimer">
+        <span class="d-icon">&#x26A0;&#xFE0F;</span>
+        <div>
+            <strong>Not Medical Advice.</strong> This tool is for <strong>informational and educational purposes only</strong>.
+            It does not replace professional eye care. Contact lens orientation should always be verified by an
+            <a href="https://www.aao.org/eye-health/tips-prevention/contact-lens-care" target="_blank" rel="noopener">eye care professional</a>.
+            If you experience discomfort, redness, or vision changes, <strong>remove the lens immediately</strong> and consult your optometrist or ophthalmologist.
+            Never insert a lens you are unsure about.
+        </div>
+    </div>
+
+    <header class="header">
+        <h1>Contact Lens Orientation Checker</h1>
+        <p class="subtitle">Show us both sides of your lens on your finger &mdash; we compare which orientation is correct</p>
+    </header>
+
+    <div class="steps-bar" id="steps-bar"></div>
+
+    <!-- ====== STEP 1: Setup ====== -->
+    <div class="panel on" id="p-1">
+        <div class="card">
+            <div class="card-hd"><div class="card-ic">&#x1F4CB;</div><h2 class="card-tl">How It Works &mdash; Show Both Sides</h2></div>
+            <p style="color:var(--t2);margin-bottom:1.25rem;line-height:1.6;font-size:.9rem">
+                Instead of guessing from one photo, we ask you to show the lens on your finger <strong>twice</strong>: once as-is, then flip it and show it again. We compare both under the <em>same conditions</em> and pick the one with the correct bowl shape.
+            </p>
+
+            <div class="info-box">
+                <h3>&#x1F4F8; Step 1: Show Side A</h3>
+                <p>Place your lens on your fingertip (however you picked it up). Hold it at eye-level from the <strong>side</strong> and take a photo. Bright background behind it.</p>
+            </div>
+            <div class="info-box" style="border-left-color:var(--ac2)">
+                <h3>&#x1F504; Step 2: Flip &amp; Show Side B</h3>
+                <p>Flip the lens onto its other side (invert it). Place it on your fingertip again and take a second photo from the <strong>same angle &amp; lighting</strong>.</p>
+            </div>
+            <div class="info-box" style="border-left-color:var(--ok)">
+                <h3>&#x2696;&#xFE0F; Step 3: We Compare</h3>
+                <p>We analyze both photos side by side. The one with smoother inward curvature (clean "U" shape) is the correct orientation. We tell you <strong>which side to use</strong>.</p>
+            </div>
+
+            <div class="info-box warn">
+                <h3>&#x1F4A1; Key: Same Conditions</h3>
+                <p>Keep the <strong>same lighting, distance, and angle</strong> for both photos. This lets us make a fair comparison. Bright backlight behind the lens is still best.</p>
+            </div>
+
+            <h3 style="margin-top:1.25rem;font-size:.95rem">&#x1F441;&#xFE0F; What We're Comparing</h3>
+            <div class="gg">
+                <div class="gi ok">
+                    <svg viewBox="0 0 140 80" style="max-width:120px;margin:0 auto .4rem"><ellipse cx="70" cy="70" rx="18" ry="11" fill="#d4a574" opacity=".4"/><path d="M20 42 Q35 60 50 65 Q60 68 70 68 Q80 68 90 65 Q105 60 120 42" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round"/><text x="70" y="22" text-anchor="middle" font-size="9" fill="#10b981" font-weight="600">Smooth "U"</text></svg>
+                    <div class="gl">&#x2713; Correct Side</div>
+                    <p class="gd">Edges curve smoothly inward. Clean bowl shape.</p>
+                </div>
+                <div class="gi bad">
+                    <svg viewBox="0 0 140 80" style="max-width:120px;margin:0 auto .4rem"><ellipse cx="70" cy="70" rx="18" ry="11" fill="#d4a574" opacity=".4"/><path d="M14 32 Q22 42 35 50 Q50 58 70 62 Q90 58 105 50 Q118 42 126 32" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/><text x="70" y="18" text-anchor="middle" font-size="9" fill="#ef4444" font-weight="600">Edges flare</text></svg>
+                    <div class="gl">&#x2717; Wrong Side</div>
+                    <p class="gd">Edges flare outward. Saucer/lip shape at rim.</p>
+                </div>
+            </div>
+
+            <div class="btn-row" style="margin-top:2rem">
+                <button class="btn btn-p btn-lg" onclick="goToStep(2)">Ready &mdash; Show Side A &#x2192;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== STEP 2: Side A Capture ====== -->
+    <div class="panel" id="p-2">
+        <div class="card">
+            <div style="text-align:center"><span class="side-tag a">Side A &mdash; As You Picked It Up</span></div>
+            <div class="card-hd"><div class="card-ic">&#x1F4F8;</div><h2 class="card-tl">Capture Side A</h2></div>
+            <p style="color:var(--t2);margin-bottom:1rem;font-size:.88rem">Lens on your fingertip, camera at side/eye-level, bright background behind.</p>
+
+            <div class="vcont" id="vc-a">
+                <video id="vid-a" autoplay playsinline muted></video>
+                <img id="img-a" alt="Side A">
+                <div class="guide-ov" id="guide-a">
+                    <svg viewBox="0 0 640 480" preserveAspectRatio="xMidYMid slice">
+                        <defs><mask id="ma"><rect width="640" height="480" fill="white"/><ellipse cx="320" cy="250" rx="170" ry="130" fill="black"/></mask></defs>
+                        <rect width="640" height="480" fill="rgba(0,0,0,.35)" mask="url(#ma)"/>
+                        <ellipse cx="320" cy="250" rx="170" ry="130" fill="none" stroke="#00d4ff" stroke-width="2" stroke-dasharray="8 4" opacity=".5"/>
+                        <g transform="translate(320,245)" opacity=".45">
+                            <ellipse cx="0" cy="38" rx="22" ry="15" fill="none" stroke="#00d4ff" stroke-width="1.5" stroke-dasharray="4 3"/>
+                            <path d="M-55 -5 Q-38 22 -18 30 Q0 35 0 35 Q0 35 18 30 Q38 22 55 -5" fill="none" stroke="#00d4ff" stroke-width="2.5" stroke-dasharray="6 3"/>
+                        </g>
+                        <text x="320" y="435" text-anchor="middle" font-size="13" fill="#00d4ff" font-family="Inter,sans-serif" font-weight="600">Side view &mdash; lens on fingertip</text>
+                    </svg>
+                </div>
+                <div class="bri-bar"><div class="bri-fill" id="bf-a" style="width:0%"></div></div>
+                <div class="countdown" id="cd-a"></div>
+                <div class="cam-prompt" id="cp-a">
+                    <div style="font-size:2.5rem;margin-bottom:.5rem">&#x1F4F7;</div>
+                    <p style="margin-bottom:.5rem">Camera access required</p>
+                    <p style="font-size:.78rem;color:var(--t3);margin-bottom:1rem">Rear camera recommended</p>
+                    <button class="btn btn-p" id="enable-cam">Enable Camera</button>
+                </div>
+            </div>
+
+            <div class="q-panel" id="qp-a" style="display:none">
+                <div class="q-row"><span style="color:var(--t2)">&#x1F4A1; Brightness</span><span class="q-badge" id="qa-b">--</span></div>
+                <div class="q-row"><span style="color:var(--t2)">&#x1F3AF; Contrast</span><span class="q-badge" id="qa-c">--</span></div>
+            </div>
+
+            <div class="detect-fb" id="df-a">
+                <span class="df-icon"></span>
+                <div class="df-body"></div>
+            </div>
+
+            <div class="btn-row" style="margin-top:1rem">
+                <button class="btn btn-p" id="cap-a" disabled>&#x1F4F8; Capture Side A</button>
+                <button class="btn btn-s" id="timer-a" disabled>&#x23F1;&#xFE0F; 3s Timer</button>
+                <button class="btn btn-s" id="retake-a" style="display:none">&#x1F504; Retake</button>
+                <button class="btn btn-ok" id="next-a" style="display:none">Got it &mdash; Now Flip &#x2192;</button>
+            </div>
+            <div class="btn-row" style="margin-top:.6rem"><button class="btn btn-s" onclick="goToStep(1)">&#x2190; Back</button></div>
+        </div>
+    </div>
+
+    <!-- ====== STEP 3: Flip Instructions ====== -->
+    <div class="panel" id="p-3">
+        <div class="card" style="text-align:center">
+            <div style="font-size:3rem;margin-bottom:.5rem">&#x1F504;</div>
+            <h2 style="margin-bottom:.75rem">Now Flip the Lens</h2>
+            <p style="color:var(--t2);max-width:480px;margin:0 auto 1.5rem;line-height:1.6;font-size:.9rem">
+                Gently place the lens in your palm and <strong>press the center</strong> to invert it onto the other side.
+                Then place it back on your fingertip. We'll take a second photo of this flipped orientation.
+            </p>
+            <div style="display:flex;justify-content:center;gap:2rem;margin-bottom:1.5rem">
+                <div style="text-align:center">
+                    <div style="font-size:1.5rem;margin-bottom:.25rem">&#x1F448;</div>
+                    <div style="font-size:.78rem;color:var(--t3)">Side A<br>(just captured)</div>
+                </div>
+                <div style="font-size:2rem;align-self:center;color:var(--ac)">&#x27A1;&#xFE0F;</div>
+                <div style="text-align:center">
+                    <div style="font-size:1.5rem;margin-bottom:.25rem">&#x1F449;</div>
+                    <div style="font-size:.78rem;color:var(--t3)">Side B<br>(flipped)</div>
+                </div>
+            </div>
+            <div class="info-box warn" style="text-align:left;max-width:480px;margin:0 auto 1.5rem">
+                <h3>&#x26A0;&#xFE0F; Same Conditions!</h3>
+                <p>Keep the same lighting, distance, and angle as Side A. Don't change your setup between shots.</p>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-p btn-lg" onclick="goToStep(4)">Lens is Flipped &mdash; Capture Side B &#x2192;</button>
+            </div>
+            <div class="btn-row" style="margin-top:.6rem"><button class="btn btn-s" onclick="goToStep(2)">&#x2190; Back to Side A</button></div>
+        </div>
+    </div>
+
+    <!-- ====== STEP 4: Side B Capture ====== -->
+    <div class="panel" id="p-4">
+        <div class="card">
+            <div style="text-align:center"><span class="side-tag b">Side B &mdash; Flipped Orientation</span></div>
+            <div class="card-hd"><div class="card-ic" style="background:linear-gradient(135deg,var(--ac2),#a78bfa)">&#x1F4F8;</div><h2 class="card-tl">Capture Side B</h2></div>
+            <p style="color:var(--t2);margin-bottom:1rem;font-size:.88rem">Same position, same lighting. Just the flipped lens on your fingertip.</p>
+
+            <div class="vcont" id="vc-b">
+                <video id="vid-b" autoplay playsinline muted></video>
+                <img id="img-b" alt="Side B">
+                <div class="guide-ov" id="guide-b">
+                    <svg viewBox="0 0 640 480" preserveAspectRatio="xMidYMid slice">
+                        <defs><mask id="mb"><rect width="640" height="480" fill="white"/><ellipse cx="320" cy="250" rx="170" ry="130" fill="black"/></mask></defs>
+                        <rect width="640" height="480" fill="rgba(0,0,0,.35)" mask="url(#mb)"/>
+                        <ellipse cx="320" cy="250" rx="170" ry="130" fill="none" stroke="#a78bfa" stroke-width="2" stroke-dasharray="8 4" opacity=".5"/>
+                        <g transform="translate(320,245)" opacity=".45">
+                            <ellipse cx="0" cy="38" rx="22" ry="15" fill="none" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4 3"/>
+                            <path d="M-55 -5 Q-38 22 -18 30 Q0 35 0 35 Q0 35 18 30 Q38 22 55 -5" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-dasharray="6 3"/>
+                        </g>
+                        <text x="320" y="435" text-anchor="middle" font-size="13" fill="#a78bfa" font-family="Inter,sans-serif" font-weight="600">Side B (flipped) &mdash; same angle &amp; light</text>
+                    </svg>
+                </div>
+                <div class="bri-bar"><div class="bri-fill" id="bf-b" style="width:0%"></div></div>
+                <div class="countdown" id="cd-b"></div>
+                <div class="cam-prompt hidden" id="cp-b"></div>
+            </div>
+
+            <div class="detect-fb" id="df-b">
+                <span class="df-icon"></span>
+                <div class="df-body"></div>
+            </div>
+
+            <div class="btn-row" style="margin-top:1rem">
+                <button class="btn btn-p" id="cap-b">&#x1F4F8; Capture Side B</button>
+                <button class="btn btn-s" id="timer-b">&#x23F1;&#xFE0F; 3s Timer</button>
+                <button class="btn btn-s" id="retake-b" style="display:none">&#x1F504; Retake</button>
+                <button class="btn btn-ok" id="next-b" style="display:none">Compare Both Sides &#x2192;</button>
+            </div>
+            <div class="btn-row" style="margin-top:.6rem"><button class="btn btn-s" onclick="goToStep(3)">&#x2190; Back</button></div>
+        </div>
+    </div>
+
+    <!-- ====== STEP 5: Analyzing ====== -->
+    <div class="panel" id="p-5">
+        <div class="card" style="text-align:center;padding:2.5rem">
+            <div class="spinner"></div>
+            <h2 style="margin-bottom:.5rem">Comparing Both Sides...</h2>
+            <p style="color:var(--t2);font-size:.88rem" id="a-status">Analyzing edge curvature of each side</p>
+            <div style="margin-top:1.25rem;text-align:left">
+                <div class="q-row" id="as-a" style="opacity:.3"><span>&#x1F4F8; Side A analysis</span><span id="as-a-v">Pending</span></div>
+                <div class="q-row" id="as-b" style="opacity:.3"><span>&#x1F4F8; Side B analysis</span><span id="as-b-v">Pending</span></div>
+                <div class="q-row" id="as-cmp" style="opacity:.3"><span>&#x2696;&#xFE0F; Comparison</span><span id="as-cmp-v">Pending</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== STEP 6: Results ====== -->
+    <div class="panel" id="p-6">
+        <div id="res-out"></div>
+        <div class="optional-section">
+            <h3>&#x1F32E; Optional: Taco Fold Test</h3>
+            <p style="color:var(--t3);font-size:.85rem;margin-bottom:.75rem">For extra confidence, gently fold the lens. Correct lens edges meet cleanly; inside-out edges splay apart.</p>
+        </div>
+        <div class="btn-row" style="margin-top:1.5rem">
+            <button class="btn btn-p btn-lg" onclick="resetAll()">&#x1F504; Check Another Lens</button>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>Contact Lens Orientation Checker by <a href="/">Find Toronto Events</a></p>
+        <p style="margin-top:.3rem"><strong style="color:var(--bad)">Not medical advice</strong> &mdash; always consult your eye care professional before inserting contact lenses</p>
+        <p style="margin-top:.5rem">
+            <a href="/">Home</a> &middot;
+            <a href="/weather/">Weather</a> &middot;
+            <a href="/fc/#/guest">Fav Creators</a> &middot;
+            <a href="/findstocks/">Stocks</a> &middot;
+            <a href="/MENTALHEALTHRESOURCES/">Mental Health</a> &middot;
+            <a href="/MOVIESHOWS3/">Movies</a> &middot;
+            <a href="/vr/">VR</a>
+        </p>
+    </footer>
+</div>
+
+<script>
+// ====================================================================
+//  DISCLAIMER GATE - Must accept before using the tool
+//  Saves acceptance to database via PHP API. Uses localStorage token
+//  + cookie for returning users.
+// ====================================================================
+const DISCLAIMER_VERSION = '1.0';
+const API_BASE = '/CONTACTLENSES/api';
+
+// Generate or retrieve a persistent user token (anonymous fingerprint)
+function getUserToken() {
+    let token = localStorage.getItem('cl_user_token');
+    if (!token) {
+        // Also check cookie
+        const match = document.cookie.match(/cl_user_token=([a-f0-9]+)/);
+        if (match) { token = match[1]; localStorage.setItem('cl_user_token', token); }
+    }
+    if (!token) {
+        // Generate new token: random hex string
+        const arr = new Uint8Array(24);
+        crypto.getRandomValues(arr);
+        token = Array.from(arr, b => b.toString(16).padStart(2,'0')).join('');
+        localStorage.setItem('cl_user_token', token);
+    }
+    // Set/refresh cookie (1 year)
+    document.cookie = 'cl_user_token=' + token + '; path=/; max-age=31536000; SameSite=Lax';
+    return token;
+}
+
+async function checkDisclaimer() {
+    const gate = document.getElementById('disclaimer-gate');
+    const loading = document.getElementById('gate-loading');
+    const form = document.getElementById('gate-form');
+    const already = document.getElementById('gate-already');
+    const token = getUserToken();
+
+    try {
+        const resp = await fetch(API_BASE + '/check_acceptance.php?token=' + encodeURIComponent(token) + '&version=' + DISCLAIMER_VERSION);
+        const data = await resp.json();
+
+        if (data.accepted) {
+            // Already accepted - show brief confirmation then unlock
+            loading.style.display = 'none';
+            already.style.display = 'block';
+            already.innerHTML = '\u2705 Disclaimer accepted on ' + new Date(data.accepted_at + 'Z').toLocaleDateString() + '. Proceeding...';
+            setTimeout(() => { gate.classList.add('hidden'); }, 800);
+            return;
+        }
+    } catch (e) {
+        // API unreachable - check localStorage fallback
+        const localAccepted = localStorage.getItem('cl_disclaimer_accepted_' + DISCLAIMER_VERSION);
+        if (localAccepted) {
+            loading.style.display = 'none';
+            already.style.display = 'block';
+            already.textContent = '\u2705 Previously accepted (offline). Proceeding...';
+            setTimeout(() => { gate.classList.add('hidden'); }, 600);
+            return;
+        }
+    }
+
+    // Not accepted - show the form
+    loading.style.display = 'none';
+    form.style.display = 'block';
+}
+
+async function saveAcceptance() {
+    const token = getUserToken();
+    const btn = document.getElementById('accept-btn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    // Save to localStorage immediately (offline fallback)
+    localStorage.setItem('cl_disclaimer_accepted_' + DISCLAIMER_VERSION, new Date().toISOString());
+
+    try {
+        const resp = await fetch(API_BASE + '/save_acceptance.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: token, version: DISCLAIMER_VERSION })
+        });
+        const data = await resp.json();
+
+        if (data.success) {
+            btn.textContent = '\u2705 Accepted — Record #' + data.record_id;
+            setTimeout(() => {
+                document.getElementById('disclaimer-gate').classList.add('hidden');
+            }, 600);
+        } else {
+            // DB save failed but localStorage worked
+            btn.textContent = '\u2705 Accepted (saved locally)';
+            setTimeout(() => {
+                document.getElementById('disclaimer-gate').classList.add('hidden');
+            }, 600);
+        }
+    } catch (e) {
+        // Network error - still allow (localStorage saved)
+        btn.textContent = '\u2705 Accepted (saved locally)';
+        setTimeout(() => {
+            document.getElementById('disclaimer-gate').classList.add('hidden');
+        }, 600);
+    }
+}
+
+// Wire checkbox -> button
+document.getElementById('accept-cb').addEventListener('change', function() {
+    document.getElementById('accept-btn').disabled = !this.checked;
+});
+document.getElementById('accept-btn').addEventListener('click', saveAcceptance);
+
+// Run disclaimer check on load
+checkDisclaimer();
+</script>
+
+<script>
+// ====================================================================
+//  CONTACT LENS CHECKER v4.0 - Comparative Two-Side Analysis
+//  Show Side A, flip lens, show Side B, we compare which is correct.
+//  No absolute thresholds - purely relative comparison.
+// ====================================================================
+
+const STEPS = ['Setup','Side A','Flip','Side B','Analyzing','Result'];
+
+const S = {
+    step: 1,
+    stream: null,
+    camOn: false,
+    qInterval: null,
+    sideAData: null, // dataURL
+    sideBData: null,
+};
+
+// Steps bar
+(function buildSteps() {
+    const bar = document.getElementById('steps-bar');
+    STEPS.forEach((l,i) => {
+        if (i > 0) { const c = document.createElement('div'); c.className = 'step-conn'; c.id = 'sc-'+i; bar.appendChild(c); }
+        const s = document.createElement('div');
+        s.className = 'step-item' + (i===0?' active':'');
+        s.innerHTML = `<span class="sn">${i+1}</span><span class="sl">${l}</span>`;
+        bar.appendChild(s);
+    });
+})();
+
+function goToStep(n) {
+    S.step = n;
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+    document.getElementById('p-'+n)?.classList.add('on');
+    document.querySelectorAll('.step-item').forEach((s,i) => {
+        s.classList.remove('active','done');
+        if (i+1 < n) s.classList.add('done');
+        if (i+1 === n) s.classList.add('active');
+    });
+    document.querySelectorAll('.step-conn').forEach((c,i) => c.classList.toggle('done', i+1 < n));
+    window.scrollTo({top:0,behavior:'smooth'});
+    // Wire video for side B
+    if (n === 4 && S.stream) {
+        const vb = document.getElementById('vid-b');
+        if (!vb.srcObject) vb.srcObject = S.stream;
+    }
+}
+
+// ===========================
+//  CAMERA
+// ===========================
+document.getElementById('enable-cam').addEventListener('click', async () => {
+    try {
+        S.stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode:'environment', width:{ideal:1280}, height:{ideal:960} }
+        });
+        document.getElementById('vid-a').srcObject = S.stream;
+        S.camOn = true;
+        document.getElementById('cp-a').classList.add('hidden');
+        document.getElementById('cap-a').disabled = false;
+        document.getElementById('timer-a').disabled = false;
+        document.getElementById('qp-a').style.display = 'block';
+        startQMon('vid-a','bf-a','qa-b','qa-c');
+    } catch(e) { alert('Camera access denied. Please allow and reload.'); }
+});
+
+function startQMon(vidId, barId, bId, cId) {
+    if (S.qInterval) clearInterval(S.qInterval);
+    const v = document.getElementById(vidId);
+    const cv = document.createElement('canvas'); const cx = cv.getContext('2d');
+    S.qInterval = setInterval(() => {
+        if (!S.camOn || v.videoWidth === 0) return;
+        cv.width = 120; cv.height = 90;
+        cx.drawImage(v, 0, 0, 120, 90);
+        const q = assessQ(cx.getImageData(0,0,120,90).data, 120, 90);
+        setBadge(bId, q.brightness>140?'pass':q.brightness>80?'warn':'fail', q.brightness>140?'Good':q.brightness>80?'Dim':'Dark');
+        setBadge(cId, q.contrast>40?'pass':q.contrast>20?'warn':'fail', q.contrast>40?'Good':q.contrast>20?'Low':'Flat');
+        const fill = document.getElementById(barId);
+        fill.style.width = Math.min(100, q.brightness/200*100)+'%';
+        fill.style.background = q.brightness>140?'#10b981':q.brightness>80?'#f59e0b':'#ef4444';
+    }, 500);
+}
+function setBadge(id,lev,txt){const e=document.getElementById(id);e.className='q-badge '+lev;e.textContent=txt;}
+
+// ===========================
+//  CAPTURE SIDE A / B
+// ===========================
+const MIN_CONTOUR = 30;     // minimum edge points to consider lens detected
+const MIN_QUALITY_BRI = 40; // minimum brightness to trust detection
+
+async function captureSide(side) {
+    const vid = document.getElementById('vid-'+side);
+    const img = document.getElementById('img-'+side);
+    const guide = document.getElementById('guide-'+side);
+    const c = document.createElement('canvas');
+    c.width = vid.videoWidth; c.height = vid.videoHeight;
+    c.getContext('2d').drawImage(vid, 0, 0);
+    const dataUrl = c.toDataURL('image/jpeg', 0.92);
+    img.src = dataUrl; img.style.display = 'block';
+    vid.style.display = 'none';
+    if (guide) guide.classList.add('hidden');
+
+    // Store data
+    if (side === 'a') S.sideAData = dataUrl; else S.sideBData = dataUrl;
+
+    // Show retake, hide capture buttons
+    document.getElementById('cap-'+side).style.display = 'none';
+    document.getElementById('timer-'+side).style.display = 'none';
+    document.getElementById('retake-'+side).style.display = 'inline-flex';
+
+    // Run quick lens detection
+    const detected = await quickDetect(dataUrl, side);
+
+    // Only show "proceed" button if lens was detected
+    const nextBtn = document.getElementById('next-'+side);
+    if (detected) {
+        nextBtn.style.display = 'inline-flex';
+    } else {
+        nextBtn.style.display = 'none'; // block proceeding
+    }
+}
+
+async function quickDetect(dataUrl, side) {
+    const fb = document.getElementById('df-'+side);
+    const fbIcon = fb.querySelector('.df-icon');
+    const fbBody = fb.querySelector('.df-body');
+
+    // Show loading state
+    fb.className = 'detect-fb ok';
+    fbIcon.textContent = '\u23F3';
+    fbBody.innerHTML = '<h4>Checking for lens...</h4>';
+
+    const imgEl = await loadImg(dataUrl);
+    const result = analyzeFrame(imgEl);
+
+    const hasLens = result.contourLen && result.contourLen >= MIN_CONTOUR;
+    const tooDark = result.quality && result.quality.brightness < MIN_QUALITY_BRI;
+    const lowContrast = result.quality && result.quality.contrast < 15;
+
+    if (hasLens && !tooDark) {
+        // Lens detected
+        fb.className = 'detect-fb ok';
+        fbIcon.textContent = '\u2705';
+        fbBody.innerHTML = `<h4>Lens detected (${result.contourLen} edge points)</h4><p>Good capture. You can proceed.</p>`;
+        return true;
+    } else {
+        // Failed detection - build specific tips
+        let reasons = [];
+        if (!hasLens) reasons.push('Could not find enough lens edges in the image');
+        if (tooDark) reasons.push('Image is too dark (brightness: ' + Math.round(result.quality.brightness) + ')');
+        if (lowContrast) reasons.push('Very low contrast between lens and background');
+
+        let tips = '<ul>';
+        if (tooDark) tips += '<li>Move to a brighter area or add a light behind the lens</li>';
+        if (!hasLens) tips += '<li>Make sure the lens is clearly visible from the <strong>side</strong></li>';
+        tips += '<li>Hold the lens closer to the camera so it fills more of the frame</li>';
+        tips += '<li>Use a bright/white background behind the lens</li>';
+        if (lowContrast) tips += '<li>Avoid holding the lens against your skin — use a contrasting background</li>';
+        tips += '</ul>';
+
+        fb.className = 'detect-fb fail';
+        fbIcon.textContent = '\u26A0\uFE0F';
+        fbBody.innerHTML = `<h4>Lens not detected — please retake</h4><p>${reasons.join('. ')}.</p>${tips}`;
+        return false;
+    }
+}
+
+function retakeSide(side) {
+    const vid = document.getElementById('vid-'+side);
+    const img = document.getElementById('img-'+side);
+    const guide = document.getElementById('guide-'+side);
+    vid.style.display = 'block'; img.style.display = 'none';
+    if (guide) guide.classList.remove('hidden');
+    // Clear detection feedback
+    const fb = document.getElementById('df-'+side);
+    fb.className = 'detect-fb'; // hides it
+    if (side === 'a') {
+        S.sideAData = null;
+        document.getElementById('cap-a').style.display = 'inline-flex';
+        document.getElementById('timer-a').style.display = 'inline-flex';
+        document.getElementById('retake-a').style.display = 'none';
+        document.getElementById('next-a').style.display = 'none';
+    } else {
+        S.sideBData = null;
+        document.getElementById('cap-b').style.display = 'inline-flex';
+        document.getElementById('timer-b').style.display = 'inline-flex';
+        document.getElementById('retake-b').style.display = 'none';
+        document.getElementById('next-b').style.display = 'none';
+    }
+}
+
+function timerCapture(side) {
+    const cd = document.getElementById('cd-'+side);
+    let t = 3;
+    cd.textContent = t; cd.classList.add('on');
+    const iv = setInterval(() => {
+        t--; cd.textContent = t;
+        if (t <= 0) { clearInterval(iv); cd.classList.remove('on'); captureSide(side); }
+    }, 1000);
+}
+
+// Wire buttons
+document.getElementById('cap-a').addEventListener('click', () => captureSide('a'));
+document.getElementById('timer-a').addEventListener('click', () => timerCapture('a'));
+document.getElementById('retake-a').addEventListener('click', () => retakeSide('a'));
+document.getElementById('next-a').addEventListener('click', () => goToStep(3));
+
+document.getElementById('cap-b').addEventListener('click', () => captureSide('b'));
+document.getElementById('timer-b').addEventListener('click', () => timerCapture('b'));
+document.getElementById('retake-b').addEventListener('click', () => retakeSide('b'));
+document.getElementById('next-b').addEventListener('click', () => runComparison());
+
+// ====================================================================
+//  COMPARATIVE ANALYSIS ENGINE
+//  Analyze both sides independently, then compare scores.
+//  The side with the better (more "correct") score wins.
+//  This is a RELATIVE comparison, not absolute threshold.
+// ====================================================================
+async function runComparison() {
+    goToStep(5);
+    updateAS('as-a', 1, 'Analyzing...');
+
+    const imgA = await loadImg(S.sideAData);
+    const imgB = await loadImg(S.sideBData);
+
+    const scoreA = analyzeFrame(imgA);
+
+    // Safeguard: if Side A has no lens, bounce back
+    if (!scoreA.contourLen || scoreA.contourLen < MIN_CONTOUR) {
+        updateAS('as-a', 2, 'No lens!');
+        await sleep(500);
+        alert('We could not detect a lens in your Side A photo. Please retake it with better lighting and angle.');
+        goToStep(2);
+        retakeSide('a');
+        return;
+    }
+
+    updateAS('as-a', 2, 'Score: ' + scoreA.score.toFixed(1));
+    await sleep(300);
+
+    updateAS('as-b', 1, 'Analyzing...');
+    const scoreB = analyzeFrame(imgB);
+
+    // Safeguard: if Side B has no lens, bounce back
+    if (!scoreB.contourLen || scoreB.contourLen < MIN_CONTOUR) {
+        updateAS('as-b', 2, 'No lens!');
+        await sleep(500);
+        alert('We could not detect a lens in your Side B photo. Please retake it with better lighting and angle.');
+        goToStep(4);
+        retakeSide('b');
+        return;
+    }
+
+    updateAS('as-b', 2, 'Score: ' + scoreB.score.toFixed(1));
+    await sleep(300);
+
+    updateAS('as-cmp', 1, 'Comparing...');
+    await sleep(300);
+
+    // Compare: higher "correctness score" = more likely correct orientation
+    const diff = scoreA.score - scoreB.score;
+    const absDiff = Math.abs(diff);
+
+    // Confidence based on how different the two scores are
+    let confidence;
+    if (absDiff > 3) confidence = 92;
+    else if (absDiff > 2) confidence = 80;
+    else if (absDiff > 1) confidence = 65;
+    else if (absDiff > 0.5) confidence = 52;
+    else confidence = 38; // very similar = can't tell
+
+    const aIsCorrect = scoreA.score > scoreB.score;
+    let orientation, message, tip, action;
+
+    if (absDiff < 0.3) {
+        orientation = 'uncertain';
+        message = 'Both sides look very similar. The difference is too small to determine reliably.';
+        tip = 'Try the taco test: gently fold the lens. If edges meet cleanly, that side is correct. If they splay apart, flip it.';
+        action = '';
+    } else if (aIsCorrect) {
+        orientation = 'correct';
+        message = '<strong>Side A</strong> (as you first picked it up) has the correct bowl shape. <strong>Use Side A.</strong>';
+        tip = 'Flip it back to Side A orientation if you\'re currently on Side B, then insert.';
+        action = 'Use Side A (flip back to original)';
+    } else {
+        orientation = 'incorrect';
+        message = '<strong>Side B</strong> (the flipped version) has the correct bowl shape. <strong>Use Side B.</strong>';
+        tip = 'Keep it on Side B (the current orientation after flipping) and insert.';
+        action = 'Use Side B (keep as flipped)';
+    }
+
+    confidence = Math.max(20, Math.min(96, confidence));
+    updateAS('as-cmp', 2, 'Done');
+    await sleep(200);
+
+    showResult(orientation, confidence, message, tip, action, scoreA, scoreB, aIsCorrect, absDiff);
+}
+
+function analyzeFrame(img) {
+    const c = document.createElement('canvas'); const ctx = c.getContext('2d');
+    const scale = 350 / img.width;
+    c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    const W = c.width, H = c.height;
+    const px = ctx.getImageData(0, 0, W, H).data;
+
+    const quality = assessQ(px, W, H);
+    const gray = toGray(px, W, H);
+    const blurred = gBlur(gray, W, H);
+    const edges = sobel(blurred, W, H);
+    const thresh = otsu(edges.mag, W, H);
+    const bin = new Uint8Array(W*H);
+    for (let i=0;i<W*H;i++) bin[i] = edges.mag[i]>thresh?1:0;
+    const contour = findContour(bin, W, H);
+
+    if (contour.length < 20) return { score: 0, factors: [{name:'Detection',value:'No lens',status:'bad'}], quality };
+
+    let minX=W,maxX=0,minY=H,maxY=0;
+    for(const p of contour){if(p.x<minX)minX=p.x;if(p.x>maxX)maxX=p.x;if(p.y<minY)minY=p.y;if(p.y>maxY)maxY=p.y;}
+    const bW=maxX-minX, bH=maxY-minY, cx=(minX+maxX)/2;
+    const topCut=minY+bH*0.25;
+    const rimPts=contour.filter(p=>p.y<=topCut);
+    const leftR=rimPts.filter(p=>p.x<cx-bW*0.1);
+    const rightR=rimPts.filter(p=>p.x>cx+bW*0.1);
+    const lc=rimCurve(leftR,cx), rc=rimCurve(rightR,cx);
+
+    const hullA=convHullArea(contour), cntA=polyArea(contour);
+    const solidity=cntA/Math.max(hullA,1);
+    const aspect=bW/Math.max(bH,1);
+
+    // Build a "correctness score" (higher = more likely correct orientation)
+    // This is what we compare between A and B
+    let score = 0;
+    const factors = [];
+
+    // Rim inflection: negative = smooth inward (correct), positive = flare (inverted)
+    const avgInf = (lc.inflection + rc.inflection) / 2;
+    if (avgInf > 0.3) { score -= 3; factors.push({name:'Rim inflection',value:'Flare',status:'bad'}); }
+    else if (avgInf <= 0) { score += 3; factors.push({name:'Rim curvature',value:'Smooth',status:'good'}); }
+    else { score += 0.5; factors.push({name:'Rim curvature',value:'Slight',status:'neutral'}); }
+
+    // Tip flare
+    const avgFlare = (lc.tipFlare + rc.tipFlare) / 2;
+    if (avgFlare > 0.3) { score -= 2; factors.push({name:'Tip direction',value:'Outward',status:'bad'}); }
+    else if (avgFlare < -0.1) { score += 2; factors.push({name:'Tip direction',value:'Inward',status:'good'}); }
+    else { score += 0.5; factors.push({name:'Tip direction',value:'Neutral',status:'neutral'}); }
+
+    // Solidity
+    if (solidity > 0.92) { score += 1.5; factors.push({name:'Convexity',value:(solidity*100).toFixed(0)+'%',status:'good'}); }
+    else if (solidity < 0.82) { score -= 1; factors.push({name:'Convexity',value:(solidity*100).toFixed(0)+'%',status:'bad'}); }
+    else factors.push({name:'Convexity',value:(solidity*100).toFixed(0)+'%',status:'neutral'});
+
+    // Side profile check
+    if (aspect > 1.2) { score += 0.5; factors.push({name:'View',value:'Side profile',status:'good'}); }
+    else factors.push({name:'View',value:'May be top-down',status:'bad'});
+
+    factors.push({name:'Brightness',value:Math.round(quality.brightness),status:quality.brightness>100?'good':'neutral'});
+    factors.push({name:'Edge points',value:contour.length,status:contour.length>50?'good':'neutral'});
+
+    return { score, factors, quality, contourLen: contour.length };
+}
+
+// ===========================
+//  SHOW RESULT
+// ===========================
+function showResult(orientation, confidence, message, tip, action, sA, sB, aWins, diff) {
+    goToStep(6);
+    const icons = {correct:'\u2705',incorrect:'\u2705',uncertain:'\u2753'};
+    const titles = {correct:'Side A is Correct',incorrect:'Side B is Correct',uncertain:'Too Close to Call'};
+    const colors = {correct:'#10b981',incorrect:'#10b981',uncertain:'#f59e0b'};
+    // For the result card class: correct/incorrect both mean we found the answer, uncertain means we didn't
+    const cardClass = orientation === 'uncertain' ? 'uncertain' : 'correct';
+
+    const aFactors = (sA.factors||[]).map(f => `<div class="f-row"><span class="f-name">${f.name}</span><span class="f-val ${f.status}">${f.value}</span></div>`).join('');
+    const bFactors = (sB.factors||[]).map(f => `<div class="f-row"><span class="f-name">${f.name}</span><span class="f-val ${f.status}">${f.value}</span></div>`).join('');
+
+    document.getElementById('res-out').innerHTML = `
+        <div class="res-card ${cardClass}" style="max-width:640px;margin:0 auto">
+            <div class="res-icon">${icons[orientation]}</div>
+            <h3 class="res-title">${titles[orientation]}</h3>
+            <p class="res-desc">${message}</p>
+            <div class="conf-bar"><div class="conf-fill" style="width:${confidence}%;background:${colors[orientation]}"></div></div>
+            <p class="conf-text">Confidence: ${confidence}% &mdash; Score difference: ${diff.toFixed(1)}</p>
+            ${action ? `<p style="margin-top:.75rem;padding:.75rem;background:rgba(16,185,129,.1);border-radius:.5rem;font-weight:700;color:var(--ok);font-size:.9rem">${action}</p>` : ''}
+            ${tip ? `<p style="margin-top:.5rem;padding:.75rem;background:rgba(255,255,255,.04);border-radius:.5rem;font-size:.85rem;color:var(--t2);text-align:left"><strong>Tip:</strong> ${tip}</p>` : ''}
+
+            <div class="compare-grid">
+                <div class="compare-box ${aWins&&orientation!=='uncertain'?'winner':'loser'}">
+                    <h4>&#x1F4F8; Side A</h4>
+                    <img src="${S.sideAData}" alt="Side A">
+                    <p class="verdict" style="color:${aWins?'var(--ok)':'var(--bad)'}">${aWins ? '\u2713 Better Shape' : '\u2717 Worse Shape'}</p>
+                    <p class="score-val">Correctness: ${sA.score.toFixed(1)}</p>
+                </div>
+                <div class="compare-box ${!aWins&&orientation!=='uncertain'?'winner':'loser'}">
+                    <h4>&#x1F4F8; Side B</h4>
+                    <img src="${S.sideBData}" alt="Side B">
+                    <p class="verdict" style="color:${!aWins?'var(--ok)':'var(--bad)'}">${!aWins ? '\u2713 Better Shape' : '\u2717 Worse Shape'}</p>
+                    <p class="score-val">Correctness: ${sB.score.toFixed(1)}</p>
+                </div>
+            </div>
+
+            <div class="factors"><h4>Side A Factors</h4>${aFactors}</div>
+            <div class="factors" style="margin-top:.5rem"><h4>Side B Factors</h4>${bFactors}</div>
+        </div>`;
+}
+
+// ===========================
+//  IMAGE PROCESSING
+// ===========================
+function assessQ(px,W,H){let s=0;const a=[];for(let i=0;i<px.length;i+=4){const b=(px[i]+px[i+1]+px[i+2])/3;s+=b;a.push(b);}const avg=s/(W*H);let v=0;for(const b of a)v+=(b-avg)**2;return{brightness:avg,contrast:Math.sqrt(v/a.length)};}
+function loadImg(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src;});}
+function toGray(px,W,H){const g=new Float32Array(W*H);for(let i=0;i<W*H;i++){const j=i*4;g[i]=px[j]*.299+px[j+1]*.587+px[j+2]*.114;}return g;}
+function gBlur(inp,W,H){const o=new Float32Array(W*H);const k=[1/16,2/16,1/16,2/16,4/16,2/16,1/16,2/16,1/16];for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){let s=0;for(let ky=-1;ky<=1;ky++)for(let kx=-1;kx<=1;kx++)s+=inp[(y+ky)*W+(x+kx)]*k[(ky+1)*3+(kx+1)];o[y*W+x]=s;}return o;}
+function sobel(gray,W,H){const m=new Float32Array(W*H),gx=new Float32Array(W*H),gy=new Float32Array(W*H);for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){const i=y*W+x;const sx=-gray[(y-1)*W+(x-1)]+gray[(y-1)*W+(x+1)]-2*gray[y*W+(x-1)]+2*gray[y*W+(x+1)]-gray[(y+1)*W+(x-1)]+gray[(y+1)*W+(x+1)];const sy=-gray[(y-1)*W+(x-1)]-2*gray[(y-1)*W+x]-gray[(y-1)*W+(x+1)]+gray[(y+1)*W+(x-1)]+2*gray[(y+1)*W+x]+gray[(y+1)*W+(x+1)];gx[i]=sx;gy[i]=sy;m[i]=Math.sqrt(sx*sx+sy*sy);}return{mag:m,gx,gy};}
+function otsu(mag,W,H){const mx=512,hist=new Array(mx).fill(0),tot=W*H;for(let i=0;i<tot;i++)hist[Math.min(mx-1,Math.floor(mag[i]))]++;let sA=0;for(let i=0;i<mx;i++)sA+=i*hist[i];let sB=0,wB=0,best=0,t=50;for(let i=0;i<mx;i++){wB+=hist[i];if(!wB)continue;const wF=tot-wB;if(!wF)break;sB+=i*hist[i];const v=wB*wF*((sB/wB-(sA-sB)/wF)**2);if(v>best){best=v;t=i;}}return Math.max(t,20);}
+function findContour(bin,W,H){const vis=new Uint8Array(W*H);let best=[];for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){const i=y*W+x;if(!bin[i]||vis[i])continue;const cl=[],q=[{x,y}];vis[i]=1;while(q.length){const p=q.shift();cl.push(p);for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const nx=p.x+dx,ny=p.y+dy;if(nx<0||nx>=W||ny<0||ny>=H)continue;const ni=ny*W+nx;if(bin[ni]&&!vis[ni]){vis[ni]=1;q.push({x:nx,y:ny});}}if(cl.length>5000)break;}if(cl.length>best.length)best=cl;}return best;}
+function rimCurve(pts,cx){if(pts.length<5)return{inflection:0,tipFlare:0};const sorted=[...pts].sort((a,b)=>Math.abs(a.x-cx)-Math.abs(b.x-cx));const nB=6,bs=Math.max(1,Math.floor(sorted.length/nB)),bins=[];for(let i=0;i<nB;i++){const s=i*bs,e=Math.min(s+bs,sorted.length);if(s>=sorted.length)break;const bp=sorted.slice(s,e);bins.push({y:bp.reduce((a,p)=>a+p.y,0)/bp.length});}if(bins.length<3)return{inflection:0,tipFlare:0};let inf=0,prev=null;for(let i=1;i<bins.length;i++){const sl=bins[i].y-bins[i-1].y;if(prev!==null&&prev<-0.5&&sl>0.5)inf++;prev=sl;}const tf=bins[bins.length-1].y-bins[bins.length-2].y;const range=Math.max(1,Math.abs(bins[0].y-bins[bins.length-1].y));return{inflection:inf,tipFlare:tf/range};}
+function convHullArea(pts){if(pts.length<3)return 0;let piv=pts[0];for(const p of pts)if(p.y>piv.y||(p.y===piv.y&&p.x<piv.x))piv=p;const s=pts.filter(p=>p!==piv).sort((a,b)=>Math.atan2(a.y-piv.y,a.x-piv.x)-Math.atan2(b.y-piv.y,b.x-piv.x));const h=[piv];for(const p of s){while(h.length>1){const a=h[h.length-2],b=h[h.length-1];if((b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x)<=0)h.pop();else break;}h.push(p);}return polyArea(h);}
+function polyArea(pts){let a=0;const n=pts.length;for(let i=0;i<n;i++){const j=(i+1)%n;a+=pts[i].x*pts[j].y-pts[j].x*pts[i].y;}return Math.abs(a)/2;}
+
+// ===========================
+//  HELPERS
+// ===========================
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function updateAS(id,s,t){document.getElementById(id).style.opacity=s===0?'.3':'1';const v=document.getElementById(id.replace('as-','as-')+'-v');if(!v)return;v.textContent=t;v.style.color=s===2?'#10b981':s===1?'#00d4ff':'';}
+function resetAll(){
+    S.sideAData=null;S.sideBData=null;
+    ['a','b'].forEach(side=>{
+        document.getElementById('vid-'+side).style.display='block';
+        document.getElementById('img-'+side).style.display='none';
+        const g=document.getElementById('guide-'+side);if(g)g.classList.remove('hidden');
+        document.getElementById('cap-'+side).style.display='inline-flex';
+        document.getElementById('cap-'+side).disabled=side==='a'?!S.camOn:false;
+        document.getElementById('timer-'+side).style.display='inline-flex';
+        document.getElementById('timer-'+side).disabled=side==='a'?!S.camOn:false;
+        document.getElementById('retake-'+side).style.display='none';
+        document.getElementById('next-'+side).style.display='none';
+        // Clear detection feedback
+        document.getElementById('df-'+side).className='detect-fb';
+    });
+    ['as-a','as-b','as-cmp'].forEach(id=>updateAS(id,0,'Pending'));
+    goToStep(2);
+}
+
+if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){document.getElementById('cp-a').innerHTML='<div style="font-size:2.5rem;margin-bottom:.5rem">\u26A0\uFE0F</div><p>Camera not available</p><p style="font-size:.78rem;color:var(--t3);margin-top:.5rem">This tool requires camera access.</p>';}
+</script>
+</body>
+</html>

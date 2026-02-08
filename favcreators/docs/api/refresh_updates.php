@@ -65,7 +65,7 @@ if (count($accounts) > $max_accounts) {
     $accounts = array_slice($accounts, 0, $max_accounts);
 }
 
-$supported_platforms = array('twitch', 'kick', 'youtube', 'tiktok', 'instagram', 'twitter', 'reddit');
+$supported_platforms = array('twitch', 'kick', 'youtube', 'tiktok', 'instagram', 'twitter', 'reddit', 'spotify');
 $results = array();
 $updated_count = 0;
 $error_count = 0;
@@ -103,6 +103,9 @@ foreach ($accounts as $account) {
             break;
         case 'reddit':
             $fetch_result = fetch_reddit_status($username);
+            break;
+        case 'spotify':
+            $fetch_result = fetch_spotify_status($username);
             break;
     }
     

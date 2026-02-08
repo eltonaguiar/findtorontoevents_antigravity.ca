@@ -333,6 +333,7 @@
         .platform-badge.instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff; }
         .platform-badge.twitter { background: #000; color: #fff; }
         .platform-badge.reddit { background: #ff4500; color: #fff; }
+        .platform-badge.spotify { background: #1DB954; color: #fff; }
 
         .live-badge {
             display: inline-flex;
@@ -567,6 +568,7 @@
             <button class="filter-btn" data-platform="twitter">Twitter</button>
             <button class="filter-btn" data-platform="reddit">Reddit</button>
             <button class="filter-btn" data-platform="instagram">Instagram</button>
+            <button class="filter-btn" data-platform="spotify">Spotify</button>
         </div>
 
         <div class="stats" id="stats" style="display: none;">
@@ -614,7 +616,8 @@
             tiktok: '🎵',
             instagram: '📷',
             twitter: '🐦',
-            reddit: '🔴'
+            reddit: '🔴',
+            spotify: '🎧'
         };
 
         // Format cache age for display
@@ -644,8 +647,17 @@
             await loadCreatorUpdates();
         }
 
-        // Detect if user is logged in by checking session
+        // Detect if user is logged in by checking session or URL param
         async function detectUser() {
+            // Check for URL parameter override (for testing)
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlUserId = urlParams.get('user_id');
+            if (urlUserId && !isNaN(parseInt(urlUserId))) {
+                loggedInUserId = parseInt(urlUserId);
+                console.log('[CreatorUpdates] Using URL param user_id:', loggedInUserId);
+                return;
+            }
+
             try {
                 const res = await fetch(`${API_BASE}/session_check.php`, {
                     credentials: 'include'
@@ -727,20 +739,31 @@
                 const cachedData = await cachedRes.json();
                 
                 if (cachedData.ok) {
-                    // Extract creators from cached data for filtering
+                    // Extract unique creators from cached updates for the filter dropdown
                     const creatorsMap = new Map();
                     cachedData.updates.forEach(u => {
-                        if (u.creator && u.creator.id) {
-                            creatorsMap.set(u.creator.id, u.creator);
+                        if (u.creator && u.creator.id && u.creator.name) {
+                            if (!creatorsMap.has(String(u.creator.id))) {
+                                creatorsMap.set(String(u.creator.id), u.creator);
+                            }
                         }
                     });
                     
-                    // Also fetch full creator list for the dropdown
-                    const creatorsRes = await fetch(`${API_BASE}/get_my_creators.php?user_id=${userId}`, {
-                        credentials: 'include'
-                    });
-                    const creatorsData = await creatorsRes.json();
-                    const creators = creatorsData.creators || [];
+                    // Try to also fetch full creator list for the dropdown (may fail without auth)
+                    let creators = Array.from(creatorsMap.values());
+                    try {
+                        const creatorsRes = await fetch(`${API_BASE}/get_my_creators.php?user_id=${userId}`, {
+                            credentials: 'include'
+                        });
+                        if (creatorsRes.ok) {
+                            const creatorsData = await creatorsRes.json();
+                            if (creatorsData.creators && creatorsData.creators.length > 0) {
+                                creators = creatorsData.creators;
+                            }
+                        }
+                    } catch (e) {
+                        console.log('get_my_creators failed, using creators from cached updates');
+                    }
                     allCreators = creators;
                     
                     document.getElementById('creatorsCount').textContent = cachedData.creators_count || creators.length;
@@ -844,7 +867,7 @@
                 // Step 3: Fetch status for each account (with rate limiting)
                 allUpdates = [];
                 let completed = 0;
-                const supportedPlatforms = ['twitch', 'kick', 'youtube', 'tiktok', 'instagram', 'twitter', 'reddit'];
+                const supportedPlatforms = ['twitch', 'kick', 'youtube', 'tiktok', 'instagram', 'twitter', 'reddit', 'spotify'];
 
                 for (const account of accounts) {
                     if (!supportedPlatforms.includes(account.platform)) {
@@ -928,9 +951,22 @@
                 filtered = filtered.filter(u => u.platform === currentFilter);
             }
             
-            // Filter by creator
+            // Filter by creator (use String() to handle type mismatches between dropdown value and creator.id)
             if (currentCreatorFilter !== 'all') {
-                filtered = filtered.filter(u => u.creator && u.creator.id === currentCreatorFilter);
+                filtered = filtered.filter(u => {
+                    if (!u.creator) return false;
+                    // Match by creator ID (string comparison)
+                    if (String(u.creator.id) === String(currentCreatorFilter)) return true;
+                    // Also match by creator name as fallback
+                    if (u.creator.name && u.creator_name) {
+                        const selectedCreator = allCreators.find(c => String(c.id) === String(currentCreatorFilter));
+                        if (selectedCreator && u.creator.name.toLowerCase() === selectedCreator.name.toLowerCase()) return true;
+                        if (selectedCreator && u.creator_name.toLowerCase() === selectedCreator.name.toLowerCase()) return true;
+                    }
+                    // Match by creator_id field directly (from API response)
+                    if (u.creator_id && String(u.creator_id) === String(currentCreatorFilter)) return true;
+                    return false;
+                });
             }
 
             // Get filter description

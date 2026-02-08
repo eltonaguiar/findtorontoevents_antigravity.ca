@@ -20,6 +20,7 @@ try {
             m.description,
             m.release_year,
             m.imdb_rating,
+            m.tmdb_id,
             t.youtube_id as trailer_id,
             th.url as thumbnail
         FROM movies m
@@ -36,6 +37,7 @@ try {
             m.description,
             m.release_year,
             m.imdb_rating,
+            m.tmdb_id,
             t.youtube_id as trailer_id,
             th.url as thumbnail
         FROM movies m

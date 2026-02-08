@@ -413,7 +413,16 @@
 
   <!-- Search Bar -->
   <div id="search-bar">
-    <input type="text" id="search-input" placeholder="Search movies..." autocomplete="off">
+    <input type="text" id="search-input" placeholder="Search movies &amp; TV shows..." autocomplete="off">
+    <select id="search-type-filter" style="
+      background: rgba(78,205,196,0.15); border: 1px solid rgba(78,205,196,0.3);
+      color: #4ecdc4; border-radius: 12px; padding: 4px 8px; font-size: 12px;
+      font-weight: 600; cursor: pointer; outline: none; font-family: inherit;
+    ">
+      <option value="all" style="background:#1a1a2e;color:#e2e8f0">All</option>
+      <option value="movie" style="background:#1a1a2e;color:#4ecdc4">Movies</option>
+      <option value="tv" style="background:#1a1a2e;color:#a855f7">TV Series</option>
+    </select>
     <button id="search-btn" onclick="performSearch()">&#128269;</button>
   </div>
   <div id="search-results"></div>
@@ -605,15 +614,17 @@
 
     <!-- ===== CAMERA RIG ===== -->
     <a-entity id="rig" position="0 1.6 2">
-      <a-camera look-controls wasd-controls="acceleration: 15" fov="80">
-        <!-- Gaze cursor for VR headset (only visible in VR) -->
-        <a-entity cursor="fuse: true; fuseTimeout: 2500"
+      <a-camera look-controls wasd-controls="acceleration: 8" fov="80">
+        <!-- Gaze cursor for VR headset ONLY — fuse disabled on desktop -->
+        <a-entity id="vr-gaze-cursor"
+                  cursor="fuse: false; fuseTimeout: 4000"
                   raycaster="objects: .clickable; far: 30"
                   geometry="primitive: ring; radiusInner: 0.005; radiusOuter: 0.012"
                   material="shader: flat; color: #4ecdc4"
                   position="0 0 -1"
+                  visible="false"
                   animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 200"
-                  animation__fusing="property: scale; startEvents: fusing; from: 1 1 1; to: 0.5 0.5 0.5; dur: 1500; easing: linear"
+                  animation__fusing="property: scale; startEvents: fusing; from: 1 1 1; to: 0.5 0.5 0.5; dur: 3500; easing: linear"
                   animation__mouseleave="property: scale; startEvents: mouseleave; to: 1 1 1; dur: 200">
         </a-entity>
       </a-camera>
@@ -1362,15 +1373,17 @@
     function performSearch() {
       var query = document.getElementById('search-input').value.toLowerCase().trim();
       var resultsContainer = document.getElementById('search-results');
+      var searchTypeFilter = document.getElementById('search-type-filter');
+      var searchType = searchTypeFilter ? searchTypeFilter.value : 'all';
       
       if (!query) {
         resultsContainer.classList.remove('visible');
         return;
       }
       
-      // Get all movies (respect current filter)
-      var moviesToSearch = currentFilter === 'all' ? allMovies : allMovies.filter(function(m) { 
-        return m.type === currentFilter; 
+      // Filter by search type dropdown (independent of the category bar)
+      var moviesToSearch = searchType === 'all' ? allMovies : allMovies.filter(function(m) { 
+        return m.type === searchType; 
       });
       
       // Search in title, genre, and description
@@ -1380,19 +1393,25 @@
                (movie.description && movie.description.toLowerCase().includes(query));
       }).slice(0, 10); // Limit to 10 results
       
+      // Build label for no-results
+      var typeLabel = searchType === 'movie' ? 'movies' : searchType === 'tv' ? 'TV shows' : 'movies or TV shows';
+      
       // Build results HTML
       if (results.length === 0) {
-        resultsContainer.innerHTML = '<div class="no-results">No movies found</div>';
+        resultsContainer.innerHTML = '<div class="no-results">No ' + typeLabel + ' found for "' + escapeHtml(query) + '"</div>';
       } else {
         resultsContainer.innerHTML = results.map(function(movie) {
           var thumb = movie.trailer_id ? ytThumb(movie.trailer_id) : '';
           var titleHtml = highlightMatch(movie.title, query);
           var meta = (movie.release_year || '') + (movie.imdb_rating ? ' ★' + movie.imdb_rating : '');
+          var typeBadge = movie.type === 'tv'
+            ? '<span style="color:#a855f7;font-weight:600">TV</span>'
+            : '<span style="color:#4ecdc4;font-weight:600">Movie</span>';
           return '<div class="search-result-item" onclick="playSearchResult(' + movie.id + ')">' +
             (thumb ? '<img src="' + thumb + '" alt="">' : '') +
             '<div class="info">' +
               '<div class="title">' + titleHtml + '</div>' +
-              '<div class="meta">' + meta + ' • ' + movie.type + '</div>' +
+              '<div class="meta">' + meta + ' • ' + typeBadge + '</div>' +
             '</div>' +
           '</div>';
         }).join('');
@@ -1461,6 +1480,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       var searchInput = document.getElementById('search-input');
       var searchResults = document.getElementById('search-results');
+      var searchTypeFilter = document.getElementById('search-type-filter');
       
       if (searchInput) {
         searchInput.addEventListener('input', function() {
@@ -1481,6 +1501,21 @@
         });
       }
       
+      // Re-search when type filter changes
+      if (searchTypeFilter) {
+        searchTypeFilter.addEventListener('change', function() {
+          // Update placeholder to match selected type
+          var type = searchTypeFilter.value;
+          if (type === 'movie') searchInput.placeholder = 'Search movies...';
+          else if (type === 'tv') searchInput.placeholder = 'Search TV series...';
+          else searchInput.placeholder = 'Search movies & TV shows...';
+          // Re-run search with new filter
+          if (searchInput.value.trim()) {
+            performSearch();
+          }
+        });
+      }
+      
       // Close search results when clicking outside
       document.addEventListener('click', function(e) {
         if (!e.target.closest('#search-bar') && !e.target.closest('#search-results')) {
@@ -1488,9 +1523,10 @@
         }
       });
       
-      // Keyboard shortcut: / to focus search
+      // Keyboard shortcut: / to focus search (but not when typing in a form field)
       document.addEventListener('keydown', function(e) {
-        if (e.key === '/' && document.activeElement !== searchInput) {
+        var _ftag = (e.target.tagName || '').toLowerCase();
+        if (e.key === '/' && _ftag !== 'input' && _ftag !== 'textarea' && !e.target.isContentEditable) {
           e.preventDefault();
           searchInput.focus();
         }
@@ -1626,16 +1662,20 @@
         if (hint) hint.style.display = 'none';
       }, 8000);
       
-      // Listen for VR mode changes
+      // Listen for VR mode changes + enable gaze cursor only in VR
       var scene = document.querySelector('a-scene');
       if (scene) {
         scene.addEventListener('enter-vr', function() {
           isVRMode = true;
           console.log('[VR Theater] Entered VR mode');
+          var gaze = document.getElementById('vr-gaze-cursor');
+          if (gaze) { gaze.setAttribute('cursor', 'fuse', true); gaze.setAttribute('visible', true); }
         });
         scene.addEventListener('exit-vr', function() {
           isVRMode = false;
           console.log('[VR Theater] Exited VR mode');
+          var gaze = document.getElementById('vr-gaze-cursor');
+          if (gaze) { gaze.setAttribute('cursor', 'fuse', false); gaze.setAttribute('visible', false); }
           // Stop VR video when exiting
           if (isPlaying) stopVRVideo();
         });
@@ -1659,8 +1699,10 @@
         // Close queue panel too
         document.getElementById('queue-panel').classList.remove('open');
       }
-      // N = next in queue
-      if ((e.key === 'n' || e.key === 'N') && isPlaying && !e.ctrlKey && !e.metaKey) {
+      // N = next in queue (but not when typing in a form field)
+      var _tag = (e.target.tagName || '').toLowerCase();
+      var _isTyping = (_tag === 'input' || _tag === 'textarea' || e.target.isContentEditable);
+      if ((e.key === 'n' || e.key === 'N') && isPlaying && !e.ctrlKey && !e.metaKey && !_isTyping) {
         skipToNext();
       }
     });
@@ -1802,7 +1844,7 @@
   <!-- Quest Thumbstick Locomotion -->
   <script>
   (function () {
-    var rig, camera, moveSpeed = 0.06, turnCooldown = false;
+    var rig, camera, moveSpeed = 0.035, turnCooldown = false;
     function init() {
       rig = document.getElementById('rig');
       camera = document.querySelector('a-camera');
@@ -1845,5 +1887,7 @@
   <!-- VR AI Agent -->
   <link rel="stylesheet" href="/vr/vr-ai-agent.css">
   <script src="/vr/vr-ai-agent.js"></script>
+  <!-- Layout Fix: resolve overlapping fixed-position widgets (must load LAST) -->
+  <script src="/vr/layout-fix.js"></script>
 </body>
 </html>

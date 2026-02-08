@@ -1,0 +1,67 @@
+name: Send Accountability Reminders
+
+on:
+  schedule:
+    # Run every hour at :00 to catch each user's preferred reminder_time
+    # (the PHP endpoint checks timezone + hour match before sending)
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (preview only, no DMs sent)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    env:
+      EVENT_NOTIFY_API_KEY: ${{ secrets.EVENT_NOTIFY_API_KEY }}
+
+    steps:
+    - name: Send Accountability Coach Reminders
+      run: |
+        DRY_RUN="${{ github.event.inputs.dry_run || 'false' }}"
+        URL="https://findtorontoevents.ca/fc/api/accountability/send_reminders.php"
+
+        if [ "$DRY_RUN" = "true" ]; then
+          URL="${URL}?dry_run=1"
+          echo "🔍 Dry run mode — no DMs will be sent"
+        fi
+
+        echo "Sending accountability reminders..."
+        response=$(curl -s -w "\n%{http_code}" \
+          -X POST \
+          -H "X-API-Key: $EVENT_NOTIFY_API_KEY" \
+          "$URL")
+
+        http_code=$(echo "$response" | tail -n1)
+        body=$(echo "$response" | sed '$d')
+
+        echo "HTTP Status: $http_code"
+        echo "Response: $body"
+
+        if [ "$http_code" != "200" ]; then
+          echo "::error::Failed to send reminders (HTTP $http_code)"
+          exit 1
+        fi
+
+        echo "$body" | python3 -c "
+        import sys, json
+        data = json.load(sys.stdin)
+        print(f\"Discord DMs sent: {data.get('sent_discord', 0)}\")
+        print(f\"Dashboard notifs sent: {data.get('sent_dashboard', 0)}\")
+        print(f\"Skipped (wrong hour): {data.get('skipped', 0)}\")
+        if data.get('dry_run'):
+            previews = data.get('previews', [])
+            print(f\"Preview count: {len(previews)}\")
+            for p in previews[:10]:
+                print(f\"  → {p.get('channel')}: {p.get('task')}\")
+        if data.get('errors'):
+            for e in data['errors']:
+                print(f\"Error: {e}\")
+        "

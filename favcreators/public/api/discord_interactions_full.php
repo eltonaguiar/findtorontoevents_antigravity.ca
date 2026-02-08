@@ -23,6 +23,11 @@ function handle_interaction($interaction) {
         // Get options from command
         $options = isset($data['options']) ? $data['options'] : array();
         
+        // Normalize command name — Discord sends 'fc-live' but we route as 'live'
+        if (substr($command_name, 0, 3) === 'fc-') {
+            $command_name = substr($command_name, 3);
+        }
+        
         switch ($command_name) {
             // Creators commands
             case 'live':
@@ -126,33 +131,62 @@ function handle_interaction($interaction) {
                 handle_info_command($feature);
                 break;
             
-            // Accountability Coach commands (fc- prefix)
-            case 'fc-coach':
-                require_once __DIR__ . '/accountability/handler.php';
+            // Accountability Coach commands
+            case 'coach':
+                require_once dirname(__FILE__) . '/accountability/handler.php';
                 $action = get_option_value($options, 'action');
                 $result = handle_fc_coach_command($discord_id, $action, $options);
                 send_response($result);
                 break;
-            case 'fc-gym':
-                require_once __DIR__ . '/accountability/handler.php';
+            case 'gym':
+                require_once dirname(__FILE__) . '/accountability/handler.php';
                 $result = handle_fc_gym_command($discord_id, $options);
                 send_response($result);
                 break;
-            case 'fc-timer':
-                require_once __DIR__ . '/accountability/handler.php';
+            case 'timer':
+                require_once dirname(__FILE__) . '/accountability/handler.php';
                 $action = get_option_value($options, 'action');
                 $result = handle_fc_timer_command($discord_id, $action, $options);
                 send_response($result);
                 break;
-            case 'fc-stats':
-                require_once __DIR__ . '/accountability/handler.php';
+            case 'stats':
+                require_once dirname(__FILE__) . '/accountability/handler.php';
                 $action = get_option_value($options, 'action');
                 $result = handle_fc_stats_command($discord_id, $action, $options);
                 send_response($result);
                 break;
                 
+            // Feed command — show latest updates from all followed creators
+            case 'feed':
+                $count = get_option_value($options, 'count');
+                $platform = get_option_value($options, 'platform');
+                handle_feed_command($discord_id, $count, $platform);
+                break;
+                
+            // Notification mode command
+            case 'notifymode':
+                $mode = get_option_value($options, 'mode');
+                handle_notifymode_command($discord_id, $mode);
+                break;
+            
+            // World Events command
+            case 'worldevents':
+                $we_range = get_option_value($options, 'range');
+                handle_worldevents_command($we_range);
+                break;
+                
+            // Near Me / Location Finder command
+            case 'nearme':
+                $nm_query = get_option_value($options, 'query');
+                $nm_location = get_option_value($options, 'location');
+                $nm_filter = get_option_value($options, 'filter');
+                $nm_dietary = get_option_value($options, 'dietary');
+                $nm_radius = get_option_value($options, 'radius');
+                handle_nearme_command($nm_query, $nm_location, $nm_filter, $nm_dietary, $nm_radius);
+                break;
+                
             default:
-                send_response("Unknown command. Use /help to see available commands.");
+                send_response("Unknown command. Use /fc-help to see available commands.");
         }
         return;
     }
@@ -245,6 +279,11 @@ function get_db_connection() {
     require_once dirname(__FILE__) . '/db_connect.php';
     global $conn;
     return $conn;
+}
+
+// Comparison callback for usort (PHP 5.2 — no closures)
+function _cmp_event_date($a, $b) {
+    return $a['date'] - $b['date'];
 }
 
 function get_movies_db_connection() {
@@ -643,8 +682,8 @@ function handle_events_command($search, $timeframe) {
         );
     }
     
-    // Sort by date
-    usort($matched, function($a, $b) { return $a['date'] - $b['date']; });
+    // Sort by date (PHP 5.2 compatible — no closures)
+    usort($matched, '_cmp_event_date');
     
     // Limit results
     $matched = array_slice($matched, 0, 8);
@@ -924,7 +963,8 @@ function handle_movies_command($search, $content_type, $page = 0, $is_update = f
     
     // Get total count
     $count_result = $db->query("SELECT COUNT(*) as cnt FROM trailers WHERE $where_sql");
-    $total = $count_result ? $count_result->fetch_assoc()['cnt'] : 0;
+    $count_row = $count_result ? $count_result->fetch_assoc() : null;
+    $total = $count_row ? intval($count_row['cnt']) : 0;
     $total_pages = ceil($total / $per_page);
     
     if ($total === 0) {
@@ -1057,7 +1097,8 @@ function handle_newreleases_command($content_type, $period, $page = 0, $is_updat
     
     // Get total count
     $count_result = $db->query("SELECT COUNT(*) as cnt FROM trailers WHERE $where_sql");
-    $total = $count_result ? $count_result->fetch_assoc()['cnt'] : 0;
+    $count_row = $count_result ? $count_result->fetch_assoc() : null;
+    $total = $count_row ? intval($count_row['cnt']) : 0;
     $total_pages = ceil($total / $per_page);
     
     if ($total === 0) {
@@ -1234,17 +1275,23 @@ function handle_stocks_command($rating_filter, $page = 0, $is_update = false) {
     $stocks = $data['stocks'];
     $market_date = isset($data['marketDate']) ? $data['marketDate'] : date('Y-m-d');
     
-    // Apply rating filter
+    // Apply rating filter (PHP 5.2 compatible — no closures)
     if ($rating_filter === 'strong_buy') {
-        $stocks = array_filter($stocks, function($s) { 
-            return isset($s['rating']) && $s['rating'] === 'STRONG BUY'; 
-        });
-        $stocks = array_values($stocks);
+        $filtered = array();
+        foreach ($stocks as $s) {
+            if (isset($s['rating']) && $s['rating'] === 'STRONG BUY') {
+                $filtered[] = $s;
+            }
+        }
+        $stocks = $filtered;
     } else if ($rating_filter === 'buy') {
-        $stocks = array_filter($stocks, function($s) { 
-            return isset($s['rating']) && ($s['rating'] === 'STRONG BUY' || $s['rating'] === 'BUY'); 
-        });
-        $stocks = array_values($stocks);
+        $filtered = array();
+        foreach ($stocks as $s) {
+            if (isset($s['rating']) && ($s['rating'] === 'STRONG BUY' || $s['rating'] === 'BUY')) {
+                $filtered[] = $s;
+            }
+        }
+        $stocks = $filtered;
     }
     
     if (empty($stocks)) {
@@ -1664,7 +1711,7 @@ function handle_weather_command($location) {
 // ============================================================================
 
 function handle_mentalhealth_command($topic) {
-    $topic = strtolower(trim($topic ?? ''));
+    $topic = strtolower(trim(isset($topic) ? $topic : ''));
     
     // Crisis resources (default)
     if ($topic === 'crisis' || empty($topic)) {
@@ -1849,6 +1896,18 @@ function handle_help_command() {
     $content .= "**🌤️ Weather**\n";
     $content .= "`/weather <location>` - Weather alerts & RealFeel\n\n";
     
+    $content .= "**📍 Near Me / Location Finder**\n";
+    $content .= "`/nearme <query> [location] [filter] [dietary] [radius]` - Find nearby places\n";
+    $content .= "  Examples: `coffee shops`, `halal pizza`, `washrooms`, `pharmacy`\n";
+    $content .= "  Location: intersection, landmark, or postal code\n";
+    $content .= "  Filters: Open Now, Open Late, Open 24/7, Top Rated\n";
+    $content .= "  Dietary: Halal, Vegan, Kosher, Vegetarian, Gluten-Free\n\n";
+    
+    $content .= "**🌍 World Events**\n";
+    $content .= "`/worldevents [range]` - See what's happening in the world\n";
+    $content .= "  Super Bowl, Oscars, Olympics, holidays, breaking news, and more\n";
+    $content .= "  Range: Today, This Week, Next Few Days\n\n";
+    
     $content .= "**💚 Mental Health**\n";
     $content .= "`/mentalhealth [topic]` - Crisis lines, breathing, grounding, panic help\n\n";
     
@@ -1947,8 +2006,560 @@ function handle_info_command($feature) {
     }
     
     $content .= "─────────────────────\n";
-    $content .= "💡 Use `/info <feature>` for detailed info about each app!\n";
-    $content .= "Example: `/info trailers` or `/info stocks`";
+    $content .= "💡 Use `/fc-info <feature>` for detailed info about each app!\n";
+    $content .= "Example: `/fc-info trailers` or `/fc-info stocks`";
+    
+    send_response($content);
+}
+
+// ============================================================================
+// FEED Command
+// ============================================================================
+
+function handle_feed_command($discord_id, $count, $platform) {
+    $conn = get_db_connection();
+    
+    if (!$conn) {
+        send_response('Database unavailable. Please try again later.');
+        return;
+    }
+    
+    $discord_id_esc = $conn->real_escape_string($discord_id);
+    $result = $conn->query("SELECT id FROM users WHERE discord_id = '$discord_id_esc' LIMIT 1");
+    
+    if (!$result || $result->num_rows === 0) {
+        send_response("Your Discord is not linked to FavCreators yet!\n\nLink your account at: https://findtorontoevents.ca/fc/");
+        return;
+    }
+    
+    $user = $result->fetch_assoc();
+    $user_id = intval($user['id']);
+    
+    $limit = 10;
+    if (!empty($count) && intval($count) > 0) {
+        $limit = min(intval($count), 25);
+    }
+    
+    $where = "np.user_id = $user_id AND np.discord_notify = 1";
+    if (!empty($platform)) {
+        $platform_esc = $conn->real_escape_string($platform);
+        $where .= " AND csu.platform = '$platform_esc'";
+    }
+    
+    $sql = "SELECT csu.creator_name, csu.platform, csu.content_title, csu.content_preview, csu.content_url, csu.content_published_at
+            FROM creator_status_updates csu
+            JOIN notification_preferences np ON csu.creator_id COLLATE utf8mb4_unicode_ci = np.creator_id
+            WHERE $where
+            ORDER BY csu.content_published_at DESC
+            LIMIT $limit";
+    
+    $result = $conn->query($sql);
+    
+    if (!$result || $result->num_rows === 0) {
+        send_response("No recent updates from your tracked creators.\n\nManage notifications at: https://findtorontoevents.ca/fc/");
+        return;
+    }
+    
+    $lines = array();
+    while ($row = $result->fetch_assoc()) {
+        $name = $row['creator_name'];
+        $plat = ucfirst($row['platform']);
+        $title = $row['content_title'] ? $row['content_title'] : '';
+        $preview = $row['content_preview'] ? $row['content_preview'] : '';
+        $url = $row['content_url'] ? $row['content_url'] : '';
+        $date = $row['content_published_at'] ? date('M j', strtotime($row['content_published_at'])) : '';
+        
+        // Skip placeholder content
+        if (stripos($title, 'Download TikTok') !== false || stripos($title, 'Make Your Day') !== false) {
+            continue;
+        }
+        
+        $text = $title ? $title : substr($preview, 0, 80);
+        if (!$title && strlen($preview) > 80) $text .= '...';
+        
+        $line = "**$name** [$plat]";
+        if ($date) $line .= " — $date";
+        $line .= "\n   $text";
+        if ($url) $line .= "\n   $url";
+        $lines[] = $line;
+    }
+    
+    if (count($lines) === 0) {
+        send_response("No recent updates from your tracked creators.\n\nManage at: https://findtorontoevents.ca/fc/");
+        return;
+    }
+    
+    $content = "**📰 Latest from your creators:**\n\n" . implode("\n\n", $lines);
+    $content .= "\n\n🔍 Full feed: https://findtorontoevents.ca/fc/";
+    send_response($content);
+}
+
+// ============================================================================
+// NOTIFY MODE Command
+// ============================================================================
+
+function handle_notifymode_command($discord_id, $mode) {
+    if (empty($mode)) {
+        send_response("Please specify a notification mode.\n\nUsage: `/fc-notifymode <mode>`\n• `channel` — Notifications in #notifications channel only\n• `dm` — Private DMs only\n• `both` — Both channel and DM");
+        return;
+    }
+    
+    $conn = get_db_connection();
+    if (!$conn) {
+        send_response('Database unavailable. Please try again later.');
+        return;
+    }
+    
+    $discord_id_esc = $conn->real_escape_string($discord_id);
+    $result = $conn->query("SELECT id FROM users WHERE discord_id = '$discord_id_esc' LIMIT 1");
+    
+    if (!$result || $result->num_rows === 0) {
+        send_response("Your Discord is not linked to FavCreators yet!\n\nLink your account at: https://findtorontoevents.ca/fc/");
+        return;
+    }
+    
+    $user = $result->fetch_assoc();
+    $user_id = intval($user['id']);
+    $mode_esc = $conn->real_escape_string($mode);
+    
+    // Update or insert notification mode preference
+    $check = $conn->query("SELECT id FROM user_settings WHERE user_id = $user_id AND setting_key = 'discord_notify_mode' LIMIT 1");
+    
+    if ($check && $check->num_rows > 0) {
+        $conn->query("UPDATE user_settings SET setting_value = '$mode_esc' WHERE user_id = $user_id AND setting_key = 'discord_notify_mode'");
+    } else {
+        // Try to insert; if user_settings table doesn't exist, just acknowledge
+        $conn->query("INSERT INTO user_settings (user_id, setting_key, setting_value) VALUES ($user_id, 'discord_notify_mode', '$mode_esc')");
+    }
+    
+    $mode_labels = array(
+        'channel' => 'Channel only (#notifications)',
+        'dm' => 'DM only (private messages)',
+        'both' => 'Both channel and DM'
+    );
+    $label = isset($mode_labels[$mode]) ? $mode_labels[$mode] : $mode;
+    
+    send_response("✅ **Notification mode set to: $label**\n\nYou can change this anytime with `/fc-notifymode`.");
+}
+
+
+// ============================================================================
+// NEAR ME / LOCATION FINDER
+// ============================================================================
+
+function handle_nearme_command($query, $location, $filter, $dietary, $radius) {
+    if (empty($query)) {
+        send_response("Please specify what you're looking for.\n\nUsage: `/fc-nearme query:coffee shops`\n\nExamples:\n• `/fc-nearme query:halal pizza location:Yonge and Dundas filter:Open Now`\n• `/fc-nearme query:washrooms location:Eaton Centre`\n• `/fc-nearme query:pharmacy filter:Open 24/7`\n• `/fc-nearme query:homeless shelter`");
+        return;
+    }
+    
+    // Build API URL
+    $api_base = dirname(__FILE__) . '/nearme.php';
+    
+    // We need to call nearme.php via HTTP (since it outputs JSON directly)
+    $api_url = 'https://findtorontoevents.ca/fc/api/nearme.php';
+    
+    $params = array();
+    $params['query'] = $query;
+    
+    // Location defaults to downtown Toronto
+    $default_lat = 43.6532;
+    $default_lng = -79.3832;
+    
+    if (!empty($location)) {
+        $params['location'] = $location;
+    } else {
+        $params['lat'] = $default_lat;
+        $params['lng'] = $default_lng;
+    }
+    
+    // Filters
+    if (!empty($filter)) {
+        if ($filter === 'open_now' || $filter === 'open_247') {
+            $params['open_now'] = 'true';
+        }
+        if ($filter === 'open_late') {
+            $params['open_now'] = 'true';
+            $params['open_at'] = '23:00';
+        }
+        if ($filter === 'top_rated') {
+            $params['sort'] = 'RATING';
+        }
+    }
+    
+    if (!empty($dietary)) {
+        $params['dietary'] = $dietary;
+    }
+    
+    if (!empty($radius)) {
+        $params['radius'] = intval($radius) * 1000; // km to meters
+    }
+    
+    $params['limit'] = 10;
+    
+    // Build query string
+    $qs = '';
+    foreach ($params as $k => $v) {
+        if ($qs !== '') $qs .= '&';
+        $qs .= urlencode($k) . '=' . urlencode($v);
+    }
+    
+    $url = $api_url . '?' . $qs;
+    
+    // Call the API
+    $context = stream_context_create(array(
+        'http' => array(
+            'method' => 'GET',
+            'timeout' => 15,
+            'header' => "User-Agent: FavCreators-Discord-Bot/1.0\r\n"
+        )
+    ));
+    
+    $response = @file_get_contents($url, false, $context);
+    
+    // Fallback to curl
+    if ($response === false && function_exists('curl_init')) {
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('User-Agent: FavCreators-Discord-Bot/1.0'));
+        $response = curl_exec($ch);
+        curl_close($ch);
+    }
+    
+    if ($response === false) {
+        send_response("Could not reach the places search service. Please try again later.");
+        return;
+    }
+    
+    $data = json_decode($response, true);
+    
+    if (!is_array($data) || !isset($data['ok']) || !$data['ok']) {
+        $err = isset($data['error']) ? $data['error'] : 'Unknown error';
+        if (strpos($err, 'API key') !== false) {
+            send_response("The Near Me feature needs a Foursquare API key to be configured.\n\nThe site admin needs to add `FOURSQUARE_API_KEY` to the server configuration.\nGet a free key at: https://foursquare.com/developers/signup");
+        } else {
+            send_response("Search error: " . $err);
+        }
+        return;
+    }
+    
+    // Handle crisis response
+    if (isset($data['is_crisis']) && $data['is_crisis']) {
+        _nearme_discord_crisis_response($data, $query);
+        return;
+    }
+    
+    // Format results
+    _nearme_discord_results_response($data, $query, $location, $dietary, $filter);
+}
+
+function _nearme_discord_crisis_response($data, $query) {
+    $content = "**24/7 Resources Available Now**\n";
+    $content .= "━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+    
+    if (isset($data['crisis_resources']) && is_array($data['crisis_resources'])) {
+        foreach ($data['crisis_resources'] as $r) {
+            $name = isset($r['name']) ? $r['name'] : '';
+            $phone = isset($r['phone']) ? $r['phone'] : '';
+            $hours = isset($r['hours']) ? $r['hours'] : '';
+            $type = isset($r['type']) ? $r['type'] : '';
+            $address = isset($r['address']) ? $r['address'] : '';
+            
+            $content .= "**" . $name . "**";
+            if ($phone !== '') $content .= " — 📞 `" . $phone . "`";
+            $content .= "\n";
+            if ($hours !== '') $content .= "🕐 " . $hours;
+            if ($type !== '') $content .= " · " . $type;
+            $content .= "\n";
+            if ($address !== '') $content .= "📍 " . $address . "\n";
+            $content .= "\n";
+        }
+    }
+    
+    // Also show Foursquare results if any
+    if (isset($data['results']) && is_array($data['results']) && count($data['results']) > 0) {
+        $content .= "\n**Also found nearby:**\n";
+        $count = 0;
+        foreach ($data['results'] as $r) {
+            if ($count >= 5) break;
+            $count++;
+            $name = isset($r['name']) ? $r['name'] : 'Unknown';
+            $dist = isset($r['distance_m']) ? $r['distance_m'] : 0;
+            $phone = isset($r['phone']) ? $r['phone'] : '';
+            $maps = isset($r['maps_url']) ? $r['maps_url'] : '';
+            
+            $dist_str = ($dist < 1000) ? $dist . 'm' : round($dist / 1000, 1) . 'km';
+            
+            $content .= $count . ". **" . $name . "** — " . $dist_str . "\n";
+            if ($phone !== '') $content .= "   📞 " . $phone . "\n";
+            if ($maps !== '') $content .= "   🗺️ " . $maps . "\n";
+        }
+    }
+    
+    send_response($content);
+}
+
+function _nearme_discord_results_response($data, $query, $location, $dietary, $filter) {
+    $results = isset($data['results']) ? $data['results'] : array();
+    $total = isset($data['total']) ? $data['total'] : 0;
+    
+    if ($total === 0) {
+        $content = "**No results found** for \"" . $query . "\"";
+        if (!empty($location)) $content .= " near " . $location;
+        $content .= ".\n\n";
+        $content .= "**Next steps:**\n";
+        $content .= "• Search [Google Maps](https://www.google.com/maps/search/" . urlencode($query) . ") for \"" . $query . "\"\n";
+        $content .= "• Try a broader search term or increase the radius\n";
+        if (!empty($dietary)) $content .= "• Try without the dietary filter first\n";
+        $content .= "• Call **311** for Toronto city services\n";
+        $content .= "• Check Uber Eats, DoorDash, or SkipTheDishes apps\n";
+        send_response($content);
+        return;
+    }
+    
+    // Header
+    $content = "**" . ucwords($query) . "**";
+    $loc_resolved = '';
+    if (isset($data['location']) && isset($data['location']['resolved_from'])) {
+        $loc_resolved = $data['location']['resolved_from'];
+    }
+    if (!empty($location)) {
+        $content .= " near **" . $location . "**";
+    } else if ($loc_resolved !== '' && $loc_resolved !== 'coordinates' && $loc_resolved !== 'default (downtown Toronto)') {
+        $content .= " near **" . $loc_resolved . "**";
+    }
+    if (!empty($dietary)) $content .= " (" . $dietary . ")";
+    $content .= "\n━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+    
+    // Results (show up to 5 in first page)
+    $per_page = 5;
+    $page_results = array_slice($results, 0, $per_page);
+    
+    $num = 0;
+    foreach ($page_results as $r) {
+        $num++;
+        $name = isset($r['name']) ? $r['name'] : 'Unknown';
+        $category = isset($r['category']) ? $r['category'] : '';
+        $dist = isset($r['distance_m']) ? $r['distance_m'] : 0;
+        $address = isset($r['address']) ? $r['address'] : '';
+        $open_now = isset($r['open_now']) ? $r['open_now'] : null;
+        $hours = isset($r['hours']) ? $r['hours'] : '';
+        $hours_detail = isset($r['hours_detail']) ? $r['hours_detail'] : '';
+        $rating = isset($r['rating']) ? $r['rating'] : 0;
+        $price = isset($r['price']) ? $r['price'] : '';
+        $phone = isset($r['phone']) ? $r['phone'] : '';
+        $maps_url = isset($r['maps_url']) ? $r['maps_url'] : '';
+        $dietary_notes = isset($r['dietary_notes']) ? $r['dietary_notes'] : '';
+        
+        $dist_str = ($dist < 1000) ? $dist . 'm' : round($dist / 1000, 1) . 'km';
+        
+        $content .= "**" . $num . ". " . $name . "** — " . $dist_str . "\n";
+        
+        if ($address !== '') $content .= "   📍 " . $address . "\n";
+        
+        // Open/closed status
+        $status_parts = array();
+        if ($open_now === true) {
+            $s = "✅ Open now";
+            if ($hours_detail !== '') $s .= " (" . $hours_detail . ")";
+            $status_parts[] = $s;
+        } else if ($open_now === false) {
+            $s = "❌ Closed";
+            if ($hours_detail !== '') $s .= " (" . $hours_detail . ")";
+            $status_parts[] = $s;
+        } else if ($hours !== '') {
+            $status_parts[] = "🕐 " . $hours;
+        }
+        
+        if ($rating > 0) {
+            $status_parts[] = "⭐ " . number_format($rating, 1) . "/10";
+        }
+        if ($price !== '') {
+            $status_parts[] = $price;
+        }
+        
+        if (count($status_parts) > 0) {
+            $content .= "   " . implode(" · ", $status_parts) . "\n";
+        }
+        
+        if ($dietary_notes !== '') {
+            $content .= "   🌿 " . $dietary_notes . "\n";
+        }
+        
+        // Action links
+        $actions = array();
+        if ($maps_url !== '') $actions[] = "[Maps](" . $maps_url . ")";
+        if ($phone !== '') $actions[] = "📞 " . $phone;
+        if (count($actions) > 0) {
+            $content .= "   " . implode(" · ", $actions) . "\n";
+        }
+        $content .= "\n";
+    }
+    
+    // Footer tips
+    $delivery_tip = isset($data['delivery_tip']) ? $data['delivery_tip'] : '';
+    $pro_tip = isset($data['pro_tip']) ? $data['pro_tip'] : '';
+    
+    if ($delivery_tip !== '') {
+        $content .= "🚚 " . $delivery_tip . "\n";
+    }
+    if ($pro_tip !== '') {
+        $content .= "💡 " . $pro_tip . "\n";
+    }
+    
+    if ($total > $per_page) {
+        $content .= "\n_Showing " . $per_page . " of " . $total . " results. Use the website for full results._";
+    }
+    
+    send_response($content);
+}
+
+// ============================================================================
+// WORLD EVENTS Command
+// ============================================================================
+
+function handle_worldevents_command($range) {
+    if (empty($range)) {
+        $range = 'today';
+    }
+    $range = strtolower(trim($range));
+    
+    // Call the world events API
+    $api_url = 'https://findtorontoevents.ca/fc/api/world_events.php?range=' . urlencode($range) . '&limit=15';
+    
+    $context = stream_context_create(array(
+        'http' => array(
+            'method' => 'GET',
+            'timeout' => 15,
+            'header' => "User-Agent: FavCreators-Discord-Bot/1.0\r\n"
+        )
+    ));
+    
+    $response = @file_get_contents($api_url, false, $context);
+    
+    // Fallback to curl
+    if ($response === false && function_exists('curl_init')) {
+        $ch = curl_init($api_url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('User-Agent: FavCreators-Discord-Bot/1.0'));
+        $response = curl_exec($ch);
+        curl_close($ch);
+    }
+    
+    if ($response === false) {
+        send_response("Could not fetch world events. Please try again later.\n\nVisit https://findtorontoevents.ca/ for more.");
+        return;
+    }
+    
+    $data = json_decode($response, true);
+    
+    if (!is_array($data) || !isset($data['ok']) || !$data['ok'] || !isset($data['events']) || count($data['events']) === 0) {
+        send_response("No world events found for " . $range . ".\n\nTry `/fc-worldevents week` for this week's events.");
+        return;
+    }
+    
+    $events = $data['events'];
+    $date = isset($data['date']) ? $data['date'] : date('Y-m-d');
+    
+    $range_label = 'Today';
+    if ($range === 'week') $range_label = 'This Week';
+    if ($range === '3days' || $range === 'upcoming') $range_label = 'Next Few Days';
+    
+    // Category emojis
+    $cat_icons = array(
+        'sports' => "\xF0\x9F\x8F\x86",
+        'entertainment' => "\xF0\x9F\x8E\xAC",
+        'holiday' => "\xF0\x9F\x8E\x89",
+        'culture' => "\xF0\x9F\x8C\x8E",
+        'tech' => "\xF0\x9F\x92\xBB",
+        'world_news' => "\xF0\x9F\x93\xB0",
+        'world' => "\xF0\x9F\x8C\x90",
+        'armed_conflicts' => "\xE2\x9A\xA0\xEF\xB8\x8F",
+        'disasters' => "\xF0\x9F\x8C\x8A",
+        'politics_elections' => "\xF0\x9F\x97\xB3\xEF\xB8\x8F"
+    );
+    
+    $content = "**\xF0\x9F\x8C\x8D World Events \xe2\x80\x94 " . $range_label . "** (" . $date . ")\n";
+    $content .= "\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\n\n";
+    
+    // Split by importance
+    $high = array();
+    $medium = array();
+    $normal = array();
+    foreach ($events as $evt) {
+        $imp = isset($evt['importance']) ? $evt['importance'] : 'normal';
+        if ($imp === 'high') $high[] = $evt;
+        else if ($imp === 'medium') $medium[] = $evt;
+        else $normal[] = $evt;
+    }
+    
+    // Featured events (high importance)
+    if (count($high) > 0) {
+        foreach ($high as $evt) {
+            $cat = isset($evt['category']) ? $evt['category'] : 'world';
+            $icon = isset($cat_icons[$cat]) ? $cat_icons[$cat] : "\xF0\x9F\x8C\x90";
+            $title = isset($evt['title']) ? $evt['title'] : '';
+            $desc = isset($evt['description']) ? $evt['description'] : '';
+            $url = isset($evt['url']) ? $evt['url'] : '';
+            
+            $content .= $icon . " **" . $title . "** \xF0\x9F\x94\xB4\n";
+            if ($desc !== '' && $desc !== $title) {
+                $show_desc = (strlen($desc) > 150) ? substr($desc, 0, 150) . '...' : $desc;
+                $content .= "   " . $show_desc . "\n";
+            }
+            if ($url !== '') {
+                $content .= "   " . $url . "\n";
+            }
+            $content .= "\n";
+        }
+    }
+    
+    // Medium importance (top headlines)
+    if (count($medium) > 0) {
+        $content .= "**\xF0\x9F\x93\xB0 Top Headlines:**\n";
+        $med_count = 0;
+        foreach ($medium as $evt) {
+            if ($med_count >= 5) break;
+            $med_count++;
+            $cat = isset($evt['category']) ? $evt['category'] : 'world';
+            $icon = isset($cat_icons[$cat]) ? $cat_icons[$cat] : "\xF0\x9F\x93\xB0";
+            $title = isset($evt['title']) ? $evt['title'] : '';
+            $src = isset($evt['source']) ? $evt['source'] : '';
+            $url = isset($evt['url']) ? $evt['url'] : '';
+            
+            $src_label = '';
+            if ($src === 'bbc_news') $src_label = 'BBC';
+            else if ($src === 'wikipedia') $src_label = 'Wikipedia';
+            else if ($src === 'curated_calendar') $src_label = 'Calendar';
+            
+            $content .= $icon . " " . $title;
+            if ($src_label !== '') $content .= " _(" . $src_label . ")_";
+            $content .= "\n";
+            if ($url !== '') $content .= "   " . $url . "\n";
+        }
+        $content .= "\n";
+    }
+    
+    // Normal events (compact)
+    if (count($normal) > 0) {
+        $show_normal = (count($normal) > 5) ? 5 : count($normal);
+        $content .= "**Also in the news:**\n";
+        for ($i = 0; $i < $show_normal; $i++) {
+            $evt = $normal[$i];
+            $title = isset($evt['title']) ? $evt['title'] : '';
+            if (strlen($title) > 80) $title = substr($title, 0, 80) . '...';
+            $content .= "\xe2\x80\xa2 " . $title . "\n";
+        }
+        if (count($normal) > $show_normal) {
+            $content .= "_...and " . (count($normal) - $show_normal) . " more stories_\n";
+        }
+    }
+    
+    $content .= "\n\xF0\x9F\x8C\x90 **Website:** https://findtorontoevents.ca/\n";
+    $content .= "_Sources: Wikipedia, BBC World News, Curated Calendar_";
     
     send_response($content);
 }

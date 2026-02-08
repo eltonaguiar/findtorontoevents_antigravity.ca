@@ -55,6 +55,169 @@ var ScoreManager = {
     }
 };
 
+// === PRESENCE MANAGER (cross-game online tracking) ===
+var PresenceManager = {
+    PRESENCE_URL: '/FIGHTGAME/api/presence.php',
+    HEARTBEAT_MS: 8000,
+    POLL_MS: 5000,
+    STORAGE_KEY: 'shadowArena_presence',
+
+    playerId: null,
+    playerName: null,
+    currentGame: 'Shadow Arena',
+    currentGameUrl: '/FIGHTGAME/',
+    currentStatus: 'online',
+    roomCode: '',
+    joinable: false,
+    spectatable: false,
+    _hbTimer: null,
+    _pollTimer: null,
+    _players: [],
+    onPlayersUpdated: null,
+
+    _apiEnabled: false,
+
+    init: function() {
+        this._loadIdentity();
+        // Only enable API calls on real server (skip localhost/dev to avoid 404 noise)
+        var host = window.location.hostname;
+        this._apiEnabled = (host !== 'localhost' && host !== '127.0.0.1' && host.indexOf('192.168') !== 0);
+        if (this._apiEnabled) {
+            this._startHeartbeat();
+            this._startPolling();
+            var self = this;
+            window.addEventListener('beforeunload', function() {
+                self._sendLeave();
+            });
+        }
+    },
+
+    _loadIdentity: function() {
+        // Saved identity
+        try {
+            var saved = localStorage.getItem(this.STORAGE_KEY);
+            if (saved) {
+                var d = JSON.parse(saved);
+                this.playerId = d.id ? d.id : null;
+                this.playerName = d.name ? d.name : null;
+            }
+        } catch (e) {}
+        // Cross-game auth (VR / FavCreators)
+        if (!this.playerName) {
+            try {
+                var vu = sessionStorage.getItem('vr_auth_user');
+                if (vu) { var ud = JSON.parse(vu); this.playerName = ud.name ? ud.name : (ud.username ? ud.username : null); }
+            } catch (e) {}
+        }
+        if (!this.playerName) {
+            try {
+                var fc = sessionStorage.getItem('fc_user');
+                if (fc) { var fd = JSON.parse(fc); this.playerName = fd.name ? fd.name : (fd.username ? fd.username : null); }
+            } catch (e) {}
+        }
+        if (!this.playerId) {
+            this.playerId = 'sa_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+        }
+        if (!this.playerName) {
+            this.playerName = 'Fighter_' + Math.floor(1000 + Math.random() * 9000);
+        }
+        this._saveIdentity();
+    },
+
+    _saveIdentity: function() {
+        try {
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify({ id: this.playerId, name: this.playerName }));
+        } catch (e) {}
+    },
+
+    setStatus: function(status, roomCode, joinable, spectatable) {
+        this.currentStatus = status || 'online';
+        this.roomCode = roomCode || '';
+        this.joinable = !!joinable;
+        this.spectatable = !!spectatable;
+        this._sendHeartbeat();
+    },
+
+    setName: function(name) {
+        if (name && name.length > 0) {
+            this.playerName = name.substr(0, 20);
+            this._saveIdentity();
+            this._sendHeartbeat();
+        }
+    },
+
+    getPlayers: function() { return this._players; },
+
+    _startHeartbeat: function() {
+        var self = this;
+        this._sendHeartbeat();
+        this._hbTimer = setInterval(function() { self._sendHeartbeat(); }, this.HEARTBEAT_MS);
+    },
+
+    _startPolling: function() {
+        var self = this;
+        this._fetchPlayers();
+        this._pollTimer = setInterval(function() { self._fetchPlayers(); }, this.POLL_MS);
+    },
+
+    _sendHeartbeat: function() {
+        if (!this._apiEnabled) return;
+        try {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', this.PRESENCE_URL, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({
+                action: 'heartbeat',
+                player_id: this.playerId,
+                player_name: this.playerName,
+                game: this.currentGame,
+                game_url: this.currentGameUrl,
+                status: this.currentStatus,
+                room_code: this.roomCode,
+                joinable: this.joinable,
+                spectatable: this.spectatable
+            }));
+        } catch (e) {}
+    },
+
+    _sendLeave: function() {
+        if (!this._apiEnabled) return;
+        try {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', this.PRESENCE_URL, false);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({ action: 'leave', player_id: this.playerId }));
+        } catch (e) {}
+    },
+
+    _fetchPlayers: function() {
+        if (!this._apiEnabled) return;
+        var self = this;
+        try {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', this.PRESENCE_URL, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    try {
+                        var data = JSON.parse(xhr.responseText);
+                        if (data && data.players) {
+                            self._players = data.players;
+                            if (self.onPlayersUpdated) self.onPlayersUpdated(self._players);
+                        }
+                    } catch (e) {}
+                }
+            };
+            xhr.send();
+        } catch (e) {}
+    },
+
+    destroy: function() {
+        if (this._hbTimer) clearInterval(this._hbTimer);
+        if (this._pollTimer) clearInterval(this._pollTimer);
+        this._sendLeave();
+    }
+};
+
 // === ONLINE MANAGER (WebRTC) ===
 var OnlineManager = {
     connection: null,
@@ -247,6 +410,9 @@ var App = {
 
         OnlineManager.init();
 
+        // Presence tracking (cross-game online players)
+        this._initPresence();
+
         // Audio init (lazy — unlocked on first user gesture)
         if (window.GameAudio) {
             GameAudio.init();
@@ -260,7 +426,11 @@ var App = {
             if (window.speechSynthesis) {
                 speechSynthesis.getVoices();
                 if (speechSynthesis.onvoiceschanged !== undefined) {
-                    speechSynthesis.onvoiceschanged = function() { speechSynthesis.getVoices(); };
+                    var self = this;
+                    speechSynthesis.onvoiceschanged = function() {
+                        speechSynthesis.getVoices();
+                        self._announcerVoice = null; // re-select best voice
+                    };
                 }
             }
             // Resume context on first interaction
@@ -335,6 +505,12 @@ var App = {
             this._showTouchControls(false);
             this._clearTouchState();
         }
+
+        // Players Online panel: show on title/mode, hide during game
+        this._updatePresencePanel(screenId);
+
+        // Update presence status based on screen
+        this._updatePresenceStatus(screenId);
     },
 
     _setupEventListeners: function() {
@@ -595,61 +771,115 @@ var App = {
         for (var i = 0; i < btns.length; i++) btns[i].classList.remove('pressed');
     },
 
-    // === ANNOUNCER (Web Speech API) ===
-    _announceCharacter: function(name) {
-        if (!window.speechSynthesis) return;
-        if (window.GameAudio && GameAudio.isMuted()) return;
+    // === ANNOUNCER (Vocal Synth + Enhanced Speech) ===
 
-        // Cancel any in-progress speech
-        speechSynthesis.cancel();
+    _announcerVoice: null,
 
-        var utt = new SpeechSynthesisUtterance(name);
-        utt.rate = 0.85;    // slightly slow for dramatic effect
-        utt.pitch = 0.7;    // deeper, more imposing
-        utt.volume = 0.9;
-
-        // Try to pick a deep/dramatic voice
+    /**
+     * Pick the best available SpeechSynthesis voice.
+     * Prefers natural / neural voices which sound dramatically more human.
+     */
+    _getAnnouncerVoice: function() {
+        if (this._announcerVoice) return this._announcerVoice;
+        if (!window.speechSynthesis) return null;
         var voices = speechSynthesis.getVoices();
-        var preferred = null;
-        // Prefer male voices or voices with "Male" / "David" / "Daniel" in name
-        for (var i = 0; i < voices.length; i++) {
-            var vn = voices[i].name.toLowerCase();
-            if (vn.indexOf('david') >= 0 || vn.indexOf('daniel') >= 0 || vn.indexOf('james') >= 0 || vn.indexOf('mark') >= 0) {
-                preferred = voices[i];
-                break;
-            }
-        }
-        // Fallback: first English voice
-        if (!preferred) {
-            for (var j = 0; j < voices.length; j++) {
-                if (voices[j].lang.indexOf('en') === 0) {
-                    preferred = voices[j];
-                    break;
+        if (!voices || voices.length === 0) return null;
+
+        // Priority: natural-sounding voices first (Google neural, MS Online, Apple)
+        var priority = [
+            'google uk english male',     // Chrome — very natural
+            'google us english',          // Chrome — natural
+            'microsoft guy online',       // Edge — neural voice
+            'microsoft mark online',      // Edge — neural
+            'microsoft david online',     // Edge — neural
+            'microsoft zira online',      // Edge — neural (female, but natural)
+            'alex',                       // macOS — high quality
+            'daniel',                     // macOS — British, decent
+            'tom',                        // macOS
+            'aaron',                      // newer macOS
+            'david',                      // Windows built-in
+            'mark',                       // Windows built-in
+            'james'                       // general
+        ];
+
+        for (var p = 0; p < priority.length; p++) {
+            for (var i = 0; i < voices.length; i++) {
+                if (voices[i].name.toLowerCase().indexOf(priority[p]) >= 0) {
+                    this._announcerVoice = voices[i];
+                    return voices[i];
                 }
             }
         }
-        if (preferred) utt.voice = preferred;
-
-        speechSynthesis.speak(utt);
-    },
-
-    _announceText: function(text, rate, pitch) {
-        if (!window.speechSynthesis) return;
-        if (window.GameAudio && GameAudio.isMuted()) return;
-        speechSynthesis.cancel();
-        var utt = new SpeechSynthesisUtterance(text);
-        utt.rate = rate || 0.9;
-        utt.pitch = pitch || 0.8;
-        utt.volume = 0.9;
-        var voices = speechSynthesis.getVoices();
-        for (var i = 0; i < voices.length; i++) {
-            var vn = voices[i].name.toLowerCase();
-            if (vn.indexOf('david') >= 0 || vn.indexOf('daniel') >= 0 || vn.indexOf('james') >= 0) {
-                utt.voice = voices[i];
-                break;
+        // Fallback: first English voice
+        for (var j = 0; j < voices.length; j++) {
+            if (voices[j].lang && voices[j].lang.indexOf('en') === 0) {
+                this._announcerVoice = voices[j];
+                return voices[j];
             }
         }
-        speechSynthesis.speak(utt);
+        return null;
+    },
+
+    /**
+     * Announce a character name as an energetic shout: "VEX!"
+     * Layers: vocal formant synth + stinger SFX + improved speech synthesis.
+     */
+    _announceCharacter: function(name) {
+        if (window.GameAudio && GameAudio.isMuted()) return;
+
+        // 1) Play the formant-synth vocal shout (stylized arcade layer)
+        if (window.GameAudio && GameAudio.announcer) {
+            GameAudio.announcer.shout(name, { pitch: 95, volume: 0.45 });
+        }
+
+        // 2) Play dramatic stinger SFX
+        if (window.GameAudio) GameAudio.sfx.announcerName();
+
+        // 3) Speak the name with improved settings
+        if (window.speechSynthesis) {
+            speechSynthesis.cancel();
+            var utt = new SpeechSynthesisUtterance(name.toUpperCase() + '!');
+            utt.rate   = 1.05;   // slightly fast for energy
+            utt.pitch  = 0.9;    // authoritative but not robot-deep
+            utt.volume = 1.0;
+            var voice = this._getAnnouncerVoice();
+            if (voice) utt.voice = voice;
+            speechSynthesis.speak(utt);
+        }
+    },
+
+    /**
+     * Announce a gameplay phrase (FIGHT!, K.O.!, X WINS!, etc.)
+     * @param {string} text     Display text
+     * @param {string} vocalKey Key in VocalAnnouncer PHRASES (e.g. 'Fight', 'KO')
+     * @param {string} sfxKey   Key on SFX (e.g. 'announcerFight', 'announcerKO')
+     * @param {number} rate     Speech rate override
+     * @param {number} pitch    Speech pitch override
+     */
+    _announceText: function(text, vocalKey, sfxKey, rate, pitch) {
+        if (window.GameAudio && GameAudio.isMuted()) return;
+
+        // 1) Vocal formant shout
+        if (vocalKey && window.GameAudio && GameAudio.announcer) {
+            GameAudio.announcer.shout(vocalKey, { pitch: 95, volume: 0.5 });
+        }
+
+        // 2) Stinger SFX
+        if (sfxKey && window.GameAudio && GameAudio.sfx[sfxKey]) {
+            GameAudio.sfx[sfxKey]();
+        }
+
+        // 3) Speech synthesis
+        if (window.speechSynthesis) {
+            speechSynthesis.cancel();
+            var utt = new SpeechSynthesisUtterance(text);
+            utt.rate   = rate  || 1.0;
+            utt.pitch  = pitch || 0.9;
+            utt.volume = 1.0;
+            var voice = this._getAnnouncerVoice();
+            if (voice) utt.voice = voice;
+            speechSynthesis.speak(utt);
+        }
     },
 
     _toggleSound: function() {
@@ -944,23 +1174,47 @@ var App = {
 
         this.engine.onMatchEnd = function(winner, stats) {
             var winChar = winner === 1 ? CHARACTERS[self.selectedChar1] : CHARACTERS[self.selectedChar2];
-            self._announceText(winChar.name + ' wins!', 0.8, 0.6);
+            // Shout the winner's name + "WINS!"
+            if (window.GameAudio && GameAudio.announcer) {
+                GameAudio.announcer.shout(winChar.name, { pitch: 100, volume: 0.5 });
+            }
+            self._announceText(
+                winChar.name.toUpperCase() + ' WINS!',
+                'Wins', 'announcerWins', 0.95, 0.9
+            );
             setTimeout(function() { self._showResults(); }, 2500);
         };
 
         this.engine.onCountdownFight = function() {
-            self._announceText('Fight!', 1.1, 0.5);
+            self._announceText('FIGHT!', 'Fight', 'announcerFight', 1.1, 0.85);
         };
 
         this.engine.onRoundEnd = function(winner) {
             var winChar = winner === 1 ? CHARACTERS[self.selectedChar1] : CHARACTERS[self.selectedChar2];
-            setTimeout(function() { self._announceText('K O!', 0.7, 0.4); }, 200);
+            setTimeout(function() {
+                self._announceText('K.O.!', 'KO', 'announcerKO', 0.8, 0.75);
+            }, 200);
         };
 
-        // Announce "Round X"
+        // Announce matchup: shout both names then "ROUND ONE!"
         var c1 = CHARACTERS[this.selectedChar1];
         var c2 = CHARACTERS[this.selectedChar2];
-        this._announceText(c1.name + ' versus ' + c2.name + '! Round 1!', 0.9, 0.6);
+        var roundWords = ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE'];
+        var roundNum = roundWords[0] || '1';
+
+        // Vocal shouts for both character names
+        if (window.GameAudio && GameAudio.announcer) {
+            GameAudio.announcer.shout(c1.name, { pitch: 95, volume: 0.4 });
+            setTimeout(function() {
+                if (window.GameAudio && GameAudio.announcer) {
+                    GameAudio.announcer.shout(c2.name, { pitch: 95, volume: 0.4 });
+                }
+            }, 600);
+        }
+        this._announceText(
+            c1.name.toUpperCase() + '! VERSUS! ' + c2.name.toUpperCase() + '! ROUND ' + roundNum + '!',
+            'Versus', 'announcerVersus', 0.95, 0.9
+        );
 
         this.engine.start();
     },
@@ -1066,6 +1320,224 @@ var App = {
                 '<div class="rank-bar lg"><div class="rank-bar-fill" style="width:' + Math.min(100, ((profile.xp - rank.current.minXP) / (rank.next.minXP - rank.current.minXP)) * 100) + '%;background:linear-gradient(90deg,' + rank.current.color + ',' + rank.next.color + ');"></div></div></div>' : '<p style="color:#ffd700;margin-top:20px;">Maximum rank achieved!</p>');
     },
 
+    // === PRESENCE / PLAYERS ONLINE ===
+    _initPresence: function() {
+        var self = this;
+        PresenceManager.init();
+
+        // Populate name input with current name
+        var nameInput = document.getElementById('fighter-name-input');
+        if (nameInput) {
+            nameInput.value = PresenceManager.playerName;
+            nameInput.addEventListener('change', function() {
+                var v = nameInput.value.trim();
+                if (v.length > 0) {
+                    PresenceManager.setName(v);
+                }
+            });
+            nameInput.addEventListener('blur', function() {
+                var v = nameInput.value.trim();
+                if (v.length > 0) {
+                    PresenceManager.setName(v);
+                }
+            });
+        }
+
+        // Listen for player list updates
+        PresenceManager.onPlayersUpdated = function(players) {
+            self._renderPlayersOnline(players);
+        };
+
+        // Toggle floating panel collapse
+        var toggle = document.getElementById('players-online-toggle');
+        if (toggle) {
+            toggle.addEventListener('click', function() {
+                var list = document.getElementById('players-online-list');
+                var chev = document.getElementById('players-online-chevron');
+                if (list) list.classList.toggle('collapsed');
+                if (chev) chev.classList.toggle('collapsed');
+            });
+        }
+    },
+
+    _updatePresenceStatus: function(screenId) {
+        var statusMap = {
+            'title-screen': 'online',
+            'mode-screen': 'choosing_mode',
+            'char-select-screen': 'character_select',
+            'weapon-select-screen': 'weapon_select',
+            'stage-select-screen': 'stage_select',
+            'game-screen': 'fighting',
+            'results-screen': 'results',
+            'scores-screen': 'online',
+            'profile-screen': 'online',
+            'controls-screen': 'online',
+            'online-lobby-screen': 'in_lobby'
+        };
+        var status = statusMap[screenId] || 'online';
+        var roomCode = OnlineManager.roomCode || '';
+        var joinable = (screenId === 'online-lobby-screen' && roomCode.length > 0 && !OnlineManager.connected);
+        var spectatable = (screenId === 'game-screen' && this.gameMode === 'vs_ai');
+        PresenceManager.setStatus(status, roomCode, joinable, spectatable);
+    },
+
+    _updatePresencePanel: function(screenId) {
+        var panel = document.getElementById('players-online-panel');
+        if (!panel) return;
+        // Show floating panel on title, mode, scores, profile, controls screens
+        // Hide on lobby (has its own inline panel), game, char/weapon/stage select
+        var showOn = {
+            'title-screen': true,
+            'mode-screen': true,
+            'scores-screen': true,
+            'profile-screen': true,
+            'controls-screen': true,
+            'results-screen': true
+        };
+        if (showOn[screenId]) {
+            panel.classList.remove('hidden');
+        } else {
+            panel.classList.add('hidden');
+        }
+    },
+
+    _renderPlayersOnline: function(players) {
+        var self = this;
+        var myId = PresenceManager.playerId;
+
+        // Sort: current user first, then by game, then alphabetical
+        players.sort(function(a, b) {
+            if (a.id === myId) return -1;
+            if (b.id === myId) return 1;
+            if (a.game !== b.game) return a.game < b.game ? -1 : 1;
+            return a.name < b.name ? -1 : 1;
+        });
+
+        // Build HTML
+        var html = '';
+        if (players.length === 0) {
+            html = '<div class="players-online-empty">No players online</div>';
+        } else {
+            for (var i = 0; i < players.length; i++) {
+                html += self._buildPlayerEntry(players[i], myId);
+            }
+        }
+
+        // Update floating panel
+        var floatList = document.getElementById('players-online-list');
+        var floatCount = document.getElementById('players-online-count');
+        if (floatList) floatList.innerHTML = html;
+        if (floatCount) floatCount.textContent = players.length;
+
+        // Update lobby inline panel
+        var lobbyList = document.getElementById('lobby-players-list');
+        var lobbyCount = document.getElementById('lobby-players-count');
+        if (lobbyList) lobbyList.innerHTML = html;
+        if (lobbyCount) lobbyCount.textContent = players.length;
+
+        // Attach click handlers for join/spectate buttons
+        self._bindPlayerActions();
+    },
+
+    _buildPlayerEntry: function(player, myId) {
+        var isMe = (player.id === myId);
+
+        // Dot color based on status
+        var dotClass = 'player-dot';
+        if (player.status === 'fighting') dotClass += ' fighting';
+        else if (player.status === 'in_lobby' || player.status === 'choosing_mode') dotClass += ' lobby';
+
+        // Status display text
+        var statusText = this._presenceStatusLabel(player.status);
+        var statusClass = 'player-status';
+        if (player.status === 'fighting') statusClass += ' status-fighting';
+        else if (player.status === 'in_lobby') statusClass += ' status-lobby';
+        else if (player.status === 'character_select' || player.status === 'weapon_select' || player.status === 'stage_select') statusClass += ' status-select';
+        else statusClass += ' status-online';
+
+        // Action buttons
+        var actions = '';
+        if (!isMe) {
+            if (player.joinable && player.room_code) {
+                actions += '<button class="player-action-btn join-btn" data-room="' + player.room_code + '" data-game-url="' + (player.game_url || '') + '" title="Join Room">' +
+                    '&#x2694;' + '</button>';
+            }
+            if (player.spectatable) {
+                actions += '<button class="player-action-btn spectate-btn" data-player-id="' + player.id + '" title="Spectate">' +
+                    '&#x1F441;' + '</button>';
+            }
+        }
+
+        return '<div class="player-entry' + (isMe ? ' is-you' : '') + '">' +
+            '<div class="' + dotClass + '"></div>' +
+            '<div class="player-info">' +
+                '<div class="player-name">' + this._escHtml(player.name) + (isMe ? '<span class="you-tag">(YOU)</span>' : '') + '</div>' +
+                '<div class="player-game">' + this._escHtml(player.game) + '</div>' +
+                '<div class="' + statusClass + '">' + statusText + '</div>' +
+            '</div>' +
+            (actions ? '<div class="player-actions">' + actions + '</div>' : '') +
+        '</div>';
+    },
+
+    _presenceStatusLabel: function(status) {
+        var labels = {
+            'online': 'Online',
+            'choosing_mode': 'Choosing Mode',
+            'character_select': 'Picking Fighter',
+            'weapon_select': 'Picking Weapon',
+            'stage_select': 'Picking Stage',
+            'fighting': 'In Battle',
+            'results': 'Match Results',
+            'in_lobby': 'In Lobby',
+            'playing': 'Playing',
+            'idle': 'Idle'
+        };
+        return labels[status] || status;
+    },
+
+    _escHtml: function(str) {
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    },
+
+    _bindPlayerActions: function() {
+        var self = this;
+
+        // Join buttons
+        var joinBtns = document.querySelectorAll('.player-action-btn.join-btn');
+        for (var i = 0; i < joinBtns.length; i++) {
+            (function(btn) {
+                btn.onclick = function() {
+                    var roomCode = btn.getAttribute('data-room');
+                    var gameUrl = btn.getAttribute('data-game-url');
+                    if (gameUrl && gameUrl !== '/FIGHTGAME/' && gameUrl !== '') {
+                        // Different game — navigate there
+                        window.location.href = gameUrl;
+                        return;
+                    }
+                    // Same game (Shadow Arena) — go to lobby and auto-join
+                    self.showScreen('online-lobby-screen');
+                    var codeInput = document.getElementById('room-code-input');
+                    if (codeInput) codeInput.value = roomCode;
+                    setTimeout(function() { self._joinOnlineRoom(); }, 300);
+                };
+            })(joinBtns[i]);
+        }
+
+        // Spectate buttons
+        var specBtns = document.querySelectorAll('.player-action-btn.spectate-btn');
+        for (var j = 0; j < specBtns.length; j++) {
+            (function(btn) {
+                btn.onclick = function() {
+                    var statusEl = document.getElementById('online-status');
+                    if (statusEl) statusEl.textContent = 'Spectating coming soon!';
+                    self.showScreen('online-lobby-screen');
+                };
+            })(specBtns[j]);
+        }
+    },
+
     // === ONLINE ===
     _createOnlineRoom: function() {
         var statusEl = document.getElementById('online-status');
@@ -1073,10 +1545,14 @@ var App = {
 
         OnlineManager.createRoom(function(code) {
             if (statusEl) statusEl.innerHTML = 'Room Code: <strong style="color:#ffd700;font-size:28px;letter-spacing:4px;">' + code + '</strong><br>Share this code with your opponent. Waiting for them to join...';
+            // Mark as joinable in presence so others see the room
+            PresenceManager.setStatus('in_lobby', code, true, false);
         });
 
         OnlineManager.onConnected = function() {
             if (statusEl) statusEl.textContent = 'Opponent connected! Starting match...';
+            // No longer joinable
+            PresenceManager.setStatus('fighting', '', false, false);
             // TODO: exchange character/weapon selections then start
         };
     },

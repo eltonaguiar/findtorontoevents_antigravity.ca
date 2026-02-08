@@ -111,6 +111,14 @@
       background: rgba(168, 85, 247, 0.6);
       box-shadow: 0 0 20px rgba(168,85,247,0.5);
     }
+    .btn.speaker { background: rgba(34,197,94,0.2); border-color: #22c55e; color: #22c55e; }
+    .btn.speaker:hover { background: rgba(34,197,94,0.4); }
+    .btn.speaker.muted { background: rgba(239,68,68,0.2); border-color: #ef4444; color: #ef4444; }
+    .btn.speaker.speaking { animation: speaker-pulse 1.5s infinite; }
+    @keyframes speaker-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+      50% { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+    }
     
     /* Season indicator */
     #season-badge {
@@ -178,6 +186,9 @@
     <a href="/vr/" class="btn">← Back to Hub</a>
     <button class="btn passthrough" id="passthrough-btn" onclick="togglePassthrough()">
       👁️ Passthrough AR
+    </button>
+    <button class="btn speaker" id="speaker-btn" onclick="toggleWeatherSpeech()">
+      🔊 Weather Summary
     </button>
   </div>
 
@@ -449,7 +460,7 @@
     <!-- ==================== CAMERA & CONTROLS ==================== -->
     
     <a-entity id="camera-rig" position="0 1.6 0">
-      <a-camera look-controls wasd-controls>
+      <a-camera look-controls wasd-controls="acceleration: 10">
         <a-cursor id="cursor" color="#00d4ff" fuse="true" fuse-timeout="1500" scale="0.5 0.5 0.5"
                   animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 0.5 0.5 0.5; dur: 150"
                   animation__fusing="property: scale; startEvents: fusing; from: 0.5 0.5 0.5; to: 0.1 0.1 0.1; dur: 1500">
@@ -529,6 +540,8 @@
     let currentWeather = null;
     let currentSeason = '';
     let passthroughActive = false;
+    let weatherSpoken = false;       // only auto-speak on first load
+    let weatherSpeechMuted = false;  // user mute toggle
 
     // ========== INITIALIZATION ==========
     document.addEventListener('DOMContentLoaded', () => {
@@ -649,6 +662,13 @@
         updateUI(data);
         updateVRScene(data);
         checkWeatherAlerts(data);
+
+        // Auto-speak weather summary on first load
+        if (!weatherSpoken) {
+          weatherSpoken = true;
+          // Short delay so the page has time to render and voices to load
+          setTimeout(function () { speakWeatherSummary(data); }, 1500);
+        }
       } catch (err) {
         console.warn('Weather fetch failed:', err);
         ui.loading.style.display = 'none';
@@ -1185,6 +1205,125 @@
       }
     }
 
+    // ========== AUDIBLE WEATHER SUMMARY (TTS) ==========
+    function buildWeatherSummaryText(data) {
+      var c = data.current;
+      var daily = data.daily;
+      var temp = Math.round(c.temperature_2m);
+      var windKmh = Math.round(c.wind_speed_10m);
+      var humidity = c.relative_humidity_2m;
+      var info = weatherCodeToInfo(c.weather_code, c.is_day);
+      var realFeel = getRealFeel(c.temperature_2m, c.wind_speed_10m, c.relative_humidity_2m);
+      var comfort = getComfortLevel(realFeel.value);
+
+      var parts = [];
+      parts.push('Welcome to the Toronto Weather Observatory.');
+      parts.push('Right now it is ' + temp + ' degrees with ' + info.desc.toLowerCase() + '.');
+
+      // Feels-like with explanation
+      if (realFeel.value !== temp) {
+        var reason = '';
+        if (realFeel.windChill !== null && realFeel.windChill < temp) {
+          reason = ' due to wind chill';
+        } else if (realFeel.humidex !== null && realFeel.humidex > temp) {
+          reason = ' due to humidity';
+        }
+        parts.push('It feels like ' + realFeel.value + ' degrees' + reason + '.');
+      }
+
+      // Wind
+      if (windKmh > 0) {
+        parts.push('Wind is ' + windKmh + ' kilometres per hour' +
+          (c.wind_gusts_10m > 40 ? ', with gusts up to ' + Math.round(c.wind_gusts_10m) : '') + '.');
+      }
+
+      // Humidity
+      if (humidity > 70) {
+        parts.push('Humidity is high at ' + humidity + ' percent.');
+      }
+
+      // UV
+      if (daily && daily.uv_index_max && daily.uv_index_max[0] >= 6) {
+        parts.push('U.V. index is ' + Math.round(daily.uv_index_max[0]) + '. Sunscreen is recommended.');
+      }
+
+      // Comfort level
+      parts.push('Comfort level: ' + comfort.level.toLowerCase() + '.');
+
+      // Clothing advice (short version)
+      var advice = getClothingAdvice(realFeel.value, c.weather_code, windKmh);
+      // Strip emojis for speech
+      var adviceClean = advice.text.replace(/[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}]|[\u{FE00}-\u{FEFF}]/gu, '').trim();
+      if (adviceClean) parts.push(adviceClean);
+
+      // Weather alerts
+      var wc = calcWindChill(c.temperature_2m, c.wind_speed_10m);
+      var hx = calcHumidex(c.temperature_2m, c.relative_humidity_2m);
+      if (wc && wc <= -30) parts.push('Warning: extreme cold. Frostbite risk within minutes.');
+      else if (wc && wc <= -15) parts.push('Cold alert. Wind chill is ' + Math.round(wc) + ' degrees.');
+      if (hx && hx >= 40) parts.push('Heat warning. Humidex is ' + hx + '. Dangerous heat levels.');
+      else if (hx && hx >= 35) parts.push('Heat alert. Humidex is ' + hx + '. Stay hydrated.');
+      if (c.wind_gusts_10m > 70) parts.push('Wind warning. Gusts up to ' + Math.round(c.wind_gusts_10m) + ' kilometres per hour.');
+
+      // Tomorrow preview
+      if (daily && daily.time && daily.time.length > 1) {
+        var tmHi = Math.round(daily.temperature_2m_max[1]);
+        var tmLo = Math.round(daily.temperature_2m_min[1]);
+        var tmInfo = weatherCodeToInfo(daily.weather_code[1], true);
+        parts.push('Tomorrow: ' + tmInfo.desc.toLowerCase() + ', high of ' + tmHi + ', low of ' + tmLo + ' degrees.');
+      }
+
+      return parts.join(' ');
+    }
+
+    function speakWeatherSummary(data) {
+      if (weatherSpeechMuted) return;
+      if (!('speechSynthesis' in window)) return;
+
+      var text = buildWeatherSummaryText(data);
+      speechSynthesis.cancel(); // stop anything currently speaking
+
+      var utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.95;
+      utterance.pitch = 1.0;
+      utterance.volume = 0.85;
+
+      // Prefer a natural English voice
+      var voices = speechSynthesis.getVoices();
+      var preferred = voices.find(function (v) {
+        return v.lang.indexOf('en') === 0 && (/Google|Natural|Samantha/i.test(v.name));
+      }) || voices.find(function (v) { return v.lang.indexOf('en') === 0; });
+      if (preferred) utterance.voice = preferred;
+
+      var btn = document.getElementById('speaker-btn');
+      utterance.onstart = function () { if (btn) btn.classList.add('speaking'); };
+      utterance.onend = function () { if (btn) btn.classList.remove('speaking'); };
+      utterance.onerror = function () { if (btn) btn.classList.remove('speaking'); };
+
+      speechSynthesis.speak(utterance);
+    }
+
+    function toggleWeatherSpeech() {
+      var btn = document.getElementById('speaker-btn');
+      if (!weatherSpeechMuted && speechSynthesis.speaking) {
+        // Currently speaking — mute and stop
+        speechSynthesis.cancel();
+        weatherSpeechMuted = true;
+        btn.textContent = '🔇 Muted';
+        btn.classList.add('muted');
+        btn.classList.remove('speaking');
+      } else if (weatherSpeechMuted) {
+        // Unmute and replay
+        weatherSpeechMuted = false;
+        btn.textContent = '🔊 Weather Summary';
+        btn.classList.remove('muted');
+        if (currentWeather) speakWeatherSummary(currentWeather);
+      } else {
+        // Not speaking, not muted — replay
+        if (currentWeather) speakWeatherSummary(currentWeather);
+      }
+    }
+
     // ===== KEYBOARD SHORTCUTS (QW-007) =====
     document.addEventListener('keydown', function (e) {
       if (e.target.tagName === 'INPUT') return;
@@ -1195,6 +1334,7 @@
         case '4': var bt = document.getElementById('btn-thunder'); if (bt) bt.click(); break;
         case 'p': case 'P': if (typeof togglePassthrough === 'function') togglePassthrough(); break;
         case 'r': case 'R': if (typeof fetchWeatherData === 'function') fetchWeatherData(); break;
+        case 's': case 'S': if (typeof toggleWeatherSpeech === 'function') toggleWeatherSpeech(); break;
       }
     });
 
@@ -1257,6 +1397,7 @@
         { key: '4', desc: 'Thunderstorm' },
         { key: 'P', desc: 'Passthrough AR' },
         { key: 'R', desc: 'Refresh weather' },
+        { key: 'S', desc: 'Weather summary (voice)' },
         { key: 'G', desc: 'Area Guide' }
       ]);
     }
@@ -1345,5 +1486,7 @@
   <!-- VR AI Agent -->
   <link rel="stylesheet" href="/vr/vr-ai-agent.css">
   <script src="/vr/vr-ai-agent.js"></script>
+  <!-- Layout Fix: resolve overlapping fixed-position widgets (must load LAST) -->
+  <script src="/vr/layout-fix.js"></script>
 </body>
 </html>

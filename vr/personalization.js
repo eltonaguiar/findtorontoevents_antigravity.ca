@@ -572,9 +572,9 @@
      ═══════════════════════════════════════════════ */
   var hubQuickLaunch = (function () {
     if (zone !== 'hub') return null;
-    var favorites = load('hub_favorites', ['events', 'movies', 'creators']);
-    var zoneUrls = { events: '/vr/events/', movies: '/vr/movies.html', creators: '/vr/creators.html', stocks: '/vr/stocks-zone.html', wellness: '/vr/wellness/', weather: '/vr/weather-zone.html' };
-    var zoneColors = { events: '#ff6b6b', movies: '#4ecdc4', creators: '#a855f7', stocks: '#22c55e', wellness: '#10b981', weather: '#06b6d4' };
+    var favorites = load('hub_favorites', ['events', 'movies', 'creators', 'games', 'fightgame']);
+    var zoneUrls = { events: '/vr/events/', movies: '/vr/movies.html', creators: '/vr/creators.html', stocks: '/vr/stocks-zone.html', wellness: '/vr/wellness/', weather: '/vr/weather-zone.html', games: '/vr/game-arena/', tictactoe: '/vr/game-arena/tic-tac-toe.html', soccer: '/vr/game-arena/soccer-shootout.html', fightgame: '/FIGHTGAME/', '2xko': '/2xko/', antrush: '/vr/ant-rush/' };
+    var zoneColors = { events: '#ff6b6b', movies: '#4ecdc4', creators: '#a855f7', stocks: '#22c55e', wellness: '#10b981', weather: '#06b6d4', games: '#8b5cf6', tictactoe: '#8b5cf6', soccer: '#34d399', fightgame: '#ef4444', '2xko': '#f97316', antrush: '#ff6b35' };
 
     function createBar() {
       css('vr11-ql-css',

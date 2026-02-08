@@ -260,6 +260,293 @@ SFX.uiSelect = function() {
 
 
 // ═══════════════════════════════════════════════════════════
+//   ANNOUNCER STINGER SFX
+//   Dramatic impact effects that play alongside voice
+// ═══════════════════════════════════════════════════════════
+
+SFX.announcerName = function() {
+    // Dramatic impact + arena reverb for character name call-outs
+    tone(70, 'sine', 0.45, 0.22, 0.005, 0.45);          // low boom
+    noiseBurst(0.1, 0.28, 1400, 2);                       // impact crack
+    tone(350, 'square', 0.06, 0.08, 0.002, 0.06);         // bright accent
+    setTimeout(function() {
+        noiseBurst(0.4, 0.06, 600, 0.5);                  // crowd-like tail
+    }, 60);
+};
+
+SFX.announcerFight = function() {
+    // Huge impact for FIGHT!
+    tone(55, 'sine', 0.6, 0.3, 0.005, 0.6);              // sub boom
+    noiseBurst(0.18, 0.4, 900, 1.5);                      // heavy crack
+    sweep(180, 700, 0.35, 'sawtooth', 0.1);               // rising energy
+    tone(440, 'square', 0.1, 0.12, 0.002, 0.1);           // sharp accent
+    setTimeout(function() {
+        noiseBurst(0.5, 0.08, 500, 0.4);                  // arena reverb tail
+    }, 100);
+};
+
+SFX.announcerKO = function() {
+    // Devastating impact for K.O.
+    tone(40, 'sine', 0.9, 0.35, 0.01, 0.9);              // deep sub
+    noiseBurst(0.25, 0.45, 500, 1);                        // massive crack
+    sweep(700, 80, 0.55, 'sawtooth', 0.12);               // descending weight
+    setTimeout(function() {
+        tone(60, 'sine', 0.5, 0.15, 0.01, 0.5);          // aftershock
+    }, 250);
+};
+
+SFX.announcerWins = function() {
+    // Triumphant chord
+    tone(261, 'square', 0.35, 0.07, 0.005, 0.35);         // C4
+    tone(329, 'square', 0.35, 0.07, 0.005, 0.35);         // E4
+    tone(392, 'square', 0.35, 0.07, 0.005, 0.35);         // G4
+    sweep(250, 1000, 0.45, 'sawtooth', 0.05);             // rising energy
+    noiseBurst(0.12, 0.2, 1200, 2);                        // impact
+};
+
+SFX.announcerVersus = function() {
+    // Tension-building whoosh
+    sweep(100, 500, 0.3, 'sawtooth', 0.08);
+    noiseBurst(0.15, 0.2, 800, 1);
+    tone(100, 'sine', 0.3, 0.12, 0.005, 0.3);
+};
+
+SFX.announcerRound = function() {
+    // Authoritative bell-like hit
+    tone(300, 'sine', 0.25, 0.15, 0.002, 0.25);
+    tone(600, 'sine', 0.2, 0.08, 0.002, 0.2);
+    noiseBurst(0.08, 0.2, 2000, 3);
+};
+
+
+// ═══════════════════════════════════════════════════════════
+//   VOCAL ANNOUNCER (Formant Synthesis)
+//   Synthesized vocal "shout" layer for fighting game energy.
+//   Plays as a stylized undertone alongside the speech voice.
+// ═══════════════════════════════════════════════════════════
+
+var VocalAnnouncer = (function() {
+
+    // Formant frequencies: [F1, F2, F3]
+    var VOWELS = {
+        'ah': [800, 1200, 2500],   // /ɑ/ "father"
+        'ee': [270, 2300, 3000],   // /i/ "see"
+        'ih': [400, 2000, 2600],   // /ɪ/ "sit"
+        'eh': [530, 1850, 2500],   // /ɛ/ "bed"
+        'oo': [300, 870, 2250],    // /u/ "boot"
+        'uh': [640, 1200, 2400],   // /ʌ/ "but"
+        'oh': [500, 700, 2500],    // /ɔ/ "go"
+        'ay': [500, 1800, 2600],   // /eɪ/ start
+        'ow': [600, 900, 2500]     // /aʊ/ "now"
+    };
+
+    // Phoneme sequences for each character name & phrase
+    // type: 'v' = vowel, 'd' = diphthong, 'p' = plosive, 'f' = fricative, 'r' = resonant
+    var PHRASES = {
+        'Kai': [
+            { t: 'p', hz: 3000, dur: 0.04 },
+            { t: 'd', from: 'ah', to: 'ee', dur: 0.38 }
+        ],
+        'Rook': [
+            { t: 'r', hz: 200, dur: 0.06 },
+            { t: 'v', s: 'oo', dur: 0.28 },
+            { t: 'p', hz: 2500, dur: 0.04 }
+        ],
+        'Zara': [
+            { t: 'f', hz: 6000, dur: 0.07 },
+            { t: 'v', s: 'ah', dur: 0.2 },
+            { t: 'r', hz: 200, dur: 0.04 },
+            { t: 'v', s: 'ah', dur: 0.28 }
+        ],
+        'Vex': [
+            { t: 'f', hz: 3500, dur: 0.06 },
+            { t: 'v', s: 'eh', dur: 0.28 },
+            { t: 'f', hz: 5000, dur: 0.1 }
+        ],
+        'Freya': [
+            { t: 'f', hz: 5000, dur: 0.05 },
+            { t: 'r', hz: 200, dur: 0.03 },
+            { t: 'd', from: 'ay', to: 'ah', dur: 0.38 }
+        ],
+        'Drake': [
+            { t: 'p', hz: 2000, dur: 0.04 },
+            { t: 'r', hz: 200, dur: 0.04 },
+            { t: 'd', from: 'ay', to: 'ee', dur: 0.32 },
+            { t: 'p', hz: 3000, dur: 0.04 }
+        ],
+        'Fight': [
+            { t: 'f', hz: 5000, dur: 0.06 },
+            { t: 'd', from: 'ah', to: 'ee', dur: 0.38 },
+            { t: 'p', hz: 4000, dur: 0.04 }
+        ],
+        'KO': [
+            { t: 'p', hz: 3000, dur: 0.05 },
+            { t: 'd', from: 'ay', to: 'oh', dur: 0.5 }
+        ],
+        'Wins': [
+            { t: 'r', hz: 250, dur: 0.05 },
+            { t: 'v', s: 'ih', dur: 0.22 },
+            { t: 'r', hz: 300, dur: 0.06 },
+            { t: 'f', hz: 6000, dur: 0.08 }
+        ],
+        'Versus': [
+            { t: 'f', hz: 3500, dur: 0.05 },
+            { t: 'v', s: 'uh', dur: 0.15 },
+            { t: 'f', hz: 5000, dur: 0.06 },
+            { t: 'v', s: 'uh', dur: 0.14 },
+            { t: 'f', hz: 5000, dur: 0.06 }
+        ],
+        'Round': [
+            { t: 'r', hz: 200, dur: 0.05 },
+            { t: 'd', from: 'ow', to: 'oo', dur: 0.28 },
+            { t: 'r', hz: 300, dur: 0.06 },
+            { t: 'p', hz: 2000, dur: 0.03 }
+        ]
+    };
+
+    var BASE_PITCH = 95;  // deep male fundamental Hz
+
+    /**
+     * Synthesize a formant-based vocal shout.
+     * @param {string} phrase  Key in PHRASES (e.g. 'Kai', 'Fight')
+     * @param {object} opts    { pitch, volume }
+     */
+    function shout(phrase, opts) {
+        var c = ctx(); if (!c) return;
+        var segs = PHRASES[phrase];
+        if (!segs) return;
+        opts = opts || {};
+        var pitch  = opts.pitch  || BASE_PITCH;
+        var vol    = opts.volume || 0.45;
+
+        // Total duration
+        var totalDur = 0;
+        for (var i = 0; i < segs.length; i++) totalDur += segs[i].dur;
+
+        var t = c.currentTime + 0.01;
+
+        // ── Voiced excitation: two slightly-detuned sawtooths ──
+        var osc1 = c.createOscillator();
+        osc1.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(pitch, t);
+        osc1.frequency.linearRampToValueAtTime(pitch * 1.18, t + totalDur * 0.65);
+        osc1.frequency.linearRampToValueAtTime(pitch * 0.88, t + totalDur);
+
+        var osc2 = c.createOscillator();
+        osc2.type = 'sawtooth';
+        osc2.frequency.setValueAtTime(pitch * 1.004, t);
+        osc2.frequency.linearRampToValueAtTime(pitch * 1.18 * 1.004, t + totalDur * 0.65);
+        osc2.frequency.linearRampToValueAtTime(pitch * 0.88 * 1.004, t + totalDur);
+
+        // Sub oscillator for chest resonance
+        var oscSub = c.createOscillator();
+        oscSub.type = 'sine';
+        oscSub.frequency.setValueAtTime(pitch * 0.5, t);
+        oscSub.frequency.linearRampToValueAtTime(pitch * 0.5 * 1.1, t + totalDur * 0.6);
+        oscSub.frequency.linearRampToValueAtTime(pitch * 0.5 * 0.9, t + totalDur);
+
+        var voiceMix = c.createGain();
+        voiceMix.gain.value = 0.45;
+        osc1.connect(voiceMix);
+        osc2.connect(voiceMix);
+        var subGain = c.createGain();
+        subGain.gain.value = 0.2;
+        oscSub.connect(subGain);
+        subGain.connect(voiceMix);
+
+        // ── Formant filter bank (3 parallel bandpass) ──
+        var fmts = [];
+        var fGains = [];
+        var qVals = [5, 8, 10];
+        var ampVals = [1.0, 0.65, 0.25];
+        for (var fi = 0; fi < 3; fi++) {
+            var bp = c.createBiquadFilter();
+            bp.type = 'bandpass';
+            bp.Q.value = qVals[fi];
+            fmts.push(bp);
+            var fg = c.createGain();
+            fg.gain.value = ampVals[fi];
+            fGains.push(fg);
+            voiceMix.connect(bp);
+            bp.connect(fg);
+        }
+
+        // ── Master vocal envelope ──
+        var masterEnv = c.createGain();
+        masterEnv.gain.setValueAtTime(0.001, t);
+        masterEnv.gain.linearRampToValueAtTime(vol, t + 0.025);
+        // Sustain at peak then decay
+        masterEnv.gain.setValueAtTime(vol, t + totalDur * 0.8);
+        masterEnv.gain.exponentialRampToValueAtTime(0.001, t + totalDur + 0.12);
+
+        for (var gi = 0; gi < fGains.length; gi++) {
+            fGains[gi].connect(masterEnv);
+        }
+
+        // ── Soft-clip distortion for vocal grit ──
+        var shaper = c.createWaveShaper();
+        var curve = new Float32Array(256);
+        for (var ci = 0; ci < 256; ci++) {
+            var x = (ci / 128) - 1;
+            curve[ci] = (Math.PI + 2.5) * x / (Math.PI + 2.5 * Math.abs(x));
+        }
+        shaper.curve = curve;
+        shaper.oversample = '2x';
+        masterEnv.connect(shaper);
+
+        // ── Arena echo (two taps) ──
+        var d1 = c.createDelay(0.5);
+        d1.delayTime.value = 0.09;
+        var d1g = c.createGain();
+        d1g.gain.value = 0.25;
+        var d2 = c.createDelay(0.5);
+        d2.delayTime.value = 0.18;
+        var d2g = c.createGain();
+        d2g.gain.value = 0.12;
+
+        shaper.connect(_sfxGain);
+        shaper.connect(d1);  d1.connect(d1g);  d1g.connect(_sfxGain);
+        shaper.connect(d2);  d2.connect(d2g);  d2g.connect(_sfxGain);
+
+        // ── Animate formants through phoneme sequence ──
+        var segT = t;
+        for (var si = 0; si < segs.length; si++) {
+            var seg = segs[si];
+            if (seg.t === 'v') {
+                // Vowel — snap formants to target
+                var vf = VOWELS[seg.s];
+                for (var vk = 0; vk < 3; vk++) {
+                    fmts[vk].frequency.linearRampToValueAtTime(vf[vk], segT + 0.012);
+                }
+            } else if (seg.t === 'd') {
+                // Diphthong — glide between two vowels
+                var vFrom = VOWELS[seg.from];
+                var vTo   = VOWELS[seg.to];
+                for (var dk = 0; dk < 3; dk++) {
+                    fmts[dk].frequency.setValueAtTime(vFrom[dk], segT);
+                    fmts[dk].frequency.linearRampToValueAtTime(vTo[dk], segT + seg.dur);
+                }
+            } else if (seg.t === 'p') {
+                noiseBurst(seg.dur, vol * 0.45, seg.hz, 3);
+            } else if (seg.t === 'f') {
+                noiseBurst(seg.dur * 1.4, vol * 0.3, seg.hz, 5);
+            } else if (seg.t === 'r') {
+                tone(seg.hz, 'sine', seg.dur, vol * 0.28, 0.005, seg.dur);
+            }
+            segT += seg.dur;
+        }
+
+        // Start & stop oscillators
+        osc1.start(t);  osc1.stop(t + totalDur + 0.2);
+        osc2.start(t);  osc2.stop(t + totalDur + 0.2);
+        oscSub.start(t); oscSub.stop(t + totalDur + 0.2);
+    }
+
+    return { shout: shout };
+})();
+
+
+// ═══════════════════════════════════════════════════════════
 //   BACKGROUND MUSIC (simple procedural loop)
 // ═══════════════════════════════════════════════════════════
 
@@ -381,6 +668,7 @@ window.GameAudio = {
     init: function() { ctx(); },
     ensureResumed: ensureResumed,
     sfx: SFX,
+    announcer: VocalAnnouncer,
     startMusic: startMusic,
     stopMusic: stopMusic,
     mute: function() {

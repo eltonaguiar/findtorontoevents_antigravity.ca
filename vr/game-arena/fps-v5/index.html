@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FPS V5 — Prototype Comparison</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0f;
+  color: #fff;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+}
+h1 {
+  font-size: 36px;
+  font-weight: 200;
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.subtitle {
+  color: #556;
+  font-size: 14px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 50px;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  max-width: 1100px;
+  width: 100%;
+}
+.card {
+  background: linear-gradient(180deg, #12141a, #0e1016);
+  border: 1px solid #1a1d28;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.3s, box-shadow 0.3s;
+}
+.card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 0 20px var(--glow);
+}
+.card-preview {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  background: var(--bg);
+  border-bottom: 1px solid #1a1d28;
+  position: relative;
+  overflow: hidden;
+}
+.card-preview::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(transparent 60%, #12141a);
+}
+.card-body { padding: 20px; }
+.card-body h2 {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.card-body p {
+  color: #667;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+.card-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tag {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: #889;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.tag.highlight { border-color: var(--accent); color: var(--accent); }
+
+/* Card themes */
+.card-krunker { --accent: #ff6a00; --glow: rgba(255,106,0,0.15); --bg: linear-gradient(135deg, #1a2a1a, #0a0f08); }
+.card-tactical { --accent: #e63946; --glow: rgba(230,57,70,0.15); --bg: linear-gradient(135deg, #1a1520, #0a0a10); }
+.card-realistic { --accent: #4488ff; --glow: rgba(68,136,255,0.15); --bg: linear-gradient(135deg, #0a1520, #080c14); }
+
+.card-preview-text {
+  position: relative;
+  z-index: 1;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-shadow: 0 0 30px var(--glow);
+}
+
+.footer {
+  margin-top: 50px;
+  color: #334;
+  font-size: 12px;
+  text-align: center;
+  letter-spacing: 2px;
+}
+</style>
+</head>
+<body>
+
+<h1>FPS V5</h1>
+<div class="subtitle">Choose a visual style prototype</div>
+
+<div class="cards">
+  <!-- Krunker Style -->
+  <a href="prototype-krunker.html" style="text-decoration: none; color: inherit;">
+    <div class="card card-krunker">
+      <div class="card-preview">
+        <div class="card-preview-text">KRUNKER</div>
+      </div>
+      <div class="card-body">
+        <h2>Krunker Style</h2>
+        <p>Colorful box-based characters and weapons. Like Krunker.io — the most popular browser FPS. Instant loading, best performance, zero external dependencies.</p>
+        <div class="card-tags">
+          <span class="tag highlight">Fastest</span>
+          <span class="tag">Voxel Art</span>
+          <span class="tag">Box Models</span>
+          <span class="tag">No Loading</span>
+        </div>
+      </div>
+    </div>
+  </a>
+
+  <!-- Tactical -->
+  <a href="prototype-tactical.html" style="text-decoration: none; color: inherit;">
+    <div class="card card-tactical">
+      <div class="card-preview">
+        <div class="card-preview-text">TACTICAL</div>
+      </div>
+      <div class="card-body">
+        <h2>Stylized Tactical</h2>
+        <p>Dark military aesthetic with post-processing (bloom, color grading, vignette). Detailed procedural models with PBR materials. Gritty and serious.</p>
+        <div class="card-tags">
+          <span class="tag highlight">Post-FX</span>
+          <span class="tag">PBR Materials</span>
+          <span class="tag">Bloom + FXAA</span>
+          <span class="tag">Military</span>
+        </div>
+      </div>
+    </div>
+  </a>
+
+  <!-- Realistic -->
+  <a href="prototype-realistic.html" style="text-decoration: none; color: inherit;">
+    <div class="card card-realistic">
+      <div class="card-preview">
+        <div class="card-preview-text">REALISM</div>
+      </div>
+      <div class="card-body">
+        <h2>Realistic (GLTF Models)</h2>
+        <p>Loads the Three.js Soldier.glb 3D model with skeletal animations. Full PBR pipeline, procedural textures, cinematic post-processing. Most visually impressive.</p>
+        <div class="card-tags">
+          <span class="tag highlight">3D Models</span>
+          <span class="tag">GLTF Soldier</span>
+          <span class="tag">Animations</span>
+          <span class="tag">~2MB Load</span>
+        </div>
+      </div>
+    </div>
+  </a>
+</div>
+
+<div class="footer">
+  FPS V5 PROTOTYPES — THREE.JS R170 — CLICK A CARD TO PLAY
+</div>
+
+</body>
+</html>

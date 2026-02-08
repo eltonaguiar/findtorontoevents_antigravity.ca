@@ -23,8 +23,13 @@
     { id: 'wellness', name: 'Wellness Garden',        emoji: '\uD83C\uDF3F', url: '/vr/wellness/',         color: '#f59e0b' },
     { id: 'weather',  name: 'Weather Observatory',    emoji: '\u26C5',       url: '/vr/weather-zone.html', color: '#06b6d4' },
     { id: 'gamearena', name: 'Game Arena',              emoji: '\uD83C\uDFAE', url: '/vr/game-arena/',       color: '#a855f7' },
-    { id: 'tutorial', name: 'Tutorial',               emoji: '\u2753',       url: '/vr/tutorial/',         color: '#f59e0b' },
-    { id: 'antrush',  name: 'Ant Rush AR',            emoji: '\uD83D\uDC1C', url: '/vr/ant-rush/',         color: '#ff6b35' }
+    { id: 'tictactoe', name: 'Tic-Tac-Toe',            emoji: '\u274C\u2B55', url: '/vr/game-arena/tic-tac-toe.html', color: '#8b5cf6' },
+    { id: 'soccer',    name: 'Soccer Shootout',         emoji: '\u26BD',       url: '/vr/game-arena/soccer-shootout.html', color: '#34d399' },
+    { id: 'fightgame', name: 'Shadow Arena Fighter',    emoji: '\uD83E\uDD4A', url: '/FIGHTGAME/',           color: '#ef4444' },
+    { id: '2xko',      name: '2XKO Fighting',           emoji: '\uD83D\uDCA5', url: '/2xko/',                color: '#f97316' },
+    { id: 'fpsarena',  name: 'FPS Arena',               emoji: '\uD83C\uDFAF', url: '/vr/game-arena/fps-arena.html', color: '#ef4444' },
+    { id: 'antrush',  name: 'Ant Rush AR',            emoji: '\uD83D\uDC1C', url: '/vr/ant-rush/',         color: '#ff6b35' },
+    { id: 'tutorial', name: 'Tutorial',               emoji: '\u2753',       url: '/vr/tutorial/',         color: '#f59e0b' }
   ];
 
   /* ── Music stations (SomaFM — copyright-free, listener-supported) ── */
@@ -46,7 +51,12 @@
     stocks:   [{ label: 'Refresh Prices',    action: 'refresh' }],
     wellness: [{ label: 'Breathing Exercise', action: 'breathe' },   { label: 'Ambient Sounds',  action: 'ambient' }],
     weather:  [{ label: 'Refresh Weather',   action: 'refresh' }],
-    gamearena: [{ label: 'New Game',          action: 'newGame' }, { label: 'Soccer Shootout', action: 'soccer' }],
+    gamearena: [{ label: 'New Game',          action: 'newGame' }, { label: 'Soccer Shootout', action: 'soccer' }, { label: 'FPS Arena', action: 'fpsArena' }],
+    fpsarena:  [{ label: 'New Match',         action: 'newGame' }],
+    tictactoe: [{ label: 'New Game',          action: 'newGame' }, { label: 'Change Difficulty', action: 'difficulty' }],
+    soccer:    [{ label: 'New Match',          action: 'newGame' }],
+    fightgame: [{ label: 'New Fight',          action: 'newGame' }, { label: 'Character Select', action: 'charSelect' }],
+    '2xko':    [{ label: 'New Match',          action: 'newGame' }],
     tutorial: [{ label: 'Restart Tutorial',  action: 'resetPos' }],
     antrush:  [{ label: 'Quick Mode',          action: 'quickMode' }, { label: 'Bed Challenge', action: 'bedChallenge' }]
   };
@@ -220,6 +230,9 @@
         document.querySelectorAll('a-text[value]').forEach(function (t) {
           t.setAttribute('visible', t.getAttribute('visible') === 'false' ? 'true' : 'false');
         });
+        break;
+      case 'fpsArena':
+        window.location.href = '/vr/game-arena/fps-arena.html';
         break;
     }
   }
@@ -547,17 +560,24 @@
 
   /* ── Keyboard ── */
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'm' || e.key === 'M' || e.key === 'Tab') {
+    // Don't trigger shortcuts if typing in an input/textarea/contentEditable
+    var tag = (e.target.tagName || '').toLowerCase();
+    var isTyping = (tag === 'input' || tag === 'textarea' || e.target.isContentEditable);
+
+    if (e.key === 'm' || e.key === 'M') {
+      if (isTyping) return; // Let the user type 'M' in search fields
+      e.preventDefault();
+      toggleNavMenu();
+    }
+    if (e.key === 'Tab') {
+      if (isTyping) return; // Let Tab work normally in form fields
       e.preventDefault();
       toggleNavMenu();
     }
     if (e.key === 'h' || e.key === 'H') {
-      // Don't trigger if typing in an input/textarea
-      var tag = (e.target.tagName || '').toLowerCase();
-      if (tag !== 'input' && tag !== 'textarea' && !e.target.isContentEditable) {
-        e.preventDefault();
-        toggleHud();
-      }
+      if (isTyping) return;
+      e.preventDefault();
+      toggleHud();
     }
     if (e.key === 'Escape') closeNavMenu();
   });

@@ -607,6 +607,141 @@
             transform: scale(1.1);
         }
 
+        /* Alt trailer button */
+        .action-btn.alt-trailer-btn {
+            position: relative;
+            font-size: 18px;
+        }
+        .action-btn.alt-trailer-btn .alt-count {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: #f59e0b;
+            color: #000;
+            font-size: 10px;
+            font-weight: 800;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        .action-btn.alt-trailer-btn.hidden-btn {
+            display: none;
+        }
+
+        /* Alt trailer dropdown */
+        .alt-trailer-dropdown {
+            position: fixed;
+            right: 80px;
+            bottom: 200px;
+            z-index: 20;
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 8px;
+            min-width: 260px;
+            max-width: 320px;
+            max-height: 350px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+        }
+        .alt-trailer-dropdown.active {
+            display: block;
+        }
+        .alt-trailer-dropdown-title {
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255,255,255,0.4);
+        }
+        .alt-trailer-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .alt-trailer-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        .alt-trailer-item.active-trailer {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        .alt-trailer-item-thumb {
+            width: 64px;
+            height: 36px;
+            border-radius: 4px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #222;
+        }
+        .alt-trailer-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .alt-trailer-item-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .alt-trailer-item-type {
+            font-size: 10px;
+            color: rgba(255,255,255,0.4);
+        }
+        .alt-trailer-item-badge {
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+        .alt-type-trailer { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+        .alt-type-teaser { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+        .alt-type-clip { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+        .alt-type-other { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+
+        /* Alt description link */
+        .alt-desc-link {
+            display: inline-block;
+            font-size: 11px;
+            color: #f59e0b;
+            cursor: pointer;
+            margin-left: 6px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+        .alt-desc-link:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+        .alt-desc-loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(245, 158, 11, 0.2);
+            border-top-color: #f59e0b;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-left: 6px;
+        }
+
         #container {
             height: 100vh;
             overflow-y: scroll;
@@ -829,21 +964,66 @@
             opacity: 1;
         }
 
-        /* User Profile */
-        .user-profile {
+        /* User Profile Avatar */
+        .user-avatar-btn {
             position: fixed;
             top: 20px;
             right: 20px;
             z-index: 100;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            padding: 12px 16px;
-            display: flex;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            display: none;
             align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .user-avatar-btn:hover {
+            transform: scale(1.1);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+        .user-dropdown {
+            position: fixed;
+            top: 68px;
+            right: 20px;
+            z-index: 101;
+            background: rgba(24, 24, 24, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 12px;
+            min-width: 160px;
+            display: none;
             color: white;
         }
+        .user-dropdown.active { display: block; }
+        .user-dropdown-name {
+            font-size: 13px;
+            font-weight: 700;
+            padding: 4px 8px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 8px;
+        }
+        .user-dropdown-item {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            background: none;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.2s;
+        }
+        .user-dropdown-item:hover { background: rgba(255, 255, 255, 0.1); }
 
         /* Mute Overlay Modal */
         .mute-overlay {
@@ -1081,6 +1261,418 @@
             border: none;
             box-shadow: 0 2px 10px rgba(255, 68, 68, 0.5);
         }
+
+        /* Now Playing Badge */
+        .now-playing-badge {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            animation: nowPlayingPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes nowPlayingPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Motivational Video Styles */
+        .motivation-badge {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .motivation-channel-badge {
+            background: rgba(139, 92, 246, 0.3);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            color: #c4b5fd;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .filter-btn.motivation-filter {
+            color: #c4b5fd;
+        }
+        .filter-btn.motivation-filter.active {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+        }
+
+        /* Settings section subtitle */
+        .settings-subtitle {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.4);
+            padding: 16px 20px 8px;
+        }
+
+        .setting-item-desc {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 2px;
+        }
+
+        /* Browse section headers */
+        .browse-section-header {
+            max-width: 1400px;
+            margin: 0 auto 16px;
+            padding: 16px 0 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .browse-section-header h2 {
+            font-size: 22px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Coming Soon Badge */
+        .coming-soon-badge {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .coming-soon-date-badge {
+            background: rgba(14, 165, 233, 0.25);
+            border: 1px solid rgba(14, 165, 233, 0.5);
+            color: #7dd3fc;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .coming-soon-venue-badge {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .filter-btn.coming-soon-filter {
+            color: #7dd3fc;
+        }
+        .filter-btn.coming-soon-filter.active {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+        }
+
+        /* Freestyle (experimental) */
+        .filter-btn.freestyle-filter {
+            color: #fbbf24;
+            position: relative;
+        }
+        .filter-btn.freestyle-filter.active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+        .freestyle-badge {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .freestyle-experimental-tag {
+            display: inline-block;
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            color: #fbbf24;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            animation: experimentalPulse 3s ease-in-out infinite;
+        }
+        @keyframes experimentalPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .freestyle-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 300;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .freestyle-overlay.active {
+            display: flex;
+        }
+        .freestyle-header {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            position: sticky;
+            top: 0;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(20px);
+            z-index: 10;
+        }
+        .freestyle-header h2 {
+            font-size: 22px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+        .freestyle-header p {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 12px;
+        }
+        .freestyle-search-row {
+            display: flex;
+            gap: 8px;
+        }
+        .freestyle-search-input {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .freestyle-search-input:focus {
+            border-color: #f59e0b;
+        }
+        .freestyle-search-input::placeholder {
+            color: rgba(255,255,255,0.3);
+        }
+        .freestyle-search-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: transform 0.1s;
+        }
+        .freestyle-search-btn:active {
+            transform: scale(0.96);
+        }
+        .freestyle-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .freestyle-results {
+            padding: 20px 24px;
+            flex: 1;
+        }
+        .freestyle-results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+        .freestyle-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .freestyle-card:hover {
+            border-color: rgba(245, 158, 11, 0.4);
+            transform: translateY(-2px);
+        }
+        .freestyle-card-thumb {
+            position: relative;
+            aspect-ratio: 16/9;
+            background: #111;
+            overflow: hidden;
+        }
+        .freestyle-card-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .freestyle-card-play {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.4);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .freestyle-card:hover .freestyle-card-play {
+            opacity: 1;
+        }
+        .freestyle-card-play span {
+            font-size: 40px;
+        }
+        .freestyle-card-body {
+            padding: 12px 14px;
+        }
+        .freestyle-card-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .freestyle-card-meta {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .freestyle-card-desc {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+        .freestyle-no-trailer {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.6);
+            color: rgba(255,255,255,0.5);
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .freestyle-loading {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255,255,255,0.4);
+        }
+        .freestyle-loading .spinner-ring {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(245, 158, 11, 0.2);
+            border-top-color: #f59e0b;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .freestyle-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255,255,255,0.3);
+        }
+        .freestyle-empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 600px) {
+            .freestyle-results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Coming soon card in browse */
+        .coming-soon-card-date {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(14, 165, 233, 0.85);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .coming-soon-card-venue {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            color: #7dd3fc;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        /* Motivational card overlay */
+        .motivation-card-channel {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background: rgba(139, 92, 246, 0.8);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .motivation-duration-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+        }
     </style>
 </head>
 
@@ -1126,6 +1718,9 @@
             <a href="https://findtorontoevents.ca/FAVCREATORS_TRACKER/" class="menu-link">
                 <span>⭐</span> FavCreators
             </a>
+            <a href="/MOVIESHOWS3/admin.html" class="menu-link">
+                <span>⚙️</span> Admin
+            </a>
 
             <div class="menu-divider"></div>
 
@@ -1149,6 +1744,52 @@
                     <input type="range" id="autoScrollDelay" min="5" max="30" value="10" step="1"
                         oninput="updateAutoScrollDelay(this.value)" class="delay-slider">
                 </div>
+
+                <div class="settings-subtitle">Motivational Videos</div>
+
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span class="setting-icon">💪</span>
+                        <div>
+                            <span>Show in "All" Feed</span>
+                            <div class="setting-item-desc">Include motivation videos in the All tab</div>
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="motivationInAllToggle" onchange="toggleMotivationInAll()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span class="setting-icon">🎬</span>
+                        <div>
+                            <span>Long-Form Videos</span>
+                            <div class="setting-item-desc">Enable longer motivational videos (5+ min)</div>
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="motivationLongFormToggle" onchange="toggleMotivationLongForm()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="settings-subtitle">Watch History</div>
+
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span class="setting-icon">⏭️</span>
+                        <div>
+                            <span>Skip Watched Trailers</span>
+                            <div class="setting-item-desc">Auto-skip trailers you already watched</div>
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="skipWatchedToggle" onchange="toggleSkipWatched()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
             </div>
         </div>
     </div>
@@ -1164,10 +1805,16 @@
         <div class="filter-group">
             <button class="filter-btn active" onclick="filterContent('all')" id="filterAll">All (<span
                     id="countAll">0</span>)</button>
+            <button class="filter-btn" onclick="filterContent('now-playing')" id="filterNowPlaying">Now Playing (<span id="countNowPlaying">0</span>)</button>
             <button class="filter-btn" onclick="filterContent('movie')" id="filterMovies">Movies (<span
                     id="countMovies">0</span>)</button>
             <button class="filter-btn" onclick="filterContent('tv')" id="filterTV">TV (<span
                     id="countTV">0</span>)</button>
+            <button class="filter-btn coming-soon-filter" onclick="filterContent('coming-soon')" id="filterComingSoon">Coming Soon (<span
+                    id="countComingSoon">0</span>)</button>
+            <button class="filter-btn motivation-filter" onclick="filterContent('motivation')" id="filterMotivation">Motivation (<span
+                    id="countMotivation">0</span>)</button>
+            <button class="filter-btn freestyle-filter" onclick="openFreestyle()" id="filterFreestyle">Freestyle <span class="freestyle-experimental-tag">Beta</span></button>
         </div>
     </div>
 
@@ -1193,14 +1840,20 @@
                     <div class="filter-buttons">
                         <button class="filter-chip active" data-type="all"
                             onclick="setContentTypeFilter('all')">All</button>
+                        <button class="filter-chip" data-type="now-playing"
+                            onclick="setContentTypeFilter('now-playing')">Now Playing</button>
                         <button class="filter-chip" data-type="movie"
                             onclick="setContentTypeFilter('movie')">Movies</button>
                         <button class="filter-chip" data-type="tv" onclick="setContentTypeFilter('tv')">TV
                             Series</button>
-                        <button class="filter-chip" data-type="now-playing"
-                            onclick="setContentTypeFilter('now-playing')">Now Playing</button>
+                        <button class="filter-chip" data-type="coming-soon"
+                            onclick="setContentTypeFilter('coming-soon')" style="border-color: rgba(14, 165, 233, 0.5); color: #7dd3fc;">Coming Soon</button>
+                        <button class="filter-chip" data-type="motivation"
+                            onclick="setContentTypeFilter('motivation')" style="border-color: rgba(139, 92, 246, 0.5); color: #c4b5fd;">Motivation</button>
                         <button class="filter-chip" data-type="out-this-week"
                             onclick="setContentTypeFilter('out-this-week')">Out This Week</button>
+                        <button class="filter-chip" data-type="freestyle"
+                            onclick="openFreestyle()" style="border-color: rgba(245, 158, 11, 0.5); color: #fbbf24;">Freestyle <span class="freestyle-experimental-tag">Beta</span></button>
                     </div>
                 </div>
 
@@ -1232,6 +1885,33 @@
         <div class="browse-grid" id="browseGrid"></div>
     </div>
 
+    <!-- Freestyle Overlay -->
+    <div class="freestyle-overlay" id="freestyleOverlay">
+        <div class="freestyle-header">
+            <button class="freestyle-close" onclick="closeFreestyle()">✕</button>
+            <h2>🎯 Freestyle <span class="freestyle-experimental-tag">Experimental</span></h2>
+            <p>Search for anything — movies, TV shows, actors, genres. Results come directly from TMDB and may not be in our database. This is an experimental feature!</p>
+            <div class="freestyle-search-row">
+                <input type="text" class="freestyle-search-input" id="freestyleSearchInput" 
+                       placeholder="Try: sci-fi thriller, anime, Korean drama, horror 2025..."
+                       onkeydown="if(event.key==='Enter')doFreestyleSearch()">
+                <select id="freestyleType" style="padding:10px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:white; font-size:13px;">
+                    <option value="multi">All</option>
+                    <option value="movie">Movies</option>
+                    <option value="tv">TV Shows</option>
+                </select>
+                <button class="freestyle-search-btn" onclick="doFreestyleSearch()">Search</button>
+            </div>
+        </div>
+        <div class="freestyle-results" id="freestyleResults">
+            <div class="freestyle-empty">
+                <div class="freestyle-empty-icon">🔍</div>
+                <div style="font-size:16px; font-weight:600; margin-bottom:8px;">Search for anything</div>
+                <div style="font-size:13px;">Type a movie, show, or topic above to discover content from TMDB</div>
+            </div>
+        </div>
+    </div>
+
     <!-- Queue Panel -->
     <div class="queue-overlay" id="queueOverlay" onclick="toggleQueue()"></div>
     <div class="queue-panel" id="queuePanel">
@@ -1256,9 +1936,9 @@
         <button class="login-close" onclick="closeLogin()">✕</button>
         <h2 style="margin: 0 0 24px 0; font-size: 24px;">Sign In to Like Movies</h2>
         <form id="loginForm" onsubmit="handleLogin(event)" style="display: flex; flex-direction: column; gap: 16px;">
-            <input type="email" id="loginEmail" placeholder="Email" required
+            <input type="email" id="loginEmail" placeholder="Email" required autocomplete="email"
                 style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; font-size: 14px;">
-            <input type="password" id="loginPassword" placeholder="Password" required
+            <input type="password" id="loginPassword" placeholder="Password" required autocomplete="current-password"
                 style="padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; font-size: 14px;">
             <button type="submit"
                 style="padding: 12px; border-radius: 8px; border: none; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; font-weight: 700; cursor: pointer; font-size: 14px;">
@@ -1272,21 +1952,23 @@
         </div>
     </div>
 
-    <!-- User Profile (when logged in) -->
-    <div class="user-profile" id="userProfile" style="display: none;">
-        <span id="userName" style="margin-right: 12px; font-size: 14px;"></span>
-        <button onclick="handleLogout()"
-            style="padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.5); color: white; cursor: pointer; font-size: 12px;">
-            Logout
-        </button>
+    <!-- User Avatar (when logged in) -->
+    <button class="user-avatar-btn" id="userAvatarBtn" onclick="toggleUserDropdown()"></button>
+    <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-name" id="userDropdownName"></div>
+        <button class="user-dropdown-item" onclick="handleLogout()">Logout</button>
     </div>
 
     <!-- Sidebar Actions -->
     <div class="sidebar-actions">
+        <button class="action-btn alt-trailer-btn hidden-btn" id="altTrailerBtn" onclick="toggleAltTrailers()" title="Alt Trailers">🎬<span class="alt-count" id="altTrailerCount" style="display:none;">0</span></button>
         <button class="action-btn" onclick="likeMovie()" title="Like">❤️</button>
         <button class="action-btn" onclick="addToQueue()" title="Add to Queue">➕</button>
         <button class="action-btn" onclick="shareMovie()" title="Share">🔗</button>
     </div>
+
+    <!-- Alt Trailer Dropdown -->
+    <div class="alt-trailer-dropdown" id="altTrailerDropdown"></div>
 
     <!-- Video Container -->
     <div id="container">
@@ -1296,10 +1978,515 @@
     <script>
         const API_URL = '/MOVIESHOWS3/api/get-movies.php';
         let allMovies = [];
+        let allMotivationalVideos = [];
         let filteredMovies = [];
         let currentFilter = 'all';
         let myQueue = JSON.parse(localStorage.getItem('movieQueue') || '[]');
         let currentMovieIndex = 0;
+
+        // Motivational settings (persisted in localStorage)
+        let motivationSettings = {
+            showInAll: false,
+            showLongForm: true
+        };
+
+        // Load motivation settings from localStorage
+        function loadMotivationSettings() {
+            const saved = localStorage.getItem('motivationSettings');
+            if (saved) {
+                motivationSettings = JSON.parse(saved);
+            }
+            document.getElementById('motivationInAllToggle').checked = motivationSettings.showInAll;
+            document.getElementById('motivationLongFormToggle').checked = motivationSettings.showLongForm;
+        }
+
+        function saveMotivationSettings() {
+            localStorage.setItem('motivationSettings', JSON.stringify(motivationSettings));
+        }
+
+        function toggleMotivationInAll() {
+            motivationSettings.showInAll = document.getElementById('motivationInAllToggle').checked;
+            saveMotivationSettings();
+            // Re-apply current filter to update the view
+            filterContent(currentFilter);
+            console.log(motivationSettings.showInAll ? '✅ Motivation videos shown in All' : '❌ Motivation videos hidden from All');
+        }
+
+        function toggleMotivationLongForm() {
+            motivationSettings.showLongForm = document.getElementById('motivationLongFormToggle').checked;
+            saveMotivationSettings();
+            // Rebuild motivation videos list
+            buildMotivationalVideos();
+            // Re-apply filter
+            filterContent(currentFilter);
+            console.log(motivationSettings.showLongForm ? '✅ Long-form motivation enabled' : '❌ Short-form only');
+        }
+
+        // ========== CURATED MOTIVATIONAL VIDEOS ==========
+        // Approved channels and their videos
+        const MOTIVATION_CHANNELS = [
+            // --- Motiversity --- (all verified 2025-02-06)
+            {
+                channel: 'Motiversity',
+                videos: [
+                    { id: 'wnHW6o8WMas', title: 'NO EXCUSES - Best Motivational Video', duration: '10:15', isShort: false },
+                    { id: '2xeW_HYdb8g', title: 'LISTEN TO THIS EVERY MORNING', duration: '10:20', isShort: false },
+                    { id: '9i45VrIyNOI', title: 'WHY NOT YOU - Best Motivational Speeches', duration: '8:35', isShort: false },
+                    { id: '-WRP5qXa7SU', title: 'FOCUS AND VALUE YOURSELF - Matthew McConaughey', duration: '17:40', isShort: false },
+                    { id: 'LwxnZzGp-n8', title: 'FOCUS ON YOURSELF AND STAY SILENT - Tony Robbins', duration: '12:25', isShort: false },
+                    { id: 'zjOS9hWVGQs', title: 'DISCIPLINE YOURSELF - Jocko Willink & David Goggins', duration: '10:00', isShort: false },
+                    { id: 'U24wsr048FY', title: 'DISCIPLINE YOUR MIND - Motivational Speech', duration: '8:00', isShort: false },
+                    { id: 'Wj1_NCOJ2yY', title: 'DISCIPLINE - Motivational Speech', duration: '9:00', isShort: false },
+                ]
+            },
+            // --- MotivationHub --- (all verified)
+            {
+                channel: 'MotivationHub',
+                videos: [
+                    { id: 'g-jwWYX7Jlo', title: 'DREAM - Motivational Video', duration: '15:22', isShort: false },
+                    { id: 'k9zTr2MAFRg', title: 'AGAINST ALL ODDS - Elon Musk Motivation', duration: '12:10', isShort: false },
+                    { id: 'Hx0VZjLvY-M', title: 'PERSISTENCE - Goggins, Jocko & Eric Thomas', duration: '15:00', isShort: false },
+                    { id: '5j3S2ZuiJfc', title: 'GET UP AND GET IT DONE IN 2025 - David Goggins', duration: '19:30', isShort: false },
+                ]
+            },
+            // --- Ben Lionel Scott --- (all verified)
+            {
+                channel: 'Ben Lionel Scott',
+                videos: [
+                    { id: '26U_seo0a1g', title: 'UNBROKEN - Motivational Video', duration: '11:30', isShort: false },
+                    { id: 'lsSC2vx7zFQ', title: 'HOW BAD DO YOU WANT IT? (Success)', duration: '5:37', isShort: false },
+                    { id: 'x3mxjCm0aUI', title: 'CONTROL YOUR MIND - Motivational Speech', duration: '10:00', isShort: false },
+                    { id: '8bUpyNYXAiI', title: 'SELF CONFIDENCE - Motivational Speech', duration: '10:00', isShort: false },
+                ]
+            },
+            // --- Be Inspired --- (all verified)
+            {
+                channel: 'Be Inspired',
+                videos: [
+                    { id: 'ft_DXwgUXB0', title: 'SELF DISCIPLINE - Featuring Will Smith', duration: '7:12', isShort: false },
+                    { id: 'bth-GCGyWcU', title: 'YOU HAVE NO DISCIPLINE - Eric Thomas', duration: '8:00', isShort: false },
+                ]
+            },
+            // --- Fearless Motivation --- (all verified)
+            {
+                channel: 'Fearless Motivation',
+                videos: [
+                    { id: 'D0q9HIMRvtk', title: 'I DID NOT COME THIS FAR TO ONLY COME THIS FAR', duration: '4:30', isShort: false },
+                    { id: 'PKBDZOPoCH0', title: 'YOU ARE HERE FOR A REASON (Goosebumps)', duration: '5:00', isShort: false },
+                    { id: 'xOvts_DTrlA', title: 'THE WARRIOR MENTALITY', duration: '6:00', isShort: false },
+                    { id: '9H5SWjSdgdk', title: 'NO FEAR - Best Motivational Speech', duration: '7:00', isShort: false },
+                ]
+            },
+            // --- Motivation2Study --- (all verified)
+            {
+                channel: 'Motivation2Study',
+                videos: [
+                    { id: 'VSceuiPBpxY', title: 'THE MINDSET OF A WINNER - Kobe Bryant', duration: '10:00', isShort: false },
+                    { id: 'YcdF_TsubxQ', title: 'NO EXCUSES - Best Video for Students', duration: '8:00', isShort: false },
+                ]
+            },
+            // --- Absolute Motivation --- (verified)
+            {
+                channel: 'Absolute Motivation',
+                videos: [
+                    { id: 'TLKxdTmk-zc', title: 'THE MOST EYE OPENING 10 MINUTES - David Goggins', duration: '10:00', isShort: false },
+                ]
+            },
+            // --- GaryVee --- (all verified)
+            {
+                channel: 'GaryVee',
+                videos: [
+                    { id: 'dp9uSNPnC34', title: 'YOU\'VE GOT TIME!', duration: '0:58', isShort: true },
+                    { id: 'f-AyDfj-1C0', title: 'ADVICE EVERY GRADUATE NEEDS TO HEAR', duration: '0:55', isShort: true },
+                    { id: '51RdAU0cOUw', title: 'CHANGE YOUR PERSPECTIVE - Gary Vaynerchuk', duration: '7:00', isShort: false },
+                    { id: 'loyfrfB4UhE', title: 'FEELING LOST? TURN YOUR LIFE AROUND', duration: '8:00', isShort: false },
+                ]
+            },
+            // --- Evan Carmichael --- (all verified)
+            {
+                channel: 'Evan Carmichael',
+                videos: [
+                    { id: 'rePlYbzByxg', title: 'TOP 10 RULES FOR SUCCESS', duration: '12:00', isShort: false },
+                    { id: 'oK28sWkfSSk', title: 'OVERCOME NEGATIVITY AND UNLOCK YOUR MIND', duration: '10:00', isShort: false },
+                ]
+            },
+            // --- Eric Thomas --- (all verified)
+            {
+                channel: 'Eric Thomas',
+                videos: [
+                    { id: '7Oxz060iedY', title: 'YOU OWE YOU - Powerful Motivation', duration: '7:40', isShort: false },
+                    { id: 'tTQG-xf611M', title: 'THE NEW VERSION OF YOU IN 2025', duration: '20:00', isShort: false },
+                    { id: 'V5-OaWYas8U', title: 'MAKING 2025 THE BEST YEAR EVER', duration: '20:00', isShort: false },
+                ]
+            },
+            // --- Tony Robbins --- (all verified)
+            {
+                channel: 'Tony Robbins',
+                videos: [
+                    { id: '0b2MtFQk_aU', title: 'ONE OF THE MOST EYE OPENING SPEECHES EVER', duration: '10:00', isShort: false },
+                    { id: '2EuhFLwtR7Y', title: 'TRANSFORM YOUR LIFE WITH ONE DECISION', duration: '34:00', isShort: false },
+                    { id: '8PHm_GkQ8kU', title: 'BECOME SOMEONE NOBODY THOUGHT YOU COULD BE', duration: '12:00', isShort: false },
+                ]
+            },
+            // --- David Goggins Clips --- (all verified)
+            {
+                channel: 'David Goggins',
+                videos: [
+                    { id: 'Emc7obS9z4s', title: 'START NOW - David Goggins', duration: '0:30', isShort: true },
+                    { id: 'm5S3H1W9lnQ', title: 'IT ALL COMES DOWN TO THIS', duration: '0:45', isShort: true },
+                    { id: '8rjtYOavgoo', title: 'WHAT DO YOU STAND FOR?', duration: '0:55', isShort: true },
+                    { id: 'Cw0hZQ8Na_Y', title: 'GET UP AND GET IT DONE', duration: '14:00', isShort: false },
+                    { id: 'b0FVTOxsWw0', title: 'A FEW MINUTES CAN CHANGE YOUR LIFE', duration: '10:00', isShort: false },
+                    { id: 'd6Jefz9Mwgg', title: 'DO IT ALONE. DO IT BROKEN. DO IT SCARED.', duration: '15:00', isShort: false },
+                    { id: 'EMRT4mfKTkw', title: 'SHUT UP AND DO THE WORK', duration: '10:00', isShort: false },
+                ]
+            },
+        ];
+
+        // Build the motivational videos list based on settings
+        function buildMotivationalVideos() {
+            allMotivationalVideos = [];
+            let idCounter = 100000; // Use high IDs to avoid collision with DB movies
+
+            MOTIVATION_CHANNELS.forEach(channel => {
+                channel.videos.forEach(video => {
+                    // If long-form is disabled, only include shorts
+                    if (!motivationSettings.showLongForm && !video.isShort) return;
+
+                    allMotivationalVideos.push({
+                        id: idCounter++,
+                        title: video.title,
+                        type: 'motivation',
+                        genre: 'Motivation',
+                        description: `${channel.channel} - Motivational ${video.isShort ? 'Short' : 'Video'}`,
+                        release_year: new Date().getFullYear(),
+                        imdb_rating: null,
+                        trailer_id: video.id,
+                        thumbnail: `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`,
+                        _channel: channel.channel,
+                        _duration: video.duration,
+                        _isShort: video.isShort,
+                        _isMotivation: true
+                    });
+                });
+            });
+
+            // Shuffle motivational videos for variety
+            for (let i = allMotivationalVideos.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allMotivationalVideos[i], allMotivationalVideos[j]] = [allMotivationalVideos[j], allMotivationalVideos[i]];
+            }
+
+            // Update count
+            document.getElementById('countMotivation').textContent = allMotivationalVideos.length;
+        }
+
+        // Now Playing data - fetched from TMDB or approximated from current movies
+        let nowPlayingMovies = [];
+
+        function buildNowPlayingList() {
+            const currentYear = new Date().getFullYear();
+            const currentMonth = new Date().getMonth(); // 0-indexed
+            // Consider "now playing" as movies from this year
+            nowPlayingMovies = allMovies.filter(m => {
+                if (m.type !== 'movie') return false;
+                const releaseYear = parseInt(m.release_year);
+                return releaseYear >= currentYear - 1 && releaseYear <= currentYear;
+            });
+            document.getElementById('countNowPlaying').textContent = nowPlayingMovies.length;
+        }
+
+        // ========== COMING SOON ==========
+        // Curated list of upcoming movies & TV shows with trailers
+        // Each entry has a release date, venue (Theaters / VOD / Streaming), and trailer ID
+        let allComingSoon = [];
+
+        const COMING_SOON_ENTRIES = [
+            // --- MOVIES - Theatrical (2026) ---
+            {
+                title: 'Dracula',
+                type: 'movie',
+                genre: 'Fantasy, Horror, Romance',
+                description: 'Luc Besson\'s gothic horror romance starring Caleb Landry Jones as the legendary vampire and Christoph Waltz as a relentless priest.',
+                releaseDate: '2026-02-06',
+                venue: 'Theaters',
+                trailerId: 'WphzEoD8Gwk',
+                thumbnail: null
+            },
+            {
+                title: 'Scream VII',
+                type: 'movie',
+                genre: 'Horror, Thriller',
+                description: 'A new Ghostface emerges targeting Sidney Prescott\'s daughter. Neve Campbell and Courteney Cox return.',
+                releaseDate: '2026-02-27',
+                venue: 'Theaters',
+                trailerId: 'UJrghaPJ0RY',
+                thumbnail: null
+            },
+            {
+                title: 'The Bride!',
+                type: 'movie',
+                genre: 'Fantasy, Drama, Horror',
+                description: 'Maggie Gyllenhaal directs Jessie Buckley and Christian Bale in a 1930s reimagining of Frankenstein\'s Bride.',
+                releaseDate: '2026-03-06',
+                venue: 'Theaters + IMAX',
+                trailerId: 'acUJhgxYkQs',
+                thumbnail: null
+            },
+            {
+                title: 'Hoppers',
+                type: 'movie',
+                genre: 'Animation, Comedy, Family',
+                description: 'Pixar\'s new film follows an animal lover who uses tech to transfer human consciousness into robotic animals.',
+                releaseDate: '2026-03-06',
+                venue: 'Theaters',
+                trailerId: 'SS3U9GnTlmY',
+                thumbnail: null
+            },
+            {
+                title: 'Project Hail Mary',
+                type: 'movie',
+                genre: 'Sci-Fi, Adventure, Drama',
+                description: 'Ryan Gosling stars as an astronaut who wakes up on a spaceship light-years from Earth with no memory, tasked with saving humanity.',
+                releaseDate: '2026-03-20',
+                venue: 'Theaters + IMAX',
+                trailerId: 'J8h_CsVEF6U',
+                thumbnail: null
+            },
+            {
+                title: 'Avengers: Doomsday',
+                type: 'movie',
+                genre: 'Action, Superhero',
+                description: 'Robert Downey Jr. returns as Doctor Doom. The Russo Brothers direct the next epic Marvel crossover uniting Avengers, Fantastic Four, and X-Men.',
+                releaseDate: '2026-05-01',
+                venue: 'Theaters + IMAX',
+                trailerId: null,
+                thumbnail: null
+            },
+            {
+                title: 'Scary Movie 6',
+                type: 'movie',
+                genre: 'Comedy, Horror',
+                description: 'The Wayans family returns for another round of horror spoofs skewering modern genre films.',
+                releaseDate: '2026-06-12',
+                venue: 'Theaters',
+                trailerId: null,
+                thumbnail: null
+            },
+            {
+                title: 'The Odyssey',
+                type: 'movie',
+                genre: 'Action, Fantasy, Adventure',
+                description: 'Christopher Nolan\'s mythic action epic starring Matt Damon, Tom Holland, Robert Pattinson, and Zendaya. Shot entirely on IMAX.',
+                releaseDate: '2026-07-17',
+                venue: 'Theaters + IMAX',
+                trailerId: 'i3j6l8zQSks',
+                thumbnail: null
+            },
+            {
+                title: 'Three Bags Full: A Sheep Detective Movie',
+                type: 'movie',
+                genre: 'Comedy, Mystery',
+                description: 'Hugh Jackman and Bryan Cranston lead an ensemble cast in this story of sheep solving their shepherd\'s murder.',
+                releaseDate: '2026-11-13',
+                venue: 'Theaters',
+                trailerId: null,
+                thumbnail: null
+            },
+        ];
+
+        function buildComingSoonList() {
+            allComingSoon = [];
+            let idCounter = 200000; // High IDs to avoid collision
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            COMING_SOON_ENTRIES.forEach(entry => {
+                const releaseDate = new Date(entry.releaseDate + 'T00:00:00');
+
+                // Only include entries that haven't been released yet (or released within last 7 days for awareness)
+                const sevenDaysAgo = new Date(today);
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+                if (releaseDate >= sevenDaysAgo) {
+                    // Calculate how many days until release
+                    const diffTime = releaseDate.getTime() - today.getTime();
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                    let releaseDateStr;
+                    if (diffDays < 0) {
+                        releaseDateStr = 'Just Released!';
+                    } else if (diffDays === 0) {
+                        releaseDateStr = 'Out Today!';
+                    } else if (diffDays === 1) {
+                        releaseDateStr = 'Tomorrow!';
+                    } else if (diffDays <= 7) {
+                        releaseDateStr = `In ${diffDays} days`;
+                    } else if (diffDays <= 30) {
+                        releaseDateStr = `In ${Math.ceil(diffDays / 7)} weeks`;
+                    } else {
+                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        releaseDateStr = `${months[releaseDate.getMonth()]} ${releaseDate.getDate()}, ${releaseDate.getFullYear()}`;
+                    }
+
+                    const trailerId = entry.trailerId;
+                    // Skip entries with no trailer (can't show in the video feed)
+                    // But include in browse grid
+
+                    allComingSoon.push({
+                        id: idCounter++,
+                        title: entry.title,
+                        type: entry.type,
+                        genre: entry.genre,
+                        description: entry.description,
+                        release_year: releaseDate.getFullYear(),
+                        imdb_rating: null,
+                        trailer_id: trailerId,
+                        thumbnail: trailerId ? `https://img.youtube.com/vi/${trailerId}/hqdefault.jpg` : null,
+                        _isComingSoon: true,
+                        _releaseDate: entry.releaseDate,
+                        _releaseDateStr: releaseDateStr,
+                        _venue: entry.venue,
+                        _daysUntil: diffDays
+                    });
+                }
+            });
+
+            // Sort by release date (soonest first)
+            allComingSoon.sort((a, b) => new Date(a._releaseDate) - new Date(b._releaseDate));
+
+            document.getElementById('countComingSoon').textContent = allComingSoon.length;
+        }
+
+        // Get coming soon entries that have trailers (for the video feed)
+        function getComingSoonWithTrailers() {
+            return allComingSoon.filter(m => m.trailer_id);
+        }
+
+        // ========== FREESTYLE (EXPERIMENTAL) ==========
+        let freestyleResults = [];
+        let freestyleSearching = false;
+
+        function openFreestyle() {
+            document.getElementById('freestyleOverlay').classList.add('active');
+            setTimeout(() => {
+                document.getElementById('freestyleSearchInput').focus();
+            }, 200);
+        }
+
+        function closeFreestyle() {
+            document.getElementById('freestyleOverlay').classList.remove('active');
+        }
+
+        async function doFreestyleSearch() {
+            const query = document.getElementById('freestyleSearchInput').value.trim();
+            const type = document.getElementById('freestyleType').value;
+            const resultsDiv = document.getElementById('freestyleResults');
+
+            if (!query) return;
+            if (freestyleSearching) return;
+            freestyleSearching = true;
+
+            resultsDiv.innerHTML = `
+                <div class="freestyle-loading">
+                    <div class="spinner-ring"></div>
+                    <div>Searching TMDB for "${escapeHtml(query)}"...</div>
+                </div>`;
+
+            try {
+                const apiBase = window.location.pathname.replace(/\/[^/]*$/, '');
+                const url = apiBase + '/api/freestyle-search.php?q=' + encodeURIComponent(query) + '&type=' + type;
+                const resp = await fetch(url);
+                const data = await resp.json();
+
+                if (!data.success) {
+                    resultsDiv.innerHTML = `<div class="freestyle-empty"><div class="freestyle-empty-icon">⚠️</div><div>${data.error || 'Search failed'}</div></div>`;
+                    freestyleSearching = false;
+                    return;
+                }
+
+                freestyleResults = data.results || [];
+
+                if (freestyleResults.length === 0) {
+                    resultsDiv.innerHTML = `
+                        <div class="freestyle-empty">
+                            <div class="freestyle-empty-icon">🤷</div>
+                            <div style="font-size:16px; font-weight:600; margin-bottom:8px;">No results found</div>
+                            <div style="font-size:13px;">Try different keywords or a broader search</div>
+                        </div>`;
+                    freestyleSearching = false;
+                    return;
+                }
+
+                let html = `<div style="margin-bottom:12px; color:rgba(255,255,255,0.4); font-size:13px;">${data.total_results.toLocaleString()} results on TMDB &bull; Showing ${freestyleResults.length} with trailers prioritized</div>`;
+                html += '<div class="freestyle-results-grid">';
+
+                freestyleResults.forEach((item, i) => {
+                    const thumb = item.trailer_id
+                        ? `https://img.youtube.com/vi/${item.trailer_id}/hqdefault.jpg`
+                        : (item.backdrop || item.thumbnail || '');
+                    const hasTrailer = !!item.trailer_id;
+                    const typeLabel = item.type === 'tv' ? 'TV' : 'Movie';
+                    const typeColor = item.type === 'tv' ? '#8957e5' : '#1f6feb';
+
+                    html += `
+                    <div class="freestyle-card" onclick="${hasTrailer ? `playFreestyleTrailer(${i})` : ''}">
+                        <div class="freestyle-card-thumb">
+                            ${thumb ? `<img src="${thumb}" alt="" onerror="this.style.display='none'">` : ''}
+                            ${hasTrailer ? `<div class="freestyle-card-play"><span>▶</span></div>` : `<div class="freestyle-no-trailer">No trailer available</div>`}
+                        </div>
+                        <div class="freestyle-card-body">
+                            <div class="freestyle-card-title">${escapeHtml(item.title)}</div>
+                            <div class="freestyle-card-meta">
+                                <span class="freestyle-badge">FREESTYLE</span>
+                                <span style="background:${typeColor}; color:#fff; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:700;">${typeLabel}</span>
+                                ${item.release_year ? `<span style="color:rgba(255,255,255,0.5); font-size:11px;">${item.release_year}</span>` : ''}
+                                ${item.imdb_rating ? `<span style="color:rgba(255,255,255,0.5); font-size:11px;">⭐ ${item.imdb_rating}</span>` : ''}
+                            </div>
+                            ${item.genre ? `<div style="font-size:11px; color:rgba(255,255,255,0.35); margin-bottom:4px;">${escapeHtml(item.genre)}</div>` : ''}
+                            <div class="freestyle-card-desc">${escapeHtml(item.description || '')}</div>
+                        </div>
+                    </div>`;
+                });
+
+                html += '</div>';
+                resultsDiv.innerHTML = html;
+            } catch (err) {
+                resultsDiv.innerHTML = `<div class="freestyle-empty"><div class="freestyle-empty-icon">❌</div><div>Error: ${err.message}</div></div>`;
+            }
+            freestyleSearching = false;
+        }
+
+        function playFreestyleTrailer(index) {
+            const item = freestyleResults[index];
+            if (!item || !item.trailer_id) return;
+
+            // Close freestyle overlay and play in the main player
+            closeFreestyle();
+
+            // Create a temporary movie entry and play it
+            const tempMovie = {
+                id: 'freestyle_' + item.tmdb_id,
+                title: item.title,
+                type: item.type,
+                genre: item.genre,
+                description: item.description,
+                release_year: item.release_year,
+                imdb_rating: item.imdb_rating,
+                trailer_id: item.trailer_id,
+                thumbnail: item.thumbnail,
+                _isFreestyle: true
+            };
+
+            // Add to filtered movies temporarily and play
+            filteredMovies = [tempMovie, ...filteredMovies];
+            currentIndex = 0;
+            renderMovies(filteredMovies);
+            if (typeof playTrailer === 'function') {
+                playTrailer(0);
+            }
+        }
 
         // Browse filter state
         let browseFilters = {
@@ -1320,7 +2507,10 @@
         async function checkSession() {
             try {
                 const response = await fetch('/MOVIESHOWS3/api/check-session.php');
-                const data = await response.json();
+                if (!response.ok) return;
+                const text = await response.text();
+                if (!text.trim().startsWith('{') && !text.trim().startsWith('[')) return;
+                const data = JSON.parse(text);
                 if (data.user) {
                     currentUser = data.user;
                     updateUserProfile();
@@ -1335,7 +2525,17 @@
         async function loadLikes() {
             try {
                 const response = await fetch('/MOVIESHOWS3/api/get-likes.php');
-                const data = await response.json();
+                if (!response.ok) {
+                    console.warn('Likes API returned status', response.status);
+                    return;
+                }
+                const text = await response.text();
+                // Guard against non-JSON responses (e.g. PHP errors returning HTML)
+                if (!text.trim().startsWith('{') && !text.trim().startsWith('[')) {
+                    console.warn('Likes API returned non-JSON response');
+                    return;
+                }
+                const data = JSON.parse(text);
                 likeCounts = data.like_counts || {};
                 userLikes = data.user_likes || [];
                 console.log('✅ Loaded likes:', { likeCounts, userLikes });
@@ -1346,15 +2546,31 @@
 
         // Update user profile display
         function updateUserProfile() {
-            const userProfile = document.getElementById('userProfile');
-            const userName = document.getElementById('userName');
+            const avatarBtn = document.getElementById('userAvatarBtn');
+            const dropdownName = document.getElementById('userDropdownName');
             if (currentUser) {
-                userName.textContent = currentUser.display_name || currentUser.email;
-                userProfile.style.display = 'flex';
+                // Show initials in avatar
+                const name = currentUser.display_name || currentUser.email || '?';
+                const initials = name.split(/[\s@]/).filter(Boolean).map(w => w[0].toUpperCase()).slice(0, 2).join('');
+                avatarBtn.textContent = initials;
+                avatarBtn.style.display = 'flex';
+                dropdownName.textContent = name;
             } else {
-                userProfile.style.display = 'none';
+                avatarBtn.style.display = 'none';
+                document.getElementById('userDropdown').classList.remove('active');
             }
         }
+
+        function toggleUserDropdown() {
+            document.getElementById('userDropdown').classList.toggle('active');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#userAvatarBtn') && !e.target.closest('#userDropdown')) {
+                document.getElementById('userDropdown').classList.remove('active');
+            }
+        });
 
         // Show login modal
         function showLogin() {
@@ -1388,6 +2604,7 @@
                     currentUser = data.user;
                     updateUserProfile();
                     await loadLikes();
+                    await loadWatchHistory();
                     closeLogin();
                     console.log('✅ Logged in as:', currentUser.display_name);
                 } else {
@@ -1407,6 +2624,7 @@
                 await fetch('/MOVIESHOWS3/api/logout.php', { method: 'POST' });
                 currentUser = null;
                 userLikes = [];
+                watchedMovieIds = [];
                 updateUserProfile();
                 console.log('✅ Logged out');
             } catch (error) {
@@ -1414,9 +2632,66 @@
             }
         }
 
+        // ---- Watch History & Skip Watched ----
+        let watchedMovieIds = [];
+        let skipWatchedSettings = { enabled: false };
+
+        // Load skip-watched setting from localStorage
+        function loadSkipWatchedSettings() {
+            const saved = localStorage.getItem('skipWatchedSettings');
+            if (saved) {
+                try { skipWatchedSettings = JSON.parse(saved); } catch(e) {}
+            }
+            const toggle = document.getElementById('skipWatchedToggle');
+            if (toggle) toggle.checked = skipWatchedSettings.enabled;
+        }
+
+        function toggleSkipWatched() {
+            skipWatchedSettings.enabled = document.getElementById('skipWatchedToggle').checked;
+            localStorage.setItem('skipWatchedSettings', JSON.stringify(skipWatchedSettings));
+            console.log(skipWatchedSettings.enabled ? '✅ Skip watched ON' : '❌ Skip watched OFF');
+            // Re-filter to apply immediately
+            filterContent(currentFilter);
+        }
+
+        // Fetch watch history from API
+        async function loadWatchHistory() {
+            if (!currentUser) return;
+            try {
+                const response = await fetch('/MOVIESHOWS3/api/watch-history.php');
+                if (!response.ok) return;
+                const text = await response.text();
+                if (!text.trim().startsWith('{') && !text.trim().startsWith('[')) return;
+                const data = JSON.parse(text);
+                watchedMovieIds = data.watched_ids || [];
+                console.log('✅ Loaded watch history:', watchedMovieIds.length, 'movies watched');
+            } catch (error) {
+                console.error('Failed to load watch history:', error);
+            }
+        }
+
+        // Record a watch event
+        async function recordWatch(movieId, trailerId, completed) {
+            if (!currentUser) return;
+            try {
+                await fetch('/MOVIESHOWS3/api/watch-history.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ movie_id: movieId, trailer_id: trailerId || '', completed: completed ? 1 : 0 })
+                });
+                // Add to local list so skip-watched works immediately
+                if (!watchedMovieIds.includes(movieId)) {
+                    watchedMovieIds.push(movieId);
+                }
+                console.log('✅ Recorded watch for movie', movieId);
+            } catch (error) {
+                console.error('Failed to record watch:', error);
+            }
+        }
+
         // Auto-scroll settings
         let autoScrollSettings = {
-            enabled: false,
+            enabled: true,
             delay: 10 // default 10 seconds (kept for backward compatibility, but now triggers on video end)
         };
         let autoScrollTimeout = null;
@@ -1510,6 +2785,11 @@
             // YT.PlayerState.ENDED = 0
             if (event.data === 0) {
                 console.log(`📺 Video ${index} ended`);
+                // Record watch history
+                if (filteredMovies[index]) {
+                    const movie = filteredMovies[index];
+                    recordWatch(movie.id, movie.trailer_id, true);
+                }
                 triggerAutoScroll();
             }
         }
@@ -1517,7 +2797,13 @@
         // Initialize YouTube player for a specific iframe
         function initYouTubePlayer(index) {
             const iframe = document.getElementById(`player-${index}`);
-            if (!iframe || ytPlayers[index]) return; // Already initialized
+            if (!iframe) return;
+
+            // Destroy stale player if iframe was reloaded (src changed)
+            if (ytPlayers[index]) {
+                try { ytPlayers[index].destroy(); } catch(e) {}
+                delete ytPlayers[index];
+            }
 
             try {
                 ytPlayers[index] = new YT.Player(`player-${index}`, {
@@ -1559,10 +2845,42 @@
 
             // Update button states
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`filter${type === 'all' ? 'All' : type === 'movie' ? 'Movies' : 'TV'}`).classList.add('active');
+            const filterMap = {
+                'all': 'filterAll',
+                'movie': 'filterMovies',
+                'tv': 'filterTV',
+                'motivation': 'filterMotivation',
+                'now-playing': 'filterNowPlaying',
+                'coming-soon': 'filterComingSoon'
+            };
+            const btnId = filterMap[type];
+            if (btnId) document.getElementById(btnId).classList.add('active');
 
             // Filter and render
-            filteredMovies = type === 'all' ? allMovies : allMovies.filter(m => m.type === type);
+            if (type === 'all') {
+                // If motivation-in-all is enabled, include motivation videos
+                if (motivationSettings.showInAll) {
+                    filteredMovies = [...allMovies, ...allMotivationalVideos];
+                } else {
+                    filteredMovies = [...allMovies];
+                }
+            } else if (type === 'motivation') {
+                filteredMovies = [...allMotivationalVideos];
+            } else if (type === 'now-playing') {
+                buildNowPlayingList();
+                filteredMovies = [...nowPlayingMovies];
+            } else if (type === 'coming-soon') {
+                buildComingSoonList();
+                filteredMovies = [...allComingSoon];
+            } else {
+                filteredMovies = allMovies.filter(m => m.type === type);
+            }
+
+            // Skip watched trailers if setting is enabled
+            if (skipWatchedSettings.enabled && watchedMovieIds.length > 0) {
+                filteredMovies = filteredMovies.filter(m => !watchedMovieIds.includes(m.id));
+            }
+
             renderMovies(filteredMovies);
 
             // Re-setup scroll autoplay after rendering new videos
@@ -1573,7 +2891,7 @@
             // Update browse grid if open
             if (document.getElementById('browseView').classList.contains('active')) {
                 renderBrowseGrid();
-                applyBrowseFilters(); // Re-apply browse filters based on the new filteredMovies
+                applyBrowseFilters();
             }
         }
 
@@ -1594,18 +2912,54 @@
             grid.innerHTML = moviesToDisplay.map((movie, index) => {
                 // Find the actual index in filteredMovies for playback
                 const actualIndex = filteredMovies.findIndex(m => m.id === movie.id);
+                const isMotivation = movie._isMotivation;
+                const isComingSoon = movie._isComingSoon;
+                const hasTrailer = !!movie.trailer_id;
+
+                // Determine card border color
+                let cardStyle = '';
+                if (isMotivation) cardStyle = 'border: 1px solid rgba(139, 92, 246, 0.3);';
+                else if (isComingSoon) cardStyle = 'border: 1px solid rgba(14, 165, 233, 0.3);';
+
+                // Determine image style
+                let imgStyle = '';
+                if (isMotivation || isComingSoon) imgStyle = 'aspect-ratio: 16/9; object-fit: cover;';
+
+                // Click handler - only if has trailer and is in filteredMovies
+                const clickHandler = hasTrailer && actualIndex >= 0
+                    ? `onclick="playMovieFromBrowse(${actualIndex})"`
+                    : '';
+                const cursorStyle = hasTrailer && actualIndex >= 0 ? 'cursor: pointer;' : 'cursor: default; opacity: 0.85;';
 
                 return `
-                <div class="movie-card">
+                <div class="movie-card" style="${cardStyle}">
                     <div class="movie-card-actions">
                         <button class="movie-card-add-queue" onclick="event.stopPropagation(); addToQueueFromBrowseFiltered(${movie.id});" title="Add to Queue">\u2795</button>
                     </div>
-                    <div onclick="playMovieFromBrowse(${actualIndex})" style="cursor: pointer;">
-                        <img src="${movie.thumbnail || 'https://placehold.co/200x300/1a1a1a/666?text=' + encodeURIComponent(movie.title)}" alt="${escapeHtml(movie.title)}" onerror="this.src='https://placehold.co/200x300/1a1a1a/666?text=No+Image'">
+                    <div ${clickHandler} style="${cursorStyle} position: relative;">
+                        <img src="${movie.thumbnail || 'https://placehold.co/200x300/1a1a1a/666?text=' + encodeURIComponent(movie.title)}" alt="${escapeHtml(movie.title)}" onerror="this.src='https://placehold.co/200x300/1a1a1a/666?text=No+Image'" style="${imgStyle}">
+                        ${isMotivation ? `
+                            <div class="motivation-card-channel">${escapeHtml(movie._channel)}</div>
+                            <div class="motivation-duration-badge">${movie._duration}</div>
+                        ` : ''}
+                        ${isComingSoon ? `
+                            <div class="coming-soon-card-date">${movie._releaseDateStr}</div>
+                            <div class="coming-soon-card-venue">${escapeHtml(movie._venue)}</div>
+                        ` : ''}
+                        ${!hasTrailer && isComingSoon ? `
+                            <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5);">
+                                <span style="color: rgba(255,255,255,0.6); font-size: 12px; font-weight: 600;">Trailer Coming Soon</span>
+                            </div>
+                        ` : ''}
                         <div class="movie-card-info">
                             <div class="movie-card-title">${escapeHtml(movie.title)}</div>
                             <div class="movie-card-meta">
-                                ${movie.release_year || ''} ${movie.imdb_rating ? '\u2b50 ' + movie.imdb_rating : ''}
+                                ${isMotivation
+                                    ? `<span class="motivation-badge" style="font-size: 9px; padding: 2px 6px;">MOTIVATION</span> ${movie._isShort ? 'Short' : 'Video'}`
+                                    : isComingSoon
+                                        ? `<span class="coming-soon-badge" style="font-size: 9px; padding: 2px 6px;">COMING SOON</span> ${movie.type ? movie.type.toUpperCase() : ''}`
+                                        : `${movie.release_year || ''} ${movie.imdb_rating ? '\u2b50 ' + movie.imdb_rating : ''}`
+                                }
                             </div>
                         </div>
                     </div>
@@ -1614,11 +2968,12 @@
         }
 
         function populateGenreFilters() {
-            // Extract unique genres from all movies
+            // Extract unique genres from all movies (check both 'genres' and 'genre' fields)
             const genresSet = new Set();
             filteredMovies.forEach(movie => {
-                if (movie.genres) {
-                    const genres = movie.genres.split(',').map(g => g.trim());
+                const genreStr = movie.genres || movie.genre;
+                if (genreStr) {
+                    const genres = genreStr.split(',').map(g => g.trim());
                     genres.forEach(genre => {
                         if (genre) genresSet.add(genre);
                     });
@@ -1665,28 +3020,30 @@
             // Start with current filter (all/movie/tv)
             let results = [...filteredMovies];
 
-            // Apply content type filter (now-playing, out-this-week)
+            // Apply content type filter (now-playing, out-this-week, motivation)
             if (browseFilters.contentType === 'now-playing') {
-                // Movies released in the last 3 months and currently in theaters
-                const threeMonthsAgo = new Date();
-                threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
                 const currentYear = new Date().getFullYear();
-
                 results = results.filter(m => {
                     if (m.type !== 'movie') return false;
                     const releaseYear = parseInt(m.release_year);
                     return releaseYear >= currentYear - 1 && releaseYear <= currentYear;
                 });
             } else if (browseFilters.contentType === 'out-this-week') {
-                // Content released in the last 7 days
-                const oneWeekAgo = new Date();
-                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
                 const currentYear = new Date().getFullYear();
-
                 results = results.filter(m => {
                     const releaseYear = parseInt(m.release_year);
                     return releaseYear === currentYear;
                 });
+            } else if (browseFilters.contentType === 'coming-soon') {
+                // Show all coming soon entries (including those without trailers in browse)
+                results = [...allComingSoon];
+            } else if (browseFilters.contentType === 'motivation') {
+                // Show only motivational videos in browse
+                results = [...allMotivationalVideos];
+            } else if (browseFilters.contentType === 'movie') {
+                results = results.filter(m => m.type === 'movie');
+            } else if (browseFilters.contentType === 'tv') {
+                results = results.filter(m => m.type === 'tv');
             }
 
             // Apply search query
@@ -1697,11 +3054,12 @@
                 );
             }
 
-            // Apply genre filter
+            // Apply genre filter (check both 'genres' and 'genre' fields)
             if (browseFilters.genre !== 'all') {
                 results = results.filter(m => {
-                    if (!m.genres) return false;
-                    const genres = m.genres.split(',').map(g => g.trim().toLowerCase());
+                    const genreStr = m.genres || m.genre;
+                    if (!genreStr) return false;
+                    const genres = genreStr.split(',').map(g => g.trim().toLowerCase());
                     return genres.includes(browseFilters.genre.toLowerCase());
                 });
             }
@@ -1974,6 +3332,227 @@
             });
         }
 
+        // ========== ALT TRAILERS & ALT DESCRIPTION ==========
+        let altContentCache = {}; // Cache per movie id/title
+        let altTrailerDropdownOpen = false;
+        let currentAltMovieKey = null;
+
+        function getAltCacheKey(movie) {
+            if (movie.tmdb_id) return 'tmdb_' + movie.tmdb_id;
+            return 'title_' + movie.title + '_' + (movie.release_year || '');
+        }
+
+        async function fetchAltContent(movie) {
+            const cacheKey = getAltCacheKey(movie);
+            if (altContentCache[cacheKey]) return altContentCache[cacheKey];
+
+            const apiBase = window.location.pathname.replace(/\/[^/]*$/, '');
+            let url = apiBase + '/api/alt-content.php?';
+            const type = movie.type === 'tv' ? 'tv' : 'movie';
+
+            if (movie.tmdb_id) {
+                url += 'tmdb_id=' + movie.tmdb_id + '&type=' + type;
+            } else {
+                url += 'title=' + encodeURIComponent(movie.title) + '&type=' + type;
+                if (movie.release_year) url += '&year=' + movie.release_year;
+            }
+
+            const resp = await fetch(url);
+            const data = await resp.json();
+
+            if (data.success) {
+                altContentCache[cacheKey] = data;
+            }
+            return data;
+        }
+
+        // Called when user scrolls to a new video — check if alt trailers available
+        function updateAltTrailerButton() {
+            const currentIndex = Math.floor(document.getElementById('container').scrollTop / window.innerHeight);
+            const movie = filteredMovies[currentIndex];
+            const btn = document.getElementById('altTrailerBtn');
+            const countEl = document.getElementById('altTrailerCount');
+
+            // Hide dropdown on scroll
+            document.getElementById('altTrailerDropdown').classList.remove('active');
+            altTrailerDropdownOpen = false;
+
+            if (!movie || movie._isMotivation) {
+                btn.classList.add('hidden-btn');
+                return;
+            }
+
+            // If we already have cached data, show the button immediately
+            const cacheKey = getAltCacheKey(movie);
+            if (altContentCache[cacheKey] && altContentCache[cacheKey].video_count > 1) {
+                btn.classList.remove('hidden-btn');
+                countEl.textContent = altContentCache[cacheKey].video_count;
+                countEl.style.display = 'flex';
+                currentAltMovieKey = cacheKey;
+                return;
+            }
+
+            // Otherwise, fetch in background (show button optimistically for DB movies)
+            if (movie.tmdb_id || (!movie._isComingSoon && movie.id)) {
+                btn.classList.remove('hidden-btn');
+                countEl.style.display = 'none';
+                currentAltMovieKey = cacheKey;
+
+                fetchAltContent(movie).then(data => {
+                    // Only update if user hasn't scrolled away
+                    const newIndex = Math.floor(document.getElementById('container').scrollTop / window.innerHeight);
+                    if (newIndex !== currentIndex) return;
+
+                    if (data && data.success && data.video_count > 1) {
+                        countEl.textContent = data.video_count;
+                        countEl.style.display = 'flex';
+                    } else if (data && data.success && data.video_count <= 1) {
+                        btn.classList.add('hidden-btn');
+                    }
+                }).catch(() => {
+                    btn.classList.add('hidden-btn');
+                });
+            } else {
+                btn.classList.add('hidden-btn');
+            }
+        }
+
+        function toggleAltTrailers() {
+            const dropdown = document.getElementById('altTrailerDropdown');
+            altTrailerDropdownOpen = !altTrailerDropdownOpen;
+
+            if (!altTrailerDropdownOpen) {
+                dropdown.classList.remove('active');
+                return;
+            }
+
+            const currentIndex = Math.floor(document.getElementById('container').scrollTop / window.innerHeight);
+            const movie = filteredMovies[currentIndex];
+            if (!movie) return;
+
+            const cacheKey = getAltCacheKey(movie);
+            const data = altContentCache[cacheKey];
+
+            if (!data || !data.videos || data.videos.length === 0) {
+                dropdown.innerHTML = '<div class="alt-trailer-dropdown-title">Loading...</div>';
+                dropdown.classList.add('active');
+                fetchAltContent(movie).then(d => {
+                    if (d && d.success) renderAltTrailerDropdown(d.videos, movie.trailer_id, currentIndex);
+                    else dropdown.innerHTML = '<div class="alt-trailer-dropdown-title">No trailers found</div>';
+                });
+                return;
+            }
+
+            renderAltTrailerDropdown(data.videos, movie.trailer_id, currentIndex);
+            dropdown.classList.add('active');
+        }
+
+        function renderAltTrailerDropdown(videos, currentTrailerId, movieIndex) {
+            const dropdown = document.getElementById('altTrailerDropdown');
+
+            let html = '<div class="alt-trailer-dropdown-title">Available Videos (' + videos.length + ')</div>';
+            videos.forEach((v, i) => {
+                const isActive = v.key === currentTrailerId;
+                const typeClass = v.type.toLowerCase() === 'trailer' ? 'alt-type-trailer'
+                    : v.type.toLowerCase() === 'teaser' ? 'alt-type-teaser'
+                    : v.type.toLowerCase() === 'clip' ? 'alt-type-clip'
+                    : 'alt-type-other';
+
+                html += `
+                    <div class="alt-trailer-item ${isActive ? 'active-trailer' : ''}" onclick="switchTrailer(${movieIndex}, '${v.key}')">
+                        <img class="alt-trailer-item-thumb" src="https://img.youtube.com/vi/${v.key}/default.jpg" alt="" onerror="this.style.background='#333'">
+                        <div class="alt-trailer-item-info">
+                            <div class="alt-trailer-item-name" title="${escapeHtml(v.name)}">${escapeHtml(v.name)}</div>
+                            <div class="alt-trailer-item-type">${v.official ? 'Official' : ''} ${escapeHtml(v.type)}</div>
+                        </div>
+                        <span class="alt-trailer-item-badge ${typeClass}">${escapeHtml(v.type)}</span>
+                    </div>`;
+            });
+            dropdown.innerHTML = html;
+        }
+
+        function switchTrailer(movieIndex, newTrailerKey) {
+            const movie = filteredMovies[movieIndex];
+            if (!movie) return;
+
+            // Update the movie's trailer_id
+            movie.trailer_id = newTrailerKey;
+
+            // Update the iframe src
+            const iframe = document.getElementById('player-' + movieIndex);
+            if (iframe) {
+                const isMuted = videoMuteStates[movieIndex] !== false ? 1 : 0;
+                iframe.src = `https://www.youtube.com/embed/${newTrailerKey}?autoplay=1&mute=${isMuted}&controls=1&playsinline=1&loop=0&modestbranding=1&rel=0&enablejsapi=1`;
+            }
+
+            // Close dropdown
+            document.getElementById('altTrailerDropdown').classList.remove('active');
+            altTrailerDropdownOpen = false;
+
+            // Update active state - re-render dropdown next time
+            const cacheKey = getAltCacheKey(movie);
+            if (altContentCache[cacheKey]) {
+                // Already cached, just note the switch
+                console.log(`🎬 Switched to alternate trailer: ${newTrailerKey}`);
+            }
+        }
+
+        // Alt description
+        let altDescStates = {}; // Track which descriptions are showing alt
+
+        async function loadAltDescription(movieIndex) {
+            const movie = filteredMovies[movieIndex];
+            if (!movie) return;
+
+            const descEl = document.getElementById('movie-desc-' + movieIndex);
+            const linkEl = document.getElementById('alt-desc-' + movieIndex);
+            if (!descEl) return;
+
+            const stateKey = 'desc_' + movieIndex;
+
+            // If already showing alt, toggle back to original
+            if (altDescStates[stateKey]) {
+                descEl.innerHTML = escapeHtml(movie.description) +
+                    `<span class="alt-desc-link" id="alt-desc-${movieIndex}" onclick="event.stopPropagation(); loadAltDescription(${movieIndex})" title="Load alternative description from TMDB">alt desc</span>`;
+                altDescStates[stateKey] = false;
+                return;
+            }
+
+            // Show loading
+            if (linkEl) {
+                linkEl.outerHTML = '<span class="alt-desc-loading"></span>';
+            }
+
+            try {
+                const data = await fetchAltContent(movie);
+                if (data && data.success && data.alt_description) {
+                    altDescStates[stateKey] = true;
+                    let altText = '';
+                    if (data.tagline) {
+                        altText = '"' + data.tagline + '" — ';
+                    }
+                    altText += data.alt_description;
+
+                    descEl.innerHTML = escapeHtml(altText) +
+                        `<span class="alt-desc-link" id="alt-desc-${movieIndex}" onclick="event.stopPropagation(); loadAltDescription(${movieIndex})" title="Switch back to original description" style="color:#4ade80;">original</span>`;
+                } else {
+                    descEl.innerHTML = escapeHtml(movie.description) +
+                        `<span class="alt-desc-link" style="color:rgba(255,255,255,0.3); cursor:default;" title="No alternative description available">no alt</span>`;
+                }
+            } catch (err) {
+                descEl.innerHTML = escapeHtml(movie.description) +
+                    `<span class="alt-desc-link" id="alt-desc-${movieIndex}" onclick="event.stopPropagation(); loadAltDescription(${movieIndex})" title="Try again">retry</span>`;
+            }
+        }
+
+        // Close alt dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (altTrailerDropdownOpen && !e.target.closest('.alt-trailer-dropdown') && !e.target.closest('.alt-trailer-btn')) {
+                document.getElementById('altTrailerDropdown').classList.remove('active');
+                altTrailerDropdownOpen = false;
+            }
+        });
+
         function renderQueue() {
             const content = document.getElementById('queueContent');
             document.getElementById('queueCount').textContent = myQueue.length;
@@ -2022,7 +3601,19 @@
                 }
 
                 allMovies = data.movies;
-                filteredMovies = allMovies;
+
+                // Build motivational videos, now playing, and coming soon lists
+                loadMotivationSettings();
+                buildMotivationalVideos();
+                buildNowPlayingList();
+                buildComingSoonList();
+
+                // Determine what goes in the "All" feed
+                if (motivationSettings.showInAll) {
+                    filteredMovies = [...allMovies, ...allMotivationalVideos];
+                } else {
+                    filteredMovies = [...allMovies];
+                }
 
                 // Update counts
                 const movieCount = allMovies.filter(m => m.type === 'movie').length;
@@ -2031,19 +3622,39 @@
                 document.getElementById('countAll').textContent = allMovies.length;
                 document.getElementById('countMovies').textContent = movieCount;
                 document.getElementById('countTV').textContent = tvCount;
+                document.getElementById('countMotivation').textContent = allMotivationalVideos.length;
+                document.getElementById('countComingSoon').textContent = allComingSoon.length;
                 document.getElementById('queueCount').textContent = myQueue.length;
 
-                renderMovies(allMovies);
-                console.log(`✅ Loaded ${allMovies.length} movies`);
+                renderMovies(filteredMovies);
+                // Init alt trailer button for first video
+                setTimeout(updateAltTrailerButton, 1000);
+                console.log(`\u2705 Loaded ${allMovies.length} movies + ${allMotivationalVideos.length} motivational + ${allComingSoon.length} coming soon`);
             } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('container').innerHTML = `
-                    <div class="error">
-                        <div class="error-icon">⚠️</div>
-                        <h2>Error Loading Movies</h2>
-                        <p>${error.message}</p>
-                    </div>
-                `;
+                console.error('Error loading movies:', error);
+                // Still build motivational videos even if movie API fails
+                loadMotivationSettings();
+                buildMotivationalVideos();
+                document.getElementById('countMotivation').textContent = allMotivationalVideos.length;
+
+                if (allMotivationalVideos.length > 0) {
+                    // Show motivation content as fallback
+                    filteredMovies = [...allMotivationalVideos];
+                    currentFilter = 'motivation';
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    const motBtn = document.getElementById('filterMotivation');
+                    if (motBtn) motBtn.classList.add('active');
+                    renderMovies(filteredMovies);
+                    console.log(`⚠️ Movie API failed, showing ${allMotivationalVideos.length} motivational videos as fallback`);
+                } else {
+                    document.getElementById('container').innerHTML = `
+                        <div class="error">
+                            <div class="error-icon">⚠️</div>
+                            <h2>Error Loading Movies</h2>
+                            <p>${error.message}</p>
+                        </div>
+                    `;
+                }
             }
         }
 
@@ -2051,10 +3662,27 @@
             const container = document.getElementById('container');
             container.innerHTML = '';
 
+            // Reset per-video mute states when re-rendering
+            videoMuteStates = {};
+
             movies.forEach((movie, index) => {
                 const card = createMovieCard(movie, index);
                 container.appendChild(card);
             });
+
+            // If user previously enabled sound, unmute new videos and update UI
+            if (userEnabledSound) {
+                const allIframes = document.querySelectorAll('#container iframe');
+                allIframes.forEach((iframe, idx) => {
+                    videoMuteStates[idx] = false;
+                    iframe.src = iframe.src.replace(/mute=1/, 'mute=0');
+                    const btn = iframe.parentElement.querySelector('.unmute-btn');
+                    if (btn) btn.textContent = '🔊';
+                });
+            }
+
+            // Update mute overlay to reflect current state
+            updateMuteOverlay();
         }
 
         function createMovieCard(movie, index) {
@@ -2062,37 +3690,95 @@
             card.className = 'video-card';
             card.dataset.index = index;
 
-            // Only the FIRST video starts with autoplay=1, all others start with autoplay=0
-            // The Intersection Observer will change autoplay=0 to autoplay=1 when scrolling
-            const autoplayValue = index === 0 ? 1 : 0;
-            const youtubeUrl = `https://www.youtube.com/embed/${movie.trailer_id}?autoplay=${autoplayValue}&mute=1&controls=0&playsinline=1&loop=1&playlist=${movie.trailer_id}&modestbranding=1&rel=0&enablejsapi=1`;
+            const isMotivation = movie._isMotivation;
+            const isComingSoon = movie._isComingSoon;
+            const hasTrailer = !!movie.trailer_id;
+
+            // Build meta badges
+            let metaBadges = '';
+            if (isMotivation) {
+                metaBadges += `<span class="motivation-badge">MOTIVATION</span>`;
+                metaBadges += `<span class="motivation-channel-badge">${escapeHtml(movie._channel)}</span>`;
+                if (movie._duration) {
+                    metaBadges += `<span class="meta-badge">${movie._duration}</span>`;
+                }
+                if (movie._isShort) {
+                    metaBadges += `<span class="meta-badge">SHORT</span>`;
+                }
+            } else if (isComingSoon) {
+                metaBadges += `<span class="coming-soon-badge">COMING SOON</span>`;
+                metaBadges += `<span class="coming-soon-date-badge">${movie._releaseDateStr}</span>`;
+                metaBadges += `<span class="coming-soon-venue-badge">${escapeHtml(movie._venue)}</span>`;
+                if (movie.type) metaBadges += `<span class="meta-badge">${movie.type.toUpperCase()}</span>`;
+            } else {
+                if (movie.release_year) metaBadges += `<span class="meta-badge">${movie.release_year}</span>`;
+                if (movie.imdb_rating) metaBadges += `<span class="meta-badge">\u2b50 ${movie.imdb_rating}</span>`;
+                if (movie.type) metaBadges += `<span class="meta-badge">${movie.type.toUpperCase()}</span>`;
+                // Now Playing badge for current-year movies
+                if (movie.type === 'movie') {
+                    const yr = parseInt(movie.release_year);
+                    const currentYr = new Date().getFullYear();
+                    if (yr >= currentYr - 1 && yr <= currentYr) {
+                        metaBadges += `<span class="now-playing-badge">NOW PLAYING</span>`;
+                    }
+                }
+            }
+
+            let videoContent;
+            if (hasTrailer) {
+                // Show YouTube controls on all videos so users can seek/fast-forward/rewind
+                const controlsParam = 1;
+                // Don't loop any videos — allows YouTube ENDED event to fire for auto-scroll
+                const loopParam = 0;
+                const playlistParam = '';
+
+                // Only the FIRST video starts with autoplay=1, all others start with autoplay=0
+                const autoplayValue = index === 0 ? 1 : 0;
+                const youtubeUrl = `https://www.youtube.com/embed/${movie.trailer_id}?autoplay=${autoplayValue}&mute=1&controls=${controlsParam}&playsinline=1&loop=${loopParam}${playlistParam}&modestbranding=1&rel=0&enablejsapi=1`;
+
+                videoContent = `
+                    <div class="video-wrapper">
+                        <iframe 
+                            id="player-${index}"
+                            src="${youtubeUrl}"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen
+                            loading="${index < 3 ? 'eager' : 'lazy'}"
+                        ></iframe>
+                        <button class="unmute-btn" onclick="toggleMute(${index})" title="Unmute">
+                            🔇
+                        </button>
+                    </div>`;
+            } else {
+                // No trailer - show poster image with "No Trailer Yet" overlay
+                const posterUrl = movie.thumbnail || `https://placehold.co/1280x720/1a1a2e/e2e8f0?text=${encodeURIComponent(movie.title)}`;
+                videoContent = `
+                    <div class="video-wrapper" style="position: relative; background: #0a0a1a;">
+                        <img src="${posterUrl}" alt="${escapeHtml(movie.title)}"
+                            style="width: 100%; height: 100%; object-fit: cover; opacity: 0.6;"
+                            onerror="this.style.display='none'">
+                        <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+                            <div style="font-size: 48px;">🎬</div>
+                            <div style="font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.9);">Trailer Coming Soon</div>
+                            <div style="font-size: 13px; color: rgba(255,255,255,0.5);">${movie._releaseDateStr || ''}</div>
+                        </div>
+                    </div>`;
+            }
+
+            const altDescId = `alt-desc-${index}`;
+            const isDbMovie = !isMotivation && !isComingSoon && movie.id;
+            const altDescLink = isDbMovie
+                ? `<span class="alt-desc-link" id="${altDescId}" onclick="event.stopPropagation(); loadAltDescription(${index})" title="Load alternative description from TMDB">alt desc</span>`
+                : '';
 
             card.innerHTML = `
-                <div class="video-wrapper">
-                    <iframe 
-                        id="player-${index}"
-                        src="${youtubeUrl}"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen
-                        loading="${index < 3 ? 'eager' : 'lazy'}"
-                    ></iframe>
-                    ${index === 0 ? `
-                        <div class="play-overlay visible" id="play-overlay-${index}" onclick="startPlayback(${index})">
-                            <div class="play-button">▶</div>
-                        </div>
-                    ` : ''}
-                    <button class="unmute-btn" onclick="toggleMute(${index})" title="Unmute">
-                        🔇
-                    </button>
-                </div>
+                ${videoContent}
                 <div class="info-overlay">
                     <div class="movie-title">${escapeHtml(movie.title)}</div>
                     <div class="movie-meta">
-                        ${movie.release_year ? `<span class="meta-badge">${movie.release_year}</span>` : ''}
-                        ${movie.imdb_rating ? `<span class="meta-badge">⭐ ${movie.imdb_rating}</span>` : ''}
-                        ${movie.type ? `<span class="meta-badge">${movie.type.toUpperCase()}</span>` : ''}
+                        ${metaBadges}
                     </div>
-                    ${movie.description ? `<div class="movie-description">${escapeHtml(movie.description)}</div>` : ''}
+                    ${movie.description ? `<div class="movie-description" id="movie-desc-${index}">${escapeHtml(movie.description)}${altDescLink}</div>` : ''}
                     ${movie.genre ? `
                         <div class="genre-tags">
                             ${movie.genre.split(',').map(g => `<span class="genre-tag">${escapeHtml(g.trim())}</span>`).join('')}
@@ -2106,6 +3792,7 @@
 
         let videoMuteStates = {}; // Track mute state per video
         let hasUserInteracted = false;
+        let userEnabledSound = false; // Track if user globally enabled sound
 
         function startPlayback(index) {
             hasUserInteracted = true;
@@ -2142,6 +3829,9 @@
         }
 
         function enableSound() {
+            // Mark that user wants sound globally (persists across category switches)
+            userEnabledSound = true;
+
             // Unmute all videos
             const allIframes = document.querySelectorAll('iframe');
             allIframes.forEach((iframe, index) => {
@@ -2248,18 +3938,32 @@
 
                         // THEN: Play the new video
                         const currentSrc = iframe.src;
+                        const isInitialLoad = currentlyPlaying === null;
                         if (!currentSrc.includes('autoplay=1')) {
                             iframe.src = currentSrc.replace(/autoplay=[01]/, 'autoplay=1');
-                        } else {
-                            // Force reload to restart
+                        } else if (!isInitialLoad) {
+                            // Only force reload if we're SWITCHING from another video
+                            // Don't reload on initial load — the iframe already has autoplay=1
                             iframe.src = iframe.src;
                         }
 
                         currentlyPlaying = index;
 
-                        // Initialize YouTube player for this video to detect when it ends
-                        if (autoScrollSettings.enabled && typeof YT !== 'undefined' && YT.Player) {
-                            initYouTubePlayer(index);
+                        // Update alt trailer button for new video
+                        updateAltTrailerButton();
+
+                        // Re-initialize YouTube player after iframe reloads (for auto-scroll on video end)
+                        if (typeof YT !== 'undefined' && YT.Player) {
+                            if (isInitialLoad && currentSrc.includes('autoplay=1')) {
+                                // Initial load — iframe isn't reloading, init YT player directly
+                                initYouTubePlayer(index);
+                            } else {
+                                // Wait for iframe to finish loading before binding YT.Player
+                                iframe.addEventListener('load', function onLoad() {
+                                    iframe.removeEventListener('load', onLoad);
+                                    initYouTubePlayer(index);
+                                });
+                            }
                         }
                     }
                 }
@@ -2270,8 +3974,12 @@
                 observer.observe(card);
             });
 
-            // Force play the first video after a short delay
+            // Force play the first video after a short delay (only if observer didn't already handle it)
             setTimeout(() => {
+                if (currentlyPlaying !== null) {
+                    console.log('First video already playing via observer, skipping force play');
+                    return;
+                }
                 const firstCard = document.querySelector('.video-card');
                 if (firstCard) {
                     const firstIframe = firstCard.querySelector('iframe');
@@ -2279,6 +3987,13 @@
                         console.log('Force playing first video');
                         firstIframe.src = firstIframe.src; // Reload to trigger autoplay
                         currentlyPlaying = '0';
+                        // Re-bind YT.Player after force reload
+                        if (typeof YT !== 'undefined' && YT.Player) {
+                            firstIframe.addEventListener('load', function onLoad() {
+                                firstIframe.removeEventListener('load', onLoad);
+                                initYouTubePlayer(0);
+                            });
+                        }
                     }
                 }
             }, 1000);
@@ -2333,15 +4048,16 @@
         }
 
         // Load movies and setup autoplay
-        loadMovies().then(() => {
+        loadMovies().then(async () => {
             setupScrollAutoplay();
             loadAutoScrollSettings();  // Load auto-scroll settings from localStorage
+            loadMotivationSettings(); // Load motivation settings from localStorage
+            loadSkipWatchedSettings(); // Load skip-watched settings from localStorage
             handleUrlHash();  // Handle shared video links
-            checkSession();  // Check if user is logged in
+            await checkSession();  // Check if user is logged in
+            await loadWatchHistory(); // Load watch history after session is confirmed
         });
     </script>
-<!-- AI Assistant -->
-<script src="/ai-assistant.js"></script>
 </body>
 
 </html>

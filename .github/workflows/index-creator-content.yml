@@ -1,0 +1,70 @@
+name: Index All Creator Content
+
+on:
+  schedule:
+    # Run daily at 3 AM UTC (10 PM EST / 11 PM EDT)
+    # Runs after refresh-creator-updates (2 AM) and before the next news aggregation cycle
+    - cron: '0 3 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  index-content:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Index All Creator Content (Batch 1 - first 15 creators)
+        run: |
+          echo "📥 Indexing creator content into creator_mentions (batch 1: 0-14)..."
+          curl -s --max-time 300 "https://findtorontoevents.ca/fc/api/index_all_creators.php?offset=0&limit=15" > /tmp/index_result_1.json
+          echo "Batch 1 result:"
+          cat /tmp/index_result_1.json | python3 -m json.tool 2>/dev/null || cat /tmp/index_result_1.json
+
+      - name: Index All Creator Content (Batch 2 - next 15 creators)
+        run: |
+          echo "📥 Indexing creator content into creator_mentions (batch 2: 15-29)..."
+          curl -s --max-time 300 "https://findtorontoevents.ca/fc/api/index_all_creators.php?offset=15&limit=15" > /tmp/index_result_2.json
+          echo "Batch 2 result:"
+          cat /tmp/index_result_2.json | python3 -m json.tool 2>/dev/null || cat /tmp/index_result_2.json
+
+      - name: Index All Creator Content (Batch 3 - next 15 creators)
+        run: |
+          echo "📥 Indexing creator content into creator_mentions (batch 3: 30-44)..."
+          curl -s --max-time 300 "https://findtorontoevents.ca/fc/api/index_all_creators.php?offset=30&limit=15" > /tmp/index_result_3.json
+          echo "Batch 3 result:"
+          cat /tmp/index_result_3.json | python3 -m json.tool 2>/dev/null || cat /tmp/index_result_3.json
+
+      - name: Index All Creator Content (Batch 4 - remaining creators)
+        run: |
+          echo "📥 Indexing creator content into creator_mentions (batch 4: 45+)..."
+          curl -s --max-time 300 "https://findtorontoevents.ca/fc/api/index_all_creators.php?offset=45&limit=30" > /tmp/index_result_4.json
+          echo "Batch 4 result:"
+          cat /tmp/index_result_4.json | python3 -m json.tool 2>/dev/null || cat /tmp/index_result_4.json
+
+      - name: Check Results
+        run: |
+          echo "📊 === Index Creator Content Summary ==="
+          
+          TOTAL_ADDED=0
+          ALL_OK=true
+          
+          for i in 1 2 3 4; do
+            FILE="/tmp/index_result_${i}.json"
+            if [ -f "$FILE" ]; then
+              if grep -q '"ok":true' "$FILE"; then
+                ADDED=$(grep -o '"content_added":[0-9]*' "$FILE" | grep -o '[0-9]*' || echo "0")
+                PROCESSED=$(grep -o '"creators_processed":[0-9]*' "$FILE" | grep -o '[0-9]*' || echo "0")
+                ERRORS=$(grep -o '"errors":[0-9]*' "$FILE" | grep -o '[0-9]*' || echo "0")
+                ENSURED=$(grep -o '"creators_ensured_in_table":[0-9]*' "$FILE" | grep -o '[0-9]*' || echo "0")
+                echo "✅ Batch $i: $PROCESSED creators processed, $ADDED content added, $ENSURED creators ensured, $ERRORS errors"
+                TOTAL_ADDED=$((TOTAL_ADDED + ADDED))
+              else
+                echo "⚠️ Batch $i: No 'ok:true' found"
+                cat "$FILE"
+              fi
+            fi
+          done
+          
+          echo ""
+          echo "📈 Total new content added: $TOTAL_ADDED"
+          echo "✅ Creator content indexing complete"

@@ -37,6 +37,24 @@ import {
 import { fcApiFetch, getApiLog, subscribeToApiLog, clearApiLog, type ApiLogEntry } from "./utils/apiLog";
 import { getCachedLiveStatus, updateStreamerLastSeen } from "./utils/streamerLastSeen";
 import { clearLiveStates } from "./utils/avatar";
+import {
+  playLiveNotificationSound,
+  showBrowserNotification,
+  isSoundEnabled,
+  setSoundEnabled,
+  getVolume,
+  setVolume as setVolumeStorage,
+  isBrowserNotifEnabled,
+  setBrowserNotifEnabled,
+  getBrowserNotifPermission,
+  requestBrowserNotifPermission,
+  getBellSoundPref,
+  setBellSoundPref,
+  getNormalSoundPref,
+  setNormalSoundPref,
+  playDefaultDing,
+  playBellSound,
+} from "./utils/notificationSounds";
 
 // Guest mode detection
 const isGuestMode =
@@ -646,7 +664,38 @@ function App() {
   
   // Discord notification preferences: { [creatorId]: boolean }
   const [notificationPrefs, setNotificationPrefs] = useState<Record<string, boolean>>({});
-  
+
+  // ── Sound & Browser Notification settings state ──
+  const [soundEnabled, _setSoundEnabled] = useState<boolean>(isSoundEnabled);
+  const [notifVolume, _setNotifVolume] = useState<number>(getVolume);
+  const [browserNotifOn, _setBrowserNotifOn] = useState<boolean>(isBrowserNotifEnabled);
+  const [browserNotifPerm, setBrowserNotifPerm] = useState<NotificationPermission | 'unsupported'>(getBrowserNotifPermission);
+  const [showNotifSettings, setShowNotifSettings] = useState(false);
+  const [bellSoundPref, _setBellSoundPref] = useState<string>(getBellSoundPref);
+  const [normalSoundPref, _setNormalSoundPref] = useState<string>(getNormalSoundPref);
+
+  // Wrapped setters that also persist to localStorage
+  const handleSoundEnabledToggle = useCallback((v: boolean) => { _setSoundEnabled(v); setSoundEnabled(v); }, []);
+  const handleVolumeChange = useCallback((v: number) => { _setNotifVolume(v); setVolumeStorage(v); }, []);
+  const handleBrowserNotifToggle = useCallback(async (v: boolean) => {
+    if (v) {
+      const perm = await requestBrowserNotifPermission();
+      setBrowserNotifPerm(perm);
+      if (perm === 'granted') {
+        _setBrowserNotifOn(true);
+        setBrowserNotifEnabled(true);
+      }
+    } else {
+      _setBrowserNotifOn(false);
+      setBrowserNotifEnabled(false);
+    }
+  }, []);
+  const handleBellSoundPrefChange = useCallback((v: string) => { _setBellSoundPref(v); setBellSoundPref(v); }, []);
+  const handleNormalSoundPrefChange = useCallback((v: string) => { _setNormalSoundPref(v); setNormalSoundPref(v); }, []);
+
+  // Track which creators were already live before a scan (to detect newly-live)
+  const preScanLiveIdsRef = useRef<Set<string>>(new Set());
+
   /** Debug: backend/DB connectivity so users know if notes & list persist */
   const [backendStatus, setBackendStatus] = useState<"checking" | "connected" | "disconnected">("checking");
   const [backendStatusDetail, setBackendStatusDetail] = useState<{
@@ -1311,14 +1360,15 @@ function App() {
       skipSaveAfterLoadRef.current = true; // prevent save effect from overwriting DB with this loaded list (avoids wiping server-only entries like Brunitarte)
       try {
         const base = getAuthBase();
-        if (!base) return;
+        if (!base) { setTimeout(() => { skipSaveAfterLoadRef.current = false; }, 2500); return; }
         const res = await fcApiFetch(`${base}/get_my_creators.php?user_id=${authUser.id}`);
-        if (!res.ok) return;
+        if (!res.ok) { setTimeout(() => { skipSaveAfterLoadRef.current = false; }, 2500); return; }
         const text = await res.text();
         let data: { creators?: unknown[] };
         try {
           data = (text ? JSON.parse(text) : {}) as { creators?: unknown[] };
         } catch {
+          setTimeout(() => { skipSaveAfterLoadRef.current = false; }, 2500);
           return;
         }
         const list = data.creators && Array.isArray(data.creators) ? data.creators : [];
@@ -1672,6 +1722,13 @@ function App() {
     setIsCheckingLiveStatus(true);
     setLiveCheckProgress({ current: 0, total: creatorsToCheck.length, currentCreator: 'Starting...' });
 
+    // Capture which creators are already live before the scan, so we only notify on NEW live
+    const preScanLive = new Set<string>();
+    creatorsRef.current.forEach(c => {
+      if (c.accounts.some(a => a.isLive)) preScanLive.add(c.id);
+    });
+    preScanLiveIdsRef.current = preScanLive;
+
     // Dispatch event for AI assistant to pick up
     try { window.dispatchEvent(new CustomEvent('fc-live-check-start', { detail: { total: creatorsToCheck.length } })); } catch (_) { /* ignore */ }
 
@@ -1731,8 +1788,25 @@ function App() {
             // Show toast notification when live creator is found!
             if (liveResult.isLive) {
               addLiveFoundToast(c.name, acc.platform);
-              // Dispatch for AI assistant
-              try { window.dispatchEvent(new CustomEvent('fc-live-found', { detail: { name: c.name, platform: acc.platform, username: acc.username } })); } catch (_) { /* ignore */ }
+
+              // Only fire sound + browser notification for NEWLY live creators (not already live before scan)
+              const isNewlyLive = !preScanLiveIdsRef.current.has(c.id);
+              if (isNewlyLive) {
+                // Play sound — different for bell-icon vs normal creators
+                const isBellCreator = !!notificationPrefs[c.id];
+                playLiveNotificationSound(isBellCreator);
+
+                // Browser notification
+                const platformEmoji = acc.platform === 'twitch' ? '💜' : acc.platform === 'kick' ? '💚' : acc.platform === 'tiktok' ? '🎵' : acc.platform === 'youtube' ? '▶️' : '🔴';
+                showBrowserNotification(
+                  `${c.name} is LIVE!`,
+                  `${platformEmoji} Now streaming on ${acc.platform}`,
+                  { tag: `fc-live-${c.id}-${acc.platform}`, icon: c.avatarUrl || '/fc/favicon.ico' }
+                );
+              }
+
+              // Dispatch for AI assistant (always, so bot tracks all live)
+              try { window.dispatchEvent(new CustomEvent('fc-live-found', { detail: { name: c.name, platform: acc.platform, username: acc.username, isNewlyLive } })); } catch (_) { /* ignore */ }
             }
 
             // Track live status in database for faster checks & analytics
@@ -1913,7 +1987,7 @@ function App() {
       // Always set isChecking to false, even if there's an error
       setIsCheckingLiveStatus(false);
     }
-  }, [addLiveFoundToast, authUser]);
+  }, [addLiveFoundToast, authUser, notificationPrefs]);
 
   // Sync live status to database cache
   const syncLiveStatusToDatabase = useCallback(async (creatorsToSync: Creator[]) => {
@@ -2117,6 +2191,23 @@ function App() {
       clearInterval(interval);
     };
   }, [updateAllLiveStatuses, loadCachedLiveStatus, loadRecentlyOnline, loadCreatorPostCounts, creatorsLoadedFromApi]);
+
+  // Listen for auto-check requests from the AI bot (every 5 min cycle)
+  useEffect(() => {
+    const isCheckingRef = { current: false };
+    const handler = async () => {
+      if (isCheckingRef.current) return; // prevent overlapping checks
+      isCheckingRef.current = true;
+      try {
+        console.log('[Auto-Check] AI bot requested live check');
+        await updateAllLiveStatuses();
+      } finally {
+        isCheckingRef.current = false;
+      }
+    };
+    window.addEventListener('fc-auto-check-request', handler);
+    return () => window.removeEventListener('fc-auto-check-request', handler);
+  }, [updateAllLiveStatuses]);
 
   // Data Migration: Ensure all existing accounts have follower counts
   useEffect(() => {
@@ -4034,6 +4125,14 @@ function App() {
           >
             📡 Check All Live Status
           </button>
+          <button
+            className="btn-secondary"
+            onClick={() => setShowNotifSettings(!showNotifSettings)}
+            title="Notification & Sound Settings"
+            style={{ position: 'relative' }}
+          >
+            🔔 Alerts
+          </button>
 
           <button
             className="btn-secondary"
@@ -4071,6 +4170,122 @@ function App() {
         </div>
       </div>
 
+
+      {/* Notification & Sound Settings Panel */}
+      {showNotifSettings && (
+        <div style={{
+          margin: '1rem 0',
+          padding: '1rem 1.25rem',
+          background: 'rgba(30, 41, 59, 0.95)',
+          border: '1px solid rgba(139, 92, 246, 0.3)',
+          borderRadius: '0.75rem',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#e2e8f0' }}>🔔 Notification & Sound Settings</h3>
+            <button onClick={() => setShowNotifSettings(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '1.2rem', padding: '0.25rem' }}>✕</button>
+          </div>
+
+          {/* Sound Notifications */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+            <div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#cbd5e1', cursor: 'pointer' }}>
+                <input type="checkbox" checked={soundEnabled} onChange={e => handleSoundEnabledToggle(e.target.checked)} style={{ accentColor: '#8b5cf6' }} />
+                Sound Notifications
+              </label>
+              <p style={{ margin: '0.25rem 0 0 1.5rem', fontSize: '0.75rem', color: '#64748b' }}>Play a sound when creators go live</p>
+            </div>
+            <div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#cbd5e1', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={browserNotifOn}
+                  onChange={e => handleBrowserNotifToggle(e.target.checked)}
+                  disabled={browserNotifPerm === 'denied' || browserNotifPerm === 'unsupported'}
+                  style={{ accentColor: '#8b5cf6' }}
+                />
+                Browser Notifications
+              </label>
+              <p style={{ margin: '0.25rem 0 0 1.5rem', fontSize: '0.75rem', color: '#64748b' }}>
+                {browserNotifPerm === 'denied' ? 'Blocked by browser — enable in site settings' :
+                 browserNotifPerm === 'unsupported' ? 'Not supported in this browser' :
+                 browserNotifPerm === 'granted' ? 'OS notifications when creators go live' :
+                 'Click to request permission'}
+              </p>
+            </div>
+          </div>
+
+          {/* Volume */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.85rem', color: '#cbd5e1' }}>
+              <span>🔊 Volume: {Math.round(notifVolume * 100)}%</span>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={Math.round(notifVolume * 100)}
+                onChange={e => handleVolumeChange(parseInt(e.target.value) / 100)}
+                style={{ flex: 1, accentColor: '#8b5cf6' }}
+              />
+            </label>
+          </div>
+
+          {/* Sound Previews */}
+          <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+            <button
+              className="btn-secondary"
+              onClick={() => playDefaultDing()}
+              style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem' }}
+            >
+              ▶ Preview Normal Sound
+            </button>
+            <button
+              className="btn-secondary"
+              onClick={() => playBellSound()}
+              style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem' }}
+            >
+              ▶ Preview Bell Sound
+            </button>
+          </div>
+
+          {/* Custom Sound URLs (logged-in users only) */}
+          {authUser && (
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.75rem' }}>
+              <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: '#94a3b8' }}>Custom Sounds (optional URL)</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div>
+                  <label style={{ fontSize: '0.75rem', color: '#64748b', display: 'block', marginBottom: '0.25rem' }}>Normal creators:</label>
+                  <input
+                    type="text"
+                    value={normalSoundPref === 'default' ? '' : normalSoundPref}
+                    placeholder="default"
+                    onChange={e => handleNormalSoundPrefChange(e.target.value || 'default')}
+                    style={{ width: '100%', padding: '0.4rem 0.6rem', borderRadius: '0.5rem', fontSize: '0.8rem', background: '#0f172a', border: '1px solid #334155', color: '#f8fafc', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.75rem', color: '#64748b', display: 'block', marginBottom: '0.25rem' }}>Bell (priority) creators:</label>
+                  <input
+                    type="text"
+                    value={bellSoundPref === 'default' ? '' : bellSoundPref}
+                    placeholder="default"
+                    onChange={e => handleBellSoundPrefChange(e.target.value || 'default')}
+                    style={{ width: '100%', padding: '0.4rem 0.6rem', borderRadius: '0.5rem', fontSize: '0.8rem', background: '#0f172a', border: '1px solid #334155', color: '#f8fafc', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+              <p style={{ margin: '0.35rem 0 0', fontSize: '0.7rem', color: '#475569' }}>
+                Enter an audio URL (mp3/wav/ogg) or leave blank for the built-in synthesized sound.
+              </p>
+            </div>
+          )}
+
+          <p style={{ margin: '0.75rem 0 0', fontSize: '0.72rem', color: '#475569' }}>
+            Sounds only play for creators that go live <b>during the current scan</b> — not for those already live.
+            Bell-icon 🔔 creators get a distinct priority chime.
+          </p>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <div className="main-content-display" style={{ marginTop: "2rem" }}>

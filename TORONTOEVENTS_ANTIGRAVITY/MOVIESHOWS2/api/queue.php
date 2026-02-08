@@ -12,8 +12,8 @@ require_once 'db-config.php';
 $pdo = getDbConnection();
 
 if (!$pdo) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed']);
+    header('HTTP/1.1 500 Internal Server Error');
+    echo json_encode(array('error' => 'Database connection failed'));
     exit;
 }
 
@@ -23,7 +23,7 @@ $input = json_decode(file_get_contents('php://input'), true);
 try {
     if ($method === 'GET') {
         // Get user's queue
-        $userId = $_GET['user_id'] ?? 0;
+        $userId = isset($_GET['user_id']) ? $_GET['user_id'] : 0;
 
         $stmt = $pdo->prepare("
             SELECT 
@@ -47,22 +47,22 @@ try {
             ORDER BY uq.position ASC
         ");
 
-        $stmt->execute([$userId]);
+        $stmt->execute(array($userId));
         $queue = $stmt->fetchAll();
 
-        echo json_encode([
+        echo json_encode(array(
             'success' => true,
             'queue' => $queue
-        ]);
+        ));
 
     } elseif ($method === 'POST') {
         // Add movie to queue
-        $userId = $input['user_id'] ?? 0;
-        $movieId = $input['movie_id'] ?? 0;
+        $userId = isset($input['user_id']) ? $input['user_id'] : 0;
+        $movieId = isset($input['movie_id']) ? $input['movie_id'] : 0;
 
         // Get next position
         $stmt = $pdo->prepare("SELECT COALESCE(MAX(position), 0) + 1 as next_pos FROM user_queues WHERE user_id = ?");
-        $stmt->execute([$userId]);
+        $stmt->execute(array($userId));
         $nextPos = $stmt->fetchColumn();
 
         $stmt = $pdo->prepare("
@@ -71,29 +71,29 @@ try {
             ON DUPLICATE KEY UPDATE position = ?
         ");
 
-        $stmt->execute([$userId, $movieId, $nextPos, $nextPos]);
+        $stmt->execute(array($userId, $movieId, $nextPos, $nextPos));
 
-        echo json_encode([
+        echo json_encode(array(
             'success' => true,
             'message' => 'Movie added to queue'
-        ]);
+        ));
 
     } elseif ($method === 'DELETE') {
         // Remove movie from queue
-        $userId = $input['user_id'] ?? 0;
-        $movieId = $input['movie_id'] ?? 0;
+        $userId = isset($input['user_id']) ? $input['user_id'] : 0;
+        $movieId = isset($input['movie_id']) ? $input['movie_id'] : 0;
 
         $stmt = $pdo->prepare("DELETE FROM user_queues WHERE user_id = ? AND movie_id = ?");
-        $stmt->execute([$userId, $movieId]);
+        $stmt->execute(array($userId, $movieId));
 
-        echo json_encode([
+        echo json_encode(array(
             'success' => true,
             'message' => 'Movie removed from queue'
-        ]);
+        ));
     }
 
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+    header('HTTP/1.1 500 Internal Server Error');
+    echo json_encode(array('error' => $e->getMessage()));
 }
 ?>

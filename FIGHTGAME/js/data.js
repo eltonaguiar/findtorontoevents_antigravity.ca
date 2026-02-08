@@ -15,12 +15,12 @@ var CONFIG = {
     ROUND_TIME: 99,
     ROUNDS_TO_WIN: 2,
     COMBO_WINDOW: 600,        // ms to chain next hit
-    HITSTOP_DURATION: 80,     // ms of freeze on hit
+    HITSTOP_DURATION: 80,     // ms of freeze on hit (light)
+    HITSTOP_HEAVY: 120,       // ms of freeze on heavy hit
+    HITSTOP_SPECIAL: 140,     // ms of freeze on special
+    HITSTOP_SUPER: 200,       // ms of freeze on super
     SCREEN_SHAKE_DECAY: 0.9,
     BLOCK_DAMAGE_MULT: 0.15,
-    SPECIAL_METER_MAX: 100,
-    METER_GAIN_DEAL: 8,
-    METER_GAIN_TAKE: 12,
     DASH_SPEED: 600,
     DASH_DURATION: 180,
     WALK_SPEED: 280,
@@ -32,7 +32,38 @@ var CONFIG = {
     KNOCKBACK_SPECIAL: 500,
     LAUNCH_FORCE: -500,
     AI_REACTION_FRAMES: { easy: 30, medium: 18, hard: 8, insane: 3 },
-    FPS: 60
+    FPS: 60,
+
+    // ── COMBO SYSTEM (Phase 1) ──
+    CHAIN_WINDOW_MS: 200,         // ms to input next chain move after hit connects
+    SPECIAL_CANCEL_MS: 180,       // ms window to cancel normal into special
+    INPUT_BUFFER_MS: 100,         // input buffer length in ms
+    MAX_JUGGLE_HITS: 4,           // max hits during a juggle before opponent becomes invincible
+    COUNTER_HIT_MULT: 1.5,        // damage multiplier for counter-hits
+    COUNTER_HIT_HITSTUN: 1.4,     // extra hitstun on counter-hit
+    COUNTER_HIT_EXTRA_JUGGLE: 1,  // bonus juggle points on counter-hit launch
+    DAMAGE_SCALING: [1.0, 0.95, 0.88, 0.78, 0.68, 0.58, 0.5], // per-hit combo scaling (min 50%)
+
+    // ── METER SYSTEM (Phase 1d) ──
+    METER_MAX: 300,               // 3 bars total (100 per bar)
+    METER_GAIN_DEAL: 10,          // meter gained on dealing damage
+    METER_GAIN_TAKE: 15,          // meter gained on taking damage
+    METER_FORWARD_WALK: 0.4,      // meter per frame walking forward (encourages aggression)
+    METER_BLOCKED_BONUS: 5,       // bonus meter for attacker when hit is blocked
+    EX_COST: 50,                  // half bar for EX special
+    SUPER_COST: 200,              // 2 bars for super
+    BURST_COST: 300,              // full 3 bars for combo breaker
+    ALPHA_COUNTER_COST: 100,      // 1 bar for alpha counter (escape blockstun)
+    RAPID_CANCEL_COST: 100,       // 1 bar for rapid cancel (extend combos)
+
+    // ── DEFENSIVE MECHANICS (Phase 1c) ──
+    AUTO_BLOCK: true,             // walking back or standing still = blocking (like TLA)
+    PUSHBLOCK_DISTANCE: 180,      // how far pushblock shoves attacker
+    GUARD_CRUSH_HITS: 8,          // consecutive blocked hits to break guard
+    GUARD_CRUSH_DECAY: 2000,      // ms for guard meter to recover
+    BURST_STARTUP_FRAMES: 20,     // burst is not instant -- punishable if read
+    ALPHA_COUNTER_STARTUP: 8,     // alpha counter startup
+    THROW_INVULN_FRAMES: 3        // frames of throw invulnerability after stun
 };
 
 // === CHARACTERS ===
@@ -213,120 +244,138 @@ var CHARACTERS = [
 ];
 
 // === WEAPONS ===
+// Each weapon now has: light, heavy, forward-heavy (launcher), crouching-heavy (sweep),
+// air attacks, and chain cancel routes. Frame data drives the combo system.
 var WEAPONS = [
     {
         id: 'katana',
         name: 'Katana',
         description: 'A balanced blade with excellent speed and reach.',
         stats: { speed: 7, damage: 7, range: 7 },
-        lightDamage: 8,
-        heavyDamage: 16,
-        lightStartup: 4,
-        heavyStartup: 10,
-        lightRecovery: 8,
-        heavyRecovery: 16,
-        lightRange: 70,
-        heavyRange: 85,
-        color: '#c0c0c0',
-        glowColor: '#e8e8e8',
-        drawType: 'blade',
-        length: 50,
-        width: 4
+        // ── Light (5L) ──
+        lightDamage: 8, lightStartup: 4, lightActive: 4, lightRecovery: 8,
+        lightRange: 70, lightHitAdv: 4, lightBlockAdv: 1, lightKnockX: 80,
+        // ── Heavy (5H) ──
+        heavyDamage: 16, heavyStartup: 10, heavyActive: 6, heavyRecovery: 16,
+        heavyRange: 85, heavyHitAdv: 6, heavyBlockAdv: -2, heavyKnockX: 200,
+        // ── Forward Heavy / Launcher (6H) ──
+        launcherDamage: 14, launcherStartup: 12, launcherActive: 5, launcherRecovery: 20,
+        launcherRange: 70, launcherLaunch: -600, launcherJuggle: 3,
+        // ── Crouching Heavy / Sweep (2H) ──
+        sweepDamage: 10, sweepStartup: 8, sweepActive: 5, sweepRecovery: 22,
+        sweepRange: 80, sweepKnockdown: true,
+        // ── Air Light (jL) ──
+        airLightDamage: 6, airLightStartup: 3, airLightActive: 5, airLightRecovery: 6,
+        airLightRange: 55, airLightHitAdv: 12, airLightBlockAdv: 8,
+        // ── Air Heavy (jH) ──
+        airHeavyDamage: 12, airHeavyStartup: 7, airHeavyActive: 6, airHeavyRecovery: 10,
+        airHeavyRange: 65, airHeavyHitAdv: 16, airHeavyBlockAdv: 10,
+        // ── Chain routes: which attacks cancel into which ──
+        chains: { 'light': ['heavy', 'special'], 'heavy': ['special', 'launcher'], 'launcher': ['special'] },
+        // ── Visual ──
+        color: '#c0c0c0', glowColor: '#e8e8e8', drawType: 'blade', length: 50, width: 4
     },
     {
         id: 'warhammer',
         name: 'War Hammer',
         description: 'Devastatingly powerful but slow to swing.',
         stats: { speed: 3, damage: 10, range: 6 },
-        lightDamage: 12,
-        heavyDamage: 25,
-        lightStartup: 8,
-        heavyStartup: 18,
-        lightRecovery: 14,
-        heavyRecovery: 24,
-        lightRange: 60,
-        heavyRange: 75,
-        color: '#8b7355',
-        glowColor: '#d4a574',
-        drawType: 'hammer',
-        length: 55,
-        width: 8
+        lightDamage: 12, lightStartup: 8, lightActive: 5, lightRecovery: 14,
+        lightRange: 60, lightHitAdv: 5, lightBlockAdv: 0, lightKnockX: 120,
+        heavyDamage: 25, heavyStartup: 18, heavyActive: 7, heavyRecovery: 24,
+        heavyRange: 75, heavyHitAdv: 8, heavyBlockAdv: -4, heavyKnockX: 350,
+        launcherDamage: 20, launcherStartup: 16, launcherActive: 6, launcherRecovery: 26,
+        launcherRange: 65, launcherLaunch: -700, launcherJuggle: 2,
+        sweepDamage: 14, sweepStartup: 12, sweepActive: 6, sweepRecovery: 26,
+        sweepRange: 70, sweepKnockdown: true,
+        airLightDamage: 8, airLightStartup: 5, airLightActive: 5, airLightRecovery: 8,
+        airLightRange: 50, airLightHitAdv: 10, airLightBlockAdv: 6,
+        airHeavyDamage: 18, airHeavyStartup: 10, airHeavyActive: 7, airHeavyRecovery: 14,
+        airHeavyRange: 60, airHeavyHitAdv: 18, airHeavyBlockAdv: 12,
+        chains: { 'light': ['heavy', 'special'], 'heavy': ['special'], 'launcher': ['special'] },
+        color: '#8b7355', glowColor: '#d4a574', drawType: 'hammer', length: 55, width: 8
     },
     {
         id: 'daggers',
         name: 'Dual Daggers',
         description: 'Blazing fast with rapid combos but short reach.',
         stats: { speed: 10, damage: 4, range: 3 },
-        lightDamage: 5,
-        heavyDamage: 10,
-        lightStartup: 2,
-        heavyStartup: 6,
-        lightRecovery: 5,
-        heavyRecovery: 10,
-        lightRange: 45,
-        heavyRange: 55,
-        color: '#a0a0a0',
-        glowColor: '#d0d0d0',
-        drawType: 'daggers',
-        length: 25,
-        width: 3
+        lightDamage: 5, lightStartup: 2, lightActive: 3, lightRecovery: 5,
+        lightRange: 45, lightHitAdv: 3, lightBlockAdv: 2, lightKnockX: 50,
+        heavyDamage: 10, heavyStartup: 6, heavyActive: 5, heavyRecovery: 10,
+        heavyRange: 55, heavyHitAdv: 5, heavyBlockAdv: -1, heavyKnockX: 150,
+        launcherDamage: 8, launcherStartup: 8, launcherActive: 4, launcherRecovery: 16,
+        launcherRange: 50, launcherLaunch: -550, launcherJuggle: 4,
+        sweepDamage: 7, sweepStartup: 5, sweepActive: 4, sweepRecovery: 16,
+        sweepRange: 55, sweepKnockdown: true,
+        airLightDamage: 4, airLightStartup: 2, airLightActive: 4, airLightRecovery: 4,
+        airLightRange: 40, airLightHitAdv: 10, airLightBlockAdv: 8,
+        airHeavyDamage: 8, airHeavyStartup: 5, airHeavyActive: 5, airHeavyRecovery: 8,
+        airHeavyRange: 50, airHeavyHitAdv: 14, airHeavyBlockAdv: 10,
+        // Daggers get extra chains -- L can chain into L (rapid hits)
+        chains: { 'light': ['light', 'heavy', 'special'], 'heavy': ['special', 'launcher'], 'launcher': ['special'] },
+        color: '#a0a0a0', glowColor: '#d0d0d0', drawType: 'daggers', length: 25, width: 3
     },
     {
         id: 'chainwhip',
         name: 'Chain Whip',
         description: 'Outstanding range to control space from a distance.',
         stats: { speed: 5, damage: 6, range: 10 },
-        lightDamage: 7,
-        heavyDamage: 14,
-        lightStartup: 6,
-        heavyStartup: 12,
-        lightRecovery: 10,
-        heavyRecovery: 18,
-        lightRange: 100,
-        heavyRange: 130,
-        color: '#8a8a8a',
-        glowColor: '#b0b0b0',
-        drawType: 'chain',
-        length: 70,
-        width: 3
+        lightDamage: 7, lightStartup: 6, lightActive: 5, lightRecovery: 10,
+        lightRange: 100, lightHitAdv: 3, lightBlockAdv: 0, lightKnockX: 100,
+        heavyDamage: 14, heavyStartup: 12, heavyActive: 6, heavyRecovery: 18,
+        heavyRange: 130, heavyHitAdv: 5, heavyBlockAdv: -3, heavyKnockX: 250,
+        launcherDamage: 12, launcherStartup: 14, launcherActive: 5, launcherRecovery: 22,
+        launcherRange: 90, launcherLaunch: -580, launcherJuggle: 3,
+        sweepDamage: 9, sweepStartup: 10, sweepActive: 6, sweepRecovery: 20,
+        sweepRange: 120, sweepKnockdown: true,
+        airLightDamage: 5, airLightStartup: 4, airLightActive: 5, airLightRecovery: 7,
+        airLightRange: 80, airLightHitAdv: 10, airLightBlockAdv: 6,
+        airHeavyDamage: 10, airHeavyStartup: 8, airHeavyActive: 6, airHeavyRecovery: 12,
+        airHeavyRange: 100, airHeavyHitAdv: 14, airHeavyBlockAdv: 8,
+        chains: { 'light': ['heavy', 'special'], 'heavy': ['special', 'launcher'], 'launcher': ['special'] },
+        color: '#8a8a8a', glowColor: '#b0b0b0', drawType: 'chain', length: 70, width: 3
     },
     {
         id: 'battleaxe',
         name: 'Battle Axe',
         description: 'Heavy cleaving power with good range.',
         stats: { speed: 4, damage: 9, range: 7 },
-        lightDamage: 10,
-        heavyDamage: 22,
-        lightStartup: 7,
-        heavyStartup: 14,
-        lightRecovery: 12,
-        heavyRecovery: 20,
-        lightRange: 75,
-        heavyRange: 90,
-        color: '#6d4c41',
-        glowColor: '#a1887f',
-        drawType: 'axe',
-        length: 55,
-        width: 6
+        lightDamage: 10, lightStartup: 7, lightActive: 5, lightRecovery: 12,
+        lightRange: 75, lightHitAdv: 4, lightBlockAdv: -1, lightKnockX: 140,
+        heavyDamage: 22, heavyStartup: 14, heavyActive: 7, heavyRecovery: 20,
+        heavyRange: 90, heavyHitAdv: 7, heavyBlockAdv: -4, heavyKnockX: 320,
+        launcherDamage: 18, launcherStartup: 14, launcherActive: 5, launcherRecovery: 24,
+        launcherRange: 75, launcherLaunch: -650, launcherJuggle: 3,
+        sweepDamage: 12, sweepStartup: 10, sweepActive: 6, sweepRecovery: 24,
+        sweepRange: 85, sweepKnockdown: true,
+        airLightDamage: 7, airLightStartup: 4, airLightActive: 5, airLightRecovery: 8,
+        airLightRange: 60, airLightHitAdv: 12, airLightBlockAdv: 8,
+        airHeavyDamage: 16, airHeavyStartup: 9, airHeavyActive: 7, airHeavyRecovery: 12,
+        airHeavyRange: 70, airHeavyHitAdv: 18, airHeavyBlockAdv: 12,
+        chains: { 'light': ['heavy', 'special'], 'heavy': ['special'], 'launcher': ['special'] },
+        color: '#6d4c41', glowColor: '#a1887f', drawType: 'axe', length: 55, width: 6
     },
     {
         id: 'staff',
         name: 'Bo Staff',
         description: 'Versatile weapon with excellent reach and control.',
         stats: { speed: 6, damage: 5, range: 9 },
-        lightDamage: 6,
-        heavyDamage: 13,
-        lightStartup: 5,
-        heavyStartup: 10,
-        lightRecovery: 8,
-        heavyRecovery: 14,
-        lightRange: 90,
-        heavyRange: 110,
-        color: '#8d6e63',
-        glowColor: '#bcaaa4',
-        drawType: 'staff',
-        length: 65,
-        width: 5
+        lightDamage: 6, lightStartup: 5, lightActive: 4, lightRecovery: 8,
+        lightRange: 90, lightHitAdv: 3, lightBlockAdv: 1, lightKnockX: 90,
+        heavyDamage: 13, heavyStartup: 10, heavyActive: 6, heavyRecovery: 14,
+        heavyRange: 110, heavyHitAdv: 5, heavyBlockAdv: -2, heavyKnockX: 220,
+        launcherDamage: 11, launcherStartup: 10, launcherActive: 5, launcherRecovery: 18,
+        launcherRange: 85, launcherLaunch: -580, launcherJuggle: 3,
+        sweepDamage: 8, sweepStartup: 7, sweepActive: 5, sweepRecovery: 18,
+        sweepRange: 100, sweepKnockdown: true,
+        airLightDamage: 5, airLightStartup: 3, airLightActive: 5, airLightRecovery: 6,
+        airLightRange: 70, airLightHitAdv: 10, airLightBlockAdv: 6,
+        airHeavyDamage: 10, airHeavyStartup: 7, airHeavyActive: 6, airHeavyRecovery: 10,
+        airHeavyRange: 85, airHeavyHitAdv: 14, airHeavyBlockAdv: 10,
+        // Staff gets extra chains -- more versatile
+        chains: { 'light': ['light', 'heavy', 'special'], 'heavy': ['special', 'launcher'], 'launcher': ['special'] },
+        color: '#8d6e63', glowColor: '#bcaaa4', drawType: 'staff', length: 65, width: 5
     }
 ];
 

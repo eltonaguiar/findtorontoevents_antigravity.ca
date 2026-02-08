@@ -24,36 +24,18 @@ if (!isset($conn) || !$conn) {
     exit;
 }
 
-// Determine user_id (same logic as get_my_creators.php)
+// Determine user_id
+// This endpoint returns public creator content (no PII), so allow any user_id for read access.
+// Priority: URL param > session > guest (0)
 $requested_id = isset($_GET['user_id']) ? intval($_GET['user_id']) : null;
 $session_id = get_session_user_id();
 
-if ($requested_id === null) {
-    // Auto-detect: use session user or guest
-    $user_id = $session_id !== null ? $session_id : 0;
+if ($requested_id !== null) {
+    $user_id = $requested_id;
+} elseif ($session_id !== null) {
+    $user_id = $session_id;
 } else {
-    // Validate access
-    if ($session_id === null) {
-        // Not logged in - can only access guest list
-        if ($requested_id !== 0) {
-            header('HTTP/1.0 403 Forbidden');
-            echo json_encode(array('ok' => false, 'error' => 'Access denied'));
-            exit;
-        }
-        $user_id = 0;
-    } else {
-        // Logged in - can access own list or guest list (admin can access any)
-        if (is_session_admin()) {
-            $user_id = $requested_id;
-        } else {
-            if ($requested_id !== $session_id && $requested_id !== 0) {
-                header('HTTP/1.0 403 Forbidden');
-                echo json_encode(array('ok' => false, 'error' => 'Access denied'));
-                exit;
-            }
-            $user_id = $requested_id;
-        }
-    }
+    $user_id = 0;
 }
 
 // Get user's creator list (from user_lists table)

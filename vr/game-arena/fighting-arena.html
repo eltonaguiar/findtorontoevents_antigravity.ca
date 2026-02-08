@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fighting Arena - 1v1 VR Combat | Game Arena | Toronto Events</title>
+  <meta name="description" content="1v1 melee combat arena with multiple fighters. Test your skills in this intense VR fighting game.">
+  
+  <!-- HTTPS redirect -->
+  <script src="/vr/https-redirect.js"></script>
+
+  <!-- A-Frame WebXR Framework -->
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+
+  <!-- Environment Component -->
+  <script src="https://cdn.jsdelivr.net/npm/aframe-environment-component@1.3.3/dist/aframe-environment-component.min.js"></script>
+
+  <!-- Custom components -->
+  <script>
+    // Billboard: face camera
+    AFRAME.registerComponent('look-at-camera', {
+      tick: function() {
+        var cam = this.el.sceneEl.camera;
+        if (cam) this.el.object3D.lookAt(cam.getWorldPosition(new THREE.Vector3()));
+      }
+    });
+
+    // Zone link: navigate on click
+    AFRAME.registerComponent('zone-link', {
+      schema: { url: { type: 'string', default: '' } },
+      init: function() {
+        var self = this;
+        this.el.addEventListener('click', function() {
+          if (!self.data.url) return;
+          self.el.setAttribute('animation__flash', 'property: opacity; from: 1; to: 0.3; dur: 150; dir: alternate; loop: 3');
+          setTimeout(function() { window.location.href = self.data.url; }, 400);
+        });
+        this.el.addEventListener('mouseenter', function() {
+          self.el.setAttribute('animation__grow', 'property: scale; to: 1.1 1.1 1.1; dur: 200; easing: easeOutQuad');
+        });
+        this.el.addEventListener('mouseleave', function() {
+          self.el.setAttribute('animation__grow', 'property: scale; to: 1 1 1; dur: 200; easing: easeOutQuad');
+        });
+      }
+    });
+
+    // Hover glow effect
+    AFRAME.registerComponent('hover-glow', {
+      schema: { color: { type: 'string', default: '#fff' } },
+      init: function() {
+        var self = this;
+        var origColor = this.el.getAttribute('color') || this.el.getAttribute('material')?.color || '#fff';
+        this.el.addEventListener('mouseenter', function() {
+          self.el.setAttribute('material', 'emissive', self.data.color);
+          self.el.setAttribute('material', 'emissiveIntensity', 0.3);
+        });
+        this.el.addEventListener('mouseleave', function() {
+          self.el.setAttribute('material', 'emissiveIntensity', 0);
+        });
+      }
+    });
+  </script>
+
+  <style>
+    body { margin: 0; overflow: hidden; font-family: 'Inter', -apple-system, sans-serif; }
+
+    /* Loading overlay */
+    #loading {
+      position: fixed; inset: 0;
+      background: linear-gradient(135deg, #0a0a1f 0%, #1a0010 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 9999; color: white; transition: opacity 0.5s;
+    }
+    #loading h1 {
+      font-size: 2.5rem; margin-bottom: 0.5rem;
+      background: linear-gradient(90deg, #ef4444, #f97316);
+      background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    #loading p { color: #888; font-size: 1.1rem; }
+    .spinner {
+      width: 60px; height: 60px; border: 4px solid rgba(239,68,68,0.3);
+      border-top-color: #ef4444; border-radius: 50%;
+      animation: spin 1s linear infinite; margin-bottom: 1.5rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none !important; }
+
+    /* Instructions */
+    #instructions {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.8); color: white; padding: 12px 24px;
+      border-radius: 2rem; z-index: 100; text-align: center;
+      backdrop-filter: blur(10px); border: 1px solid rgba(239,68,68,0.3);
+      font-size: 14px; pointer-events: none;
+      animation: fadeInUp 0.5s ease;
+    }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } }
+
+    /* HUD overlay */
+    #hud {
+      position: fixed; top: 16px; left: 16px; z-index: 200;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .hud-card {
+      background: rgba(10,10,30,0.85); backdrop-filter: blur(10px);
+      border: 1px solid rgba(239,68,68,0.3); border-radius: 12px;
+      padding: 10px 16px; color: white; font-size: 13px;
+    }
+    .hud-card h3 { margin: 0 0 4px; font-size: 14px; color: #ef4444; }
+    .hud-stats { display: flex; gap: 12px; }
+    .hud-stat { text-align: center; }
+    .hud-stat .val { font-size: 18px; font-weight: 700; }
+    .hud-stat .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #888; }
+    #hud-name { cursor: pointer; }
+    #hud-name:hover { text-decoration: underline; }
+
+    /* Toast notifications */
+    #toast-container {
+      position: fixed; top: 16px; right: 16px; z-index: 9000;
+      display: flex; flex-direction: column; gap: 8px; max-width: 320px;
+    }
+    .toast {
+      background: rgba(10,10,30,0.9); border: 1px solid rgba(239,68,68,0.5);
+      border-radius: 12px; padding: 12px 16px; color: white;
+      animation: toastIn 0.3s ease-out; font-size: 13px;
+    }
+    @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .toast-title { font-weight: 700; margin-bottom: 2px; }
+    .toast-msg { color: #aaa; font-size: 12px; }
+    .toast-actions { display: flex; gap: 6px; margin-top: 8px; }
+    .toast-btn {
+      padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+      cursor: pointer; border: none; transition: all 0.2s;
+    }
+    .toast-btn.accept { background: #22c55e; color: white; }
+    .toast-btn.decline { background: rgba(255,255,255,0.1); color: #aaa; }
+
+    /* Back button */
+    #back-btn {
+      position: fixed; top: 16px; right: 16px; z-index: 200;
+      background: rgba(10,10,30,0.85); backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
+      padding: 8px 16px; color: white; font-size: 13px; cursor: pointer;
+      text-decoration: none; transition: all 0.2s;
+    }
+    #back-btn:hover { border-color: rgba(239,68,68,0.5); background: rgba(10,10,30,0.95); }
+  </style>
+</head>
+<body>
+
+  <!-- Loading -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <h1>FIGHTING ARENA</h1>
+    <p>Entering the combat zone...</p>
+  </div>
+
+  <!-- Instructions -->
+  <div id="instructions" class="hidden">
+    Click a fighter to battle | WASD to move | Mouse to look
+  </div>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="hud-card">
+      <h3 id="hud-name" onclick="editName()" title="Click to change name">Guest</h3>
+      <div class="hud-stats">
+        <div class="hud-stat"><div class="val" id="hud-wins">0</div><div class="lbl">Wins</div></div>
+        <div class="hud-stat"><div class="val" id="hud-losses">0</div><div class="lbl">Losses</div></div>
+        <div class="hud-stat"><div class="val" id="hud-kos">0</div><div class="lbl">KOs</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back -->
+  <a id="back-btn" href="/vr/game-arena/">&#8592; Game Arena</a>
+
+  <!-- Toast container -->
+  <div id="toast-container"></div>
+
+  <!-- ========== A-FRAME SCENE ========== -->
+  <a-scene
+    renderer="antialias: true; colorManagement: true; sortTransparentObjects: true"
+    vr-mode-ui="enabled: true"
+    loading-screen="enabled: false"
+    cursor="rayOrigin: mouse; fuse: false"
+    raycaster="objects: .clickable"
+  >
+    <a-assets></a-assets>
+
+    <!-- Dark combat arena environment -->
+    <a-entity environment="
+      preset: starry;
+      groundColor: #0a0a1f;
+      groundTexture: none;
+      dressing: none;
+      skyType: atmosphere;
+      skyColor: #050005;
+      horizonColor: #1a0000;
+      fog: 0.3"></a-entity>
+
+    <!-- Arena Floor Platform -->
+    <a-cylinder position="0 0 0" radius="18" height="0.1" color="#0a0a1f" opacity="0.9"></a-cylinder>
+    <!-- Glowing rings -->
+    <a-ring position="0 0.12 0" rotation="-90 0 0" radius-inner="5" radius-outer="5.15" color="#ef4444" opacity="0.6"
+            animation="property: rotation; to: -90 360 0; dur: 40000; loop: true; easing: linear"></a-ring>
+    <a-ring position="0 0.12 0" rotation="-90 0 0" radius-inner="10" radius-outer="10.1" color="#f97316" opacity="0.3"
+            animation="property: rotation; to: -90 -360 0; dur: 60000; loop: true; easing: linear"></a-ring>
+    <a-ring position="0 0.12 0" rotation="-90 0 0" radius-inner="15" radius-outer="15.05" color="#dc2626" opacity="0.2"
+            animation="property: rotation; to: -90 360 0; dur: 80000; loop: true; easing: linear"></a-ring>
+
+    <!-- ===== CENTRAL TITLE ===== -->
+    <a-entity position="0 5 0" look-at-camera>
+      <a-text value="FIGHTING ARENA" align="center" width="12" color="#ef4444" font="mozillavr"
+              animation="property: position; from: 0 0 0; to: 0 0.15 0; dur: 3000; dir: alternate; loop: true; easing: easeInOutSine"></a-text>
+      <a-text value="1v1 Combat" align="center" width="6" color="#f97316" position="0 -0.7 0" font="mozillavr"></a-text>
+      <a-text value="Click a fighter to battle" align="center" width="4" color="#888" position="0 -1.2 0"></a-text>
+    </a-entity>
+
+    <!-- ===== FIGHTER PORTAL: RED WARRIOR ===== -->
+    <a-entity position="-5 0 -6">
+      <!-- Floating fighter cube -->
+      <a-box class="clickable" position="0 2 0" width="2.5" height="2.5" depth="2.5"
+             color="#ef4444" opacity="0.85"
+             zone-link="url: /vr/game-arena/fighting-arena.html"
+             hover-glow="color: #ef4444"
+             animation="property: rotation; to: 0 360 0; dur: 25000; loop: true; easing: linear">
+        <!-- Sword and shield on faces -->
+        <a-text value="⚔️" align="center" position="0 0.3 1.26" width="5" color="#fff" font="mozillavr"></a-text>
+        <a-text value="Red\nWarrior" align="center" position="0 -0.4 1.26" width="3" color="#fecaca"></a-text>
+        <a-text value="⚔️" align="center" position="0 0.3 -1.26" rotation="0 180 0" width="5" color="#fff" font="mozillavr"></a-text>
+        <a-text value="Red\nWarrior" align="center" position="0 -0.4 -1.26" rotation="0 180 0" width="3" color="#fecaca"></a-text>
+        <a-text value="⚔️" align="center" position="1.26 0.3 0" rotation="0 90 0" width="5" color="#fff" font="mozillavr"></a-text>
+        <a-text value="⚔️" align="center" position="-1.26 0.3 0" rotation="0 -90 0" width="5" color="#fff" font="mozillavr"></a-text>
+      </a-box>
+      <!-- ENTER button -->
+      <a-entity position="0 -0.2 1.5" look-at-camera>
+        <a-plane class="clickable" width="2.2" height="0.55" color="#ef4444" opacity="0.9"
+                 zone-link="url: /vr/game-arena/fighting-arena.html"
+                 animation="property: position; from: 0 0 0; to: 0 0.08 0; dur: 1500; dir: alternate; loop: true; easing: easeInOutSine">
+          <a-text value="BATTLE RED WARRIOR" align="center" width="4" color="#fff" position="0 0 0.01" font="mozillavr"></a-text>
+        </a-plane>
+      </a-entity>
+      <!-- Ground ring -->
+      <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="1.8" radius-outer="2" color="#ef4444" opacity="0.5"
+              animation="property: rotation; to: -90 360 0; dur: 10000; loop: true; easing: linear"></a-ring>
+      <a-cylinder position="0 0.01 0" radius="1.8" height="0.02" color="#ef4444" opacity="0.12"
+                  class="clickable" zone-link="url: /vr/game-arena/fighting-arena.html"></a-cylinder>
+      <!-- Floating label -->
+      <a-entity position="0 4 0" look-at-camera>
+        <a-text value="Red Warrior" align="center" width="5" color="#ef4444"></a-text>
+        <a-text value="Aggressive Fighter" align="center" width="3" color="#888" position="0 -0.35 0"></a-text>
+      </a-entity>
+    </a-entity>
+
+    <!-- ===== FIGHTER PORTAL: BLUE NINJA ===== -->
+    <a-entity position="5 0 -6">
+      <!-- Floating ninja sphere -->
+      <a-sphere class="clickable" position="0 2 0" radius="1.3"
+                color="#3b82f6" opacity="0.85"
+                zone-link="url: /vr/game-arena/fighting-arena.html"
+                hover-glow="color: #3b82f6"
+                animation="property: rotation; to: 360 360 0; dur: 20000; loop: true; easing: linear">
+        <a-text value="🥷" align="center" position="0 0.2 1.31" width="4" color="#fff" font="mozillavr"></a-text>
+        <a-text value="Blue\nNinja" align="center" position="0 -0.3 1.31" width="2.5" color="#bfdbfe"></a-text>
+        <a-text value="🥷" align="center" position="0 0.2 -1.31" rotation="0 180 0" width="4" color="#fff" font="mozillavr"></a-text>
+      </a-sphere>
+      <!-- ENTER button -->
+      <a-entity position="0 -0.2 1.5" look-at-camera>
+        <a-plane class="clickable" width="2.4" height="0.55" color="#3b82f6" opacity="0.9"
+                 zone-link="url: /vr/game-arena/fighting-arena.html"
+                 animation="property: position; from: 0 0 0; to: 0 0.08 0; dur: 1500; dir: alternate; loop: true; easing: easeInOutSine">
+          <a-text value="BATTLE BLUE NINJA" align="center" width="4.5" color="#fff" position="0 0 0.01" font="mozillavr"></a-text>
+        </a-plane>
+      </a-entity>
+      <!-- Ground ring -->
+      <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="1.8" radius-outer="2" color="#3b82f6" opacity="0.5"
+              animation="property: rotation; to: -90 360 0; dur: 10000; loop: true; easing: linear"></a-ring>
+      <a-cylinder position="0 0.01 0" radius="1.8" height="0.02" color="#3b82f6" opacity="0.12"
+                  class="clickable" zone-link="url: /vr/game-arena/fighting-arena.html"></a-cylinder>
+      <!-- Floating label -->
+      <a-entity position="0 4 0" look-at-camera>
+        <a-text value="Blue Ninja" align="center" width="5" color="#3b82f6"></a-text>
+        <a-text value="Stealth & Speed" align="center" width="3" color="#888" position="0 -0.35 0"></a-text>
+      </a-entity>
+    </a-entity>
+
+    <!-- ===== FIGHTER PORTAL: GREEN SAMURAI ===== -->
+    <a-entity position="0 0 -10">
+      <!-- Floating samurai cube -->
+      <a-box class="clickable" position="0 2 0" width="2.5" height="2.5" depth="2.5"
+             color="#22c55e" opacity="0.85"
+             zone-link="url: /vr/game-arena/fighting-arena.html"
+             hover-glow="color: #22c55e"
+             animation="property: rotation; to: 0 360 0; dur: 22000; loop: true; easing: linear">
+        <!-- Sword emoji + title on faces -->
+        <a-text value=" katana" align="center" position="0 0.35 1.26" width="6" color="#fff" font="mozillavr"></a-text>
+        <a-text value="Green\nSamurai" align="center" position="0 -0.15 1.26" width="6" color="#bbf7d0" font="mozillavr"></a-text>
+        <a-text value=" katana" align="center" position="0 0.35 -1.26" rotation="0 180 0" width="6" color="#fff" font="mozillavr"></a-text>
+        <a-text value="Green\nSamurai" align="center" position="0 -0.15 -1.26" rotation="0 180 0" width="6" color="#bbf7d0" font="mozillavr"></a-text>
+        <a-text value=" katana" align="center" position="1.26 0 0" rotation="0 90 0" width="5" color="#fff" font="mozillavr"></a-text>
+        <a-text value=" katana" align="center" position="-1.26 0 0" rotation="0 -90 0" width="5" color="#fff" font="mozillavr"></a-text>
+      </a-box>
+      <!-- ENTER button -->
+      <a-entity position="0 -0.2 1.5" look-at-camera>
+        <a-plane class="clickable" width="2.4" height="0.55" color="#22c55e" opacity="0.9"
+                 zone-link="url: /vr/game-arena/fighting-arena.html"
+                 animation="property: position; from: 0 0 0; to: 0 0.08 0; dur: 1500; dir: alternate; loop: true; easing: easeInOutSine">
+          <a-text value="BATTLE GREEN SAMURAI" align="center" width="4.5" color="#fff" position="0 0 0.01" font="mozillavr"></a-text>
+        </a-plane>
+      </a-entity>
+      <!-- Ground ring -->
+      <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="1.8" radius-outer="2" color="#22c55e" opacity="0.5"
+              animation="property: rotation; to: -90 360 0; dur: 10000; loop: true; easing: linear"></a-ring>
+      <a-cylinder position="0 0.01 0" radius="1.8" height="0.02" color="#22c55e" opacity="0.12"
+                  class="clickable" zone-link="url: /vr/game-arena/fighting-arena.html"></a-cylinder>
+      <!-- Floating label -->
+      <a-entity position="0 4 0" look-at-camera>
+        <a-text value="Green Samurai" align="center" width="5" color="#22c55e"></a-text>
+        <a-text value="Master of Katana" align="center" width="3.5" color="#888" position="0 -0.35 0"></a-text>
+      </a-entity>
+    </a-entity>
+
+    <!-- ===== FIGHTER PORTAL: PURPLE MAGE ===== -->
+    <a-entity position="-5 0 -12">
+      <!-- Pulsing glow aura -->
+      <a-sphere position="0 2 0" radius="2.2" color="#a855f7" opacity="0.06"
+                animation="property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dur: 2000; dir: alternate; loop: true; easing: easeInOutSine"></a-sphere>
+      <!-- Floating magic cube -->
+      <a-box class="clickable" position="0 2 0" width="3" height="3" depth="3"
+             color="#a855f7" opacity="0.85"
+             zone-link="url: /vr/game-arena/fighting-arena.html"
+             hover-glow="color: #a855f7"
+             animation="property: rotation; to: 0 360 0; dur: 18000; loop: true; easing: linear">
+        <a-text value=" Magic" align="center" position="0 0.4 1.51" width="7" color="#fff" font="mozillavr"></a-text>
+        <a-text value="Purple\nMage" align="center" position="0 -0.4 1.51" width="3" color="#d8b4fe"></a-text>
+        <a-text value=" Magic" align="center" position="0 0.4 -1.51" rotation="0 180 0" width="7" color="#fff" font="mozillavr"></a-text>
+        <a-text value="Purple\nMage" align="center" position="0 -0.4 -1.51" rotation="0 180 0" width="3" color="#d8b4fe"></a-text>
+        <a-text value="Spell" align="center" position="1.51 0.4 0" rotation="0 90 0" width="7" color="#fff" font="mozillavr"></a-text>
+        <a-text value="Spell" align="center" position="-1.51 0.4 0" rotation="0 -90 0" width="7" color="#fff" font="mozillavr"></a-text>
+      </a-box>
+      <!-- ENTER button -->
+      <a-entity position="0 -0.2 2" look-at-camera>
+        <a-plane class="clickable" width="3" height="0.6" color="#a855f7" opacity="0.9"
+                 zone-link="url: /vr/game-arena/fighting-arena.html"
+                 animation="property: position; from: 0 0 0; to: 0 0.08 0; dur: 1500; dir: alternate; loop: true; easing: easeInOutSine">
+          <a-text value="BATTLE PURPLE MAGE" align="center" width="5" color="#fff" position="0 0 0.01" font="mozillavr"></a-text>
+        </a-plane>
+      </a-entity>
+      <!-- Ground ring (larger) -->
+      <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="2" radius-outer="2.3" color="#a855f7" opacity="0.5"
+              animation="property: rotation; to: -90 360 0; dur: 6000; loop: true; easing: linear"></a-ring>
+      <a-cylinder position="0 0.01 0" radius="2" height="0.02" color="#a855f7" opacity="0.15"
+                  class="clickable" zone-link="url: /vr/game-arena/fighting-arena.html"></a-cylinder>
+      <!-- Floating label -->
+      <a-entity position="0 4.5 0" look-at-camera>
+        <a-text value="Purple Mage" align="center" width="6" color="#a855f7" font="mozillavr"></a-text>
+        <a-text value="Arcane Combatant" align="center" width="4.5" color="#888" position="0 -0.4 0"></a-text>
+      </a-entity>
+    </a-entity>
+
+    <!-- Fighter light -->
+    <a-light type="point" position="5 3 -6" color="#ef4444" intensity="0.7" distance="14"></a-light>
+
+    <!-- ===== LEADERBOARD PANEL ===== -->
+    <a-entity position="8 1.5 2" rotation="0 -45 0" id="leaderboard-panel">
+      <a-plane width="4" height="5" color="#0a0a1f" opacity="0.9" material="shader: flat">
+        <a-plane width="3.8" height="4.8" color="#111128" opacity="0.95" position="0 0 0.01" material="shader: flat"></a-plane>
+      </a-plane>
+      <a-text value="LEADERBOARD" align="center" width="5" color="#ef4444" position="0 2 0.05" font="mozillavr"></a-text>
+      <a-entity id="leaderboard-entries" position="0 0.8 0.05"></a-entity>
+    </a-entity>
+
+    <!-- ===== ONLINE FIGHTERS AREA ===== -->
+    <a-entity position="-8 1.5 2" rotation="0 45 0" id="fighters-panel">
+      <a-plane width="4.5" height="5.5" color="#0a0a1f" opacity="0.9" material="shader: flat">
+        <a-plane width="4.3" height="5.3" color="#111128" opacity="0.95" position="0 0 0.01" material="shader: flat"></a-plane>
+      </a-plane>
+      <a-text value="FIGHTERS ONLINE" align="center" width="5" color="#22c55e" position="0 2.3 0.05" font="mozillavr"></a-text>
+      <!-- Column headers -->
+      <a-text value="Fighter" align="left" width="2.2" color="#475569" position="-1.8 1.9 0.05"></a-text>
+      <a-text value="Status" align="center" width="2" color="#475569" position="0.2 1.9 0.05"></a-text>
+      <a-text value="Wins" align="right" width="2" color="#475569" position="1.8 1.9 0.05"></a-text>
+      <!-- Divider line -->
+      <a-plane width="4" height="0.01" color="#334155" position="0 1.75 0.05" material="shader: flat"></a-plane>
+      <a-entity id="online-fighters" position="0 1.4 0.05"></a-entity>
+    </a-entity>
+
+    <!-- ===== RECENT BATTLES PANEL ===== -->
+    <a-entity position="0 1.5 6" rotation="0 180 0" id="battles-panel">
+      <a-plane width="5" height="3.5" color="#0a0a1f" opacity="0.9" material="shader: flat">
+        <a-plane width="4.8" height="3.3" color="#111128" opacity="0.95" position="0 0 0.01" material="shader: flat"></a-plane>
+      </a-plane>
+      <a-text value="RECENT BATTLES" align="center" width="5" color="#f97316" position="0 1.3 0.05" font="mozillavr"></a-text>
+      <a-entity id="recent-battles" position="0 0.5 0.05"></a-entity>
+    </a-entity>
+
+    <!-- Floating particle decorations -->
+    <a-sphere position="-8 4 -8" radius="0.1" color="#ef4444" opacity="0.5"
+              animation="property: position; to: -8 6 -8; dur: 4000; loop: true; dir: alternate; easing: easeInOutSine"></a-sphere>
+    <a-sphere position="8 3 -8" radius="0.12" color="#3b82f6" opacity="0.5"
+              animation="property: position; to: 8 5 -8; dur: 3500; loop: true; dir: alternate; easing: easeInOutSine"></a-sphere>
+    <a-sphere position="0 5 -12" radius="0.08" color="#22c55e" opacity="0.4"
+              animation="property: position; to: 0 7 -12; dur: 5000; loop: true; dir: alternate; easing: easeInOutSine"></a-sphere>
+    <a-sphere position="-12 3 4" radius="0.15" color="#a855f7" opacity="0.3"
+              animation="property: position; to: -12 5 4; dur: 4500; loop: true; dir: alternate; easing: easeInOutSine"></a-sphere>
+    <a-sphere position="12 4 4" radius="0.1" color="#f97316" opacity="0.4"
+              animation="property: position; to: 12 6 4; dur: 3800; loop: true; dir: alternate; easing: easeInOutSine"></a-sphere>
+
+    <!-- Lighting -->
+    <a-light type="ambient" color="#300000" intensity="0.4"></a-light>
+    <a-light type="point" position="0 8 0" color="#ef4444" intensity="1" distance="30"></a-light>
+    <a-light type="point" position="-5 3 -6" color="#ef4444" intensity="0.6" distance="12"></a-light>
+    <a-light type="point" position="5 3 -6" color="#3b82f6" intensity="0.6" distance="12"></a-light>
+    <a-light type="point" position="0 3 -10" color="#22c55e" intensity="0.3" distance="10"></a-light>
+    <a-light type="point" position="-8 3 2" color="#a855f7" intensity="0.4" distance="10"></a-light>
+    <a-light type="point" position="8 3 2" color="#f97316" intensity="0.4" distance="10"></a-light>
+
+    <!-- Camera Rig -->
+    <a-entity id="rig" position="0 1.6 4">
+      <a-camera look-controls wasd-controls="acceleration: 12" fov="80">
+        <a-ring cursor="fuse: true; fuseTimeout: 1500"
+                raycaster="objects: .clickable; far: 30"
+                radius-inner="0.005" radius-outer="0.012"
+                color="#ef4444" shader="flat"
+                position="0 0 -1"
+                animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 200"
+                animation__fusing="property: scale; startEvents: fusing; from: 1 1 1; to: 0.5 0.5 0.5; dur: 1500; easing: linear"
+                animation__mouseleave="property: scale; startEvents: mouseleave; to: 1 1 1; dur: 200">
+        </a-ring>
+      </a-camera>
+      <a-entity id="left-hand" laser-controls="hand: left"
+                raycaster="objects: .clickable; far: 25; lineColor: #ef4444; lineOpacity: 0.5"
+                cursor="rayOrigin: entity; fuse: false"></a-entity>
+      <a-entity id="right-hand" laser-controls="hand: right"
+                raycaster="objects: .clickable; far: 25; lineColor: #f97316; lineOpacity: 0.5"
+                cursor="rayOrigin: entity; fuse: false"></a-entity>
+    </a-entity>
+  </a-scene>
+
+  <script>
+  (function() {
+    'use strict';
+
+    // ===== LOADING =====
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        var el = document.getElementById('loading');
+        el.style.opacity = '0';
+        setTimeout(function() {
+          el.classList.add('hidden');
+          document.getElementById('instructions').classList.remove('hidden');
+          setTimeout(function() {
+            document.getElementById('instructions').style.opacity = '0';
+            document.getElementById('instructions').style.transition = 'opacity 1s';
+          }, 6000);
+        }, 500);
+      }, 1200);
+    });
+
+    // ===== STATE =====
+    var STORAGE_KEY = 'fightingArena';
+    var state = loadState();
+
+    function loadState() {
+      try {
+        var s = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+        // Check for logged-in user name (Google auth / FavCreators)
+        var authName = null;
+        try {
+          var vrAuth = sessionStorage.getItem('vr_auth_user');
+          if (vrAuth) { var u = JSON.parse(vrAuth); authName = u.display_name || u.username; }
+          if (!authName) {
+            var fcAuth = sessionStorage.getItem('fc_user');
+            if (fcAuth) { var u2 = JSON.parse(fcAuth); authName = u2.display_name || u2.username; }
+          }
+        } catch(e2) {}
+
+        return {
+          playerName: authName || s.playerName || 'Fighter_' + Math.floor(Math.random() * 9000 + 1000),
+          wins: s.wins || 0, losses: s.losses || 0, kos: s.kos || 0,
+          matches: s.matches || [],
+          playerId: s.playerId || 'f_' + Date.now()
+        };
+      } catch(e) {
+        return { playerName: 'Fighter_' + Math.floor(Math.random() * 9000 + 1000), wins: 0, losses: 0, kos: 0, matches: [], playerId: 'f_' + Date.now() };
+      }
+    }
+    function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {} }
+
+    // ===== HUD =====
+    function updateHUD() {
+      document.getElementById('hud-name').textContent = state.playerName;
+      document.getElementById('hud-wins').textContent = state.wins;
+      document.getElementById('hud-losses').textContent = state.losses;
+      document.getElementById('hud-kos').textContent = state.kos;
+    }
+
+    window.editName = function() {
+      var n = prompt('Enter your fighter name:', state.playerName);
+      if (n && n.trim()) { state.playerName = n.trim().substring(0, 20); saveState(); updateHUD(); }
+    };
+
+    // ===== BOT FIGHTERS =====
+    var FIGHTER_NAMES = ['TorontoBrawler','MapleLeaf99','PuckSlayer','CityFighter','EventHunter',
+      'NightOwlTO','LakeShoreBrawler','QueenWestAce','KensingtonKid','DistilleryDan','YongeFighter','BloorBeast'];
+    var COLORS = ['#ef4444','#3b82f6','#22c55e','#f97316','#a855f7','#14b8a6','#f59e0b','#dc2626'];
+
+    // ===== 3D LEADERBOARD =====
+    function renderLeaderboard() {
+      var container = document.getElementById('leaderboard-entries');
+      if (!container) return;
+      container.innerHTML = '';
+      var entries = [{ name: state.playerName, wins: state.wins, isMe: true }];
+      FIGHTER_NAMES.slice(0, 7).forEach(function(n, i) {
+        entries.push({ name: n, wins: Math.floor(Math.random() * 15) + 2, isMe: false });
+      });
+      entries.sort(function(a, b) { return b.wins - a.wins; });
+      entries.forEach(function(e, i) {
+        var y = -i * 0.45;
+        var color = i === 0 ? '#fbbf24' : i === 1 ? '#94a3b8' : i === 2 ? '#d97706' : '#888';
+        var nameColor = e.isMe ? '#ef4444' : '#fff';
+        var rank = document.createElement('a-text');
+        rank.setAttribute('value', '#' + (i + 1));
+        rank.setAttribute('align', 'left');
+        rank.setAttribute('width', '3');
+        rank.setAttribute('color', color);
+        rank.setAttribute('position', '-1.6 ' + y + ' 0');
+        container.appendChild(rank);
+
+        var name = document.createElement('a-text');
+        name.setAttribute('value', e.name + (e.isMe ? ' (You)' : ''));
+        name.setAttribute('align', 'left');
+        name.setAttribute('width', '2.5');
+        name.setAttribute('color', nameColor);
+        name.setAttribute('position', '-1 ' + y + ' 0');
+        container.appendChild(name);
+
+        var wins = document.createElement('a-text');
+        wins.setAttribute('value', e.wins + 'W');
+        wins.setAttribute('align', 'right');
+        wins.setAttribute('width', '2.5');
+        wins.setAttribute('color', color);
+        wins.setAttribute('position', '1.6 ' + y + ' 0');
+        container.appendChild(wins);
+      });
+    }
+
+    // ===== 3D ONLINE FIGHTERS =====
+    var API_URL = '/api/ttt_match.php';
+    var cachedRealPlayers = [];
+
+    function fetchOnlineFighters(cb) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', API_URL + '?action=players_online', true);
+      xhr.onload = function() {
+        try {
+          var data = JSON.parse(xhr.responseText);
+          if (data.success) { cachedRealPlayers = data.players || []; }
+        } catch(e) { /* ignore */ }
+        cb();
+      };
+      xhr.onerror = function() { cb(); };
+      xhr.send();
+    }
+
+    function isUserLoggedIn() {
+      try {
+        if (window.vrAuthUser) return true;
+        if (sessionStorage.getItem('vr_auth_user')) return true;
+        if (sessionStorage.getItem('fc_user')) return true;
+      } catch(e) {}
+      return false;
+    }
+
+    function renderFighters() {
+      fetchOnlineFighters(function() {
+        var container = document.getElementById('online-fighters');
+        if (!container) return;
+        container.innerHTML = '';
+
+        // Build player list: real players first, then bots to fill
+        var players = [];
+        var seenNames = {};
+
+        // Add "me" (current user) at the top
+        var meLoggedIn = isUserLoggedIn();
+        var meIsGuest = state.playerName.indexOf('Fighter_') === 0 && !meLoggedIn;
+        players.push({
+          name: state.playerName + ' (You)',
+          status: 'In Arena',
+          isGuest: meIsGuest,
+          isReal: true
+        });
+        seenNames[state.playerName] = true;
+
+        // Add real players from API
+        for (var r = 0; r < cachedRealPlayers.length; r++) {
+          var rp = cachedRealPlayers[r];
+          if (seenNames[rp.name]) continue;
+          seenNames[rp.name] = true;
+          players.push({
+            name: rp.name,
+            status: rp.status,
+            isGuest: !!rp.is_guest,
+            isReal: true
+          });
+        }
+
+        // Fill with bots to have at least 5 entries
+        var shuffled = FIGHTER_NAMES.slice().sort(function() { return Math.random() - 0.5; });
+        var botIdx = 0;
+        while (players.length < 5 && botIdx < shuffled.length) {
+          if (!seenNames[shuffled[botIdx]]) {
+            var isInArena = Math.random() > 0.6;
+            players.push({
+              name: shuffled[botIdx],
+              status: isInArena ? 'In Arena' : 'Waiting',
+              isGuest: true,
+              isReal: false
+            });
+          }
+          botIdx++;
+        }
+
+        // Render rows (max 8 visible)
+        var maxRows = Math.min(players.length, 8);
+        for (var i = 0; i < maxRows; i++) {
+          var p = players[i];
+          var y = -i * 0.45;
+
+          // Column 1: Player name
+          var nameEl = document.createElement('a-text');
+          var displayName = p.name.length > 14 ? p.name.substring(0, 13) + '..' : p.name;
+          nameEl.setAttribute('value', displayName);
+          nameEl.setAttribute('align', 'left');
+          nameEl.setAttribute('width', '2.4');
+          nameEl.setAttribute('color', p.isReal ? '#fff' : '#94a3b8');
+          nameEl.setAttribute('position', '-1.8 ' + y + ' 0');
+          container.appendChild(nameEl);
+
+          // Column 2: Status (In Arena / Waiting)
+          var statusEl = document.createElement('a-text');
+          var statusColor = p.status === 'In Arena' ? '#ef4444' : p.status === 'Waiting' ? '#22c55e' : '#64748b';
+          statusEl.setAttribute('value', p.status);
+          statusEl.setAttribute('align', 'right');
+          statusEl.setAttribute('width', '1.8');
+          statusEl.setAttribute('color', statusColor);
+          statusEl.setAttribute('position', '1.8 ' + y + ' 0');
+          container.appendChild(statusEl);
+
+          // Column 3: Wins
+          var winsEl = document.createElement('a-text');
+          winsEl.setAttribute('value', Math.floor(Math.random() * 20) + 'W');
+          winsEl.setAttribute('align', 'right');
+          winsEl.setAttribute('width', '2');
+          winsEl.setAttribute('color', '#fbbf24');
+          winsEl.setAttribute('position', '1.8 ' + y + ' 0');
+          container.appendChild(winsEl);
+        }
+      });
+    }
+
+    // ===== 3D RECENT BATTLES =====
+    function renderBattles() {
+      var container = document.getElementById('recent-battles');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!state.matches || state.matches.length === 0) {
+        var t = document.createElement('a-text');
+        t.setAttribute('value', 'No battles yet. Enter the arena!');
+        t.setAttribute('align', 'center');
+        t.setAttribute('width', '3');
+        t.setAttribute('color', '#666');
+        t.setAttribute('position', '0 0 0');
+        container.appendChild(t);
+        return;
+      }
+      var recent = state.matches.slice(-5).reverse();
+      recent.forEach(function(m, i) {
+        var y = -i * 0.4;
+        var color = m.result === 'win' ? '#22c55e' : m.result === 'loss' ? '#ef4444' : '#f59e0b';
+        var resultText = m.result.charAt(0).toUpperCase() + m.result.slice(1);
+
+        var info = document.createElement('a-text');
+        info.setAttribute('value', (m.game || 'Fight') + ' vs ' + (m.opponent || 'Opponent'));
+        info.setAttribute('align', 'left');
+        info.setAttribute('width', '2.8');
+        info.setAttribute('color', '#ccc');
+        info.setAttribute('position', '-2 ' + y + ' 0');
+        container.appendChild(info);
+
+        var result = document.createElement('a-text');
+        result.setAttribute('value', resultText);
+        result.setAttribute('align', 'right');
+        result.setAttribute('width', '2.5');
+        result.setAttribute('color', color);
+        result.setAttribute('position', '2 ' + y + ' 0');
+        container.appendChild(result);
+      });
+    }
+
+    // ===== TOAST =====
+    function showToast(title, msg, actions) {
+      var c = document.getElementById('toast-container');
+      var t = document.createElement('div');
+      t.className = 'toast';
+      t.innerHTML = '<div class="toast-title">' + title + '</div><div class="toast-msg">' + msg + '</div>' + (actions || '');
+      c.appendChild(t);
+      setTimeout(function() { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(function() { t.remove(); }, 300); }, 5000);
+    }
+
+    // ===== INIT =====
+    function init() {
+      var scene = document.querySelector('a-scene');
+      function onReady() {
+        saveState();
+        updateHUD();
+        renderLeaderboard();
+        renderFighters();
+        renderBattles();
+        setInterval(renderFighters, 30000);
+      }
+      if (scene && scene.hasLoaded) onReady();
+      else if (scene) scene.addEventListener('loaded', onReady);
+      else document.addEventListener('DOMContentLoaded', function() {
+        var s = document.querySelector('a-scene');
+        if (s) s.addEventListener('loaded', onReady);
+      });
+    }
+    init();
+  })();
+  </script>
+  <!-- VR Navigation Menu -->
+  <script src="/vr/nav-menu.js"></script>
+  <!-- Layout Fix: resolve overlapping fixed-position widgets (must load LAST) -->
+  <script src="/vr/layout-fix.js"></script>
+</body>
+</html>

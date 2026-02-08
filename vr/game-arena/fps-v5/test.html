@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>FPS V5 Test</title>
+</head>
+
+<body>
+    <h1>Testing FPS V5...</h1>
+    <iframe src="file:///e:/findtorontoevents_antigravity.ca/vr/game-arena/fps-v5/index.html" width="1200"
+        height="800"></iframe>
+    <script>
+        setTimeout(() => {
+            const iframe = document.querySelector('iframe');
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            const errors = [];
+
+            iframe.contentWindow.addEventListener('error', (e) => {
+                errors.push(e.message);
+            });
+
+            setTimeout(() => {
+                if (errors.length === 0) {
+                    document.body.innerHTML += '<h2 style="color: green;">✅ NO ERRORS!</h2>';
+                } else {
+                    document.body.innerHTML += '<h2 style="color: red;">❌ ERRORS FOUND:</h2><pre>' + errors.join('\n') + '</pre>';
+                }
+            }, 5000);
+        }, 1000);
+    </script>
+</body>
+
+</html>

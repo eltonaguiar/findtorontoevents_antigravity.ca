@@ -108,7 +108,7 @@ InputManager.prototype.getPlayerInput = function(playerIndex, keyMap, gamepadInd
         grab: false, block: false, dash: false, taunt: false,
         // Just-pressed versions
         lightAttackPressed: false, heavyAttackPressed: false, specialPressed: false,
-        grabPressed: false, dashPressed: false
+        grabPressed: false, dashPressed: false, superPressed: false
     };
 
     // Keyboard
@@ -180,6 +180,7 @@ InputManager.prototype.getPlayerInput = function(playerIndex, keyMap, gamepadInd
             if (this.isGamepadButtonJustPressed(gamepadIndex, GAMEPAD_MAP.SPECIAL)) input.specialPressed = true;
             if (this.isGamepadButtonJustPressed(gamepadIndex, GAMEPAD_MAP.GRAB)) input.grabPressed = true;
             if (this.isGamepadButtonJustPressed(gamepadIndex, GAMEPAD_MAP.DASH)) input.dashPressed = true;
+            if (this.isGamepadButtonJustPressed(gamepadIndex, GAMEPAD_MAP.SUPER)) input.superPressed = true;
         }
     }
 
@@ -299,6 +300,36 @@ function Fighter(x, y, facingRight, charIndex, weaponIndex, isPlayer) {
     this.height = (this.character.body.headR * 2 + this.character.body.torsoH + this.character.body.legLen + 10) * _RENDER_SCALE;
 
     this.rageActive = false;
+
+    // ── COMBO CHAIN SYSTEM ──
+    this.chainState = null;         // last attack type that connected ('light','heavy',etc.)
+    this.chainWindow = 0;           // ms remaining to input next chain
+    this.lastAttackConnected = false;
+    this.inputBuffer = null;        // buffered attack type
+    this.inputBufferTimer = 0;      // ms remaining for buffer
+
+    // ── JUGGLE TRACKING ──
+    this.juggleHits = 0;            // hits taken during current juggle
+    this.juggleMax = 0;             // max juggle hits allowed (set by launcher)
+    this.isJuggled = false;         // currently being juggled
+
+    // ── COUNTER-HIT ──
+    this.isCounterHit = false;      // was the last hit a counter-hit?
+
+    // ── GUARD CRUSH ──
+    this.guardMeter = 0;            // consecutive blocked hits
+    this.guardCrushTimer = 0;       // ms remaining in guard-crushed state
+    this.guardDecayTimer = 0;       // ms until guard meter starts decaying
+
+    // ── DEFENSIVE METER (burst/alpha counter) ──
+    this.burstCooldown = 0;         // cooldown after burst
+    this.throwInvulnTimer = 0;      // frames of throw invuln after stun
+
+    // ── COMBO DISPLAY ──
+    this.lastComboCount = 0;        // for display purposes
+    this.lastComboDamage = 0;
+    this.comboDisplayTimer = 0;     // how long to show combo after it ends
+    this.isCounterCombo = false;    // was this combo started by a counter-hit?
 }
 
 Fighter.prototype.reset = function(x, y, facingRight) {
@@ -334,6 +365,25 @@ Fighter.prototype.reset = function(x, y, facingRight) {
     this.winPose = false;
     this.hurtFlash = 0;
     this.rageActive = false;
+    // Combo chain system reset
+    this.chainState = null;
+    this.chainWindow = 0;
+    this.lastAttackConnected = false;
+    this.inputBuffer = null;
+    this.inputBufferTimer = 0;
+    this.juggleHits = 0;
+    this.juggleMax = 0;
+    this.isJuggled = false;
+    this.isCounterHit = false;
+    this.guardMeter = 0;
+    this.guardCrushTimer = 0;
+    this.guardDecayTimer = 0;
+    this.burstCooldown = 0;
+    this.throwInvulnTimer = 0;
+    this.lastComboCount = 0;
+    this.lastComboDamage = 0;
+    this.comboDisplayTimer = 0;
+    this.isCounterCombo = false;
 };
 
 Fighter.prototype.getHitbox = function() {
@@ -352,16 +402,31 @@ Fighter.prototype.getAttackBox = function() {
     if (!this.attackHitActive || this.attackHasHit) return null;
     var range = 0;
     var type = this.currentAttackType;
-    if (type === 'light') range = this.weapon.lightRange;
-    else if (type === 'heavy') range = this.weapon.heavyRange;
-    else if (type === 'special') range = 90;
-    else if (type === 'grab') range = 50;
+    var wp = this.weapon;
+    if (type === 'light') {
+        range = !this.grounded ? (wp.airLightRange || wp.lightRange) : wp.lightRange;
+    } else if (type === 'heavy') {
+        range = !this.grounded ? (wp.airHeavyRange || wp.heavyRange) : wp.heavyRange;
+    } else if (type === 'launcher') {
+        range = wp.launcherRange || wp.heavyRange;
+    } else if (type === 'sweep') {
+        range = wp.sweepRange || wp.heavyRange;
+    } else if (type === 'special' || type === 'super') {
+        range = 90;
+    } else if (type === 'grab') {
+        range = 50;
+    } else if (type === 'alpha_counter') {
+        range = 70;
+    } else if (type === 'burst') {
+        range = 120; // burst hits in a wide area
+    }
     var dir = this.facingRight ? 1 : -1;
     var w = range;
-    var h = 40;
+    var h = type === 'burst' ? 80 : (type === 'sweep' ? 30 : 40);
     var ox = dir > 0 ? this.width / 2 : -this.width / 2 - w;
     var oy = -this.height * 0.5;
-    if (this.state === 'crouch') oy = -this.height * 0.3;
+    if (type === 'sweep') oy = -this.height * 0.15; // sweep hits low
+    if (type === 'burst') { ox = -w / 2 + this.width * 0.25 * dir; oy = -this.height * 0.7; h = 100; } // burst is a circle
     return {
         x: this.x + ox,
         y: this.y + oy,
@@ -370,37 +435,117 @@ Fighter.prototype.getAttackBox = function() {
     };
 };
 
-Fighter.prototype.startAttack = function(type) {
-    if (this.hitStun > 0 || this.blockStun > 0 || this.isKO || this.freezeTimer > 0) return;
-    if (this.state === 'attacking' || this.state === 'special') return;
+Fighter.prototype.startAttack = function(type, forceChain) {
+    if (this.isKO || this.freezeTimer > 0 || this.guardCrushTimer > 0) return;
+
+    // Alpha counter: during blockstun, spend meter to counter-attack
+    if (this.blockStun > 0 && type === 'special' && this.specialMeter >= CONFIG.ALPHA_COUNTER_COST) {
+        this.specialMeter -= CONFIG.ALPHA_COUNTER_COST;
+        this.blockStun = 0;
+        this.isBlocking = false;
+        type = 'alpha_counter';
+    } else if (this.hitStun > 0 || this.blockStun > 0) {
+        // Burst: during hitstun, spend full meter to break free
+        if (this.hitStun > 0 && type === 'grab' && this.specialMeter >= CONFIG.BURST_COST && this.burstCooldown <= 0) {
+            this.specialMeter -= CONFIG.BURST_COST;
+            this.hitStun = 0;
+            this.knockbackX = 0;
+            this.knockbackY = 0;
+            this.juggleHits = 0;
+            this.isJuggled = false;
+            this.burstCooldown = 5;
+            type = 'burst';
+        } else {
+            return; // can't attack while stunned
+        }
+    }
+
+    // Chain cancel: if in attack state and hit connected, allow chaining
+    var isChain = false;
+    if ((this.state === 'attacking' || this.state === 'special') && !forceChain) {
+        if (this.lastAttackConnected && this.chainWindow > 0 && this._canChain(this.chainState, type)) {
+            isChain = true; // allow the chain cancel
+        } else {
+            // Buffer the input instead of dropping it
+            this.inputBuffer = type;
+            this.inputBufferTimer = CONFIG.INPUT_BUFFER_MS;
+            return;
+        }
+    }
 
     this.currentAttackType = type;
     this.attackHasHit = false;
     this.attackHitActive = false;
+    this.lastAttackConnected = false;
 
     var startup, active, recovery;
+    var w = this.weapon;
+
     if (type === 'light') {
-        startup = this.weapon.lightStartup;
-        active = 4;
-        recovery = this.weapon.lightRecovery;
+        if (!this.grounded) {
+            // Air light
+            startup = w.airLightStartup || w.lightStartup;
+            active = w.airLightActive || 4;
+            recovery = w.airLightRecovery || w.lightRecovery;
+        } else {
+            startup = w.lightStartup;
+            active = w.lightActive || 4;
+            recovery = w.lightRecovery;
+        }
         this.state = 'attacking';
     } else if (type === 'heavy') {
-        startup = this.weapon.heavyStartup;
-        active = 6;
-        recovery = this.weapon.heavyRecovery;
+        if (!this.grounded) {
+            // Air heavy
+            startup = w.airHeavyStartup || w.heavyStartup;
+            active = w.airHeavyActive || 6;
+            recovery = w.airHeavyRecovery || w.heavyRecovery;
+        } else {
+            startup = w.heavyStartup;
+            active = w.heavyActive || 6;
+            recovery = w.heavyRecovery;
+        }
+        this.state = 'attacking';
+    } else if (type === 'launcher') {
+        // Forward + Heavy
+        startup = w.launcherStartup || 12;
+        active = w.launcherActive || 5;
+        recovery = w.launcherRecovery || 20;
+        this.state = 'attacking';
+    } else if (type === 'sweep') {
+        // Crouching Heavy
+        startup = w.sweepStartup || 8;
+        active = w.sweepActive || 5;
+        recovery = w.sweepRecovery || 22;
         this.state = 'attacking';
     } else if (type === 'special') {
-        if (this.specialMeter < 50) return;
-        this.specialMeter -= 50;
+        if (this.specialMeter < CONFIG.EX_COST) return;
+        this.specialMeter -= CONFIG.EX_COST;
         startup = this.character.specialStartup;
         active = 8;
         recovery = this.character.specialRecovery;
+        this.state = 'special';
+    } else if (type === 'super') {
+        if (this.specialMeter < CONFIG.SUPER_COST) return;
+        this.specialMeter -= CONFIG.SUPER_COST;
+        startup = Math.max(4, this.character.specialStartup - 4);
+        active = 12;
+        recovery = this.character.specialRecovery + 4;
         this.state = 'special';
     } else if (type === 'grab') {
         startup = 4;
         active = 4;
         recovery = 20;
         this.state = 'attacking';
+    } else if (type === 'alpha_counter') {
+        startup = CONFIG.ALPHA_COUNTER_STARTUP;
+        active = 6;
+        recovery = 14;
+        this.state = 'special';
+    } else if (type === 'burst') {
+        startup = CONFIG.BURST_STARTUP_FRAMES;
+        active = 8;
+        recovery = 30;
+        this.state = 'special';
     }
 
     this.attackPhase = 'startup';
@@ -414,16 +559,52 @@ Fighter.prototype.startAttack = function(type) {
     // Attack whoosh SFX
     if (window.GameAudio) {
         if (type === 'light') GameAudio.sfx.lightAttack();
-        else if (type === 'heavy') GameAudio.sfx.heavyAttack();
-        else if (type === 'special') GameAudio.sfx.specialAttack();
+        else if (type === 'heavy' || type === 'launcher' || type === 'sweep') GameAudio.sfx.heavyAttack();
+        else if (type === 'special' || type === 'super' || type === 'alpha_counter') GameAudio.sfx.specialAttack();
+        else if (type === 'burst') { GameAudio.sfx.specialHit(); }
     }
+};
+
+// Check if currentAttackType can chain-cancel into nextType
+Fighter.prototype._canChain = function(fromType, toType) {
+    if (!fromType || !this.weapon.chains) return false;
+    var allowed = this.weapon.chains[fromType];
+    if (!allowed) return false;
+    for (var i = 0; i < allowed.length; i++) {
+        if (allowed[i] === toType) return true;
+    }
+    return false;
 };
 
 Fighter.prototype.takeDamage = function(amount, knockbackX, knockbackY, attacker) {
     if (this.isKO) return;
 
-    var blocked = this.isBlocking;
+    // ── Counter-hit detection: hitting during startup frames ──
+    var isCounterHit = false;
+    if (attacker && this.attackPhase === 'startup' && this.state === 'attacking') {
+        isCounterHit = true;
+    }
+
+    // ── Juggle invincibility: can't be hit after juggle limit ──
+    if (this.isJuggled && this.juggleHits >= this.juggleMax && this.juggleMax > 0) {
+        return; // juggle protection
+    }
+
+    var blocked = this.isBlocking && !this.isJuggled; // can't block while juggled
+
+    // ── Damage calculation with scaling ──
     var actualDamage = blocked ? amount * CONFIG.BLOCK_DAMAGE_MULT : amount;
+
+    // Counter-hit bonus
+    if (isCounterHit && !blocked) {
+        actualDamage *= CONFIG.COUNTER_HIT_MULT;
+    }
+
+    // Combo damage scaling
+    if (attacker && attacker.comboCount > 0 && !blocked) {
+        var scaleIndex = Math.min(attacker.comboCount, CONFIG.DAMAGE_SCALING.length - 1);
+        actualDamage *= CONFIG.DAMAGE_SCALING[scaleIndex];
+    }
 
     // Drake rage mode bonus
     if (attacker && attacker.rageActive) {
@@ -436,32 +617,98 @@ Fighter.prototype.takeDamage = function(amount, knockbackX, knockbackY, attacker
     if (blocked) {
         this.blockStun = 0.2;
         this.knockbackX = knockbackX * 0.3;
-        if (window.GameAudio) GameAudio.sfx.block();
+
+        // Guard crush meter
+        this.guardMeter++;
+        this.guardDecayTimer = CONFIG.GUARD_CRUSH_DECAY;
+        if (this.guardMeter >= CONFIG.GUARD_CRUSH_HITS) {
+            this.guardCrushTimer = 1.0; // 1 second of guard-crushed state
+            this.guardMeter = 0;
+            this.isBlocking = false;
+            this.blockStun = 0;
+            if (window.GameAudio) GameAudio.sfx.heavyHit();
+        } else {
+            if (window.GameAudio) GameAudio.sfx.block();
+        }
+
+        // Attacker gets bonus meter for blocked hits
+        if (attacker) {
+            attacker.specialMeter = Math.min(CONFIG.METER_MAX, attacker.specialMeter + CONFIG.METER_BLOCKED_BONUS);
+        }
     } else {
-        this.hitStun = 0.3;
+        // ── Hit connected ──
+        var stunMult = isCounterHit ? CONFIG.COUNTER_HIT_HITSTUN : 1.0;
+        this.hitStun = 0.3 * stunMult;
         this.knockbackX = knockbackX;
         this.knockbackY = knockbackY;
         this.velY = knockbackY;
+
         // CRITICAL: mark as airborne so gravity applies during launch
         if (knockbackY < 0) {
             this.grounded = false;
         }
+
+        // Juggle tracking
+        if (!this.grounded || knockbackY < 0) {
+            if (!this.isJuggled) {
+                this.isJuggled = true;
+                this.juggleHits = 0;
+                // Set juggle limit from the launcher
+                if (attacker && attacker.currentAttackType === 'launcher') {
+                    this.juggleMax = attacker.weapon.launcherJuggle || CONFIG.MAX_JUGGLE_HITS;
+                    if (isCounterHit) this.juggleMax += CONFIG.COUNTER_HIT_EXTRA_JUGGLE;
+                } else {
+                    this.juggleMax = CONFIG.MAX_JUGGLE_HITS;
+                }
+            }
+            this.juggleHits++;
+        }
+
         this.state = 'hit';
         this.stateTime = 0;
         this.attackPhase = 'none';
         this.attackHitActive = false;
         this.hurtFlash = 0.15;
+
+        // Counter-hit flag for display
+        this.isCounterHit = isCounterHit;
+        if (isCounterHit && attacker) {
+            attacker.isCounterCombo = true;
+        }
+
+        // Guard crush resets on getting hit
+        this.guardMeter = 0;
+
+        // Throw invulnerability after hitstun
+        this.throwInvulnTimer = CONFIG.THROW_INVULN_FRAMES;
+
+        // Mark attacker's hit as connected (enables chain cancel)
+        if (attacker) {
+            attacker.lastAttackConnected = true;
+            attacker.chainState = attacker.currentAttackType;
+            attacker.chainWindow = CONFIG.CHAIN_WINDOW_MS;
+
+            // Combo tracking on attacker
+            attacker.comboCount++;
+            attacker.comboTimer = CONFIG.COMBO_WINDOW;
+            attacker.comboDamage += actualDamage;
+        }
     }
 
-    // Special meter gain
-    var prevMeter = this.specialMeter;
-    this.specialMeter = Math.min(CONFIG.SPECIAL_METER_MAX, this.specialMeter + CONFIG.METER_GAIN_TAKE);
+    // ── Meter gain (expanded 3-bar system) ──
+    this.specialMeter = Math.min(CONFIG.METER_MAX, this.specialMeter + CONFIG.METER_GAIN_TAKE);
     if (attacker) {
         var aPrev = attacker.specialMeter;
-        attacker.specialMeter = Math.min(CONFIG.SPECIAL_METER_MAX, attacker.specialMeter + CONFIG.METER_GAIN_DEAL);
-        if (aPrev < 50 && attacker.specialMeter >= 50 && window.GameAudio) GameAudio.sfx.meterFull();
+        attacker.specialMeter = Math.min(CONFIG.METER_MAX, attacker.specialMeter + CONFIG.METER_GAIN_DEAL);
+        // Meter full SFX at each bar threshold (100, 200, 300)
+        var barSize = CONFIG.METER_MAX / 3;
+        for (var b = 1; b <= 3; b++) {
+            if (aPrev < barSize * b && attacker.specialMeter >= barSize * b && window.GameAudio) {
+                GameAudio.sfx.meterFull();
+                break;
+            }
+        }
     }
-    if (prevMeter < 50 && this.specialMeter >= 50 && window.GameAudio) GameAudio.sfx.meterFull();
 
     // Drake rage check
     if (this.character.rageMode && this.health < 30) {
@@ -489,16 +736,64 @@ Fighter.prototype.applyFreeze = function(duration) {
 Fighter.prototype.update = function(dt, input) {
     this.animTime += dt;
     this.stateTime += dt;
+    var dtMs = dt * 1000;
 
     // Timers
     if (this.hurtFlash > 0) this.hurtFlash -= dt;
+
+    // Combo timer + combo display
     if (this.comboTimer > 0) {
-        this.comboTimer -= dt * 1000;
+        this.comboTimer -= dtMs;
         if (this.comboTimer <= 0) {
+            // Store for display before resetting
+            if (this.comboCount > 1) {
+                this.lastComboCount = this.comboCount;
+                this.lastComboDamage = this.comboDamage;
+                this.comboDisplayTimer = 2000; // show for 2s
+            }
             this.comboCount = 0;
             this.comboDamage = 0;
+            this.isCounterCombo = false;
         }
     }
+    if (this.comboDisplayTimer > 0) this.comboDisplayTimer -= dtMs;
+
+    // Chain window countdown
+    if (this.chainWindow > 0) {
+        this.chainWindow -= dtMs;
+        if (this.chainWindow <= 0) {
+            this.chainState = null;
+            this.lastAttackConnected = false;
+        }
+    }
+
+    // Input buffer countdown
+    if (this.inputBufferTimer > 0) {
+        this.inputBufferTimer -= dtMs;
+        if (this.inputBufferTimer <= 0) {
+            this.inputBuffer = null;
+        }
+    }
+
+    // Guard crush timer
+    if (this.guardCrushTimer > 0) {
+        this.guardCrushTimer -= dt;
+        this.state = 'hit'; // stunned during guard crush
+        this._applyPhysics(dt);
+        return;
+    }
+
+    // Guard meter decay
+    if (this.guardDecayTimer > 0) {
+        this.guardDecayTimer -= dtMs;
+    } else if (this.guardMeter > 0) {
+        this.guardMeter = Math.max(0, this.guardMeter - dt * 2);
+    }
+
+    // Burst cooldown
+    if (this.burstCooldown > 0) this.burstCooldown -= dt;
+    // Throw invuln
+    if (this.throwInvulnTimer > 0) this.throwInvulnTimer--;
 
     // Poison DOT
     if (this.poisonTimer > 0) {
@@ -595,16 +890,22 @@ Fighter.prototype.update = function(dt, input) {
         if (this.tauntTimer <= 0) {
             this.isTaunting = false;
             this.state = 'idle';
-            this.specialMeter = Math.min(CONFIG.SPECIAL_METER_MAX, this.specialMeter + 15);
+            this.specialMeter = Math.min(CONFIG.METER_MAX, this.specialMeter + 25);
         }
         return;
     }
 
     if (!input) { this._applyPhysics(dt); return; }
 
-    // Blocking
+    // ── Blocking (auto-block + manual block) ──
     var holdingBack = (this.facingRight && input.left) || (!this.facingRight && input.right);
-    this.isBlocking = holdingBack && input.block && this.grounded && this.hitStun <= 0;
+    var standingStill = !input.left && !input.right && !input.up && !input.down;
+    // Auto-block: walking back OR holding block. Standing still also blocks if CONFIG.AUTO_BLOCK.
+    if (CONFIG.AUTO_BLOCK) {
+        this.isBlocking = (holdingBack || (standingStill && input.block)) && this.grounded && this.hitStun <= 0;
+    } else {
+        this.isBlocking = holdingBack && input.block && this.grounded && this.hitStun <= 0;
+    }
 
     if (this.isBlocking) {
         this.state = 'block';
@@ -614,6 +915,16 @@ Fighter.prototype.update = function(dt, input) {
 
     // Handle input actions (only if not stunned)
     if (this.hitStun <= 0 && this.blockStun <= 0) {
+
+        // Process input buffer first (buffered attacks from previous frames)
+        if (this.inputBuffer && this.inputBufferTimer > 0 && this.state !== 'attacking' && this.state !== 'special') {
+            var buffered = this.inputBuffer;
+            this.inputBuffer = null;
+            this.inputBufferTimer = 0;
+            this.startAttack(buffered);
+            if (this.state === 'attacking' || this.state === 'special') return;
+        }
+
         // Dash
         if (input.dashPressed && this.grounded) {
             this.isDashing = true;
@@ -625,25 +936,50 @@ Fighter.prototype.update = function(dt, input) {
             return;
         }
 
-        // Attacks
+        // ── Super (RT / special button when meter >= 200) ──
+        if (input.superPressed && this.specialMeter >= CONFIG.SUPER_COST) {
+            this.startAttack('super');
+            if (this.state === 'special') return;
+        }
+
+        // ── Special ──
         if (input.specialPressed) {
             this.startAttack('special');
             if (this.state === 'special') return;
         }
+
+        // ── Launcher (Forward + Heavy) ──
+        var holdingForward = (this.facingRight && input.right) || (!this.facingRight && input.left);
+        if (input.heavyAttackPressed && holdingForward && this.grounded) {
+            this.startAttack('launcher');
+            if (this.state === 'attacking') return;
+        }
+
+        // ── Sweep (Down + Heavy) ──
+        if (input.heavyAttackPressed && input.down && this.grounded) {
+            this.startAttack('sweep');
+            if (this.state === 'attacking') return;
+        }
+
+        // ── Heavy ──
         if (input.heavyAttackPressed) {
             this.startAttack('heavy');
             if (this.state === 'attacking') return;
         }
+
+        // ── Light ──
         if (input.lightAttackPressed) {
             this.startAttack('light');
             if (this.state === 'attacking') return;
         }
+
+        // ── Grab ──
         if (input.grabPressed) {
             this.startAttack('grab');
             if (this.state === 'attacking') return;
         }
 
-        // Taunt
+        // ── Taunt ──
         if (input.taunt && this.grounded && this.state === 'idle') {
             this.isTaunting = true;
             this.tauntTimer = 1.5;
@@ -656,9 +992,17 @@ Fighter.prototype.update = function(dt, input) {
         if (input.left) {
             this.velX = -moveSpeed;
             this.state = this.grounded ? 'walk' : this.state;
+            // Walking forward builds meter (like TLA)
+            if (this.grounded && !this.facingRight) {
+                this.specialMeter = Math.min(CONFIG.METER_MAX, this.specialMeter + CONFIG.METER_FORWARD_WALK);
+            }
         } else if (input.right) {
             this.velX = moveSpeed;
             this.state = this.grounded ? 'walk' : this.state;
+            // Walking forward builds meter
+            if (this.grounded && this.facingRight) {
+                this.specialMeter = Math.min(CONFIG.METER_MAX, this.specialMeter + CONFIG.METER_FORWARD_WALK);
+            }
         } else {
             this.velX = 0;
             if (this.grounded && this.state === 'walk') this.state = 'idle';
@@ -709,6 +1053,12 @@ Fighter.prototype._applyPhysics = function(dt) {
         this.velY = 0;
         this.grounded = true;
         this.usedDoubleJump = false;
+        // Reset juggle state on landing
+        if (this.isJuggled) {
+            this.isJuggled = false;
+            this.juggleHits = 0;
+            this.juggleMax = 0;
+        }
         if (this.state === 'jump' || this.state === 'hit') {
             this.state = 'idle';
         }
@@ -1230,7 +1580,7 @@ AIController.prototype.getInput = function(fighter, opponent, dt) {
         lightAttack: false, heavyAttack: false, special: false,
         grab: false, block: false, dash: false, taunt: false,
         lightAttackPressed: false, heavyAttackPressed: false, specialPressed: false,
-        grabPressed: false, dashPressed: false
+        grabPressed: false, dashPressed: false, superPressed: false
     };
 
     this.reactionTimer += dt;
@@ -1246,7 +1596,9 @@ AIController.prototype.getInput = function(fighter, opponent, dt) {
     var isFar = dist >= 200;
     var opponentAttacking = opponent.state === 'attacking' || opponent.state === 'special';
     var healthAdvantage = fighter.health - opponent.health;
-    var hasSpecial = fighter.specialMeter >= 50;
+    var hasSpecial = fighter.specialMeter >= CONFIG.EX_COST;
+    var hasSuper = fighter.specialMeter >= CONFIG.SUPER_COST;
+    var hasBurst = fighter.specialMeter >= CONFIG.BURST_COST;
 
     // Track opponent patterns for adaptation
     if (this.difficulty.adaptRate > 0) {
@@ -1257,31 +1609,66 @@ AIController.prototype.getInput = function(fighter, opponent, dt) {
     // Decision making
     var rand = Math.random();
 
+    // ── Burst out of combos (AI difficulty dependent) ──
+    if (fighter.hitStun > 0 && fighter.comboCount >= 3 && hasBurst && rand < this.difficulty.blockChance * 0.4) {
+        input.grabPressed = true; // burst input
+        input.grab = true;
+        return input;
+    }
+
     // Block incoming attacks
     if (opponentAttacking && rand < this.difficulty.blockChance) {
         input.block = true;
         input.left = fighter.facingRight;
         input.right = !fighter.facingRight;
+        // Alpha counter on higher difficulties
+        if (fighter.blockStun > 0 && fighter.specialMeter >= CONFIG.ALPHA_COUNTER_COST && rand < this.difficulty.blockChance * 0.3) {
+            input.specialPressed = true;
+        }
         return input;
     }
 
     // Close range decisions
     if (isClose) {
         if (rand < this.difficulty.aggressiveness) {
-            // Attack
+            // Attack -- AI now uses chain combos
             var attackRand = Math.random();
-            if (hasSpecial && attackRand < 0.2) {
+            if (hasSuper && fighter.health < 30 && attackRand < 0.15 * this.difficulty.comboChance) {
+                // Desperate super
+                input.superPressed = true;
+            } else if (hasSpecial && attackRand < 0.2) {
                 input.specialPressed = true;
                 input.special = true;
-            } else if (attackRand < 0.5 && rand < this.difficulty.comboChance) {
+            } else if (attackRand < 0.35 && rand < this.difficulty.comboChance) {
+                // Launcher combo attempt (forward + heavy)
                 input.heavyAttackPressed = true;
                 input.heavyAttack = true;
-            } else if (attackRand < 0.8) {
+                input.right = opponent.x > fighter.x;
+                input.left = opponent.x < fighter.x;
+            } else if (attackRand < 0.6 && rand < this.difficulty.comboChance) {
+                // Chain combo: start with light
                 input.lightAttackPressed = true;
                 input.lightAttack = true;
+            } else if (attackRand < 0.8) {
+                input.heavyAttackPressed = true;
+                input.heavyAttack = true;
             } else {
                 input.grabPressed = true;
                 input.grab = true;
+            }
+
+            // AI chains: if currently in a connected attack, try to chain
+            if (fighter.lastAttackConnected && fighter.chainWindow > 0) {
+                var chainRoll = Math.random();
+                if (chainRoll < this.difficulty.comboChance) {
+                    if (fighter.chainState === 'light') {
+                        input.heavyAttackPressed = true;
+                        input.heavyAttack = true;
+                    } else if (fighter.chainState === 'heavy') {
+                        input.specialPressed = true;
+                        input.special = true;
+                    }
+                }
             }
         } else {
             // Defensive - dash away or block
@@ -1304,8 +1691,15 @@ AIController.prototype.getInput = function(fighter, opponent, dt) {
             input.right = opponent.x > fighter.x;
             input.left = opponent.x < fighter.x;
             if (dist < 120 && Math.random() < 0.4) {
-                input.lightAttackPressed = true;
-                input.lightAttack = true;
+                // Sweep at mid range
+                if (Math.random() < 0.3) {
+                    input.heavyAttackPressed = true;
+                    input.heavyAttack = true;
+                    input.down = true;
+                } else {
+                    input.lightAttackPressed = true;
+                    input.lightAttack = true;
+                }
             }
         } else {
             // Use ranged special or approach carefully
@@ -1328,10 +1722,13 @@ AIController.prototype.getInput = function(fighter, opponent, dt) {
             input.dashPressed = true;
             input.dash = true;
         }
-        // Anti-air if opponent is jumping
+        // Anti-air if opponent is jumping -- launcher!
         if (!opponent.grounded && Math.random() < this.difficulty.comboChance) {
             input.heavyAttackPressed = true;
             input.heavyAttack = true;
+            // Forward + heavy = launcher for anti-air
+            input.right = opponent.x > fighter.x;
+            input.left = opponent.x < fighter.x;
         }
     }
 
@@ -1588,27 +1985,40 @@ function renderHUD(ctx, fighter1, fighter2, timer, round, p1Wins, p2Wins) {
         ctx.strokeRect(x - 2.5, y - 2.5, w + 5, h + 5);
     }
 
-    // ── Special meter helper ──
-    function drawMeter(x, y, w, h, pct, glow, flipDir) {
+    // ── 3-Bar Meter helper ──
+    function drawMeter(x, y, w, h, meter, maxMeter, glow, flipDir) {
+        var barCount = 3;
+        var barGap = 2;
+        var singleW = (w - barGap * (barCount - 1)) / barCount;
         ctx.fillStyle = '#08080f';
         ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
-        ctx.fillStyle = '#111';
-        ctx.fillRect(x, y, w, h);
-        var mW = pct * w;
-        if (mW > 0) {
-            var ready = pct >= 0.5;
-            var mGrad = ctx.createLinearGradient(x, y, x, y + h);
-            mGrad.addColorStop(0, ready ? glow : '#444');
-            mGrad.addColorStop(1, ready ? glow : '#333');
-            ctx.fillStyle = mGrad;
-            if (flipDir) ctx.fillRect(x + w - mW, y, mW, h);
-            else ctx.fillRect(x, y, mW, h);
-            if (ready) {
-                ctx.shadowColor = glow;
-                ctx.shadowBlur = 6;
-                ctx.fillStyle = 'rgba(255,255,255,0.1)';
-                ctx.fillRect(x, y, w, h);
-                ctx.shadowBlur = 0;
+
+        for (var b = 0; b < barCount; b++) {
+            var bx = flipDir ? (x + w - singleW * (b + 1) - barGap * b) : (x + singleW * b + barGap * b);
+            var barThresh = (maxMeter / barCount) * (b + 1);
+            var barStart = (maxMeter / barCount) * b;
+            var barFill = clamp((meter - barStart) / (barThresh - barStart), 0, 1);
+
+            ctx.fillStyle = '#111';
+            ctx.fillRect(bx, y, singleW, h);
+
+            var mW = barFill * singleW;
+            if (mW > 0) {
+                var full = barFill >= 1;
+                var mGrad = ctx.createLinearGradient(bx, y, bx, y + h);
+                var barColor = full ? glow : '#556';
+                mGrad.addColorStop(0, barColor);
+                mGrad.addColorStop(1, full ? glow : '#334');
+                ctx.fillStyle = mGrad;
+                if (flipDir) ctx.fillRect(bx + singleW - mW, y, mW, h);
+                else ctx.fillRect(bx, y, mW, h);
+                if (full) {
+                    ctx.shadowColor = glow;
+                    ctx.shadowBlur = 4;
+                    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+                    ctx.fillRect(bx, y, singleW, h);
+                    ctx.shadowBlur = 0;
+                }
             }
         }
     }
@@ -1621,10 +2031,10 @@ function renderHUD(ctx, fighter1, fighter2, timer, round, p1Wins, p2Wins) {
     drawHealthBar(p1BarX, hudY, barWidth, barHeight, p1Pct, fighter1.character.colors.glow, false);
     drawHealthBar(p2BarX, hudY, barWidth, barHeight, p2Pct, fighter2.character.colors.glow, true);
 
-    // ── Meters ──
+    // ── Meters (3-bar) ──
     var meterY = hudY + barHeight + 5;
-    drawMeter(p1BarX, meterY, barWidth, meterHeight, fighter1.specialMeter / CONFIG.SPECIAL_METER_MAX, fighter1.character.colors.glow, false);
-    drawMeter(p2BarX, meterY, barWidth, meterHeight, fighter2.specialMeter / CONFIG.SPECIAL_METER_MAX, fighter2.character.colors.glow, true);
+    drawMeter(p1BarX, meterY, barWidth, meterHeight, fighter1.specialMeter, CONFIG.METER_MAX, fighter1.character.colors.glow, false);
+    drawMeter(p2BarX, meterY, barWidth, meterHeight, fighter2.specialMeter, CONFIG.METER_MAX, fighter2.character.colors.glow, true);
 
     // ── Names ──
     ctx.font = 'bold 17px "Orbitron", "Rajdhani", sans-serif';
@@ -1675,6 +2085,64 @@ function renderHUD(ctx, fighter1, fighter2, timer, round, p1Wins, p2Wins) {
         ctx.beginPath(); ctx.arc(halfW + 28 + i * 16, hudY + 67, 5, 0, Math.PI * 2); ctx.fill();
         if (i < p2Wins) { ctx.strokeStyle = '#ffaa00'; ctx.lineWidth = 1; ctx.stroke(); }
     }
+
+    // ── Combo Counter Display (P1 on left, P2 on right) ──
+    function drawCombo(f, x, align) {
+        var count = f.comboCount > 1 ? f.comboCount : (f.comboDisplayTimer > 0 ? f.lastComboCount : 0);
+        var dmg = f.comboCount > 1 ? f.comboDamage : (f.comboDisplayTimer > 0 ? f.lastComboDamage : 0);
+        var isCounter = f.isCounterCombo;
+        if (count < 2) return;
+
+        var comboY = CONFIG.GROUND_Y - 140;
+        var alpha = f.comboCount > 1 ? 1 : clamp(f.comboDisplayTimer / 500, 0, 1);
+        ctx.globalAlpha = alpha;
+        ctx.textAlign = align;
+
+        // Counter-hit label
+        if (isCounter) {
+            ctx.font = 'bold 14px "Orbitron", "Rajdhani", sans-serif';
+            ctx.fillStyle = '#ff4444';
+            ctx.shadowColor = '#ff0000';
+            ctx.shadowBlur = 8;
+            ctx.fillText('COUNTER!', x, comboY - 28);
+            ctx.shadowBlur = 0;
+        }
+
+        // Combo count
+        ctx.font = 'bold 36px "Orbitron", "Rajdhani", sans-serif';
+        var comboColor = count >= 8 ? '#ff2244' : count >= 5 ? '#ffaa00' : count >= 3 ? '#44bbff' : '#ffffff';
+        ctx.fillStyle = comboColor;
+        ctx.shadowColor = comboColor;
+        ctx.shadowBlur = 10;
+        ctx.fillText(count + ' HIT', x, comboY);
+        ctx.shadowBlur = 0;
+
+        // Damage
+        ctx.font = '16px "Orbitron", "Rajdhani", sans-serif';
+        ctx.fillStyle = '#ccc';
+        ctx.fillText(Math.floor(dmg) + ' DMG', x, comboY + 22);
+        ctx.globalAlpha = 1;
+    }
+
+    drawCombo(fighter1, p1BarX + 10, 'left');
+    drawCombo(fighter2, p2BarX + barWidth - 10, 'right');
+
+    // ── Guard Crush Warning ──
+    function drawGuardBar(f, x, flipDir) {
+        if (f.guardMeter <= 0) return;
+        var gw = 60;
+        var gh = 4;
+        var gy = meterY + meterHeight + 30;
+        var gx = flipDir ? x + barWidth - gw : x;
+        var pct = f.guardMeter / CONFIG.GUARD_CRUSH_HITS;
+        ctx.fillStyle = '#111';
+        ctx.fillRect(gx, gy, gw, gh);
+        var guardColor = pct > 0.7 ? '#ff3333' : pct > 0.4 ? '#ffaa00' : '#44aa44';
+        ctx.fillStyle = guardColor;
+        ctx.fillRect(gx, gy, gw * pct, gh);
+    }
+    drawGuardBar(fighter1, p1BarX, false);
+    drawGuardBar(fighter2, p2BarX, true);
 }
 
 
@@ -1953,19 +2421,28 @@ GameEngine.prototype._checkAttackCollisions = function(attacker, defender) {
         var kbX = 0;
         var kbY = 0;
         var type = attacker.currentAttackType;
+        var dir = attacker.facingRight ? 1 : -1;
+        var wp = attacker.weapon;
 
         if (type === 'light') {
-            damage = attacker.weapon.lightDamage;
-            kbX = CONFIG.KNOCKBACK_LIGHT * (attacker.facingRight ? 1 : -1);
+            damage = !attacker.grounded ? (wp.airLightDamage || wp.lightDamage) : wp.lightDamage;
+            kbX = (wp.lightKnockX || CONFIG.KNOCKBACK_LIGHT) * dir;
         } else if (type === 'heavy') {
-            damage = attacker.weapon.heavyDamage;
-            kbX = CONFIG.KNOCKBACK_HEAVY * (attacker.facingRight ? 1 : -1);
+            damage = !attacker.grounded ? (wp.airHeavyDamage || wp.heavyDamage) : wp.heavyDamage;
+            kbX = (wp.heavyKnockX || CONFIG.KNOCKBACK_HEAVY) * dir;
             kbY = CONFIG.LAUNCH_FORCE * 0.3;
+        } else if (type === 'launcher') {
+            damage = wp.launcherDamage || 14;
+            kbX = CONFIG.KNOCKBACK_HEAVY * 0.6 * dir;
+            kbY = wp.launcherLaunch || CONFIG.LAUNCH_FORCE;
+        } else if (type === 'sweep') {
+            damage = wp.sweepDamage || 10;
+            kbX = CONFIG.KNOCKBACK_LIGHT * 0.5 * dir;
+            kbY = 0; // sweep doesn't launch, it knocks down
         } else if (type === 'special') {
             damage = attacker.character.specialDamage;
-            kbX = CONFIG.KNOCKBACK_SPECIAL * (attacker.facingRight ? 1 : -1);
+            kbX = CONFIG.KNOCKBACK_SPECIAL * dir;
             kbY = CONFIG.LAUNCH_FORCE * 0.5;
-
             // Apply character-specific effects
             if (attacker.character.uniqueFeature === 'poison') {
                 defender.applyPoison(attacker.character.poisonDPS, attacker.character.poisonDuration);
@@ -1973,66 +2450,97 @@ GameEngine.prototype._checkAttackCollisions = function(attacker, defender) {
             if (attacker.character.uniqueFeature === 'ice') {
                 defender.applyFreeze(attacker.character.freezeDuration);
             }
+        } else if (type === 'super') {
+            damage = attacker.character.specialDamage * 1.8;
+            kbX = CONFIG.KNOCKBACK_SPECIAL * 1.5 * dir;
+            kbY = CONFIG.LAUNCH_FORCE * 0.8;
+            // Apply character-specific effects (enhanced)
+            if (attacker.character.uniqueFeature === 'poison') {
+                defender.applyPoison(attacker.character.poisonDPS * 2, attacker.character.poisonDuration * 1.5);
+            }
+            if (attacker.character.uniqueFeature === 'ice') {
+                defender.applyFreeze(attacker.character.freezeDuration * 1.5);
+            }
         } else if (type === 'grab') {
             damage = 12;
-            kbX = CONFIG.KNOCKBACK_HEAVY * 1.2 * (attacker.facingRight ? 1 : -1);
+            kbX = CONFIG.KNOCKBACK_HEAVY * 1.2 * dir;
             kbY = CONFIG.LAUNCH_FORCE;
+        } else if (type === 'alpha_counter') {
+            damage = 8;
+            kbX = CONFIG.KNOCKBACK_HEAVY * dir;
+            kbY = CONFIG.LAUNCH_FORCE * 0.3;
+        } else if (type === 'burst') {
+            damage = 5; // burst does minimal damage, it's about escape
+            kbX = CONFIG.KNOCKBACK_SPECIAL * 1.5 * dir;
+            kbY = CONFIG.LAUNCH_FORCE * 0.7;
         }
 
-        // Combo scaling
-        attacker.comboCount++;
-        attacker.comboTimer = CONFIG.COMBO_WINDOW;
-        var comboScale = Math.max(0.3, 1 - (attacker.comboCount - 1) * 0.1);
-        damage *= comboScale;
-        attacker.comboDamage += damage;
-
-        // Track stats
+        // Track stats (combo tracking now happens inside takeDamage)
         if (attacker === this.fighter1) {
             this.matchStats.p1Damage += damage;
             this.matchStats.p1Combos++;
-            if (attacker.comboCount > this.matchStats.p1MaxCombo) this.matchStats.p1MaxCombo = attacker.comboCount;
+            if (attacker.comboCount + 1 > this.matchStats.p1MaxCombo) this.matchStats.p1MaxCombo = attacker.comboCount + 1;
         } else {
             this.matchStats.p2Damage += damage;
             this.matchStats.p2Combos++;
-            if (attacker.comboCount > this.matchStats.p2MaxCombo) this.matchStats.p2MaxCombo = attacker.comboCount;
+            if (attacker.comboCount + 1 > this.matchStats.p2MaxCombo) this.matchStats.p2MaxCombo = attacker.comboCount + 1;
         }
 
         defender.takeDamage(damage, kbX, kbY, attacker);
 
         // Hit SFX
         if (window.GameAudio) {
-            if (type === 'special') GameAudio.sfx.specialHit();
-            else if (type === 'heavy') GameAudio.sfx.heavyHit();
+            if (type === 'super') { GameAudio.sfx.specialHit(); GameAudio.sfx.ko(); }
+            else if (type === 'special' || type === 'alpha_counter') GameAudio.sfx.specialHit();
+            else if (type === 'heavy' || type === 'launcher') GameAudio.sfx.heavyHit();
+            else if (type === 'sweep') GameAudio.sfx.heavyHit();
             else if (type === 'grab') GameAudio.sfx.grabHit();
+            else if (type === 'burst') GameAudio.sfx.specialHit();
             else GameAudio.sfx.lightHit();
             // KO boom
             if (defender.health <= 0) {
                 setTimeout(function() { GameAudio.sfx.ko(); }, 100);
             }
+            // Counter-hit SFX
+            if (defender.isCounterHit) {
+                GameAudio.sfx.heavyHit();
+            }
         }
 
-        // Effects — premium impact
-        var isHeavyHit = type === 'heavy' || type === 'special';
+        // ── Hitstop & screen effects (scaled by attack weight) ──
+        var isHeavyHit = type === 'heavy' || type === 'special' || type === 'launcher' || type === 'super';
+        var isSuperHit = type === 'super';
         var isCritCombo = attacker.comboCount >= 5;
-        this.hitstopTimer = (isHeavyHit ? CONFIG.HITSTOP_DURATION * 1.8 : CONFIG.HITSTOP_DURATION) / 1000;
-        var shakeMult = isHeavyHit ? 2.5 : (isCritCombo ? 1.8 : 1);
+        var isCounter = defender.isCounterHit;
+
+        // Hitstop duration varies by attack type
+        var hitstopMs = CONFIG.HITSTOP_DURATION;
+        if (type === 'heavy' || type === 'launcher') hitstopMs = CONFIG.HITSTOP_HEAVY;
+        if (type === 'special' || type === 'alpha_counter') hitstopMs = CONFIG.HITSTOP_SPECIAL;
+        if (type === 'super') hitstopMs = CONFIG.HITSTOP_SUPER;
+        if (isCounter) hitstopMs *= 1.3; // extra freeze on counter-hit
+        this.hitstopTimer = hitstopMs / 1000;
+
+        var shakeMult = isSuperHit ? 4 : (isHeavyHit ? 2.5 : (isCritCombo ? 1.8 : (isCounter ? 2 : 1)));
         this.screenShakeX = randomRange(-8, 8) * shakeMult;
         this.screenShakeY = randomRange(-5, 5) * shakeMult;
         // Impact flash (white overlay duration in seconds)
-        this.impactFlash = isHeavyHit ? 0.08 : 0.04;
+        this.impactFlash = isSuperHit ? 0.15 : (isHeavyHit ? 0.08 : 0.04);
         // KO slow-motion
         if (defender.health <= 0) { this.koSlowTimer = 0.6; }
+        // Super slow-motion
+        if (isSuperHit && defender.health > 0) { this.koSlowTimer = 0.3; }
 
-        // Hit particles — more on heavy
+        // ── Particles ──
         var hitX = (attacker.x + defender.x) / 2;
         var hitY = defender.y - defender.height / 2;
-        var pCount = isHeavyHit ? 22 : 10;
+        var pCount = isSuperHit ? 35 : (isHeavyHit ? 22 : 10);
         this.particles.emit(hitX, hitY, pCount, {
             color: attacker.character.colors.glow,
             minVX: -250, maxVX: 250,
             minVY: -350, maxVY: -50,
-            minSize: 2, maxSize: isHeavyHit ? 10 : 5,
-            minLife: 0.2, maxLife: isHeavyHit ? 0.7 : 0.45
+            minSize: 2, maxSize: isSuperHit ? 14 : (isHeavyHit ? 10 : 5),
+            minLife: 0.2, maxLife: isSuperHit ? 1.0 : (isHeavyHit ? 0.7 : 0.45)
         });
 
         // White flash burst
@@ -2044,14 +2552,25 @@ GameEngine.prototype._checkAttackCollisions = function(attacker, defender) {
             minLife: 0.08, maxLife: 0.2
         });
 
-        // Spark ring on heavy
+        // Spark ring on heavy/super
         if (isHeavyHit) {
-            this.particles.emit(hitX, hitY, 12, {
-                color: '#ffdd44',
+            this.particles.emit(hitX, hitY, isSuperHit ? 24 : 12, {
+                color: isSuperHit ? '#ff4444' : '#ffdd44',
                 minVX: -300, maxVX: 300,
                 minVY: -300, maxVY: 300,
-                minSize: 1, maxSize: 3,
-                minLife: 0.15, maxLife: 0.35
+                minSize: 1, maxSize: isSuperHit ? 5 : 3,
+                minLife: 0.15, maxLife: isSuperHit ? 0.5 : 0.35
+            });
+        }
+
+        // Counter-hit flash (big red burst)
+        if (isCounter) {
+            this.particles.emit(hitX, hitY, 16, {
+                color: '#ff0000',
+                minVX: -200, maxVX: 200,
+                minVY: -200, maxVY: 200,
+                minSize: 4, maxSize: 12,
+                minLife: 0.1, maxLife: 0.4
             });
         }
     }

@@ -944,6 +944,246 @@ body {
     border-color: #ff5555;
 }
 
+/* === PLAYERS ONLINE — Floating Panel (title/mode screens) === */
+.players-online-panel {
+    position: fixed;
+    bottom: 70px;
+    right: 18px;
+    z-index: 9999;
+    width: 270px;
+    background: rgba(10, 10, 18, 0.95);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    backdrop-filter: blur(8px);
+    overflow: hidden;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.players-online-panel.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+}
+.players-online-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: rgba(231, 76, 60, 0.1);
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text-primary);
+    user-select: none;
+}
+.players-online-header:hover { background: rgba(231, 76, 60, 0.2); }
+.players-online-icon { font-size: 14px; }
+.players-online-count {
+    margin-left: auto;
+    background: var(--accent-red);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 24px;
+    text-align: center;
+}
+.players-online-chevron {
+    font-size: 10px;
+    color: var(--text-secondary);
+    transition: transform 0.2s;
+    margin-left: 4px;
+}
+.players-online-chevron.collapsed { transform: rotate(180deg); }
+.players-online-list {
+    max-height: 280px;
+    overflow-y: auto;
+    transition: max-height 0.3s ease;
+}
+.players-online-list.collapsed {
+    max-height: 0;
+    overflow: hidden;
+}
+.players-online-empty {
+    padding: 18px 14px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-style: italic;
+}
+
+/* Player entry row */
+.player-entry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(34, 34, 51, 0.5);
+    transition: background 0.15s;
+}
+.player-entry:hover { background: rgba(255, 255, 255, 0.03); }
+.player-entry:last-child { border-bottom: none; }
+.player-entry.is-you { background: rgba(255, 215, 0, 0.04); }
+
+.player-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #2ecc71;
+    box-shadow: 0 0 6px rgba(46, 204, 113, 0.5);
+    flex-shrink: 0;
+}
+.player-dot.fighting { background: #e74c3c; box-shadow: 0 0 6px rgba(231, 76, 60, 0.5); }
+.player-dot.lobby    { background: #ffd700; box-shadow: 0 0 6px rgba(255, 215, 0, 0.5); }
+
+.player-info { flex: 1; min-width: 0; }
+.player-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.player-name .you-tag {
+    font-size: 9px;
+    color: var(--accent-gold);
+    margin-left: 4px;
+    letter-spacing: 1px;
+}
+.player-game {
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.player-status {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.player-status.status-online   { color: #2ecc71; }
+.player-status.status-lobby    { color: var(--accent-gold); }
+.player-status.status-fighting { color: var(--accent-red); }
+.player-status.status-select   { color: var(--accent-blue); }
+
+.player-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.player-action-btn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    padding: 0;
+    position: relative;
+}
+.player-action-btn[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.9);
+    color: #fff;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+    pointer-events: none;
+}
+.player-action-btn.join-btn:hover {
+    border-color: #2ecc71;
+    color: #2ecc71;
+    background: rgba(46, 204, 113, 0.1);
+}
+.player-action-btn.spectate-btn:hover {
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+    background: rgba(52, 152, 219, 0.1);
+}
+
+/* === PLAYERS ONLINE — Lobby Inline Panel === */
+.online-lobby-layout {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px;
+    width: 100%;
+    max-width: 900px;
+}
+.lobby-players-panel {
+    width: 280px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.lobby-players-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    background: rgba(231, 76, 60, 0.1);
+    border-bottom: 1px solid var(--border-color);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text-primary);
+}
+.lobby-players-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Fighter name input in lobby */
+.fighter-name-row {
+    margin-bottom: 20px;
+    text-align: center;
+}
+.fighter-name-row label {
+    display: block;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+.fighter-name-row input {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 8px 16px;
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    color: var(--accent-gold);
+    text-align: center;
+    letter-spacing: 2px;
+    width: 220px;
+    transition: border-color 0.2s;
+}
+.fighter-name-row input:focus {
+    outline: none;
+    border-color: var(--accent-gold);
+}
+.fighter-name-row input::placeholder {
+    color: #444;
+    font-size: 14px;
+}
+
 /* === SCROLLBAR === */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-dark); }
@@ -964,6 +1204,9 @@ body {
     .profile-stats-grid { grid-template-columns: repeat(2, 1fr); }
     .btn { min-width: 220px; padding: 12px 30px; font-size: 16px; }
     .select-header { font-size: 18px; }
+    .online-lobby-layout { flex-direction: column; align-items: center; }
+    .lobby-players-panel { width: 100%; max-width: 350px; }
+    .players-online-panel { width: 240px; right: 10px; bottom: 65px; }
 }
 
 @media (max-width: 480px) {

@@ -21,12 +21,12 @@ $results = array(
 try {
     // Get creators with 50K+ followers to aggregate news for
     // Exclude starfireara (data is incorrect)
+    // No LIMIT - process ALL eligible creators so the updates feed covers everyone
     $sql = "SELECT id, name, follower_count 
             FROM creators 
             WHERE follower_count >= 50000 
             AND LOWER(TRIM(name)) != 'starfireara'
-            ORDER BY follower_count DESC 
-            LIMIT 5";
+            ORDER BY follower_count DESC";
 
     $creators_result = $conn->query($sql);
 

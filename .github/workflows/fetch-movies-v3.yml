@@ -1,0 +1,89 @@
+name: Deploy & Refresh MOVIESHOWS3
+
+on:
+  schedule:
+    # Run daily at 7:00 AM UTC (2:00 AM EST) — after the 6 AM MOVIESHOWS2 fetch
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+    inputs:
+      type:
+        description: 'Content type to fetch'
+        required: false
+        default: 'both'
+        type: choice
+        options:
+          - both
+          - movie
+          - tv
+      pages:
+        description: 'Number of pages per category (1-10)'
+        required: false
+        default: '3'
+      mode:
+        description: 'Fetch mode'
+        required: false
+        default: 'trending'
+        type: choice
+        options:
+          - trending
+          - discover
+
+jobs:
+  deploy-and-fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Deploy MOVIESHOWS3 scripts to FTP
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python tools/deploy_movieshows3.py
+
+      - name: Wait for FTP propagation
+        run: sleep 10
+
+      - name: Trigger TMDB fetch via MOVIESHOWS3
+        env:
+          SYNC_KEY: ${{ secrets.MS2_SYNC_KEY }}
+        run: |
+          TYPE="${{ github.event.inputs.type || 'both' }}"
+          PAGES="${{ github.event.inputs.pages || '3' }}"
+          MODE="${{ github.event.inputs.mode || 'trending' }}"
+
+          echo "Fetching: type=$TYPE pages=$PAGES mode=$MODE"
+
+          RESPONSE=$(curl -sS --max-time 300 \
+            "https://findtorontoevents.ca/MOVIESHOWS3/fetch_new_content.php?key=${SYNC_KEY}&type=${TYPE}&pages=${PAGES}&mode=${MODE}")
+
+          echo "$RESPONSE"
+
+          # Check for success
+          if echo "$RESPONSE" | grep -q "Status: success\|Status: partial"; then
+            echo "Fetch completed successfully"
+          elif echo "$RESPONSE" | grep -q "Status: failed"; then
+            echo "::warning::Fetch completed with failures"
+          elif echo "$RESPONSE" | grep -q "Unauthorized"; then
+            echo "::error::Authentication failed"
+            exit 1
+          fi
+
+      - name: Verify MOVIESHOWS3 database status
+        run: |
+          STATUS=$(curl -sS --max-time 30 \
+            "https://findtorontoevents.ca/MOVIESHOWS3/log/api_status.php")
+
+          echo "Database Status:"
+          echo "$STATUS" | python3 -m json.tool 2>/dev/null || echo "$STATUS"
+
+          # Extract total count
+          TOTAL=$(echo "$STATUS" | python3 -c "import sys,json; print(json.load(sys.stdin)['stats']['total_titles'])" 2>/dev/null || echo "unknown")
+          echo "Total titles in database: $TOTAL"

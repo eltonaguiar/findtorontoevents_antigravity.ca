@@ -100,7 +100,7 @@ foreach ($creator['accounts'] as $account) {
     if (!$platform || !$username) continue;
     
     // Skip unsupported platforms
-    $supported = array('youtube', 'tiktok', 'twitter', 'instagram', 'kick', 'twitch');
+    $supported = array('youtube', 'tiktok', 'twitter', 'instagram', 'kick', 'twitch', 'reddit', 'spotify');
     if (!in_array($platform, $supported)) continue;
     
     // Call fetch_platform_status.php internally

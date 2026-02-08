@@ -63,11 +63,13 @@ foreach ($count_by_creator as $id => $info) {
         'in_guest_list' => isset($guest_creator_ids[$id]),
     );
 }
-// Sort by follower_count desc, then name
-usort($list, function ($a, $b) {
-    if ($a['follower_count'] !== $b['follower_count']) return $b['follower_count'] - $a['follower_count'];
-    return strcasecmp($a['name'], $b['name']);
-});
+// Sort by follower_count desc, then name (PHP 5.2 compatible - no anonymous functions)
+// Build sortable keys: zero-padded inverted count + lowercase name
+$sort_keys = array();
+foreach ($list as $i => $item) {
+    $sort_keys[$i] = str_pad(99999 - $item['follower_count'], 5, '0', STR_PAD_LEFT) . strtolower($item['name']);
+}
+array_multisort($sort_keys, SORT_ASC, SORT_STRING, $list);
 
 echo json_encode(array('creators' => $list));
 $conn->close();

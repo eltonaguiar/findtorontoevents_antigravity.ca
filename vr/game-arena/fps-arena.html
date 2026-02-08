@@ -584,6 +584,63 @@
       100% { opacity: 0; transform: translateX(-50%) translateY(-30px); }
     }
 
+    /* ========== KILLCAM OVERLAY ========== */
+    #killcam-overlay {
+      display: none;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 95; pointer-events: none;
+    }
+    #killcam-overlay.active { display: block; }
+    .killcam-border {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      border: 3px solid rgba(255, 0, 0, 0.4);
+      box-shadow: inset 0 0 80px rgba(0,0,0,0.5);
+    }
+    .killcam-vignette {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%);
+    }
+    .killcam-scanlines {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
+      );
+    }
+    .killcam-label {
+      position: absolute; top: 20px; left: 20px;
+      font-size: 28px; font-weight: 900; letter-spacing: 6px;
+      color: #fff; text-shadow: 0 0 10px rgba(255,0,0,0.8), 0 0 30px rgba(255,0,0,0.4);
+      animation: killcamPulse 1s ease-in-out infinite;
+    }
+    .killcam-sublabel {
+      position: absolute; top: 58px; left: 20px;
+      font-size: 14px; color: #ef4444; letter-spacing: 2px;
+    }
+    .killcam-recap {
+      position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.7); border: 1px solid rgba(255,0,0,0.4);
+      padding: 12px 30px; border-radius: 4px; text-align: center;
+      backdrop-filter: blur(4px);
+    }
+    .killcam-recap-title {
+      font-size: 11px; color: #666; letter-spacing: 3px; text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .killcam-recap-name {
+      font-size: 22px; font-weight: 900; color: #ef4444; letter-spacing: 2px;
+    }
+    .killcam-recap-details {
+      font-size: 12px; color: #94a3b8; margin-top: 4px; letter-spacing: 1px;
+    }
+    .killcam-skip {
+      position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+      font-size: 12px; color: rgba(255,255,255,0.4); letter-spacing: 1px;
+    }
+    @keyframes killcamPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
     /* ========== KILL CONFIRMED POPUP ========== */
     .kill-confirmed {
       position: fixed; top: 55%; left: 50%; transform: translate(-50%, -50%);
@@ -847,6 +904,21 @@
 
 <!-- Low health overlay -->
 <div id="low-health-overlay"></div>
+
+<!-- Killcam overlay -->
+<div id="killcam-overlay">
+  <div class="killcam-border"></div>
+  <div class="killcam-vignette"></div>
+  <div class="killcam-scanlines"></div>
+  <div class="killcam-label">INSTANT REPLAY</div>
+  <div class="killcam-sublabel" id="killcam-killer-name"></div>
+  <div class="killcam-recap">
+    <div class="killcam-recap-title">KILLED BY</div>
+    <div class="killcam-recap-name" id="killcam-recap-name"></div>
+    <div class="killcam-recap-details" id="killcam-recap-details"></div>
+  </div>
+  <div class="killcam-skip">Press any key to skip</div>
+</div>
 
 <!-- Muzzle flash screen overlay -->
 <div id="muzzle-flash-overlay"></div>
@@ -1293,6 +1365,620 @@ state.baseFov = 75;
 state.targetFov = 75;
 state.crosshairSpread = 0;
 state.footstepTimer = 0;
+
+// ─── KILLCAM REPLAY SYSTEM ─────────────────────────────────────────────────
+var KILLCAM_DURATION = 8;
+var KILLCAM_FREEZE_TIME = 2;
+var REPLAY_FPS = 20;
+var REPLAY_BUFFER_SECONDS = 6;
+var REPLAY_MAX_FRAMES = REPLAY_FPS * REPLAY_BUFFER_SECONDS;
+
+var replayBuffer = [];
+var replayRecordAccum = 0;
+var replayShots = [];
+
+var killcam = {
+  active: false,
+  frames: [],
+  shots: [],
+  killerName: '',
+  killerIdx: -1,
+  ghostMesh: null,
+  killerRing: null,
+  killerLabel: null,
+  startTime: 0,
+  totalDuration: 0,
+  savedPitch: 0,
+  savedYaw: 0,
+  freezing: false,
+  freezeStart: 0,
+  deathDistance: 0,
+  lastShotCount: 0
+};
+
+function recordReplayFrame(dt) {
+  replayRecordAccum += dt;
+  if (replayRecordAccum < 1 / REPLAY_FPS) return;
+  replayRecordAccum = 0;
+
+  var frame = {
+    t: performance.now(),
+    px: camera.position.x,
+    py: camera.position.y,
+    pz: camera.position.z,
+    pp: state.pitch,
+    pw: state.yaw,
+    bots: []
+  };
+
+  for (var i = 0; i < state.bots.length; i++) {
+    var b = state.bots[i];
+    frame.bots.push({
+      x: b.position.x,
+      z: b.position.z,
+      ry: b.mesh.rotation.y,
+      alive: b.alive
+    });
+  }
+
+  replayBuffer.push(frame);
+  if (replayBuffer.length > REPLAY_MAX_FRAMES) replayBuffer.shift();
+}
+
+function recordShot(attackerName, fromPos) {
+  replayShots.push({
+    t: performance.now(),
+    name: attackerName,
+    fx: fromPos.x,
+    fz: fromPos.z,
+    tx: camera.position.x,
+    tz: camera.position.z
+  });
+  if (replayShots.length > 60) replayShots.shift();
+}
+
+function createGhostPlayer() {
+  var group = new THREE.Group();
+
+  // All materials use MeshBasicMaterial — self-lit, always visible regardless of lighting
+  // Body (bright white/cyan — maximum contrast)
+  var bodyGeo = new THREE.BoxGeometry(0.7, 1.1, 0.45);
+  var bodyMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.85 });
+  var body = new THREE.Mesh(bodyGeo, bodyMat);
+  body.position.y = 1.2;
+  group.add(body);
+
+  // Head
+  var headGeo = new THREE.SphereGeometry(0.22, 8, 8);
+  var headMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.85 });
+  var head = new THREE.Mesh(headGeo, headMat);
+  head.position.y = 1.9;
+  group.add(head);
+
+  // Legs
+  var legGeo = new THREE.BoxGeometry(0.18, 0.7, 0.18);
+  var legMat = new THREE.MeshBasicMaterial({ color: 0x00dddd, transparent: true, opacity: 0.85 });
+  var leftLeg = new THREE.Mesh(legGeo, legMat);
+  leftLeg.position.set(-0.17, 0.35, 0);
+  group.add(leftLeg);
+  var rightLeg = new THREE.Mesh(legGeo, legMat.clone());
+  rightLeg.position.set(0.17, 0.35, 0);
+  group.add(rightLeg);
+
+  // Arms
+  var armGeo = new THREE.BoxGeometry(0.14, 0.65, 0.14);
+  var armMat = new THREE.MeshBasicMaterial({ color: 0x00dddd, transparent: true, opacity: 0.85 });
+  var leftArm = new THREE.Mesh(armGeo, armMat);
+  leftArm.position.set(-0.45, 1.1, 0);
+  group.add(leftArm);
+  var rightArm = new THREE.Mesh(armGeo, armMat.clone());
+  rightArm.position.set(0.45, 1.1, 0.15);
+  group.add(rightArm);
+
+  // Glowing beacon ring at feet (ground marker)
+  var ringGeo = new THREE.RingGeometry(0.6, 0.9, 32);
+  var ringMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.5, side: THREE.DoubleSide });
+  var ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.y = 0.05;
+  group.add(ring);
+
+  // Vertical beacon line above the ghost
+  var beaconGeo = new THREE.CylinderGeometry(0.03, 0.03, 6, 4);
+  var beaconMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.3 });
+  var beacon = new THREE.Mesh(beaconGeo, beaconMat);
+  beacon.position.y = 4;
+  group.add(beacon);
+
+  // Large "YOU" label (billboard sprite)
+  var nameCanvas = document.createElement('canvas');
+  nameCanvas.width = 256; nameCanvas.height = 64;
+  var nCtx = nameCanvas.getContext('2d');
+  nCtx.fillStyle = 'rgba(0,200,200,0.6)';
+  nCtx.fillRect(0, 0, 256, 64);
+  nCtx.strokeStyle = '#00ffff';
+  nCtx.lineWidth = 3;
+  nCtx.strokeRect(0, 0, 256, 64);
+  nCtx.font = 'bold 40px Inter, sans-serif';
+  nCtx.textAlign = 'center';
+  nCtx.fillStyle = '#ffffff';
+  nCtx.fillText('YOU', 128, 46);
+  var nameTex = new THREE.CanvasTexture(nameCanvas);
+  var nameSpriteMat = new THREE.SpriteMaterial({ map: nameTex, transparent: true, depthWrite: false });
+  var nameSprite = new THREE.Sprite(nameSpriteMat);
+  nameSprite.position.set(0, 2.8, 0);
+  nameSprite.scale.set(2.5, 0.6, 1);
+  group.add(nameSprite);
+
+  scene.add(group);
+  killcam.ghostMesh = group;
+}
+
+function startKillcam(killerName) {
+  killcam.savedPitch = state.pitch;
+  killcam.savedYaw = state.yaw;
+  killcam.freezing = false;
+  killcam.freezeStart = 0;
+  killcam.ghostMesh = null;
+
+  killcam.frames = replayBuffer.slice();
+  killcam.shots = replayShots.slice();
+  killcam.lastShotCount = 0;
+  for (var s = 0; s < killcam.shots.length; s++) killcam.shots[s].shown = false;
+  killcam.killerName = killerName;
+  killcam.startTime = performance.now();
+
+  // Find killer bot index
+  killcam.killerIdx = -1;
+  for (var i = 0; i < state.bots.length; i++) {
+    if (state.bots[i].name === killerName) {
+      killcam.killerIdx = i;
+      break;
+    }
+  }
+
+  // Calculate death distance
+  killcam.deathDistance = 0;
+  if (killcam.killerIdx >= 0) {
+    var kb = state.bots[killcam.killerIdx];
+    var dx = camera.position.x - kb.position.x;
+    var dz = camera.position.z - kb.position.z;
+    killcam.deathDistance = Math.round(Math.sqrt(dx * dx + dz * dz));
+  }
+
+  // Count shots from killer in buffer
+  killcam.lastShotCount = 0;
+  for (var sc = 0; sc < killcam.shots.length; sc++) {
+    if (killcam.shots[sc].name === killerName) killcam.lastShotCount++;
+  }
+
+  // Playback duration from buffer
+  if (killcam.frames.length >= 2) {
+    killcam.totalDuration = (killcam.frames[killcam.frames.length - 1].t - killcam.frames[0].t) / 1000;
+  } else {
+    killcam.totalDuration = 2;
+  }
+
+  // Create ghost player mesh (the "YOU" avatar visible during replay)
+  createGhostPlayer();
+
+  // Highlight the killer bot with red glow + KILLER label
+  if (killcam.killerIdx >= 0) {
+    var killerBot = state.bots[killcam.killerIdx];
+    if (killerBot && killerBot.mesh) {
+      // Red ring at feet
+      var ringGeo = new THREE.RingGeometry(0.8, 1.1, 32);
+      var ringMat = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.6, side: THREE.DoubleSide });
+      var ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.y = 0.05;
+      killerBot.mesh.add(ring);
+      killcam.killerRing = ring;
+
+      // KILLER label
+      var labelCanvas = document.createElement('canvas');
+      labelCanvas.width = 256; labelCanvas.height = 64;
+      var lCtx = labelCanvas.getContext('2d');
+      lCtx.fillStyle = 'rgba(200,0,0,0.7)';
+      lCtx.fillRect(0, 0, 256, 64);
+      lCtx.strokeStyle = '#ff0000';
+      lCtx.lineWidth = 3;
+      lCtx.strokeRect(0, 0, 256, 64);
+      lCtx.font = 'bold 36px Inter, sans-serif';
+      lCtx.textAlign = 'center';
+      lCtx.fillStyle = '#ffffff';
+      lCtx.fillText('KILLER', 128, 44);
+      var labelTex = new THREE.CanvasTexture(labelCanvas);
+      var labelSpriteMat = new THREE.SpriteMaterial({ map: labelTex, transparent: true, depthWrite: false });
+      var labelSprite = new THREE.Sprite(labelSpriteMat);
+      labelSprite.position.set(0, 3.2, 0);
+      labelSprite.scale.set(2.5, 0.6, 1);
+      killerBot.mesh.add(labelSprite);
+      killcam.killerLabel = labelSprite;
+
+      // Red glow on killer body
+      killerBot.mesh.children.forEach(function(c) {
+        if (c.material && c.material.emissive && c !== ring && c !== labelSprite) {
+          c.material.emissive.setHex(0x660000);
+          c.material.emissiveIntensity = 0.5;
+        }
+      });
+    }
+  }
+
+  // Show overlay + death recap
+  document.getElementById('killcam-overlay').classList.add('active');
+  document.getElementById('killcam-killer-name').textContent = killerName;
+  document.getElementById('killcam-recap-name').textContent = killerName;
+  var detailParts = [];
+  if (killcam.deathDistance > 0) detailParts.push(killcam.deathDistance + 'm distance');
+  if (killcam.lastShotCount > 0) detailParts.push(killcam.lastShotCount + ' shots landed');
+  document.getElementById('killcam-recap-details').textContent = detailParts.join('  //  ');
+
+  // Hide crosshair + first-person weapon during replay
+  document.getElementById('crosshair').style.display = 'none';
+  document.getElementById('fp-weapon').style.display = 'none';
+
+  // Subtle film look
+  var canvas = document.getElementById('game-canvas');
+  canvas.style.filter = 'contrast(1.1) brightness(0.95)';
+  canvas.style.transition = 'filter 0.3s';
+
+  killcam.active = true;
+}
+
+function updateKillcam(dt) {
+  if (!killcam.active) return;
+
+  var elapsed = (performance.now() - killcam.startTime) / 1000;
+
+  // Fallback: not enough recorded data — orbit around death position
+  if (killcam.frames.length < 2) {
+    if (elapsed >= KILLCAM_DURATION) { endKillcam(); return; }
+    // Place ghost at last known position (or camera position at death)
+    var dx = killcam.savedPitch !== undefined ? camera.position.x : 0;
+    var dz = killcam.savedPitch !== undefined ? camera.position.z : 0;
+    if (killcam.ghostMesh) killcam.ghostMesh.position.set(dx, 0, dz);
+    var oAngle = elapsed * 0.5;
+    camera.position.set(dx + Math.sin(oAngle) * 5, 3, dz + Math.cos(oAngle) * 5);
+    camera.lookAt(dx, 1.2, dz);
+    return;
+  }
+
+  // ─── FREEZE-FRAME phase: hold the death moment ───
+  if (killcam.freezing) {
+    var freezeElapsed = (performance.now() - killcam.freezeStart) / 1000;
+    // Ghost slowly falls over during freeze
+    if (killcam.ghostMesh && freezeElapsed < 1.5) {
+      killcam.ghostMesh.rotation.z += dt * 1.2;
+      killcam.ghostMesh.position.y -= dt * 0.4;
+      if (killcam.ghostMesh.position.y < -0.5) killcam.ghostMesh.position.y = -0.5;
+    }
+    if (freezeElapsed >= KILLCAM_FREEZE_TIME) {
+      endKillcam();
+    }
+    return;
+  }
+
+  if (elapsed >= KILLCAM_DURATION) {
+    endKillcam();
+    return;
+  }
+
+  // ─── Replay playback: 0.5x speed, extreme slow-mo for final 25% ───
+  var playSpeed = 0.5;
+  var replayDuration = killcam.totalDuration / playSpeed;
+  var rawProgress = Math.min(elapsed / replayDuration, 1);
+
+  var progress;
+  if (rawProgress <= 0.75) {
+    progress = rawProgress;
+  } else {
+    var overrun = (rawProgress - 0.75) / 0.25;
+    progress = 0.75 + overrun * 0.25 * 0.15;
+    progress = Math.min(progress, 1);
+  }
+
+  var firstT = killcam.frames[0].t;
+  var lastT = killcam.frames[killcam.frames.length - 1].t;
+  var bufferTime = firstT + progress * (lastT - firstT);
+
+  // ─── Interpolate between recorded frames ───
+  var frameA = killcam.frames[0];
+  var frameB = killcam.frames[1];
+  var lerpT = 0;
+
+  for (var i = 0; i < killcam.frames.length - 1; i++) {
+    if (killcam.frames[i + 1].t >= bufferTime) {
+      frameA = killcam.frames[i];
+      frameB = killcam.frames[i + 1];
+      var span = frameB.t - frameA.t;
+      lerpT = span > 0 ? (bufferTime - frameA.t) / span : 0;
+      break;
+    }
+  }
+  if (progress >= 1) {
+    frameA = frameB = killcam.frames[killcam.frames.length - 1];
+    lerpT = 0;
+  }
+
+  // ─── Ghost player position from recorded data ───
+  var gx = frameA.px + (frameB.px - frameA.px) * lerpT;
+  var gy = frameA.py + (frameB.py - frameA.py) * lerpT;
+  var gz = frameA.pz + (frameB.pz - frameA.pz) * lerpT;
+  var gYaw = frameA.pw + (frameB.pw - frameA.pw) * lerpT;
+
+  if (killcam.ghostMesh) {
+    killcam.ghostMesh.position.set(gx, 0, gz);
+    killcam.ghostMesh.rotation.y = gYaw;
+  }
+
+  // ─── Reposition ALL bot meshes from recorded data ───
+  var kx = gx, kz = gz; // fallback if no killer
+  for (var b = 0; b < state.bots.length; b++) {
+    if (!frameA.bots[b]) continue;
+    var bA = frameA.bots[b];
+    var bB = (frameB.bots[b] || bA);
+
+    var bx = bA.x + (bB.x - bA.x) * lerpT;
+    var bz = bA.z + (bB.z - bA.z) * lerpT;
+    var bry = bA.ry + (bB.ry - bA.ry) * lerpT;
+
+    state.bots[b].mesh.position.set(bx, 0, bz);
+    state.bots[b].mesh.rotation.y = bry;
+    state.bots[b].mesh.visible = bA.alive;
+
+    if (b === killcam.killerIdx) {
+      kx = bx;
+      kz = bz;
+      // Make killer face the ghost during replay
+      state.bots[b].mesh.rotation.y = Math.atan2(gx - bx, gz - bz);
+    }
+  }
+
+  // Pulse the killer ring
+  if (killcam.killerRing) {
+    killcam.killerRing.material.opacity = 0.4 + Math.sin(elapsed * 4) * 0.3;
+  }
+
+  // ─── CINEMATIC SIDE-CAMERA: always frames both killer + ghost ───
+  // Vector from killer → ghost
+  var dxKG = gx - kx;
+  var dzKG = gz - kz;
+  var distKG = Math.sqrt(dxKG * dxKG + dzKG * dzKG);
+  if (distKG < 0.1) distKG = 0.1;
+
+  // Midpoint between killer and ghost
+  var midX = (kx + gx) / 2;
+  var midZ = (kz + gz) / 2;
+
+  // Perpendicular direction (90° to the killer→ghost line)
+  var perpX = -dzKG / distKG;
+  var perpZ = dxKG / distKG;
+
+  // Camera distance scales with how far apart they are
+  var camSideDist = Math.max(distKG * 0.9, 4);
+  // Slow orbit: drift the perpendicular angle slightly over time
+  var orbitShift = Math.sin(elapsed * 0.3) * 0.15;
+
+  var camX = midX + perpX * camSideDist + (dxKG / distKG) * orbitShift * camSideDist;
+  var camZ = midZ + perpZ * camSideDist + (dzKG / distKG) * orbitShift * camSideDist;
+  // Camera height: higher when further apart, lower when close for drama
+  var camHeight = 2.0 + distKG * 0.15;
+  camHeight = Math.min(camHeight, 5);
+
+  // Zoom in during last 30% of replay for close-up on the kill
+  if (progress > 0.7) {
+    var zoomFactor = 1 - (progress - 0.7) / 0.3 * 0.4; // zoom to 60%
+    camX = midX + (camX - midX) * zoomFactor;
+    camZ = midZ + (camZ - midZ) * zoomFactor;
+    camHeight *= zoomFactor;
+    camHeight = Math.max(camHeight, 1.5);
+  }
+
+  camera.position.set(camX, camHeight, camZ);
+  camera.lookAt(midX, 1.2, midZ);
+
+  // ─── Replay shots: tracer lines + muzzle flash + impact burst ───
+  for (var j = 0; j < killcam.shots.length; j++) {
+    var shot = killcam.shots[j];
+    if (!shot.shown && Math.abs(shot.t - bufferTime) < 200) {
+      shot.shown = true;
+
+      // Bright tracer line from killer to ghost
+      var tracerStart = new THREE.Vector3(kx, 1.2, kz);
+      var tracerEnd = new THREE.Vector3(gx, 1.4, gz);
+      var tGeo = new THREE.BufferGeometry();
+      tGeo.setFromPoints([tracerStart, tracerEnd]);
+      var tMat = new THREE.LineBasicMaterial({ color: 0xff6633, transparent: true, opacity: 0.9 });
+      var tLine = new THREE.Line(tGeo, tMat);
+      scene.add(tLine);
+
+      // Thick tracer cylinder
+      var tDir = tracerEnd.clone().sub(tracerStart);
+      var tLen = tDir.length();
+      var cGeo = new THREE.CylinderGeometry(0.04, 0.04, tLen, 4);
+      var cMat = new THREE.MeshBasicMaterial({ color: 0xff4422, transparent: true, opacity: 0.7 });
+      var cyl = new THREE.Mesh(cGeo, cMat);
+      cyl.position.copy(tracerStart.clone().add(tracerEnd).multiplyScalar(0.5));
+      cyl.lookAt(tracerEnd);
+      cyl.rotateX(Math.PI / 2);
+      scene.add(cyl);
+
+      // Impact burst on the ghost
+      var impGeo = new THREE.SphereGeometry(0.2, 8, 8);
+      var impMat = new THREE.MeshBasicMaterial({ color: 0xff2200, transparent: true, opacity: 0.9 });
+      var imp = new THREE.Mesh(impGeo, impMat);
+      imp.position.set(gx, 1.3, gz);
+      scene.add(imp);
+
+      // Muzzle flash at killer
+      var mfGeo = new THREE.SphereGeometry(0.2, 6, 6);
+      var mfMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.9 });
+      var mf = new THREE.Mesh(mfGeo, mfMat);
+      mf.position.set(kx, 1.3, kz);
+      var toGhostDir = new THREE.Vector3(gx - kx, 0, gz - kz).normalize();
+      mf.position.x += toGhostDir.x * 0.5;
+      mf.position.z += toGhostDir.z * 0.5;
+      scene.add(mf);
+
+      // Flash the killer bot orange briefly
+      if (killcam.killerIdx >= 0 && state.bots[killcam.killerIdx]) {
+        state.bots[killcam.killerIdx].mesh.children.forEach(function(c) {
+          if (c.material && c.material.emissive && !c.isSprite) {
+            c.material.emissive.setHex(0xff6600);
+          }
+        });
+        (function(idx) {
+          setTimeout(function() {
+            if (state.bots[idx]) state.bots[idx].mesh.children.forEach(function(c) {
+              if (c.material && c.material.emissive && !c.isSprite) {
+                c.material.emissive.setHex(0x660000);
+              }
+            });
+          }, 120);
+        })(killcam.killerIdx);
+      }
+
+      // Flash ghost red on hit (MeshBasicMaterial — change color directly)
+      if (killcam.ghostMesh) {
+        killcam.ghostMesh.children.forEach(function(c) {
+          if (c.material && c.material.color) {
+            c.material.color.setHex(0xff3333);
+          }
+        });
+        (function(ghost) {
+          setTimeout(function() {
+            if (ghost) ghost.children.forEach(function(c) {
+              if (c.material && c.material.color && !c.isSprite) {
+                c.material.color.setHex(0x00ffff);
+              }
+            });
+          }, 250);
+        })(killcam.ghostMesh);
+      }
+
+      // Fade out all tracer elements
+      (function(tl, tg, tm, cy, cg2, cm2, im, ig, imm, mfl, mfg, mfm) {
+        var st = performance.now();
+        function fadeAll() {
+          var t = (performance.now() - st) / 700;
+          if (t >= 1) {
+            scene.remove(tl); tg.dispose(); tm.dispose();
+            scene.remove(cy); cg2.dispose(); cm2.dispose();
+            scene.remove(im); ig.dispose(); imm.dispose();
+            scene.remove(mfl); mfg.dispose(); mfm.dispose();
+            return;
+          }
+          tm.opacity = 0.9 * (1 - t);
+          cm2.opacity = 0.7 * (1 - t);
+          imm.opacity = 0.9 * (1 - t);
+          im.scale.setScalar(1 + t * 3);
+          mfm.opacity = 0.9 * (1 - t);
+          mfl.scale.setScalar(1 + t * 2);
+          requestAnimationFrame(fadeAll);
+        }
+        fadeAll();
+      })(tLine, tGeo, tMat, cyl, cGeo, cMat, imp, impGeo, impMat, mf, mfGeo, mfMat);
+
+      // Damage audio
+      AudioSys.playDamage();
+    }
+  }
+
+  // ─── Death moment: ghost flashes, screen flash, freeze ───
+  if (progress >= 0.97 && !killcam.freezing) {
+    killcam.freezing = true;
+    killcam.freezeStart = performance.now();
+
+    // Flash ghost bright red at death
+    if (killcam.ghostMesh) {
+      killcam.ghostMesh.children.forEach(function(c) {
+        if (c.material && c.material.color) {
+          c.material.color.setHex(0xff0000);
+        }
+        if (c.material) c.material.opacity = 1.0;
+      });
+    }
+
+    // Screen flash white then go dark
+    var canvas = document.getElementById('game-canvas');
+    canvas.style.filter = 'contrast(1.4) brightness(1.3)';
+    canvas.style.transition = 'filter 0.15s';
+    setTimeout(function() {
+      canvas.style.filter = 'saturate(0.5) contrast(1.1) brightness(0.6)';
+      canvas.style.transition = 'filter 0.8s';
+    }, 150);
+
+    AudioSys.playDamage();
+  }
+}
+
+function endKillcam() {
+  killcam.active = false;
+  killcam.freezing = false;
+
+  // Remove ghost mesh (if ever created)
+  if (killcam.ghostMesh) {
+    scene.remove(killcam.ghostMesh);
+    killcam.ghostMesh.traverse(function(c) {
+      if (c.geometry) c.geometry.dispose();
+      if (c.material) {
+        if (c.material.map) c.material.map.dispose();
+        c.material.dispose();
+      }
+    });
+    killcam.ghostMesh = null;
+  }
+
+  // Remove killer highlight elements
+  if (killcam.killerIdx >= 0) {
+    var killerBot = state.bots[killcam.killerIdx];
+    if (killerBot && killerBot.mesh) {
+      if (killcam.killerRing) {
+        killerBot.mesh.remove(killcam.killerRing);
+        killcam.killerRing.geometry.dispose();
+        killcam.killerRing.material.dispose();
+        killcam.killerRing = null;
+      }
+      if (killcam.killerLabel) {
+        killerBot.mesh.remove(killcam.killerLabel);
+        killcam.killerLabel.material.map.dispose();
+        killcam.killerLabel.material.dispose();
+        killcam.killerLabel = null;
+      }
+      // Reset killer bot emissive glow
+      killerBot.mesh.children.forEach(function(c) {
+        if (c.material && c.material.emissive) {
+          c.material.emissive.setHex(0x000000);
+          c.material.emissiveIntensity = 1;
+        }
+      });
+    }
+  }
+
+  // Clear any lingering damage indicator arrows
+  var dmgContainer = document.getElementById('damage-indicators');
+  while (dmgContainer.firstChild) dmgContainer.removeChild(dmgContainer.firstChild);
+  document.getElementById('damage-overlay').classList.remove('hit');
+
+  // Hide overlay, restore HUD elements
+  document.getElementById('killcam-overlay').classList.remove('active');
+  document.getElementById('crosshair').style.display = '';
+  document.getElementById('fp-weapon').style.display = 'block';
+
+  // Reset canvas filter
+  var canvas = document.getElementById('game-canvas');
+  canvas.style.filter = '';
+  canvas.style.transition = '';
+  camera.rotation.z = 0;
+
+  // Reset camera orientation
+  state.pitch = 0;
+  state.yaw = Math.random() * Math.PI * 2;
+
+  respawnPlayer();
+}
 
 // ─── PROCEDURAL AUDIO SYSTEM (Web Audio API) ────────────────────────────────
 var AudioSys = {
@@ -2014,6 +2700,9 @@ function initGame() {
     state.matchActive = true;
     state.matchTime = MATCH_DURATION;
     state.grenades = 3;
+    replayBuffer = [];
+    replayShots = [];
+    replayRecordAccum = 0;
     document.getElementById('hud-grenades').textContent = state.grenades;
     updateHUD();
 
@@ -2388,6 +3077,12 @@ function setupInput() {
   document.addEventListener('keydown', function(e) {
     state.keys[e.code] = true;
 
+    // Skip killcam on any key press (after 1s to prevent accidental skip)
+    if (killcam.active && (performance.now() - killcam.startTime) > 1000) {
+      endKillcam();
+      return;
+    }
+
     // Weapon switch by number
     if (e.key >= '1' && e.key <= '6') {
       var idx = parseInt(e.key) - 1;
@@ -2451,6 +3146,11 @@ function setupInput() {
   });
 
   document.addEventListener('mousedown', function(e) {
+    // Skip killcam on click (after 1s)
+    if (killcam.active && (performance.now() - killcam.startTime) > 1000) {
+      endKillcam();
+      return;
+    }
     if (e.button === 0) state.mouseDown = true;
     // Right-click for ADS
     if (e.button === 2) {
@@ -3065,6 +3765,11 @@ function damagePlayer(damage, attackerName, attackerPos) {
   // Spawn protection
   if (isSpawnProtected()) return;
 
+  // Record shot for killcam replay
+  if (attackerPos) {
+    recordShot(attackerName, attackerPos);
+  }
+
   // Armor absorbs 60% of damage
   if (state.armor > 0) {
     var armorDmg = Math.min(state.armor, damage * 0.6);
@@ -3119,34 +3824,10 @@ function playerDie(killerName) {
   state.streak = 0;
   addKillFeed(killerName, state.userName);
 
-  // Death camera effect
-  var canvas = document.getElementById('game-canvas');
-  canvas.style.filter = 'saturate(0) brightness(0.6)';
-  canvas.style.transition = 'filter 0.5s';
-
-  // Death screen tilt
-  var deathStart = performance.now();
-  function deathCam() {
-    var elapsed = (performance.now() - deathStart) / 1000;
-    if (elapsed > RESPAWN_TIME) return;
-    // Slowly tilt and look down
-    if (elapsed < 1) {
-      state.pitch -= 0.02;
-      camera.rotation.z += 0.01;
-    }
-    requestAnimationFrame(deathCam);
-  }
-  deathCam();
-
   showStreakBanner('ELIMINATED', '#ef4444', 'Killed by ' + killerName);
 
-  // Respawn after delay
-  setTimeout(function() {
-    canvas.style.filter = '';
-    canvas.style.transition = '';
-    camera.rotation.z = 0;
-    respawnPlayer();
-  }, RESPAWN_TIME * 1000);
+  // Start killcam instant replay
+  startKillcam(killerName);
 }
 
 function respawnPlayer() {
@@ -3185,6 +3866,19 @@ function gameLoop() {
   if (state.matchTime <= 0) {
     endMatch();
     return;
+  }
+
+  // Killcam replay mode — skip normal gameplay updates
+  if (killcam.active) {
+    updateKillcam(dt);
+    updateTimerHUD();
+    renderer.render(scene, camera);
+    return;
+  }
+
+  // Record replay frames while alive
+  if (state.health > 0) {
+    recordReplayFrame(dt);
   }
 
   // Update camera rotation
@@ -4109,6 +4803,11 @@ function escHTML(s) { var d = document.createElement('div'); d.textContent = s; 
 
 // ─── MATCH END ──────────────────────────────────────────────────────────────
 function endMatch() {
+  // Clean up killcam if active
+  if (killcam.active) {
+    endKillcam();
+  }
+
   state.matchActive = false;
 
   // Exit pointer lock
@@ -4213,6 +4912,9 @@ window.restartMatch = function() {
   state.viewPunchX = 0;
   state.viewPunchY = 0;
   state.crosshairSpread = 0;
+  replayBuffer = [];
+  replayShots = [];
+  replayRecordAccum = 0;
   document.getElementById('hud-grenades').textContent = state.grenades;
   document.getElementById('low-health-overlay').classList.remove('active');
 

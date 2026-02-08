@@ -74,7 +74,8 @@
       if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'zone-loading';
-        overlay.style.cssText = 'position:fixed;inset:0;z-index:9990;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);opacity:0;transition:opacity 0.3s;pointer-events:none;';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);opacity:0;transition:opacity 0.3s;pointer-events:none;';
+
         overlay.innerHTML = '<div style="text-align:center;color:#fff;font-family:Inter,sans-serif;"><div style="font-size:1.4rem;font-weight:700;margin-bottom:8px;">Entering Zone...</div><div style="width:40px;height:40px;border:3px solid rgba(255,255,255,0.2);border-top-color:#00d4ff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto;"></div></div>';
         document.body.appendChild(overlay);
       }
@@ -110,16 +111,23 @@
       }
     });
   </script>
-
   <style>
-    body { margin: 0; overflow: hidden; font-family: 'Inter', -apple-system, sans-serif; }
+    body { margin: 0; overflow: hidden; font-family: 'Inter', -apple-system, sans-serif; background: #0a0a1a; }
+
+    /* A-Frame scene — let A-Frame handle positioning, just protect visibility */
+    a-scene { display: block !important; visibility: visible !important; }
+
+    /* Clickable elements hover effect */
+    .clickable:hover {
+      cursor: pointer;
+    }
 
     /* Loading overlay */
     #loading {
       position: fixed; inset: 0;
       background: linear-gradient(135deg, #0f0f0f 0%, #1a0a1a 100%);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      z-index: 9999; color: white; transition: opacity 0.5s;
+      z-index: 10000; color: white; transition: opacity 0.5s;
     }
     #loading h1 {
       font-size: 2.5rem; margin-bottom: 1rem;
@@ -139,7 +147,7 @@
     #instructions {
       position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
       background: rgba(0,0,0,0.8); color: white; padding: 12px 24px;
-      border-radius: 2rem; z-index: 100; text-align: center;
+      border-radius: 2rem; z-index: 50; text-align: center;
       backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
       font-size: 14px; pointer-events: none;
       animation: fadeInUp 0.5s ease;
@@ -150,9 +158,10 @@
 
     /* Help overlay */
     #help-overlay {
-      position: fixed; inset: 0; background: rgba(8,10,20,0.88);
-      color: #e8f6ff; z-index: 10001;
+      position: fixed; inset: 0; background: rgba(8,10,20,0.95);
+      color: #e8f6ff; z-index: 9999;
       display: flex; align-items: center; justify-content: center; padding: 2rem;
+      backdrop-filter: blur(10px);
     }
     #help-card {
       max-width: 720px; width: min(90vw, 720px);
@@ -172,12 +181,7 @@
       border-radius: 6px; padding: 0.1rem 0.4rem; margin-right: 0.35rem;
     }
   </style>
-  <script src="/vr/quick-wins-substantial-set11.js"></script>
-  <script src="/vr/quick-wins-substantial-set12.js"></script>
-  <script src="/vr/quick-wins-substantial-set13.js"></script>
-  <script src="/vr/quick-wins-substantial-set14.js"></script>
-  <script src="/vr/quick-wins-substantial-set15.js"></script>
-  <script src="/vr/quick-wins-substantial-set16.js"></script>
+
   <script src="/vr/vr-logger.js"></script>
   <script src="/vr/mobile-detect.js"></script>
 </head>
@@ -244,7 +248,7 @@
       skyType: atmosphere;
       skyColor: #0a0a1a;
       horizonColor: #1a1a3e;
-      fog: 0.4"></a-entity>
+      fog: 0.08"></a-entity>
 
     <!-- Teleport Floor -->
     <a-circle id="teleport-floor" class="clickable" position="0 0 0" rotation="-90 0 0" radius="30"
@@ -265,6 +269,29 @@
       <a-text value="Toronto Events" align="center" width="8" color="#00d4ff" font="mozillavr"></a-text>
       <a-text value="VR Hub" align="center" width="5" color="#a855f7" position="0 -0.6 0" font="mozillavr"></a-text>
       <a-text value="Click any zone to enter" align="center" width="3" color="#888" position="0 -1.1 0"></a-text>
+    </a-entity>
+
+    <!-- ===== PART OF THE WORLD PORTAL BUTTON ===== -->
+    <!-- Central floating portal button that allows users to pick a place to go -->
+    <a-entity position="0 2.5 0" look-at-camera>
+      <!-- Clickable sphere (glowing globe-like) -->
+      <a-sphere class="clickable" position="0 0 0" radius="1.2"
+                color="#00d4ff" opacity="0.9"
+                onclick="toggleNavMenu()"
+                animation="property: rotation; to: 0 360 0; dur: 20000; loop: true; easing: linear">
+        <a-text value="PART OF\nTHE WORLD" align="center" width="3" color="#fff" position="0 0.3 0.8" font="mozillavr"></a-text>
+        <a-text value="Click to\nNavigate" align="center" width="2.5" color="#e0f2fe" position="0 -0.3 0.8" font="mozillavr"></a-text>
+      </a-sphere>
+      <!-- Outer glow ring -->
+      <a-ring position="0 0 1.3" rotation="-90 0 0" radius-inner="1.3" radius-outer="1.4" color="#00d4ff" opacity="0.6"
+              animation="property: rotation; to: -90 360 0; dur: 15000; loop: true; easing: linear"></a-ring>
+      <!-- Inner glow ring -->
+      <a-ring position="0 0 1.1" rotation="-90 0 0" radius-inner="1.1" radius-outer="1.2" color="#a855f7" opacity="0.4"
+              animation="property: rotation; to: -90 -360 0; dur: 25000; loop: true; easing: linear"></a-ring>
+      <!-- Floating animation indicator -->
+      <a-entity animation="property: position; from: 0 0 0; to: 0 0.15 0; dur: 2000; dir: alternate; loop: true; easing: easeInOutSine">
+        <a-text value="🌍" position="0 0.5 0.8" font="mozillavr"></a-text>
+      </a-entity>
     </a-entity>
 
     <!-- ===== ZONE 1: Toronto Events ===== -->
@@ -514,15 +541,17 @@
 
     <!-- Camera Rig -->
     <a-entity id="rig" position="0 1.6 0">
-      <a-camera look-controls wasd-controls="acceleration: 40" fov="80">
-        <!-- Gaze cursor for VR headset -->
-        <a-ring cursor="fuse: true; fuseTimeout: 2500"
+      <a-camera look-controls wasd-controls="acceleration: 12" fov="80">
+        <!-- Gaze cursor for VR headset ONLY — fuse disabled on desktop -->
+        <a-ring id="vr-gaze-cursor"
+                cursor="fuse: false; fuseTimeout: 4000"
                 raycaster="objects: .clickable; far: 30"
                 radius-inner="0.005" radius-outer="0.012"
                 color="#00d4ff" shader="flat"
                 position="0 0 -1"
+                visible="false"
                 animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 200"
-                animation__fusing="property: scale; startEvents: fusing; from: 1 1 1; to: 0.5 0.5 0.5; dur: 1500; easing: linear"
+                animation__fusing="property: scale; startEvents: fusing; from: 1 1 1; to: 0.5 0.5 0.5; dur: 3500; easing: linear"
                 animation__mouseleave="property: scale; startEvents: mouseleave; to: 1 1 1; dur: 200">
         </a-ring>
       </a-camera>
@@ -556,6 +585,16 @@
       }, 1500);
     });
 
+    // Safety net: force-remove loading overlay after 8 seconds regardless
+    setTimeout(function () {
+      var el = document.getElementById('loading');
+      if (el && !el.classList.contains('hidden')) {
+        el.style.opacity = '0';
+        setTimeout(function () { el.classList.add('hidden'); }, 500);
+        console.log('[VR Hub] Force-hid loading overlay (8s safety net)');
+      }
+    }, 8000);
+
     // Loading timeout fallback: if page doesn't load within 20s, show error + skip option
     setTimeout(function () {
       if (loadingDone) return;
@@ -572,6 +611,28 @@
         '<p style="color:#64748b;font-size:0.8rem;margin-top:0.75rem;">Some features may be limited.</p>';
       el.appendChild(msg);
     }, 20000);
+
+    // ===== GAZE CURSOR: fuse only in VR headset mode =====
+    // On desktop the mouse handles clicks. The gaze fuse was auto-firing
+    // after 2.5s and "forcing" users into zones they were just looking at.
+    (function () {
+      var scene = document.querySelector('a-scene');
+      if (!scene) return;
+      scene.addEventListener('enter-vr', function () {
+        var gaze = document.getElementById('vr-gaze-cursor');
+        if (gaze) {
+          gaze.setAttribute('cursor', 'fuse', true);
+          gaze.setAttribute('visible', true);
+        }
+      });
+      scene.addEventListener('exit-vr', function () {
+        var gaze = document.getElementById('vr-gaze-cursor');
+        if (gaze) {
+          gaze.setAttribute('cursor', 'fuse', false);
+          gaze.setAttribute('visible', false);
+        }
+      });
+    })();
 
     // ===== NAVIGATE TO ZONE =====
     function goToZone(url) {
@@ -645,7 +706,7 @@
       var panel = document.createElement('div');
       panel.id = 'touch-zone-panel';
       panel.style.cssText = [
-        'position:fixed', 'bottom:80px', 'right:16px', 'z-index:9998',
+        'position:fixed', 'bottom:80px', 'right:16px', 'z-index:100',
         'display:flex', 'flex-direction:column', 'gap:8px',
         'background:rgba(10,10,30,0.85)', 'backdrop-filter:blur(8px)',
         'border:1px solid rgba(0,212,255,0.25)', 'border-radius:16px',
@@ -653,60 +714,53 @@
         'box-shadow:0 8px 32px rgba(0,0,0,0.4)'
       ].join(';');
 
+      // Zone buttons
       var zones = [
-        { key: '1', label: 'Events',   color: '#ff6b6b', pos: '-6 1.6 -5' },
-        { key: '2', label: 'Movies',   color: '#4ecdc4', pos: '0 1.6 -5' },
-        { key: '3', label: 'Creators', color: '#a855f7', pos: '6 1.6 -5' },
-        { key: '4', label: 'Stocks',   color: '#22c55e', pos: '-6 1.6 5' },
-        { key: '5', label: 'Wellness', color: '#10b981', pos: '0 1.6 5' },
-        { key: '6', label: 'Weather',  color: '#06b6d4', pos: '6 1.6 5' },
-        { key: '7', label: 'Games',    color: '#a855f7', pos: '-6 1.6 9' },
-        { key: '8', label: 'Ant Rush', color: '#ff6b35', pos: '6 1.6 9' },
-        { key: '0', label: 'Center',   color: '#ffffff', pos: '0 1.6 0' }
+        { label: 'Events', emoji: '\uD83D\uDCC5', pos: '-6 1.6 -5' },
+        { label: 'Movies', emoji: '\uD83C\uDFAC', pos: '0 1.6 -5' },
+        { label: 'Creators', emoji: '\uD83C\uDFA8', pos: '6 1.6 -5' },
+        { label: 'Stocks', emoji: '\uD83D\uDCC8', pos: '-6 1.6 5' },
+        { label: 'Wellness', emoji: '\uD83C\uDF3F', pos: '0 1.6 5' },
+        { label: 'Weather', emoji: '\u2601', pos: '6 1.6 5' },
+        { label: 'Games', emoji: '\uD83C\uDFAE', pos: '-6 1.6 9' },
+        { label: 'Center', emoji: '\uD83C\uDFE0', pos: '0 1.6 0' }
       ];
 
       zones.forEach(function (z) {
         var btn = document.createElement('button');
-        btn.textContent = z.label.charAt(0);
+        btn.textContent = z.emoji;
         btn.title = z.label;
         btn.style.cssText = [
-          'width:50px', 'height:50px', 'border-radius:12px',
-          'border:2px solid ' + z.color,
-          'background:rgba(0,0,0,0.5)', 'color:' + z.color,
-          'font-size:16px', 'font-weight:700', 'cursor:pointer',
-          'transition:transform 0.15s,background 0.15s'
+          'width:44px', 'height:44px', 'border-radius:10px',
+          'background:rgba(255,255,255,0.08)', 'border:1px solid rgba(255,255,255,0.15)',
+          'color:#fff', 'font-size:18px', 'cursor:pointer'
         ].join(';');
-        btn.dataset.vrMode = 'simple';
         btn.addEventListener('click', function () {
           var cam = document.querySelector('a-camera');
           if (cam) cam.setAttribute('position', z.pos);
-          btn.style.transform = 'scale(0.9)';
-          setTimeout(function () { btn.style.transform = ''; }, 150);
         });
         panel.appendChild(btn);
       });
 
-      // Toggle button to show/hide the panel
+      // Toggle button
       var toggle = document.createElement('button');
       toggle.id = 'touch-panel-toggle';
-      toggle.innerHTML = '&#x1F4CD;'; // pin emoji
+      toggle.innerHTML = '&#x1F4CD;';
       toggle.title = 'Zone Jump Panel';
       toggle.style.cssText = [
-        'position:fixed', 'bottom:30px', 'right:16px', 'z-index:9999',
+        'position:fixed', 'bottom:30px', 'right:16px', 'z-index:101',
         'width:44px', 'height:44px', 'border-radius:50%',
         'background:linear-gradient(135deg,#00d4ff,#a855f7)',
         'border:none', 'color:#fff', 'font-size:18px',
         'cursor:pointer', 'box-shadow:0 4px 20px rgba(0,212,255,0.3)',
         'pointer-events:auto'
       ].join(';');
-      toggle.dataset.vrMode = 'simple';
 
-      var panelVisible = false;
-      panel.style.display = 'none';
+      var panelVisible = true;
       toggle.addEventListener('click', function () {
         panelVisible = !panelVisible;
         panel.style.display = panelVisible ? 'flex' : 'none';
-        toggle.style.opacity = panelVisible ? '0.6' : '1';
+        toggle.style.opacity = panelVisible ? '1' : '0.6';
       });
 
       document.body.appendChild(panel);
@@ -717,7 +771,7 @@
     (function () {
       var rig = document.getElementById('rig');
       var camera = document.querySelector('a-camera');
-      var moveSpeed = 0.06;
+      var moveSpeed = 0.035;
       var turnCooldown = false;
 
       function getYaw() {
@@ -774,7 +828,7 @@
         requestAnimationFrame(step);
       }
 
-      requestAnimationFrame(step);
+      if (rig) requestAnimationFrame(step);
     })();
   </script>
 
@@ -985,5 +1039,7 @@
   <!-- VR AI Agent -->
   <link rel="stylesheet" href="/vr/vr-ai-agent.css">
   <script src="/vr/vr-ai-agent.js"></script>
+  <!-- Layout Fix: resolve overlapping fixed-position widgets (must load LAST) -->
+  <script src="/vr/layout-fix.js"></script>
 </body>
 </html>

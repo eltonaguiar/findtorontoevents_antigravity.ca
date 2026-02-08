@@ -8,7 +8,7 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     ob_end_clean();
-    http_response_code(204);
+    header('HTTP/1.0 204 No Content');
     exit;
 }
 

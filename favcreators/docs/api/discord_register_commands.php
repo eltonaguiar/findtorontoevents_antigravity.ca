@@ -382,6 +382,78 @@ $commands = array(
             )
         )
     ),
+    // Near Me / Location Finder command
+    array(
+        'name' => 'fc-nearme',
+        'description' => 'Find nearby places, restaurants, services, and amenities',
+        'type' => 1,
+        'options' => array(
+            array(
+                'name' => 'query',
+                'description' => 'What to find (e.g. coffee shops, washrooms, halal pizza, pharmacy)',
+                'type' => 3,
+                'required' => true
+            ),
+            array(
+                'name' => 'location',
+                'description' => 'Where to search (postal code, intersection, landmark). Default: downtown Toronto',
+                'type' => 3,
+                'required' => false
+            ),
+            array(
+                'name' => 'filter',
+                'description' => 'Time/availability filter',
+                'type' => 3,
+                'required' => false,
+                'choices' => array(
+                    array('name' => 'Open Now', 'value' => 'open_now'),
+                    array('name' => 'Open Late (past 11pm)', 'value' => 'open_late'),
+                    array('name' => 'Open 24/7', 'value' => 'open_247'),
+                    array('name' => 'Top Rated', 'value' => 'top_rated')
+                )
+            ),
+            array(
+                'name' => 'dietary',
+                'description' => 'Dietary restriction filter',
+                'type' => 3,
+                'required' => false,
+                'choices' => array(
+                    array('name' => 'Halal', 'value' => 'halal'),
+                    array('name' => 'Vegan', 'value' => 'vegan'),
+                    array('name' => 'Kosher', 'value' => 'kosher'),
+                    array('name' => 'Vegetarian', 'value' => 'vegetarian'),
+                    array('name' => 'Gluten-Free', 'value' => 'gluten-free')
+                )
+            ),
+            array(
+                'name' => 'radius',
+                'description' => 'Search radius in km (default 2, max 50)',
+                'type' => 4,
+                'required' => false,
+                'min_value' => 1,
+                'max_value' => 50
+            )
+        )
+    ),
+    // World Events command
+    array(
+        'name' => 'fc-worldevents',
+        'description' => 'See what\'s happening in the world today (Super Bowl, news, holidays, etc.)',
+        'type' => 1,
+        'options' => array(
+            array(
+                'name' => 'range',
+                'description' => 'Time range to show',
+                'type' => 3,
+                'required' => false,
+                'choices' => array(
+                    array('name' => 'Today', 'value' => 'today'),
+                    array('name' => 'This Week', 'value' => 'week'),
+                    array('name' => 'Next Few Days', 'value' => '3days')
+                )
+            )
+        )
+    ),
     // Notification delivery mode command
     array(
         'name' => 'fc-notifymode',

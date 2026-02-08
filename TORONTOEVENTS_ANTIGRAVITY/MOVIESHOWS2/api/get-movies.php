@@ -10,8 +10,8 @@ require_once 'db-config.php';
 $pdo = getDbConnection();
 
 if (!$pdo) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed']);
+    header('HTTP/1.1 500 Internal Server Error');
+    echo json_encode(array('error' => 'Database connection failed'));
     exit;
 }
 
@@ -38,14 +38,14 @@ try {
 
     $movies = $stmt->fetchAll();
 
-    echo json_encode([
+    echo json_encode(array(
         'success' => true,
         'count' => count($movies),
         'movies' => $movies
-    ]);
+    ));
 
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+    header('HTTP/1.1 500 Internal Server Error');
+    echo json_encode(array('error' => $e->getMessage()));
 }
 ?>

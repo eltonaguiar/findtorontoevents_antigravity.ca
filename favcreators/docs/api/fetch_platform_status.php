@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $_FETCH_PLATFORM_DIRECT_ACCESS = (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME']));
 
 if ($_FETCH_PLATFORM_DIRECT_ACCESS) {
-    $allowed_platforms = array('twitch', 'kick', 'tiktok', 'instagram', 'twitter', 'reddit', 'youtube');
+    $allowed_platforms = array('twitch', 'kick', 'tiktok', 'instagram', 'twitter', 'reddit', 'youtube', 'spotify');
 
     $platform = isset($_GET['platform']) ? strtolower(trim($_GET['platform'])) : null;
     $username = isset($_GET['user']) ? trim($_GET['user']) : null;
@@ -108,6 +108,9 @@ if ($_FETCH_PLATFORM_DIRECT_ACCESS) {
             break;
         case 'youtube':
             $result = fetch_youtube_status($username);
+            break;
+        case 'spotify':
+            $result = fetch_spotify_status($username);
             break;
         default:
             $result = array('platform' => $platform, 'username' => $username, 'found' => false, 'updates' => array(), 'error' => 'Platform not implemented');
@@ -814,6 +817,113 @@ function fetch_youtube_status($username) {
         'account_url' => $account_url,
         'found' => !empty($updates),
         'is_live' => $is_live,
+        'updates' => $updates,
+        'error' => $error
+    );
+}
+
+
+/**
+ * SPOTIFY — Uses Spotify's public oEmbed API (no auth needed).
+ * Returns artist name, thumbnail, and profile link.
+ * Also attempts to scrape the artist page for recent release info.
+ */
+function fetch_spotify_status($username) {
+    $updates = array();
+    $error = null;
+
+    // Clean username — handle full URLs, strip URL prefix
+    if (preg_match('#open\.spotify\.com/(artist|show)/([A-Za-z0-9]+)#', $username, $url_m)) {
+        $username = $url_m[2];
+    }
+    $username = ltrim($username, '@/');
+
+    $account_url = "https://open.spotify.com/artist/" . urlencode($username);
+
+    // Method 1: oEmbed API (reliable, no auth needed)
+    $oembed_url = "https://open.spotify.com/oembed?url=" . urlencode($account_url);
+    $oembed_response = http_fetch($oembed_url);
+
+    $artist_name = '';
+    $thumbnail = '';
+
+    if ($oembed_response !== false) {
+        $oembed_data = json_decode($oembed_response, true);
+        if ($oembed_data && isset($oembed_data['title'])) {
+            $artist_name = $oembed_data['title'];
+            $thumbnail = isset($oembed_data['thumbnail_url']) ? $oembed_data['thumbnail_url'] : '';
+        }
+    }
+
+    // Method 2: Scrape artist page for og: meta tags
+    $page_response = http_fetch($account_url);
+    $description = '';
+
+    if ($page_response !== false) {
+        // Extract og:description
+        if (preg_match('/<meta\s+property="og:description"\s+content="([^"]+)"/i', $page_response, $desc_m)) {
+            $description = html_entity_decode($desc_m[1], ENT_QUOTES, 'UTF-8');
+        }
+        if (!$description && preg_match('/<meta\s+content="([^"]+)"\s+property="og:description"/i', $page_response, $desc_m)) {
+            $description = html_entity_decode($desc_m[1], ENT_QUOTES, 'UTF-8');
+        }
+
+        // Fallback for artist name from og:title
+        if (!$artist_name) {
+            if (preg_match('/<meta\s+property="og:title"\s+content="([^"]+)"/i', $page_response, $title_m)) {
+                $artist_name = html_entity_decode($title_m[1], ENT_QUOTES, 'UTF-8');
+            }
+        }
+
+        // Fallback for thumbnail from og:image
+        if (!$thumbnail) {
+            if (preg_match('/<meta\s+property="og:image"\s+content="([^"]+)"/i', $page_response, $img_m)) {
+                $thumbnail = $img_m[1];
+            }
+        }
+    }
+
+    // Build profile update if we found artist info
+    if ($artist_name || $oembed_response !== false) {
+        $profile_preview = $artist_name ? $artist_name . ' on Spotify' : 'Artist on Spotify';
+        if ($description) {
+            $profile_preview = substr($description, 0, 300);
+        }
+
+        $updates[] = array(
+            'update_type' => 'post',
+            'content_title' => $artist_name ? $artist_name : $username,
+            'content_url' => $account_url,
+            'content_preview' => $profile_preview,
+            'content_thumbnail' => $thumbnail,
+            'content_id' => 'spotify_profile_' . $username,
+            'is_live' => false,
+            'viewer_count' => 0,
+            'content_published_at' => null
+        );
+    }
+
+    // Fallback: bare profile link
+    if (empty($updates)) {
+        $updates[] = array(
+            'update_type' => 'profile',
+            'content_title' => $username . ' on Spotify',
+            'content_url' => $account_url,
+            'content_preview' => 'Visit artist profile on Spotify',
+            'content_id' => 'spotify_profile_' . $username,
+            'is_live' => false,
+            'viewer_count' => 0,
+            'content_published_at' => null
+        );
+        $error = 'Could not fetch Spotify data - profile link provided';
+    }
+
+    return array(
+        'platform' => 'spotify',
+        'username' => $username,
+        'account_url' => $account_url,
+        'found' => ($artist_name !== '' || !empty($updates)),
+        'is_live' => false,
         'updates' => $updates,
         'error' => $error
     );

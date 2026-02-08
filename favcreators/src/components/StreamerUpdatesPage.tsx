@@ -76,7 +76,8 @@ const SmartThumbnail: React.FC<SmartThumbnailProps> = ({ src, alt, contentUrl, p
         tiktok: '#000000',
         twitter: '#1DA1F2',
         instagram: '#E4405F',
-        news: '#4A4A4A'
+        news: '#4A4A4A',
+        spotify: '#1DB954'
     };
 
     const platformIcons: Record<string, string> = {
@@ -84,7 +85,8 @@ const SmartThumbnail: React.FC<SmartThumbnailProps> = ({ src, alt, contentUrl, p
         tiktok: '🎵',
         twitter: '🐦',
         instagram: '📷',
-        news: '📰'
+        news: '📰',
+        spotify: '🎧'
     };
 
     if (hasError || !currentSrc) {
@@ -130,7 +132,7 @@ interface ContentItem {
         name: string;
         avatarUrl: string;
     };
-    platform: 'youtube' | 'tiktok' | 'twitter' | 'instagram' | 'news';
+    platform: 'youtube' | 'tiktok' | 'twitter' | 'instagram' | 'news' | 'spotify';
     contentType: 'video' | 'short' | 'reel' | 'story' | 'tweet' | 'post' | 'article';
     title: string;
     description: string;
@@ -149,7 +151,9 @@ const StreamerUpdatesPage: React.FC = () => {
     const [contentTypeFilter] = useState<string[]>(['all']); // Reserved for future use
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [userId, setUserId] = useState<number>(0);
+    // Start with null so we don't fire a wasted fetch with user_id=0 before get_me resolves
+    const [userId, setUserId] = useState<number | null>(null);
+    const [userResolved, setUserResolved] = useState(false);
 
     // Platform icons
     const platformIcons: Record<string, string> = {
@@ -157,10 +161,11 @@ const StreamerUpdatesPage: React.FC = () => {
         tiktok: '🎵',
         twitter: '🐦',
         instagram: '📷',
-        news: '📰'
+        news: '📰',
+        spotify: '🎧'
     };
 
-    // Fetch user ID from session (or URL param for testing)
+    // Fetch user ID from session (or URL param for testing) - runs once on mount
     useEffect(() => {
         const fetchUserId = async () => {
             // Check for URL parameter override (for testing)
@@ -169,6 +174,7 @@ const StreamerUpdatesPage: React.FC = () => {
             if (urlUserId && !isNaN(parseInt(urlUserId))) {
                 console.log('[StreamerUpdates] Using URL param user_id:', urlUserId);
                 setUserId(parseInt(urlUserId));
+                setUserResolved(true);
                 return;
             }
 
@@ -178,6 +184,7 @@ const StreamerUpdatesPage: React.FC = () => {
             if (hashUserId && !isNaN(parseInt(hashUserId))) {
                 console.log('[StreamerUpdates] Using hash param user_id:', hashUserId);
                 setUserId(parseInt(hashUserId));
+                setUserResolved(true);
                 return;
             }
 
@@ -190,10 +197,9 @@ const StreamerUpdatesPage: React.FC = () => {
                 if (response.ok) {
                     const data = await response.json();
                     console.log('[StreamerUpdates] get_me.php returned:', data);
-                    // get_me.php returns {user: {id: ..., ...}, debug_log_enabled: ...}
-                    const userId = data.user?.id || data.id || 0;
-                    console.log('[StreamerUpdates] Detected user_id:', userId);
-                    setUserId(userId);
+                    const detectedId = data.user?.id || data.id || 0;
+                    console.log('[StreamerUpdates] Detected user_id:', detectedId);
+                    setUserId(detectedId);
                 } else {
                     setUserId(0); // Guest mode
                 }
@@ -201,16 +207,17 @@ const StreamerUpdatesPage: React.FC = () => {
                 console.error('Failed to fetch user ID:', err);
                 setUserId(0);
             }
+            setUserResolved(true);
         };
 
         fetchUserId();
     }, []);
 
-    // Fetch available creators
+    // Fetch available creators - only after userId is resolved
     useEffect(() => {
-        const fetchCreators = async () => {
-            if (userId === null) return;
+        if (!userResolved || userId === null) return;
 
+        const fetchCreators = async () => {
             try {
                 const authBase = await resolveAuthBase();
                 const url = `${authBase}/creator_news_creators.php?user_id=${userId}`;
@@ -231,11 +238,11 @@ const StreamerUpdatesPage: React.FC = () => {
         };
 
         fetchCreators();
-    }, [userId]);
+    }, [userId, userResolved]);
 
-    // Fetch content feed
+    // Fetch content feed - only after userId is resolved
     const fetchContentFeed = useCallback(async () => {
-        if (userId === null) return;
+        if (!userResolved || userId === null) return;
 
         setIsLoading(true);
         setError(null);
@@ -271,14 +278,14 @@ const StreamerUpdatesPage: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [userId, creatorFilter]);
+    }, [userId, userResolved, creatorFilter]);
 
-    // Initial load and re-fetch when filters change
+    // Initial load and re-fetch when filters change - only after userId is resolved
     useEffect(() => {
-        if (userId !== null) {
+        if (userResolved && userId !== null) {
             fetchContentFeed();
         }
-    }, [userId, creatorFilter, fetchContentFeed]);
+    }, [userId, userResolved, creatorFilter, fetchContentFeed]);
 
     // Apply filters
     useEffect(() => {
@@ -327,8 +334,20 @@ const StreamerUpdatesPage: React.FC = () => {
         return date.toLocaleDateString();
     };
 
+    // Show centered loading while resolving user identity
+    if (!userResolved) {
+        return (
+            <div style={{ width: '100%', padding: '20px', maxWidth: '1200px', margin: '0 auto', boxSizing: 'border-box' }}>
+                <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</div>
+                    <p style={{ color: 'var(--text-muted, #94a3b8)', fontSize: '1.1rem' }}>Loading your updates...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ width: '100%', padding: '20px', maxWidth: '1200px', margin: '0 auto', boxSizing: 'border-box' }}>
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h1 style={{ margin: 0 }}>Streamer Updates</h1>
@@ -373,7 +392,7 @@ const StreamerUpdatesPage: React.FC = () => {
                 </div>
                 <div style={{ marginBottom: '10px' }}>
                     <strong>Platforms:</strong>
-                    {['all', 'youtube', 'tiktok', 'twitter', 'instagram', 'news'].map(platform => (
+                    {['all', 'youtube', 'tiktok', 'twitter', 'instagram', 'news', 'spotify'].map(platform => (
                         <button
                             key={platform}
                             onClick={() => togglePlatformFilter(platform)}
@@ -401,7 +420,7 @@ const StreamerUpdatesPage: React.FC = () => {
             )}
 
             {/* Loading State */}
-            {isLoading && (
+            {isLoading && filteredItems.length === 0 && (
                 <div style={{ textAlign: 'center', padding: '40px' }}>
                     <div style={{ fontSize: '48px' }}>⏳</div>
                     <p>Loading content...</p>
@@ -416,8 +435,8 @@ const StreamerUpdatesPage: React.FC = () => {
                 </div>
             )}
 
-            {/* Content Feed */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+            {/* Content Feed - 3 columns on desktop, 2 on tablet, 1 on mobile */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', width: '100%' }}>
                 {filteredItems.map(item => (
                     <div
                         key={item.id}

@@ -11,6 +11,10 @@ RewriteRule ^services/users/ / [R=301,L]
 # VR: redirect uppercase /VR to lowercase /vr/ (case-sensitive servers)
 RewriteRule ^VR/?$ /vr/ [R=301,L]
 
+# MOVIESHOWS3: redirect any case variation to uppercase (case-sensitive servers)
+RewriteCond %{REQUEST_URI} !^/MOVIESHOWS3
+RewriteRule ^movieshows3(.*)$ /MOVIESHOWS3$1 [R=301,NC,L]
+
 # Stats page at /stats (root): serve stats/index.html
 RewriteRule ^stats/?$ stats/index.html [L]
 
