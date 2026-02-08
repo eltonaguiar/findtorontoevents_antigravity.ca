@@ -1,0 +1,40 @@
+---
+description: Rules for adding new games to the Game Arena
+globs:
+  - vr/game-arena/**
+  - vr/**/game*.html
+  - vr/**/game*.js
+alwaysApply: true
+---
+
+# Game Arena Rules
+
+## Adding New Games
+
+When creating or adding ANY new game to the project:
+
+1. **Game Arena Hub** (`vr/game-arena/index.html`): You MUST add a new portal entry (3D floating object + ENTER button + ground ring + floating label) to the Game Arena hub page. Follow the existing pattern of portals (Tic-Tac-Toe, Soccer Shootout, FPS Arena, Ant Rush). Each portal needs:
+   - A clickable 3D shape (box/sphere) with `zone-link` including both `url` and `label` for the confirmation dialog
+   - An ENTER/PLAY button with `zone-link`
+   - A ground ring and clickable floor cylinder
+   - A floating text label with game name and subtitle
+   - A point light in matching color
+   - Position the portal so it doesn't overlap existing ones
+
+2. **Navigation Menu** (`vr/nav-menu.js`): Add the game to the `SECTION_ACTIONS.gamearena` array with a label and action, and add a handler in `fireSectionAction()` for the new action.
+
+3. **Main Site** (`index.html`): Add the game to the "Other Stuff" section and optionally to the top navigation bar buttons.
+
+4. **VR Hub** (`vr/index.html`): If the game is significant, consider adding a reference to it from the Game Arena portal in the VR Hub.
+
+## Navigation Safety
+
+- ALL navigation from the Game Arena hub MUST use the `zone-link` component which triggers a confirmation dialog ("Play [game]? Yes/No") before navigating.
+- NEVER use direct `window.location.href` for game navigation without user confirmation.
+- The fuse cursor MUST remain disabled (`fuse: false`) on the Game Arena page to prevent accidental navigation from VR gaze-based input.
+- Challenge/invite toasts must also use the confirmation dialog, not direct navigation.
+
+## Menu Accessibility
+
+- Every VR page MUST include `<script src="/vr/nav-menu.js"></script>` at the bottom of the body to ensure the global navigation menu works (M key, Tab key, floating menu button, Meta Quest controller menu button).
+- Game pages that have their own keyboard handlers (like the FPS Arena) must not block the M key from opening the nav menu when the game is paused or in a lobby state.

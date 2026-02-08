@@ -37,6 +37,12 @@ const RANKS = [
   { name: 'Legend',          xp: 10000 }
 ];
 
+// Anti-cheat constants
+const MAX_SPEED_THRESHOLD = 20; // units per second
+const MAX_SHOTS_PER_SECOND = 15;
+const POSITION_HISTORY_SIZE = 10;
+const SPAWN_PROTECTION_TIME = 3; // seconds
+
 function getRank(xp) {
   let rank = RANKS[0];
   for (let i = RANKS.length - 1; i >= 0; i--) {
@@ -118,22 +124,32 @@ class FPSGameServer {
       // Match stats
       kills: 0,
       deaths: 0,
+      assists: 0,
       streak: 0,
       bestStreak: 0,
       xpEarned: 0,
+      headshots: 0,
+      damageDealt: 0,
       // In-game state
       health: MAX_HEALTH,
       armor: 50,
       alive: true,
       respawnTimer: 0,
       weapon: 'assault',
+      spawnProtection: SPAWN_PROTECTION_TIME,
       // Position / rotation
       position: { x: 0, y: 1.7, z: 0 },
       rotation: { x: 0, y: 0 },
       // Timestamps
       lastUpdate: Date.now(),
       lastShot: 0,
-      joinedAt: Date.now()
+      joinedAt: Date.now(),
+      // Anti-cheat
+      positionHistory: [],
+      shotTimestamps: [],
+      violations: 0,
+      // Match history for this session
+      lastDamagedBy: null
     };
   }
 
@@ -264,6 +280,8 @@ class FPSGameServer {
             allPlayers.push({
               name: p.name, rank: p.rank, totalXP: p.totalXP,
               kills: p.kills, deaths: p.deaths,
+              assists: p.assists || 0, headshots: p.headshots || 0,
+              damageDealt: p.damageDealt || 0,
               kd: p.deaths > 0 ? (p.kills / p.deaths).toFixed(2) : p.kills.toString(),
               roomName: room.name
             });
@@ -272,6 +290,49 @@ class FPSGameServer {
       }
       allPlayers.sort((a, b) => b.kills - a.kills);
       res.json({ success: true, leaderboard: allPlayers.slice(0, 50) });
+    });
+
+    // Server stats endpoint
+    this.app.get('/api/fps/stats', (req, res) => {
+      let totalPlayers = 0;
+      let totalBots = 0;
+      let activeMatches = 0;
+
+      for (const [, room] of this.rooms) {
+        const humanCount = Array.from(room.players.values()).filter(p => !p.isBot).length;
+        totalPlayers += humanCount;
+        totalBots += room.bots.length;
+        if (room.state === 'playing') activeMatches++;
+      }
+
+      res.json({
+        success: true,
+        stats: {
+          totalRooms: this.rooms.size,
+          activeMatches,
+          totalPlayers,
+          totalBots,
+          uptime: process.uptime(),
+          memory: process.memoryUsage().heapUsed
+        }
+      });
+    });
+
+    // Map info endpoint
+    this.app.get('/api/fps/maps', (req, res) => {
+      res.json({
+        success: true,
+        maps: [
+          {
+            id: 'arena_default',
+            name: 'Neon Arena',
+            description: 'The classic 80x80 arena with multiple levels, cover points, and hazard zones',
+            size: ARENA_SIZE,
+            maxPlayers: MAX_PLAYERS_PER_ROOM,
+            features: ['cover_objects', 'elevated_platforms', 'hazard_zones', 'weapon_pickups']
+          }
+        ]
+      });
     });
   }
 
@@ -480,12 +541,39 @@ class FPSGameServer {
         const player = room.players.get(info.playerId);
         if (!player || !player.alive) return;
 
-        // Validate and clamp position within arena
+        const now = Date.now();
         const half = ARENA_SIZE / 2;
+
         if (data.position) {
-          player.position.x = Math.max(-half, Math.min(half, data.position.x || 0));
-          player.position.y = Math.max(0, Math.min(20, data.position.y || 1.7));
-          player.position.z = Math.max(-half, Math.min(half, data.position.z || 0));
+          const newX = Math.max(-half, Math.min(half, data.position.x || 0));
+          const newY = Math.max(0, Math.min(20, data.position.y || 1.7));
+          const newZ = Math.max(-half, Math.min(half, data.position.z || 0));
+
+          // Anti-cheat: Speed validation
+          const dt = (now - player.lastUpdate) / 1000;
+          if (dt > 0.01) {
+            const dx = newX - player.position.x;
+            const dz = newZ - player.position.z;
+            const speed = Math.sqrt(dx * dx + dz * dz) / dt;
+            if (speed > MAX_SPEED_THRESHOLD) {
+              player.violations++;
+              if (player.violations > 20) {
+                console.warn(`[FPS-AC] ${player.name} speed violation: ${speed.toFixed(1)}u/s`);
+              }
+              // Silently reject extreme teleports but allow small ones
+              if (speed > MAX_SPEED_THRESHOLD * 3) return;
+            }
+          }
+
+          player.position.x = newX;
+          player.position.y = newY;
+          player.position.z = newZ;
+
+          // Track position history
+          player.positionHistory.push({ x: newX, z: newZ, t: now });
+          if (player.positionHistory.length > POSITION_HISTORY_SIZE) {
+            player.positionHistory.shift();
+          }
         }
         if (data.rotation) {
           player.rotation.x = data.rotation.x || 0;
@@ -494,7 +582,7 @@ class FPSGameServer {
         if (data.weapon && WEAPONS[data.weapon]) {
           player.weapon = data.weapon;
         }
-        player.lastUpdate = Date.now();
+        player.lastUpdate = now;
       });
 
       // ── Shoot Event (server-authoritative hit detection) ───────────────
@@ -509,9 +597,25 @@ class FPSGameServer {
         const weaponDef = WEAPONS[shooter.weapon];
         if (!weaponDef) return;
 
-        // Rate limit shooting (minimum 50ms between shots)
+        // Anti-cheat: Rate limit shooting
         const now = Date.now();
         if (now - shooter.lastShot < 50) return;
+
+        // Anti-cheat: Track shot frequency
+        shooter.shotTimestamps.push(now);
+        // Keep only last second of shots
+        shooter.shotTimestamps = shooter.shotTimestamps.filter(t => now - t < 1000);
+        if (shooter.shotTimestamps.length > MAX_SHOTS_PER_SECOND) {
+          shooter.violations++;
+          console.warn(`[FPS-AC] ${shooter.name} exceeded shot rate: ${shooter.shotTimestamps.length}/s (violations: ${shooter.violations})`);
+          if (shooter.violations > 10) {
+            socket.emit('error', { code: 'KICKED', message: 'Kicked for suspicious activity' });
+            this.handlePlayerLeave(socket);
+            return;
+          }
+          return; // Silently drop the shot
+        }
+
         shooter.lastShot = now;
 
         // data.targetId = who they claim to have hit
@@ -623,6 +727,9 @@ class FPSGameServer {
 
   // ─── DAMAGE APPLICATION ──────────────────────────────────────────────────
   applyDamage(room, shooter, target, damage, isTargetBot, headshot) {
+    // Check spawn protection
+    if (!isTargetBot && target.spawnProtection > 0) return;
+
     // Armor absorbs 60%
     if (target.armor > 0) {
       const armorDmg = Math.min(target.armor, damage * 0.6);
@@ -630,6 +737,23 @@ class FPSGameServer {
       damage = Math.round(damage - armorDmg);
     }
     target.health = Math.max(0, target.health - damage);
+
+    // Track damage dealt and assist credits
+    if (!shooter.isBot) shooter.damageDealt += damage;
+    if (headshot && !shooter.isBot) shooter.headshots++;
+
+    // Track last damaged by for assist credit
+    if (!isTargetBot && target.lastDamagedBy !== shooter.id) {
+      // If someone else damaged them before, they get an assist
+      if (target.lastDamagedBy) {
+        const assister = room.players.get(target.lastDamagedBy);
+        if (assister && assister.id !== shooter.id) {
+          assister.assists++;
+          assister.xpEarned += 10;
+        }
+      }
+      target.lastDamagedBy = shooter.id;
+    }
 
     if (target.health <= 0) {
       this.handleKill(room, shooter, target, isTargetBot, headshot);
@@ -640,7 +764,9 @@ class FPSGameServer {
       targetId: target.id,
       health: target.health,
       armor: target.armor,
-      attackerId: shooter.id
+      attackerId: shooter.id,
+      damage: damage,
+      headshot: !!headshot
     });
   }
 
@@ -693,12 +819,15 @@ class FPSGameServer {
       victim.health = MAX_HEALTH;
       victim.armor = 50;
       victim.alive = true;
+      victim.lastDamagedBy = null;
+      if (!isVictimBot) victim.spawnProtection = SPAWN_PROTECTION_TIME;
 
       this.io.to(room.id).emit('player_respawned', {
         playerId: victim.id,
         position: victim.position,
         health: victim.health,
-        armor: victim.armor
+        armor: victim.armor,
+        spawnProtection: SPAWN_PROTECTION_TIME
       });
     }, respawnDelay);
   }
@@ -762,6 +891,11 @@ class FPSGameServer {
       if (room.matchTime <= 0) {
         this.endMatch(room);
         return;
+      }
+
+      // Update spawn protection timers
+      for (const [, p] of room.players) {
+        if (p.spawnProtection > 0) p.spawnProtection -= dt;
       }
 
       // Update bots (simplified server-side AI)
@@ -879,25 +1013,29 @@ class FPSGameServer {
       this.roomTicks.delete(room.id);
     }
 
-    // Compile final scoreboard
+    // Compile final scoreboard with detailed stats
     const scoreboard = [];
     for (const [, p] of room.players) {
       scoreboard.push({
         id: p.id, name: p.name, rank: p.rank, isBot: false,
-        kills: p.kills, deaths: p.deaths, bestStreak: p.bestStreak,
-        xpEarned: p.xpEarned,
-        kd: p.deaths > 0 ? (p.kills / p.deaths).toFixed(2) : p.kills.toString()
+        kills: p.kills, deaths: p.deaths, assists: p.assists || 0,
+        headshots: p.headshots || 0, damageDealt: p.damageDealt || 0,
+        bestStreak: p.bestStreak, xpEarned: p.xpEarned,
+        kd: p.deaths > 0 ? (p.kills / p.deaths).toFixed(2) : p.kills.toString(),
+        score: p.kills * 100 + (p.assists || 0) * 25 + (p.headshots || 0) * 50 + p.xpEarned
       });
     }
     room.bots.forEach(b => {
       scoreboard.push({
         id: b.id, name: b.name, rank: b.rank, isBot: true,
-        kills: b.kills, deaths: b.deaths, bestStreak: b.bestStreak,
-        xpEarned: b.xpEarned || 0,
-        kd: b.deaths > 0 ? (b.kills / b.deaths).toFixed(2) : b.kills.toString()
+        kills: b.kills, deaths: b.deaths, assists: 0,
+        headshots: 0, damageDealt: 0,
+        bestStreak: b.bestStreak, xpEarned: b.xpEarned || 0,
+        kd: b.deaths > 0 ? (b.kills / b.deaths).toFixed(2) : b.kills.toString(),
+        score: b.kills * 100
       });
     });
-    scoreboard.sort((a, b) => b.kills - a.kills);
+    scoreboard.sort((a, b) => b.score - a.score);
 
     this.io.to(room.id).emit('match_ended', {
       scoreboard: scoreboard,
