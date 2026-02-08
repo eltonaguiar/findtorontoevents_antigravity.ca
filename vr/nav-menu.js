@@ -46,10 +46,23 @@
     stocks:   [{ label: 'Refresh Prices',    action: 'refresh' }],
     wellness: [{ label: 'Breathing Exercise', action: 'breathe' },   { label: 'Ambient Sounds',  action: 'ambient' }],
     weather:  [{ label: 'Refresh Weather',   action: 'refresh' }],
-    gamearena: [{ label: 'New Game',          action: 'newGame' }, { label: 'Soccer Shootout', action: 'soccer' }, { label: 'FPS Arena (18+)', action: 'fpsArena' }],
+    gamearena: [
+      { label: 'Tic-Tac-Toe',        action: 'tictactoe' },
+      { label: 'Soccer Shootout',     action: 'soccer' },
+      { label: 'FPS Arena (18+)',     action: 'fpsArena' },
+      { label: 'Ant Rush AR',         action: 'antRush' }
+    ],
     tutorial: [{ label: 'Restart Tutorial',  action: 'resetPos' }],
     antrush:  [{ label: 'Quick Mode',          action: 'quickMode' }, { label: 'Bed Challenge', action: 'bedChallenge' }]
   };
+
+  /* ── Games catalog (always accessible from any zone) ── */
+  var GAMES = [
+    { id: 'tictactoe', name: 'Tic-Tac-Toe',       emoji: '\u274C\u2B55', url: '/vr/game-arena/tic-tac-toe.html',    color: '#6366f1', desc: 'Classic 3x3 Strategy' },
+    { id: 'soccer',    name: 'Soccer Shootout',     emoji: '\u26BD',       url: '/vr/game-arena/soccer-shootout.html', color: '#22c55e', desc: 'Best of 3 Penalties' },
+    { id: 'fps',       name: 'FPS Arena (18+)',      emoji: '\uD83C\uDFAF', url: '/vr/game-arena/fps-arena.html',      color: '#ef4444', desc: '6 Weapons, AI Bots, PvP' },
+    { id: 'antrush',   name: 'Ant Rush AR',          emoji: '\uD83D\uDC1C', url: '/vr/ant-rush/',                      color: '#ff6b35', desc: 'Augmented Reality' }
+  ];
 
   /* ── State ── */
   var menuOpen = false;
@@ -216,8 +229,20 @@
       case 'ambient':
         toggleMusic();
         break;
+      case 'tictactoe':
+        window.location.href = '/vr/game-arena/tic-tac-toe.html';
+        break;
+      case 'soccer':
+        window.location.href = '/vr/game-arena/soccer-shootout.html';
+        break;
       case 'fpsArena':
         window.location.href = '/vr/game-arena/fps-arena.html';
+        break;
+      case 'antRush':
+        window.location.href = '/vr/ant-rush/';
+        break;
+      case 'newGame':
+        window.location.href = '/vr/game-arena/';
         break;
       case 'toggleLabels':
         document.querySelectorAll('a-text[value]').forEach(function (t) {
@@ -281,6 +306,29 @@
 
         // Section-specific actions
         sectionHTML +
+
+        // Games — always visible from every zone
+        '<div class="vr-nav-section-label">Games</div>' +
+        '<div class="vr-nav-games">' +
+          GAMES.map(function (g) {
+            return '<a href="' + g.url + '" class="vr-nav-game-item" style="--game-color:' + g.color + '">' +
+              '<span class="vr-game-emoji">' + g.emoji + '</span>' +
+              '<div class="vr-game-info">' +
+                '<span class="vr-game-name">' + g.name + '</span>' +
+                '<span class="vr-game-desc">' + g.desc + '</span>' +
+              '</div>' +
+              '<span class="vr-game-play">PLAY &rsaquo;</span>' +
+            '</a>';
+          }).join('') +
+          '<a href="/vr/game-arena/" class="vr-nav-game-item vr-nav-game-arena" style="--game-color:#a855f7">' +
+            '<span class="vr-game-emoji">\uD83C\uDFAE</span>' +
+            '<div class="vr-game-info">' +
+              '<span class="vr-game-name">Game Arena Hub</span>' +
+              '<span class="vr-game-desc">Browse all games in VR</span>' +
+            '</div>' +
+            '<span class="vr-game-play">GO &rsaquo;</span>' +
+          '</a>' +
+        '</div>' +
 
         // Area Guide button
         '<div class="vr-nav-section-label">Area Guide</div>' +
@@ -417,8 +465,8 @@
 
     var html = '';
     // Background panel
-    html += '<a-plane width="4.2" height="6.5" color="#0a0a1a" opacity="0.95" material="shader: flat"></a-plane>';
-    html += '<a-plane width="4.22" height="6.52" color="#00d4ff" opacity="0.4" position="0 0 -0.005" material="shader: flat; wireframe: true"></a-plane>';
+    html += '<a-plane width="4.2" height="9" color="#0a0a1a" opacity="0.95" material="shader: flat"></a-plane>';
+    html += '<a-plane width="4.22" height="9.02" color="#00d4ff" opacity="0.4" position="0 0 -0.005" material="shader: flat; wireframe: true"></a-plane>';
 
     // Header: current zone + clock
     html += '<a-text value="' + currentZone.emoji + ' ' + currentZone.name.toUpperCase() + '" position="0 2.8 0.02" align="center" width="6" color="' + currentZone.color + '"></a-text>';
@@ -442,8 +490,30 @@
       });
     }
 
+    // Games section (always shown)
+    var gamesStartY = actions.length > 0 ? (2.0 - actions.length * 0.4 - 0.3) : 2.2;
+    html += '<a-text value="GAMES" position="-1.7 ' + gamesStartY + ' 0.02" align="left" width="3" color="#475569"></a-text>';
+    GAMES.forEach(function (g, i) {
+      var y = gamesStartY - 0.3 - i * 0.38;
+      html += '<a-entity position="0 ' + y + ' 0.02" class="clickable"' +
+              '  onclick="window.location.href=\'' + g.url + '\'"' +
+              '  animation__hover="property: scale; to: 1.04 1.04 1.04; dur: 150; startEvents: mouseenter"' +
+              '  animation__leave="property: scale; to: 1 1 1; dur: 150; startEvents: mouseleave">' +
+              '<a-box width="3.6" height="0.3" depth="0.04" color="' + g.color + '" opacity="0.15"></a-box>' +
+              '<a-box width="0.08" height="0.3" depth="0.05" color="' + g.color + '" position="-1.76 0 0"></a-box>' +
+              '<a-text value="' + g.name.toUpperCase() + '" position="-0.2 0 0.03" align="center" width="3.6" color="#fff"></a-text></a-entity>';
+    });
+    // Game Arena hub link
+    var arenaY = gamesStartY - 0.3 - GAMES.length * 0.38;
+    html += '<a-entity position="0 ' + arenaY + ' 0.02" class="clickable"' +
+            '  onclick="window.location.href=\'/vr/game-arena/\'"' +
+            '  animation__hover="property: scale; to: 1.04 1.04 1.04; dur: 150; startEvents: mouseenter"' +
+            '  animation__leave="property: scale; to: 1 1 1; dur: 150; startEvents: mouseleave">' +
+            '<a-box width="3.6" height="0.3" depth="0.04" color="#a855f7" opacity="0.1"></a-box>' +
+            '<a-text value="GAME ARENA HUB" position="0 0 0.03" align="center" width="3.6" color="#a855f7"></a-text></a-entity>';
+
     // Zone navigation
-    var navStartY = actions.length > 0 ? (2.0 - actions.length * 0.4 - 0.3) : 2.2;
+    var navStartY = arenaY - 0.4;
     html += '<a-text value="NAVIGATE" position="-1.7 ' + navStartY + ' 0.02" align="left" width="3" color="#475569"></a-text>';
 
     ZONES.forEach(function (z, i) {
@@ -606,6 +676,17 @@
 .vr-nav-section-btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}\
 .vr-nav-section-btn{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#cbd5e1;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;transition:all .2s}\
 .vr-nav-section-btn:hover{background:rgba(255,255,255,0.12);color:#fff}\
+.vr-nav-games{display:flex;flex-direction:column;gap:4px;margin-bottom:6px}\
+.vr-nav-game-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-left:3px solid var(--game-color);border-radius:10px;text-decoration:none;color:#94a3b8;transition:all .2s;font-size:13px}\
+.vr-nav-game-item:hover{background:rgba(255,255,255,0.08);border-color:var(--game-color);color:#fff;transform:translateX(3px)}\
+.vr-game-emoji{font-size:18px;width:28px;text-align:center;flex-shrink:0}\
+.vr-game-info{flex:1;display:flex;flex-direction:column;gap:1px}\
+.vr-game-name{font-weight:600;font-size:13px;color:#e2e8f0}\
+.vr-game-desc{font-size:10px;color:#64748b}\
+.vr-game-play{font-size:11px;font-weight:700;color:var(--game-color);opacity:0;transition:all .2s;white-space:nowrap}\
+.vr-nav-game-item:hover .vr-game-play{opacity:1;transform:translateX(3px)}\
+.vr-nav-game-arena{border-left-style:dashed;opacity:0.7}\
+.vr-nav-game-arena:hover{opacity:1}\
 .vr-nav-zones{display:flex;flex-direction:column;gap:5px}\
 .vr-nav-zone{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;text-decoration:none;color:#94a3b8;transition:all .2s;font-size:14px}\
 .vr-nav-zone:hover{background:rgba(255,255,255,0.08);border-color:var(--zone-color);color:#fff;transform:translateX(3px)}\
