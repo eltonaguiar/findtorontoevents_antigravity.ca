@@ -1783,6 +1783,9 @@ function initGame() {
   // Spawn pickups
   spawnPickups();
 
+  // Create hazard zones
+  createHazardZones();
+
   // Setup input
   setupInput();
 
@@ -2622,6 +2625,11 @@ function killBot(bot) {
   // Audio
   AudioSys.playKill();
 
+  // 50% chance to drop a weapon
+  if (Math.random() < 0.5) {
+    spawnWeaponDrop(bot.position);
+  }
+
   // Kill feed
   addKillFeed(state.userName, bot.name);
 
@@ -2640,6 +2648,9 @@ function killBot(bot) {
 }
 
 function damagePlayer(damage, attackerName, attackerPos) {
+  // Spawn protection
+  if (isSpawnProtected()) return;
+
   // Armor absorbs 60% of damage
   if (state.armor > 0) {
     var armorDmg = Math.min(state.armor, damage * 0.6);
@@ -2739,8 +2750,9 @@ function respawnPlayer() {
     state.ammoClip[i] = w.clipSize;
     state.ammoReserve[i] = w.reserve;
   });
+  // Spawn protection
+  activateSpawnProtection();
   updateHUD();
-  showToast('Respawned!');
 }
 
 // ─── GAME LOOP ──────────────────────────────────────────────────────────────
@@ -3281,6 +3293,197 @@ function createExplosion(pos) {
     requestAnimationFrame(animateExplosion);
   }
   animateExplosion();
+}
+
+// ─── WEAPON DROPS FROM KILLED BOTS ──────────────────────────────────────────
+var weaponDrops = [];
+var weaponDropMeshes = [];
+
+function spawnWeaponDrop(position) {
+  // Random weapon drop
+  var weaponIdx = Math.floor(Math.random() * WEAPONS.length);
+  var w = WEAPONS[weaponIdx];
+
+  var group = new THREE.Group();
+  // Simple box representation of weapon
+  var geo = new THREE.BoxGeometry(0.3, 0.15, 0.6);
+  var mat = new THREE.MeshStandardMaterial({ color: new THREE.Color(w.color), emissive: new THREE.Color(w.color), emissiveIntensity: 0.3 });
+  var mesh = new THREE.Mesh(geo, mat);
+  group.add(mesh);
+
+  // Glow
+  var glowGeo = new THREE.SphereGeometry(0.5, 8, 8);
+  var glowMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(w.color), transparent: true, opacity: 0.15 });
+  var glow = new THREE.Mesh(glowGeo, glowMat);
+  group.add(glow);
+
+  group.position.set(position.x, 0.5, position.z);
+  scene.add(group);
+  weaponDropMeshes.push(group);
+
+  weaponDrops.push({
+    mesh: group,
+    weaponIdx: weaponIdx,
+    position: new THREE.Vector3(position.x, 0.5, position.z),
+    active: true,
+    lifetime: 20 // Disappears after 20 seconds
+  });
+}
+
+function updateWeaponDrops(dt) {
+  for (var i = weaponDrops.length - 1; i >= 0; i--) {
+    var drop = weaponDrops[i];
+    if (!drop.active) continue;
+
+    drop.lifetime -= dt;
+    if (drop.lifetime <= 0) {
+      scene.remove(drop.mesh);
+      weaponDropMeshes.splice(weaponDropMeshes.indexOf(drop.mesh), 1);
+      weaponDrops.splice(i, 1);
+      continue;
+    }
+
+    // Animate: hover and rotate
+    drop.mesh.position.y = 0.5 + Math.sin(Date.now() * 0.003) * 0.15;
+    drop.mesh.rotation.y += dt * 2;
+
+    // Blink when about to expire
+    if (drop.lifetime < 5) {
+      drop.mesh.visible = Math.sin(Date.now() * 0.01) > 0;
+    }
+
+    // Check player pickup
+    var dist = camera.position.distanceTo(drop.position);
+    if (dist < 2) {
+      // Switch to this weapon and refill its ammo
+      var w = WEAPONS[drop.weaponIdx];
+      state.currentWeapon = drop.weaponIdx;
+      state.ammoClip[drop.weaponIdx] = w.clipSize;
+      state.ammoReserve[drop.weaponIdx] = w.reserve;
+      AudioSys.playPickup();
+      showToast('Picked up ' + w.name + '!');
+      updateWeaponHUD();
+      updateHUD();
+
+      scene.remove(drop.mesh);
+      weaponDropMeshes.splice(weaponDropMeshes.indexOf(drop.mesh), 1);
+      weaponDrops.splice(i, 1);
+    }
+  }
+}
+
+// ─── SPAWN PROTECTION ───────────────────────────────────────────────────────
+var spawnProtectionTimer = 0;
+
+function activateSpawnProtection() {
+  spawnProtectionTimer = 3; // 3 seconds of protection
+  showToast('SPAWN PROTECTION (3s)');
+}
+
+function isSpawnProtected() {
+  return spawnProtectionTimer > 0;
+}
+
+// ─── ENVIRONMENT HAZARDS ────────────────────────────────────────────────────
+var hazardZones = [];
+
+function createHazardZones() {
+  // Electric zones that pulse and damage players/bots who stand in them
+  var hazardPositions = [
+    { x: 0, z: 0, radius: 2 },      // Central danger zone
+    { x: -30, z: -30, radius: 3 },   // Corner hazards
+    { x: 30, z: 30, radius: 3 },
+  ];
+
+  hazardPositions.forEach(function(hz) {
+    // Visual indicator - pulsing ring on ground
+    var ringGeo = new THREE.RingGeometry(hz.radius - 0.2, hz.radius, 32);
+    var ringMat = new THREE.MeshBasicMaterial({
+      color: 0xf59e0b, transparent: true, opacity: 0.4, side: THREE.DoubleSide
+    });
+    var ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.position.set(hz.x, 0.05, hz.z);
+    ring.rotation.x = -Math.PI / 2;
+    scene.add(ring);
+
+    // Inner danger area
+    var innerGeo = new THREE.CircleGeometry(hz.radius - 0.2, 32);
+    var innerMat = new THREE.MeshBasicMaterial({
+      color: 0xf59e0b, transparent: true, opacity: 0.08, side: THREE.DoubleSide
+    });
+    var inner = new THREE.Mesh(innerGeo, innerMat);
+    inner.position.set(hz.x, 0.04, hz.z);
+    inner.rotation.x = -Math.PI / 2;
+    scene.add(inner);
+
+    // Electric particle effect
+    var particleGeo = new THREE.BufferGeometry();
+    var positions = [];
+    for (var j = 0; j < 20; j++) {
+      var angle = Math.random() * Math.PI * 2;
+      var r = Math.random() * hz.radius;
+      positions.push(hz.x + Math.cos(angle) * r, 0.5 + Math.random() * 2, hz.z + Math.sin(angle) * r);
+    }
+    particleGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    var particleMat = new THREE.PointsMaterial({ color: 0xf59e0b, size: 0.08, transparent: true, opacity: 0.6 });
+    var particles = new THREE.Points(particleGeo, particleMat);
+    scene.add(particles);
+
+    hazardZones.push({
+      x: hz.x, z: hz.z, radius: hz.radius,
+      ring: ring, inner: inner, particles: particles,
+      damageTimer: 0
+    });
+  });
+}
+
+function updateHazardZones(dt) {
+  hazardZones.forEach(function(hz) {
+    // Pulse animation
+    var pulse = 0.3 + Math.sin(Date.now() * 0.005) * 0.15;
+    hz.ring.material.opacity = pulse;
+    hz.inner.material.opacity = pulse * 0.25;
+
+    // Update particles
+    var posArr = hz.particles.geometry.attributes.position.array;
+    for (var i = 0; i < posArr.length; i += 3) {
+      posArr[i + 1] += dt * (1 + Math.random());
+      if (posArr[i + 1] > 3) {
+        posArr[i + 1] = 0.2;
+        var angle = Math.random() * Math.PI * 2;
+        var r = Math.random() * hz.radius;
+        posArr[i] = hz.x + Math.cos(angle) * r;
+        posArr[i + 2] = hz.z + Math.sin(angle) * r;
+      }
+    }
+    hz.particles.geometry.attributes.position.needsUpdate = true;
+
+    // Damage check
+    hz.damageTimer -= dt;
+    if (hz.damageTimer <= 0) {
+      hz.damageTimer = 0.5; // damage every 0.5s
+
+      // Player damage
+      var playerDist = Math.sqrt(
+        Math.pow(camera.position.x - hz.x, 2) + Math.pow(camera.position.z - hz.z, 2)
+      );
+      if (playerDist < hz.radius && state.health > 0 && !isSpawnProtected()) {
+        damagePlayer(8, 'Electric Hazard');
+        showToast('HAZARD ZONE!');
+      }
+
+      // Bot damage
+      state.bots.forEach(function(bot) {
+        if (!bot.alive) return;
+        var botDist = Math.sqrt(
+          Math.pow(bot.position.x - hz.x, 2) + Math.pow(bot.position.z - hz.z, 2)
+        );
+        if (botDist < hz.radius) {
+          damageBot(bot, 10);
+        }
+      });
+    }
+  });
 }
 
 // ─── PICKUPS ────────────────────────────────────────────────────────────────
@@ -4551,10 +4754,17 @@ gameLoop = function() {
   }
 
   // ── Bots & Multiplayer ──────────────────────────────────────────────────
+  // Spawn protection timer
+  if (spawnProtectionTimer > 0) spawnProtectionTimer -= dt;
+
   if (!MP.roomId) { updateBots(dt); }
   updateRemotePlayers(dt);
   updateProjectiles(dt);
-  if (!MP.roomId) { updatePickups(dt); }
+  if (!MP.roomId) {
+    updatePickups(dt);
+    updateWeaponDrops(dt);
+    updateHazardZones(dt);
+  }
   updateTimerHUD();
   renderMinimap();
 
