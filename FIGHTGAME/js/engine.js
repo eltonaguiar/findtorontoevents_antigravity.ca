@@ -27,6 +27,14 @@ function InputManager() {
     window.addEventListener('gamepaddisconnected', function(e) {
         console.log('Gamepad disconnected: ' + e.gamepad.id);
     });
+
+    // Touch input state (set by touch controls overlay)
+    this.touchState = {
+        left: false, right: false, up: false, down: false,
+        lightAttack: false, heavyAttack: false, special: false,
+        grab: false, block: false, dash: false
+    };
+    this.prevTouchState = {};
 }
 
 InputManager.prototype.update = function() {
@@ -54,6 +62,10 @@ InputManager.prototype.postUpdate = function() {
                 this.prevGamepadButtons[g][b] = pad.buttons[b].pressed;
             }
         }
+    }
+    // Snapshot touch state for just-pressed detection
+    for (k in this.touchState) {
+        this.prevTouchState[k] = this.touchState[k];
     }
 };
 
@@ -117,6 +129,28 @@ InputManager.prototype.getPlayerInput = function(playerIndex, keyMap, gamepadInd
     input.specialPressed = this.isKeyJustPressed(keyMap.special);
     input.grabPressed = this.isKeyJustPressed(keyMap.grab);
     input.dashPressed = this.isKeyJustPressed(keyMap.dash);
+
+    // Touch overlay (player 1 only)
+    if (playerIndex === 0) {
+        var ts = this.touchState;
+        var pts = this.prevTouchState;
+        if (ts.left) input.left = true;
+        if (ts.right) input.right = true;
+        if (ts.up) input.up = true;
+        if (ts.down) input.down = true;
+        if (ts.lightAttack) input.lightAttack = true;
+        if (ts.heavyAttack) input.heavyAttack = true;
+        if (ts.special) input.special = true;
+        if (ts.grab) input.grab = true;
+        if (ts.block) input.block = true;
+        if (ts.dash) input.dash = true;
+        // Just-pressed: active now but not in previous frame
+        if (ts.lightAttack && !pts.lightAttack) input.lightAttackPressed = true;
+        if (ts.heavyAttack && !pts.heavyAttack) input.heavyAttackPressed = true;
+        if (ts.special && !pts.special) input.specialPressed = true;
+        if (ts.grab && !pts.grab) input.grabPressed = true;
+        if (ts.dash && !pts.dash) input.dashPressed = true;
+    }
 
     // Gamepad overlay
     if (gamepadIndex !== undefined && gamepadIndex !== null) {
@@ -1801,9 +1835,14 @@ GameEngine.prototype.update = function(dt) {
                 }
             }
             // Play countdown beep on text change
-            if (window.GameAudio && this.countdownText !== prevText) {
-                if (this.countdownText === 'FIGHT!') GameAudio.sfx.roundStart();
-                else GameAudio.sfx.countdown(parseInt(this.countdownText));
+            if (this.countdownText !== prevText) {
+                if (window.GameAudio) {
+                    if (this.countdownText === 'FIGHT!') GameAudio.sfx.roundStart();
+                    else GameAudio.sfx.countdown(parseInt(this.countdownText));
+                }
+                if (this.countdownText === 'FIGHT!' && this.onCountdownFight) {
+                    this.onCountdownFight();
+                }
             }
             break;
 

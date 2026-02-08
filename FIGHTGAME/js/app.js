@@ -235,6 +235,7 @@ var App = {
         }
 
         this._setupEventListeners();
+        this._initTouchControls();
         this._renderCharacterGrid();
         this._renderWeaponGrid();
         this._renderStageGrid();
@@ -325,6 +326,14 @@ var App = {
         var gameContainer = document.getElementById('game-container');
         if (gameContainer) {
             gameContainer.style.display = screenId === 'game-screen' ? 'block' : 'none';
+        }
+
+        // Touch controls: show only during gameplay
+        if (screenId === 'game-screen') {
+            this._showTouchControls(true);
+        } else {
+            this._showTouchControls(false);
+            this._clearTouchState();
         }
     },
 
@@ -488,6 +497,102 @@ var App = {
         window.addEventListener('gamepaddisconnected', function() {
             self._updateGamepadStatus();
         });
+    },
+
+    // === MOBILE TOUCH CONTROLS ===
+    _isTouchDevice: false,
+
+    _initTouchControls: function() {
+        var self = this;
+        // Detect touch capability
+        this._isTouchDevice = ('ontouchstart' in window) ||
+            (navigator.maxTouchPoints > 0) ||
+            (navigator.msMaxTouchPoints > 0);
+
+        var container = document.getElementById('touch-controls');
+        if (!container) return;
+
+        if (this._isTouchDevice) {
+            container.classList.remove('hidden');
+        }
+
+        var buttons = container.querySelectorAll('.touch-btn');
+        for (var i = 0; i < buttons.length; i++) {
+            (function(btn) {
+                var action = btn.getAttribute('data-action');
+                if (!action) return;
+
+                // Touch start — activate
+                btn.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    btn.classList.add('pressed');
+                    if (self.engine && self.engine.input) {
+                        self.engine.input.touchState[action] = true;
+                    }
+                    // Ensure audio context is unlocked
+                    if (window.GameAudio) GameAudio.ensureResumed();
+                }, { passive: false });
+
+                // Touch end — deactivate
+                btn.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    btn.classList.remove('pressed');
+                    if (self.engine && self.engine.input) {
+                        self.engine.input.touchState[action] = false;
+                    }
+                }, { passive: false });
+
+                // Touch cancel (e.g. finger slides off)
+                btn.addEventListener('touchcancel', function(e) {
+                    btn.classList.remove('pressed');
+                    if (self.engine && self.engine.input) {
+                        self.engine.input.touchState[action] = false;
+                    }
+                }, { passive: false });
+
+                // Also handle touchmove leaving the button
+                btn.addEventListener('touchmove', function(e) {
+                    var touch = e.touches[0];
+                    if (!touch) return;
+                    var rect = btn.getBoundingClientRect();
+                    var inside = touch.clientX >= rect.left && touch.clientX <= rect.right &&
+                                 touch.clientY >= rect.top && touch.clientY <= rect.bottom;
+                    if (!inside) {
+                        btn.classList.remove('pressed');
+                        if (self.engine && self.engine.input) {
+                            self.engine.input.touchState[action] = false;
+                        }
+                    }
+                }, { passive: false });
+
+                // Prevent context menu on long-press
+                btn.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+            })(buttons[i]);
+        }
+
+        // Prevent scroll/zoom on the touch controls area
+        container.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
+    },
+
+    _showTouchControls: function(show) {
+        var el = document.getElementById('touch-controls');
+        if (!el) return;
+        if (show && this._isTouchDevice) {
+            el.classList.remove('hidden');
+        } else {
+            el.classList.add('hidden');
+        }
+    },
+
+    // Clear all touch state (e.g. on screen transition)
+    _clearTouchState: function() {
+        if (this.engine && this.engine.input) {
+            var ts = this.engine.input.touchState;
+            for (var k in ts) ts[k] = false;
+        }
+        // Remove pressed class from all buttons
+        var btns = document.querySelectorAll('.touch-btn.pressed');
+        for (var i = 0; i < btns.length; i++) btns[i].classList.remove('pressed');
     },
 
     // === ANNOUNCER (Web Speech API) ===

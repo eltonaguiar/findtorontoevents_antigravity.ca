@@ -398,12 +398,15 @@ body {
     align-items: center;
     justify-content: center;
     background: #000;
+    touch-action: none;
+    overflow: hidden;
 }
 #gameCanvas {
     display: block;
     image-rendering: crisp-edges;
     max-width: 100%;
     max-height: 100vh;
+    touch-action: none;
 }
 
 /* === RESULTS SCREEN === */
@@ -737,6 +740,175 @@ body {
 }
 @media (max-width: 480px) {
     .controls-overlay-grid { grid-template-columns: 1fr; }
+}
+
+/* === MOBILE TOUCH CONTROLS === */
+.touch-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9000;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 10px 12px 14px;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+.touch-controls.hidden { display: none; }
+
+.touch-dpad, .touch-actions {
+    pointer-events: auto;
+}
+
+/* D-Pad cluster */
+.touch-dpad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+.touch-dpad-mid {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+/* Action buttons cluster */
+.touch-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.touch-actions-row {
+    display: flex;
+    gap: 8px;
+}
+
+/* Base button style */
+.touch-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.55);
+    color: #ddd;
+    font-family: 'Orbitron', 'Rajdhani', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition: background 0.08s, transform 0.08s;
+    touch-action: manipulation;
+}
+.touch-btn:active, .touch-btn.pressed {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(0.92);
+}
+
+/* D-pad buttons */
+.touch-up, .touch-down {
+    width: 56px;
+    height: 44px;
+    font-size: 18px;
+}
+.touch-left, .touch-right {
+    width: 44px;
+    height: 56px;
+    font-size: 18px;
+}
+
+/* Attack buttons (larger, colored) */
+.touch-atk {
+    width: 58px;
+    height: 58px;
+    font-size: 20px;
+    border-radius: 50%;
+}
+.touch-light {
+    border-color: rgba(100, 200, 255, 0.5);
+    color: #66ccff;
+    text-shadow: 0 0 6px rgba(100, 200, 255, 0.4);
+}
+.touch-light:active, .touch-light.pressed {
+    background: rgba(100, 200, 255, 0.3);
+}
+.touch-heavy {
+    border-color: rgba(255, 100, 50, 0.5);
+    color: #ff6644;
+    text-shadow: 0 0 6px rgba(255, 100, 50, 0.4);
+}
+.touch-heavy:active, .touch-heavy.pressed {
+    background: rgba(255, 100, 50, 0.3);
+}
+.touch-special {
+    border-color: rgba(255, 215, 0, 0.5);
+    color: #ffd700;
+    text-shadow: 0 0 6px rgba(255, 215, 0, 0.4);
+}
+.touch-special:active, .touch-special.pressed {
+    background: rgba(255, 215, 0, 0.3);
+}
+
+/* Utility buttons (smaller) */
+.touch-util {
+    width: 48px;
+    height: 40px;
+    font-size: 14px;
+    border-radius: 10px;
+}
+.touch-grab {
+    border-color: rgba(180, 100, 255, 0.4);
+    color: #bb77ff;
+}
+.touch-grab:active, .touch-grab.pressed {
+    background: rgba(180, 100, 255, 0.25);
+}
+.touch-block {
+    border-color: rgba(100, 255, 160, 0.4);
+    color: #77ffaa;
+}
+.touch-block:active, .touch-block.pressed {
+    background: rgba(100, 255, 160, 0.25);
+}
+.touch-dash {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ccc;
+}
+.touch-dash:active, .touch-dash.pressed {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Touch device: shrink canvas to leave room for controls */
+@media (pointer: coarse) {
+    #gameCanvas {
+        max-height: 55vh;
+    }
+    #game-container {
+        height: auto;
+        padding-top: 4px;
+        align-items: flex-start;
+    }
+}
+
+/* Landscape orientation on small screens — tighten layout */
+@media (max-height: 500px) {
+    .touch-controls { padding: 4px 8px 6px; }
+    .touch-atk { width: 50px; height: 50px; font-size: 17px; }
+    .touch-util { width: 42px; height: 34px; font-size: 12px; }
+    .touch-up, .touch-down { width: 48px; height: 36px; font-size: 15px; }
+    .touch-left, .touch-right { width: 36px; height: 48px; font-size: 15px; }
+    .touch-actions-row { gap: 6px; }
+    .touch-actions { gap: 4px; }
+}
+@media (pointer: coarse) and (max-height: 500px) {
+    #gameCanvas { max-height: 45vh; }
+    .touch-controls { padding: 2px 6px 4px; }
 }
 
 /* === SOUND TOGGLE BUTTON === */
