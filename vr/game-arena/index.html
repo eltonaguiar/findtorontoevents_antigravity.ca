@@ -25,15 +25,18 @@
       }
     });
 
-    // Zone link: navigate on click
+    // Zone link: navigate on click WITH CONFIRMATION DIALOG
     AFRAME.registerComponent('zone-link', {
-      schema: { url: { type: 'string', default: '' } },
+      schema: {
+        url: { type: 'string', default: '' },
+        label: { type: 'string', default: '' }
+      },
       init: function () {
         var self = this;
         this.el.addEventListener('click', function () {
           if (!self.data.url) return;
-          self.el.setAttribute('animation__flash', 'property: opacity; from: 1; to: 0.3; dur: 150; dir: alternate; loop: 3');
-          setTimeout(function () { window.location.href = self.data.url; }, 400);
+          // Show confirmation dialog instead of auto-navigating
+          showNavigationConfirm(self.data.label || self.data.url, self.data.url);
         });
         this.el.addEventListener('mouseenter', function () {
           self.el.setAttribute('animation__grow', 'property: scale; to: 1.1 1.1 1.1; dur: 200; easing: easeOutQuad');
@@ -144,6 +147,50 @@
       text-decoration: none; transition: all 0.2s;
     }
     #back-btn:hover { border-color: rgba(168,85,247,0.5); background: rgba(10,10,30,0.95); }
+
+    /* Navigation confirmation dialog */
+    #nav-confirm {
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center;
+    }
+    #nav-confirm.active { display: flex; }
+    .nav-confirm-card {
+      background: rgba(15,15,35,0.95);
+      border: 1.5px solid rgba(168,85,247,0.4);
+      border-radius: 20px; padding: 32px; max-width: 400px; width: 90%;
+      text-align: center; box-shadow: 0 20px 60px rgba(168,85,247,0.15);
+      animation: confirmPop 0.25s ease;
+    }
+    @keyframes confirmPop { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    .nav-confirm-card h2 { font-size: 1.3rem; margin-bottom: 8px; color: #fff; }
+    .nav-confirm-card p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 20px; }
+    .nav-confirm-btns { display: flex; gap: 10px; justify-content: center; }
+    .nav-confirm-btn {
+      padding: 12px 28px; border-radius: 10px; font-size: 14px; font-weight: 700;
+      cursor: pointer; border: none; transition: all 0.2s;
+    }
+    .nav-confirm-btn.yes {
+      background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff;
+    }
+    .nav-confirm-btn.yes:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(168,85,247,0.3); }
+    .nav-confirm-btn.no {
+      background: rgba(255,255,255,0.08); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1);
+    }
+    .nav-confirm-btn.no:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+    /* Visible menu button (always shown, top-left area below HUD) */
+    #menu-btn {
+      position: fixed; bottom: 16px; left: 16px; z-index: 200;
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      border: none; border-radius: 12px; padding: 10px 18px;
+      color: white; font-size: 13px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      box-shadow: 0 4px 16px rgba(168,85,247,0.3);
+      transition: all 0.2s;
+    }
+    #menu-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(168,85,247,0.4); }
+    #menu-btn .key-hint { font-size: 10px; opacity: 0.7; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 4px; }
   </style>
 </head>
 <body>
@@ -174,6 +221,23 @@
 
   <!-- Back -->
   <a id="back-btn" href="/vr/">&#8592; VR Hub</a>
+
+  <!-- Visible menu button -->
+  <button id="menu-btn" onclick="if(window.toggleNavMenu)toggleNavMenu();" title="Open Menu (press M)">
+    &#9776; Menu <span class="key-hint">M</span>
+  </button>
+
+  <!-- Navigation confirmation dialog -->
+  <div id="nav-confirm">
+    <div class="nav-confirm-card">
+      <h2 id="nav-confirm-title">Play this game?</h2>
+      <p id="nav-confirm-desc">You are about to navigate to a different game.</p>
+      <div class="nav-confirm-btns">
+        <button class="nav-confirm-btn yes" id="nav-confirm-yes">Yes, Play!</button>
+        <button class="nav-confirm-btn no" id="nav-confirm-no">Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Toast container -->
   <div id="toast-container"></div>
@@ -218,11 +282,11 @@
     </a-entity>
 
     <!-- ===== GAME PORTAL: TIC-TAC-TOE ===== -->
-    <a-entity position="-7 0 -6">
+    <a-entity position="-8 0 -5">
       <!-- Floating game cube -->
       <a-box class="clickable" position="0 2 0" width="2.5" height="2.5" depth="2.5"
              color="#6366f1" opacity="0.85"
-             zone-link="url: /vr/game-arena/tic-tac-toe.html"
+             zone-link="url: /vr/game-arena/tic-tac-toe.html; label: Tic-Tac-Toe"
              hover-glow="color: #6366f1"
              animation="property: rotation; to: 0 360 0; dur: 25000; loop: true; easing: linear">
         <!-- X and O on faces -->
@@ -236,7 +300,7 @@
       <!-- ENTER button -->
       <a-entity position="0 -0.2 1.5" look-at-camera>
         <a-plane class="clickable" width="2.2" height="0.55" color="#6366f1" opacity="0.9"
-                 zone-link="url: /vr/game-arena/tic-tac-toe.html"
+                 zone-link="url: /vr/game-arena/tic-tac-toe.html; label: Tic-Tac-Toe"
                  animation="property: position; from: 0 0 0; to: 0 0.08 0; dur: 1500; dir: alternate; loop: true; easing: easeInOutSine">
           <a-text value="PLAY TIC-TAC-TOE" align="center" width="4" color="#fff" position="0 0 0.01" font="mozillavr"></a-text>
         </a-plane>
@@ -245,7 +309,7 @@
       <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="1.8" radius-outer="2" color="#6366f1" opacity="0.5"
               animation="property: rotation; to: -90 360 0; dur: 10000; loop: true; easing: linear"></a-ring>
       <a-cylinder position="0 0.01 0" radius="1.8" height="0.02" color="#6366f1" opacity="0.12"
-                  class="clickable" zone-link="url: /vr/game-arena/tic-tac-toe.html"></a-cylinder>
+                  class="clickable" zone-link="url: /vr/game-arena/tic-tac-toe.html; label: Tic-Tac-Toe"></a-cylinder>
       <!-- Floating label -->
       <a-entity position="0 4 0" look-at-camera>
         <a-text value="Tic-Tac-Toe" align="center" width="5" color="#6366f1"></a-text>
@@ -254,11 +318,11 @@
     </a-entity>
 
     <!-- ===== GAME PORTAL: SOCCER SHOOTOUT ===== -->
-    <a-entity position="7 0 -6">
+    <a-entity position="8 0 -5">
       <!-- Floating soccer ball (sphere) -->
       <a-sphere class="clickable" position="0 2 0" radius="1.3"
                 color="#22c55e" opacity="0.85"
-                zone-link="url: /vr/game-arena/soccer-shootout.html"
+                zone-link="url: /vr/game-arena/soccer-shootout.html; label: Soccer Shootout"
                 hover-glow="color: #22c55e"
                 animation="property: rotation; to: 360 360 0; dur: 20000; loop: true; easing: linear">
         <a-text value="GOAL!" align="center" position="0 0.2 1.31" width="4" color="#fff" font="mozillavr"></a-text>
@@ -268,7 +332,7 @@
       <!-- ENTER button -->
       <a-entity position="0 -0.2 1.5" look-at-camera>
         <a-plane class="clickable" width="2.4" height="0.55" color="#22c55e" opacity="0.9"
-                 zone-link="url: /vr/game-arena/soccer-shootout.html"
+                 zone-link="url: /vr/game-arena/soccer-shootout.html; label: Soccer Shootout"
                  animation="property: position; from: 0 0 0; to: 0 0.08 0; dur: 1500; dir: alternate; loop: true; easing: easeInOutSine">
           <a-text value="PLAY SOCCER SHOOTOUT" align="center" width="4.5" color="#000" position="0 0 0.01" font="mozillavr"></a-text>
         </a-plane>
@@ -277,7 +341,7 @@
       <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="1.8" radius-outer="2" color="#22c55e" opacity="0.5"
               animation="property: rotation; to: -90 360 0; dur: 10000; loop: true; easing: linear"></a-ring>
       <a-cylinder position="0 0.01 0" radius="1.8" height="0.02" color="#22c55e" opacity="0.12"
-                  class="clickable" zone-link="url: /vr/game-arena/soccer-shootout.html"></a-cylinder>
+                  class="clickable" zone-link="url: /vr/game-arena/soccer-shootout.html; label: Soccer Shootout"></a-cylinder>
       <!-- Floating label -->
       <a-entity position="0 4 0" look-at-camera>
         <a-text value="Soccer Shootout" align="center" width="5" color="#22c55e"></a-text>
@@ -286,14 +350,14 @@
     </a-entity>
 
     <!-- ===== GAME PORTAL: FPS ARENA (18+ PvP Multiplayer) ===== -->
-    <a-entity position="0 0 -8">
+    <a-entity position="-5 0 -12">
       <!-- Pulsing glow aura -->
       <a-sphere position="0 2 0" radius="2.2" color="#ef4444" opacity="0.06"
                 animation="property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dur: 2000; dir: alternate; loop: true; easing: easeInOutSine"></a-sphere>
       <!-- Floating weapon-shaped cube (slightly larger than others) -->
       <a-box class="clickable" position="0 2 0" width="3" height="3" depth="3"
              color="#ef4444" opacity="0.85"
-             zone-link="url: /vr/game-arena/fps-arena.html"
+             zone-link="url: /vr/game-arena/fps-arena.html; label: FPS Arena (18+)"
              hover-glow="color: #ef4444"
              animation="property: rotation; to: 0 360 0; dur: 18000; loop: true; easing: linear">
         <a-text value="FPS" align="center" position="0 0.4 1.51" width="7" color="#fff" font="mozillavr"></a-text>
@@ -306,7 +370,7 @@
       <!-- ENTER button -->
       <a-entity position="0 -0.2 2" look-at-camera>
         <a-plane class="clickable" width="3" height="0.6" color="#ef4444" opacity="0.9"
-                 zone-link="url: /vr/game-arena/fps-arena.html"
+                 zone-link="url: /vr/game-arena/fps-arena.html; label: FPS Arena (18+)"
                  animation="property: position; from: 0 0 0; to: 0 0.08 0; dur: 1500; dir: alternate; loop: true; easing: easeInOutSine">
           <a-text value="PLAY FPS ARENA (18+)" align="center" width="5" color="#fff" position="0 0 0.01" font="mozillavr"></a-text>
         </a-plane>
@@ -315,13 +379,50 @@
       <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="2" radius-outer="2.3" color="#ef4444" opacity="0.5"
               animation="property: rotation; to: -90 360 0; dur: 6000; loop: true; easing: linear"></a-ring>
       <a-cylinder position="0 0.01 0" radius="2" height="0.02" color="#ef4444" opacity="0.15"
-                  class="clickable" zone-link="url: /vr/game-arena/fps-arena.html"></a-cylinder>
+                  class="clickable" zone-link="url: /vr/game-arena/fps-arena.html; label: FPS Arena (18+)"></a-cylinder>
       <!-- Floating label -->
       <a-entity position="0 4.5 0" look-at-camera>
         <a-text value="FPS Arena" align="center" width="6" color="#ef4444" font="mozillavr"></a-text>
         <a-text value="18+ | PvP Multiplayer | AI Bots | Ranked" align="center" width="4.5" color="#888" position="0 -0.4 0"></a-text>
       </a-entity>
     </a-entity>
+
+    <!-- ===== GAME PORTAL: ANT RUSH AR ===== -->
+    <a-entity position="5 0 -12">
+      <!-- Floating ant-themed sphere -->
+      <a-sphere class="clickable" position="0 2 0" radius="1.4"
+                color="#ff6b35" opacity="0.85"
+                zone-link="url: /vr/ant-rush/; label: Ant Rush AR"
+                hover-glow="color: #ff6b35"
+                animation="property: rotation; to: 0 360 0; dur: 20000; loop: true; easing: linear">
+        <a-text value="ANT" align="center" position="0 0.3 1.41" width="5" color="#fff" font="mozillavr"></a-text>
+        <a-text value="RUSH" align="center" position="0 -0.3 1.41" width="4" color="#fde68a"></a-text>
+        <a-text value="ANT" align="center" position="0 0.3 -1.41" rotation="0 180 0" width="5" color="#fff" font="mozillavr"></a-text>
+        <a-text value="RUSH" align="center" position="0 -0.3 -1.41" rotation="0 180 0" width="4" color="#fde68a"></a-text>
+      </a-sphere>
+      <!-- ENTER button -->
+      <a-entity position="0 -0.2 1.5" look-at-camera>
+        <a-plane class="clickable" width="2.4" height="0.55" color="#ff6b35" opacity="0.9"
+                 zone-link="url: /vr/ant-rush/; label: Ant Rush AR"
+                 animation="property: position; from: 0 0 0; to: 0 0.08 0; dur: 1500; dir: alternate; loop: true; easing: easeInOutSine">
+          <a-text value="PLAY ANT RUSH" align="center" width="4.5" color="#fff" position="0 0 0.01" font="mozillavr"></a-text>
+        </a-plane>
+      </a-entity>
+      <!-- Ground ring -->
+      <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="1.8" radius-outer="2" color="#ff6b35" opacity="0.5"
+              animation="property: rotation; to: -90 360 0; dur: 10000; loop: true; easing: linear"></a-ring>
+      <a-cylinder position="0 0.01 0" radius="1.8" height="0.02" color="#ff6b35" opacity="0.12"
+                  class="clickable" zone-link="url: /vr/ant-rush/; label: Ant Rush AR"></a-cylinder>
+      <!-- Floating label -->
+      <a-entity position="0 4 0" look-at-camera>
+        <a-text value="Ant Rush AR" align="center" width="5" color="#ff6b35"></a-text>
+        <a-text value="Augmented Reality Challenge" align="center" width="3" color="#888" position="0 -0.35 0"></a-text>
+      </a-entity>
+      <!-- Light -->
+    </a-entity>
+
+    <!-- Ant Rush light -->
+    <a-light type="point" position="5 3 -12" color="#ff6b35" intensity="0.6" distance="12"></a-light>
 
     <!-- ===== LEADERBOARD PANEL ===== -->
     <a-entity position="8 1.5 2" rotation="0 -45 0" id="leaderboard-panel">
@@ -374,7 +475,7 @@
     <!-- Camera Rig -->
     <a-entity id="rig" position="0 1.6 4">
       <a-camera look-controls wasd-controls="acceleration: 40" fov="80">
-        <a-ring cursor="fuse: true; fuseTimeout: 1500"
+        <a-ring cursor="fuse: false"
                 raycaster="objects: .clickable; far: 30"
                 radius-inner="0.005" radius-outer="0.012"
                 color="#a855f7" shader="flat"
@@ -583,7 +684,7 @@
         t.innerHTML = '<div class="toast-title">' + challenger + ' challenges you!</div>'
           + '<div class="toast-msg">' + game.name + '</div>'
           + '<div class="toast-actions">'
-          + '<button class="toast-btn accept" onclick="window.location.href=\'' + game.url + '?opponent=' + encodeURIComponent(challenger) + '\'">Accept</button>'
+          + '<button class="toast-btn accept" onclick="showNavigationConfirm(\'' + game.name + '\', \'' + game.url + '?opponent=' + encodeURIComponent(challenger) + '\')">Accept</button>'
           + '<button class="toast-btn decline" onclick="this.closest(\'.toast\').remove()">Decline</button>'
           + '</div>';
         c.appendChild(t);
@@ -614,5 +715,56 @@
     init();
   })();
   </script>
+
+  <!-- Navigation confirmation dialog logic -->
+  <script>
+  (function() {
+    'use strict';
+    var confirmEl = document.getElementById('nav-confirm');
+    var confirmTitle = document.getElementById('nav-confirm-title');
+    var confirmDesc = document.getElementById('nav-confirm-desc');
+    var confirmYes = document.getElementById('nav-confirm-yes');
+    var confirmNo = document.getElementById('nav-confirm-no');
+    var pendingUrl = null;
+
+    window.showNavigationConfirm = function(label, url) {
+      pendingUrl = url;
+      confirmTitle.textContent = 'Play ' + label + '?';
+      confirmDesc.textContent = 'You will be taken to ' + label + '. Continue?';
+      confirmEl.classList.add('active');
+    };
+
+    confirmYes.addEventListener('click', function() {
+      confirmEl.classList.remove('active');
+      if (pendingUrl) {
+        window.location.href = pendingUrl;
+      }
+    });
+
+    confirmNo.addEventListener('click', function() {
+      confirmEl.classList.remove('active');
+      pendingUrl = null;
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && confirmEl.classList.contains('active')) {
+        confirmEl.classList.remove('active');
+        pendingUrl = null;
+      }
+    });
+
+    // Close on clicking outside the card
+    confirmEl.addEventListener('click', function(e) {
+      if (e.target === confirmEl) {
+        confirmEl.classList.remove('active');
+        pendingUrl = null;
+      }
+    });
+  })();
+  </script>
+
+  <!-- VR Navigation Menu (provides M/Tab menu, floating button, Quest gamepad support) -->
+  <script src="/vr/nav-menu.js"></script>
 </body>
 </html>
