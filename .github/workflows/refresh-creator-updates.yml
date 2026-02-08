@@ -1,0 +1,41 @@
+name: Refresh Creator Updates
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC (9 PM EST / 10 PM EDT)
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  refresh-updates:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Refresh All Creator Content
+        run: |
+          echo "🔄 Starting creator content refresh..."
+          curl -s "https://findtorontoevents.ca/fc/api/refresh_all_creators.php" > /tmp/refresh_result.json
+          cat /tmp/refresh_result.json
+          
+      - name: Check Result
+        run: |
+          if grep -q '"ok":true' /tmp/refresh_result.json; then
+            echo "✅ Creator content refresh successful"
+            
+            # Extract and display statistics
+            REFRESHED=$(cat /tmp/refresh_result.json | grep -o '"refreshed":[0-9]*' | grep -o '[0-9]*')
+            ERRORS=$(cat /tmp/refresh_result.json | grep -o '"errors":[0-9]*' | grep -o '[0-9]*')
+            TOTAL=$(cat /tmp/refresh_result.json | grep -o '"total_creators":[0-9]*' | grep -o '[0-9]*')
+            
+            echo "📊 Statistics:"
+            echo "   - Total creators: $TOTAL"
+            echo "   - Successfully refreshed: $REFRESHED"
+            echo "   - Errors: $ERRORS"
+            
+            # Pretty print the full JSON response
+            cat /tmp/refresh_result.json | python3 -m json.tool
+          else
+            echo "❌ Creator content refresh failed"
+            cat /tmp/refresh_result.json
+            exit 1
+          fi
