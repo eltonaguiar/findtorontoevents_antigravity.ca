@@ -110,8 +110,32 @@ If issues are encountered:
 - [ ] Gather user feedback
 - [ ] Monitor API performance
 - [ ] Implement remaining platform fetchers (TikTok, Twitter, Instagram)
-- [ ] Add automated content refresh cron job
+- [x] Add automated content refresh cron job (GitHub Actions workflow)
 - [ ] Implement push notifications (future enhancement)
+
+### Automated Content Refresh
+
+The system now includes a GitHub Actions workflow that automatically refreshes creator content daily:
+
+**Workflow:** `.github/workflows/refresh-creator-updates.yml`
+- Runs daily at 2 AM UTC (9 PM EST / 10 PM EDT)
+- Fetches fresh content for all creators in the database
+- Supports YouTube, Twitch, Kick, TikTok, Instagram, Twitter platforms
+- Can be manually triggered via GitHub Actions UI
+
+**Backend Script:** `favcreators/public/api/refresh_all_creators.php`
+- Aggregates all creators from user lists
+- Calls platform-specific fetchers for each creator
+- Saves updates to `creator_status_updates` table
+- Includes dry-run mode for testing: `?dry_run=1`
+- Can limit scope for testing: `?limit=5`
+
+**Manual Trigger:**
+1. Go to GitHub repository → Actions tab
+2. Select "Refresh Creator Updates" workflow
+3. Click "Run workflow" button
+4. View logs to see refresh results
+
 
 ## Support
 
