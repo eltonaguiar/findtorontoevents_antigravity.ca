@@ -168,6 +168,48 @@ jobs:
         RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/learning.php?action=analyze_and_adjust") || true
         echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Learning update: ok={d.get(\"ok\")}, adjustments={d.get(\"adjustments_made\",0)}')" || echo "Learning response: $RESULT"
 
+    # ─── Smart Learning Suite (Grok Feedback Integration) ───
+
+    - name: Refresh rolling algorithm performance
+      continue-on-error: true
+      run: |
+        echo "=== Refreshing rolling algorithm performance ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/rolling_perf.php?action=refresh&key=stocksrefresh2026") || true
+        echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Rolling perf: {d.get(\"processed\",0)} algorithms refreshed')" || echo "Rolling: $RESULT"
+
+    - name: Calculate Kelly position sizing
+      continue-on-error: true
+      run: |
+        echo "=== Calculating Kelly position sizing ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/kelly_sizing.php?action=all&key=stocksrefresh2026") || true
+        echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Kelly: {d.get(\"count\",0)} algorithms, {d.get(\"with_edge\",0)} with edge')" || echo "Kelly: $RESULT"
+
+    - name: Enter paper trades
+      continue-on-error: true
+      run: |
+        echo "=== Entering paper trades ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/paper_trade.php?action=enter&key=stocksrefresh2026") || true
+        echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Paper trades entered: {d.get(\"entered\",0)}')" || echo "Paper enter: $RESULT"
+
+    - name: Track open paper trades
+      continue-on-error: true
+      run: |
+        echo "=== Tracking paper trades ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/paper_trade.php?action=track&key=stocksrefresh2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        print(f'Tracked: {d.get(\"tracked\",0)}, Closed: {d.get(\"closed\",0)}')
+        print(f'Win Rate: {d.get(\"win_rate\",0)}%, Cumulative PnL: {d.get(\"cumulative_pnl_pct\",0)}%')
+        " || echo "Paper track: $RESULT"
+
+    - name: Check circuit breakers
+      continue-on-error: true
+      run: |
+        echo "=== Checking circuit breakers ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/findstocks/portfolio2/api/circuit_breaker.php?action=check&key=stocksrefresh2026") || true
+        echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Circuit breakers: {d.get(\"active_count\",0)} active. {d.get(\"recommendation\",\"\")}')" || echo "CB: $RESULT"
+
     - name: Print stocks summary
       continue-on-error: true
       run: |
@@ -227,11 +269,65 @@ jobs:
         print(f'MF: {len(d.get(\"top_mutual_funds\",[]))}, FX: {len(d.get(\"top_forex\",[]))}, Crypto: {len(d.get(\"top_crypto\",[]))}')
         " || echo "Top picks: $RESULT"
 
+    # ─── Consolidated Picks & DayTrader Sim ───
+    - name: Refresh consolidated consensus picks
+      continue-on-error: true
+      run: |
+        echo "=== Refreshing consolidated consensus picks ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/consolidated_picks.php?action=consensus") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            picks = d.get('picks', [])
+            multi = [p for p in picks if p.get('consensus_count',0) >= 2]
+            print(f'Consensus picks: {len(picks)} total, {len(multi)} multi-algo')
+            if multi:
+                print('Top multi-algo picks:')
+                for p in multi[:5]:
+                    print(f'  {p[\"ticker\"]}: {p[\"consensus_count\"]} algos, score={p.get(\"consensus_score\",0):.1f}')
+        else:
+            print(f'Error: {d.get(\"error\",\"unknown\")}')
+        " || echo "Consensus: $RESULT"
+
+    - name: Run daytrader simulation for today
+      continue-on-error: true
+      run: |
+        echo "=== Running daytrader simulation ==="
+        TODAY=$(date -u +%Y-%m-%d)
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/daytrader_sim.php?action=simulate_day&date=$TODAY&key=stocksrefresh2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            for ver, sim in d.get('results', {}).items():
+                print(f'{ver}: {sim.get(\"picks_used\",0)} picks, PnL=\${sim.get(\"total_pnl\",0):.2f}, Return={sim.get(\"return_pct\",0):.2f}%')
+        else:
+            print(f'Error: {d.get(\"error\",\"unknown\")}')
+        " || echo "DayTrader sim: $RESULT"
+
+    - name: Refresh learning dashboard data
+      continue-on-error: true
+      run: |
+        echo "=== Refreshing learning dashboard ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/findstocks/portfolio2/api/learning_dashboard.php?action=is_improving") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            print(f'Overall improving: {d.get(\"overall_improving\",False)}')
+            for imp in d.get('improvements', []):
+                name = imp.get('name','')
+                improving = imp.get('is_improving', False)
+                pct = imp.get('improvement_pct', 0)
+                print(f'  {name}: {\"improving\" if improving else \"declining\"} ({pct:+.2f}%)')
+        " || echo "Learning: $RESULT"
+
     - name: Verify dashboard pages
       continue-on-error: true
       run: |
         echo "=== Verifying dashboard pages ==="
-        for page in "findstocks/portfolio2/picks.html" "findstocks/portfolio2/leaderboard.html" "findstocks/portfolio2/horizon-picks.html" "findstocks/portfolio2/dashboard.html" "findstocks/portfolio2/dividends.html"; do
+        for page in "findstocks/portfolio2/picks.html" "findstocks/portfolio2/leaderboard.html" "findstocks/portfolio2/horizon-picks.html" "findstocks/portfolio2/dashboard.html" "findstocks/portfolio2/dividends.html" "findstocks/portfolio2/consolidated.html" "findstocks/portfolio2/stock-intel.html" "findstocks/portfolio2/learning-lab.html" "findstocks/portfolio2/daytrader-sim.html"; do
           STATUS=$(curl -sS -o /dev/null -w "%{http_code}" "https://findtorontoevents.ca/$page" 2>&1) || true
           echo "$page: HTTP $STATUS"
         done
