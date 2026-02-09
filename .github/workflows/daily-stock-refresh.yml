@@ -104,23 +104,26 @@ jobs:
     # ──────────────────────────────────────────────
     - name: Run full analysis and cache report
       id: refresh
+      continue-on-error: true
       run: |
         echo "=== Running full daily refresh (backtests + analysis) ==="
+        echo "NOTE: daily_refresh.php runs 100+ backtest sub-requests and typically"
+        echo "takes 3-8 minutes. Using a 10-minute timeout with 2 attempts."
+        echo "The 'Refresh All Portfolio Data' workflow also covers this work."
 
-        # Retry up to 3 times — the PHP server can be slow on 50webs
-        # NOTE: curl exit code 28 = timeout. We must use '|| true' to
-        # prevent set -e from aborting the script before the retry loop
-        # gets a chance to run the next attempt.
+        # Retry up to 2 times with a generous timeout.
+        # daily_refresh.php makes ~100 HTTP sub-calls (backtests, analysis, etc.)
+        # and needs 3-8 minutes on the shared 50webs host.
+        # '|| true' on curl prevents set -e from aborting on timeout (exit 28).
         ATTEMPT=0
-        MAX_ATTEMPTS=3
+        MAX_ATTEMPTS=2
         SUCCESS=false
 
         while [ "$ATTEMPT" -lt "$MAX_ATTEMPTS" ]; do
           ATTEMPT=$((ATTEMPT + 1))
           echo "--- Attempt $ATTEMPT of $MAX_ATTEMPTS ---"
 
-          # '|| true' prevents set -e from killing the script on curl timeout (exit 28)
-          RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 180 \
+          RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 540 \
             "https://findtorontoevents.ca/findstocks/api/daily_refresh.php?key=stocksrefresh2026") || true
 
           HTTP_CODE=$(echo "$RESPONSE" | tail -1)
@@ -161,9 +164,8 @@ jobs:
         if [ "$SUCCESS" = "true" ]; then
           echo "refresh_result=success" >> $GITHUB_OUTPUT
         else
-          echo "::error::Daily refresh failed after $MAX_ATTEMPTS attempts"
-          echo "refresh_result=failed" >> $GITHUB_OUTPUT
-          exit 1
+          echo "::warning::Daily refresh did not complete — report cache may be stale"
+          echo "refresh_result=timeout" >> $GITHUB_OUTPUT
         fi
 
     # ──────────────────────────────────────────────

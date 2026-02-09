@@ -18,10 +18,11 @@ if ($auth_key !== 'stocksrefresh2026') {
 
 require_once dirname(__FILE__) . '/db_config.php';
 
-// Extend execution time — this script makes many HTTP sub-requests
-// and the default 30s limit is not enough.
-@set_time_limit(300);
-@ini_set('max_execution_time', '300');
+// Extend execution time — this script makes 100+ HTTP sub-requests
+// (backtests, analysis, etc.) and the default 30s limit is not enough.
+// Typically takes 3-8 minutes on the shared 50webs host.
+@set_time_limit(600);
+@ini_set('max_execution_time', '600');
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
