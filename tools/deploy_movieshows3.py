@@ -42,10 +42,13 @@ FILES_TO_DEPLOY = [
     "fetch_new_content.php",
     "log/api_status.php",
     "api/db_connect.php",
+    "api/get-movies.php",
     "api/like-movie.php",
     "api/get-likes.php",
     "api/login.php",
     "api/watch-history.php",
+    "api/alt-content.php",
+    "api/freestyle-search.php",
     "index.html",
 ]
 

@@ -1615,6 +1615,68 @@
             font-size: 48px;
             margin-bottom: 16px;
         }
+        /* Freestyle card actions */
+        .freestyle-card-actions {
+            display: flex;
+            gap: 6px;
+            padding: 8px 14px 12px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .freestyle-action-btn {
+            flex: 1;
+            padding: 8px 0;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.8);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        .freestyle-action-btn:hover {
+            background: rgba(255,255,255,0.12);
+        }
+        .freestyle-action-btn.play-btn {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.3);
+            color: #fbbf24;
+        }
+        .freestyle-action-btn.play-btn:hover {
+            background: rgba(245, 158, 11, 0.25);
+        }
+        .freestyle-action-btn.queue-btn {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: rgba(34, 197, 94, 0.25);
+            color: #4ade80;
+        }
+        .freestyle-action-btn.queue-btn:hover {
+            background: rgba(34, 197, 94, 0.2);
+        }
+        .freestyle-action-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        /* YouTube result badge */
+        .yt-badge {
+            background: linear-gradient(135deg, #ff0000, #cc0000);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .freestyle-yt-channel {
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 4px;
+        }
         @media (max-width: 600px) {
             .freestyle-results-grid {
                 grid-template-columns: 1fr;
@@ -1890,15 +1952,16 @@
         <div class="freestyle-header">
             <button class="freestyle-close" onclick="closeFreestyle()">✕</button>
             <h2>🎯 Freestyle <span class="freestyle-experimental-tag">Experimental</span></h2>
-            <p>Search for anything — movies, TV shows, actors, genres. Results come directly from TMDB and may not be in our database. This is an experimental feature!</p>
+            <p>Search for anything — movies, TV shows, or switch to <strong style="color:#ff4444;">YouTube</strong> for music, vlogs, tutorials, and more. Results are fetched live and may not be in our database. This is an experimental feature!</p>
             <div class="freestyle-search-row">
                 <input type="text" class="freestyle-search-input" id="freestyleSearchInput" 
                        placeholder="Try: sci-fi thriller, anime, Korean drama, horror 2025..."
                        onkeydown="if(event.key==='Enter')doFreestyleSearch()">
-                <select id="freestyleType" style="padding:10px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:white; font-size:13px;">
-                    <option value="multi">All</option>
-                    <option value="movie">Movies</option>
-                    <option value="tv">TV Shows</option>
+                <select id="freestyleType" style="padding:10px; background:#1a1a1a; border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:white; font-size:13px;" onchange="updateFreestylePlaceholder()">
+                    <option value="multi" style="background:#1a1a1a; color:white;">All (TMDB)</option>
+                    <option value="movie" style="background:#1a1a1a; color:white;">Movies</option>
+                    <option value="tv" style="background:#1a1a1a; color:white;">TV Shows</option>
+                    <option value="youtube" style="background:#1a1a1a; color:#ff4444;">YouTube</option>
                 </select>
                 <button class="freestyle-search-btn" onclick="doFreestyleSearch()">Search</button>
             </div>
@@ -2379,6 +2442,16 @@
             document.getElementById('freestyleOverlay').classList.remove('active');
         }
 
+        function updateFreestylePlaceholder() {
+            const type = document.getElementById('freestyleType').value;
+            const input = document.getElementById('freestyleSearchInput');
+            if (type === 'youtube') {
+                input.placeholder = 'Search YouTube: music videos, tutorials, vlogs, anything...';
+            } else {
+                input.placeholder = 'Try: sci-fi thriller, anime, Korean drama, horror 2025...';
+            }
+        }
+
         async function doFreestyleSearch() {
             const query = document.getElementById('freestyleSearchInput').value.trim();
             const type = document.getElementById('freestyleType').value;
@@ -2388,15 +2461,25 @@
             if (freestyleSearching) return;
             freestyleSearching = true;
 
+            const isYouTube = type === 'youtube';
+            const searchLabel = isYouTube ? 'YouTube' : 'TMDB';
+
             resultsDiv.innerHTML = `
                 <div class="freestyle-loading">
                     <div class="spinner-ring"></div>
-                    <div>Searching TMDB for "${escapeHtml(query)}"...</div>
+                    <div>Searching ${searchLabel} for "${escapeHtml(query)}"...</div>
                 </div>`;
 
             try {
                 const apiBase = window.location.pathname.replace(/\/[^/]*$/, '');
-                const url = apiBase + '/api/freestyle-search.php?q=' + encodeURIComponent(query) + '&type=' + type;
+                let url;
+
+                if (isYouTube) {
+                    url = apiBase + '/api/freestyle-search.php?q=' + encodeURIComponent(query) + '&type=youtube';
+                } else {
+                    url = apiBase + '/api/freestyle-search.php?q=' + encodeURIComponent(query) + '&type=' + type;
+                }
+
                 const resp = await fetch(url);
                 const data = await resp.json();
 
@@ -2419,33 +2502,51 @@
                     return;
                 }
 
-                let html = `<div style="margin-bottom:12px; color:rgba(255,255,255,0.4); font-size:13px;">${data.total_results.toLocaleString()} results on TMDB &bull; Showing ${freestyleResults.length} with trailers prioritized</div>`;
+                const sourceLabel = isYouTube ? 'YouTube' : 'TMDB';
+                let html = `<div style="margin-bottom:12px; color:rgba(255,255,255,0.4); font-size:13px;">${(data.total_results || freestyleResults.length).toLocaleString()} results on ${sourceLabel} &bull; Showing ${freestyleResults.length}</div>`;
                 html += '<div class="freestyle-results-grid">';
 
                 freestyleResults.forEach((item, i) => {
-                    const thumb = item.trailer_id
-                        ? `https://img.youtube.com/vi/${item.trailer_id}/hqdefault.jpg`
+                    const isYt = item._isYouTube;
+                    const videoId = isYt ? item.trailer_id : item.trailer_id;
+                    const thumb = videoId
+                        ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
                         : (item.backdrop || item.thumbnail || '');
-                    const hasTrailer = !!item.trailer_id;
-                    const typeLabel = item.type === 'tv' ? 'TV' : 'Movie';
-                    const typeColor = item.type === 'tv' ? '#8957e5' : '#1f6feb';
+                    const hasTrailer = !!videoId;
+
+                    let badgeHtml;
+                    if (isYt) {
+                        badgeHtml = `<span class="yt-badge">YouTube</span>`;
+                        if (item._channel) {
+                            badgeHtml += `<span style="color:rgba(255,255,255,0.4); font-size:11px;">${escapeHtml(item._channel)}</span>`;
+                        }
+                    } else {
+                        const typeLabel = item.type === 'tv' ? 'TV' : 'Movie';
+                        const typeColor = item.type === 'tv' ? '#8957e5' : '#1f6feb';
+                        badgeHtml = `<span class="freestyle-badge">FREESTYLE</span>
+                            <span style="background:${typeColor}; color:#fff; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:700;">${typeLabel}</span>`;
+                    }
 
                     html += `
-                    <div class="freestyle-card" onclick="${hasTrailer ? `playFreestyleTrailer(${i})` : ''}">
-                        <div class="freestyle-card-thumb">
+                    <div class="freestyle-card">
+                        <div class="freestyle-card-thumb" onclick="${hasTrailer ? `playFreestyleTrailer(${i})` : ''}" style="${hasTrailer ? 'cursor:pointer' : ''}">
                             ${thumb ? `<img src="${thumb}" alt="" onerror="this.style.display='none'">` : ''}
                             ${hasTrailer ? `<div class="freestyle-card-play"><span>▶</span></div>` : `<div class="freestyle-no-trailer">No trailer available</div>`}
                         </div>
                         <div class="freestyle-card-body">
                             <div class="freestyle-card-title">${escapeHtml(item.title)}</div>
                             <div class="freestyle-card-meta">
-                                <span class="freestyle-badge">FREESTYLE</span>
-                                <span style="background:${typeColor}; color:#fff; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:700;">${typeLabel}</span>
+                                ${badgeHtml}
                                 ${item.release_year ? `<span style="color:rgba(255,255,255,0.5); font-size:11px;">${item.release_year}</span>` : ''}
                                 ${item.imdb_rating ? `<span style="color:rgba(255,255,255,0.5); font-size:11px;">⭐ ${item.imdb_rating}</span>` : ''}
+                                ${item._duration ? `<span style="color:rgba(255,255,255,0.4); font-size:11px;">${item._duration}</span>` : ''}
                             </div>
                             ${item.genre ? `<div style="font-size:11px; color:rgba(255,255,255,0.35); margin-bottom:4px;">${escapeHtml(item.genre)}</div>` : ''}
                             <div class="freestyle-card-desc">${escapeHtml(item.description || '')}</div>
+                        </div>
+                        <div class="freestyle-card-actions">
+                            ${hasTrailer ? `<button class="freestyle-action-btn play-btn" onclick="event.stopPropagation(); playFreestyleTrailer(${i})">▶ Play Now</button>` : ''}
+                            ${hasTrailer ? `<button class="freestyle-action-btn queue-btn" onclick="event.stopPropagation(); queueFreestyleItem(${i}, this)">➕ Queue</button>` : ''}
                         </div>
                     </div>`;
                 });
@@ -2458,6 +2559,23 @@
             freestyleSearching = false;
         }
 
+        function makeFreestyleMovie(item) {
+            return {
+                id: 'freestyle_' + (item.tmdb_id || item.trailer_id || Math.random()),
+                title: item.title,
+                type: item.type || 'movie',
+                genre: item.genre || '',
+                description: item.description || '',
+                release_year: item.release_year,
+                imdb_rating: item.imdb_rating,
+                trailer_id: item.trailer_id,
+                thumbnail: item.thumbnail,
+                _isFreestyle: true,
+                _isYouTube: item._isYouTube || false,
+                _channel: item._channel || ''
+            };
+        }
+
         function playFreestyleTrailer(index) {
             const item = freestyleResults[index];
             if (!item || !item.trailer_id) return;
@@ -2465,19 +2583,7 @@
             // Close freestyle overlay and play in the main player
             closeFreestyle();
 
-            // Create a temporary movie entry and play it
-            const tempMovie = {
-                id: 'freestyle_' + item.tmdb_id,
-                title: item.title,
-                type: item.type,
-                genre: item.genre,
-                description: item.description,
-                release_year: item.release_year,
-                imdb_rating: item.imdb_rating,
-                trailer_id: item.trailer_id,
-                thumbnail: item.thumbnail,
-                _isFreestyle: true
-            };
+            const tempMovie = makeFreestyleMovie(item);
 
             // Add to filtered movies temporarily and play
             filteredMovies = [tempMovie, ...filteredMovies];
@@ -2486,6 +2592,28 @@
             if (typeof playTrailer === 'function') {
                 playTrailer(0);
             }
+        }
+
+        function queueFreestyleItem(index, btn) {
+            const item = freestyleResults[index];
+            if (!item || !item.trailer_id) return;
+
+            const tempMovie = makeFreestyleMovie(item);
+
+            // Check if already in queue
+            if (myQueue.find(m => m.trailer_id === tempMovie.trailer_id)) {
+                btn.textContent = 'Already queued';
+                btn.disabled = true;
+                return;
+            }
+
+            myQueue.push(tempMovie);
+            localStorage.setItem('movieQueue', JSON.stringify(myQueue));
+            document.getElementById('queueCount').textContent = myQueue.length;
+
+            btn.textContent = '✓ Queued';
+            btn.disabled = true;
+            btn.style.background = 'rgba(34, 197, 94, 0.25)';
         }
 
         // Browse filter state
