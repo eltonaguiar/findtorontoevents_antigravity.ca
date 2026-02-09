@@ -4149,7 +4149,11 @@
       law_crime: '\u2696\uFE0F',
       science_technology: '\uD83D\uDD2C',
       health: '\uD83C\uDFE5',
-      business_economy: '\uD83D\uDCC8'
+      business_economy: '\uD83D\uDCC8',
+      streaming: '\uD83D\uDCF1',
+      esports: '\uD83C\uDFAE',
+      gaming: '\uD83D\uDD79\uFE0F',
+      tv_movies: '\uD83C\uDFA5'
     };
 
     // Importance colors
@@ -4270,7 +4274,7 @@
 
     // Footer
     html += '<div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);font-size:0.78rem;color:#64748b;">';
-    html += 'Sources: Wikipedia Current Events, BBC World News, Curated Calendar';
+    html += 'Sources: Wikipedia Current Events, BBC World News, Dexerto, Curated Calendar';
     if (range === 'today') {
       html += '<br>Try: "world events this week" for upcoming events';
     }
@@ -4474,16 +4478,118 @@
     if (/^movies?\s+near\s+(?:me|here|by)$/i.test(lower)) return true;
     // "now playing" / "now showing" / "in theaters now"
     if (/(?:now\s+playing|now\s+showing|in\s+theaters?\s+(?:now|today|this\s+week))/i.test(lower)) return true;
-    // "showtimes near me" / "movie showtimes"
-    if (/showtime/i.test(lower) && /near|around|close|my\s+area/i.test(lower)) return true;
-    if (/movie\s+showtime/i.test(lower)) return true;
+    // "showtimes near me" / "movie showtimes" (with optional time qualifiers)
+    if (/showtime/i.test(lower)) return true;
     // "what's on at the movies/cinema", "whats playing at the cinema"
     if (/what(?:'?s|\s+is)\s+(?:on|playing)\s+at\s+(?:the\s+)?(?:movie|cinema)/i.test(lower)) return true;
-    // "movies starting soon"
-    if (/movies?\s+starting\s+soon/i.test(lower)) return true;
+    // "movies starting soon / starting now / starting in X minutes / starting at Xpm / starting between"
+    if (/movies?\s+starting/i.test(lower)) return true;
     // "what can i watch in theaters"
     if (/what\s+(?:can\s+i|to)\s+watch\s+(?:in|at)\s+(?:the\s+)?(?:theater|theatre|cinema)/i.test(lower)) return true;
+    // "movie times" / "film times"
+    if (/(?:movie|film)\s+times?\s/i.test(lower)) return true;
     return false;
+  }
+
+  /**
+   * Parse time filter from a movie showtime query.
+   * Returns object: { type, label, googleQuery }
+   *   type: 'now' | 'soon' | 'in_minutes' | 'at_time' | 'between' | 'today' | 'tonight' | null
+   *   label: human-readable string e.g. "starting in 20 minutes", "between 4pm and 6pm"
+   *   googleQuery: fragment for Google Maps URL e.g. "showtimes+4pm"
+   */
+  function _parseMovieTimeFilter(lower) {
+    var result = { type: null, label: '', googleQuery: 'showtimes' };
+
+    // "starting now" / "right now"
+    if (/starting\s+(?:right\s+)?now/i.test(lower) || /right\s+now/i.test(lower)) {
+      result.type = 'now';
+      result.label = 'starting now';
+      result.googleQuery = 'showtimes+now';
+      return result;
+    }
+
+    // "starting soon"
+    if (/starting\s+soon/i.test(lower)) {
+      result.type = 'soon';
+      result.label = 'starting soon';
+      result.googleQuery = 'showtimes+today';
+      return result;
+    }
+
+    // "starting in X minutes/hours"
+    var inMinMatch = lower.match(/starting\s+in\s+(\d+)\s*(min(?:ute)?s?|hrs?|hours?)/i);
+    if (inMinMatch) {
+      var amount = parseInt(inMinMatch[1], 10);
+      var unit = inMinMatch[2].toLowerCase();
+      var isHours = /^h/.test(unit);
+      var minutes = isHours ? amount * 60 : amount;
+      var now = new Date();
+      var target = new Date(now.getTime() + minutes * 60000);
+      var h = target.getHours();
+      var ampm = h >= 12 ? 'pm' : 'am';
+      var h12 = h % 12;
+      if (h12 === 0) h12 = 12;
+      var minStr = target.getMinutes() > 0 ? ':' + (target.getMinutes() < 10 ? '0' : '') + target.getMinutes() : '';
+      result.type = 'in_minutes';
+      result.label = 'starting around ' + h12 + minStr + ampm + ' (in ' + (isHours ? amount + (amount === 1 ? ' hour' : ' hours') : amount + ' min') + ')';
+      result.googleQuery = 'showtimes+' + h12 + ampm;
+      result.targetTime = target;
+      return result;
+    }
+
+    // "starting between Xpm and Ypm" / "between X and Y"
+    var betweenMatch = lower.match(/between\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s+and\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+    if (betweenMatch) {
+      var h1 = parseInt(betweenMatch[1], 10);
+      var m1 = betweenMatch[2] ? parseInt(betweenMatch[2], 10) : 0;
+      var ap1 = (betweenMatch[3] || betweenMatch[6] || 'pm').toLowerCase();
+      var h2 = parseInt(betweenMatch[4], 10);
+      var m2 = betweenMatch[5] ? parseInt(betweenMatch[5], 10) : 0;
+      var ap2 = (betweenMatch[6] || ap1).toLowerCase();
+      result.type = 'between';
+      result.label = 'between ' + h1 + (m1 ? ':' + (m1 < 10 ? '0' : '') + m1 : '') + ap1 + ' and ' + h2 + (m2 ? ':' + (m2 < 10 ? '0' : '') + m2 : '') + ap2;
+      result.googleQuery = 'showtimes+' + h1 + ap1;
+      return result;
+    }
+
+    // "starting at Xpm" / "at X:XX pm" / "around Xpm"
+    var atTimeMatch = lower.match(/(?:starting\s+)?(?:at|around)\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i);
+    if (atTimeMatch) {
+      var ht = parseInt(atTimeMatch[1], 10);
+      var mt = atTimeMatch[2] ? parseInt(atTimeMatch[2], 10) : 0;
+      var apt = atTimeMatch[3].toLowerCase();
+      result.type = 'at_time';
+      result.label = 'around ' + ht + (mt ? ':' + (mt < 10 ? '0' : '') + mt : '') + apt;
+      result.googleQuery = 'showtimes+' + ht + apt;
+      return result;
+    }
+
+    // "tonight" / "this evening"
+    if (/tonight|this\s+evening/i.test(lower)) {
+      result.type = 'tonight';
+      result.label = 'tonight';
+      result.googleQuery = 'showtimes+tonight';
+      return result;
+    }
+
+    // "today"
+    if (/today/i.test(lower)) {
+      result.type = 'today';
+      result.label = 'today';
+      result.googleQuery = 'showtimes+today';
+      return result;
+    }
+
+    // "tomorrow"
+    if (/tomorrow/i.test(lower)) {
+      result.type = 'tomorrow';
+      result.label = 'tomorrow';
+      result.googleQuery = 'showtimes+tomorrow';
+      return result;
+    }
+
+    return result;
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -5893,8 +5999,17 @@
   }
 
   /** Render the combined "now playing + theaters + events" card */
-  function _renderNowPlayingCard(nowPlayingData, theaterData, filmEvents, userLoc) {
+  function _renderNowPlayingCard(nowPlayingData, theaterData, filmEvents, userLoc, timeFilter) {
+    timeFilter = timeFilter || { type: null, label: '', googleQuery: 'showtimes' };
     var html = '<div class="fte-ai-summary">';
+
+    // ── Time filter banner (if user specified a time) ──
+    if (timeFilter.label) {
+      html += '<div style="margin-bottom:10px;padding:8px 12px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.25);border-radius:8px;font-size:0.9rem;">';
+      html += '<span style="color:#fbbf24;font-weight:600;">\u23F0 Showtimes ' + escapeHtml(timeFilter.label) + '</span>';
+      html += '<br><span style="font-size:0.8rem;color:#94a3b8;">Click a movie poster or theater below to see exact showtimes for this time.</span>';
+      html += '</div>';
+    }
 
     // ── Section 1: Now Playing in Theaters ──
     html += '<b style="font-size:1.05rem;">Now Playing in Theaters</b><br><br>';
@@ -5907,7 +6022,7 @@
       for (var i = 0; i < showCount; i++) {
         var m = movies[i];
         var posterSrc = m.poster_url || '';
-        var gmapsLink = 'https://www.google.com/maps/search/' + encodeURIComponent(m.title + ' showtimes');
+        var gmapsLink = 'https://www.google.com/maps/search/' + encodeURIComponent(m.title + ' ' + timeFilter.googleQuery);
         html += '<div style="flex:0 0 120px;text-align:center;">';
         html += '<a href="' + escapeHtml(gmapsLink) + '" target="_blank" style="text-decoration:none;">';
         if (posterSrc) {
@@ -5973,14 +6088,18 @@
       }
     }
 
-    // ── Footer: Google Maps showtimes link ──
-    var showtimesUrl = 'https://www.google.com/maps/search/movie+showtimes+near+me';
+    // ── Footer: Google Maps showtimes link (time-aware) ──
+    var gQuery = 'movie+' + timeFilter.googleQuery.replace(/\s+/g, '+');
+    var showtimesUrl = 'https://www.google.com/maps/search/' + gQuery + '+near+me';
     if (userLoc && userLoc.lat) {
-      showtimesUrl = 'https://www.google.com/maps/search/movie+showtimes/@' + userLoc.lat + ',' + userLoc.lng + ',14z';
+      showtimesUrl = 'https://www.google.com/maps/search/' + gQuery + '/@' + userLoc.lat + ',' + userLoc.lng + ',14z';
     }
+    var linkLabel = timeFilter.label
+      ? 'See showtimes ' + escapeHtml(timeFilter.label) + ' on Google Maps'
+      : 'See all showtimes on Google Maps';
     html += '<div style="margin-top:10px;padding:8px 10px;background:rgba(52,168,83,0.1);border-radius:6px;">';
     html += '<a href="' + escapeHtml(showtimesUrl) + '" target="_blank" style="color:#34a853;font-weight:600;text-decoration:none;font-size:0.9rem;">';
-    html += '\uD83C\uDFAC See all showtimes on Google Maps</a>';
+    html += '\uD83C\uDFAC ' + linkLabel + '</a>';
     html += '</div>';
 
     // ── Footer: Browse trailers ──
@@ -5996,10 +6115,17 @@
   async function handleNowPlayingNearMe(lower, raw) {
     state.processing = true;
     showStopBtn(true);
-    setStatus('Finding movies near you...', '#f59e0b');
 
+    // Parse time filter from query
+    var timeFilter = _parseMovieTimeFilter(lower);
+    var statusMsg = timeFilter.label ? 'Finding movies ' + timeFilter.label + '...' : 'Finding movies near you...';
+    setStatus(statusMsg, '#f59e0b');
+
+    var loadingText = timeFilter.label
+      ? 'Finding movies <b>' + escapeHtml(timeFilter.label) + '</b> near you...'
+      : 'Finding movies playing near you...';
     addMessage('ai', '<div id="fte-ai-nowplaying-loading" class="fte-ai-summary">' +
-      '<b>Finding movies playing near you...</b><br>' +
+      '<b>' + loadingText + '</b><br>' +
       '<span style="color:#94a3b8;">Checking theaters and now-playing listings...</span></div>', false);
 
     // Get user location for theater search
@@ -6026,7 +6152,7 @@
     var filmEvents = _getFilmEventsFromCache();
 
     // Render the combined card
-    var html = _renderNowPlayingCard(nowPlayingData, theaterData, filmEvents, userLoc);
+    var html = _renderNowPlayingCard(nowPlayingData, theaterData, filmEvents, userLoc, timeFilter);
 
     // Replace loading message
     var el = document.getElementById('fte-ai-nowplaying-loading');
@@ -6045,9 +6171,13 @@
       spoken += '. ';
     }
     if (theaterData.ok && theaterData.results && theaterData.results.length > 0) {
-      spoken += 'The closest theater is ' + theaterData.results[0].name + ', ' + _formatDistance(theaterData.results[0].distance_m) + ' away.';
+      spoken += 'The closest theater is ' + theaterData.results[0].name + ', ' + _formatDistance(theaterData.results[0].distance_m) + ' away. ';
     }
-    spoken += ' I\'ve also included a link to Google Maps for full showtimes.';
+    if (timeFilter.label) {
+      spoken += 'Check the Google Maps link for exact showtimes ' + timeFilter.label + '.';
+    } else {
+      spoken += 'I\'ve also included a link to Google Maps for full showtimes.';
+    }
     speakText(spoken);
 
     setStatus('Ready', '#64748b');

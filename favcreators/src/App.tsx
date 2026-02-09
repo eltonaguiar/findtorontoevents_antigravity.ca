@@ -1707,17 +1707,33 @@ function App() {
       return c.accounts.some((a) => defaultLivePlats.includes(a.platform));
     });
 
-    // Prioritize recently-active creators so "Creators Live Now" populates faster
+    // 4-tier priority for checking order:
+    // 1. Currently showing as LIVE — re-verify first to quickly clear false positives
+    // 2. Recently active — likely to go live soon
+    // 3. Bell icon (notification) creators — user cares about these most
+    // 4. Everyone else
+    const currentlyLiveIds = new Set<string>();
+    creatorsRef.current.forEach(c => {
+      if (c.accounts.some(a => a.isLive)) currentlyLiveIds.add(c.id);
+    });
     const recentlyOnlineIds = new Set(recentlyOnlineRef.current.map((r) => r.creator_id));
+    const bellCreatorIds = new Set(Object.keys(notificationPrefs).filter(id => notificationPrefs[id]));
+
     creatorsToCheck.sort((a, b) => {
-      const aRecent = recentlyOnlineIds.has(a.id) ? 1 : 0;
-      const bRecent = recentlyOnlineIds.has(b.id) ? 1 : 0;
-      return bRecent - aRecent; // recently-active first
+      const getPriority = (c: Creator) => {
+        if (currentlyLiveIds.has(c.id)) return 3;  // highest — verify live status ASAP
+        if (recentlyOnlineIds.has(c.id)) return 2;  // recently active
+        if (bellCreatorIds.has(c.id)) return 1;      // bell icon / notification creators
+        return 0;                                     // everyone else
+      };
+      return getPriority(b) - getPriority(a);
     });
 
     const skippedCount = allCreators.length - creatorsToCheck.length;
-    const recentFirst = creatorsToCheck.filter((c) => recentlyOnlineIds.has(c.id)).length;
-    console.log(`[Live Check] Starting updateAllLiveStatuses: ${creatorsToCheck.length} to check, ${skippedCount} skipped (isLiveStreamer=false), ${recentFirst} recently-active prioritized`);
+    const liveFirst = creatorsToCheck.filter((c) => currentlyLiveIds.has(c.id)).length;
+    const recentFirst = creatorsToCheck.filter((c) => !currentlyLiveIds.has(c.id) && recentlyOnlineIds.has(c.id)).length;
+    const bellFirst = creatorsToCheck.filter((c) => !currentlyLiveIds.has(c.id) && !recentlyOnlineIds.has(c.id) && bellCreatorIds.has(c.id)).length;
+    console.log(`[Live Check] Starting updateAllLiveStatuses: ${creatorsToCheck.length} to check, ${skippedCount} skipped (isLiveStreamer=false). Priority: ${liveFirst} currently-live, ${recentFirst} recently-active, ${bellFirst} bell-icon, ${creatorsToCheck.length - liveFirst - recentFirst - bellFirst} other`);
     
     setIsCheckingLiveStatus(true);
     setLiveCheckProgress({ current: 0, total: creatorsToCheck.length, currentCreator: 'Starting...' });

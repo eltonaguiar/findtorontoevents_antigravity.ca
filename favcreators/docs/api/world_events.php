@@ -3,10 +3,11 @@
  * world_events.php — World Events API (FREE, no API keys)
  *
  * Returns major world events happening today/this week that "everyone is talking about."
- * Combines 3 sources:
+ * Combines 4 sources:
  *   1. Curated calendar of major annual events (Super Bowl, Oscars, holidays, etc.)
  *   2. Wikipedia Current Events portal scraping (daily world news)
  *   3. BBC World News RSS feed (top headlines)
+ *   4. Dexerto.com scraping (streamers, gaming, esports, TV/movies)
  *
  * Usage:
  *   GET world_events.php                    — today's events
@@ -29,6 +30,9 @@ header('Access-Control-Allow-Methods: GET, OPTIONS');
 if (strtoupper($_SERVER['REQUEST_METHOD']) === 'OPTIONS') {
     exit;
 }
+
+// Force Toronto/EST timezone — this site is Toronto-based
+date_default_timezone_set('America/Toronto');
 
 // ============================================================
 // PARAMETERS
@@ -68,7 +72,12 @@ $today_dow   = (int)date('w', $today); // 0=Sun, 6=Sat
 // SOURCE 1: CURATED MAJOR EVENTS CALENDAR
 // ============================================================
 
-$curated_events = _we_get_curated_events($today, $date_start, $date_end, $today_year);
+// For curated events, use a wider "buzz window" so major events still show
+// the day after (e.g. Super Bowl on Feb 8 should still appear on Feb 9).
+// High-importance: ±2 days buzz window; medium: ±1 day.
+$curated_start = $date_start - (2 * 86400);  // 2 days before
+$curated_end   = $date_end   + (2 * 86400);  // 2 days after
+$curated_events = _we_get_curated_events($today, $curated_start, $curated_end, $today_year, $date_start, $date_end);
 
 
 // ============================================================
@@ -86,6 +95,13 @@ $news_events = _we_scrape_bbc_rss();
 
 
 // ============================================================
+// SOURCE 4: DEXERTO (Streamers, Gaming, Esports, TV/Movies)
+// ============================================================
+
+$dexerto_events = _we_scrape_dexerto();
+
+
+// ============================================================
 // MERGE + RESPOND
 // ============================================================
 
@@ -93,6 +109,7 @@ $all_events = array();
 foreach ($curated_events as $e) { $all_events[] = $e; }
 foreach ($wiki_events as $e) { $all_events[] = $e; }
 foreach ($news_events as $e) { $all_events[] = $e; }
+foreach ($dexerto_events as $e) { $all_events[] = $e; }
 
 // Sort: high importance first, then medium, then normal
 usort($all_events, '_we_sort_events');
@@ -113,7 +130,8 @@ if ($debug) {
     $response['debug'] = array(
         'curated_count' => count($curated_events),
         'wiki_count' => count($wiki_events),
-        'news_count' => count($news_events)
+        'news_count' => count($news_events),
+        'dexerto_count' => count($dexerto_events)
     );
 }
 
@@ -125,7 +143,7 @@ exit;
 // CURATED EVENTS
 // ============================================================
 
-function _we_get_curated_events($today_ts, $range_start, $range_end, $year) {
+function _we_get_curated_events($today_ts, $buzz_start, $buzz_end, $year, $strict_start, $strict_end) {
     $events = array();
 
     // Build the full curated calendar for this year
@@ -135,11 +153,28 @@ function _we_get_curated_events($today_ts, $range_start, $range_end, $year) {
         $evt_ts = strtotime($evt['date']);
         if ($evt_ts === false) continue;
 
-        // Check if event falls in our date range
-        if ($evt_ts >= $range_start && $evt_ts < $range_end) {
+        // Events within the strict date range always show
+        $in_strict = ($evt_ts >= $strict_start && $evt_ts < $strict_end);
+
+        // Events within the wider buzz window show only if high/medium importance
+        $in_buzz = ($evt_ts >= $buzz_start && $evt_ts < $buzz_end);
+
+        if ($in_strict || ($in_buzz && ($evt['importance'] === 'high' || $evt['importance'] === 'medium'))) {
+            // If it's outside strict range, add a "buzz" note to description
+            $desc = $evt['description'];
+            if (!$in_strict && $in_buzz) {
+                $days_diff = round(($strict_start - $evt_ts) / 86400);
+                if ($days_diff > 0) {
+                    $desc = $desc . ' (was ' . $days_diff . ' day' . ($days_diff > 1 ? 's' : '') . ' ago — still trending)';
+                } elseif ($days_diff < 0) {
+                    $days_until = abs($days_diff);
+                    $desc = $desc . ' (in ' . $days_until . ' day' . ($days_until > 1 ? 's' : '') . ')';
+                }
+            }
+
             $events[] = array(
                 'title' => $evt['title'],
-                'description' => $evt['description'],
+                'description' => $desc,
                 'category' => $evt['category'],
                 'date' => $evt['date'],
                 'source' => 'curated_calendar',
@@ -701,6 +736,153 @@ function _we_scrape_bbc_rss() {
 
 
 // ============================================================
+// ENTERTAINMENT NEWS — Gaming, Streaming, Esports, TV/Movies
+// (via Google News RSS — aggregates Dexerto, IGN, Kotaku, etc.)
+// ============================================================
+
+function _we_scrape_dexerto() {
+    $all = array();
+
+    // Use Google News RSS search for each topic — returns fresh articles from many sources
+    $feeds = array(
+        array(
+            'url' => 'https://news.google.com/rss/search?q=esports+OR+competitive+gaming+OR+tournament&hl=en-US&gl=US&ceid=US:en',
+            'cat' => 'esports',
+            'limit' => 4
+        ),
+        array(
+            'url' => 'https://news.google.com/rss/search?q=twitch+streamer+OR+youtube+creator+OR+kick+streaming&hl=en-US&gl=US&ceid=US:en',
+            'cat' => 'streaming',
+            'limit' => 4
+        ),
+        array(
+            'url' => 'https://news.google.com/rss/search?q=new+movie+OR+tv+show+premiere+OR+anime+release+OR+netflix+series&hl=en-US&gl=US&ceid=US:en',
+            'cat' => 'tv_movies',
+            'limit' => 4
+        ),
+        array(
+            'url' => 'https://news.google.com/rss/search?q=video+game+news+OR+gaming+announcement+OR+playstation+OR+xbox+OR+nintendo&hl=en-US&gl=US&ceid=US:en',
+            'cat' => 'gaming',
+            'limit' => 4
+        )
+    );
+
+    $seen_titles = array();
+
+    for ($f = 0; $f < count($feeds); $f++) {
+        $feed = $feeds[$f];
+        $xml = _we_http_get($feed['url']);
+        if ($xml === false || strlen($xml) < 100) continue;
+
+        $items = _we_parse_google_news_rss($xml);
+        $count = 0;
+        for ($i = 0; $i < count($items); $i++) {
+            if ($count >= $feed['limit']) break;
+            $item = $items[$i];
+
+            // Skip duplicates by title similarity
+            $key = strtolower(substr($item['title'], 0, 50));
+            if (isset($seen_titles[$key])) continue;
+            $seen_titles[$key] = true;
+
+            // Refine category based on title keywords
+            $cat = _we_detect_entertainment_category($item['title'], $feed['cat']);
+
+            // First 2 per feed are medium, rest normal
+            $imp = ($count < 2) ? 'medium' : 'normal';
+
+            $all[] = array(
+                'title' => $item['title'],
+                'description' => ($item['description'] !== '') ? $item['description'] : $item['title'],
+                'category' => $cat,
+                'date' => ($item['date'] !== '') ? $item['date'] : date('Y-m-d'),
+                'source' => 'dexerto',
+                'url' => $item['url'],
+                'importance' => $imp
+            );
+            $count++;
+        }
+    }
+
+    return $all;
+}
+
+/**
+ * Parse Google News RSS XML for article items.
+ * Returns array of: title, url, description, date, source_name
+ */
+function _we_parse_google_news_rss($xml) {
+    $items = array();
+
+    preg_match_all('/<item>(.*?)<\\/item>/s', $xml, $matches);
+    if (!isset($matches[1])) return array();
+
+    for ($i = 0; $i < count($matches[1]); $i++) {
+        $item_xml = $matches[1][$i];
+
+        $title = '';
+        if (preg_match('/<title>(?:<\\!\\[CDATA\\[)?(.+?)(?:\\]\\]>)?<\\/title>/', $item_xml, $tm)) {
+            $title = html_entity_decode(trim($tm[1]), ENT_QUOTES, 'UTF-8');
+            // Google News appends " - Source Name", remove it for cleaner titles
+            $dash_pos = strrpos($title, ' - ');
+            if ($dash_pos !== false && $dash_pos > 20) {
+                $title = trim(substr($title, 0, $dash_pos));
+            }
+        }
+
+        $url = '';
+        if (preg_match('/<link>(.+?)<\\/link>/', $item_xml, $lm)) {
+            $url = trim($lm[1]);
+        }
+
+        $desc = '';
+        if (preg_match('/<description>(?:<\\!\\[CDATA\\[)?(.+?)(?:\\]\\]>)?<\\/description>/s', $item_xml, $dm)) {
+            $desc = html_entity_decode(strip_tags(trim($dm[1])), ENT_QUOTES, 'UTF-8');
+            if (strlen($desc) > 200) $desc = substr($desc, 0, 200) . '...';
+        }
+
+        $pub_date = '';
+        if (preg_match('/<pubDate>(.+?)<\\/pubDate>/', $item_xml, $pm)) {
+            $ts = strtotime(trim($pm[1]));
+            if ($ts !== false) $pub_date = date('Y-m-d', $ts);
+        }
+
+        if ($title === '' || strlen($title) < 15) continue;
+
+        $items[] = array(
+            'title' => $title,
+            'url' => $url,
+            'description' => $desc,
+            'date' => $pub_date
+        );
+    }
+
+    return $items;
+}
+
+/**
+ * Detect specific sub-category from article title keywords.
+ */
+function _we_detect_entertainment_category($title, $default_cat) {
+    $t = strtolower($title);
+
+    // Streaming platforms / creators
+    if (preg_match('/\\btwitch\\b|\\bstreamer|\\byoutub|\\bkick\\b|\\btiktok\\b|\\bcreator\\b/i', $t)) return 'streaming';
+
+    // Esports / competitive
+    if (preg_match('/\\besport|\\btournament\\b|\\bchampion|\\bcompetitive|\\bleague\\b|\\bmajor\\b|\\bvalorant\\b|\\bcounter.?strike|\\boverwatch\\b/i', $t)) return 'esports';
+
+    // TV & Movies
+    if (preg_match('/\\bmovie\\b|\\bfilm\\b|\\bnetflix\\b|\\bdisney|\\bmarvel\\b|\\btrailer\\b|\\banime\\b|\\btv show|\\bseason\\b|\\bseries\\b|\\bpremiere/i', $t)) return 'tv_movies';
+
+    // Gaming
+    if (preg_match('/\\bgame\\b|\\bgaming\\b|\\bplaystation\\b|\\bxbox\\b|\\bnintendo\\b|\\bfortnite\\b|\\bminecraft\\b|\\bgta\\b|\\bconsole\\b/i', $t)) return 'gaming';
+
+    return $default_cat;
+}
+
+
+// ============================================================
 // SORT + HELPERS
 // ============================================================
 
@@ -711,8 +893,8 @@ function _we_sort_events($a, $b) {
     if ($a_imp !== $b_imp) {
         return ($a_imp < $b_imp) ? -1 : 1;
     }
-    // Same importance — sort by source priority (curated > wiki > news)
-    $src_order = array('curated_calendar' => 0, 'wikipedia' => 1, 'bbc_news' => 2);
+    // Same importance — sort by source priority (curated > wiki > dexerto > news)
+    $src_order = array('curated_calendar' => 0, 'wikipedia' => 1, 'dexerto' => 2, 'bbc_news' => 3);
     $a_src = isset($src_order[$a['source']]) ? $src_order[$a['source']] : 3;
     $b_src = isset($src_order[$b['source']]) ? $src_order[$b['source']] : 3;
     if ($a_src !== $b_src) {
