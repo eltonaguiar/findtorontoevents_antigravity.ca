@@ -296,6 +296,7 @@
     <div class="tabs">
         <div class="tab active" data-tab="whatif">What-If Analysis</div>
         <div class="tab" data-tab="compare">Compare Strategies</div>
+        <div class="tab" data-tab="optimal">Optimal Finder</div>
         <div class="tab" data-tab="picks">Stock Picks</div>
         <div class="tab" data-tab="history">Backtest History</div>
     </div>
@@ -321,6 +322,22 @@
                                 <option value="conservative">Conservative</option>
                                 <option value="aggressive">Aggressive</option>
                                 <option value="buy_hold">Buy & Hold</option>
+                                <option value="low_vol">Low Volatility (skip VIX&ge;25)</option>
+                                <option value="calm_only">Calm Markets Only (VIX&lt;16)</option>
+                                <option value="vol_aware">Volatility-Aware (skip VIX&ge;20)</option>
+                                <option value="bluechip_30d">Blue Chip 30-Day Hold</option>
+                                <option value="bluechip_90d">Blue Chip 90-Day Hold</option>
+                                <option value="bluechip_180d">Blue Chip 6-Month Hold</option>
+                                <option value="bluechip_calm">Blue Chip (Calm Markets)</option>
+                                <option value="cursor_genius_90d">⭐ Cursor Genius 90d Hold</option>
+                                <option value="cursor_genius_50tp">⭐ Cursor Genius 50% TP</option>
+                                <option value="cursor_genius_20tp">⭐ Cursor Genius 20% TP</option>
+                                <option value="cursor_genius_std">⭐ Cursor Genius Standard</option>
+                                <option value="etf_90d">📦 ETF Masters 90d Hold</option>
+                                <option value="etf_20tp">📦 ETF Masters 20% TP</option>
+                                <option value="sector_rotation_90d">🔄 Sector Rotation 90d</option>
+                                <option value="sector_momentum_30d">🔥 Sector Momentum 30d</option>
+                                <option value="sector_momentum_90d">🔥 Sector Momentum 90d</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -342,8 +359,30 @@
                             <input type="number" id="initialCapital" value="10000" min="100" step="100">
                         </div>
                         <div class="form-group">
+                            <label>Fee Model</label>
+                            <select id="feeModel" onchange="toggleCommField()">
+                                <option value="questrade" selected>Questrade Canada ($0 stocks, forex for US)</option>
+                                <option value="flat_10">Flat $10/trade (legacy)</option>
+                                <option value="zero">Zero fees</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="commGroup" style="display:none">
                             <label>Commission Per Trade ($)</label>
                             <input type="number" id="commission" value="10" min="0" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Volatility Filter (VIX-based)</label>
+                            <select id="volFilter" onchange="toggleMaxVix()">
+                                <option value="off">Off (trade always)</option>
+                                <option value="skip_high">Skip High Vol (VIX &ge; 25)</option>
+                                <option value="skip_elevated">Skip Elevated (VIX &ge; 20)</option>
+                                <option value="calm_only">Calm Markets Only (VIX &lt; 16)</option>
+                                <option value="custom">Custom VIX Threshold</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="maxVixGroup" style="display:none">
+                            <label>Max VIX Threshold</label>
+                            <input type="number" id="maxVix" value="25" min="10" max="80" step="1">
                         </div>
                         <div class="form-group">
                             <label>Slippage %</label>
@@ -456,6 +495,143 @@
                     </table>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ TAB: Optimal Finder ═══════════ -->
+    <div class="tab-content" id="tab-optimal">
+        <div class="card section">
+            <div class="section-header">
+                <h2>Optimal Conditions Finder</h2>
+            </div>
+            <p style="color:var(--text-dim); margin-bottom:1rem;">
+                Runs a grid search across <strong>every permutation</strong> of Take Profit, Stop Loss, Holding Period,
+                Volatility Filter, and Fee Model to find the exact conditions that produce the highest returns.
+            </p>
+            <div class="grid-2">
+                <div>
+                    <div class="form-group">
+                        <label>Algorithm Filter</label>
+                        <select id="optAlgoFilter" style="width:100%;">
+                            <option value="">All Algorithms</option>
+                            <option value="Blue Chip Growth">Blue Chip Growth Only</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <div class="form-group">
+                        <label>Sort Results By</label>
+                        <select id="optSortBy" style="width:100%;">
+                            <option value="total_return_pct">Total Return %</option>
+                            <option value="win_rate">Win Rate %</option>
+                            <option value="sharpe_ratio">Sharpe Ratio</option>
+                            <option value="profit_factor">Profit Factor</option>
+                            <option value="expectancy">Expectancy</option>
+                            <option value="final_value">Final Portfolio Value</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-2" style="margin-top:0.5rem;">
+                <div>
+                    <div class="form-group">
+                        <label>Speed</label>
+                        <select id="optQuick" style="width:100%;">
+                            <option value="1">Quick (fewer combos, faster)</option>
+                            <option value="0">Full Grid (comprehensive, slower)</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <div class="form-group">
+                        <label>Show Top N Results</label>
+                        <input type="number" id="optTopN" value="25" min="5" max="100" style="width:100%;">
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top:1rem;">
+                <button class="btn btn-primary" onclick="runOptimalFinder()" id="optRunBtn">Find Optimal Conditions</button>
+            </div>
+        </div>
+
+        <div id="optimalLoading" style="display:none;">
+            <div class="card" style="text-align:center; padding:3rem;">
+                <div class="loading">Searching permutations... this may take 10-30 seconds</div>
+            </div>
+        </div>
+
+        <div id="optimalResults" style="display:none;">
+            <!-- Summary stats -->
+            <div class="stat-grid" id="optimalSummaryStats"></div>
+
+            <!-- Winner card -->
+            <div class="card section" id="optimalWinnerCard" style="border: 2px solid var(--green); display:none;">
+                <h2 style="color: var(--green);">&#x1F3C6; Winning Configuration</h2>
+                <div id="optimalWinnerContent"></div>
+            </div>
+
+            <!-- Top results chart -->
+            <div class="card section">
+                <h2>Top Configurations by <span id="optSortLabel">Return</span></h2>
+                <div class="chart-container" style="height:500px;"><canvas id="optimalChart"></canvas></div>
+            </div>
+
+            <!-- Top results table -->
+            <div class="card section">
+                <h2>Full Results Table</h2>
+                <div class="table-wrap">
+                    <table id="optimalTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Configuration</th>
+                                <th onclick="sortOptTable(2)">TP</th>
+                                <th onclick="sortOptTable(3)">SL</th>
+                                <th onclick="sortOptTable(4)">Hold</th>
+                                <th>Vol Filter</th>
+                                <th>Fee Model</th>
+                                <th onclick="sortOptTable(7)">Trades</th>
+                                <th onclick="sortOptTable(8)">Win Rate</th>
+                                <th onclick="sortOptTable(9)">Return %</th>
+                                <th onclick="sortOptTable(10)">Final Value</th>
+                                <th onclick="sortOptTable(11)">Max DD%</th>
+                                <th onclick="sortOptTable(12)">Sharpe</th>
+                                <th onclick="sortOptTable(13)">P/F</th>
+                                <th onclick="sortOptTable(14)">Fees</th>
+                                <th>Best Trade</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Worst results (what to avoid) -->
+            <div class="card section" style="border-color: var(--red);">
+                <h2 style="color:var(--red);">Worst Configurations (Avoid These)</h2>
+                <div class="table-wrap">
+                    <table id="worstTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Configuration</th>
+                                <th>Trades</th>
+                                <th>Win Rate</th>
+                                <th>Return %</th>
+                                <th>Final Value</th>
+                                <th>Max DD%</th>
+                                <th>Worst Trade</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="optimalEmpty" class="card" style="text-align:center; padding:3rem;">
+            <p style="font-size:1.1rem; margin-bottom:0.5rem;">Click "Find Optimal Conditions" to search all parameter permutations</p>
+            <p style="color:var(--text-dim);">The engine will test every combination and rank them by your chosen metric</p>
         </div>
     </div>
 
@@ -615,6 +791,7 @@ function loadAlgorithms() {
         renderAlgoCheckboxes('algoCheckboxes');
         renderAlgoCheckboxes('compareAlgoCheckboxes');
         renderAlgoFilter();
+        populateOptAlgoFilter();
     });
 }
 
@@ -629,6 +806,13 @@ function renderAlgoCheckboxes(containerId) {
              + '</label>';
     }
     document.getElementById(containerId).innerHTML = html;
+}
+
+function selectOnlyAlgo(containerId, algoName) {
+    var boxes = document.querySelectorAll('#' + containerId + ' input[type="checkbox"]');
+    for (var i = 0; i < boxes.length; i++) {
+        boxes[i].checked = (boxes[i].value === algoName);
+    }
 }
 
 function renderAlgoFilter() {
@@ -680,22 +864,48 @@ function selectScenario(el, key, tp, sl, hold) {
 function onStrategyChange() {
     var strat = document.getElementById('strategyType').value;
     var presets = {
-        daytrader:    {tp: 5,   sl: 3,  hold: 2},
-        swing:        {tp: 15,  sl: 5,  hold: 14},
-        conservative: {tp: 10,  sl: 5,  hold: 30},
-        aggressive:   {tp: 30,  sl: 15, hold: 30},
-        buy_hold:     {tp: 999, sl: 999, hold: 90}
+        daytrader:    {tp: 5,   sl: 3,  hold: 2,  vol: 'off'},
+        swing:        {tp: 15,  sl: 5,  hold: 14, vol: 'off'},
+        conservative: {tp: 10,  sl: 5,  hold: 30, vol: 'off'},
+        aggressive:   {tp: 30,  sl: 15, hold: 30, vol: 'off'},
+        buy_hold:     {tp: 999, sl: 999, hold: 90, vol: 'off'},
+        low_vol:      {tp: 10,  sl: 5,  hold: 14, vol: 'skip_high'},
+        calm_only:    {tp: 15,  sl: 5,  hold: 30, vol: 'calm_only'},
+        vol_aware:    {tp: 10,  sl: 5,  hold: 7,  vol: 'skip_elevated'},
+        bluechip_30d: {tp: 999, sl: 999, hold: 30, vol: 'off',       algo: 'Blue Chip Growth'},
+        bluechip_90d: {tp: 999, sl: 999, hold: 90, vol: 'off',       algo: 'Blue Chip Growth'},
+        bluechip_180d:{tp: 999, sl: 999, hold: 180,vol: 'off',       algo: 'Blue Chip Growth'},
+        bluechip_calm:{tp: 999, sl: 999, hold: 90, vol: 'calm_only', algo: 'Blue Chip Growth'},
+        cursor_genius_90d:{tp: 999, sl: 999, hold: 90, vol: 'off', algo: 'Cursor Genius'},
+        cursor_genius_50tp:{tp: 50, sl: 999, hold: 90, vol: 'off', algo: 'Cursor Genius'},
+        cursor_genius_20tp:{tp: 20, sl: 999, hold: 90, vol: 'off', algo: 'Cursor Genius'},
+        cursor_genius_std:{tp: 10, sl: 5, hold: 30, vol: 'off', algo: 'Cursor Genius'},
+        etf_90d:{tp: 999, sl: 999, hold: 90, vol: 'off', algo: 'ETF Masters'},
+        etf_20tp:{tp: 20, sl: 999, hold: 90, vol: 'off', algo: 'ETF Masters'},
+        sector_rotation_90d:{tp: 999, sl: 999, hold: 90, vol: 'off', algo: 'Sector Rotation'},
+        sector_momentum_30d:{tp: 999, sl: 999, hold: 30, vol: 'off', algo: 'Sector Momentum'},
+        sector_momentum_90d:{tp: 999, sl: 999, hold: 90, vol: 'off', algo: 'Sector Momentum'}
     };
     if (presets[strat]) {
         document.getElementById('takeProfit').value = presets[strat].tp;
         document.getElementById('stopLoss').value = presets[strat].sl;
         document.getElementById('maxHoldDays').value = presets[strat].hold;
+        if (presets[strat].vol) {
+            document.getElementById('volFilter').value = presets[strat].vol;
+            toggleMaxVix();
+        }
+        // For Blue Chip presets, auto-select only the Blue Chip Growth algo
+        if (presets[strat].algo) {
+            selectOnlyAlgo('algoCheckboxes', presets[strat].algo);
+        }
     }
 }
 
 // ─── Run What-If ───
 function runWhatIf(save) {
     var algos = getSelectedAlgos('algoCheckboxes');
+    var fm = document.getElementById('feeModel').value;
+    var vf = document.getElementById('volFilter').value;
     var params = {
         algorithms: algos,
         strategy: document.getElementById('strategyType').value,
@@ -705,7 +915,10 @@ function runWhatIf(save) {
         initial_capital: document.getElementById('initialCapital').value,
         commission: document.getElementById('commission').value,
         slippage: document.getElementById('slippage').value,
-        position_size: document.getElementById('positionSize').value
+        position_size: document.getElementById('positionSize').value,
+        fee_model: fm,
+        vol_filter: vf,
+        max_vix: document.getElementById('maxVix').value
     };
     if (save) params.save = '1';
 
@@ -727,18 +940,50 @@ function runWhatIf(save) {
 
 function renderWhatIfResults(data) {
     var s = data.summary;
+    var p = data.params || {};
     var statsHtml = ''
         + statCard('Total Return', fmtPct(s.total_return_pct), s.total_return_pct)
-        + statCard('Final Value', '$' + fmtNum(s.final_value), s.final_value - data.params.initial_capital)
+        + statCard('Final Value', '$' + fmtNum(s.final_value), s.final_value - p.initial_capital)
         + statCard('Win Rate', s.win_rate + '%', s.win_rate - 50)
         + statCard('Total Trades', s.total_trades, 0)
         + statCard('Avg Win', fmtPct(s.avg_win_pct), 1)
         + statCard('Avg Loss', fmtPct(-s.avg_loss_pct), -1)
         + statCard('Max Drawdown', fmtPct(-s.max_drawdown_pct), -1)
-        + statCard('Commissions', '$' + fmtNum(s.total_commissions), -1)
+        + statCard('Total Fees', '$' + fmtNum(s.total_commissions), -1)
         + statCard('Sharpe Ratio', s.sharpe_ratio, s.sharpe_ratio)
         + statCard('Profit Factor', s.profit_factor, s.profit_factor - 1)
         + statCard('Expectancy', fmtPct(s.expectancy), s.expectancy);
+
+    // Fee breakdown for Questrade model
+    if (p.fee_model === 'questrade' && (s.total_forex_fees > 0 || s.cdr_trades > 0)) {
+        statsHtml += statCard('CDR Trades', s.cdr_trades + ' ($0 fee)', 1)
+                  +  statCard('US Forex Trades', s.us_forex_trades, s.us_forex_trades > 0 ? -1 : 0)
+                  +  statCard('Forex Fees', '$' + fmtNum(s.total_forex_fees), -1)
+                  +  statCard('ECN+SEC Fees', '$' + fmtNum((s.total_ecn_fees || 0) + (s.total_sec_fees || 0)), -1);
+    }
+
+    // Fee model label
+    statsHtml += '<div class="stat-card" style="border-color:var(--accent)"><div class="label">Fee Model</div><div class="value" style="font-size:0.8rem">' + (p.fee_model_label || p.fee_model || 'flat') + '</div></div>';
+
+    // Volatility filter info
+    if (p.vol_filter && p.vol_filter !== 'off') {
+        statsHtml += '<div class="stat-card" style="border-color:#eab308"><div class="label">Vol Filter</div><div class="value" style="font-size:0.75rem">' + (p.vol_filter_label || p.vol_filter) + '</div></div>';
+        statsHtml += statCard('Trades Skipped', s.vol_skipped || 0, s.vol_skipped > 0 ? 1 : 0);
+
+        // Show skipped tickers summary
+        if (s.vol_skipped_tickers && s.vol_skipped_tickers.length > 0) {
+            var skipList = '<div style="margin-top:0.5rem;font-size:0.8rem;color:var(--text-dim)"><strong>Skipped due to VIX:</strong> ';
+            var shown = Math.min(s.vol_skipped_tickers.length, 10);
+            for (var si = 0; si < shown; si++) {
+                var sk = s.vol_skipped_tickers[si];
+                skipList += sk.ticker + ' (VIX:' + sk.vix.toFixed(1) + ') ';
+            }
+            if (s.vol_skipped > shown) skipList += '...+' + (s.vol_skipped - shown) + ' more';
+            skipList += '</div>';
+            statsHtml += '<div class="stat-card" style="grid-column:1/-1;text-align:left">' + skipList + '</div>';
+        }
+    }
+
     document.getElementById('whatifStats').innerHTML = statsHtml;
 
     renderTradeTable(data.trades);
@@ -754,6 +999,19 @@ function statCard(label, value, sentiment) {
 function fmtPct(v) { return (v >= 0 ? '+' : '') + parseFloat(v).toFixed(2) + '%'; }
 function fmtNum(v) { return parseFloat(v).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
 
+// Toggle commission field based on fee model
+function toggleCommField() {
+    var fm = document.getElementById('feeModel').value;
+    var cg = document.getElementById('commGroup');
+    cg.style.display = (fm === 'flat_10') ? '' : 'none';
+}
+
+// Toggle max VIX input based on vol filter
+function toggleMaxVix() {
+    var vf = document.getElementById('volFilter').value;
+    document.getElementById('maxVixGroup').style.display = (vf === 'custom') ? '' : 'none';
+}
+
 // ─── Trade Table ───
 function renderTradeTable(trades) {
     var tbody = document.getElementById('tradeTable').querySelector('tbody');
@@ -761,12 +1019,18 @@ function renderTradeTable(trades) {
     for (var i = 0; i < trades.length; i++) {
         var t = trades[i];
         var cls = t.net_profit >= 0 ? 'positive' : 'negative';
+        var cdrBadge = t.has_cdr ? ' <span class="badge badge-green" title="CDR available — $0 fee">CDR</span>' : (t.forex_fee > 0 ? ' <span class="badge badge-yellow" title="1.75% forex fee">FX</span>' : '');
+        var vixBadge = '';
+        if (t.vix_at_entry !== null && t.vix_at_entry > 0) {
+            var vixColor = t.vix_at_entry < 16 ? 'badge-green' : (t.vix_at_entry < 20 ? 'badge-blue' : (t.vix_at_entry < 25 ? 'badge-yellow' : 'badge-red'));
+            vixBadge = ' <span class="badge ' + vixColor + '" title="VIX: ' + t.vix_at_entry.toFixed(1) + ' (' + (t.vol_regime || '') + ')">VIX:' + t.vix_at_entry.toFixed(0) + '</span>';
+        }
         var reasonBadge = t.exit_reason === 'take_profit' ? '<span class="badge badge-green">TP</span>'
                        : t.exit_reason === 'stop_loss' ? '<span class="badge badge-red">SL</span>'
                        : t.exit_reason === 'max_hold' ? '<span class="badge badge-yellow">MAX</span>'
                        : '<span class="badge badge-blue">' + t.exit_reason + '</span>';
         html += '<tr>'
-             + '<td><strong>' + t.ticker + '</strong></td>'
+             + '<td><strong>' + t.ticker + '</strong>' + cdrBadge + vixBadge + '</td>'
              + '<td>' + t.algorithm + '</td>'
              + '<td>' + t.entry_date + '</td>'
              + '<td>$' + parseFloat(t.entry_price).toFixed(2) + '</td>'
@@ -900,7 +1164,7 @@ function runComparison() {
     var algos = getSelectedAlgos('compareAlgoCheckboxes');
     document.getElementById('comparisonResults').style.display = 'none';
 
-    apiCall('whatif.php', {compare: '1', algorithms: algos, initial_capital: document.getElementById('initialCapital').value, commission: document.getElementById('commission').value}, function(err, data) {
+    apiCall('whatif.php', {compare: '1', algorithms: algos, initial_capital: document.getElementById('initialCapital').value, commission: document.getElementById('commission').value, fee_model: document.getElementById('feeModel').value}, function(err, data) {
         if (err || !data || !data.ok) return;
         document.getElementById('comparisonResults').style.display = 'block';
         renderComparison(data);
@@ -1093,6 +1357,241 @@ function fetchPricesRemaining() {
 function logSetup(msg) {
     var log = document.getElementById('setupLog');
     log.innerHTML += '<div>' + new Date().toLocaleTimeString() + ': ' + msg + '</div>';
+}
+
+// ─── Optimal Finder ───
+var optimalChartInstance = null;
+
+function runOptimalFinder() {
+    var algo = document.getElementById('optAlgoFilter').value;
+    var sortBy = document.getElementById('optSortBy').value;
+    var quick = document.getElementById('optQuick').value;
+    var topN = document.getElementById('optTopN').value;
+
+    document.getElementById('optimalEmpty').style.display = 'none';
+    document.getElementById('optimalResults').style.display = 'none';
+    document.getElementById('optimalLoading').style.display = 'block';
+    document.getElementById('optRunBtn').disabled = true;
+    document.getElementById('optRunBtn').textContent = 'Searching...';
+
+    var params = {
+        algorithms: algo,
+        sort_by: sortBy,
+        quick: quick,
+        top: topN,
+        fee_model: 'questrade',
+        initial_capital: document.getElementById('initialCapital').value,
+        slippage: document.getElementById('slippage').value
+    };
+
+    apiCall('optimal_finder.php', params, function(err, data) {
+        document.getElementById('optimalLoading').style.display = 'none';
+        document.getElementById('optRunBtn').disabled = false;
+        document.getElementById('optRunBtn').textContent = 'Find Optimal Conditions';
+
+        if (err || !data || !data.ok) {
+            document.getElementById('optimalEmpty').style.display = 'block';
+            document.getElementById('optimalEmpty').innerHTML = '<p style="color:var(--red);">Error: ' + (err || (data && data.error ? data.error : 'Unknown')) + '</p>';
+            return;
+        }
+
+        document.getElementById('optimalResults').style.display = 'block';
+        renderOptimalResults(data);
+    });
+}
+
+function renderOptimalResults(data) {
+    var top = data.top_results || [];
+    var worst = data.worst_results || [];
+    var sortLabel = {
+        total_return_pct: 'Return %',
+        win_rate: 'Win Rate',
+        sharpe_ratio: 'Sharpe Ratio',
+        profit_factor: 'Profit Factor',
+        expectancy: 'Expectancy',
+        final_value: 'Final Value'
+    };
+    document.getElementById('optSortLabel').textContent = sortLabel[data.sort_by] || data.sort_by;
+
+    // ─── Summary stats ───
+    var html = '';
+    html += statCard('Permutations Tested', data.total_permutations, 0);
+    html += statCard('With Trades', data.total_with_trades, 0);
+    html += statCard('Time Elapsed', data.elapsed_seconds + 's', 0);
+    html += statCard('Picks Analyzed', data.total_picks, 0);
+    if (top.length > 0) {
+        var best = top[0].summary;
+        html += statCard('Best Return', fmtPct(best.total_return_pct), best.total_return_pct);
+        html += statCard('Best Win Rate', best.win_rate + '%', best.win_rate - 50);
+        html += statCard('Best Sharpe', best.sharpe_ratio, best.sharpe_ratio);
+        html += statCard('Best Final Value', '$' + fmtNum(best.final_value), best.final_value - data.initial_capital);
+    }
+    document.getElementById('optimalSummaryStats').innerHTML = html;
+
+    // ─── Winner card ───
+    if (top.length > 0) {
+        var w = top[0];
+        var ws = w.summary;
+        var wp = w.params;
+        var winnerHtml = '<div class="stat-grid" style="margin-top:1rem;">';
+        winnerHtml += '<div class="stat-card" style="border-color:var(--green)"><div class="label">Take Profit</div><div class="value">' + (wp.take_profit >= 999 ? 'None (Hold)' : wp.take_profit + '%') + '</div></div>';
+        winnerHtml += '<div class="stat-card" style="border-color:var(--green)"><div class="label">Stop Loss</div><div class="value">' + (wp.stop_loss >= 999 ? 'None' : wp.stop_loss + '%') + '</div></div>';
+        winnerHtml += '<div class="stat-card" style="border-color:var(--green)"><div class="label">Holding Period</div><div class="value">' + wp.max_hold_days + ' days</div></div>';
+        winnerHtml += '<div class="stat-card" style="border-color:var(--green)"><div class="label">Vol Filter</div><div class="value">' + wp.vol_filter + '</div></div>';
+        winnerHtml += '<div class="stat-card" style="border-color:var(--green)"><div class="label">Fee Model</div><div class="value">' + wp.fee_model + '</div></div>';
+        winnerHtml += '</div>';
+        winnerHtml += '<div class="stat-grid" style="margin-top:0.5rem;">';
+        winnerHtml += statCard('Total Return', fmtPct(ws.total_return_pct), ws.total_return_pct);
+        winnerHtml += statCard('Win Rate', ws.win_rate + '%', ws.win_rate - 50);
+        winnerHtml += statCard('Final Value', '$' + fmtNum(ws.final_value), ws.final_value - data.initial_capital);
+        winnerHtml += statCard('Trades', ws.total_trades, 0);
+        winnerHtml += statCard('Sharpe', ws.sharpe_ratio, ws.sharpe_ratio);
+        winnerHtml += statCard('Profit Factor', ws.profit_factor, ws.profit_factor - 1);
+        winnerHtml += statCard('Max Drawdown', fmtPct(-ws.max_drawdown_pct), -1);
+        winnerHtml += statCard('Total Fees', '$' + fmtNum(ws.total_commissions), -1);
+        winnerHtml += '</div>';
+
+        if (ws.best_trade) {
+            winnerHtml += '<p style="margin-top:1rem;font-size:0.85rem;color:var(--text-dim);">Best single trade: <strong style="color:var(--green);">' + ws.best_trade.ticker + '</strong> ' + ws.best_trade.entry_date + ' → ' + ws.best_trade.exit_date + ' (' + fmtPct(ws.best_trade.return_pct) + ', ' + ws.best_trade.exit_reason + ')</p>';
+        }
+
+        document.getElementById('optimalWinnerContent').innerHTML = winnerHtml;
+        document.getElementById('optimalWinnerCard').style.display = 'block';
+    }
+
+    // ─── Top results chart ───
+    renderOptimalChart(top, data.sort_by);
+
+    // ─── Top results table ───
+    renderOptimalTable(top);
+
+    // ─── Worst results table ───
+    renderWorstTable(worst);
+}
+
+function renderOptimalChart(results, sortKey) {
+    var ctx = document.getElementById('optimalChart').getContext('2d');
+    if (optimalChartInstance) optimalChartInstance.destroy();
+
+    var labels = [], values = [], winRates = [], colors = [];
+    var max = Math.min(results.length, 20);
+    for (var i = 0; i < max; i++) {
+        var r = results[i];
+        var lbl = '#' + r.rank + ' ' + (r.params.take_profit >= 999 ? 'NoTP' : 'TP' + r.params.take_profit) + '/' + (r.params.stop_loss >= 999 ? 'NoSL' : 'SL' + r.params.stop_loss) + '/' + r.params.max_hold_days + 'd';
+        labels.push(lbl);
+        values.push(r.summary[sortKey] || 0);
+        winRates.push(r.summary.win_rate);
+        colors.push(r.summary.total_return_pct >= 0 ? 'rgba(34,197,94,0.7)' : 'rgba(239,68,68,0.7)');
+    }
+
+    optimalChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: sortKey.replace(/_/g, ' '), data: values, backgroundColor: colors, borderRadius: 6 },
+                { label: 'Win Rate %', data: winRates, backgroundColor: 'rgba(99,102,241,0.4)', borderRadius: 6 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: { legend: { labels: { color: '#8888aa' } } },
+            scales: {
+                x: { grid: { color: 'rgba(42,42,74,0.5)' }, ticks: { color: '#8888aa' } },
+                y: { grid: { display: false }, ticks: { color: '#8888aa', font: { size: 10 } } }
+            }
+        }
+    });
+}
+
+function renderOptimalTable(results) {
+    var tbody = document.getElementById('optimalTable').querySelector('tbody');
+    var html = '';
+    for (var i = 0; i < results.length; i++) {
+        var r = results[i];
+        var s = r.summary;
+        var p = r.params;
+        var cls = s.total_return_pct >= 0 ? 'positive' : 'negative';
+        var bestTrade = s.best_trade ? (s.best_trade.ticker + ' ' + fmtPct(s.best_trade.return_pct)) : '—';
+        var isWinner = (i === 0);
+        var rowStyle = isWinner ? ' style="background:rgba(34,197,94,0.08);"' : '';
+        html += '<tr' + rowStyle + '>'
+             + '<td>' + (isWinner ? '<strong style="color:var(--green);">#' + r.rank + ' &#x1F3C6;</strong>' : '#' + r.rank) + '</td>'
+             + '<td style="font-size:0.75rem;">' + p.label + '</td>'
+             + '<td>' + (p.take_profit >= 999 ? '—' : p.take_profit + '%') + '</td>'
+             + '<td>' + (p.stop_loss >= 999 ? '—' : p.stop_loss + '%') + '</td>'
+             + '<td>' + p.max_hold_days + 'd</td>'
+             + '<td><span class="badge ' + (p.vol_filter === 'off' ? 'badge-blue' : 'badge-yellow') + '">' + p.vol_filter + '</span></td>'
+             + '<td>' + p.fee_model + '</td>'
+             + '<td>' + s.total_trades + '</td>'
+             + '<td>' + s.win_rate + '%</td>'
+             + '<td class="' + cls + '"><strong>' + fmtPct(s.total_return_pct) + '</strong></td>'
+             + '<td>$' + fmtNum(s.final_value) + '</td>'
+             + '<td class="negative">' + fmtPct(-s.max_drawdown_pct) + '</td>'
+             + '<td>' + s.sharpe_ratio + '</td>'
+             + '<td>' + s.profit_factor + '</td>'
+             + '<td>$' + fmtNum(s.total_commissions) + '</td>'
+             + '<td style="font-size:0.75rem;">' + bestTrade + '</td>'
+             + '</tr>';
+    }
+    tbody.innerHTML = html || '<tr><td colspan="16" style="text-align:center;">No results</td></tr>';
+}
+
+function renderWorstTable(results) {
+    var tbody = document.getElementById('worstTable').querySelector('tbody');
+    var html = '';
+    for (var i = 0; i < results.length; i++) {
+        var r = results[i];
+        var s = r.summary;
+        var p = r.params;
+        var worstTrade = s.worst_trade ? (s.worst_trade.ticker + ' ' + fmtPct(s.worst_trade.return_pct)) : '—';
+        html += '<tr>'
+             + '<td>#' + r.rank + '</td>'
+             + '<td style="font-size:0.75rem;">' + p.label + '</td>'
+             + '<td>' + s.total_trades + '</td>'
+             + '<td>' + s.win_rate + '%</td>'
+             + '<td class="negative"><strong>' + fmtPct(s.total_return_pct) + '</strong></td>'
+             + '<td>$' + fmtNum(s.final_value) + '</td>'
+             + '<td class="negative">' + fmtPct(-s.max_drawdown_pct) + '</td>'
+             + '<td style="font-size:0.75rem;color:var(--red);">' + worstTrade + '</td>'
+             + '</tr>';
+    }
+    tbody.innerHTML = html || '<tr><td colspan="8" style="text-align:center;">No results</td></tr>';
+}
+
+var optSortDir = {};
+function sortOptTable(colIdx) {
+    var table = document.getElementById('optimalTable');
+    var tbody = table.querySelector('tbody');
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+    var dir = optSortDir[colIdx] === 'asc' ? 'desc' : 'asc';
+    optSortDir[colIdx] = dir;
+    rows.sort(function(a, b) {
+        var aVal = a.cells[colIdx].textContent.replace(/[$%+,#🏆]/g, '').trim();
+        var bVal = b.cells[colIdx].textContent.replace(/[$%+,#🏆]/g, '').trim();
+        var aNum = parseFloat(aVal);
+        var bNum = parseFloat(bVal);
+        if (!isNaN(aNum) && !isNaN(bNum)) return dir === 'asc' ? aNum - bNum : bNum - aNum;
+        return dir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
+    for (var i = 0; i < rows.length; i++) tbody.appendChild(rows[i]);
+}
+
+// Populate optimal algo filter dropdown with loaded algorithms
+function populateOptAlgoFilter() {
+    var sel = document.getElementById('optAlgoFilter');
+    if (!sel || !allAlgorithms) return;
+    // Keep existing options (All + Blue Chip), add rest
+    for (var i = 0; i < allAlgorithms.length; i++) {
+        var a = allAlgorithms[i];
+        if (a.name === 'Blue Chip Growth') continue; // Already in HTML
+        var opt = document.createElement('option');
+        opt.value = a.name;
+        opt.textContent = a.name + ' (' + (a.pick_count || 0) + ' picks)';
+        sel.appendChild(opt);
+    }
 }
 </script>
 </body>

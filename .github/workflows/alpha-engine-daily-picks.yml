@@ -1,0 +1,234 @@
+name: Alpha Engine — Daily Picks
+
+on:
+  schedule:
+    # ─── Run weekdays after US market close ───
+    # 22:00 UTC = 5:00 PM EST — closing prices available
+    - cron: '0 22 * * 1-5'
+    # Weekend full run (Sunday midnight) — extended universe + validation
+    - cron: '0 5 * * 0'
+  workflow_dispatch:
+    inputs:
+      universe:
+        description: 'Stock universe to scan'
+        required: false
+        default: 'default'
+        type: choice
+        options:
+          - 'default'
+          - 'sp500'
+          - 'dividend_aristocrats'
+          - 'all'
+      top_k:
+        description: 'Number of top picks to generate'
+        required: false
+        default: '20'
+        type: choice
+        options:
+          - '10'
+          - '20'
+          - '30'
+          - '50'
+      mode:
+        description: 'Run mode'
+        required: false
+        default: 'picks'
+        type: choice
+        options:
+          - 'picks'
+          - 'quick'
+
+jobs:
+  generate-picks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    # ─── Step 1: Checkout ───
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # ─── Step 2: Setup Python ───
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        cache-dependency-path: 'alpha_engine/requirements.txt'
+
+    # ─── Step 3: Install dependencies ───
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r alpha_engine/requirements.txt
+
+    # ─── Step 4: Run Alpha Engine ───
+    - name: Generate daily picks
+      id: picks
+      env:
+        ALPHA_LOG_LEVEL: INFO
+        ALPHA_VERBOSE: '1'
+      run: |
+        echo "======================================================"
+        echo "  Alpha Engine - Multi-Strategy Pick Generation"
+        echo "======================================================"
+        echo ""
+
+        UNIVERSE="${{ github.event.inputs.universe || 'default' }}"
+        TOP_K="${{ github.event.inputs.top_k || '20' }}"
+        MODE="${{ github.event.inputs.mode || 'picks' }}"
+
+        # Sunday runs use extended universe
+        DAY_OF_WEEK=$(date +%u)
+        if [ "$DAY_OF_WEEK" = "7" ] && [ "$UNIVERSE" = "default" ]; then
+          UNIVERSE="sp500"
+          TOP_K="30"
+          echo "Sunday extended run: universe=$UNIVERSE, top_k=$TOP_K"
+        fi
+
+        echo "Universe: $UNIVERSE | Top-K: $TOP_K | Mode: $MODE"
+        echo ""
+
+        python -m alpha_engine.main --mode "$MODE" --universe "$UNIVERSE" --top-k "$TOP_K" 2>&1 | tee alpha_output.log
+
+        EXIT_CODE=${PIPESTATUS[0]}
+
+        if [ $EXIT_CODE -eq 0 ]; then
+          echo "picks_status=success" >> $GITHUB_OUTPUT
+        else
+          echo "::warning::Alpha Engine exited with code $EXIT_CODE"
+          echo "picks_status=failed" >> $GITHUB_OUTPUT
+        fi
+
+        # Check if picks were generated
+        if [ -f "alpha_engine/output/latest_picks.json" ]; then
+          PICK_COUNT=$(python3 -c "import json; d=json.load(open('alpha_engine/output/latest_picks.json')); print(len(d))")
+          echo "Picks generated: $PICK_COUNT"
+          echo "pick_count=$PICK_COUNT" >> $GITHUB_OUTPUT
+        else
+          echo "::warning::No picks JSON generated"
+          echo "pick_count=0" >> $GITHUB_OUTPUT
+        fi
+
+    # ─── Step 5: Display pick summary ───
+    - name: Display pick summary
+      if: success()
+      run: |
+        echo "=== Alpha Engine Pick Summary ==="
+        if [ -f "alpha_engine/output/latest_picks.json" ]; then
+          python3 << 'PYEOF'
+        import json
+
+        with open("alpha_engine/output/latest_picks.json") as f:
+            picks = json.load(f)
+
+        if not picks:
+            print("No picks generated.")
+        else:
+            print(f"{'Rank':<5} {'Ticker':<8} {'Score':<8} {'Conviction':<14} {'Category':<18} {'Horizon'}")
+            print("-" * 80)
+            for p in picks[:30]:
+                print(f"{p.get('rank',''):<5} {p.get('ticker',''):<8} {p.get('score',0):<8.3f} {p.get('conviction',''):<14} {p.get('category',''):<18} {p.get('expected_horizon','')}")
+            print(f"\nTotal picks: {len(picks)}")
+            total_value = sum(p.get('position_value', 0) for p in picks)
+            total_risk = sum(p.get('risk_amount', 0) for p in picks)
+            print(f"Total allocation: ${total_value:,.0f} | Total risk: ${total_risk:,.0f}")
+        PYEOF
+        else
+          echo "No picks file found."
+        fi
+
+    # ─── Step 6: Display regime info ───
+    - name: Display regime status
+      if: success()
+      run: |
+        echo "=== Market Regime Status ==="
+        # Extract regime from the report if available
+        REPORT=$(ls -t alpha_engine/output/report_*.md 2>/dev/null | head -1)
+        if [ -n "$REPORT" ]; then
+          head -40 "$REPORT"
+        else
+          echo "No report file generated."
+        fi
+
+    # ─── Step 7: Deploy picks to live site via FTP ───
+    - name: Deploy picks to live site
+      if: success() && steps.picks.outputs.pick_count != '0'
+      env:
+        FTP_SERVER: ${{ secrets.FTP_SERVER }}
+        FTP_USER: ${{ secrets.FTP_USER }}
+        FTP_PASS: ${{ secrets.FTP_PASS }}
+      run: |
+        echo "=== Deploying picks to live site ==="
+
+        # Skip if FTP credentials not set
+        if [ -z "$FTP_SERVER" ] || [ -z "$FTP_USER" ]; then
+          echo "::warning::FTP credentials not configured. Skipping deploy."
+          echo "Set FTP_SERVER, FTP_USER, FTP_PASS in repository secrets to enable."
+          exit 0
+        fi
+
+        # Install lftp for FTP upload
+        sudo apt-get update -qq && sudo apt-get install -y -qq lftp > /dev/null 2>&1
+
+        # Create remote directory structure
+        REMOTE_DIR="/findtorontoevents.ca/findstocks/alpha"
+
+        # Upload all output files
+        lftp -u "$FTP_USER,$FTP_PASS" "$FTP_SERVER" << FTPEOF
+        set ssl:verify-certificate no
+        set net:timeout 30
+        set net:max-retries 3
+        mkdir -p $REMOTE_DIR
+        cd $REMOTE_DIR
+        mput alpha_engine/output/*.json
+        mput alpha_engine/output/*.md
+        echo "Upload complete"
+        bye
+        FTPEOF
+
+        if [ $? -eq 0 ]; then
+          echo "Deployed to: https://findtorontoevents.ca/findstocks/alpha/"
+          echo "Picks JSON:  https://findtorontoevents.ca/findstocks/alpha/latest_picks.json"
+        else
+          echo "::warning::FTP upload failed"
+        fi
+
+    # ─── Step 8: Upload artifacts ───
+    - name: Upload output artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: alpha-engine-output-${{ github.run_number }}
+        path: |
+          alpha_engine/output/
+          alpha_output.log
+        retention-days: 30
+
+    # ─── Step 9: Summary ───
+    - name: Summary
+      if: always()
+      run: |
+        echo ""
+        echo "======================================================"
+        echo "       Alpha Engine Daily Run Summary"
+        echo "======================================================"
+        echo " Status:    ${{ steps.picks.outputs.picks_status || 'unknown' }}"
+        echo " Picks:     ${{ steps.picks.outputs.pick_count || '0' }} generated"
+        echo " Universe:  ${{ github.event.inputs.universe || 'default' }}"
+        echo " Top-K:     ${{ github.event.inputs.top_k || '20' }}"
+        echo "------------------------------------------------------"
+        echo " Live:      https://findtorontoevents.ca/findstocks/alpha/latest_picks.json"
+        echo " Artifacts: Available in Actions tab"
+        echo "======================================================"
+
+    # ─── Step 10: Trigger existing stock refresh (cascade) ───
+    - name: Trigger existing portfolio refresh
+      if: success()
+      run: |
+        echo "=== Triggering existing stock data refresh ==="
+        # Run the existing PHP-based daily refresh too (cascade)
+        curl -s --max-time 30 \
+          "https://findtorontoevents.ca/findstocks/api/daily_refresh.php?key=stocksrefresh2026" \
+          > /dev/null 2>&1 || true
+        echo "PHP daily refresh triggered."

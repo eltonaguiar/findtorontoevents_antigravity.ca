@@ -1,0 +1,144 @@
+name: Refresh All Portfolio Data
+
+on:
+  schedule:
+    # Run daily at 6:30 PM ET (23:30 UTC) - after market close
+    - cron: '30 23 * * 1-5'
+    # Run weekly comprehensive refresh on Sunday at midnight UTC
+    - cron: '0 0 * * 0'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  refresh-stocks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    # ─── Step 0: Ensure all algorithms are seeded (picks up new algos from code updates) ───
+    - name: Seed algorithms and portfolios
+      run: |
+        echo "=== Seeding algorithms & portfolio templates ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/findstocks/portfolio2/api/setup_schema.php")
+        echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Schema ok={d.get(\"ok\")}, Actions: {len(d.get(\"actions\",[]))}')" || echo "Schema: $RESULT"
+
+    - name: Import new stock picks
+      run: |
+        echo "=== Importing stock picks from JSON feeds ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/findstocks/portfolio2/api/import_picks.php?source=all")
+        echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Imported: {d.get(\"imported\",0)}, Skipped: {d.get(\"skipped\",0)}, Prices: {d.get(\"prices_imported\",\"N/A\")}')" || echo "Import response: $RESULT"
+
+    - name: Fetch price data (batch 1)
+      run: |
+        echo "=== Fetching price data from Yahoo Finance (batch 1) ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/fetch_prices.php?range=1y")
+        echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Fetched: {d.get(\"fetched\",0)} tickers. Note: {d.get(\"note\",\"\")}. Errors: {d.get(\"errors\",[])}')" || echo "Fetch response: $RESULT"
+
+    - name: Fetch price data (batch 2)
+      run: |
+        echo "=== Fetching remaining tickers ==="
+        sleep 5
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/fetch_prices.php?range=1y")
+        echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Fetched: {d.get(\"fetched\",0)} tickers. Message: {d.get(\"message\",d.get(\"note\",\"\"))}')" || echo "Fetch response: $RESULT"
+
+    - name: Run comprehensive backtest and save
+      run: |
+        echo "=== Running all-algorithm backtest ==="
+        # Momentum Ride (best performing strategy)
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/backtest.php?take_profit=50&stop_loss=10&max_hold_days=30&save=1")
+        echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); s=d.get('summary',{}); print(f'Momentum Ride: Return={s.get(\"total_return_pct\",0):.2f}%, Win Rate={s.get(\"win_rate\",0)}%, Trades={s.get(\"total_trades\",0)}')" || echo "$RESULT"
+
+    - name: Run strategy comparison
+      run: |
+        echo "=== Running all 10 strategy comparison ==="
+        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findstocks/portfolio2/api/whatif.php?compare=1")
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            print('Strategy Comparison Results:')
+            for i, s in enumerate(d.get('scenarios', [])):
+                sm = s.get('summary', {})
+                print(f'  {i+1}. {s[\"name\"]}: Return={sm.get(\"total_return_pct\",0):.2f}%, Win Rate={sm.get(\"win_rate\",0)}%')
+        " || echo "Comparison response: $RESULT"
+
+    - name: Run algorithm comparison
+      run: |
+        echo "=== Comparing algorithms under Momentum Ride scenario ==="
+        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findstocks/portfolio2/api/whatif.php?compare_algos=1&scenario=momentum_ride")
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            print('Algorithm Comparison (Momentum Ride):')
+            for a in d.get('algorithms', []):
+                sm = a.get('summary', {})
+                print(f'  {a[\"algorithm\"]}: Return={sm.get(\"total_return_pct\",0):.2f}%, Win Rate={sm.get(\"win_rate\",0)}%')
+        " || echo "Algo comparison: $RESULT"
+
+    - name: Update learning algorithm metrics
+      run: |
+        echo "=== Triggering learning algorithm parameter update ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/learning.php?action=analyze_and_adjust")
+        echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Learning update: ok={d.get(\"ok\")}, adjustments={d.get(\"adjustments_made\",0)}')" || echo "Learning response: $RESULT"
+
+    - name: Print stocks summary
+      run: |
+        echo "=== Stocks Database Stats ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/findstocks/portfolio2/api/data.php?type=stats")
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        s = d.get('stats', {})
+        print(f'Stocks: {s.get(\"total_stocks\",0)}')
+        print(f'Picks: {s.get(\"total_picks\",0)}')
+        print(f'Price Records: {s.get(\"total_price_records\",0)}')
+        print(f'Backtests: {s.get(\"total_backtests\",0)}')
+        print(f'Active Algos: {s.get(\"active_algorithms\",0)}')
+        " || echo "Stats: $RESULT"
+
+    # ─── Mutual Funds Refresh ───
+    - name: Refresh mutual funds NAV data
+      run: |
+        echo "=== Refreshing Mutual Funds ==="
+        curl -s --max-time 30 "https://findtorontoevents.ca/findmutualfunds2/portfolio2/api/import_picks.php?source=seed" > /dev/null 2>&1 || true
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findmutualfunds2/portfolio2/api/fetch_prices.php?force=1")
+        echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'MF NAVs fetched: {d.get(\"fetched\",0)}')" || echo "MF: $RESULT"
+        curl -s --max-time 60 "https://findtorontoevents.ca/findmutualfunds2/portfolio2/api/learning.php?action=analyze_and_adjust" > /dev/null 2>&1 || true
+
+    # ─── Forex Refresh ───
+    - name: Refresh forex price data
+      run: |
+        echo "=== Refreshing Forex ==="
+        curl -s --max-time 30 "https://findtorontoevents.ca/findforex2/portfolio/api/import_picks.php?source=seed" > /dev/null 2>&1 || true
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findforex2/portfolio/api/fetch_prices.php?force=1")
+        echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'FX prices fetched: {d.get(\"fetched\",0)}')" || echo "FX: $RESULT"
+        curl -s --max-time 60 "https://findtorontoevents.ca/findforex2/portfolio/api/learning.php?action=analyze_and_adjust" > /dev/null 2>&1 || true
+
+    # ─── Crypto Refresh ───
+    - name: Refresh crypto price data
+      run: |
+        echo "=== Refreshing Crypto ==="
+        curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/portfolio/api/import_picks.php?source=seed" > /dev/null 2>&1 || true
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findcryptopairs/portfolio/api/fetch_prices.php?force=1")
+        echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Crypto prices fetched: {d.get(\"fetched\",0)}')" || echo "CR: $RESULT"
+        curl -s --max-time 60 "https://findtorontoevents.ca/findcryptopairs/portfolio/api/learning.php?action=analyze_and_adjust" > /dev/null 2>&1 || true
+
+    # ─── Regenerate Top Picks & Verify Dashboards ───
+    - name: Regenerate top picks cache
+      run: |
+        echo "=== Regenerating cross-asset top picks ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/findstocks/portfolio2/api/advanced_stats.php?action=top_picks")
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        print(f'Stocks: {len(d.get(\"top_stocks\",[]))}, Day Trading: {len(d.get(\"day_trading\",[]))}')
+        print(f'MF: {len(d.get(\"top_mutual_funds\",[]))}, FX: {len(d.get(\"top_forex\",[]))}, Crypto: {len(d.get(\"top_crypto\",[]))}')
+        " || echo "Top picks: $RESULT"
+
+    - name: Verify dashboard pages
+      run: |
+        echo "=== Verifying dashboard pages ==="
+        for page in "findstocks/portfolio2/picks.html" "findstocks/portfolio2/leaderboard.html"; do
+          STATUS=$(curl -sS -o /dev/null -w "%{http_code}" "https://findtorontoevents.ca/$page" 2>&1)
+          echo "$page: HTTP $STATUS"
+        done

@@ -661,7 +661,8 @@ function App() {
   const [registerPassword, setRegisterPassword] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [showLoginForm, setShowLoginForm] = useState(false);
-  
+  const [guestDayLimitReached, setGuestDayLimitReached] = useState(false);
+
   // Discord notification preferences: { [creatorId]: boolean }
   const [notificationPrefs, setNotificationPrefs] = useState<Record<string, boolean>>({});
 
@@ -829,6 +830,32 @@ function App() {
     }
 
   }, []);
+
+  // Guest day-limit check: after 2 calendar days of visits (by IP), require sign-in
+  // Also pings for logged-in users to mark their IP as "registered"
+  useEffect(() => {
+    const base = getAuthBase();
+    if (!base) return;
+
+    // Logged-in user: just mark IP as registered, no lockdown
+    if (authUser) {
+      setGuestDayLimitReached(false);
+      fetch(`${base}/guest_usage.php?action=check_site&user_id=${authUser.id}`, { credentials: "include" }).catch(() => {});
+      return;
+    }
+    if (!isGuestMode) return;
+
+    fetch(`${base}/guest_usage.php?action=check_site`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.ok && !data.allowed) {
+          setGuestDayLimitReached(true);
+        } else {
+          setGuestDayLimitReached(false);
+        }
+      })
+      .catch(() => { /* fail open */ });
+  }, [authUser, isGuestMode]);
 
   // Fetch notification preferences when user has Discord linked
   useEffect(() => {
@@ -1206,6 +1233,10 @@ function App() {
       const snapshot = creatorsRef.current;
       for (const creator of snapshot) {
         if (!isMounted) return;
+        // Skip creators where the user has explicitly selected an avatar
+        if (creator.selectedAvatarSource) {
+          continue;
+        }
         const avatarUrl = creator.avatarUrl || "";
         const isLocalAvatar = avatarUrl.startsWith("/avatars/");
         const shouldFetch = isGuestMode || (!isLocalAvatar && avatarUrl.includes("dicebear.com"));
@@ -1217,7 +1248,9 @@ function App() {
               console.log(`[AVATAR] Updated avatar for ${creator.name}: ${avatar}`);
               setCreators((oldCreators) =>
                 oldCreators.map((c) =>
-                  c.id === creator.id ? { ...c, avatarUrl: avatar } : c,
+                  // Double-check: don't overwrite if user selected an avatar while we were fetching
+                  // (race condition with loadMyList loading user preferences from DB)
+                  c.id === creator.id && !c.selectedAvatarSource ? { ...c, avatarUrl: avatar } : c,
                 ),
               );
             }
@@ -3114,19 +3147,21 @@ function App() {
     const creator = creators.find((c) => c.id === id);
     if (!creator) return;
     const avatar = await getBestAvatar(creator.name, creator.accounts);
-    setCreators((oldCreators) =>
-      oldCreators.map((c) =>
-        c.id === id
-          ? {
-            ...c,
-            avatarUrl:
-              avatar && !avatar.includes("dicebear.com")
-                ? avatar
-                : buildFallbackAvatar(c),
-          }
-          : c
-      )
+    const next = creators.map((c) =>
+      c.id === id
+        ? {
+          ...c,
+          avatarUrl:
+            avatar && !avatar.includes("dicebear.com")
+              ? avatar
+              : buildFallbackAvatar(c),
+          // Clear user selection since they explicitly asked for a refresh
+          selectedAvatarSource: undefined,
+        }
+        : c
     );
+    setCreators(next);
+    void saveCreatorsToBackend(next);
   };
 
   // Handle bulk avatar updates from BulkAvatarManager
@@ -3239,13 +3274,71 @@ function App() {
 
   return (
     <div className="app-container">
+      {/* Guest day-limit login wall: shown after 2 days of guest usage */}
+      {guestDayLimitReached && !authUser && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9998,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(0,0,0,0.88)',
+          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)'
+        }}>
+          <div style={{
+            maxWidth: 420, width: '90%', padding: '2.5rem',
+            background: 'linear-gradient(135deg, rgba(30,30,60,0.98), rgba(20,20,40,0.98))',
+            borderRadius: '1.5rem', border: '1px solid rgba(99,102,241,0.3)',
+            textAlign: 'center', color: '#fff',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.5)'
+          }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>&#128274;</div>
+            <h2 style={{
+              fontSize: '1.5rem', fontWeight: 800, margin: '0 0 0.75rem 0',
+              background: 'linear-gradient(135deg,#a5b4fc,#818cf8)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
+            }}>Sign in to continue</h2>
+            <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: 1.6, margin: '0 0 1.5rem 0' }}>
+              You&apos;ve been using Favorite Creators for a couple of days! Create a free account to keep tracking your creators and unlock all features.
+            </p>
+            <div style={{ textAlign: 'left', color: '#cbd5e1', fontSize: '0.85rem', marginBottom: '1.5rem', paddingLeft: '1rem' }}>
+              &bull; Track creators across Twitch, Kick, TikTok &amp; YouTube<br/>
+              &bull; Get live notifications when they go online<br/>
+              &bull; Unlimited AI assistant access<br/>
+              &bull; Save your personal creator list
+            </div>
+            <button
+              onClick={handleGoogleLogin}
+              style={{
+                display: 'inline-block', padding: '0.85rem 2rem',
+                background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+                color: '#fff', border: 'none', borderRadius: '0.75rem',
+                fontSize: '1rem', fontWeight: 700, cursor: 'pointer',
+                boxShadow: '0 10px 25px rgba(99,102,241,0.3)',
+                marginBottom: '0.5rem', width: '100%'
+              }}
+            >Continue with Google</button>
+            <button
+              onClick={() => { setShowLoginForm(true); setGuestDayLimitReached(false); }}
+              style={{
+                display: 'inline-block', padding: '0.65rem 1.5rem',
+                background: 'transparent', color: '#a5b4fc',
+                border: '1px solid rgba(99,102,241,0.4)', borderRadius: '0.75rem',
+                fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
+                width: '100%', marginTop: '0.5rem'
+              }}
+            >Use Email Instead</button>
+            <p style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '1rem' }}>
+              Free &bull; 30 seconds &bull; Google or email
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Toast Notification */}
       {toastMessage && (
         <div className="toast-notification">
           {toastMessage}
         </div>
       )}
-      
+
       {/* Live Found Toasts - Stack in bottom right during checking */}
       {liveFoundToasts.length > 0 && (
         <div className="live-found-toasts" style={{

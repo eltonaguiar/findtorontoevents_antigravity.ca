@@ -62,6 +62,39 @@ if ($conn->query($sql2)) {
     $results['ok'] = false;
 }
 
+// 3. Create accountability_followup_optouts table (morning follow-up opt-outs)
+$sql3 = "CREATE TABLE IF NOT EXISTS accountability_followup_optouts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    discord_user_id VARCHAR(32) DEFAULT NULL,
+    app_user_id INT DEFAULT NULL,
+    opted_out_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_discord (discord_user_id),
+    INDEX idx_app_user (app_user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+
+if ($conn->query($sql3)) {
+    $results['actions'][] = 'Created accountability_followup_optouts table (or already exists)';
+} else {
+    $results['actions'][] = 'Failed: ' . $conn->error;
+    $results['ok'] = false;
+}
+
+// 4. Create accountability_followup_log table (tracks daily follow-up sends)
+$sql4 = "CREATE TABLE IF NOT EXISTS accountability_followup_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    discord_user_id VARCHAR(32) NOT NULL,
+    sent_date DATE NOT NULL,
+    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_user_date (discord_user_id, sent_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+
+if ($conn->query($sql4)) {
+    $results['actions'][] = 'Created accountability_followup_log table (or already exists)';
+} else {
+    $results['actions'][] = 'Failed: ' . $conn->error;
+    $results['ok'] = false;
+}
+
 $results['message'] = 'Reminder tables setup complete';
 echo json_encode($results);
 $conn->close();

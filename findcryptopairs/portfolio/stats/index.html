@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Pairs System Status | Portfolio Analysis</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a; --bg-card: #12122a; --border: #2a2a4a;
+            --text: #e0e0f0; --text-dim: #8888aa; --accent: #f59e0b;
+            --green: #22c55e; --green-dim: rgba(34,197,94,0.15);
+            --red: #ef4444; --red-dim: rgba(239,68,68,0.15);
+            --yellow: #eab308; --yellow-dim: rgba(234,179,8,0.15);
+            --blue: #3b82f6; --orange: #f97316; --radius: 12px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg-dark); color:var(--text); min-height:100vh; line-height:1.5; }
+        a { color:var(--accent); text-decoration:none; }
+        a:hover { text-decoration:underline; }
+        .header { background:linear-gradient(135deg,#12122a,#1e1e3f); border-bottom:1px solid var(--border); padding:1rem 2rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; }
+        .header h1 { font-size:1.4rem; background:linear-gradient(135deg,var(--accent),var(--orange)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .header-links { display:flex; gap:1rem; font-size:0.9rem; }
+        .header-links a { color:var(--text-dim); }
+        .header-links a:hover { color:var(--text); }
+        .container { max-width:1200px; margin:0 auto; padding:1.5rem; }
+        .card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; margin-bottom:1.5rem; }
+        .card h2 { font-size:1.1rem; margin-bottom:1rem; }
+        .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+        .stat-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1rem; text-align:center; }
+        .stat-card .label { font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; }
+        .stat-card .value { font-size:1.3rem; font-weight:700; margin-top:0.25rem; }
+        .positive { color:var(--green); }
+        .negative { color:var(--red); }
+        .neutral { color:var(--text); }
+        .warning { color:var(--yellow); }
+        table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+        th,td { padding:0.5rem 0.75rem; text-align:left; border-bottom:1px solid var(--border); }
+        th { color:var(--text-dim); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600; }
+        tr:hover { background:rgba(245,158,11,0.03); }
+        .badge { display:inline-block; padding:0.15rem 0.5rem; border-radius:4px; font-size:0.7rem; font-weight:600; text-transform:uppercase; }
+        .badge-green { background:var(--green-dim); color:var(--green); }
+        .badge-red { background:var(--red-dim); color:var(--red); }
+        .badge-yellow { background:var(--yellow-dim); color:var(--yellow); }
+        .badge-blue { background:rgba(59,130,246,0.15); color:var(--blue); }
+        .status-ok { color:var(--green); font-weight:600; }
+        .status-fail { color:var(--red); font-weight:600; }
+        .loading { text-align:center; padding:2rem; color:var(--text-dim); }
+        .spinner { display:inline-block; width:20px; height:20px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+        @media (max-width:768px) { .grid-2 { grid-template-columns:1fr; } .container { padding:1rem; } .stat-grid { grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); } }
+        .refresh-btn { background:var(--accent); color:#111; border:none; padding:0.5rem 1.2rem; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600; transition:all 0.2s; }
+        .refresh-btn:hover { background:#d97706; }
+        .refresh-btn:disabled { opacity:0.5; cursor:not-allowed; }
+        .timestamp { font-size:0.8rem; color:var(--text-dim); }
+        .table-wrap { overflow-x:auto; }
+        .health-icon { font-size:1.1rem; margin-right:0.3rem; }
+        .footer { text-align:center; padding:2rem 1rem 1rem; color:var(--text-dim); font-size:0.8rem; }
+        .dir-long { background:var(--green-dim); color:var(--green); padding:0.1rem 0.4rem; border-radius:3px; font-size:0.7rem; font-weight:700; }
+        .dir-short { background:var(--red-dim); color:var(--red); padding:0.1rem 0.4rem; border-radius:3px; font-size:0.7rem; font-weight:700; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Crypto Pairs Portfolio &mdash; System Status</h1>
+        <div class="header-links">
+            <a href="/findcryptopairs/portfolio/">Crypto Dashboard</a>
+            <a href="/findstocks/portfolio2/">Stock Dashboard</a>
+            <a href="/findmutualfunds2/portfolio2/">MF Dashboard</a>
+            <a href="/">Events</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Status Banner -->
+        <div id="status-banner" class="card" style="text-align:center;">
+            <span class="spinner"></span> Loading system status...
+        </div>
+
+        <!-- Database Stats -->
+        <div class="stat-grid" id="db-stats"></div>
+
+        <!-- System Health -->
+        <div class="card" id="health-card">
+            <h2>System Health</h2>
+            <div id="health-checks"><span class="spinner"></span></div>
+        </div>
+
+        <div class="grid-2">
+            <!-- Algorithm Breakdown -->
+            <div class="card">
+                <h2>Algorithm Breakdown</h2>
+                <div class="table-wrap">
+                    <table id="algo-table">
+                        <thead><tr><th>Algorithm</th><th>Picks</th><th>Avg Score</th><th>Status</th></tr></thead>
+                        <tbody><tr><td colspan="4" class="loading"><span class="spinner"></span></td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Category Breakdown -->
+            <div class="card">
+                <h2>Category Breakdown</h2>
+                <div class="table-wrap">
+                    <table id="cat-table">
+                        <thead><tr><th>Category</th><th>Count</th></tr></thead>
+                        <tbody><tr><td colspan="2" class="loading"><span class="spinner"></span></td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Direction Breakdown -->
+        <div class="card">
+            <h2>Direction Breakdown</h2>
+            <div id="dir-breakdown" style="display:flex;gap:2rem;align-items:center;flex-wrap:wrap;"></div>
+        </div>
+
+        <!-- Learning Analysis -->
+        <div class="card">
+            <h2>Learning Algorithm Recommendations</h2>
+            <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem;">
+                Scans 343 parameter combinations per algorithm (7 take profits x 7 stop losses x 7 hold periods) to find optimal trading parameters for crypto.
+            </p>
+            <button class="refresh-btn" id="btn-learning" onclick="runLearning()">Run Learning Analysis</button>
+            <div id="learning-results" style="margin-top:1rem;"></div>
+        </div>
+
+        <!-- Permutation Scan -->
+        <div class="card">
+            <h2>Exhaustive Permutation Scan</h2>
+            <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem;">
+                Tests every combination of take profit %, stop loss %, and hold period across the full parameter grid (990 combos) to find the absolute best parameters.
+            </p>
+            <button class="refresh-btn" id="btn-perm" onclick="runPermScan()">Run Full Permutation Scan</button>
+            <div id="perm-results" style="margin-top:1rem;"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer" id="last-updated">
+            &mdash;
+        </div>
+    </div>
+
+<script>
+var API = (function() {
+    var loc = window.location;
+    if (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1') {
+        return '../api/';
+    }
+    return '/findcryptopairs/portfolio/api/';
+})();
+
+var loadedAt = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadAllData();
+});
+
+function apiGet(url, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API + url, true);
+    xhr.onload = function() {
+        try { cb(JSON.parse(xhr.responseText)); }
+        catch(e) { cb({ok:false,error:'Parse error: ' + e.message}); }
+    };
+    xhr.onerror = function() { cb({ok:false,error:'Network error'}); };
+    xhr.send();
+}
+
+function n(v) { return (v === null || v === undefined) ? 0 : v; }
+
+function loadAllData() {
+    apiGet('data.php?type=stats', function(d) {
+        loadedAt = new Date();
+        document.getElementById('last-updated').innerHTML = 'Last updated: ' + loadedAt.toLocaleString();
+
+        if (!d.ok || !d.stats) {
+            document.getElementById('status-banner').innerHTML =
+                '<span class="status-fail" style="font-size:1.1rem;">Database connection failed or no data found.</span>'
+                + '<div class="timestamp" style="margin-top:0.5rem;">Check API endpoint: ' + API + 'data.php?type=stats</div>';
+            document.getElementById('db-stats').innerHTML = '';
+            document.getElementById('health-checks').innerHTML = '<span class="status-fail">Unable to load health data.</span>';
+            document.querySelector('#algo-table tbody').innerHTML = '<tr><td colspan="4" style="color:var(--text-dim);">No data</td></tr>';
+            document.querySelector('#cat-table tbody').innerHTML = '<tr><td colspan="2" style="color:var(--text-dim);">No data</td></tr>';
+            return;
+        }
+
+        var s = d.stats;
+
+        // Status banner
+        var bannerHtml = '<div style="font-size:1.2rem;font-weight:700;margin-bottom:0.3rem;">'
+            + '<span style="color:var(--green);">System Online</span></div>'
+            + '<div class="timestamp">Last checked: ' + loadedAt.toLocaleString() + '</div>';
+        if (s.pick_date_range && s.pick_date_range.earliest) {
+            bannerHtml += '<div class="timestamp">Pick data: ' + s.pick_date_range.earliest + ' to ' + s.pick_date_range.latest + '</div>';
+        }
+        if (s.price_date_range && s.price_date_range.earliest) {
+            bannerHtml += '<div class="timestamp">Price data: ' + s.price_date_range.earliest + ' to ' + s.price_date_range.latest + '</div>';
+        }
+        document.getElementById('status-banner').innerHTML = bannerHtml;
+
+        // Stat cards
+        var statsHtml = '';
+        var items = [
+            ['Total Pairs',        n(s.total_pairs),          'neutral'],
+            ['Total Picks',        n(s.total_picks),          'neutral'],
+            ['Price Records',      n(s.total_price_records).toLocaleString(), 'neutral'],
+            ['Backtests Run',      n(s.total_backtests),      'neutral'],
+            ['Active Algorithms',  n(s.active_algorithms),    'neutral']
+        ];
+        for (var i = 0; i < items.length; i++) {
+            statsHtml += '<div class="stat-card"><div class="label">' + items[i][0] + '</div><div class="value ' + items[i][2] + '">' + items[i][1] + '</div></div>';
+        }
+        document.getElementById('db-stats').innerHTML = statsHtml;
+
+        // Health checks
+        var checks = [
+            ['Database Connection', true, 'Connected'],
+            ['Crypto Pairs', s.total_pairs > 0, s.total_pairs + ' pairs in database'],
+            ['Pair Picks', s.total_picks > 0, s.total_picks + ' picks loaded'],
+            ['Price History', n(s.total_price_records) > 0, n(s.total_price_records).toLocaleString() + ' price records'],
+            ['Pick Freshness', s.pick_date_range && s.pick_date_range.latest >= '2025-01-01', 'Latest: ' + (s.pick_date_range ? s.pick_date_range.latest : 'N/A')],
+            ['Price Freshness', s.price_date_range && s.price_date_range.latest >= '2025-01-01', 'Latest: ' + (s.price_date_range ? s.price_date_range.latest : 'N/A')],
+            ['Algorithms Active', n(s.active_algorithms) > 0, s.active_algorithms + ' algorithms producing picks'],
+            ['Backtests', n(s.total_backtests) >= 0, s.total_backtests + ' backtest runs saved']
+        ];
+        var hhtml = '<table><tbody>';
+        for (var i = 0; i < checks.length; i++) {
+            var c = checks[i];
+            var icon = c[1] ? '<span class="health-icon" style="color:var(--green);">&#10003;</span>' : '<span class="health-icon" style="color:var(--red);">&#10007;</span>';
+            hhtml += '<tr>'
+                + '<td style="width:30px;">' + icon + '</td>'
+                + '<td style="font-weight:600;">' + c[0] + '</td>'
+                + '<td class="' + (c[1] ? 'status-ok' : 'status-fail') + '">' + (c[1] ? 'OK' : 'ISSUE') + '</td>'
+                + '<td style="color:var(--text-dim);">' + c[2] + '</td>'
+                + '</tr>';
+        }
+        hhtml += '</tbody></table>';
+        document.getElementById('health-checks').innerHTML = hhtml;
+
+        // Algorithm breakdown
+        var aBody = document.querySelector('#algo-table tbody');
+        aBody.innerHTML = '';
+        var ab = s.algorithm_breakdown || [];
+        if (ab.length === 0) {
+            aBody.innerHTML = '<tr><td colspan="4" style="color:var(--text-dim);">No algorithms found</td></tr>';
+        } else {
+            for (var i = 0; i < ab.length; i++) {
+                var a = ab[i];
+                var avgScore = parseFloat(a.avg_score || 0).toFixed(1);
+                var badgeCls = avgScore >= 80 ? 'badge-green' : avgScore >= 60 ? 'badge-yellow' : 'badge-red';
+                var badgeText = avgScore >= 80 ? 'Strong' : avgScore >= 60 ? 'Moderate' : 'Weak';
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td style="font-weight:600;">' + a.algorithm_name + '</td>'
+                    + '<td>' + a.cnt + '</td>'
+                    + '<td>' + avgScore + '</td>'
+                    + '<td><span class="badge ' + badgeCls + '">' + badgeText + '</span></td>';
+                aBody.appendChild(tr);
+            }
+        }
+
+        // Category breakdown
+        var cBody = document.querySelector('#cat-table tbody');
+        cBody.innerHTML = '';
+        var cb = s.category_breakdown || [];
+        if (cb.length === 0) {
+            cBody.innerHTML = '<tr><td colspan="2" style="color:var(--text-dim);">No category data</td></tr>';
+        } else {
+            for (var i = 0; i < cb.length; i++) {
+                var c = cb[i];
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td style="font-weight:600;">' + (c.category || 'Unknown') + '</td>'
+                    + '<td>' + c.cnt + '</td>';
+                cBody.appendChild(tr);
+            }
+        }
+
+        // Direction breakdown
+        var dirEl = document.getElementById('dir-breakdown');
+        var db = s.direction_breakdown || [];
+        var dirHtml = '';
+        for (var i = 0; i < db.length; i++) {
+            var dd = db[i];
+            var dirClass = dd.direction === 'SHORT' ? 'dir-short' : 'dir-long';
+            dirHtml += '<div style="text-align:center;">'
+                + '<div style="font-size:2rem;font-weight:700;" class="' + (dd.direction === 'SHORT' ? 'negative' : 'positive') + '">' + dd.cnt + '</div>'
+                + '<div><span class="' + dirClass + '">' + dd.direction + '</span></div>'
+                + '</div>';
+        }
+        if (dirHtml === '') dirHtml = '<span style="color:var(--text-dim);">No direction data</span>';
+        dirEl.innerHTML = dirHtml;
+    });
+}
+
+function runLearning() {
+    var btn = document.getElementById('btn-learning');
+    var el = document.getElementById('learning-results');
+    btn.disabled = true;
+    btn.textContent = 'Running...';
+    el.innerHTML = '<div style="padding:1rem;"><span class="spinner"></span> Running learning analysis (scanning 343 parameter combos per algorithm)...</div>';
+
+    apiGet('learning.php?action=analyze_and_adjust', function(d) {
+        btn.disabled = false;
+        btn.textContent = 'Run Learning Analysis';
+
+        if (!d.ok) {
+            el.innerHTML = '<span class="status-fail">Error: ' + (d.error || 'Unknown error') + '</span>';
+            return;
+        }
+
+        var recs = d.recommendations || [];
+        if (recs.length === 0) {
+            el.innerHTML = '<span style="color:var(--text-dim);">No algorithms found with trade data.</span>';
+            return;
+        }
+
+        var html = '<table><thead><tr>'
+            + '<th>Algorithm</th>'
+            + '<th>Verdict</th>'
+            + '<th>Current Return</th>'
+            + '<th>Best Params</th>'
+            + '<th>Best Return</th>'
+            + '<th>Profitable Combos</th>'
+            + '</tr></thead><tbody>';
+
+        for (var i = 0; i < recs.length; i++) {
+            var r = recs[i];
+            var bp = r.best_params;
+            var verdictCls = r.verdict === 'PROFITABLE_PARAMS_EXIST' ? 'badge-green'
+                : r.verdict === 'IMPROVABLE_BUT_STILL_LOSING' ? 'badge-yellow' : 'badge-red';
+            var verdictLabel = r.verdict.replace(/_/g, ' ');
+
+            var currRet = r.current_performance ? r.current_performance.return_pct : 0;
+            var currCls = currRet >= 0 ? 'positive' : 'negative';
+
+            var bestRet = r.best_return_pct || 0;
+            var bestCls = bestRet >= 0 ? 'positive' : 'negative';
+
+            var paramsStr = 'TP:' + bp.tp + '% SL:' + bp.sl + '% Hold:' + bp.hold + 'd';
+
+            var profitStr = (r.profitable_combos || 0) + ' / ' + (r.total_combos_tested || 0);
+
+            html += '<tr>'
+                + '<td style="font-weight:600;">' + r.algorithm + '</td>'
+                + '<td><span class="badge ' + verdictCls + '">' + verdictLabel + '</span></td>'
+                + '<td class="' + currCls + '">' + currRet.toFixed(2) + '%</td>'
+                + '<td><code style="font-size:0.8rem;color:var(--accent);">' + paramsStr + '</code></td>'
+                + '<td class="' + bestCls + '">' + bestRet.toFixed(2) + '%</td>'
+                + '<td>' + profitStr + '</td>'
+                + '</tr>';
+        }
+
+        html += '</tbody></table>';
+        html += '<p style="margin-top:1rem;color:var(--text-dim);font-size:0.85rem;">Analyzed '
+            + (d.total_algorithms || 0) + ' algorithms. Results saved to cr_algo_performance table.</p>';
+
+        el.innerHTML = html;
+    });
+}
+
+function runPermScan() {
+    var btn = document.getElementById('btn-perm');
+    var el = document.getElementById('perm-results');
+    btn.disabled = true;
+    btn.textContent = 'Scanning...';
+    el.innerHTML = '<div style="padding:1rem;"><span class="spinner"></span> Running exhaustive scan (990 parameter combos)... this may take 30-60 seconds.</div>';
+
+    apiGet('learning.php?action=permutation_scan&top=10', function(d) {
+        btn.disabled = false;
+        btn.textContent = 'Run Full Permutation Scan';
+
+        if (!d.ok) {
+            el.innerHTML = '<span class="status-fail">Error or timeout: ' + (d.error || 'Unknown') + '</span>';
+            return;
+        }
+
+        var profRate = n(d.profitability_rate);
+        var profRateCls = profRate > 30 ? 'positive' : profRate > 10 ? 'warning' : 'negative';
+
+        var html = '<div class="stat-grid" style="margin:1rem 0;">'
+            + '<div class="stat-card"><div class="label">Total Combos</div><div class="value">' + n(d.total_combos) + '</div></div>'
+            + '<div class="stat-card"><div class="label">Profitable</div><div class="value positive">' + n(d.profitable_combos) + '</div></div>'
+            + '<div class="stat-card"><div class="label">Losing</div><div class="value negative">' + (n(d.total_combos) - n(d.profitable_combos)) + '</div></div>'
+            + '<div class="stat-card"><div class="label">Profitability Rate</div><div class="value ' + profRateCls + '">' + profRate + '%</div></div>'
+            + '</div>';
+
+        var top = d.top_permutations || [];
+        if (top.length > 0) {
+            html += '<h3 style="margin:1rem 0 0.5rem;font-size:0.95rem;">Top 10 Parameter Combinations</h3>';
+            html += '<div class="table-wrap"><table><thead><tr>'
+                + '<th>#</th><th>Take Profit %</th><th>Stop Loss %</th><th>Hold Days</th>'
+                + '<th>Return %</th><th>Win Rate</th><th>Trades</th><th>Total P&L</th>'
+                + '</tr></thead><tbody>';
+
+            for (var i = 0; i < top.length; i++) {
+                var p = top[i];
+                var retCls = p.return_pct >= 0 ? 'positive' : 'negative';
+                var pnlCls = p.total_pnl >= 0 ? 'positive' : 'negative';
+                html += '<tr>'
+                    + '<td>' + (i + 1) + '</td>'
+                    + '<td>' + (p.take_profit === 999 ? 'None' : p.take_profit + '%') + '</td>'
+                    + '<td>' + (p.stop_loss === 999 ? 'None' : p.stop_loss + '%') + '</td>'
+                    + '<td>' + p.max_hold_days + 'd</td>'
+                    + '<td class="' + retCls + '" style="font-weight:700;">' + p.return_pct.toFixed(2) + '%</td>'
+                    + '<td>' + p.win_rate + '%</td>'
+                    + '<td>' + p.trades + '</td>'
+                    + '<td class="' + pnlCls + '">$' + p.total_pnl.toFixed(2) + '</td>'
+                    + '</tr>';
+            }
+            html += '</tbody></table></div>';
+        }
+
+        var worst = d.worst_permutations || [];
+        if (worst.length > 0) {
+            html += '<h3 style="margin:1.5rem 0 0.5rem;font-size:0.95rem;color:var(--red);">5 Worst Parameter Combinations (Avoid)</h3>';
+            html += '<div class="table-wrap"><table><thead><tr>'
+                + '<th>Take Profit %</th><th>Stop Loss %</th><th>Hold Days</th>'
+                + '<th>Return %</th><th>Win Rate</th>'
+                + '</tr></thead><tbody>';
+
+            for (var i = 0; i < worst.length; i++) {
+                var w = worst[i];
+                html += '<tr>'
+                    + '<td>' + (w.take_profit === 999 ? 'None' : w.take_profit + '%') + '</td>'
+                    + '<td>' + (w.stop_loss === 999 ? 'None' : w.stop_loss + '%') + '</td>'
+                    + '<td>' + w.max_hold_days + 'd</td>'
+                    + '<td class="negative">' + w.return_pct.toFixed(2) + '%</td>'
+                    + '<td>' + w.win_rate + '%</td>'
+                    + '</tr>';
+            }
+            html += '</tbody></table></div>';
+        }
+
+        html += '<p style="margin-top:1rem;color:var(--text-dim);font-size:0.85rem;">Algorithms tested: '
+            + (d.algorithms || 'ALL') + '. Tested ' + n(d.tested) + ' total combinations.</p>';
+
+        el.innerHTML = html;
+    });
+}
+</script>
+</body>
+</html>

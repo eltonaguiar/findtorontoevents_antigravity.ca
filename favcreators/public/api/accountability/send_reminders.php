@@ -119,6 +119,7 @@ while ($row = $result->fetch_assoc()) {
     }
     $message .= "\n📱 Dashboard: https://findtorontoevents.ca/fc/#/accountability";
     $message .= "\n💬 Or use `/fc-coach checkin taskname:" . $taskName . "` in Discord";
+    $message .= "\n\n_🔕 To stop all morning follow-ups, toggle it off in your [Dashboard](https://findtorontoevents.ca/fc/#/accountability) or use `/fc-coach followup off`._";
 
     // Discord DM
     if ($row['discord_reminder'] && $row['discord_user_id'] && $bot_token) {

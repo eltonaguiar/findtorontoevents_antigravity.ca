@@ -1,0 +1,1914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Analysis v2 | Find Stocks</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--accent), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-links { display: flex; gap: 1rem; font-size: 0.9rem; }
+        .header-links a { color: var(--text-dim); }
+        .header-links a:hover { color: var(--text); }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; overflow-x: auto; }
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            color: var(--text-dim);
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: var(--text); background: rgba(99, 102, 241, 0.05); }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .card h2 { font-size: 1.1rem; margin-bottom: 1rem; }
+        .card h3 { font-size: 0.95rem; color: var(--text-dim); margin-bottom: 0.5rem; }
+
+        /* Stat Cards */
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-card .label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-card .value { font-size: 1.4rem; font-weight: 700; margin-top: 0.25rem; }
+        .stat-card .value.positive { color: var(--green); }
+        .stat-card .value.negative { color: var(--red); }
+
+        /* Forms */
+        label { display: block; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.2rem; text-transform: uppercase; letter-spacing: 0.03em; }
+        select, input[type="number"], input[type="text"], textarea {
+            width: 100%;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        select:focus, input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+        .form-group { margin-bottom: 0.75rem; }
+        .btn {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: #5558e6; }
+        .btn-secondary { background: var(--border); color: var(--text); }
+        .btn-secondary:hover { background: #3a3a5a; }
+        .btn-success { background: var(--green); color: white; }
+        .btn-danger { background: var(--red); color: white; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+
+        /* Tables */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th, td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+        tr:hover { background: rgba(99, 102, 241, 0.03); }
+        .pct-positive { color: var(--green); }
+        .pct-negative { color: var(--red); }
+
+        /* Algo checkboxes */
+        .algo-checks { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+        .algo-check {
+            display: flex; align-items: center; gap: 0.3rem;
+            background: var(--bg-dark); border: 1px solid var(--border);
+            border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.8rem; cursor: pointer;
+        }
+        .algo-check:hover { border-color: var(--accent); }
+        .algo-check input { accent-color: var(--accent); }
+
+        /* Loading */
+        .loading { text-align: center; padding: 2rem; color: var(--text-dim); }
+        .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Charts */
+        .chart-container { position: relative; height: 300px; margin: 1rem 0; }
+
+        /* Comparison table highlights */
+        .rank-1 { background: var(--green-dim); }
+        .rank-last { background: var(--red-dim); }
+
+        /* Grid layouts */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        @media (max-width: 1024px) { .grid-2 { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .grid-3 { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        /* Disclaimer */
+        .disclaimer {
+            background: var(--yellow-dim);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.8rem;
+            color: var(--yellow);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-green { background: var(--green-dim); color: var(--green); }
+        .badge-red { background: var(--red-dim); color: var(--red); }
+        .badge-yellow { background: var(--yellow-dim); color: var(--yellow); }
+        .badge-blue { background: rgba(59, 130, 246, 0.15); color: var(--blue); }
+
+        /* Natural language query */
+        .nl-query {
+            width: 100%;
+            min-height: 60px;
+            resize: vertical;
+        }
+        .nl-examples { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.5rem; }
+        .nl-examples span { cursor: pointer; color: var(--accent); }
+        .nl-examples span:hover { text-decoration: underline; }
+
+        /* Setup banner */
+        .setup-banner {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(167, 139, 250, 0.1));
+            border: 1px solid var(--accent);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .setup-banner h2 { color: var(--accent); margin-bottom: 0.5rem; }
+        .setup-banner p { color: var(--text-dim); margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Portfolio Analysis v2</h1>
+        <div class="header-links">
+            <a href="/findstocks/portfolio2/hub.html">All Portfolios</a>
+            <a href="/findmutualfunds2/portfolio2/">Mutual Funds</a>
+            <a href="/findstocks/">Stock Picks</a>
+            <a href="/findstocks/portfolio2/stats/">Stats</a>
+            <a href="/">Events</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="disclaimer">
+            This tool is for research and educational purposes only. Past performance does not guarantee future results. Default: $10 buy + $10 sell commission. Questrade scenarios: $0 commission (CDR stocks) or 1.5% FX fee (US stocks). Consult a licensed financial adviser.
+        </div>
+
+        <div id="setup-banner" class="setup-banner" style="display:none;">
+            <h2>First-Time Setup</h2>
+            <p>Initialize the database, import stock picks, and fetch price data.</p>
+            <div class="btn-group" style="justify-content:center;">
+                <button class="btn btn-primary" onclick="runSetup()">1. Setup Database</button>
+                <button class="btn btn-secondary" onclick="importPicks('all')">2. Import All Data</button>
+                <button class="btn btn-secondary" onclick="fetchPrices()">3. Fetch Prices</button>
+            </div>
+            <div id="setup-log" style="margin-top:1rem;font-size:0.8rem;color:var(--text-dim);"></div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stat-grid" id="stats-row">
+            <div class="stat-card"><div class="label">Stocks</div><div class="value" id="stat-stocks">-</div></div>
+            <div class="stat-card"><div class="label">Picks</div><div class="value" id="stat-picks">-</div></div>
+            <div class="stat-card"><div class="label">Price Records</div><div class="value" id="stat-prices">-</div></div>
+            <div class="stat-card"><div class="label">Algorithms</div><div class="value" id="stat-algos">-</div></div>
+            <div class="stat-card"><div class="label">Backtests</div><div class="value" id="stat-backtests">-</div></div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" data-tab="whatif">What-If Analysis</div>
+            <div class="tab" data-tab="compare">Compare Strategies</div>
+            <div class="tab" data-tab="algo-compare">Compare Algorithms</div>
+            <div class="tab" data-tab="altdata">Alt-Data Factors</div>
+            <div class="tab" data-tab="portfolios">Portfolio Templates</div>
+            <div class="tab" data-tab="picks">Stock Picks</div>
+            <div class="tab" data-tab="history">Backtest History</div>
+            <div class="tab" data-tab="alphaforge" style="color:#a78bfa;font-weight:600;">Alpha Forge</div>
+        </div>
+
+        <!-- TAB: What-If Analysis -->
+        <div class="tab-content active" id="tab-whatif">
+            <div class="grid-2">
+                <div class="card">
+                    <h2>What-If Parameters</h2>
+
+                    <div class="form-group">
+                        <label>Quick Scenario</label>
+                        <select id="wi-scenario" onchange="applyScenario()">
+                            <option value="">-- Custom Parameters --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Take Profit %</label>
+                            <input type="number" id="wi-tp" value="10" min="1" max="999" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Stop Loss %</label>
+                            <input type="number" id="wi-sl" value="5" min="1" max="999" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Max Hold Days</label>
+                            <input type="number" id="wi-hold" value="7" min="1" max="365" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Initial Capital $</label>
+                            <input type="number" id="wi-capital" value="10000" min="100" step="100">
+                        </div>
+                        <div class="form-group">
+                            <label>Commission $/trade</label>
+                            <input type="number" id="wi-comm" value="10" min="0" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Slippage %</label>
+                            <input type="number" id="wi-slip" value="0.5" min="0" max="5" step="0.1">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Filter Algorithms</label>
+                        <div class="algo-checks" id="wi-algos"></div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" id="btn-run-whatif" onclick="runWhatIf()">Run Analysis</button>
+                        <button class="btn btn-success" id="btn-save-whatif" onclick="runWhatIf(true)" style="display:none;">Save Results</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Natural Language Query</h2>
+                    <textarea class="nl-query" id="nl-query" placeholder="Describe your scenario in plain English..."></textarea>
+                    <div class="nl-examples">
+                        Try: <span onclick="setNLQuery('day trader buying stocks and holding for max 2 days with 10% profit target')">day trader, 2-day hold, 10% target</span> |
+                        <span onclick="setNLQuery('buy and hold for 6 months with no stop loss')">buy & hold 6 months</span> |
+                        <span onclick="setNLQuery('conservative swing trader targeting 10% profit with tight 3% stop loss over 2 weeks')">conservative swing, 10% TP, 3% SL</span> |
+                        <span onclick="setNLQuery('aggressive trader targeting 20% profit held for 1 week')">aggressive 1 week, 20% target</span>
+                    </div>
+                    <button class="btn btn-primary" onclick="parseNLQuery()" style="margin-top:0.75rem;">Analyze Query</button>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="wi-results" style="display:none;">
+                <div class="stat-grid" id="wi-stats"></div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h2>Equity Curve</h2>
+                        <div class="chart-container"><canvas id="chart-equity"></canvas></div>
+                    </div>
+                    <div class="card">
+                        <h2>Exit Reasons</h2>
+                        <div class="chart-container"><canvas id="chart-exits"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Algorithm Breakdown</h2>
+                    <div class="table-wrap">
+                        <table id="wi-algo-table">
+                            <thead><tr>
+                                <th>Algorithm</th><th>Trades</th><th>Wins</th><th>Losses</th>
+                                <th>Win Rate</th><th>Avg Return</th><th>Total P&L</th>
+                            </tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Trade Log</h2>
+                    <div class="table-wrap">
+                        <table id="wi-trades-table">
+                            <thead><tr>
+                                <th>Ticker</th><th>Algorithm</th><th>Entry Date</th><th>Entry $</th>
+                                <th>Exit Date</th><th>Exit $</th><th>Shares</th><th>Net P&L</th>
+                                <th>Return %</th><th>Hold Days</th><th>Exit Reason</th>
+                            </tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Compare Strategies -->
+        <div class="tab-content" id="tab-compare">
+            <div class="card">
+                <h2>Compare All Strategies</h2>
+                <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem;">
+                    Run all 10 preset scenarios against the same stock picks and compare performance side by side.
+                </p>
+                <div class="form-group" style="max-width:300px;">
+                    <label>Filter Algorithms</label>
+                    <div class="algo-checks" id="cmp-algos"></div>
+                </div>
+                <button class="btn btn-primary" id="btn-compare" onclick="runCompare()">Run Comparison</button>
+            </div>
+
+            <div id="cmp-results" style="display:none;">
+                <div class="card">
+                    <h2>Strategy Comparison (Ranked by Return)</h2>
+                    <div class="chart-container" style="height:350px;"><canvas id="chart-compare"></canvas></div>
+                </div>
+                <div class="card">
+                    <div class="table-wrap">
+                        <table id="cmp-table">
+                            <thead><tr>
+                                <th>#</th><th>Strategy</th><th>TP%</th><th>SL%</th><th>Hold</th>
+                                <th>Trades</th><th>Win Rate</th><th>Return %</th><th>Final $</th>
+                                <th>Max DD</th><th>Commissions</th><th>Sharpe</th><th>Profit Factor</th>
+                            </tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Compare Algorithms -->
+        <div class="tab-content" id="tab-algo-compare">
+            <div class="card">
+                <h2>Compare Algorithms</h2>
+                <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem;">
+                    Test each algorithm independently under the same trading rules.
+                </p>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Scenario</label>
+                        <select id="ac-scenario">
+                            <option value="">-- Custom --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Take Profit %</label>
+                        <input type="number" id="ac-tp" value="10" min="1" max="999">
+                    </div>
+                    <div class="form-group">
+                        <label>Stop Loss %</label>
+                        <input type="number" id="ac-sl" value="5" min="1" max="999">
+                    </div>
+                    <div class="form-group">
+                        <label>Max Hold Days</label>
+                        <input type="number" id="ac-hold" value="7" min="1" max="365">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="runAlgoCompare()">Compare Algorithms</button>
+            </div>
+
+            <div id="ac-results" style="display:none;">
+                <div class="card">
+                    <h2>Algorithm Performance (Ranked by Return)</h2>
+                    <div class="chart-container" style="height:400px;"><canvas id="chart-algo-cmp"></canvas></div>
+                </div>
+                <div class="card">
+                    <div class="table-wrap">
+                        <table id="ac-table">
+                            <thead><tr>
+                                <th>#</th><th>Algorithm</th><th>Trades</th><th>Win Rate</th>
+                                <th>Return %</th><th>Final $</th><th>Max DD</th>
+                                <th>Commissions</th><th>Sharpe</th><th>Profit Factor</th><th>Avg Hold</th>
+                            </tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Alt-Data Factors -->
+        <div class="tab-content" id="tab-altdata">
+            <div class="card">
+                <h2>Alternative Data Factor Families</h2>
+                <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem;">
+                    7 research-backed alternative data families bolted onto the core algorithm engine. These factors provide incremental alpha beyond traditional price/volume signals.
+                </p>
+                <div class="btn-group" style="margin-bottom:1.5rem;">
+                    <button class="btn btn-primary" onclick="loadAltDataFactors()">Load Factor Families</button>
+                    <button class="btn btn-secondary" onclick="loadRegimeSignals()">Current Regime Signals</button>
+                    <button class="btn btn-secondary" onclick="loadDataSources()">Data Sources</button>
+                </div>
+                <div id="altdata-content">
+                    <div style="color:var(--text-dim);font-size:0.85rem;">Click a button above to explore the factor framework.</div>
+                </div>
+            </div>
+
+            <div id="regime-panel" style="display:none;">
+                <div class="card">
+                    <h2>Current Macro Regime</h2>
+                    <div class="stat-grid" id="regime-stats"></div>
+                    <div id="regime-recommendation" style="margin-top:1rem;"></div>
+                </div>
+            </div>
+
+            <div id="factor-weights-panel" style="display:none;">
+                <div class="card">
+                    <h2>Regime-Based Factor Weights</h2>
+                    <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem;">
+                        How the Meta-Allocator adjusts factor exposure based on the current regime.
+                    </p>
+                    <div id="factor-weights-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Portfolio Templates -->
+        <div class="tab-content" id="tab-portfolios">
+            <div class="card">
+                <h2>Portfolio Templates</h2>
+                <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem;">
+                    Pre-configured portfolio strategies. Click "Backtest" to run a simulation.
+                </p>
+                <div class="table-wrap">
+                    <table id="portfolios-table">
+                        <thead><tr>
+                            <th>Name</th><th>Type</th><th>TP%</th><th>SL%</th><th>Hold</th>
+                            <th>Capital</th><th>Commission</th><th>Pos Size</th><th>Action</th>
+                        </tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Stock Picks -->
+        <div class="tab-content" id="tab-picks">
+            <div class="card">
+                <h2>Imported Stock Picks</h2>
+                <div class="form-group" style="max-width:300px;">
+                    <label>Filter by Algorithm</label>
+                    <select id="picks-algo-filter" onchange="loadPicks()">
+                        <option value="">All Algorithms</option>
+                    </select>
+                </div>
+                <div class="table-wrap">
+                    <table id="picks-table">
+                        <thead><tr>
+                            <th>Ticker</th><th>Company</th><th>Algorithm</th><th>Pick Date</th>
+                            <th>Entry $</th><th>Score</th><th>Rating</th><th>Risk</th><th>Timeframe</th>
+                        </tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: History -->
+        <div class="tab-content" id="tab-history">
+            <div class="card">
+                <h2>Saved Backtest Results</h2>
+                <div class="table-wrap">
+                    <table id="history-table">
+                        <thead><tr>
+                            <th>Run Name</th><th>Strategy</th><th>Algos</th><th>Trades</th>
+                            <th>Win Rate</th><th>Return %</th><th>Final $</th><th>Max DD</th>
+                            <th>Sharpe</th><th>Created</th>
+                        </tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Alpha Forge -->
+        <div class="tab-content" id="tab-alphaforge">
+            <!-- Regime Dashboard -->
+            <div class="card" style="border-color:var(--accent);border-width:2px;">
+                <h2 style="background:linear-gradient(135deg,var(--accent),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Alpha Forge — Quant Lab Engine</h2>
+                <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem;">Regime-aware, multi-sleeve portfolio construction with 20+ expanded metrics. Dynamic allocation based on 4-quadrant market regime detection.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>Current Market Regime</h3>
+                        <div id="af-regime-card" style="background:var(--bg-dark);border:1px solid var(--border);border-radius:8px;padding:1.25rem;margin-top:0.5rem;">
+                            <div class="loading"><div class="spinner"></div> Detecting regime...</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3>Regime Allocation</h3>
+                        <div style="position:relative;height:220px;margin-top:0.5rem;">
+                            <canvas id="chart-af-allocation"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top:1.5rem;">Sector Momentum Heatmap</h3>
+                <div id="af-sector-heatmap" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;"></div>
+
+                <div class="btn-group" style="margin-top:1rem;">
+                    <button class="btn btn-primary" onclick="loadAlphaForgeRegime()">Refresh Regime</button>
+                </div>
+            </div>
+
+            <!-- Multi-Sleeve Backtest -->
+            <div class="card">
+                <h2>Multi-Sleeve Portfolio Backtest</h2>
+                <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem;">Three independent sleeves (Momentum Hunter, Quality Compounder, Event Arbitrage) weighted by the current regime, plus a cash reserve. Click Run to see how each sleeve performs.</p>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Starting Capital $</label>
+                        <input type="number" id="af-capital" value="10000" min="1000" step="500">
+                    </div>
+                </div>
+                <button class="btn btn-primary" id="btn-af-sleeves" onclick="runAlphaForgeSleeves()">Run 3-Sleeve Backtest</button>
+                <div id="af-sleeve-results" style="display:none;margin-top:1.5rem;">
+                    <div class="stat-grid" id="af-ensemble-stats"></div>
+                    <div class="grid-3" id="af-sleeve-cards"></div>
+                    <div style="position:relative;height:300px;margin-top:1rem;">
+                        <canvas id="chart-af-sleeves"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Composite Ranking -->
+            <div class="card">
+                <h2>Alpha Forge Composite Ranking</h2>
+                <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem;">All tickers ranked by composite score: Momentum(25) + Quality(25) + Risk(25) + Signal(25). Grades A through F.</p>
+                <button class="btn btn-primary" id="btn-af-rank" onclick="loadAlphaForgeRank()">Load Rankings</button>
+                <div id="af-rank-results" style="display:none;margin-top:1rem;">
+                    <div class="table-wrap">
+                        <table id="af-rank-table">
+                            <thead><tr>
+                                <th>#</th><th>Ticker</th><th>Company</th><th>Score</th><th>Grade</th>
+                                <th>Momentum</th><th>Volatility</th><th>Trend</th><th>RSI</th>
+                                <th>Vol Ratio</th><th>Picks</th><th>Price</th>
+                            </tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ticker Deep Dive -->
+            <div class="card">
+                <h2>Ticker Deep Dive — Expanded Metrics</h2>
+                <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem;">20+ Alpha Forge metrics: multi-horizon momentum, downside deviation, beta decay, Amihud illiquidity, PEAD drift, volume anomaly, tail risk, Kelly sizing, and more.</p>
+                <div style="display:flex;gap:0.5rem;align-items:flex-end;">
+                    <div class="form-group" style="flex:1;margin-bottom:0;">
+                        <label>Ticker Symbol</label>
+                        <input type="text" id="af-ticker" placeholder="e.g. AAPL" style="text-transform:uppercase;">
+                    </div>
+                    <button class="btn btn-primary" onclick="loadAlphaForgeMetrics()">Analyze</button>
+                </div>
+                <div id="af-metrics-results" style="display:none;margin-top:1.5rem;">
+                    <div class="stat-grid" id="af-metrics-score"></div>
+                    <div class="grid-2" id="af-metrics-detail"></div>
+                </div>
+            </div>
+
+            <!-- Feature Importance -->
+            <div class="card">
+                <h2>Feature Importance — Ablation Analysis</h2>
+                <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem;">Which metric categories actually predict winning trades? Measured by ablation: remove one feature at a time and measure accuracy change.</p>
+                <button class="btn btn-primary" id="btn-af-features" onclick="loadAlphaForgeFeatures()">Run Ablation Test</button>
+                <div id="af-feature-results" style="display:none;margin-top:1rem;">
+                    <div style="position:relative;height:300px;">
+                        <canvas id="chart-af-features"></canvas>
+                    </div>
+                    <div class="table-wrap" style="margin-top:1rem;">
+                        <table id="af-feature-table">
+                            <thead><tr><th>Feature</th><th>Importance</th><th>Accuracy</th><th>Contribution</th><th>Samples</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+<script>
+// ─── Config ───
+var API = (function() {
+    var loc = window.location;
+    if (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1') {
+        return './api/';
+    }
+    return '/findstocks/portfolio2/api/';
+})();
+
+var scenarios = [];
+var algorithms = [];
+var chartEquity = null;
+var chartExits = null;
+var chartCompare = null;
+var chartAlgoCmp = null;
+
+// ─── Init ───
+document.addEventListener('DOMContentLoaded', function() {
+    initTabs();
+    loadStats();
+    loadScenarios();
+    loadAlgorithms();
+    loadPortfolios();
+    loadHistory();
+});
+
+var afLoaded = false;
+function initTabs() {
+    var tabs = document.querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) {
+        tabs[i].addEventListener('click', function() {
+            var all = document.querySelectorAll('.tab');
+            for (var j = 0; j < all.length; j++) { all[j].classList.remove('active'); }
+            this.classList.add('active');
+            var contents = document.querySelectorAll('.tab-content');
+            for (var j = 0; j < contents.length; j++) { contents[j].classList.remove('active'); }
+            var tabName = this.getAttribute('data-tab');
+            document.getElementById('tab-' + tabName).classList.add('active');
+            // Auto-load Alpha Forge regime on first visit
+            if (tabName === 'alphaforge' && !afLoaded) {
+                afLoaded = true;
+                loadAlphaForgeRegime();
+            }
+        });
+    }
+}
+
+// ─── API Helpers ───
+function apiGet(endpoint, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API + endpoint, true);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try { cb(JSON.parse(xhr.responseText)); }
+            catch(e) { cb({ ok: false, error: 'Parse error' }); }
+        } else { cb({ ok: false, error: 'HTTP ' + xhr.status }); }
+    };
+    xhr.onerror = function() { cb({ ok: false, error: 'Network error' }); };
+    xhr.send();
+}
+
+// ─── Load Data ───
+function loadStats() {
+    apiGet('data.php?type=stats', function(d) {
+        if (!d.ok || !d.stats) {
+            document.getElementById('setup-banner').style.display = 'block';
+            return;
+        }
+        var s = d.stats;
+        document.getElementById('stat-stocks').textContent = s.total_stocks || 0;
+        document.getElementById('stat-picks').textContent = s.total_picks || 0;
+        document.getElementById('stat-prices').textContent = (s.total_price_records || 0).toLocaleString();
+        document.getElementById('stat-algos').textContent = s.active_algorithms || 0;
+        document.getElementById('stat-backtests').textContent = s.total_backtests || 0;
+        if (s.total_picks === 0) {
+            document.getElementById('setup-banner').style.display = 'block';
+        }
+    });
+}
+
+function loadScenarios() {
+    apiGet('data.php?type=scenarios', function(d) {
+        if (!d.ok) return;
+        scenarios = d.scenarios;
+        var sel1 = document.getElementById('wi-scenario');
+        var sel2 = document.getElementById('ac-scenario');
+        for (var i = 0; i < scenarios.length; i++) {
+            var s = scenarios[i];
+            var o1 = document.createElement('option');
+            o1.value = s.key;
+            o1.textContent = s.name + ' (TP:' + s.tp + '% SL:' + s.sl + '% Hold:' + s.hold + 'd)';
+            sel1.appendChild(o1);
+            var o2 = o1.cloneNode(true);
+            sel2.appendChild(o2);
+        }
+    });
+}
+
+function loadAlgorithms() {
+    apiGet('data.php?type=algorithms', function(d) {
+        if (!d.ok) return;
+        algorithms = d.algorithms;
+        renderAlgoChecks('wi-algos', algorithms);
+        renderAlgoChecks('cmp-algos', algorithms);
+        var sel = document.getElementById('picks-algo-filter');
+        for (var i = 0; i < algorithms.length; i++) {
+            var o = document.createElement('option');
+            o.value = algorithms[i].name;
+            o.textContent = algorithms[i].name + ' (' + (algorithms[i].pick_count || 0) + ')';
+            sel.appendChild(o);
+        }
+    });
+}
+
+function renderAlgoChecks(containerId, algos) {
+    var c = document.getElementById(containerId);
+    c.innerHTML = '';
+    for (var i = 0; i < algos.length; i++) {
+        var lbl = document.createElement('label');
+        lbl.className = 'algo-check';
+        var chk = document.createElement('input');
+        chk.type = 'checkbox';
+        chk.value = algos[i].name;
+        chk.checked = true;
+        lbl.appendChild(chk);
+        lbl.appendChild(document.createTextNode(algos[i].name));
+        c.appendChild(lbl);
+    }
+}
+
+function getCheckedAlgos(containerId) {
+    var checks = document.querySelectorAll('#' + containerId + ' input[type=checkbox]:checked');
+    var arr = [];
+    for (var i = 0; i < checks.length; i++) arr.push(checks[i].value);
+    // If all are checked, return empty (= all)
+    var total = document.querySelectorAll('#' + containerId + ' input[type=checkbox]').length;
+    if (arr.length === total) return '';
+    return arr.join(',');
+}
+
+function applyScenario() {
+    var key = document.getElementById('wi-scenario').value;
+    if (!key) return;
+    for (var i = 0; i < scenarios.length; i++) {
+        if (scenarios[i].key === key) {
+            document.getElementById('wi-tp').value = scenarios[i].tp;
+            document.getElementById('wi-sl').value = scenarios[i].sl;
+            document.getElementById('wi-hold').value = scenarios[i].hold;
+            break;
+        }
+    }
+}
+
+// ─── What-If Analysis ───
+function runWhatIf(save) {
+    var btn = document.getElementById('btn-run-whatif');
+    btn.disabled = true;
+    btn.textContent = 'Running...';
+
+    var params = 'take_profit=' + document.getElementById('wi-tp').value
+        + '&stop_loss=' + document.getElementById('wi-sl').value
+        + '&max_hold_days=' + document.getElementById('wi-hold').value
+        + '&initial_capital=' + document.getElementById('wi-capital').value
+        + '&commission=' + document.getElementById('wi-comm').value
+        + '&slippage=' + document.getElementById('wi-slip').value;
+
+    var algos = getCheckedAlgos('wi-algos');
+    if (algos) params += '&algorithms=' + encodeURIComponent(algos);
+
+    var scenario = document.getElementById('wi-scenario').value;
+    if (scenario) params += '&scenario=' + scenario;
+
+    if (save) params += '&save=1';
+
+    apiGet('backtest.php?' + params, function(d) {
+        btn.disabled = false;
+        btn.textContent = 'Run Analysis';
+        if (!d.ok) {
+            alert('Error: ' + (d.error || 'Unknown'));
+            return;
+        }
+        renderWhatIfResults(d);
+    });
+}
+
+function renderWhatIfResults(d) {
+    var el = document.getElementById('wi-results');
+    el.style.display = 'block';
+    document.getElementById('btn-save-whatif').style.display = 'inline-block';
+
+    var s = d.summary;
+    var statsHtml = '';
+    var metrics = [
+        ['Final Value', '$' + s.final_value.toLocaleString(), s.total_return_pct >= 0 ? 'positive' : 'negative'],
+        ['Total Return', s.total_return_pct.toFixed(2) + '%', s.total_return_pct >= 0 ? 'positive' : 'negative'],
+        ['Win Rate', s.win_rate + '%', s.win_rate >= 50 ? 'positive' : 'negative'],
+        ['Trades', s.total_trades, ''],
+        ['Avg Win', '+' + s.avg_win_pct.toFixed(2) + '%', 'positive'],
+        ['Avg Loss', '-' + s.avg_loss_pct.toFixed(2) + '%', 'negative'],
+        ['Max Drawdown', s.max_drawdown_pct.toFixed(2) + '%', 'negative'],
+        ['Commissions', '$' + s.total_commissions.toFixed(0), 'negative'],
+        ['Sharpe', s.sharpe_ratio.toFixed(3), s.sharpe_ratio > 0 ? 'positive' : 'negative'],
+        ['Profit Factor', s.profit_factor.toFixed(2), s.profit_factor > 1 ? 'positive' : 'negative'],
+        ['Expectancy', s.expectancy.toFixed(2), s.expectancy > 0 ? 'positive' : 'negative'],
+        ['Avg Hold', (s.avg_hold_days || 0).toFixed(1) + 'd', '']
+    ];
+    for (var i = 0; i < metrics.length; i++) {
+        var m = metrics[i];
+        statsHtml += '<div class="stat-card"><div class="label">' + m[0] + '</div><div class="value ' + m[2] + '">' + m[1] + '</div></div>';
+    }
+    document.getElementById('wi-stats').innerHTML = statsHtml;
+
+    // Equity curve
+    if (d.equity_curve && d.equity_curve.length > 0) {
+        renderEquityCurve(d.equity_curve);
+    }
+
+    // Exit reasons pie
+    if (d.exit_reasons) {
+        renderExitPie(d.exit_reasons);
+    }
+
+    // Algorithm breakdown
+    if (d.algorithm_breakdown) {
+        var tbody = document.querySelector('#wi-algo-table tbody');
+        tbody.innerHTML = '';
+        for (var i = 0; i < d.algorithm_breakdown.length; i++) {
+            var a = d.algorithm_breakdown[i];
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + a.algorithm + '</td><td>' + a.trades + '</td>'
+                + '<td>' + a.wins + '</td><td>' + a.losses + '</td>'
+                + '<td>' + a.win_rate + '%</td>'
+                + '<td class="' + (a.avg_return_pct >= 0 ? 'pct-positive' : 'pct-negative') + '">' + a.avg_return_pct.toFixed(2) + '%</td>'
+                + '<td class="' + (a.total_pnl >= 0 ? 'pct-positive' : 'pct-negative') + '">$' + a.total_pnl.toFixed(2) + '</td>';
+            tbody.appendChild(tr);
+        }
+    }
+
+    // Trade log
+    if (d.trades) {
+        var tbody2 = document.querySelector('#wi-trades-table tbody');
+        tbody2.innerHTML = '';
+        var maxShow = Math.min(d.trades.length, 200);
+        for (var i = 0; i < maxShow; i++) {
+            var t = d.trades[i];
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td><strong>' + t.ticker + '</strong></td><td>' + t.algorithm + '</td>'
+                + '<td>' + t.entry_date + '</td><td>$' + t.entry_price.toFixed(2) + '</td>'
+                + '<td>' + (t.exit_date || '-') + '</td><td>$' + t.exit_price.toFixed(2) + '</td>'
+                + '<td>' + t.shares + '</td>'
+                + '<td class="' + (t.net_profit >= 0 ? 'pct-positive' : 'pct-negative') + '">$' + t.net_profit.toFixed(2) + '</td>'
+                + '<td class="' + (t.return_pct >= 0 ? 'pct-positive' : 'pct-negative') + '">' + t.return_pct.toFixed(2) + '%</td>'
+                + '<td>' + t.hold_days + '</td>'
+                + '<td><span class="badge ' + exitBadge(t.exit_reason) + '">' + t.exit_reason.replace('_', ' ') + '</span></td>';
+            tbody2.appendChild(tr);
+        }
+        if (d.trades.length > 200) {
+            var note = document.createElement('tr');
+            note.innerHTML = '<td colspan="11" style="text-align:center;color:var(--text-dim);">Showing first 200 of ' + d.trades.length + ' trades</td>';
+            tbody2.appendChild(note);
+        }
+    }
+}
+
+function exitBadge(reason) {
+    if (reason === 'take_profit') return 'badge-green';
+    if (reason === 'stop_loss') return 'badge-red';
+    if (reason === 'max_hold') return 'badge-yellow';
+    return 'badge-blue';
+}
+
+function renderEquityCurve(curve) {
+    var ctx = document.getElementById('chart-equity').getContext('2d');
+    if (chartEquity) chartEquity.destroy();
+    var labels = [];
+    var data = [];
+    for (var i = 0; i < curve.length; i++) {
+        labels.push(curve[i].trade || (i + 1));
+        data.push(curve[i].capital);
+    }
+    chartEquity = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Portfolio Value ($)',
+                data: data,
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 0
+            }, {
+                label: 'Starting Capital',
+                data: new Array(data.length).fill(data[0] || 10000),
+                borderColor: 'rgba(255,255,255,0.2)',
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#8888aa' } } },
+            scales: {
+                x: { ticks: { color: '#8888aa' }, grid: { color: 'rgba(42,42,74,0.5)' } },
+                y: { ticks: { color: '#8888aa', callback: function(v) { return '$' + v.toLocaleString(); } }, grid: { color: 'rgba(42,42,74,0.5)' } }
+            }
+        }
+    });
+}
+
+function renderExitPie(reasons) {
+    var ctx = document.getElementById('chart-exits').getContext('2d');
+    if (chartExits) chartExits.destroy();
+    var labels = [];
+    var data = [];
+    var colors = { 'take_profit': '#22c55e', 'stop_loss': '#ef4444', 'max_hold': '#eab308', 'end_of_data': '#3b82f6', 'no_price_data': '#8888aa' };
+    for (var k in reasons) {
+        if (reasons.hasOwnProperty(k)) {
+            labels.push(k.replace('_', ' '));
+            data.push(reasons[k]);
+        }
+    }
+    var bgColors = labels.map(function(l) {
+        var key = l.replace(' ', '_');
+        return colors[key] || '#6366f1';
+    });
+    chartExits = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{ data: data, backgroundColor: bgColors, borderWidth: 0 }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#e0e0f0' } } }
+        }
+    });
+}
+
+// ─── Compare Strategies ───
+function runCompare() {
+    var btn = document.getElementById('btn-compare');
+    btn.disabled = true;
+    btn.textContent = 'Running all scenarios...';
+
+    var params = 'compare=1';
+    var algos = getCheckedAlgos('cmp-algos');
+    if (algos) params += '&algorithms=' + encodeURIComponent(algos);
+
+    apiGet('whatif.php?' + params, function(d) {
+        btn.disabled = false;
+        btn.textContent = 'Run Comparison';
+        if (!d.ok) { alert('Error: ' + (d.error || 'Unknown')); return; }
+        document.getElementById('cmp-results').style.display = 'block';
+
+        var sc = d.scenarios;
+        // Chart
+        var ctx = document.getElementById('chart-compare').getContext('2d');
+        if (chartCompare) chartCompare.destroy();
+        var labels = [];
+        var returns = [];
+        var winRates = [];
+        var barColors = [];
+        for (var i = 0; i < sc.length; i++) {
+            labels.push(sc[i].name);
+            returns.push(sc[i].summary.total_return_pct);
+            winRates.push(sc[i].summary.win_rate);
+            barColors.push(sc[i].summary.total_return_pct >= 0 ? '#22c55e' : '#ef4444');
+        }
+        chartCompare = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Total Return %',
+                    data: returns,
+                    backgroundColor: barColors,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: '#8888aa', callback: function(v) { return v + '%'; } }, grid: { color: 'rgba(42,42,74,0.5)' } },
+                    y: { ticks: { color: '#e0e0f0', font: { size: 11 } }, grid: { display: false } }
+                }
+            }
+        });
+
+        // Table
+        var tbody = document.querySelector('#cmp-table tbody');
+        tbody.innerHTML = '';
+        for (var i = 0; i < sc.length; i++) {
+            var s = sc[i].summary;
+            var p = sc[i].params;
+            var cls = i === 0 ? 'rank-1' : (i === sc.length - 1 ? 'rank-last' : '');
+            var tr = document.createElement('tr');
+            tr.className = cls;
+            tr.innerHTML = '<td>' + (i + 1) + '</td><td><strong>' + sc[i].name + '</strong></td>'
+                + '<td>' + p.take_profit + '</td><td>' + p.stop_loss + '</td><td>' + p.max_hold_days + 'd</td>'
+                + '<td>' + s.total_trades + '</td><td>' + s.win_rate + '%</td>'
+                + '<td class="' + (s.total_return_pct >= 0 ? 'pct-positive' : 'pct-negative') + '"><strong>' + s.total_return_pct.toFixed(2) + '%</strong></td>'
+                + '<td>$' + s.final_value.toLocaleString() + '</td>'
+                + '<td class="pct-negative">' + s.max_drawdown_pct.toFixed(2) + '%</td>'
+                + '<td>$' + s.total_commissions.toFixed(0) + '</td>'
+                + '<td>' + s.sharpe_ratio.toFixed(3) + '</td>'
+                + '<td>' + s.profit_factor.toFixed(2) + '</td>';
+            tbody.appendChild(tr);
+        }
+    });
+}
+
+// ─── Compare Algorithms ───
+function runAlgoCompare() {
+    var params = 'compare_algos=1';
+    var sc = document.getElementById('ac-scenario').value;
+    if (sc) {
+        params += '&scenario=' + sc;
+    } else {
+        params += '&take_profit=' + document.getElementById('ac-tp').value
+            + '&stop_loss=' + document.getElementById('ac-sl').value
+            + '&max_hold_days=' + document.getElementById('ac-hold').value;
+    }
+
+    apiGet('whatif.php?' + params, function(d) {
+        if (!d.ok) { alert('Error: ' + (d.error || 'Unknown')); return; }
+        document.getElementById('ac-results').style.display = 'block';
+
+        var algos = d.algorithms;
+        // Chart
+        var ctx = document.getElementById('chart-algo-cmp').getContext('2d');
+        if (chartAlgoCmp) chartAlgoCmp.destroy();
+        var labels = [];
+        var returns = [];
+        var barColors = [];
+        for (var i = 0; i < algos.length; i++) {
+            labels.push(algos[i].algorithm);
+            returns.push(algos[i].summary.total_return_pct);
+            barColors.push(algos[i].summary.total_return_pct >= 0 ? '#22c55e' : '#ef4444');
+        }
+        chartAlgoCmp = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{ label: 'Total Return %', data: returns, backgroundColor: barColors, borderRadius: 4 }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: '#8888aa', callback: function(v) { return v + '%'; } }, grid: { color: 'rgba(42,42,74,0.5)' } },
+                    y: { ticks: { color: '#e0e0f0', font: { size: 11 } }, grid: { display: false } }
+                }
+            }
+        });
+
+        // Table
+        var tbody = document.querySelector('#ac-table tbody');
+        tbody.innerHTML = '';
+        for (var i = 0; i < algos.length; i++) {
+            var s = algos[i].summary;
+            var cls = i === 0 ? 'rank-1' : (i === algos.length - 1 ? 'rank-last' : '');
+            var tr = document.createElement('tr');
+            tr.className = cls;
+            tr.innerHTML = '<td>' + (i + 1) + '</td><td><strong>' + algos[i].algorithm + '</strong></td>'
+                + '<td>' + s.total_trades + '</td><td>' + s.win_rate + '%</td>'
+                + '<td class="' + (s.total_return_pct >= 0 ? 'pct-positive' : 'pct-negative') + '"><strong>' + s.total_return_pct.toFixed(2) + '%</strong></td>'
+                + '<td>$' + s.final_value.toLocaleString() + '</td>'
+                + '<td class="pct-negative">' + s.max_drawdown_pct.toFixed(2) + '%</td>'
+                + '<td>$' + s.total_commissions.toFixed(0) + '</td>'
+                + '<td>' + s.sharpe_ratio.toFixed(3) + '</td>'
+                + '<td>' + s.profit_factor.toFixed(2) + '</td>'
+                + '<td>' + (s.avg_hold_days || 0).toFixed(1) + 'd</td>';
+            tbody.appendChild(tr);
+        }
+    });
+}
+
+// ─── Portfolio Templates ───
+function loadPortfolios() {
+    apiGet('data.php?type=portfolios', function(d) {
+        if (!d.ok) return;
+        var tbody = document.querySelector('#portfolios-table tbody');
+        tbody.innerHTML = '';
+        var ports = d.portfolios;
+        for (var i = 0; i < ports.length; i++) {
+            var p = ports[i];
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td><strong>' + p.name + '</strong><br><span style="font-size:0.75rem;color:var(--text-dim)">' + (p.description || '') + '</span></td>'
+                + '<td><span class="badge badge-blue">' + p.strategy_type + '</span></td>'
+                + '<td>' + parseFloat(p.take_profit_pct) + '</td>'
+                + '<td>' + parseFloat(p.stop_loss_pct) + '</td>'
+                + '<td>' + p.max_hold_days + 'd</td>'
+                + '<td>$' + parseFloat(p.initial_capital).toLocaleString() + '</td>'
+                + '<td>$' + parseFloat(p.commission_buy) + '</td>'
+                + '<td>' + parseFloat(p.position_size_pct || 10) + '%</td>'
+                + '<td><button class="btn btn-primary" style="padding:0.3rem 0.8rem;font-size:0.8rem;" onclick="backtestPortfolio(' + p.id + ')">Backtest</button></td>';
+            tbody.appendChild(tr);
+        }
+    });
+}
+
+function backtestPortfolio(id) {
+    // Switch to what-if tab and run with portfolio_id
+    document.querySelector('.tab[data-tab="whatif"]').click();
+    var btn = document.getElementById('btn-run-whatif');
+    btn.disabled = true;
+    btn.textContent = 'Running portfolio backtest...';
+
+    apiGet('backtest.php?portfolio_id=' + id, function(d) {
+        btn.disabled = false;
+        btn.textContent = 'Run Analysis';
+        if (!d.ok) { alert('Error: ' + (d.error || 'Unknown')); return; }
+        renderWhatIfResults(d);
+    });
+}
+
+// ─── Stock Picks ───
+function loadPicks() {
+    var algo = document.getElementById('picks-algo-filter').value;
+    var url = 'data.php?type=picks';
+    if (algo) url += '&algorithm=' + encodeURIComponent(algo);
+
+    apiGet(url, function(d) {
+        if (!d.ok) return;
+        var tbody = document.querySelector('#picks-table tbody');
+        tbody.innerHTML = '';
+        var picks = d.picks;
+        for (var i = 0; i < picks.length; i++) {
+            var p = picks[i];
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td><strong>' + p.ticker + '</strong></td>'
+                + '<td>' + (p.company_name || '') + '</td>'
+                + '<td>' + p.algorithm_name + '</td>'
+                + '<td>' + p.pick_date + '</td>'
+                + '<td>$' + parseFloat(p.entry_price).toFixed(2) + '</td>'
+                + '<td>' + p.score + '</td>'
+                + '<td><span class="badge ' + (p.rating === 'STRONG BUY' ? 'badge-green' : p.rating === 'BUY' ? 'badge-blue' : 'badge-yellow') + '">' + p.rating + '</span></td>'
+                + '<td>' + p.risk_level + '</td>'
+                + '<td>' + p.timeframe + '</td>';
+            tbody.appendChild(tr);
+        }
+    });
+}
+
+// ─── Backtest History ───
+function loadHistory() {
+    apiGet('data.php?type=backtests', function(d) {
+        if (!d.ok) return;
+        var tbody = document.querySelector('#history-table tbody');
+        tbody.innerHTML = '';
+        var bt = d.backtests;
+        for (var i = 0; i < bt.length; i++) {
+            var b = bt[i];
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + b.run_name + '</td>'
+                + '<td><span class="badge badge-blue">' + b.strategy_type + '</span></td>'
+                + '<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;">' + (b.algorithm_filter || 'All') + '</td>'
+                + '<td>' + b.total_trades + '</td>'
+                + '<td>' + parseFloat(b.win_rate).toFixed(1) + '%</td>'
+                + '<td class="' + (parseFloat(b.total_return_pct) >= 0 ? 'pct-positive' : 'pct-negative') + '">' + parseFloat(b.total_return_pct).toFixed(2) + '%</td>'
+                + '<td>$' + parseFloat(b.final_value).toLocaleString() + '</td>'
+                + '<td class="pct-negative">' + parseFloat(b.max_drawdown_pct).toFixed(2) + '%</td>'
+                + '<td>' + parseFloat(b.sharpe_ratio).toFixed(3) + '</td>'
+                + '<td>' + (b.created_at || '') + '</td>';
+            tbody.appendChild(tr);
+        }
+    });
+}
+
+// ─── Natural Language Query Parser ───
+function setNLQuery(text) {
+    document.getElementById('nl-query').value = text;
+    parseNLQuery();
+}
+
+function parseNLQuery() {
+    var q = document.getElementById('nl-query').value.toLowerCase();
+    if (!q) return;
+
+    var tp = 10, sl = 5, hold = 7;
+
+    // Profit target
+    var tpMatch = q.match(/(\d+)%?\s*(?:profit|target|tp|gain)/);
+    if (tpMatch) tp = parseInt(tpMatch[1]);
+
+    // Stop loss
+    var slMatch = q.match(/(\d+)%?\s*(?:stop|loss|sl|risk)/);
+    if (slMatch) sl = parseInt(slMatch[1]);
+
+    // Holding period
+    if (q.indexOf('end of day') !== -1 || q.indexOf('eod') !== -1 || q.indexOf('same day') !== -1) hold = 1;
+    else if (q.indexOf('2 day') !== -1 || q.indexOf('two day') !== -1 || q.indexOf('2-day') !== -1) hold = 2;
+    else if (q.indexOf('1 week') !== -1 || q.indexOf('one week') !== -1 || q.indexOf('a week') !== -1 || q.indexOf('7 day') !== -1) hold = 7;
+    else if (q.indexOf('2 week') !== -1 || q.indexOf('two week') !== -1 || q.indexOf('14 day') !== -1) hold = 14;
+    else if (q.indexOf('1 month') !== -1 || q.indexOf('one month') !== -1 || q.indexOf('a month') !== -1 || q.indexOf('30 day') !== -1) hold = 20;
+    else if (q.indexOf('3 month') !== -1 || q.indexOf('three month') !== -1 || q.indexOf('quarter') !== -1) hold = 60;
+    else if (q.indexOf('6 month') !== -1 || q.indexOf('six month') !== -1 || q.indexOf('half year') !== -1) hold = 126;
+
+    // Day trader
+    if (q.indexOf('day trad') !== -1 || q.indexOf('daytrad') !== -1 || q.indexOf('scalp') !== -1) {
+        if (hold > 2) hold = 2;
+        if (tp > 15) tp = 10;
+    }
+
+    // Buy and hold
+    if (q.indexOf('buy and hold') !== -1 || q.indexOf('buy & hold') !== -1) {
+        tp = 999; sl = 999;
+        if (hold < 30) hold = 60;
+    }
+
+    // Conservative
+    if (q.indexOf('conservative') !== -1 || q.indexOf('safe') !== -1 || q.indexOf('tight') !== -1) {
+        if (sl > 5) sl = 5;
+    }
+
+    // Aggressive
+    if (q.indexOf('aggressive') !== -1 || q.indexOf('risky') !== -1) {
+        if (sl < 10) sl = 15;
+    }
+
+    // No stop loss
+    if (q.indexOf('no stop') !== -1 || q.indexOf('no sl') !== -1) sl = 999;
+
+    // Specific day match
+    var dayMatch = q.match(/(\d+)\s*(?:day|trading day)/);
+    if (dayMatch && !q.match(/2\s*day/)) hold = parseInt(dayMatch[1]);
+
+    document.getElementById('wi-tp').value = tp;
+    document.getElementById('wi-sl').value = sl;
+    document.getElementById('wi-hold').value = hold;
+
+    runWhatIf();
+}
+
+// ─── Alt-Data Factor Functions ───
+var ALT_API = (function() {
+    var loc = window.location;
+    if (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1') {
+        return '../api/';
+    }
+    return '/findstocks/api/';
+})();
+
+function altApiGet(endpoint, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', ALT_API + endpoint, true);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try { cb(JSON.parse(xhr.responseText)); }
+            catch(e) { cb({ ok: false, error: 'Parse error' }); }
+        } else { cb({ ok: false, error: 'HTTP ' + xhr.status }); }
+    };
+    xhr.onerror = function() { cb({ ok: false, error: 'Network error' }); };
+    xhr.send();
+}
+
+function loadAltDataFactors() {
+    var el = document.getElementById('altdata-content');
+    el.innerHTML = '<div class="loading"><div class="spinner"></div> Loading factor families...</div>';
+    document.getElementById('regime-panel').style.display = 'none';
+
+    altApiGet('alt_data.php?action=factors', function(d) {
+        if (!d.ok) { el.innerHTML = '<p style="color:var(--red);">Error: ' + (d.error || 'Unknown') + '</p>'; return; }
+        var families = d.factor_families;
+        var html = '<div style="margin-bottom:1rem;font-size:0.85rem;color:var(--text-dim);">' + d.total_families + ' factor families, ' + d.total_features + ' total features</div>';
+
+        var colors = {
+            'human_capital': '#22c55e',
+            'supply_chain': '#eab308',
+            'geopolitical': '#ef4444',
+            'institutional_flow': '#3b82f6',
+            'esg_climate': '#06b6d4',
+            'patent_innovation': '#a855f7',
+            'congressional_nuanced': '#f97316'
+        };
+
+        for (var i = 0; i < families.length; i++) {
+            var f = families[i];
+            var color = colors[f.id] || '#6366f1';
+            html += '<div style="background:var(--bg-dark);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:1rem;border-left:3px solid ' + color + ';">';
+            html += '<h3 style="font-size:1rem;color:' + color + ';margin-bottom:0.3rem;">' + f.name + '</h3>';
+            html += '<p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.8rem;">' + f.description + '</p>';
+            html += '<div style="font-size:0.72rem;color:var(--text-dim);margin-bottom:0.5rem;"><strong>Sources:</strong> ' + f.source_refs.join(', ') + ' | <strong>Update:</strong> ' + f.update_cadence + '</div>';
+            html += '<div style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-bottom:0.5rem;">';
+            for (var j = 0; j < f.features.length; j++) {
+                var feat = f.features[j];
+                html += '<span style="font-size:0.68rem;padding:0.15rem 0.5rem;border-radius:4px;background:rgba(255,255,255,0.05);color:var(--text);" title="' + feat.description + ' (' + feat.range + ')">' + feat.name + '</span>';
+            }
+            html += '</div>';
+            html += '<div style="font-size:0.72rem;color:var(--text-dim);"><strong>Algorithms:</strong> ' + f.algorithms.join(', ') + '</div>';
+            html += '<div style="font-size:0.72rem;color:var(--accent);margin-top:0.3rem;"><strong>Regime use:</strong> ' + f.regime_use + '</div>';
+            html += '</div>';
+        }
+        el.innerHTML = html;
+    });
+}
+
+function loadRegimeSignals() {
+    var panel = document.getElementById('regime-panel');
+    panel.style.display = 'block';
+    var statsEl = document.getElementById('regime-stats');
+    statsEl.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+    altApiGet('macro_regime.php?action=current_regime', function(d) {
+        if (!d.ok || !d.regime) { statsEl.innerHTML = '<p style="color:var(--red);">Error loading regime data</p>'; return; }
+        var r = d.regime;
+        var unifiedColors = { 'risk_on': 'positive', 'cautious_bull': 'positive', 'transition': '', 'risk_off': 'negative', 'neutral': '' };
+        var html = '';
+        html += '<div class="stat-card"><div class="label">Unified Regime</div><div class="value ' + (unifiedColors[r.unified] || '') + '">' + r.unified.replace('_', ' ').toUpperCase() + '</div></div>';
+        html += '<div class="stat-card"><div class="label">Confidence</div><div class="value">' + r.confidence.toUpperCase() + '</div></div>';
+
+        var comps = r.components;
+        if (comps.vix.value !== null) {
+            html += '<div class="stat-card"><div class="label">VIX</div><div class="value ' + (comps.vix.value < 20 ? 'positive' : 'negative') + '">' + comps.vix.value.toFixed(1) + '</div><div style="font-size:0.65rem;color:var(--text-dim);">' + comps.vix.regime + '</div></div>';
+        }
+        if (comps.spy_trend.value !== null) {
+            html += '<div class="stat-card"><div class="label">SPY</div><div class="value ' + (comps.spy_trend.regime.indexOf('bull') >= 0 ? 'positive' : 'negative') + '">$' + comps.spy_trend.value.toFixed(0) + '</div><div style="font-size:0.65rem;color:var(--text-dim);">' + comps.spy_trend.regime + '</div></div>';
+        }
+
+        html += '<div class="stat-card"><div class="label">BDI</div><div class="value" style="font-size:0.9rem;">Pending</div><div style="font-size:0.6rem;color:var(--text-dim);">Connect feed</div></div>';
+        html += '<div class="stat-card"><div class="label">GPR</div><div class="value" style="font-size:0.9rem;">Pending</div><div style="font-size:0.6rem;color:var(--text-dim);">Connect feed</div></div>';
+        html += '<div class="stat-card"><div class="label">Date</div><div class="value" style="font-size:0.85rem;">' + (r.date || '--') + '</div></div>';
+        statsEl.innerHTML = html;
+
+        // Recommendation
+        var recEl = document.getElementById('regime-recommendation');
+        if (r.recommendation && r.recommendation.note) {
+            var rec = r.recommendation;
+            recEl.innerHTML = '<div style="background:var(--bg-dark);border:1px solid var(--border);border-radius:8px;padding:1rem;">'
+                + '<div style="font-size:0.85rem;font-weight:700;margin-bottom:0.5rem;">Regime Recommendation</div>'
+                + '<div style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.5rem;">' + rec.note + '</div>'
+                + '<div style="display:flex;gap:1rem;flex-wrap:wrap;font-size:0.78rem;">'
+                + '<span><strong style="color:var(--green);">Primary:</strong> ' + rec.primary_sleeve + '</span>'
+                + '<span><strong style="color:var(--blue);">Secondary:</strong> ' + rec.secondary_sleeve + '</span>'
+                + '<span><strong style="color:var(--red);">Avoid:</strong> ' + rec.avoid + '</span>'
+                + '<span><strong style="color:var(--yellow);">Sizing:</strong> ' + rec.sizing + '</span>'
+                + '</div></div>';
+        }
+
+        // Load factor weights
+        loadFactorWeights(r.unified);
+    });
+}
+
+function loadFactorWeights(currentRegime) {
+    var panel = document.getElementById('factor-weights-panel');
+    panel.style.display = 'block';
+    var el = document.getElementById('factor-weights-content');
+    el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+    altApiGet('macro_regime.php?action=factor_weights', function(d) {
+        if (!d.ok || !d.weight_table) { el.innerHTML = ''; return; }
+        var wt = d.weight_table;
+        var html = '<div class="table-wrap"><table><thead><tr><th>Factor Sleeve</th>';
+        var regimes = ['risk_on', 'cautious_bull', 'transition', 'risk_off'];
+        for (var i = 0; i < regimes.length; i++) {
+            var isActive = (regimes[i] === currentRegime) ? ' style="color:var(--accent);font-weight:700;"' : '';
+            html += '<th' + isActive + '>' + regimes[i].replace('_', ' ').toUpperCase() + (regimes[i] === currentRegime ? ' *' : '') + '</th>';
+        }
+        html += '</tr></thead><tbody>';
+
+        var sleeves = ['momentum', 'event_arb', 'quality', 'flow', 'defensive', 'mean_reversion'];
+        for (var s = 0; s < sleeves.length; s++) {
+            html += '<tr><td><strong>' + sleeves[s].replace('_', ' ') + '</strong></td>';
+            for (var r = 0; r < regimes.length; r++) {
+                var val = wt[regimes[r]][sleeves[s]];
+                var cls = val >= 30 ? 'pct-positive' : (val <= 5 ? 'pct-negative' : '');
+                html += '<td class="' + cls + '">' + val + '%</td>';
+            }
+            html += '</tr>';
+        }
+        html += '</tbody></table></div>';
+        el.innerHTML = html;
+    });
+}
+
+function loadDataSources() {
+    var el = document.getElementById('altdata-content');
+    el.innerHTML = '<div class="loading"><div class="spinner"></div> Loading data sources...</div>';
+    document.getElementById('regime-panel').style.display = 'none';
+
+    altApiGet('alt_data.php?action=data_sources', function(d) {
+        if (!d.ok) { el.innerHTML = '<p style="color:var(--red);">Error loading data sources</p>'; return; }
+        var sources = d.data_sources;
+        var html = '<div class="table-wrap"><table><thead><tr><th>Family</th><th>Source</th><th>Free?</th><th>Update</th><th>Alternative</th></tr></thead><tbody>';
+        for (var i = 0; i < sources.length; i++) {
+            var s = sources[i];
+            html += '<tr><td><span class="badge badge-blue">' + s.family + '</span></td>'
+                + '<td><a href="' + s.url + '" target="_blank">' + s.source + '</a></td>'
+                + '<td>' + (s.free_tier ? '<span class="badge badge-green">FREE</span>' : '<span class="badge badge-yellow">PAID</span>') + '</td>'
+                + '<td>' + s.update_frequency + '</td>'
+                + '<td style="font-size:0.78rem;color:var(--text-dim);">' + s.alternative + '</td></tr>';
+        }
+        html += '</tbody></table></div>';
+        el.innerHTML = html;
+    });
+}
+
+// ─── Setup Functions ───
+function runSetup() {
+    var log = document.getElementById('setup-log');
+    log.innerHTML = '<div class="spinner"></div> Setting up database...';
+    apiGet('setup_schema.php', function(d) {
+        if (d.ok) {
+            log.innerHTML = 'Database created. Actions: ' + (d.actions ? d.actions.join(', ') : 'OK');
+        } else {
+            log.innerHTML = 'Error: ' + (d.error || JSON.stringify(d));
+        }
+    });
+}
+
+function importPicks(source) {
+    var log = document.getElementById('setup-log');
+    log.innerHTML = '<div class="spinner"></div> Importing picks (source: ' + source + ')...';
+    apiGet('import_picks.php?source=' + source, function(d) {
+        log.innerHTML = 'Imported: ' + (d.imported || 0) + ', Skipped: ' + (d.skipped || 0)
+            + (d.prices_imported ? ', Prices: ' + d.prices_imported : '')
+            + (d.errors && d.errors.length ? ', Errors: ' + d.errors.join('; ') : '');
+        loadStats();
+    });
+}
+
+function fetchPrices() {
+    var log = document.getElementById('setup-log');
+    log.innerHTML = '<div class="spinner"></div> Fetching price data from Yahoo Finance (10 tickers at a time)...';
+    apiGet('fetch_prices.php', function(d) {
+        log.innerHTML = 'Fetched: ' + (d.fetched || 0) + ' tickers. '
+            + (d.note || '')
+            + (d.errors && d.errors.length ? ' Errors: ' + d.errors.join('; ') : '');
+        loadStats();
+    });
+}
+
+// ═══════════════════════════════════════════
+// ALPHA FORGE — Quant Lab Engine
+// ═══════════════════════════════════════════
+
+var chartAfAlloc = null;
+var chartAfSleeves = null;
+var chartAfFeatures = null;
+
+// ── Regime Detection ──
+function loadAlphaForgeRegime() {
+    var card = document.getElementById('af-regime-card');
+    card.innerHTML = '<div class="loading"><div class="spinner"></div> Detecting regime...</div>';
+
+    apiGet('alpha_forge.php?action=regime', function(d) {
+        if (!d.ok) {
+            card.innerHTML = '<p style="color:var(--red);">Error: ' + (d.error || 'Unknown') + '</p>';
+            return;
+        }
+        var r = d.regime;
+        var a = d.allocation;
+
+        // Regime colors
+        var regimeColors = {
+            'bull_low': '#22c55e', 'bull_high': '#eab308',
+            'bear_low': '#3b82f6', 'bear_high': '#ef4444'
+        };
+        var regimeEmoji = {
+            'bull_low': '&#9650;', 'bull_high': '&#9650;&#9888;',
+            'bear_low': '&#9660;', 'bear_high': '&#9660;&#9888;'
+        };
+        var color = regimeColors[r.code] || '#6366f1';
+        var emoji = regimeEmoji[r.code] || '';
+
+        var html = '<div style="display:flex;align-items:center;gap:1rem;">'
+            + '<div style="font-size:2.5rem;font-weight:900;color:' + color + ';">' + emoji + '</div>'
+            + '<div>'
+            + '<div style="font-size:1.3rem;font-weight:700;color:' + color + ';">' + r.label + '</div>'
+            + '<div style="font-size:0.8rem;color:var(--text-dim);">' + a.strategy + '</div>'
+            + '</div></div>'
+            + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;margin-top:1rem;">'
+            + '<div style="text-align:center;"><div style="font-size:0.65rem;color:var(--text-dim);text-transform:uppercase;">SPY</div><div style="font-weight:700;">$' + r.spy_current + '</div></div>'
+            + '<div style="text-align:center;"><div style="font-size:0.65rem;color:var(--text-dim);text-transform:uppercase;">SMA200</div><div style="font-weight:700;">$' + r.spy_sma200 + '</div></div>'
+            + '<div style="text-align:center;"><div style="font-size:0.65rem;color:var(--text-dim);text-transform:uppercase;">VIX</div><div style="font-weight:700;color:' + (r.vix > 20 ? 'var(--red)' : 'var(--green)') + ';">' + r.vix + '</div></div>'
+            + '<div style="text-align:center;"><div style="font-size:0.65rem;color:var(--text-dim);text-transform:uppercase;">SPY 20d</div><div style="font-weight:700;color:' + (r.spy_return_20d >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + r.spy_return_20d + '%</div></div>'
+            + '</div>';
+
+        if (r.rate_regime) {
+            html += '<div style="margin-top:0.75rem;font-size:0.8rem;color:var(--text-dim);">Rate Regime: <span style="color:var(--text);font-weight:600;">'
+                + r.rate_regime.replace('_', ' ') + '</span></div>';
+        }
+
+        card.innerHTML = html;
+
+        // Allocation chart
+        renderAfAllocationChart(a);
+
+        // Sector heatmap
+        renderAfSectorHeatmap(d.sector_momentum);
+    });
+}
+
+function renderAfAllocationChart(a) {
+    var ctx = document.getElementById('chart-af-allocation').getContext('2d');
+    if (chartAfAlloc) chartAfAlloc.destroy();
+    chartAfAlloc = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Momentum Hunter', 'Quality Compounder', 'Event Arbitrage', 'Cash Reserve'],
+            datasets: [{
+                data: [a.momentum_weight, a.quality_weight, a.event_weight, a.cash_weight],
+                backgroundColor: ['#6366f1', '#22c55e', '#eab308', '#3b82f6'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#e0e0f0', font: { size: 11 } } }
+            }
+        }
+    });
+}
+
+function renderAfSectorHeatmap(sectors) {
+    var el = document.getElementById('af-sector-heatmap');
+    if (!sectors || sectors.length === 0) {
+        el.innerHTML = '<p style="color:var(--text-dim);font-size:0.85rem;">No sector data available. Import sector ETF price data first.</p>';
+        return;
+    }
+    var html = '';
+    for (var i = 0; i < sectors.length; i++) {
+        var s = sectors[i];
+        var color = s.return_60d >= 5 ? 'var(--green)' : (s.return_60d <= -5 ? 'var(--red)' : 'var(--yellow)');
+        var bg = s.return_60d >= 5 ? 'var(--green-dim)' : (s.return_60d <= -5 ? 'var(--red-dim)' : 'var(--yellow-dim)');
+        html += '<div style="background:' + bg + ';border:1px solid ' + color + ';border-radius:8px;padding:0.5rem 0.75rem;text-align:center;min-width:80px;">'
+            + '<div style="font-weight:700;font-size:0.9rem;">' + s.etf + '</div>'
+            + '<div style="color:' + color + ';font-weight:600;font-size:0.85rem;">' + (s.return_60d >= 0 ? '+' : '') + s.return_60d + '%</div>'
+            + '<div style="font-size:0.65rem;color:var(--text-dim);">20d: ' + (s.return_20d >= 0 ? '+' : '') + s.return_20d + '%</div>'
+            + '</div>';
+    }
+    el.innerHTML = html;
+}
+
+// ── Multi-Sleeve Backtest ──
+function runAlphaForgeSleeves() {
+    var btn = document.getElementById('btn-af-sleeves');
+    btn.disabled = true;
+    btn.textContent = 'Running 3-sleeve backtest...';
+    var cap = document.getElementById('af-capital').value;
+
+    apiGet('alpha_forge.php?action=sleeves&capital=' + cap, function(d) {
+        btn.disabled = false;
+        btn.textContent = 'Run 3-Sleeve Backtest';
+        if (!d.ok) {
+            alert('Error: ' + (d.error || 'Unknown'));
+            return;
+        }
+        document.getElementById('af-sleeve-results').style.display = 'block';
+        renderAfSleeveResults(d);
+    });
+}
+
+function renderAfSleeveResults(d) {
+    var e = d.ensemble;
+    // Ensemble stats
+    var statsHtml = '';
+    var metrics = [
+        ['Ensemble Value', '$' + e.final_value.toLocaleString(), e.total_return_pct >= 0 ? 'positive' : 'negative'],
+        ['Total Return', e.total_return_pct.toFixed(2) + '%', e.total_return_pct >= 0 ? 'positive' : 'negative'],
+        ['Win Rate', e.win_rate + '%', e.win_rate >= 50 ? 'positive' : 'negative'],
+        ['Total Trades', e.total_trades, ''],
+        ['Sharpe', e.sharpe_ratio.toFixed(3), e.sharpe_ratio > 0 ? 'positive' : 'negative'],
+        ['Cash Reserve', '$' + e.cash_reserve.toLocaleString(), ''],
+        ['Regime', d.regime.label, '']
+    ];
+    for (var i = 0; i < metrics.length; i++) {
+        var m = metrics[i];
+        statsHtml += '<div class="stat-card"><div class="label">' + m[0] + '</div><div class="value ' + m[2] + '">' + m[1] + '</div></div>';
+    }
+    document.getElementById('af-ensemble-stats').innerHTML = statsHtml;
+
+    // Sleeve cards
+    var cardsHtml = '';
+    var sleeveKeys = ['momentum', 'quality', 'event'];
+    var sleeveColors = { momentum: '#6366f1', quality: '#22c55e', event: '#eab308' };
+    var sleeveLabels = [];
+    var sleeveReturns = [];
+    var sleeveBarColors = [];
+
+    for (var i = 0; i < sleeveKeys.length; i++) {
+        var k = sleeveKeys[i];
+        if (!d.sleeves[k]) continue;
+        var s = d.sleeves[k];
+        var col = sleeveColors[k];
+        sleeveLabels.push(s.label);
+        sleeveReturns.push(s.total_return_pct);
+        sleeveBarColors.push(col);
+
+        cardsHtml += '<div style="background:var(--bg-dark);border:1px solid ' + col + ';border-radius:var(--radius);padding:1rem;">'
+            + '<div style="font-weight:700;color:' + col + ';margin-bottom:0.5rem;">' + s.label + '</div>'
+            + '<div style="font-size:0.78rem;color:var(--text-dim);margin-bottom:0.75rem;">' + s.description + '</div>'
+            + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.3rem;font-size:0.8rem;">'
+            + '<div>Allocation: <b>' + s.allocation_pct + '%</b></div>'
+            + '<div>Trades: <b>' + s.total_trades + '</b></div>'
+            + '<div>Win Rate: <b style="color:' + (s.win_rate >= 50 ? 'var(--green)' : 'var(--red)') + ';">' + s.win_rate + '%</b></div>'
+            + '<div>Return: <b style="color:' + (s.total_return_pct >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + s.total_return_pct.toFixed(2) + '%</b></div>'
+            + '<div>Sharpe: <b>' + s.sharpe_ratio.toFixed(3) + '</b></div>'
+            + '<div>Max DD: <b style="color:var(--red);">' + s.max_drawdown_pct.toFixed(2) + '%</b></div>'
+            + '<div>TP/SL: <b>' + s.params.tp + '%/' + s.params.sl + '%</b></div>'
+            + '<div>Max Hold: <b>' + s.params.max_hold + 'd</b></div>'
+            + '</div></div>';
+    }
+    document.getElementById('af-sleeve-cards').innerHTML = cardsHtml;
+
+    // Sleeve comparison bar chart
+    var ctx = document.getElementById('chart-af-sleeves').getContext('2d');
+    if (chartAfSleeves) chartAfSleeves.destroy();
+    chartAfSleeves = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: sleeveLabels,
+            datasets: [{
+                label: 'Return %',
+                data: sleeveReturns,
+                backgroundColor: sleeveBarColors,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { color: '#e0e0f0' }, grid: { display: false } },
+                y: { ticks: { color: '#8888aa', callback: function(v) { return v + '%'; } }, grid: { color: 'rgba(42,42,74,0.5)' } }
+            }
+        }
+    });
+}
+
+// ── Composite Ranking ──
+function loadAlphaForgeRank() {
+    var btn = document.getElementById('btn-af-rank');
+    btn.disabled = true;
+    btn.textContent = 'Loading rankings...';
+
+    apiGet('alpha_forge.php?action=composite_rank&limit=50', function(d) {
+        btn.disabled = false;
+        btn.textContent = 'Load Rankings';
+        if (!d.ok) { alert('Error: ' + (d.error || 'Unknown')); return; }
+        document.getElementById('af-rank-results').style.display = 'block';
+
+        var tbody = document.querySelector('#af-rank-table tbody');
+        tbody.innerHTML = '';
+        var r = d.rankings;
+        for (var i = 0; i < r.length; i++) {
+            var t = r[i];
+            var gradeColor = { A: 'badge-green', B: 'badge-blue', C: 'badge-yellow', D: 'badge-red', F: 'badge-red' };
+            var tr = document.createElement('tr');
+            if (i === 0) tr.className = 'rank-1';
+            tr.innerHTML = '<td>' + t.rank + '</td>'
+                + '<td><strong style="cursor:pointer;color:var(--accent);" onclick="afDeepDive(\'' + t.ticker + '\')">' + t.ticker + '</strong></td>'
+                + '<td>' + (t.company || '') + '</td>'
+                + '<td><strong>' + t.composite_score + '</strong></td>'
+                + '<td><span class="badge ' + (gradeColor[t.grade] || 'badge-yellow') + '">' + t.grade + '</span></td>'
+                + '<td class="' + (t.momentum >= 0 ? 'pct-positive' : 'pct-negative') + '">' + t.momentum.toFixed(2) + '%</td>'
+                + '<td>' + t.volatility.toFixed(1) + '%</td>'
+                + '<td>' + t.trend_consistency.toFixed(0) + '%</td>'
+                + '<td>' + t.rsi + '</td>'
+                + '<td>' + t.volume_ratio.toFixed(2) + 'x</td>'
+                + '<td>' + t.picks + '</td>'
+                + '<td>$' + t.price.toFixed(2) + '</td>';
+            tbody.appendChild(tr);
+        }
+    });
+}
+
+function afDeepDive(ticker) {
+    document.getElementById('af-ticker').value = ticker;
+    loadAlphaForgeMetrics();
+    // Scroll to the metrics section
+    document.getElementById('af-metrics-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Ticker Deep Dive Metrics ──
+function loadAlphaForgeMetrics() {
+    var ticker = document.getElementById('af-ticker').value.toUpperCase().trim();
+    if (!ticker) { alert('Enter a ticker symbol'); return; }
+
+    var scoreEl = document.getElementById('af-metrics-score');
+    var detailEl = document.getElementById('af-metrics-detail');
+    scoreEl.innerHTML = '<div class="stat-card" style="grid-column:1/-1;"><div class="loading"><div class="spinner"></div> Analyzing ' + ticker + '...</div></div>';
+    document.getElementById('af-metrics-results').style.display = 'block';
+
+    apiGet('alpha_forge.php?action=metrics&ticker=' + ticker, function(d) {
+        if (!d.ok) {
+            scoreEl.innerHTML = '<div class="stat-card" style="grid-column:1/-1;"><div class="value negative">' + (d.error || 'Error') + '</div></div>';
+            detailEl.innerHTML = '';
+            return;
+        }
+
+        var c = d.composite;
+        var m = d.metrics;
+        var gradeColor = { A: 'var(--green)', B: 'var(--blue)', C: 'var(--yellow)', D: 'var(--red)', F: 'var(--red)' };
+
+        // Score overview
+        var sHtml = '';
+        sHtml += '<div class="stat-card" style="border-color:' + (gradeColor[c.grade] || 'var(--border)') + ';border-width:2px;">'
+            + '<div class="label">Composite Score</div>'
+            + '<div class="value" style="color:' + (gradeColor[c.grade] || 'var(--text)') + ';">' + c.score + '/100</div>'
+            + '<div style="font-size:2rem;font-weight:900;color:' + (gradeColor[c.grade] || 'var(--text)') + ';">' + c.grade + '</div></div>';
+
+        sHtml += '<div class="stat-card"><div class="label">Momentum</div><div class="value">' + c.components.momentum + '/25</div></div>';
+        sHtml += '<div class="stat-card"><div class="label">Quality</div><div class="value">' + c.components.quality + '/25</div></div>';
+        sHtml += '<div class="stat-card"><div class="label">Risk</div><div class="value">' + c.components.risk + '/25</div></div>';
+        sHtml += '<div class="stat-card"><div class="label">Signal</div><div class="value">' + c.components.signal + '/25</div></div>';
+        sHtml += '<div class="stat-card"><div class="label">Price</div><div class="value">$' + d.current_price.toFixed(2) + '</div></div>';
+        scoreEl.innerHTML = sHtml;
+
+        // Detailed metrics in two columns
+        var dHtml = '';
+
+        // Column 1: Momentum + Volatility
+        dHtml += '<div>'
+            + '<div style="background:var(--bg-dark);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:1rem;">'
+            + '<h3 style="color:var(--accent);margin-bottom:0.75rem;">Momentum</h3>'
+            + afMetricRow('Multi-Horizon Score', m.momentum.multi_horizon_score.toFixed(2) + '%', m.momentum.multi_horizon_score >= 0)
+            + afMetricRow('5-Day Return', m.momentum.return_5d.toFixed(2) + '%', m.momentum.return_5d >= 0)
+            + afMetricRow('20-Day Return', m.momentum.return_20d.toFixed(2) + '%', m.momentum.return_20d >= 0)
+            + afMetricRow('60-Day Return', m.momentum.return_60d.toFixed(2) + '%', m.momentum.return_60d >= 0)
+            + afMetricRow('Trend Consistency', m.momentum.trend_consistency_pct.toFixed(0) + '%', m.momentum.trend_consistency_pct > 50)
+            + afMetricRow('RSI(14)', m.momentum.rsi_14, m.momentum.rsi_14 > 30 && m.momentum.rsi_14 < 70)
+            + '</div>'
+            + '<div style="background:var(--bg-dark);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:1rem;">'
+            + '<h3 style="color:#ef4444;margin-bottom:0.75rem;">Volatility & Risk</h3>'
+            + afMetricRow('Downside Deviation', m.volatility_risk.downside_deviation.toFixed(4), m.volatility_risk.downside_deviation < 2)
+            + afMetricRow('Beta (60d)', m.volatility_risk.beta_60d.toFixed(3), m.volatility_risk.beta_60d < 1.3)
+            + afMetricRow('Beta Decay', m.volatility_risk.beta_decay.toFixed(4), true)
+            + afMetricRow('Vol 20d Ann.', m.volatility_risk.vol_20d_annualized.toFixed(1) + '%', m.volatility_risk.vol_20d_annualized < 30)
+            + afMetricRow('Vol Regime', m.volatility_risk.vol_regime, true)
+            + afMetricRow('Tail Risk', m.volatility_risk.tail_risk_pct.toFixed(1) + '%', m.volatility_risk.tail_risk_pct < 5)
+            + afMetricRow('ATR(14)', '$' + m.volatility_risk.atr_14.toFixed(2), true)
+            + afMetricRow('Trailing Stop 2xATR', '$' + m.volatility_risk.trailing_stop_2atr.toFixed(2), true)
+            + '</div></div>';
+
+        // Column 2: Microstructure + Signals
+        dHtml += '<div>'
+            + '<div style="background:var(--bg-dark);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:1rem;">'
+            + '<h3 style="color:#eab308;margin-bottom:0.75rem;">Microstructure</h3>'
+            + afMetricRow('Amihud Illiquidity', m.microstructure.amihud_illiquidity.toFixed(4), true)
+            + afMetricRow('Liquidity Grade', m.microstructure.liquidity_grade, m.microstructure.liquidity_grade !== 'low')
+            + afMetricRow('Volume Ratio', m.microstructure.volume_ratio.toFixed(2) + 'x', m.microstructure.volume_ratio > 0.8)
+            + afMetricRow('Volume Trend', m.microstructure.volume_trend, m.microstructure.volume_trend !== 'drying_up')
+            + afMetricRow('Vol Anomaly Z', m.microstructure.volume_anomaly_zscore.toFixed(2), true)
+            + afMetricRow('Return Autocorr', m.microstructure.return_autocorrelation.toFixed(4), true)
+            + afMetricRow('Price Efficiency', m.microstructure.price_efficiency, true)
+            + afMetricRow('Avg Gap', m.microstructure.avg_gap_pct.toFixed(3) + '%', true)
+            + '</div>'
+            + '<div style="background:var(--bg-dark);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:1rem;">'
+            + '<h3 style="color:#22c55e;margin-bottom:0.75rem;">Signals & Alternative</h3>'
+            + afMetricRow('PEAD Drift Score', m.signals.earnings_drift_score.toFixed(1), m.signals.earnings_drift_score > 50)
+            + afMetricRow('Pick Win Rate', m.signals.pick_win_rate.toFixed(0) + '%', m.signals.pick_win_rate > 50)
+            + afMetricRow('Avg Pick Drift', m.signals.avg_pick_drift_pct.toFixed(2) + '%', m.signals.avg_pick_drift_pct > 0)
+            + afMetricRow('Z-Score (20d)', m.signals.zscore_20d.toFixed(3), true)
+            + afMetricRow('Mean Rev Signal', m.signals.mean_reversion_signal.replace('_', ' '), true)
+            + afMetricRow('Kelly Optimal', m.signals.kelly_optimal_pct.toFixed(1) + '%', m.signals.kelly_optimal_pct > 0)
+            + afMetricRow('Supply Chain Vuln', m.alternative.supply_chain_vulnerability.toFixed(3), true)
+            + '</div></div>';
+
+        detailEl.innerHTML = dHtml;
+    });
+}
+
+function afMetricRow(label, value, good) {
+    var color = good ? 'var(--text)' : 'var(--red)';
+    return '<div style="display:flex;justify-content:space-between;padding:0.25rem 0;border-bottom:1px solid rgba(42,42,74,0.5);font-size:0.82rem;">'
+        + '<span style="color:var(--text-dim);">' + label + '</span>'
+        + '<span style="font-weight:600;color:' + color + ';">' + value + '</span></div>';
+}
+
+// ── Feature Importance ──
+function loadAlphaForgeFeatures() {
+    var btn = document.getElementById('btn-af-features');
+    btn.disabled = true;
+    btn.textContent = 'Running ablation test...';
+
+    apiGet('alpha_forge.php?action=feature_importance', function(d) {
+        btn.disabled = false;
+        btn.textContent = 'Run Ablation Test';
+        if (!d.ok) { alert('Error: ' + (d.error || 'Unknown')); return; }
+        document.getElementById('af-feature-results').style.display = 'block';
+
+        var f = d.features;
+
+        // Horizontal bar chart
+        var labels = [];
+        var data = [];
+        var colors = [];
+        for (var i = 0; i < f.length; i++) {
+            labels.push(f[i].label);
+            data.push(f[i].importance);
+            colors.push(f[i].importance > 50 ? '#22c55e' : (f[i].importance > 25 ? '#eab308' : '#ef4444'));
+        }
+
+        var ctx = document.getElementById('chart-af-features').getContext('2d');
+        if (chartAfFeatures) chartAfFeatures.destroy();
+        chartAfFeatures = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{ label: 'Importance', data: data, backgroundColor: colors, borderRadius: 4 }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { min: 0, max: 100, ticks: { color: '#8888aa' }, grid: { color: 'rgba(42,42,74,0.5)' } },
+                    y: { ticks: { color: '#e0e0f0', font: { size: 11 } }, grid: { display: false } }
+                }
+            }
+        });
+
+        // Table
+        var tbody = document.querySelector('#af-feature-table tbody');
+        tbody.innerHTML = '';
+        for (var i = 0; i < f.length; i++) {
+            var ft = f[i];
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td><strong>' + ft.label + '</strong></td>'
+                + '<td><div style="width:100%;background:var(--bg-dark);border-radius:4px;overflow:hidden;">'
+                + '<div style="width:' + ft.importance + '%;height:8px;background:' + (ft.importance > 50 ? '#22c55e' : '#eab308') + ';border-radius:4px;"></div></div>'
+                + '<span style="font-size:0.8rem;">' + ft.importance.toFixed(0) + '%</span></td>'
+                + '<td>' + ft.accuracy.toFixed(1) + '%</td>'
+                + '<td class="' + (ft.contribution > 0 ? 'pct-positive' : 'pct-negative') + '">' + (ft.contribution > 0 ? '+' : '') + ft.contribution.toFixed(1) + '%</td>'
+                + '<td>' + ft.samples + '</td>';
+            tbody.appendChild(tr);
+        }
+    });
+}
+</script>
+</body>
+</html>

@@ -204,7 +204,8 @@
               </div>
             </div>
           </a></div>
-        <div class="flex flex-wrap justify-center gap-6 mt-6"><a href="https://github.com/eltonaguiar/STOCKSUNIFY2"
+        <div class="flex flex-wrap justify-center gap-6 mt-6"><a href="/findstocks_global/"
+            class="text-emerald-400 hover:text-emerald-300 text-xs font-mono uppercase tracking-widest">📊 Investment Hub →</a><a href="https://github.com/eltonaguiar/STOCKSUNIFY2"
             target="_blank" rel="noopener noreferrer"
             class="text-[var(--pk-400)] hover:text-indigo-300 text-xs font-mono uppercase tracking-widest">📦 Scientific
             Repo (V2) →</a><a href="https://github.com/eltonaguiar/stocksunify" target="_blank"
@@ -1731,6 +1732,60 @@
   <script>self.__next_f.push([1, "13:[[\"$\",\"meta\",\"0\",{\"charSet\":\"utf-8\"}],[\"$\",\"meta\",\"1\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"}]]\n"])</script>
   <script>self.__next_f.push([1, "16:I[27201,[\"/next/_next/static/chunks/ff1a16fafef87110.js\",\"/next/_next/static/chunks/7c4eddd014120b50.js\"],\"IconMark\"]\n11:null\n"])</script>
   <script>self.__next_f.push([1, "15:[[\"$\",\"title\",\"0\",{\"children\":\"Find Toronto Events | Dating, Activities \u0026 Things to Do This Weekend\"}],[\"$\",\"meta\",\"1\",{\"name\":\"description\",\"content\":\"Your ultimate guide to Toronto events, dating meetups, and activities. Discover the best things to do in Toronto, from GTA happenings to mingle events and weekend plans.\"}],[\"$\",\"meta\",\"2\",{\"name\":\"keywords\",\"content\":\"Toronto Events,Toronto Dating,Toronto Activities,Things to do in Toronto,Toronto Calendar,GTA Happenings,Toronto Mingle,What's On Toronto\"}],[\"$\",\"meta\",\"3\",{\"property\":\"og:title\",\"content\":\"Find Toronto Events | Dating, Activities \u0026 Things to Do This Weekend\"}],[\"$\",\"meta\",\"4\",{\"property\":\"og:description\",\"content\":\"Your ultimate guide to Toronto events, dating meetups, and activities. Discover the best things to do in Toronto this weekend.\"}],[\"$\",\"meta\",\"5\",{\"property\":\"og:site_name\",\"content\":\"Find Toronto Events\"}],[\"$\",\"meta\",\"6\",{\"property\":\"og:locale\",\"content\":\"en_CA\"}],[\"$\",\"meta\",\"7\",{\"property\":\"og:type\",\"content\":\"website\"}],[\"$\",\"meta\",\"8\",{\"name\":\"twitter:card\",\"content\":\"summary\"}],[\"$\",\"meta\",\"9\",{\"name\":\"twitter:title\",\"content\":\"Find Toronto Events | Dating, Activities \u0026 Things to Do This Weekend\"}],[\"$\",\"meta\",\"10\",{\"name\":\"twitter:description\",\"content\":\"Your ultimate guide to Toronto events, dating meetups, and activities. Discover the best things to do in Toronto this weekend.\"}],[\"$\",\"link\",\"11\",{\"rel\":\"icon\",\"href\":\"/favicon.ico?favicon.0b3bf435.ico\",\"sizes\":\"256x256\",\"type\":\"image/x-icon\"}],[\"$\",\"$L16\",\"12\",{}]]\n"])</script>
+<!-- Post-hydration: inject Global Dashboard link (avoids React #418 hydration mismatch) -->
+<script>
+(function(){
+  function inject(){
+    // 1. Inject Global Dashboard card after STOCKSUNIFY2 card
+    var cards = document.querySelectorAll('.mt-8.max-w-4xl');
+    var target = null;
+    for(var i=0;i<cards.length;i++){
+      if(cards[i].innerHTML.indexOf('STOCKSUNIFY2')!==-1){target=cards[i];break;}
+    }
+    if(target){
+      var d=document.createElement('div');
+      d.className='mt-4 max-w-4xl mx-auto';
+      d.innerHTML='<a class="block group" href="/findstocks2_global/">'
+        +'<div class="glass-panel p-6 rounded-[2rem] border-2 border-emerald-500/50 bg-gradient-to-r from-emerald-500/10 via-transparent to-cyan-500/10 hover:border-emerald-400 transition-all">'
+        +'<div class="flex flex-wrap items-center justify-between gap-6 px-4">'
+        +'<div class="text-left">'
+        +'<div class="flex items-center gap-3 mb-2">'
+        +'<span class="px-2 py-0.5 rounded bg-emerald-500 text-[10px] font-black tracking-tighter uppercase">Multi-Asset Intelligence</span>'
+        +'<h2 class="text-xl font-bold text-white">Global Portfolio Dashboard</h2>'
+        +'</div>'
+        +'<p class="text-sm text-neutral-400 max-w-xl"><strong>91 algorithms</strong> across <strong>25 families</strong> &mdash; Stocks, Mutual Funds, Forex &amp; Crypto. Real-time consensus, leaderboards &amp; cross-asset analysis.</p>'
+        +'</div>'
+        +'<div class="px-8 py-3 bg-emerald-500 text-white text-sm font-black rounded-full group-hover:scale-105 transition-transform">Explore Global Dashboard &rarr;</div>'
+        +'</div></div></a>';
+      target.parentNode.insertBefore(d,target.nextSibling);
+    }
+
+    // 2. Inject nav link in Quick Navigation sidebar
+    var navLinks = document.querySelectorAll('a[href="/findstocks"]');
+    for(var j=0;j<navLinks.length;j++){
+      var lnk=navLinks[j];
+      if(lnk.textContent.indexOf('Find Stocks')!==-1 && lnk.className.indexOf('rounded-xl')!==-1){
+        var nl=document.createElement('a');
+        nl.href='/findstocks2_global/';
+        nl.className='w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-emerald-500/20 text-emerald-200 hover:text-white transition-all border border-transparent hover:border-emerald-500/30';
+        nl.innerHTML='<span class="text-lg">\uD83C\uDF0D</span> Global Portfolio Dashboard';
+        lnk.parentNode.insertBefore(nl,lnk.nextSibling);
+        break;
+      }
+    }
+
+    // 3. Fix broken /findstocks2/ link → redirect to /findstocks2_global/
+    var brokenLinks = document.querySelectorAll('a[href="/findstocks2/"]');
+    for(var k=0;k<brokenLinks.length;k++){
+      brokenLinks[k].href='/findstocks2_global/';
+    }
+  }
+
+  // Wait for React hydration to complete before injecting
+  if(document.readyState==='complete'){setTimeout(inject,800);}
+  else{window.addEventListener('load',function(){setTimeout(inject,800);});}
+})();
+</script>
 <!-- AI Assistant: context-aware chat + voice assistant (free, no API keys) -->
 <script src="/ai-assistant.js"></script>
 </body>

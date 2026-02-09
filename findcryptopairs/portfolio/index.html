@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Portfolio Analysis | FindCryptoPairs</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #f59e0b;
+            --accent-glow: rgba(245, 158, 11, 0.3);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ─── Header ─── */
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--accent), #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-links { display: flex; gap: 1rem; font-size: 0.9rem; }
+        .header-links a { color: var(--text-dim); }
+        .header-links a:hover { color: var(--text); }
+
+        /* ─── Layout ─── */
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+        @media (max-width: 1024px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .container { padding: 1rem; } }
+
+        /* ─── Cards ─── */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+        }
+        .card h2 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--text); }
+        .card h3 { font-size: 0.95rem; color: var(--text-dim); margin-bottom: 0.5rem; }
+
+        /* ─── Stat Cards ─── */
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-card .label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-card .value { font-size: 1.5rem; font-weight: 700; margin-top: 0.25rem; }
+        .stat-card .value.positive { color: var(--green); }
+        .stat-card .value.negative { color: var(--red); }
+        .stat-card .value.neutral { color: var(--text); }
+
+        /* ─── Forms ─── */
+        label { display: block; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.03em; }
+        select, input[type="number"], input[type="text"] {
+            width: 100%;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        select:focus, input:focus { border-color: var(--accent); }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .form-group { display: flex; flex-direction: column; }
+
+        /* ─── Buttons ─── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: #d97706; box-shadow: 0 0 20px var(--accent-glow); }
+        .btn-secondary { background: var(--bg-dark); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { border-color: var(--accent); }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+        .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+        /* ─── Checkboxes ─── */
+        .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.5rem; }
+        .checkbox-item {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 0.6rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .checkbox-item:hover { border-color: var(--accent); }
+        .checkbox-item input { accent-color: var(--accent); }
+
+        /* ─── Tables ─── */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        thead th {
+            text-align: left;
+            padding: 0.6rem 0.8rem;
+            background: var(--bg-dark);
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        thead th:hover { color: var(--text); }
+        tbody td {
+            padding: 0.5rem 0.8rem;
+            border-bottom: 1px solid rgba(42, 42, 74, 0.5);
+            white-space: nowrap;
+        }
+        tbody tr:hover { background: rgba(245, 158, 11, 0.05); }
+        .positive { color: var(--green); }
+        .negative { color: var(--red); }
+
+        /* ─── Tabs ─── */
+        .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+        .tab {
+            padding: 0.75rem 1.25rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: var(--text-dim);
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: var(--text); }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* ─── Scenario Cards ─── */
+        .scenario-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .scenario-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .scenario-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .scenario-card.selected { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+        .scenario-card h4 { font-size: 1rem; margin-bottom: 0.5rem; }
+        .scenario-card p { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.75rem; }
+        .scenario-meta { display: flex; gap: 1rem; font-size: 0.8rem; }
+        .scenario-meta span { background: var(--bg-dark); padding: 0.2rem 0.5rem; border-radius: 4px; }
+
+        /* ─── Comparison Table ─── */
+        .comparison-row { display: grid; grid-template-columns: 200px 1fr; gap: 1rem; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid rgba(42,42,74,0.5); }
+        .comparison-bar { height: 24px; border-radius: 4px; position: relative; min-width: 2px; }
+        .comparison-label { font-size: 0.85rem; }
+        .comparison-value { position: absolute; right: 8px; top: 3px; font-size: 0.75rem; font-weight: 600; }
+
+        /* ─── Charts ─── */
+        .chart-container { position: relative; height: 300px; }
+
+        /* ─── Loading ─── */
+        .loading { text-align: center; padding: 2rem; color: var(--text-dim); }
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px; height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ─── Badge ─── */
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-green { background: var(--green-dim); color: var(--green); }
+        .badge-red { background: var(--red-dim); color: var(--red); }
+        .badge-yellow { background: var(--yellow-dim); color: var(--yellow); }
+        .badge-blue { background: rgba(59,130,246,0.15); color: var(--blue); }
+
+        /* ─── Disclaimer ─── */
+        .disclaimer {
+            background: rgba(234, 179, 8, 0.08);
+            border: 1px solid rgba(234, 179, 8, 0.2);
+            border-radius: var(--radius);
+            padding: 1rem 1.5rem;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 1.5rem;
+        }
+        .disclaimer strong { color: var(--yellow); }
+
+        /* ─── Export ─── */
+        .export-btns { display: flex; gap: 0.5rem; margin-top: 1rem; }
+
+        /* ─── Section spacing ─── */
+        .section { margin-bottom: 2rem; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem; }
+    </style>
+</head>
+<body>
+
+<!-- ─── Header ─── -->
+<div class="header">
+    <h1>Crypto Portfolio Analysis Tool</h1>
+    <div class="header-links">
+        <a href="/findcryptopairs/portfolio/">Portfolio</a>
+        <a href="/findcryptopairs/">Crypto Pairs</a>
+        <a href="/investments/">Investments</a>
+        <a href="/">Events Home</a>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- ─── Status Bar ─── -->
+    <div id="statusBar" class="stat-grid">
+        <div class="stat-card"><div class="label">Pairs</div><div class="value neutral" id="statPairs">—</div></div>
+        <div class="stat-card"><div class="label">Signals</div><div class="value neutral" id="statSignals">—</div></div>
+        <div class="stat-card"><div class="label">Price Records</div><div class="value neutral" id="statPrices">—</div></div>
+        <div class="stat-card"><div class="label">Strategies</div><div class="value neutral" id="statStrategies">—</div></div>
+    </div>
+
+    <!-- ─── Setup Banner ─── -->
+    <div id="setupBanner" class="card section" style="display:none; border-color: var(--yellow);">
+        <h2>Setup Required</h2>
+        <p style="color:var(--text-dim); margin-bottom:1rem;">The database needs to be initialized. Click the buttons below in order:</p>
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="runSetup()">1. Create Tables</button>
+            <button class="btn btn-secondary" onclick="seedSignals()">2. Seed Signals</button>
+            <button class="btn btn-secondary" onclick="fetchPrices()">3. Fetch Price Data</button>
+        </div>
+        <div id="setupLog" style="margin-top:1rem; font-size:0.85rem; color:var(--text-dim);"></div>
+    </div>
+
+    <!-- ─── Tabs ─── -->
+    <div class="tabs">
+        <div class="tab active" data-tab="whatif">What-If Analysis</div>
+        <div class="tab" data-tab="compare">Compare Strategies</div>
+        <div class="tab" data-tab="optimal">Optimal Finder</div>
+        <div class="tab" data-tab="signals">Signals</div>
+    </div>
+
+    <!-- ═══════════ TAB: What-If Analysis ═══════════ -->
+    <div class="tab-content active" id="tab-whatif">
+        <div class="grid-2">
+            <!-- Left: Controls -->
+            <div>
+                <div class="card section">
+                    <h2>Preset Scenarios</h2>
+                    <div class="scenario-grid" id="scenarioGrid"></div>
+                </div>
+                <div class="card section">
+                    <h2>Custom Parameters</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Strategy Type</label>
+                            <select id="strategyType" onchange="onStrategyChange()">
+                                <option value="custom">Custom</option>
+                                <option value="scalp">Scalp (TP:3%, SL:2%, hold:1d)</option>
+                                <option value="daytrade">Day Trade (TP:5%, SL:3%, hold:3d)</option>
+                                <option value="swing">Swing (TP:15%, SL:5%, hold:14d)</option>
+                                <option value="hodl">HODL (TP:999%, SL:999%, hold:90d)</option>
+                                <option value="dca">DCA (TP:999%, SL:999%, hold:180d)</option>
+                                <option value="momentum">Momentum (TP:20%, SL:8%, hold:7d)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Take Profit %</label>
+                            <input type="number" id="takeProfit" value="10" min="1" max="999" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Stop Loss %</label>
+                            <input type="number" id="stopLoss" value="5" min="1" max="999" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Max Hold (Days)</label>
+                            <input type="number" id="maxHoldDays" value="7" min="1" max="365" step="1">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Initial Capital ($)</label>
+                            <input type="number" id="initialCapital" value="10000" min="100" step="100">
+                        </div>
+                        <div class="form-group">
+                            <label>Exchange Fee %</label>
+                            <input type="number" id="exchangeFee" value="0.1" min="0" max="5" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>Slippage %</label>
+                            <input type="number" id="slippage" value="0.5" min="0" max="5" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label>Position Size % of Capital</label>
+                            <input type="number" id="positionSize" value="10" min="1" max="100" step="1">
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top:1rem;">Filter by Strategy</h3>
+                    <div class="checkbox-grid" id="strategyCheckboxes"></div>
+
+                    <div style="margin-top:1.5rem;">
+                        <button class="btn btn-primary" onclick="runWhatIf()">Run What-If Analysis</button>
+                        <button class="btn btn-secondary" onclick="runWhatIf(true)" style="margin-left:0.5rem;">Run & Save</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Results -->
+            <div>
+                <div id="whatifResults" style="display:none;">
+                    <div class="stat-grid" id="whatifStats"></div>
+                    <div class="card section">
+                        <h2>Equity Curve</h2>
+                        <div class="chart-container"><canvas id="equityChart"></canvas></div>
+                    </div>
+                    <div class="card section">
+                        <h2>Returns by Strategy</h2>
+                        <div class="chart-container"><canvas id="strategyChart"></canvas></div>
+                    </div>
+                    <div class="card section">
+                        <div class="section-header">
+                            <h2>Trade Log</h2>
+                            <div class="export-btns">
+                                <button class="btn btn-sm btn-secondary" onclick="exportCSV()">Export CSV</button>
+                            </div>
+                        </div>
+                        <div class="table-wrap">
+                            <table id="tradeTable">
+                                <thead>
+                                    <tr>
+                                        <th onclick="sortTable(0)">Pair</th>
+                                        <th onclick="sortTable(1)">Strategy</th>
+                                        <th onclick="sortTable(2)">Entry Date</th>
+                                        <th onclick="sortTable(3)">Entry Price</th>
+                                        <th onclick="sortTable(4)">Exit Date</th>
+                                        <th onclick="sortTable(5)">Exit Price</th>
+                                        <th onclick="sortTable(6)">Units</th>
+                                        <th onclick="sortTable(7)">Net P/L</th>
+                                        <th onclick="sortTable(8)">Return %</th>
+                                        <th onclick="sortTable(9)">Exit Reason</th>
+                                        <th onclick="sortTable(10)">Hold Days</th>
+                                        <th onclick="sortTable(11)">Fees</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div id="whatifEmpty" class="card" style="text-align:center; padding:3rem;">
+                    <p style="font-size:1.1rem; margin-bottom:0.5rem;">Select a scenario or configure custom parameters</p>
+                    <p style="color:var(--text-dim);">Results will appear here after running the analysis</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ TAB: Compare Strategies ═══════════ -->
+    <div class="tab-content" id="tab-compare">
+        <div class="card section">
+            <div class="section-header">
+                <h2>Strategy Comparison</h2>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="runComparison()">Compare All Scenarios</button>
+                </div>
+            </div>
+            <h3 style="margin-bottom:0.5rem;">Filter by Strategy (optional)</h3>
+            <div class="checkbox-grid" id="compareStrategyCheckboxes"></div>
+        </div>
+        <div id="comparisonResults" style="display:none;">
+            <div class="card section">
+                <h2>Return Comparison</h2>
+                <div class="chart-container" style="height:400px;"><canvas id="comparisonChart"></canvas></div>
+            </div>
+            <div class="card section">
+                <h2>Detailed Comparison</h2>
+                <div class="table-wrap">
+                    <table id="comparisonTable">
+                        <thead>
+                            <tr>
+                                <th>Scenario</th>
+                                <th>TP%</th>
+                                <th>SL%</th>
+                                <th>Hold</th>
+                                <th>Trades</th>
+                                <th>Win Rate</th>
+                                <th>Return %</th>
+                                <th>Final Value</th>
+                                <th>Max DD%</th>
+                                <th>Fees</th>
+                                <th>Sharpe</th>
+                                <th>P/F</th>
+                                <th>Expectancy</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ TAB: Optimal Finder ═══════════ -->
+    <div class="tab-content" id="tab-optimal">
+        <div class="card section">
+            <div class="section-header">
+                <h2>Optimal Conditions Finder</h2>
+            </div>
+            <p style="color:var(--text-dim); margin-bottom:1rem;">
+                Runs a grid search across <strong>every permutation</strong> of Take Profit, Stop Loss, Holding Period,
+                Exchange Fee, and Strategy to find the exact conditions that produce the highest returns.
+            </p>
+            <div class="grid-2">
+                <div>
+                    <div class="form-group">
+                        <label>Strategy Filter</label>
+                        <select id="optStrategyFilter" style="width:100%;">
+                            <option value="">All Strategies</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <div class="form-group">
+                        <label>Sort Results By</label>
+                        <select id="optSortBy" style="width:100%;">
+                            <option value="total_return_pct">Total Return %</option>
+                            <option value="win_rate">Win Rate %</option>
+                            <option value="sharpe_ratio">Sharpe Ratio</option>
+                            <option value="profit_factor">Profit Factor</option>
+                            <option value="expectancy">Expectancy</option>
+                            <option value="final_value">Final Portfolio Value</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-2" style="margin-top:0.5rem;">
+                <div>
+                    <div class="form-group">
+                        <label>Exchange Fee %</label>
+                        <select id="optExchangeFee" style="width:100%;">
+                            <option value="0.05">0.05% (Low)</option>
+                            <option value="0.1" selected>0.1% (Standard)</option>
+                            <option value="0.2">0.2% (High)</option>
+                            <option value="0.5">0.5% (Very High)</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <div class="form-group">
+                        <label>Show Top N Results</label>
+                        <input type="number" id="optTopN" value="25" min="5" max="100" style="width:100%;">
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top:1rem;">
+                <button class="btn btn-primary" onclick="runOptimalFinder()" id="optRunBtn">Find Optimal Conditions</button>
+            </div>
+        </div>
+
+        <div id="optimalLoading" style="display:none;">
+            <div class="card" style="text-align:center; padding:3rem;">
+                <div class="loading">Searching permutations... this may take 10-30 seconds</div>
+            </div>
+        </div>
+
+        <div id="optimalResults" style="display:none;">
+            <!-- Summary stats -->
+            <div class="stat-grid" id="optimalSummaryStats"></div>
+
+            <!-- Winner card -->
+            <div class="card section" id="optimalWinnerCard" style="border: 2px solid var(--green); display:none;">
+                <h2 style="color: var(--green);">🏆 Winning Configuration</h2>
+                <div id="optimalWinnerContent"></div>
+            </div>
+
+            <!-- Top results chart -->
+            <div class="card section">
+                <h2>Top Configurations by <span id="optSortLabel">Return</span></h2>
+                <div class="chart-container" style="height:500px;"><canvas id="optimalChart"></canvas></div>
+            </div>
+
+            <!-- Top results table -->
+            <div class="card section">
+                <h2>Full Results Table</h2>
+                <div class="table-wrap">
+                    <table id="optimalTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Configuration</th>
+                                <th onclick="sortOptTable(2)">TP</th>
+                                <th onclick="sortOptTable(3)">SL</th>
+                                <th onclick="sortOptTable(4)">Hold</th>
+                                <th>Exchange Fee</th>
+                                <th>Strategy</th>
+                                <th onclick="sortOptTable(7)">Trades</th>
+                                <th onclick="sortOptTable(8)">Win Rate</th>
+                                <th onclick="sortOptTable(9)">Return %</th>
+                                <th onclick="sortOptTable(10)">Final Value</th>
+                                <th onclick="sortOptTable(11)">Max DD%</th>
+                                <th onclick="sortOptTable(12)">Sharpe</th>
+                                <th onclick="sortOptTable(13)">P/F</th>
+                                <th onclick="sortOptTable(14)">Fees</th>
+                                <th>Best Trade</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Worst results (what to avoid) -->
+            <div class="card section" style="border-color: var(--red);">
+                <h2 style="color:var(--red);">Worst Configurations (Avoid These)</h2>
+                <div class="table-wrap">
+                    <table id="worstTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Configuration</th>
+                                <th>Trades</th>
+                                <th>Win Rate</th>
+                                <th>Return %</th>
+                                <th>Final Value</th>
+                                <th>Max DD%</th>
+                                <th>Worst Trade</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="optimalEmpty" class="card" style="text-align:center; padding:3rem;">
+            <p style="font-size:1.1rem; margin-bottom:0.5rem;">Click "Find Optimal Conditions" to search all parameter permutations</p>
+            <p style="color:var(--text-dim);">The engine will test every combination and rank them by your chosen metric</p>
+        </div>
+    </div>
+
+    <!-- ═══════════ TAB: Signals ═══════════ -->
+    <div class="tab-content" id="tab-signals">
+        <div class="card section">
+            <div class="section-header">
+                <h2>Crypto Trading Signals</h2>
+                <select id="signalsStrategyFilter" onchange="loadSignals()" style="width:auto;">
+                    <option value="">All Strategies</option>
+                </select>
+            </div>
+            <div class="table-wrap">
+                <table id="signalsTable">
+                    <thead>
+                        <tr>
+                            <th>Pair</th>
+                            <th>Strategy</th>
+                            <th>Signal Date</th>
+                            <th>Entry Price</th>
+                            <th>Direction</th>
+                            <th>Confidence</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Disclaimer ─── -->
+    <div class="disclaimer">
+        <strong>Disclaimer:</strong> This tool is for <strong>research and educational purposes only</strong>.
+        Past performance does not guarantee future results. Backtests use historical data and may not reflect real-world execution.
+        All simulations include exchange fees and configurable slippage. Cryptocurrency trading involves significant risk of loss.
+        Consult a licensed financial adviser before making investment decisions.
+    </div>
+</div>
+
+<script>
+// ─── Config ───
+var API_BASE = '../api/';
+let allStrategies = [];
+let currentTrades = [];
+let equityChartInstance = null;
+let strategyChartInstance = null;
+let comparisonChartInstance = null;
+
+// ─── Init ───
+document.addEventListener('DOMContentLoaded', function() {
+    initTabs();
+    loadStats();
+    loadStrategies();
+    loadScenarios();
+});
+
+// ─── Tab Navigation ───
+function initTabs() {
+    var tabs = document.querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) {
+        tabs[i].addEventListener('click', function() {
+            var target = this.getAttribute('data-tab');
+            var allTabs = document.querySelectorAll('.tab');
+            var allContent = document.querySelectorAll('.tab-content');
+            for (var j = 0; j < allTabs.length; j++) allTabs[j].classList.remove('active');
+            for (var j = 0; j < allContent.length; j++) allContent[j].classList.remove('active');
+            this.classList.add('active');
+            document.getElementById('tab-' + target).classList.add('active');
+            // Load data for tab
+            if (target === 'signals') loadSignals();
+        });
+    }
+}
+
+// ─── API Helper ───
+function apiCall(endpoint, params, callback) {
+    var qs = [];
+    for (var k in params) {
+        if (params.hasOwnProperty(k) && params[k] !== '') {
+            qs.push(encodeURIComponent(k) + '=' + encodeURIComponent(params[k]));
+        }
+    }
+    var url = API_BASE + endpoint + (qs.length > 0 ? '?' + qs.join('&') : '');
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url);
+    xhr.onload = function() {
+        try {
+            var data = JSON.parse(xhr.responseText);
+            callback(null, data);
+        } catch(e) {
+            callback('Parse error: ' + e.message);
+        }
+    };
+    xhr.onerror = function() { callback('Network error'); };
+    xhr.send();
+}
+
+// ─── Load Stats ───
+function loadStats() {
+    apiCall('data.php', {type: 'stats'}, function(err, data) {
+        if (err || !data || !data.ok) {
+            document.getElementById('setupBanner').style.display = 'block';
+            return;
+        }
+        var s = data.stats;
+        document.getElementById('statPairs').textContent = s.total_pairs || 0;
+        document.getElementById('statSignals').textContent = s.total_signals || 0;
+        document.getElementById('statPrices').textContent = s.total_price_records || 0;
+        document.getElementById('statStrategies').textContent = s.total_strategies || 0;
+
+        if (s.total_signals === 0) {
+            document.getElementById('setupBanner').style.display = 'block';
+        }
+    });
+}
+
+// ─── Load Strategies ───
+function loadStrategies() {
+    apiCall('data.php', {type: 'strategies'}, function(err, data) {
+        if (err || !data || !data.strategies) return;
+        allStrategies = data.strategies;
+        renderStrategyCheckboxes('strategyCheckboxes');
+        renderStrategyCheckboxes('compareStrategyCheckboxes');
+        renderStrategyFilter();
+        populateOptStrategyFilter();
+    });
+}
+
+function renderStrategyCheckboxes(containerId) {
+    var html = '';
+    for (var i = 0; i < allStrategies.length; i++) {
+        var s = allStrategies[i];
+        var count = s.signal_count || 0;
+        html += '<label class="checkbox-item">'
+             + '<input type="checkbox" value="' + s.name + '" checked>'
+             + s.name + ' (' + count + ')'
+             + '</label>';
+    }
+    document.getElementById(containerId).innerHTML = html;
+}
+
+function selectOnlyStrategy(containerId, strategyName) {
+    var boxes = document.querySelectorAll('#' + containerId + ' input[type="checkbox"]');
+    for (var i = 0; i < boxes.length; i++) {
+        boxes[i].checked = (boxes[i].value === strategyName);
+    }
+}
+
+function renderStrategyFilter() {
+    var sel = document.getElementById('signalsStrategyFilter');
+    for (var i = 0; i < allStrategies.length; i++) {
+        var opt = document.createElement('option');
+        opt.value = allStrategies[i].name;
+        opt.textContent = allStrategies[i].name;
+        sel.appendChild(opt);
+    }
+}
+
+function getSelectedStrategies(containerId) {
+    var cbs = document.getElementById(containerId).querySelectorAll('input[type="checkbox"]:checked');
+    var selected = [];
+    for (var i = 0; i < cbs.length; i++) selected.push(cbs[i].value);
+    return selected.join(',');
+}
+
+// ─── Load Scenarios ───
+function loadScenarios() {
+    // Crypto-specific presets
+    var scenarios = [
+        {key: 'scalp', name: 'Scalp', tp: 3, sl: 2, hold: 1},
+        {key: 'daytrade', name: 'Day Trade', tp: 5, sl: 3, hold: 3},
+        {key: 'swing', name: 'Swing', tp: 15, sl: 5, hold: 14},
+        {key: 'hodl', name: 'HODL', tp: 999, sl: 999, hold: 90},
+        {key: 'dca', name: 'DCA', tp: 999, sl: 999, hold: 180},
+        {key: 'momentum', name: 'Momentum', tp: 20, sl: 8, hold: 7}
+    ];
+    var grid = document.getElementById('scenarioGrid');
+    var html = '';
+    for (var i = 0; i < scenarios.length; i++) {
+        var sc = scenarios[i];
+        html += '<div class="scenario-card" data-key="' + sc.key + '" onclick="selectScenario(this, \'' + sc.key + '\',' + sc.tp + ',' + sc.sl + ',' + sc.hold + ')">'
+             + '<h4>' + sc.name + '</h4>'
+             + '<div class="scenario-meta">'
+             + '<span>TP: ' + (sc.tp >= 999 ? 'None' : sc.tp + '%') + '</span>'
+             + '<span>SL: ' + (sc.sl >= 999 ? 'None' : sc.sl + '%') + '</span>'
+             + '<span>Hold: ' + sc.hold + 'd</span>'
+             + '</div></div>';
+    }
+    grid.innerHTML = html;
+}
+
+function selectScenario(el, key, tp, sl, hold) {
+    var cards = document.querySelectorAll('.scenario-card');
+    for (var i = 0; i < cards.length; i++) cards[i].classList.remove('selected');
+    el.classList.add('selected');
+    document.getElementById('takeProfit').value = tp >= 999 ? 999 : tp;
+    document.getElementById('stopLoss').value = sl >= 999 ? 999 : sl;
+    document.getElementById('maxHoldDays').value = hold;
+}
+
+function onStrategyChange() {
+    var strat = document.getElementById('strategyType').value;
+    var presets = {
+        scalp:     {tp: 3,   sl: 2,  hold: 1},
+        daytrade:  {tp: 5,   sl: 3,  hold: 3},
+        swing:     {tp: 15,  sl: 5,  hold: 14},
+        hodl:      {tp: 999, sl: 999, hold: 90},
+        dca:       {tp: 999, sl: 999, hold: 180},
+        momentum:  {tp: 20,  sl: 8,  hold: 7}
+    };
+    if (presets[strat]) {
+        document.getElementById('takeProfit').value = presets[strat].tp;
+        document.getElementById('stopLoss').value = presets[strat].sl;
+        document.getElementById('maxHoldDays').value = presets[strat].hold;
+    }
+}
+
+// ─── Run What-If ───
+function runWhatIf(save) {
+    var strategies = getSelectedStrategies('strategyCheckboxes');
+    var params = {
+        strategies: strategies,
+        strategy_type: document.getElementById('strategyType').value,
+        take_profit: document.getElementById('takeProfit').value,
+        stop_loss: document.getElementById('stopLoss').value,
+        max_hold_days: document.getElementById('maxHoldDays').value,
+        initial_capital: document.getElementById('initialCapital').value,
+        exchange_fee: document.getElementById('exchangeFee').value,
+        slippage: document.getElementById('slippage').value,
+        position_size: document.getElementById('positionSize').value
+    };
+    if (save) params.save = '1';
+
+    document.getElementById('whatifResults').style.display = 'none';
+    document.getElementById('whatifEmpty').innerHTML = '<div class="loading">Running analysis</div>';
+    document.getElementById('whatifEmpty').style.display = 'block';
+
+    apiCall('backtest.php', params, function(err, data) {
+        if (err || !data || !data.ok) {
+            document.getElementById('whatifEmpty').innerHTML = '<p style="color:var(--red);">Error: ' + (err || (data && data.error ? data.error : 'Unknown error')) + '</p>';
+            return;
+        }
+        document.getElementById('whatifEmpty').style.display = 'none';
+        document.getElementById('whatifResults').style.display = 'block';
+        currentTrades = data.trades || [];
+        renderWhatIfResults(data);
+    });
+}
+
+function renderWhatIfResults(data) {
+    var s = data.summary;
+    var p = data.params || {};
+    var statsHtml = ''
+        + statCard('Total Return', fmtPct(s.total_return_pct), s.total_return_pct)
+        + statCard('Final Value', '$' + fmtCrypto(s.final_value), s.final_value - p.initial_capital)
+        + statCard('Win Rate', s.win_rate + '%', s.win_rate - 50)
+        + statCard('Total Trades', s.total_trades, 0)
+        + statCard('Avg Win', fmtPct(s.avg_win_pct), 1)
+        + statCard('Avg Loss', fmtPct(-s.avg_loss_pct), -1)
+        + statCard('Max Drawdown', fmtPct(-s.max_drawdown_pct), -1)
+        + statCard('Total Fees', '$' + fmtCrypto(s.total_fees || 0), -1)
+        + statCard('Sharpe Ratio', s.sharpe_ratio, s.sharpe_ratio)
+        + statCard('Profit Factor', s.profit_factor, s.profit_factor - 1)
+        + statCard('Expectancy', fmtPct(s.expectancy), s.expectancy);
+
+    // Exchange fee info
+    statsHtml += '<div class="stat-card" style="border-color:var(--accent)"><div class="label">Exchange Fee</div><div class="value" style="font-size:0.8rem">' + p.exchange_fee + '%</div></div>';
+
+    document.getElementById('whatifStats').innerHTML = statsHtml;
+
+    renderTradeTable(data.trades);
+    renderEquityChart(data);
+    renderStrategyChart(data);
+}
+
+function statCard(label, value, sentiment) {
+    var cls = sentiment > 0 ? 'positive' : (sentiment < 0 ? 'negative' : 'neutral');
+    return '<div class="stat-card"><div class="label">' + label + '</div><div class="value ' + cls + '">' + value + '</div></div>';
+}
+
+function fmtPct(v) { return (v >= 0 ? '+' : '') + parseFloat(v).toFixed(2) + '%'; }
+function fmtCrypto(v) {
+    var num = parseFloat(v);
+    if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(2) + 'K';
+    if (num >= 1) return num.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    if (num >= 0.01) return num.toFixed(4);
+    return num.toFixed(8);
+}
+
+// ─── Trade Table ───
+function renderTradeTable(trades) {
+    var tbody = document.getElementById('tradeTable').querySelector('tbody');
+    var html = '';
+    for (var i = 0; i < trades.length; i++) {
+        var t = trades[i];
+        var cls = t.net_profit >= 0 ? 'positive' : 'negative';
+        var reasonBadge = t.exit_reason === 'take_profit' ? '<span class="badge badge-green">TP</span>'
+                       : t.exit_reason === 'stop_loss' ? '<span class="badge badge-red">SL</span>'
+                       : t.exit_reason === 'max_hold' ? '<span class="badge badge-yellow">MAX</span>'
+                       : '<span class="badge badge-blue">' + t.exit_reason + '</span>';
+        html += '<tr>'
+             + '<td><strong>' + t.pair + '</strong></td>'
+             + '<td>' + t.strategy + '</td>'
+             + '<td>' + t.entry_date + '</td>'
+             + '<td>$' + fmtCrypto(t.entry_price) + '</td>'
+             + '<td>' + (t.exit_date || '—') + '</td>'
+             + '<td>$' + fmtCrypto(t.exit_price) + '</td>'
+             + '<td>' + fmtCrypto(t.units) + '</td>'
+             + '<td class="' + cls + '">$' + fmtCrypto(t.net_profit) + '</td>'
+             + '<td class="' + cls + '">' + fmtPct(t.return_pct) + '</td>'
+             + '<td>' + reasonBadge + '</td>'
+             + '<td>' + t.hold_days + '</td>'
+             + '<td>$' + fmtCrypto(t.fees || 0) + '</td>'
+             + '</tr>';
+    }
+    tbody.innerHTML = html || '<tr><td colspan="12" style="text-align:center; color:var(--text-dim);">No trades executed</td></tr>';
+}
+
+// ─── Sort Table ───
+var sortDir = {};
+function sortTable(colIdx) {
+    var table = document.getElementById('tradeTable');
+    var tbody = table.querySelector('tbody');
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+    var dir = sortDir[colIdx] === 'asc' ? 'desc' : 'asc';
+    sortDir[colIdx] = dir;
+    rows.sort(function(a, b) {
+        var aVal = a.cells[colIdx].textContent.replace(/[$%+,KM]/g, '').trim();
+        var bVal = b.cells[colIdx].textContent.replace(/[$%+,KM]/g, '').trim();
+        var aNum = parseFloat(aVal);
+        var bNum = parseFloat(bVal);
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+            return dir === 'asc' ? aNum - bNum : bNum - aNum;
+        }
+        return dir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
+    for (var i = 0; i < rows.length; i++) tbody.appendChild(rows[i]);
+}
+
+// ─── Charts ───
+function renderEquityChart(data) {
+    var ctx = document.getElementById('equityChart').getContext('2d');
+    if (equityChartInstance) equityChartInstance.destroy();
+
+    var trades = data.trades || [];
+    var capital = data.params.initial_capital || 10000;
+    var labels = ['Start'];
+    var values = [capital];
+    for (var i = 0; i < trades.length; i++) {
+        capital += parseFloat(trades[i].net_profit);
+        labels.push(trades[i].pair);
+        values.push(Math.round(capital * 100) / 100);
+    }
+
+    equityChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Portfolio Value ($)',
+                data: values,
+                borderColor: '#f59e0b',
+                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 3,
+                pointBackgroundColor: function(context) {
+                    var idx = context.dataIndex;
+                    if (idx === 0) return '#f59e0b';
+                    return values[idx] >= values[idx - 1] ? '#22c55e' : '#ef4444';
+                }
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { color: 'rgba(42,42,74,0.5)' }, ticks: { color: '#8888aa' } },
+                x: { grid: { display: false }, ticks: { color: '#8888aa', maxRotation: 45 } }
+            }
+        }
+    });
+}
+
+function renderStrategyChart(data) {
+    var ctx = document.getElementById('strategyChart').getContext('2d');
+    if (strategyChartInstance) strategyChartInstance.destroy();
+
+    var trades = data.trades || [];
+    var strategyMap = {};
+    for (var i = 0; i < trades.length; i++) {
+        var strategy = trades[i].strategy;
+        if (!strategyMap[strategy]) strategyMap[strategy] = {wins: 0, losses: 0, totalReturn: 0, count: 0};
+        strategyMap[strategy].count++;
+        strategyMap[strategy].totalReturn += parseFloat(trades[i].return_pct);
+        if (parseFloat(trades[i].net_profit) >= 0) strategyMap[strategy].wins++;
+        else strategyMap[strategy].losses++;
+    }
+
+    var labels = [], returns = [], colors = [];
+    for (var name in strategyMap) {
+        labels.push(name);
+        var avg = strategyMap[name].totalReturn / strategyMap[name].count;
+        returns.push(Math.round(avg * 100) / 100);
+        colors.push(avg >= 0 ? '#22c55e' : '#ef4444');
+    }
+
+    strategyChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Avg Return %',
+                data: returns,
+                backgroundColor: colors,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { color: 'rgba(42,42,74,0.5)' }, ticks: { color: '#8888aa', callback: function(v) { return v + '%'; } } },
+                x: { grid: { display: false }, ticks: { color: '#8888aa', maxRotation: 45 } }
+            }
+        }
+    });
+}
+
+// ─── Comparison ───
+function runComparison() {
+    var strategies = getSelectedStrategies('compareStrategyCheckboxes');
+    document.getElementById('comparisonResults').style.display = 'none';
+
+    apiCall('backtest.php', {compare: '1', strategies: strategies, initial_capital: document.getElementById('initialCapital').value, exchange_fee: document.getElementById('exchangeFee').value}, function(err, data) {
+        if (err || !data || !data.ok) return;
+        document.getElementById('comparisonResults').style.display = 'block';
+        renderComparison(data);
+    });
+}
+
+function renderComparison(data) {
+    var scenarios = data.scenarios || [];
+
+    // Table
+    var tbody = document.getElementById('comparisonTable').querySelector('tbody');
+    var html = '';
+    for (var i = 0; i < scenarios.length; i++) {
+        var sc = scenarios[i];
+        var s = sc.summary;
+        var cls = s.total_return_pct >= 0 ? 'positive' : 'negative';
+        html += '<tr>'
+             + '<td><strong>' + sc.name + '</strong></td>'
+             + '<td>' + (sc.params.take_profit >= 999 ? '—' : sc.params.take_profit + '%') + '</td>'
+             + '<td>' + (sc.params.stop_loss >= 999 ? '—' : sc.params.stop_loss + '%') + '</td>'
+             + '<td>' + sc.params.max_hold_days + 'd</td>'
+             + '<td>' + s.total_trades + '</td>'
+             + '<td>' + s.win_rate + '%</td>'
+             + '<td class="' + cls + '">' + fmtPct(s.total_return_pct) + '</td>'
+             + '<td>$' + fmtCrypto(s.final_value) + '</td>'
+             + '<td class="negative">' + fmtPct(-s.max_drawdown_pct) + '</td>'
+             + '<td>$' + fmtCrypto(s.total_fees || 0) + '</td>'
+             + '<td>' + s.sharpe_ratio + '</td>'
+             + '<td>' + s.profit_factor + '</td>'
+             + '<td class="' + (s.expectancy >= 0 ? 'positive' : 'negative') + '">' + fmtPct(s.expectancy) + '</td>'
+             + '</tr>';
+    }
+    tbody.innerHTML = html;
+
+    // Chart
+    var ctx = document.getElementById('comparisonChart').getContext('2d');
+    if (comparisonChartInstance) comparisonChartInstance.destroy();
+
+    var labels = [], returns = [], winRates = [], colors = [];
+    for (var i = 0; i < scenarios.length; i++) {
+        labels.push(scenarios[i].name);
+        returns.push(scenarios[i].summary.total_return_pct);
+        winRates.push(scenarios[i].summary.win_rate);
+        colors.push(scenarios[i].summary.total_return_pct >= 0 ? 'rgba(34,197,94,0.7)' : 'rgba(239,68,68,0.7)');
+    }
+
+    comparisonChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Total Return %', data: returns, backgroundColor: colors, borderRadius: 6 },
+                { label: 'Win Rate %', data: winRates, backgroundColor: 'rgba(245,158,11,0.5)', borderRadius: 6 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#8888aa' } } },
+            scales: {
+                y: { grid: { color: 'rgba(42,42,74,0.5)' }, ticks: { color: '#8888aa', callback: function(v) { return v + '%'; } } },
+                x: { grid: { display: false }, ticks: { color: '#8888aa', maxRotation: 45, font: { size: 10 } } }
+            }
+        }
+    });
+}
+
+// ─── Signals ───
+function loadSignals() {
+    var strategy = document.getElementById('signalsStrategyFilter').value;
+    var params = {type: 'signals'};
+    if (strategy) params.strategy = strategy;
+
+    apiCall('data.php', params, function(err, data) {
+        if (err || !data || !data.signals) return;
+        var tbody = document.getElementById('signalsTable').querySelector('tbody');
+        var html = '';
+        for (var i = 0; i < data.signals.length; i++) {
+            var s = data.signals[i];
+            var dirCls = s.direction === 'LONG' ? 'badge-green' : (s.direction === 'SHORT' ? 'badge-red' : 'badge-blue');
+            var confCls = s.confidence >= 80 ? 'badge-green' : (s.confidence >= 60 ? 'badge-yellow' : 'badge-blue');
+            html += '<tr>'
+                 + '<td><strong>' + s.pair + '</strong></td>'
+                 + '<td>' + s.strategy_name + '</td>'
+                 + '<td>' + s.signal_date + '</td>'
+                 + '<td>$' + fmtCrypto(s.entry_price) + '</td>'
+                 + '<td><span class="badge ' + dirCls + '">' + s.direction + '</span></td>'
+                 + '<td><span class="badge ' + confCls + '">' + s.confidence + '%</span></td>'
+                 + '<td>' + (s.status || 'Active') + '</td>'
+                 + '</tr>';
+        }
+        tbody.innerHTML = html || '<tr><td colspan="7" style="text-align:center; color:var(--text-dim);">No signals found</td></tr>';
+    });
+}
+
+// ─── Export CSV ───
+function exportCSV() {
+    if (!currentTrades || currentTrades.length === 0) return;
+    var csv = 'Pair,Strategy,Entry Date,Entry Price,Exit Date,Exit Price,Units,Net P/L,Return %,Exit Reason,Hold Days,Fees\n';
+    for (var i = 0; i < currentTrades.length; i++) {
+        var t = currentTrades[i];
+        csv += [t.pair, t.strategy, t.entry_date, t.entry_price, t.exit_date, t.exit_price, t.units, t.net_profit, t.return_pct, t.exit_reason, t.hold_days, t.fees || 0].join(',') + '\n';
+    }
+    var blob = new Blob([csv], {type: 'text/csv'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'crypto_backtest_trades_' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+}
+
+// ─── Setup Functions ───
+function runSetup() {
+    logSetup('Creating tables...');
+    apiCall('setup_schema.php', {}, function(err, data) {
+        if (err) { logSetup('Error: ' + err); return; }
+        logSetup('Schema: ' + JSON.stringify(data.actions || {}));
+        loadStats();
+    });
+}
+
+function seedSignals() {
+    logSetup('Seeding signals...');
+    apiCall('seed_signals.php', {}, function(err, data) {
+        if (err) { logSetup('Error: ' + err); return; }
+        logSetup('Seeded: ' + (data.seeded || 0) + ' signals');
+        loadStats();
+    });
+}
+
+function fetchPrices() {
+    logSetup('Fetching price data (this may take a moment)...');
+    apiCall('fetch_prices.php', {range: '1y'}, function(err, data) {
+        if (err) { logSetup('Error: ' + err); return; }
+        var msg = 'Fetched: ' + (data.fetched || 0) + ' pairs.';
+        if (data.errors && data.errors.length > 0) msg += ' Errors: ' + data.errors.join(', ');
+        logSetup(msg);
+        loadStats();
+    });
+}
+
+function logSetup(msg) {
+    var log = document.getElementById('setupLog');
+    log.innerHTML += '<div>' + new Date().toLocaleTimeString() + ': ' + msg + '</div>';
+}
+
+// ─── Optimal Finder ───
+var optimalChartInstance = null;
+
+function runOptimalFinder() {
+    var strategy = document.getElementById('optStrategyFilter').value;
+    var sortBy = document.getElementById('optSortBy').value;
+    var exchangeFee = document.getElementById('optExchangeFee').value;
+    var topN = document.getElementById('optTopN').value;
+
+    document.getElementById('optimalEmpty').style.display = 'none';
+    document.getElementById('optimalResults').style.display = 'none';
+    document.getElementById('optimalLoading').style.display = 'block';
+    document.getElementById('optRunBtn').disabled = true;
+    document.getElementById('optRunBtn').textContent = 'Searching...';
+
+    var params = {
+        strategies: strategy,
+        sort_by: sortBy,
+        exchange_fee: exchangeFee,
+        top: topN,
+        initial_capital: document.getElementById('initialCapital').value,
+        slippage: document.getElementById('slippage').value
+    };
+
+    apiCall('optimal_finder.php', params, function(err, data) {
+        document.getElementById('optimalLoading').style.display = 'none';
+        document.getElementById('optRunBtn').disabled = false;
+        document.getElementById('optRunBtn').textContent = 'Find Optimal Conditions';
+
+        if (err || !data || !data.ok) {
+            document.getElementById('optimalEmpty').style.display = 'block';
+            document.getElementById('optimalEmpty').innerHTML = '<p style="color:var(--red);">Error: ' + (err || (data && data.error ? data.error : 'Unknown')) + '</p>';
+            return;
+        }
+
+        document.getElementById('optimalResults').style.display = 'block';
+        renderOptimalResults(data);
+    });
+}
+
+function renderOptimalResults(data) {
+    var top = data.top_results || [];
+    var worst = data.worst_results || [];
+    var sortLabel = {
+        total_return_pct: 'Return %',
+        win_rate: 'Win Rate',
+        sharpe_ratio: 'Sharpe Ratio',
+        profit_factor: 'Profit Factor',
+        expectancy: 'Expectancy',
+        final_value: 'Final Value'
+    };
+    document.getElementById('optSortLabel').textContent = sortLabel[data.sort_by] || data.sort_by;
+
+    // ─── Summary stats ───
+    var html = '';
+    html += statCard('Permutations Tested', data.total_permutations || 0, 0);
+    html += statCard('With Trades', data.total_with_trades || 0, 0);
+    html += statCard('Time Elapsed', (data.elapsed_seconds || 0) + 's', 0);
+    html += statCard('Signals Analyzed', data.total_signals || 0, 0);
+    if (top.length > 0) {
+        var best = top[0].summary;
+        html += statCard('Best Return', fmtPct(best.total_return_pct), best.total_return_pct);
+        html += statCard('Best Win Rate', best.win_rate + '%', best.win_rate - 50);
+        html += statCard('Best Sharpe', best.sharpe_ratio, best.sharpe_ratio);
+        html += statCard('Best Final Value', '$' + fmtCrypto(best.final_value), best.final_value - (data.initial_capital || 10000));
+    }
+    document.getElementById('optimalSummaryStats').innerHTML = html;
+
+    // ─── Winner card ───
+    if (top.length > 0) {
+        var w = top[0];
+        var ws = w.summary;
+        var wp = w.params;
+        var winnerHtml = '<div class="stat-grid" style="margin-top:1rem;">';
+        winnerHtml += '<div class="stat-card" style="border-color:var(--green)"><div class="label">Take Profit</div><div class="value">' + (wp.take_profit >= 999 ? 'None (Hold)' : wp.take_profit + '%') + '</div></div>';
+        winnerHtml += '<div class="stat-card" style="border-color:var(--green)"><div class="label">Stop Loss</div><div class="value">' + (wp.stop_loss >= 999 ? 'None' : wp.stop_loss + '%') + '</div></div>';
+        winnerHtml += '<div class="stat-card" style="border-color:var(--green)"><div class="label">Holding Period</div><div class="value">' + wp.max_hold_days + ' days</div></div>';
+        winnerHtml += '<div class="stat-card" style="border-color:var(--green)"><div class="label">Exchange Fee</div><div class="value">' + wp.exchange_fee + '%</div></div>';
+        winnerHtml += '<div class="stat-card" style="border-color:var(--green)"><div class="label">Strategy</div><div class="value">' + (wp.strategy || 'All') + '</div></div>';
+        winnerHtml += '</div>';
+        winnerHtml += '<div class="stat-grid" style="margin-top:0.5rem;">';
+        winnerHtml += statCard('Total Return', fmtPct(ws.total_return_pct), ws.total_return_pct);
+        winnerHtml += statCard('Win Rate', ws.win_rate + '%', ws.win_rate - 50);
+        winnerHtml += statCard('Final Value', '$' + fmtCrypto(ws.final_value), ws.final_value - (data.initial_capital || 10000));
+        winnerHtml += statCard('Trades', ws.total_trades, 0);
+        winnerHtml += statCard('Sharpe', ws.sharpe_ratio, ws.sharpe_ratio);
+        winnerHtml += statCard('Profit Factor', ws.profit_factor, ws.profit_factor - 1);
+        winnerHtml += statCard('Max Drawdown', fmtPct(-ws.max_drawdown_pct), -1);
+        winnerHtml += statCard('Total Fees', '$' + fmtCrypto(ws.total_fees || 0), -1);
+        winnerHtml += '</div>';
+
+        if (ws.best_trade) {
+            winnerHtml += '<p style="margin-top:1rem;font-size:0.85rem;color:var(--text-dim);">Best single trade: <strong style="color:var(--green);">' + ws.best_trade.pair + '</strong> ' + ws.best_trade.entry_date + ' → ' + ws.best_trade.exit_date + ' (' + fmtPct(ws.best_trade.return_pct) + ', ' + ws.best_trade.exit_reason + ')</p>';
+        }
+
+        document.getElementById('optimalWinnerContent').innerHTML = winnerHtml;
+        document.getElementById('optimalWinnerCard').style.display = 'block';
+    }
+
+    // ─── Top results chart ───
+    renderOptimalChart(top, data.sort_by);
+
+    // ─── Top results table ───
+    renderOptimalTable(top);
+
+    // ─── Worst results table ───
+    renderWorstTable(worst);
+}
+
+function renderOptimalChart(results, sortKey) {
+    var ctx = document.getElementById('optimalChart').getContext('2d');
+    if (optimalChartInstance) optimalChartInstance.destroy();
+
+    var labels = [], values = [], winRates = [], colors = [];
+    var max = Math.min(results.length, 20);
+    for (var i = 0; i < max; i++) {
+        var r = results[i];
+        var lbl = '#' + r.rank + ' ' + (r.params.take_profit >= 999 ? 'NoTP' : 'TP' + r.params.take_profit) + '/' + (r.params.stop_loss >= 999 ? 'NoSL' : 'SL' + r.params.stop_loss) + '/' + r.params.max_hold_days + 'd';
+        labels.push(lbl);
+        values.push(r.summary[sortKey] || 0);
+        winRates.push(r.summary.win_rate);
+        colors.push(r.summary.total_return_pct >= 0 ? 'rgba(34,197,94,0.7)' : 'rgba(239,68,68,0.7)');
+    }
+
+    optimalChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: sortKey.replace(/_/g, ' '), data: values, backgroundColor: colors, borderRadius: 6 },
+                { label: 'Win Rate %', data: winRates, backgroundColor: 'rgba(245,158,11,0.4)', borderRadius: 6 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: { legend: { labels: { color: '#8888aa' } } },
+            scales: {
+                x: { grid: { color: 'rgba(42,42,74,0.5)' }, ticks: { color: '#8888aa' } },
+                y: { grid: { display: false }, ticks: { color: '#8888aa', font: { size: 10 } } }
+            }
+        }
+    });
+}
+
+function renderOptimalTable(results) {
+    var tbody = document.getElementById('optimalTable').querySelector('tbody');
+    var html = '';
+    for (var i = 0; i < results.length; i++) {
+        var r = results[i];
+        var s = r.summary;
+        var p = r.params;
+        var cls = s.total_return_pct >= 0 ? 'positive' : 'negative';
+        var bestTrade = s.best_trade ? (s.best_trade.pair + ' ' + fmtPct(s.best_trade.return_pct)) : '—';
+        var isWinner = (i === 0);
+        var rowStyle = isWinner ? ' style="background:rgba(34,197,94,0.08);"' : '';
+        html += '<tr' + rowStyle + '>'
+             + '<td>' + (isWinner ? '<strong style="color:var(--green);">#' + r.rank + ' 🏆</strong>' : '#' + r.rank) + '</td>'
+             + '<td style="font-size:0.75rem;">' + (p.label || 'Custom') + '</td>'
+             + '<td>' + (p.take_profit >= 999 ? '—' : p.take_profit + '%') + '</td>'
+             + '<td>' + (p.stop_loss >= 999 ? '—' : p.stop_loss + '%') + '</td>'
+             + '<td>' + p.max_hold_days + 'd</td>'
+             + '<td>' + p.exchange_fee + '%</td>'
+             + '<td>' + (p.strategy || 'All') + '</td>'
+             + '<td>' + s.total_trades + '</td>'
+             + '<td>' + s.win_rate + '%</td>'
+             + '<td class="' + cls + '"><strong>' + fmtPct(s.total_return_pct) + '</strong></td>'
+             + '<td>$' + fmtCrypto(s.final_value) + '</td>'
+             + '<td class="negative">' + fmtPct(-s.max_drawdown_pct) + '</td>'
+             + '<td>' + s.sharpe_ratio + '</td>'
+             + '<td>' + s.profit_factor + '</td>'
+             + '<td>$' + fmtCrypto(s.total_fees || 0) + '</td>'
+             + '<td style="font-size:0.75rem;">' + bestTrade + '</td>'
+             + '</tr>';
+    }
+    tbody.innerHTML = html || '<tr><td colspan="16" style="text-align:center;">No results</td></tr>';
+}
+
+function renderWorstTable(results) {
+    var tbody = document.getElementById('worstTable').querySelector('tbody');
+    var html = '';
+    for (var i = 0; i < results.length; i++) {
+        var r = results[i];
+        var s = r.summary;
+        var p = r.params;
+        var worstTrade = s.worst_trade ? (s.worst_trade.pair + ' ' + fmtPct(s.worst_trade.return_pct)) : '—';
+        html += '<tr>'
+             + '<td>#' + r.rank + '</td>'
+             + '<td style="font-size:0.75rem;">' + (p.label || 'Custom') + '</td>'
+             + '<td>' + s.total_trades + '</td>'
+             + '<td>' + s.win_rate + '%</td>'
+             + '<td class="negative"><strong>' + fmtPct(s.total_return_pct) + '</strong></td>'
+             + '<td>$' + fmtCrypto(s.final_value) + '</td>'
+             + '<td class="negative">' + fmtPct(-s.max_drawdown_pct) + '</td>'
+             + '<td style="font-size:0.75rem;color:var(--red);">' + worstTrade + '</td>'
+             + '</tr>';
+    }
+    tbody.innerHTML = html || '<tr><td colspan="8" style="text-align:center;">No results</td></tr>';
+}
+
+var optSortDir = {};
+function sortOptTable(colIdx) {
+    var table = document.getElementById('optimalTable');
+    var tbody = table.querySelector('tbody');
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+    var dir = optSortDir[colIdx] === 'asc' ? 'desc' : 'asc';
+    optSortDir[colIdx] = dir;
+    rows.sort(function(a, b) {
+        var aVal = a.cells[colIdx].textContent.replace(/[$%+,#🏆KM]/g, '').trim();
+        var bVal = b.cells[colIdx].textContent.replace(/[$%+,#🏆KM]/g, '').trim();
+        var aNum = parseFloat(aVal);
+        var bNum = parseFloat(bVal);
+        if (!isNaN(aNum) && !isNaN(bNum)) return dir === 'asc' ? aNum - bNum : bNum - aNum;
+        return dir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
+    for (var i = 0; i < rows.length; i++) tbody.appendChild(rows[i]);
+}
+
+// Populate optimal strategy filter dropdown with loaded strategies
+function populateOptStrategyFilter() {
+    var sel = document.getElementById('optStrategyFilter');
+    if (!sel || !allStrategies) return;
+    // Keep existing "All Strategies" option, add rest
+    for (var i = 0; i < allStrategies.length; i++) {
+        var s = allStrategies[i];
+        var opt = document.createElement('option');
+        opt.value = s.name;
+        opt.textContent = s.name + ' (' + (s.signal_count || 0) + ' signals)';
+        sel.appendChild(opt);
+    }
+}
+</script>
+</body>
+</html>

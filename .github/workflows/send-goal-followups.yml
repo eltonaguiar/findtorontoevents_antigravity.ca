@@ -1,0 +1,68 @@
+name: Send Morning Goal Follow-Ups
+
+on:
+  schedule:
+    # Run at 14:00 UTC = 9:00 AM EST / 10:00 AM EDT
+    # The PHP endpoint has its own 8-10 AM EST window check as a safety net
+    - cron: '0 14 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (preview only, no DMs sent)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+jobs:
+  send-followups:
+    runs-on: ubuntu-latest
+    env:
+      EVENT_NOTIFY_API_KEY: ${{ secrets.EVENT_NOTIFY_API_KEY }}
+
+    steps:
+    - name: Send Morning Goal Follow-Up DMs
+      run: |
+        DRY_RUN="${{ github.event.inputs.dry_run || 'false' }}"
+        URL="https://findtorontoevents.ca/fc/api/accountability/goal_followup.php"
+
+        if [ "$DRY_RUN" = "true" ]; then
+          URL="${URL}?dry_run=1"
+          echo "🔍 Dry run mode — no DMs will be sent"
+        fi
+
+        echo "☀️ Sending morning goal follow-ups..."
+        response=$(curl -s -w "\n%{http_code}" \
+          -X POST \
+          -H "X-API-Key: $EVENT_NOTIFY_API_KEY" \
+          "$URL")
+
+        http_code=$(echo "$response" | tail -n1)
+        body=$(echo "$response" | sed '$d')
+
+        echo "HTTP Status: $http_code"
+        echo "Response: $body"
+
+        if [ "$http_code" != "200" ]; then
+          echo "::error::Failed to send follow-ups (HTTP $http_code)"
+          exit 1
+        fi
+
+        echo "$body" | python3 -c "
+        import sys, json
+        data = json.load(sys.stdin)
+        print(f\"DMs sent: {data.get('sent', 0)}\")
+        print(f\"Skipped (already sent today / no tasks): {data.get('skipped', 0)}\")
+        print(f\"Date: {data.get('date', '?')}\")
+        print(f\"EST hour: {data.get('hour_est', '?')}\")
+        if data.get('dry_run'):
+            previews = data.get('previews', [])
+            print(f\"Preview count: {len(previews)}\")
+            for p in previews[:10]:
+                print(f\"  → {p.get('discord_id')}: {p.get('tasks')} tasks, top streak: {p.get('top_streak')}\")
+        if data.get('errors'):
+            for e in data['errors']:
+                print(f\"Error: {e}\")
+        "

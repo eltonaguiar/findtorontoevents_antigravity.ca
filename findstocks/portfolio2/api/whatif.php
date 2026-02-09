@@ -1,0 +1,557 @@
+<?php
+/**
+ * What-If Analysis Engine v2
+ * Enhanced with multi-scenario comparison, per-algorithm analysis,
+ * and natural language query mapping.
+ * PHP 5.2 compatible.
+ *
+ * Parameters:
+ *   scenario       — preset scenario key
+ *   algorithms     — comma-separated algorithm names
+ *   take_profit    — TP %
+ *   stop_loss      — SL %
+ *   max_hold_days  — max hold
+ *   initial_capital— starting capital
+ *   commission     — per-trade commission $
+ *   slippage       — slippage %
+ *   compare        — 1 = run all presets for comparison
+ *   compare_algos  — 1 = compare algorithms under same scenario
+ *   query          — natural language query text
+ */
+require_once dirname(__FILE__) . '/db_connect.php';
+
+function _wi_param($key, $default) {
+    if (isset($_POST[$key]) && $_POST[$key] !== '') return $_POST[$key];
+    if (isset($_GET[$key]) && $_GET[$key] !== '') return $_GET[$key];
+    return $default;
+}
+
+$scenario        = _wi_param('scenario', '');
+$query_text      = _wi_param('query', '');
+$algorithms      = _wi_param('algorithms', '');
+$take_profit     = (float)_wi_param('take_profit', 10);
+$stop_loss       = (float)_wi_param('stop_loss', 5);
+$max_hold_days   = (int)_wi_param('max_hold_days', 7);
+$initial_capital = (float)_wi_param('initial_capital', 10000);
+$commission      = (float)_wi_param('commission', 10);
+$slippage        = (float)_wi_param('slippage', 0.5);
+$compare_mode    = (int)_wi_param('compare', 0);
+$compare_algos   = (int)_wi_param('compare_algos', 0);
+
+// ─── Preset Scenarios ───
+$scenarios = array(
+    'daytrader_eod' => array('name' => 'Day Trader (EOD Exit)', 'description' => 'Buy at open, sell at close same day.', 'take_profit' => 5, 'stop_loss' => 3, 'max_hold' => 1),
+    'daytrader_2day' => array('name' => 'Day Trader (2-Day Max)', 'description' => 'Buy in morning, sell within 2 days.', 'take_profit' => 10, 'stop_loss' => 5, 'max_hold' => 2),
+    'weekly_10' => array('name' => 'Weekly Hold (10% Target)', 'description' => 'Hold up to 7 days, 10% profit target.', 'take_profit' => 10, 'stop_loss' => 5, 'max_hold' => 7),
+    'weekly_20' => array('name' => 'Weekly Hold (20% Target)', 'description' => 'Hold up to 7 days, 20% profit target.', 'take_profit' => 20, 'stop_loss' => 8, 'max_hold' => 7),
+    'swing_conservative' => array('name' => 'Conservative Swing', 'description' => 'Hold 2-4 weeks, tight stops.', 'take_profit' => 10, 'stop_loss' => 5, 'max_hold' => 20),
+    'swing_aggressive' => array('name' => 'Aggressive Swing', 'description' => 'Hold 2-4 weeks, wide stops.', 'take_profit' => 30, 'stop_loss' => 15, 'max_hold' => 20),
+    'buy_hold_3m' => array('name' => 'Buy & Hold (3 Months)', 'description' => 'No TP/SL, hold 60 trading days.', 'take_profit' => 999, 'stop_loss' => 999, 'max_hold' => 60),
+    'buy_hold_6m' => array('name' => 'Buy & Hold (6 Months)', 'description' => 'No TP/SL, hold 126 trading days.', 'take_profit' => 999, 'stop_loss' => 999, 'max_hold' => 126),
+    'tight_scalp' => array('name' => 'Tight Scalp', 'description' => 'Quick 3% target, 2% stop, 1 day.', 'take_profit' => 3, 'stop_loss' => 2, 'max_hold' => 1),
+    'momentum_ride' => array('name' => 'Momentum Ride', 'description' => 'Let winners run. 50% target, 30 days.', 'take_profit' => 50, 'stop_loss' => 10, 'max_hold' => 30),
+    // Questrade commission-free scenarios
+    'questrade_cdr_weekly' => array('name' => 'Questrade CDR Weekly', 'description' => 'CDR stocks, $0 commission, 7-day hold.', 'take_profit' => 10, 'stop_loss' => 5, 'max_hold' => 7),
+    'questrade_cdr_momentum' => array('name' => 'Questrade CDR Momentum', 'description' => 'CDR stocks, $0 commission, ride momentum 30d.', 'take_profit' => 50, 'stop_loss' => 10, 'max_hold' => 30),
+    'questrade_us_swing' => array('name' => 'Questrade US (1.5% FX)', 'description' => 'US stocks, $0 commission but 1.5% FX fee.', 'take_profit' => 10, 'stop_loss' => 5, 'max_hold' => 7),
+    // Blue chip / guaranteed growth
+    'blue_chip_hold' => array('name' => 'Blue Chip Hold (1 Year)', 'description' => 'MCD/JNJ/WMT-style compounders, hold 1 year.', 'take_profit' => 999, 'stop_loss' => 999, 'max_hold' => 252),
+    'blue_chip_quarter' => array('name' => 'Blue Chip Quarterly', 'description' => 'Blue chips, 15% target, quarterly rebalance.', 'take_profit' => 15, 'stop_loss' => 8, 'max_hold' => 63),
+    // Claude Genius scenarios
+    'claude_genius_standard' => array('name' => 'Claude Genius (Standard)', 'description' => 'AI meta-algo: 20% target, 5% stop, 14-day hold. $0 commission.', 'take_profit' => 20, 'stop_loss' => 5, 'max_hold' => 14),
+    'claude_genius_aggressive' => array('name' => 'Claude Genius (Aggressive)', 'description' => 'Aggressive AI: 30% target, 8% stop, 7 days.', 'take_profit' => 30, 'stop_loss' => 8, 'max_hold' => 7),
+    'claude_genius_patient' => array('name' => 'Claude Genius (Patient)', 'description' => 'Patient AI: 50% target, 10% stop, 30 days.', 'take_profit' => 50, 'stop_loss' => 10, 'max_hold' => 30),
+    // ETF / Sector scenarios
+    'etf_buy_hold' => array('name' => 'ETF Buy & Hold (1Y)', 'description' => 'Index ETFs, no TP/SL, hold 1 year.', 'take_profit' => 999, 'stop_loss' => 999, 'max_hold' => 252),
+    'sector_rotation_monthly' => array('name' => 'Sector Rotation Monthly', 'description' => 'Rotate sectors monthly, 15% target.', 'take_profit' => 15, 'stop_loss' => 8, 'max_hold' => 30),
+    // ─── GOD-MODE SCENARIOS ───
+    'god_mode_standard' => array('name' => 'God-Mode Standard', 'description' => 'Meta-learner ensemble. 25% target, 8% stop, 3-week hold. $0 commission.', 'take_profit' => 25, 'stop_loss' => 8, 'max_hold' => 21),
+    'god_mode_aggressive' => array('name' => 'God-Mode Aggressive', 'description' => 'Full alpha: 40% target, 12% stop, 30-day ride.', 'take_profit' => 40, 'stop_loss' => 12, 'max_hold' => 30),
+    'god_mode_conservative' => array('name' => 'God-Mode Conservative', 'description' => 'Quality+safety: 15% target, 5% stop, 2-week hold.', 'take_profit' => 15, 'stop_loss' => 5, 'max_hold' => 14),
+    'earnings_drift_6w' => array('name' => 'Earnings Drift (6 Week)', 'description' => 'PEAD play: buy after beats, hold 42 trading days for drift.', 'take_profit' => 25, 'stop_loss' => 10, 'max_hold' => 42),
+    'safe_bet_annual' => array('name' => 'Safe Bet (Annual Hold)', 'description' => 'Dividend Aristocrats + Quality compounders. No TP/SL, hold 1 year.', 'take_profit' => 999, 'stop_loss' => 999, 'max_hold' => 252),
+    'safe_bet_quarterly' => array('name' => 'Safe Bet (Quarterly)', 'description' => 'Quality compounders with quarterly rebalance. 15% target.', 'take_profit' => 15, 'stop_loss' => 8, 'max_hold' => 63),
+    'flow_momentum' => array('name' => 'Smart Money Flow', 'description' => 'Follow insider + dark pool signals. 20% target, 2-week hold.', 'take_profit' => 20, 'stop_loss' => 8, 'max_hold' => 14),
+    'factor_rank_monthly' => array('name' => 'Factor Rank Monthly', 'description' => 'Cross-sectional top-K factor rank. Monthly rebalance.', 'take_profit' => 15, 'stop_loss' => 8, 'max_hold' => 30),
+    'mean_reversion_3d' => array('name' => 'Mean Reversion (3-Day)', 'description' => 'Oversold bounce: 8% target, 3% stop, 3-day max.', 'take_profit' => 8, 'stop_loss' => 3, 'max_hold' => 3),
+    'regime_adaptive_swing' => array('name' => 'Regime-Adaptive Swing', 'description' => 'Regime-aware: switches strategy by market condition. 20% target.', 'take_profit' => 20, 'stop_loss' => 8, 'max_hold' => 21),
+    'kelly_optimal' => array('name' => 'Kelly Criterion Optimal', 'description' => 'Mathematically optimal position sizing. 20% target, 8% stop.', 'take_profit' => 20, 'stop_loss' => 8, 'max_hold' => 21),
+    'all_weather' => array('name' => 'All-Weather Portfolio', 'description' => 'Long quality + short failures. Absolute return in any regime.', 'take_profit' => 15, 'stop_loss' => 10, 'max_hold' => 30),
+    // Alpha Forge Scenarios
+    'alpha_forge_standard' => array('name' => 'Alpha Forge Standard', 'description' => 'Ultimate multi-factor ensemble. 25% target, 8% stop, monthly hold.', 'take_profit' => 25, 'stop_loss' => 8, 'max_hold' => 30),
+    'alpha_forge_aggressive' => array('name' => 'Alpha Forge Aggressive', 'description' => 'Full alpha generation. 40% target, 12% stop.', 'take_profit' => 40, 'stop_loss' => 12, 'max_hold' => 30),
+    'human_capital_hold' => array('name' => 'Human Capital (6 Month)', 'description' => 'Employee satisfaction alpha. Hold 6 months.', 'take_profit' => 25, 'stop_loss' => 10, 'max_hold' => 126),
+    'esg_quality_annual' => array('name' => 'ESG + Quality (Annual)', 'description' => 'ESG momentum + quality compounders, 1 year hold.', 'take_profit' => 999, 'stop_loss' => 999, 'max_hold' => 252),
+    'supply_chain_swing' => array('name' => 'Supply Chain Swing', 'description' => 'BDI-driven cyclical trades. Monthly rebalance.', 'take_profit' => 20, 'stop_loss' => 8, 'max_hold' => 30),
+    'deep_flow_weekly' => array('name' => 'Deep Flow (Weekly)', 'description' => 'Dark pool + congressional + squeeze signals. 2-week hold.', 'take_profit' => 20, 'stop_loss' => 8, 'max_hold' => 14),
+    'innovation_growth_6m' => array('name' => 'Innovation Growth (6M)', 'description' => 'Patent surge + network effects. Long-term growth plays.', 'take_profit' => 30, 'stop_loss' => 12, 'max_hold' => 126),
+    'three_sleeve_balanced' => array('name' => 'Three-Sleeve Balanced', 'description' => 'Momentum 40% + Quality 40% + Event 20%. Dynamic regime allocation.', 'take_profit' => 20, 'stop_loss' => 8, 'max_hold' => 30),
+    // Research-Backed Academic Scenarios
+    'gross_profitability' => array('name' => 'Gross Profitability (GP/A)', 'description' => 'Novy-Marx: buy high GP/A stocks, hold quarterly. Sharpe 0.7-1.0.', 'take_profit' => 20, 'stop_loss' => 8, 'max_hold' => 60),
+    'piotroski_fscore' => array('name' => 'Piotroski F-Score', 'description' => '9-criteria quality scoring. Buy F>=7, avoid F<=3. 6-month hold.', 'take_profit' => 25, 'stop_loss' => 10, 'max_hold' => 126),
+    'bab_low_beta' => array('name' => 'Betting Against Beta', 'description' => 'Long low-beta, leverage-adjusted. Quarterly rebalance.', 'take_profit' => 15, 'stop_loss' => 8, 'max_hold' => 60),
+    'qmj_quality' => array('name' => 'Quality Minus Junk', 'description' => 'AQR QMJ factor: long quality, short junk. Quarterly.', 'take_profit' => 20, 'stop_loss' => 8, 'max_hold' => 60),
+    'shareholder_yield' => array('name' => 'Shareholder Yield', 'description' => 'Dividend + buyback + debt paydown. Annual hold.', 'take_profit' => 999, 'stop_loss' => 999, 'max_hold' => 252),
+    'factor_momentum' => array('name' => 'Factor Momentum', 'description' => 'Momentum on factors themselves. Monthly rebalance.', 'take_profit' => 15, 'stop_loss' => 8, 'max_hold' => 30),
+    'ts_momentum' => array('name' => 'Time-Series Momentum', 'description' => 'Trend-following: long if 12-month return positive. Monthly.', 'take_profit' => 20, 'stop_loss' => 10, 'max_hold' => 30),
+    'st_reversal' => array('name' => 'Short-Term Reversal', 'description' => 'Oversold bounce: 1-5 day reversal plays. Quick exit.', 'take_profit' => 5, 'stop_loss' => 2, 'max_hold' => 5),
+    'lt_reversal' => array('name' => 'Long-Term Reversal', 'description' => 'DeBondt-Thaler: 3-5yr losers outperform over 1+ year.', 'take_profit' => 999, 'stop_loss' => 999, 'max_hold' => 252),
+    'halloween_seasonal' => array('name' => 'Halloween (Nov-Apr)', 'description' => 'Sell in May: only hold stocks from November through April.', 'take_profit' => 20, 'stop_loss' => 10, 'max_hold' => 126),
+    'merger_arb' => array('name' => 'Merger Arbitrage', 'description' => 'Buy target post-announcement, capture spread to offer price.', 'take_profit' => 8, 'stop_loss' => 5, 'max_hold' => 60),
+    'spinoff_alpha' => array('name' => 'Spin-Off Alpha', 'description' => 'Buy spin-offs, hold 1 year. Greenblatt 10%+ outperformance.', 'take_profit' => 30, 'stop_loss' => 12, 'max_hold' => 252),
+    'risk_parity' => array('name' => 'Risk Parity', 'description' => 'Equal risk allocation across assets. Quarterly rebalance.', 'take_profit' => 999, 'stop_loss' => 999, 'max_hold' => 60),
+    'trend_cta' => array('name' => 'CTA Trend Following', 'description' => '10-month SMA crossover. Crisis alpha + positive convexity.', 'take_profit' => 20, 'stop_loss' => 10, 'max_hold' => 30),
+    'vol_risk_premium' => array('name' => 'Volatility Risk Premium', 'description' => 'Sell implied vs realized vol. Consistent 5-8% annual premium.', 'take_profit' => 10, 'stop_loss' => 8, 'max_hold' => 30),
+    'factor_zoo_full' => array('name' => 'Factor Zoo Full', 'description' => 'All academic factors combined. Maximum factor diversification.', 'take_profit' => 20, 'stop_loss' => 8, 'max_hold' => 30),
+    'academic_allstar' => array('name' => 'Academic All-Star', 'description' => 'Best of 50 years of research: GP/A + BAB + Piotroski + momentum.', 'take_profit' => 25, 'stop_loss' => 8, 'max_hold' => 30),
+    // No-Bed-Time Scenarios
+    'nobed_standard' => array('name' => 'No-Bed-Time Standard', 'description' => 'Dual consensus: only when proven top 2 algorithms agree. High conviction entries.', 'take_profit' => 20, 'stop_loss' => 5, 'max_hold' => 14),
+    'nobed_full_suite' => array('name' => 'No-Bed-Time Full Suite', 'description' => 'All 5 NoBedTime variants combined. Meta-ensemble with regime awareness.', 'take_profit' => 25, 'stop_loss' => 8, 'max_hold' => 14),
+    'nobed_overnight' => array('name' => 'No-Bed-Time Overnight', 'description' => 'Overnight premium capture. Enter at close, exit at open. 1-day max.', 'take_profit' => 5, 'stop_loss' => 3, 'max_hold' => 1),
+    'nobed_contrarian' => array('name' => 'No-Bed-Time Contrarian', 'description' => '3-8% single-day dip bounce on quality names. Mean reversion with quality floor.', 'take_profit' => 10, 'stop_loss' => 5, 'max_hold' => 5)
+);
+
+// ─── Inline backtest engine ───
+function run_backtest_v2($conn, $algo_filter, $tp, $sl, $mhd, $cap, $comm, $slip, $pos_pct) {
+    $where_algo = '';
+    if ($algo_filter !== '') {
+        $algo_list = explode(',', $algo_filter);
+        $escaped = array();
+        foreach ($algo_list as $a) {
+            $a = trim($a);
+            if ($a !== '') $escaped[] = "'" . $conn->real_escape_string($a) . "'";
+        }
+        if (count($escaped) > 0) {
+            $where_algo = " AND sp.algorithm_name IN (" . implode(',', $escaped) . ")";
+        }
+    }
+
+    $sql = "SELECT sp.*, s.company_name
+            FROM stock_picks sp LEFT JOIN stocks s ON sp.ticker = s.ticker
+            WHERE sp.entry_price > 0 $where_algo
+            ORDER BY sp.pick_date ASC, sp.ticker ASC";
+    $picks_res = $conn->query($sql);
+
+    $result = array(
+        'total_trades' => 0, 'winning_trades' => 0, 'losing_trades' => 0,
+        'win_rate' => 0, 'total_return_pct' => 0, 'final_value' => $cap,
+        'max_drawdown_pct' => 0, 'total_commissions' => 0, 'sharpe_ratio' => 0,
+        'sortino_ratio' => 0, 'profit_factor' => 0, 'expectancy' => 0,
+        'avg_hold_days' => 0, 'best_trade_pct' => 0, 'worst_trade_pct' => 0,
+        'avg_win_pct' => 0, 'avg_loss_pct' => 0,
+        'commission_drag_pct' => 0, 'trades' => array(),
+        'algo_breakdown' => array(), 'exit_reasons' => array()
+    );
+
+    if (!$picks_res || $picks_res->num_rows === 0) return $result;
+
+    $capital = $cap;
+    $peak = $cap;
+    $max_dd = 0;
+    $t_trades = 0;
+    $wins = 0;
+    $losses = 0;
+    $t_comm = 0;
+    $tw_pct = 0;
+    $tl_pct = 0;
+    $g_wins = 0;
+    $g_losses = 0;
+    $best = -9999;
+    $worst = 9999;
+    $t_hold = 0;
+    $trades = array();
+    $returns = array();
+    $algo_s = array();
+    $exit_r = array();
+
+    while ($pick = $picks_res->fetch_assoc()) {
+        $ticker = $pick['ticker'];
+        $entry = (float)$pick['entry_price'];
+        $pdate = $pick['pick_date'];
+        $algo = $pick['algorithm_name'];
+        $company = isset($pick['company_name']) ? $pick['company_name'] : '';
+
+        $eff_entry = $entry * (1 + $slip / 100);
+        $pos_val = $capital * ($pos_pct / 100);
+        if ($pos_val < $eff_entry + $comm) continue;
+        $shares = (int)floor(($pos_val - $comm) / $eff_entry);
+        if ($shares <= 0) continue;
+
+        $safe_t = $conn->real_escape_string($ticker);
+        $safe_d = $conn->real_escape_string($pdate);
+        $pr_sql = "SELECT trade_date, high_price, low_price, close_price FROM daily_prices
+                   WHERE ticker='$safe_t' AND trade_date >= '$safe_d'
+                   ORDER BY trade_date ASC LIMIT " . ($mhd + 5);
+        $pr_res = $conn->query($pr_sql);
+
+        $dc = 0;
+        $sold = false;
+        $exit_p = $entry;
+        $exit_d = $pdate;
+        $ex_r = 'end_of_data';
+        $dclose = 0;
+
+        if ($pr_res && $pr_res->num_rows > 0) {
+            while ($day = $pr_res->fetch_assoc()) {
+                $dc++;
+                $dh = (float)$day['high_price'];
+                $dl = (float)$day['low_price'];
+                $dclose = (float)$day['close_price'];
+                $dd = $day['trade_date'];
+
+                $tp_p = $eff_entry * (1 + $tp / 100);
+                $sl_p = $eff_entry * (1 - $sl / 100);
+
+                if ($dl <= $sl_p && $sl < 999) { $exit_p = $sl_p; $exit_d = $dd; $ex_r = 'stop_loss'; $sold = true; break; }
+                if ($dh >= $tp_p && $tp < 999) { $exit_p = $tp_p; $exit_d = $dd; $ex_r = 'take_profit'; $sold = true; break; }
+                if ($dc >= $mhd) { $exit_p = $dclose; $exit_d = $dd; $ex_r = 'max_hold'; $sold = true; break; }
+            }
+            if (!$sold && $dc > 0 && $dclose > 0) { $exit_p = $dclose; }
+        }
+
+        $eff_exit = $exit_p * (1 - $slip / 100);
+        $gpnl = ($eff_exit - $eff_entry) * $shares;
+        $ct = $comm * 2;
+        $npnl = $gpnl - $ct;
+        $rpct = ($eff_entry * $shares > 0) ? ($npnl / ($eff_entry * $shares)) * 100 : 0;
+
+        $trades[] = array(
+            'ticker' => $ticker, 'company' => $company, 'algorithm' => $algo,
+            'entry_date' => $pdate, 'entry_price' => round($eff_entry, 4),
+            'exit_date' => $exit_d, 'exit_price' => round($eff_exit, 4),
+            'shares' => $shares, 'net_profit' => round($npnl, 2),
+            'return_pct' => round($rpct, 4), 'exit_reason' => $ex_r, 'hold_days' => $dc
+        );
+
+        $t_trades++;
+        $t_comm += $ct;
+        $capital += $npnl;
+        $returns[] = $rpct;
+        $t_hold += $dc;
+
+        if ($rpct > $best) $best = $rpct;
+        if ($rpct < $worst) $worst = $rpct;
+
+        if ($npnl > 0) { $wins++; $tw_pct += $rpct; $g_wins += $npnl; }
+        else { $losses++; $tl_pct += abs($rpct); $g_losses += abs($npnl); }
+
+        if ($capital > $peak) $peak = $capital;
+        $dd_val = ($peak > 0) ? (($peak - $capital) / $peak) * 100 : 0;
+        if ($dd_val > $max_dd) $max_dd = $dd_val;
+
+        // Per-algo stats
+        if (!isset($algo_s[$algo])) $algo_s[$algo] = array('t' => 0, 'w' => 0, 'l' => 0, 'r' => 0, 'pnl' => 0);
+        $algo_s[$algo]['t']++;
+        $algo_s[$algo]['r'] += $rpct;
+        $algo_s[$algo]['pnl'] += $npnl;
+        if ($npnl > 0) $algo_s[$algo]['w']++;
+        else $algo_s[$algo]['l']++;
+
+        if (!isset($exit_r[$ex_r])) $exit_r[$ex_r] = 0;
+        $exit_r[$ex_r]++;
+    }
+
+    // Metrics
+    $wr = ($t_trades > 0) ? round($wins / $t_trades * 100, 2) : 0;
+    $aw = ($wins > 0) ? round($tw_pct / $wins, 4) : 0;
+    $al = ($losses > 0) ? round($tl_pct / $losses, 4) : 0;
+    $pf = ($g_losses > 0) ? round($g_wins / $g_losses, 4) : ($g_wins > 0 ? 999 : 0);
+    $lr = ($t_trades > 0) ? $losses / $t_trades : 0;
+    $wrd = ($t_trades > 0) ? $wins / $t_trades : 0;
+    $exp = round(($wrd * $aw) - ($lr * $al), 4);
+    $ah = ($t_trades > 0) ? round($t_hold / $t_trades, 2) : 0;
+    $cdrag = ($cap > 0) ? round($t_comm / $cap * 100, 4) : 0;
+
+    $sharpe = 0;
+    $sortino_v = 0;
+    if (count($returns) > 1) {
+        $mean = array_sum($returns) / count($returns);
+        $var = 0;
+        $dvar = 0;
+        $dcnt = 0;
+        foreach ($returns as $r) {
+            $var += ($r - $mean) * ($r - $mean);
+            if ($r < 0) { $dvar += $r * $r; $dcnt++; }
+        }
+        $std = sqrt($var / count($returns));
+        if ($std > 0) $sharpe = round($mean / $std, 4);
+        if ($dcnt > 0) {
+            $dstd = sqrt($dvar / $dcnt);
+            if ($dstd > 0) $sortino_v = round($mean / $dstd, 4);
+        }
+    }
+
+    $total_ret = ($cap > 0) ? round(($capital - $cap) / $cap * 100, 4) : 0;
+
+    // Algo breakdown
+    $ab = array();
+    foreach ($algo_s as $aname => $as) {
+        $ab[] = array(
+            'algorithm' => $aname,
+            'trades' => $as['t'], 'wins' => $as['w'], 'losses' => $as['l'],
+            'win_rate' => ($as['t'] > 0) ? round($as['w'] / $as['t'] * 100, 2) : 0,
+            'avg_return_pct' => ($as['t'] > 0) ? round($as['r'] / $as['t'], 4) : 0,
+            'total_pnl' => round($as['pnl'], 2)
+        );
+    }
+
+    // ─── Advanced Metrics ───
+    // Calmar
+    $calmar = 0;
+    $ann_ret = 0;
+    if (count($trades) >= 2) {
+        $fd = strtotime($trades[0]['entry_date']);
+        $ld = strtotime($trades[count($trades) - 1]['exit_date']);
+        $dd_days = ($ld - $fd) / 86400;
+        if ($dd_days > 30 && $capital > 0 && $cap > 0) {
+            $yrs = $dd_days / 365.25;
+            if ($yrs > 0) $ann_ret = round((pow($capital / $cap, 1 / $yrs) - 1) * 100, 4);
+        }
+    }
+    if ($max_dd > 0 && $ann_ret != 0) $calmar = round($ann_ret / $max_dd, 4);
+
+    // Recovery Factor
+    $recov = 0;
+    if ($max_dd > 0) {
+        $recov = round(abs($total_ret) / $max_dd, 4);
+        if ($total_ret < 0) $recov = -$recov;
+    }
+
+    // Kelly Criterion
+    $kelly = 0;
+    if ($al > 0 && $wins > 0) {
+        $wl_ratio = $aw / $al;
+        $kelly = round(($wrd - ((1 - $wrd) / $wl_ratio)) * 100, 4);
+        if ($kelly < 0) $kelly = 0;
+    }
+
+    // Payoff Ratio
+    $payoff = ($al > 0) ? round($aw / $al, 4) : 0;
+
+    // Consecutive streaks
+    $mc_w = 0; $mc_l = 0; $cc_w = 0; $cc_l = 0;
+    foreach ($trades as $t2) {
+        if ($t2['net_profit'] > 0) { $cc_w++; $cc_l = 0; if ($cc_w > $mc_w) $mc_w = $cc_w; }
+        else { $cc_l++; $cc_w = 0; if ($cc_l > $mc_l) $mc_l = $cc_l; }
+    }
+
+    // Tail risk
+    $v95 = 0;
+    if (count($returns) >= 10) {
+        $sr = $returns;
+        sort($sr);
+        $i5 = (int)floor(count($sr) * 0.05);
+        if ($i5 < count($sr)) $v95 = round($sr[$i5], 4);
+    }
+
+    return array(
+        'total_trades' => $t_trades, 'winning_trades' => $wins, 'losing_trades' => $losses,
+        'win_rate' => $wr, 'avg_win_pct' => $aw, 'avg_loss_pct' => $al,
+        'total_return_pct' => $total_ret, 'final_value' => round($capital, 2),
+        'annualized_return_pct' => $ann_ret,
+        'max_drawdown_pct' => round($max_dd, 4), 'total_commissions' => round($t_comm, 2),
+        'sharpe_ratio' => $sharpe, 'sortino_ratio' => $sortino_v,
+        'profit_factor' => $pf, 'expectancy' => $exp,
+        'avg_hold_days' => $ah, 'best_trade_pct' => ($t_trades > 0) ? round($best, 4) : 0,
+        'worst_trade_pct' => ($t_trades > 0) ? round($worst, 4) : 0,
+        'commission_drag_pct' => $cdrag,
+        'calmar_ratio' => $calmar, 'recovery_factor' => $recov,
+        'kelly_criterion_pct' => $kelly, 'payoff_ratio' => $payoff,
+        'var_95' => $v95,
+        'max_consecutive_wins' => $mc_w, 'max_consecutive_losses' => $mc_l,
+        'trades' => $trades, 'algo_breakdown' => $ab, 'exit_reasons' => $exit_r
+    );
+}
+
+// ─── Compare All Scenarios Mode ───
+if ($compare_mode === 1) {
+    $comparison = array();
+    foreach ($scenarios as $key => $sc) {
+        // Questrade CDR = $0 commission, low slippage; Questrade US = $0 comm, 1.5% FX as slippage
+        $sc_comm = $commission;
+        $sc_slip = $slippage;
+        if (strpos($key, 'questrade_cdr') === 0) { $sc_comm = 0; $sc_slip = 0.1; }
+        if (strpos($key, 'questrade_us') === 0) { $sc_comm = 0; $sc_slip = 1.5; }
+        if (strpos($key, 'blue_chip') === 0) { $sc_comm = 0; $sc_slip = 0.1; }
+        if (strpos($key, 'claude_genius') === 0) { $sc_comm = 0; $sc_slip = 0.1; }
+        if (strpos($key, 'etf_') === 0 || strpos($key, 'sector_') === 0) { $sc_comm = 0; $sc_slip = 0.1; }
+        if (strpos($key, 'god_mode') === 0 || strpos($key, 'earnings_drift') === 0 || strpos($key, 'safe_bet') === 0) { $sc_comm = 0; $sc_slip = 0.1; }
+        if (strpos($key, 'flow_') === 0 || strpos($key, 'factor_rank') === 0 || strpos($key, 'mean_reversion') === 0) { $sc_comm = 0; $sc_slip = 0.1; }
+        if (strpos($key, 'regime_') === 0 || strpos($key, 'kelly_') === 0 || strpos($key, 'all_weather') === 0) { $sc_comm = 0; $sc_slip = 0.1; }
+        if (strpos($key, 'alpha_forge') === 0 || strpos($key, 'human_capital') === 0 || strpos($key, 'esg_') === 0) { $sc_comm = 0; $sc_slip = 0.1; }
+        if (strpos($key, 'supply_chain') === 0 || strpos($key, 'deep_flow') === 0 || strpos($key, 'innovation_') === 0) { $sc_comm = 0; $sc_slip = 0.1; }
+        if (strpos($key, 'three_sleeve') === 0) { $sc_comm = 0; $sc_slip = 0.1; }
+        // Research-backed academic scenarios
+        if (strpos($key, 'gross_profit') === 0 || strpos($key, 'piotroski') === 0 || strpos($key, 'bab_') === 0) { $sc_comm = 0; $sc_slip = 0.1; }
+        if (strpos($key, 'qmj_') === 0 || strpos($key, 'shareholder_') === 0 || strpos($key, 'factor_m') === 0) { $sc_comm = 0; $sc_slip = 0.1; }
+        if (strpos($key, 'ts_momentum') === 0 || strpos($key, 'st_reversal') === 0 || strpos($key, 'lt_reversal') === 0) { $sc_comm = 0; $sc_slip = 0.1; }
+        if (strpos($key, 'halloween') === 0 || strpos($key, 'merger_') === 0 || strpos($key, 'spinoff') === 0) { $sc_comm = 0; $sc_slip = 0.1; }
+        if (strpos($key, 'risk_parity') === 0 || strpos($key, 'trend_cta') === 0 || strpos($key, 'vol_risk') === 0) { $sc_comm = 0; $sc_slip = 0.1; }
+        if (strpos($key, 'factor_zoo') === 0 || strpos($key, 'academic_') === 0) { $sc_comm = 0; $sc_slip = 0.1; }
+        if (strpos($key, 'nobed_') === 0) { $sc_comm = 0; $sc_slip = 0.1; }
+        $r = run_backtest_v2($conn, $algorithms, $sc['take_profit'], $sc['stop_loss'], $sc['max_hold'], $initial_capital, $sc_comm, $sc_slip, 10);
+        $comparison[] = array(
+            'scenario_key' => $key,
+            'name' => $sc['name'],
+            'description' => $sc['description'],
+            'params' => array('take_profit' => $sc['take_profit'], 'stop_loss' => $sc['stop_loss'], 'max_hold_days' => $sc['max_hold']),
+            'summary' => array(
+                'total_trades' => $r['total_trades'], 'win_rate' => $r['win_rate'],
+                'total_return_pct' => $r['total_return_pct'], 'final_value' => $r['final_value'],
+                'annualized_return_pct' => $r['annualized_return_pct'],
+                'max_drawdown_pct' => $r['max_drawdown_pct'], 'total_commissions' => $r['total_commissions'],
+                'sharpe_ratio' => $r['sharpe_ratio'], 'sortino_ratio' => $r['sortino_ratio'],
+                'profit_factor' => $r['profit_factor'], 'expectancy' => $r['expectancy'],
+                'avg_hold_days' => $r['avg_hold_days'],
+                'commission_drag_pct' => $r['commission_drag_pct'],
+                'best_trade_pct' => $r['best_trade_pct'], 'worst_trade_pct' => $r['worst_trade_pct'],
+                'calmar_ratio' => $r['calmar_ratio'], 'recovery_factor' => $r['recovery_factor'],
+                'kelly_criterion_pct' => $r['kelly_criterion_pct'], 'payoff_ratio' => $r['payoff_ratio'],
+                'var_95' => $r['var_95'],
+                'max_consecutive_wins' => $r['max_consecutive_wins'],
+                'max_consecutive_losses' => $r['max_consecutive_losses']
+            )
+        );
+    }
+
+    // Sort by return
+    $ret_arr = array();
+    $cnt = count($comparison);
+    for ($i = 0; $i < $cnt; $i++) {
+        $ret_arr[$i] = $comparison[$i]['summary']['total_return_pct'];
+    }
+    arsort($ret_arr);
+    $sorted = array();
+    foreach ($ret_arr as $idx => $val) {
+        $sorted[] = $comparison[$idx];
+    }
+
+    echo json_encode(array(
+        'ok' => true, 'mode' => 'comparison',
+        'algorithms' => $algorithms, 'initial_capital' => $initial_capital,
+        'scenarios' => $sorted
+    ));
+    $conn->close();
+    exit;
+}
+
+// ─── Compare Algorithms Mode ───
+if ($compare_algos === 1) {
+    // Get all algorithms that have picks
+    $algo_res = $conn->query("SELECT DISTINCT algorithm_name FROM stock_picks WHERE entry_price > 0 ORDER BY algorithm_name");
+    $algo_list = array();
+    if ($algo_res) {
+        while ($arow = $algo_res->fetch_assoc()) {
+            $algo_list[] = $arow['algorithm_name'];
+        }
+    }
+
+    // Apply scenario if specified
+    $tp_use = $take_profit;
+    $sl_use = $stop_loss;
+    $mhd_use = $max_hold_days;
+    if ($scenario !== '' && isset($scenarios[$scenario])) {
+        $sc = $scenarios[$scenario];
+        $tp_use = $sc['take_profit'];
+        $sl_use = $sc['stop_loss'];
+        $mhd_use = $sc['max_hold'];
+    }
+
+    $algo_comparison = array();
+    foreach ($algo_list as $aname) {
+        $r = run_backtest_v2($conn, $aname, $tp_use, $sl_use, $mhd_use, $initial_capital, $commission, $slippage, 10);
+        $algo_comparison[] = array(
+            'algorithm' => $aname,
+            'params' => array('take_profit' => $tp_use, 'stop_loss' => $sl_use, 'max_hold_days' => $mhd_use),
+            'summary' => array(
+                'total_trades' => $r['total_trades'], 'win_rate' => $r['win_rate'],
+                'total_return_pct' => $r['total_return_pct'], 'final_value' => $r['final_value'],
+                'annualized_return_pct' => $r['annualized_return_pct'],
+                'max_drawdown_pct' => $r['max_drawdown_pct'], 'total_commissions' => $r['total_commissions'],
+                'sharpe_ratio' => $r['sharpe_ratio'], 'sortino_ratio' => $r['sortino_ratio'],
+                'profit_factor' => $r['profit_factor'], 'expectancy' => $r['expectancy'],
+                'avg_hold_days' => $r['avg_hold_days'],
+                'calmar_ratio' => $r['calmar_ratio'], 'recovery_factor' => $r['recovery_factor'],
+                'kelly_criterion_pct' => $r['kelly_criterion_pct'], 'payoff_ratio' => $r['payoff_ratio'],
+                'var_95' => $r['var_95'],
+                'max_consecutive_wins' => $r['max_consecutive_wins'],
+                'max_consecutive_losses' => $r['max_consecutive_losses']
+            )
+        );
+    }
+
+    // Sort by return
+    $ret2 = array();
+    $cnt2 = count($algo_comparison);
+    for ($i = 0; $i < $cnt2; $i++) {
+        $ret2[$i] = $algo_comparison[$i]['summary']['total_return_pct'];
+    }
+    arsort($ret2);
+    $sorted2 = array();
+    foreach ($ret2 as $idx => $val) {
+        $sorted2[] = $algo_comparison[$idx];
+    }
+
+    echo json_encode(array(
+        'ok' => true, 'mode' => 'algorithm_comparison',
+        'scenario' => $scenario, 'initial_capital' => $initial_capital,
+        'algorithms' => $sorted2
+    ));
+    $conn->close();
+    exit;
+}
+
+// ─── Single Scenario ───
+if ($scenario !== '' && isset($scenarios[$scenario])) {
+    $sc = $scenarios[$scenario];
+    $take_profit   = $sc['take_profit'];
+    $stop_loss     = $sc['stop_loss'];
+    $max_hold_days = $sc['max_hold'];
+}
+
+$result = run_backtest_v2($conn, $algorithms, $take_profit, $stop_loss, $max_hold_days, $initial_capital, $commission, $slippage, 10);
+
+$response = array(
+    'ok' => true,
+    'mode' => 'single',
+    'params' => array(
+        'scenario' => $scenario, 'algorithms' => $algorithms,
+        'take_profit' => $take_profit, 'stop_loss' => $stop_loss,
+        'max_hold_days' => $max_hold_days, 'initial_capital' => $initial_capital,
+        'commission' => $commission, 'slippage' => $slippage
+    ),
+    'summary' => array(
+        'total_trades' => $result['total_trades'], 'winning_trades' => $result['winning_trades'],
+        'losing_trades' => $result['losing_trades'], 'win_rate' => $result['win_rate'],
+        'avg_win_pct' => $result['avg_win_pct'], 'avg_loss_pct' => $result['avg_loss_pct'],
+        'total_return_pct' => $result['total_return_pct'], 'final_value' => $result['final_value'],
+        'annualized_return_pct' => $result['annualized_return_pct'],
+        'max_drawdown_pct' => $result['max_drawdown_pct'], 'total_commissions' => $result['total_commissions'],
+        'sharpe_ratio' => $result['sharpe_ratio'], 'sortino_ratio' => $result['sortino_ratio'],
+        'profit_factor' => $result['profit_factor'], 'expectancy' => $result['expectancy'],
+        'avg_hold_days' => $result['avg_hold_days'],
+        'best_trade_pct' => $result['best_trade_pct'], 'worst_trade_pct' => $result['worst_trade_pct'],
+        'commission_drag_pct' => $result['commission_drag_pct'],
+        'calmar_ratio' => $result['calmar_ratio'], 'recovery_factor' => $result['recovery_factor'],
+        'kelly_criterion_pct' => $result['kelly_criterion_pct'], 'payoff_ratio' => $result['payoff_ratio'],
+        'var_95' => $result['var_95'],
+        'max_consecutive_wins' => $result['max_consecutive_wins'],
+        'max_consecutive_losses' => $result['max_consecutive_losses']
+    ),
+    'algorithm_breakdown' => $result['algo_breakdown'],
+    'exit_reasons' => $result['exit_reasons'],
+    'trades' => $result['trades']
+);
+
+// Log
+$now = date('Y-m-d H:i:s');
+$ip = isset($_SERVER['REMOTE_ADDR']) ? $conn->real_escape_string($_SERVER['REMOTE_ADDR']) : 'unknown';
+$safe_query = $conn->real_escape_string($query_text);
+$safe_params = $conn->real_escape_string(json_encode($response['params']));
+$safe_results = $conn->real_escape_string(json_encode($response['summary']));
+$conn->query("INSERT INTO whatif_scenarios (scenario_name, query_text, params_json, results_json, created_at)
+              VALUES ('" . $conn->real_escape_string($scenario) . "', '$safe_query', '$safe_params', '$safe_results', '$now')");
+
+echo json_encode($response);
+$conn->close();
+?>

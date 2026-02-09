@@ -175,8 +175,15 @@ if ($type === 2) {
             break;
         // Accountability Coach commands
         case 'fc-coach':
-            require_once dirname(__FILE__) . '/accountability/handler.php';
             $action = get_option_value($options, 'action');
+            // Handle followup on/off directly (no handler.php dependency)
+            if ($action === 'followup') {
+                $followup_arg = get_option_value($options, 'value');
+                if (!$followup_arg) $followup_arg = get_option_value($options, 'taskname');
+                _handle_followup_command($discord_id, $followup_arg);
+                break;
+            }
+            require_once dirname(__FILE__) . '/accountability/handler.php';
             $result = handle_fc_coach_command($discord_id, $action, $options);
             send_response($result);
             break;
@@ -227,6 +234,11 @@ if ($type === 3) {
             // Format: stocks_page:page:rating_filter
             $rating_filter = isset($parts[2]) ? $parts[2] : 'all';
             handle_stocks_command($rating_filter, $page, true);
+            break;
+        case 'goal_followup_optout':
+            // Format: goal_followup_optout:discord_user_id
+            $optout_discord_id = isset($parts[1]) ? $parts[1] : '';
+            _handle_followup_optout_button($optout_discord_id);
             break;
         default:
             send_response("Unknown action.");
@@ -314,6 +326,104 @@ function send_response_with_components($content, $components, $ephemeral = true,
     }
     echo json_encode($response);
     exit;
+}
+
+/**
+ * Handle /fc-coach followup on|off slash command.
+ * Toggles morning goal follow-up DMs for the user.
+ */
+function _handle_followup_command($discord_id, $value) {
+    if (!$discord_id) {
+        send_response("Could not identify your account.");
+        return;
+    }
+
+    $value = strtolower(trim($value));
+    if ($value !== 'on' && $value !== 'off' && $value !== 'status') {
+        send_response("**Morning Goal Follow-Up**\n\nUsage:\n`/fc-coach action:followup value:on` — Enable morning follow-ups\n`/fc-coach action:followup value:off` — Disable morning follow-ups\n`/fc-coach action:followup value:status` — Check current status\n\nYou can also toggle this in your [Dashboard](https://findtorontoevents.ca/fc/#/accountability).");
+        return;
+    }
+
+    $conn = get_db_connection();
+    if (!$conn) {
+        send_response("Database error. Please try via the dashboard.");
+        return;
+    }
+
+    // Ensure table
+    $conn->query("CREATE TABLE IF NOT EXISTS accountability_followup_optouts (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        discord_user_id VARCHAR(32) DEFAULT NULL,
+        app_user_id INT DEFAULT NULL,
+        opted_out_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_discord (discord_user_id),
+        INDEX idx_app_user (app_user_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $esc_id = $conn->real_escape_string($discord_id);
+
+    if ($value === 'status') {
+        $check = $conn->query("SELECT id FROM accountability_followup_optouts WHERE discord_user_id = '" . $esc_id . "' LIMIT 1");
+        $isOff = ($check && $check->num_rows > 0);
+        $conn->close();
+        if ($isOff) {
+            send_response("🔕 Morning follow-ups are currently **OFF**.\n\nUse `/fc-coach action:followup value:on` to re-enable them.");
+        } else {
+            send_response("🔔 Morning follow-ups are currently **ON**.\n\nYou receive a DM at 9 AM EST each day with your goal summary.\nUse `/fc-coach action:followup value:off` to stop them.");
+        }
+        return;
+    }
+
+    if ($value === 'off') {
+        $conn->query("INSERT IGNORE INTO accountability_followup_optouts (discord_user_id) VALUES ('" . $esc_id . "')");
+        $conn->close();
+        send_response("🔕 **Morning follow-ups stopped.**\n\nYou will no longer receive daily 9 AM goal follow-ups.\nUse `/fc-coach action:followup value:on` to re-enable them anytime.");
+        return;
+    }
+
+    // value === 'on'
+    $conn->query("DELETE FROM accountability_followup_optouts WHERE discord_user_id = '" . $esc_id . "'");
+    $conn->close();
+    send_response("🔔 **Morning follow-ups enabled!**\n\nYou will receive a DM at 9 AM EST each day with your active goals summary and streaks.\nUse `/fc-coach action:followup value:off` to stop them.");
+}
+
+/**
+ * Handle the "Stop Follow-ups" button click from a morning goal follow-up DM.
+ * Inserts an opt-out record so the user won't receive further morning DMs.
+ */
+function _handle_followup_optout_button($discord_id) {
+    if (!$discord_id) {
+        send_response("Could not identify your account. Please opt out via the dashboard:\nhttps://findtorontoevents.ca/fc/#/accountability");
+        return;
+    }
+
+    $conn = get_db_connection();
+    if (!$conn) {
+        send_response("Database error. Please try opting out via the dashboard:\nhttps://findtorontoevents.ca/fc/#/accountability");
+        return;
+    }
+
+    // Ensure table exists
+    $conn->query("CREATE TABLE IF NOT EXISTS accountability_followup_optouts (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        discord_user_id VARCHAR(32) DEFAULT NULL,
+        app_user_id INT DEFAULT NULL,
+        opted_out_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_discord (discord_user_id),
+        INDEX idx_app_user (app_user_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $esc_id = $conn->real_escape_string($discord_id);
+    $conn->query("INSERT IGNORE INTO accountability_followup_optouts (discord_user_id) VALUES ('" . $esc_id . "')");
+    $conn->close();
+
+    // Respond with a confirmation (update the original message)
+    send_response_with_components(
+        "🔕 **Morning follow-ups stopped.**\n\nYou will no longer receive daily 9 AM goal follow-ups.\n\nYou can re-enable them anytime from your [Accountability Dashboard](https://findtorontoevents.ca/fc/#/accountability) or use `/fc-coach followup on`.",
+        array(),
+        true,
+        true
+    );
 }
 
 /**

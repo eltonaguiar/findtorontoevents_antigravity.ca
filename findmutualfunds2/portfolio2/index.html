@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mutual Funds Portfolio v2 | Fund Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--accent), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-links { display: flex; gap: 1rem; font-size: 0.9rem; }
+        .header-links a { color: var(--text-dim); }
+        .header-links a:hover { color: var(--text); }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; overflow-x: auto; }
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            color: var(--text-dim);
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: var(--text); background: rgba(99, 102, 241, 0.05); }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .card h2 { font-size: 1.1rem; margin-bottom: 1rem; }
+        .card h3 { font-size: 0.95rem; color: var(--text-dim); margin-bottom: 0.5rem; }
+
+        /* Stat Cards */
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-card .label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-card .value { font-size: 1.4rem; font-weight: 700; margin-top: 0.25rem; }
+        .stat-card .value.positive { color: var(--green); }
+        .stat-card .value.negative { color: var(--red); }
+
+        /* Forms */
+        label { display: block; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.2rem; text-transform: uppercase; letter-spacing: 0.03em; }
+        select, input[type="number"], input[type="text"], textarea {
+            width: 100%;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        select:focus, input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+        .form-group { margin-bottom: 0.75rem; }
+        .btn {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: #5558e6; }
+        .btn-secondary { background: var(--border); color: var(--text); }
+        .btn-secondary:hover { background: #3a3a5a; }
+        .btn-success { background: var(--green); color: white; }
+        .btn-danger { background: var(--red); color: white; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+
+        /* Tables */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th, td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+        tr:hover { background: rgba(99, 102, 241, 0.03); }
+        .pct-positive { color: var(--green); }
+        .pct-negative { color: var(--red); }
+
+        /* Algo checkboxes */
+        .algo-checks { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+        .algo-check {
+            display: flex; align-items: center; gap: 0.3rem;
+            background: var(--bg-dark); border: 1px solid var(--border);
+            border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.8rem; cursor: pointer;
+        }
+        .algo-check:hover { border-color: var(--accent); }
+        .algo-check input { accent-color: var(--accent); }
+
+        /* Loading */
+        .loading { text-align: center; padding: 2rem; color: var(--text-dim); }
+        .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Charts */
+        .chart-container { position: relative; height: 300px; margin: 1rem 0; }
+
+        /* Comparison table highlights */
+        .rank-1 { background: var(--green-dim); }
+        .rank-last { background: var(--red-dim); }
+
+        /* Grid layouts */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        @media (max-width: 1024px) { .grid-2 { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .grid-3 { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        /* Disclaimer */
+        .disclaimer {
+            background: var(--yellow-dim);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.8rem;
+            color: var(--yellow);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-green { background: var(--green-dim); color: var(--green); }
+        .badge-red { background: var(--red-dim); color: var(--red); }
+        .badge-yellow { background: var(--yellow-dim); color: var(--yellow); }
+        .badge-blue { background: rgba(59, 130, 246, 0.15); color: var(--blue); }
+        .badge-purple { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+
+        /* Stars */
+        .stars { color: #eab308; letter-spacing: 1px; }
+        .stars-dim { color: var(--border); }
+
+        /* Setup banner */
+        .setup-banner {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(167, 139, 250, 0.1));
+            border: 1px solid var(--accent);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .setup-banner h2 { color: var(--accent); margin-bottom: 0.5rem; }
+        .setup-banner p { color: var(--text-dim); margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Mutual Funds Portfolio v2</h1>
+        <div class="header-links">
+            <a href="/findstocks/portfolio2/">Stocks</a>
+            <a href="/findmutualfunds2/">Funds Home</a>
+            <a href="/">Events</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="disclaimer">
+            This tool is for research and educational purposes only. Past performance does not guarantee future results. Mutual fund trades may have redemption fees and T+1 settlement. Consult a licensed financial adviser.
+        </div>
+
+        <div id="setup-banner" class="setup-banner" style="display:none;">
+            <h2>First-Time Setup</h2>
+            <p>Initialize the database, import sample mutual fund picks, and fetch NAV data.</p>
+            <div class="btn-group" style="justify-content:center;">
+                <button class="btn btn-primary" onclick="runSetup()">1. Setup DB</button>
+                <button class="btn btn-secondary" onclick="importPicks('seed')">2. Import Seed Data</button>
+                <button class="btn btn-secondary" onclick="fetchNAVs()">3. Fetch NAVs</button>
+            </div>
+            <div id="setup-log" style="margin-top:1rem;font-size:0.8rem;color:var(--text-dim);"></div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stat-grid" id="stats-row">
+            <div class="stat-card"><div class="label">Total Funds</div><div class="value" id="stat-funds">-</div></div>
+            <div class="stat-card"><div class="label">Total Picks</div><div class="value" id="stat-picks">-</div></div>
+            <div class="stat-card"><div class="label">NAV Records</div><div class="value" id="stat-navs">-</div></div>
+            <div class="stat-card"><div class="label">Algorithms</div><div class="value" id="stat-algos">-</div></div>
+            <div class="stat-card"><div class="label">Backtests</div><div class="value" id="stat-backtests">-</div></div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" data-tab="whatif">What-If Analysis</div>
+            <div class="tab" data-tab="compare">Compare Strategies</div>
+            <div class="tab" data-tab="algo-compare">Compare Algorithms</div>
+            <div class="tab" data-tab="portfolios">Portfolio Templates</div>
+            <div class="tab" data-tab="picks">Fund Picks</div>
+            <div class="tab" data-tab="history">Backtest History</div>
+        </div>
+
+        <!-- TAB: What-If Analysis -->
+        <div class="tab-content active" id="tab-whatif">
+            <div class="grid-2">
+                <div class="card">
+                    <h2>What-If Parameters</h2>
+
+                    <div class="form-group">
+                        <label>Quick Scenario</label>
+                        <select id="wi-scenario" onchange="applyScenario()">
+                            <option value="">-- Custom Parameters --</option>
+                            <option value="short_tactical">Short Tactical (TR:5% SL:3% Hold:14d)</option>
+                            <option value="momentum_monthly">Momentum Monthly (TR:8% SL:5% Hold:30d)</option>
+                            <option value="swing_quarter">Swing Quarter (TR:12% SL:6% Hold:60d)</option>
+                            <option value="conservative_hold">Conservative Hold (TR:6% SL:4% Hold:90d)</option>
+                            <option value="growth_6m">Growth 6-Month (TR:18% SL:10% Hold:126d)</option>
+                            <option value="buy_hold_1y">Buy & Hold 1-Year (TR:25% SL:15% Hold:252d)</option>
+                            <option value="income_steady">Income Steady (TR:5% SL:3% Hold:90d)</option>
+                            <option value="aggressive_rotation">Aggressive Rotation (TR:15% SL:8% Hold:21d)</option>
+                            <option value="value_patient">Value Patient (TR:20% SL:12% Hold:180d)</option>
+                            <option value="balanced_moderate">Balanced Moderate (TR:10% SL:6% Hold:60d)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Target Return %</label>
+                            <input type="number" id="wi-tp" value="10" min="1" max="999" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Stop Loss %</label>
+                            <input type="number" id="wi-sl" value="5" min="1" max="999" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Max Hold Days</label>
+                            <input type="number" id="wi-hold" value="60" min="1" max="365" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Initial Capital $</label>
+                            <input type="number" id="wi-capital" value="10000" min="100" step="100">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Filter Algorithms</label>
+                        <div class="algo-checks" id="wi-algos"></div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" id="btn-run-whatif" onclick="runWhatIf()">Run Analysis</button>
+                        <button class="btn btn-success" id="btn-save-whatif" onclick="runWhatIf(true)" style="display:none;">Save Results</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Scenario Guide</h2>
+                    <div style="font-size:0.85rem;color:var(--text-dim);line-height:1.8;">
+                        <p><strong style="color:var(--text);">Short Tactical</strong> - Quick rotations, 5% target, 14-day hold. Low-fee funds only.</p>
+                        <p><strong style="color:var(--text);">Momentum Monthly</strong> - Ride monthly trends, 8% target, 30-day hold.</p>
+                        <p><strong style="color:var(--text);">Swing Quarter</strong> - Quarterly rebalancing, 12% target, 60-day hold.</p>
+                        <p><strong style="color:var(--text);">Conservative Hold</strong> - Steady growth, 6% target, 90-day hold with tight stops.</p>
+                        <p><strong style="color:var(--text);">Growth 6-Month</strong> - Mid-term growth, 18% target, 126-day hold.</p>
+                        <p><strong style="color:var(--text);">Buy & Hold 1-Year</strong> - Long-term, 25% target, full year hold.</p>
+                        <p><strong style="color:var(--text);">Income Steady</strong> - Income-focused, 5% target, 90-day hold.</p>
+                        <p><strong style="color:var(--text);">Aggressive Rotation</strong> - Fast rotation, 15% target, 21-day hold.</p>
+                        <p><strong style="color:var(--text);">Value Patient</strong> - Undervalued funds, 20% target, 180-day hold.</p>
+                        <p><strong style="color:var(--text);">Balanced Moderate</strong> - Middle ground, 10% target, 60-day hold.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="wi-results" style="display:none;">
+                <div class="stat-grid" id="wi-stats"></div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h2>Equity Curve</h2>
+                        <div class="chart-container"><canvas id="chart-equity"></canvas></div>
+                    </div>
+                    <div class="card">
+                        <h2>Exit Reasons</h2>
+                        <div class="chart-container"><canvas id="chart-exits"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Algorithm Breakdown</h2>
+                    <div class="table-wrap">
+                        <table id="wi-algo-table">
+                            <thead><tr>
+                                <th>Algorithm</th><th>Trades</th><th>Wins</th><th>Losses</th>
+                                <th>Win Rate</th><th>Avg Return</th><th>Total P&L</th>
+                            </tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Trade Log</h2>
+                    <div class="table-wrap">
+                        <table id="wi-trades-table">
+                            <thead><tr>
+                                <th>Symbol</th><th>Algorithm</th><th>Entry Date</th><th>Entry NAV</th>
+                                <th>Exit Date</th><th>Exit NAV</th><th>Units</th><th>Net P&L</th>
+                                <th>Return %</th><th>Hold Days</th><th>Exit Reason</th>
+                            </tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Compare Strategies -->
+        <div class="tab-content" id="tab-compare">
+            <div class="card">
+                <h2>Compare All Strategies</h2>
+                <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem;">
+                    Run all 10 preset scenarios against the same fund picks and compare performance side by side.
+                </p>
+                <div class="form-group" style="max-width:300px;">
+                    <label>Filter Algorithms</label>
+                    <div class="algo-checks" id="cmp-algos"></div>
+                </div>
+                <button class="btn btn-primary" id="btn-compare" onclick="runCompare()">Run Comparison</button>
+            </div>
+
+            <div id="cmp-results" style="display:none;">
+                <div class="card">
+                    <h2>Strategy Comparison (Ranked by Return)</h2>
+                    <div class="chart-container" style="height:350px;"><canvas id="chart-compare"></canvas></div>
+                </div>
+                <div class="card">
+                    <div class="table-wrap">
+                        <table id="cmp-table">
+                            <thead><tr>
+                                <th>#</th><th>Strategy</th><th>TR%</th><th>SL%</th><th>Hold</th>
+                                <th>Trades</th><th>Win Rate</th><th>Return %</th><th>Final $</th>
+                                <th>Max DD</th><th>Fee Drag</th><th>Sharpe</th><th>Profit Factor</th>
+                            </tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Compare Algorithms -->
+        <div class="tab-content" id="tab-algo-compare">
+            <div class="card">
+                <h2>Compare Algorithms</h2>
+                <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem;">
+                    Test each algorithm independently under the same scenario rules.
+                </p>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Scenario</label>
+                        <select id="ac-scenario">
+                            <option value="">-- Custom --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Target Return %</label>
+                        <input type="number" id="ac-tp" value="10" min="1" max="999">
+                    </div>
+                    <div class="form-group">
+                        <label>Stop Loss %</label>
+                        <input type="number" id="ac-sl" value="5" min="1" max="999">
+                    </div>
+                    <div class="form-group">
+                        <label>Max Hold Days</label>
+                        <input type="number" id="ac-hold" value="60" min="1" max="365">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="runAlgoCompare()">Compare Algorithms</button>
+            </div>
+
+            <div id="ac-results" style="display:none;">
+                <div class="card">
+                    <h2>Algorithm Performance (Ranked by Return)</h2>
+                    <div class="chart-container" style="height:400px;"><canvas id="chart-algo-cmp"></canvas></div>
+                </div>
+                <div class="card">
+                    <div class="table-wrap">
+                        <table id="ac-table">
+                            <thead><tr>
+                                <th>#</th><th>Algorithm</th><th>Trades</th><th>Win Rate</th>
+                                <th>Return %</th><th>Final $</th><th>Max DD</th>
+                                <th>Fee Drag</th><th>Sharpe</th><th>Profit Factor</th><th>Avg Hold</th>
+                            </tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Portfolio Templates -->
+        <div class="tab-content" id="tab-portfolios">
+            <div class="card">
+                <h2>Portfolio Templates</h2>
+                <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem;">
+                    Pre-configured fund portfolio strategies. Click "Backtest" to run a simulation.
+                </p>
+                <div class="table-wrap">
+                    <table id="portfolios-table">
+                        <thead><tr>
+                            <th>Name</th><th>Type</th><th>TR%</th><th>SL%</th><th>Hold</th>
+                            <th>Capital</th><th>Pos Size</th><th>Action</th>
+                        </tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Fund Picks -->
+        <div class="tab-content" id="tab-picks">
+            <div class="card">
+                <h2>Mutual Fund Picks</h2>
+                <div class="form-group" style="max-width:300px;">
+                    <label>Filter by Algorithm</label>
+                    <select id="picks-algo-filter" onchange="loadPicks()">
+                        <option value="">All Algorithms</option>
+                    </select>
+                </div>
+                <div class="table-wrap">
+                    <table id="picks-table">
+                        <thead><tr>
+                            <th>Symbol</th><th>Fund Name</th><th>Family</th><th>Category</th>
+                            <th>Algorithm</th><th>NAV</th><th>Score</th><th>Rating</th>
+                            <th>Morningstar</th><th>Expense Ratio</th>
+                        </tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Backtest History -->
+        <div class="tab-content" id="tab-history">
+            <div class="card">
+                <h2>Saved Backtest Results</h2>
+                <div class="table-wrap">
+                    <table id="history-table">
+                        <thead><tr>
+                            <th>Run Name</th><th>Strategy</th><th>Algos</th><th>Trades</th>
+                            <th>Win Rate</th><th>Return %</th><th>Final $</th><th>Max DD</th>
+                            <th>Sharpe</th><th>Created</th>
+                        </tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ─── Config ───
+var API = './api/';
+
+var SCENARIOS = {
+    short_tactical:       { name: 'Short Tactical',       tp: 5,  sl: 3,  hold: 14 },
+    momentum_monthly:     { name: 'Momentum Monthly',     tp: 8,  sl: 5,  hold: 30 },
+    swing_quarter:        { name: 'Swing Quarter',        tp: 12, sl: 6,  hold: 60 },
+    conservative_hold:    { name: 'Conservative Hold',    tp: 6,  sl: 4,  hold: 90 },
+    growth_6m:            { name: 'Growth 6-Month',       tp: 18, sl: 10, hold: 126 },
+    buy_hold_1y:          { name: 'Buy & Hold 1-Year',    tp: 25, sl: 15, hold: 252 },
+    income_steady:        { name: 'Income Steady',        tp: 5,  sl: 3,  hold: 90 },
+    aggressive_rotation:  { name: 'Aggressive Rotation',  tp: 15, sl: 8,  hold: 21 },
+    value_patient:        { name: 'Value Patient',        tp: 20, sl: 12, hold: 180 },
+    balanced_moderate:    { name: 'Balanced Moderate',     tp: 10, sl: 6,  hold: 60 }
+};
+
+var scenarios = [];
+var algorithms = [];
+var chartEquity = null;
+var chartExits = null;
+var chartCompare = null;
+var chartAlgoCmp = null;
+
+// ─── Init ───
+document.addEventListener('DOMContentLoaded', function() {
+    initTabs();
+    loadStats();
+    loadScenarios();
+    loadAlgorithms();
+    loadPortfolios();
+    loadHistory();
+});
+
+function initTabs() {
+    var tabs = document.querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) {
+        tabs[i].addEventListener('click', function() {
+            var all = document.querySelectorAll('.tab');
+            for (var j = 0; j < all.length; j++) { all[j].classList.remove('active'); }
+            this.classList.add('active');
+            var contents = document.querySelectorAll('.tab-content');
+            for (var j = 0; j < contents.length; j++) { contents[j].classList.remove('active'); }
+            document.getElementById('tab-' + this.getAttribute('data-tab')).classList.add('active');
+
+            // Lazy-load picks on first visit
+            if (this.getAttribute('data-tab') === 'picks' && !this._loaded) {
+                this._loaded = true;
+                loadPicks();
+            }
+        });
+    }
+}
+
+// ─── API Helpers ───
+function apiGet(endpoint, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API + endpoint, true);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try { cb(JSON.parse(xhr.responseText)); }
+            catch(e) { cb({ ok: false, error: 'Parse error: ' + e.message }); }
+        } else { cb({ ok: false, error: 'HTTP ' + xhr.status }); }
+    };
+    xhr.onerror = function() { cb({ ok: false, error: 'Network error' }); };
+    xhr.send();
+}
+
+function fmt(num, decimals) {
+    if (num === null || num === undefined || isNaN(num)) return '-';
+    return parseFloat(num).toFixed(decimals !== undefined ? decimals : 2);
+}
+
+function fmtDollar(num) {
+    if (num === null || num === undefined || isNaN(num)) return '-';
+    return '$' + parseFloat(num).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtInt(num) {
+    if (num === null || num === undefined || isNaN(num)) return '-';
+    return parseInt(num).toLocaleString();
+}
+
+// ─── Load Data ───
+function loadStats() {
+    apiGet('data.php?type=stats', function(d) {
+        if (!d.ok || !d.stats) {
+            document.getElementById('setup-banner').style.display = 'block';
+            return;
+        }
+        var s = d.stats;
+        document.getElementById('stat-funds').textContent = s.total_funds || s.total_stocks || 0;
+        document.getElementById('stat-picks').textContent = s.total_picks || 0;
+        document.getElementById('stat-navs').textContent = fmtInt(s.total_nav_records || s.total_price_records || 0);
+        document.getElementById('stat-algos').textContent = s.active_algorithms || 0;
+        document.getElementById('stat-backtests').textContent = s.total_backtests || 0;
+        if ((s.total_picks || 0) === 0) {
+            document.getElementById('setup-banner').style.display = 'block';
+        }
+    });
+}
+
+function loadScenarios() {
+    apiGet('data.php?type=scenarios', function(d) {
+        if (!d.ok || !d.scenarios) return;
+        scenarios = d.scenarios;
+        var sel2 = document.getElementById('ac-scenario');
+        for (var i = 0; i < scenarios.length; i++) {
+            var s = scenarios[i];
+            var o2 = document.createElement('option');
+            o2.value = s.key;
+            o2.textContent = s.name + ' (TR:' + s.tp + '% SL:' + s.sl + '% Hold:' + s.hold + 'd)';
+            sel2.appendChild(o2);
+        }
+    });
+}
+
+function loadAlgorithms() {
+    apiGet('data.php?type=algorithms', function(d) {
+        if (!d.ok || !d.algorithms) return;
+        algorithms = d.algorithms;
+        renderAlgoChecks('wi-algos', algorithms);
+        renderAlgoChecks('cmp-algos', algorithms);
+        var sel = document.getElementById('picks-algo-filter');
+        for (var i = 0; i < algorithms.length; i++) {
+            var o = document.createElement('option');
+            o.value = algorithms[i].name;
+            o.textContent = algorithms[i].name + ' (' + (algorithms[i].pick_count || 0) + ')';
+            sel.appendChild(o);
+        }
+    });
+}
+
+function renderAlgoChecks(containerId, algos) {
+    var c = document.getElementById(containerId);
+    c.innerHTML = '';
+    for (var i = 0; i < algos.length; i++) {
+        var lbl = document.createElement('label');
+        lbl.className = 'algo-check';
+        var chk = document.createElement('input');
+        chk.type = 'checkbox';
+        chk.value = algos[i].name;
+        chk.checked = true;
+        lbl.appendChild(chk);
+        lbl.appendChild(document.createTextNode(algos[i].name));
+        c.appendChild(lbl);
+    }
+}
+
+function getCheckedAlgos(containerId) {
+    var checks = document.querySelectorAll('#' + containerId + ' input[type=checkbox]:checked');
+    var arr = [];
+    for (var i = 0; i < checks.length; i++) arr.push(checks[i].value);
+    var total = document.querySelectorAll('#' + containerId + ' input[type=checkbox]').length;
+    if (arr.length === total) return '';
+    return arr.join(',');
+}
+
+function applyScenario() {
+    var key = document.getElementById('wi-scenario').value;
+    if (!key) return;
+    var s = SCENARIOS[key];
+    if (s) {
+        document.getElementById('wi-tp').value = s.tp;
+        document.getElementById('wi-sl').value = s.sl;
+        document.getElementById('wi-hold').value = s.hold;
+    }
+    // Also try from server-loaded scenarios
+    for (var i = 0; i < scenarios.length; i++) {
+        if (scenarios[i].key === key) {
+            document.getElementById('wi-tp').value = scenarios[i].tp;
+            document.getElementById('wi-sl').value = scenarios[i].sl;
+            document.getElementById('wi-hold').value = scenarios[i].hold;
+            break;
+        }
+    }
+}
+
+// ─── What-If Analysis ───
+function runWhatIf(save) {
+    var btn = document.getElementById('btn-run-whatif');
+    btn.disabled = true;
+    btn.textContent = 'Running...';
+
+    var scenario = document.getElementById('wi-scenario').value;
+    var params = 'scenario=' + (scenario || 'custom')
+        + '&target_return=' + document.getElementById('wi-tp').value
+        + '&stop_loss=' + document.getElementById('wi-sl').value
+        + '&max_hold_days=' + document.getElementById('wi-hold').value
+        + '&initial_capital=' + document.getElementById('wi-capital').value;
+
+    var algos = getCheckedAlgos('wi-algos');
+    if (algos) params += '&algorithms=' + encodeURIComponent(algos);
+
+    if (save) params += '&save=1';
+
+    apiGet('whatif.php?' + params, function(d) {
+        btn.disabled = false;
+        btn.textContent = 'Run Analysis';
+        if (!d.ok) {
+            alert('Error: ' + (d.error || 'Unknown'));
+            return;
+        }
+        renderWhatIfResults(d);
+    });
+}
+
+function renderWhatIfResults(d) {
+    var el = document.getElementById('wi-results');
+    el.style.display = 'block';
+    document.getElementById('btn-save-whatif').style.display = 'inline-block';
+
+    var s = d.summary;
+    if (!s) { el.innerHTML = '<div class="card"><p style="color:var(--text-dim);">No results returned. Make sure NAV data has been fetched.</p></div>'; return; }
+
+    var statsHtml = '';
+    var metrics = [
+        ['Final Value', fmtDollar(s.final_value), (s.total_return_pct || 0) >= 0 ? 'positive' : 'negative'],
+        ['Total Return', fmt(s.total_return_pct) + '%', (s.total_return_pct || 0) >= 0 ? 'positive' : 'negative'],
+        ['Win Rate', fmt(s.win_rate, 1) + '%', (s.win_rate || 0) >= 50 ? 'positive' : 'negative'],
+        ['Trades', s.total_trades || 0, ''],
+        ['Avg Win', '+' + fmt(s.avg_win_pct) + '%', 'positive'],
+        ['Avg Loss', '-' + fmt(s.avg_loss_pct) + '%', 'negative'],
+        ['Max Drawdown', fmt(s.max_drawdown_pct) + '%', 'negative'],
+        ['Fee Drag', fmtDollar(s.total_commissions || s.fee_drag || 0), 'negative'],
+        ['Sharpe', fmt(s.sharpe_ratio, 3), (s.sharpe_ratio || 0) > 0 ? 'positive' : 'negative'],
+        ['Profit Factor', fmt(s.profit_factor), (s.profit_factor || 0) > 1 ? 'positive' : 'negative'],
+        ['Expectancy', fmt(s.expectancy), (s.expectancy || 0) > 0 ? 'positive' : 'negative'],
+        ['Avg Hold', fmt(s.avg_hold_days || 0, 1) + 'd', '']
+    ];
+    for (var i = 0; i < metrics.length; i++) {
+        var m = metrics[i];
+        statsHtml += '<div class="stat-card"><div class="label">' + m[0] + '</div><div class="value ' + m[2] + '">' + m[1] + '</div></div>';
+    }
+    document.getElementById('wi-stats').innerHTML = statsHtml;
+
+    // Equity curve
+    if (d.equity_curve && d.equity_curve.length > 0) {
+        renderEquityCurve(d.equity_curve);
+    }
+
+    // Exit reasons pie
+    if (d.exit_reasons) {
+        renderExitPie(d.exit_reasons);
+    }
+
+    // Algorithm breakdown
+    if (d.algorithm_breakdown) {
+        var tbody = document.querySelector('#wi-algo-table tbody');
+        tbody.innerHTML = '';
+        for (var i = 0; i < d.algorithm_breakdown.length; i++) {
+            var a = d.algorithm_breakdown[i];
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + a.algorithm + '</td><td>' + a.trades + '</td>'
+                + '<td>' + a.wins + '</td><td>' + a.losses + '</td>'
+                + '<td>' + fmt(a.win_rate, 1) + '%</td>'
+                + '<td class="' + ((a.avg_return_pct || 0) >= 0 ? 'pct-positive' : 'pct-negative') + '">' + fmt(a.avg_return_pct) + '%</td>'
+                + '<td class="' + ((a.total_pnl || 0) >= 0 ? 'pct-positive' : 'pct-negative') + '">' + fmtDollar(a.total_pnl) + '</td>';
+            tbody.appendChild(tr);
+        }
+    }
+
+    // Trade log
+    if (d.trades) {
+        var tbody2 = document.querySelector('#wi-trades-table tbody');
+        tbody2.innerHTML = '';
+        var maxShow = Math.min(d.trades.length, 200);
+        for (var i = 0; i < maxShow; i++) {
+            var t = d.trades[i];
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td><strong>' + (t.ticker || t.symbol) + '</strong></td><td>' + t.algorithm + '</td>'
+                + '<td>' + t.entry_date + '</td><td>$' + fmt(t.entry_price || t.entry_nav) + '</td>'
+                + '<td>' + (t.exit_date || '-') + '</td><td>$' + fmt(t.exit_price || t.exit_nav) + '</td>'
+                + '<td>' + (t.units || t.shares || 0) + '</td>'
+                + '<td class="' + ((t.net_profit || 0) >= 0 ? 'pct-positive' : 'pct-negative') + '">' + fmtDollar(t.net_profit) + '</td>'
+                + '<td class="' + ((t.return_pct || 0) >= 0 ? 'pct-positive' : 'pct-negative') + '">' + fmt(t.return_pct) + '%</td>'
+                + '<td>' + (t.hold_days || 0) + '</td>'
+                + '<td><span class="badge ' + exitBadge(t.exit_reason || '') + '">' + (t.exit_reason || '').replace(/_/g, ' ') + '</span></td>';
+            tbody2.appendChild(tr);
+        }
+        if (d.trades.length > 200) {
+            var note = document.createElement('tr');
+            note.innerHTML = '<td colspan="11" style="text-align:center;color:var(--text-dim);">Showing first 200 of ' + d.trades.length + ' trades</td>';
+            tbody2.appendChild(note);
+        }
+    }
+}
+
+function exitBadge(reason) {
+    if (reason === 'target_return' || reason === 'take_profit') return 'badge-green';
+    if (reason === 'stop_loss') return 'badge-red';
+    if (reason === 'max_hold') return 'badge-yellow';
+    return 'badge-blue';
+}
+
+function renderEquityCurve(curve) {
+    var ctx = document.getElementById('chart-equity').getContext('2d');
+    if (chartEquity) chartEquity.destroy();
+    var labels = [];
+    var data = [];
+    for (var i = 0; i < curve.length; i++) {
+        labels.push(curve[i].trade || (i + 1));
+        data.push(curve[i].capital);
+    }
+    chartEquity = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Portfolio Value ($)',
+                data: data,
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 0
+            }, {
+                label: 'Starting Capital',
+                data: new Array(data.length).fill(data[0] || 10000),
+                borderColor: 'rgba(255,255,255,0.2)',
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#8888aa' } } },
+            scales: {
+                x: { ticks: { color: '#8888aa' }, grid: { color: 'rgba(42,42,74,0.5)' } },
+                y: { ticks: { color: '#8888aa', callback: function(v) { return '$' + v.toLocaleString(); } }, grid: { color: 'rgba(42,42,74,0.5)' } }
+            }
+        }
+    });
+}
+
+function renderExitPie(reasons) {
+    var ctx = document.getElementById('chart-exits').getContext('2d');
+    if (chartExits) chartExits.destroy();
+    var labels = [];
+    var data = [];
+    var colors = { 'target_return': '#22c55e', 'take_profit': '#22c55e', 'stop_loss': '#ef4444', 'max_hold': '#eab308', 'end_of_data': '#3b82f6', 'no_price_data': '#8888aa', 'no_nav_data': '#8888aa' };
+    for (var k in reasons) {
+        if (reasons.hasOwnProperty(k)) {
+            labels.push(k.replace(/_/g, ' '));
+            data.push(reasons[k]);
+        }
+    }
+    var bgColors = labels.map(function(l) {
+        var key = l.replace(/ /g, '_');
+        return colors[key] || '#6366f1';
+    });
+    chartExits = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{ data: data, backgroundColor: bgColors, borderWidth: 0 }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#e0e0f0' } } }
+        }
+    });
+}
+
+// ─── Compare Strategies ───
+function runCompare() {
+    var btn = document.getElementById('btn-compare');
+    btn.disabled = true;
+    btn.textContent = 'Running all scenarios...';
+
+    var params = 'compare=1';
+    var algos = getCheckedAlgos('cmp-algos');
+    if (algos) params += '&algorithms=' + encodeURIComponent(algos);
+
+    apiGet('whatif.php?' + params, function(d) {
+        btn.disabled = false;
+        btn.textContent = 'Run Comparison';
+        if (!d.ok) { alert('Error: ' + (d.error || 'Unknown')); return; }
+        document.getElementById('cmp-results').style.display = 'block';
+
+        var sc = d.scenarios;
+        if (!sc || !sc.length) { alert('No scenario data returned.'); return; }
+
+        // Chart
+        var ctx = document.getElementById('chart-compare').getContext('2d');
+        if (chartCompare) chartCompare.destroy();
+        var labels = [];
+        var returns = [];
+        var barColors = [];
+        for (var i = 0; i < sc.length; i++) {
+            labels.push(sc[i].name);
+            var ret = sc[i].summary ? sc[i].summary.total_return_pct : 0;
+            returns.push(ret);
+            barColors.push(ret >= 0 ? '#22c55e' : '#ef4444');
+        }
+        chartCompare = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Total Return %',
+                    data: returns,
+                    backgroundColor: barColors,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: '#8888aa', callback: function(v) { return v + '%'; } }, grid: { color: 'rgba(42,42,74,0.5)' } },
+                    y: { ticks: { color: '#e0e0f0', font: { size: 11 } }, grid: { display: false } }
+                }
+            }
+        });
+
+        // Table
+        var tbody = document.querySelector('#cmp-table tbody');
+        tbody.innerHTML = '';
+        for (var i = 0; i < sc.length; i++) {
+            var s = sc[i].summary || {};
+            var p = sc[i].params || {};
+            var cls = i === 0 ? 'rank-1' : (i === sc.length - 1 ? 'rank-last' : '');
+            var tr = document.createElement('tr');
+            tr.className = cls;
+            tr.innerHTML = '<td>' + (i + 1) + '</td><td><strong>' + sc[i].name + '</strong></td>'
+                + '<td>' + (p.target_return || p.take_profit || '-') + '</td>'
+                + '<td>' + (p.stop_loss || '-') + '</td>'
+                + '<td>' + (p.max_hold_days || '-') + 'd</td>'
+                + '<td>' + (s.total_trades || 0) + '</td>'
+                + '<td>' + fmt(s.win_rate, 1) + '%</td>'
+                + '<td class="' + ((s.total_return_pct || 0) >= 0 ? 'pct-positive' : 'pct-negative') + '"><strong>' + fmt(s.total_return_pct) + '%</strong></td>'
+                + '<td>' + fmtDollar(s.final_value) + '</td>'
+                + '<td class="pct-negative">' + fmt(s.max_drawdown_pct) + '%</td>'
+                + '<td>' + fmtDollar(s.total_commissions || s.fee_drag || 0) + '</td>'
+                + '<td>' + fmt(s.sharpe_ratio, 3) + '</td>'
+                + '<td>' + fmt(s.profit_factor) + '</td>';
+            tbody.appendChild(tr);
+        }
+    });
+}
+
+// ─── Compare Algorithms ───
+function runAlgoCompare() {
+    var params = 'compare_algos=1';
+    var sc = document.getElementById('ac-scenario').value;
+    if (sc) {
+        params += '&scenario=' + sc;
+    } else {
+        params += '&target_return=' + document.getElementById('ac-tp').value
+            + '&stop_loss=' + document.getElementById('ac-sl').value
+            + '&max_hold_days=' + document.getElementById('ac-hold').value;
+    }
+
+    apiGet('whatif.php?' + params, function(d) {
+        if (!d.ok) { alert('Error: ' + (d.error || 'Unknown')); return; }
+        document.getElementById('ac-results').style.display = 'block';
+
+        var algos = d.algorithms;
+        if (!algos || !algos.length) { alert('No algorithm data returned.'); return; }
+
+        // Chart
+        var ctx = document.getElementById('chart-algo-cmp').getContext('2d');
+        if (chartAlgoCmp) chartAlgoCmp.destroy();
+        var labels = [];
+        var returns = [];
+        var barColors = [];
+        for (var i = 0; i < algos.length; i++) {
+            labels.push(algos[i].algorithm);
+            var ret = algos[i].summary ? algos[i].summary.total_return_pct : 0;
+            returns.push(ret);
+            barColors.push(ret >= 0 ? '#22c55e' : '#ef4444');
+        }
+        chartAlgoCmp = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{ label: 'Total Return %', data: returns, backgroundColor: barColors, borderRadius: 4 }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: '#8888aa', callback: function(v) { return v + '%'; } }, grid: { color: 'rgba(42,42,74,0.5)' } },
+                    y: { ticks: { color: '#e0e0f0', font: { size: 11 } }, grid: { display: false } }
+                }
+            }
+        });
+
+        // Table
+        var tbody = document.querySelector('#ac-table tbody');
+        tbody.innerHTML = '';
+        for (var i = 0; i < algos.length; i++) {
+            var s = algos[i].summary || {};
+            var cls = i === 0 ? 'rank-1' : (i === algos.length - 1 ? 'rank-last' : '');
+            var tr = document.createElement('tr');
+            tr.className = cls;
+            tr.innerHTML = '<td>' + (i + 1) + '</td><td><strong>' + algos[i].algorithm + '</strong></td>'
+                + '<td>' + (s.total_trades || 0) + '</td><td>' + fmt(s.win_rate, 1) + '%</td>'
+                + '<td class="' + ((s.total_return_pct || 0) >= 0 ? 'pct-positive' : 'pct-negative') + '"><strong>' + fmt(s.total_return_pct) + '%</strong></td>'
+                + '<td>' + fmtDollar(s.final_value) + '</td>'
+                + '<td class="pct-negative">' + fmt(s.max_drawdown_pct) + '%</td>'
+                + '<td>' + fmtDollar(s.total_commissions || s.fee_drag || 0) + '</td>'
+                + '<td>' + fmt(s.sharpe_ratio, 3) + '</td>'
+                + '<td>' + fmt(s.profit_factor) + '</td>'
+                + '<td>' + fmt(s.avg_hold_days || 0, 1) + 'd</td>';
+            tbody.appendChild(tr);
+        }
+    });
+}
+
+// ─── Portfolio Templates ───
+function loadPortfolios() {
+    apiGet('data.php?type=portfolios', function(d) {
+        if (!d.ok || !d.portfolios) return;
+        var tbody = document.querySelector('#portfolios-table tbody');
+        tbody.innerHTML = '';
+        var ports = d.portfolios;
+        for (var i = 0; i < ports.length; i++) {
+            var p = ports[i];
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td><strong>' + p.name + '</strong><br><span style="font-size:0.75rem;color:var(--text-dim)">' + (p.description || '') + '</span></td>'
+                + '<td><span class="badge badge-blue">' + (p.strategy_type || '-') + '</span></td>'
+                + '<td>' + parseFloat(p.take_profit_pct || p.target_return_pct || 0) + '</td>'
+                + '<td>' + parseFloat(p.stop_loss_pct || 0) + '</td>'
+                + '<td>' + (p.max_hold_days || '-') + 'd</td>'
+                + '<td>' + fmtDollar(p.initial_capital) + '</td>'
+                + '<td>' + parseFloat(p.position_size_pct || 10) + '%</td>'
+                + '<td><button class="btn btn-primary" style="padding:0.3rem 0.8rem;font-size:0.8rem;" onclick="backtestPortfolio(' + p.id + ')">Backtest</button></td>';
+            tbody.appendChild(tr);
+        }
+    });
+}
+
+function backtestPortfolio(id) {
+    document.querySelector('.tab[data-tab="whatif"]').click();
+    var btn = document.getElementById('btn-run-whatif');
+    btn.disabled = true;
+    btn.textContent = 'Running portfolio backtest...';
+
+    apiGet('backtest.php?portfolio_id=' + id + '&save=1', function(d) {
+        btn.disabled = false;
+        btn.textContent = 'Run Analysis';
+        if (!d.ok) { alert('Error: ' + (d.error || 'Unknown')); return; }
+        renderWhatIfResults(d);
+    });
+}
+
+// ─── Fund Picks ───
+function loadPicks() {
+    var algo = document.getElementById('picks-algo-filter').value;
+    var url = 'data.php?type=picks';
+    if (algo) url += '&algorithm=' + encodeURIComponent(algo);
+
+    apiGet(url, function(d) {
+        if (!d.ok || !d.picks) return;
+        var tbody = document.querySelector('#picks-table tbody');
+        tbody.innerHTML = '';
+        var picks = d.picks;
+        for (var i = 0; i < picks.length; i++) {
+            var p = picks[i];
+            var starHtml = renderStars(p.morningstar_rating || p.morningstar || 0);
+            var expRatio = p.expense_ratio ? fmt(p.expense_ratio, 2) + '%' : '-';
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td><strong>' + (p.ticker || p.symbol) + '</strong></td>'
+                + '<td>' + (p.company_name || p.fund_name || '') + '</td>'
+                + '<td>' + (p.fund_family || '-') + '</td>'
+                + '<td>' + (p.category || '-') + '</td>'
+                + '<td>' + (p.algorithm_name || p.algorithm || '') + '</td>'
+                + '<td>$' + fmt(p.entry_price || p.nav || 0) + '</td>'
+                + '<td>' + (p.score || '-') + '</td>'
+                + '<td><span class="badge ' + ratingBadge(p.rating) + '">' + (p.rating || '-') + '</span></td>'
+                + '<td>' + starHtml + '</td>'
+                + '<td>' + expRatio + '</td>';
+            tbody.appendChild(tr);
+        }
+    });
+}
+
+function renderStars(count) {
+    count = parseInt(count) || 0;
+    if (count <= 0) return '<span class="stars-dim">N/A</span>';
+    var html = '<span class="stars">';
+    for (var i = 0; i < 5; i++) {
+        if (i < count) {
+            html += '&#9733;';
+        } else {
+            html += '<span class="stars-dim">&#9733;</span>';
+        }
+    }
+    html += '</span>';
+    return html;
+}
+
+function ratingBadge(rating) {
+    if (!rating) return 'badge-blue';
+    var r = rating.toUpperCase();
+    if (r === 'STRONG BUY') return 'badge-green';
+    if (r === 'BUY') return 'badge-blue';
+    if (r === 'HOLD') return 'badge-yellow';
+    if (r === 'SELL' || r === 'STRONG SELL') return 'badge-red';
+    return 'badge-purple';
+}
+
+// ─── Backtest History ───
+function loadHistory() {
+    apiGet('data.php?type=backtests', function(d) {
+        if (!d.ok || !d.backtests) return;
+        var tbody = document.querySelector('#history-table tbody');
+        tbody.innerHTML = '';
+        var bt = d.backtests;
+        for (var i = 0; i < bt.length; i++) {
+            var b = bt[i];
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + (b.run_name || '-') + '</td>'
+                + '<td><span class="badge badge-blue">' + (b.strategy_type || '-') + '</span></td>'
+                + '<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;">' + (b.algorithm_filter || 'All') + '</td>'
+                + '<td>' + (b.total_trades || 0) + '</td>'
+                + '<td>' + fmt(b.win_rate, 1) + '%</td>'
+                + '<td class="' + (parseFloat(b.total_return_pct || 0) >= 0 ? 'pct-positive' : 'pct-negative') + '">' + fmt(b.total_return_pct) + '%</td>'
+                + '<td>' + fmtDollar(b.final_value) + '</td>'
+                + '<td class="pct-negative">' + fmt(b.max_drawdown_pct) + '%</td>'
+                + '<td>' + fmt(b.sharpe_ratio, 3) + '</td>'
+                + '<td>' + (b.created_at || '') + '</td>';
+            tbody.appendChild(tr);
+        }
+    });
+}
+
+// ─── Setup Functions ───
+function runSetup() {
+    var log = document.getElementById('setup-log');
+    log.innerHTML = '<div class="spinner"></div> Setting up database...';
+    apiGet('setup_schema.php', function(d) {
+        if (d.ok) {
+            log.innerHTML = 'Database created successfully. ' + (d.actions ? 'Actions: ' + d.actions.join(', ') : 'Tables ready.');
+        } else {
+            log.innerHTML = 'Error: ' + (d.error || JSON.stringify(d));
+        }
+    });
+}
+
+function importPicks(source) {
+    var log = document.getElementById('setup-log');
+    log.innerHTML = '<div class="spinner"></div> Importing fund picks (source: ' + source + ')...';
+    apiGet('import_picks.php?source=' + source, function(d) {
+        log.innerHTML = 'Imported: ' + (d.imported || 0) + ', Skipped: ' + (d.skipped || 0)
+            + (d.prices_imported ? ', NAV records: ' + d.prices_imported : '')
+            + (d.errors && d.errors.length ? ', Errors: ' + d.errors.join('; ') : '');
+        loadStats();
+    });
+}
+
+function fetchNAVs() {
+    var log = document.getElementById('setup-log');
+    log.innerHTML = '<div class="spinner"></div> Fetching NAV data (this may take a minute)...';
+    apiGet('fetch_prices.php?force=1', function(d) {
+        log.innerHTML = 'Fetched: ' + (d.fetched || 0) + ' funds. '
+            + (d.note || '')
+            + (d.errors && d.errors.length ? ' Errors: ' + d.errors.join('; ') : '');
+        loadStats();
+    });
+}
+</script>
+</body>
+</html>

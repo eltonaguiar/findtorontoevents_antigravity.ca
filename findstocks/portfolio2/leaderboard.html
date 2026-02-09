@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithm Leaderboard | Multi-Asset Intelligence</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --gold: #f59e0b;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--gold), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-links { display: flex; gap: 1rem; font-size: 0.9rem; }
+        .header-links a { color: var(--text-dim); }
+        .header-links a:hover { color: var(--text); }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 1.5rem 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .section-title .icon { font-size: 1.5rem; }
+        .section-title .badge {
+            font-size: 0.65rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 99px;
+            background: var(--accent);
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Summary Cards */
+        .summary-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .summary-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+        }
+        .summary-card .val {
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+        .summary-card .lbl {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.25rem;
+        }
+
+        /* Formula explanation */
+        .formula-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .formula-bar code {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.75rem;
+        }
+
+        /* Leaderboard Table */
+        .lb-table-wrap {
+            overflow-x: auto;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        .lb-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        .lb-table th {
+            background: #1a1a3a;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            position: relative;
+        }
+        .lb-table th:hover { color: var(--text); }
+        .lb-table th .sort-arrow {
+            margin-left: 4px;
+            font-size: 0.6rem;
+            opacity: 0.3;
+        }
+        .lb-table th.sorted .sort-arrow { opacity: 1; color: var(--accent); }
+        .lb-table td {
+            padding: 0.65rem 1rem;
+            border-bottom: 1px solid rgba(42, 42, 74, 0.5);
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+        .lb-table tr { transition: background 0.15s; }
+        .lb-table tr:hover { background: var(--bg-card-hover); }
+        .lb-table tr.rank-1 { background: rgba(245, 158, 11, 0.08); }
+        .lb-table tr.rank-2 { background: rgba(156, 163, 175, 0.06); }
+        .lb-table tr.rank-3 { background: rgba(180, 83, 9, 0.06); }
+
+        .rank-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+            background: var(--border);
+            color: var(--text-dim);
+        }
+        .rank-badge.gold { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; }
+        .rank-badge.silver { background: linear-gradient(135deg, #9ca3af, #6b7280); color: #000; }
+        .rank-badge.bronze { background: linear-gradient(135deg, #b45309, #92400e); color: #fff; }
+
+        .algo-name {
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .metric-bar {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .mini-bar {
+            width: 40px;
+            height: 5px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .mini-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+        .mini-fill.high { background: var(--green); }
+        .mini-fill.mid { background: var(--yellow); }
+        .mini-fill.low { background: var(--red); }
+
+        .val-green { color: var(--green); }
+        .val-red { color: var(--red); }
+        .val-yellow { color: var(--yellow); }
+        .val-blue { color: var(--blue); }
+
+        .pct-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+        }
+        .pct-badge.pos { background: var(--green-dim); color: var(--green); }
+        .pct-badge.neg { background: var(--red-dim); color: var(--red); }
+
+        /* Expandable detail row */
+        .detail-row { display: none; }
+        .detail-row.open { display: table-row; }
+        .detail-row td {
+            padding: 1rem;
+            background: rgba(18, 18, 42, 0.8);
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .detail-item .lbl {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+        .detail-item .val {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        /* Loading / Error */
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-dim);
+        }
+        .loading .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .disclaimer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            padding: 2rem 1rem;
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+        }
+
+        .timestamp {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+        }
+
+        /* Mobile Cards */
+        .mobile-cards { display: none; }
+
+        @media (max-width: 800px) {
+            .header { padding: 0.75rem 1rem; }
+            .container { padding: 1rem; }
+            .lb-table-wrap { display: none; }
+            .mobile-cards { display: block; }
+            .mobile-card {
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 1rem;
+                margin-bottom: 0.75rem;
+            }
+            .mobile-card.rank-1 { border-left: 3px solid var(--gold); }
+            .mobile-card.rank-2 { border-left: 3px solid #9ca3af; }
+            .mobile-card.rank-3 { border-left: 3px solid #b45309; }
+            .mobile-card .mc-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 0.5rem;
+            }
+            .mobile-card .mc-stats {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+                text-align: center;
+            }
+            .mobile-card .mc-stats .lbl {
+                font-size: 0.6rem;
+                color: var(--text-dim);
+                text-transform: uppercase;
+            }
+            .mobile-card .mc-stats .val {
+                font-size: 0.9rem;
+                font-weight: 700;
+            }
+            .summary-row { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Algorithm Leaderboard</h1>
+        <div class="header-links">
+            <a href="/findstocks/portfolio2/picks.html">Top Picks</a>
+            <a href="/findstocks/portfolio2/">Portfolio Analysis</a>
+            <a href="/findstocks2_global/">Global Dashboard</a>
+            <a href="/findstocks/">Home</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p style="margin-top:1rem;">Loading algorithm leaderboard...</p>
+        </div>
+
+        <div id="content" style="display:none;">
+            <div id="timestamp" class="timestamp"></div>
+
+            <!-- Summary Stats -->
+            <div id="summary-row" class="summary-row"></div>
+
+            <!-- Ranking Formula -->
+            <div id="formula-bar" class="formula-bar"></div>
+
+            <!-- Section Title -->
+            <div class="section-title">
+                <span class="icon">&#x1F3C6;</span>
+                <span>Stock Algorithm Rankings</span>
+                <span class="badge">Backtested</span>
+            </div>
+
+            <!-- Desktop Table -->
+            <div class="lb-table-wrap">
+                <table class="lb-table" id="lb-table">
+                    <thead>
+                        <tr>
+                            <th data-col="rank">Rank <span class="sort-arrow">&#x25B2;</span></th>
+                            <th data-col="algorithm">Algorithm <span class="sort-arrow">&#x25B2;</span></th>
+                            <th data-col="picks">Picks <span class="sort-arrow">&#x25B2;</span></th>
+                            <th data-col="win_rate">Win Rate <span class="sort-arrow">&#x25B2;</span></th>
+                            <th data-col="avg_return_pct">Avg Return <span class="sort-arrow">&#x25B2;</span></th>
+                            <th data-col="total_return_pct">Total Return <span class="sort-arrow">&#x25B2;</span></th>
+                            <th data-col="sharpe_ratio">Sharpe <span class="sort-arrow">&#x25B2;</span></th>
+                            <th data-col="composite_score">Score <span class="sort-arrow">&#x25B2;</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="lb-body"></tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Cards -->
+            <div id="mobile-cards" class="mobile-cards"></div>
+
+            <!-- Cross-Asset Leaderboards -->
+            <div id="cross-asset-section"></div>
+        </div>
+
+        <div class="disclaimer">
+            This leaderboard is for educational and research purposes only. Not financial advice.<br>
+            Past performance does not guarantee future results. Always do your own research before investing.
+        </div>
+    </div>
+
+<script>
+var API = (function() {
+    var loc = window.location;
+    if (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1') return './api/';
+    return '/findstocks/portfolio2/api/';
+})();
+
+var currentData = [];
+var currentSort = 'composite_score';
+var currentDir = -1; // descending
+
+function apiGet(endpoint, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API + endpoint, true);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try { cb(JSON.parse(xhr.responseText)); } catch(e) { cb(null); }
+        } else { cb(null); }
+    };
+    xhr.onerror = function() { cb(null); };
+    xhr.send();
+}
+
+function fmt(n, d) {
+    if (n === null || n === undefined || isNaN(n)) return '-';
+    return parseFloat(n).toFixed(d === undefined ? 2 : d);
+}
+
+function rankClass(r) {
+    if (r === 1) return 'gold';
+    if (r === 2) return 'silver';
+    if (r === 3) return 'bronze';
+    return '';
+}
+
+function barClass(pct) {
+    if (pct >= 60) return 'high';
+    if (pct >= 40) return 'mid';
+    return 'low';
+}
+
+function pctBadge(val) {
+    var n = parseFloat(val) || 0;
+    var cls = n >= 0 ? 'pos' : 'neg';
+    var sign = n >= 0 ? '+' : '';
+    return '<span class="pct-badge ' + cls + '">' + sign + fmt(n) + '%</span>';
+}
+
+function valColor(val) {
+    var n = parseFloat(val) || 0;
+    if (n > 0) return 'val-green';
+    if (n < 0) return 'val-red';
+    return '';
+}
+
+function sortData(col, dir) {
+    currentData.sort(function(a, b) {
+        var va = a[col], vb = b[col];
+        if (col === 'algorithm') {
+            return dir * ((va || '').localeCompare(vb || ''));
+        }
+        va = parseFloat(va) || 0;
+        vb = parseFloat(vb) || 0;
+        return dir * (va - vb);
+    });
+}
+
+function renderTable() {
+    var tbody = document.getElementById('lb-body');
+    var html = '';
+    for (var i = 0; i < currentData.length; i++) {
+        var a = currentData[i];
+        var r = i + 1;
+        var rCls = r <= 3 ? ' rank-' + r : '';
+        var wr = parseFloat(a.win_rate) || 0;
+        var sharpe = parseFloat(a.sharpe_ratio) || 0;
+
+        html += '<tr class="' + rCls + '" onclick="toggleDetail(' + i + ')" style="cursor:pointer;">'
+            + '<td><span class="rank-badge ' + rankClass(r) + '">' + r + '</span></td>'
+            + '<td><span class="algo-name">' + a.algorithm + '</span></td>'
+            + '<td>' + a.picks + '</td>'
+            + '<td><span class="metric-bar"><span class="mini-bar"><span class="mini-fill ' + barClass(wr) + '" style="width:' + wr + '%;"></span></span><span class="' + (wr >= 50 ? 'val-green' : 'val-red') + '">' + fmt(wr, 1) + '%</span></span></td>'
+            + '<td>' + pctBadge(a.avg_return_pct) + '</td>'
+            + '<td>' + pctBadge(a.total_return_pct) + '</td>'
+            + '<td><span class="' + valColor(sharpe) + '">' + fmt(sharpe, 4) + '</span></td>'
+            + '<td><span class="' + valColor(a.composite_score) + '" style="font-weight:800;">' + fmt(a.composite_score, 2) + '</span></td>'
+            + '</tr>';
+
+        // Detail row
+        html += '<tr class="detail-row" id="detail-' + i + '"><td colspan="8">'
+            + '<div class="detail-grid">'
+            + '<div class="detail-item"><div class="lbl">Wins</div><div class="val val-green">' + (a.wins || 0) + '</div></div>'
+            + '<div class="detail-item"><div class="lbl">Losses</div><div class="val val-red">' + (a.losses || 0) + '</div></div>'
+            + '<div class="detail-item"><div class="lbl">Win Rate</div><div class="val">' + fmt(wr, 1) + '%</div></div>'
+            + '<div class="detail-item"><div class="lbl">Avg Return</div><div class="val ' + valColor(a.avg_return_pct) + '">' + fmt(a.avg_return_pct) + '%</div></div>'
+            + '<div class="detail-item"><div class="lbl">Total Return</div><div class="val ' + valColor(a.total_return_pct) + '">' + fmt(a.total_return_pct) + '%</div></div>'
+            + '<div class="detail-item"><div class="lbl">Sharpe Ratio</div><div class="val ' + valColor(sharpe) + '">' + fmt(sharpe, 4) + '</div></div>'
+            + '</div>'
+            + '</td></tr>';
+    }
+    tbody.innerHTML = html;
+}
+
+function renderMobileCards() {
+    var container = document.getElementById('mobile-cards');
+    var html = '';
+    for (var i = 0; i < currentData.length; i++) {
+        var a = currentData[i];
+        var r = i + 1;
+        var rCls = r <= 3 ? ' rank-' + r : '';
+        var wr = parseFloat(a.win_rate) || 0;
+
+        html += '<div class="mobile-card' + rCls + '">'
+            + '<div class="mc-header">'
+            + '<span><span class="rank-badge ' + rankClass(r) + '" style="width:24px;height:24px;font-size:0.65rem;">' + r + '</span> <span class="algo-name" style="margin-left:0.5rem;">' + a.algorithm + '</span></span>'
+            + '<span class="' + valColor(a.composite_score) + '" style="font-weight:800;font-size:1.1rem;">' + fmt(a.composite_score, 1) + '</span>'
+            + '</div>'
+            + '<div class="mc-stats">'
+            + '<div><div class="lbl">Win Rate</div><div class="val ' + (wr >= 50 ? 'val-green' : 'val-red') + '">' + fmt(wr, 1) + '%</div></div>'
+            + '<div><div class="lbl">Avg Ret</div><div class="val">' + pctBadge(a.avg_return_pct) + '</div></div>'
+            + '<div><div class="lbl">Sharpe</div><div class="val ' + valColor(a.sharpe_ratio) + '">' + fmt(a.sharpe_ratio, 2) + '</div></div>'
+            + '</div>'
+            + '<div style="display:flex;justify-content:space-between;margin-top:0.5rem;font-size:0.75rem;color:var(--text-dim);">'
+            + '<span>' + a.picks + ' picks (' + (a.wins||0) + 'W / ' + (a.losses||0) + 'L)</span>'
+            + '<span>Total: ' + pctBadge(a.total_return_pct) + '</span>'
+            + '</div>'
+            + '</div>';
+    }
+    container.innerHTML = html;
+}
+
+function toggleDetail(idx) {
+    var row = document.getElementById('detail-' + idx);
+    if (row) row.classList.toggle('open');
+}
+
+function setupSort() {
+    var ths = document.querySelectorAll('.lb-table th[data-col]');
+    for (var i = 0; i < ths.length; i++) {
+        (function(th) {
+            th.addEventListener('click', function() {
+                var col = th.getAttribute('data-col');
+                if (currentSort === col) {
+                    currentDir = currentDir * -1;
+                } else {
+                    currentSort = col;
+                    currentDir = -1;
+                }
+                // Update sort indicators
+                var all = document.querySelectorAll('.lb-table th');
+                for (var j = 0; j < all.length; j++) all[j].classList.remove('sorted');
+                th.classList.add('sorted');
+                th.querySelector('.sort-arrow').innerHTML = currentDir === 1 ? '&#x25B2;' : '&#x25BC;';
+
+                sortData(currentSort, currentDir);
+                renderTable();
+                renderMobileCards();
+            });
+        })(ths[i]);
+    }
+}
+
+function renderSummary(data) {
+    var lb = data.leaderboard || [];
+    var totalPicks = 0, totalWins = 0, bestReturn = -Infinity, bestAlgo = '-';
+    for (var i = 0; i < lb.length; i++) {
+        totalPicks += (parseInt(lb[i].picks) || 0);
+        totalWins += (parseInt(lb[i].wins) || 0);
+        var tr = parseFloat(lb[i].total_return_pct) || 0;
+        if (tr > bestReturn) { bestReturn = tr; bestAlgo = lb[i].algorithm; }
+    }
+
+    var html = '<div class="summary-card"><div class="val" style="color:var(--accent);">' + lb.length + '</div><div class="lbl">Algorithms</div></div>'
+        + '<div class="summary-card"><div class="val">' + totalPicks.toLocaleString() + '</div><div class="lbl">Total Picks</div></div>'
+        + '<div class="summary-card"><div class="val ' + (totalWins > 0 ? 'val-green' : '') + '">' + totalWins.toLocaleString() + '</div><div class="lbl">Total Wins</div></div>'
+        + '<div class="summary-card"><div class="val" style="color:var(--gold);">' + fmt(bestReturn, 1) + '%</div><div class="lbl">Best Total Return</div></div>';
+    document.getElementById('summary-row').innerHTML = html;
+}
+
+function renderCrossAsset() {
+    var section = document.getElementById('cross-asset-section');
+    var pending = 3;
+    var mfData = null, fxData = null, crData = null;
+
+    function tryRender() {
+        pending--;
+        if (pending > 0) return;
+
+        var html = '';
+
+        // MF algorithms
+        if (mfData && mfData.length > 0) {
+            html += '<div class="section-title" style="margin-top:2rem;"><span class="icon">&#x1F4CA;</span><span>Mutual Fund Algorithm Performance</span><span class="badge" style="background:#8b5cf6;">NAV-Based</span></div>';
+            html += buildMiniTable(mfData);
+        }
+
+        // FX algorithms
+        if (fxData && fxData.length > 0) {
+            html += '<div class="section-title" style="margin-top:2rem;"><span class="icon">&#x1F4B1;</span><span>Forex Algorithm Performance</span><span class="badge" style="background:#06b6d4;">Pip-Based</span></div>';
+            html += buildMiniTable(fxData);
+        }
+
+        // Crypto algorithms
+        if (crData && crData.length > 0) {
+            html += '<div class="section-title" style="margin-top:2rem;"><span class="icon">&#x1FA99;</span><span>Crypto Algorithm Performance</span><span class="badge" style="background:#f97316;">Crypto</span></div>';
+            html += buildMiniTable(crData);
+        }
+
+        section.innerHTML = html;
+    }
+
+    function buildMiniTable(data) {
+        var t = '<div class="lb-table-wrap"><table class="lb-table"><thead><tr>'
+            + '<th>Rank</th><th>Algorithm</th><th>Trades</th><th>Win Rate</th><th>Avg Return</th><th>Avg Pips</th>'
+            + '</tr></thead><tbody>';
+        for (var i = 0; i < data.length; i++) {
+            var d = data[i];
+            var r = i + 1;
+            var wr = parseFloat(d.win_rate) || 0;
+            t += '<tr class="' + (r <= 3 ? 'rank-' + r : '') + '">'
+                + '<td><span class="rank-badge ' + rankClass(r) + '">' + r + '</span></td>'
+                + '<td><span class="algo-name">' + (d.algorithm_name || d.algorithm || '-') + '</span></td>'
+                + '<td>' + (d.total_trades || d.trades || 0) + '</td>'
+                + '<td><span class="' + (wr >= 50 ? 'val-green' : 'val-red') + '">' + fmt(wr, 1) + '%</span></td>'
+                + '<td>' + pctBadge(d.avg_return_pct) + '</td>'
+                + '<td>' + fmt(d.avg_pips, 1) + '</td>'
+                + '</tr>';
+        }
+        t += '</tbody></table></div>';
+
+        // Mobile version
+        t += '<div class="mobile-cards">';
+        for (var i = 0; i < data.length; i++) {
+            var d = data[i];
+            var r = i + 1;
+            var wr = parseFloat(d.win_rate) || 0;
+            t += '<div class="mobile-card' + (r <= 3 ? ' rank-' + r : '') + '">'
+                + '<div class="mc-header">'
+                + '<span><span class="rank-badge ' + rankClass(r) + '" style="width:24px;height:24px;font-size:0.65rem;">' + r + '</span> <span class="algo-name" style="margin-left:0.5rem;">' + (d.algorithm_name || d.algorithm || '-') + '</span></span>'
+                + '<span class="' + (wr >= 50 ? 'val-green' : 'val-red') + '" style="font-weight:700;">' + fmt(wr, 1) + '%</span>'
+                + '</div>'
+                + '<div class="mc-stats">'
+                + '<div><div class="lbl">Trades</div><div class="val">' + (d.total_trades || d.trades || 0) + '</div></div>'
+                + '<div><div class="lbl">Avg Ret</div><div class="val">' + pctBadge(d.avg_return_pct) + '</div></div>'
+                + '<div><div class="lbl">Pips</div><div class="val">' + fmt(d.avg_pips, 1) + '</div></div>'
+                + '</div>'
+                + '</div>';
+        }
+        t += '</div>';
+
+        return t;
+    }
+
+    // Fetch MF algo performance
+    var mfXhr = new XMLHttpRequest();
+    mfXhr.open('GET', '/findmutualfunds2/portfolio2/api/data.php?type=algo_performance', true);
+    mfXhr.onload = function() {
+        if (mfXhr.status === 200) {
+            try { var d = JSON.parse(mfXhr.responseText); mfData = d.performance || []; } catch(e) {}
+        }
+        tryRender();
+    };
+    mfXhr.onerror = function() { tryRender(); };
+    mfXhr.send();
+
+    // Fetch FX algo performance
+    var fxXhr = new XMLHttpRequest();
+    fxXhr.open('GET', '/findforex2/portfolio/api/data.php?type=algo_performance', true);
+    fxXhr.onload = function() {
+        if (fxXhr.status === 200) {
+            try { var d = JSON.parse(fxXhr.responseText); fxData = d.performance || []; } catch(e) {}
+        }
+        tryRender();
+    };
+    fxXhr.onerror = function() { tryRender(); };
+    fxXhr.send();
+
+    // Fetch Crypto algo performance
+    var crXhr = new XMLHttpRequest();
+    crXhr.open('GET', '/findcryptopairs/portfolio/api/data.php?type=algo_performance', true);
+    crXhr.onload = function() {
+        if (crXhr.status === 200) {
+            try { var d = JSON.parse(crXhr.responseText); crData = d.performance || []; } catch(e) {}
+        }
+        tryRender();
+    };
+    crXhr.onerror = function() { tryRender(); };
+    crXhr.send();
+}
+
+function loadLeaderboard() {
+    apiGet('advanced_stats.php?action=leaderboard', function(data) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+
+        if (!data || !data.ok) {
+            document.getElementById('content').innerHTML = '<div class="loading" style="color:var(--red);">Failed to load leaderboard. Please try again.</div>';
+            return;
+        }
+
+        document.getElementById('timestamp').textContent = 'Scenario: ' + (data.scenario || 'Default') + ' | Rankings are backtested against historical data.';
+
+        // Formula
+        document.getElementById('formula-bar').innerHTML = '<span>Ranking Formula:</span> <code>' + (data.ranking_method || 'composite_score') + '</code>';
+
+        // Summary
+        renderSummary(data);
+
+        // Store data and render
+        currentData = data.leaderboard || [];
+        sortData(currentSort, currentDir);
+        renderTable();
+        renderMobileCards();
+        setupSort();
+
+        // Cross-asset leaderboards
+        renderCrossAsset();
+    });
+}
+
+loadLeaderboard();
+</script>
+</body>
+</html>

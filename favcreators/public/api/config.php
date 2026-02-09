@@ -24,6 +24,11 @@ function _config_read_env($key) {
         if ($len >= 2 && $val[0] === "'" && $val[$len-1] === "'") {
             return substr($val, 1, -1);
         }
+        // Strip inline comments (unquoted # or // at end)
+        $hash = strpos($val, '#');
+        if ($hash !== false) {
+            $val = rtrim(substr($val, 0, $hash));
+        }
         return $val;
     }
     return null;

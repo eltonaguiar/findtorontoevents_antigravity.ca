@@ -24,7 +24,7 @@ FPSV4.Engine = (function () {
 
   // ─── Player state ───
   var player = {
-    pos: new THREE.Vector3(0, PLAYER_HEIGHT, 0),
+    pos: new THREE.Vector3(5, PLAYER_HEIGHT, 10),
     vel: new THREE.Vector3(),
     pitch: 0,
     yaw: 0,
@@ -344,10 +344,10 @@ FPSV4.Engine = (function () {
 
     // Movement direction
     var moveX = 0, moveZ = 0;
-    if (keys['KeyW']) moveZ -= 1;
-    if (keys['KeyS']) moveZ += 1;
-    if (keys['KeyA']) moveX -= 1;
-    if (keys['KeyD']) moveX += 1;
+    if (keys['KeyW'] || keys['ArrowUp']) moveZ -= 1;
+    if (keys['KeyS'] || keys['ArrowDown']) moveZ += 1;
+    if (keys['KeyA'] || keys['ArrowLeft']) moveX -= 1;
+    if (keys['KeyD'] || keys['ArrowRight']) moveX += 1;
 
     var moving = moveX !== 0 || moveZ !== 0;
 
@@ -511,7 +511,7 @@ FPSV4.Engine = (function () {
 
   // ─── Reset Player ───
   function resetPlayer() {
-    player.pos.set(0, PLAYER_HEIGHT, 0);
+    player.pos.set(5, PLAYER_HEIGHT, 10);
     player.vel.set(0, 0, 0);
     player.pitch = 0;
     player.yaw = 0;

@@ -43,13 +43,18 @@
     moviesApi: '/MOVIESHOWS3/api/get-movies.php',
     nearMeApi: 'https://findtorontoevents.ca/fc/api/nearme.php',
     nowPlayingApi: 'https://findtorontoevents.ca/fc/api/now_playing.php',
+    cineplexShowtimesApi: 'https://findtorontoevents.ca/fc/api/cineplex_showtimes.php',
     responseDelay: 300,
     firstTimeKey: 'fte_ai_first_visit',
     visitedSectionsKey: 'fte_ai_visited_sections',
     tutorialModeKey: 'fte_ai_tutorial_mode',
     hideBtnKey: 'fte_ai_hide_btn',
     muteTTSKey: 'fte_ai_mute_tts',
-    aiEnabledKey: 'fte_ai_enabled'
+    aiEnabledKey: 'fte_ai_enabled',
+    defaultTheaterKey: 'fte_default_theater',
+    guestUsageApi: 'https://findtorontoevents.ca/fc/api/guest_usage.php',
+    guestAiUsedKey: 'fte_ai_guest_used',
+    verifyBusinessApi: 'https://findtorontoevents.ca/fc/api/verify_business.php'
   };
 
   // ═══════════════════════════════════════════════════════════
@@ -98,7 +103,9 @@
     userLocation: null, // { lat, lon, area } cached geolocation
     lastOfferedCreator: null, // { name, url, platform } — tracks the creator we offered to open
     aiEnabled: load(CONFIG.aiEnabledKey, true), // master on/off — persisted for logged-in users
-    dbPrefsSynced: false // whether we've fetched DB prefs for this session
+    dbPrefsSynced: false, // whether we've fetched DB prefs for this session
+    guestAiCheckDone: false, // whether we've verified guest AI usage with server
+    guestAiAllowed: true    // cached result of guest AI check
   };
 
   // ═══════════════════════════════════════════════════════════
@@ -497,6 +504,75 @@
     } catch (e) { /* silent */ }
   }
 
+  // ── GUEST RATE-LIMIT HELPERS ──
+  function isUserLoggedIn() {
+    var user = window.__fc_logged_in_user__;
+    if (user && user.id) return true;
+    try {
+      var c = localStorage.getItem('fav_creators_auth_user');
+      if (c) { var p = JSON.parse(c); if (p && p.id) return true; }
+    } catch (_) {}
+    return false;
+  }
+
+  function checkGuestAiAllowed(callback) {
+    if (isUserLoggedIn()) { callback(true); return; }
+    // Quick client-side check
+    if (load(CONFIG.guestAiUsedKey, false) && state.guestAiCheckDone) {
+      callback(false);
+      return;
+    }
+    // Server-side check by IP
+    try {
+      fetch(CONFIG.guestUsageApi + '?action=check_ai')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          state.guestAiCheckDone = true;
+          if (data && data.ok) {
+            state.guestAiAllowed = data.allowed;
+            if (!data.allowed) store(CONFIG.guestAiUsedKey, true);
+            callback(data.allowed);
+          } else {
+            callback(true); // fail open
+          }
+        })
+        .catch(function () { callback(true); }); // fail open
+    } catch (e) { callback(true); }
+  }
+
+  function recordGuestAiUsage() {
+    if (isUserLoggedIn()) return;
+    try {
+      fetch(CONFIG.guestUsageApi, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'record_ai' })
+      }).then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data && !data.allowed) {
+            store(CONFIG.guestAiUsedKey, true);
+            state.guestAiAllowed = false;
+          }
+        }).catch(function () { /* silent */ });
+    } catch (e) { /* silent */ }
+  }
+
+  function showGuestAiLimitMessage() {
+    addMessage('ai',
+      '<div class="fte-ai-summary">' +
+      '<b>Sign in to keep chatting!</b><br><br>' +
+      'You\'ve used your free message as a guest. ' +
+      'Sign in to get <b>unlimited</b> access to the AI assistant, plus:<br><br>' +
+      '\u2022 Track your favorite creators across platforms<br>' +
+      '\u2022 Save events and build your calendar<br>' +
+      '\u2022 Get personalized recommendations<br><br>' +
+      '<a href="/fc/#login" style="display:inline-block;padding:10px 24px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px;">Sign In / Create Account</a>' +
+      '<br><br><span style="color:#64748b;font-size:0.8rem;">It\'s free and takes under 30 seconds.</span>' +
+      '</div>',
+      false);
+    setStatus('Sign in required', '#f59e0b');
+  }
+
   function hideAssistantCompletely() {
     var btn = document.getElementById('fte-ai-btn');
     var panel = document.getElementById('fte-ai-panel');
@@ -628,6 +704,11 @@
     if (panel) {
       if (state.open) {
         panel.classList.add('open');
+        // If user logged in since guest limit was hit, clear the gate
+        if (isUserLoggedIn() && load(CONFIG.guestAiUsedKey, false)) {
+          store(CONFIG.guestAiUsedKey, false);
+          state.guestAiAllowed = true;
+        }
         checkFirstVisit();
         setTimeout(function () {
           var inp = document.getElementById('fte-ai-input');
@@ -851,7 +932,7 @@
 
     var lower = input.toLowerCase();
 
-    // ── STOP / SHUT UP / PAUSE ──
+    // ── STOP / SHUT UP / PAUSE ── (always allowed, even for guests)
     if (lower === 'stop' || lower === 'shut up' || lower.indexOf('shut up') !== -1 || lower === 'be quiet' || lower === 'silence' || lower === 'pause') {
       stopSpeaking();
       state.processing = false;
@@ -865,6 +946,35 @@
       return;
     }
 
+    // ── GUEST AI RATE-LIMIT GATE ──
+    // Logged-in users skip this entirely. Guests get 1 free message, tracked by IP.
+    if (!isUserLoggedIn()) {
+      // Quick client-side check first (avoids API call if already used)
+      if (load(CONFIG.guestAiUsedKey, false)) {
+        showGuestAiLimitMessage();
+        return;
+      }
+      // Async server-side check by IP
+      addTypingIndicator();
+      setStatus('Checking...', '#a5b4fc');
+      checkGuestAiAllowed(function (allowed) {
+        removeTypingIndicator();
+        if (!allowed) {
+          showGuestAiLimitMessage();
+          return;
+        }
+        // Record usage, then process the message
+        recordGuestAiUsage();
+        _processUserInputInner(lower, input);
+      });
+      return;
+    }
+
+    // Logged-in users: process immediately
+    _processUserInputInner(lower, input);
+  }
+
+  function _processUserInputInner(lower, input) {
     // ── HIDE / SHOW AI BUTTON ──
     if (/hide (ai|assistant|bot) (button|icon)/i.test(lower) || /hide the (ai|assistant)/i.test(lower)) {
       state.hiddenOnMovies = true;
@@ -1340,6 +1450,90 @@
         return;
       }
 
+      // ── SET DEFAULT THEATER ──
+      var theaterSetMatch = lower.match(/(?:make|set|change)\s+(?:my\s+)?(?:default\s+)?(?:theat(?:re|er)|cinema)\s+(?:to\s+)(.+)/i);
+      if (!theaterSetMatch) theaterSetMatch = lower.match(/(?:default\s+theat(?:re|er)|my\s+theat(?:re|er))\s+(?:is|to)\s+(.+)/i);
+      if (theaterSetMatch) {
+        var newTheater = theaterSetMatch[1].trim().replace(/^["']/, '').replace(/["']$/, '');
+        _setDefaultTheater(newTheater);
+        addMessage('ai', '<div class="fte-ai-summary"><b>Default theater updated!</b><br><br>' +
+          'Your default theater is now <b>' + escapeHtml(newTheater) + '</b>.<br>' +
+          'Movie showtime queries will show times at this theater first.<br><br>' +
+          '<a href="' + escapeHtml(_getTheaterShowtimeUrl(newTheater)) + '" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:600;">\uD83C\uDFAC View showtimes at ' + escapeHtml(newTheater) + '</a></div>');
+        speakText('Default theater set to ' + newTheater + '.');
+        setStatus('Ready', '#64748b');
+        state.processing = false;
+        showStopBtn(false);
+        return;
+      }
+
+      // ── SET/CHANGE DEFAULT THEATER (bare, no theater name given) ──
+      if (/(?:set|change|pick|choose|select)\s+(?:my\s+)?(?:default\s+)?(?:theat(?:re|er)|cinema)$/i.test(lower) ||
+          /(?:set|change|pick|choose|select)\s+(?:(?:a|my)\s+)?(?:default|fav(?:ou?rite)?)\s+(?:theat(?:re|er)|cinema)$/i.test(lower)) {
+        state.processing = true;
+        showStopBtn(true);
+        setStatus('Finding nearby theaters...', '#f59e0b');
+        addMessage('ai', '<div id="fte-theater-picker-loading" class="fte-ai-summary"><b>Finding theaters near you...</b></div>', false);
+        var pickLoc = await _getNearMeLocation();
+        var pickLocParams = '';
+        if (pickLoc && pickLoc.lat) pickLocParams = '&lat=' + pickLoc.lat + '&lng=' + pickLoc.lng;
+        var pickData = { ok: false, results: [] };
+        try {
+          var pickResp = await fetch(CONFIG.nearMeApi + '?query=cinema&limit=6&provider=google' + pickLocParams);
+          pickData = await pickResp.json();
+        } catch(e) {}
+        var pickEl = document.getElementById('fte-theater-picker-loading');
+        var pickHtml = '<div class="fte-ai-summary">';
+        var currentDefault = _getDefaultTheater();
+        if (currentDefault) {
+          pickHtml += '<div style="margin-bottom:8px;font-size:0.85rem;color:#94a3b8;">Current default: <b style="color:#fbbf24;">' + escapeHtml(currentDefault) + '</b></div>';
+        }
+        pickHtml += '<b>Pick your default theater:</b><br><br>';
+        if (pickData.ok && pickData.results && pickData.results.length > 0) {
+          for (var pi = 0; pi < pickData.results.length; pi++) {
+            var pt = pickData.results[pi];
+            var safePt = pt.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            var isCurrentDefault = currentDefault && pt.name.toLowerCase() === currentDefault.toLowerCase();
+            pickHtml += '<div style="margin-bottom:8px;padding:8px 10px;background:rgba(100,116,139,0.08);border-radius:8px;cursor:pointer;border-left:2px solid ' + (isCurrentDefault ? '#fbbf24' : '#64748b') + ';" onclick="__fteSetDefaultTheater(\'' + safePt + '\');this.parentElement.querySelectorAll(\'div[style]\').forEach(function(d){d.style.borderLeftColor=\'#64748b\'});this.style.borderLeftColor=\'#fbbf24\';this.querySelector(\'.fte-pick-status\').textContent=\'\u2605 Default\';this.querySelector(\'.fte-pick-status\').style.color=\'#fbbf24\'">';
+            pickHtml += '<div style="display:flex;justify-content:space-between;align-items:center;">';
+            pickHtml += '<b style="font-size:0.95rem;">' + escapeHtml(pt.name) + '</b>';
+            pickHtml += '<span style="color:#a78bfa;font-size:0.8rem;margin-left:8px;">' + _formatDistance(pt.distance_m) + '</span>';
+            pickHtml += '</div>';
+            if (pt.address) pickHtml += '<div style="font-size:0.82rem;color:#94a3b8;">' + escapeHtml(pt.address) + '</div>';
+            pickHtml += '<span class="fte-pick-status" style="font-size:0.8rem;color:' + (isCurrentDefault ? '#fbbf24' : '#6366f1') + ';">' + (isCurrentDefault ? '\u2605 Default' : 'Tap to select') + '</span>';
+            pickHtml += '</div>';
+          }
+        } else {
+          pickHtml += '<span style="color:#94a3b8;">Could not find theaters near you. Try saying "set my default theater to [theater name]".</span>';
+        }
+        pickHtml += '<div style="margin-top:8px;font-size:0.82rem;color:#94a3b8;">Or type: <b>"set my default theater to [name]"</b></div>';
+        pickHtml += '</div>';
+        if (pickEl) { pickEl.outerHTML = pickHtml; } else { addMessage('ai', pickHtml, false); }
+        speakText(currentDefault ? 'Your current default is ' + currentDefault + '. Tap a theater to change it.' : 'Tap a theater to set it as your default.');
+        setStatus('Ready', '#64748b');
+        state.processing = false;
+        showStopBtn(false);
+        return;
+      }
+
+      // ── WHAT IS MY DEFAULT THEATER ──
+      if (/(?:what|show|which)\s+(?:is\s+)?(?:my\s+)?(?:default\s+)?theat(?:re|er)/i.test(lower) && !/near|playing|showtime|movie/i.test(lower)) {
+        var dt = _getDefaultTheater();
+        if (dt) {
+          addMessage('ai', '<div class="fte-ai-summary"><b>Your default theater:</b> ' + escapeHtml(dt) + '<br><br>' +
+            '<a href="' + escapeHtml(_getTheaterShowtimeUrl(dt)) + '" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:600;">\uD83C\uDFAC View showtimes</a>' +
+            ' <span style="margin-left:10px;color:#94a3b8;font-size:0.85rem;cursor:pointer;text-decoration:underline;" onclick="__fteSetDefaultTheater(\'\');this.parentElement.innerHTML=\'Default theater cleared. Next showtime search will use your nearest theater.\'">Clear default</span></div>');
+        } else {
+          addMessage('ai', '<div class="fte-ai-summary">You haven\'t set a default theater yet.<br><br>' +
+            'Say <b>"set my default theater to Cineplex Yonge-Dundas"</b> or ask about movie showtimes \u2014 you can set a default from the results.</div>');
+        }
+        speakText(dt ? 'Your default theater is ' + dt + '.' : 'You haven\'t set a default theater yet.');
+        setStatus('Ready', '#64748b');
+        state.processing = false;
+        showStopBtn(false);
+        return;
+      }
+
       // ── WORLD EVENTS / WHAT'S HAPPENING IN THE WORLD ──
       if (_isWorldEventsQuery(lower)) {
         await handleWorldEvents(lower);
@@ -1349,6 +1543,12 @@
       // ── MOVIES NEAR ME / NOW PLAYING ──
       if (_isMovieShowtimesQuery(lower)) {
         await handleNowPlayingNearMe(lower, raw);
+        return;
+      }
+
+      // ── BUSINESS VERIFY (is X still open?) ──
+      if (_isBusinessVerifyQuery(lower)) {
+        await handleBusinessVerify(lower);
         return;
       }
 
@@ -4562,6 +4762,12 @@
       result.type = 'at_time';
       result.label = 'around ' + ht + (mt ? ':' + (mt < 10 ? '0' : '') + mt : '') + apt;
       result.googleQuery = 'showtimes+' + ht + apt;
+      var atDate = new Date();
+      var atH24 = ht;
+      if (apt === 'pm' && ht < 12) atH24 = ht + 12;
+      if (apt === 'am' && ht === 12) atH24 = 0;
+      atDate.setHours(atH24, mt, 0, 0);
+      result.targetTime = atDate;
       return result;
     }
 
@@ -4591,6 +4797,272 @@
 
     return result;
   }
+
+  // ── DEFAULT THEATER HELPERS ──
+
+  function _getDefaultTheater() {
+    try { return localStorage.getItem(CONFIG.defaultTheaterKey) || ''; } catch(e) { return ''; }
+  }
+
+  function _setDefaultTheater(name) {
+    try { localStorage.setItem(CONFIG.defaultTheaterKey, name); } catch(e) {}
+  }
+
+  function _getTheaterShowtimeUrl(theaterName, timeFilter) {
+    timeFilter = timeFilter || { googleQuery: 'showtimes' };
+    return 'https://www.google.com/search?q=' + encodeURIComponent(theaterName + ' ' + timeFilter.googleQuery);
+  }
+
+  // Global function for "set as default" onclick in rendered HTML
+  window.__fteSetDefaultTheater = function(name) {
+    _setDefaultTheater(name);
+    var links = document.querySelectorAll('.fte-theater-default-link');
+    for (var i = 0; i < links.length; i++) {
+      var linkName = links[i].getAttribute('data-theater');
+      if (linkName === name) {
+        links[i].innerHTML = '\u2605 Default theater';
+        links[i].style.color = '#fbbf24';
+        links[i].style.cursor = 'default';
+        links[i].onclick = null;
+      } else {
+        links[i].innerHTML = '\u2606 Set as default';
+        links[i].style.color = '#64748b';
+        links[i].style.cursor = 'pointer';
+      }
+    }
+    // Update primary theater banner if present
+    var banner = document.getElementById('fte-primary-theater-banner');
+    if (banner) {
+      var bannerName = banner.querySelector('.fte-primary-theater-name');
+      if (bannerName) bannerName.textContent = name;
+      var bannerLabel = banner.querySelector('.fte-primary-theater-label');
+      if (bannerLabel) bannerLabel.textContent = '\u2605 Your Theater';
+      banner.style.background = 'rgba(251,191,36,0.08)';
+      banner.style.borderColor = 'rgba(251,191,36,0.2)';
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // BUSINESS VERIFICATION (is X still open?)
+  // ═══════════════════════════════════════════════════════════
+
+  /** Detect if user query is asking about a specific business being open/closed */
+  function _isBusinessVerifyQuery(lower) {
+    // "is [business] still open" / "is [business] closed"
+    if (/\bis\s+.{2,40}\s+(still\s+)?(open|closed|shut\s*down|operating|running)\b/i.test(lower)) return true;
+    // "check if [business] is open/closed"
+    if (/\bcheck\s+(if|whether)\s+.{2,40}\s+(is|has)\s+(open|closed|shut|still)/i.test(lower)) return true;
+    // "did [business] close" / "has [business] closed"
+    if (/\b(did|has)\s+.{2,40}\s+(close[d]?|shut\s*down|gone)\b/i.test(lower)) return true;
+    // "verify [business]" / "verify if [business]"
+    if (/\bverify\s+(if\s+)?.{2,40}\s+(is\s+)?(open|closed|still)/i.test(lower)) return true;
+    // "[business] still open?" / "[business] closed?"
+    if (/\b.{3,40}\s+still\s+open\s*\??$/i.test(lower)) return true;
+    return false;
+  }
+
+  /** Parse a business verify query to extract name and optional address */
+  function _parseBusinessVerifyQuery(lower) {
+    var name = '';
+    var address = '';
+
+    // Pattern: "is [business] (on/at [address]) still open/closed"
+    var m = lower.match(/\bis\s+(.+?)\s+(?:on|at)\s+(.+?)\s+(?:still\s+)?(?:open|closed|shut|operating|running)/i);
+    if (m) {
+      name = m[1];
+      address = m[2];
+    }
+
+    // Pattern: "is [business] still open/closed" (no address)
+    if (!name) {
+      m = lower.match(/\bis\s+(.+?)\s+(?:still\s+)?(?:open|closed|shut\s*down|operating|running)/i);
+      if (m) name = m[1];
+    }
+
+    // Pattern: "check if [business] (on/at [address]) is open/closed"
+    if (!name) {
+      m = lower.match(/\bcheck\s+(?:if|whether)\s+(.+?)\s+(?:on|at)\s+(.+?)\s+(?:is|has)\s+(?:still\s+)?(?:open|closed)/i);
+      if (m) { name = m[1]; address = m[2]; }
+    }
+    if (!name) {
+      m = lower.match(/\bcheck\s+(?:if|whether)\s+(.+?)\s+(?:is|has)\s+(?:still\s+)?(?:open|closed)/i);
+      if (m) name = m[1];
+    }
+
+    // Pattern: "did [business] close" / "has [business] closed"
+    if (!name) {
+      m = lower.match(/\b(?:did|has)\s+(.+?)\s+(?:close[d]?|shut\s*down|gone)/i);
+      if (m) name = m[1];
+    }
+
+    // Pattern: "[business] still open?"
+    if (!name) {
+      m = lower.match(/^(.+?)\s+still\s+open\s*\??$/i);
+      if (m) name = m[1];
+    }
+
+    // Extract address from name if it contains "on/at [street]"
+    if (name && !address) {
+      m = name.match(/^(.+?)\s+(?:on|at)\s+(.+)$/i);
+      if (m) { name = m[1]; address = m[2]; }
+    }
+
+    // Clean up: remove leading "the"
+    name = name.replace(/^the\s+/i, '').trim();
+
+    return { name: name, address: address };
+  }
+
+  /** Handle a business verification query */
+  async function handleBusinessVerify(lower) {
+    var parsed = _parseBusinessVerifyQuery(lower);
+
+    if (!parsed.name) {
+      addMessage('ai', '<div class="fte-ai-summary"><b>Business Verification</b><br><br>' +
+        'I can check if a business is still open or has closed. Try asking like:<br>' +
+        '\u2022 "Is 241 Pizza on Queen Street still open?"<br>' +
+        '\u2022 "Check if Blockbuster Video is closed"<br>' +
+        '\u2022 "Did the cafe on Dundas close?"</div>');
+      setStatus('Ready', '#64748b');
+      return;
+    }
+
+    // Show loading
+    addMessage('ai', '<div id="fte-ai-verify-loading" class="fte-ai-summary">' +
+      '<b>\uD83D\uDD0D Checking: ' + escapeHtml(parsed.name) + '</b>' +
+      (parsed.address ? '<br><span style="color:#94a3b8;">Near: ' + escapeHtml(parsed.address) + '</span>' : '') +
+      '<br><span style="color:#a78bfa;">Cross-referencing Foursquare + OpenStreetMap...</span></div>');
+
+    // Build API URL
+    var params = 'name=' + encodeURIComponent(parsed.name);
+    if (parsed.address) params += '&address=' + encodeURIComponent(parsed.address);
+    var url = CONFIG.verifyBusinessApi + '?' + params;
+
+    try {
+      var resp = await fetch(url);
+      var data = await resp.json();
+
+      if (!data.ok) {
+        _replaceVerifyLoading('<div class="fte-ai-summary"><b>Verification Error</b><br><br>' +
+          escapeHtml(data.error || 'Unknown error') + '</div>');
+        setStatus('Ready', '#64748b');
+        return;
+      }
+
+      _renderBusinessVerifyResult(data, parsed);
+    } catch (err) {
+      _replaceVerifyLoading('<div class="fte-ai-summary"><b>Connection Error</b><br><br>' +
+        'Could not reach the verification service. Please try again later.<br>' +
+        '<span style="color:#94a3b8;">' + escapeHtml(err.message || 'Network error') + '</span></div>');
+      setStatus('Ready', '#64748b');
+    }
+  }
+
+  function _replaceVerifyLoading(html) {
+    var el = document.getElementById('fte-ai-verify-loading');
+    if (el) {
+      el.outerHTML = html;
+    } else {
+      addMessage('ai', html);
+    }
+  }
+
+  /** Render the business verification result card */
+  function _renderBusinessVerifyResult(data, parsed) {
+    // Verdict styling
+    var verdictColors = {
+      'likely_closed': { bg: 'rgba(239,68,68,0.1)', border: '#ef4444', icon: '\u274C', label: 'Likely Closed' },
+      'possibly_closed': { bg: 'rgba(245,158,11,0.1)', border: '#f59e0b', icon: '\u26A0\uFE0F', label: 'Possibly Closed' },
+      'temporarily_closed': { bg: 'rgba(245,158,11,0.1)', border: '#f59e0b', icon: '\u23F8\uFE0F', label: 'Temporarily Closed' },
+      'likely_open': { bg: 'rgba(34,197,94,0.1)', border: '#22c55e', icon: '\u2705', label: 'Likely Open' },
+      'possibly_open': { bg: 'rgba(34,197,94,0.08)', border: '#86efac', icon: '\uD83D\uDFE2', label: 'Possibly Open' },
+      'unverified': { bg: 'rgba(148,163,184,0.1)', border: '#a78bfa', icon: '\uD83D\uDD0D', label: 'Unverified' },
+      'unknown': { bg: 'rgba(148,163,184,0.1)', border: '#94a3b8', icon: '\u2753', label: 'Unknown' }
+    };
+
+    var v = verdictColors[data.verdict] || verdictColors['unknown'];
+
+    var html = '<div class="fte-ai-summary" style="border-left:3px solid ' + v.border + ';">';
+
+    // Header
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">';
+    html += '<span style="font-size:1.5em;">' + v.icon + '</span>';
+    html += '<div><b style="font-size:1.1em;">' + escapeHtml(data.business_name) + '</b>';
+    html += '<br><span style="color:' + v.border + ';font-weight:600;font-size:0.95em;">' + v.label + '</span>';
+    html += ' <span style="color:#64748b;font-size:0.8em;">(' + escapeHtml(data.confidence) + ' confidence)</span>';
+    html += '</div></div>';
+
+    // Summary
+    if (data.summary) {
+      html += '<p style="color:#cbd5e1;margin:0 0 12px;line-height:1.5;">' + escapeHtml(data.summary) + '</p>';
+    }
+
+    // Sources
+    if (data.sources && data.sources.length > 0) {
+      html += '<div style="border-top:1px solid rgba(148,163,184,0.2);padding-top:10px;margin-top:8px;">';
+      html += '<b style="font-size:0.85em;color:#94a3b8;">Sources:</b>';
+
+      for (var i = 0; i < data.sources.length; i++) {
+        var src = data.sources[i];
+        var srcIcon = '\uD83C\uDF10';
+        var srcLabel = src.provider || 'Unknown';
+        if (src.provider === 'foursquare') { srcIcon = '\uD83D\uDCCD'; srcLabel = 'Foursquare'; }
+        else if (src.provider === 'osm') { srcIcon = '\uD83C\uDF10'; srcLabel = 'OpenStreetMap'; }
+        else if (src.provider === 'google_places') { srcIcon = '\uD83D\uDDFA\uFE0F'; srcLabel = 'Google Places'; }
+
+        html += '<div style="margin-top:6px;padding:6px 8px;background:rgba(30,30,60,0.4);border-radius:6px;font-size:0.9em;">';
+        html += '<span>' + srcIcon + ' <b>' + srcLabel + '</b></span>';
+
+        if (src.status === 'closed' || src.status === 'disused') {
+          html += ' \u2014 <span style="color:#f87171;">Closed</span>';
+        } else if (src.status === 'temporarily_closed') {
+          html += ' \u2014 <span style="color:#fbbf24;">Temporarily Closed</span>';
+        } else if (src.status === 'open' || src.status === 'active') {
+          html += ' \u2014 <span style="color:#86efac;">Open</span>';
+        } else if (src.status === 'found') {
+          html += ' \u2014 <span style="color:#a78bfa;">Listed</span>';
+        } else if (src.status === 'unsure') {
+          html += ' \u2014 <span style="color:#fbbf24;">Unsure</span>';
+        } else if (src.status === 'not_found') {
+          html += ' \u2014 <span style="color:#94a3b8;">Not found</span>';
+        } else if (src.status === 'error' || src.status === 'unavailable') {
+          html += ' \u2014 <span style="color:#94a3b8;">' + escapeHtml(src.note || 'Unavailable') + '</span>';
+        }
+
+        if (src.name) {
+          html += '<br><span style="color:#94a3b8;">Match: ' + escapeHtml(src.name) + '</span>';
+        }
+        if (src.address) {
+          html += '<br><span style="color:#94a3b8;">' + escapeHtml(src.address) + '</span>';
+        }
+        if (src.category) {
+          html += '<br><span style="color:#94a3b8;font-size:0.85em;">Category: ' + escapeHtml(src.category) + '</span>';
+        }
+        if (src.business_status) {
+          html += '<br><span style="color:#94a3b8;font-size:0.85em;">Google status: ' + escapeHtml(src.business_status) + '</span>';
+        }
+
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+
+    // Google Maps link
+    var mapsQuery = data.business_name;
+    if (data.query_address) mapsQuery += ' ' + data.query_address;
+    if (data.query_city) mapsQuery += ' ' + data.query_city;
+    html += '<div style="margin-top:10px;">';
+    html += '<a href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(mapsQuery) + '" target="_blank" rel="noopener" ' +
+      'style="color:#a78bfa;text-decoration:none;font-size:0.9em;">\uD83D\uDDFA\uFE0F View on Google Maps</a>';
+    html += '</div>';
+
+    html += '</div>';
+
+    _replaceVerifyLoading(html);
+    speakText(data.business_name + ' is ' + (data.verdict || 'unknown status') + '. ' + (data.summary || ''));
+    setStatus('Ready', '#64748b');
+  }
+
 
   // ═══════════════════════════════════════════════════════════
   // NEAR ME / LOCATION FINDER
@@ -4622,7 +5094,7 @@
     // Dietary + food/restaurant/near
     if (/(?:halal|kosher|vegan|vegetarian|gluten.?free|dairy.?free|keto)\s+.*(food|restaurant|near|place|option|pizza|burger|shop)/i.test(lower)) return true;
     // Food/restaurant explicit queries
-    if (/(?:restaurant|coffee\s*shop|cafe|pizza\s*(place|shop)?|burger\s*(joint|place)?|sushi|ramen|pho|shawarma|falafel|taco|hot\s*dog|deli|bakery|donut|ice\s*cream|bubble\s*tea|boba)\s*(near|open|close|around)/i.test(lower)) return true;
+    if (/(?:restaurants?|coffee\s*shops?|cafes?|pizza\s*(places?|shops?)?|burger\s*(joints?|places?)?|sushi|ramen|pho|shawarma|falafel|tacos?|hot\s*dogs?|delis?|baker(y|ies)|donuts?|ice\s*cream|bubble\s*tea|boba)\s*(near|open|close|around)/i.test(lower)) return true;
     if (/where\s+(can i|to|should i)\s+eat/i.test(lower)) return true;
     if (/food\s+near/i.test(lower) || /places\s+to\s+eat/i.test(lower)) return true;
     // Time-based: "open now/late/24/7/at midnight/till 3am" with a place term
@@ -4692,8 +5164,12 @@
     // ── "I need / I want / I'm looking for" patterns ──
     if (/\b(?:i\s+need|i\s+want|i(?:'m|\s+am)\s+looking\s+for|i(?:'m|\s+am)\s+searching\s+for|looking\s+for)\s+(?:a\s+|an\s+|some\s+|the\s+)?(?:restaurant|cafe|coffee|food|pizza|bar|pub|store|shop|pharmacy|clinic|dentist|doctor|gym|salon|barber|bank|atm|gas|station|hotel|hostel|laundry|mechanic|vet|washroom|restroom|bathroom|library)/i.test(lower)) return true;
 
+    // ── "[anything] near [street address / postal code]" — catches "pizza places near 21 mccaul street" ──
+    if (/\b.+\s+near\s+\d+\s+[a-z]/i.test(lower)) return true;
+    if (/\b.+\s+near\s+[a-z]\d[a-z]\s*\d[a-z]\d/i.test(lower)) return true;
+
     // ── "Show me" + place type ──
-    if (/show\s+me\s+(?:all\s+)?(?:the\s+)?(?:restaurant|cafe|coffee|food|pizza|bar|store|shop|pharmacy|clinic|gym|hotel|bank|gas\s+station|washroom|library|park)/i.test(lower)) return true;
+    if (/show\s+me\s+(?:all\s+)?(?:the\s+)?(?:restaurants?|cafes?|coffee|food|pizza|bars?|stores?|shops?|pharmacy|clinic|gym|hotel|bank|gas\s+station|washroom|library|park)/i.test(lower)) return true;
 
     // ── "Is there a [place] near/around here" ──
     if (/is\s+there\s+(?:a|an)\s+.+\s+(?:near|around|close|nearby)/i.test(lower)) return true;
@@ -5999,20 +6475,215 @@
   }
 
   /** Render the combined "now playing + theaters + events" card */
-  function _renderNowPlayingCard(nowPlayingData, theaterData, filmEvents, userLoc, timeFilter) {
+  function _renderNowPlayingCard(nowPlayingData, theaterData, filmEvents, userLoc, timeFilter, showtimesData) {
     timeFilter = timeFilter || { type: null, label: '', googleQuery: 'showtimes' };
+    showtimesData = showtimesData || { ok: false };
+    var defaultTheater = _getDefaultTheater();
     var html = '<div class="fte-ai-summary">';
+
+    // Determine primary theater (default > closest)
+    var primaryTheater = '';
+    if (defaultTheater) {
+      primaryTheater = defaultTheater;
+    } else if (theaterData && theaterData.ok && theaterData.results && theaterData.results.length > 0) {
+      primaryTheater = theaterData.results[0].name;
+    }
+    var primaryTheaterUrl = primaryTheater ? _getTheaterShowtimeUrl(primaryTheater, timeFilter) : '';
 
     // ── Time filter banner (if user specified a time) ──
     if (timeFilter.label) {
       html += '<div style="margin-bottom:10px;padding:8px 12px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.25);border-radius:8px;font-size:0.9rem;">';
       html += '<span style="color:#fbbf24;font-weight:600;">\u23F0 Showtimes ' + escapeHtml(timeFilter.label) + '</span>';
-      html += '<br><span style="font-size:0.8rem;color:#94a3b8;">Click a movie poster or theater below to see exact showtimes for this time.</span>';
+      if (primaryTheater) {
+        html += ' at <b>' + escapeHtml(primaryTheater) + '</b>';
+      }
+      html += '<br><a href="' + escapeHtml(primaryTheaterUrl || '#') + '" target="_blank" style="color:#60a5fa;font-size:0.85rem;text-decoration:none;">View exact showtimes \u2192</a>';
       html += '</div>';
     }
 
+    // ── "Set a favorite theater" prompt (when no default is set) ──
+    if (!defaultTheater && theaterData && theaterData.ok && theaterData.results && theaterData.results.length > 0) {
+      html += '<div style="margin-bottom:12px;padding:10px 14px;background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.15);border-radius:10px;">';
+      html += '<div style="font-size:0.9rem;color:#fbbf24;font-weight:600;margin-bottom:4px;">\u2606 Pick your favorite theater</div>';
+      html += '<div style="font-size:0.82rem;color:#94a3b8;margin-bottom:8px;">Set a default to quickly see showtimes with one tap next time.</div>';
+      html += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+      var theaterPickCount = Math.min(theaterData.results.length, 4);
+      for (var tp = 0; tp < theaterPickCount; tp++) {
+        var tpName = theaterData.results[tp].name;
+        var tpDist = _formatDistance(theaterData.results[tp].distance_m);
+        var safeTp = tpName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        html += '<button onclick="__fteSetDefaultTheater(\'' + safeTp + '\')" style="padding:5px 12px;border-radius:16px;border:1px solid rgba(99,102,241,0.25);background:rgba(99,102,241,0.08);color:#a5b4fc;font-size:0.8rem;cursor:pointer;transition:all .2s;" onmouseover="this.style.background=\'rgba(99,102,241,0.2)\'" onmouseout="this.style.background=\'rgba(99,102,241,0.08)\'">';
+        html += escapeHtml(tpName) + ' <span style="color:#94a3b8;">(' + tpDist + ')</span>';
+        html += '</button>';
+      }
+      html += '</div>';
+      html += '</div>';
+    }
+
+    // ── Primary theater showtime banner ──
+    if (primaryTheater) {
+      var bannerBg = defaultTheater ? 'rgba(251,191,36,0.08)' : 'rgba(96,165,250,0.08)';
+      var bannerBorder = defaultTheater ? 'rgba(251,191,36,0.2)' : 'rgba(96,165,250,0.2)';
+      html += '<div id="fte-primary-theater-banner" style="margin-bottom:12px;padding:10px 14px;background:' + bannerBg + ';border:1px solid ' + bannerBorder + ';border-radius:10px;">';
+      html += '<div class="fte-primary-theater-label" style="font-size:0.82rem;color:#94a3b8;margin-bottom:2px;">' + (defaultTheater ? '\u2605 Your Theater' : '\uD83D\uDCCD Nearest Theater') + '</div>';
+      html += '<b class="fte-primary-theater-name" style="font-size:1.05rem;">' + escapeHtml(primaryTheater) + '</b>';
+      html += '<div style="margin-top:6px;">';
+      html += '<a href="' + escapeHtml(primaryTheaterUrl) + '" target="_blank" style="display:inline-block;padding:6px 16px;background:#6366f1;color:#fff;border-radius:6px;text-decoration:none;font-size:0.9rem;font-weight:600;">View Showtimes</a>';
+      if (!defaultTheater) {
+        var safePrimary = primaryTheater.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        html += ' <span class="fte-theater-default-link" data-theater="' + escapeHtml(primaryTheater) + '" style="color:#64748b;font-size:0.8rem;cursor:pointer;margin-left:8px;" onclick="__fteSetDefaultTheater(\'' + safePrimary + '\')">\u2606 Set as default</span>';
+      }
+      html += '</div>';
+      html += '</div>';
+    }
+
+    // ── Section 0: REAL SHOWTIMES (from Cineplex API) ──
+    if (showtimesData.ok && showtimesData.showtimes && showtimesData.showtimes.length > 0) {
+      var stTheater = showtimesData.theatre || primaryTheater;
+      html += '<b style="font-size:1.05rem;">Showtimes at ' + escapeHtml(stTheater) + '</b>';
+      if (timeFilter.label) {
+        html += ' <span style="color:#fbbf24;font-size:0.85rem;">' + escapeHtml(timeFilter.label) + '</span>';
+      }
+      html += '<br>';
+      if (showtimesData.date) {
+        html += '<span style="font-size:0.78rem;color:#64748b;">' + escapeHtml(showtimesData.date) + '</span>';
+        if (showtimesData.cached && showtimesData.cache_age_minutes > 0) {
+          html += '<span style="font-size:0.78rem;color:#64748b;"> \u00b7 Updated ' + showtimesData.cache_age_minutes + ' min ago</span>';
+        }
+      }
+      html += '<br><br>';
+
+      // Time filter helper: check if a session time matches the filter
+      var nowMs = Date.now();
+      function _sessMatchesFilter(sess, tf) {
+        if (!tf || !tf.type) return true; // no filter = show all
+        var raw = sess.time_raw || '';
+        var sortT = sess.time_sort || '';
+        var sessMs = raw ? new Date(raw).getTime() : 0;
+        // Parse HH:MM from time_sort
+        var sortParts = sortT.split(':');
+        var sessH = sortParts.length >= 2 ? parseInt(sortParts[0], 10) : -1;
+        var sessM = sortParts.length >= 2 ? parseInt(sortParts[1], 10) : 0;
+
+        if (tf.type === 'now') {
+          // Starting within next 45 minutes
+          return sessMs > 0 && sessMs >= nowMs && sessMs <= nowMs + 45 * 60000;
+        } else if (tf.type === 'soon') {
+          // Starting within next 90 minutes
+          return sessMs > 0 && sessMs >= nowMs && sessMs <= nowMs + 90 * 60000;
+        } else if (tf.type === 'tonight') {
+          // 6pm onwards
+          return sessH >= 18;
+        } else if (tf.type === 'at_time' && tf.targetTime) {
+          // Within ±45 minutes of target
+          var tgt = tf.targetTime.getTime();
+          return sessMs > 0 && sessMs >= tgt - 45 * 60000 && sessMs <= tgt + 45 * 60000;
+        } else if (tf.type === 'in_minutes' && tf.targetTime) {
+          // Within ±30 minutes of target
+          var tgt2 = tf.targetTime.getTime();
+          return sessMs > 0 && sessMs >= tgt2 - 30 * 60000 && sessMs <= tgt2 + 30 * 60000;
+        }
+        return true; // 'today', 'tomorrow', unknown → show all
+      }
+
+      // Filter movies to only those with matching sessions, and count
+      var stMovies = showtimesData.showtimes;
+      var filteredMovies = [];
+      for (var fi = 0; fi < stMovies.length; fi++) {
+        var fm = stMovies[fi];
+        var fSessions = fm.sessions || [];
+        var matchedSessions = [];
+        for (var fj = 0; fj < fSessions.length; fj++) {
+          var fs = fSessions[fj];
+          if (fs.is_past) continue;
+          if (_sessMatchesFilter(fs, timeFilter)) matchedSessions.push(fs);
+        }
+        if (matchedSessions.length > 0) {
+          filteredMovies.push({ movie: fm.movie, poster_url: fm.poster_url, runtime: fm.runtime, film_url: fm.film_url, sessions: matchedSessions });
+        }
+      }
+
+      // If time filter produced zero results, fall back to all non-past sessions
+      if (filteredMovies.length === 0 && timeFilter.type) {
+        html += '<div style="font-size:0.85rem;color:#fbbf24;margin-bottom:8px;">No movies match "' + escapeHtml(timeFilter.label) + '" — showing all upcoming showtimes instead.</div>';
+        for (var fi2 = 0; fi2 < stMovies.length; fi2++) {
+          var fm2 = stMovies[fi2];
+          var fSessions2 = fm2.sessions || [];
+          var matchedSessions2 = [];
+          for (var fj2 = 0; fj2 < fSessions2.length; fj2++) {
+            if (!fSessions2[fj2].is_past) matchedSessions2.push(fSessions2[fj2]);
+          }
+          if (matchedSessions2.length > 0) {
+            filteredMovies.push({ movie: fm2.movie, poster_url: fm2.poster_url, runtime: fm2.runtime, film_url: fm2.film_url, sessions: matchedSessions2 });
+          }
+        }
+      }
+
+      var stCount = Math.min(filteredMovies.length, 10);
+      for (var si = 0; si < stCount; si++) {
+        var stm = filteredMovies[si];
+        html += '<div style="margin-bottom:8px;padding:6px 8px;background:rgba(100,116,139,0.06);border-radius:8px;">';
+        html += '<div style="display:flex;align-items:center;gap:8px;">';
+        if (stm.poster_url) {
+          html += '<img src="' + escapeHtml(stm.poster_url) + '" style="width:32px;height:48px;border-radius:4px;object-fit:cover;" loading="lazy" onerror="this.style.display=\'none\'">';
+        }
+        html += '<div style="flex:1;min-width:0;">';
+        html += '<b style="font-size:0.9rem;">' + escapeHtml(stm.movie) + '</b>';
+        if (stm.runtime > 0) {
+          html += ' <span style="color:#64748b;font-size:0.75rem;">' + stm.runtime + 'min</span>';
+        }
+        html += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:3px;">';
+        var stSessions = stm.sessions || [];
+        for (var sj = 0; sj < stSessions.length; sj++) {
+          var sess = stSessions[sj];
+          var sessStyle = 'display:inline-block;padding:3px 8px;border-radius:4px;font-size:0.78rem;font-weight:600;text-decoration:none;';
+          if (sess.is_sold_out) {
+            sessStyle += 'background:rgba(248,113,113,0.15);color:#f87171;';
+          } else if (sess.just_started) {
+            sessStyle += 'background:rgba(251,191,36,0.15);color:#fbbf24;';
+          } else if (sess.ticket_url) {
+            sessStyle += 'background:rgba(99,102,241,0.12);color:#a5b4fc;';
+          } else {
+            sessStyle += 'background:rgba(100,116,139,0.12);color:#94a3b8;';
+          }
+          var sessLabel = sess.time;
+          if (sess.experience && sess.experience !== 'Regular') {
+            sessLabel += ' ' + sess.experience;
+          }
+          if (sess.is_sold_out) {
+            sessLabel += ' SOLD OUT';
+          } else if (sess.just_started && sess.minutes_ago > 0) {
+            sessLabel += ' (started ' + sess.minutes_ago + 'min ago)';
+          }
+          if (sess.ticket_url && !sess.is_sold_out) {
+            html += '<a href="' + escapeHtml(sess.ticket_url) + '" target="_blank" style="' + sessStyle + '">' + escapeHtml(sessLabel) + '</a>';
+          } else {
+            html += '<span style="' + sessStyle + '">' + escapeHtml(sessLabel) + '</span>';
+          }
+        }
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+      }
+      if (filteredMovies.length > stCount) {
+        html += '<div style="font-size:0.8rem;color:#94a3b8;">...and ' + (filteredMovies.length - stCount) + ' more movies showing today.</div>';
+      }
+      // Disclaimer with link to official source
+      var cineplexLink = showtimesData.cineplex_url || 'https://www.cineplex.com/Showtimes';
+      html += '<div style="margin-top:6px;font-size:0.75rem;color:#64748b;">';
+      html += 'Showtimes are approximate and may change. ';
+      html += '<a href="' + escapeHtml(cineplexLink) + '" target="_blank" style="color:#60a5fa;">Verify at cineplex.com</a>';
+      html += '</div>';
+      html += '<br>';
+    }
+
     // ── Section 1: Now Playing in Theaters ──
-    html += '<b style="font-size:1.05rem;">Now Playing in Theaters</b><br><br>';
+    html += '<b style="font-size:1.05rem;">Now Playing in Theaters</b>';
+    if (primaryTheater) {
+      html += '<span style="font-size:0.82rem;color:#94a3b8;margin-left:6px;">(tap poster for showtimes)</span>';
+    }
+    html += '<br><br>';
 
     if (nowPlayingData.ok && nowPlayingData.movies && nowPlayingData.movies.length > 0) {
       // Horizontal scrolling poster row
@@ -6022,9 +6693,15 @@
       for (var i = 0; i < showCount; i++) {
         var m = movies[i];
         var posterSrc = m.poster_url || '';
-        var gmapsLink = 'https://www.google.com/maps/search/' + encodeURIComponent(m.title + ' ' + timeFilter.googleQuery);
+        // Link to showtimes at primary theater, or generic search
+        var movieLink;
+        if (primaryTheater) {
+          movieLink = 'https://www.google.com/search?q=' + encodeURIComponent(m.title + ' showtimes ' + primaryTheater);
+        } else {
+          movieLink = 'https://www.google.com/maps/search/' + encodeURIComponent(m.title + ' ' + timeFilter.googleQuery);
+        }
         html += '<div style="flex:0 0 120px;text-align:center;">';
-        html += '<a href="' + escapeHtml(gmapsLink) + '" target="_blank" style="text-decoration:none;">';
+        html += '<a href="' + escapeHtml(movieLink) + '" target="_blank" style="text-decoration:none;">';
         if (posterSrc) {
           html += '<img src="' + escapeHtml(posterSrc) + '" alt="' + escapeHtml(m.title) + '" '
             + 'style="width:120px;height:180px;border-radius:8px;object-fit:cover;box-shadow:0 2px 8px rgba(0,0,0,0.3);" '
@@ -6064,7 +6741,39 @@
     html += '<br><b style="font-size:1.05rem;">Theaters Near You</b><br><br>';
 
     if (theaterData.ok && theaterData.results && theaterData.results.length > 0) {
-      html += _buildResultsList(theaterData.results, 5);
+      var theaters = theaterData.results;
+      var theaterCount = Math.min(theaters.length, 5);
+      for (var ti = 0; ti < theaterCount; ti++) {
+        var t = theaters[ti];
+        var isDefault = defaultTheater && t.name.toLowerCase() === defaultTheater.toLowerCase();
+        var tShowtimeUrl = _getTheaterShowtimeUrl(t.name, timeFilter);
+        var borderColor = isDefault ? '#fbbf24' : (t.open_now === true ? '#86efac' : t.open_now === false ? '#f87171' : '#64748b');
+
+        html += '<div style="margin-bottom:10px;padding:8px 10px;background:rgba(100,116,139,0.08);border-radius:8px;border-left:2px solid ' + borderColor + ';">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;">';
+        html += '<b style="font-size:0.95rem;">' + (isDefault ? '\u2605 ' : (ti + 1) + '. ') + escapeHtml(t.name) + '</b>';
+        html += '<span style="color:#a78bfa;font-size:0.8rem;white-space:nowrap;margin-left:8px;">' + _formatDistance(t.distance_m) + '</span>';
+        html += '</div>';
+
+        if (t.address) {
+          html += '<div style="font-size:0.83rem;color:#94a3b8;margin-top:2px;">' + escapeHtml(t.address) + '</div>';
+        }
+
+        // Action links with showtimes
+        html += '<div style="font-size:0.8rem;margin-top:4px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;">';
+        html += '<a href="' + escapeHtml(tShowtimeUrl) + '" target="_blank" style="color:#6366f1;text-decoration:none;font-weight:600;">\uD83C\uDFAC Showtimes</a>';
+        if (t.maps_url) {
+          html += '<a href="' + escapeHtml(t.maps_url) + '" target="_blank" style="color:#60a5fa;text-decoration:none;">\uD83D\uDDFA\uFE0F Directions</a>';
+        }
+        var safeT = t.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        if (!isDefault) {
+          html += '<span class="fte-theater-default-link" data-theater="' + escapeHtml(t.name) + '" style="color:#64748b;cursor:pointer;" onclick="__fteSetDefaultTheater(\'' + safeT + '\')">\u2606 Set as default</span>';
+        } else {
+          html += '<span class="fte-theater-default-link" data-theater="' + escapeHtml(t.name) + '" style="color:#fbbf24;">\u2605 Default theater</span>';
+        }
+        html += '</div>';
+        html += '</div>';
+      }
     } else if (!userLoc) {
       html += '<span style="color:#94a3b8;">Enable location access to find theaters near you, or search "movie theatre near [your area]".</span><br>';
     } else {
@@ -6088,18 +6797,17 @@
       }
     }
 
-    // ── Footer: Google Maps showtimes link (time-aware) ──
-    var gQuery = 'movie+' + timeFilter.googleQuery.replace(/\s+/g, '+');
-    var showtimesUrl = 'https://www.google.com/maps/search/' + gQuery + '+near+me';
-    if (userLoc && userLoc.lat) {
-      showtimesUrl = 'https://www.google.com/maps/search/' + gQuery + '/@' + userLoc.lat + ',' + userLoc.lng + ',14z';
+    // ── Footer: Primary theater showtimes link ──
+    var footerUrl = primaryTheaterUrl || ('https://www.google.com/maps/search/movie+' + timeFilter.googleQuery.replace(/\s+/g, '+') + '+near+me');
+    if (!primaryTheater && userLoc && userLoc.lat) {
+      footerUrl = 'https://www.google.com/maps/search/movie+' + timeFilter.googleQuery.replace(/\s+/g, '+') + '/@' + userLoc.lat + ',' + userLoc.lng + ',14z';
     }
-    var linkLabel = timeFilter.label
-      ? 'See showtimes ' + escapeHtml(timeFilter.label) + ' on Google Maps'
-      : 'See all showtimes on Google Maps';
+    var footerLabel = primaryTheater
+      ? 'All showtimes at ' + primaryTheater
+      : (timeFilter.label ? 'See showtimes ' + timeFilter.label + ' on Google' : 'See all showtimes on Google');
     html += '<div style="margin-top:10px;padding:8px 10px;background:rgba(52,168,83,0.1);border-radius:6px;">';
-    html += '<a href="' + escapeHtml(showtimesUrl) + '" target="_blank" style="color:#34a853;font-weight:600;text-decoration:none;font-size:0.9rem;">';
-    html += '\uD83C\uDFAC ' + linkLabel + '</a>';
+    html += '<a href="' + escapeHtml(footerUrl) + '" target="_blank" style="color:#34a853;font-weight:600;text-decoration:none;font-size:0.9rem;">';
+    html += '\uD83C\uDFAC ' + escapeHtml(footerLabel) + '</a>';
     html += '</div>';
 
     // ── Footer: Browse trailers ──
@@ -6135,7 +6843,7 @@
       locParams = '&lat=' + userLoc.lat + '&lng=' + userLoc.lng;
     }
 
-    // Fire both requests in parallel
+    // Fire all requests in parallel
     var nowPlayingPromise = fetch(CONFIG.nowPlayingApi + '?region=CA')
       .then(function(r) { return r.json(); })
       .catch(function() { return { ok: false }; });
@@ -6144,15 +6852,40 @@
       .then(function(r) { return r.json(); })
       .catch(function() { return { ok: false, results: [] }; });
 
-    var results = await Promise.all([nowPlayingPromise, theatersPromise]);
+    // Fetch Cineplex showtimes for the primary theater
+    var defaultT = _getDefaultTheater();
+    var showtimesPromise = Promise.resolve({ ok: false });
+    var stDateParam = '';
+    if (timeFilter.type === 'tomorrow') {
+      var tmrw = new Date();
+      tmrw.setDate(tmrw.getDate() + 1);
+      stDateParam = '&date=' + tmrw.getFullYear() + '-' + String(tmrw.getMonth() + 1).padStart(2, '0') + '-' + String(tmrw.getDate()).padStart(2, '0');
+    }
+    if (defaultT) {
+      showtimesPromise = fetch(CONFIG.cineplexShowtimesApi + '?theatre=' + encodeURIComponent(defaultT) + stDateParam)
+        .then(function(r) { return r.json(); })
+        .catch(function() { return { ok: false }; });
+    }
+
+    var results = await Promise.all([nowPlayingPromise, theatersPromise, showtimesPromise]);
     var nowPlayingData = results[0];
     var theaterData = results[1];
+    var showtimesData = results[2];
+
+    // If no default theater but we have nearby theaters, try fetching showtimes for the nearest
+    if (!showtimesData.ok && theaterData.ok && theaterData.results && theaterData.results.length > 0) {
+      var nearestName = theaterData.results[0].name;
+      try {
+        var stResp = await fetch(CONFIG.cineplexShowtimesApi + '?theatre=' + encodeURIComponent(nearestName) + stDateParam);
+        showtimesData = await stResp.json();
+      } catch(e) { showtimesData = { ok: false }; }
+    }
 
     // Film events from cached events data
     var filmEvents = _getFilmEventsFromCache();
 
     // Render the combined card
-    var html = _renderNowPlayingCard(nowPlayingData, theaterData, filmEvents, userLoc, timeFilter);
+    var html = _renderNowPlayingCard(nowPlayingData, theaterData, filmEvents, userLoc, timeFilter, showtimesData);
 
     // Replace loading message
     var el = document.getElementById('fte-ai-nowplaying-loading');
@@ -6163,22 +6896,43 @@
     }
 
     // Speak summary
+    var defaultT = _getDefaultTheater();
+    var primaryT = defaultT || (theaterData.ok && theaterData.results && theaterData.results.length > 0 ? theaterData.results[0].name : '');
     var spoken = '';
     if (nowPlayingData.ok && nowPlayingData.movies && nowPlayingData.movies.length > 0) {
-      spoken = 'There are ' + nowPlayingData.movies.length + ' movies now playing in theaters. ';
+      spoken = 'There are ' + nowPlayingData.movies.length + ' movies now playing. ';
       spoken += 'Top picks include ' + nowPlayingData.movies[0].title;
       if (nowPlayingData.movies.length > 1) spoken += ' and ' + nowPlayingData.movies[1].title;
       spoken += '. ';
     }
-    if (theaterData.ok && theaterData.results && theaterData.results.length > 0) {
-      spoken += 'The closest theater is ' + theaterData.results[0].name + ', ' + _formatDistance(theaterData.results[0].distance_m) + ' away. ';
+    if (primaryT) {
+      spoken += 'Tap any movie poster to see showtimes at ' + primaryT + '. ';
     }
     if (timeFilter.label) {
-      spoken += 'Check the Google Maps link for exact showtimes ' + timeFilter.label + '.';
+      spoken += 'Click View Showtimes for exact times ' + timeFilter.label + '.';
     } else {
-      spoken += 'I\'ve also included a link to Google Maps for full showtimes.';
+      spoken += 'Click View Showtimes to see what\'s playing now.';
     }
     speakText(spoken);
+
+    // Set follow-up suggestion chips
+    var followUps = [];
+    if (!timeFilter.type) {
+      followUps.push('Showtimes starting now');
+      followUps.push('Showtimes tonight');
+    } else if (timeFilter.type === 'now' || timeFilter.type === 'soon') {
+      followUps.push('Showtimes tonight');
+      followUps.push('Showtimes tomorrow');
+    } else {
+      followUps.push('Showtimes starting now');
+    }
+    if (!defaultT) {
+      followUps.push('Set my default theater');
+    } else {
+      followUps.push('Change my default theater');
+    }
+    followUps.push('What else is happening tonight?');
+    setPrompts(followUps);
 
     setStatus('Ready', '#64748b');
     state.processing = false;

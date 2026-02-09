@@ -192,7 +192,18 @@ if ($user_id > 0) {
 // Fallback to creators table (guest list)
 $log .= "NOT found in user_lists, falling back to creators table (guest list)\n";
 
-$guest_query = $conn->query("SELECT id, name, bio, avatar_url, category, reason, tags, accounts, is_favorite, is_pinned FROM creators WHERE in_guest_list = 1 ORDER BY guest_sort_order ASC");
+// Check if selected_avatar_source column exists for the query
+$has_sel_avatar = false;
+$col_check = $conn->query("SHOW COLUMNS FROM creators LIKE 'selected_avatar_source'");
+if ($col_check && $col_check->num_rows > 0) {
+    $has_sel_avatar = true;
+}
+
+$guest_cols = "id, name, bio, avatar_url, category, reason, tags, accounts, is_favorite, is_pinned";
+if ($has_sel_avatar) {
+    $guest_cols = "id, name, bio, avatar_url, selected_avatar_source, category, reason, tags, accounts, is_favorite, is_pinned";
+}
+$guest_query = $conn->query("SELECT $guest_cols FROM creators WHERE in_guest_list = 1 ORDER BY guest_sort_order ASC");
 
 $creators = array();
 $seen_ids = array();
@@ -204,7 +215,7 @@ if ($guest_query) {
     // Skip starfireara (data is incorrect)
         if (strtolower(trim($row['name'])) === 'starfireara') continue;
         
-        $creators[] = array(
+        $c = array(
             'id' => $row['id'],
             'name' => $row['name'],
             'bio' => $row['bio'],
@@ -216,6 +227,11 @@ if ($guest_query) {
             'isFavorite' => (bool) $row['is_favorite'],
             'isPinned' => (bool) $row['is_pinned']
         );
+        // Include selectedAvatarSource if available
+        if ($has_sel_avatar && isset($row['selected_avatar_source']) && $row['selected_avatar_source'] !== '') {
+            $c['selectedAvatarSource'] = $row['selected_avatar_source'];
+        }
+        $creators[] = $c;
     }
 }
 

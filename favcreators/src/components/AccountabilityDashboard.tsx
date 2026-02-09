@@ -2343,6 +2343,10 @@ export default function AccountabilityDashboard() {
   const [detectedPatterns, setDetectedPatterns] = useState<DetectedPattern[]>([]);
   const [patternsLoading, setPatternsLoading] = useState(false);
   
+  // Morning follow-up opt-out state
+  const [followupOptedOut, setFollowupOptedOut] = useState<boolean | null>(null);
+  const [followupToggling, setFollowupToggling] = useState(false);
+
   // Toast notifications
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   
@@ -2559,6 +2563,52 @@ export default function AccountabilityDashboard() {
     };
   }, [isLinked, appUserId, discordId, pollNotifications]);
   
+  // Fetch morning follow-up opt-out status
+  useEffect(() => {
+    if (!isLinked || (!appUserId && !discordId)) return;
+    let url = `${getApiBase()}/accountability/goal_followup_optout.php?check=1`;
+    if (appUserId) url += `&app_user_id=${appUserId}`;
+    if (discordId) url += `&discord_id=${discordId}`;
+    fetch(url)
+      .then(r => r.json())
+      .then(result => {
+        if (result.success) setFollowupOptedOut(result.opted_out);
+      })
+      .catch(() => {});
+  }, [isLinked, appUserId, discordId]);
+
+  // Toggle morning follow-up
+  const handleToggleFollowup = async () => {
+    if (followupToggling) return;
+    setFollowupToggling(true);
+    const newAction = followupOptedOut ? 'optin' : 'optout';
+    try {
+      const body: Record<string, unknown> = { action: newAction };
+      if (appUserId) body.app_user_id = appUserId;
+      if (discordId) body.discord_id = discordId;
+      const resp = await fetch(`${getApiBase()}/accountability/goal_followup_optout.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const result = await resp.json();
+      if (result.success) {
+        setFollowupOptedOut(result.opted_out);
+        addToast(
+          result.opted_out ? 'Morning Follow-ups Stopped' : 'Morning Follow-ups Enabled',
+          result.opted_out
+            ? 'You will no longer receive 9 AM goal follow-up DMs.'
+            : 'You will receive a daily 9 AM EST DM with your goal summary.',
+          result.opted_out ? 'info' : 'success'
+        );
+      }
+    } catch {
+      addToast('Error', 'Failed to update follow-up preference.', 'warning');
+    } finally {
+      setFollowupToggling(false);
+    }
+  };
+
   // Handle Discord ID submission
   const handleLink = (e: React.FormEvent) => {
     e.preventDefault();
@@ -3162,6 +3212,48 @@ export default function AccountabilityDashboard() {
 
       {/* Browser notification permission prompt */}
       <NotificationPermissionBanner onGrant={handleNotifPermissionGrant} />
+
+      {/* Morning Follow-Up Toggle */}
+      {followupOptedOut !== null && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '12px',
+          padding: '12px 16px', marginBottom: '12px',
+          background: followupOptedOut
+            ? 'rgba(255,255,255,0.03)'
+            : 'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(59,130,246,0.08))',
+          border: `1px solid ${followupOptedOut ? 'rgba(255,255,255,0.06)' : 'rgba(16,185,129,0.2)'}`,
+          borderRadius: '10px',
+          transition: 'all 0.2s',
+        }}>
+          <span style={{ fontSize: '1.3rem' }}>{followupOptedOut ? '🔕' : '☀️'}</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, fontSize: '0.85rem', color: '#f8fafc' }}>
+              Morning Goal Follow-Up
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px' }}>
+              {followupOptedOut
+                ? 'Disabled — you won\'t receive daily 9 AM goal DMs'
+                : 'Enabled — you get a DM at 9 AM EST each day with your goal summary & streaks'}
+            </div>
+          </div>
+          <button
+            onClick={handleToggleFollowup}
+            disabled={followupToggling}
+            style={{
+              padding: '6px 14px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600,
+              border: 'none', cursor: followupToggling ? 'wait' : 'pointer',
+              background: followupOptedOut ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.12)',
+              color: followupOptedOut ? '#10b981' : '#f87171',
+              transition: 'opacity 0.2s',
+              opacity: followupToggling ? 0.5 : 1,
+            }}
+          >
+            {followupToggling
+              ? '...'
+              : followupOptedOut ? 'Enable' : 'Disable'}
+          </button>
+        </div>
+      )}
       
       {/* Stats Overview */}
       <section className="section">

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mutual Fund Portfolio Analysis | FindMutualFunds</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0f1a;
+            --bg-card: #0f1729;
+            --bg-card-hover: #162040;
+            --border: #1e2d4a;
+            --text: #e0e8f0;
+            --text-dim: #7888aa;
+            --accent: #0ea5e9;
+            --accent-glow: rgba(14, 165, 233, 0.25);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --teal: #14b8a6;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .header {
+            background: linear-gradient(135deg, #0f1729 0%, #132040 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--teal));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hdr-links { display: flex; gap: 1rem; font-size: 0.9rem; }
+        .hdr-links a { color: var(--text-dim); }
+        .hdr-links a:hover { color: var(--text); }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        @media (max-width: 1024px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+        }
+        .card h2 { font-size: 1.1rem; margin-bottom: 1rem; }
+        .card h3 { font-size: 0.95rem; color: var(--text-dim); margin-bottom: 0.5rem; }
+
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.2rem; text-align: center;
+        }
+        .stat-card .label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim); letter-spacing: 1px; }
+        .stat-card .value { font-size: 1.6rem; font-weight: 700; margin-top: 0.25rem; }
+        .stat-card .value.green { color: var(--green); }
+        .stat-card .value.red { color: var(--red); }
+        .stat-card .value.yellow { color: var(--yellow); }
+        .stat-card .value.blue { color: var(--blue); }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { background: rgba(14,165,233,0.08); text-align: left; padding: 0.6rem 0.8rem; font-weight: 600; color: var(--text-dim); border-bottom: 1px solid var(--border); }
+        td { padding: 0.6rem 0.8rem; border-bottom: 1px solid rgba(30,45,74,0.5); }
+        tr:hover td { background: var(--bg-card-hover); }
+
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+        .badge.green { background: var(--green-dim); color: var(--green); }
+        .badge.red { background: var(--red-dim); color: var(--red); }
+        .badge.yellow { background: var(--yellow-dim); color: var(--yellow); }
+
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.3rem; }
+        .form-group select, .form-group input {
+            width: 100%; padding: 0.6rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-dark);
+            color: var(--text); font-size: 0.9rem;
+        }
+        .btn {
+            padding: 0.7rem 1.5rem; border-radius: 8px; border: none;
+            cursor: pointer; font-weight: 600; font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: #38bdf8; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
+        .btn-outline:hover { border-color: var(--accent); color: var(--text); }
+
+        .loading { text-align: center; padding: 3rem; color: var(--text-dim); }
+        .section-title { font-size: 1.2rem; margin: 2rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+        .insight { background: rgba(14,165,233,0.06); border-left: 3px solid var(--accent); padding: 0.8rem 1rem; border-radius: 0 8px 8px 0; margin-bottom: 0.5rem; font-size: 0.85rem; }
+        .chart-wrap { position: relative; height: 300px; }
+        #toast { position: fixed; bottom: 20px; right: 20px; background: var(--accent); color: #fff; padding: 0.8rem 1.5rem; border-radius: 8px; display: none; z-index: 999; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Mutual Fund Portfolio Analysis</h1>
+        <div class="hdr-links">
+            <a href="/findmutualfunds/portfolio1/report.html">Daily Report</a>
+            <a href="/findmutualfunds/portfolio1/stats.html">Stats</a>
+            <a href="/findstocks/portfolio/">Stock Picks</a>
+            <a href="/">Events</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Summary Stats -->
+        <div class="stat-grid" id="summaryStats">
+            <div class="stat-card"><div class="label">Funds Tracked</div><div class="value blue" id="stat-funds">--</div></div>
+            <div class="stat-card"><div class="label">NAV Data Points</div><div class="value" id="stat-navs">--</div></div>
+            <div class="stat-card"><div class="label">Strategies</div><div class="value blue" id="stat-strats">--</div></div>
+            <div class="stat-card"><div class="label">Selections</div><div class="value" id="stat-sels">--</div></div>
+            <div class="stat-card"><div class="label">Portfolios</div><div class="value blue" id="stat-ports">--</div></div>
+            <div class="stat-card"><div class="label">Last Updated</div><div class="value" id="stat-updated" style="font-size:0.85rem">--</div></div>
+        </div>
+
+        <!-- What-If Analysis Tool -->
+        <h2 class="section-title">What-If Analysis</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h2>Simulation Parameters</h2>
+                <div class="grid-2" style="gap:0.8rem">
+                    <div class="form-group">
+                        <label>Strategy Filter</label>
+                        <select id="wi-strategy"><option value="">All Strategies</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Holding Period (days)</label>
+                        <select id="wi-hold">
+                            <option value="30">30 days</option>
+                            <option value="90" selected>90 days (quarterly)</option>
+                            <option value="180">180 days (semi-annual)</option>
+                            <option value="365">365 days (annual)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Target Return %</label>
+                        <input type="number" id="wi-tp" value="10" step="1" min="1" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label>Stop Loss %</label>
+                        <input type="number" id="wi-sl" value="5" step="1" min="1" max="50">
+                    </div>
+                    <div class="form-group">
+                        <label>Fee Model</label>
+                        <select id="wi-feemodel" onchange="toggleMfComm()">
+                            <option value="questrade" selected>Questrade ($9.95/trade)</option>
+                            <option value="zero">Zero fees</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="mfCommGroup" style="display:none">
+                        <label>Commission per trade ($)</label>
+                        <input type="number" id="wi-comm" value="9.95" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Position Size (%)</label>
+                        <input type="number" id="wi-pos" value="10" step="1" min="1" max="100">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="runWhatIf()" id="btnRun">Run Simulation</button>
+            </div>
+            <div class="card" id="wi-results">
+                <h2>Results</h2>
+                <p class="loading">Configure parameters and click "Run Simulation"</p>
+            </div>
+        </div>
+
+        <!-- Scenario Results Chart -->
+        <div id="scenarioSection" style="display:none">
+            <h2 class="section-title">Scenario Comparison</h2>
+            <div class="card">
+                <div class="chart-wrap"><canvas id="scenarioChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- Trades Table -->
+        <div id="tradesSection" style="display:none">
+            <h2 class="section-title">Individual Trades</h2>
+            <div class="card" style="overflow-x:auto">
+                <table id="tradesTable">
+                    <thead>
+                        <tr><th>Ticker</th><th>Fund Name</th><th>Strategy</th><th>Entry Date</th><th>Entry NAV</th><th>Exit Date</th><th>Exit NAV</th><th>Hold Days</th><th>Net P/L</th><th>Return %</th><th>Exit Reason</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pre-defined Scenarios -->
+        <h2 class="section-title">Pre-built Scenario Analysis</h2>
+        <div class="grid-3">
+            <div class="card" style="cursor:pointer" onclick="runPreset('conservative')">
+                <h2>Conservative</h2>
+                <p style="font-size:0.85rem; color:var(--text-dim)">90-day hold, 8% target, 5% stop loss, no commission. Focus on capital preservation.</p>
+            </div>
+            <div class="card" style="cursor:pointer" onclick="runPreset('moderate')">
+                <h2>Moderate Growth</h2>
+                <p style="font-size:0.85rem; color:var(--text-dim)">180-day hold, 12% target, 8% stop loss. Balanced approach.</p>
+            </div>
+            <div class="card" style="cursor:pointer" onclick="runPreset('aggressive')">
+                <h2>Aggressive</h2>
+                <p style="font-size:0.85rem; color:var(--text-dim)">90-day hold, 20% target, 15% stop loss. Higher risk/reward.</p>
+            </div>
+            <div class="card" style="cursor:pointer" onclick="runPreset('buyhold')">
+                <h2>Buy & Hold (1yr)</h2>
+                <p style="font-size:0.85rem; color:var(--text-dim)">365-day hold, no target/SL. Pure buy-and-hold strategy.</p>
+            </div>
+            <div class="card" style="cursor:pointer" onclick="runPreset('commission')">
+                <h2>With Questrade $9.95 Fee</h2>
+                <p style="font-size:0.85rem; color:var(--text-dim)">180-day hold, 12% target. Tests impact of Questrade MF fees ($9.95/trade).</p>
+            </div>
+            <div class="card" style="cursor:pointer" onclick="runPreset('index')">
+                <h2>Index Only</h2>
+                <p style="font-size:0.85rem; color:var(--text-dim)">365-day hold, Index Tracker strategy only. Passive baseline.</p>
+            </div>
+        </div>
+
+        <!-- Fund Coverage -->
+        <h2 class="section-title">Fund Universe</h2>
+        <div class="card" style="overflow-x:auto">
+            <table id="fundTable">
+                <thead>
+                    <tr><th>Ticker</th><th>Fund Name</th><th>Category</th><th>Family</th><th>Expense Ratio</th><th>Stars</th><th>Asset Class</th></tr>
+                </thead>
+                <tbody id="fundBody"><tr><td colspan="7" class="loading">Loading...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+    var API = '/findmutualfunds/api/';
+
+    function showToast(msg) {
+        var t = document.getElementById('toast');
+        t.textContent = msg;
+        t.style.display = 'block';
+        setTimeout(function(){ t.style.display = 'none'; }, 3000);
+    }
+
+    function fetchJSON(url, cb) {
+        var x = new XMLHttpRequest();
+        x.open('GET', url, true);
+        x.onreadystatechange = function() {
+            if (x.readyState === 4) {
+                if (x.status === 200) {
+                    try { cb(JSON.parse(x.responseText)); }
+                    catch(e) { cb(null); }
+                } else { cb(null); }
+            }
+        };
+        x.send();
+    }
+
+    // Load stats on page load
+    fetchJSON(API + 'get_stats.php', function(data) {
+        if (!data || !data.table_counts) return;
+        var tc = data.table_counts;
+        document.getElementById('stat-funds').textContent = (tc.mf_funds || 0);
+        document.getElementById('stat-navs').textContent = (tc.mf_nav_history || 0).toLocaleString();
+        document.getElementById('stat-strats').textContent = (tc.mf_strategies || 0);
+        document.getElementById('stat-sels').textContent = (tc.mf_selections || 0);
+        document.getElementById('stat-ports').textContent = (tc.mf_portfolios || 0);
+
+        if (data.health && data.health.report_cache_hours_old < 999) {
+            document.getElementById('stat-updated').textContent = data.health.report_cache_hours_old + 'h ago';
+        }
+
+        // Populate strategy dropdown
+        if (data.freshness && data.freshness.selections_per_strategy) {
+            var sel = document.getElementById('wi-strategy');
+            data.freshness.selections_per_strategy.forEach(function(s) {
+                var opt = document.createElement('option');
+                opt.value = s.strategy_name;
+                opt.textContent = s.strategy_name + ' (' + s.cnt + ')';
+                sel.appendChild(opt);
+            });
+        }
+
+        // Load fund table
+        if (data.freshness && data.freshness.fund_coverage) {
+            loadFundTable(data.freshness.fund_coverage);
+        }
+    });
+
+    // Also fetch fund master data
+    function loadFundTable(coverage) {
+        var body = document.getElementById('fundBody');
+        body.innerHTML = '';
+        // We need actual fund data, fetch from backtest endpoint for fund details
+        fetchJSON(API + 'get_report.php', function(rep) {
+            // Fallback: use coverage data
+            if (!coverage || coverage.length === 0) {
+                body.innerHTML = '<tr><td colspan="7">No funds loaded yet. Run setup_schema.php first.</td></tr>';
+                return;
+            }
+            coverage.forEach(function(f) {
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td><strong>' + f.ticker + '</strong></td>' +
+                    '<td>' + (f.fund_name || '--') + '</td>' +
+                    '<td>--</td><td>--</td><td>--</td>' +
+                    '<td>' + (f.nav_count || 0) + ' pts</td>' +
+                    '<td>' + (f.latest_nav || '--') + '</td>';
+                body.appendChild(tr);
+            });
+        });
+    }
+
+    // What-If Analysis
+    function toggleMfComm() {
+        var fm = document.getElementById('wi-feemodel').value;
+        document.getElementById('mfCommGroup').style.display = (fm === 'custom') ? '' : 'none';
+    }
+
+    function runWhatIf() {
+        var strat = document.getElementById('wi-strategy').value;
+        var hold = document.getElementById('wi-hold').value;
+        var tp = document.getElementById('wi-tp').value;
+        var sl = document.getElementById('wi-sl').value;
+        var feeModel = document.getElementById('wi-feemodel').value;
+        var comm = (feeModel === 'questrade') ? '9.95' : ((feeModel === 'zero') ? '0' : document.getElementById('wi-comm').value);
+        var pos = document.getElementById('wi-pos').value;
+
+        var resultsDiv = document.getElementById('wi-results');
+        resultsDiv.innerHTML = '<h2>Results</h2><p class="loading">Running simulation...</p>';
+        document.getElementById('btnRun').disabled = true;
+
+        var url = API + 'backtest.php?strategies=' + encodeURIComponent(strat) +
+            '&hold_days=' + hold + '&target_return=' + tp + '&stop_loss=' + sl +
+            '&commission=' + comm + '&position_size=' + pos;
+
+        fetchJSON(url, function(data) {
+            document.getElementById('btnRun').disabled = false;
+            if (!data || !data.ok) {
+                resultsDiv.innerHTML = '<h2>Results</h2><p style="color:var(--red)">Error: ' + (data ? data.error : 'Request failed') + '</p>';
+                return;
+            }
+            renderResults(data);
+        });
+    }
+
+    function renderResults(data) {
+        var s = data.summary;
+        var retClass = s.total_return_pct >= 0 ? 'green' : 'red';
+        var html = '<h2>Simulation Results</h2>';
+        html += '<div class="stat-grid" style="margin-top:1rem">';
+        html += '<div class="stat-card"><div class="label">Final Value</div><div class="value ' + retClass + '">$' + s.final_value.toLocaleString() + '</div></div>';
+        html += '<div class="stat-card"><div class="label">Total Return</div><div class="value ' + retClass + '">' + s.total_return_pct.toFixed(2) + '%</div></div>';
+        html += '<div class="stat-card"><div class="label">Win Rate</div><div class="value">' + s.win_rate + '%</div></div>';
+        html += '<div class="stat-card"><div class="label">Trades</div><div class="value">' + s.total_trades + '</div></div>';
+        html += '<div class="stat-card"><div class="label">Max Drawdown</div><div class="value red">' + s.max_drawdown_pct.toFixed(2) + '%</div></div>';
+        html += '<div class="stat-card"><div class="label">Expenses</div><div class="value yellow">$' + s.total_expenses.toFixed(2) + '</div></div>';
+        html += '</div>';
+
+        if (s.sharpe_ratio) html += '<p style="font-size:0.85rem; color:var(--text-dim)">Sharpe: ' + s.sharpe_ratio.toFixed(4) + ' | Profit Factor: ' + s.profit_factor.toFixed(2) + ' | Commissions: $' + s.total_commissions.toFixed(2) + '</p>';
+
+        document.getElementById('wi-results').innerHTML = html;
+
+        // Render trades table
+        if (data.trades && data.trades.length > 0) {
+            document.getElementById('tradesSection').style.display = '';
+            var tbody = document.querySelector('#tradesTable tbody');
+            tbody.innerHTML = '';
+            data.trades.forEach(function(t) {
+                var pnlClass = t.net_profit >= 0 ? 'green' : 'red';
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td><strong>' + t.ticker + '</strong></td>' +
+                    '<td>' + (t.fund_name || '') + '</td>' +
+                    '<td>' + t.strategy + '</td>' +
+                    '<td>' + t.entry_date + '</td>' +
+                    '<td>$' + t.entry_nav.toFixed(2) + '</td>' +
+                    '<td>' + t.exit_date + '</td>' +
+                    '<td>$' + t.exit_nav.toFixed(2) + '</td>' +
+                    '<td>' + t.hold_days + '</td>' +
+                    '<td><span class="badge ' + pnlClass + '">$' + t.net_profit.toFixed(2) + '</span></td>' +
+                    '<td><span class="badge ' + pnlClass + '">' + t.return_pct.toFixed(2) + '%</span></td>' +
+                    '<td>' + t.exit_reason.replace(/_/g, ' ') + '</td>';
+                tbody.appendChild(tr);
+            });
+        }
+        showToast('Simulation complete: ' + data.summary.total_trades + ' trades');
+    }
+
+    function runPreset(preset) {
+        var presets = {
+            conservative: { hold: 90, tp: 8, sl: 5, comm: 0, strat: '' },
+            moderate: { hold: 180, tp: 12, sl: 8, comm: 0, strat: '' },
+            aggressive: { hold: 90, tp: 20, sl: 15, comm: 0, strat: '' },
+            buyhold: { hold: 365, tp: 999, sl: 999, comm: 0, strat: '' },
+            commission: { hold: 180, tp: 12, sl: 8, comm: 9.95, strat: '' },
+            index: { hold: 365, tp: 999, sl: 999, comm: 0, strat: 'Index Tracker' }
+        };
+        var p = presets[preset];
+        if (!p) return;
+        document.getElementById('wi-hold').value = p.hold;
+        document.getElementById('wi-tp').value = p.tp;
+        document.getElementById('wi-sl').value = p.sl;
+        document.getElementById('wi-comm').value = p.comm;
+        if (p.strat) {
+            var sel = document.getElementById('wi-strategy');
+            for (var i = 0; i < sel.options.length; i++) {
+                if (sel.options[i].value === p.strat) { sel.selectedIndex = i; break; }
+            }
+        } else {
+            document.getElementById('wi-strategy').selectedIndex = 0;
+        }
+        runWhatIf();
+    }
+    </script>
+</body>
+</html>

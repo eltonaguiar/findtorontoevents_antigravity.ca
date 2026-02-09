@@ -1,0 +1,95 @@
+name: Daily Mutual Fund Refresh
+
+on:
+  schedule:
+    # Run Mon-Fri at 22:30 UTC (after market close)
+    - cron: '30 22 * * 1-5'
+    # Run Mon-Fri at 14:00 UTC (pre-market)
+    - cron: '0 14 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      extra_nav_batches:
+        description: 'Extra NAV fetch batches (beyond default 5)'
+        required: false
+        default: '0'
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Trigger daily_refresh.php
+        run: |
+          echo "=== Mutual Fund Daily Refresh ==="
+          echo "Time: $(date -u)"
+          
+          RESULT=$(curl -sS --max-time 120 \
+            "https://findtorontoevents.ca/findmutualfunds/api/daily_refresh.php" \
+            2>&1) || true
+          
+          echo "$RESULT" | head -c 5000
+          
+          # Check if it was successful
+          OK=$(echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print('yes' if d.get('ok') else 'no')" 2>/dev/null || echo "parse_error")
+          
+          if [ "$OK" = "yes" ]; then
+            echo ""
+            echo "=== Refresh successful ==="
+            
+            # Extract summary info
+            echo "$RESULT" | python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)
+          s = d.get('summary', {})
+          print('NAV fetched:', s.get('nav_fetched', 0))
+          imp = s.get('import', {})
+          print('Funds imported:', imp.get('imported', 0), '/ skipped:', imp.get('skipped', 0))
+          a = s.get('analysis', {})
+          print('Strategies analyzed:', a.get('strategies_analyzed', 0))
+          if a.get('scenarios'):
+              for sc in a['scenarios']:
+                  print('  ', sc['scenario'], '-> Return:', sc['total_return_pct'], '%, WR:', sc['win_rate'], '%')
+          print('Elapsed:', s.get('elapsed_seconds', '?'), 'seconds')
+          " 2>/dev/null || echo "(Could not parse summary)"
+          else
+            echo ""
+            echo "=== Refresh may have failed ==="
+            echo "Response: $RESULT"
+          fi
+
+      - name: Extra NAV batches (if requested)
+        if: ${{ github.event.inputs.extra_nav_batches != '0' && github.event.inputs.extra_nav_batches != '' }}
+        run: |
+          BATCHES=${{ github.event.inputs.extra_nav_batches }}
+          echo "Running $BATCHES extra NAV fetch batches..."
+          for i in $(seq 1 $BATCHES); do
+            echo "--- Batch $i ---"
+            curl -sS --max-time 30 \
+              "https://findtorontoevents.ca/findmutualfunds/api/fetch_nav.php?range=1y&batch=10" \
+              2>&1 | head -c 1000
+            echo ""
+            sleep 2
+          done
+
+      - name: Verify report page
+        run: |
+          STATUS=$(curl -sS -o /dev/null -w "%{http_code}" \
+            "https://findtorontoevents.ca/findmutualfunds/portfolio1/report.html" \
+            2>&1)
+          echo "Report page HTTP status: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "WARNING: Report page returned $STATUS"
+          fi
+
+      - name: Verify API
+        run: |
+          RESULT=$(curl -sS --max-time 15 \
+            "https://findtorontoevents.ca/findmutualfunds/api/get_report.php" \
+            2>&1)
+          echo "API response length: $(echo "$RESULT" | wc -c) bytes"
+          echo "$RESULT" | python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)
+          print('Report updated_at:', d.get('updated_at', 'N/A'))
+          print('Has analysis:', 'analysis' in d)
+          " 2>/dev/null || echo "Could not parse API response"

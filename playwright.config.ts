@@ -69,6 +69,7 @@ export default defineConfig({
     /(?:^|\/)tests\/fps-v5\.spec\.ts$/,
     /(?:^|\/)tests\/fps-v5-complete\.spec\.ts$/,
     /(?:^|\/)tests\/fps-v5-debug\.spec\.ts$/,
+    /(?:^|\/)tests\/full_site_js_errors\.spec\.ts$/,
   ],
   timeout: isRemoteVerify ? 90000 : 30000,
   retries: isRemoteVerify ? 1 : 0,

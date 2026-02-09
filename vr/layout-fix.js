@@ -413,51 +413,98 @@
     });
   }
 
-  /* ── Gaze Cursor: fuse only in VR headset mode ── */
+  /* ── Gaze Cursor: completely off on desktop, enabled only in VR headset ── */
   function fixGazeCursor() {
     var scene = document.querySelector('a-scene');
     if (!scene) return;
 
+    /**
+     * Gather all gaze cursor elements:
+     *  - .vr-gaze-ring  (new convention: ring with data-vr-cursor / data-vr-raycaster)
+     *  - [cursor*="fuse"] EXCLUDING a-scene (legacy pages)
+     *  - a-cursor[fuse="true"] (legacy)
+     */
     function getAllGazeCursors() {
       var cursors = [];
+      var seen = {};
+
+      // New convention: rings with class .vr-gaze-ring
+      var gazeRings = document.querySelectorAll('.vr-gaze-ring');
+      for (var g = 0; g < gazeRings.length; g++) {
+        cursors.push(gazeRings[g]);
+        seen[gazeRings[g]] = true;
+      }
+
+      // Legacy: [cursor*="fuse"], excluding a-scene
       var rings = document.querySelectorAll('[cursor*="fuse"]');
-      for (var i = 0; i < rings.length; i++) cursors.push(rings[i]);
+      for (var i = 0; i < rings.length; i++) {
+        var tag = rings[i].tagName.toLowerCase();
+        if (tag === 'a-scene') continue; // never hide or modify the scene element
+        if (!seen[rings[i]]) cursors.push(rings[i]);
+      }
+
       var acursors = document.querySelectorAll('a-cursor[fuse="true"]');
-      for (var j = 0; j < acursors.length; j++) cursors.push(acursors[j]);
+      for (var j = 0; j < acursors.length; j++) {
+        if (!seen[acursors[j]]) cursors.push(acursors[j]);
+      }
       return cursors;
     }
 
-    function disableFuse() {
+    /**
+     * Desktop mode: completely remove cursor + raycaster from gaze rings
+     * so they cannot intercept mouse clicks. Only the scene-level mouse cursor
+     * (on a-scene) should handle click events on desktop.
+     */
+    function disableGazeCursors() {
       var cursors = getAllGazeCursors();
       for (var k = 0; k < cursors.length; k++) {
         var c = cursors[k];
+        // Remove cursor component entirely (prevents click interception)
+        if (c.hasAttribute('cursor')) {
+          c.removeAttribute('cursor');
+        }
+        // Remove raycaster component (prevents intersection detection)
+        if (c.hasAttribute('raycaster')) {
+          c.removeAttribute('raycaster');
+        }
+        // Legacy a-cursor elements: just disable fuse
         if (c.tagName && c.tagName.toLowerCase() === 'a-cursor') {
           c.setAttribute('fuse', 'false');
-        } else {
-          c.setAttribute('cursor', 'fuse', false);
         }
         c.setAttribute('visible', false);
       }
     }
 
-    function enableFuse() {
+    /**
+     * VR mode: add cursor + raycaster to gaze rings for gaze-based interaction.
+     * Reads config from data-vr-cursor / data-vr-raycaster attributes, or uses defaults.
+     */
+    function enableGazeCursors() {
       var cursors = getAllGazeCursors();
       for (var k = 0; k < cursors.length; k++) {
         var c = cursors[k];
+        // Determine cursor config
+        var cursorConf = c.dataset.vrCursor || 'fuse: true; fuseTimeout: 1500';
+        var raycasterConf = c.dataset.vrRaycaster || 'objects: .clickable; far: 30';
+
+        c.setAttribute('cursor', cursorConf);
+        c.setAttribute('raycaster', raycasterConf);
+
+        // Legacy a-cursor
         if (c.tagName && c.tagName.toLowerCase() === 'a-cursor') {
           c.setAttribute('fuse', 'true');
-        } else {
-          c.setAttribute('cursor', 'fuse', true);
         }
         c.setAttribute('visible', true);
       }
     }
 
-    if (scene.hasLoaded) { disableFuse(); }
-    else { scene.addEventListener('loaded', disableFuse); }
+    // Disable immediately and again after scene loads (belt + suspenders)
+    disableGazeCursors();
+    if (scene.hasLoaded) { disableGazeCursors(); }
+    else { scene.addEventListener('loaded', disableGazeCursors); }
 
-    scene.addEventListener('enter-vr', enableFuse);
-    scene.addEventListener('exit-vr', disableFuse);
+    scene.addEventListener('enter-vr', enableGazeCursors);
+    scene.addEventListener('exit-vr', disableGazeCursors);
   }
 
   /* ── Verify A-Frame scene is rendering properly ── */

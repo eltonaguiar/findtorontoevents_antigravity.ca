@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Investment Platform | Find Toronto Events</title>
+    <style>
+        :root {
+            --bg: #08081a;
+            --bg2: #0e0e28;
+            --bg3: #14143a;
+            --border: #1e1e4a;
+            --text: #e0e0f0;
+            --dim: #7777aa;
+            --accent: #6366f1;
+            --green: #22c55e;
+            --green-dim: rgba(34,197,94,0.12);
+            --red: #ef4444;
+            --red-dim: rgba(239,68,68,0.12);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234,179,8,0.12);
+            --blue: #3b82f6;
+            --orange: #f97316;
+            --purple: #a855f7;
+            --cyan: #06b6d4;
+            --pink: #ec4899;
+            --r: 14px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; line-height:1.6; }
+        a { color:var(--accent); text-decoration:none; }
+        a:hover { text-decoration:underline; }
+
+        .hero {
+            background: linear-gradient(135deg, #0a0a2e 0%, #1a1060 40%, #0a2040 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 3rem 2rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content:''; position:absolute; top:0; left:0; right:0; bottom:0;
+            background: radial-gradient(ellipse at 30% 50%, rgba(99,102,241,0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 50%, rgba(34,197,94,0.1) 0%, transparent 60%);
+        }
+        .hero * { position:relative; z-index:1; }
+        .hero h1 { font-size:2.4rem; font-weight:800; background:linear-gradient(135deg,#6366f1,#a78bfa,#3b82f6,#22c55e); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:0.5rem; }
+        .hero .sub { color:var(--dim); font-size:1.05rem; max-width:700px; margin:0 auto 1.5rem; }
+        .hero-stats { display:flex; gap:2.5rem; justify-content:center; flex-wrap:wrap; }
+        .hero-stat .num { font-size:2rem; font-weight:700; color:var(--accent); }
+        .hero-stat .lbl { font-size:0.7rem; color:var(--dim); text-transform:uppercase; letter-spacing:1px; }
+        .nav-links { display:flex; gap:1.5rem; justify-content:center; margin-top:1.5rem; font-size:0.85rem; flex-wrap:wrap; }
+        .nav-links a { color:var(--dim); padding:0.3rem 0.8rem; border:1px solid var(--border); border-radius:20px; transition:all 0.2s; }
+        .nav-links a:hover { color:var(--text); border-color:var(--accent); text-decoration:none; }
+
+        .container { max-width:1300px; margin:0 auto; padding:2rem 1.5rem; }
+
+        .disclaimer { background:var(--yellow-dim); border:1px solid rgba(234,179,8,0.3); border-radius:8px; padding:0.6rem 1rem; font-size:0.75rem; color:var(--yellow); text-align:center; margin-bottom:2rem; }
+
+        .section { margin-bottom:3rem; }
+        .section-head { display:flex; align-items:center; gap:0.8rem; margin-bottom:1.2rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border); }
+        .section-head h2 { font-size:1.15rem; color:var(--dim); font-weight:600; }
+        .section-head .badge-count { background:var(--bg3); color:var(--accent); font-size:0.7rem; padding:0.15rem 0.5rem; border-radius:10px; font-weight:600; }
+
+        .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:1.2rem; }
+        .grid-sm { grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); }
+
+        .card {
+            background:var(--bg2);
+            border:1px solid var(--border);
+            border-radius:var(--r);
+            padding:1.5rem;
+            transition:all 0.25s;
+            cursor:pointer;
+            position:relative;
+            overflow:hidden;
+        }
+        .card:hover { border-color:var(--accent); transform:translateY(-3px); box-shadow:0 8px 30px rgba(99,102,241,0.12); }
+        .card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+        .card.stocks::before { background:linear-gradient(90deg,var(--green),var(--blue)); }
+        .card.funds::before { background:linear-gradient(90deg,var(--purple),var(--accent)); }
+        .card.forex::before { background:linear-gradient(90deg,var(--orange),var(--yellow)); }
+        .card.crypto::before { background:linear-gradient(90deg,var(--cyan),var(--blue)); }
+        .card.tool::before { background:linear-gradient(90deg,var(--pink),var(--purple)); }
+        .card.api::before { background:linear-gradient(90deg,var(--green),var(--cyan)); }
+        .card.god::before { background:linear-gradient(90deg,#ff6b6b,#ffd93d,#6bcb77,#4d96ff,#9b59b6); }
+
+        .card-icon { font-size:2rem; margin-bottom:0.8rem; display:block; }
+        .card h3 { font-size:1.1rem; margin-bottom:0.3rem; }
+        .card p { color:var(--dim); font-size:0.82rem; margin-bottom:0.8rem; line-height:1.5; }
+        .card .link { color:var(--accent); font-weight:600; font-size:0.82rem; display:inline-flex; align-items:center; gap:0.3rem; }
+        .card .link::after { content:' \2192'; }
+
+        .badge { display:inline-block; padding:0.15rem 0.5rem; border-radius:4px; font-size:0.65rem; font-weight:700; text-transform:uppercase; margin-right:0.4rem; margin-bottom:0.4rem; }
+        .badge-live { background:var(--green-dim); color:var(--green); }
+        .badge-new { background:rgba(99,102,241,0.15); color:var(--accent); }
+        .badge-god { background:linear-gradient(135deg,rgba(255,107,107,0.15),rgba(155,89,182,0.15)); color:var(--pink); }
+        .badge-beta { background:rgba(6,182,212,0.15); color:var(--cyan); }
+
+        .tag-row { display:flex; flex-wrap:wrap; gap:0.3rem; margin-bottom:0.6rem; }
+        .tag { font-size:0.6rem; padding:0.1rem 0.4rem; border-radius:3px; background:var(--bg3); color:var(--dim); }
+
+        .algo-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:0.8rem; }
+        .algo-chip {
+            background:var(--bg2); border:1px solid var(--border); border-radius:8px;
+            padding:0.6rem 0.8rem; font-size:0.78rem; transition:border-color 0.2s;
+        }
+        .algo-chip:hover { border-color:var(--accent); }
+        .algo-chip .name { font-weight:600; color:var(--text); }
+        .algo-chip .fam { font-size:0.65rem; color:var(--dim); }
+
+        .metric-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:0.6rem; }
+        .metric-chip { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:0.5rem 0.7rem; }
+        .metric-chip .val { font-size:0.9rem; font-weight:700; color:var(--green); }
+        .metric-chip .lbl { font-size:0.65rem; color:var(--dim); }
+
+        .endpoint-row { display:flex; align-items:center; gap:0.8rem; padding:0.6rem 0; border-bottom:1px solid var(--border); }
+        .endpoint-row:last-child { border-bottom:none; }
+        .endpoint-row .method { font-size:0.65rem; font-weight:700; padding:0.1rem 0.4rem; border-radius:3px; background:var(--green-dim); color:var(--green); }
+        .endpoint-row .path { font-family:monospace; font-size:0.8rem; color:var(--accent); }
+        .endpoint-row .desc { font-size:0.75rem; color:var(--dim); margin-left:auto; }
+
+        .footer { text-align:center; padding:2rem; color:var(--dim); font-size:0.75rem; border-top:1px solid var(--border); }
+
+        .tip { position:relative; cursor:help; border-bottom:1px dotted var(--dim); }
+        .tip:hover::after {
+            content:attr(data-tip);
+            position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%);
+            background:#1a1a3e; color:var(--text); border:1px solid var(--border);
+            border-radius:6px; padding:0.4rem 0.7rem; font-size:0.7rem; white-space:nowrap;
+            z-index:100; max-width:320px; white-space:normal; line-height:1.4;
+            box-shadow:0 4px 12px rgba(0,0,0,0.4);
+        }
+        .section-help { font-size:0.72rem; color:var(--dim); margin-bottom:0.8rem; line-height:1.5; }
+        .card .helper { font-size:0.68rem; color:var(--dim); font-style:italic; margin-top:0.3rem; }
+
+        @media (max-width:768px) {
+            .hero h1 { font-size:1.6rem; }
+            .grid { grid-template-columns:1fr; }
+            .hero-stats { gap:1.2rem; }
+            .algo-grid { grid-template-columns:repeat(auto-fill, minmax(160px,1fr)); }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>Global Investment Platform</h1>
+        <p class="sub">Multi-asset portfolio analysis, backtesting, and alpha generation across stocks, mutual funds, forex, and crypto. 115+ algorithms. 77 scenarios. 7 alt-data factor families. 30+ technical indicators. Research-backed academic factor investing.</p>
+        <div class="hero-stats" id="hero-stats">
+            <div class="hero-stat" title="Stocks, Mutual Funds, Forex, Crypto"><div class="num">4</div><div class="lbl">Asset Classes</div></div>
+            <div class="hero-stat" title="Unique stock selection algorithms spanning 30+ families"><div class="num" id="s-algos">115</div><div class="lbl">Algorithms</div></div>
+            <div class="hero-stat" title="Different parameter combinations (TP/SL/hold period) for backtesting"><div class="num">77</div><div class="lbl">Scenarios</div></div>
+            <div class="hero-stat" title="Algorithm categories: CAN SLIM, Technical, Academic Factor, Alt-Data, ESG, etc."><div class="num">30</div><div class="lbl">Algo Families</div></div>
+            <div class="hero-stat" title="Total individual stock picks generated across all algorithms"><div class="num" id="s-picks">--</div><div class="lbl">Stock Picks</div></div>
+            <div class="hero-stat" title="Historical price data points stored for backtesting accuracy"><div class="num" id="s-prices">--</div><div class="lbl">Price Records</div></div>
+        </div>
+        <div style="margin-top:1rem;font-size:0.7rem;color:var(--dim);">
+            Last updated: <span id="last-updated">--</span> &bull; Next update: <span id="next-update">--</span>
+        </div>
+        <div class="nav-links">
+            <a href="#alpha-suite" style="border-color:var(--accent);color:var(--accent);">Alpha Suite</a>
+            <a href="#portfolios">Portfolios</a>
+            <a href="#algorithms">Algorithms</a>
+            <a href="#analytics">Analytics</a>
+            <a href="#api">API Reference</a>
+            <a href="/fc/">FavCreators</a>
+            <a href="/">Events</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="disclaimer">
+            For research and educational purposes only. Past performance does not guarantee future results. Not financial advice.
+        </div>
+
+        <!-- ═══ ALPHA FACTOR SUITE (NEW) ═══ -->
+        <div class="section" id="alpha-suite">
+            <div class="section-head">
+                <h2>Alpha Factor Suite</h2>
+                <span class="badge-count" style="background:rgba(99,102,241,0.2);color:#818cf8;">NEW - QUANTITATIVE</span>
+            </div>
+            <p class="section-help">Multi-factor quantitative stock analysis powered by 6 academic factor families. Regime-aware, cross-sectional ranking, 9 strategies, automated daily refresh via GitHub Actions.</p>
+            <div style="display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+                <a href="/findstocks/alpha/" style="text-decoration:none;flex:1;min-width:300px;">
+                    <div class="card stocks" style="border-left:4px solid var(--accent);">
+                        <span class="card-icon">&#x1F9E0;</span>
+                        <div><span class="badge badge-live">LIVE</span><span class="badge badge-god">QUANT</span></div>
+                        <h3>Alpha Factor Dashboard</h3>
+                        <p>Cross-sectional factor ranking of 50 liquid US stocks across Momentum, Quality, Value, Earnings, Volatility, and Growth. Regime-adjusted composite scores. 9 strategies with conviction-weighted picks.</p>
+                        <div class="tag-row">
+                            <span class="tag">50 Stocks</span>
+                            <span class="tag">6 Factor Families</span>
+                            <span class="tag">9 Strategies</span>
+                            <span class="tag">Regime-Aware</span>
+                            <span class="tag">Daily Auto-Refresh</span>
+                            <span class="tag">Kelly Sizing</span>
+                        </div>
+                        <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:0.8rem;font-size:0.75rem;color:var(--dim);">
+                            <span>Last Updated: <strong id="alphaLastUpdate" style="color:var(--green)">Loading...</strong></span>
+                            <span>Next Update: <strong id="alphaNextUpdate" style="color:var(--accent)">--</strong></span>
+                            <span>Regime: <strong id="alphaRegime" style="color:var(--yellow)">--</strong></span>
+                        </div>
+                        <span class="link">Open Alpha Suite</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ═══ PORTFOLIO SYSTEMS ═══ -->
+        <div class="section" id="portfolios">
+            <div class="section-head">
+                <h2>Portfolio Analysis Systems</h2>
+                <span class="badge-count">4 systems</span>
+            </div>
+            <p class="section-help">Each system provides backtesting (simulated historical trading), what-if scenario analysis, and algorithm-driven stock picks for a specific asset class. Click any card to open its dashboard.</p>
+            <div class="grid">
+                <a href="/findstocks/portfolio2/" style="text-decoration:none;">
+                    <div class="card stocks">
+                        <span class="card-icon">&#x1F4C8;</span>
+                        <div><span class="badge badge-live">LIVE</span><span class="badge badge-god">GOD-MODE</span></div>
+                        <h3>Stocks Portfolio v2</h3>
+                        <p>Full backtesting engine with 115+ algorithms across 30+ families. Academic factor investing, God-Mode + Alpha Forge + No-Bed-Time ensembles, 7 alt-data factor families (Glassdoor, BDI, GPR, Dark Pool, ESG, Patents, Congressional), 30+ indicators, walk-forward validation.</p>
+                        <div class="tag-row">
+                            <span class="tag">115+ Algorithms</span>
+                            <span class="tag">77 Scenarios</span>
+                            <span class="tag">7 Alt-Data Families</span>
+                            <span class="tag">Kelly Criterion</span>
+                            <span class="tag">Regime-Aware</span>
+                            <span class="tag">Walk-Forward</span>
+                        </div>
+                        <span class="link">Open Stock Analysis</span>
+                    </div>
+                </a>
+
+                <a href="/findmutualfunds2/portfolio2/" style="text-decoration:none;">
+                    <div class="card funds">
+                        <span class="card-icon">&#x1F4CA;</span>
+                        <div><span class="badge badge-new">NEW</span></div>
+                        <h3>Mutual Funds Portfolio v2</h3>
+                        <p>NAV-based backtesting for Canadian mutual funds. 10 fund selection algorithms, expense ratio tracking, RBC/TD fund families.</p>
+                        <div class="tag-row">
+                            <span class="tag">10 Algorithms</span>
+                            <span class="tag">12 Templates</span>
+                            <span class="tag">Canadian Focus</span>
+                            <span class="tag">Expense Ratio</span>
+                        </div>
+                        <span class="link">Open Mutual Funds</span>
+                    </div>
+                </a>
+
+                <a href="/findforex2/portfolio/" style="text-decoration:none;">
+                    <div class="card forex">
+                        <span class="card-icon">&#x1F4B1;</span>
+                        <div><span class="badge badge-new">NEW</span></div>
+                        <h3>Forex Pairs Portfolio</h3>
+                        <p>Currency pair analysis with pip-based calculations. Trend following, carry trade, and mean reversion across major/minor pairs.</p>
+                        <div class="tag-row">
+                            <span class="tag">8 Algorithms</span>
+                            <span class="tag">Pip-Based</span>
+                            <span class="tag">Long/Short</span>
+                            <span class="tag">Leverage</span>
+                        </div>
+                        <span class="link">Open Forex Analysis</span>
+                    </div>
+                </a>
+
+                <a href="/findcryptopairs/portfolio/" style="text-decoration:none;">
+                    <div class="card crypto">
+                        <span class="card-icon">&#x20BF;</span>
+                        <div><span class="badge badge-new">NEW</span></div>
+                        <h3>Crypto Pairs Portfolio</h3>
+                        <p>Cryptocurrency backtesting. DCA strategies, momentum, and volatility-adjusted sizing for BTC, ETH, SOL, and altcoins.</p>
+                        <div class="tag-row">
+                            <span class="tag">8 Algorithms</span>
+                            <span class="tag">DCA Support</span>
+                            <span class="tag">24/7 Market</span>
+                        </div>
+                        <span class="link">Open Crypto Analysis</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ═══ CROSS-ASSET CONSENSUS ═══ -->
+        <div class="section" id="consensus">
+            <div class="section-head">
+                <h2>Cross-Asset Consensus Dashboard</h2>
+                <span class="badge-count">4 markets</span>
+            </div>
+            <p class="section-help">Side-by-side comparison of all 4 asset classes. Shows live performance metrics from our stock system and static profiles for mutual funds, forex, and crypto. Use this to decide which market suits your risk tolerance and investment horizon.</p>
+            <div id="consensus-grid" class="grid">
+                <div class="card stocks">
+                    <span class="card-icon">&#x1F4C8;</span>
+                    <h3>Stocks</h3>
+                    <div id="consensus-stocks" style="font-size:0.8rem;color:var(--dim);">
+                        <div style="margin-bottom:0.5rem;"><strong style="color:var(--text);">115+ algorithms</strong> &bull; 77 scenarios</div>
+                        <div>Win Rate: <span id="cs-wr" style="color:var(--green);">--</span></div>
+                        <div>Avg Return: <span id="cs-ret" style="color:var(--green);">--</span></div>
+                        <div>Top Algo: <span id="cs-top" style="color:var(--accent);">--</span></div>
+                        <div>Picks Tracked: <span id="cs-picks" style="color:var(--text);">--</span></div>
+                        <div style="margin-top:0.4rem;font-size:0.65rem;">Last scan: <span id="cs-date">--</span></div>
+                    </div>
+                </div>
+                <div class="card funds">
+                    <span class="card-icon">&#x1F4CA;</span>
+                    <h3>Mutual Funds</h3>
+                    <div style="font-size:0.8rem;color:var(--dim);">
+                        <div style="margin-bottom:0.5rem;"><strong style="color:var(--text);">10 algorithms</strong> &bull; 12 templates</div>
+                        <div>Focus: <span style="color:var(--purple);">Canadian RBC/TD Funds</span></div>
+                        <div>Tracking: <span style="color:var(--text);">NAV-based pricing</span></div>
+                        <div>Strategy: <span style="color:var(--text);">MER-adjusted returns</span></div>
+                        <div>Horizon: <span style="color:var(--text);">Long-term (1-5yr)</span></div>
+                        <div style="margin-top:0.4rem;font-size:0.65rem;">Low risk, low fees, steady growth</div>
+                    </div>
+                </div>
+                <div class="card forex">
+                    <span class="card-icon">&#x1F4B1;</span>
+                    <h3>Forex Pairs</h3>
+                    <div style="font-size:0.8rem;color:var(--dim);">
+                        <div style="margin-bottom:0.5rem;"><strong style="color:var(--text);">8 algorithms</strong> &bull; Pip-based</div>
+                        <div>Majors: <span style="color:var(--orange);">EUR/USD, GBP/USD, USD/JPY</span></div>
+                        <div>Style: <span style="color:var(--text);">Trend + Carry + MR</span></div>
+                        <div>Leverage: <span style="color:var(--text);">Up to 50:1</span></div>
+                        <div>Sessions: <span style="color:var(--text);">London, NY, Asian</span></div>
+                        <div style="margin-top:0.4rem;font-size:0.65rem;">24/5 market, high liquidity</div>
+                    </div>
+                </div>
+                <div class="card crypto">
+                    <span class="card-icon">&#x20BF;</span>
+                    <h3>Crypto Pairs</h3>
+                    <div style="font-size:0.8rem;color:var(--dim);">
+                        <div style="margin-bottom:0.5rem;"><strong style="color:var(--text);">8 algorithms</strong> &bull; DCA + Momentum</div>
+                        <div>Assets: <span style="color:var(--cyan);">BTC, ETH, SOL, AVAX</span></div>
+                        <div>Style: <span style="color:var(--text);">DCA, Breakout, Vol-Adj</span></div>
+                        <div>Risk: <span style="color:var(--red);">High volatility</span></div>
+                        <div>Market: <span style="color:var(--text);">24/7, no close</span></div>
+                        <div style="margin-top:0.4rem;font-size:0.65rem;">Highest risk, highest potential</div>
+                    </div>
+                </div>
+            </div>
+            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;margin-top:1rem;">
+                <div style="font-size:0.85rem;font-weight:700;color:var(--text);margin-bottom:0.6rem;">Asset Class Comparison</div>
+                <table style="width:100%;font-size:0.75rem;color:var(--dim);border-collapse:collapse;">
+                    <tr style="border-bottom:1px solid var(--border);">
+                        <th style="text-align:left;padding:0.4rem 0.5rem;color:var(--text);">Metric</th>
+                        <th style="padding:0.4rem 0.5rem;color:var(--green);">Stocks</th>
+                        <th style="padding:0.4rem 0.5rem;color:var(--purple);">Mutual Funds</th>
+                        <th style="padding:0.4rem 0.5rem;color:var(--orange);">Forex</th>
+                        <th style="padding:0.4rem 0.5rem;color:var(--cyan);">Crypto</th>
+                    </tr>
+                    <tr><td style="padding:0.3rem 0.5rem;" title="Number of unique stock/asset selection strategies available">Algorithms</td><td style="text-align:center;padding:0.3rem;">115+</td><td style="text-align:center;padding:0.3rem;">10</td><td style="text-align:center;padding:0.3rem;">8</td><td style="text-align:center;padding:0.3rem;">8</td></tr>
+                    <tr style="background:var(--bg3);"><td style="padding:0.3rem 0.5rem;" title="Overall volatility and potential for capital loss">Risk Level</td><td style="text-align:center;padding:0.3rem;color:var(--yellow);">Med-High</td><td style="text-align:center;padding:0.3rem;color:var(--green);">Low</td><td style="text-align:center;padding:0.3rem;color:var(--orange);">Medium</td><td style="text-align:center;padding:0.3rem;color:var(--red);">Very High</td></tr>
+                    <tr><td style="padding:0.3rem 0.5rem;" title="When you can actively trade this asset class">Market Hours</td><td style="text-align:center;padding:0.3rem;">9:30-4 ET</td><td style="text-align:center;padding:0.3rem;">EOD NAV</td><td style="text-align:center;padding:0.3rem;">24/5</td><td style="text-align:center;padding:0.3rem;">24/7</td></tr>
+                    <tr style="background:var(--bg3);"><td style="padding:0.3rem 0.5rem;" title="Recommended holding period for best results with our algorithms">Ideal Horizon</td><td style="text-align:center;padding:0.3rem;">1d-1yr</td><td style="text-align:center;padding:0.3rem;">1-5 yrs</td><td style="text-align:center;padding:0.3rem;">1d-3mo</td><td style="text-align:center;padding:0.3rem;">1d-1yr</td></tr>
+                    <tr><td style="padding:0.3rem 0.5rem;" title="Typical trading costs per transaction (lower is better)">Commissions</td><td style="text-align:center;padding:0.3rem;">$0-10</td><td style="text-align:center;padding:0.3rem;">$0 + MER</td><td style="text-align:center;padding:0.3rem;">Spread</td><td style="text-align:center;padding:0.3rem;">0.1-0.5%</td></tr>
+                    <tr style="background:var(--bg3);"><td style="padding:0.3rem 0.5rem;" title="How much you can multiply your buying power. Higher leverage = higher risk AND higher potential returns">Leverage</td><td style="text-align:center;padding:0.3rem;">1-2x</td><td style="text-align:center;padding:0.3rem;">None</td><td style="text-align:center;padding:0.3rem;">Up to 50x</td><td style="text-align:center;padding:0.3rem;">1-5x</td></tr>
+                    <tr><td style="padding:0.3rem 0.5rem;" title="How much academic and industry research exists for this asset class">Research Depth</td><td style="text-align:center;padding:0.3rem;color:var(--green);">50+ yrs academic</td><td style="text-align:center;padding:0.3rem;">Moderate</td><td style="text-align:center;padding:0.3rem;">Carry/Trend</td><td style="text-align:center;padding:0.3rem;">Emerging</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- ═══ ANALYTICS & TOOLS ═══ -->
+        <div class="section" id="analytics">
+            <div class="section-head">
+                <h2>Pro Analytics & Tools</h2>
+                <span class="badge-count">10 tools + Alt-Data</span>
+            </div>
+            <p class="section-help">Professional-grade analytics endpoints. Each tool returns JSON data that powers our dashboards. Leaderboard ranks all algorithms by composite score. Ticker Profile gives 30+ indicators per stock. Walk-Forward tests strategy robustness over time.</p>
+            <div class="grid">
+                <a href="/findstocks/portfolio2/api/advanced_stats.php?action=leaderboard" style="text-decoration:none;">
+                    <div class="card tool">
+                        <span class="card-icon">&#x1F3C6;</span>
+                        <div><span class="badge badge-god">GOD-MODE</span></div>
+                        <h3>Algorithm Leaderboard</h3>
+                        <p>Multi-metric ranking of all algorithms. Composite score combining Sharpe ratio, win rate, and average return. Find the best performers.</p>
+                        <span class="link">View Leaderboard</span>
+                    </div>
+                </a>
+
+                <a href="/findstocks/portfolio2/api/advanced_stats.php?action=ticker_profile&ticker=MSFT" style="text-decoration:none;">
+                    <div class="card tool">
+                        <span class="card-icon">&#x1F50D;</span>
+                        <div><span class="badge badge-god">GOD-MODE</span></div>
+                        <h3>Ticker Deep Profile</h3>
+                        <p>30+ indicators: RSI, Stochastic RSI, MACD, Bollinger, TTM Squeeze, Supertrend, Ichimoku Cloud, OBV, CCI, Williams %R, Z-Score, ATR, SMA 20/50/200, buy/sell verdict.</p>
+                        <span class="link">View MSFT Profile</span>
+                    </div>
+                </a>
+
+                <a href="/findstocks/portfolio2/api/advanced_stats.php?action=walk_forward&window=1" style="text-decoration:none;">
+                    <div class="card tool">
+                        <span class="card-icon">&#x1F6E1;</span>
+                        <div><span class="badge badge-god">GOD-MODE</span></div>
+                        <h3>Walk-Forward Validation</h3>
+                        <p>Anti-overfitting test. Splits data into rolling windows and checks if strategies hold up out-of-sample. Consistency scoring: ROBUST / MODERATE / WEAK.</p>
+                        <span class="link">Run Walk-Forward</span>
+                    </div>
+                </a>
+
+                <a href="/findstocks/portfolio2/api/advanced_stats.php?action=regime_analysis" style="text-decoration:none;">
+                    <div class="card tool">
+                        <span class="card-icon">&#x1F30D;</span>
+                        <div><span class="badge badge-god">GOD-MODE</span></div>
+                        <h3>Regime Analysis</h3>
+                        <p>Performance breakdown by market regime: bull, bear, sideways. Based on SPY 20-day trend. Identifies which algorithms thrive in each regime.</p>
+                        <span class="link">View Regime Analysis</span>
+                    </div>
+                </a>
+
+                <a href="/findstocks/portfolio2/api/advanced_stats.php?action=risk_report" style="text-decoration:none;">
+                    <div class="card tool">
+                        <span class="card-icon">&#x26A0;</span>
+                        <div><span class="badge badge-god">GOD-MODE</span></div>
+                        <h3>Risk Report</h3>
+                        <p>Day-1 and Day-5 return distributions, VaR 95%/99%, expected shortfall (CVaR). Identifies worst picks and tail risk exposure.</p>
+                        <span class="link">View Risk Report</span>
+                    </div>
+                </a>
+
+                <a href="/findstocks/portfolio2/api/advanced_stats.php?action=portfolio_analytics" style="text-decoration:none;">
+                    <div class="card tool">
+                        <span class="card-icon">&#x1F4B0;</span>
+                        <div><span class="badge badge-god">GOD-MODE</span></div>
+                        <h3>Portfolio Analytics</h3>
+                        <p>Full portfolio metrics: Sharpe, Sortino, Calmar, Kelly Criterion, VaR, equity curve, drawdown periods, monthly returns, skewness, kurtosis.</p>
+                        <span class="link">View Portfolio Analytics</span>
+                    </div>
+                </a>
+
+                <a href="/findstocks/portfolio2/api/advanced_stats.php?action=algorithm_report" style="text-decoration:none;">
+                    <div class="card tool">
+                        <span class="card-icon">&#x1F9E0;</span>
+                        <div><span class="badge badge-new">NEW</span></div>
+                        <h3>Algorithm Report</h3>
+                        <p>Per-algorithm deep analysis: pick count, date range, average score, top tickers, algorithm family, and strategy type breakdown.</p>
+                        <span class="link">View Algorithm Report</span>
+                    </div>
+                </a>
+
+                <a href="/findstocks/api/alt_data.php?action=factors" style="text-decoration:none;">
+                    <div class="card tool">
+                        <span class="card-icon">&#x1F9EC;</span>
+                        <div><span class="badge badge-god">ALT-DATA</span></div>
+                        <h3>Alternative Data Factors</h3>
+                        <p>7 alt-data factor families: Human Capital (Glassdoor), Supply Chain (BDI), Geopolitical Risk (GPR), Dark Pool Flow, ESG + Climate, Patents/IP, Congressional Trading. 50+ features.</p>
+                        <span class="link">View Factor Families</span>
+                    </div>
+                </a>
+
+                <a href="/findstocks/api/macro_regime.php?action=current_regime" style="text-decoration:none;">
+                    <div class="card tool">
+                        <span class="card-icon">&#x1F3AF;</span>
+                        <div><span class="badge badge-god">ALT-DATA</span></div>
+                        <h3>Macro Regime Engine</h3>
+                        <p>Unified regime model: VIX + BDI + GPR + DXY + yield curve + climate. Outputs factor weights per regime state. Powers the Meta-Allocator.</p>
+                        <span class="link">View Current Regime</span>
+                    </div>
+                </a>
+
+                <a href="/findstocks/api/alt_data.php?action=data_sources" style="text-decoration:none;">
+                    <div class="card tool">
+                        <span class="card-icon">&#x1F4E1;</span>
+                        <div><span class="badge badge-new">NEW</span></div>
+                        <h3>Data Source Directory</h3>
+                        <p>External data feeds for all 7 factor families. Free and paid sources: FRED, SEC EDGAR, USPTO, FINRA ATS, GPR index, Glassdoor, MSCI ESG.</p>
+                        <span class="link">View Data Sources</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ═══ ALT-DATA FACTOR FAMILIES ═══ -->
+        <div class="section" id="altdata">
+            <div class="section-head">
+                <h2>Alternative Data Factor Families</h2>
+                <span class="badge-count">7 families</span>
+            </div>
+            <p class="section-help">Research-backed alternative data factors bolted onto the core engine. Each family provides incremental alpha beyond traditional price/volume signals. Wired into the Feature Factory and Regime Meta-Allocator.</p>
+            <div class="grid grid-sm">
+                <div class="card stocks" style="cursor:default;">
+                    <span class="card-icon">&#x1F465;</span>
+                    <div><span class="badge badge-god">GEORGETOWN</span></div>
+                    <h3>Human Capital & Culture</h3>
+                    <p>Glassdoor ratings, culture trends, leadership sentiment. Firms with high+improving scores earn significant four-factor alpha.</p>
+                    <div class="tag-row"><span class="tag">Glassdoor</span><span class="tag">Monthly</span><span class="tag">7 features</span></div>
+                </div>
+                <div class="card forex" style="cursor:default;">
+                    <span class="card-icon">&#x1F6A2;</span>
+                    <div><span class="badge badge-god">BDI</span></div>
+                    <h3>Supply Chain & Freight</h3>
+                    <p>Baltic Dry Index, freight rates, port congestion. Leading indicator of global trade. Supply-tight vs supply-slack regime flags.</p>
+                    <div class="tag-row"><span class="tag">FRED</span><span class="tag">Daily</span><span class="tag">7 features</span></div>
+                </div>
+                <div class="card tool" style="cursor:default;">
+                    <span class="card-icon">&#x1F30D;</span>
+                    <div><span class="badge badge-god">GPR</span></div>
+                    <h3>Geopolitical Risk</h3>
+                    <p>Caldara-Iacoviello GPR index. High GPR depresses risk assets. Sanctions avoidance, conflict zone exposure mapping per firm.</p>
+                    <div class="tag-row"><span class="tag">GPR Index</span><span class="tag">Daily</span><span class="tag">6 features</span></div>
+                </div>
+                <div class="card stocks" style="cursor:default;">
+                    <span class="card-icon">&#x1F3E6;</span>
+                    <div><span class="badge badge-god">FLOW</span></div>
+                    <h3>Institutional Flow & Dark Pool</h3>
+                    <p>Dark pool block trades, congressional trading (Harvard study), insider clusters. Hidden institutional footprints precede moves.</p>
+                    <div class="tag-row"><span class="tag">FINRA ATS</span><span class="tag">Daily</span><span class="tag">9 features</span></div>
+                </div>
+                <div class="card crypto" style="cursor:default;">
+                    <span class="card-icon">&#x1F33F;</span>
+                    <div><span class="badge badge-god">ESG</span></div>
+                    <h3>ESG & Climate Risk</h3>
+                    <p>ESG momentum, controversy velocity, climate physical risk. ESG + employee satisfaction composites show abnormal alpha.</p>
+                    <div class="tag-row"><span class="tag">MSCI</span><span class="tag">Monthly</span><span class="tag">7 features</span></div>
+                </div>
+                <div class="card funds" style="cursor:default;">
+                    <span class="card-icon">&#x1F4A1;</span>
+                    <div><span class="badge badge-god">PATENT</span></div>
+                    <h3>Patent / IP & Innovation</h3>
+                    <p>Patent intensity, citation weighting, new CPC class entries. Innovation proxy for future growth and competitive advantage.</p>
+                    <div class="tag-row"><span class="tag">USPTO</span><span class="tag">Quarterly</span><span class="tag">7 features</span></div>
+                </div>
+                <div class="card tool" style="cursor:default;">
+                    <span class="card-icon">&#x1F3DB;</span>
+                    <div><span class="badge badge-god">CONGRESS</span></div>
+                    <h3>Congressional (Nuanced)</h3>
+                    <p>Harvard Law: negative trades earn strongest abnormal returns. Committee jurisdiction, trade clustering, disclosure timing.</p>
+                    <div class="tag-row"><span class="tag">Senate EFDS</span><span class="tag">Daily</span><span class="tag">6 features</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ OTHER PAGES ═══ -->
+        <div class="section">
+            <div class="section-head">
+                <h2>Other Pages</h2>
+                <span class="badge-count">5 pages</span>
+            </div>
+            <p class="section-help">Additional dashboards, reporting pages, and research tools that complement the main portfolio systems.</p>
+            <div class="grid grid-sm">
+                <a href="/findstocks/" style="text-decoration:none;">
+                    <div class="card stocks">
+                        <span class="card-icon">&#x1F4CB;</span>
+                        <div><span class="badge badge-live">LIVE</span></div>
+                        <h3>Daily Stock Picks</h3>
+                        <p>Live daily picks from our algorithms with real-time scoring and SHA-256 verification.</p>
+                        <span class="link">View Today's Picks</span>
+                    </div>
+                </a>
+                <a href="/findstocks/portfolio2/stats/" style="text-decoration:none;">
+                    <div class="card stocks">
+                        <span class="card-icon">&#x2699;</span>
+                        <div><span class="badge badge-live">LIVE</span></div>
+                        <h3>System Status & Stats</h3>
+                        <p>Database health, algorithm win rates, permutation scan results, learning analysis.</p>
+                        <span class="link">View System Status</span>
+                    </div>
+                </a>
+                <a href="/findstocks/portfolio2/hub.html" style="text-decoration:none;">
+                    <div class="card stocks">
+                        <span class="card-icon">&#x1F517;</span>
+                        <h3>Portfolio Hub (Legacy)</h3>
+                        <p>Original investment portfolio hub page linking the four asset class systems.</p>
+                        <span class="link">View Hub</span>
+                    </div>
+                </a>
+                <a href="/findstocks/research/" style="text-decoration:none;">
+                    <div class="card stocks">
+                        <span class="card-icon">&#x1F4D6;</span>
+                        <h3>Stock Research</h3>
+                        <p>Research tools and data exploration for stock analysis.</p>
+                        <span class="link">Open Research</span>
+                    </div>
+                </a>
+                <a href="/findmutualfunds2/portfolio2/stats/" style="text-decoration:none;">
+                    <div class="card funds">
+                        <span class="card-icon">&#x2699;</span>
+                        <h3>Mutual Funds Stats</h3>
+                        <p>System status for the mutual funds portfolio engine.</p>
+                        <span class="link">View MF Stats</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ═══ ALGORITHMS ═══ -->
+        <div class="section" id="algorithms">
+            <div class="section-head">
+                <h2>All Algorithms by Family</h2>
+                <span class="badge-count" id="algo-count">115+ algos</span>
+            </div>
+            <p class="section-help">Every algorithm is a unique stock selection strategy with its own logic. They are grouped by family (e.g., AcademicFactor = peer-reviewed research, NoBedTime = our final consensus ensemble). Algorithms with pick counts have been actively generating trades.</p>
+            <div id="algo-list">
+                <!-- Populated by JS -->
+                <p style="color:var(--dim);font-size:0.85rem;">Loading algorithms...</p>
+            </div>
+        </div>
+
+        <!-- ═══ SCENARIOS ═══ -->
+        <div class="section">
+            <div class="section-head">
+                <h2>All Trading Scenarios</h2>
+                <span class="badge-count">77 scenarios</span>
+            </div>
+            <p class="section-help">Each scenario is a set of backtesting parameters: Take Profit (TP = auto-sell when gain reaches X%), Stop Loss (SL = auto-sell when loss reaches X%), and Hold period (max days before forced exit). "None" means unlimited. Different scenarios simulate different trading styles from aggressive day-trading to patient long-term holds.</p>
+            <div id="scenario-list">
+                <p style="color:var(--dim);font-size:0.85rem;">Loading scenarios...</p>
+            </div>
+        </div>
+
+        <!-- ═══ ADVANCED METRICS ═══ -->
+        <div class="section">
+            <div class="section-head">
+                <h2>Advanced Metrics & Indicators</h2>
+                <span class="badge-count">40+ metrics</span>
+            </div>
+            <p class="section-help">Portfolio metrics measure overall strategy performance (Sharpe = return per unit risk, Kelly = optimal bet size). Technical indicators analyze individual stocks (RSI = momentum oscillator, TTM Squeeze = volatility compression breakout signal). Hover over any metric for details.</p>
+            <div style="font-size:0.8rem;font-weight:600;color:var(--dim);margin-bottom:0.5rem;">PORTFOLIO METRICS</div>
+            <div class="metric-grid" style="margin-bottom:1.2rem;">
+                <div class="metric-chip" title="Sharpe Ratio: Average return divided by standard deviation. Higher = better risk-adjusted returns. >1.0 is good, >2.0 is excellent."><div class="val">Sharpe</div><div class="lbl">Risk-adjusted return</div></div>
+                <div class="metric-chip" title="Sortino Ratio: Like Sharpe but only penalizes downside volatility. Better for strategies with asymmetric returns."><div class="val">Sortino</div><div class="lbl">Downside risk-adjusted</div></div>
+                <div class="metric-chip" title="Calmar Ratio: Annualized return divided by maximum drawdown. Measures return per unit of worst-case pain."><div class="val">Calmar</div><div class="lbl">Return / Max Drawdown</div></div>
+                <div class="metric-chip" title="Kelly Criterion: Mathematically optimal fraction of capital to bet. Shows how much edge your strategy has. We use fractional Kelly (25%) for safety."><div class="val">Kelly %</div><div class="lbl">Optimal bet size</div></div>
+                <div class="metric-chip" title="Value at Risk (95%): The maximum loss you'd expect 95% of the time. A VaR of -5% means only 5% chance of losing more than 5% on a trade."><div class="val">VaR 95</div><div class="lbl">Value at Risk</div></div>
+                <div class="metric-chip" title="Conditional VaR (Expected Shortfall): Average loss in the worst 5% of cases. More informative than VaR for tail risk."><div class="val">CVaR 95</div><div class="lbl">Expected Shortfall</div></div>
+                <div class="metric-chip" title="Profit Factor: Total gross profit / total gross loss. >1.0 means profitable. >2.0 is strong. A PF of 1.5 means you make $1.50 for every $1 lost."><div class="val">Profit Factor</div><div class="lbl">Gross wins / losses</div></div>
+                <div class="metric-chip" title="Payoff Ratio: Average winning trade / average losing trade. >1.5 is good. Even a 40% win rate can be profitable if payoff ratio is high enough."><div class="val">Payoff Ratio</div><div class="lbl">Avg win / avg loss</div></div>
+                <div class="metric-chip" title="Maximum Drawdown: Largest peak-to-trough decline in portfolio value. Shows your worst-case pain. -20% means at some point you were down 20% from your peak."><div class="val">Max DD</div><div class="lbl">Maximum drawdown</div></div>
+                <div class="metric-chip" title="Recovery Factor: Total return / maximum drawdown. Measures how well the strategy recovers from losses. >3.0 is solid."><div class="val">Recovery</div><div class="lbl">Return / drawdown</div></div>
+                <div class="metric-chip" title="Expectancy: Average dollar amount expected per trade. Positive = edge exists. Calculated as (Win% x AvgWin) - (Loss% x AvgLoss)."><div class="val">Expectancy</div><div class="lbl">Expected per-trade edge</div></div>
+                <div class="metric-chip" title="Skewness: Measures asymmetry of returns. Positive skew = more upside outliers (good). Negative skew = more downside outliers (risky). 0 = symmetric."><div class="val">Skewness</div><div class="lbl">Return distribution tilt</div></div>
+                <div class="metric-chip" title="Kurtosis: Measures tail thickness of return distribution. High kurtosis = more extreme events than normal. >3 means fat tails (more black swans)."><div class="val">Kurtosis</div><div class="lbl">Tail fatness</div></div>
+                <div class="metric-chip" title="Max Win Streak: Longest consecutive series of winning trades. Useful for gauging momentum persistence and setting position size expectations."><div class="val">Win Streak</div><div class="lbl">Max consecutive wins</div></div>
+                <div class="metric-chip" title="Monthly Win Rate: Percentage of calendar months with positive returns. >60% suggests consistent profitability, not just a few big winners."><div class="val">Monthly WR</div><div class="lbl">Positive months %</div></div>
+                <div class="metric-chip" title="Annualized Return: Total return scaled to a 1-year basis. Allows comparing strategies with different time horizons on equal footing."><div class="val">Annualized</div><div class="lbl">Annualized return %</div></div>
+                <div class="metric-chip" title="Commission Drag: How much commissions reduce your total return. Shows the % of returns eaten by trading fees. Lower is better."><div class="val">Comm Drag</div><div class="lbl">Commission impact %</div></div>
+            </div>
+            <div style="font-size:0.8rem;font-weight:600;color:var(--dim);margin-bottom:0.5rem;">TECHNICAL INDICATORS (Per Ticker)</div>
+            <div class="metric-grid">
+                <div class="metric-chip" title="RSI (14-period): Momentum oscillator 0-100. >70 = overbought (potential pullback), <30 = oversold (potential bounce). 50 is neutral."><div class="val">RSI (14)</div><div class="lbl">Relative Strength Index</div></div>
+                <div class="metric-chip" title="Stochastic RSI: RSI applied to its own values to create a more sensitive oscillator. >80 = strongly overbought, <20 = strongly oversold. Faster signal than plain RSI."><div class="val">Stoch RSI</div><div class="lbl">Stochastic RSI %K</div></div>
+                <div class="metric-chip" title="MACD (12/26/9): Moving Average Convergence/Divergence. When MACD line crosses above signal line = bullish. Histogram shows momentum strength. Most popular trend indicator."><div class="val">MACD</div><div class="lbl">12/26/9 signal + histogram</div></div>
+                <div class="metric-chip" title="Bollinger Bands %B: Shows where price is relative to the bands. >1.0 = above upper band (overbought), <0 = below lower band (oversold). 0.5 = at the midline."><div class="val">Bollinger</div><div class="lbl">Band position %B</div></div>
+                <div class="metric-chip" title="TTM Squeeze: Detects when Bollinger Bands move inside Keltner Channels (volatility compression). When squeeze fires, a big price move is likely coming. Direction determined by momentum."><div class="val">TTM Squeeze</div><div class="lbl">BB inside Keltner Channel</div></div>
+                <div class="metric-chip" title="Supertrend (Factor 3, Period 10): ATR-based trailing stop indicator. Shows BULLISH (price above line) or BEARISH (below). Great for trend-following entries/exits."><div class="val">Supertrend</div><div class="lbl">ATR-based trend indicator</div></div>
+                <div class="metric-chip" title="Ichimoku Cloud: Japanese charting system with 5 lines. Tenkan (9-period fast), Kijun (26-period slow), Senkou A/B form the cloud. Price above cloud = bullish, below = bearish, inside = neutral."><div class="val">Ichimoku</div><div class="lbl">Cloud: Tenkan/Kijun/Senkou</div></div>
+                <div class="metric-chip" title="On-Balance Volume: Cumulative volume indicator. Rising OBV = accumulation (buying pressure), falling OBV = distribution (selling). Confirms price trends with volume."><div class="val">OBV Trend</div><div class="lbl">On-Balance Volume signal</div></div>
+                <div class="metric-chip" title="CCI (20-period): Commodity Channel Index measures deviation from the mean. >100 = overbought, <-100 = oversold. Often used for cyclical market timing."><div class="val">CCI (20)</div><div class="lbl">Commodity Channel Index</div></div>
+                <div class="metric-chip" title="Williams %R (14-period): Momentum oscillator -100 to 0. >-20 = overbought, <-80 = oversold. Inverse of Stochastic. Fast-acting, good for short-term reversals."><div class="val">Williams %R</div><div class="lbl">14-period overbought/sold</div></div>
+                <div class="metric-chip" title="Z-Score (20-day): How many standard deviations price is from its 20-day mean. >2 = very extended high, <-2 = very extended low. Used for mean reversion strategies."><div class="val">Z-Score</div><div class="lbl">20-day mean reversion</div></div>
+                <div class="metric-chip" title="Rate of Change (10-day): Percentage change in price over 10 days. Positive = upward momentum, negative = downward. Simple but effective momentum gauge."><div class="val">ROC (10)</div><div class="lbl">Rate of Change %</div></div>
+                <div class="metric-chip" title="ATR (14-period): Average True Range measures price volatility in dollar terms. Used for position sizing (smaller positions when ATR is high) and stop-loss placement."><div class="val">ATR (14)</div><div class="lbl">Average True Range</div></div>
+                <div class="metric-chip" title="Simple Moving Averages: SMA20 (short-term), SMA50 (medium), SMA200 (long-term). Golden Cross = SMA50 crosses above SMA200 (bullish). Death Cross = opposite."><div class="val">SMA 20/50/200</div><div class="lbl">Moving averages + crosses</div></div>
+                <div class="metric-chip" title="52-Week Range: Shows where price is between its annual high and low. >90% = near highs (strong momentum or resistance), <10% = near lows (potential value or falling knife)."><div class="val">52W Range</div><div class="lbl">High / Low distance</div></div>
+                <div class="metric-chip" title="20-Day Annualized Volatility: Daily standard deviation x sqrt(252). Shows annualized price fluctuation. <20% = calm, 20-40% = moderate, >40% = highly volatile."><div class="val">Vol 20d</div><div class="lbl">Annualized volatility</div></div>
+            </div>
+        </div>
+
+        <!-- ═══ API REFERENCE ═══ -->
+        <div class="section" id="api">
+            <div class="section-head">
+                <h2>API Reference (Stocks)</h2>
+                <span class="badge-count">9 endpoints</span>
+            </div>
+            <p class="section-help">Direct JSON API endpoints you can query. Each returns structured data. Useful for building custom dashboards or integrating with external tools. All endpoints are public GET requests requiring no authentication.</p>
+            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;">
+                <div class="endpoint-row">
+                    <span class="method">GET</span>
+                    <a class="path" href="/findstocks/portfolio2/api/data.php?type=stats">/api/data.php?type=</a>
+                    <span class="desc">picks | algorithms | portfolios | backtests | scenarios | stats | prices | trades</span>
+                </div>
+                <div class="endpoint-row">
+                    <span class="method">GET</span>
+                    <a class="path" href="/findstocks/portfolio2/api/backtest.php?take_profit=50&stop_loss=10&max_hold_days=30&commission=0">/api/backtest.php</a>
+                    <span class="desc">take_profit, stop_loss, max_hold_days, commission, slippage, algorithms, save</span>
+                </div>
+                <div class="endpoint-row">
+                    <span class="method">GET</span>
+                    <a class="path" href="/findstocks/portfolio2/api/whatif.php?compare=1">/api/whatif.php?compare=1</a>
+                    <span class="desc">All 56 scenario comparison | compare_algos=1 | scenario=key</span>
+                </div>
+                <div class="endpoint-row">
+                    <span class="method">GET</span>
+                    <a class="path" href="/findstocks/portfolio2/api/advanced_stats.php?action=leaderboard">/api/advanced_stats.php</a>
+                    <span class="desc">leaderboard | ticker_profile | walk_forward | regime_analysis | risk_report | portfolio_analytics | algorithm_report</span>
+                </div>
+                <div class="endpoint-row">
+                    <span class="method">GET</span>
+                    <a class="path" href="/findstocks/portfolio2/api/learning.php?action=analyze_and_adjust">/api/learning.php</a>
+                    <span class="desc">analyze_and_adjust | bear_analysis | permutation_scan</span>
+                </div>
+                <div class="endpoint-row">
+                    <span class="method">GET</span>
+                    <a class="path" href="/findstocks/portfolio2/api/fetch_prices.php">/api/fetch_prices.php</a>
+                    <span class="desc">Fetches Yahoo Finance price data for all tracked tickers</span>
+                </div>
+                <div class="endpoint-row">
+                    <span class="method">GET</span>
+                    <a class="path" href="/findstocks/api/alt_data.php?action=factors">/api/alt_data.php</a>
+                    <span class="desc">factors | factor_scores | regime_signals | data_sources | ticker_factors</span>
+                </div>
+                <div class="endpoint-row">
+                    <span class="method">GET</span>
+                    <a class="path" href="/findstocks/api/macro_regime.php?action=current_regime">/api/macro_regime.php</a>
+                    <span class="desc">current_regime | regime_history | factor_weights | regime_rules</span>
+                </div>
+                <div class="endpoint-row">
+                    <span class="method">GET</span>
+                    <a class="path" href="/findstocks/portfolio2/api/setup_schema.php">/api/setup_schema.php</a>
+                    <span class="desc">Creates/verifies all DB tables, seeds 115+ algorithms + 70+ portfolio templates</span>
+                </div>
+            </div>
+
+            <div class="section-head" style="margin-top:2rem;">
+                <h2>API Reference (Other Systems)</h2>
+            </div>
+            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;">
+                <div class="endpoint-row">
+                    <span class="method">GET</span>
+                    <a class="path" href="/findmutualfunds2/portfolio2/api/data.php?type=stats">/findmutualfunds2/portfolio2/api/</a>
+                    <span class="desc">Mutual Funds: data, backtest, whatif, learning, fetch_prices, import_picks</span>
+                </div>
+                <div class="endpoint-row">
+                    <span class="method">GET</span>
+                    <a class="path" href="/findforex2/portfolio/api/data.php?type=stats">/findforex2/portfolio/api/</a>
+                    <span class="desc">Forex: data, backtest, whatif, learning, fetch_prices, import_picks</span>
+                </div>
+                <div class="endpoint-row">
+                    <span class="method">GET</span>
+                    <a class="path" href="/findcryptopairs/portfolio/api/data.php?type=stats">/findcryptopairs/portfolio/api/</a>
+                    <span class="desc">Crypto: data, backtest, whatif, learning, fetch_prices, import_picks</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Global Investment Platform &mdash; findtorontoevents.ca &mdash; Last updated: <span id="footer-updated">Feb 2026</span></p>
+        <p style="margin-top:0.3rem;">115+ Algorithms &bull; 77 Scenarios &bull; 4 Asset Classes &bull; 30+ Algo Families &bull; 7 Alt-Data Factor Families &bull; 30+ Technical Indicators</p>
+        <p style="margin-top:0.3rem;">God-Mode + Alpha Forge + Academic Factor Zoo + Alt-Data (Glassdoor, BDI, GPR, Dark Pool, ESG, Patents, Congress)</p>
+        <p style="margin-top:0.3rem;">Not financial advice. For educational and research purposes only.</p>
+    </div>
+
+    <script>
+    // Timestamps
+    var now = new Date();
+    var updateStr = now.toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'}) + ' ' + now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('last-updated').textContent = updateStr;
+    var next = new Date(now.getTime() + 24*60*60*1000);
+    document.getElementById('next-update').textContent = next.toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'}) + ' (daily)';
+    document.getElementById('footer-updated').textContent = updateStr;
+
+    // Load live stats
+    fetch('/findstocks/portfolio2/api/data.php?type=stats')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.ok && d.stats) {
+                var s = d.stats;
+                document.getElementById('s-picks').textContent = s.total_picks || '--';
+                document.getElementById('s-prices').textContent = (s.total_price_records || 0).toLocaleString();
+                document.getElementById('cs-picks').textContent = s.total_picks || '--';
+                if (s.pick_date_range && s.pick_date_range.latest) {
+                    document.getElementById('cs-date').textContent = s.pick_date_range.latest;
+                }
+            }
+        }).catch(function(){});
+
+    // Load leaderboard for consensus stock data
+    fetch('/findstocks/portfolio2/api/advanced_stats.php?action=leaderboard')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.ok && d.leaderboard && d.leaderboard.length > 0) {
+                var top = d.leaderboard[0];
+                document.getElementById('cs-top').textContent = top.algorithm + ' (Sharpe: ' + top.sharpe_ratio + ')';
+                // Compute avg win rate and return
+                var totalWR = 0, totalRet = 0, cnt = d.leaderboard.length;
+                d.leaderboard.forEach(function(a) { totalWR += a.win_rate; totalRet += a.avg_return_pct; });
+                document.getElementById('cs-wr').textContent = (totalWR / cnt).toFixed(1) + '%';
+                document.getElementById('cs-ret').textContent = (totalRet / cnt).toFixed(2) + '%';
+            }
+        }).catch(function(){});
+
+    // Load algorithms
+    fetch('/findstocks/portfolio2/api/data.php?type=algorithms')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (!d.ok) return;
+            var algos = d.algorithms || [];
+            document.getElementById('algo-count').textContent = algos.length + ' algos';
+            document.getElementById('s-algos').textContent = algos.length;
+
+            // Group by family
+            var families = {};
+            algos.forEach(function(a) {
+                var f = a.family || 'Other';
+                if (!families[f]) families[f] = [];
+                families[f].push(a);
+            });
+
+            var html = '';
+            var familyColors = {
+                'CAN SLIM':'#22c55e','Technical':'#3b82f6','Composite':'#6366f1','ML':'#a855f7',
+                'StatArb':'#06b6d4','Alpha':'#f97316','Penny':'#ef4444','Inverse':'#ef4444',
+                'BlueChip':'#22c55e','Claude':'#a78bfa','ETF':'#3b82f6','Sector':'#eab308',
+                'Earnings':'#22c55e','Quality':'#06b6d4','Flow':'#f97316','Regime':'#ec4899',
+                'Quant':'#6366f1','Macro':'#eab308','ESG':'#22c55e','Innovation':'#a855f7',
+                'MetaAI':'#ff6b6b',
+                'AcademicFactor':'#22d3ee','Seasonal':'#fbbf24','Behavioral':'#f472b6',
+                'EventDriven':'#fb923c','QuantFund':'#818cf8','CrossAsset':'#34d399',
+                'AltData':'#10b981','SupplyChain':'#eab308','Geopolitical':'#ef4444',
+                'InstFlow':'#3b82f6','AlphaForge':'#f59e0b','NoBedTime':'#8b5cf6'
+            };
+
+            Object.keys(families).sort().forEach(function(fam) {
+                var color = familyColors[fam] || '#6366f1';
+                html += '<div style="margin-bottom:1.2rem;">';
+                html += '<div style="font-size:0.8rem;font-weight:700;color:' + color + ';margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:1px;">' + fam + ' (' + families[fam].length + ')</div>';
+                html += '<div class="algo-grid">';
+                families[fam].forEach(function(a) {
+                    var picks = parseInt(a.pick_count) || 0;
+                    var pickBadge = picks > 0 ? ' <span style="color:var(--green);font-size:0.6rem;">' + picks + ' picks</span>' : '';
+                    html += '<div class="algo-chip"><div class="name">' + a.name + pickBadge + '</div>';
+                    html += '<div class="fam">' + (a.algo_type || '') + ' &bull; ' + (a.ideal_timeframe || '') + '</div></div>';
+                });
+                html += '</div></div>';
+            });
+
+            document.getElementById('algo-list').innerHTML = html;
+        }).catch(function(){});
+
+    // Load scenarios
+    fetch('/findstocks/portfolio2/api/data.php?type=scenarios')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (!d.ok) return;
+            var scenarios = d.scenarios || [];
+            var html = '<div class="algo-grid">';
+            scenarios.forEach(function(s) {
+                var tp = s.tp >= 999 ? 'None' : s.tp + '%';
+                var sl = s.sl >= 999 ? 'None' : s.sl + '%';
+                html += '<div class="algo-chip">';
+                html += '<div class="name">' + s.name + '</div>';
+                html += '<div class="fam">TP: ' + tp + ' &bull; SL: ' + sl + ' &bull; Hold: ' + s.hold + 'd</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+            document.getElementById('scenario-list').innerHTML = html;
+        }).catch(function(){});
+
+        // ─── Alpha Suite Status ───
+        fetch('/findstocks/api/alpha_data.php?type=status')
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+            var st = d.data && d.data.status ? d.data.status : {};
+            var el1 = document.getElementById('alphaLastUpdate');
+            var el2 = document.getElementById('alphaNextUpdate');
+            var el3 = document.getElementById('alphaRegime');
+            if (el1 && st.last_refresh_end) {
+                var dt = new Date(st.last_refresh_end.replace(' ','T'));
+                el1.textContent = dt.toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+            }
+            if (el2 && st.next_expected_refresh) {
+                var dt2 = new Date(st.next_expected_refresh.replace(' ','T'));
+                el2.textContent = dt2.toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+            }
+            if (el3 && st.current_regime) {
+                el3.textContent = st.current_regime.replace(/_/g,' ');
+            }
+        }).catch(function(){});
+    </script>
+</body>
+</html>

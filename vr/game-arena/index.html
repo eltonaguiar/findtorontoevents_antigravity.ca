@@ -25,15 +25,23 @@
       }
     });
 
-    // Zone link: navigate on click
+    // Zone link: navigate on click with in-page confirmation overlay
+    // Uses drag detection so clicking-to-look-around doesn't trigger navigation.
     AFRAME.registerComponent('zone-link', {
-      schema: { url: { type: 'string', default: '' } },
+      schema: {
+        url: { type: 'string', default: '' },
+        label: { type: 'string', default: '' }
+      },
       init: function () {
         var self = this;
         this.el.addEventListener('click', function () {
           if (!self.data.url) return;
-          self.el.setAttribute('animation__flash', 'property: opacity; from: 1; to: 0.3; dur: 150; dir: alternate; loop: 3');
-          setTimeout(function () { window.location.href = self.data.url; }, 400);
+          // Ignore if user was dragging to look around
+          if (window._zoneMouseDragged) return;
+          // Ignore if a confirm overlay is already open
+          if (document.getElementById('zone-confirm')) return;
+          var gameName = self.data.label || self.data.url.split('/').filter(Boolean).pop() || 'this game';
+          window._showZoneConfirm(gameName, self.data.url, self.el);
         });
         this.el.addEventListener('mouseenter', function () {
           self.el.setAttribute('animation__grow', 'property: scale; to: 1.1 1.1 1.1; dur: 200; easing: easeOutQuad');
@@ -43,6 +51,75 @@
         });
       }
     });
+
+    // ---- Drag detection: distinguish click-to-navigate from click-to-look ----
+    (function() {
+      var startX = 0, startY = 0;
+      var DRAG_THRESHOLD = 6; // pixels of movement to count as a drag
+      window._zoneMouseDragged = false;
+      document.addEventListener('mousedown', function(e) {
+        startX = e.clientX; startY = e.clientY;
+        window._zoneMouseDragged = false;
+      }, true);
+      document.addEventListener('mousemove', function(e) {
+        if (Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY) > DRAG_THRESHOLD) {
+          window._zoneMouseDragged = true;
+        }
+      }, true);
+    })();
+
+    // ---- In-page confirmation overlay (replaces browser confirm()) ----
+    var _zoneConfirmCooldown = 0; // timestamp: block new confirms until this time
+    window._showZoneConfirm = function(gameName, url, sourceEl) {
+      // Block if overlay already open OR within cooldown period after last dismiss
+      if (document.getElementById('zone-confirm')) return;
+      if (Date.now() < _zoneConfirmCooldown) return;
+
+      var overlay = document.createElement('div');
+      overlay.id = 'zone-confirm';
+      overlay.innerHTML =
+        '<div class="zone-confirm-box">' +
+          '<div class="zone-confirm-title">Play ' + gameName + '?</div>' +
+          '<div class="zone-confirm-actions">' +
+            '<button class="zone-confirm-btn yes">Yes</button>' +
+            '<button class="zone-confirm-btn no">No</button>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(overlay);
+
+      function cleanup() {
+        overlay.remove();
+        document.removeEventListener('keydown', onKey);
+        // 500ms cooldown prevents a stale/queued click from immediately opening another confirm
+        _zoneConfirmCooldown = Date.now() + 500;
+      }
+      function onKey(e) { if (e.key === 'Escape') cleanup(); }
+      document.addEventListener('keydown', onKey);
+
+      // Prevent ALL clicks on the overlay from reaching the A-Frame canvas
+      overlay.addEventListener('mousedown', function(e) { e.stopPropagation(); }, true);
+      overlay.addEventListener('mouseup', function(e) { e.stopPropagation(); }, true);
+      overlay.addEventListener('click', function(e) { e.stopPropagation(); }, true);
+
+      // Click outside the box = dismiss
+      overlay.addEventListener('click', function(e) { if (e.target === overlay) cleanup(); });
+
+      // Yes button
+      overlay.querySelector('.zone-confirm-btn.yes').addEventListener('click', function(e) {
+        e.stopPropagation();
+        cleanup();
+        if (sourceEl) {
+          sourceEl.setAttribute('animation__flash', 'property: opacity; from: 1; to: 0.3; dur: 150; dir: alternate; loop: 3');
+        }
+        setTimeout(function() { window.location.href = url; }, 350);
+      });
+
+      // No button
+      overlay.querySelector('.zone-confirm-btn.no').addEventListener('click', function(e) {
+        e.stopPropagation();
+        cleanup();
+      });
+    };
 
     // Hover glow effect
     AFRAME.registerComponent('hover-glow', {
@@ -144,6 +221,49 @@
       text-decoration: none; transition: all 0.2s;
     }
     #back-btn:hover { border-color: rgba(168,85,247,0.5); background: rgba(10,10,30,0.95); }
+
+    /* Zone-link confirmation overlay (replaces intrusive browser confirm()) */
+    #zone-confirm {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.65);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10000;
+      backdrop-filter: blur(4px);
+      animation: zcFadeIn 0.15s ease-out;
+    }
+    @keyframes zcFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .zone-confirm-box {
+      background: rgba(10,10,30,0.95);
+      border: 1px solid rgba(168,85,247,0.5);
+      border-radius: 16px;
+      padding: 28px 36px;
+      text-align: center;
+      color: white;
+      min-width: 260px;
+      box-shadow: 0 8px 40px rgba(168,85,247,0.15);
+    }
+    .zone-confirm-title {
+      font-size: 1.4rem; font-weight: 700;
+      margin-bottom: 20px;
+      background: linear-gradient(90deg, #a855f7, #ec4899);
+      background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .zone-confirm-actions { display: flex; gap: 12px; justify-content: center; }
+    .zone-confirm-btn {
+      padding: 10px 28px; border-radius: 10px; font-size: 15px;
+      font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;
+    }
+    .zone-confirm-btn.yes { background: #a855f7; color: white; }
+    .zone-confirm-btn.yes:hover { background: #9333ea; transform: scale(1.05); }
+    .zone-confirm-btn.no { background: rgba(255,255,255,0.1); color: #aaa; }
+    .zone-confirm-btn.no:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+    /* Challenge toast HUMAN badge */
+    .toast-human-badge {
+      display: inline-block; background: #a855f7; color: #fff;
+      font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 4px;
+      margin-left: 4px; vertical-align: middle; letter-spacing: 0.03em;
+    }
   </style>
 </head>
 <body>
@@ -222,7 +342,7 @@
       <!-- Floating game cube -->
       <a-box class="clickable" position="0 2 0" width="2.5" height="2.5" depth="2.5"
              color="#6366f1" opacity="0.85"
-             zone-link="url: /vr/game-arena/tic-tac-toe.html"
+             zone-link="url: /vr/game-arena/tic-tac-toe.html; label: Tic-Tac-Toe"
              hover-glow="color: #6366f1"
              animation="property: rotation; to: 0 360 0; dur: 25000; loop: true; easing: linear">
         <!-- X and O on faces -->
@@ -236,7 +356,7 @@
       <!-- ENTER button -->
       <a-entity position="0 -0.2 1.5" look-at-camera>
         <a-plane class="clickable" width="2.2" height="0.55" color="#6366f1" opacity="0.9"
-                 zone-link="url: /vr/game-arena/tic-tac-toe.html"
+                 zone-link="url: /vr/game-arena/tic-tac-toe.html; label: Tic-Tac-Toe"
                  animation="property: position; from: 0 0 0; to: 0 0.08 0; dur: 1500; dir: alternate; loop: true; easing: easeInOutSine">
           <a-text value="PLAY TIC-TAC-TOE" align="center" width="4" color="#fff" position="0 0 0.01" font="mozillavr"></a-text>
         </a-plane>
@@ -245,7 +365,7 @@
       <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="1.8" radius-outer="2" color="#6366f1" opacity="0.5"
               animation="property: rotation; to: -90 360 0; dur: 10000; loop: true; easing: linear"></a-ring>
       <a-cylinder position="0 0.01 0" radius="1.8" height="0.02" color="#6366f1" opacity="0.12"
-                  class="clickable" zone-link="url: /vr/game-arena/tic-tac-toe.html"></a-cylinder>
+                  class="clickable" zone-link="url: /vr/game-arena/tic-tac-toe.html; label: Tic-Tac-Toe"></a-cylinder>
       <!-- Floating label -->
       <a-entity position="0 4 0" look-at-camera>
         <a-text value="Tic-Tac-Toe" align="center" width="5" color="#6366f1"></a-text>
@@ -258,7 +378,7 @@
       <!-- Floating soccer ball (sphere) -->
       <a-sphere class="clickable" position="0 2 0" radius="1.3"
                 color="#22c55e" opacity="0.85"
-                zone-link="url: /vr/game-arena/soccer-shootout.html"
+                zone-link="url: /vr/game-arena/soccer-shootout.html; label: Soccer Shootout"
                 hover-glow="color: #22c55e"
                 animation="property: rotation; to: 360 360 0; dur: 20000; loop: true; easing: linear">
         <a-text value="GOAL!" align="center" position="0 0.2 1.31" width="4" color="#fff" font="mozillavr"></a-text>
@@ -268,7 +388,7 @@
       <!-- ENTER button -->
       <a-entity position="0 -0.2 1.5" look-at-camera>
         <a-plane class="clickable" width="2.4" height="0.55" color="#22c55e" opacity="0.9"
-                 zone-link="url: /vr/game-arena/soccer-shootout.html"
+                 zone-link="url: /vr/game-arena/soccer-shootout.html; label: Soccer Shootout"
                  animation="property: position; from: 0 0 0; to: 0 0.08 0; dur: 1500; dir: alternate; loop: true; easing: easeInOutSine">
           <a-text value="PLAY SOCCER SHOOTOUT" align="center" width="4.5" color="#000" position="0 0 0.01" font="mozillavr"></a-text>
         </a-plane>
@@ -277,7 +397,7 @@
       <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="1.8" radius-outer="2" color="#22c55e" opacity="0.5"
               animation="property: rotation; to: -90 360 0; dur: 10000; loop: true; easing: linear"></a-ring>
       <a-cylinder position="0 0.01 0" radius="1.8" height="0.02" color="#22c55e" opacity="0.12"
-                  class="clickable" zone-link="url: /vr/game-arena/soccer-shootout.html"></a-cylinder>
+                  class="clickable" zone-link="url: /vr/game-arena/soccer-shootout.html; label: Soccer Shootout"></a-cylinder>
       <!-- Floating label -->
       <a-entity position="0 4 0" look-at-camera>
         <a-text value="Soccer Shootout" align="center" width="5" color="#22c55e"></a-text>
@@ -290,7 +410,7 @@
       <!-- Floating game cube — red/orange ant theme -->
       <a-box class="clickable" position="0 2 0" width="2.5" height="2.5" depth="2.5"
              color="#ef4444" opacity="0.85"
-             zone-link="url: /vr/ant-rush/"
+             zone-link="url: /vr/ant-rush/; label: Ant Rush"
              hover-glow="color: #ef4444"
              animation="property: rotation; to: 0 360 0; dur: 22000; loop: true; easing: linear">
         <!-- Ant emoji + title on faces -->
@@ -306,7 +426,7 @@
       <!-- ENTER button -->
       <a-entity position="0 -0.2 1.5" look-at-camera>
         <a-plane class="clickable" width="2.4" height="0.55" color="#ef4444" opacity="0.9"
-                 zone-link="url: /vr/ant-rush/"
+                 zone-link="url: /vr/ant-rush/; label: Ant Rush"
                  animation="property: position; from: 0 0 0; to: 0 0.08 0; dur: 1500; dir: alternate; loop: true; easing: easeInOutSine">
           <a-text value="PLAY ANT RUSH" align="center" width="4.5" color="#fff" position="0 0 0.01" font="mozillavr"></a-text>
         </a-plane>
@@ -321,7 +441,7 @@
       <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="1.8" radius-outer="2" color="#ef4444" opacity="0.5"
               animation="property: rotation; to: -90 360 0; dur: 10000; loop: true; easing: linear"></a-ring>
       <a-cylinder position="0 0.01 0" radius="1.8" height="0.02" color="#ef4444" opacity="0.12"
-                  class="clickable" zone-link="url: /vr/ant-rush/"></a-cylinder>
+                  class="clickable" zone-link="url: /vr/ant-rush/; label: Ant Rush"></a-cylinder>
       <!-- Floating label -->
       <a-entity position="0 4 0" look-at-camera>
         <a-text value="Ant Rush" align="center" width="5" color="#ef4444"></a-text>
@@ -337,7 +457,7 @@
       <!-- Floating weapon-shaped cube -->
       <a-box class="clickable" position="0 2 0" width="3" height="3" depth="3"
              color="#ef4444" opacity="0.85"
-             zone-link="url: /vr/game-arena/fps-arena.html"
+             zone-link="url: /vr/game-arena/fps-arena.html; label: FPS Arena"
              hover-glow="color: #ef4444"
              animation="property: rotation; to: 0 360 0; dur: 18000; loop: true; easing: linear">
         <a-text value="FPS" align="center" position="0 0.4 1.51" width="7" color="#fff" font="mozillavr"></a-text>
@@ -350,7 +470,7 @@
       <!-- ENTER button -->
       <a-entity position="0 -0.2 2" look-at-camera>
         <a-plane class="clickable" width="3" height="0.6" color="#ef4444" opacity="0.9"
-                 zone-link="url: /vr/game-arena/fps-arena.html"
+                 zone-link="url: /vr/game-arena/fps-arena.html; label: FPS Arena"
                  animation="property: position; from: 0 0 0; to: 0 0.08 0; dur: 1500; dir: alternate; loop: true; easing: easeInOutSine">
           <a-text value="PLAY FPS ARENA" align="center" width="5" color="#fff" position="0 0 0.01" font="mozillavr"></a-text>
         </a-plane>
@@ -359,7 +479,7 @@
       <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="2" radius-outer="2.3" color="#ef4444" opacity="0.5"
               animation="property: rotation; to: -90 360 0; dur: 6000; loop: true; easing: linear"></a-ring>
       <a-cylinder position="0 0.01 0" radius="2" height="0.02" color="#ef4444" opacity="0.15"
-                  class="clickable" zone-link="url: /vr/game-arena/fps-arena.html"></a-cylinder>
+                  class="clickable" zone-link="url: /vr/game-arena/fps-arena.html; label: FPS Arena"></a-cylinder>
       <!-- Floating label -->
       <a-entity position="0 4.5 0" look-at-camera>
         <a-text value="FPS Arena" align="center" width="6" color="#ef4444" font="mozillavr"></a-text>
@@ -378,7 +498,7 @@
       <!-- Floating sword-shaped cube -->
       <a-box class="clickable" position="0 2 0" width="3" height="3" depth="3"
              color="#dc2626" opacity="0.85"
-             zone-link="url: /vr/game-arena/fighting-arena.html"
+             zone-link="url: /FIGHTGAME/; label: Shadow Arena"
              hover-glow="color: #dc2626"
              animation="property: rotation; to: 0 360 0; dur: 18000; loop: true; easing: linear">
         <a-text value="FIGHT" align="center" position="0 0.4 1.51" width="7" color="#fff" font="mozillavr"></a-text>
@@ -391,24 +511,24 @@
       <!-- ENTER button -->
       <a-entity position="0 -0.2 2" look-at-camera>
         <a-plane class="clickable" width="3" height="0.6" color="#dc2626" opacity="0.9"
-                 zone-link="url: /vr/game-arena/fighting-arena.html"
+                 zone-link="url: /FIGHTGAME/; label: Shadow Arena"
                  animation="property: position; from: 0 0 0; to: 0 0.08 0; dur: 1500; dir: alternate; loop: true; easing: easeInOutSine">
-          <a-text value="PLAY FIGHTING ARENA" align="center" width="5" color="#fff" position="0 0 0.01" font="mozillavr"></a-text>
+          <a-text value="PLAY SHADOW ARENA" align="center" width="5" color="#fff" position="0 0 0.01" font="mozillavr"></a-text>
         </a-plane>
       </a-entity>
       <!-- Ground ring (larger) -->
       <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="2" radius-outer="2.3" color="#dc2626" opacity="0.5"
               animation="property: rotation; to: -90 360 0; dur: 6000; loop: true; easing: linear"></a-ring>
       <a-cylinder position="0 0.01 0" radius="2" height="0.02" color="#dc2626" opacity="0.15"
-                  class="clickable" zone-link="url: /vr/game-arena/fighting-arena.html"></a-cylinder>
+                  class="clickable" zone-link="url: /FIGHTGAME/; label: Shadow Arena"></a-cylinder>
       <!-- Floating label -->
       <a-entity position="0 4.5 0" look-at-camera>
-        <a-text value="Fighting Arena" align="center" width="6" color="#dc2626" font="mozillavr"></a-text>
-        <a-text value="1v1 Melee Combat | Multiple Fighters" align="center" width="4.5" color="#888" position="0 -0.4 0"></a-text>
+        <a-text value="Shadow Arena" align="center" width="6" color="#dc2626" font="mozillavr"></a-text>
+        <a-text value="2D Fighting Game | 6 Fighters | Online PvP" align="center" width="4.5" color="#888" position="0 -0.4 0"></a-text>
       </a-entity>
     </a-entity>
 
-    <!-- Fighting Arena light -->
+    <!-- Shadow Arena light -->
     <a-light type="point" position="5 3 -12" color="#dc2626" intensity="0.7" distance="14"></a-light>
 
     <!-- ===== LEADERBOARD PANEL ===== -->
@@ -478,14 +598,14 @@
     <!-- Camera Rig -->
     <a-entity id="rig" position="0 1.6 4">
       <a-camera look-controls wasd-controls="acceleration: 12" fov="80">
-        <a-ring cursor="fuse: true; fuseTimeout: 1500"
-                raycaster="objects: .clickable; far: 30"
+        <!-- Gaze cursor ring: visual-only on desktop. layout-fix.js adds cursor+raycaster on enter-vr. -->
+        <a-ring class="vr-gaze-ring"
                 radius-inner="0.005" radius-outer="0.012"
                 color="#a855f7" shader="flat"
                 position="0 0 -1"
-                animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 200"
-                animation__fusing="property: scale; startEvents: fusing; from: 1 1 1; to: 0.5 0.5 0.5; dur: 1500; easing: linear"
-                animation__mouseleave="property: scale; startEvents: mouseleave; to: 1 1 1; dur: 200">
+                visible="false"
+                data-vr-cursor="fuse: true; fuseTimeout: 1500"
+                data-vr-raycaster="objects: .clickable; far: 30">
         </a-ring>
       </a-camera>
       <a-entity id="left-hand" laser-controls="hand: left"
@@ -826,19 +946,47 @@
     function simulateChallenge() {
       var delay = 20000 + Math.random() * 40000;
       setTimeout(function() {
-        var challenger = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
+        // Don't show challenge toasts when tab is hidden (avoids startling the user)
+        if (document.hidden) { simulateChallenge(); return; }
+
+        // Pick a challenger: prefer real humans from the API when available
+        var challenger, isHuman = false;
+        var realOthers = cachedRealPlayers.filter(function(p) { return p.name !== state.playerName; });
+        if (realOthers.length > 0 && Math.random() < 0.6) {
+          // 60% chance to pick a real player if any are online
+          var rp = realOthers[Math.floor(Math.random() * realOthers.length)];
+          challenger = rp.name;
+          isHuman = true;
+        } else {
+          challenger = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
+          isHuman = false;
+        }
+
         var games = [{ name: 'Tic-Tac-Toe', url: '/vr/game-arena/tic-tac-toe.html' }, { name: 'Soccer Shootout', url: '/vr/game-arena/soccer-shootout.html' }, { name: 'FPS Arena', url: '/vr/game-arena/fps-arena.html' }];
         var game = games[Math.floor(Math.random() * games.length)];
+        var humanBadge = isHuman ? ' <span class="toast-human-badge">HUMAN</span>' : '';
+
         var c = document.getElementById('toast-container');
         var t = document.createElement('div');
         t.className = 'toast';
-        t.innerHTML = '<div class="toast-title">' + challenger + ' challenges you!</div>'
+        t.innerHTML = '<div class="toast-title">' + challenger + humanBadge + ' challenges you!</div>'
           + '<div class="toast-msg">' + game.name + '</div>'
           + '<div class="toast-actions">'
-          + '<button class="toast-btn accept" onclick="window.location.href=\'' + game.url + '?opponent=' + encodeURIComponent(challenger) + '\'">Accept</button>'
-          + '<button class="toast-btn decline" onclick="this.closest(\'.toast\').remove()">Decline</button>'
+          + '<button class="toast-btn accept">Accept</button>'
+          + '<button class="toast-btn decline">Decline</button>'
           + '</div>';
         c.appendChild(t);
+
+        // Wire up buttons (use zone-confirm overlay for Accept, not direct navigation)
+        var acceptUrl = game.url + '?opponent=' + encodeURIComponent(challenger);
+        t.querySelector('.toast-btn.accept').addEventListener('click', function() {
+          t.remove();
+          window._showZoneConfirm(game.name + ' vs ' + challenger, acceptUrl, null);
+        });
+        t.querySelector('.toast-btn.decline').addEventListener('click', function() {
+          t.remove();
+        });
+
         setTimeout(function() { if (t.parentNode) { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(function(){ t.remove(); }, 300); } }, 12000);
         simulateChallenge();
       }, delay);

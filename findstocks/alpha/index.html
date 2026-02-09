@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha Factor Suite | Multi-Strategy Quantitative Stock Picks</title>
+<style>
+:root {
+    --bg: #0f1117; --bg2: #1a1d28; --bg3: #252836; --bg4: #2d3142;
+    --text: #e8e8e8; --text2: #a0a4b8; --text3: #6b7086;
+    --accent: #6366f1; --accent2: #818cf8; --green: #22c55e; --red: #ef4444;
+    --orange: #f59e0b; --blue: #3b82f6; --purple: #a855f7; --cyan: #06b6d4;
+    --border: #2d3142;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+a { color: var(--accent2); text-decoration: none; }
+a:hover { color: var(--accent); text-decoration: underline; }
+
+/* Header */
+.header { background: linear-gradient(135deg, #1a1d28 0%, #0f1117 100%); border-bottom: 1px solid var(--border); padding: 20px 24px; }
+.header-top { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; flex-wrap: wrap; gap: 12px; }
+.header h1 { font-size: 22px; font-weight: 700; }
+.header h1 span { color: var(--accent2); }
+.header-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--text2); }
+.header-meta .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 12px; font-weight: 600; font-size: 12px; }
+.badge-green { background: rgba(34,197,94,0.15); color: var(--green); }
+.badge-red { background: rgba(239,68,68,0.15); color: var(--red); }
+.badge-orange { background: rgba(245,158,11,0.15); color: var(--orange); }
+.badge-blue { background: rgba(59,130,246,0.15); color: var(--blue); }
+.badge-purple { background: rgba(168,85,247,0.15); color: var(--purple); }
+
+/* Nav */
+.nav-bar { display: flex; gap: 4px; padding: 8px 24px; max-width: 1400px; margin: 0 auto; overflow-x: auto; }
+.nav-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid transparent; background: transparent; color: var(--text2); cursor: pointer; font-size: 13px; font-weight: 500; white-space: nowrap; transition: all 0.2s; }
+.nav-btn:hover { background: var(--bg3); color: var(--text); }
+.nav-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* Panels */
+.container { max-width: 1400px; margin: 0 auto; padding: 16px 24px; }
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* Cards */
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.card-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+
+/* Stats row */
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stat-card { background: var(--bg3); border-radius: 10px; padding: 14px 16px; }
+.stat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-value { font-size: 22px; font-weight: 700; margin-top: 2px; }
+.stat-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: var(--bg3); color: var(--text2); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; padding: 10px 12px; text-align: left; white-space: nowrap; cursor: pointer; user-select: none; position: sticky; top: 0; }
+th:hover { color: var(--text); background: var(--bg4); }
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+tr:hover td { background: rgba(99,102,241,0.05); }
+
+/* Heatmap colors */
+.heat-100 { color: #22c55e; font-weight: 700; }
+.heat-90 { color: #4ade80; font-weight: 600; }
+.heat-80 { color: #86efac; font-weight: 600; }
+.heat-70 { color: #a7f3d0; }
+.heat-60 { color: #d1fae5; }
+.heat-50 { color: var(--text2); }
+.heat-40 { color: #fcd34d; }
+.heat-30 { color: #fbbf24; }
+.heat-20 { color: #f59e0b; }
+.heat-10 { color: #ef4444; }
+.heat-0 { color: #dc2626; font-weight: 700; }
+
+/* Regime indicator */
+.regime-box { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 14px; }
+.regime-bullish { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+.regime-bearish { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.regime-volatile { background: rgba(245,158,11,0.15); color: var(--orange); border: 1px solid rgba(245,158,11,0.3); }
+.regime-neutral { background: rgba(99,102,241,0.15); color: var(--accent2); border: 1px solid rgba(99,102,241,0.3); }
+
+/* Conviction badges */
+.conv-high { color: var(--green); font-weight: 600; }
+.conv-medium { color: var(--orange); }
+.conv-low { color: var(--text3); }
+
+/* Strategy tabs */
+.strat-tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 12px; }
+.strat-tab { padding: 6px 14px; border-radius: 6px; background: var(--bg3); color: var(--text2); cursor: pointer; font-size: 12px; border: 1px solid transparent; transition: all 0.2s; }
+.strat-tab:hover { color: var(--text); border-color: var(--border); }
+.strat-tab.active { background: var(--accent); color: #fff; }
+
+/* Loading */
+.loading { text-align: center; padding: 40px; color: var(--text3); }
+.loading-spin { display: inline-block; width: 24px; height: 24px; border: 3px solid var(--bg3); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Refresh timestamps */
+.timestamps { display: flex; gap: 24px; flex-wrap: wrap; font-size: 12px; color: var(--text3); margin-top: 8px; }
+.timestamps strong { color: var(--text2); }
+
+/* Back link */
+.back-link { display: inline-flex; align-items: center; gap: 4px; color: var(--text2); font-size: 13px; margin-bottom: 12px; }
+.back-link:hover { color: var(--accent2); }
+
+/* Ticker link */
+.ticker-link { color: var(--accent2); font-weight: 600; cursor: pointer; }
+.ticker-link:hover { text-decoration: underline; }
+
+/* Regime chart */
+.regime-chart { display: flex; gap: 2px; align-items: flex-end; height: 60px; margin-top: 12px; }
+.regime-bar { flex: 1; min-width: 4px; border-radius: 2px 2px 0 0; transition: height 0.3s; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header-top { flex-direction: column; align-items: flex-start; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .container { padding: 12px 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-top">
+        <div>
+            <a class="back-link" href="/findstocks/">&larr; Back to Stock Picks</a>
+            <h1><span>Alpha</span> Factor Suite</h1>
+            <div class="timestamps" id="timestamps">
+                <span>Last Updated: <strong id="lastUpdate">Loading...</strong></span>
+                <span>Next Update: <strong id="nextUpdate">--</strong></span>
+                <span>Regime: <strong id="regimeLabel">--</strong></span>
+            </div>
+        </div>
+        <div class="header-meta">
+            <span class="badge badge-blue" id="badgeUniverse">-- stocks</span>
+            <span class="badge badge-purple" id="badgeStrategies">9 strategies</span>
+            <span class="badge badge-green" id="badgePicks">-- picks</span>
+        </div>
+    </div>
+    <div class="nav-bar">
+        <button class="nav-btn active" data-panel="overview">Overview</button>
+        <button class="nav-btn" data-panel="factors">Factor Scores</button>
+        <button class="nav-btn" data-panel="picks">Strategy Picks</button>
+        <button class="nav-btn" data-panel="regime">Market Regime</button>
+        <button class="nav-btn" data-panel="universe">Universe</button>
+        <button class="nav-btn" data-panel="api">API Docs</button>
+    </div>
+</div>
+
+<div class="container">
+
+<!-- ═══ OVERVIEW PANEL ═══ -->
+<div class="panel active" id="panel-overview">
+    <div class="stats-row" id="overviewStats">
+        <div class="stat-card"><div class="stat-label">Universe Size</div><div class="stat-value" id="statUniverse">--</div><div class="stat-sub">actively tracked stocks</div></div>
+        <div class="stat-card"><div class="stat-label">Factors Computed</div><div class="stat-value" id="statFactors">--</div><div class="stat-sub">6 factor families</div></div>
+        <div class="stat-card"><div class="stat-label">Today's Picks</div><div class="stat-value" id="statPicks">--</div><div class="stat-sub">across 9 strategies</div></div>
+        <div class="stat-card"><div class="stat-label">Current Regime</div><div class="stat-value" id="statRegime">--</div><div class="stat-sub" id="statRegimeSub">--</div></div>
+        <div class="stat-card"><div class="stat-label">Regime Score</div><div class="stat-value" id="statRegimeScore">--</div><div class="stat-sub">0=crisis 100=euphoria</div></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Consensus Top Picks (appear in 3+ strategies)</div>
+        <div class="table-wrap">
+            <table id="consensusTable">
+                <thead><tr><th>Ticker</th><th>Company</th><th>Sector</th><th>Score</th><th>Conviction</th><th>Strategies</th><th>Rationale</th></tr></thead>
+                <tbody id="consensusBody"><tr><td colspan="7" class="loading"><div class="loading-spin"></div></td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Factor Leaderboard (Top 10 by Regime-Adjusted Composite)</div>
+        <div class="table-wrap">
+            <table id="leaderboardTable">
+                <thead><tr><th>Rank</th><th>Ticker</th><th>Company</th><th>Sector</th><th>Momentum</th><th>Quality</th><th>Value</th><th>Earnings</th><th>Low Vol</th><th>Growth</th><th>Composite</th></tr></thead>
+                <tbody id="leaderboardBody"><tr><td colspan="11" class="loading"><div class="loading-spin"></div></td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">How It Works</div>
+        <p style="color:var(--text2); font-size:14px; line-height:1.7;">
+            The Alpha Factor Suite ranks <strong>50 liquid US stocks</strong> across <strong>6 academic factor families</strong>
+            (Momentum, Quality, Value, Earnings, Volatility, Growth) using cross-sectional percentile ranking.
+            Factor weights dynamically adjust based on the current <strong>market regime</strong> (VIX, yield curve, dollar index, SPY trend).
+            In bear/high-vol markets, defensive factors (Quality, Low Vol) are overweighted.
+            In bull/goldilocks markets, offensive factors (Momentum, Growth) get more weight.
+            <strong>9 strategies</strong> generate picks daily, and a <strong>Consensus</strong> strategy highlights stocks appearing in 3+ strategies.
+            All data refreshes automatically via GitHub Actions after market close.
+        </p>
+    </div>
+</div>
+
+<!-- ═══ FACTORS PANEL ═══ -->
+<div class="panel" id="panel-factors">
+    <div class="card">
+        <div class="card-title">Factor Scores Heatmap (click column headers to sort)</div>
+        <div style="margin-bottom:8px; font-size:12px; color:var(--text3);">
+            Scores are cross-sectional percentiles (0-100). Higher = better within the universe.
+        </div>
+        <div class="table-wrap">
+            <table id="factorsTable">
+                <thead><tr>
+                    <th data-sort="ticker">Ticker</th><th data-sort="company_name">Company</th><th data-sort="sector">Sector</th>
+                    <th data-sort="momentum_score">Momentum</th><th data-sort="quality_score">Quality</th>
+                    <th data-sort="value_score">Value</th><th data-sort="earnings_score">Earnings</th>
+                    <th data-sort="vol_score">Low Vol</th><th data-sort="growth_score">Growth</th>
+                    <th data-sort="composite_score">Composite</th><th data-sort="regime_adj_score">Regime Adj</th>
+                </tr></thead>
+                <tbody id="factorsBody"><tr><td colspan="11" class="loading"><div class="loading-spin"></div></td></tr></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ PICKS PANEL ═══ -->
+<div class="panel" id="panel-picks">
+    <div class="card">
+        <div class="card-title">Strategy Picks</div>
+        <div class="strat-tabs" id="stratTabs"></div>
+        <div class="table-wrap">
+            <table id="picksTable">
+                <thead><tr><th>Ticker</th><th>Company</th><th>Sector</th><th>Score</th><th>Conviction</th><th>Horizon</th><th>Risk</th><th>Size %</th><th>SL %</th><th>TP %</th><th>Top Factors</th></tr></thead>
+                <tbody id="picksBody"><tr><td colspan="11" class="loading"><div class="loading-spin"></div></td></tr></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ REGIME PANEL ═══ -->
+<div class="panel" id="panel-regime">
+    <div class="stats-row">
+        <div class="stat-card"><div class="stat-label">VIX</div><div class="stat-value" id="regimeVix">--</div></div>
+        <div class="stat-card"><div class="stat-label">S&P 500</div><div class="stat-value" id="regimeSpy">--</div></div>
+        <div class="stat-card"><div class="stat-label">10Y Yield</div><div class="stat-value" id="regimeTnx">--</div></div>
+        <div class="stat-card"><div class="stat-label">Yield Spread</div><div class="stat-value" id="regimeSpread">--</div></div>
+        <div class="stat-card"><div class="stat-label">Dollar (DXY)</div><div class="stat-value" id="regimeDxy">--</div></div>
+        <div class="stat-card"><div class="stat-label">Regime</div><div class="stat-value" id="regimeName">--</div></div>
+    </div>
+    <div class="card">
+        <div class="card-title">Regime History (30 Days)</div>
+        <div class="regime-chart" id="regimeChart"></div>
+        <div class="table-wrap" style="margin-top:16px;">
+            <table id="regimeTable">
+                <thead><tr><th>Date</th><th>VIX</th><th>S&P 500</th><th>10Y</th><th>Spread</th><th>DXY</th><th>Regime</th><th>Score</th></tr></thead>
+                <tbody id="regimeBody"></tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title">Regime Impact on Factor Weights</div>
+        <table>
+            <thead><tr><th>Regime</th><th>Momentum</th><th>Quality</th><th>Value</th><th>Earnings</th><th>Low Vol</th><th>Growth</th></tr></thead>
+            <tbody>
+                <tr><td>Goldilocks (VIX&lt;16, SPY up)</td><td>30%</td><td>15%</td><td>15%</td><td>20%</td><td>5%</td><td>15%</td></tr>
+                <tr><td>Calm Bull (VIX 16-20, SPY up)</td><td>30%</td><td>18%</td><td>15%</td><td>17%</td><td>5%</td><td>15%</td></tr>
+                <tr><td>Moderate (baseline)</td><td>25%</td><td>20%</td><td>20%</td><td>15%</td><td>10%</td><td>10%</td></tr>
+                <tr><td>Bear (SPY below SMA50)</td><td>10%</td><td>30%</td><td>25%</td><td>10%</td><td>20%</td><td>5%</td></tr>
+                <tr><td>High Volatility (VIX &gt;25)</td><td>10%</td><td>25%</td><td>20%</td><td>10%</td><td>25%</td><td>10%</td></tr>
+                <tr><td>Extreme (VIX &gt;35)</td><td>5%</td><td>30%</td><td>20%</td><td>5%</td><td>35%</td><td>5%</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ═══ UNIVERSE PANEL ═══ -->
+<div class="panel" id="panel-universe">
+    <div class="card">
+        <div class="card-title">Alpha Universe (50 stocks)</div>
+        <div class="table-wrap">
+            <table id="universeTable">
+                <thead><tr><th>Ticker</th><th>Company</th><th>Sector</th><th>Industry</th><th>Tier</th><th>Price</th><th>Mkt Cap</th><th>P/E</th><th>Div Yield</th></tr></thead>
+                <tbody id="universeBody"><tr><td colspan="9" class="loading"><div class="loading-spin"></div></td></tr></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ API PANEL ═══ -->
+<div class="panel" id="panel-api">
+    <div class="card">
+        <div class="card-title">Alpha Suite API Reference</div>
+        <table>
+            <thead><tr><th>Endpoint</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>alpha_data.php?type=status</code></td><td>System status, timestamps, counts</td></tr>
+                <tr><td><code>alpha_data.php?type=picks</code></td><td>Latest strategy picks (add &amp;strategy=X to filter)</td></tr>
+                <tr><td><code>alpha_data.php?type=factors</code></td><td>Factor scores heatmap (add &amp;sort=momentum etc)</td></tr>
+                <tr><td><code>alpha_data.php?type=regime</code></td><td>Current regime + 30-day history</td></tr>
+                <tr><td><code>alpha_data.php?type=universe</code></td><td>Stock universe with fundamentals</td></tr>
+                <tr><td><code>alpha_data.php?type=ticker&amp;symbol=AAPL</code></td><td>Single ticker deep dive</td></tr>
+                <tr><td><code>alpha_data.php?type=strategies</code></td><td>Strategy summary</td></tr>
+            </tbody>
+        </table>
+        <p style="color:var(--text3); font-size:13px; margin-top:12px;">
+            Factor families: Momentum (12M/6M/3M returns), Quality (ROE, margins, FCF yield, debt),
+            Value (P/E, P/B, P/S, dividend yield), Earnings (surprise consistency, beat rate, growth),
+            Volatility (realized vol, beta, drawdown), Growth (revenue + earnings growth).
+            All scored as cross-sectional percentiles (0-100) within the universe.
+        </p>
+    </div>
+</div>
+
+</div>
+
+<script>
+var API = '/findstocks/api/alpha_data.php';
+
+/* ─── Tab Navigation ─── */
+var navBtns = document.querySelectorAll('.nav-btn');
+for (var i = 0; i < navBtns.length; i++) {
+    navBtns[i].onclick = function() {
+        for (var j = 0; j < navBtns.length; j++) navBtns[j].className = 'nav-btn';
+        this.className = 'nav-btn active';
+        var panels = document.querySelectorAll('.panel');
+        for (var j = 0; j < panels.length; j++) panels[j].className = 'panel';
+        document.getElementById('panel-' + this.getAttribute('data-panel')).className = 'panel active';
+    };
+}
+
+/* ─── Helpers ─── */
+function heatClass(v) {
+    v = parseFloat(v) || 0;
+    if (v >= 90) return 'heat-100';
+    if (v >= 80) return 'heat-90';
+    if (v >= 70) return 'heat-80';
+    if (v >= 60) return 'heat-70';
+    if (v >= 50) return 'heat-60';
+    if (v >= 40) return 'heat-50';
+    if (v >= 30) return 'heat-40';
+    if (v >= 20) return 'heat-30';
+    if (v >= 10) return 'heat-20';
+    return 'heat-10';
+}
+function fmt(v, d) { return (parseFloat(v) || 0).toFixed(d !== undefined ? d : 1); }
+function fmtM(v) {
+    v = parseFloat(v) || 0;
+    if (v >= 1e12) return (v/1e12).toFixed(1) + 'T';
+    if (v >= 1e9) return (v/1e9).toFixed(1) + 'B';
+    if (v >= 1e6) return (v/1e6).toFixed(1) + 'M';
+    return v.toFixed(0);
+}
+function fmtDate(d) {
+    if (!d) return '--';
+    var dt = new Date(d.replace(' ', 'T'));
+    return dt.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit'});
+}
+function convClass(c) { return c === 'high' ? 'conv-high' : c === 'medium' ? 'conv-medium' : 'conv-low'; }
+function regimeClass(r) {
+    if (!r) return 'regime-neutral';
+    if (r.indexOf('bull') >= 0 || r.indexOf('goldilocks') >= 0) return 'regime-bullish';
+    if (r.indexOf('bear') >= 0) return 'regime-bearish';
+    if (r.indexOf('vol') >= 0 || r.indexOf('extreme') >= 0) return 'regime-volatile';
+    return 'regime-neutral';
+}
+function apiCall(type, params, cb) {
+    var qs = '?type=' + type;
+    if (params) for (var k in params) if (params.hasOwnProperty(k)) qs += '&' + k + '=' + encodeURIComponent(params[k]);
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API + qs);
+    xhr.onload = function() {
+        try { var d = JSON.parse(xhr.responseText); cb(null, d); }
+        catch(e) { cb(e, null); }
+    };
+    xhr.onerror = function() { cb('Network error', null); };
+    xhr.send();
+}
+
+/* ─── Load Status ─── */
+apiCall('status', null, function(err, res) {
+    if (err || !res || !res.data) return;
+    var d = res.data;
+    var st = d.status || {};
+    document.getElementById('lastUpdate').textContent = fmtDate(st.last_refresh_end);
+    document.getElementById('nextUpdate').textContent = fmtDate(st.next_expected_refresh);
+    var regime = st.current_regime || 'unknown';
+    document.getElementById('regimeLabel').innerHTML = '<span class="regime-box ' + regimeClass(regime) + '">' + regime.replace(/_/g, ' ') + '</span>';
+    var c = d.counts || {};
+    document.getElementById('badgeUniverse').textContent = (c.universe || 0) + ' stocks';
+    document.getElementById('badgePicks').textContent = (c.total_picks || 0) + ' picks';
+    document.getElementById('statUniverse').textContent = c.universe || '--';
+    document.getElementById('statFactors').textContent = c.factor_scores || '--';
+    document.getElementById('statPicks').textContent = c.total_picks || '--';
+    document.getElementById('statRegime').textContent = regime.replace(/_/g, ' ');
+});
+
+/* ─── Load Factor Leaderboard (overview) ─── */
+apiCall('factors', {sort: 'regime'}, function(err, res) {
+    if (err || !res || !res.data) return;
+    var factors = res.data.factors || [];
+    var body = document.getElementById('leaderboardBody');
+    var html = '';
+    for (var i = 0; i < Math.min(10, factors.length); i++) {
+        var f = factors[i];
+        html += '<tr><td>' + (i+1) + '</td><td class="ticker-link">' + f.ticker + '</td><td>' + (f.company_name||'') + '</td><td>' + (f.sector||'') + '</td>';
+        html += '<td class="' + heatClass(f.momentum_score) + '">' + fmt(f.momentum_score) + '</td>';
+        html += '<td class="' + heatClass(f.quality_score) + '">' + fmt(f.quality_score) + '</td>';
+        html += '<td class="' + heatClass(f.value_score) + '">' + fmt(f.value_score) + '</td>';
+        html += '<td class="' + heatClass(f.earnings_score) + '">' + fmt(f.earnings_score) + '</td>';
+        html += '<td class="' + heatClass(f.vol_score) + '">' + fmt(f.vol_score) + '</td>';
+        html += '<td class="' + heatClass(f.growth_score) + '">' + fmt(f.growth_score) + '</td>';
+        html += '<td class="' + heatClass(f.regime_adj_score) + '" style="font-weight:700">' + fmt(f.regime_adj_score) + '</td></tr>';
+    }
+    body.innerHTML = html || '<tr><td colspan="11">No factor data yet. Run the daily refresh first.</td></tr>';
+
+    // Also populate full factors table
+    var fbody = document.getElementById('factorsBody');
+    var fhtml = '';
+    for (var i = 0; i < factors.length; i++) {
+        var f = factors[i];
+        fhtml += '<tr><td class="ticker-link">' + f.ticker + '</td><td>' + (f.company_name||'') + '</td><td>' + (f.sector||'') + '</td>';
+        fhtml += '<td class="' + heatClass(f.momentum_score) + '">' + fmt(f.momentum_score) + '</td>';
+        fhtml += '<td class="' + heatClass(f.quality_score) + '">' + fmt(f.quality_score) + '</td>';
+        fhtml += '<td class="' + heatClass(f.value_score) + '">' + fmt(f.value_score) + '</td>';
+        fhtml += '<td class="' + heatClass(f.earnings_score) + '">' + fmt(f.earnings_score) + '</td>';
+        fhtml += '<td class="' + heatClass(f.vol_score) + '">' + fmt(f.vol_score) + '</td>';
+        fhtml += '<td class="' + heatClass(f.growth_score) + '">' + fmt(f.growth_score) + '</td>';
+        fhtml += '<td class="' + heatClass(f.composite_score) + '">' + fmt(f.composite_score) + '</td>';
+        fhtml += '<td class="' + heatClass(f.regime_adj_score) + '" style="font-weight:700">' + fmt(f.regime_adj_score) + '</td></tr>';
+    }
+    fbody.innerHTML = fhtml || '<tr><td colspan="11">No factor data yet.</td></tr>';
+});
+
+/* ─── Load Picks ─── */
+var allPicks = [];
+var currentStrategy = 'all';
+apiCall('picks', null, function(err, res) {
+    if (err || !res || !res.data) return;
+    allPicks = res.data.picks || [];
+    var strats = res.data.strategies || [];
+
+    // Build consensus table
+    var cBody = document.getElementById('consensusBody');
+    var chtml = '';
+    var consensus = [];
+    for (var i = 0; i < allPicks.length; i++) {
+        if (allPicks[i].strategy === 'Alpha Factor Consensus') consensus.push(allPicks[i]);
+    }
+    for (var i = 0; i < consensus.length; i++) {
+        var p = consensus[i];
+        chtml += '<tr><td class="ticker-link">' + p.ticker + '</td><td>' + (p.company_name||'') + '</td><td>' + (p.sector||'') + '</td>';
+        chtml += '<td>' + fmt(p.score) + '</td><td class="' + convClass(p.conviction) + '">' + p.conviction + '</td>';
+        chtml += '<td>' + (p.rationale||'').replace(/Consensus pick: appears in /,'') + '</td>';
+        chtml += '<td style="font-size:11px;color:var(--text3)">' + (p.top_factors||'') + '</td></tr>';
+    }
+    cBody.innerHTML = chtml || '<tr><td colspan="7">No consensus picks yet. Run daily refresh first.</td></tr>';
+
+    // Build strategy tabs
+    var tabs = document.getElementById('stratTabs');
+    var thtml = '<div class="strat-tab active" data-strat="all">All (' + allPicks.length + ')</div>';
+    for (var i = 0; i < strats.length; i++) {
+        thtml += '<div class="strat-tab" data-strat="' + strats[i].strategy + '">' + strats[i].strategy.replace('Alpha Factor ','') + ' (' + strats[i].cnt + ')</div>';
+    }
+    tabs.innerHTML = thtml;
+
+    // Tab click handlers
+    var tabEls = tabs.querySelectorAll('.strat-tab');
+    for (var i = 0; i < tabEls.length; i++) {
+        tabEls[i].onclick = function() {
+            for (var j = 0; j < tabEls.length; j++) tabEls[j].className = 'strat-tab';
+            this.className = 'strat-tab active';
+            renderPicks(this.getAttribute('data-strat'));
+        };
+    }
+
+    renderPicks('all');
+});
+
+function renderPicks(strategy) {
+    var body = document.getElementById('picksBody');
+    var html = '';
+    for (var i = 0; i < allPicks.length; i++) {
+        var p = allPicks[i];
+        if (strategy !== 'all' && p.strategy !== strategy) continue;
+        html += '<tr><td class="ticker-link">' + p.ticker + '</td>';
+        html += '<td>' + (p.company_name||'') + '</td><td>' + (p.sector||'') + '</td>';
+        html += '<td>' + fmt(p.score) + '</td>';
+        html += '<td class="' + convClass(p.conviction) + '">' + p.conviction + '</td>';
+        html += '<td>' + (p.expected_horizon||'') + '</td>';
+        html += '<td>' + (p.risk_level||'') + '</td>';
+        html += '<td>' + fmt(p.position_size_pct) + '%</td>';
+        html += '<td>' + fmt(p.stop_loss_pct) + '%</td>';
+        html += '<td>' + (parseFloat(p.take_profit_pct) > 900 ? 'Hold' : fmt(p.take_profit_pct) + '%') + '</td>';
+        html += '<td style="font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis">' + (p.top_factors||'') + '</td></tr>';
+    }
+    body.innerHTML = html || '<tr><td colspan="11">No picks for this strategy.</td></tr>';
+}
+
+/* ─── Load Regime ─── */
+apiCall('regime', null, function(err, res) {
+    if (err || !res || !res.data) return;
+    var cur = res.data.current || {};
+    document.getElementById('regimeVix').textContent = fmt(cur.vix_close);
+    document.getElementById('regimeSpy').textContent = fmt(cur.spy_close, 0);
+    document.getElementById('regimeTnx').textContent = fmt(cur.tnx_close, 2) + '%';
+    document.getElementById('regimeSpread').textContent = fmt(cur.yield_spread, 2) + '%';
+    document.getElementById('regimeDxy').textContent = fmt(cur.dxy_close, 1);
+    document.getElementById('regimeName').innerHTML = '<span class="regime-box ' + regimeClass(cur.regime) + '">' + (cur.regime||'unknown').replace(/_/g,' ') + '</span>';
+    document.getElementById('statRegime').textContent = (cur.regime||'unknown').replace(/_/g,' ');
+    document.getElementById('statRegimeScore').textContent = cur.regime_score || '--';
+    document.getElementById('statRegimeSub').textContent = 'VIX: ' + fmt(cur.vix_close) + ' | SPY: ' + fmt(cur.spy_close,0);
+
+    // Regime history table + chart
+    var hist = res.data.history || [];
+    var tbody = document.getElementById('regimeBody');
+    var chart = document.getElementById('regimeChart');
+    var thtml = '';
+    var chtml = '';
+    for (var i = hist.length - 1; i >= 0; i--) {
+        var h = hist[i];
+        thtml += '<tr><td>' + h.trade_date + '</td><td>' + fmt(h.vix_close) + '</td><td>' + fmt(h.spy_close,0) + '</td>';
+        thtml += '<td>' + fmt(h.tnx_close,2) + '</td><td>' + fmt(h.yield_spread,2) + '</td><td>' + fmt(h.dxy_close,1) + '</td>';
+        thtml += '<td><span class="regime-box ' + regimeClass(h.regime) + '" style="padding:2px 8px;font-size:11px">' + (h.regime||'').replace(/_/g,' ') + '</span></td>';
+        thtml += '<td>' + h.regime_score + '</td></tr>';
+
+        // Chart bar
+        var score = parseInt(h.regime_score) || 50;
+        var barH = Math.max(4, score * 0.6);
+        var barColor = score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--orange)' : 'var(--red)';
+        chtml += '<div class="regime-bar" style="height:' + barH + 'px;background:' + barColor + '" title="' + h.trade_date + ': ' + h.regime + ' (' + score + ')"></div>';
+    }
+    tbody.innerHTML = thtml;
+    chart.innerHTML = chtml;
+});
+
+/* ─── Load Universe ─── */
+apiCall('universe', null, function(err, res) {
+    if (err || !res || !res.data) return;
+    var stocks = res.data.universe || [];
+    var body = document.getElementById('universeBody');
+    var html = '';
+    for (var i = 0; i < stocks.length; i++) {
+        var s = stocks[i];
+        html += '<tr><td class="ticker-link">' + s.ticker + '</td>';
+        html += '<td>' + (s.company_name||'') + '</td><td>' + (s.sector||'') + '</td><td>' + (s.industry||'') + '</td>';
+        html += '<td>' + (s.market_cap_tier||'') + '</td>';
+        html += '<td>$' + fmt(s.regular_market_price, 2) + '</td>';
+        html += '<td>' + fmtM(s.market_cap) + '</td>';
+        html += '<td>' + fmt(s.pe_trailing) + '</td>';
+        html += '<td>' + (parseFloat(s.dividend_yield) > 0 ? (parseFloat(s.dividend_yield)*100).toFixed(2) + '%' : '--') + '</td></tr>';
+    }
+    body.innerHTML = html || '<tr><td colspan="9">No universe data. Run setup first.</td></tr>';
+});
+
+/* ─── Column Sorting ─── */
+document.getElementById('factorsTable').addEventListener('click', function(e) {
+    var th = e.target;
+    if (th.tagName !== 'TH' || !th.getAttribute('data-sort')) return;
+    var col = th.getAttribute('data-sort');
+    var tbody = document.getElementById('factorsBody');
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+    var colIdx = Array.prototype.indexOf.call(th.parentNode.children, th);
+    var isNum = col.indexOf('score') >= 0;
+    var dir = th.getAttribute('data-dir') === 'asc' ? 'desc' : 'asc';
+    th.setAttribute('data-dir', dir);
+    rows.sort(function(a, b) {
+        var va = a.children[colIdx].textContent;
+        var vb = b.children[colIdx].textContent;
+        if (isNum) { va = parseFloat(va)||0; vb = parseFloat(vb)||0; }
+        if (dir === 'asc') return va > vb ? 1 : -1;
+        return va < vb ? 1 : -1;
+    });
+    for (var i = 0; i < rows.length; i++) tbody.appendChild(rows[i]);
+});
+</script>
+</body>
+</html>

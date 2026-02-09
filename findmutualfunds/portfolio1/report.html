@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Report | Mutual Fund Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0f1a; --bg-card: #0f1729; --bg-card-hover: #162040;
+            --border: #1e2d4a; --text: #e0e8f0; --text-dim: #7888aa;
+            --accent: #0ea5e9; --accent-glow: rgba(14,165,233,0.25);
+            --green: #22c55e; --green-dim: rgba(34,197,94,0.15);
+            --red: #ef4444; --red-dim: rgba(239,68,68,0.15);
+            --yellow: #eab308; --yellow-dim: rgba(234,179,8,0.15);
+            --blue: #3b82f6; --teal: #14b8a6; --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background: var(--bg-dark); color: var(--text); min-height: 100vh; line-height: 1.5; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .header { background: linear-gradient(135deg,#0f1729,#132040); border-bottom: 1px solid var(--border); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+        .header h1 { font-size: 1.5rem; background: linear-gradient(135deg,var(--accent),var(--teal)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hdr-links { display: flex; gap: 1rem; font-size: 0.9rem; }
+        .hdr-links a { color: var(--text-dim); } .hdr-links a:hover { color: var(--text); }
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+        @media (max-width: 1024px) { .grid-2,.grid-3 { grid-template-columns: 1fr; } }
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
+        .card h2 { font-size: 1.1rem; margin-bottom: 1rem; }
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem; text-align: center; }
+        .stat-card .label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim); letter-spacing: 1px; }
+        .stat-card .value { font-size: 1.6rem; font-weight: 700; margin-top: 0.25rem; }
+        .stat-card .value.green { color: var(--green); } .stat-card .value.red { color: var(--red); }
+        .stat-card .value.yellow { color: var(--yellow); } .stat-card .value.blue { color: var(--blue); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { background: rgba(14,165,233,0.08); text-align: left; padding: 0.6rem 0.8rem; font-weight: 600; color: var(--text-dim); border-bottom: 1px solid var(--border); }
+        td { padding: 0.6rem 0.8rem; border-bottom: 1px solid rgba(30,45,74,0.5); }
+        tr:hover td { background: var(--bg-card-hover); }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+        .badge.green { background: var(--green-dim); color: var(--green); }
+        .badge.red { background: var(--red-dim); color: var(--red); }
+        .section-title { font-size: 1.2rem; margin: 2rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+        .insight { background: rgba(14,165,233,0.06); border-left: 3px solid var(--accent); padding: 0.8rem 1rem; border-radius: 0 8px 8px 0; margin-bottom: 0.5rem; font-size: 0.85rem; }
+        .chart-wrap { position: relative; height: 300px; }
+        .loading { text-align: center; padding: 3rem; color: var(--text-dim); }
+        .updated-badge { display: inline-block; background: rgba(14,165,233,0.1); border: 1px solid var(--accent); border-radius: 20px; padding: 4px 14px; font-size: 0.8rem; color: var(--accent); margin-bottom: 1.5rem; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Mutual Fund Daily Report</h1>
+        <div class="hdr-links">
+            <a href="/findmutualfunds/portfolio1/">Portfolio Tool</a>
+            <a href="/findmutualfunds/portfolio1/stats.html">Stats</a>
+            <a href="/findstocks/portfolio/">Stock Picks</a>
+            <a href="/">Events</a>
+        </div>
+    </div>
+    <div class="container">
+        <div id="updatedBadge" class="updated-badge" style="display:none">Last updated: --</div>
+
+        <!-- Summary Stats -->
+        <div class="stat-grid" id="topStats">
+            <div class="stat-card"><div class="label">Strategies Analyzed</div><div class="value blue" id="r-strats">--</div></div>
+            <div class="stat-card"><div class="label">NAV Fetched</div><div class="value" id="r-navs">--</div></div>
+            <div class="stat-card"><div class="label">Funds Imported</div><div class="value" id="r-imported">--</div></div>
+            <div class="stat-card"><div class="label">Total Scenarios</div><div class="value blue" id="r-scenarios">--</div></div>
+        </div>
+
+        <!-- Scenario Performance Chart -->
+        <h2 class="section-title">Scenario Performance</h2>
+        <div class="card">
+            <div class="chart-wrap"><canvas id="scenarioChart"></canvas></div>
+        </div>
+
+        <!-- Per-Strategy Scorecards -->
+        <h2 class="section-title">Strategy Scorecards</h2>
+        <div id="stratCards" class="grid-3"><div class="loading">Loading report data...</div></div>
+
+        <!-- Top Funds -->
+        <h2 class="section-title">Top Performing Fund Picks</h2>
+        <div class="card" style="overflow-x:auto">
+            <table id="topFundsTable">
+                <thead><tr><th>Ticker</th><th>Fund Name</th><th>Strategy</th><th>Entry NAV</th><th>Latest NAV</th><th>Return</th><th>Expense Ratio</th></tr></thead>
+                <tbody id="topFundsBody"><tr><td colspan="7" class="loading">Loading...</td></tr></tbody>
+            </table>
+        </div>
+
+        <!-- Worst Funds -->
+        <h2 class="section-title">Worst Performing Fund Picks</h2>
+        <div class="card" style="overflow-x:auto">
+            <table id="worstFundsTable">
+                <thead><tr><th>Ticker</th><th>Fund Name</th><th>Strategy</th><th>Entry NAV</th><th>Latest NAV</th><th>Return</th></tr></thead>
+                <tbody id="worstFundsBody"><tr><td colspan="6" class="loading">Loading...</td></tr></tbody>
+            </table>
+        </div>
+
+        <!-- Key Findings -->
+        <h2 class="section-title">Key Findings & Recommendations</h2>
+        <div id="findings"><div class="loading">Loading...</div></div>
+
+        <!-- DB Stats -->
+        <h2 class="section-title">Database Summary</h2>
+        <div class="card" style="overflow-x:auto">
+            <table id="dbTable">
+                <thead><tr><th>Table</th><th>Rows</th></tr></thead>
+                <tbody id="dbBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+    var API = '/findmutualfunds/api/';
+    var scenarioChartObj = null;
+
+    function fetchJSON(url, cb) {
+        var x = new XMLHttpRequest();
+        x.open('GET', url, true);
+        x.onreadystatechange = function() {
+            if (x.readyState === 4) {
+                if (x.status === 200) { try { cb(JSON.parse(x.responseText)); } catch(e) { cb(null); } }
+                else { cb(null); }
+            }
+        };
+        x.send();
+    }
+
+    fetchJSON(API + 'get_report.php', function(data) {
+        if (!data) {
+            document.getElementById('stratCards').innerHTML = '<div class="card"><p style="color:var(--red)">No report data. Run daily_refresh.php first.</p></div>';
+            return;
+        }
+
+        // Updated badge
+        if (data.updated_at) {
+            var badge = document.getElementById('updatedBadge');
+            badge.textContent = 'Last updated: ' + data.updated_at;
+            badge.style.display = '';
+        }
+
+        // Top stats
+        document.getElementById('r-navs').textContent = (data.nav_fetched || 0);
+        if (data.import) document.getElementById('r-imported').textContent = data.import.imported || 0;
+
+        // Analysis
+        if (data.analysis) {
+            var a = data.analysis;
+            document.getElementById('r-strats').textContent = a.strategies_analyzed || 0;
+            document.getElementById('r-scenarios').textContent = (a.scenarios ? a.scenarios.length : 0);
+
+            // Scenario chart
+            if (a.scenarios && a.scenarios.length > 0) {
+                renderScenarioChart(a.scenarios);
+            }
+
+            // Strategy scorecards
+            if (a.per_strategy && a.per_strategy.length > 0) {
+                renderStratCards(a.per_strategy);
+            }
+        }
+
+        // Top funds
+        if (data.top_funds && data.top_funds.length > 0) {
+            renderFundTable('topFundsBody', data.top_funds, true);
+        } else {
+            document.getElementById('topFundsBody').innerHTML = '<tr><td colspan="7">No data yet</td></tr>';
+        }
+
+        // Worst funds
+        if (data.worst_funds && data.worst_funds.length > 0) {
+            renderFundTable('worstFundsBody', data.worst_funds, false);
+        } else {
+            document.getElementById('worstFundsBody').innerHTML = '<tr><td colspan="6">No data yet</td></tr>';
+        }
+
+        // Findings
+        if (data.findings && data.findings.length > 0) {
+            var html = '';
+            data.findings.forEach(function(f) { html += '<div class="insight">' + f + '</div>'; });
+            document.getElementById('findings').innerHTML = html;
+        } else {
+            document.getElementById('findings').innerHTML = '<div class="insight">No significant findings yet. More data is needed.</div>';
+        }
+
+        // DB stats
+        if (data.db_stats) {
+            var tbody = document.getElementById('dbBody');
+            tbody.innerHTML = '';
+            for (var tbl in data.db_stats) {
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td>' + tbl + '</td><td>' + data.db_stats[tbl].toLocaleString() + '</td>';
+                tbody.appendChild(tr);
+            }
+        }
+    });
+
+    function renderScenarioChart(scenarios) {
+        var labels = []; var returns = []; var winRates = [];
+        var colors = [];
+        scenarios.forEach(function(sc) {
+            labels.push(sc.scenario);
+            returns.push(sc.total_return_pct);
+            winRates.push(sc.win_rate);
+            colors.push(sc.total_return_pct >= 0 ? 'rgba(34,197,94,0.7)' : 'rgba(239,68,68,0.7)');
+        });
+
+        if (scenarioChartObj) scenarioChartObj.destroy();
+        scenarioChartObj = new Chart(document.getElementById('scenarioChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Total Return %', data: returns, backgroundColor: colors, borderRadius: 6 },
+                    { label: 'Win Rate %', data: winRates, backgroundColor: 'rgba(14,165,233,0.4)', borderRadius: 6 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#7888aa' } } },
+                scales: {
+                    x: { ticks: { color: '#7888aa', maxRotation: 45 }, grid: { color: 'rgba(30,45,74,0.3)' } },
+                    y: { ticks: { color: '#7888aa' }, grid: { color: 'rgba(30,45,74,0.3)' } }
+                }
+            }
+        });
+    }
+
+    function renderStratCards(strats) {
+        var html = '';
+        strats.forEach(function(s) {
+            var wrClass = s.win_rate >= 55 ? 'green' : (s.win_rate >= 40 ? 'yellow' : 'red');
+            var pnlClass = s.total_pnl >= 0 ? 'green' : 'red';
+            html += '<div class="card">';
+            html += '<h2>' + s.strategy + '</h2>';
+            html += '<div style="display:flex; gap:1.5rem; margin-top:0.5rem">';
+            html += '<div><span class="label" style="font-size:0.7rem; color:var(--text-dim)">TRADES</span><div style="font-size:1.3rem; font-weight:700">' + s.total_trades + '</div></div>';
+            html += '<div><span class="label" style="font-size:0.7rem; color:var(--text-dim)">WIN RATE</span><div style="font-size:1.3rem; font-weight:700; color:var(--' + wrClass + ')">' + s.win_rate + '%</div></div>';
+            html += '<div><span class="label" style="font-size:0.7rem; color:var(--text-dim)">P/L</span><div style="font-size:1.3rem; font-weight:700; color:var(--' + pnlClass + ')">$' + s.total_pnl.toFixed(0) + '</div></div>';
+            html += '</div></div>';
+        });
+        document.getElementById('stratCards').innerHTML = html;
+    }
+
+    function renderFundTable(bodyId, funds, showExpense) {
+        var tbody = document.getElementById(bodyId);
+        tbody.innerHTML = '';
+        funds.forEach(function(f) {
+            var retClass = (parseFloat(f.return_pct) || 0) >= 0 ? 'green' : 'red';
+            var tr = document.createElement('tr');
+            var html = '<td><strong>' + f.ticker + '</strong></td>' +
+                '<td>' + (f.fund_name || '') + '</td>' +
+                '<td>' + (f.strategy_name || '') + '</td>' +
+                '<td>$' + parseFloat(f.nav_at_select || 0).toFixed(2) + '</td>' +
+                '<td>$' + parseFloat(f.latest_nav || 0).toFixed(2) + '</td>' +
+                '<td><span class="badge ' + retClass + '">' + (parseFloat(f.return_pct) || 0).toFixed(2) + '%</span></td>';
+            if (showExpense) html += '<td>' + (parseFloat(f.expense_ratio) * 100 || 0).toFixed(2) + '%</td>';
+            tr.innerHTML = html;
+            tbody.appendChild(tr);
+        });
+    }
+    </script>
+</body>
+</html>

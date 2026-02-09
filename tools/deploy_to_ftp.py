@@ -260,6 +260,92 @@ def deploy_fightgame(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
     return n > 0
 
 
+def deploy_updates(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload updates/ to /updates/ (Latest Updates changelog page)."""
+    local_updates = WORKSPACE / "updates"
+    if not local_updates.is_dir():
+        print("  updates/ not found, skipping.")
+        return False
+    remote = f"{main_remote_base}/updates" if main_remote_base else "findtorontoevents.ca/updates"
+    print(f"  Uploading Updates page to {remote}/ ...")
+    n = _upload_tree(ftp, local_updates, remote)
+    print(f"  -> {n} files under updates/")
+    return n > 0
+
+
+def deploy_findstocks(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload findstocks/api/, findstocks/portfolio/, and findstocks/portfolio2/ to /findstocks/."""
+    base = main_remote_base if main_remote_base else "findtorontoevents.ca"
+    total = 0
+
+    # Upload API endpoints
+    local_api = WORKSPACE / "findstocks" / "api"
+    if local_api.is_dir():
+        remote_api = f"{base}/findstocks/api"
+        n = _upload_tree(ftp, local_api, remote_api)
+        print(f"  -> {n} files under findstocks/api/")
+        total += n
+
+    # Upload portfolio page
+    local_portfolio = WORKSPACE / "findstocks" / "portfolio"
+    if local_portfolio.is_dir():
+        remote_portfolio = f"{base}/findstocks/portfolio"
+        n = _upload_tree(ftp, local_portfolio, remote_portfolio)
+        print(f"  -> {n} files under findstocks/portfolio/")
+        total += n
+
+    # Upload portfolio2 (Alpha Forge + advanced analytics)
+    local_portfolio2 = WORKSPACE / "findstocks" / "portfolio2"
+    if local_portfolio2.is_dir():
+        remote_portfolio2 = f"{base}/findstocks/portfolio2"
+        n = _upload_tree(ftp, local_portfolio2, remote_portfolio2)
+        print(f"  -> {n} files under findstocks/portfolio2/")
+        total += n
+
+    return total > 0
+
+
+def deploy_investments(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload investments/ landing page to /investments/."""
+    base = main_remote_base if main_remote_base else "findtorontoevents.ca"
+    local_dir = WORKSPACE / "investments"
+    if not local_dir.is_dir():
+        print("  -> investments/ directory not found, skipping")
+        return False
+    remote_dir = f"{base}/investments"
+    n = _upload_tree(ftp, local_dir, remote_dir)
+    print(f"  -> {n} files under investments/")
+    return n > 0
+
+
+def deploy_forex(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload findforex2/ to /findforex2/."""
+    base = main_remote_base if main_remote_base else "findtorontoevents.ca"
+    total = 0
+    for sub in ("api", "portfolio"):
+        local_dir = WORKSPACE / "findforex2" / sub
+        if local_dir.is_dir():
+            remote_dir = f"{base}/findforex2/{sub}"
+            n = _upload_tree(ftp, local_dir, remote_dir)
+            print(f"  -> {n} files under findforex2/{sub}/")
+            total += n
+    return total > 0
+
+
+def deploy_crypto(ftp: ftplib.FTP, main_remote_base: str = "") -> bool:
+    """Upload findcryptopairs/ to /findcryptopairs/."""
+    base = main_remote_base if main_remote_base else "findtorontoevents.ca"
+    total = 0
+    for sub in ("api", "portfolio"):
+        local_dir = WORKSPACE / "findcryptopairs" / sub
+        if local_dir.is_dir():
+            remote_dir = f"{base}/findcryptopairs/{sub}"
+            n = _upload_tree(ftp, local_dir, remote_dir)
+            print(f"  -> {n} files under findcryptopairs/{sub}/")
+            total += n
+    return total > 0
+
+
 def main() -> None:
     host = _env("FTP_SERVER") or _env("FTP_HOST")
     user = _env("FTP_USER")
@@ -324,6 +410,36 @@ def main() -> None:
             deploy_fightgame(ftp, remote_path)
             if parent_root:
                 deploy_fightgame(ftp, parent_root)
+            print()
+
+            print("Uploading Updates page to /updates/ ...")
+            deploy_updates(ftp, remote_path)
+            if parent_root:
+                deploy_updates(ftp, parent_root)
+            print()
+
+            print("Uploading Investment Tools landing to /investments/ ...")
+            deploy_investments(ftp, remote_path)
+            if parent_root:
+                deploy_investments(ftp, parent_root)
+            print()
+
+            print("Uploading FindStocks API + Portfolio to /findstocks/ ...")
+            deploy_findstocks(ftp, remote_path)
+            if parent_root:
+                deploy_findstocks(ftp, parent_root)
+            print()
+
+            print("Uploading Forex API + Portfolio to /findforex2/ ...")
+            deploy_forex(ftp, remote_path)
+            if parent_root:
+                deploy_forex(ftp, parent_root)
+            print()
+
+            print("Uploading Crypto API + Portfolio to /findcryptopairs/ ...")
+            deploy_crypto(ftp, remote_path)
+            if parent_root:
+                deploy_crypto(ftp, parent_root)
             print()
 
         print("Deploy complete.")

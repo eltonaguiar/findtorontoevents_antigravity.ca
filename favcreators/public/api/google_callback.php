@@ -63,7 +63,18 @@ curl_close($ch);
 
 $token_data = json_decode($response, true);
 if (!isset($token_data['access_token'])) {
-    die("Token Exchange Failed: " . htmlspecialchars($response));
+    $retry_url = 'https://findtorontoevents.ca/fc/api/google_auth.php?return_to=' . urlencode($return_to);
+    echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Sign In - Retry</title>';
+    echo '<style>body{font-family:-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#0f0f23;color:#fff;}';
+    echo '.box{text-align:center;max-width:400px;padding:2.5rem;background:rgba(30,30,60,0.95);border-radius:1.5rem;border:1px solid rgba(99,102,241,0.3);}';
+    echo 'h2{color:#a5b4fc;margin:0 0 1rem;}p{color:#94a3b8;line-height:1.6;margin:0 0 1.5rem;}';
+    echo 'a.btn{display:inline-block;padding:0.85rem 2rem;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;text-decoration:none;border-radius:0.75rem;font-weight:700;}</style></head>';
+    echo '<body><div class="box"><h2>Sign-in hiccup</h2>';
+    echo '<p>The sign-in link expired. This can happen if the page sat open too long or was refreshed. No worries — just try again!</p>';
+    echo '<a class="btn" href="' . htmlspecialchars($retry_url) . '">Try Again</a>';
+    echo '<p style="margin-top:1rem;font-size:0.75rem;color:#64748b;">If this keeps happening, try clearing your browser cookies for this site.</p>';
+    echo '</div></body></html>';
+    exit;
 }
 
 // 2. Profile

@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Picks | Multi-Asset Intelligence</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --gold: #f59e0b;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--green), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-links { display: flex; gap: 1rem; font-size: 0.9rem; }
+        .header-links a { color: var(--text-dim); }
+        .header-links a:hover { color: var(--text); }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 2rem 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .section-title .icon { font-size: 1.5rem; }
+        .section-title .badge {
+            font-size: 0.65rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 99px;
+            background: var(--accent);
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Pick Cards */
+        .picks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; }
+        .pick-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .pick-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+        .pick-card.long { border-left: 3px solid var(--green); }
+        .pick-card.short { border-left: 3px solid var(--red); }
+        .pick-card.buy { border-left: 3px solid var(--green); }
+
+        .pick-rank {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+            background: var(--border);
+            color: var(--text-dim);
+        }
+        .pick-rank.gold { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; }
+        .pick-rank.silver { background: linear-gradient(135deg, #9ca3af, #6b7280); color: #000; }
+        .pick-rank.bronze { background: linear-gradient(135deg, #b45309, #92400e); color: #fff; }
+
+        .pick-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .pick-ticker {
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+        .pick-name {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
+        }
+        .direction-badge {
+            font-size: 0.6rem;
+            font-weight: 800;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .direction-badge.long { background: var(--green-dim); color: var(--green); }
+        .direction-badge.short { background: var(--red-dim); color: var(--red); }
+        .direction-badge.buy { background: var(--green-dim); color: var(--green); }
+
+        .pick-prices {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin: 0.75rem 0;
+        }
+        .price-item { text-align: center; }
+        .price-item .label { font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+        .price-item .val { font-size: 0.95rem; font-weight: 700; }
+        .price-item .val.green { color: var(--green); }
+        .price-item .val.red { color: var(--red); }
+
+        .pick-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+        .pick-score {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .score-bar {
+            width: 50px;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .score-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s;
+        }
+        .score-fill.high { background: var(--green); }
+        .score-fill.mid { background: var(--yellow); }
+        .score-fill.low { background: var(--red); }
+
+        .pick-algo {
+            font-size: 0.65rem;
+            padding: 0.15rem 0.4rem;
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent);
+            border-radius: 4px;
+        }
+
+        /* Return indicator */
+        .return-pct {
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+        }
+        .return-pct.positive { background: var(--green-dim); color: var(--green); }
+        .return-pct.negative { background: var(--red-dim); color: var(--red); }
+
+        /* Loading / Error */
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-dim);
+        }
+        .loading .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Disclaimer */
+        .disclaimer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            padding: 2rem 1rem;
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+        }
+
+        /* Updated timestamp */
+        .timestamp {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Cross-asset section */
+        .cross-asset { margin-top: 2rem; }
+        .asset-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        /* Stars for Morningstar */
+        .stars { color: var(--gold); letter-spacing: 1px; }
+
+        @media (max-width: 600px) {
+            .picks-grid { grid-template-columns: 1fr; }
+            .header { padding: 0.75rem 1rem; }
+            .container { padding: 1rem; }
+            .pick-prices { grid-template-columns: repeat(3, 1fr); gap: 0.3rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Top Picks Dashboard</h1>
+        <div class="header-links">
+            <a href="/findstocks/portfolio2/">Portfolio Analysis</a>
+            <a href="/findstocks/portfolio2/leaderboard.html">Leaderboard</a>
+            <a href="/findstocks2_global/">Global Dashboard</a>
+            <a href="/findstocks/">Home</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p style="margin-top:1rem;">Loading top picks across all asset classes...</p>
+        </div>
+
+        <div id="content" style="display:none;">
+            <div id="timestamp" class="timestamp"></div>
+
+            <!-- Top 10 Stock Picks -->
+            <div class="section-title">
+                <span class="icon">&#x1F4C8;</span>
+                <span>Today's Top 10 Stock Picks</span>
+                <span class="badge">Swing Trade</span>
+            </div>
+            <div id="stock-picks" class="picks-grid"></div>
+
+            <!-- Day Trading Picks -->
+            <div class="section-title">
+                <span class="icon">&#x26A1;</span>
+                <span>Day Trading Picks</span>
+                <span class="badge" style="background:var(--yellow);color:#000;">1-2 Day Hold</span>
+            </div>
+            <div id="day-picks" class="picks-grid"></div>
+
+            <!-- Cross-Asset Top Picks -->
+            <div class="section-title cross-asset">
+                <span class="icon">&#x1F30D;</span>
+                <span>Cross-Asset Top Picks</span>
+            </div>
+
+            <div class="section-title" style="font-size:1rem;margin-top:1rem;">
+                <span>Mutual Funds</span>
+                <span class="badge" style="background:#8b5cf6;">NAV-Based</span>
+            </div>
+            <div id="mf-picks" class="asset-row"></div>
+
+            <div class="section-title" style="font-size:1rem;margin-top:1.5rem;">
+                <span>Forex Pairs</span>
+                <span class="badge" style="background:#06b6d4;">Pip-Based</span>
+            </div>
+            <div id="fx-picks" class="asset-row"></div>
+
+            <div class="section-title" style="font-size:1rem;margin-top:1.5rem;">
+                <span>Cryptocurrency</span>
+                <span class="badge" style="background:#f97316;">Crypto</span>
+            </div>
+            <div id="cr-picks" class="asset-row"></div>
+        </div>
+
+        <div class="disclaimer">
+            This dashboard is for educational and research purposes only. Not financial advice.<br>
+            Past performance does not guarantee future results. Always do your own research before investing.
+        </div>
+    </div>
+
+<script>
+var API = (function() {
+    var loc = window.location;
+    if (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1') return './api/';
+    return '/findstocks/portfolio2/api/';
+})();
+
+function apiGet(endpoint, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API + endpoint, true);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try { cb(JSON.parse(xhr.responseText)); } catch(e) { cb(null); }
+        } else { cb(null); }
+    };
+    xhr.onerror = function() { cb(null); };
+    xhr.send();
+}
+
+function rankClass(r) {
+    if (r === 1) return 'gold';
+    if (r === 2) return 'silver';
+    if (r === 3) return 'bronze';
+    return '';
+}
+
+function scoreClass(s) {
+    if (s >= 75) return 'high';
+    if (s >= 50) return 'mid';
+    return 'low';
+}
+
+function fmt(n, d) {
+    if (n === null || n === undefined) return '-';
+    return parseFloat(n).toFixed(d || 2);
+}
+
+function renderStockCard(pick) {
+    var retClass = pick.current_return_pct >= 0 ? 'positive' : 'negative';
+    var retSign = pick.current_return_pct >= 0 ? '+' : '';
+    return '<div class="pick-card long">'
+        + '<div class="pick-rank ' + rankClass(pick.rank) + '">' + pick.rank + '</div>'
+        + '<div class="pick-header">'
+        + '<span class="pick-ticker">' + pick.ticker + '</span>'
+        + '<span class="pick-name">' + (pick.company_name || '') + '</span>'
+        + '</div>'
+        + '<div class="pick-prices">'
+        + '<div class="price-item"><div class="label">Entry</div><div class="val">$' + fmt(pick.entry_price) + '</div></div>'
+        + '<div class="price-item"><div class="label">Target</div><div class="val green">$' + fmt(pick.swing_target) + '</div></div>'
+        + '<div class="price-item"><div class="label">Stop Loss</div><div class="val red">$' + fmt(pick.swing_stop) + '</div></div>'
+        + '</div>'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">'
+        + '<span style="font-size:0.75rem;color:var(--text-dim);">Latest: $' + fmt(pick.latest_price) + '</span>'
+        + '<span class="return-pct ' + retClass + '">' + retSign + fmt(pick.current_return_pct) + '%</span>'
+        + '</div>'
+        + '<div class="pick-meta">'
+        + '<div class="pick-score"><span>Score:</span>'
+        + '<div class="score-bar"><div class="score-fill ' + scoreClass(pick.score) + '" style="width:' + pick.score + '%;"></div></div>'
+        + '<span>' + pick.score + '</span></div>'
+        + '<span class="pick-algo">' + pick.algorithm + '</span>'
+        + '</div>'
+        + '</div>';
+}
+
+function renderDayCard(pick) {
+    return '<div class="pick-card long">'
+        + '<div class="pick-header">'
+        + '<span class="pick-ticker">' + pick.ticker + '</span>'
+        + '<span class="pick-name">' + (pick.company_name || '') + '</span>'
+        + '<span class="direction-badge buy">DAY</span>'
+        + '</div>'
+        + '<div class="pick-prices">'
+        + '<div class="price-item"><div class="label">Entry</div><div class="val">$' + fmt(pick.entry_price) + '</div></div>'
+        + '<div class="price-item"><div class="label">Target (+5%)</div><div class="val green">$' + fmt(pick.target) + '</div></div>'
+        + '<div class="price-item"><div class="label">Stop (-3%)</div><div class="val red">$' + fmt(pick.stop_loss) + '</div></div>'
+        + '</div>'
+        + '<div class="pick-meta">'
+        + '<div class="pick-score"><span>Score:</span>'
+        + '<div class="score-bar"><div class="score-fill ' + scoreClass(pick.score) + '" style="width:' + pick.score + '%;"></div></div>'
+        + '<span>' + pick.score + '</span></div>'
+        + '<span class="pick-algo">' + pick.algorithm + '</span>'
+        + '</div>'
+        + '</div>';
+}
+
+function renderMFCard(pick) {
+    var stars = '';
+    var mr = parseInt(pick.morningstar_rating) || 0;
+    for (var i = 0; i < mr; i++) stars += '\u2605';
+    for (var j = mr; j < 5; j++) stars += '\u2606';
+    return '<div class="pick-card buy">'
+        + '<div class="pick-header">'
+        + '<span class="pick-ticker">' + pick.symbol + '</span>'
+        + '<span class="pick-name">' + (pick.fund_name || '') + '</span>'
+        + '</div>'
+        + '<div style="display:flex;justify-content:space-between;font-size:0.8rem;margin:0.5rem 0;">'
+        + '<span style="color:var(--text-dim);">' + (pick.fund_family || '') + ' &middot; ' + (pick.category || '') + '</span>'
+        + '<span class="stars">' + stars + '</span>'
+        + '</div>'
+        + '<div class="pick-prices">'
+        + '<div class="price-item"><div class="label">Entry NAV</div><div class="val">$' + fmt(pick.entry_nav) + '</div></div>'
+        + '<div class="price-item"><div class="label">Score</div><div class="val">' + (pick.score || 0) + '</div></div>'
+        + '<div class="price-item"><div class="label">Rating</div><div class="val" style="font-size:0.8rem;">' + (pick.rating || '-') + '</div></div>'
+        + '</div>'
+        + '<div class="pick-meta"><span class="pick-algo">' + (pick.algorithm_name || '') + '</span><span>' + (pick.risk_level || '') + '</span></div>'
+        + '</div>';
+}
+
+function renderFXCard(pick) {
+    var dir = (pick.direction || 'LONG').toUpperCase();
+    var dirClass = dir === 'SHORT' ? 'short' : 'long';
+    return '<div class="pick-card ' + dirClass + '">'
+        + '<div class="pick-header">'
+        + '<span class="pick-ticker">' + pick.symbol + '</span>'
+        + '<span class="direction-badge ' + dirClass + '">' + dir + '</span>'
+        + '</div>'
+        + '<div class="pick-prices">'
+        + '<div class="price-item"><div class="label">Entry</div><div class="val">' + fmt(pick.entry_price, 4) + '</div></div>'
+        + '<div class="price-item"><div class="label">Score</div><div class="val">' + (pick.score || 0) + '</div></div>'
+        + '<div class="price-item"><div class="label">Rating</div><div class="val" style="font-size:0.8rem;">' + (pick.rating || '-') + '</div></div>'
+        + '</div>'
+        + '<div class="pick-meta"><span class="pick-algo">' + (pick.algorithm_name || '') + '</span><span>' + (pick.risk_level || '') + '</span></div>'
+        + '</div>';
+}
+
+function renderCryptoCard(pick) {
+    var dir = (pick.direction || 'LONG').toUpperCase();
+    var dirClass = dir === 'SHORT' ? 'short' : 'long';
+    return '<div class="pick-card ' + dirClass + '">'
+        + '<div class="pick-header">'
+        + '<span class="pick-ticker">' + pick.symbol + '</span>'
+        + '<span class="direction-badge ' + dirClass + '">' + dir + '</span>'
+        + '</div>'
+        + '<div class="pick-prices">'
+        + '<div class="price-item"><div class="label">Entry</div><div class="val">$' + fmt(pick.entry_price) + '</div></div>'
+        + '<div class="price-item"><div class="label">Score</div><div class="val">' + (pick.score || 0) + '</div></div>'
+        + '<div class="price-item"><div class="label">Rating</div><div class="val" style="font-size:0.8rem;">' + (pick.rating || '-') + '</div></div>'
+        + '</div>'
+        + '<div class="pick-meta"><span class="pick-algo">' + (pick.algorithm_name || '') + '</span><span>' + (pick.risk_level || '') + '</span></div>'
+        + '</div>';
+}
+
+function loadPicks() {
+    apiGet('advanced_stats.php?action=top_picks', function(data) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+
+        if (!data || !data.ok) {
+            document.getElementById('content').innerHTML = '<div class="loading" style="color:var(--red);">Failed to load picks. Please try again.</div>';
+            return;
+        }
+
+        // Timestamp
+        document.getElementById('timestamp').textContent = 'Generated: ' + (data.generated_at || 'Unknown');
+
+        // Stock Picks
+        var html = '';
+        var stocks = data.top_stocks || [];
+        for (var i = 0; i < stocks.length; i++) html += renderStockCard(stocks[i]);
+        document.getElementById('stock-picks').innerHTML = html || '<p style="color:var(--text-dim);padding:1rem;">No stock picks available.</p>';
+
+        // Day Trading
+        html = '';
+        var day = data.day_trading || [];
+        for (var i = 0; i < day.length; i++) html += renderDayCard(day[i]);
+        document.getElementById('day-picks').innerHTML = html || '<p style="color:var(--text-dim);padding:1rem;">No day trading picks available.</p>';
+
+        // Mutual Funds
+        html = '';
+        var mf = data.top_mutual_funds || [];
+        for (var i = 0; i < mf.length; i++) html += renderMFCard(mf[i]);
+        document.getElementById('mf-picks').innerHTML = html || '<p style="color:var(--text-dim);padding:1rem;">No mutual fund picks available.</p>';
+
+        // Forex
+        html = '';
+        var fx = data.top_forex || [];
+        for (var i = 0; i < fx.length; i++) html += renderFXCard(fx[i]);
+        document.getElementById('fx-picks').innerHTML = html || '<p style="color:var(--text-dim);padding:1rem;">No forex picks available.</p>';
+
+        // Crypto
+        html = '';
+        var cr = data.top_crypto || [];
+        for (var i = 0; i < cr.length; i++) html += renderCryptoCard(cr[i]);
+        document.getElementById('cr-picks').innerHTML = html || '<p style="color:var(--text-dim);padding:1rem;">No crypto picks available.</p>';
+    });
+}
+
+loadPicks();
+</script>
+</body>
+</html>

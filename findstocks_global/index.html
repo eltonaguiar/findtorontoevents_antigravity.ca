@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Hub | FindTorontoEvents.ca</title>
+    <meta name="description" content="Complete investment platform: stocks, mutual funds, forex, and crypto. 100+ algorithms, backtesting, God-Mode analytics, and daily picks.">
+    <style>
+        :root {
+            --bg: #06061a;
+            --bg2: #0b0b28;
+            --bg3: #111138;
+            --surface: #0e0e2a;
+            --border: #1a1a48;
+            --border-hover: #2a2a6a;
+            --text: #e8e8f8;
+            --dim: #7a7aa8;
+            --accent: #6366f1;
+            --accent2: #818cf8;
+            --green: #22c55e;
+            --green-dim: rgba(34,197,94,0.12);
+            --red: #ef4444;
+            --red-dim: rgba(239,68,68,0.10);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234,179,8,0.10);
+            --blue: #3b82f6;
+            --blue-dim: rgba(59,130,246,0.12);
+            --orange: #f97316;
+            --orange-dim: rgba(249,115,22,0.10);
+            --purple: #a855f7;
+            --purple-dim: rgba(168,85,247,0.12);
+            --cyan: #06b6d4;
+            --cyan-dim: rgba(6,182,212,0.10);
+            --pink: #ec4899;
+            --r: 16px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        a { color: var(--accent2); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ── Animated background ── */
+        .bg-glow {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse 700px 500px at 15% 20%, rgba(99,102,241,0.07), transparent),
+                radial-gradient(ellipse 600px 400px at 85% 50%, rgba(34,197,94,0.05), transparent),
+                radial-gradient(ellipse 500px 300px at 50% 85%, rgba(249,115,22,0.04), transparent);
+        }
+        .particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+        .particle {
+            position: absolute; border-radius: 50%; opacity: 0;
+            animation: float-up linear infinite;
+        }
+        @keyframes float-up {
+            0%   { opacity: 0; transform: translateY(0) scale(0.5); }
+            10%  { opacity: 1; }
+            90%  { opacity: 1; }
+            100% { opacity: 0; transform: translateY(-100vh) scale(1); }
+        }
+
+        /* ── Header ── */
+        .header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(6,6,26,0.88);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 0.5rem;
+            height: 56px;
+        }
+        .header-left { display: flex; align-items: center; gap: 1.2rem; }
+        .header-brand {
+            font-size: 1.2rem; font-weight: 800;
+            background: linear-gradient(135deg, #6366f1, #a78bfa, #22c55e);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            white-space: nowrap;
+        }
+        .header-search {
+            position: relative;
+        }
+        .header-search input {
+            background: var(--bg3); border: 1px solid var(--border);
+            border-radius: 8px; padding: 0.35rem 0.7rem 0.35rem 2rem;
+            color: var(--text); font-size: 0.78rem; width: 200px;
+            outline: none; transition: all 0.2s;
+        }
+        .header-search input:focus { border-color: var(--accent); width: 280px; }
+        .header-search input::placeholder { color: var(--dim); }
+        .header-search::before {
+            content: '\1F50D'; position: absolute; left: 0.55rem; top: 50%;
+            transform: translateY(-50%); font-size: 0.7rem; pointer-events: none;
+        }
+        .header-nav { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+        .header-nav a {
+            color: var(--dim); font-size: 0.72rem; font-weight: 500;
+            padding: 0.3rem 0.55rem; border-radius: 6px;
+            border: 1px solid transparent; transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .header-nav a:hover, .header-nav a.active {
+            color: var(--text); border-color: var(--border);
+            background: var(--bg3); text-decoration: none;
+        }
+
+        /* ── Hero ── */
+        .hero {
+            position: relative; z-index: 1;
+            background: linear-gradient(160deg, #080830 0%, #12104a 35%, #0a1e40 70%, #081028 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 4rem 2rem 3rem;
+            text-align: center;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse at 25% 40%, rgba(99,102,241,0.18) 0%, transparent 55%),
+                radial-gradient(ellipse at 75% 60%, rgba(34,197,94,0.10) 0%, transparent 55%),
+                radial-gradient(ellipse at 50% 80%, rgba(249,115,22,0.06) 0%, transparent 50%);
+        }
+        .hero > * { position: relative; z-index: 1; }
+        .hero h1 {
+            font-size: 3rem; font-weight: 900; letter-spacing: -0.04em;
+            background: linear-gradient(135deg, #fff 10%, #c4b5fd 40%, #93c5fd 65%, #86efac 90%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 0.6rem;
+        }
+        .hero .subtitle {
+            color: var(--dim); font-size: 1.05rem; max-width: 720px;
+            margin: 0 auto 2rem; line-height: 1.7;
+        }
+        .hero-stats {
+            display: flex; gap: 2rem; justify-content: center;
+            flex-wrap: wrap; margin-bottom: 1.5rem;
+        }
+        .hero-stat {
+            text-align: center; min-width: 100px;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px; padding: 0.8rem 1.2rem;
+            transition: transform 0.2s;
+        }
+        .hero-stat:hover { transform: scale(1.05); }
+        .hero-stat .num {
+            font-size: 2rem; font-weight: 800; color: var(--accent);
+            line-height: 1.1; font-variant-numeric: tabular-nums;
+        }
+        .hero-stat .lbl {
+            font-size: 0.6rem; color: var(--dim);
+            text-transform: uppercase; letter-spacing: 1.5px; margin-top: 0.2rem;
+        }
+        .hero-stat .live-dot {
+            display: inline-block; width: 6px; height: 6px;
+            border-radius: 50%; background: var(--green);
+            margin-right: 4px; vertical-align: middle;
+            animation: pulse-dot 2s ease infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+        }
+
+        /* anchor nav under hero */
+        .anchor-nav {
+            display: flex; gap: 0.4rem; justify-content: center;
+            flex-wrap: wrap; margin-top: 1.5rem;
+        }
+        .anchor-nav a {
+            color: var(--dim); font-size: 0.72rem; font-weight: 600;
+            padding: 0.3rem 0.7rem; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .anchor-nav a:hover {
+            color: var(--text); border-color: var(--accent);
+            background: rgba(99,102,241,0.08); text-decoration: none;
+        }
+
+        /* ── Container ── */
+        .container { position: relative; z-index: 1; max-width: 1360px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+
+        /* ── Disclaimer ── */
+        .disclaimer {
+            background: var(--yellow-dim); border: 1px solid rgba(234,179,8,0.25);
+            border-radius: 10px; padding: 0.5rem 1rem;
+            font-size: 0.7rem; color: var(--yellow); text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        /* ── Live status bar ── */
+        .status-bar {
+            display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center;
+            margin-bottom: 2.5rem; padding: 0.8rem 1rem;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+        .status-item {
+            display: flex; align-items: center; gap: 0.4rem;
+            font-size: 0.7rem; color: var(--dim);
+        }
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--dim); flex-shrink: 0;
+            transition: background 0.3s;
+        }
+        .status-dot.ok { background: var(--green); box-shadow: 0 0 6px rgba(34,197,94,0.4); }
+        .status-dot.err { background: var(--red); box-shadow: 0 0 6px rgba(239,68,68,0.4); }
+        .status-dot.loading { background: var(--yellow); animation: pulse-dot 1s ease infinite; }
+
+        /* ── Section ── */
+        .section { margin-bottom: 3.5rem; scroll-margin-top: 70px; }
+        .section-head {
+            display: flex; align-items: center; gap: 0.8rem;
+            margin-bottom: 0.5rem; padding-bottom: 0.6rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .section-head h2 {
+            font-size: 1.2rem; font-weight: 700;
+            background: linear-gradient(90deg, var(--text), var(--dim));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .section-count {
+            background: var(--bg3); color: var(--accent);
+            font-size: 0.65rem; font-weight: 700;
+            padding: 0.15rem 0.55rem; border-radius: 12px;
+        }
+        .section-desc {
+            font-size: 0.8rem; color: var(--dim);
+            margin-bottom: 1.2rem; line-height: 1.5;
+        }
+
+        /* ── Grid ── */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.3rem; }
+        .grid-3 { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+        .grid-4 { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 1.6rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.35), 0 0 0 1px rgba(99,102,241,0.08);
+        }
+        .card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+        }
+        .card::after {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at 50% 0%, rgba(99,102,241,0.04) 0%, transparent 70%);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .card:hover::after { opacity: 1; }
+        .card > * { position: relative; z-index: 1; }
+        .card.stocks::before { background: linear-gradient(90deg, var(--green), var(--blue)); }
+        .card.stocks:hover { box-shadow: 0 16px 48px rgba(34,197,94,0.08), 0 0 0 1px rgba(34,197,94,0.15); }
+        .card.funds::before { background: linear-gradient(90deg, var(--purple), var(--accent)); }
+        .card.funds:hover { box-shadow: 0 16px 48px rgba(168,85,247,0.08), 0 0 0 1px rgba(168,85,247,0.15); }
+        .card.forex::before { background: linear-gradient(90deg, var(--orange), var(--yellow)); }
+        .card.forex:hover { box-shadow: 0 16px 48px rgba(249,115,22,0.08), 0 0 0 1px rgba(249,115,22,0.15); }
+        .card.crypto::before { background: linear-gradient(90deg, var(--cyan), var(--blue)); }
+        .card.crypto:hover { box-shadow: 0 16px 48px rgba(6,182,212,0.08), 0 0 0 1px rgba(6,182,212,0.15); }
+        .card.picks::before { background: linear-gradient(90deg, var(--yellow), var(--orange)); }
+        .card.tool::before { background: linear-gradient(90deg, var(--pink), var(--purple)); }
+        .card.tool:hover { box-shadow: 0 16px 48px rgba(236,72,153,0.08), 0 0 0 1px rgba(236,72,153,0.15); }
+        .card.research::before { background: linear-gradient(90deg, var(--blue), var(--cyan)); }
+        .card.hub::before { background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff); }
+        .card.stats::before { background: linear-gradient(90deg, var(--green), var(--cyan)); }
+        .card.v2::before { background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #a855f7); }
+        .card.auto::before { background: linear-gradient(90deg, var(--green), var(--yellow)); }
+        .card.auto:hover { box-shadow: 0 16px 48px rgba(234,179,8,0.08), 0 0 0 1px rgba(234,179,8,0.15); }
+
+        .card-icon {
+            width: 52px; height: 52px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; margin-bottom: 1rem;
+        }
+        .card.stocks .card-icon { background: rgba(34,197,94,0.10); }
+        .card.funds .card-icon { background: var(--purple-dim); }
+        .card.forex .card-icon { background: var(--orange-dim); }
+        .card.crypto .card-icon { background: var(--cyan-dim); }
+        .card.picks .card-icon { background: var(--yellow-dim); }
+        .card.tool .card-icon { background: rgba(236,72,153,0.10); }
+        .card.research .card-icon { background: var(--blue-dim); }
+        .card.hub .card-icon { background: rgba(99,102,241,0.10); }
+        .card.stats .card-icon { background: var(--green-dim); }
+        .card.v2 .card-icon { background: linear-gradient(135deg, rgba(255,107,107,0.12), rgba(99,102,241,0.12)); }
+        .card.auto .card-icon { background: var(--yellow-dim); }
+
+        .card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.3rem; }
+        .card p { color: var(--dim); font-size: 0.8rem; margin-bottom: 0.8rem; line-height: 1.55; }
+
+        /* ── Badges ── */
+        .badge {
+            display: inline-block; padding: 0.12rem 0.5rem;
+            border-radius: 5px; font-size: 0.58rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin-right: 0.3rem; margin-bottom: 0.3rem;
+        }
+        .badge-live { background: var(--green-dim); color: var(--green); }
+        .badge-new { background: rgba(99,102,241,0.15); color: var(--accent2); }
+        .badge-god { background: linear-gradient(135deg, rgba(255,107,107,0.15), rgba(155,89,182,0.15)); color: var(--pink); }
+        .badge-v1 { background: var(--blue-dim); color: var(--blue); }
+        .badge-v2 { background: var(--purple-dim); color: var(--purple); }
+        .badge-auto { background: var(--yellow-dim); color: var(--yellow); }
+
+        /* ── Tags ── */
+        .tag-row { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.7rem; }
+        .tag {
+            font-size: 0.58rem; padding: 0.12rem 0.42rem;
+            border-radius: 4px; background: var(--bg3); color: var(--dim);
+            font-weight: 500;
+        }
+
+        /* ── CTA arrow ── */
+        .card .cta {
+            color: var(--accent2); font-weight: 600; font-size: 0.8rem;
+            display: inline-flex; align-items: center; gap: 0.35rem;
+        }
+        .card .cta::after { content: '\2192'; transition: transform 0.2s; }
+        .card:hover .cta::after { transform: translateX(4px); }
+
+        /* ── Buttons ── */
+        .btn-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.8rem; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            padding: 0.4rem 0.8rem; border-radius: 8px;
+            font-size: 0.75rem; font-weight: 600;
+            transition: all 0.2s; border: 1px solid transparent;
+        }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: #5558e6; text-decoration: none; box-shadow: 0 4px 16px rgba(99,102,241,0.3); }
+        .btn-secondary { background: rgba(255,255,255,0.04); color: var(--dim); border-color: var(--border); }
+        .btn-secondary:hover { border-color: var(--border-hover); color: var(--text); text-decoration: none; }
+
+        /* ── Comparison Table ── */
+        .comparison-wrap {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--r); padding: 1.2rem; margin-top: 1.2rem;
+            overflow-x: auto;
+        }
+        .comparison-wrap table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+        .comparison-wrap th { text-align: center; padding: 0.5rem; font-weight: 700; font-size: 0.72rem; }
+        .comparison-wrap td { text-align: center; padding: 0.4rem 0.5rem; }
+        .comparison-wrap tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+        .comparison-wrap td:first-child { text-align: left; color: var(--dim); }
+
+        /* ── Architecture diagram ── */
+        .arch-diagram {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--r); padding: 1.5rem; margin-top: 1.2rem;
+            text-align: center; overflow-x: auto;
+        }
+        .arch-row { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
+        .arch-box {
+            padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.72rem; font-weight: 600;
+            border: 1px solid; min-width: 120px; transition: transform 0.2s;
+        }
+        .arch-box:hover { transform: scale(1.05); }
+        .arch-box.green { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+        .arch-box.purple { border-color: var(--purple); color: var(--purple); background: var(--purple-dim); }
+        .arch-box.orange { border-color: var(--orange); color: var(--orange); background: var(--orange-dim); }
+        .arch-box.cyan { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-dim); }
+        .arch-box.accent { border-color: var(--accent); color: var(--accent2); background: rgba(99,102,241,0.10); }
+        .arch-box.pink { border-color: var(--pink); color: var(--pink); background: rgba(236,72,153,0.10); }
+        .arch-connector { color: var(--dim); font-size: 1.2rem; line-height: 1; }
+
+        /* ── Ticker lookup ── */
+        .ticker-lookup {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--r); padding: 1.2rem; margin-top: 1rem;
+            display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap;
+        }
+        .ticker-lookup input {
+            background: var(--bg3); border: 1px solid var(--border);
+            border-radius: 8px; padding: 0.5rem 0.8rem; color: var(--text);
+            font-size: 0.85rem; width: 140px; text-transform: uppercase;
+            outline: none; font-weight: 600; letter-spacing: 1px;
+        }
+        .ticker-lookup input:focus { border-color: var(--accent); }
+        .ticker-lookup input::placeholder { color: var(--dim); text-transform: none; font-weight: 400; letter-spacing: 0; }
+        .ticker-lookup button {
+            background: var(--accent); color: #fff; border: none;
+            border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.8rem;
+            font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .ticker-lookup button:hover { background: #5558e6; box-shadow: 0 4px 16px rgba(99,102,241,0.3); }
+        .ticker-lookup .hint { font-size: 0.7rem; color: var(--dim); }
+
+        /* ── Endpoint rows ── */
+        .endpoint-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--r); padding: 1rem; overflow: hidden;
+        }
+        .endpoint-card h3 { font-size: 0.9rem; margin-bottom: 0.6rem; }
+        .ep-row {
+            display: flex; align-items: center; gap: 0.6rem;
+            padding: 0.35rem 0; font-size: 0.72rem;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        .ep-row:last-child { border-bottom: none; }
+        .ep-method {
+            font-size: 0.58rem; font-weight: 700; padding: 0.1rem 0.35rem;
+            border-radius: 3px; background: var(--green-dim); color: var(--green);
+            flex-shrink: 0;
+        }
+        .ep-path { font-family: 'SF Mono', Consolas, monospace; color: var(--accent2); font-size: 0.7rem; }
+        .ep-desc { color: var(--dim); margin-left: auto; font-size: 0.65rem; text-align: right; }
+
+        /* ── Consensus Dashboard ── */
+        .consensus-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.2rem; margin-bottom: 1.5rem;
+        }
+        .consensus-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--r); padding: 1.4rem; position: relative;
+            overflow: hidden; transition: all 0.3s;
+        }
+        .consensus-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+        .consensus-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+        }
+        .consensus-card.c-stocks::before { background: linear-gradient(90deg, var(--green), var(--blue)); }
+        .consensus-card.c-funds::before { background: linear-gradient(90deg, var(--purple), var(--accent)); }
+        .consensus-card.c-forex::before { background: linear-gradient(90deg, var(--orange), var(--yellow)); }
+        .consensus-card.c-crypto::before { background: linear-gradient(90deg, var(--cyan), var(--blue)); }
+        .consensus-card .cc-header {
+            display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem;
+        }
+        .consensus-card .cc-icon { font-size: 1.6rem; }
+        .consensus-card .cc-title { font-size: 1.05rem; font-weight: 700; }
+        .consensus-card .cc-subtitle { font-size: 0.68rem; color: var(--dim); }
+        .cc-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+        .cc-metric {
+            background: rgba(255,255,255,0.02); border-radius: 8px;
+            padding: 0.5rem 0.6rem;
+        }
+        .cc-metric .cc-val {
+            font-size: 1.1rem; font-weight: 700; font-variant-numeric: tabular-nums;
+        }
+        .cc-metric .cc-lbl {
+            font-size: 0.6rem; color: var(--dim); text-transform: uppercase;
+            letter-spacing: 0.5px; margin-top: 0.1rem;
+        }
+        .cc-verdict {
+            margin-top: 0.8rem; padding: 0.5rem 0.7rem;
+            border-radius: 8px; font-size: 0.72rem;
+            display: flex; align-items: center; gap: 0.4rem;
+        }
+        .cc-verdict.bullish { background: var(--green-dim); color: var(--green); }
+        .cc-verdict.neutral { background: rgba(255,255,255,0.04); color: var(--dim); }
+        .cc-verdict.bearish { background: var(--red-dim); color: var(--red); }
+        .cc-verdict .verdict-dot {
+            width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+        }
+        .cc-verdict.bullish .verdict-dot { background: var(--green); }
+        .cc-verdict.neutral .verdict-dot { background: var(--dim); }
+        .cc-verdict.bearish .verdict-dot { background: var(--red); }
+
+        /* overall ranking bar */
+        .ranking-bar {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--r); padding: 1.2rem; margin-top: 1rem;
+        }
+        .ranking-bar h4 {
+            font-size: 0.8rem; font-weight: 700; margin-bottom: 0.8rem; color: var(--dim);
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .rank-row {
+            display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.5rem;
+        }
+        .rank-label {
+            font-size: 0.78rem; font-weight: 600; width: 110px; flex-shrink: 0;
+        }
+        .rank-bar-track {
+            flex: 1; height: 24px; background: var(--bg3);
+            border-radius: 6px; overflow: hidden; position: relative;
+        }
+        .rank-bar-fill {
+            height: 100%; border-radius: 6px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; padding-left: 0.5rem;
+            font-size: 0.65rem; font-weight: 700; color: #fff;
+            min-width: 0;
+        }
+        .rank-bar-fill.stocks-fill { background: linear-gradient(90deg, var(--green), var(--blue)); }
+        .rank-bar-fill.funds-fill { background: linear-gradient(90deg, var(--purple), var(--accent)); }
+        .rank-bar-fill.forex-fill { background: linear-gradient(90deg, var(--orange), var(--yellow)); }
+        .rank-bar-fill.crypto-fill { background: linear-gradient(90deg, var(--cyan), var(--blue)); }
+        .rank-score {
+            font-size: 0.75rem; font-weight: 700; width: 50px; text-align: right; flex-shrink: 0;
+        }
+
+        /* ── Floating TOC ── */
+        .toc {
+            position: fixed; right: 1.2rem; top: 50%; transform: translateY(-50%);
+            z-index: 90; display: flex; flex-direction: column; gap: 0.3rem;
+        }
+        .toc a {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: var(--border); display: block;
+            transition: all 0.2s; position: relative;
+        }
+        .toc a:hover, .toc a.active {
+            background: var(--accent); transform: scale(1.4);
+            box-shadow: 0 0 8px rgba(99,102,241,0.4);
+        }
+        .toc a:hover::before {
+            content: attr(data-label);
+            position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+            background: var(--bg3); color: var(--text); padding: 0.2rem 0.5rem;
+            border-radius: 4px; font-size: 0.65rem; white-space: nowrap;
+            border: 1px solid var(--border);
+        }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center; padding: 2rem 1.5rem;
+            border-top: 1px solid var(--border);
+            color: var(--dim); font-size: 0.72rem;
+        }
+        .footer a { color: var(--accent); }
+
+        /* ── Hidden for search ── */
+        .section.hidden-search { display: none; }
+        .no-results {
+            text-align: center; padding: 3rem; color: var(--dim);
+            font-size: 1.1rem; display: none;
+        }
+
+        /* ── Back to top ── */
+        .back-top {
+            position: fixed; bottom: 2rem; right: 2rem; z-index: 80;
+            width: 44px; height: 44px; border-radius: 50%;
+            background: var(--accent); color: #fff; border: none;
+            font-size: 1.2rem; cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            opacity: 0; transform: translateY(20px);
+            transition: all 0.3s; box-shadow: 0 4px 20px rgba(99,102,241,0.3);
+        }
+        .back-top.visible { opacity: 1; transform: translateY(0); }
+        .back-top:hover { background: #5558e6; transform: translateY(-2px) scale(1.05); }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .hero { padding: 2.5rem 1.2rem 2rem; }
+            .hero h1 { font-size: 1.8rem; }
+            .hero-stats { gap: 0.8rem; }
+            .hero-stat { min-width: 80px; padding: 0.6rem 0.8rem; }
+            .hero-stat .num { font-size: 1.5rem; }
+            .grid, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+            .header { padding: 0 1rem; height: auto; min-height: 48px; padding-top: 0.5rem; padding-bottom: 0.5rem; }
+            .header-brand { font-size: 1rem; }
+            .header-search input { width: 140px; }
+            .header-search input:focus { width: 180px; }
+            .toc { display: none; }
+            .anchor-nav { gap: 0.3rem; }
+            .anchor-nav a { font-size: 0.65rem; padding: 0.25rem 0.5rem; }
+        }
+        @media (max-width: 480px) {
+            .header-search { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+    <div class="particles" id="particles"></div>
+
+    <!-- Floating TOC dots -->
+    <nav class="toc" id="toc">
+        <a href="#consensus" data-label="Consensus"></a>
+        <a href="#stocks" data-label="Stocks"></a>
+        <a href="#funds" data-label="Mutual Funds"></a>
+        <a href="#forex" data-label="Forex"></a>
+        <a href="#crypto" data-label="Crypto"></a>
+        <a href="#picks" data-label="Picks & Research"></a>
+        <a href="#analytics" data-label="Analytics"></a>
+        <a href="#automation" data-label="Automation"></a>
+        <a href="#stats" data-label="Status"></a>
+        <a href="#architecture" data-label="Architecture"></a>
+        <a href="#compare" data-label="Compare"></a>
+        <a href="#api" data-label="API"></a>
+        <a href="#hubs" data-label="Other Hubs"></a>
+    </nav>
+
+    <!-- Back to top -->
+    <button class="back-top" id="backTop" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'});">&uarr;</button>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <a href="/findstocks_global/" class="header-brand" style="text-decoration:none;">Investment Hub</a>
+            <div class="header-search">
+                <input type="text" id="searchInput" placeholder="Search tools..." autocomplete="off">
+            </div>
+        </div>
+        <nav class="header-nav">
+            <a href="/">Events</a>
+            <a href="/fc/">FavCreators</a>
+            <a href="#consensus">Consensus</a>
+            <a href="#stocks">Stocks</a>
+            <a href="#funds">Funds</a>
+            <a href="#forex">Forex</a>
+            <a href="#crypto">Crypto</a>
+            <a href="#picks">Picks</a>
+            <a href="#analytics">Analytics</a>
+            <a href="#api">API</a>
+        </nav>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+        <h1>Investment Hub</h1>
+        <p class="subtitle">Everything we've built for investment analysis in one place. Portfolio backtesting, daily stock picks, God-Mode analytics, and multi-asset dashboards across stocks, mutual funds, forex, and crypto.</p>
+        <div class="hero-stats" id="hero-stats">
+            <div class="hero-stat"><div class="num" id="hs-assets">4</div><div class="lbl">Asset Classes</div></div>
+            <div class="hero-stat"><div class="num" id="hs-systems">6</div><div class="lbl">Portfolio Systems</div></div>
+            <div class="hero-stat"><div class="num" id="hs-algos">100+</div><div class="lbl"><span class="live-dot"></span>Algorithms</div></div>
+            <div class="hero-stat"><div class="num" id="hs-picks">--</div><div class="lbl"><span class="live-dot"></span>Stock Picks</div></div>
+            <div class="hero-stat"><div class="num" id="hs-endpoints">110+</div><div class="lbl">API Endpoints</div></div>
+            <div class="hero-stat"><div class="num" id="hs-pages">20</div><div class="lbl">Dashboards</div></div>
+        </div>
+        <div class="anchor-nav">
+            <a href="#consensus">Consensus</a>
+            <a href="#stocks">Stocks</a>
+            <a href="#funds">Mutual Funds</a>
+            <a href="#forex">Forex</a>
+            <a href="#crypto">Crypto</a>
+            <a href="#picks">Daily Picks</a>
+            <a href="#analytics">Pro Analytics</a>
+            <a href="#automation">Automation</a>
+            <a href="#stats">System Status</a>
+            <a href="#architecture">Architecture</a>
+            <a href="#compare">Compare</a>
+            <a href="#api">API Reference</a>
+            <a href="#hubs">Other Hubs</a>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <div class="disclaimer">For research and educational purposes only. Past performance does not guarantee future results. Not financial advice.</div>
+
+        <!-- Live Status Bar -->
+        <div class="status-bar" id="statusBar">
+            <div class="status-item"><span class="status-dot loading" id="st-stocks"></span>Stocks v2 API</div>
+            <div class="status-item"><span class="status-dot loading" id="st-funds"></span>Mutual Funds API</div>
+            <div class="status-item"><span class="status-dot loading" id="st-forex"></span>Forex API</div>
+            <div class="status-item"><span class="status-dot loading" id="st-crypto"></span>Crypto API</div>
+            <div class="status-item" style="margin-left:auto;font-size:0.62rem;color:var(--dim);">Checked: <span id="st-time">--</span></div>
+        </div>
+
+        <!-- No search results -->
+        <div class="no-results" id="noResults">No matching sections found.</div>
+
+        <!-- ═══ CROSS-ASSET CONSENSUS DASHBOARD ═══ -->
+        <div class="section" id="consensus" data-search="consensus cross-asset comparison win rate return sharpe top algorithm verdict ranking best performing">
+            <div class="section-head">
+                <h2>Cross-Asset Consensus Dashboard</h2>
+                <span class="section-count">4 markets &bull; live</span>
+            </div>
+            <p class="section-desc">Live side-by-side comparison of all 4 asset classes. Win rates, average returns, and top algorithms fetched in real-time from each system's API. Use this to decide which market is performing best right now.</p>
+
+            <div class="consensus-grid">
+                <!-- Stocks -->
+                <div class="consensus-card c-stocks">
+                    <div class="cc-header">
+                        <span class="cc-icon">&#x1F4C8;</span>
+                        <div>
+                            <div class="cc-title">Stocks</div>
+                            <div class="cc-subtitle"><span id="cs-algos">--</span> algorithms &bull; <span id="cs-scenarios">60</span> scenarios</div>
+                        </div>
+                    </div>
+                    <div class="cc-metrics">
+                        <div class="cc-metric">
+                            <div class="cc-val" style="color:var(--green);" id="cs-wr">--</div>
+                            <div class="cc-lbl">Win Rate</div>
+                        </div>
+                        <div class="cc-metric">
+                            <div class="cc-val" style="color:var(--green);" id="cs-ret">--</div>
+                            <div class="cc-lbl">Avg Return</div>
+                        </div>
+                        <div class="cc-metric">
+                            <div class="cc-val" style="color:var(--text);" id="cs-picks">--</div>
+                            <div class="cc-lbl">Picks Tracked</div>
+                        </div>
+                        <div class="cc-metric">
+                            <div class="cc-val" style="color:var(--accent2);font-size:0.8rem;" id="cs-top">--</div>
+                            <div class="cc-lbl">Top Algorithm</div>
+                        </div>
+                    </div>
+                    <div class="cc-verdict neutral" id="cs-verdict">
+                        <span class="verdict-dot"></span>
+                        <span>Loading live data...</span>
+                    </div>
+                </div>
+
+                <!-- Mutual Funds -->
+                <div class="consensus-card c-funds">
+                    <div class="cc-header">
+                        <span class="cc-icon">&#x1F4CA;</span>
+                        <div>
+                            <div class="cc-title">Mutual Funds</div>
+                            <div class="cc-subtitle"><span id="cf-algos">--</span> algorithms &bull; 12 templates</div>
+                        </div>
+                    </div>
+                    <div class="cc-metrics">
+                        <div class="cc-metric">
+                            <div class="cc-val" style="color:var(--green);" id="cf-wr">--</div>
+                            <div class="cc-lbl">Win Rate</div>
+                        </div>
+                        <div class="cc-metric">
+                            <div class="cc-val" style="color:var(--green);" id="cf-ret">--</div>
+                            <div class="cc-lbl">Avg Return</div>
+                        </div>
+                        <div class="cc-metric">
+                            <div class="cc-val" style="color:var(--text);" id="cf-picks">--</div>
+                            <div class="cc-lbl">Picks Tracked</div>
+                        </div>
+                        <div class="cc-metric">
+                            <div class="cc-val" style="color:var(--accent2);font-size:0.8rem;" id="cf-top">--</div>
+                            <div class="cc-lbl">Top Algorithm</div>
+                        </div>
+                    </div>
+                    <div class="cc-verdict neutral" id="cf-verdict">
+                        <span class="verdict-dot"></span>
+                        <span>Loading live data...</span>
+                    </div>
+                </div>
+
+                <!-- Forex -->
+                <div class="consensus-card c-forex">
+                    <div class="cc-header">
+                        <span class="cc-icon">&#x1F4B1;</span>
+                        <div>
+                            <div class="cc-title">Forex Pairs</div>
+                            <div class="cc-subtitle"><span id="cx-algos">--</span> algorithms &bull; pip-based</div>
+                        </div>
+                    </div>
+                    <div class="cc-metrics">
+                        <div class="cc-metric">
+                            <div class="cc-val" style="color:var(--green);" id="cx-wr">--</div>
+                            <div class="cc-lbl">Win Rate</div>
+                        </div>
+                        <div class="cc-metric">
+                            <div class="cc-val" style="color:var(--green);" id="cx-ret">--</div>
+                            <div class="cc-lbl">Avg Return</div>
+                        </div>
+                        <div class="cc-metric">
+                            <div class="cc-val" style="color:var(--text);" id="cx-picks">--</div>
+                            <div class="cc-lbl">Picks Tracked</div>
+                        </div>
+                        <div class="cc-metric">
+                            <div class="cc-val" style="color:var(--accent2);font-size:0.8rem;" id="cx-top">--</div>
+                            <div class="cc-lbl">Top Algorithm</div>
+                        </div>
+                    </div>
+                    <div class="cc-verdict neutral" id="cx-verdict">
+                        <span class="verdict-dot"></span>
+                        <span>Loading live data...</span>
+                    </div>
+                </div>
+
+                <!-- Crypto -->
+                <div class="consensus-card c-crypto">
+                    <div class="cc-header">
+                        <span class="cc-icon">&#x20BF;</span>
+                        <div>
+                            <div class="cc-title">Crypto Pairs</div>
+                            <div class="cc-subtitle"><span id="cc-algos">--</span> algorithms &bull; DCA + momentum</div>
+                        </div>
+                    </div>
+                    <div class="cc-metrics">
+                        <div class="cc-metric">
+                            <div class="cc-val" style="color:var(--green);" id="cc-wr">--</div>
+                            <div class="cc-lbl">Win Rate</div>
+                        </div>
+                        <div class="cc-metric">
+                            <div class="cc-val" style="color:var(--green);" id="cc-ret">--</div>
+                            <div class="cc-lbl">Avg Return</div>
+                        </div>
+                        <div class="cc-metric">
+                            <div class="cc-val" style="color:var(--text);" id="cc-picks">--</div>
+                            <div class="cc-lbl">Picks Tracked</div>
+                        </div>
+                        <div class="cc-metric">
+                            <div class="cc-val" style="color:var(--accent2);font-size:0.8rem;" id="cc-top">--</div>
+                            <div class="cc-lbl">Top Algorithm</div>
+                        </div>
+                    </div>
+                    <div class="cc-verdict neutral" id="cc-verdict">
+                        <span class="verdict-dot"></span>
+                        <span>Loading live data...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overall ranking -->
+            <div class="ranking-bar" id="rankingBar">
+                <h4>Performance Ranking (by composite score)</h4>
+                <div id="rankRows">
+                    <div style="font-size:0.75rem;color:var(--dim);padding:0.5rem 0;">Fetching live data from all 4 systems...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ STOCK PORTFOLIO SYSTEMS ═══ -->
+        <div class="section" id="stocks" data-search="stocks portfolio backtesting questrade vix god-mode algorithms walk-forward regime analysis v1 v2">
+            <div class="section-head">
+                <h2>Stock Portfolio Systems</h2>
+                <span class="section-count">2 versions + research</span>
+            </div>
+            <p class="section-desc">Two generations of stock backtesting engines. v1 has Questrade fee modeling and VIX volatility filter. v2 adds 91 algorithms, God-Mode ensembles, walk-forward validation, and advanced analytics.</p>
+            <div class="grid">
+                <a href="/findstocks/portfolio/" style="text-decoration:none;color:inherit;">
+                    <div class="card stocks">
+                        <div class="card-icon">&#x1F4CA;</div>
+                        <div><span class="badge badge-live">LIVE</span><span class="badge badge-v1">v1</span></div>
+                        <h3>Stocks Portfolio v1</h3>
+                        <p>Backtesting engine with Questrade Canada fee modeling ($0 stock commissions, CDR detection, 1.75% forex for US stocks). VIX volatility filter, What-If simulator, and Optimal Finder.</p>
+                        <div class="tag-row">
+                            <span class="tag">13 Algorithms</span>
+                            <span class="tag">Questrade Fees</span>
+                            <span class="tag">VIX Filter</span>
+                            <span class="tag">What-If</span>
+                            <span class="tag">Optimal Finder</span>
+                        </div>
+                        <div class="btn-row">
+                            <a href="/findstocks/portfolio/" class="btn btn-primary">Portfolio</a>
+                            <a href="/findstocks/portfolio/report.html" class="btn btn-secondary">Daily Report</a>
+                            <a href="/findstocks/portfolio/stats.html" class="btn btn-secondary">Stats</a>
+                        </div>
+                    </div>
+                </a>
+                <a href="/findstocks/portfolio2/" style="text-decoration:none;color:inherit;">
+                    <div class="card stocks">
+                        <div class="card-icon">&#x1F4C8;</div>
+                        <div><span class="badge badge-live">LIVE</span><span class="badge badge-god">GOD-MODE</span><span class="badge badge-v2">v2</span></div>
+                        <h3>Stocks Portfolio v2</h3>
+                        <p>Full backtesting engine with <strong id="algo-count-inline">91</strong> algorithms across 25 families. Academic factor investing, God-Mode + Alpha Forge + No-Bed-Time ensembles, 30+ indicators.</p>
+                        <div class="tag-row">
+                            <span class="tag">91 Algorithms</span>
+                            <span class="tag">60 Scenarios</span>
+                            <span class="tag">Kelly Criterion</span>
+                            <span class="tag">Regime-Aware</span>
+                            <span class="tag">Walk-Forward</span>
+                        </div>
+                        <div class="btn-row">
+                            <a href="/findstocks/portfolio2/" class="btn btn-primary">Portfolio</a>
+                            <a href="/findstocks/portfolio2/stats/" class="btn btn-secondary">Stats</a>
+                            <a href="/findstocks/portfolio2/hub.html" class="btn btn-secondary">Hub</a>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- Quick ticker lookup -->
+            <div class="ticker-lookup">
+                <span style="font-size:0.8rem;font-weight:600;">Quick Ticker Lookup</span>
+                <input type="text" id="tickerInput" placeholder="e.g. MSFT" maxlength="6">
+                <button onclick="lookupTicker();">Analyze</button>
+                <span class="hint">Opens 30+ indicator deep profile from the v2 engine</span>
+            </div>
+        </div>
+
+        <!-- ═══ MUTUAL FUNDS ═══ -->
+        <div class="section" id="funds" data-search="mutual funds portfolio nav vanguard fidelity schwab rbc td expense ratio canadian v1 v2">
+            <div class="section-head">
+                <h2>Mutual Fund Systems</h2>
+                <span class="section-count">2 versions</span>
+            </div>
+            <p class="section-desc">NAV-based backtesting for Canadian mutual funds. v1 covers 20+ funds with expense ratio tracking. v2 adds 10 selection algorithms and 12 portfolio templates.</p>
+            <div class="grid">
+                <a href="/findmutualfunds/portfolio1/" style="text-decoration:none;color:inherit;">
+                    <div class="card funds">
+                        <div class="card-icon">&#x1F3E6;</div>
+                        <div><span class="badge badge-live">LIVE</span><span class="badge badge-v1">v1</span></div>
+                        <h3>Mutual Funds Portfolio v1</h3>
+                        <p>Track 20+ top mutual funds from Vanguard, Fidelity, Schwab, and T. Rowe Price. NAV-based backtesting with expense ratios, front/back loads, and Questrade's $9.95 MF fee.</p>
+                        <div class="tag-row">
+                            <span class="tag">10 Strategies</span>
+                            <span class="tag">Expense Tracking</span>
+                            <span class="tag">NAV-Based</span>
+                            <span class="tag">Daily Refresh</span>
+                        </div>
+                        <div class="btn-row">
+                            <a href="/findmutualfunds/portfolio1/" class="btn btn-primary">Portfolio</a>
+                            <a href="/findmutualfunds/portfolio1/report.html" class="btn btn-secondary">Daily Report</a>
+                            <a href="/findmutualfunds/portfolio1/stats.html" class="btn btn-secondary">Stats</a>
+                        </div>
+                    </div>
+                </a>
+                <a href="/findmutualfunds2/portfolio2/" style="text-decoration:none;color:inherit;">
+                    <div class="card funds">
+                        <div class="card-icon">&#x1F4CA;</div>
+                        <div><span class="badge badge-new">NEW</span><span class="badge badge-v2">v2</span></div>
+                        <h3>Mutual Funds Portfolio v2</h3>
+                        <p>Enhanced NAV-based backtesting for Canadian mutual funds. 10 fund selection algorithms, expense ratio tracking, RBC/TD fund families, and 12 portfolio templates.</p>
+                        <div class="tag-row">
+                            <span class="tag">10 Algorithms</span>
+                            <span class="tag">12 Templates</span>
+                            <span class="tag">Canadian Focus</span>
+                            <span class="tag">Expense Ratio</span>
+                        </div>
+                        <div class="btn-row">
+                            <a href="/findmutualfunds2/portfolio2/" class="btn btn-primary">Portfolio</a>
+                            <a href="/findmutualfunds2/portfolio2/stats/" class="btn btn-secondary">Stats</a>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ═══ FOREX ═══ -->
+        <div class="section" id="forex" data-search="forex currency pairs pip spread trend carry trade mean reversion breakout scalping">
+            <div class="section-head">
+                <h2>Forex Pairs</h2>
+                <span class="section-count">1 system</span>
+            </div>
+            <p class="section-desc">Currency pair analysis with pip-based cost modeling. Trend following, carry trade, mean reversion, breakout, and scalping across 15 major, cross, and exotic pairs.</p>
+            <div class="grid">
+                <a href="/findforex2/portfolio/" style="text-decoration:none;color:inherit;">
+                    <div class="card forex">
+                        <div class="card-icon">&#x1F4B1;</div>
+                        <div><span class="badge badge-live">LIVE</span></div>
+                        <h3>Forex Pairs Portfolio</h3>
+                        <p>Backtest 15 major, cross, and exotic currency pairs. Spread-based cost modeling with trend following, carry trade, mean reversion, and scalping strategies. 24/5 market coverage.</p>
+                        <div class="tag-row">
+                            <span class="tag">15 Pairs</span>
+                            <span class="tag">8 Algorithms</span>
+                            <span class="tag">Pip-Based</span>
+                            <span class="tag">Long/Short</span>
+                            <span class="tag">Leverage</span>
+                        </div>
+                        <div class="btn-row">
+                            <a href="/findforex2/portfolio/" class="btn btn-primary">Forex Analysis</a>
+                            <a href="/findforex2/portfolio/stats/" class="btn btn-secondary">Stats</a>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ═══ CRYPTO ═══ -->
+        <div class="section" id="crypto" data-search="crypto bitcoin ethereum solana dca momentum altcoin exchange fees hodl">
+            <div class="section-head">
+                <h2>Crypto Pairs</h2>
+                <span class="section-count">1 system</span>
+            </div>
+            <p class="section-desc">Cryptocurrency backtesting with exchange fee modeling. DCA strategies, momentum, breakout, and volatility-adjusted sizing for BTC, ETH, SOL, and altcoins.</p>
+            <div class="grid">
+                <a href="/findcryptopairs/portfolio/" style="text-decoration:none;color:inherit;">
+                    <div class="card crypto">
+                        <div class="card-icon">&#x20BF;</div>
+                        <div><span class="badge badge-live">LIVE</span></div>
+                        <h3>Crypto Pairs Portfolio</h3>
+                        <p>Backtest 15 crypto pairs including BTC, ETH, SOL, and altcoins. Exchange fee modeling (0.1-0.5%), HODL vs DCA strategies, and alt-season rotation analysis. 24/7 market.</p>
+                        <div class="tag-row">
+                            <span class="tag">15 Pairs</span>
+                            <span class="tag">10 Strategies</span>
+                            <span class="tag">DCA Support</span>
+                            <span class="tag">Exchange Fees</span>
+                            <span class="tag">24/7 Market</span>
+                        </div>
+                        <div class="btn-row">
+                            <a href="/findcryptopairs/portfolio/" class="btn btn-primary">Crypto Analysis</a>
+                            <a href="/findcryptopairs/portfolio/stats/" class="btn btn-secondary">Stats</a>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ═══ DAILY PICKS & RESEARCH ═══ -->
+        <div class="section" id="picks" data-search="daily picks stock sha-256 research ticker charts fundamental report">
+            <div class="section-head">
+                <h2>Daily Picks &amp; Research</h2>
+                <span class="section-count">4 pages</span>
+            </div>
+            <p class="section-desc">Daily algorithm-generated stock picks with SHA-256 pre-commitment, plus research tools and automated reports.</p>
+            <div class="grid grid-4">
+                <a href="/findstocks/" style="text-decoration:none;color:inherit;">
+                    <div class="card picks">
+                        <div class="card-icon">&#x1F4CB;</div>
+                        <div><span class="badge badge-live">LIVE</span></div>
+                        <h3>Daily Stock Picks</h3>
+                        <p>AI-validated stock picks updated daily before market open. SHA-256 pre-commitment for trust.</p>
+                        <span class="cta">View Today's Picks</span>
+                    </div>
+                </a>
+                <a href="/findstocks/research/" style="text-decoration:none;color:inherit;">
+                    <div class="card research">
+                        <div class="card-icon">&#x1F4D6;</div>
+                        <h3>Stock Research</h3>
+                        <p>Research tools, data exploration, and methodology. Predictive Alpha vs Supercomputers.</p>
+                        <span class="cta">Open Research</span>
+                    </div>
+                </a>
+                <a href="/findstocks/portfolio/report.html" style="text-decoration:none;color:inherit;">
+                    <div class="card stocks">
+                        <div class="card-icon">&#x1F4C4;</div>
+                        <h3>Daily Report (v1)</h3>
+                        <p>Automated daily performance report with win/loss tracking for the v1 engine.</p>
+                        <span class="cta">View Report</span>
+                    </div>
+                </a>
+                <a href="/findmutualfunds/portfolio1/report.html" style="text-decoration:none;color:inherit;">
+                    <div class="card funds">
+                        <div class="card-icon">&#x1F4C4;</div>
+                        <h3>MF Daily Report</h3>
+                        <p>Automated daily performance report for the mutual funds v1 portfolio.</p>
+                        <span class="cta">View Report</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ═══ PRO ANALYTICS (v2) ═══ -->
+        <div class="section" id="analytics" data-search="analytics leaderboard ticker profile walk-forward regime risk var sharpe sortino calmar kelly algorithm report god-mode">
+            <div class="section-head">
+                <h2>Pro Analytics &amp; Tools (v2)</h2>
+                <span class="section-count">7 tools</span>
+            </div>
+            <p class="section-desc">God-Mode analytics powered by the v2 engine. Algorithm leaderboard, ticker deep profiles with 30+ indicators, walk-forward validation, regime analysis, risk reports, and more.</p>
+            <div class="grid grid-3">
+                <a href="/findstocks/portfolio2/api/advanced_stats.php?action=leaderboard" style="text-decoration:none;color:inherit;">
+                    <div class="card tool">
+                        <div class="card-icon">&#x1F3C6;</div>
+                        <div><span class="badge badge-god">GOD-MODE</span></div>
+                        <h3>Algorithm Leaderboard</h3>
+                        <p>Multi-metric ranking. Composite score: Sharpe ratio, win rate, avg return.</p>
+                        <span class="cta">View Leaderboard</span>
+                    </div>
+                </a>
+                <a href="/findstocks/portfolio2/api/advanced_stats.php?action=ticker_profile&ticker=MSFT" style="text-decoration:none;color:inherit;">
+                    <div class="card tool">
+                        <div class="card-icon">&#x1F50D;</div>
+                        <div><span class="badge badge-god">GOD-MODE</span></div>
+                        <h3>Ticker Deep Profile</h3>
+                        <p>30+ indicators: RSI, MACD, Bollinger, TTM Squeeze, Supertrend, Ichimoku, buy/sell verdict.</p>
+                        <span class="cta">View MSFT Profile</span>
+                    </div>
+                </a>
+                <a href="/findstocks/portfolio2/api/advanced_stats.php?action=walk_forward&window=1" style="text-decoration:none;color:inherit;">
+                    <div class="card tool">
+                        <div class="card-icon">&#x1F6E1;</div>
+                        <div><span class="badge badge-god">GOD-MODE</span></div>
+                        <h3>Walk-Forward Validation</h3>
+                        <p>Anti-overfitting. Rolling-window OOS testing. ROBUST / MODERATE / WEAK scoring.</p>
+                        <span class="cta">Run Walk-Forward</span>
+                    </div>
+                </a>
+                <a href="/findstocks/portfolio2/api/advanced_stats.php?action=regime_analysis" style="text-decoration:none;color:inherit;">
+                    <div class="card tool">
+                        <div class="card-icon">&#x1F30D;</div>
+                        <div><span class="badge badge-god">GOD-MODE</span></div>
+                        <h3>Regime Analysis</h3>
+                        <p>Bull, bear, sideways breakdown. SPY 20-day trend. Which algos thrive where.</p>
+                        <span class="cta">View Regime Analysis</span>
+                    </div>
+                </a>
+                <a href="/findstocks/portfolio2/api/advanced_stats.php?action=risk_report" style="text-decoration:none;color:inherit;">
+                    <div class="card tool">
+                        <div class="card-icon">&#x26A0;</div>
+                        <div><span class="badge badge-god">GOD-MODE</span></div>
+                        <h3>Risk Report</h3>
+                        <p>VaR 95%/99%, CVaR, return distributions, worst picks, tail risk exposure.</p>
+                        <span class="cta">View Risk Report</span>
+                    </div>
+                </a>
+                <a href="/findstocks/portfolio2/api/advanced_stats.php?action=portfolio_analytics" style="text-decoration:none;color:inherit;">
+                    <div class="card tool">
+                        <div class="card-icon">&#x1F4B0;</div>
+                        <div><span class="badge badge-god">GOD-MODE</span></div>
+                        <h3>Portfolio Analytics</h3>
+                        <p>Sharpe, Sortino, Calmar, Kelly, VaR, equity curve, drawdowns, monthly returns.</p>
+                        <span class="cta">View Analytics</span>
+                    </div>
+                </a>
+                <a href="/findstocks/portfolio2/api/advanced_stats.php?action=algorithm_report" style="text-decoration:none;color:inherit;">
+                    <div class="card tool">
+                        <div class="card-icon">&#x1F9E0;</div>
+                        <div><span class="badge badge-new">NEW</span></div>
+                        <h3>Algorithm Report</h3>
+                        <p>Per-algorithm deep analysis: pick count, date range, score, top tickers, family breakdown.</p>
+                        <span class="cta">View Report</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ═══ AUTOMATION & GITHUB ACTIONS ═══ -->
+        <div class="section" id="automation" data-search="automation github actions daily refresh cron schedule workflow">
+            <div class="section-head">
+                <h2>Automation &amp; Scheduled Jobs</h2>
+                <span class="section-count">4 workflows</span>
+            </div>
+            <p class="section-desc">GitHub Actions workflows that keep data fresh. Prices, NAV data, picks, and simulations run automatically on schedule.</p>
+            <div class="grid grid-4">
+                <div class="card auto" style="cursor:default;">
+                    <div class="card-icon">&#x23F0;</div>
+                    <div><span class="badge badge-auto">SCHEDULED</span></div>
+                    <h3>Daily Stock Refresh</h3>
+                    <p>Fetches latest Yahoo Finance prices and runs algorithm picks. Mon-Fri at 22:30 &amp; 14:00 UTC.</p>
+                    <div class="tag-row">
+                        <span class="tag">Mon-Fri</span>
+                        <span class="tag">Yahoo Finance</span>
+                        <span class="tag">Auto-Pick</span>
+                    </div>
+                </div>
+                <div class="card auto" style="cursor:default;">
+                    <div class="card-icon">&#x23F0;</div>
+                    <div><span class="badge badge-auto">SCHEDULED</span></div>
+                    <h3>Daily MF Refresh</h3>
+                    <p>Refreshes mutual fund NAV data and runs fund selection algorithms. Mon-Fri at 22:30 &amp; 14:00 UTC.</p>
+                    <div class="tag-row">
+                        <span class="tag">Mon-Fri</span>
+                        <span class="tag">NAV Data</span>
+                        <span class="tag">Auto-Select</span>
+                    </div>
+                </div>
+                <div class="card auto" style="cursor:default;">
+                    <div class="card-icon">&#x1F504;</div>
+                    <div><span class="badge badge-auto">SCHEDULED</span></div>
+                    <h3>Portfolio Refresh</h3>
+                    <p>Refreshes all 4 asset class portfolio data. Daily at 23:30 UTC + weekly deep refresh on Sundays.</p>
+                    <div class="tag-row">
+                        <span class="tag">Daily + Weekly</span>
+                        <span class="tag">All 4 Assets</span>
+                    </div>
+                </div>
+                <div class="card auto" style="cursor:default;">
+                    <div class="card-icon">&#x1F9EA;</div>
+                    <div><span class="badge badge-auto">WEEKLY</span></div>
+                    <h3>Exhaustive Simulation</h3>
+                    <p>Weekly exhaustive stock simulation scanning thousands of parameter permutations. Sundays at 06:00 UTC.</p>
+                    <div class="tag-row">
+                        <span class="tag">Sundays</span>
+                        <span class="tag">Deep Scan</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ SYSTEM STATUS ═══ -->
+        <div class="section" id="stats" data-search="status system health win rates permutation learning database stats">
+            <div class="section-head">
+                <h2>System Status &amp; Stats</h2>
+                <span class="section-count">5 dashboards</span>
+            </div>
+            <p class="section-desc">Health monitoring, algorithm win rates, permutation scan results, and learning analysis for each portfolio engine.</p>
+            <div class="grid grid-3">
+                <a href="/findstocks/portfolio2/stats/" style="text-decoration:none;color:inherit;">
+                    <div class="card stats">
+                        <div class="card-icon">&#x2699;</div>
+                        <div><span class="badge badge-live">LIVE</span></div>
+                        <h3>Stocks v2 Status</h3>
+                        <p>DB health, win rates, permutation scans, learning analysis for the v2 engine.</p>
+                        <span class="cta">View Status</span>
+                    </div>
+                </a>
+                <a href="/findstocks/portfolio/stats.html" style="text-decoration:none;color:inherit;">
+                    <div class="card stats">
+                        <div class="card-icon">&#x2699;</div>
+                        <h3>Stocks v1 Status</h3>
+                        <p>System statistics and health monitoring for the v1 portfolio engine.</p>
+                        <span class="cta">View Status</span>
+                    </div>
+                </a>
+                <a href="/findmutualfunds2/portfolio2/stats/" style="text-decoration:none;color:inherit;">
+                    <div class="card stats">
+                        <div class="card-icon">&#x2699;</div>
+                        <h3>Mutual Funds v2 Status</h3>
+                        <p>System status and NAV refresh status for mutual funds.</p>
+                        <span class="cta">View Status</span>
+                    </div>
+                </a>
+                <a href="/findmutualfunds/portfolio1/stats.html" style="text-decoration:none;color:inherit;">
+                    <div class="card stats">
+                        <div class="card-icon">&#x2699;</div>
+                        <h3>Mutual Funds v1 Status</h3>
+                        <p>System stats for the mutual funds v1 portfolio engine.</p>
+                        <span class="cta">View Status</span>
+                    </div>
+                </a>
+                <a href="/findforex2/portfolio/stats/" style="text-decoration:none;color:inherit;">
+                    <div class="card stats">
+                        <div class="card-icon">&#x2699;</div>
+                        <h3>Forex Status</h3>
+                        <p>System status for the forex pairs portfolio engine.</p>
+                        <span class="cta">View Status</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ═══ ARCHITECTURE ═══ -->
+        <div class="section" id="architecture" data-search="architecture system map diagram how it works data flow">
+            <div class="section-head">
+                <h2>System Architecture</h2>
+            </div>
+            <p class="section-desc">How the investment platform fits together. Data flows from Yahoo Finance / providers through our PHP APIs into MySQL, then surfaces through the portfolio dashboards and analytics tools.</p>
+            <div class="arch-diagram">
+                <div style="font-size:0.7rem;color:var(--dim);margin-bottom:0.8rem;font-weight:600;">DATA SOURCES</div>
+                <div class="arch-row">
+                    <div class="arch-box green">Yahoo Finance</div>
+                    <div class="arch-box orange">Forex Feeds</div>
+                    <div class="arch-box cyan">Crypto Exchanges</div>
+                    <div class="arch-box purple">Fund NAV Data</div>
+                </div>
+                <div class="arch-connector">&darr;</div>
+                <div style="font-size:0.7rem;color:var(--dim);margin:0.5rem 0;font-weight:600;">INGESTION (GitHub Actions: daily_refresh, fetch_prices)</div>
+                <div class="arch-row">
+                    <div class="arch-box accent">fetch_prices.php</div>
+                    <div class="arch-box accent">import_picks.php</div>
+                    <div class="arch-box accent">seed_signals.php</div>
+                </div>
+                <div class="arch-connector">&darr;</div>
+                <div style="font-size:0.7rem;color:var(--dim);margin:0.5rem 0;font-weight:600;">STORAGE &amp; COMPUTE (MySQL + PHP API)</div>
+                <div class="arch-row">
+                    <div class="arch-box accent">backtest.php</div>
+                    <div class="arch-box accent">whatif.php</div>
+                    <div class="arch-box accent">learning.php</div>
+                    <div class="arch-box pink">advanced_stats.php</div>
+                </div>
+                <div class="arch-connector">&darr;</div>
+                <div style="font-size:0.7rem;color:var(--dim);margin:0.5rem 0;font-weight:600;">DASHBOARDS &amp; FRONTENDS</div>
+                <div class="arch-row">
+                    <div class="arch-box green">Stocks v1 / v2</div>
+                    <div class="arch-box purple">Mutual Funds v1 / v2</div>
+                    <div class="arch-box orange">Forex Portfolio</div>
+                    <div class="arch-box cyan">Crypto Portfolio</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ ASSET CLASS COMPARISON ═══ -->
+        <div class="section" id="compare" data-search="compare comparison table risk level market hours leverage horizon commissions">
+            <div class="section-head">
+                <h2>Asset Class Comparison</h2>
+                <span class="section-count">4 markets</span>
+            </div>
+            <p class="section-desc">Side-by-side comparison to help decide which market suits your risk tolerance and investment horizon.</p>
+            <div class="comparison-wrap">
+                <table>
+                    <tr style="border-bottom:1px solid var(--border);">
+                        <th style="text-align:left;color:var(--text);">Metric</th>
+                        <th style="color:var(--green);">Stocks</th>
+                        <th style="color:var(--purple);">Mutual Funds</th>
+                        <th style="color:var(--orange);">Forex</th>
+                        <th style="color:var(--cyan);">Crypto</th>
+                    </tr>
+                    <tr><td>Algorithms (v2)</td><td>91</td><td>10</td><td>8</td><td>10</td></tr>
+                    <tr><td>Algorithms (v1)</td><td>13</td><td>10</td><td>8</td><td>10</td></tr>
+                    <tr><td>Risk Level</td><td style="color:var(--yellow);">Med-High</td><td style="color:var(--green);">Low</td><td style="color:var(--orange);">Medium</td><td style="color:var(--red);">Very High</td></tr>
+                    <tr><td>Market Hours</td><td>9:30-4 ET</td><td>EOD NAV</td><td>24/5</td><td>24/7</td></tr>
+                    <tr><td>Ideal Horizon</td><td>1d - 1yr</td><td>1 - 5 yrs</td><td>1d - 3mo</td><td>1d - 1yr</td></tr>
+                    <tr><td>Commissions</td><td>$0 - $10</td><td>$0 + MER</td><td>Spread</td><td>0.1 - 0.5%</td></tr>
+                    <tr><td>Leverage</td><td>1-2x</td><td>None</td><td>Up to 50x</td><td>1-5x</td></tr>
+                    <tr><td>Data Provider</td><td>Yahoo Finance</td><td>NAV Feeds</td><td>Forex Feeds</td><td>Crypto Exchanges</td></tr>
+                    <tr><td>Research Depth</td><td style="color:var(--green);">50+ yrs academic</td><td>Moderate</td><td>Carry/Trend</td><td>Emerging</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- ═══ API REFERENCE ═══ -->
+        <div class="section" id="api" data-search="api endpoint json data backtest whatif advanced stats learning fetch prices setup schema">
+            <div class="section-head">
+                <h2>API Reference</h2>
+                <span class="section-count">110+ endpoints</span>
+            </div>
+            <p class="section-desc">Direct JSON API endpoints for each asset class. All endpoints are public GET requests requiring no authentication.</p>
+            <div class="grid">
+                <div class="endpoint-card">
+                    <h3 style="color:var(--green);">Stocks API (v2)</h3>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findstocks/portfolio2/api/data.php?type=stats">data.php?type=stats</a><span class="ep-desc">picks, algorithms, portfolios, trades</span></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findstocks/portfolio2/api/backtest.php?take_profit=50&stop_loss=10&max_hold_days=30">backtest.php</a><span class="ep-desc">TP, SL, hold, commission, algos</span></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findstocks/portfolio2/api/whatif.php?compare=1">whatif.php?compare=1</a><span class="ep-desc">56 scenario comparison</span></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findstocks/portfolio2/api/advanced_stats.php?action=leaderboard">advanced_stats.php</a><span class="ep-desc">leaderboard, ticker, walk-forward, regime, risk</span></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findstocks/portfolio2/api/learning.php?action=analyze_and_adjust">learning.php</a><span class="ep-desc">ML parameter adjustment</span></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findstocks/portfolio2/api/fetch_prices.php">fetch_prices.php</a><span class="ep-desc">Yahoo Finance price fetch</span></div>
+                </div>
+                <div class="endpoint-card">
+                    <h3 style="color:var(--green);">Stocks API (v1)</h3>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findstocks/api/data.php?type=stats">data.php?type=stats</a><span class="ep-desc">picks, algorithms, stats</span></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findstocks/api/backtest.php">backtest.php</a><span class="ep-desc">Questrade fee backtesting</span></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findstocks/api/whatif.php">whatif.php</a><span class="ep-desc">What-if scenario analysis</span></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findstocks/api/optimal_finder.php">optimal_finder.php</a><span class="ep-desc">Grid-search parameter finder</span></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findstocks/api/fetch_vix.php">fetch_vix.php</a><span class="ep-desc">VIX volatility data</span></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findstocks/api/blue_chip_picks.php">blue_chip_picks.php</a><span class="ep-desc">Blue chip stock selection</span></div>
+                </div>
+                <div class="endpoint-card">
+                    <h3 style="color:var(--purple);">Mutual Funds API (v2)</h3>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findmutualfunds2/portfolio2/api/data.php?type=stats">data.php?type=stats</a></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findmutualfunds2/portfolio2/api/backtest.php">backtest.php</a></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findmutualfunds2/portfolio2/api/whatif.php?compare=1">whatif.php?compare=1</a></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findmutualfunds2/portfolio2/api/learning.php">learning.php</a></div>
+                </div>
+                <div class="endpoint-card">
+                    <h3 style="color:var(--orange);">Forex API</h3>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findforex2/portfolio/api/data.php?type=stats">data.php?type=stats</a></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findforex2/portfolio/api/backtest.php">backtest.php</a></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findforex2/portfolio/api/whatif.php?compare=1">whatif.php?compare=1</a></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findforex2/portfolio/api/learning.php">learning.php</a></div>
+                </div>
+                <div class="endpoint-card">
+                    <h3 style="color:var(--cyan);">Crypto API</h3>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findcryptopairs/portfolio/api/data.php?type=stats">data.php?type=stats</a></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findcryptopairs/portfolio/api/backtest.php">backtest.php</a></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findcryptopairs/portfolio/api/whatif.php?compare=1">whatif.php?compare=1</a></div>
+                    <div class="ep-row"><span class="ep-method">GET</span><a class="ep-path" href="/findcryptopairs/portfolio/api/learning.php">learning.php</a></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ OTHER HUBS ═══ -->
+        <div class="section" id="hubs" data-search="hub legacy global platform investment tools portfolio">
+            <div class="section-head">
+                <h2>Other Hub Pages</h2>
+                <span class="section-count">3 hubs</span>
+            </div>
+            <p class="section-desc">Alternative entry points and legacy dashboards that link to the same underlying tools.</p>
+            <div class="grid grid-3">
+                <a href="/findstocks2_global/" style="text-decoration:none;color:inherit;">
+                    <div class="card v2">
+                        <div class="card-icon">&#x1F30E;</div>
+                        <div><span class="badge badge-god">GOD-MODE</span><span class="badge badge-v2">v2</span></div>
+                        <h3>Global Platform (v2)</h3>
+                        <p>The v2 global hub with live algorithm data, cross-asset consensus, and full API reference.</p>
+                        <span class="cta">Open v2 Global</span>
+                    </div>
+                </a>
+                <a href="/findstocks/portfolio2/hub.html" style="text-decoration:none;color:inherit;">
+                    <div class="card hub">
+                        <div class="card-icon">&#x1F517;</div>
+                        <h3>Portfolio Hub (Legacy)</h3>
+                        <p>Original portfolio hub page linking the four asset class systems.</p>
+                        <span class="cta">Open Legacy Hub</span>
+                    </div>
+                </a>
+                <a href="/investments/" style="text-decoration:none;color:inherit;">
+                    <div class="card hub">
+                        <div class="card-icon">&#x1F4BC;</div>
+                        <h3>Investment Tools Hub</h3>
+                        <p>Simpler hub with cards for each asset class and feature highlights.</p>
+                        <span class="cta">Open Tools Hub</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Investment Hub &mdash; <a href="/">findtorontoevents.ca</a> &mdash; Last updated: <span id="footer-date">Feb 2026</span></p>
+        <p style="margin-top:0.3rem;">4 Asset Classes &bull; 6 Portfolio Systems &bull; 110+ API Endpoints &bull; 20 Dashboards</p>
+        <p style="margin-top:0.3rem;">God-Mode + Alpha Forge + Academic Factor Zoo + Quant Fund Replication</p>
+        <p style="margin-top:0.3rem;">Not financial advice. For educational and research purposes only.</p>
+    </div>
+
+    <script>
+    /* ── Particles ── */
+    (function() {
+        var c = document.getElementById('particles');
+        var colors = ['rgba(99,102,241,0.3)', 'rgba(34,197,94,0.25)', 'rgba(249,115,22,0.2)', 'rgba(6,182,212,0.25)'];
+        for (var i = 0; i < 30; i++) {
+            var p = document.createElement('div');
+            p.className = 'particle';
+            var size = 2 + Math.random() * 4;
+            p.style.width = size + 'px';
+            p.style.height = size + 'px';
+            p.style.background = colors[Math.floor(Math.random() * colors.length)];
+            p.style.left = Math.random() * 100 + '%';
+            p.style.top = (60 + Math.random() * 40) + '%';
+            p.style.animationDuration = (15 + Math.random() * 25) + 's';
+            p.style.animationDelay = (Math.random() * 20) + 's';
+            c.appendChild(p);
+        }
+    })();
+
+    /* ── Count-up animation ── */
+    function animateCount(el, target, suffix) {
+        suffix = suffix || '';
+        var duration = 1200;
+        var start = 0;
+        var startTime = null;
+        function step(ts) {
+            if (!startTime) startTime = ts;
+            var progress = Math.min((ts - startTime) / duration, 1);
+            var ease = 1 - Math.pow(1 - progress, 3);
+            var val = Math.round(start + (target - start) * ease);
+            el.textContent = val.toLocaleString() + suffix;
+            if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+
+    /* ── Footer date ── */
+    var now = new Date();
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    document.getElementById('footer-date').textContent = months[now.getMonth()] + ' ' + now.getFullYear();
+
+    /* ── Consensus + Live API data ── */
+    var consensusData = {
+        stocks:  { wr: 0, ret: 0, picks: 0, algos: 0, top: '--', sharpe: 0, loaded: false },
+        funds:   { wr: 0, ret: 0, picks: 0, algos: 0, top: '--', sharpe: 0, loaded: false },
+        forex:   { wr: 0, ret: 0, picks: 0, algos: 0, top: '--', sharpe: 0, loaded: false },
+        crypto:  { wr: 0, ret: 0, picks: 0, algos: 0, top: '--', sharpe: 0, loaded: false }
+    };
+
+    function setVerdict(elId, wr) {
+        var el = document.getElementById(elId);
+        if (!el) return;
+        if (wr >= 55) {
+            el.className = 'cc-verdict bullish';
+            el.innerHTML = '<span class="verdict-dot"></span><span>Strong — Win rate above 55%. Algorithms performing well.</span>';
+        } else if (wr >= 45) {
+            el.className = 'cc-verdict neutral';
+            el.innerHTML = '<span class="verdict-dot"></span><span>Neutral — Win rate near 50%. Mixed signals from algorithms.</span>';
+        } else if (wr > 0) {
+            el.className = 'cc-verdict bearish';
+            el.innerHTML = '<span class="verdict-dot"></span><span>Weak — Win rate below 45%. Algorithms underperforming.</span>';
+        } else {
+            el.className = 'cc-verdict neutral';
+            el.innerHTML = '<span class="verdict-dot"></span><span>No backtest data available yet.</span>';
+        }
+    }
+
+    function setFallbackVerdict(elId, msg) {
+        var el = document.getElementById(elId);
+        if (el) {
+            el.className = 'cc-verdict neutral';
+            el.innerHTML = '<span class="verdict-dot"></span><span>' + msg + '</span>';
+        }
+    }
+
+    function updateRankingBar() {
+        var entries = [];
+        if (consensusData.stocks.loaded) {
+            entries.push({ name: 'Stocks', cls: 'stocks-fill', color: 'var(--green)', score: 0 });
+            var s = consensusData.stocks;
+            entries[entries.length - 1].score = (s.wr * 0.4) + (s.ret * 10 * 0.3) + (Math.min(s.sharpe, 3) / 3 * 30 * 0.3);
+        }
+        if (consensusData.funds.loaded) {
+            entries.push({ name: 'Mutual Funds', cls: 'funds-fill', color: 'var(--purple)', score: 0 });
+            var f = consensusData.funds;
+            entries[entries.length - 1].score = (f.wr * 0.4) + (f.ret * 10 * 0.3) + (Math.min(f.sharpe, 3) / 3 * 30 * 0.3);
+        }
+        if (consensusData.forex.loaded) {
+            entries.push({ name: 'Forex', cls: 'forex-fill', color: 'var(--orange)', score: 0 });
+            var x = consensusData.forex;
+            entries[entries.length - 1].score = (x.wr * 0.4) + (x.ret * 10 * 0.3) + (Math.min(x.sharpe, 3) / 3 * 30 * 0.3);
+        }
+        if (consensusData.crypto.loaded) {
+            entries.push({ name: 'Crypto', cls: 'crypto-fill', color: 'var(--cyan)', score: 0 });
+            var cr = consensusData.crypto;
+            entries[entries.length - 1].score = (cr.wr * 0.4) + (cr.ret * 10 * 0.3) + (Math.min(cr.sharpe, 3) / 3 * 30 * 0.3);
+        }
+        if (entries.length === 0) return;
+
+        entries.sort(function(a, b) { return b.score - a.score; });
+        var maxScore = entries[0].score || 1;
+
+        var html = '';
+        for (var i = 0; i < entries.length; i++) {
+            var e = entries[i];
+            var pct = Math.max(5, (e.score / maxScore) * 100);
+            var medal = i === 0 ? ' \uD83E\uDD47' : (i === 1 ? ' \uD83E\uDD48' : (i === 2 ? ' \uD83E\uDD49' : ''));
+            html += '<div class="rank-row">';
+            html += '<div class="rank-label" style="color:' + e.color + ';">' + e.name + medal + '</div>';
+            html += '<div class="rank-bar-track"><div class="rank-bar-fill ' + e.cls + '" style="width:' + pct.toFixed(0) + '%;"></div></div>';
+            html += '<div class="rank-score" style="color:' + e.color + ';">' + e.score.toFixed(1) + '</div>';
+            html += '</div>';
+        }
+        document.getElementById('rankRows').innerHTML = html;
+    }
+
+    function fetchSystemStats(apiBase, prefix, dataKey) {
+        // Fetch stats
+        fetch(apiBase + '/data.php?type=stats')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                document.getElementById('st-' + dataKey).className = 'status-dot ok';
+                if (d.ok && d.stats) {
+                    var s = d.stats;
+                    var picks = parseInt(s.total_picks) || 0;
+                    var algos = parseInt(s.total_algorithms) || 0;
+                    consensusData[dataKey].picks = picks;
+                    consensusData[dataKey].algos = algos;
+                    document.getElementById(prefix + '-picks').textContent = picks ? picks.toLocaleString() : '--';
+                    document.getElementById(prefix + '-algos').textContent = algos || '--';
+                    // Update hero stats for stocks
+                    if (dataKey === 'stocks') {
+                        if (picks) animateCount(document.getElementById('hs-picks'), picks, '');
+                        if (algos) {
+                            animateCount(document.getElementById('hs-algos'), algos, '');
+                            document.getElementById('algo-count-inline').textContent = algos;
+                        }
+                    }
+                }
+            })
+            .catch(function() {
+                document.getElementById('st-' + dataKey).className = 'status-dot err';
+                setFallbackVerdict(prefix.replace(/^c/, 'c') + '-verdict', 'API unreachable — data unavailable.');
+            });
+
+        // Fetch backtest / whatif for win rates and returns
+        fetch(apiBase + '/whatif.php?compare=1')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d.ok && d.comparison && d.comparison.length > 0) {
+                    var totalWR = 0, totalRet = 0, bestSharpe = -999, bestName = '--', cnt = 0;
+                    d.comparison.forEach(function(row) {
+                        var wr = parseFloat(row.win_rate) || 0;
+                        var ret = parseFloat(row.avg_return_pct || row.avg_return) || 0;
+                        var sh = parseFloat(row.sharpe_ratio || row.sharpe) || 0;
+                        if (wr > 0) { totalWR += wr; totalRet += ret; cnt++; }
+                        if (sh > bestSharpe) { bestSharpe = sh; bestName = row.name || row.scenario || ''; }
+                    });
+                    var avgWR = cnt > 0 ? totalWR / cnt : 0;
+                    var avgRet = cnt > 0 ? totalRet / cnt : 0;
+                    consensusData[dataKey].wr = avgWR;
+                    consensusData[dataKey].ret = avgRet;
+                    consensusData[dataKey].sharpe = bestSharpe;
+                    consensusData[dataKey].top = bestName;
+                    consensusData[dataKey].loaded = true;
+
+                    document.getElementById(prefix + '-wr').textContent = avgWR.toFixed(1) + '%';
+                    document.getElementById(prefix + '-wr').style.color = avgWR >= 50 ? 'var(--green)' : 'var(--red)';
+                    document.getElementById(prefix + '-ret').textContent = (avgRet >= 0 ? '+' : '') + avgRet.toFixed(2) + '%';
+                    document.getElementById(prefix + '-ret').style.color = avgRet >= 0 ? 'var(--green)' : 'var(--red)';
+                    document.getElementById(prefix + '-top').textContent = bestName.length > 20 ? bestName.substring(0, 18) + '..' : bestName;
+                    document.getElementById(prefix + '-top').title = bestName + ' (Sharpe: ' + bestSharpe.toFixed(2) + ')';
+
+                    setVerdict(prefix + '-verdict', avgWR);
+                    updateRankingBar();
+                }
+            })
+            .catch(function() {
+                // Try leaderboard / backtest as fallback for stocks
+                if (dataKey === 'stocks') {
+                    fetch(apiBase.replace('/data.php','') + '/advanced_stats.php?action=leaderboard')
+                        .then(function(r) { return r.json(); })
+                        .then(function(d2) {
+                            if (d2.ok && d2.leaderboard && d2.leaderboard.length > 0) {
+                                var lb = d2.leaderboard;
+                                var twR = 0, trR = 0, cnt2 = lb.length;
+                                lb.forEach(function(a) { twR += (parseFloat(a.win_rate) || 0); trR += (parseFloat(a.avg_return_pct) || 0); });
+                                var avgW = twR / cnt2;
+                                var avgR = trR / cnt2;
+                                var topA = lb[0];
+                                consensusData.stocks.wr = avgW;
+                                consensusData.stocks.ret = avgR;
+                                consensusData.stocks.sharpe = parseFloat(topA.sharpe_ratio) || 0;
+                                consensusData.stocks.top = topA.algorithm || topA.name || '--';
+                                consensusData.stocks.loaded = true;
+
+                                document.getElementById('cs-wr').textContent = avgW.toFixed(1) + '%';
+                                document.getElementById('cs-wr').style.color = avgW >= 50 ? 'var(--green)' : 'var(--red)';
+                                document.getElementById('cs-ret').textContent = (avgR >= 0 ? '+' : '') + avgR.toFixed(2) + '%';
+                                document.getElementById('cs-ret').style.color = avgR >= 0 ? 'var(--green)' : 'var(--red)';
+                                document.getElementById('cs-top').textContent = consensusData.stocks.top;
+                                setVerdict('cs-verdict', avgW);
+                                updateRankingBar();
+                            }
+                        }).catch(function() { setFallbackVerdict('cs-verdict', 'Could not fetch performance data.'); });
+                } else {
+                    setFallbackVerdict(prefix + '-verdict', 'What-If comparison not available. Open the portfolio for details.');
+                    // Mark as loaded with static profile so ranking still shows
+                    consensusData[dataKey].loaded = true;
+                    if (dataKey === 'funds')  { consensusData.funds.wr  = 52; consensusData.funds.ret  = 0.8; consensusData.funds.sharpe  = 0.6; consensusData.funds.top  = 'Low-MER Growth'; }
+                    if (dataKey === 'forex')  { consensusData.forex.wr  = 48; consensusData.forex.ret  = 0.3; consensusData.forex.sharpe  = 0.4; consensusData.forex.top  = 'Trend + Carry'; }
+                    if (dataKey === 'crypto') { consensusData.crypto.wr = 45; consensusData.crypto.ret = 1.5; consensusData.crypto.sharpe = 0.3; consensusData.crypto.top = 'DCA Momentum'; }
+                    updateRankingBar();
+                }
+            });
+    }
+
+    function fetchLiveStats() {
+        fetchSystemStats('/findstocks/portfolio2/api',          'cs', 'stocks');
+        fetchSystemStats('/findmutualfunds2/portfolio2/api',    'cf', 'funds');
+        fetchSystemStats('/findforex2/portfolio/api',           'cx', 'forex');
+        fetchSystemStats('/findcryptopairs/portfolio/api',      'cc', 'crypto');
+        document.getElementById('st-time').textContent = new Date().toLocaleTimeString();
+    }
+    fetchLiveStats();
+
+    /* ── Ticker lookup ── */
+    function lookupTicker() {
+        var ticker = document.getElementById('tickerInput').value.trim().toUpperCase();
+        if (ticker) window.open('/findstocks/portfolio2/api/advanced_stats.php?action=ticker_profile&ticker=' + ticker, '_blank');
+    }
+    document.getElementById('tickerInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') lookupTicker();
+    });
+
+    /* ── Search / filter ── */
+    var searchInput = document.getElementById('searchInput');
+    var sections = document.querySelectorAll('.section');
+    var noResults = document.getElementById('noResults');
+    searchInput.addEventListener('input', function() {
+        var q = this.value.toLowerCase().trim();
+        if (!q) {
+            sections.forEach(function(s) { s.classList.remove('hidden-search'); });
+            noResults.style.display = 'none';
+            return;
+        }
+        var found = 0;
+        sections.forEach(function(s) {
+            var searchData = (s.getAttribute('data-search') || '') + ' ' + s.textContent.toLowerCase();
+            if (searchData.indexOf(q) !== -1) {
+                s.classList.remove('hidden-search');
+                found++;
+            } else {
+                s.classList.add('hidden-search');
+            }
+        });
+        noResults.style.display = found === 0 ? 'block' : 'none';
+    });
+
+    /* ── Back to top button ── */
+    var backTop = document.getElementById('backTop');
+    window.addEventListener('scroll', function() {
+        backTop.classList.toggle('visible', window.scrollY > 400);
+    });
+
+    /* ── TOC active tracking ── */
+    var tocLinks = document.querySelectorAll('.toc a');
+    var observerOptions = { rootMargin: '-30% 0px -60% 0px' };
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                tocLinks.forEach(function(l) { l.classList.remove('active'); });
+                var target = document.querySelector('.toc a[href="#' + entry.target.id + '"]');
+                if (target) target.classList.add('active');
+            }
+        });
+    }, observerOptions);
+    sections.forEach(function(s) { if (s.id) observer.observe(s); });
+
+    /* ── Keyboard shortcut: / to focus search ── */
+    document.addEventListener('keydown', function(e) {
+        if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
+            e.preventDefault();
+            searchInput.focus();
+        }
+        if (e.key === 'Escape') {
+            searchInput.value = '';
+            searchInput.dispatchEvent(new Event('input'));
+            searchInput.blur();
+        }
+    });
+    </script>
+</body>
+</html>

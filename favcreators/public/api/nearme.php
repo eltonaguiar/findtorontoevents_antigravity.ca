@@ -407,10 +407,24 @@ function _nearme_reverse_geocode_intersection($lat, $lng) {
 function _nearme_geocode_nominatim($query) {
     // 1. Try exact query first (handles global locations, full addresses, postal codes)
     $result = _nearme_nominatim_fetch($query);
-    if ($result !== null) return $result;
 
-    // 2. Fall back: append Toronto context for local queries like "Yonge and Dundas"
-    $result = _nearme_nominatim_fetch($query . ', Toronto, ON, Canada');
+    // 2. If result is NOT in the GTA area (lat ~43.4-44.0, lon ~-80.0 to -79.0),
+    //    also try with Toronto suffix and prefer that result
+    $is_local = false;
+    if ($result !== null) {
+        $lat = $result['lat'];
+        $lng = $result['lng'];
+        if ($lat >= 43.4 && $lat <= 44.0 && $lng >= -80.0 && $lng <= -79.0) {
+            $is_local = true;
+        }
+    }
+
+    if ($result === null || !$is_local) {
+        $toronto_result = _nearme_nominatim_fetch($query . ', Toronto, ON, Canada');
+        if ($toronto_result !== null) return $toronto_result;
+    }
+
+    // Return whatever we got (may be non-local if Toronto fallback also failed)
     return $result;
 }
 
@@ -1445,10 +1459,33 @@ function _nearme_dedup_chains($results) {
  * Matches names containing "(closed)", "[closed]", "closed permanently", etc.
  */
 function _nearme_filter_closed($results) {
+    // Known-closed businesses: array of [name_substring, address_substring] pairs
+    // Both must match (case-insensitive) for the entry to be removed.
+    // Use '' for address to match by name alone across all locations.
+    $known_closed = array(
+        array('241 pizza', '327 queen'),
+    );
+
     $filtered = array();
     foreach ($results as $r) {
         $name_lower = strtolower($r['name']);
+        $addr_lower = strtolower(isset($r['address']) ? $r['address'] : '');
+
+        // Filter names containing "closed"
         if (strpos($name_lower, 'closed') !== false) continue;
+
+        // Check known-closed blocklist
+        $is_closed = false;
+        foreach ($known_closed as $entry) {
+            $match_name = strpos($name_lower, $entry[0]) !== false;
+            $match_addr = ($entry[1] === '') || (strpos($addr_lower, $entry[1]) !== false);
+            if ($match_name && $match_addr) {
+                $is_closed = true;
+                break;
+            }
+        }
+        if ($is_closed) continue;
+
         $filtered[] = $r;
     }
     return $filtered;

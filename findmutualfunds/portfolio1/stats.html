@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Stats | Mutual Fund Analysis</title>
+    <style>
+        :root {
+            --bg-dark: #0a0f1a; --bg-card: #0f1729; --bg-card-hover: #162040;
+            --border: #1e2d4a; --text: #e0e8f0; --text-dim: #7888aa;
+            --accent: #0ea5e9; --green: #22c55e; --green-dim: rgba(34,197,94,0.15);
+            --red: #ef4444; --red-dim: rgba(239,68,68,0.15);
+            --yellow: #eab308; --yellow-dim: rgba(234,179,8,0.15);
+            --blue: #3b82f6; --teal: #14b8a6; --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background: var(--bg-dark); color: var(--text); min-height: 100vh; line-height: 1.5; }
+        a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+        .header { background: linear-gradient(135deg,#0f1729,#132040); border-bottom: 1px solid var(--border); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+        .header h1 { font-size: 1.5rem; background: linear-gradient(135deg,var(--accent),var(--teal)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hdr-links { display: flex; gap: 1rem; font-size: 0.9rem; }
+        .hdr-links a { color: var(--text-dim); } .hdr-links a:hover { color: var(--text); }
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        @media (max-width: 1024px) { .grid-2 { grid-template-columns: 1fr; } }
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; }
+        .card h2 { font-size: 1.1rem; margin-bottom: 1rem; }
+        .health-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .health-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem; text-align: center; }
+        .health-card .icon { font-size: 2rem; margin-bottom: 0.3rem; }
+        .health-card .label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim); letter-spacing: 1px; }
+        .health-card .value { font-size: 1.2rem; font-weight: 700; margin-top: 0.2rem; }
+        .health-card.ok { border-color: var(--green); }
+        .health-card.warn { border-color: var(--yellow); }
+        .health-card.bad { border-color: var(--red); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { background: rgba(14,165,233,0.08); text-align: left; padding: 0.6rem 0.8rem; font-weight: 600; color: var(--text-dim); border-bottom: 1px solid var(--border); }
+        td { padding: 0.6rem 0.8rem; border-bottom: 1px solid rgba(30,45,74,0.5); }
+        tr:hover td { background: var(--bg-card-hover); }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+        .badge.green { background: var(--green-dim); color: var(--green); }
+        .badge.red { background: var(--red-dim); color: var(--red); }
+        .badge.yellow { background: var(--yellow-dim); color: var(--yellow); }
+        .section-title { font-size: 1.2rem; margin: 2rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+        .btn { padding: 0.7rem 1.5rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+        .btn-primary { background: var(--accent); color: #fff; } .btn-primary:hover { background: #38bdf8; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-dim); margin-left: 0.5rem; }
+        .loading { text-align: center; padding: 2rem; color: var(--text-dim); }
+        .step-ok { color: var(--green); } .step-fail { color: var(--red); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Mutual Fund System Stats</h1>
+        <div class="hdr-links">
+            <a href="/findmutualfunds/portfolio1/">Portfolio Tool</a>
+            <a href="/findmutualfunds/portfolio1/report.html">Daily Report</a>
+            <a href="/findstocks/portfolio/">Stock Picks</a>
+            <a href="/">Events</a>
+        </div>
+    </div>
+    <div class="container">
+
+        <!-- Health Indicators -->
+        <div class="health-grid" id="healthGrid">
+            <div class="health-card" id="hc-refresh"><div class="icon">--</div><div class="label">Refreshed Today</div><div class="value">--</div></div>
+            <div class="health-card" id="hc-nav"><div class="icon">--</div><div class="label">NAV Freshness</div><div class="value">--</div></div>
+            <div class="health-card" id="hc-report"><div class="icon">--</div><div class="label">Report Cache</div><div class="value">--</div></div>
+            <div class="health-card" id="hc-funds"><div class="icon">--</div><div class="label">Funds Tracked</div><div class="value">--</div></div>
+            <div class="health-card" id="hc-coverage"><div class="icon">--</div><div class="label">NAV Coverage</div><div class="value">--</div></div>
+            <div class="health-card" id="hc-strats"><div class="icon">--</div><div class="label">Active Strategies</div><div class="value">--</div></div>
+        </div>
+
+        <!-- Last Refresh Details -->
+        <div class="card">
+            <h2>Last Daily Refresh</h2>
+            <div id="lastRefresh"><div class="loading">Loading...</div></div>
+            <div style="margin-top:1rem">
+                <button class="btn btn-primary" onclick="triggerRefresh()" id="btnRefresh">Run Manual Refresh Now</button>
+                <button class="btn btn-outline" onclick="location.reload()">Reload Stats</button>
+            </div>
+        </div>
+
+        <!-- Database Tables -->
+        <h2 class="section-title">Database Tables</h2>
+        <div class="card" style="overflow-x:auto">
+            <table><thead><tr><th>Table</th><th>Rows</th></tr></thead>
+            <tbody id="tableBody"><tr><td colspan="2" class="loading">Loading...</td></tr></tbody></table>
+        </div>
+
+        <!-- Data Freshness -->
+        <div class="grid-2">
+            <div>
+                <h2 class="section-title">Data Freshness</h2>
+                <div class="card">
+                    <table><thead><tr><th>Metric</th><th>Value</th></tr></thead>
+                    <tbody id="freshnessBody"></tbody></table>
+                </div>
+            </div>
+            <div>
+                <h2 class="section-title">Selections per Strategy</h2>
+                <div class="card" style="overflow-x:auto">
+                    <table><thead><tr><th>Strategy</th><th>Selections</th></tr></thead>
+                    <tbody id="stratBody"></tbody></table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fund NAV Coverage -->
+        <h2 class="section-title">Fund NAV Coverage</h2>
+        <div class="card" style="overflow-x:auto">
+            <table><thead><tr><th>Ticker</th><th>Fund Name</th><th>NAV Data Points</th><th>Latest NAV Date</th></tr></thead>
+            <tbody id="coverageBody"></tbody></table>
+        </div>
+
+        <!-- Cache Status -->
+        <h2 class="section-title">Report Cache</h2>
+        <div class="card" style="overflow-x:auto">
+            <table><thead><tr><th>Cache Key</th><th>Last Updated</th><th>Size</th></tr></thead>
+            <tbody id="cacheBody"></tbody></table>
+        </div>
+
+        <!-- Audit Log -->
+        <h2 class="section-title">Recent Audit Log</h2>
+        <div class="card" style="overflow-x:auto">
+            <table><thead><tr><th>Action</th><th>Details</th><th>IP</th><th>Time</th></tr></thead>
+            <tbody id="auditBody"></tbody></table>
+        </div>
+
+        <!-- Audit Summary -->
+        <h2 class="section-title">Audit Summary</h2>
+        <div class="card" style="overflow-x:auto">
+            <table><thead><tr><th>Action Type</th><th>Count</th><th>Latest</th></tr></thead>
+            <tbody id="auditSumBody"></tbody></table>
+        </div>
+
+        <div style="margin-top:2rem; text-align:center; color:var(--text-dim); font-size:0.8rem">
+            <p>GitHub Actions: <a href="https://github.com/ilovespectra/findtorontoevents_antigravity.ca/actions" target="_blank">View Workflows</a></p>
+        </div>
+    </div>
+
+    <script>
+    var API = '/findmutualfunds/api/';
+
+    function fetchJSON(url, cb) {
+        var x = new XMLHttpRequest();
+        x.open('GET', url, true);
+        x.onreadystatechange = function() {
+            if (x.readyState === 4) {
+                if (x.status === 200) { try { cb(JSON.parse(x.responseText)); } catch(e) { cb(null); } }
+                else { cb(null); }
+            }
+        };
+        x.send();
+    }
+
+    function setHealth(id, icon, value, cls) {
+        var el = document.getElementById(id);
+        el.className = 'health-card ' + cls;
+        el.querySelector('.icon').textContent = icon;
+        el.querySelector('.value').textContent = value;
+    }
+
+    fetchJSON(API + 'get_stats.php', function(data) {
+        if (!data || !data.ok) return;
+
+        // Health indicators
+        var h = data.health || {};
+        setHealth('hc-refresh', h.refreshed_today ? 'OK' : '!', h.refreshed_today ? 'Yes' : 'No', h.refreshed_today ? 'ok' : 'warn');
+        var navSt = h.nav_status || 'unknown';
+        setHealth('hc-nav', navSt === 'fresh' ? 'OK' : '!', (h.nav_days_stale || '?') + ' days old', navSt === 'fresh' ? 'ok' : (navSt === 'stale' ? 'warn' : 'bad'));
+        var repSt = h.report_status || 'unknown';
+        setHealth('hc-report', repSt === 'fresh' ? 'OK' : '!', (h.report_cache_hours_old || '?') + 'h old', repSt === 'fresh' ? 'ok' : (repSt === 'stale' ? 'warn' : 'bad'));
+
+        var tc = data.table_counts || {};
+        setHealth('hc-funds', tc.mf_funds || 0, (tc.mf_funds || 0) + ' funds', (tc.mf_funds || 0) > 0 ? 'ok' : 'bad');
+
+        var fr = data.freshness || {};
+        var withNav = fr.funds_with_nav || 0;
+        var withoutNav = fr.funds_without_nav || 0;
+        var total = withNav + withoutNav;
+        setHealth('hc-coverage', withNav + '/' + total, withoutNav === 0 ? 'Complete' : withoutNav + ' missing', withoutNav === 0 ? 'ok' : 'warn');
+        setHealth('hc-strats', fr.active_strategies || 0, (fr.active_strategies || 0) + ' active', (fr.active_strategies || 0) > 0 ? 'ok' : 'warn');
+
+        // Table counts
+        var tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        for (var tbl in tc) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + tbl + '</td><td>' + (tc[tbl] || 0).toLocaleString() + '</td>';
+            tbody.appendChild(tr);
+        }
+
+        // Data freshness
+        var fb = document.getElementById('freshnessBody');
+        fb.innerHTML = '';
+        var freshItems = [
+            ['Latest NAV Date', fr.latest_nav_date || '--'],
+            ['Funds with NAV', fr.funds_with_nav || 0],
+            ['Funds missing NAV', fr.funds_without_nav || 0],
+            ['Latest Selection Date', fr.latest_selection_date || '--'],
+            ['Active Strategies', fr.active_strategies || 0]
+        ];
+        freshItems.forEach(function(item) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + item[0] + '</td><td>' + item[1] + '</td>';
+            fb.appendChild(tr);
+        });
+
+        // Selections per strategy
+        var sb = document.getElementById('stratBody');
+        sb.innerHTML = '';
+        if (fr.selections_per_strategy) {
+            fr.selections_per_strategy.forEach(function(s) {
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td>' + s.strategy_name + '</td><td>' + s.cnt + '</td>';
+                sb.appendChild(tr);
+            });
+        }
+
+        // Fund coverage
+        var cb2 = document.getElementById('coverageBody');
+        cb2.innerHTML = '';
+        if (fr.fund_coverage) {
+            fr.fund_coverage.forEach(function(f) {
+                var tr = document.createElement('tr');
+                var navClass = (parseInt(f.nav_count) || 0) > 50 ? 'green' : ((parseInt(f.nav_count) || 0) > 0 ? 'yellow' : 'red');
+                tr.innerHTML = '<td><strong>' + f.ticker + '</strong></td><td>' + (f.fund_name || '') + '</td>' +
+                    '<td><span class="badge ' + navClass + '">' + (f.nav_count || 0) + '</span></td>' +
+                    '<td>' + (f.latest_nav || '--') + '</td>';
+                cb2.appendChild(tr);
+            });
+        }
+
+        // Caches
+        var cacheBod = document.getElementById('cacheBody');
+        cacheBod.innerHTML = '';
+        if (data.caches) {
+            data.caches.forEach(function(c) {
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td>' + c.cache_key + '</td><td>' + c.updated_at + '</td><td>' + ((parseInt(c.data_size) || 0) / 1024).toFixed(1) + ' KB</td>';
+                cacheBod.appendChild(tr);
+            });
+        }
+
+        // Audit log
+        var ab = document.getElementById('auditBody');
+        ab.innerHTML = '';
+        if (data.recent_audits) {
+            data.recent_audits.forEach(function(a) {
+                var tr = document.createElement('tr');
+                var det = (a.details || '').length > 100 ? a.details.substring(0, 100) + '...' : (a.details || '');
+                tr.innerHTML = '<td><strong>' + a.action_type + '</strong></td><td>' + det + '</td><td>' + (a.ip_address || '') + '</td><td>' + a.created_at + '</td>';
+                ab.appendChild(tr);
+            });
+        }
+
+        // Audit summary
+        var asb = document.getElementById('auditSumBody');
+        asb.innerHTML = '';
+        if (data.audit_summary) {
+            data.audit_summary.forEach(function(a) {
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td>' + a.action_type + '</td><td>' + a.cnt + '</td><td>' + a.latest + '</td>';
+                asb.appendChild(tr);
+            });
+        }
+
+        // Last refresh
+        if (data.last_refresh) {
+            var lr = data.last_refresh;
+            var html = '<p style="margin-bottom:0.5rem"><strong>Timestamp:</strong> ' + (lr.timestamp || '--') + ' | <strong>Duration:</strong> ' + (lr.elapsed_seconds || '--') + 's</p>';
+            if (lr.steps) {
+                html += '<table><thead><tr><th>Step</th><th>Status</th><th>Details</th></tr></thead><tbody>';
+                lr.steps.forEach(function(step) {
+                    var cls = step.status === 'ok' ? 'step-ok' : (step.status === 'failed' ? 'step-fail' : '');
+                    var details = '';
+                    if (step.tickers_fetched !== undefined) details = step.tickers_fetched + ' tickers';
+                    if (step.imported !== undefined) details = step.imported + ' imported';
+                    if (step.scenarios !== undefined) details = step.scenarios + ' scenarios';
+                    html += '<tr><td>' + step.name + '</td><td class="' + cls + '">' + step.status + '</td><td>' + details + '</td></tr>';
+                });
+                html += '</tbody></table>';
+            }
+            document.getElementById('lastRefresh').innerHTML = html;
+        }
+    });
+
+    function triggerRefresh() {
+        var btn = document.getElementById('btnRefresh');
+        btn.disabled = true;
+        btn.textContent = 'Running...';
+        fetchJSON(API + 'daily_refresh.php', function(data) {
+            btn.disabled = false;
+            btn.textContent = 'Run Manual Refresh Now';
+            if (data && data.ok) {
+                alert('Refresh completed in ' + (data.summary ? data.summary.elapsed_seconds : '?') + ' seconds. Reloading...');
+                location.reload();
+            } else {
+                alert('Refresh failed. Check the console.');
+            }
+        });
+    }
+    </script>
+</body>
+</html>

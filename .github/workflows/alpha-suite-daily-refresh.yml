@@ -1,0 +1,130 @@
+name: Alpha Suite Daily Refresh
+
+on:
+  schedule:
+    # Run at 9:35 PM UTC (4:35 PM EST) on weekdays after market close
+    - cron: '35 21 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      step:
+        description: 'Specific step to run (leave blank for full refresh)'
+        required: false
+        default: ''
+        type: string
+
+env:
+  BASE_URL: https://findtorontoevents.ca/findstocks/api
+  REFRESH_KEY: alpharefresh2026
+
+jobs:
+  alpha-refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Step 1 - Setup (create tables + seed universe)
+        if: ${{ github.event.inputs.step == '' || github.event.inputs.step == 'setup' }}
+        run: |
+          echo "=== ALPHA SUITE: Setup ==="
+          RESULT=$(curl -s --max-time 60 "$BASE_URL/alpha_refresh.php?key=$REFRESH_KEY&step=setup")
+          echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(json.dumps(d,indent=2))" 2>/dev/null || echo "$RESULT"
+          echo ""
+
+      - name: Step 2 - Fetch Macro Data (VIX, Yields, DXY, SPY)
+        if: ${{ github.event.inputs.step == '' || github.event.inputs.step == 'fetch_macro' }}
+        run: |
+          echo "=== ALPHA SUITE: Fetch Macro ==="
+          RESULT=$(curl -s --max-time 120 "$BASE_URL/alpha_fetch.php?key=$REFRESH_KEY&action=macro")
+          echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print('Macro fetched:', d.get('data',{}).get('macro',{}))" 2>/dev/null || echo "$RESULT"
+          echo ""
+
+      - name: Step 3 - Fetch Fundamentals (Yahoo Finance v7 batch)
+        if: ${{ github.event.inputs.step == '' || github.event.inputs.step == 'fetch_fundamentals' }}
+        run: |
+          echo "=== ALPHA SUITE: Fetch Fundamentals ==="
+          RESULT=$(curl -s --max-time 120 "$BASE_URL/alpha_fetch.php?key=$REFRESH_KEY&action=fundamentals")
+          echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print('Fundamentals:', d.get('data',{}).get('fundamentals',{}))" 2>/dev/null || echo "$RESULT"
+          echo ""
+
+      - name: Step 4 - Fetch Earnings History (batches)
+        if: ${{ github.event.inputs.step == '' || github.event.inputs.step == 'fetch_earnings' }}
+        run: |
+          echo "=== ALPHA SUITE: Fetch Earnings ==="
+          for BATCH in 1 2 3 4 5; do
+            echo "--- Batch $BATCH ---"
+            RESULT=$(curl -s --max-time 120 "$BASE_URL/alpha_fetch.php?key=$REFRESH_KEY&action=earnings&batch=$BATCH")
+            echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print('Batch $BATCH:', d.get('data',{}).get('earnings',{}))" 2>/dev/null || echo "$RESULT"
+            sleep 2
+          done
+          echo ""
+
+      - name: Step 5 - Fetch/Update Prices (batches)
+        if: ${{ github.event.inputs.step == '' || github.event.inputs.step == 'fetch_prices' }}
+        run: |
+          echo "=== ALPHA SUITE: Fetch Prices ==="
+          # First check which tickers need updates
+          CHECK=$(curl -s --max-time 30 "$BASE_URL/alpha_fetch.php?action=prices_check")
+          BATCHES=$(echo "$CHECK" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('data',{}).get('batches_needed',6))" 2>/dev/null || echo "6")
+          echo "Batches needed: $BATCHES"
+          for BATCH in $(seq 1 $BATCHES); do
+            echo "--- Price Batch $BATCH ---"
+            RESULT=$(curl -s --max-time 120 "$BASE_URL/alpha_fetch.php?key=$REFRESH_KEY&action=prices&batch=$BATCH")
+            echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print('Prices batch $BATCH:', d.get('data',{}).get('prices',{}))" 2>/dev/null || echo "$RESULT"
+            sleep 3
+          done
+          echo ""
+
+      - name: Step 6 - Compute Factors + Generate Picks
+        if: ${{ github.event.inputs.step == '' || github.event.inputs.step == 'compute' }}
+        run: |
+          echo "=== ALPHA SUITE: Compute Factors & Generate Picks ==="
+          RESULT=$(curl -s --max-time 120 "$BASE_URL/alpha_engine.php?key=$REFRESH_KEY&action=all")
+          echo "$RESULT" | python3 -c "
+          import sys,json
+          d=json.load(sys.stdin)
+          factors = d.get('data',{}).get('factors',{})
+          picks = d.get('data',{}).get('picks',{})
+          print('Factors computed:', factors.get('computed', 0), '/', factors.get('total', 0))
+          print('Regime:', factors.get('regime', 'unknown'))
+          print('Picks generated:', picks.get('total', 0))
+          by_strat = picks.get('by_strategy', {})
+          for s, tickers in by_strat.items():
+            print(f'  {s}: {tickers}')
+          consensus = picks.get('consensus', [])
+          if consensus:
+            print('Consensus picks:', [c['ticker'] for c in consensus])
+          errors = d.get('errors', [])
+          if errors:
+            print('ERRORS:', errors)
+          " 2>/dev/null || echo "$RESULT"
+          echo ""
+
+      - name: Step 7 - Verify Status
+        if: ${{ github.event.inputs.step == '' }}
+        run: |
+          echo "=== ALPHA SUITE: Final Status ==="
+          RESULT=$(curl -s --max-time 30 "$BASE_URL/alpha_data.php?type=status")
+          echo "$RESULT" | python3 -c "
+          import sys,json
+          d=json.load(sys.stdin)
+          st = d.get('data',{}).get('status',{})
+          counts = d.get('data',{}).get('counts',{})
+          dates = d.get('data',{}).get('latest_dates',{})
+          print('=== REFRESH COMPLETE ===')
+          print('Status:', st.get('last_refresh_status','unknown'))
+          print('Last refresh:', st.get('last_refresh_end',''))
+          print('Next expected:', st.get('next_expected_refresh',''))
+          print('Regime:', st.get('current_regime',''))
+          print('Counts:', json.dumps(counts, indent=2))
+          print('Latest dates:', json.dumps(dates, indent=2))
+          " 2>/dev/null || echo "$RESULT"
+
+      - name: Post Summary
+        if: always()
+        run: |
+          echo "## Alpha Suite Refresh Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          RESULT=$(curl -s --max-time 15 "$BASE_URL/alpha_data.php?type=status" 2>/dev/null || echo '{}')
+          STATUS=$(echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('data',{}).get('status',{}).get('last_refresh_status','unknown'))" 2>/dev/null || echo "unknown")
+          echo "- **Status**: $STATUS" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dashboard**: [Alpha Suite](https://findtorontoevents.ca/findstocks/alpha/)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run time**: $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY

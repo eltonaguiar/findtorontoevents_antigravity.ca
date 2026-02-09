@@ -357,13 +357,13 @@
     <!-- Camera Rig -->
     <a-entity id="rig" position="0 1.6 -12">
       <a-camera look-controls wasd-controls="acceleration: 10" fov="75">
-        <a-ring cursor="fuse: true; fuseTimeout: 1500"
-                raycaster="objects: .clickable; far: 30"
+        <!-- Gaze cursor ring: visual-only on desktop. layout-fix.js adds cursor+raycaster on enter-vr. -->
+        <a-ring class="vr-gaze-ring"
                 radius-inner="0.005" radius-outer="0.012"
                 color="#22c55e" shader="flat" position="0 0 -1"
-                animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 200"
-                animation__fusing="property: scale; startEvents: fusing; from: 1 1 1; to: 0.5 0.5 0.5; dur: 1500; easing: linear"
-                animation__mouseleave="property: scale; startEvents: mouseleave; to: 1 1 1; dur: 200"></a-ring>
+                visible="false"
+                data-vr-cursor="fuse: true; fuseTimeout: 1500"
+                data-vr-raycaster="objects: .clickable; far: 30"></a-ring>
       </a-camera>
       <a-entity laser-controls="hand: left" raycaster="objects: .clickable; far: 25; lineColor: #22c55e; lineOpacity: 0.5" cursor="rayOrigin: entity; fuse: false"></a-entity>
       <a-entity laser-controls="hand: right" raycaster="objects: .clickable; far: 25; lineColor: #16a34a; lineOpacity: 0.5" cursor="rayOrigin: entity; fuse: false"></a-entity>

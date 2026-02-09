@@ -126,6 +126,11 @@ if (!$conn->query($query)) {
 
 // Only when saving the GUEST list (user_id=0) do we update the global creators table. Normal users (user_id > 0) only update their own user_lists.
 if ($user_id === 0) {
+    // Ensure selected_avatar_source column exists (migration for existing tables)
+    $col_check = $conn->query("SHOW COLUMNS FROM creators LIKE 'selected_avatar_source'");
+    if ($col_check && $col_check->num_rows === 0) {
+        $conn->query("ALTER TABLE creators ADD COLUMN selected_avatar_source VARCHAR(255) DEFAULT '' AFTER avatar_url");
+    }
     $order = 0;
     foreach ($creators as $c) {
         $id = isset($c['id']) ? $c['id'] : '';
@@ -134,6 +139,7 @@ if ($user_id === 0) {
         $name = isset($c['name']) ? $conn->real_escape_string($c['name']) : '';
         $bio = isset($c['bio']) ? $conn->real_escape_string($c['bio']) : '';
         $avatar_url = isset($c['avatarUrl']) ? $conn->real_escape_string($c['avatarUrl']) : '';
+        $sel_avatar_src = isset($c['selectedAvatarSource']) ? $conn->real_escape_string($c['selectedAvatarSource']) : '';
         $category = isset($c['category']) ? $conn->real_escape_string($c['category']) : '';
         $reason = isset($c['reason']) ? $conn->real_escape_string($c['reason']) : '';
         $tags = isset($c['tags']) ? $conn->real_escape_string(is_string($c['tags']) ? $c['tags'] : json_encode($c['tags'])) : '[]';
@@ -141,9 +147,9 @@ if ($user_id === 0) {
         $is_fav = isset($c['isFavorite']) ? (int) (bool) $c['isFavorite'] : 0;
         $is_pinned = isset($c['isPinned']) ? (int) (bool) $c['isPinned'] : 0;
         $id_esc = $conn->real_escape_string($id);
-        $sql = "INSERT INTO creators (id, name, bio, avatar_url, category, reason, tags, accounts, is_favorite, is_pinned, in_guest_list, guest_sort_order) 
-                VALUES ('$id_esc','$name','$bio','$avatar_url','$category','$reason','$tags','$accounts',$is_fav,$is_pinned,1,$order) 
-                ON DUPLICATE KEY UPDATE name=VALUES(name), bio=VALUES(bio), avatar_url=VALUES(avatar_url), category=VALUES(category), reason=VALUES(reason), tags=VALUES(tags), accounts=VALUES(accounts), is_favorite=VALUES(is_favorite), is_pinned=VALUES(is_pinned), in_guest_list=1, guest_sort_order=VALUES(guest_sort_order)";
+        $sql = "INSERT INTO creators (id, name, bio, avatar_url, selected_avatar_source, category, reason, tags, accounts, is_favorite, is_pinned, in_guest_list, guest_sort_order) 
+                VALUES ('$id_esc','$name','$bio','$avatar_url','$sel_avatar_src','$category','$reason','$tags','$accounts',$is_fav,$is_pinned,1,$order) 
+                ON DUPLICATE KEY UPDATE name=VALUES(name), bio=VALUES(bio), avatar_url=VALUES(avatar_url), selected_avatar_source=VALUES(selected_avatar_source), category=VALUES(category), reason=VALUES(reason), tags=VALUES(tags), accounts=VALUES(accounts), is_favorite=VALUES(is_favorite), is_pinned=VALUES(is_pinned), in_guest_list=1, guest_sort_order=VALUES(guest_sort_order)";
         $conn->query($sql);
         $order++;
     }

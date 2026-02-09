@@ -768,6 +768,7 @@
                 document.getElementById('flashlight-hud').style.display = '';
                 const f = document.getElementById('kill-feed'), d = document.createElement('div'); d.textContent = '🔦 FLASHLIGHT UNLOCKED [F]'; d.style.color = '#ecc94b'; f.appendChild(d); setTimeout(() => d.remove(), 5000);
             }
+            update(dt) {
         this.position.x += this.velocity.x * dt; this.position.y += this.velocity.y * dt; this.position.z += this.velocity.z * dt;
         if (this.position.y <= 1.7) { if (!this.wasGround && this.velocity.y < -4) this.engine.shake(Math.min(Math.abs(this.velocity.y) * .01, .08)); this.position.y = 1.7; this.velocity.y = 0; this.isGrounded = true }
         this.wasGround = this.isGrounded;
@@ -790,7 +791,7 @@
             this.engine.shake(.06);
         }
         addKill() { this.kills++; document.getElementById('hud-kills').textContent = this.kills; const f = document.getElementById('kill-feed'), d = document.createElement('div'); d.textContent = '+ ENEMY DOWN'; f.appendChild(d); setTimeout(() => d.remove(), 3000); if (this.kills === 1) this.unlockFlashlight() }
-
+        }
 
         // ===== WEAPONS =====
         const WDEFS = [

@@ -46,6 +46,7 @@ $tables = array(
         name VARCHAR(255) NOT NULL,
         bio TEXT,
         avatar_url VARCHAR(1024) DEFAULT '',
+        selected_avatar_source VARCHAR(255) DEFAULT '',
         category VARCHAR(128) DEFAULT '',
         reason VARCHAR(255) DEFAULT '',
         tags TEXT,

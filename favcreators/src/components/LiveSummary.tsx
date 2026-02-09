@@ -355,6 +355,7 @@ export default function LiveSummary({
     
     // Track page load time
     const [pageLoadTime] = React.useState<number>(Date.now());
+    const [showScanHelp, setShowScanHelp] = useState(false);
     const groupedCreators = groupLiveCreators(liveCreators);
 
     // Filter creators by selected platform
@@ -669,7 +670,26 @@ export default function LiveSummary({
                         <>
                             {liveStreams.length > 0 && (
                                 <div className="live-section">
-                                    <h3 className="section-title">🔴 Live Streams</h3>
+                                    <h3 className="section-title">
+                                        🔴 Live Streams
+                                        <span className="live-help-icon" onClick={(e) => { e.stopPropagation(); setShowScanHelp(prev => !prev); }} title="How scanning priority works">
+                                            &#9432;
+                                        </span>
+                                    </h3>
+                                    {showScanHelp && (
+                                        <div className="scan-help-popup">
+                                            <button className="scan-help-close" onClick={() => setShowScanHelp(false)}>&times;</button>
+                                            <h4>How Live Scanning Works</h4>
+                                            <p>We check your creators for live status every <strong>3 minutes</strong>, but not all at once. Creators are scanned in priority order:</p>
+                                            <ol>
+                                                <li><strong>Currently Live</strong> &mdash; Re-verified first to quickly clear false positives</li>
+                                                <li><strong>Recently Active</strong> &mdash; Creators seen online in the last 24 hours are likely to go live again soon</li>
+                                                <li><strong>Bell Creators</strong> &mdash; Creators you&rsquo;ve enabled notifications for (tap the bell icon on a creator card)</li>
+                                                <li><strong>Everyone Else</strong> &mdash; All other creators in your list</li>
+                                            </ol>
+                                            <p className="scan-help-tip"><strong>Tip:</strong> To get a creator scanned sooner, tap their <strong>bell icon</strong> to move them into the priority tier!</p>
+                                        </div>
+                                    )}
                                     <div className="live-grid">
                                         {liveStreams.map((gc) => (
                                             <div

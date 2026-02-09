@@ -51,17 +51,85 @@ for ($batch = 0; $batch < 3; $batch++) {
 }
 $log[] = 'Prices: fetched ' . $total_fetched . ' tickers';
 
+// ─── 2a. Seed Blue Chip Growth picks (monthly DCA entries) ───
+$bc_url = 'https://findtorontoevents.ca/findstocks/api/blue_chip_picks.php?action=seed';
+$bc_json = @file_get_contents($bc_url);
+$bc_data = ($bc_json !== false) ? json_decode($bc_json, true) : null;
+$log[] = 'Blue Chip: ' . ($bc_data ? ('seeded=' . $bc_data['seeded'] . ' skipped=' . $bc_data['skipped'] . ' tickers=' . $bc_data['ticker_count']) : 'failed');
+
+// ─── 2a2. Seed Cursor Genius picks ───
+$cg_url = 'https://findtorontoevents.ca/findstocks/api/cursor_genius.php?action=seed';
+$cg_json = @file_get_contents($cg_url);
+$cg_data = ($cg_json !== false) ? json_decode($cg_json, true) : null;
+$log[] = 'Cursor Genius: ' . ($cg_data ? ('seeded=' . $cg_data['seeded'] . ' skipped=' . $cg_data['skipped']) : 'failed');
+
+// ─── 2a3. Seed ETF Masters picks ───
+$etf_url = 'https://findtorontoevents.ca/findstocks/api/etf_portfolio.php?action=seed';
+$etf_json = @file_get_contents($etf_url);
+$etf_data = ($etf_json !== false) ? json_decode($etf_json, true) : null;
+$log[] = 'ETF Masters: ' . ($etf_data ? ('seeded=' . $etf_data['seeded'] . ' skipped=' . $etf_data['skipped']) : 'failed');
+
+// ─── 2a4. Seed Sector Rotation picks ───
+$sr_url = 'https://findtorontoevents.ca/findstocks/api/sector_rotation.php?action=seed';
+$sr_json = @file_get_contents($sr_url);
+$sr_data = ($sr_json !== false) ? json_decode($sr_json, true) : null;
+$log[] = 'Sector Rotation: ' . ($sr_data ? ('seeded=' . $sr_data['seeded'] . ' skipped=' . $sr_data['skipped']) : 'failed');
+
+// ─── 2a5. Seed Sector Momentum picks ───
+$sm_url = 'https://findtorontoevents.ca/findstocks/api/sector_momentum.php?action=seed';
+$sm_json = @file_get_contents($sm_url);
+$sm_data = ($sm_json !== false) ? json_decode($sm_json, true) : null;
+$log[] = 'Sector Momentum: ' . ($sm_data ? ('seeded=' . $sm_data['seeded'] . ' skipped=' . $sm_data['skipped']) : 'failed');
+
+// ─── 2b. Fetch VIX + SPY data for volatility regimes ───
+$vix_url = 'https://findtorontoevents.ca/findstocks/api/fetch_vix.php?range=2y';
+$vix_json = @file_get_contents($vix_url);
+$vix_data = ($vix_json !== false) ? json_decode($vix_json, true) : null;
+$log[] = 'VIX: ' . ($vix_data ? ('classified ' . $vix_data['regimes_classified'] . ' days') : 'failed');
+
 // ─── 3. Run standard backtests and cache results ───
 $scenarios = array(
-    array('name' => 'daytrader_eod',      'tp' => 5,   'sl' => 3,  'hold' => 1,   'comm' => 10),
-    array('name' => 'daytrader_2day',     'tp' => 10,  'sl' => 5,  'hold' => 2,   'comm' => 10),
-    array('name' => 'weekly_10',          'tp' => 10,  'sl' => 5,  'hold' => 7,   'comm' => 10),
-    array('name' => 'weekly_20',          'tp' => 20,  'sl' => 8,  'hold' => 7,   'comm' => 10),
-    array('name' => 'swing_conservative', 'tp' => 10,  'sl' => 5,  'hold' => 20,  'comm' => 10),
-    array('name' => 'momentum_ride',      'tp' => 50,  'sl' => 10, 'hold' => 30,  'comm' => 10),
-    array('name' => 'buy_hold_3m',        'tp' => 999, 'sl' => 999,'hold' => 60,  'comm' => 10),
-    array('name' => 'pure_hold_7d_nocomm','tp' => 999, 'sl' => 999,'hold' => 7,   'comm' => 0),
-    array('name' => 'daytrader_2d_nocomm','tp' => 10,  'sl' => 5,  'hold' => 2,   'comm' => 0)
+    // Standard scenarios (Questrade fees)
+    array('name' => 'daytrader_eod',          'tp' => 5,   'sl' => 3,  'hold' => 1,   'comm' => 10, 'vol' => 'off'),
+    array('name' => 'daytrader_2day',         'tp' => 10,  'sl' => 5,  'hold' => 2,   'comm' => 10, 'vol' => 'off'),
+    array('name' => 'weekly_10',              'tp' => 10,  'sl' => 5,  'hold' => 7,   'comm' => 10, 'vol' => 'off'),
+    array('name' => 'weekly_20',              'tp' => 20,  'sl' => 8,  'hold' => 7,   'comm' => 10, 'vol' => 'off'),
+    array('name' => 'swing_conservative',     'tp' => 10,  'sl' => 5,  'hold' => 20,  'comm' => 10, 'vol' => 'off'),
+    array('name' => 'momentum_ride',          'tp' => 50,  'sl' => 10, 'hold' => 30,  'comm' => 10, 'vol' => 'off'),
+    array('name' => 'buy_hold_3m',            'tp' => 999, 'sl' => 999,'hold' => 60,  'comm' => 10, 'vol' => 'off'),
+    array('name' => 'pure_hold_7d_nocomm',    'tp' => 999, 'sl' => 999,'hold' => 7,   'comm' => 0,  'vol' => 'off'),
+    array('name' => 'daytrader_2d_nocomm',    'tp' => 10,  'sl' => 5,  'hold' => 2,   'comm' => 0,  'vol' => 'off'),
+    // Volatility-filtered scenarios
+    array('name' => 'low_vol_weekly',         'tp' => 10,  'sl' => 5,  'hold' => 7,   'comm' => 10, 'vol' => 'skip_high'),
+    array('name' => 'low_vol_swing',          'tp' => 10,  'sl' => 5,  'hold' => 14,  'comm' => 10, 'vol' => 'skip_high'),
+    array('name' => 'calm_only_weekly',       'tp' => 10,  'sl' => 5,  'hold' => 7,   'comm' => 10, 'vol' => 'calm_only'),
+    array('name' => 'skip_elevated_swing',    'tp' => 15,  'sl' => 5,  'hold' => 14,  'comm' => 10, 'vol' => 'skip_elevated'),
+    // Blue Chip Growth scenarios (long-term hold, low/no stop-loss)
+    array('name' => 'bluechip_30d',            'tp' => 999, 'sl' => 999,'hold' => 30,  'comm' => 10, 'vol' => 'off',  'algo' => 'Blue Chip Growth'),
+    array('name' => 'bluechip_90d',            'tp' => 999, 'sl' => 999,'hold' => 90,  'comm' => 10, 'vol' => 'off',  'algo' => 'Blue Chip Growth'),
+    array('name' => 'bluechip_180d',           'tp' => 999, 'sl' => 999,'hold' => 180, 'comm' => 10, 'vol' => 'off',  'algo' => 'Blue Chip Growth'),
+    array('name' => 'bluechip_30d_nocomm',     'tp' => 999, 'sl' => 999,'hold' => 30,  'comm' => 0,  'vol' => 'off',  'algo' => 'Blue Chip Growth'),
+    array('name' => 'bluechip_calm_90d',       'tp' => 999, 'sl' => 999,'hold' => 90,  'comm' => 10, 'vol' => 'calm_only', 'algo' => 'Blue Chip Growth'),
+
+    // Cursor Genius scenarios (data-driven meta-strategy)
+    array('name' => 'cursor_genius_90d',       'tp' => 999, 'sl' => 999,'hold' => 90,  'comm' => 0,  'vol' => 'off',       'algo' => 'Cursor Genius'),
+    array('name' => 'cursor_genius_50tp_90d',  'tp' => 50,  'sl' => 999,'hold' => 90,  'comm' => 0,  'vol' => 'off',       'algo' => 'Cursor Genius'),
+    array('name' => 'cursor_genius_20tp_90d',  'tp' => 20,  'sl' => 999,'hold' => 90,  'comm' => 0,  'vol' => 'off',       'algo' => 'Cursor Genius'),
+    array('name' => 'cursor_genius_standard',  'tp' => 10,  'sl' => 5,  'hold' => 30,  'comm' => 10, 'vol' => 'off',       'algo' => 'Cursor Genius'),
+    array('name' => 'cursor_genius_calm_90d',  'tp' => 999, 'sl' => 999,'hold' => 90,  'comm' => 0,  'vol' => 'calm_only', 'algo' => 'Cursor Genius'),
+
+    // ETF Masters scenarios
+    array('name' => 'etf_masters_90d',         'tp' => 999, 'sl' => 999,'hold' => 90,  'comm' => 0,  'vol' => 'off',       'algo' => 'ETF Masters'),
+    array('name' => 'etf_masters_20tp_90d',    'tp' => 20,  'sl' => 999,'hold' => 90,  'comm' => 0,  'vol' => 'off',       'algo' => 'ETF Masters'),
+
+    // Sector Rotation scenarios
+    array('name' => 'sector_rotation_90d',     'tp' => 999, 'sl' => 999,'hold' => 90,  'comm' => 0,  'vol' => 'off',       'algo' => 'Sector Rotation'),
+    array('name' => 'sector_rotation_30d',     'tp' => 999, 'sl' => 999,'hold' => 30,  'comm' => 0,  'vol' => 'off',       'algo' => 'Sector Rotation'),
+
+    // Sector Momentum scenarios
+    array('name' => 'sector_momentum_30d',     'tp' => 999, 'sl' => 999,'hold' => 30,  'comm' => 0,  'vol' => 'off',       'algo' => 'Sector Momentum'),
+    array('name' => 'sector_momentum_90d',     'tp' => 999, 'sl' => 999,'hold' => 90,  'comm' => 0,  'vol' => 'off',       'algo' => 'Sector Momentum'),
+    array('name' => 'sector_momentum_20tp_30d','tp' => 20,  'sl' => 5,  'hold' => 30,  'comm' => 0,  'vol' => 'off',       'algo' => 'Sector Momentum')
 );
 
 // Build summary JSON
@@ -78,12 +146,18 @@ $summary = array(
 
 // Run scenarios
 foreach ($scenarios as $sc) {
+    $vol = isset($sc['vol']) ? $sc['vol'] : 'off';
     $url = 'https://findtorontoevents.ca/findstocks/api/backtest.php'
          . '?take_profit=' . $sc['tp']
          . '&stop_loss=' . $sc['sl']
          . '&max_hold_days=' . $sc['hold']
          . '&commission=' . $sc['comm']
-         . '&slippage=0.5';
+         . '&slippage=0.5'
+         . '&fee_model=questrade'
+         . '&vol_filter=' . $vol;
+    if (isset($sc['algo']) && $sc['algo'] !== '') {
+        $url .= '&algorithms=' . urlencode($sc['algo']);
+    }
     $json = @file_get_contents($url);
     $data = ($json !== false) ? json_decode($json, true) : null;
     if ($data && $data['ok']) {

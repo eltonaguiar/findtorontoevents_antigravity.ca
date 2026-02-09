@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Portfolio Hub | Find Toronto Events</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --orange: #f97316;
+            --purple: #a855f7;
+            --radius: 16px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--accent), #a78bfa, var(--blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .header p { color: var(--text-dim); font-size: 1rem; }
+        .header-links { margin-top: 1rem; display: flex; gap: 1.5rem; justify-content: center; font-size: 0.9rem; }
+        .header-links a { color: var(--text-dim); }
+        .header-links a:hover { color: var(--text); }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+        .disclaimer {
+            background: var(--yellow-dim);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.8rem;
+            color: var(--yellow);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+        .card.stocks::before { background: linear-gradient(90deg, var(--green), var(--blue)); }
+        .card.funds::before { background: linear-gradient(90deg, var(--purple), var(--accent)); }
+        .card.forex::before { background: linear-gradient(90deg, var(--orange), var(--yellow)); }
+        .card.crypto::before { background: linear-gradient(90deg, var(--blue), #06b6d4); }
+        .card.main::before { background: linear-gradient(90deg, var(--accent), var(--green)); }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        .card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        .card p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        .card .link {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .card .link::after { content: ' \2192'; }
+
+        .card .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-right: 0.5rem;
+        }
+        .badge-live { background: var(--green-dim); color: var(--green); }
+        .badge-new { background: rgba(99, 102, 241, 0.15); color: var(--accent); }
+        .badge-soon { background: rgba(234, 179, 8, 0.15); color: var(--yellow); }
+
+        .features {
+            list-style: none;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+        }
+        .features li { padding: 0.2rem 0; }
+        .features li::before { content: '\2713 '; color: var(--green); margin-right: 0.3rem; }
+
+        .stats-row {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .stat { text-align: center; }
+        .stat .num { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+        .stat .lbl { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; }
+
+        .broker-note {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .broker-note h3 { color: var(--green); margin-bottom: 0.5rem; }
+        .broker-note p { color: var(--text-dim); font-size: 0.9rem; }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+            .header h1 { font-size: 1.5rem; }
+            .stats-row { gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Investment Portfolio Hub</h1>
+        <p>Backtesting, what-if analysis, and portfolio optimization across asset classes</p>
+        <div class="header-links">
+            <a href="/findstocks/">Stock Picks</a>
+            <a href="/findstocks/research/">Research</a>
+            <a href="/fc/">FavCreators</a>
+            <a href="/">Events</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="disclaimer">
+            For research and educational purposes only. Past performance does not guarantee future results. Consult a licensed financial adviser before investing.
+        </div>
+
+        <div class="stats-row" id="stats-row">
+            <div class="stat"><div class="num" id="s-assets">4</div><div class="lbl">Asset Classes</div></div>
+            <div class="stat"><div class="num" id="s-algos">17+</div><div class="lbl">Algorithms</div></div>
+            <div class="stat"><div class="num" id="s-strategies">16+</div><div class="lbl">Strategies</div></div>
+            <div class="stat"><div class="num" id="s-scenarios">1000+</div><div class="lbl">Permutations Tested</div></div>
+        </div>
+
+        <div class="broker-note">
+            <h3>Questrade Canada Integration</h3>
+            <p>Our stock portfolios now model Questrade's commission structure: <strong>$0 commission</strong> on all stock and ETF trades.
+            CDR (Canadian Depositary Receipt) stocks trade in CAD with no FX fee. US-listed stocks incur a <strong>1.5% currency conversion fee</strong> unless you hold USD in your account.
+            This dramatically changes the profitability analysis vs. the old $10/trade commission model.</p>
+        </div>
+
+        <div class="section-title">Portfolio Analysis Systems</div>
+
+        <div class="grid">
+            <!-- Stocks Portfolio v2 -->
+            <a href="/findstocks/portfolio2/" style="text-decoration:none;">
+                <div class="card stocks">
+                    <span class="card-icon">&#x1F4C8;</span>
+                    <div><span class="badge badge-live">LIVE</span></div>
+                    <h2>Stocks Portfolio v2</h2>
+                    <p>Full backtesting engine for 13+ stock-picking algorithms. What-if analysis, strategy comparison, commission modeling, and self-adjusting learning algorithms.</p>
+                    <ul class="features">
+                        <li>13 algorithms (CAN SLIM, Technical, Composite, Inverse, Blue Chip)</li>
+                        <li>16+ preset scenarios including Questrade $0 commission</li>
+                        <li>Inverse/bear algorithms for short strategies</li>
+                        <li>Blue Chip Compounder (MCD, JNJ, WMT style)</li>
+                        <li>1,287 exhaustive permutation scan</li>
+                    </ul>
+                    <span class="link">Open Stock Analysis</span>
+                </div>
+            </a>
+
+            <!-- Mutual Funds Portfolio v2 -->
+            <a href="/findmutualfunds2/portfolio2/" style="text-decoration:none;">
+                <div class="card funds">
+                    <span class="card-icon">&#x1F4CA;</span>
+                    <div><span class="badge badge-new">NEW</span></div>
+                    <h2>Mutual Funds Portfolio v2</h2>
+                    <p>NAV-based backtesting for Canadian mutual funds (RBC, TD). 10 fund selection algorithms, expense ratio tracking, and Morningstar ratings integration.</p>
+                    <ul class="features">
+                        <li>10 algorithms (Momentum, Value, Sector Rotation, Quality, Income)</li>
+                        <li>12 portfolio templates (Conservative to Aggressive)</li>
+                        <li>Expense ratio drag calculation</li>
+                        <li>Canadian fund focus (RBC, TD families)</li>
+                        <li>Learning algorithm with parameter optimization</li>
+                    </ul>
+                    <span class="link">Open Mutual Funds Analysis</span>
+                </div>
+            </a>
+
+            <!-- Forex Portfolio -->
+            <a href="/findforex2/portfolio/" style="text-decoration:none;">
+                <div class="card forex">
+                    <span class="card-icon">&#x1F4B1;</span>
+                    <div><span class="badge badge-soon">COMING SOON</span></div>
+                    <h2>Forex Pairs Portfolio</h2>
+                    <p>Currency pair analysis and backtesting. Trend following, carry trade, and mean reversion strategies across major and minor pairs.</p>
+                    <ul class="features">
+                        <li>Major pairs (EUR/USD, GBP/USD, USD/CAD, USD/JPY)</li>
+                        <li>Pip-based profit/loss calculation</li>
+                        <li>Leverage modeling (1x to 50x)</li>
+                        <li>Carry trade and interest rate differential</li>
+                    </ul>
+                    <span class="link">Coming Soon</span>
+                </div>
+            </a>
+
+            <!-- Crypto Portfolio -->
+            <a href="/findcryptopairs/portfolio/" style="text-decoration:none;">
+                <div class="card crypto">
+                    <span class="card-icon">&#x20BF;</span>
+                    <div><span class="badge badge-soon">COMING SOON</span></div>
+                    <h2>Crypto Pairs Portfolio</h2>
+                    <p>Cryptocurrency pair backtesting and analysis. DCA strategies, momentum, and on-chain metrics for BTC, ETH, and altcoins.</p>
+                    <ul class="features">
+                        <li>Major pairs (BTC/USD, ETH/USD, SOL/USD)</li>
+                        <li>DCA (Dollar Cost Averaging) simulations</li>
+                        <li>Volatility-adjusted position sizing</li>
+                        <li>24/7 market support</li>
+                    </ul>
+                    <span class="link">Coming Soon</span>
+                </div>
+            </a>
+
+            <!-- Main Stocks Page -->
+            <a href="/findstocks/" style="text-decoration:none;">
+                <div class="card main">
+                    <span class="card-icon">&#x1F50D;</span>
+                    <div><span class="badge badge-live">LIVE</span></div>
+                    <h2>Daily Stock Picks</h2>
+                    <p>Live daily stock picks from our 13 algorithms. Real-time scoring, risk levels, and performance tracking with trust protocol verification.</p>
+                    <ul class="features">
+                        <li>Daily automated picks across 7 algorithm families</li>
+                        <li>Real-time pick verification with SHA-256 hashes</li>
+                        <li>Performance tracking and win rate history</li>
+                    </ul>
+                    <span class="link">View Today's Picks</span>
+                </div>
+            </a>
+
+            <!-- Stats Page -->
+            <a href="/findstocks/portfolio2/stats/" style="text-decoration:none;">
+                <div class="card main">
+                    <span class="card-icon">&#x2699;</span>
+                    <div><span class="badge badge-live">LIVE</span></div>
+                    <h2>System Status & Stats</h2>
+                    <p>Real-time system health, algorithm performance summaries, learning analysis results, and audit logs.</p>
+                    <ul class="features">
+                        <li>Database health monitoring</li>
+                        <li>Algorithm win rates and verdicts</li>
+                        <li>Exhaustive permutation scan results</li>
+                    </ul>
+                    <span class="link">View System Status</span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Investment Portfolio Hub &mdash; findtorontoevents.ca &mdash; Updated Feb 2026</p>
+        <p style="margin-top:0.5rem;">Not financial advice. For educational and research purposes only.</p>
+    </div>
+
+    <script>
+    // Load live stats from stocks API
+    fetch('/findstocks/portfolio2/api/data.php?type=stats')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.ok && d.stats) {
+                var s = d.stats;
+                document.getElementById('s-algos').textContent = (s.active_algorithms || 0) + '+';
+            }
+        })
+        .catch(function() {});
+    </script>
+</body>
+</html>

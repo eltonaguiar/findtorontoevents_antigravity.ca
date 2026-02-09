@@ -73,6 +73,7 @@ var PresenceManager = {
     _hbTimer: null,
     _pollTimer: null,
     _players: [],
+    _recentlyOnline: [],
     onPlayersUpdated: null,
 
     _apiEnabled: false,
@@ -202,7 +203,8 @@ var PresenceManager = {
                         var data = JSON.parse(xhr.responseText);
                         if (data && data.players) {
                             self._players = data.players;
-                            if (self.onPlayersUpdated) self.onPlayersUpdated(self._players);
+                            self._recentlyOnline = data.recently_online || [];
+                            if (self.onPlayersUpdated) self.onPlayersUpdated(self._players, self._recentlyOnline);
                         }
                     } catch (e) {}
                 }
@@ -1344,8 +1346,8 @@ var App = {
         }
 
         // Listen for player list updates
-        PresenceManager.onPlayersUpdated = function(players) {
-            self._renderPlayersOnline(players);
+        PresenceManager.onPlayersUpdated = function(players, recentlyOnline) {
+            self._renderPlayersOnline(players, recentlyOnline);
         };
 
         // Toggle floating panel collapse
@@ -1401,21 +1403,22 @@ var App = {
         }
     },
 
-    _renderPlayersOnline: function(players) {
+    _renderPlayersOnline: function(players, recentlyOnline) {
         var self = this;
         var myId = PresenceManager.playerId;
+        recentlyOnline = recentlyOnline || [];
 
         // Sort: current user first, then by game, then alphabetical
         players.sort(function(a, b) {
             if (a.id === myId) return -1;
             if (b.id === myId) return 1;
-            if (a.game !== b.game) return a.game < b.game ? -1 : 1;
-            return a.name < b.name ? -1 : 1;
+            if (a.game !== b.game) return (a.game < b.game ? -1 : 1);
+            return (a.name < b.name ? -1 : 1);
         });
 
-        // Build HTML
+        // Build online players HTML
         var html = '';
-        if (players.length === 0) {
+        if (players.length === 0 && recentlyOnline.length === 0) {
             html = '<div class="players-online-empty">No players online</div>';
         } else {
             for (var i = 0; i < players.length; i++) {
@@ -1423,17 +1426,28 @@ var App = {
             }
         }
 
+        // Build recently online section
+        if (recentlyOnline.length > 0) {
+            html += '<div class="recently-online-divider">Recently Online</div>';
+            for (var j = 0; j < recentlyOnline.length; j++) {
+                html += self._buildRecentEntry(recentlyOnline[j]);
+            }
+        }
+
+        // Total for counter: online only
+        var totalOnline = players.length;
+
         // Update floating panel
         var floatList = document.getElementById('players-online-list');
         var floatCount = document.getElementById('players-online-count');
         if (floatList) floatList.innerHTML = html;
-        if (floatCount) floatCount.textContent = players.length;
+        if (floatCount) floatCount.textContent = totalOnline;
 
         // Update lobby inline panel
         var lobbyList = document.getElementById('lobby-players-list');
         var lobbyCount = document.getElementById('lobby-players-count');
         if (lobbyList) lobbyList.innerHTML = html;
-        if (lobbyCount) lobbyCount.textContent = players.length;
+        if (lobbyCount) lobbyCount.textContent = totalOnline;
 
         // Attach click handlers for join/spectate buttons
         self._bindPlayerActions();
@@ -1476,6 +1490,23 @@ var App = {
                 '<div class="' + statusClass + '">' + statusText + '</div>' +
             '</div>' +
             (actions ? '<div class="player-actions">' + actions + '</div>' : '') +
+        '</div>';
+    },
+
+    _buildRecentEntry: function(player) {
+        var agoSec = player.last_seen_ago || 0;
+        var agoText;
+        if (agoSec < 60) agoText = 'just now';
+        else if (agoSec < 120) agoText = '1 min ago';
+        else agoText = Math.floor(agoSec / 60) + ' min ago';
+
+        return '<div class="player-entry recently-offline">' +
+            '<div class="player-dot offline"></div>' +
+            '<div class="player-info">' +
+                '<div class="player-name">' + this._escHtml(player.name) + '</div>' +
+                '<div class="player-game">' + this._escHtml(player.game) + '</div>' +
+                '<div class="player-status status-offline">Left ' + agoText + '</div>' +
+            '</div>' +
         '</div>';
     },
 

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock System Status | Portfolio Analysis v2</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a; --bg-card: #12122a; --border: #2a2a4a;
+            --text: #e0e0f0; --text-dim: #8888aa; --accent: #6366f1;
+            --green: #22c55e; --green-dim: rgba(34,197,94,0.15);
+            --red: #ef4444; --red-dim: rgba(239,68,68,0.15);
+            --yellow: #eab308; --yellow-dim: rgba(234,179,8,0.15);
+            --blue: #3b82f6; --radius: 12px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg-dark); color:var(--text); min-height:100vh; line-height:1.5; }
+        a { color:var(--accent); text-decoration:none; }
+        a:hover { text-decoration:underline; }
+        .header { background:linear-gradient(135deg,#12122a,#1e1e3f); border-bottom:1px solid var(--border); padding:1rem 2rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; }
+        .header h1 { font-size:1.5rem; background:linear-gradient(135deg,var(--accent),#a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .header-links { display:flex; gap:1rem; font-size:0.9rem; }
+        .header-links a { color:var(--text-dim); }
+        .container { max-width:1200px; margin:0 auto; padding:1.5rem; }
+        .card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; margin-bottom:1.5rem; }
+        .card h2 { font-size:1.1rem; margin-bottom:1rem; }
+        .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+        .stat-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1rem; text-align:center; }
+        .stat-card .label { font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; }
+        .stat-card .value { font-size:1.3rem; font-weight:700; margin-top:0.25rem; }
+        .positive { color:var(--green); }
+        .negative { color:var(--red); }
+        .neutral { color:var(--text); }
+        .warning { color:var(--yellow); }
+        table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+        th,td { padding:0.5rem 0.75rem; text-align:left; border-bottom:1px solid var(--border); }
+        th { color:var(--text-dim); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; }
+        .badge { display:inline-block; padding:0.15rem 0.5rem; border-radius:4px; font-size:0.7rem; font-weight:600; }
+        .badge-green { background:var(--green-dim); color:var(--green); }
+        .badge-red { background:var(--red-dim); color:var(--red); }
+        .badge-yellow { background:var(--yellow-dim); color:var(--yellow); }
+        .badge-blue { background:rgba(59,130,246,0.15); color:var(--blue); }
+        .status-ok { color:var(--green); }
+        .status-warn { color:var(--yellow); }
+        .status-fail { color:var(--red); }
+        .loading { text-align:center; padding:2rem; color:var(--text-dim); }
+        .spinner { display:inline-block; width:20px; height:20px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .progress-bar { background:var(--border); border-radius:4px; height:8px; overflow:hidden; margin-top:0.5rem; }
+        .progress-fill { height:100%; border-radius:4px; transition:width 0.3s; }
+        .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+        @media (max-width:768px) { .grid-2 { grid-template-columns:1fr; } .container { padding:1rem; } }
+        .refresh-btn { background:var(--accent); color:white; border:none; padding:0.5rem 1rem; border-radius:8px; cursor:pointer; font-size:0.85rem; }
+        .refresh-btn:hover { background:#5558e6; }
+        .timestamp { font-size:0.8rem; color:var(--text-dim); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>System Status &amp; Analytics</h1>
+        <div class="header-links">
+            <a href="/findstocks/portfolio2/">Dashboard</a>
+            <a href="/findstocks/">Stock Picks</a>
+            <a href="/findstocks/research/">Research</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="last-updated" class="card" style="text-align:center;">
+            <span class="spinner"></span> Loading system status...
+        </div>
+
+        <!-- Database Stats -->
+        <div class="stat-grid" id="db-stats"></div>
+
+        <!-- System Health -->
+        <div class="card" id="health-card">
+            <h2>System Health</h2>
+            <div id="health-checks"></div>
+        </div>
+
+        <div class="grid-2">
+            <!-- Algorithm Performance -->
+            <div class="card">
+                <h2>Algorithm Performance Summary</h2>
+                <div class="table-wrap">
+                    <table id="algo-table">
+                        <thead><tr><th>Algorithm</th><th>Picks</th><th>Avg Score</th><th>Status</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Strategy Rankings -->
+            <div class="card">
+                <h2>Strategy Rankings (All Algos)</h2>
+                <div class="table-wrap">
+                    <table id="strat-table">
+                        <thead><tr><th>#</th><th>Strategy</th><th>Return %</th><th>Win Rate</th><th>Verdict</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Trades -->
+        <div class="card">
+            <h2>Top Performing Trades</h2>
+            <div class="table-wrap">
+                <table id="top-trades-table">
+                    <thead><tr><th>#</th><th>Ticker</th><th>Algorithm</th><th>Entry</th><th>Exit</th><th>Return %</th><th>P&L</th><th>Hold Days</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Worst Trades -->
+        <div class="card">
+            <h2>Worst Performing Trades</h2>
+            <div class="table-wrap">
+                <table id="worst-trades-table">
+                    <thead><tr><th>#</th><th>Ticker</th><th>Algorithm</th><th>Entry</th><th>Exit</th><th>Return %</th><th>P&L</th><th>Hold Days</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Learning Algorithm Insights -->
+        <div class="card">
+            <h2>Learning Algorithm Recommendations</h2>
+            <button class="refresh-btn" onclick="runLearning()">Run Learning Analysis</button>
+            <div id="learning-results" style="margin-top:1rem;"></div>
+        </div>
+
+        <!-- Bear / Short Analysis -->
+        <div class="card">
+            <h2>Bear Market / Short Opportunity Analysis</h2>
+            <button class="refresh-btn" onclick="runBearAnalysis()">Analyze Short Opportunities</button>
+            <div id="bear-results" style="margin-top:1rem;"></div>
+        </div>
+
+        <!-- Permutation Scan -->
+        <div class="card">
+            <h2>Exhaustive Parameter Scan</h2>
+            <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem;">
+                Tests every combination of TP%, SL%, and hold period to find optimal parameters.
+            </p>
+            <button class="refresh-btn" onclick="runPermScan()">Run Full Permutation Scan</button>
+            <div id="perm-results" style="margin-top:1rem;"></div>
+        </div>
+
+        <!-- Audit Log -->
+        <div class="card">
+            <h2>Recent Activity Log</h2>
+            <div class="table-wrap">
+                <table id="audit-table">
+                    <thead><tr><th>Time</th><th>Action</th><th>Details</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<script>
+var API = '/findstocks/portfolio2/api/';
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadAllData();
+});
+
+function apiGet(url, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API + url, true);
+    xhr.onload = function() {
+        try { cb(JSON.parse(xhr.responseText)); }
+        catch(e) { cb({ok:false,error:'Parse error'}); }
+    };
+    xhr.onerror = function() { cb({ok:false,error:'Network error'}); };
+    xhr.send();
+}
+
+function loadAllData() {
+    // Stats
+    apiGet('data.php?type=stats', function(d) {
+        if (!d.ok || !d.stats) {
+            document.getElementById('last-updated').innerHTML = '<span class="status-fail">Database connection failed. Check credentials.</span>';
+            return;
+        }
+        var s = d.stats;
+        var now = new Date().toLocaleString();
+        document.getElementById('last-updated').innerHTML =
+            '<div style="font-size:1.1rem;font-weight:700;">System Online</div>'
+            + '<div class="timestamp">Last checked: ' + now + '</div>'
+            + '<div class="timestamp">Pick data: ' + (s.pick_date_range ? s.pick_date_range.earliest + ' to ' + s.pick_date_range.latest : 'N/A') + '</div>'
+            + '<div class="timestamp">Price data: ' + (s.price_date_range ? s.price_date_range.earliest + ' to ' + s.price_date_range.latest : 'N/A') + '</div>';
+
+        var statsHtml = '';
+        var items = [
+            ['Stocks Tracked', s.total_stocks, 'neutral'],
+            ['Stock Picks', s.total_picks, 'neutral'],
+            ['Price Records', (s.total_price_records||0).toLocaleString(), 'neutral'],
+            ['Active Algorithms', s.active_algorithms, 'neutral'],
+            ['Backtests Run', s.total_backtests, 'neutral']
+        ];
+        for (var i = 0; i < items.length; i++) {
+            statsHtml += '<div class="stat-card"><div class="label">' + items[i][0] + '</div><div class="value ' + items[i][2] + '">' + items[i][1] + '</div></div>';
+        }
+        document.getElementById('db-stats').innerHTML = statsHtml;
+
+        // Algorithm breakdown
+        var tbody = document.querySelector('#algo-table tbody');
+        tbody.innerHTML = '';
+        var ab = s.algorithm_breakdown || [];
+        for (var i = 0; i < ab.length; i++) {
+            var a = ab[i];
+            var avgScore = parseFloat(a.avg_score || 0).toFixed(1);
+            var status = avgScore >= 80 ? 'badge-green' : avgScore >= 60 ? 'badge-yellow' : 'badge-red';
+            var statusText = avgScore >= 80 ? 'Strong' : avgScore >= 60 ? 'Moderate' : 'Weak';
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + a.algorithm_name + '</td><td>' + a.cnt + '</td><td>' + avgScore + '</td>'
+                + '<td><span class="badge ' + status + '">' + statusText + '</span></td>';
+            tbody.appendChild(tr);
+        }
+
+        // Health checks
+        var hc = document.getElementById('health-checks');
+        var checks = [
+            ['Database Connection', true, 'Connected to ejaguiar1_stocks'],
+            ['Stock Picks', s.total_picks > 0, s.total_picks + ' picks loaded'],
+            ['Price Data', s.total_price_records > 100, s.total_price_records + ' records'],
+            ['Data Freshness', s.pick_date_range && s.pick_date_range.latest >= '2026-01-01', 'Latest: ' + (s.pick_date_range ? s.pick_date_range.latest : 'N/A')],
+            ['Price Coverage', s.price_date_range && s.price_date_range.latest >= '2026-01-01', 'Latest: ' + (s.price_date_range ? s.price_date_range.latest : 'N/A')]
+        ];
+        var hhtml = '<table><tbody>';
+        for (var i = 0; i < checks.length; i++) {
+            var c = checks[i];
+            hhtml += '<tr><td>' + c[0] + '</td><td class="' + (c[1] ? 'status-ok' : 'status-fail') + '">' + (c[1] ? 'OK' : 'ISSUE') + '</td><td style="color:var(--text-dim)">' + c[2] + '</td></tr>';
+        }
+        hhtml += '</tbody></table>';
+        hc.innerHTML = hhtml;
+    });
+
+    // Strategy comparison
+    apiGet('whatif.php?compare=1', function(d) {
+        if (!d.ok) return;
+        var tbody = document.querySelector('#strat-table tbody');
+        tbody.innerHTML = '';
+        var sc = d.scenarios || [];
+        for (var i = 0; i < sc.length; i++) {
+            var s = sc[i].summary;
+            var verdict = s.total_return_pct > 0 ? 'badge-green' : s.total_return_pct > -5 ? 'badge-yellow' : 'badge-red';
+            var vtext = s.total_return_pct > 0 ? 'Profitable' : s.total_return_pct > -5 ? 'Marginal' : 'Losing';
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + (i+1) + '</td><td>' + sc[i].name + '</td>'
+                + '<td class="' + (s.total_return_pct >= 0 ? 'positive' : 'negative') + '">' + s.total_return_pct.toFixed(2) + '%</td>'
+                + '<td>' + s.win_rate + '%</td>'
+                + '<td><span class="badge ' + verdict + '">' + vtext + '</span></td>';
+            tbody.appendChild(tr);
+        }
+    });
+
+    // Top/worst trades
+    apiGet('backtest.php?take_profit=50&stop_loss=10&max_hold_days=30', function(d) {
+        if (!d.ok || !d.trades) return;
+        var trades = d.trades.slice();
+        // Sort by return desc
+        trades.sort(function(a,b) { return b.return_pct - a.return_pct; });
+
+        // Top 10
+        var tbody = document.querySelector('#top-trades-table tbody');
+        tbody.innerHTML = '';
+        for (var i = 0; i < Math.min(10, trades.length); i++) {
+            var t = trades[i];
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + (i+1) + '</td><td><strong>' + t.ticker + '</strong></td><td>' + t.algorithm + '</td>'
+                + '<td>' + t.entry_date + ' $' + t.entry_price.toFixed(2) + '</td>'
+                + '<td>' + t.exit_date + ' $' + t.exit_price.toFixed(2) + '</td>'
+                + '<td class="' + (t.return_pct >= 0 ? 'positive' : 'negative') + '">' + t.return_pct.toFixed(2) + '%</td>'
+                + '<td class="' + (t.net_profit >= 0 ? 'positive' : 'negative') + '">$' + t.net_profit.toFixed(2) + '</td>'
+                + '<td>' + t.hold_days + 'd</td>';
+            tbody.appendChild(tr);
+        }
+
+        // Worst 10
+        var tbody2 = document.querySelector('#worst-trades-table tbody');
+        tbody2.innerHTML = '';
+        for (var i = trades.length - 1; i >= Math.max(0, trades.length - 10); i--) {
+            var t = trades[i];
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + (trades.length - i) + '</td><td><strong>' + t.ticker + '</strong></td><td>' + t.algorithm + '</td>'
+                + '<td>' + t.entry_date + ' $' + t.entry_price.toFixed(2) + '</td>'
+                + '<td>' + t.exit_date + ' $' + t.exit_price.toFixed(2) + '</td>'
+                + '<td class="' + (t.return_pct >= 0 ? 'positive' : 'negative') + '">' + t.return_pct.toFixed(2) + '%</td>'
+                + '<td class="' + (t.net_profit >= 0 ? 'positive' : 'negative') + '">$' + t.net_profit.toFixed(2) + '</td>'
+                + '<td>' + t.hold_days + 'd</td>';
+            tbody2.appendChild(tr);
+        }
+    });
+}
+
+function runLearning() {
+    var el = document.getElementById('learning-results');
+    el.innerHTML = '<div class="spinner"></div> Running learning analysis (scanning 180 parameter combos per algorithm)...';
+    apiGet('learning.php?action=analyze_and_adjust', function(d) {
+        if (!d.ok) { el.innerHTML = 'Error: ' + (d.error||'Unknown'); return; }
+        var html = '<table><thead><tr><th>Algorithm</th><th>Current Return</th><th>Best Params Found</th><th>Best Return</th><th>Improvement</th><th>Verdict</th></tr></thead><tbody>';
+        var recs = d.recommendations || [];
+        for (var i = 0; i < recs.length; i++) {
+            var r = recs[i];
+            var bp = r.best_params;
+            var verdict_cls = r.verdict === 'PROFITABLE_PARAMS_EXIST' ? 'badge-green' : r.verdict === 'IMPROVABLE_BUT_STILL_LOSING' ? 'badge-yellow' : 'badge-red';
+            html += '<tr><td>' + r.algorithm + '</td>'
+                + '<td class="' + (r.current_performance.return_pct >= 0 ? 'positive' : 'negative') + '">' + r.current_performance.return_pct.toFixed(2) + '%</td>'
+                + '<td>TP:' + bp.tp + '% SL:' + bp.sl + '% Hold:' + bp.hold + 'd</td>'
+                + '<td class="' + (r.best_return_pct >= 0 ? 'positive' : 'negative') + '">' + r.best_return_pct.toFixed(2) + '%</td>'
+                + '<td class="positive">+' + r.improvement_pct.toFixed(2) + '%</td>'
+                + '<td><span class="badge ' + verdict_cls + '">' + r.verdict.replace(/_/g,' ') + '</span></td></tr>';
+        }
+        html += '</tbody></table>';
+        html += '<p style="margin-top:1rem;color:var(--text-dim);font-size:0.85rem;">Tested ' + (d.total_algorithms||0) + ' algorithms, ' + (d.adjustments_made||0) + ' records updated.</p>';
+        el.innerHTML = html;
+    });
+}
+
+function runBearAnalysis() {
+    var el = document.getElementById('bear-results');
+    el.innerHTML = '<div class="spinner"></div> Analyzing short/bear market opportunities...';
+    apiGet('learning.php?action=bear_analysis', function(d) {
+        if (!d.ok) { el.innerHTML = 'Error'; return; }
+        var html = '<p style="color:var(--yellow);margin-bottom:1rem;">' + (d.insight||'') + '</p>';
+        if (d.short_candidates && d.short_candidates.length > 0) {
+            html += '<h3 style="margin-bottom:0.5rem;">Best Short Candidates (stocks that declined after our BUY signal)</h3>';
+            html += '<table><thead><tr><th>Ticker</th><th>Algorithm</th><th>Pick Date</th><th>Entry $</th><th>Current $</th><th>Decline %</th><th>Short Profit %</th></tr></thead><tbody>';
+            for (var i = 0; i < d.short_candidates.length; i++) {
+                var s = d.short_candidates[i];
+                html += '<tr><td><strong>' + s.ticker + '</strong></td><td>' + s.algorithm + '</td><td>' + s.pick_date + '</td>'
+                    + '<td>$' + s.entry_price + '</td><td>$' + s.current_price + '</td>'
+                    + '<td class="negative">' + s.change_pct + '%</td>'
+                    + '<td class="positive">+' + s.short_profit_pct + '%</td></tr>';
+            }
+            html += '</tbody></table>';
+        }
+        if (d.inverse_algorithms) {
+            html += '<h3 style="margin:1.5rem 0 0.5rem;">Proposed Inverse/Short Algorithms</h3>';
+            for (var i = 0; i < d.inverse_algorithms.length; i++) {
+                var ia = d.inverse_algorithms[i];
+                html += '<div style="background:rgba(99,102,241,0.05);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:0.75rem;">'
+                    + '<strong>' + ia.name + '</strong><br>'
+                    + '<span style="color:var(--text-dim)">Based on: ' + ia.based_on + '</span><br>'
+                    + '<span style="color:var(--text-dim)">' + ia.concept + '</span><br>'
+                    + '<span style="color:var(--accent)">' + ia.strategy + '</span></div>';
+            }
+        }
+        el.innerHTML = html;
+    });
+}
+
+function runPermScan() {
+    var el = document.getElementById('perm-results');
+    el.innerHTML = '<div class="spinner"></div> Running exhaustive scan (1,287 parameter combos)... this may take 30-60 seconds.';
+    apiGet('learning.php?action=permutation_scan&top=20', function(d) {
+        if (!d.ok) { el.innerHTML = 'Error or timeout'; return; }
+        var html = '<div class="stat-grid" style="margin-bottom:1rem;">'
+            + '<div class="stat-card"><div class="label">Total Combos</div><div class="value">' + (d.total_combos||0) + '</div></div>'
+            + '<div class="stat-card"><div class="label">Profitable</div><div class="value positive">' + (d.profitable_combos||0) + '</div></div>'
+            + '<div class="stat-card"><div class="label">Losing</div><div class="value negative">' + (d.losing_combos||0) + '</div></div>'
+            + '<div class="stat-card"><div class="label">Profitability Rate</div><div class="value ' + ((d.profitability_rate||0) > 30 ? 'positive' : 'negative') + '">' + (d.profitability_rate||0) + '%</div></div>'
+            + '</div>';
+
+        if (d.top_permutations && d.top_permutations.length > 0) {
+            html += '<h3>Top 20 Parameter Combinations</h3>';
+            html += '<table><thead><tr><th>#</th><th>TP%</th><th>SL%</th><th>Hold Days</th><th>Return %</th><th>Win Rate</th><th>Trades</th><th>Total P&L</th></tr></thead><tbody>';
+            for (var i = 0; i < d.top_permutations.length; i++) {
+                var p = d.top_permutations[i];
+                html += '<tr><td>' + (i+1) + '</td><td>' + p.take_profit + '</td><td>' + p.stop_loss + '</td><td>' + p.max_hold_days + '</td>'
+                    + '<td class="' + (p.return_pct >= 0 ? 'positive' : 'negative') + '"><strong>' + p.return_pct.toFixed(2) + '%</strong></td>'
+                    + '<td>' + p.win_rate + '%</td><td>' + p.trades + '</td>'
+                    + '<td class="' + (p.total_pnl >= 0 ? 'positive' : 'negative') + '">$' + p.total_pnl.toFixed(2) + '</td></tr>';
+            }
+            html += '</tbody></table>';
+        }
+
+        if (d.worst_permutations && d.worst_permutations.length > 0) {
+            html += '<h3 style="margin-top:1.5rem;">5 Worst Parameter Combinations (Avoid)</h3>';
+            html += '<table><thead><tr><th>TP%</th><th>SL%</th><th>Hold</th><th>Return %</th><th>Win Rate</th></tr></thead><tbody>';
+            for (var i = 0; i < d.worst_permutations.length; i++) {
+                var p = d.worst_permutations[i];
+                html += '<tr><td>' + p.take_profit + '</td><td>' + p.stop_loss + '</td><td>' + p.max_hold_days + '</td>'
+                    + '<td class="negative">' + p.return_pct.toFixed(2) + '%</td><td>' + p.win_rate + '%</td></tr>';
+            }
+            html += '</tbody></table>';
+        }
+
+        el.innerHTML = html;
+    });
+}
+</script>
+</body>
+</html>

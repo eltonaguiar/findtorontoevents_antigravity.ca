@@ -670,13 +670,14 @@ addTarget(-55, 20); addTarget(55, -20);
 // ─── ENEMY SPAWNING SYSTEM ───
 const enemies = [];
 const ENEMY_RESPAWN_TIME = 5.0;
-const ENEMY_SHOOT_INTERVAL = 1.8;
-const ENEMY_DAMAGE = 12;
-const ENEMY_SHOOT_RANGE = 40;
+const ENEMY_SHOOT_INTERVAL = 2.8;
+const ENEMY_DAMAGE = 8;
+const ENEMY_SHOOT_RANGE = 28;
 const ENEMY_MAX_HEALTH = 100;
 const ENEMY_MOVE_SPEED = 5.0;
 const ENEMY_CHASE_RANGE = 80;
-const ENEMY_STOP_RANGE = 8;  // stop walking when this close (shoot instead)
+const ENEMY_STOP_RANGE = 6;  // stop walking when this close (shoot instead)
+const ENEMY_ACCURACY = 0.6;  // 60% chance to hit (simulates missing)
 
 function addPart(parent, geo, material, x, y, z, shadow) {
   const m = new THREE.Mesh(geo, material);
@@ -1402,8 +1403,83 @@ function playerRespawn() {
   startRecording();
 }
 
+// ─── LOS check: can enemy see the player? (AABB ray test against colliders) ───
+function enemyHasLOS(enemy) {
+  const ox = enemy.group.position.x, oz = enemy.group.position.z, oy = 1.4;
+  const px = camera.position.x, pz = camera.position.z, py = camera.position.y;
+  const dx = px - ox, dy = py - oy, dz = pz - oz;
+  const len = Math.sqrt(dx*dx + dy*dy + dz*dz);
+  if (len < 0.1) return true;
+  const idx = 1/dx, idy = 1/dy, idz = 1/dz;
+  // Check each collider AABB for ray intersection
+  for (const c of colliders) {
+    let tmin = -Infinity, tmax = Infinity;
+    // X slab
+    let t1 = (c.min.x - ox) * idx, t2 = (c.max.x - ox) * idx;
+    if (t1 > t2) { const tmp = t1; t1 = t2; t2 = tmp; }
+    tmin = Math.max(tmin, t1); tmax = Math.min(tmax, t2);
+    if (tmin > tmax) continue;
+    // Y slab
+    t1 = (c.min.y - oy) * idy; t2 = (c.max.y - oy) * idy;
+    if (t1 > t2) { const tmp = t1; t1 = t2; t2 = tmp; }
+    tmin = Math.max(tmin, t1); tmax = Math.min(tmax, t2);
+    if (tmin > tmax) continue;
+    // Z slab
+    t1 = (c.min.z - oz) * idz; t2 = (c.max.z - oz) * idz;
+    if (t1 > t2) { const tmp = t1; t1 = t2; t2 = tmp; }
+    tmin = Math.max(tmin, t1); tmax = Math.min(tmax, t2);
+    if (tmin > tmax) continue;
+    // If the intersection is between origin and target (0 < tmin < 1), LOS is blocked
+    if (tmax > 0.01 && tmin < 0.99) return false;
+  }
+  return true;
+}
+
+// ─── Enemy muzzle flash + tracer ───
+const enemyTracers = [];
+function showEnemyMuzzleFlash(enemy) {
+  // Flash on enemy weapon (gun barrel area)
+  const flash = new THREE.PointLight(0xff8800, 8, 12);
+  flash.position.copy(enemy.group.position);
+  flash.position.y += 0.9;
+  scene.add(flash);
+  setTimeout(() => scene.remove(flash), 80);
+
+  // Tracer line from enemy to player
+  const start = enemy.group.position.clone(); start.y += 0.9;
+  const end = camera.position.clone();
+  const geom = new THREE.BufferGeometry().setFromPoints([start, end]);
+  const tracerMat = new THREE.LineBasicMaterial({ color: 0xffaa44, transparent: true, opacity: 0.7 });
+  const tracer = new THREE.Line(geom, tracerMat);
+  scene.add(tracer);
+  enemyTracers.push({ line: tracer, life: 0.15 });
+}
+
+function updateEnemyTracers(dt) {
+  for (let i = enemyTracers.length - 1; i >= 0; i--) {
+    enemyTracers[i].life -= dt;
+    enemyTracers[i].line.material.opacity = Math.max(0, enemyTracers[i].life / 0.15);
+    if (enemyTracers[i].life <= 0) {
+      scene.remove(enemyTracers[i].line);
+      enemyTracers[i].line.geometry.dispose();
+      enemyTracers[i].line.material.dispose();
+      enemyTracers.splice(i, 1);
+    }
+  }
+}
+
 function enemyShootAtPlayer(enemy) {
   if (state.playerDead || state.health <= 0) return;
+
+  // Line-of-sight check: can the enemy actually see the player?
+  if (!enemyHasLOS(enemy)) return;
+
+  // Show muzzle flash + tracer regardless of hit
+  showEnemyMuzzleFlash(enemy);
+
+  // Accuracy check: enemies don't always hit
+  if (Math.random() > ENEMY_ACCURACY) return;
+
   state.health = Math.max(0, state.health - ENEMY_DAMAGE);
   recordDamageTaken(ENEMY_DAMAGE, enemy);
   document.getElementById('damage-vignette').style.opacity = '1';
@@ -1413,15 +1489,16 @@ function enemyShootAtPlayer(enemy) {
   if (state.health <= 0) playerDie(enemy);
 }
 
-// Spawn enemies spread around the map (all in clear areas, most visible from spawn)
-spawnEnemy(10, 30);    // ahead of player, close
-spawnEnemy(-10, 25);   // ahead-left, close
-spawnEnemy(20, 35);    // ahead-right
-spawnEnemy(-20, 15);   // well ahead
-spawnEnemy(25, 0);     // far ahead
-spawnEnemy(-30, -10);  // far ahead-left
-spawnEnemy(15, -20);   // far ahead
-spawnEnemy(-10, 50);   // behind player (flanker)
+// Spawn enemies spread around the map (visible from player spawn at z=45)
+spawnEnemy(8, 30);     // ahead, clearly visible
+spawnEnemy(-12, 28);   // ahead-left, visible
+spawnEnemy(18, 32);    // ahead-right, visible
+spawnEnemy(-22, 18);   // well ahead, visible
+spawnEnemy(25, 10);    // far ahead-right
+spawnEnemy(-15, 5);    // far ahead-left
+
+// Stagger initial shoot timers so enemies don't all fire at once
+enemies.forEach((e, i) => { e.shootTimer = 2.0 + i * 0.8 + Math.random() * 1.5; });
 
 // Start life recording
 startRecording();
@@ -1780,6 +1857,7 @@ function animate() {
       else updateDeathReplay(dt);
     }
     updateEnemies(dt);
+    updateEnemyTracers(dt);
     drawRadar();
     updateFPS(dt);
     composer.render();
@@ -1878,6 +1956,7 @@ function animate() {
   }
 
   updateEnemies(dt);
+  updateEnemyTracers(dt);
   updateCompass();
   drawRadar();
   updateFPS(dt);

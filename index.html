@@ -137,6 +137,8 @@
     main .mentalhealth-promo,
     main .vr-promo,
     main .accountability-promo,
+    main .gameprototypes-promo,
+    main .latestupdates-promo,
     main .otherstuff-promo,
     main #horizontal-promo-container {
       display: none !important;
@@ -164,7 +166,7 @@
       visibility: visible !important;
     }
     
-    /* FORCE ALL 8 BANNERS inside our injected container */
+    /* FORCE ALL 10 BANNERS inside our injected container */
     #injected-promos .windows-fixer-promo,
     #injected-promos .favcreators-promo,
     #injected-promos .movieshows-promo,
@@ -172,6 +174,8 @@
     #injected-promos .mentalhealth-promo,
     #injected-promos .vr-promo,
     #injected-promos .accountability-promo,
+    #injected-promos .gameprototypes-promo,
+    #injected-promos .latestupdates-promo,
     #injected-promos .otherstuff-promo {
       display: block !important;
       visibility: visible !important;
@@ -181,9 +185,11 @@
     }
     
     /* Ensure content inside our promos is visible */
-    #injected-promos .promo-banner,
-    #injected-promos .promo-banner > * {
+    #injected-promos .promo-banner {
       display: block !important;
+      visibility: visible !important;
+    }
+    #injected-promos .promo-banner > * {
       visibility: visible !important;
     }
     
@@ -195,6 +201,8 @@
     .mentalhealth-promo .group > .relative,
     .vr-promo .group > .relative,
     .accountability-promo .group > .relative,
+    .gameprototypes-promo .group > .relative,
+    .latestupdates-promo .group > .relative,
     .otherstuff-promo .group > .relative {
       z-index: 10 !important;
       position: relative !important;
@@ -208,6 +216,8 @@
     .mentalhealth-promo .override-overflow,
     .vr-promo .override-overflow,
     .accountability-promo .override-overflow,
+    .gameprototypes-promo .override-overflow,
+    .latestupdates-promo .override-overflow,
     .otherstuff-promo .override-overflow {
       z-index: 1 !important;
       position: relative !important;
@@ -222,6 +232,8 @@
     .mentalhealth-promo .tooltip-panel,
     .vr-promo .tooltip-panel,
     .accountability-promo .tooltip-panel,
+    .gameprototypes-promo .tooltip-panel,
+    .latestupdates-promo .tooltip-panel,
     .otherstuff-promo .tooltip-panel {
       visibility: hidden !important;
       opacity: 0 !important;
@@ -235,6 +247,8 @@
     .mentalhealth-promo:hover .tooltip-panel,
     .vr-promo:hover .tooltip-panel,
     .accountability-promo:hover .tooltip-panel,
+    .gameprototypes-promo:hover .tooltip-panel,
+    .latestupdates-promo:hover .tooltip-panel,
     .otherstuff-promo:hover .tooltip-panel {
       visibility: visible !important;
       opacity: 1 !important;
@@ -304,6 +318,132 @@
     /* Additional spacing for Movieshows specifically to prevent FavCreators tooltip overlap */
     .movieshows-promo {
       margin-bottom: 2rem !important;
+    }
+
+    /* ===== RESPONSIVE 5-COL PROMO GRID ===== */
+    /* Widen the injected container to accommodate 5 columns */
+    #injected-promos {
+      max-width: 80rem !important;
+    }
+
+    /* Remove old row-based margin spacers inside injected promos - grid gap handles it */
+    #injected-promos .favcreators-promo,
+    #injected-promos .movieshows-promo,
+    #injected-promos .stocks-promo,
+    #injected-promos .windows-fixer-promo {
+      margin-bottom: 0 !important;
+    }
+
+    /* Vertical card layout — applied at all sizes for compact tile look */
+    #injected-promos .promo-banner {
+      padding: 14px 10px !important;
+      border-radius: 14px !important;
+    }
+    #injected-promos .promo-banner > div {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      text-align: center !important;
+      gap: 8px !important;
+    }
+
+    /* Smaller icon circle */
+    #injected-promos .promo-banner .w-16 {
+      width: 2.75rem !important;
+      height: 2.75rem !important;
+      min-width: 2.75rem !important;
+    }
+    #injected-promos .promo-banner .text-3xl {
+      font-size: 1.25rem !important;
+    }
+
+    /* Allow text to wrap in compact cards */
+    #injected-promos .promo-banner .whitespace-nowrap {
+      white-space: normal !important;
+    }
+
+    /* Smaller title */
+    #injected-promos .promo-banner span.text-lg {
+      font-size: 0.8125rem !important;
+      line-height: 1.3 !important;
+    }
+
+    /* Smaller subtitle */
+    #injected-promos .promo-banner .flex-col span.text-sm,
+    #injected-promos .promo-banner .flex-col .text-sm {
+      font-size: 0.625rem !important;
+      line-height: 1.35 !important;
+    }
+
+    /* Remove left margin from buttons */
+    #injected-promos .promo-banner a.ml-2 {
+      margin-left: 0 !important;
+    }
+
+    /* Shrink action buttons */
+    #injected-promos .promo-banner a[class*="rounded-full"] {
+      font-size: 0.625rem !important;
+      padding: 4px 10px !important;
+    }
+    #injected-promos .promo-banner span[class*="rounded-full"] {
+      font-size: 0.625rem !important;
+      padding: 4px 10px !important;
+    }
+
+    /* Center multi-button containers */
+    #injected-promos .promo-banner .flex.items-center.gap-2 {
+      flex-wrap: wrap !important;
+      justify-content: center !important;
+      gap: 4px !important;
+    }
+
+    /* Smaller info button */
+    #injected-promos .promo-banner button[style*="font-size"] {
+      width: 20px !important;
+      height: 20px !important;
+      font-size: 10px !important;
+    }
+
+    /* Compact tooltips centered below info button */
+    #injected-promos .group\/info > div[class*="absolute"][class*="w-80"] {
+      width: 240px !important;
+      left: 50% !important;
+      right: auto !important;
+      transform: translateX(-50%) !important;
+    }
+
+    /* Remove row margin spacers for grid layout */
+    #injected-promos .favcreators-promo,
+    #injected-promos .movieshows-promo,
+    #injected-promos .stocks-promo,
+    #injected-promos .windows-fixer-promo,
+    #injected-promos .mentalhealth-promo {
+      margin-bottom: 0 !important;
+    }
+
+    /* Responsive grid column breakpoints */
+    /* Small: 2 columns (default from grid-cols-2 class) */
+    /* Medium screens (768px+): 3 columns */
+    @media (min-width: 768px) {
+      #injected-promos > div {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 0.625rem !important;
+      }
+    }
+
+    /* Large screens (1024px+): 5 columns × 2 rows */
+    @media (min-width: 1024px) {
+      #injected-promos > div {
+        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+      }
+      /* Slightly tighter padding at 5-col */
+      #injected-promos .promo-banner {
+        padding: 12px 8px !important;
+      }
+      /* Slightly smaller title at 5-col */
+      #injected-promos .promo-banner span.text-lg {
+        font-size: 0.75rem !important;
+      }
     }
 
     /* ===== OTHER STUFF POPUP MENU ===== */
@@ -459,13 +599,11 @@
                 NETWORK <span class="group-open/nav-section:rotate-180 transition-transform">▼</span>
               </summary>
               <div class="space-y-1 mt-1">
-                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-blue-500/20 text-blue-200 hover:text-white transition-all border border-transparent hover:border-blue-500/30 overflow-hidden"
-                  href="/WINDOWSFIXER/"
-                  title="Fixes boot issues such as EFI corrupt, winload.efi missing, or INACCESSIBLE_BOOT_DEVICE."><span
-                    class="text-lg">🛠️</span> Windows Boot Fixer</a>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-green-500/20 text-green-200 hover:text-white transition-all border border-transparent hover:border-green-500/30 overflow-hidden"
                   href="/MENTALHEALTHRESOURCES/"><span class="text-lg">🌟</span> Mental Health Resources</a>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-yellow-500/20 text-yellow-200 hover:text-white transition-all border border-transparent hover:border-yellow-500/30 overflow-hidden"
+                  href="/investments/"><span class="text-lg">💰</span> Investment Tools</a>
+                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-indigo-500/20 text-indigo-200 hover:text-white transition-all border border-transparent hover:border-indigo-500/30 overflow-hidden"
                   href="/findstocks"><span class="text-lg">📈</span> Find Stocks</a>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-amber-500/20 text-amber-200 hover:text-white transition-all border border-transparent hover:border-amber-500/30 overflow-hidden"
                   href="/MOVIESHOWS/"><span class="text-lg">🎬</span> Movies &amp; TV</a>
@@ -490,8 +628,16 @@
                   href="/fc/#/accountability"><span class="text-lg">🎯</span> Accountability Dashboard</a>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-red-500/20 text-red-200 hover:text-white transition-all border border-transparent hover:border-red-500/30 overflow-hidden"
                   href="/FIGHTGAME/"><span class="text-lg">⚔️</span> Shadow Arena (Fight Game)</a>
+                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-red-500/20 text-red-200 hover:text-white transition-all border border-transparent hover:border-red-500/30 overflow-hidden"
+                  href="/vr/game-arena/fps-v5/"><span class="text-lg">🎮</span> Game Prototypes</a>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-cyan-500/20 text-cyan-200 hover:text-white transition-all border border-transparent hover:border-cyan-500/30 overflow-hidden"
-                  href="/gotjob/"><span class="text-lg">💼</span> GotJob — $100K+ Jobs</a>
+                  href="/gotjob/"><span class="text-lg">💼</span> GotJob — Your Job Finding Hub</a>
+                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-blue-500/20 text-blue-200 hover:text-white transition-all border border-transparent hover:border-blue-500/30 overflow-hidden"
+                  href="/WINDOWSFIXER/"
+                  title="Fixes boot issues such as EFI corrupt, winload.efi missing, or INACCESSIBLE_BOOT_DEVICE."><span
+                    class="text-lg">🛠️</span> Windows Boot Fixer</a>
+                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-emerald-500/20 text-emerald-200 hover:text-white transition-all border border-transparent hover:border-emerald-500/30 overflow-hidden"
+                  href="/updates/"><span class="text-lg">📋</span> Latest Updates</a>
               </div>
             </details>
             <button
@@ -565,8 +711,8 @@
         </svg></button></div>
   </div>
   <!-- STATIC PROMO CONTAINER - Completely outside React's hydration scope -->
-  <div id="static-promo-container" class="max-w-4xl mx-auto px-4 py-6" style="display:none;">
-    <div class="grid grid-cols-2 gap-4">
+  <div id="static-promo-container" class="max-w-7xl mx-auto px-4 py-4" style="display:none;">
+    <div class="grid grid-cols-2 gap-3">
         <!-- Windows Fixer -->
         <div class="windows-fixer-promo w-full">
           <div class="promo-banner bg-white/5 rounded-2xl p-5 h-full">
@@ -759,7 +905,7 @@
                     <div class="space-y-2 text-xs text-[var(--text-2)]">
                       <div class="p-2 bg-white/5 rounded-lg"><span class="font-bold text-white">VR Hub</span> — Full desktop & Quest 3 experience: Events Explorer, Movie Theater, Creators Lounge, Stocks Floor, Weather Observatory & more</div>
                       <div class="p-2 bg-fuchsia-500/10 rounded-lg border border-fuchsia-500/20"><span class="font-bold text-fuchsia-300">V2(Mobile)</span> — Mobile-optimized VR with touch controls and streamlined UI</div>
-                      <div class="p-2 bg-red-500/10 rounded-lg border border-red-500/20"><span class="font-bold text-red-400">FPS Arena (18+)</span> — Multiplayer first-person shooter with 6 weapons, AI bots, online PvP, customizable loadouts & 12 ranked tiers. Requires FavCreators login.</div>
+                      <div class="p-2 bg-red-500/10 rounded-lg border border-red-500/20"><span class="font-bold text-red-400">FPS Arena</span> — Multiplayer first-person shooter with 6 weapons, AI bots, online PvP, customizable loadouts & 12 ranked tiers.</div>
                       <div class="p-2 bg-violet-500/10 rounded-lg border border-violet-500/20"><span class="font-bold text-violet-300">Game Arena</span> — Tic-Tac-Toe, Soccer Shootout & more 1v1 games</div>
                     </div>
                   </div>
@@ -802,6 +948,60 @@
             </div>
           </div>
         </div>
+        <!-- Game Prototypes -->
+        <div class="gameprototypes-promo w-full">
+          <div class="promo-banner bg-white/5 rounded-2xl p-5 h-full">
+            <div class="flex items-center gap-4 transition-all duration-500 group">
+              <div class="w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center shadow-lg">
+                <span class="text-3xl">🎮</span>
+              </div>
+              <div class="transition-all duration-500">
+                <div class="flex flex-col whitespace-nowrap">
+                  <span class="text-lg font-bold text-white">Game Prototypes</span>
+                  <span class="text-sm text-[var(--text-2)]">FPS drafts, fighting game &amp; more</span>
+                </div>
+              </div>
+              <div class="relative">
+                <a class="ml-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-base font-bold text-white transition-all whitespace-nowrap" href="/vr/game-arena/fps-v5/" target="_blank">Play →</a>
+              </div>
+              <div class="relative group/info">
+                <button class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-xs flex items-center justify-center cursor-pointer border-0" style="font-size:14px;">ℹ️</button>
+                <div class="absolute left-0 mt-2 w-80 p-4 bg-[#1a1a2e] border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-300 z-[9999] text-left" style="top: 100%;">
+                  <p class="text-xs font-bold text-red-400 mb-2">🔫 Experimental game pilots</p>
+                  <div class="space-y-2 text-xs text-[var(--text-2)]">
+                    <p>Try our game prototypes and <span class="text-white">email us your favorite</span>.</p>
+                    <ul class="list-disc list-inside space-y-1 pl-1">
+                      <li><span class="text-white">🎯 FPS Arena</span> — The original multiplayer shooter</li>
+                      <li><span class="text-white">🔫 3 New FPS Drafts</span> — Krunker, Tactical &amp; Realistic styles</li>
+                      <li><span class="text-white">🧟 Zombie Survival</span> — Wave-based defense</li>
+                      <li><span class="text-white">🥊 Shadow Arena</span> — 2D fighting game</li>
+                    </ul>
+                  </div>
+                  <p class="text-[10px] text-[var(--text-3)] mt-2 italic">Built with Three.js &amp; A-Frame.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Latest Updates -->
+        <div class="latestupdates-promo w-full">
+          <div class="promo-banner bg-white/5 rounded-2xl p-5 h-full">
+            <div class="flex items-center gap-4 transition-all duration-500 group">
+              <div class="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400 to-green-600 flex items-center justify-center shadow-lg">
+                <span class="text-3xl">📋</span>
+              </div>
+              <div class="transition-all duration-500">
+                <div class="flex flex-col whitespace-nowrap">
+                  <span class="text-lg font-bold text-white">Latest Updates</span>
+                  <span class="text-sm text-[var(--text-2)]">New features &amp; bug fixes</span>
+                </div>
+              </div>
+              <div class="relative">
+                <a class="ml-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-base font-bold text-white transition-all whitespace-nowrap" href="/updates/" target="_blank">View →</a>
+              </div>
+            </div>
+          </div>
+        </div>
         <!-- Other Stuff - Popup menu with links to all sections -->
         <div class="otherstuff-promo w-full">
           <div class="promo-banner bg-white/5 rounded-2xl p-5 h-full" style="cursor:pointer;" onclick="if(typeof openOtherStuffMenu==='function')openOtherStuffMenu();">
@@ -836,7 +1036,7 @@
           <a href="/fc" class="hover:text-[var(--pk-300)] transition">track your favourite livestreamers/creators</a> so they dont get lost in your feed, 
           find your next <a href="/movieshows2" class="hover:text-[var(--pk-300)] transition">movie/show</a> in a scrolling interface, 
           fix your <a href="/WINDOWSFIXER/" class="hover:text-[var(--pk-300)] transition">windows boot issues</a>, and 
-          find out if someone WITHOUT a supercomputer can beat the <a href="/findstocks/" class="hover:text-[var(--pk-300)] transition">stock</a> market
+          find out if someone WITHOUT a supercomputer can beat the <a href="/findstocks/" class="hover:text-[var(--pk-300)] transition">stock</a> market with our <a href="/investments/" class="hover:text-[var(--pk-300)] transition">investment tools</a>
         </p>
         <p class="text-sm text-[var(--text-3)] mt-2">Updated daily • Feb 4, 2026</p>
       </header>
@@ -1348,6 +1548,8 @@
           <a class="text-[10px] font-black uppercase tracking-widest text-[var(--text-3)] hover:text-white transition-colors"
             href="/">Event discovery</a>
           <a class="text-[10px] font-black uppercase tracking-widest text-[var(--text-3)] hover:text-white transition-colors"
+            href="/investments/">Investment Tools</a>
+          <a class="text-[10px] font-black uppercase tracking-widest text-[var(--text-3)] hover:text-white transition-colors"
             href="/findstocks">Stock analysis</a>
           <a class="text-[10px] font-black uppercase tracking-widest text-[var(--text-3)] hover:text-white transition-colors"
             href="/fc/#/guest">FAVCREATORS</a>
@@ -1390,6 +1592,8 @@
                      existing.querySelector('.mentalhealth-promo') &&
                      existing.querySelector('.vr-promo') &&
                      existing.querySelector('.accountability-promo') &&
+                     existing.querySelector('.gameprototypes-promo') &&
+                     existing.querySelector('.latestupdates-promo') &&
                      existing.querySelector('.otherstuff-promo');
       if (hasAll) {
         // Already good, just ensure visibility
@@ -1411,7 +1615,7 @@
     }
     
     // Hide React's promo sections (the broken hydrated ones)
-    document.querySelectorAll('main .windows-fixer-promo, main .movieshows-promo, main .favcreators-promo, main .stocks-promo, main .mentalhealth-promo, main .vr-promo, main .accountability-promo, main .otherstuff-promo').forEach(el => {
+    document.querySelectorAll('main .windows-fixer-promo, main .movieshows-promo, main .favcreators-promo, main .stocks-promo, main .mentalhealth-promo, main .vr-promo, main .accountability-promo, main .gameprototypes-promo, main .latestupdates-promo, main .otherstuff-promo').forEach(el => {
       if (!el.closest('#injected-promos') && !el.closest('#static-promo-container')) {
         el.style.cssText = 'display:none !important;';
       }
@@ -3022,6 +3226,156 @@
   }, true);
 })();
 </script>
+<!-- Click & page view tracking: logs events clicked, links clicked, pages visited (guests + users) -->
+<script>
+(function(){
+  var trackApi = 'https://findtorontoevents.ca/fc/api/track.php';
+
+  function getUid() {
+    var u = window.__fc_logged_in_user__;
+    return (u && u.id) ? u.id : null;
+  }
+
+  function detectPage() {
+    var p = window.location.pathname.toLowerCase();
+    if (p.indexOf('/fc/') !== -1 || p.indexOf('/favcreators') !== -1) return 'fc';
+    if (p.indexOf('/findstocks') !== -1) return 'stocks';
+    if (p.indexOf('/movieshows3') !== -1) return 'movies_v3';
+    if (p.indexOf('/movieshows2') !== -1) return 'movies_v2';
+    if (p.indexOf('/movieshows') !== -1 || p.indexOf('/movies') !== -1) return 'movies';
+    if (p.indexOf('/mentalhealthresources') !== -1) return 'wellness';
+    if (p.indexOf('/windowsfixer') !== -1) return 'windowsfixer';
+    if (p.indexOf('/stats') !== -1) return 'stats';
+    if (p.indexOf('/vr/') !== -1) return 'vr';
+    if (p.indexOf('/weather') !== -1) return 'weather';
+    return 'events';
+  }
+
+  function send(payload) {
+    try {
+      var uid = getUid();
+      if (uid) payload.user_id = uid;
+      fetch(trackApi, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(function(){});
+    } catch(e) {}
+  }
+
+  // ── Track page view on load ──
+  function trackPageView() {
+    send({
+      action: 'pageview',
+      page: detectPage(),
+      page_url: window.location.pathname + window.location.hash
+    });
+  }
+
+  // ── Track all link/event clicks + Quick View / card previews ──
+  document.addEventListener('click', function(e) {
+    var target = e.target;
+    if (!target) return;
+
+    // --- Quick View / event card preview detection ---
+    var text = (target.textContent || '').toLowerCase();
+    var isQuickView = text.indexOf('quick view') !== -1 ||
+                      (target.closest && target.closest('button[class*="quick"]'));
+    var isCardClick = false;
+    var eventCard = target.closest ? target.closest('article, [data-event-id], [class*="EventCard"]') : null;
+
+    // A card click is when the user clicks directly on an event card (not a link inside it)
+    if (eventCard && !target.closest('a[href]') && !isQuickView) {
+      // Only count if the click is on the card body, title, or image — not nav elements
+      var onCard = target.closest ? target.closest('h1, h2, h3, h4, img, [class*="title"], [class*="card"], [class*="panel"], article') : null;
+      if (onCard) isCardClick = true;
+    }
+
+    if (isQuickView || isCardClick) {
+      var previewCard = eventCard || (target.closest ? target.closest('[class*="card"], [class*="glass-panel"], article') : null);
+      var previewTitle = '';
+      if (previewCard) {
+        var th = previewCard.querySelector('h1, h2, h3, h4, [class*="title"]');
+        if (th) previewTitle = (th.textContent || '').trim().substring(0, 200);
+      }
+      var previewId = '';
+      if (previewCard && previewCard.getAttribute('data-event-id')) previewId = previewCard.getAttribute('data-event-id');
+
+      send({
+        action: 'click',
+        click_type: 'event_click',
+        page: detectPage(),
+        target_url: isQuickView ? 'quickview://' + previewTitle.substring(0, 100) : 'preview://' + previewTitle.substring(0, 100),
+        target_title: previewTitle,
+        target_id: previewId
+      });
+
+      if (window.__fte_recheckGuestLockdown) {
+        setTimeout(window.__fte_recheckGuestLockdown, 1500);
+      }
+      return; // Don't double-count as a link click below
+    }
+
+    // --- Standard link click tracking ---
+    var a = target.closest ? target.closest('a[href]') : null;
+    if (!a || !a.href) return;
+    var href = a.href;
+
+    // Determine click type
+    var clickType = 'link_click';
+    if (href.indexOf('eventbrite') !== -1 || href.indexOf('universe.com') !== -1 || href.indexOf('showpass') !== -1 || href.indexOf('ticketmaster') !== -1) {
+      clickType = 'event_click';
+    } else if (href.indexOf('/fc/') !== -1 || href.indexOf('/favcreators') !== -1) {
+      clickType = 'nav_click';
+    } else if (href.indexOf('/findstocks') !== -1 || href.indexOf('/MOVIESHOWS') !== -1 || href.indexOf('/MENTALHEALTHRESOURCES') !== -1 || href.indexOf('/WINDOWSFIXER') !== -1) {
+      clickType = 'nav_click';
+    }
+
+    // Try to get event title from card context
+    var title = '';
+    var card = a.closest ? a.closest('[class*="card"], [class*="glass-panel"], article, [data-event-id]') : null;
+    if (card) {
+      var h = card.querySelector('h2, h3, h4, [class*="title"]');
+      if (h) title = (h.textContent || '').trim().substring(0, 200);
+    }
+    if (!title) title = (a.textContent || '').trim().substring(0, 200);
+
+    var eventId = '';
+    if (card && card.getAttribute('data-event-id')) eventId = card.getAttribute('data-event-id');
+
+    send({
+      action: 'click',
+      click_type: clickType,
+      page: detectPage(),
+      target_url: href.substring(0, 1024),
+      target_title: title,
+      target_id: eventId
+    });
+
+    // Re-check lockdown after event clicks (server needs time to record first)
+    if (clickType === 'event_click' && window.__fte_recheckGuestLockdown) {
+      setTimeout(window.__fte_recheckGuestLockdown, 1500);
+    }
+  }, true);
+
+  // ── Track heart/save clicks ──
+  window.addEventListener('toronto-event-saved', function(ev) {
+    var detail = ev && ev.detail ? ev.detail : {};
+    var event = detail.event || detail || {};
+    send({
+      action: 'click',
+      click_type: 'heart_click',
+      page: 'events',
+      target_url: event.url || event.link || '',
+      target_title: event.title || event.name || '',
+      target_id: event.id || ''
+    });
+  });
+
+  // Fire page view after short delay (let auth check complete first)
+  setTimeout(trackPageView, 1500);
+})();
+</script>
 <!-- Bridge: when app dispatches toronto-event-saved we persist to server and show "Saved to DB" or error -->
 <script>
 (function(){
@@ -3068,6 +3422,117 @@
   });
 })();
 </script>
+<!-- Guest lockdown: after 2 calendar days of visits (by IP), require sign-in to view events -->
+<script>
+(function(){
+  var guestUsageApi = 'https://findtorontoevents.ca/fc/api/guest_usage.php';
+
+  function checkGuestSiteLockdown() {
+    // If user is logged in, still ping to mark IP as registered, but no lockdown
+    var user = window.__fc_logged_in_user__;
+    var url = guestUsageApi + '?action=check_site';
+    if (user && user.id) {
+      url += '&user_id=' + user.id;
+      fetch(url, { credentials: 'include' }).catch(function(){});
+      removeLoginWall();
+      return;
+    }
+
+    fetch(guestUsageApi + '?action=check_site', { credentials: 'include' })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data || !data.ok) return;
+
+        // Highlight sign-in button for all guests (even day 1)
+        if (!window.__fc_logged_in_user__) {
+          highlightSignInIsland();
+        }
+
+        // If past the 2-day limit, show login wall
+        if (!data.allowed && !window.__fc_logged_in_user__) {
+          showLoginWall();
+        }
+      })
+      .catch(function() { /* fail open — don't block on network error */ });
+  }
+
+  function highlightSignInIsland() {
+    var style = document.getElementById('fte-signin-pulse-css');
+    if (style) return;
+    style = document.createElement('style');
+    style.id = 'fte-signin-pulse-css';
+    style.textContent =
+      '@keyframes fte-signin-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.7); } 50% { box-shadow: 0 0 0 12px rgba(99,102,241,0); } }' +
+      '#signin-island > button, #signin-island > a { animation: fte-signin-pulse 2s ease-in-out infinite !important; border-color: rgba(99,102,241,0.6) !important; }';
+    document.head.appendChild(style);
+  }
+
+  function showLoginWall() {
+    if (document.getElementById('fte-guest-login-wall')) return;
+
+    var wall = document.createElement('div');
+    wall.id = 'fte-guest-login-wall';
+    wall.setAttribute('style',
+      'position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;' +
+      'background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);'
+    );
+
+    wall.innerHTML =
+      '<div style="max-width:420px;width:90%;padding:2.5rem;background:linear-gradient(135deg,rgba(30,30,60,0.98),rgba(20,20,40,0.98));border-radius:1.5rem;border:1px solid rgba(99,102,241,0.3);text-align:center;color:#fff;box-shadow:0 25px 60px rgba(0,0,0,0.5);">' +
+        '<div style="font-size:3rem;margin-bottom:1rem;">\uD83D\uDD12</div>' +
+        '<h2 style="font-size:1.5rem;font-weight:800;margin:0 0 0.75rem 0;background:linear-gradient(135deg,#a5b4fc,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Sign in to continue</h2>' +
+        '<p style="color:#94a3b8;font-size:0.95rem;line-height:1.6;margin:0 0 1.5rem 0;">' +
+          'You\'ve been enjoying Toronto events for a couple of days! Create a free account to keep browsing and unlock all features.' +
+        '</p>' +
+        '<div style="text-align:left;color:#cbd5e1;font-size:0.85rem;margin-bottom:1.5rem;padding-left:1rem;">' +
+          '\u2022 Save your favorite events<br>' +
+          '\u2022 Track creators across platforms<br>' +
+          '\u2022 Unlimited AI assistant access<br>' +
+          '\u2022 Personalized recommendations' +
+        '</div>' +
+        '<button id="fte-wall-signin-btn" style="display:inline-block;padding:0.85rem 2rem;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:0.75rem;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:0 10px 25px rgba(99,102,241,0.3);transition:transform 0.15s ease;">Sign In / Create Account</button>' +
+        '<p style="color:#64748b;font-size:0.75rem;margin-top:1rem;">Free \u2022 30 seconds \u2022 Google or email</p>' +
+      '</div>';
+
+    document.body.appendChild(wall);
+
+    var btn = document.getElementById('fte-wall-signin-btn');
+    if (btn) {
+      btn.onmouseover = function() { this.style.transform = 'scale(1.05)'; };
+      btn.onmouseout = function() { this.style.transform = 'scale(1)'; };
+      btn.onclick = function() {
+        if (window.openSignInModal) window.openSignInModal();
+      };
+    }
+  }
+
+  function removeLoginWall() {
+    var wall = document.getElementById('fte-guest-login-wall');
+    if (wall) wall.remove();
+    var pulse = document.getElementById('fte-signin-pulse-css');
+    if (pulse) pulse.remove();
+  }
+
+  // Re-check after login (user sets window.__fc_logged_in_user__ on successful auth)
+  var _origCloseSignIn = window.closeSignInModal;
+  window.closeSignInModal = function() {
+    if (_origCloseSignIn) _origCloseSignIn();
+    if (window.__fc_logged_in_user__) removeLoginWall();
+  };
+
+  // Expose so tracking script can re-check after event clicks
+  window.__fte_recheckGuestLockdown = checkGuestSiteLockdown;
+
+  // Run check after page load (give time for auth check to complete)
+  function run() {
+    setTimeout(checkGuestSiteLockdown, 2000);
+    setTimeout(checkGuestSiteLockdown, 6000);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+  else run();
+  window.addEventListener('load', run);
+})();
+</script>
 <!-- OTHER STUFF POPUP MENU - Dynamic creation (immune to React hydration) -->
 <script>
 (function() {
@@ -3088,9 +3553,21 @@
     // Divider: Apps & Tools
     + '<div class="otherstuff-divider"></div>'
     + '<div class="otherstuff-section-label">Apps & Tools</div>'
-    // Stocks
+    // Investment Tools (Landing)
+    + '<a href="/investments/" class="otherstuff-item" target="_blank">'
+    + '<div class="os-icon" style="background:rgba(99,102,241,0.15);">\u{1F4B0}</div>'
+    + '<div class="os-text"><div class="os-title">Investment Tools</div>'
+    + '<div class="os-desc">Stocks, mutual funds, portfolio analysis & backtesting</div></div>'
+    + '<span class="os-arrow">\u203A</span></a>'
+    // Investment Hub (Global Dashboard)
+    + '<a href="/findstocks_global/" class="otherstuff-item" target="_blank">'
+    + '<div class="os-icon" style="background:rgba(34,197,94,0.15);">\u{1F4CA}</div>'
+    + '<div class="os-text"><div class="os-title">Investment Hub</div>'
+    + '<div class="os-desc">All portfolios, analytics & tools in one place</div></div>'
+    + '<span class="os-arrow">\u203A</span></a>'
+    // Stock Picks
     + '<a href="/findstocks/" class="otherstuff-item" target="_blank">'
-    + '<div class="os-icon" style="background:rgba(99,102,241,0.15);">\u{1F4C8}</div>'
+    + '<div class="os-icon" style="background:rgba(245,158,11,0.15);">\u{1F4C8}</div>'
     + '<div class="os-text"><div class="os-title">Stock Ideas</div>'
     + '<div class="os-desc">AI-validated picks, updated daily</div></div>'
     + '<span class="os-arrow">\u203A</span></a>'
@@ -3115,7 +3592,7 @@
     // GotJob - Jobs Database
     + '<a href="/gotjob/" class="otherstuff-item" target="_blank">'
     + '<div class="os-icon" style="background:rgba(6,182,212,0.15);">\u{1F4BC}</div>'
-    + '<div class="os-text"><div class="os-title" style="color:#22d3ee;">GotJob \u2014 $100K+ Jobs</div>'
+    + '<div class="os-text"><div class="os-title" style="color:#22d3ee;">GotJob \u2014 Your Job Finding Hub</div>'
     + '<div class="os-desc">Toronto tech jobs: ServiceNow, VBA, Alteryx, Full Stack & more</div></div>'
     + '<span class="os-arrow">\u203A</span></a>'
     // Divider: Movies
@@ -3160,17 +3637,17 @@
     + '<div class="os-text"><div class="os-title">Game Arena</div>'
     + '<div class="os-desc">1v1 Tic-Tac-Toe, Soccer Shootout & FPS Arena in VR</div></div>'
     + '<span class="os-arrow">\u203A</span></a>'
-    // FPS Arena (18+ Multiplayer)
-    + '<a href="/vr/game-arena/fps-arena.html" class="otherstuff-item" target="_blank">'
-    + '<div class="os-icon" style="background:rgba(239,68,68,0.15);">\u{1F3AF}</div>'
-    + '<div class="os-text"><div class="os-title" style="color:#ef4444;">FPS Arena <span style="font-size:10px;background:rgba(239,68,68,0.2);padding:1px 6px;border-radius:4px;margin-left:4px;">18+</span></div>'
-    + '<div class="os-desc">6 weapons, AI & online PvP, ranked multiplayer</div></div>'
-    + '<span class="os-arrow">\u203A</span></a>'
     // FPS Arena
     + '<a href="/vr/game-arena/fps-arena.html" class="otherstuff-item" target="_blank">'
     + '<div class="os-icon" style="background:rgba(239,68,68,0.15);">\uD83C\uDFAF</div>'
     + '<div class="os-text"><div class="os-title">FPS Arena</div>'
     + '<div class="os-desc">First-person shooter — 6 weapons, AI bots, PvP & ranked</div></div>'
+    + '<span class="os-arrow">\u203A</span></a>'
+    // Game Prototypes
+    + '<a href="/vr/game-arena/fps-v5/" class="otherstuff-item" target="_blank">'
+    + '<div class="os-icon" style="background:rgba(168,85,247,0.15);">\u{1F3AE}</div>'
+    + '<div class="os-text"><div class="os-title" style="color:#a855f7;">Game Prototypes</div>'
+    + '<div class="os-desc">FPS drafts, fighting game & more — try them, email your favorite</div></div>'
     + '<span class="os-arrow">\u203A</span></a>'
     // Shadow Arena Fighting Game
     + '<a href="/FIGHTGAME/" class="otherstuff-item" target="_blank">'
@@ -3183,6 +3660,14 @@
     + '<div class="os-icon" style="background:rgba(102,126,234,0.15);">\u{1F6E0}\uFE0F</div>'
     + '<div class="os-text"><div class="os-title">Windows Boot Fixer</div>'
     + '<div class="os-desc">Fix BSOD, bootloader & recovery issues</div></div>'
+    + '<span class="os-arrow">\u203A</span></a>'
+    // Divider: Updates
+    + '<div class="otherstuff-divider"></div>'
+    // Latest Updates
+    + '<a href="/updates/" class="otherstuff-item" target="_blank">'
+    + '<div class="os-icon" style="background:rgba(16,185,129,0.15);">\u{1F4CB}</div>'
+    + '<div class="os-text"><div class="os-title" style="color:#34d399;">Latest Updates</div>'
+    + '<div class="os-desc">New features, improvements & bug fixes</div></div>'
     + '<span class="os-arrow">\u203A</span></a>'
     + '</div>'
     // Sticky footer: Back to Events
