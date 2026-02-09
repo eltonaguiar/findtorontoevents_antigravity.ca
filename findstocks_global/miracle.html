@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DayTraders Miracle | Claude-Generated Stock Scanner</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --gold: #f59e0b;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-dark); color: var(--text); min-height: 100vh; line-height: 1.5; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .header { background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%); border-bottom: 1px solid var(--border); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+        .header h1 { font-size: 1.5rem; background: linear-gradient(135deg, var(--gold), var(--green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header .subtitle { font-size: 0.7rem; color: var(--text-dim); margin-top: 0.1rem; }
+        .header-links { display: flex; gap: 1rem; font-size: 0.85rem; }
+        .header-links a { color: var(--text-dim); }
+        .header-links a:hover { color: var(--text); }
+
+        .container { max-width: 1300px; margin: 0 auto; padding: 1.5rem; }
+
+        /* Summary stats */
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem; }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; text-align: center; }
+        .stat-card .val { font-size: 1.6rem; font-weight: 800; }
+        .stat-card .lbl { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+
+        .section-title { font-size: 1.2rem; font-weight: 700; margin: 1.5rem 0 0.75rem; display: flex; align-items: center; gap: 0.6rem; }
+        .section-title .badge { font-size: 0.6rem; padding: 0.15rem 0.5rem; border-radius: 99px; background: var(--accent); color: white; font-weight: 700; text-transform: uppercase; }
+
+        /* Action buttons */
+        .actions { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .btn { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text); cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+        .btn:hover { border-color: var(--accent); background: var(--bg-card-hover); }
+        .btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+        .btn.btn-green { border-color: var(--green); color: var(--green); }
+        .btn.btn-green:hover { background: var(--green-dim); }
+
+        /* Pick cards */
+        .picks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 0.75rem; }
+        .pick-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; transition: all 0.2s; position: relative; overflow: hidden; }
+        .pick-card:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,0,0,0.3); }
+        .pick-card.cdr { border-left: 3px solid var(--gold); }
+        .pick-card.non-cdr { border-left: 3px solid var(--blue); }
+
+        .pick-rank { position: absolute; top: 0.6rem; right: 0.6rem; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; background: var(--border); color: var(--text-dim); }
+        .pick-rank.gold { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; }
+        .pick-rank.silver { background: linear-gradient(135deg, #9ca3af, #6b7280); color: #000; }
+        .pick-rank.bronze { background: linear-gradient(135deg, #b45309, #92400e); color: #fff; }
+
+        .pick-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; }
+        .pick-ticker { font-size: 1.1rem; font-weight: 800; }
+        .pick-name { font-size: 0.7rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+        .conf-badge { font-size: 0.55rem; font-weight: 800; padding: 0.1rem 0.4rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.03em; }
+        .conf-badge.extremely-strong { background: rgba(34,197,94,0.25); color: #22c55e; }
+        .conf-badge.very-strong { background: rgba(34,197,94,0.15); color: #22c55e; }
+        .conf-badge.strong { background: rgba(59,130,246,0.15); color: #3b82f6; }
+        .conf-badge.okay { background: rgba(234,179,8,0.15); color: #eab308; }
+        .conf-badge.weak { background: rgba(239,68,68,0.1); color: #ef4444; }
+
+        .pick-prices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; margin: 0.6rem 0; }
+        .price-item { text-align: center; }
+        .price-item .lbl { font-size: 0.55rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+        .price-item .val { font-size: 0.9rem; font-weight: 700; }
+        .val-green { color: var(--green); }
+        .val-red { color: var(--red); }
+        .val-gold { color: var(--gold); }
+
+        .pick-meta { display: flex; justify-content: space-between; align-items: center; padding-top: 0.5rem; border-top: 1px solid var(--border); font-size: 0.7rem; color: var(--text-dim); flex-wrap: wrap; gap: 0.3rem; }
+        .strat-badge { font-size: 0.6rem; padding: 0.1rem 0.35rem; background: rgba(99,102,241,0.15); color: var(--accent); border-radius: 4px; }
+        .cdr-tag { font-size: 0.55rem; padding: 0.1rem 0.3rem; background: rgba(245,158,11,0.2); color: var(--gold); border-radius: 4px; font-weight: 700; }
+        .fee-tag { font-size: 0.55rem; color: var(--text-dim); }
+
+        .score-bar { display: inline-flex; align-items: center; gap: 0.3rem; }
+        .mini-bar { width: 45px; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+        .mini-fill { height: 100%; border-radius: 3px; }
+        .mini-fill.high { background: var(--green); }
+        .mini-fill.mid { background: var(--yellow); }
+        .mini-fill.low { background: var(--red); }
+
+        /* Leaderboard table */
+        .lb-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1.5rem; }
+        .lb-table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        .lb-table th { background: #1a1a3a; padding: 0.6rem 0.8rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); border-bottom: 1px solid var(--border); }
+        .lb-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid rgba(42,42,74,0.5); font-size: 0.8rem; }
+        .lb-table tr:hover { background: var(--bg-card-hover); }
+
+        .loading { text-align: center; padding: 3rem; color: var(--text-dim); }
+        .spinner { display: inline-block; width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .disclaimer { text-align: center; font-size: 0.65rem; color: var(--text-dim); padding: 2rem 1rem; border-top: 1px solid var(--border); margin-top: 2rem; }
+
+        .status-msg { padding: 0.5rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.8rem; }
+        .status-msg.success { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+        .status-msg.error { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+
+        @media (max-width: 600px) {
+            .picks-grid { grid-template-columns: 1fr; }
+            .header { padding: 0.75rem 1rem; }
+            .container { padding: 0.75rem; }
+            .stats-row { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>DayTraders Miracle</h1>
+            <div class="subtitle">Claude-Generated AI Stock Scanner &mdash; v3 (miracle3_ tables)</div>
+        </div>
+        <div class="header-links">
+            <a href="/findstocks/portfolio2/picks.html">Portfolio Picks</a>
+            <a href="/findstocks/portfolio2/leaderboard.html">Algo Leaderboard</a>
+            <a href="/findstocks_global/">Investment Hub</a>
+            <a href="/findstocks/">Home</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="status-area"></div>
+
+        <div class="actions">
+            <button class="btn btn-green" onclick="runScan()">Run Scan Now</button>
+            <button class="btn" onclick="runResolve()">Resolve Outcomes</button>
+            <button class="btn" onclick="runLearn()">Run Learning</button>
+            <button class="btn" id="btn-cdr" onclick="toggleCDR()">CDR Only</button>
+            <button class="btn" id="btn-refresh" onclick="loadAll()">Refresh</button>
+        </div>
+
+        <div id="stats-area"></div>
+        <div id="loading" class="loading"><div class="spinner"></div><p style="margin-top:0.75rem;">Loading miracle picks...</p></div>
+
+        <div id="picks-section" style="display:none;">
+            <div class="section-title"><span>Today's Miracle Picks</span><span class="badge" style="background:var(--gold);color:#000;">Day Trade</span></div>
+            <div id="picks-grid" class="picks-grid"></div>
+        </div>
+
+        <div id="leaderboard-section" style="display:none;">
+            <div class="section-title"><span>Strategy Leaderboard</span><span class="badge">Performance</span></div>
+            <div id="leaderboard"></div>
+        </div>
+
+        <div class="disclaimer">
+            DayTraders Miracle_CURSOR &mdash; Generated by Claude (Anthropic). For educational and research purposes only.<br>
+            Past performance does not guarantee future results. Always do your own research. Questrade fee model used for P&L calculations.
+        </div>
+    </div>
+
+<script>
+var API = '/findstocks_global/api/';
+var cdrOnly = false;
+
+function apiGet(url, cb) {
+    var x = new XMLHttpRequest();
+    x.open('GET', API + url, true);
+    x.onload = function() { try { cb(JSON.parse(x.responseText)); } catch(e) { cb(null); } };
+    x.onerror = function() { cb(null); };
+    x.send();
+}
+
+function fmt(n, d) { return (n === null || n === undefined || isNaN(n)) ? '-' : parseFloat(n).toFixed(d || 2); }
+function rankClass(r) { return r === 1 ? 'gold' : (r === 2 ? 'silver' : (r === 3 ? 'bronze' : '')); }
+function barClass(s) { return s >= 70 ? 'high' : (s >= 50 ? 'mid' : 'low'); }
+function confClass(c) { return (c || '').toLowerCase().replace(/\s+/g, '-'); }
+
+function showStatus(msg, type) {
+    document.getElementById('status-area').innerHTML = '<div class="status-msg ' + type + '">' + msg + '</div>';
+    setTimeout(function() { document.getElementById('status-area').innerHTML = ''; }, 5000);
+}
+
+function renderStats(data) {
+    if (!data || !data.stats) return;
+    var s = data.stats;
+    var html = '<div class="stats-row">'
+        + '<div class="stat-card"><div class="val" style="color:var(--accent);">' + s.watchlist_tickers + '</div><div class="lbl">Watchlist</div></div>'
+        + '<div class="stat-card"><div class="val">' + s.active_strategies + '</div><div class="lbl">Strategies</div></div>'
+        + '<div class="stat-card"><div class="val">' + s.total_picks + '</div><div class="lbl">Total Picks</div></div>'
+        + '<div class="stat-card"><div class="val val-green">' + s.total_wins + '</div><div class="lbl">Wins</div></div>'
+        + '<div class="stat-card"><div class="val val-red">' + s.total_losses + '</div><div class="lbl">Losses</div></div>'
+        + '<div class="stat-card"><div class="val" style="color:var(--gold);">' + s.overall_win_rate + '%</div><div class="lbl">Win Rate</div></div>'
+        + '<div class="stat-card"><div class="val">' + s.today_picks + '</div><div class="lbl">Today</div></div>'
+        + '<div class="stat-card"><div class="val" style="color:var(--blue);">' + s.learning_adjustments + '</div><div class="lbl">Learned</div></div>'
+        + '</div>';
+    document.getElementById('stats-area').innerHTML = html;
+}
+
+function renderPicks(data) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('picks-section').style.display = 'block';
+    if (!data || !data.picks || data.picks.length === 0) {
+        document.getElementById('picks-grid').innerHTML = '<p style="color:var(--text-dim);padding:1rem;">No picks found. Run a scan to generate picks.</p>';
+        return;
+    }
+    var html = '';
+    var picks = data.picks;
+    for (var i = 0; i < picks.length; i++) {
+        var p = picks[i];
+        var rank = i + 1;
+        var isCDR = parseInt(p.is_cdr) === 1;
+        var score = parseInt(p.score) || 0;
+        var conf = p.confidence || 'Okay';
+        var rr = parseFloat(p.risk_reward_ratio) || 0;
+        var netProfit = parseFloat(p.net_profit_if_tp) || 0;
+        var fee = parseFloat(p.questrade_buy_fee || 0) + parseFloat(p.questrade_sell_fee || 0);
+
+        html += '<div class="pick-card ' + (isCDR ? 'cdr' : 'non-cdr') + '">'
+            + '<div class="pick-rank ' + rankClass(rank) + '">' + rank + '</div>'
+            + '<div class="pick-header">'
+            + '<span class="pick-ticker">' + p.ticker + '</span>'
+            + '<span class="pick-name">' + (p.company_name || '') + '</span>'
+            + '<span class="conf-badge ' + confClass(conf) + '">' + conf + '</span>'
+            + '</div>'
+            + '<div class="pick-prices">'
+            + '<div class="price-item"><div class="lbl">Entry</div><div class="val">$' + fmt(p.entry_price) + '</div></div>'
+            + '<div class="price-item"><div class="lbl">Target +' + fmt(p.take_profit_pct, 1) + '%</div><div class="val val-green">$' + fmt(p.take_profit_price) + '</div></div>'
+            + '<div class="price-item"><div class="lbl">Stop -' + fmt(p.stop_loss_pct, 1) + '%</div><div class="val val-red">$' + fmt(p.stop_loss_price) + '</div></div>'
+            + '</div>'
+            + '<div style="display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;margin-bottom:0.4rem;">'
+            + '<span class="score-bar">Score: <span class="mini-bar"><span class="mini-fill ' + barClass(score) + '" style="width:' + score + '%;"></span></span> ' + score + '</span>'
+            + '<span>R:R ' + fmt(rr, 1) + ':1</span>'
+            + '</div>'
+            + '<div class="pick-meta">'
+            + '<span class="strat-badge">' + (p.strategy_name || '') + '</span>'
+            + (isCDR ? '<span class="cdr-tag">CDR $0 FEE</span>' : '<span class="fee-tag">Fee: $' + fmt(fee) + '</span>')
+            + '<span style="color:' + (netProfit > 0 ? 'var(--green)' : 'var(--red)') + ';font-weight:700;">Net: $' + fmt(netProfit) + '</span>'
+            + '</div></div>';
+    }
+    document.getElementById('picks-grid').innerHTML = html;
+}
+
+function renderLeaderboard(data) {
+    document.getElementById('leaderboard-section').style.display = 'block';
+    if (!data || !data.leaderboard || data.leaderboard.length === 0) {
+        document.getElementById('leaderboard').innerHTML = '<p style="color:var(--text-dim);padding:1rem;">No strategy data yet.</p>';
+        return;
+    }
+    var lb = data.leaderboard;
+    var html = '<div class="lb-wrap"><table class="lb-table"><thead><tr>'
+        + '<th>#</th><th>Strategy</th><th>Picks</th><th>W/L</th><th>Win Rate</th><th>Avg Return</th><th>R:R</th><th>Score</th>'
+        + '</tr></thead><tbody>';
+    for (var i = 0; i < lb.length; i++) {
+        var s = lb[i];
+        var wr = parseFloat(s.win_rate) || 0;
+        html += '<tr>'
+            + '<td><span class="pick-rank ' + rankClass(s.rank) + '" style="width:22px;height:22px;font-size:0.6rem;">' + s.rank + '</span></td>'
+            + '<td style="font-weight:700;">' + s.strategy_name + '</td>'
+            + '<td>' + s.total_picks + '</td>'
+            + '<td><span class="val-green">' + (s.wins||0) + '</span>/<span class="val-red">' + (s.losses||0) + '</span></td>'
+            + '<td><span class="' + (wr >= 50 ? 'val-green' : 'val-red') + '">' + fmt(wr, 1) + '%</span></td>'
+            + '<td>' + fmt(s.avg_outcome_pct, 2) + '%</td>'
+            + '<td>' + fmt(s.avg_rr, 1) + ':1</td>'
+            + '<td style="font-weight:800;">' + fmt(s.composite_score, 1) + '</td>'
+            + '</tr>';
+    }
+    html += '</tbody></table></div>';
+    document.getElementById('leaderboard').innerHTML = html;
+}
+
+function loadAll() {
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('picks-section').style.display = 'none';
+    var picksUrl = 'picks3.php' + (cdrOnly ? '?cdr_only=1' : '');
+    apiGet('dashboard3.php?action=stats', renderStats);
+    apiGet(picksUrl, renderPicks);
+    apiGet('dashboard3.php?action=leaderboard', renderLeaderboard);
+}
+
+function runScan() {
+    var BATCH = 10;
+    var totalPicks = 0, totalSaved = 0, totalScanned = 0, totalErrors = [];
+    showStatus('Starting batch scan (10 tickers per batch)...', 'success');
+
+    function scanBatch(offset) {
+        var url = 'scanner3.php?batch=' + BATCH + '&offset=' + offset;
+        apiGet(url, function(d) {
+            if (!d || !d.ok) { showStatus('Batch failed at offset ' + offset, 'error'); loadAll(); return; }
+            totalPicks += (d.picks_found || 0);
+            totalSaved += (d.picks_saved || 0);
+            totalScanned += (d.tickers_scanned || 0);
+            if (d.errors) totalErrors = totalErrors.concat(d.errors);
+            var pct = d.batch ? Math.min(100, Math.round((d.batch.offset + d.batch.size) / d.batch.total * 100)) : 100;
+            showStatus('Scanning... ' + pct + '% (' + totalScanned + ' tickers, ' + totalPicks + ' picks found)', 'success');
+
+            if (d.batch && d.batch.has_more) {
+                scanBatch(offset + BATCH);
+            } else {
+                showStatus('Scan complete: ' + totalScanned + ' tickers scanned, ' + totalPicks + ' picks found, ' + totalSaved + ' saved.' + (totalErrors.length ? ' (' + totalErrors.length + ' errors)' : ''), 'success');
+                loadAll();
+            }
+        });
+    }
+    scanBatch(0);
+}
+
+function runResolve() {
+    showStatus('Resolving pending pick outcomes...', 'success');
+    apiGet('resolve3.php', function(d) {
+        if (d && d.ok) showStatus('Resolved: ' + (d.resolved||0) + ' picks. Still pending: ' + (d.still_pending||0), 'success');
+        else showStatus('Resolve failed.', 'error');
+        loadAll();
+    });
+}
+
+function runLearn() {
+    showStatus('Running self-adjusting learning algorithm...', 'success');
+    apiGet('learning3.php?action=adjust', function(d) {
+        if (d && d.ok) showStatus('Learning complete: ' + (d.adjustments_made||0) + ' adjustments applied to ' + (d.total_strategies||0) + ' strategies.', 'success');
+        else showStatus('Learning failed.', 'error');
+        loadAll();
+    });
+}
+
+function toggleCDR() {
+    cdrOnly = !cdrOnly;
+    document.getElementById('btn-cdr').classList.toggle('active', cdrOnly);
+    loadAll();
+}
+
+loadAll();
+</script>
+</body>
+</html>

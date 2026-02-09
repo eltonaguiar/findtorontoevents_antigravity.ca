@@ -105,6 +105,7 @@ const ALL_PAGES: PageEntry[] = [
 
   // ── FindStocks Global ──
   { path: '/findstocks2_global/', name: 'Global Stock Finder', module: 'findstocks_global' },
+  { path: '/findstocks_global/miracle.html', name: 'DayTraders Miracle Scanner', module: 'findstocks_global' },
 
   // ── Mutual Funds V2 Portfolio ──
   { path: '/findmutualfunds2/portfolio2/', name: 'MF Portfolio V2', module: 'mutualfunds' },
