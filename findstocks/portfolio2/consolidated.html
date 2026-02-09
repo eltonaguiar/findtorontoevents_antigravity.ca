@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consolidated Stock Picks | Cross-Algorithm Consensus</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --gold: #f59e0b;
+            --cyan: #06b6d4;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--gold), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-links { display: flex; gap: 1rem; font-size: 0.85rem; flex-wrap: wrap; }
+        .header-links a { color: var(--text-dim); }
+        .header-links a:hover { color: var(--text); }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+
+        /* Freshness banner */
+        .freshness-banner {
+            display: flex; gap: 0.75rem; flex-wrap: wrap;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1.5rem;
+        }
+        .freshness-item {
+            display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem;
+        }
+        .freshness-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+        }
+        .freshness-dot.fresh { background: var(--green); }
+        .freshness-dot.stale { background: var(--yellow); }
+        .freshness-dot.outdated { background: var(--red); }
+
+        .section-title {
+            font-size: 1.2rem; font-weight: 700;
+            margin: 2rem 0 1rem;
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+        .badge {
+            font-size: 0.6rem; padding: 0.2rem 0.5rem;
+            border-radius: 99px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .badge-consensus { background: var(--gold); color: #000; }
+        .badge-count { background: var(--accent); color: #fff; }
+        .badge-fresh { background: var(--green); color: #000; }
+        .badge-stale { background: var(--yellow); color: #000; }
+        .badge-outdated { background: var(--red); color: #fff; }
+
+        /* Filter bar */
+        .filter-bar {
+            display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+            align-items: center;
+        }
+        .filter-bar select, .filter-bar input {
+            background: var(--bg-card); color: var(--text); border: 1px solid var(--border);
+            padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.85rem;
+        }
+        .filter-bar label { font-size: 0.8rem; color: var(--text-dim); }
+        .filter-bar button {
+            background: var(--accent); color: #fff; border: none;
+            padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .filter-bar button:hover { opacity: 0.85; }
+
+        /* Stats row */
+        .stats-row {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.75rem; margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1rem; text-align: center;
+        }
+        .stat-card .num { font-size: 1.8rem; font-weight: 800; }
+        .stat-card .label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; }
+
+        /* Consensus cards */
+        .picks-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1rem;
+        }
+        .pick-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.25rem;
+            transition: border-color 0.2s, transform 0.1s;
+            position: relative;
+        }
+        .pick-card:hover {
+            border-color: var(--accent); transform: translateY(-2px);
+        }
+        .pick-card .rank-badge {
+            position: absolute; top: -8px; left: 12px;
+            width: 28px; height: 28px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.75rem;
+        }
+        .rank-1 { background: var(--gold); color: #000; }
+        .rank-2 { background: #c0c0c0; color: #000; }
+        .rank-3 { background: #cd7f32; color: #fff; }
+        .rank-default { background: var(--border); color: var(--text); }
+
+        .pick-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 0.75rem; padding-left: 24px;
+        }
+        .pick-ticker {
+            font-size: 1.3rem; font-weight: 800;
+            color: var(--cyan);
+        }
+        .pick-company { font-size: 0.75rem; color: var(--text-dim); }
+        .consensus-badge {
+            font-size: 0.7rem; padding: 0.25rem 0.6rem;
+            border-radius: 99px; font-weight: 700;
+            border: 1px solid;
+        }
+        .consensus-high { background: rgba(245, 158, 11, 0.15); border-color: var(--gold); color: var(--gold); }
+        .consensus-medium { background: rgba(99, 102, 241, 0.15); border-color: var(--accent); color: var(--accent); }
+        .consensus-low { background: rgba(136, 136, 170, 0.1); border-color: var(--text-dim); color: var(--text-dim); }
+
+        .pick-metrics {
+            display: grid; grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem; margin-bottom: 0.75rem;
+        }
+        .metric { text-align: center; }
+        .metric .val { font-size: 1rem; font-weight: 700; font-family: monospace; }
+        .metric .lbl { font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; }
+        .val.positive { color: var(--green); }
+        .val.negative { color: var(--red); }
+
+        .pick-sources {
+            border-top: 1px solid var(--border); padding-top: 0.75rem;
+        }
+        .source-tag {
+            display: inline-block; font-size: 0.65rem;
+            padding: 0.15rem 0.5rem; border-radius: 4px;
+            background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3);
+            color: var(--accent); margin: 0.15rem 0.1rem;
+        }
+        .source-link {
+            font-size: 0.65rem; color: var(--text-dim);
+            margin-top: 0.4rem; display: block;
+        }
+
+        .pick-direction {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            font-size: 0.7rem; font-weight: 800; padding: 0.2rem 0.6rem;
+            border-radius: 6px; text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .dir-long { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+        .dir-short { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+        .pick-verdict {
+            font-size: 0.72rem; color: var(--text-dim); padding: 0.5rem 0.6rem;
+            background: rgba(99,102,241,0.05); border-radius: 6px;
+            margin-top: 0.5rem; line-height: 1.5; border-left: 3px solid var(--accent);
+        }
+        .stale-note { font-size: 0.65rem; color: var(--yellow); font-style: italic; }
+
+        .pick-actions {
+            margin-top: 0.75rem; display: flex; gap: 0.5rem;
+        }
+        .btn-sm {
+            font-size: 0.7rem; padding: 0.3rem 0.6rem;
+            border-radius: 6px; border: 1px solid var(--border);
+            background: transparent; color: var(--text-dim); cursor: pointer;
+        }
+        .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* Loading / Error */
+        .loading { text-align: center; padding: 3rem; color: var(--text-dim); }
+        .spinner { display: inline-block; width: 32px; height: 32px;
+            border: 3px solid var(--border); border-top: 3px solid var(--accent);
+            border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error-box {
+            background: var(--red-dim); border: 1px solid var(--red);
+            border-radius: var(--radius); padding: 1rem; margin: 1rem 0;
+        }
+
+        .disclaimer {
+            text-align: center; font-size: 0.7rem; color: var(--text-dim);
+            padding: 2rem 1.5rem; border-top: 1px solid var(--border);
+            margin-top: 2rem; max-width: 900px; margin-left: auto; margin-right: auto;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .header { padding: 0.75rem 1rem; }
+            .header h1 { font-size: 1.2rem; }
+            .container { padding: 1rem; }
+            .picks-grid { grid-template-columns: 1fr; }
+            .pick-metrics { grid-template-columns: 1fr 1fr; }
+        }
+        .data-type-tag { font-size:0.6rem; padding:0.15rem 0.5rem; border-radius:4px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; vertical-align:middle; }
+        .tag-backtest { background:rgba(234,179,8,0.15); color:#eab308; border:1px solid rgba(234,179,8,0.3); }
+        .tag-live { background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3); }
+        .tag-forward { background:rgba(99,102,241,0.15); color:#6366f1; border:1px solid rgba(99,102,241,0.3); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Consolidated Stock Picks</h1>
+        <div class="header-links">
+            <a href="hub.html">Hub</a>
+            <a href="picks.html">Top Picks</a>
+            <a href="leaderboard.html">Leaderboard</a>
+            <a href="learning-lab.html">Learning Lab</a>
+            <a href="daytrader-sim.html">DayTrader Sim</a>
+            <a href="horizon-picks.html">Horizons</a>
+            <a href="/findstocks_global/miracle.html">Miracle v3</a>
+            <a href="/findstocks2_global/miracle.html">Miracle v2</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;font-size:0.72rem;color:#8888aa;margin-bottom:1rem;padding:0.5rem 0.75rem;background:rgba(234,179,8,0.04);border:1px solid rgba(234,179,8,0.15);border-radius:8px;">
+            <span>Data on this page:</span>
+            <span class="data-type-tag tag-forward">Forward-Looking</span> <span>Consensus picks</span>
+            <span style="opacity:0.3;">|</span>
+            <span class="data-type-tag tag-live">Live</span> <span>Data freshness status</span>
+        </div>
+        <!-- Freshness Banner -->
+        <div class="freshness-banner" id="freshnessBanner">
+            <div class="freshness-item"><div class="spinner" style="width:14px;height:14px;border-width:2px;"></div> Checking data freshness...</div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-row" id="statsRow">
+            <div class="stat-card"><div class="num" id="statConsensus">-</div><div class="label">Consensus Picks</div></div>
+            <div class="stat-card"><div class="num" id="statTotal">-</div><div class="label">Total Raw Picks</div></div>
+            <div class="stat-card"><div class="num" id="statAlgos">-</div><div class="label">Algorithms</div></div>
+            <div class="stat-card"><div class="num" id="statSources">-</div><div class="label">Data Sources</div></div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-bar">
+            <label>Days:
+                <select id="filterDays">
+                    <option value="3">3 days</option>
+                    <option value="7">7 days</option>
+                    <option value="14" selected>14 days</option>
+                    <option value="30">30 days</option>
+                </select>
+            </label>
+            <label>Min Consensus:
+                <select id="filterMinConsensus">
+                    <option value="1">1+ (all)</option>
+                    <option value="2" selected>2+ (consensus)</option>
+                    <option value="3">3+ (strong)</option>
+                    <option value="5">5+ (very strong)</option>
+                </select>
+            </label>
+            <button onclick="loadConsensus()">Apply Filters</button>
+        </div>
+
+        <!-- Consensus Picks Section -->
+        <div class="section-title">
+            Cross-Algorithm Consensus <span class="badge badge-consensus" id="consensusBadge">Loading...</span> <span class="data-type-tag tag-forward">Forward-Looking</span>
+        </div>
+        <div id="consensusGrid" class="picks-grid">
+            <div class="loading"><div class="spinner"></div><br>Loading consensus data...</div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+            <strong>Important Disclaimer</strong><br>
+            This tool is for <strong>educational and research purposes only</strong> and does not constitute financial advice, investment recommendations, or solicitation to buy or sell securities.
+            <strong>No fiduciary relationship</strong> is created by using this tool.
+            <strong>All investments involve risk</strong>, including the possible loss of principal. Past performance does not guarantee future results.
+            Data is sourced from third parties (Yahoo Finance) and may be delayed, inaccurate, or incomplete.
+            <strong>Consult a licensed financial adviser</strong> before making any investment decisions.<br><br>
+            <span style="opacity:0.7;">By using this tool you acknowledge that you have read and understood this disclaimer and accept full responsibility for your own investment decisions.</span>
+        </div>
+    </div>
+
+<script>
+var API_BASE = (function() {
+    var h = window.location.hostname;
+    if (h === 'findtorontoevents.ca' || h === 'www.findtorontoevents.ca') {
+        return '/findstocks/portfolio2/api/';
+    }
+    return 'api/';
+})();
+
+function apiGet(endpoint, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API_BASE + endpoint, true);
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 400) {
+            try { cb(null, JSON.parse(xhr.responseText)); }
+            catch(e) { cb('JSON parse error'); }
+        } else {
+            cb('HTTP ' + xhr.status);
+        }
+    };
+    xhr.onerror = function() { cb('Network error'); };
+    xhr.send();
+}
+
+// ─── Load freshness data ───
+function loadFreshness() {
+    apiGet('consolidated_picks.php?action=freshness', function(err, data) {
+        var banner = document.getElementById('freshnessBanner');
+        if (err || !data || !data.ok) {
+            banner.innerHTML = '<div class="freshness-item"><div class="freshness-dot outdated"></div> Unable to check data freshness</div>';
+            return;
+        }
+        var html = '';
+        var sources = data.sources || [];
+        for (var i = 0; i < sources.length; i++) {
+            var s = sources[i];
+            var status = s.status || 'unknown';
+            var dotClass = status === 'fresh' ? 'fresh' : (status === 'stale' ? 'stale' : 'outdated');
+            var label = s.label || s.table;
+            var dateStr = s.latest_pick_date || s.latest_date || 'N/A';
+            html += '<div class="freshness-item">' +
+                '<div class="freshness-dot ' + dotClass + '"></div>' +
+                '<span>' + label + ': ' + dateStr + '</span>' +
+                '</div>';
+        }
+        if (data.warnings && data.warnings.length > 0) {
+            html += '<div class="freshness-item" style="color:var(--yellow);margin-left:auto;">' +
+                data.warnings.length + ' warning(s)</div>';
+        }
+        banner.innerHTML = html;
+
+        // Update source count stat
+        document.getElementById('statSources').textContent = sources.length;
+    });
+}
+
+// ─── Load consensus picks ───
+function loadConsensus() {
+    var days = document.getElementById('filterDays').value;
+    var minCons = document.getElementById('filterMinConsensus').value;
+    var grid = document.getElementById('consensusGrid');
+    grid.innerHTML = '<div class="loading"><div class="spinner"></div><br>Loading consensus data...</div>';
+
+    apiGet('consolidated_picks.php?action=consensus&days=' + days + '&min_consensus=' + minCons + '&limit=100', function(err, data) {
+        if (err || !data || !data.ok) {
+            grid.innerHTML = '<div class="error-box">Failed to load consensus data: ' + (err || 'Unknown error') + '</div>';
+            return;
+        }
+
+        var picks = data.consensus_picks || [];
+        document.getElementById('statConsensus').textContent = picks.length;
+        document.getElementById('statTotal').textContent = data.total_raw_picks || 0;
+        document.getElementById('consensusBadge').textContent = picks.length + ' tickers';
+
+        // Count distinct algos
+        var algoSet = {};
+        for (var i = 0; i < picks.length; i++) {
+            var sources = picks[i].sources || [];
+            for (var j = 0; j < sources.length; j++) {
+                algoSet[sources[j].algorithm] = true;
+            }
+        }
+        document.getElementById('statAlgos').textContent = Object.keys(algoSet).length;
+
+        if (picks.length === 0) {
+            grid.innerHTML = '<div class="loading" style="color:var(--text-dim);">No consensus picks found for the selected filters. Try widening the date range or lowering the minimum consensus.</div>';
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < picks.length; i++) {
+            var p = picks[i];
+            var rank = i + 1;
+            var rankClass = rank <= 3 ? 'rank-' + rank : 'rank-default';
+            var consClass = p.consensus_count >= 5 ? 'consensus-high' : (p.consensus_count >= 3 ? 'consensus-medium' : 'consensus-low');
+            var returnClass = p.current_return_pct > 0 ? 'positive' : (p.current_return_pct < 0 ? 'negative' : '');
+            var returnSign = p.current_return_pct > 0 ? '+' : '';
+
+            html += '<div class="pick-card">';
+            html += '<div class="rank-badge ' + rankClass + '">' + rank + '</div>';
+            html += '<div class="pick-header">';
+            html += '<div><div class="pick-ticker">' + escHtml(p.ticker) + '</div>';
+            html += '<div class="pick-company">' + escHtml(p.company_name || '') + '</div></div>';
+            html += '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.3rem;">';
+            var dirClass = (p.direction === 'SHORT') ? 'dir-short' : 'dir-long';
+            var dirLabel = (p.direction === 'SHORT') ? '&#9660; SHORT' : '&#9650; LONG';
+            html += '<span class="pick-direction ' + dirClass + '">' + dirLabel + '</span>';
+            html += '<div class="consensus-badge ' + consClass + '">' + p.consensus_count + ' algorithms agree</div>';
+            html += '</div></div>';
+
+            html += '<div class="pick-metrics">';
+            html += '<div class="metric"><div class="val">$' + fmtPrice(p.avg_entry_price) + '</div><div class="lbl">Avg Entry</div></div>';
+            html += '<div class="metric"><div class="val">$' + fmtPrice(p.latest_price) + '</div><div class="lbl">Latest Price';
+            if (p.price_age_days >= 2) html += ' <span class="stale-note">(' + p.price_age_days + 'd old)</span>';
+            html += '</div></div>';
+            html += '<div class="metric"><div class="val ' + returnClass + '">' + returnSign + p.current_return_pct + '%</div><div class="lbl">Return Since Entry</div></div>';
+            html += '</div>';
+
+            html += '<div class="pick-metrics" style="margin-bottom:0.5rem;">';
+            html += '<div class="metric"><div class="val">' + fmtNum(p.consensus_score) + '</div><div class="lbl">Consensus Score</div></div>';
+            html += '<div class="metric"><div class="val">' + fmtNum(p.avg_score) + '</div><div class="lbl">Avg Algo Score</div></div>';
+            html += '<div class="metric"><div class="val">' + p.total_picks + '</div><div class="lbl">Total Picks</div></div>';
+            html += '</div>';
+
+            // Verdict
+            if (p.verdict) {
+                var vBorder = p.current_return_pct >= 0 ? 'var(--green)' : (p.price_age_days >= 2 ? 'var(--yellow)' : 'var(--accent)');
+                html += '<div class="pick-verdict" style="border-left-color:' + vBorder + ';">' + escHtml(p.verdict) + '</div>';
+            }
+
+            // Sources
+            html += '<div class="pick-sources">';
+            var srcs = p.sources || [];
+            for (var j = 0; j < srcs.length; j++) {
+                var s = srcs[j];
+                html += '<span class="source-tag">' + escHtml(s.algorithm) + ' <span style="opacity:0.5;">(' + escHtml(s.label) + ')</span></span>';
+            }
+            // Page links
+            var pageLinks = {};
+            for (var j = 0; j < srcs.length; j++) {
+                if (srcs[j].page_link && !pageLinks[srcs[j].page_link]) {
+                    pageLinks[srcs[j].page_link] = srcs[j].label;
+                }
+            }
+            var linkKeys = Object.keys(pageLinks);
+            if (linkKeys.length > 0) {
+                html += '<div class="source-link">View on: ';
+                for (var k = 0; k < linkKeys.length; k++) {
+                    if (k > 0) html += ' | ';
+                    html += '<a href="' + linkKeys[k] + '">' + pageLinks[linkKeys[k]] + '</a>';
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+
+            // Actions
+            html += '<div class="pick-actions">';
+            html += '<button class="btn-sm" onclick="viewIntel(\'' + escHtml(p.ticker) + '\')">Deep Dive</button>';
+            html += '<button class="btn-sm" onclick="window.open(\'https://finance.yahoo.com/quote/' + encodeURIComponent(p.ticker) + '\',\'_blank\')">Yahoo Finance</button>';
+            html += '</div>';
+
+            html += '</div>';
+        }
+        grid.innerHTML = html;
+    });
+}
+
+function viewIntel(ticker) {
+    window.location.href = 'stock-intel.html?ticker=' + encodeURIComponent(ticker);
+}
+
+function escHtml(s) {
+    if (!s) return '';
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function fmtPrice(n) {
+    if (!n || n === 0) return '0.00';
+    return parseFloat(n).toFixed(2);
+}
+
+function fmtNum(n) {
+    if (!n) return '0';
+    var v = parseFloat(n);
+    return v >= 1000 ? (v/1000).toFixed(1) + 'k' : v.toFixed(v < 10 ? 1 : 0);
+}
+
+// ─── Init ───
+loadFreshness();
+loadConsensus();
+</script>
+</body>
+</html>

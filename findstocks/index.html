@@ -1826,8 +1826,70 @@
       qpCard.parentNode.insertBefore(m3,qpCard.nextSibling);
     }
 
-    // 5. Latest Updates banner
+    // 5. Consolidated Picks card
     var lastCard = m3 || qpCard || mc;
+    if(lastCard && lastCard.parentNode){
+      var cp=document.createElement('div');
+      cp.className='mt-4 max-w-4xl mx-auto';
+      cp.innerHTML='<a class="block group" href="/findstocks/portfolio2/consolidated.html">'
+        +'<div class="glass-panel p-6 rounded-[2rem] border-2 border-indigo-500/50 bg-gradient-to-r from-indigo-500/10 via-transparent to-cyan-500/10 hover:border-indigo-400 transition-all">'
+        +'<div class="flex flex-wrap items-center justify-between gap-6 px-4">'
+        +'<div class="text-left">'
+        +'<div class="flex items-center gap-3 mb-2">'
+        +'<span class="px-2 py-0.5 rounded bg-indigo-500 text-[10px] font-black tracking-tighter uppercase">Consensus</span>'
+        +'<h2 class="text-xl font-bold text-white">Consolidated Stock Picks</h2>'
+        +'</div>'
+        +'<p class="text-sm text-neutral-400 max-w-xl">All picks from <strong>55+ algorithms</strong> across 3 databases in one view. Consensus detection: tickers flagged by multiple algorithms, weighted by win rate &amp; recency. Deep-dive per stock with technicals, fundamentals &amp; analyst data.</p>'
+        +'</div>'
+        +'<div class="px-8 py-3 bg-indigo-500 text-white text-sm font-black rounded-full group-hover:scale-105 transition-transform">View Consensus Picks \u2192</div>'
+        +'</div></div></a>';
+      lastCard.parentNode.insertBefore(cp,lastCard.nextSibling);
+      lastCard = cp;
+    }
+
+    // 5b. Cross-Asset Hub
+    if(lastCard && lastCard.parentNode){
+      var ca=document.createElement('div');
+      ca.className='mt-6 max-w-4xl mx-auto';
+      ca.innerHTML='<div class="glass-panel p-5 rounded-2xl border border-white/10 bg-white/[0.02]">'
+        +'<div class="flex items-center gap-3 mb-4">'
+        +'<span class="px-2 py-0.5 rounded bg-teal-500 text-[10px] font-black tracking-tighter uppercase">Cross-Asset</span>'
+        +'<h2 class="text-lg font-bold text-white">All Asset Classes</h2>'
+        +'</div>'
+        +'<div class="grid grid-cols-1 md:grid-cols-2 gap-3">'
+        +'<a href="/findstocks/portfolio2/consolidated.html" class="block p-4 rounded-xl border border-indigo-500/30 bg-indigo-500/5 hover:border-indigo-400 hover:bg-indigo-500/10 transition-all">'
+        +'<div class="flex items-center gap-3"><span class="text-2xl">\uD83D\uDCCA</span><div>'
+        +'<div class="text-sm font-bold text-white">Stocks \u2014 Consolidated Picks</div>'
+        +'<div class="text-xs text-neutral-400">55+ algos, consensus detection, per-stock intelligence</div>'
+        +'</div></div></a>'
+        +'<a href="/findmutualfunds2/portfolio2/" class="block p-4 rounded-xl border border-sky-500/30 bg-sky-500/5 hover:border-sky-400 hover:bg-sky-500/10 transition-all">'
+        +'<div class="flex items-center gap-3"><span class="text-2xl">\uD83C\uDFE6</span><div>'
+        +'<div class="text-sm font-bold text-white">Mutual Funds Portfolio</div>'
+        +'<div class="text-xs text-neutral-400">10 strategies, NAV-based backtests, daily refresh</div>'
+        +'</div></div></a>'
+        +'<a href="/findforex2/portfolio/" class="block p-4 rounded-xl border border-teal-500/30 bg-teal-500/5 hover:border-teal-400 hover:bg-teal-500/10 transition-all">'
+        +'<div class="flex items-center gap-3"><span class="text-2xl">\uD83D\uDCB1</span><div>'
+        +'<div class="text-sm font-bold text-white">Forex Pairs Portfolio</div>'
+        +'<div class="text-xs text-neutral-400">15 currency pairs, 8 strategies, pip-based spreads</div>'
+        +'</div></div></a>'
+        +'<a href="/findcryptopairs/portfolio/" class="block p-4 rounded-xl border border-orange-500/30 bg-orange-500/5 hover:border-orange-400 hover:bg-orange-500/10 transition-all">'
+        +'<div class="flex items-center gap-3"><span class="text-2xl">\u20BF</span><div>'
+        +'<div class="text-sm font-bold text-white">Crypto Pairs Portfolio</div>'
+        +'<div class="text-xs text-neutral-400">15 crypto pairs, exchange fees, 24/7 data</div>'
+        +'</div></div></a>'
+        +'</div>'
+        +'<div class="mt-3 flex flex-wrap gap-3 text-xs">'
+        +'<a href="/investments/" class="text-teal-400 hover:text-teal-300">All Investment Tools \u2192</a>'
+        +'<a href="/findstocks/portfolio2/learning-lab.html" class="text-purple-400 hover:text-purple-300">Learning Lab \u2192</a>'
+        +'<a href="/findstocks/portfolio2/daytrader-sim.html" class="text-yellow-400 hover:text-yellow-300">$500/Day Simulator \u2192</a>'
+        +'<a href="/findstocks/portfolio2/hub.html" class="text-indigo-400 hover:text-indigo-300">Portfolio Hub \u2192</a>'
+        +'</div>'
+        +'</div>';
+      lastCard.parentNode.insertBefore(ca,lastCard.nextSibling);
+      lastCard = ca;
+    }
+
+    // 5c. Latest Updates banner
     if(lastCard && lastCard.parentNode){
       var ub=document.createElement('div');
       ub.className='mt-6 max-w-4xl mx-auto';
@@ -1837,19 +1899,21 @@
         +'<span class="text-sm text-neutral-400">Feb 9, 2026</span>'
         +'</div>'
         +'<div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">'
-        +'<div class="flex items-start gap-2"><span class="text-yellow-400">\u26A1</span><span class="text-neutral-300"><strong>Quick Picks</strong> \u2014 Ready-made picks for day trade, swing, and long-term with TP/SL</span></div>'
-        +'<div class="flex items-start gap-2"><span class="text-green-400">\uD83D\uDCBC</span><span class="text-neutral-300"><strong>Portfolio Tracker</strong> \u2014 Save picks, monitor TP/SL hits daily via GitHub Actions</span></div>'
+        +'<div class="flex items-start gap-2"><span class="text-indigo-400">\uD83D\uDD17</span><span class="text-neutral-300"><strong>Consolidated Picks</strong> \u2014 Cross-algorithm consensus detection for stocks</span></div>'
+        +'<div class="flex items-start gap-2"><span class="text-yellow-400">\u26A1</span><span class="text-neutral-300"><strong>Quick Picks</strong> \u2014 Ready-made picks for day trade, swing, and long-term</span></div>'
+        +'<div class="flex items-start gap-2"><span class="text-green-400">\uD83E\uDDEA</span><span class="text-neutral-300"><strong>Learning Lab</strong> \u2014 Track how all 6 self-learning systems are improving</span></div>'
         +'<div class="flex items-start gap-2"><span class="text-rose-400">\uD83D\uDD2C</span><span class="text-neutral-300"><strong>DayTraders Miracle v3</strong> \u2014 Latest AI scanner with self-learning strategies</span></div>'
-        +'<div class="flex items-start gap-2"><span class="text-amber-400">\uD83D\uDCC8</span><span class="text-neutral-300"><strong>Multi-Asset Picks</strong> \u2014 Cross-asset top picks: stocks, mutual funds, forex, crypto</span></div>'
         +'</div>'
         +'<div class="mt-3 flex flex-wrap gap-3 text-xs">'
-        +'<a href="/findstocks/portfolio/quick-picks.html" class="text-yellow-400 hover:text-yellow-300">Quick Picks \u2192</a>'
-        +'<a href="/findstocks/portfolio/" class="text-indigo-400 hover:text-indigo-300">Portfolio Analysis \u2192</a>'
-        +'<a href="/findstocks/portfolio2/picks.html" class="text-emerald-400 hover:text-emerald-300">Top Picks Dashboard \u2192</a>'
-        +'<a href="/findstocks/portfolio2/leaderboard.html" class="text-cyan-400 hover:text-cyan-300">Algorithm Leaderboard \u2192</a>'
+        +'<a href="/findstocks/portfolio2/consolidated.html" class="text-indigo-400 hover:text-indigo-300">Consolidated Picks \u2192</a>'
+        +'<a href="/findstocks/portfolio2/stock-intel.html?ticker=AAPL" class="text-cyan-400 hover:text-cyan-300">Stock Intelligence \u2192</a>'
+        +'<a href="/findstocks/portfolio2/learning-lab.html" class="text-purple-400 hover:text-purple-300">Learning Lab \u2192</a>'
+        +'<a href="/findstocks/portfolio2/daytrader-sim.html" class="text-yellow-400 hover:text-yellow-300">$500/Day Simulator \u2192</a>'
+        +'<a href="/findstocks/portfolio2/leaderboard.html" class="text-emerald-400 hover:text-emerald-300">Algorithm Leaderboard \u2192</a>'
         +'<a href="/findstocks_global/miracle.html" class="text-rose-400 hover:text-rose-300">Miracle v3 \u2192</a>'
-        +'<a href="/findstocks2_global/miracle.html" class="text-amber-400 hover:text-amber-300">Miracle v2 \u2192</a>'
-        +'<a href="/findstocks_global/" class="text-neutral-400 hover:text-neutral-300">Investment Hub \u2192</a>'
+        +'<a href="/findforex2/portfolio/" class="text-teal-400 hover:text-teal-300">Forex \u2192</a>'
+        +'<a href="/findcryptopairs/portfolio/" class="text-orange-400 hover:text-orange-300">Crypto \u2192</a>'
+        +'<a href="/findmutualfunds2/portfolio2/" class="text-sky-400 hover:text-sky-300">Mutual Funds \u2192</a>'
         +'<a href="/updates/" class="text-neutral-500 hover:text-neutral-300">Full Changelog \u2192</a>'
         +'</div>'
         +'</div>';

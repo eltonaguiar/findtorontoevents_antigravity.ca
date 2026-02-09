@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Intelligence | Deep Dive</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a; --bg-card: #12122a; --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a; --text: #e0e0f0; --text-dim: #8888aa;
+            --accent: #6366f1; --green: #22c55e; --red: #ef4444;
+            --yellow: #eab308; --blue: #3b82f6; --gold: #f59e0b;
+            --cyan: #06b6d4; --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark); color: var(--text); min-height: 100vh; line-height: 1.5; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .header { background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border); padding: 1rem 2rem;
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+        .header h1 { font-size: 1.5rem; }
+        .ticker-big { font-size: 2rem; font-weight: 800; color: var(--cyan); }
+        .company-name { font-size: 0.9rem; color: var(--text-dim); }
+        .price-info { text-align: right; }
+        .price-current { font-size: 1.8rem; font-weight: 800; font-family: monospace; }
+        .price-change { font-size: 0.85rem; padding: 0.2rem 0.5rem; border-radius: 6px; }
+        .positive { color: var(--green); }
+        .negative { color: var(--red); }
+        .bg-positive { background: rgba(34,197,94,0.15); }
+        .bg-negative { background: rgba(239,68,68,0.15); }
+        .header-links { display: flex; gap: 1rem; font-size: 0.85rem; flex-wrap: wrap; width: 100%; }
+        .header-links a { color: var(--text-dim); }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .tab { padding: 0.6rem 1rem; font-size: 0.85rem; cursor: pointer;
+            color: var(--text-dim); border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .tab:hover { color: var(--text); }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Cards */
+        .card { background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
+        .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem;
+            display: flex; align-items: center; gap: 0.5rem; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; }
+        .metric-box { text-align: center; padding: 0.5rem; background: rgba(99,102,241,0.05);
+            border-radius: 8px; border: 1px solid rgba(99,102,241,0.1); }
+        .metric-box .val { font-size: 1.1rem; font-weight: 700; font-family: monospace; }
+        .metric-box .lbl { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; }
+
+        /* Verdict badge */
+        .verdict { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 6px;
+            font-weight: 700; font-size: 0.85rem; }
+        .verdict-bull { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid var(--green); }
+        .verdict-bear { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid var(--red); }
+        .verdict-neutral { background: rgba(234,179,8,0.15); color: var(--yellow); border: 1px solid var(--yellow); }
+
+        /* Gauge */
+        .gauge-container { display: flex; align-items: center; gap: 0.75rem; margin: 0.75rem 0; }
+        .gauge-bar { flex: 1; height: 8px; background: var(--border); border-radius: 4px; position: relative; overflow: hidden; }
+        .gauge-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+        .gauge-label { font-size: 0.75rem; color: var(--text-dim); min-width: 60px; }
+
+        /* Picks table */
+        .picks-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .picks-table th { text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--border);
+            color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase; }
+        .picks-table td { padding: 0.5rem; border-bottom: 1px solid rgba(42,42,74,0.5); }
+        .picks-table tr:hover { background: var(--bg-card-hover); }
+
+        /* Analyst bar */
+        .analyst-bar { display: flex; height: 24px; border-radius: 4px; overflow: hidden; margin: 0.5rem 0; }
+        .analyst-bar div { display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem; font-weight: 700; color: #000; min-width: 24px; }
+
+        .badge-sm { font-size: 0.6rem; padding: 0.15rem 0.4rem; border-radius: 4px;
+            font-weight: 700; text-transform: uppercase; }
+        .badge-green { background: rgba(34,197,94,0.15); color: var(--green); }
+        .badge-red { background: rgba(239,68,68,0.15); color: var(--red); }
+        .badge-yellow { background: rgba(234,179,8,0.15); color: var(--yellow); }
+
+        .loading { text-align: center; padding: 3rem; color: var(--text-dim); }
+        .spinner { display: inline-block; width: 32px; height: 32px;
+            border: 3px solid var(--border); border-top: 3px solid var(--accent);
+            border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .btn { background: var(--accent); color: #fff; border: none; padding: 0.5rem 1rem;
+            border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+        .btn:hover { opacity: 0.85; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
+
+        .disclaimer { text-align: center; font-size: 0.7rem; color: var(--text-dim);
+            padding: 2rem 1.5rem; border-top: 1px solid var(--border); margin-top: 2rem;
+            max-width: 900px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+
+        @media (max-width: 768px) {
+            .header { padding: 0.75rem 1rem; }
+            .ticker-big { font-size: 1.5rem; }
+            .price-current { font-size: 1.3rem; }
+            .card-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <div class="ticker-big" id="tickerDisplay">---</div>
+            <div class="company-name" id="companyName">Loading...</div>
+        </div>
+        <div class="price-info">
+            <div class="price-current" id="priceDisplay">--</div>
+            <span class="price-change" id="priceChange">--</span>
+        </div>
+        <div class="header-links">
+            <a href="consolidated.html">Consolidated Picks</a>
+            <a href="picks.html">Top Picks</a>
+            <a href="leaderboard.html">Leaderboard</a>
+            <a href="learning-lab.html">Learning Lab</a>
+            <a href="hub.html">Hub</a>
+            <span style="margin-left:auto;">
+                <button class="btn-outline btn" onclick="openYahoo()" style="font-size:0.75rem;">Yahoo Finance</button>
+                <button class="btn" onclick="refreshYahoo()" style="font-size:0.75rem;margin-left:0.25rem;">Refresh Data</button>
+            </span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('technicals')">Technical Analysis</div>
+            <div class="tab" onclick="switchTab('fundamentals')">Fundamentals</div>
+            <div class="tab" onclick="switchTab('earnings')">Earnings & Dividends</div>
+            <div class="tab" onclick="switchTab('picks')">Algorithm Picks</div>
+            <div class="tab" onclick="switchTab('analyst')">Analyst Consensus</div>
+        </div>
+
+        <div id="contentArea">
+            <div class="loading"><div class="spinner"></div><br>Loading intelligence data...</div>
+        </div>
+
+        <div class="disclaimer">
+            <strong>Important Disclaimer</strong><br>
+            This tool is for <strong>educational and research purposes only</strong> and does not constitute financial advice.
+            <strong>All investments involve risk</strong>, including the possible loss of principal.
+            Data is sourced from third parties and may be delayed or inaccurate.
+            <strong>Consult a licensed financial adviser</strong> before making investment decisions.
+        </div>
+    </div>
+
+<script>
+var API_BASE = (function() {
+    var h = window.location.hostname;
+    if (h === 'findtorontoevents.ca' || h === 'www.findtorontoevents.ca') return '/findstocks/portfolio2/api/';
+    return 'api/';
+})();
+
+var TICKER = new URLSearchParams(window.location.search).get('ticker') || '';
+var DATA = null;
+var ACTIVE_TAB = 'technicals';
+
+function apiGet(endpoint, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API_BASE + endpoint, true);
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 400) {
+            try { cb(null, JSON.parse(xhr.responseText)); } catch(e) { cb('Parse error'); }
+        } else { cb('HTTP ' + xhr.status); }
+    };
+    xhr.onerror = function() { cb('Network error'); };
+    xhr.send();
+}
+
+function escHtml(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+function fmtPrice(n) { return n ? parseFloat(n).toFixed(2) : '0.00'; }
+function fmtPct(n) { return n ? parseFloat(n).toFixed(2) + '%' : '0.00%'; }
+
+function switchTab(tab) {
+    ACTIVE_TAB = tab;
+    document.querySelectorAll('.tab').forEach(function(t) {
+        t.classList.toggle('active', t.textContent.toLowerCase().indexOf(tab) >= 0 ||
+            (tab === 'technicals' && t.textContent.indexOf('Technical') >= 0) ||
+            (tab === 'picks' && t.textContent.indexOf('Algorithm') >= 0) ||
+            (tab === 'analyst' && t.textContent.indexOf('Analyst') >= 0));
+    });
+    if (DATA) renderTab();
+}
+
+function renderTab() {
+    var area = document.getElementById('contentArea');
+    if (!DATA) return;
+    if (ACTIVE_TAB === 'technicals') renderTechnicals(area);
+    else if (ACTIVE_TAB === 'fundamentals') renderFundamentals(area);
+    else if (ACTIVE_TAB === 'earnings') renderEarnings(area);
+    else if (ACTIVE_TAB === 'picks') renderPicks(area);
+    else if (ACTIVE_TAB === 'analyst') renderAnalyst(area);
+}
+
+function renderTechnicals(area) {
+    var ta = DATA.technicals || {};
+    if (ta.error) { area.innerHTML = '<div class="card">' + ta.error + '</div>'; return; }
+    var v = ta.verdict || 'NEUTRAL';
+    var vc = v === 'BULLISH' ? 'verdict-bull' : (v === 'BEARISH' ? 'verdict-bear' : 'verdict-neutral');
+    var html = '<div class="card"><div class="card-title">Overall Verdict <span class="verdict ' + vc + '">' + v + '</span></div>';
+    html += '<div class="gauge-container"><span class="gauge-label" style="color:var(--red);">Bearish</span>';
+    html += '<div class="gauge-bar"><div class="gauge-fill" style="width:' + (ta.bull_pct || 50) + '%;background:linear-gradient(90deg,var(--red),var(--yellow),var(--green));"></div></div>';
+    html += '<span class="gauge-label" style="text-align:right;color:var(--green);">Bullish ' + (ta.bull_pct || 50) + '%</span></div>';
+    html += '<div style="font-size:0.75rem;color:var(--text-dim);">' + (ta.bull_signals||0) + ' bullish / ' + (ta.bear_signals||0) + ' bearish signals out of ' + (ta.total_signals||0) + ' indicators</div></div>';
+
+    html += '<div class="card"><div class="card-title">Key Indicators</div><div class="card-grid">';
+    var indicators = [
+        {lbl:'RSI (14)', val:ta.rsi_14, sig:ta.rsi_signal},
+        {lbl:'MACD', val:ta.macd_line, sig:ta.macd_signal},
+        {lbl:'Stoch RSI', val:ta.stoch_rsi},
+        {lbl:'ATR (14)', val:ta.atr_14},
+        {lbl:'ATR %', val:ta.atr_pct ? ta.atr_pct+'%' : '-'},
+        {lbl:'Bollinger %B', val:ta.bb_pct_b, sig:ta.bb_signal},
+        {lbl:'Vol Ratio', val:ta.volume_ratio, sig:ta.volume_surge?'surge':'normal'},
+        {lbl:'SMA 20', val:'$'+fmtPrice(ta.sma_20)},
+        {lbl:'SMA 50', val:'$'+fmtPrice(ta.sma_50)},
+        {lbl:'SMA 200', val:'$'+fmtPrice(ta.sma_200)},
+    ];
+    for (var i = 0; i < indicators.length; i++) {
+        var ind = indicators[i];
+        var sigClass = '';
+        if (ind.sig === 'bullish' || ind.sig === 'oversold' || ind.sig === 'surge') sigClass = 'positive';
+        else if (ind.sig === 'bearish' || ind.sig === 'overbought') sigClass = 'negative';
+        html += '<div class="metric-box"><div class="val ' + sigClass + '">' + (ind.val !== undefined ? ind.val : '-') + '</div>';
+        html += '<div class="lbl">' + ind.lbl + (ind.sig ? ' (' + ind.sig + ')' : '') + '</div></div>';
+    }
+    html += '</div></div>';
+
+    html += '<div class="card"><div class="card-title">Support & Resistance</div><div class="card-grid">';
+    var levels = [
+        {lbl:'Resistance 2', val:'$'+fmtPrice(ta.resistance_2)},
+        {lbl:'Resistance 1', val:'$'+fmtPrice(ta.resistance_1)},
+        {lbl:'Pivot', val:'$'+fmtPrice(ta.pivot)},
+        {lbl:'Support 1', val:'$'+fmtPrice(ta.support_1)},
+        {lbl:'Support 2', val:'$'+fmtPrice(ta.support_2)},
+        {lbl:'52W High', val:'$'+fmtPrice(ta.high_52w)},
+        {lbl:'52W Low', val:'$'+fmtPrice(ta.low_52w)},
+        {lbl:'From 52W High', val:fmtPct(ta.pct_from_52w_high)},
+    ];
+    for (var i = 0; i < levels.length; i++) {
+        html += '<div class="metric-box"><div class="val">' + levels[i].val + '</div><div class="lbl">' + levels[i].lbl + '</div></div>';
+    }
+    html += '</div></div>';
+
+    var crosses = [];
+    if (ta.golden_cross) crosses.push('<span class="badge-sm badge-green">Golden Cross (SMA50 > SMA200)</span>');
+    if (ta.death_cross) crosses.push('<span class="badge-sm badge-red">Death Cross (SMA50 < SMA200)</span>');
+    if (ta.price_above_sma200) crosses.push('<span class="badge-sm badge-green">Above SMA 200</span>');
+    else crosses.push('<span class="badge-sm badge-red">Below SMA 200</span>');
+    if (crosses.length) html += '<div class="card"><div class="card-title">Signals</div>' + crosses.join(' ') + '</div>';
+
+    area.innerHTML = html;
+}
+
+function renderFundamentals(area) {
+    var f = DATA.fundamentals;
+    if (!f) { area.innerHTML = '<div class="card">No fundamentals data available. Try clicking "Refresh Data" to fetch from Yahoo Finance.</div>'; return; }
+    var html = '<div class="card"><div class="card-title">Key Fundamentals</div><div class="card-grid">';
+    var metrics = [
+        {lbl:'Trailing P/E', val:f.trailing_pe}, {lbl:'Forward P/E', val:f.forward_pe},
+        {lbl:'PEG Ratio', val:f.peg_ratio}, {lbl:'Price/Book', val:f.price_to_book},
+        {lbl:'Trailing EPS', val:'$'+(f.trailing_eps||'-')}, {lbl:'Forward EPS', val:'$'+(f.forward_eps||'-')},
+        {lbl:'Dividend Yield', val:f.dividend_yield ? (parseFloat(f.dividend_yield)*100).toFixed(2)+'%' : '-'},
+        {lbl:'Payout Ratio', val:f.payout_ratio ? (parseFloat(f.payout_ratio)*100).toFixed(1)+'%' : '-'},
+        {lbl:'ROE', val:f.roe ? (parseFloat(f.roe)*100).toFixed(1)+'%' : '-'},
+        {lbl:'Gross Margin', val:f.gross_margins ? (parseFloat(f.gross_margins)*100).toFixed(1)+'%' : '-'},
+        {lbl:'Op Margin', val:f.operating_margins ? (parseFloat(f.operating_margins)*100).toFixed(1)+'%' : '-'},
+        {lbl:'Current Ratio', val:f.current_ratio||'-'},
+        {lbl:'Target Price', val:f.target_mean_price ? '$'+fmtPrice(f.target_mean_price) : '-'},
+        {lbl:'Recommendation', val:f.recommendation_key||'-'},
+    ];
+    for (var i = 0; i < metrics.length; i++) {
+        html += '<div class="metric-box"><div class="val">' + (metrics[i].val||'-') + '</div><div class="lbl">' + metrics[i].lbl + '</div></div>';
+    }
+    html += '</div></div>';
+    area.innerHTML = html;
+}
+
+function renderEarnings(area) {
+    var html = '';
+    var earnings = DATA.earnings || [];
+    var dividends = DATA.dividends || [];
+    if (earnings.length > 0) {
+        html += '<div class="card"><div class="card-title">Earnings History</div>';
+        html += '<table class="picks-table"><thead><tr><th>Date</th><th>EPS Actual</th><th>EPS Est</th><th>Surprise</th><th>Surprise %</th></tr></thead><tbody>';
+        for (var i = 0; i < earnings.length; i++) {
+            var e = earnings[i];
+            var surpClass = parseFloat(e.surprise_pct||0) > 0 ? 'positive' : (parseFloat(e.surprise_pct||0) < 0 ? 'negative' : '');
+            html += '<tr><td>' + (e.earnings_date||e.quarter_end||'-') + '</td><td>$' + (e.eps_actual||'-') + '</td><td>$' + (e.eps_estimate||'-') + '</td>';
+            html += '<td class="' + surpClass + '">' + (e.eps_surprise||'-') + '</td><td class="' + surpClass + '">' + fmtPct(e.surprise_pct) + '</td></tr>';
+        }
+        html += '</tbody></table></div>';
+    } else {
+        html += '<div class="card">No earnings data available.</div>';
+    }
+    if (dividends.length > 0) {
+        html += '<div class="card"><div class="card-title">Dividend History</div>';
+        html += '<table class="picks-table"><thead><tr><th>Ex-Date</th><th>Amount</th><th>Frequency</th></tr></thead><tbody>';
+        for (var i = 0; i < dividends.length; i++) {
+            var d = dividends[i];
+            html += '<tr><td>' + (d.ex_date||'-') + '</td><td>$' + fmtPrice(d.amount) + '</td><td>' + (d.frequency||'-') + '</td></tr>';
+        }
+        html += '</tbody></table></div>';
+    }
+    area.innerHTML = html || '<div class="card">No earnings or dividend data available.</div>';
+}
+
+function renderPicks(area) {
+    var picks = DATA.all_picks || [];
+    if (picks.length === 0) { area.innerHTML = '<div class="card">No algorithm picks found for this ticker.</div>'; return; }
+    var html = '<div class="card"><div class="card-title">' + picks.length + ' Algorithm Picks</div>';
+    html += '<table class="picks-table"><thead><tr><th>Date</th><th>Algorithm</th><th>Source</th><th>Entry</th><th>Score</th><th>Rating</th></tr></thead><tbody>';
+    for (var i = 0; i < picks.length; i++) {
+        var p = picks[i];
+        var sourceLabel = p.source === 'stock_picks' ? 'Portfolio' : (p.source === 'miracle_picks2' ? 'Miracle v2' : (p.source === 'miracle_picks3' ? 'Miracle v3' : p.source));
+        html += '<tr><td>' + (p.pick_date||'-') + '</td><td>' + escHtml(p.algorithm_name) + '</td>';
+        html += '<td><span class="badge-sm" style="background:rgba(99,102,241,0.1);color:var(--accent);">' + sourceLabel + '</span></td>';
+        html += '<td>$' + fmtPrice(p.entry_price) + '</td><td>' + (p.score||'-') + '</td><td>' + (p.rating||'-') + '</td></tr>';
+    }
+    html += '</tbody></table></div>';
+
+    // Consensus history
+    var ch = DATA.consensus_history || [];
+    if (ch.length > 0) {
+        html += '<div class="card"><div class="card-title">Consensus History</div>';
+        html += '<table class="picks-table"><thead><tr><th>Date</th><th>Algorithms Agree</th><th>Score</th><th>Avg Entry</th></tr></thead><tbody>';
+        for (var i = 0; i < ch.length; i++) {
+            var c = ch[i];
+            html += '<tr><td>' + c.consensus_date + '</td><td>' + c.consensus_count + '</td><td>' + c.consensus_score + '</td><td>$' + fmtPrice(c.avg_entry_price) + '</td></tr>';
+        }
+        html += '</tbody></table></div>';
+    }
+    area.innerHTML = html;
+}
+
+function renderAnalyst(area) {
+    var recs = DATA.analyst_recs || [];
+    if (recs.length === 0) {
+        area.innerHTML = '<div class="card">No analyst recommendation data available. Click "Refresh Data" to fetch from Yahoo Finance.</div>';
+        return;
+    }
+    var html = '';
+    for (var i = 0; i < recs.length; i++) {
+        var r = recs[i];
+        var total = (parseInt(r.strong_buy)||0) + (parseInt(r.buy)||0) + (parseInt(r.hold_count)||0) + (parseInt(r.sell)||0) + (parseInt(r.strong_sell)||0);
+        if (total === 0) continue;
+        var pctSB = (r.strong_buy/total*100).toFixed(0);
+        var pctB = (r.buy/total*100).toFixed(0);
+        var pctH = (r.hold_count/total*100).toFixed(0);
+        var pctS = (r.sell/total*100).toFixed(0);
+        var pctSS = (r.strong_sell/total*100).toFixed(0);
+        html += '<div class="card"><div class="card-title">Analyst Consensus — ' + (r.period||'Current') + ' (' + total + ' analysts)</div>';
+        html += '<div class="analyst-bar">';
+        if (pctSB > 0) html += '<div style="width:' + pctSB + '%;background:#166534;">' + r.strong_buy + '</div>';
+        if (pctB > 0) html += '<div style="width:' + pctB + '%;background:var(--green);">' + r.buy + '</div>';
+        if (pctH > 0) html += '<div style="width:' + pctH + '%;background:var(--yellow);">' + r.hold_count + '</div>';
+        if (pctS > 0) html += '<div style="width:' + pctS + '%;background:#dc2626;">' + r.sell + '</div>';
+        if (pctSS > 0) html += '<div style="width:' + pctSS + '%;background:#7f1d1d;">' + r.strong_sell + '</div>';
+        html += '</div>';
+        html += '<div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-dim);margin-top:0.3rem;">';
+        html += '<span>Strong Buy: ' + r.strong_buy + '</span><span>Buy: ' + r.buy + '</span><span>Hold: ' + r.hold_count + '</span><span>Sell: ' + r.sell + '</span><span>Strong Sell: ' + r.strong_sell + '</span>';
+        html += '</div></div>';
+    }
+    area.innerHTML = html || '<div class="card">No analyst data available.</div>';
+}
+
+function loadData() {
+    if (!TICKER) {
+        document.getElementById('contentArea').innerHTML = '<div class="card">No ticker specified. Add ?ticker=AAPL to the URL.</div>';
+        return;
+    }
+    document.getElementById('tickerDisplay').textContent = TICKER;
+    document.title = TICKER + ' | Stock Intelligence';
+
+    apiGet('stock_intel.php?action=full&ticker=' + encodeURIComponent(TICKER), function(err, data) {
+        if (err || !data || !data.ok) {
+            document.getElementById('contentArea').innerHTML = '<div class="card" style="color:var(--red);">Error loading data: ' + (err || (data && data.error) || 'Unknown') + '</div>';
+            return;
+        }
+        DATA = data;
+        document.getElementById('companyName').textContent = data.company_name || '';
+        if (data.technicals && data.technicals.current_price) {
+            var price = data.technicals.current_price;
+            document.getElementById('priceDisplay').textContent = '$' + fmtPrice(price);
+            if (data.technicals.pct_from_52w_high !== undefined) {
+                var ch = parseFloat(data.technicals.pct_from_52w_high);
+                var el = document.getElementById('priceChange');
+                el.textContent = (ch > 0 ? '+' : '') + ch + '% from 52W High';
+                el.className = 'price-change ' + (ch >= 0 ? 'bg-positive positive' : 'bg-negative negative');
+            }
+        }
+        renderTab();
+    });
+}
+
+function openYahoo() { window.open('https://finance.yahoo.com/quote/' + encodeURIComponent(TICKER), '_blank'); }
+
+function refreshYahoo() {
+    var btn = event.target;
+    btn.textContent = 'Refreshing...';
+    btn.disabled = true;
+    apiGet('stock_intel.php?action=yahoo_refresh&ticker=' + encodeURIComponent(TICKER), function(err, data) {
+        btn.textContent = 'Refresh Data';
+        btn.disabled = false;
+        if (!err && data && data.ok) {
+            // Reload full data
+            loadData();
+        }
+    });
+}
+
+loadData();
+</script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$500/Day DayTrader Simulator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root { --bg-dark:#0a0a1a; --bg-card:#12122a; --border:#2a2a4a; --text:#e0e0f0;
+            --text-dim:#8888aa; --accent:#6366f1; --green:#22c55e; --red:#ef4444;
+            --yellow:#eab308; --blue:#3b82f6; --gold:#f59e0b; --cyan:#06b6d4; --radius:12px; }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+            background:var(--bg-dark);color:var(--text);min-height:100vh;line-height:1.5;}
+        a{color:var(--accent);text-decoration:none;} a:hover{text-decoration:underline;}
+        .header{background:linear-gradient(135deg,#12122a,#1e1e3f);border-bottom:1px solid var(--border);
+            padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+        .header h1{font-size:1.5rem;background:linear-gradient(135deg,var(--green),var(--gold));
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .header-links{display:flex;gap:1rem;font-size:0.85rem;flex-wrap:wrap;}
+        .header-links a{color:var(--text-dim);}
+        .container{max-width:1200px;margin:0 auto;padding:1.5rem;}
+        .section-title{font-size:1.2rem;font-weight:700;margin:2rem 0 1rem;}
+
+        .stats-compare{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem;}
+        .stat-col{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;}
+        .stat-col h3{font-size:0.9rem;margin-bottom:0.75rem;text-align:center;}
+        .stat-col.original{border-top:3px solid var(--blue);}
+        .stat-col.revised{border-top:3px solid var(--green);}
+        .stat-row{display:flex;justify-content:space-between;padding:0.3rem 0;font-size:0.8rem;
+            border-bottom:1px solid rgba(42,42,74,0.5);}
+        .stat-row .lbl{color:var(--text-dim);}
+        .stat-row .val{font-weight:700;font-family:monospace;}
+
+        .chart-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+            padding:1.25rem;margin-bottom:1.5rem;}
+        canvas{max-height:300px;}
+
+        .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+            padding:1.25rem;margin-bottom:1rem;}
+        .today-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.75rem;}
+        .today-pick{background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.2);
+            border-radius:8px;padding:0.75rem;text-align:center;}
+        .today-pick .ticker{font-size:1.1rem;font-weight:800;color:var(--cyan);}
+        .today-pick .detail{font-size:0.7rem;color:var(--text-dim);}
+
+        .trades-table{width:100%;border-collapse:collapse;font-size:0.75rem;}
+        .trades-table th{text-align:left;padding:0.4rem;border-bottom:1px solid var(--border);
+            color:var(--text-dim);font-size:0.65rem;text-transform:uppercase;}
+        .trades-table td{padding:0.4rem;border-bottom:1px solid rgba(42,42,74,0.5);}
+        .trades-table tr:hover{background:rgba(99,102,241,0.05);}
+        .positive{color:var(--green);} .negative{color:var(--red);}
+
+        .badge-sm{font-size:0.6rem;padding:0.15rem 0.4rem;border-radius:4px;font-weight:700;}
+        .badge-blue{background:rgba(59,130,246,0.15);color:var(--blue);}
+        .badge-green{background:rgba(34,197,94,0.15);color:var(--green);}
+
+        .loading{text-align:center;padding:3rem;color:var(--text-dim);}
+        .spinner{display:inline-block;width:32px;height:32px;border:3px solid var(--border);
+            border-top:3px solid var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+        @keyframes spin{to{transform:rotate(360deg);}}
+
+        .disclaimer{text-align:center;font-size:0.7rem;color:var(--text-dim);
+            padding:2rem 1.5rem;border-top:1px solid var(--border);margin-top:2rem;
+            max-width:900px;margin-left:auto;margin-right:auto;line-height:1.6;}
+
+        @media(max-width:768px){.stats-compare{grid-template-columns:1fr;}.container{padding:1rem;}}
+        .data-type-tag { font-size:0.6rem; padding:0.15rem 0.5rem; border-radius:4px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; vertical-align:middle; }
+        .tag-backtest { background:rgba(234,179,8,0.15); color:#eab308; border:1px solid rgba(234,179,8,0.3); }
+        .tag-live { background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3); }
+        .tag-forward { background:rgba(99,102,241,0.15); color:#6366f1; border:1px solid rgba(99,102,241,0.3); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>$500/Day DayTrader Sim</h1>
+        <div class="header-links">
+            <a href="consolidated.html">Consolidated</a>
+            <a href="picks.html">Top Picks</a>
+            <a href="learning-lab.html">Learning Lab</a>
+            <a href="leaderboard.html">Leaderboard</a>
+            <a href="hub.html">Hub</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;font-size:0.72rem;color:#8888aa;margin-bottom:1rem;padding:0.5rem 0.75rem;background:rgba(234,179,8,0.04);border:1px solid rgba(234,179,8,0.15);border-radius:8px;">
+            <span>Data types:</span>
+            <span class="data-type-tag tag-backtest">Backtest</span> <span>Simulated trading results</span>
+            <span style="opacity:0.3;">|</span>
+            <span class="data-type-tag tag-forward">Forward-Looking</span> <span>Today's picks</span>
+        </div>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:1.5rem;text-align:center;">
+            <div style="font-size:0.8rem;color:var(--text-dim);">Simulated daily budget</div>
+            <div style="font-size:2rem;font-weight:800;color:var(--gold);">$500</div>
+            <div style="font-size:0.75rem;color:var(--text-dim);">Max 5 positions per day | Must close by EOD</div>
+        </div>
+
+        <!-- Stats Comparison -->
+        <div class="section-title">Original vs Revised Algorithm Performance <span class="data-type-tag tag-backtest">Backtest</span></div>
+        <div class="stats-compare" id="statsCompare">
+            <div class="loading"><div class="spinner"></div></div>
+        </div>
+
+        <!-- Equity Curve -->
+        <div class="chart-card">
+            <div style="font-size:1rem;font-weight:700;margin-bottom:0.75rem;">Cumulative P&L ($500/day)</div>
+            <canvas id="equityChart"></canvas>
+        </div>
+
+        <!-- Today's Picks -->
+        <div class="section-title">Today's Day Trade Picks <span class="data-type-tag tag-forward">Forward-Looking</span></div>
+        <div id="todayPicks" class="card">
+            <div class="loading"><div class="spinner"></div></div>
+        </div>
+
+        <!-- Recent Trades -->
+        <div class="section-title">Recent Trades <span class="data-type-tag tag-backtest">Simulated</span></div>
+        <div id="recentTrades" class="card">
+            <div class="loading"><div class="spinner"></div></div>
+        </div>
+
+        <div class="disclaimer">
+            <strong>Important Disclaimer</strong><br>
+            This is a <strong>simulated</strong> trading exercise for educational purposes only.
+            <strong>Day trading involves substantial risk of rapid financial loss.</strong>
+            Statistics show the majority of day traders lose money.
+            Past simulated performance does not guarantee future results.
+            <strong>Consult a licensed financial adviser</strong> before making any investment decisions.
+        </div>
+    </div>
+
+<script>
+var API_BASE = (function(){
+    var h = window.location.hostname;
+    return (h==='findtorontoevents.ca'||h==='www.findtorontoevents.ca') ? '/findstocks/portfolio2/api/' : 'api/';
+})();
+
+function apiGet(ep,cb){
+    var x=new XMLHttpRequest();x.open('GET',API_BASE+ep,true);
+    x.onload=function(){if(x.status>=200&&x.status<400){try{cb(null,JSON.parse(x.responseText));}catch(e){cb('Parse');}
+    }else cb('HTTP '+x.status);};x.onerror=function(){cb('Network');};x.send();
+}
+function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):'';}
+function fmtP(n){return n?'$'+parseFloat(n).toFixed(2):'$0.00';}
+var equityChart = null;
+
+function loadDashboard(){
+    apiGet('daytrader_sim.php?action=dashboard',function(err,d){
+        if(err||!d||!d.ok){
+            document.getElementById('statsCompare').innerHTML='<div style="color:var(--text-dim);">No simulation data yet. Simulations will run automatically via GitHub Actions after picks are generated.</div>';
+            return;
+        }
+        var stats=d.stats||{};
+        var html='';
+
+        // Original column
+        html+='<div class="stat-col original"><h3><span class="badge-sm badge-blue">ORIGINAL</span> Default Params (5% TP / 3% SL)</h3>';
+        var o=stats.original||{};
+        html+=statRows(o);
+        html+='</div>';
+
+        // Revised column
+        html+='<div class="stat-col revised"><h3><span class="badge-sm badge-green">REVISED</span> Self-Learned Params</h3>';
+        var r=stats.revised||{};
+        html+=statRows(r);
+        html+='</div>';
+
+        document.getElementById('statsCompare').innerHTML=html;
+
+        // Equity chart
+        renderEquityChart(d.equity_original||[], d.equity_revised||[]);
+
+        // Recent trades
+        var trades=d.recent_trades||[];
+        if(trades.length===0){
+            document.getElementById('recentTrades').innerHTML='<div style="color:var(--text-dim);">No trades yet.</div>';
+        } else {
+            var th='<table class="trades-table"><thead><tr><th>Date</th><th>Ticker</th><th>Strategy</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Return</th><th>Reason</th><th>Version</th></tr></thead><tbody>';
+            for(var i=0;i<Math.min(trades.length,30);i++){
+                var t=trades[i]; var cls=parseFloat(t.pnl)>=0?'positive':'negative';
+                var verBadge=t.algo_version==='original'?'<span class="badge-sm badge-blue">ORIG</span>':'<span class="badge-sm badge-green">REV</span>';
+                th+='<tr><td>'+t.sim_date+'</td><td style="font-weight:700;">'+esc(t.ticker)+'</td><td style="font-size:0.65rem;">'+esc(t.strategy_name)+'</td>';
+                th+='<td>'+fmtP(t.entry_price)+'</td><td>'+fmtP(t.exit_price)+'</td>';
+                th+='<td class="'+cls+'">'+fmtP(t.pnl)+'</td><td class="'+cls+'">'+(parseFloat(t.return_pct)>0?'+':'')+parseFloat(t.return_pct).toFixed(2)+'%</td>';
+                th+='<td style="font-size:0.65rem;">'+esc(t.exit_reason)+'</td><td>'+verBadge+'</td></tr>';
+            }
+            th+='</tbody></table>';
+            document.getElementById('recentTrades').innerHTML=th;
+        }
+    });
+}
+
+function statRows(s){
+    var h='';
+    h+='<div class="stat-row"><span class="lbl">Trading Days</span><span class="val">'+(s.total_days||0)+'</span></div>';
+    h+='<div class="stat-row"><span class="lbl">Total Trades</span><span class="val">'+(s.total_trades||0)+'</span></div>';
+    h+='<div class="stat-row"><span class="lbl">Total P&L</span><span class="val '+(parseFloat(s.total_pnl||0)>=0?'positive':'negative')+'">'+fmtP(s.total_pnl)+'</span></div>';
+    h+='<div class="stat-row"><span class="lbl">Avg Daily P&L</span><span class="val">'+fmtP(s.avg_daily_pnl)+'</span></div>';
+    h+='<div class="stat-row"><span class="lbl">Win Rate</span><span class="val">'+(s.win_rate||0)+'%</span></div>';
+    h+='<div class="stat-row"><span class="lbl">Profitable Days</span><span class="val">'+(s.profitable_day_rate||0)+'%</span></div>';
+    h+='<div class="stat-row"><span class="lbl">Max Drawdown</span><span class="val negative">'+(s.max_drawdown_pct||0)+'%</span></div>';
+    h+='<div class="stat-row"><span class="lbl">Sharpe Ratio</span><span class="val">'+(s.sharpe_ratio||0)+'</span></div>';
+    return h;
+}
+
+function renderEquityChart(orig,rev){
+    var ctx=document.getElementById('equityChart');
+    if(!ctx)return;
+    var labels=[];var d1=[];var d2=[];
+    for(var i=0;i<orig.length;i++){labels.push(orig[i].date);d1.push(orig[i].equity);}
+    for(var i=0;i<rev.length;i++){d2.push(rev[i].equity);if(i>=labels.length)labels.push(rev[i].date);}
+    if(equityChart)equityChart.destroy();
+    equityChart=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[
+        {label:'Original (5%/3%)',data:d1,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.1)',fill:true,tension:0.3,pointRadius:1},
+        {label:'Revised (Learned)',data:d2,borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,0.1)',fill:true,tension:0.3,pointRadius:1}
+    ]},options:{responsive:true,plugins:{legend:{labels:{color:'#8888aa'}}},scales:{
+        x:{ticks:{color:'#8888aa',maxTicksLimit:10},grid:{color:'rgba(42,42,74,0.3)'}},
+        y:{ticks:{color:'#8888aa',callback:function(v){return '$'+v;}},grid:{color:'rgba(42,42,74,0.3)'}}
+    }}});
+}
+
+function loadToday(){
+    apiGet('daytrader_sim.php?action=today',function(err,d){
+        var el=document.getElementById('todayPicks');
+        if(err||!d||!d.ok){el.innerHTML='<div style="color:var(--text-dim);">Could not load today\'s picks.</div>';return;}
+        var picks=d.picks||[];
+        if(picks.length===0){el.innerHTML='<div style="color:var(--text-dim);">No day-trade picks for today. Scans may not have run yet.</div>';return;}
+        var html='<div style="font-size:0.8rem;color:var(--text-dim);margin-bottom:0.75rem;">Budget: '+fmtP(d.budget)+' | Per position: '+fmtP(d.per_position)+' | '+picks.length+' picks</div>';
+        html+='<div class="today-grid">';
+        for(var i=0;i<picks.length;i++){
+            var p=picks[i];
+            html+='<div class="today-pick">';
+            html+='<div class="ticker">'+esc(p.ticker)+'</div>';
+            html+='<div class="detail">'+esc(p.strategy_name)+'</div>';
+            html+='<div style="margin:0.3rem 0;font-family:monospace;">'+fmtP(p.entry_price)+'</div>';
+            html+='<div class="detail">Score: '+p.score+' | '+p.shares+' shares | '+fmtP(p.allocated)+'</div>';
+            html+='</div>';
+        }
+        html+='</div>';
+        el.innerHTML=html;
+    });
+}
+
+loadDashboard();
+loadToday();
+</script>
+</body>
+</html>

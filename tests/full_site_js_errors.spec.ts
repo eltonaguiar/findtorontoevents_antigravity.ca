@@ -101,6 +101,10 @@ const ALL_PAGES: PageEntry[] = [
   { path: '/findstocks/portfolio2/stats/', name: 'Portfolio V2 Stats', module: 'findstocks' },
   { path: '/findstocks/portfolio2/picks.html', name: 'Top Picks Dashboard', module: 'findstocks' },
   { path: '/findstocks/portfolio2/leaderboard.html', name: 'Algorithm Leaderboard', module: 'findstocks' },
+  { path: '/findstocks/portfolio2/consolidated.html', name: 'Consolidated Stock Picks', module: 'findstocks' },
+  { path: '/findstocks/portfolio2/stock-intel.html?ticker=AAPL', name: 'Stock Intelligence', module: 'findstocks' },
+  { path: '/findstocks/portfolio2/learning-lab.html', name: 'Learning Lab', module: 'findstocks' },
+  { path: '/findstocks/portfolio2/daytrader-sim.html', name: 'DayTrader Simulator', module: 'findstocks' },
   { path: '/findstocks/research/', name: 'Stock Research', module: 'findstocks' },
 
   // ── FindStocks Global ──
