@@ -511,6 +511,163 @@ foreach ($portfolios as $p) {
 }
 $results['actions'][] = 'Seeded ' . $port_count . ' portfolio templates';
 
+// ─── Saved Portfolio Tables (horizon picks + tracking) ───
+$port_schema_file = dirname(__FILE__) . '/portfolio_schema.php';
+if (file_exists($port_schema_file)) {
+    // portfolio_schema.php uses its own db_connect, so we just note it here
+    $results['actions'][] = 'portfolio_schema available (run separately)';
+}
+
+// Create portfolio tables inline so they're part of the same setup flow
+$portfolio_tables = array(
+"CREATE TABLE IF NOT EXISTS saved_portfolios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    portfolio_name VARCHAR(200) NOT NULL,
+    portfolio_key VARCHAR(64) NOT NULL DEFAULT '',
+    horizon VARCHAR(20) NOT NULL DEFAULT 'swing',
+    initial_capital DECIMAL(12,2) NOT NULL DEFAULT 1000.00,
+    current_equity DECIMAL(12,2) NOT NULL DEFAULT 0,
+    take_profit_pct DECIMAL(5,2) NOT NULL DEFAULT 10.00,
+    stop_loss_pct DECIMAL(5,2) NOT NULL DEFAULT 5.00,
+    max_hold_days INT NOT NULL DEFAULT 30,
+    status VARCHAR(20) NOT NULL DEFAULT 'active',
+    ip_address VARCHAR(45) NOT NULL DEFAULT '',
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    KEY idx_status (status),
+    KEY idx_ip (ip_address),
+    KEY idx_key (portfolio_key)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8",
+"CREATE TABLE IF NOT EXISTS portfolio_positions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    portfolio_id INT NOT NULL,
+    ticker VARCHAR(10) NOT NULL,
+    company_name VARCHAR(200) NOT NULL DEFAULT '',
+    algorithm_name VARCHAR(100) NOT NULL DEFAULT '',
+    entry_date DATE NOT NULL,
+    entry_price DECIMAL(12,4) NOT NULL DEFAULT 0,
+    shares DECIMAL(12,4) NOT NULL DEFAULT 0,
+    allocated_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    current_price DECIMAL(12,4) NOT NULL DEFAULT 0,
+    unrealized_pnl DECIMAL(12,2) NOT NULL DEFAULT 0,
+    exit_date DATE,
+    exit_price DECIMAL(12,4) NOT NULL DEFAULT 0,
+    realized_pnl DECIMAL(12,2) NOT NULL DEFAULT 0,
+    exit_reason VARCHAR(50) NOT NULL DEFAULT '',
+    status VARCHAR(20) NOT NULL DEFAULT 'open',
+    KEY idx_portfolio (portfolio_id),
+    KEY idx_status (status),
+    KEY idx_ticker (ticker)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8",
+"CREATE TABLE IF NOT EXISTS portfolio_daily_equity (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    portfolio_id INT NOT NULL,
+    snapshot_date DATE NOT NULL,
+    equity_value DECIMAL(12,2) NOT NULL DEFAULT 0,
+    cash_balance DECIMAL(12,2) NOT NULL DEFAULT 0,
+    open_positions INT NOT NULL DEFAULT 0,
+    daily_return_pct DECIMAL(10,4) NOT NULL DEFAULT 0,
+    cumulative_return_pct DECIMAL(10,4) NOT NULL DEFAULT 0,
+    max_drawdown_pct DECIMAL(10,4) NOT NULL DEFAULT 0,
+    spy_close DECIMAL(10,2) NOT NULL DEFAULT 0,
+    UNIQUE KEY idx_portfolio_date (portfolio_id, snapshot_date),
+    KEY idx_date (snapshot_date)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8"
+);
+
+foreach ($portfolio_tables as $sql) {
+    if ($conn->query($sql)) {
+        $matches = array();
+        preg_match('/CREATE TABLE IF NOT EXISTS (\w+)/', $sql, $matches);
+        $tname = isset($matches[1]) ? $matches[1] : 'unknown';
+        $results['actions'][] = 'OK: ' . $tname;
+    } else {
+        $results['ok'] = false;
+        $results['actions'][] = 'FAIL: ' . $conn->error;
+    }
+}
+
+// ─── Dividend & Earnings Tables ───
+$div_earn_tables = array(
+
+"CREATE TABLE IF NOT EXISTS stock_dividends (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ticker VARCHAR(10) NOT NULL,
+    ex_date DATE NOT NULL,
+    payment_date DATE DEFAULT NULL,
+    amount DECIMAL(10,6) NOT NULL DEFAULT 0,
+    frequency VARCHAR(20) NOT NULL DEFAULT 'quarterly',
+    source VARCHAR(20) NOT NULL DEFAULT 'yahoo_v8',
+    updated_at DATETIME NOT NULL,
+    UNIQUE KEY idx_ticker_exdate (ticker, ex_date),
+    KEY idx_exdate (ex_date),
+    KEY idx_ticker (ticker)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8",
+
+"CREATE TABLE IF NOT EXISTS stock_earnings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ticker VARCHAR(10) NOT NULL,
+    quarter_end DATE NOT NULL,
+    earnings_date DATE DEFAULT NULL,
+    eps_actual DECIMAL(10,4) DEFAULT NULL,
+    eps_estimate DECIMAL(10,4) DEFAULT NULL,
+    eps_surprise DECIMAL(10,4) DEFAULT NULL,
+    surprise_pct DECIMAL(10,4) DEFAULT NULL,
+    revenue_actual BIGINT DEFAULT NULL,
+    revenue_estimate BIGINT DEFAULT NULL,
+    source VARCHAR(20) NOT NULL DEFAULT 'yahoo_v10',
+    updated_at DATETIME NOT NULL,
+    UNIQUE KEY idx_ticker_quarter (ticker, quarter_end),
+    KEY idx_earnings_date (earnings_date),
+    KEY idx_ticker (ticker)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8",
+
+"CREATE TABLE IF NOT EXISTS stock_fundamentals (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ticker VARCHAR(10) NOT NULL,
+    trailing_eps DECIMAL(10,4) DEFAULT NULL,
+    forward_eps DECIMAL(10,4) DEFAULT NULL,
+    trailing_pe DECIMAL(10,4) DEFAULT NULL,
+    forward_pe DECIMAL(10,4) DEFAULT NULL,
+    peg_ratio DECIMAL(10,4) DEFAULT NULL,
+    dividend_rate DECIMAL(10,4) DEFAULT NULL,
+    dividend_yield DECIMAL(10,6) DEFAULT NULL,
+    trailing_annual_div_rate DECIMAL(10,4) DEFAULT NULL,
+    trailing_annual_div_yield DECIMAL(10,6) DEFAULT NULL,
+    five_yr_avg_div_yield DECIMAL(10,6) DEFAULT NULL,
+    payout_ratio DECIMAL(10,4) DEFAULT NULL,
+    ex_dividend_date DATE DEFAULT NULL,
+    next_earnings_date DATE DEFAULT NULL,
+    price_to_book DECIMAL(10,4) DEFAULT NULL,
+    enterprise_to_revenue DECIMAL(10,4) DEFAULT NULL,
+    total_revenue BIGINT DEFAULT NULL,
+    ebitda BIGINT DEFAULT NULL,
+    total_debt BIGINT DEFAULT NULL,
+    current_ratio DECIMAL(10,4) DEFAULT NULL,
+    roe DECIMAL(10,4) DEFAULT NULL,
+    gross_margins DECIMAL(10,4) DEFAULT NULL,
+    operating_margins DECIMAL(10,4) DEFAULT NULL,
+    recommendation_key VARCHAR(20) DEFAULT NULL,
+    target_mean_price DECIMAL(10,4) DEFAULT NULL,
+    source VARCHAR(20) NOT NULL DEFAULT 'yahoo_v10',
+    updated_at DATETIME NOT NULL,
+    UNIQUE KEY idx_ticker (ticker)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8"
+
+);
+
+foreach ($div_earn_tables as $sql) {
+    if ($conn->query($sql)) {
+        $matches = array();
+        preg_match('/CREATE TABLE IF NOT EXISTS (\w+)/', $sql, $matches);
+        $tname = isset($matches[1]) ? $matches[1] : 'unknown';
+        $results['actions'][] = 'OK: ' . $tname;
+    } else {
+        $results['ok'] = false;
+        $results['actions'][] = 'FAIL: ' . $conn->error;
+    }
+}
+
 // Log
 $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'unknown';
 $ip = $conn->real_escape_string($ip);

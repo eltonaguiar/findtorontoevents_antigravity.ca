@@ -1,17 +1,21 @@
 <?php
 /**
  * DayTrades Miracle Claude — Budget-Aware Pick Recommender
- * Given a dollar budget, returns the optimal pick(s) with exact
+ * Given a dollar budget + trading style, returns the optimal pick(s) with exact
  * shares, fees, net profit/loss calculations.
  * PHP 5.2 compatible.
  *
  * Usage:
- *   GET .../budget_pick2.php?budget=250                — best pick for $250
- *   GET .../budget_pick2.php?budget=1000&top=5         — top 5 picks for $1000
- *   GET .../budget_pick2.php?budget=500&cdr_only=1     — CDR-only picks for $500
- *   GET .../budget_pick2.php?budget=100&strategy=X     — filter by strategy
- *   GET .../budget_pick2.php?budget=250&days=7         — include last 7 days of picks
- *   GET .../budget_pick2.php?budget=250&fresh=1        — run a fresh scan first
+ *   GET .../budget_pick2.php?budget=250                    — best pick for $250
+ *   GET .../budget_pick2.php?budget=1000&top=5             — top 5 picks for $1000
+ *   GET .../budget_pick2.php?budget=500&cdr_only=1         — CDR-only picks for $500
+ *   GET .../budget_pick2.php?budget=100&strategy=X         — filter by strategy
+ *   GET .../budget_pick2.php?budget=250&days=7             — include last 7 days of picks
+ *   GET .../budget_pick2.php?budget=250&fresh=1            — run a fresh scan first
+ *   GET .../budget_pick2.php?budget=250&style=intraday     — day trade (today only)
+ *   GET .../budget_pick2.php?budget=250&style=overnight    — day trade (next day close)
+ *   GET .../budget_pick2.php?budget=250&style=swing        — swing trade (up to 1 week)
+ *   GET .../budget_pick2.php?budget=250&style=longterm     — buy & hold (weeks/months)
  */
 require_once dirname(__FILE__) . '/db_connect2.php';
 require_once dirname(__FILE__) . '/questrade_fees2.php';
@@ -22,6 +26,60 @@ $cdr_only   = isset($_GET['cdr_only']) ? (int)$_GET['cdr_only'] : 0;
 $strategy   = isset($_GET['strategy']) ? trim($_GET['strategy']) : '';
 $days       = isset($_GET['days']) ? (int)$_GET['days'] : 0;
 $fresh_scan = isset($_GET['fresh']) ? (int)$_GET['fresh'] : 0;
+$style      = isset($_GET['style']) ? trim(strtolower($_GET['style'])) : '';
+
+// ─── Trading style definitions ───
+// Each style adjusts TP/SL multipliers and gives score bonuses/penalties
+// to strategies that match or conflict with the desired hold period.
+$style_configs = array(
+    'intraday' => array(
+        'label'       => 'Day Trade (Today)',
+        'max_hold'    => '1 day',
+        'tp_mult'     => 0.6,
+        'sl_mult'     => 0.7,
+        'preferred'   => 'Gap Up Momentum,Sector Momentum Leader,CDR Zero-Fee Play,Volume Surge Breakout',
+        'penalized'   => 'Earnings Catalyst Runner,Mean Reversion Sniper,Momentum Continuation',
+        'bonus'       => 15,
+        'penalty'     => -12
+    ),
+    'overnight' => array(
+        'label'       => 'Day Trade (Next Day)',
+        'max_hold'    => '2 days',
+        'tp_mult'     => 0.8,
+        'sl_mult'     => 0.85,
+        'preferred'   => 'Gap Up Momentum,Volume Surge Breakout,CDR Zero-Fee Play,Sector Momentum Leader',
+        'penalized'   => 'Earnings Catalyst Runner',
+        'bonus'       => 10,
+        'penalty'     => -8
+    ),
+    'swing' => array(
+        'label'       => 'Swing Trade (Up to 1 Week)',
+        'max_hold'    => '5-7 days',
+        'tp_mult'     => 1.0,
+        'sl_mult'     => 1.0,
+        'preferred'   => 'Momentum Continuation,Oversold Bounce,Mean Reversion Sniper,Earnings Catalyst Runner,CDR Zero-Fee Play',
+        'penalized'   => '',
+        'bonus'       => 10,
+        'penalty'     => 0
+    ),
+    'longterm' => array(
+        'label'       => 'Buy & Hold (Weeks/Months)',
+        'max_hold'    => '30+ days',
+        'tp_mult'     => 2.0,
+        'sl_mult'     => 1.5,
+        'preferred'   => 'Momentum Continuation,Mean Reversion Sniper,Oversold Bounce,CDR Zero-Fee Play',
+        'penalized'   => 'Gap Up Momentum,Sector Momentum Leader',
+        'bonus'       => 12,
+        'penalty'     => -8
+    )
+);
+
+$active_style = null;
+$style_label  = '';
+if ($style !== '' && isset($style_configs[$style])) {
+    $active_style = $style_configs[$style];
+    $style_label  = $active_style['label'];
+}
 
 if ($budget <= 0) {
     echo json_encode(array('ok' => false, 'error' => 'Please provide a budget amount. Example: ?budget=250'));
@@ -80,6 +138,8 @@ if (count($candidates) === 0) {
     echo json_encode(array(
         'ok'      => true,
         'budget'  => $budget,
+        'style'   => $style,
+        'style_label' => $style_label,
         'message' => 'No picks available. Run the scanner first: scanner2.php',
         'picks'   => array()
     ));
@@ -87,17 +147,43 @@ if (count($candidates) === 0) {
     exit;
 }
 
+// ─── Helper: check if strategy name is in a comma-separated list ───
+function _in_list($name, $csv) {
+    if ($csv === '') return false;
+    $parts = explode(',', $csv);
+    for ($i = 0; $i < count($parts); $i++) {
+        if (trim($parts[$i]) === $name) return true;
+    }
+    return false;
+}
+
 // ─── Calculate budget-specific metrics for each candidate ───
 $budget_picks = array();
 
 foreach ($candidates as $pick) {
     $entry_price = (float)$pick['entry_price'];
-    $tp_price    = (float)$pick['take_profit_price'];
-    $sl_price    = (float)$pick['stop_loss_price'];
+    $orig_tp     = (float)$pick['take_profit_price'];
+    $orig_sl     = (float)$pick['stop_loss_price'];
     $tp_pct      = (float)$pick['take_profit_pct'];
     $sl_pct      = (float)$pick['stop_loss_pct'];
     $ticker      = $pick['ticker'];
     $is_cdr      = (int)$pick['is_cdr'];
+    $strat_name  = $pick['strategy_name'];
+
+    // ─── Style-adjusted TP/SL ───
+    $tp_price = $orig_tp;
+    $sl_price = $orig_sl;
+    if ($active_style !== null) {
+        $tp_move = ($orig_tp - $entry_price) * $active_style['tp_mult'];
+        $sl_move = ($entry_price - $orig_sl) * $active_style['sl_mult'];
+        $tp_price = round($entry_price + $tp_move, 4);
+        $sl_price = round($entry_price - $sl_move, 4);
+        // Recalculate percentages
+        if ($entry_price > 0) {
+            $tp_pct = round(($tp_price - $entry_price) / $entry_price * 100, 2);
+            $sl_pct = round(($entry_price - $sl_price) / $entry_price * 100, 2);
+        }
+    }
 
     // Can we afford at least 1 share?
     if ($entry_price <= 0 || $entry_price > $budget) continue;
@@ -162,6 +248,16 @@ foreach ($candidates as $pick) {
     // Penalty if net profit is tiny (< $5)
     if ($net_profit_tp < 5) $budget_score -= 10;
 
+    // ─── Style-based scoring adjustments ───
+    if ($active_style !== null) {
+        if (_in_list($strat_name, $active_style['preferred'])) {
+            $budget_score += $active_style['bonus'];
+        }
+        if (_in_list($strat_name, $active_style['penalized'])) {
+            $budget_score += $active_style['penalty']; // negative
+        }
+    }
+
     if ($budget_score > 100) $budget_score = 100;
     if ($budget_score < 0)   $budget_score = 0;
 
@@ -174,11 +270,17 @@ foreach ($candidates as $pick) {
     // How much does the stock need to move (%) just to cover fees?
     $breakeven_move_pct = ($invested > 0) ? round(($total_fees_tp / $invested) * 100, 3) : 0;
 
+    // ─── Determine hold period label ───
+    $hold_label = '';
+    if ($active_style !== null) {
+        $hold_label = $active_style['max_hold'];
+    }
+
     $budget_picks[] = array(
         'rank'             => 0,
         'ticker'           => $ticker,
         'company'          => '',
-        'strategy'         => $pick['strategy_name'],
+        'strategy'         => $strat_name,
         'is_cdr'           => $is_cdr,
         'budget'           => $budget,
         'entry_price'      => $entry_price,
@@ -206,6 +308,7 @@ foreach ($candidates as $pick) {
         'budget_score'     => $budget_score,
         'original_score'   => $base_score,
         'confidence'       => $confidence,
+        'hold_period'      => $hold_label,
         'scan_date'        => $pick['scan_date'],
         'signals'          => json_decode($pick['signals_json'], true)
     );
@@ -256,11 +359,16 @@ $recommendation = '';
 if (count($top_budget_picks) > 0) {
     $best = $top_budget_picks[0];
     $cdr_note = $best['is_cdr'] ? ' (CDR = $0 commission)' : '';
-    $recommendation = 'With $' . number_format($budget, 2) . ', buy '
+    $style_note = $style_label !== '' ? ' [' . $style_label . ']' : '';
+    $recommendation = 'With $' . number_format($budget, 2) . $style_note . ', buy '
         . $best['shares'] . ' share' . ($best['shares'] > 1 ? 's' : '') . ' of '
         . $best['ticker'] . ' at $' . number_format($best['entry_price'], 2) . $cdr_note . '. '
         . 'Set stop-loss at $' . number_format($best['sl_price'], 2)
         . ' and take-profit at $' . number_format($best['tp_price'], 2) . '. ';
+
+    if ($best['hold_period'] !== '') {
+        $recommendation .= 'Max hold: ' . $best['hold_period'] . '. ';
+    }
 
     if ($best['net_profit'] > 0) {
         $recommendation .= 'If TP hits: +$' . number_format($best['net_profit'], 2)
@@ -287,6 +395,8 @@ $avg_fee_drag = ($affordable_count > 0) ? round($avg_fee_drag / $affordable_coun
 echo json_encode(array(
     'ok'             => true,
     'budget'         => $budget,
+    'style'          => $style,
+    'style_label'    => $style_label,
     'affordable'     => $affordable_count,
     'cdr_affordable' => $cdr_affordable,
     'avg_fee_drag'   => $avg_fee_drag,

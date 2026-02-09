@@ -588,4 +588,86 @@ test.describe('DayTrades Miracle Claude — Budget Picks', () => {
     // Budget presets should be visible
     await expect(page.locator('.budget-presets button').first()).toBeVisible();
   });
+
+  test('miracle.html has trading style selector with all 5 options', async ({ page }) => {
+    await page.goto(PAGE_URL);
+    await page.locator('.tab:has-text("My Budget")').click();
+    await expect(page.locator('#panel-budget')).toBeVisible();
+    const pills = page.locator('.style-pills button');
+    await expect(pills).toHaveCount(5);
+    // Check labels
+    await expect(pills.nth(0)).toContainText('All Styles');
+    await expect(pills.nth(1)).toContainText('Day Trade');
+    await expect(pills.nth(2)).toContainText('Overnight');
+    await expect(pills.nth(3)).toContainText('Swing Trade');
+    await expect(pills.nth(4)).toContainText('Buy');
+  });
+
+  test('budget_pick2.php style=intraday adjusts TP/SL', async ({ request }) => {
+    const [noStyle, intraday] = await Promise.all([
+      request.get(`${API_BASE}/budget_pick2.php?budget=500`).then(r => r.json()),
+      request.get(`${API_BASE}/budget_pick2.php?budget=500&style=intraday`).then(r => r.json()),
+    ]);
+    expect(noStyle.ok).toBe(true);
+    expect(intraday.ok).toBe(true);
+    expect(intraday.style).toBe('intraday');
+    expect(intraday.style_label).toBe('Day Trade (Today)');
+    if (noStyle.picks.length > 0 && intraday.picks.length > 0) {
+      // Find matching ticker in both
+      const ns = noStyle.picks[0];
+      const id = intraday.picks.find((p: any) => p.ticker === ns.ticker);
+      if (id) {
+        // Intraday TP should be tighter (closer to entry)
+        expect(Math.abs(id.tp_price - id.entry_price)).toBeLessThanOrEqual(
+          Math.abs(ns.tp_price - ns.entry_price) + 0.01
+        );
+      }
+    }
+  });
+
+  test('budget_pick2.php style=longterm widens TP/SL', async ({ request }) => {
+    const [noStyle, longterm] = await Promise.all([
+      request.get(`${API_BASE}/budget_pick2.php?budget=500`).then(r => r.json()),
+      request.get(`${API_BASE}/budget_pick2.php?budget=500&style=longterm`).then(r => r.json()),
+    ]);
+    expect(longterm.ok).toBe(true);
+    expect(longterm.style).toBe('longterm');
+    expect(longterm.style_label).toBe('Buy & Hold (Weeks/Months)');
+    if (noStyle.picks.length > 0 && longterm.picks.length > 0) {
+      const ns = noStyle.picks[0];
+      const lt = longterm.picks.find((p: any) => p.ticker === ns.ticker);
+      if (lt) {
+        // Longterm TP should be wider (further from entry)
+        expect(Math.abs(lt.tp_price - lt.entry_price)).toBeGreaterThanOrEqual(
+          Math.abs(ns.tp_price - ns.entry_price) - 0.01
+        );
+        expect(lt.hold_period).toBe('30+ days');
+      }
+    }
+  });
+
+  test('budget_pick2.php style=swing returns valid data', async ({ request }) => {
+    const res = await request.get(`${API_BASE}/budget_pick2.php?budget=1000&style=swing`);
+    const data = await res.json();
+    expect(data.ok).toBe(true);
+    expect(data.style).toBe('swing');
+    expect(data.style_label).toBe('Swing Trade (Up to 1 Week)');
+    for (const p of data.picks) {
+      expect(p.hold_period).toBe('5-7 days');
+      expect(p.tp_price).toBeGreaterThan(p.entry_price);
+      expect(p.sl_price).toBeLessThan(p.entry_price);
+    }
+  });
+
+  test('budget_pick2.php invalid style is ignored', async ({ request }) => {
+    const res = await request.get(`${API_BASE}/budget_pick2.php?budget=250&style=invalid`);
+    const data = await res.json();
+    expect(data.ok).toBe(true);
+    expect(data.style).toBe('invalid');
+    expect(data.style_label).toBe('');
+    // Should still return picks with no hold_period
+    for (const p of data.picks) {
+      expect(p.hold_period).toBe('');
+    }
+  });
 });

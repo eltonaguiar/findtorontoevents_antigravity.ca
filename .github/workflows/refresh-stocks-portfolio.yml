@@ -40,6 +40,36 @@ jobs:
         RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/fetch_prices.php?range=1y")
         echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Fetched: {d.get(\"fetched\",0)} tickers. Message: {d.get(\"message\",d.get(\"note\",\"\"))}')" || echo "Fetch response: $RESULT"
 
+    - name: Track saved portfolios
+      run: |
+        echo "=== Tracking saved portfolio positions ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/track_portfolio.php?key=stocksrefresh2026")
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            print(f'Portfolios tracked: {d.get(\"portfolios_tracked\", 0)}')
+            print(f'Positions checked: {d.get(\"positions_checked\", 0)}')
+            print(f'Positions closed: {d.get(\"positions_closed\", 0)}')
+            cr = d.get('close_reasons', {})
+            print(f'  SL hits: {cr.get(\"stop_loss\",0)}, TP hits: {cr.get(\"take_profit\",0)}, Max hold: {cr.get(\"max_hold\",0)}')
+        else:
+            print(f'Error: {d.get(\"error\",\"unknown\")}')
+        " || echo "Track response: $RESULT"
+
+    - name: Refresh horizon picks cache
+      run: |
+        echo "=== Refreshing horizon picks ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/horizon_picks.php?nocache=1")
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            for h in d.get('horizons', []):
+                bt = h.get('backtest', {})
+                print(f'{h[\"name\"]}: {h.get(\"pick_count\",0)} picks, Win Rate={bt.get(\"win_rate\",0)}%')
+        " || echo "Horizon picks: $RESULT"
+
     - name: Run comprehensive backtest and save
       run: |
         echo "=== Running all-algorithm backtest ==="
@@ -138,7 +168,7 @@ jobs:
     - name: Verify dashboard pages
       run: |
         echo "=== Verifying dashboard pages ==="
-        for page in "findstocks/portfolio2/picks.html" "findstocks/portfolio2/leaderboard.html"; do
+        for page in "findstocks/portfolio2/picks.html" "findstocks/portfolio2/leaderboard.html" "findstocks/portfolio2/horizon-picks.html" "findstocks/portfolio2/dashboard.html"; do
           STATUS=$(curl -sS -o /dev/null -w "%{http_code}" "https://findtorontoevents.ca/$page" 2>&1)
           echo "$page: HTTP $STATUS"
         done

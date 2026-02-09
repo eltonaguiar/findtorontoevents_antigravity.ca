@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Portfolios - Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+<style>
+:root {
+    --bg-dark: #0a0a1a;
+    --bg-card: #12122a;
+    --bg-card-hover: #1a1a3a;
+    --border: #2a2a4a;
+    --text: #e0e0f0;
+    --text-dim: #8888aa;
+    --accent: #6366f1;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #eab308;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 2rem;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap; gap: 0.5rem;
+}
+.header h1 { font-size: 1.4rem; font-weight: 700; }
+.header-links { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+.header-links a {
+    color: var(--text-dim); font-size: 0.9rem; transition: color 0.2s;
+}
+.header-links a:hover { color: var(--text); text-decoration: none; }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+
+/* Portfolio Selector */
+.selector-row {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 1.5rem; flex-wrap: wrap;
+}
+.selector-row label { font-size: 0.9rem; color: var(--text-dim); }
+.selector-row select {
+    background: var(--bg-card); color: var(--text);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 0.5rem 1rem; font-size: 0.95rem;
+    min-width: 260px; cursor: pointer;
+}
+.selector-row select:focus { outline: none; border-color: var(--accent); }
+.status-badge {
+    font-size: 0.75rem; padding: 2px 8px; border-radius: 10px;
+    font-weight: 600; text-transform: uppercase;
+}
+.status-active { background: rgba(34,197,94,0.15); color: var(--green); }
+.status-closed { background: rgba(136,136,170,0.15); color: var(--text-dim); }
+
+/* Empty State */
+.empty-state {
+    text-align: center; padding: 4rem 2rem;
+    background: var(--bg-card); border-radius: 12px;
+    border: 1px dashed var(--border);
+}
+.empty-state h2 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+.empty-state p { color: var(--text-dim); margin-bottom: 1.5rem; }
+.empty-state a {
+    display: inline-block; padding: 0.6rem 1.5rem;
+    background: var(--accent); color: #fff; border-radius: 8px;
+    font-weight: 600;
+}
+.empty-state a:hover { opacity: 0.9; text-decoration: none; }
+
+/* Summary Cards */
+.summary-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin-bottom: 1.5rem;
+}
+.summary-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.2rem;
+    transition: background 0.2s;
+}
+.summary-card:hover { background: var(--bg-card-hover); }
+.summary-card .label { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.3rem; }
+.summary-card .value { font-size: 1.5rem; font-weight: 700; }
+.summary-card .sub { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.2rem; }
+
+/* Chart */
+.chart-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.2rem; margin-bottom: 1.5rem;
+}
+.chart-card h3 { font-size: 1rem; margin-bottom: 1rem; }
+.chart-wrap { position: relative; width: 100%; height: 320px; }
+
+/* Tables */
+.table-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.2rem; margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+.table-card h3 { font-size: 1rem; margin-bottom: 1rem; }
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th {
+    text-align: left; padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim); font-weight: 600; white-space: nowrap;
+}
+td {
+    padding: 0.55rem 0.8rem;
+    border-bottom: 1px solid rgba(42,42,74,0.5);
+    white-space: nowrap;
+}
+tr:hover td { background: rgba(99,102,241,0.04); }
+.pnl-pos { color: var(--green); font-weight: 600; }
+.pnl-neg { color: var(--red); font-weight: 600; }
+
+.btn-close-pos {
+    background: transparent; color: var(--red);
+    border: 1px solid var(--red); border-radius: 4px;
+    padding: 3px 10px; font-size: 0.78rem; cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-close-pos:hover { background: var(--red); color: #fff; }
+
+/* Exit reason badges */
+.exit-badge {
+    font-size: 0.72rem; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+}
+.exit-take_profit { background: rgba(34,197,94,0.15); color: var(--green); }
+.exit-stop_loss { background: rgba(239,68,68,0.15); color: var(--red); }
+.exit-max_hold { background: rgba(234,179,8,0.15); color: var(--yellow); }
+.exit-manual { background: rgba(136,136,170,0.15); color: var(--text-dim); }
+
+/* Toggle */
+.toggle-btn {
+    background: var(--bg-card-hover); color: var(--text);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 0.5rem 1rem; font-size: 0.85rem; cursor: pointer;
+    margin-bottom: 1rem; transition: background 0.2s;
+}
+.toggle-btn:hover { background: var(--border); }
+
+/* Metrics Panel */
+.metrics-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0.8rem 2rem;
+}
+.metric-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(42,42,74,0.4);
+}
+.metric-row .mlabel { color: var(--text-dim); font-size: 0.88rem; }
+.metric-row .mval { font-weight: 600; font-size: 0.95rem; }
+.alpha-highlight {
+    background: rgba(99,102,241,0.12); padding: 0.6rem 1rem;
+    border-radius: 8px; margin-top: 1rem;
+    display: flex; justify-content: space-between; align-items: center;
+    border: 1px solid rgba(99,102,241,0.3);
+}
+.alpha-highlight .mlabel { font-weight: 600; }
+
+/* Delete */
+.delete-row { text-align: center; margin: 2rem 0 1rem; }
+.btn-delete {
+    background: transparent; color: var(--red);
+    border: 1px solid var(--red); border-radius: 8px;
+    padding: 0.6rem 1.8rem; font-size: 0.9rem; cursor: pointer;
+    font-weight: 600; transition: all 0.2s;
+}
+.btn-delete:hover { background: var(--red); color: #fff; }
+
+/* Confirm dialog overlay */
+.confirm-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); z-index: 999;
+    justify-content: center; align-items: center;
+}
+.confirm-overlay.active { display: flex; }
+.confirm-box {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 2rem; max-width: 400px; width: 90%;
+    text-align: center;
+}
+.confirm-box p { margin-bottom: 1.5rem; }
+.confirm-box .btn-row { display: flex; gap: 1rem; justify-content: center; }
+.confirm-box button {
+    padding: 0.5rem 1.5rem; border-radius: 6px; border: none;
+    font-size: 0.9rem; cursor: pointer; font-weight: 600;
+}
+.confirm-box .btn-yes { background: var(--red); color: #fff; }
+.confirm-box .btn-no { background: var(--border); color: var(--text); }
+
+/* Disclaimer */
+.disclaimer {
+    text-align: center; color: var(--text-dim);
+    font-size: 0.75rem; padding: 2rem 1rem 1rem;
+    border-top: 1px solid var(--border); margin-top: 2rem;
+}
+
+/* Loading */
+.loading { text-align: center; padding: 3rem; color: var(--text-dim); }
+.loading::after {
+    content: ''; display: inline-block; width: 20px; height: 20px;
+    border: 2px solid var(--border); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+    margin-left: 0.5rem; vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.no-data { text-align: center; padding: 2rem; color: var(--text-dim); font-size: 0.9rem; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header { padding: 1rem; }
+    .header h1 { font-size: 1.1rem; }
+    .container { padding: 1rem; }
+    .summary-grid { grid-template-columns: 1fr 1fr; }
+    .metrics-grid { grid-template-columns: 1fr; }
+    .selector-row select { min-width: 180px; }
+    .chart-wrap { height: 240px; }
+}
+@media (max-width: 480px) {
+    .summary-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>My Portfolios</h1>
+    <div class="header-links">
+        <a href="/findstocks/portfolio2/">Analysis</a>
+        <a href="/findstocks/portfolio2/horizon-picks.html">Invest</a>
+        <a href="/findstocks/portfolio2/picks.html">All Picks</a>
+        <a href="/findstocks/">Home</a>
+    </div>
+</div>
+
+<div class="container">
+    <div id="loading" class="loading">Loading portfolios</div>
+    <div id="empty-state" class="empty-state" style="display:none;">
+        <h2>No portfolios yet</h2>
+        <p>Create your first portfolio from the Invest page and track its performance here.</p>
+        <a href="/findstocks/portfolio2/horizon-picks.html">Create a Portfolio</a>
+    </div>
+
+    <div id="main-content" style="display:none;">
+        <!-- Portfolio Selector -->
+        <div class="selector-row">
+            <label for="portfolio-select">Portfolio:</label>
+            <select id="portfolio-select"></select>
+            <span id="portfolio-status"></span>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-grid" id="summary-grid">
+            <div class="summary-card">
+                <div class="label">Total Return</div>
+                <div class="value" id="sum-return">--</div>
+                <div class="sub" id="sum-return-sub"></div>
+            </div>
+            <div class="summary-card">
+                <div class="label">Max Drawdown</div>
+                <div class="value" id="sum-drawdown" style="color:var(--red)">--</div>
+                <div class="sub">Worst peak-to-trough</div>
+            </div>
+            <div class="summary-card">
+                <div class="label">Win Rate</div>
+                <div class="value" id="sum-winrate">--</div>
+                <div class="sub" id="sum-winrate-sub"></div>
+            </div>
+            <div class="summary-card">
+                <div class="label">Alpha vs S&amp;P</div>
+                <div class="value" id="sum-alpha">--</div>
+                <div class="sub">Excess return over benchmark</div>
+            </div>
+        </div>
+
+        <!-- Equity Curve Chart -->
+        <div class="chart-card">
+            <h3>Equity Curve</h3>
+            <div class="chart-wrap">
+                <canvas id="equity-chart"></canvas>
+            </div>
+        </div>
+
+        <!-- Open Positions -->
+        <div class="table-card">
+            <h3>Open Positions</h3>
+            <div id="open-positions-content"></div>
+        </div>
+
+        <!-- Closed Positions -->
+        <div class="table-card">
+            <button class="toggle-btn" id="toggle-closed" onclick="toggleClosed()">
+                Show Closed Positions (0)
+            </button>
+            <div id="closed-positions-wrap" style="display:none;">
+                <div id="closed-positions-content"></div>
+            </div>
+        </div>
+
+        <!-- Metrics Panel -->
+        <div class="table-card">
+            <h3>Performance Metrics</h3>
+            <div class="metrics-grid" id="metrics-grid"></div>
+            <div class="alpha-highlight" id="alpha-panel"></div>
+        </div>
+
+        <!-- Delete -->
+        <div class="delete-row">
+            <button class="btn-delete" onclick="confirmDelete()">Delete This Portfolio</button>
+        </div>
+    </div>
+
+    <div class="disclaimer">
+        Simulated portfolio tracking for educational purposes only. Past performance does not guarantee future results.
+        Not financial advice. Data may be delayed or inaccurate.
+    </div>
+</div>
+
+<!-- Confirm Overlay -->
+<div class="confirm-overlay" id="confirm-overlay">
+    <div class="confirm-box">
+        <p id="confirm-msg">Are you sure?</p>
+        <div class="btn-row">
+            <button class="btn-yes" id="confirm-yes">Yes</button>
+            <button class="btn-no" onclick="hideConfirm()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+var API = (function() {
+    var loc = window.location;
+    if (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1') return './api/';
+    return '/findstocks/portfolio2/api/';
+})();
+
+var equityChart = null;
+var currentPortfolioId = null;
+var portfolioList = [];
+var closedVisible = false;
+
+function apiGet(endpoint, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API + endpoint, true);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try { cb(JSON.parse(xhr.responseText)); } catch(e) { cb(null); }
+        } else { cb(null); }
+    };
+    xhr.onerror = function() { cb(null); };
+    xhr.send();
+}
+
+function $(id) { return document.getElementById(id); }
+
+function fmtPct(v) {
+    if (v == null) return '--';
+    var n = parseFloat(v);
+    return (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+}
+
+function fmtDollar(v) {
+    if (v == null) return '--';
+    var n = parseFloat(v);
+    return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtDate(d) {
+    if (!d) return '--';
+    return d.substring(0, 10);
+}
+
+function pnlClass(v) {
+    return parseFloat(v) >= 0 ? 'pnl-pos' : 'pnl-neg';
+}
+
+// ---- Init ----
+function init() {
+    apiGet('saved_portfolio.php?action=list', function(data) {
+        $('loading').style.display = 'none';
+        if (!data || !data.ok || !data.portfolios || data.portfolios.length === 0) {
+            $('empty-state').style.display = '';
+            return;
+        }
+        portfolioList = data.portfolios;
+        $('main-content').style.display = '';
+        populateDropdown();
+        var saved = localStorage.getItem('fte_active_portfolio_id');
+        var found = false;
+        if (saved) {
+            for (var i = 0; i < portfolioList.length; i++) {
+                if (String(portfolioList[i].id) === String(saved)) {
+                    $('portfolio-select').value = saved;
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            $('portfolio-select').selectedIndex = 0;
+        }
+        loadPortfolio($('portfolio-select').value);
+    });
+}
+
+function populateDropdown() {
+    var sel = $('portfolio-select');
+    sel.innerHTML = '';
+    for (var i = 0; i < portfolioList.length; i++) {
+        var p = portfolioList[i];
+        var opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = p.name + ' (' + (p.horizon || 'custom') + ')';
+        sel.appendChild(opt);
+    }
+    sel.onchange = function() { loadPortfolio(this.value); };
+}
+
+function loadPortfolio(id) {
+    currentPortfolioId = id;
+    localStorage.setItem('fte_active_portfolio_id', id);
+
+    // Show status badge
+    var port = null;
+    for (var i = 0; i < portfolioList.length; i++) {
+        if (String(portfolioList[i].id) === String(id)) { port = portfolioList[i]; break; }
+    }
+    if (port) {
+        var st = port.status || 'active';
+        $('portfolio-status').innerHTML = '<span class="status-badge status-' + st + '">' + st + '</span>';
+    }
+
+    // Load detail and equity curve in parallel
+    apiGet('saved_portfolio.php?action=detail&id=' + id, function(data) {
+        if (data && data.ok) {
+            renderDetail(data);
+        }
+    });
+    apiGet('saved_portfolio.php?action=equity_curve&id=' + id, function(data) {
+        if (data && data.ok) {
+            renderEquityCurve(data);
+            renderAlphaSummary(data.summary);
+        }
+    });
+}
+
+// ---- Summary Cards ----
+function renderSummary(metrics, summary) {
+    var ret = metrics.total_return_pct;
+    $('sum-return').textContent = fmtPct(ret);
+    $('sum-return').style.color = parseFloat(ret) >= 0 ? 'var(--green)' : 'var(--red)';
+    $('sum-return-sub').textContent = '';
+
+    var dd = metrics.max_drawdown_pct || (summary && summary.max_drawdown_pct);
+    $('sum-drawdown').textContent = dd != null ? '-' + Math.abs(parseFloat(dd)).toFixed(2) + '%' : '--';
+
+    var wr = metrics.win_rate;
+    $('sum-winrate').textContent = wr != null ? parseFloat(wr).toFixed(1) + '%' : '--';
+    $('sum-winrate-sub').textContent = '';
+
+    var alpha = summary ? summary.alpha : null;
+    if (alpha != null) {
+        $('sum-alpha').textContent = fmtPct(alpha);
+        $('sum-alpha').style.color = parseFloat(alpha) >= 0 ? 'var(--green)' : 'var(--red)';
+    } else {
+        $('sum-alpha').textContent = '--';
+        $('sum-alpha').style.color = '';
+    }
+}
+
+// ---- Detail ----
+function renderDetail(data) {
+    var p = data.portfolio;
+    var openPos = data.open_positions || [];
+    var closedPos = data.closed_positions || [];
+    var metrics = data.metrics || {};
+
+    renderSummary(metrics, null);
+    renderOpenPositions(openPos);
+    renderClosedPositions(closedPos);
+    renderMetrics(metrics);
+}
+
+// ---- Equity Curve ----
+function renderEquityCurve(data) {
+    var curve = data.curve || [];
+    if (curve.length === 0) {
+        $('equity-chart').parentNode.innerHTML = '<div class="no-data">No equity data available yet.</div>';
+        return;
+    }
+
+    var labels = [];
+    var eqData = [];
+    var spyData = [];
+    for (var i = 0; i < curve.length; i++) {
+        labels.push(curve[i].date);
+        eqData.push(parseFloat(curve[i].equity));
+        spyData.push(parseFloat(curve[i].spy));
+    }
+
+    if (equityChart) { equityChart.destroy(); }
+
+    var ctx = $('equity-chart').getContext('2d');
+    equityChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Portfolio',
+                    data: eqData,
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99,102,241,0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 0,
+                    borderWidth: 2
+                },
+                {
+                    label: 'S&P 500',
+                    data: spyData,
+                    borderColor: '#8888aa',
+                    borderDash: [6, 3],
+                    fill: false,
+                    tension: 0.3,
+                    pointRadius: 0,
+                    borderWidth: 1.5
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    labels: { color: '#8888aa', usePointStyle: true, padding: 20 }
+                },
+                tooltip: {
+                    backgroundColor: '#12122a',
+                    borderColor: '#2a2a4a',
+                    borderWidth: 1,
+                    titleColor: '#e0e0f0',
+                    bodyColor: '#e0e0f0',
+                    callbacks: {
+                        label: function(ctx) {
+                            return ctx.dataset.label + ': $' +
+                                ctx.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: '#2a2a4a' },
+                    ticks: {
+                        color: '#8888aa', maxTicksLimit: 10,
+                        maxRotation: 0, autoSkip: true
+                    }
+                },
+                y: {
+                    grid: { color: '#2a2a4a' },
+                    ticks: {
+                        color: '#8888aa',
+                        callback: function(v) {
+                            return '$' + v.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Update alpha summary if available
+    if (data.summary) {
+        renderAlphaSummary(data.summary);
+    }
+}
+
+function renderAlphaSummary(summary) {
+    if (!summary) return;
+    // Update the alpha card
+    var alpha = summary.alpha;
+    if (alpha != null) {
+        $('sum-alpha').textContent = fmtPct(alpha);
+        $('sum-alpha').style.color = parseFloat(alpha) >= 0 ? 'var(--green)' : 'var(--red)';
+    }
+
+    // Render alpha comparison panel
+    var html = '<span class="mlabel">Portfolio: ' + fmtPct(summary.portfolio_return_pct) + '</span>';
+    html += '<span class="mlabel">S&P 500: ' + fmtPct(summary.spy_return_pct) + '</span>';
+    html += '<span class="mval" style="color:' + (parseFloat(alpha) >= 0 ? 'var(--green)' : 'var(--red)') + '">';
+    html += 'Alpha: ' + fmtPct(alpha) + '</span>';
+    $('alpha-panel').innerHTML = html;
+
+    // Update drawdown if not already set
+    if (summary.max_drawdown_pct != null) {
+        var dd = parseFloat(summary.max_drawdown_pct);
+        if ($('sum-drawdown').textContent === '--') {
+            $('sum-drawdown').textContent = '-' + Math.abs(dd).toFixed(2) + '%';
+        }
+    }
+}
+
+// ---- Open Positions ----
+function renderOpenPositions(positions) {
+    var el = $('open-positions-content');
+    if (!positions || positions.length === 0) {
+        el.innerHTML = '<div class="no-data">All positions closed</div>';
+        return;
+    }
+    var html = '<div class="table-scroll"><table><thead><tr>';
+    html += '<th>Ticker</th><th>Company</th><th>Entry Date</th><th>Entry $</th>';
+    html += '<th>Current $</th><th>Shares</th><th>P&L ($)</th><th>P&L (%)</th>';
+    html += '<th>Days Held</th><th>TP Dist</th><th>SL Dist</th><th>Action</th>';
+    html += '</tr></thead><tbody>';
+
+    for (var i = 0; i < positions.length; i++) {
+        var p = positions[i];
+        var pnlDollar = p.pnl_dollar != null ? parseFloat(p.pnl_dollar) : ((parseFloat(p.current_price) - parseFloat(p.entry_price)) * parseFloat(p.shares));
+        var pnlPct = p.pnl_pct != null ? parseFloat(p.pnl_pct) : ((parseFloat(p.current_price) / parseFloat(p.entry_price) - 1) * 100);
+        var daysHeld = p.days_held || '--';
+        var tpDist = p.tp_distance != null ? fmtPct(p.tp_distance) : '--';
+        var slDist = p.sl_distance != null ? fmtPct(p.sl_distance) : '--';
+
+        html += '<tr>';
+        html += '<td><strong>' + (p.ticker || p.symbol || '--') + '</strong></td>';
+        html += '<td>' + (p.company || p.name || '--') + '</td>';
+        html += '<td>' + fmtDate(p.entry_date) + '</td>';
+        html += '<td>' + fmtDollar(p.entry_price) + '</td>';
+        html += '<td>' + fmtDollar(p.current_price) + '</td>';
+        html += '<td>' + (p.shares || '--') + '</td>';
+        html += '<td class="' + pnlClass(pnlDollar) + '">' + (pnlDollar >= 0 ? '+' : '') + pnlDollar.toFixed(2) + '</td>';
+        html += '<td class="' + pnlClass(pnlPct) + '">' + fmtPct(pnlPct) + '</td>';
+        html += '<td>' + daysHeld + '</td>';
+        html += '<td>' + tpDist + '</td>';
+        html += '<td>' + slDist + '</td>';
+        html += '<td><button class="btn-close-pos" onclick="closePosition(' + (p.id || p.position_id) + ')">Close</button></td>';
+        html += '</tr>';
+    }
+
+    html += '</tbody></table></div>';
+    el.innerHTML = html;
+}
+
+// ---- Closed Positions ----
+function renderClosedPositions(positions) {
+    var count = positions ? positions.length : 0;
+    $('toggle-closed').textContent = (closedVisible ? 'Hide' : 'Show') + ' Closed Positions (' + count + ')';
+
+    var el = $('closed-positions-content');
+    if (!positions || positions.length === 0) {
+        el.innerHTML = '<div class="no-data">No closed positions yet</div>';
+        return;
+    }
+    var html = '<div class="table-scroll"><table><thead><tr>';
+    html += '<th>Ticker</th><th>Entry Date</th><th>Exit Date</th><th>Entry $</th>';
+    html += '<th>Exit $</th><th>Shares</th><th>P&L ($)</th><th>Return %</th>';
+    html += '<th>Exit Reason</th><th>Hold Days</th>';
+    html += '</tr></thead><tbody>';
+
+    for (var i = 0; i < positions.length; i++) {
+        var p = positions[i];
+        var pnlDollar = p.pnl_dollar != null ? parseFloat(p.pnl_dollar) : ((parseFloat(p.exit_price) - parseFloat(p.entry_price)) * parseFloat(p.shares));
+        var retPct = p.return_pct != null ? parseFloat(p.return_pct) : ((parseFloat(p.exit_price) / parseFloat(p.entry_price) - 1) * 100);
+        var reason = p.exit_reason || 'manual';
+        var reasonLabel = reason.replace(/_/g, ' ');
+
+        html += '<tr>';
+        html += '<td><strong>' + (p.ticker || p.symbol || '--') + '</strong></td>';
+        html += '<td>' + fmtDate(p.entry_date) + '</td>';
+        html += '<td>' + fmtDate(p.exit_date) + '</td>';
+        html += '<td>' + fmtDollar(p.entry_price) + '</td>';
+        html += '<td>' + fmtDollar(p.exit_price) + '</td>';
+        html += '<td>' + (p.shares || '--') + '</td>';
+        html += '<td class="' + pnlClass(pnlDollar) + '">' + (pnlDollar >= 0 ? '+' : '') + pnlDollar.toFixed(2) + '</td>';
+        html += '<td class="' + pnlClass(retPct) + '">' + fmtPct(retPct) + '</td>';
+        html += '<td><span class="exit-badge exit-' + reason + '">' + reasonLabel + '</span></td>';
+        html += '<td>' + (p.hold_days || p.days_held || '--') + '</td>';
+        html += '</tr>';
+    }
+
+    html += '</tbody></table></div>';
+    el.innerHTML = html;
+}
+
+function toggleClosed() {
+    closedVisible = !closedVisible;
+    $('closed-positions-wrap').style.display = closedVisible ? '' : 'none';
+    var btn = $('toggle-closed');
+    btn.textContent = btn.textContent.replace(closedVisible ? 'Show' : 'Hide', closedVisible ? 'Hide' : 'Show');
+}
+
+// ---- Metrics ----
+function renderMetrics(m) {
+    var rows = [
+        ['Total Return', fmtPct(m.total_return_pct), pnlClass(m.total_return_pct)],
+        ['Win Rate', m.win_rate != null ? parseFloat(m.win_rate).toFixed(1) + '%' : '--', ''],
+        ['Avg Win', fmtPct(m.avg_win_pct), 'pnl-pos'],
+        ['Avg Loss', fmtPct(m.avg_loss_pct), 'pnl-neg'],
+        ['Best Trade', fmtPct(m.best_trade_pct), 'pnl-pos'],
+        ['Worst Trade', fmtPct(m.worst_trade_pct), 'pnl-neg'],
+        ['Profit Factor', m.profit_factor != null ? parseFloat(m.profit_factor).toFixed(2) + 'x' : '--', ''],
+        ['Max Drawdown', m.max_drawdown_pct != null ? '-' + Math.abs(parseFloat(m.max_drawdown_pct)).toFixed(2) + '%' : '--', 'pnl-neg']
+    ];
+    var html = '';
+    for (var i = 0; i < rows.length; i++) {
+        html += '<div class="metric-row">';
+        html += '<span class="mlabel">' + rows[i][0] + '</span>';
+        html += '<span class="mval ' + rows[i][2] + '">' + rows[i][1] + '</span>';
+        html += '</div>';
+    }
+    $('metrics-grid').innerHTML = html;
+}
+
+// ---- Close Position ----
+function closePosition(posId) {
+    showConfirm('Close this position at current market price?', function() {
+        apiGet('saved_portfolio.php?action=close_position&position_id=' + posId, function(data) {
+            if (data && data.ok) {
+                loadPortfolio(currentPortfolioId);
+            } else {
+                alert('Failed to close position. ' + (data && data.error ? data.error : ''));
+            }
+        });
+    });
+}
+
+// ---- Delete Portfolio ----
+function confirmDelete() {
+    showConfirm('Permanently delete this portfolio and all its positions? This cannot be undone.', function() {
+        apiGet('saved_portfolio.php?action=delete&id=' + currentPortfolioId, function(data) {
+            if (data && data.ok) {
+                localStorage.removeItem('fte_active_portfolio_id');
+                window.location.reload();
+            } else {
+                alert('Failed to delete portfolio. ' + (data && data.error ? data.error : ''));
+            }
+        });
+    });
+}
+
+// ---- Confirm Dialog ----
+var confirmCallback = null;
+function showConfirm(msg, cb) {
+    $('confirm-msg').textContent = msg;
+    confirmCallback = cb;
+    $('confirm-overlay').classList.add('active');
+    $('confirm-yes').onclick = function() {
+        hideConfirm();
+        if (confirmCallback) confirmCallback();
+    };
+}
+function hideConfirm() {
+    $('confirm-overlay').classList.remove('active');
+    confirmCallback = null;
+}
+
+// Close confirm on escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') hideConfirm();
+});
+
+// ---- Boot ----
+init();
+</script>
+</body>
+</html>

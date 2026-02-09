@@ -29,6 +29,7 @@ files_to_deploy = [
     ('findstocks2_global/api/resolve_picks2.php', 'findstocks2_global/api/resolve_picks2.php'),
     ('findstocks2_global/api/learning2.php', 'findstocks2_global/api/learning2.php'),
     ('findstocks2_global/api/daily_scan2.php', 'findstocks2_global/api/daily_scan2.php'),
+    ('findstocks2_global/api/budget_pick2.php', 'findstocks2_global/api/budget_pick2.php'),
     ('findstocks2_global/miracle.html', 'findstocks2_global/miracle.html'),
 ]
 
