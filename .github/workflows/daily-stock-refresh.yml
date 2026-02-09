@@ -1,0 +1,214 @@
+name: Daily Stock Data Refresh
+
+on:
+  schedule:
+    # ─── Two runs per weekday ───
+    # 1) 22:30 UTC = 5:30 PM EST — right after US market close
+    #    Imports new picks, fetches closing prices, runs full analysis
+    - cron: '30 22 * * 1-5'
+    # 2) 14:00 UTC = 9:00 AM EST — morning pre-market refresh
+    #    Catches any picks published overnight, updates stats
+    - cron: '0 14 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      extra_price_batches:
+        description: 'Extra price-fetch batches (0-10, default 3)'
+        required: false
+        default: '3'
+        type: choice
+        options:
+          - '1'
+          - '3'
+          - '5'
+          - '10'
+
+jobs:
+  refresh-stock-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+
+    # ──────────────────────────────────────────────
+    # Step 1: Import new stock picks
+    # ──────────────────────────────────────────────
+    - name: Import new stock picks
+      id: import
+      run: |
+        echo "=== Importing new stock picks ==="
+        RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 30 \
+          "https://findtorontoevents.ca/findstocks/api/import_picks.php")
+
+        HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+        BODY=$(echo "$RESPONSE" | head -n -1)
+
+        echo "HTTP: $HTTP_CODE"
+        echo "Body: $BODY"
+
+        if [ "$HTTP_CODE" = "200" ]; then
+          IMPORTED=$(echo "$BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('imported',0))" 2>/dev/null || echo "?")
+          SKIPPED=$(echo "$BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('skipped',0))" 2>/dev/null || echo "?")
+          echo "Imported: $IMPORTED | Skipped: $SKIPPED"
+          echo "import_result=imported=$IMPORTED skipped=$SKIPPED" >> $GITHUB_OUTPUT
+        else
+          echo "::warning::Import returned HTTP $HTTP_CODE"
+          echo "import_result=failed (HTTP $HTTP_CODE)" >> $GITHUB_OUTPUT
+        fi
+
+    # ──────────────────────────────────────────────
+    # Step 2: Fetch latest prices (multiple batches)
+    # ──────────────────────────────────────────────
+    - name: Fetch latest stock prices
+      id: prices
+      run: |
+        echo "=== Fetching latest stock prices ==="
+        BATCHES="${{ github.event.inputs.extra_price_batches || '3' }}"
+        TOTAL_FETCHED=0
+        BATCH=0
+
+        while [ "$BATCH" -lt "$BATCHES" ]; do
+          BATCH=$((BATCH + 1))
+          echo "--- Batch $BATCH of $BATCHES ---"
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 60 \
+            "https://findtorontoevents.ca/findstocks/api/fetch_prices.php?range=1y")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          if [ "$HTTP_CODE" = "200" ]; then
+            FETCHED=$(echo "$BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('fetched',0))" 2>/dev/null || echo "0")
+            HAS_MORE=$(echo "$BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); print('yes' if 'note' in d else 'no')" 2>/dev/null || echo "no")
+            echo "Fetched: $FETCHED tickers | More remaining: $HAS_MORE"
+            TOTAL_FETCHED=$((TOTAL_FETCHED + FETCHED))
+
+            # Stop early if nothing left
+            if [ "$HAS_MORE" = "no" ]; then
+              echo "All tickers populated — stopping early"
+              break
+            fi
+          else
+            echo "::warning::Price fetch batch $BATCH returned HTTP $HTTP_CODE"
+            break
+          fi
+
+          # Brief pause between batches
+          sleep 2
+        done
+
+        echo "Total tickers fetched: $TOTAL_FETCHED"
+        echo "prices_result=$TOTAL_FETCHED tickers across $BATCH batches" >> $GITHUB_OUTPUT
+
+    # ──────────────────────────────────────────────
+    # Step 3: Run full daily refresh (backtests + analysis + cache)
+    # ──────────────────────────────────────────────
+    - name: Run full analysis and cache report
+      id: refresh
+      run: |
+        echo "=== Running full daily refresh (backtests + analysis) ==="
+
+        # Retry up to 3 times — the PHP server can be slow on 50webs
+        ATTEMPT=0
+        MAX_ATTEMPTS=3
+        SUCCESS=false
+
+        while [ "$ATTEMPT" -lt "$MAX_ATTEMPTS" ]; do
+          ATTEMPT=$((ATTEMPT + 1))
+          echo "--- Attempt $ATTEMPT of $MAX_ATTEMPTS ---"
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 120 \
+            "https://findtorontoevents.ca/findstocks/api/daily_refresh.php?key=stocksrefresh2026")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          echo "HTTP: $HTTP_CODE"
+
+          if [ "$HTTP_CODE" = "200" ] && echo "$BODY" | grep -q '"ok":true'; then
+            echo "$BODY" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        print('=== Refresh Results ===')
+        for line in d.get('log', []):
+            print(f'  {line}')
+        print(f'Elapsed: {d.get(\"elapsed_seconds\", \"?\")}s')
+        " 2>/dev/null || echo "Response: $BODY"
+            SUCCESS=true
+            break
+          else
+            echo "::warning::Attempt $ATTEMPT failed (HTTP $HTTP_CODE)"
+            if [ "$ATTEMPT" -lt "$MAX_ATTEMPTS" ]; then
+              echo "Waiting 10s before retry..."
+              sleep 10
+            fi
+          fi
+        done
+
+        if [ "$SUCCESS" = "true" ]; then
+          echo "refresh_result=success" >> $GITHUB_OUTPUT
+        else
+          echo "::error::Daily refresh failed after $MAX_ATTEMPTS attempts"
+          echo "refresh_result=failed" >> $GITHUB_OUTPUT
+          exit 1
+        fi
+
+    # ──────────────────────────────────────────────
+    # Step 4: Verify report page is accessible
+    # ──────────────────────────────────────────────
+    - name: Verify report page loads
+      run: |
+        echo "=== Verifying report page ==="
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 \
+          "https://findtorontoevents.ca/findstocks/portfolio/report.html")
+
+        echo "Report page: HTTP $HTTP_CODE"
+        if [ "$HTTP_CODE" != "200" ]; then
+          echo "::warning::Report page returned HTTP $HTTP_CODE"
+        fi
+
+    # ──────────────────────────────────────────────
+    # Step 5: Verify cached data is fresh
+    # ──────────────────────────────────────────────
+    - name: Verify cached report data
+      run: |
+        echo "=== Verifying cached report data ==="
+        RESPONSE=$(curl -s --max-time 15 \
+          "https://findtorontoevents.ca/findstocks/api/get_report.php")
+
+        if echo "$RESPONSE" | grep -q '"ok":true'; then
+          echo "$RESPONSE" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        report = d.get('report', {})
+        stats = report.get('stats', {})
+        print(f'Updated at:       {d.get(\"updated_at\", \"?\")}')
+        print(f'Stocks tracked:   {stats.get(\"total_stocks\", \"?\")}')
+        print(f'Total picks:      {stats.get(\"total_picks\", \"?\")}')
+        print(f'Price records:    {stats.get(\"total_price_records\", \"?\")}')
+        print(f'Scenarios cached: {len(report.get(\"scenarios\", []))}')
+        print(f'Algorithms:       {len(report.get(\"per_algorithm\", []))}')
+        print(f'Top trades:       {len(report.get(\"top_trades\", []))}')
+        print(f'Recommendations:  {len(report.get(\"recommendations\", []))}')
+        " 2>/dev/null
+          echo "Verification passed!"
+        else
+          echo "::warning::Report cache not available or malformed"
+          echo "Response: $RESPONSE"
+        fi
+
+    # ──────────────────────────────────────────────
+    # Step 6: Print summary
+    # ──────────────────────────────────────────────
+    - name: Summary
+      if: always()
+      run: |
+        echo "╔══════════════════════════════════════════╗"
+        echo "║     Daily Stock Refresh Summary          ║"
+        echo "╠══════════════════════════════════════════╣"
+        echo "║ Import:   ${{ steps.import.outputs.import_result || 'skipped' }}"
+        echo "║ Prices:   ${{ steps.prices.outputs.prices_result || 'skipped' }}"
+        echo "║ Refresh:  ${{ steps.refresh.outputs.refresh_result || 'skipped' }}"
+        echo "╠══════════════════════════════════════════╣"
+        echo "║ Report:   https://findtorontoevents.ca/findstocks/portfolio/report.html"
+        echo "║ Portfolio: https://findtorontoevents.ca/findstocks/portfolio/"
+        echo "╚══════════════════════════════════════════╝"

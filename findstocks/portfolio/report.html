@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Stock Report | Find Stocks</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg: #0a0a1a; --card: #12122a; --card2: #1a1a3a; --border: #2a2a4a;
+            --text: #e0e0f0; --dim: #8888aa; --accent: #6366f1; --glow: rgba(99,102,241,0.3);
+            --green: #22c55e; --green-bg: rgba(34,197,94,0.12);
+            --red: #ef4444; --red-bg: rgba(239,68,68,0.12);
+            --yellow: #eab308; --yellow-bg: rgba(234,179,8,0.12);
+            --blue: #3b82f6; --blue-bg: rgba(59,130,246,0.12);
+            --r: 12px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); line-height:1.6; }
+        a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
+        .hdr { background:linear-gradient(135deg,#12122a,#1e1e3f); border-bottom:1px solid var(--border); padding:1.25rem 2rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; }
+        .hdr h1 { font-size:1.4rem; background:linear-gradient(135deg,var(--accent),#a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .hdr-links { display:flex; gap:1rem; font-size:.85rem; }
+        .hdr-links a { color:var(--dim); } .hdr-links a:hover { color:var(--text); }
+        .wrap { max-width:1200px; margin:0 auto; padding:1.5rem; }
+        .updated { text-align:center; color:var(--dim); font-size:.8rem; margin-bottom:1.5rem; }
+        .updated strong { color:var(--accent); }
+
+        /* Cards */
+        .card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:1.5rem; margin-bottom:1.5rem; }
+        .card h2 { font-size:1.15rem; margin-bottom:1rem; display:flex; align-items:center; gap:.5rem; }
+        .card h3 { font-size:.9rem; color:var(--dim); margin:1rem 0 .5rem; }
+
+        /* Stat row */
+        .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+        .st { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:.85rem; text-align:center; }
+        .st .lb { font-size:.7rem; color:var(--dim); text-transform:uppercase; letter-spacing:.04em; }
+        .st .vl { font-size:1.35rem; font-weight:700; margin-top:.15rem; }
+        .pos { color:var(--green); } .neg { color:var(--red); } .neu { color:var(--text); } .warn { color:var(--yellow); }
+
+        /* Badges */
+        .badge { display:inline-block; padding:.1rem .5rem; border-radius:4px; font-size:.75rem; font-weight:600; }
+        .b-green { background:var(--green-bg); color:var(--green); }
+        .b-red { background:var(--red-bg); color:var(--red); }
+        .b-yellow { background:var(--yellow-bg); color:var(--yellow); }
+        .b-blue { background:var(--blue-bg); color:var(--blue); }
+
+        /* Algo cards */
+        .algo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1rem; }
+        .algo-card { background:var(--card2); border:1px solid var(--border); border-radius:var(--r); padding:1.25rem; }
+        .algo-card h4 { font-size:1rem; margin-bottom:.75rem; }
+        .algo-row { display:flex; justify-content:space-between; font-size:.85rem; padding:.25rem 0; border-bottom:1px solid rgba(42,42,74,.3); }
+        .algo-row:last-child { border-bottom:none; }
+
+        /* Tables */
+        .tbl-wrap { overflow-x:auto; }
+        table { width:100%; border-collapse:collapse; font-size:.83rem; }
+        thead th { text-align:left; padding:.55rem .7rem; background:var(--bg); color:var(--dim); font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid var(--border); white-space:nowrap; }
+        tbody td { padding:.45rem .7rem; border-bottom:1px solid rgba(42,42,74,.4); white-space:nowrap; }
+        tbody tr:hover { background:rgba(99,102,241,.04); }
+
+        /* Charts */
+        .chart-box { position:relative; height:280px; margin:1rem 0; }
+
+        /* Recs */
+        .rec { padding:1rem; border-radius:8px; margin-bottom:.75rem; }
+        .rec.profitable { background:var(--green-bg); border-left:3px solid var(--green); }
+        .rec.fixable { background:var(--yellow-bg); border-left:3px solid var(--yellow); }
+        .rec.failing { background:var(--red-bg); border-left:3px solid var(--red); }
+        .rec h4 { font-size:.95rem; margin-bottom:.35rem; }
+        .rec p { font-size:.82rem; color:var(--dim); margin:.2rem 0; }
+
+        /* Finding boxes */
+        .finding { padding:1rem 1.25rem; border-radius:8px; margin-bottom:.75rem; border-left:3px solid var(--accent); background:rgba(99,102,241,.06); }
+        .finding strong { color:var(--accent); }
+
+        /* Disclaimer */
+        .disc { background:rgba(234,179,8,.06); border:1px solid rgba(234,179,8,.15); border-radius:var(--r); padding:.85rem 1.25rem; font-size:.78rem; color:var(--dim); margin-top:1.5rem; }
+        .disc strong { color:var(--yellow); }
+
+        /* Grid helpers */
+        .g2 { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+        @media(max-width:900px) { .g2 { grid-template-columns:1fr; } .wrap { padding:1rem; } }
+
+        .loading { text-align:center; padding:3rem; color:var(--dim); font-size:1.1rem; }
+        .loading::after { content:''; display:inline-block; width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:sp .7s linear infinite; margin-left:.5rem; vertical-align:middle; }
+        @keyframes sp { to { transform:rotate(360deg); } }
+
+        .separator { border:none; border-top:1px solid var(--border); margin:2rem 0; }
+    </style>
+</head>
+<body>
+
+<div class="hdr">
+    <h1>Daily Stock Analysis Report</h1>
+    <div class="hdr-links">
+        <a href="/findstocks/portfolio/">Portfolio Tool</a>
+        <a href="/findstocks/">Stock Picks</a>
+        <a href="/findstocks/research/">Research</a>
+        <a href="/">Events</a>
+    </div>
+</div>
+
+<div class="wrap">
+    <div class="updated" id="updatedAt">Loading report data...</div>
+
+    <div id="content" style="display:none">
+
+        <!-- ═══ DATABASE STATS ═══ -->
+        <div class="stats" id="dbStats"></div>
+
+        <!-- ═══ KEY FINDINGS ═══ -->
+        <div class="card">
+            <h2>Key Findings</h2>
+            <div id="findings"></div>
+        </div>
+
+        <!-- ═══ ALGORITHM SCORECARDS ═══ -->
+        <div class="card">
+            <h2>Algorithm Scorecards</h2>
+            <div class="algo-grid" id="algoCards"></div>
+        </div>
+
+        <!-- ═══ CHARTS ═══ -->
+        <div class="g2">
+            <div class="card">
+                <h2>Strategy Comparison</h2>
+                <div class="chart-box"><canvas id="stratChart"></canvas></div>
+            </div>
+            <div class="card">
+                <h2>Algorithm Returns</h2>
+                <div class="chart-box"><canvas id="algoChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- ═══ TOP TRADES ═══ -->
+        <div class="g2">
+            <div class="card">
+                <h2>Top Winning Trades</h2>
+                <div class="tbl-wrap"><table id="topTable"><thead><tr><th>Stock</th><th>Algo</th><th>Entry</th><th>Exit</th><th>Return</th></tr></thead><tbody></tbody></table></div>
+            </div>
+            <div class="card">
+                <h2>Worst Trades</h2>
+                <div class="tbl-wrap"><table id="worstTable"><thead><tr><th>Stock</th><th>Algo</th><th>Entry</th><th>Exit</th><th>Return</th></tr></thead><tbody></tbody></table></div>
+            </div>
+        </div>
+
+        <!-- ═══ BEST POSSIBLE TRADES ═══ -->
+        <div class="card">
+            <h2>Best Possible Trades (Theoretical Maximum from Price Data)</h2>
+            <p style="color:var(--dim);font-size:.82rem;margin-bottom:1rem;">If you bought at the exact low and sold at the exact high — what was available in the market for each stock we picked.</p>
+            <div class="tbl-wrap"><table id="bestTable"><thead><tr><th>Stock</th><th>Algo</th><th>Best Month</th><th>Buy Date</th><th>Sell Date</th><th>Best Week</th><th>Best Day</th><th>Actual Return</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <!-- ═══ STRATEGY COMPARISON TABLE ═══ -->
+        <div class="card">
+            <h2>Strategy Comparison (All Scenarios)</h2>
+            <div class="tbl-wrap"><table id="scenarioTable"><thead><tr><th>Strategy</th><th>TP%</th><th>SL%</th><th>Hold</th><th>Comm</th><th>Trades</th><th>Win Rate</th><th>Return</th><th>Final Value</th><th>Max DD</th><th>Sharpe</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <!-- ═══ RECOMMENDATIONS ═══ -->
+        <div class="card">
+            <h2>Self-Learning Recommendations</h2>
+            <p style="color:var(--dim);font-size:.82rem;margin-bottom:1rem;">Grid-search analysis of 200+ parameter combinations per algorithm. Shows whether each algorithm is profitable, fixable with parameter tuning, or failing.</p>
+            <div id="recs"></div>
+        </div>
+
+        <!-- ═══ COMMISSION IMPACT ═══ -->
+        <div class="card">
+            <h2>Commission Impact Analysis</h2>
+            <div class="chart-box" style="height:220px;"><canvas id="commChart"></canvas></div>
+            <div id="commInsight" style="margin-top:1rem;"></div>
+        </div>
+
+        <hr class="separator">
+
+        <!-- ═══ METHODOLOGY ═══ -->
+        <div class="card">
+            <h2>Methodology & Trust</h2>
+            <div style="font-size:.85rem; color:var(--dim);">
+                <p>All backtests use <strong style="color:var(--text);">immutable pick data</strong> verified via SHA-256 hashes from the <a href="/findstocks/research/">Bet-Your-Life Protocol</a>. No look-ahead bias — picks are recorded before market open with cryptographic commitment.</p>
+                <p style="margin-top:.5rem;">Default assumptions: <strong style="color:var(--text);">$10 buy + $10 sell commission</strong>, <strong style="color:var(--text);">0.5% slippage</strong> on entry/exit, <strong style="color:var(--text);">10% position sizing</strong> per trade on $10,000 capital. Zero-commission tests isolate the algorithm signal from fee drag.</p>
+                <p style="margin-top:.5rem;">This report auto-refreshes daily at 10:30 PM UTC (after US market close) via GitHub Actions. Data sourced from Yahoo Finance (OHLCV) and our STOCKSUNIFY2 pick archive.</p>
+            </div>
+        </div>
+
+        <div class="disc">
+            <strong>Disclaimer:</strong> This report is for <strong>research and educational purposes only</strong>. Past performance does not guarantee future results. All simulations use historical data. Investing involves risk of loss. Consult a licensed financial adviser before making investment decisions.
+        </div>
+    </div>
+
+    <div id="loadingState" class="loading">Loading daily report</div>
+</div>
+
+<script>
+var API = '/findstocks/api';
+var R = null; // report data
+
+document.addEventListener('DOMContentLoaded', function() { loadReport(); });
+
+function loadReport() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API + '/get_report.php');
+    xhr.onload = function() {
+        try {
+            var d = JSON.parse(xhr.responseText);
+            if (d.ok && d.report) {
+                R = d.report;
+                document.getElementById('updatedAt').innerHTML = 'Last updated: <strong>' + d.updated_at + ' UTC</strong> &mdash; Auto-refreshes daily after market close';
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+                render();
+            } else {
+                document.getElementById('loadingState').innerHTML = 'No report cached yet. <a href="' + API + '/daily_refresh.php?key=stocksrefresh2026">Run initial refresh</a>';
+            }
+        } catch(e) {
+            document.getElementById('loadingState').textContent = 'Error loading report: ' + e.message;
+        }
+    };
+    xhr.onerror = function() { document.getElementById('loadingState').textContent = 'Network error'; };
+    xhr.send();
+}
+
+function render() {
+    renderStats();
+    renderFindings();
+    renderAlgoCards();
+    renderTopTrades();
+    renderBestPossible();
+    renderScenarioTable();
+    renderRecs();
+    renderCharts();
+    renderCommission();
+}
+
+// ─── Stats Bar ───
+function renderStats() {
+    var s = R.stats || {};
+    var h = st('Stocks Tracked', s.total_stocks || 0, 'neu')
+          + st('Algorithm Picks', s.total_picks || 0, 'neu')
+          + st('Price Records', s.total_price_records || 0, 'neu')
+          + st('Pick Dates', s.pick_range || '—', 'neu')
+          + st('Price History', s.price_range || '—', 'neu');
+    document.getElementById('dbStats').innerHTML = h;
+}
+function st(lb, vl, cls) { return '<div class="st"><div class="lb">' + lb + '</div><div class="vl ' + cls + '">' + vl + '</div></div>'; }
+
+// ─── Key Findings ───
+function renderFindings() {
+    var f = [];
+    // Find best algo
+    var algos = R.per_algorithm || [];
+    var bestAlgo = null, bestRet = -999;
+    for (var i = 0; i < algos.length; i++) {
+        var a = algos[i];
+        if (a.hold_7d_nocomm && parseFloat(a.hold_7d_nocomm.total_return_pct) > bestRet) {
+            bestRet = parseFloat(a.hold_7d_nocomm.total_return_pct);
+            bestAlgo = a.algorithm;
+        }
+    }
+    if (bestAlgo) {
+        f.push('<strong>' + bestAlgo + '</strong> is the top-performing algorithm with ' + fmt(bestRet) + ' return (zero-commission, 7-day hold).');
+    }
+
+    // Commission finding
+    var sc = R.scenarios || [];
+    var withComm = null, noComm = null;
+    for (var i = 0; i < sc.length; i++) {
+        if (sc[i].name === 'pure_hold_7d_nocomm') noComm = sc[i].summary;
+        if (sc[i].name === 'weekly_10') withComm = sc[i].summary;
+    }
+    if (withComm && noComm) {
+        var commDrag = Math.abs(parseFloat(withComm.total_return_pct) - parseFloat(noComm.total_return_pct));
+        f.push('<strong>Commission drag: ' + commDrag.toFixed(2) + '%.</strong> $10/trade commissions account for a significant portion of losses. With modern commission-free brokers, results improve dramatically.');
+    }
+    if (withComm) {
+        f.push('Total commissions paid: <strong>$' + parseFloat(withComm.total_commissions).toFixed(0) + '</strong> on $10,000 capital (' + (parseFloat(withComm.total_commissions) / 100).toFixed(1) + '% of capital).');
+    }
+
+    // Day trading finding
+    for (var i = 0; i < algos.length; i++) {
+        if (algos[i].daytrader_nocomm && parseFloat(algos[i].daytrader_nocomm.total_return_pct) > 0) {
+            f.push('<strong>' + algos[i].algorithm + '</strong> is profitable as a 2-day daytrader strategy (zero-commission): ' + fmt(algos[i].daytrader_nocomm.total_return_pct) + ' return, ' + algos[i].daytrader_nocomm.win_rate + '% win rate.');
+        }
+    }
+
+    // Best possible
+    var bp = R.best_possible || [];
+    if (bp.length > 0) {
+        f.push('The market offered up to <strong>+' + bp[0].max_gain_pct + '%</strong> theoretical gain on ' + bp[0].ticker + ' in the past month. Our algorithms are capturing a fraction of available moves.');
+    }
+
+    // Overall verdict
+    var profitable = 0, failing = 0;
+    var recs = R.recommendations || [];
+    for (var i = 0; i < recs.length; i++) {
+        if (recs[i].status === 'profitable') profitable++;
+        else if (recs[i].status === 'failing') failing++;
+    }
+    if (failing > 0) {
+        f.push('<strong>' + failing + ' of ' + recs.length + ' algorithms are currently failing</strong> under all tested parameter combinations. Consider adding market regime filters or suspending picks during high-volatility periods.');
+    }
+
+    var html = '';
+    for (var i = 0; i < f.length; i++) html += '<div class="finding">' + f[i] + '</div>';
+    document.getElementById('findings').innerHTML = html;
+}
+
+// ─── Algo Scorecards ───
+function renderAlgoCards() {
+    var algos = R.per_algorithm || [];
+    var html = '';
+    for (var i = 0; i < algos.length; i++) {
+        var a = algos[i];
+        var s7 = a.hold_7d_comm || {};
+        var s7n = a.hold_7d_nocomm || {};
+        var sdt = a.daytrader_nocomm || {};
+
+        var ret7 = parseFloat(s7.total_return_pct || 0);
+        var ret7n = parseFloat(s7n.total_return_pct || 0);
+        var retDt = parseFloat(sdt.total_return_pct || 0);
+        var wr7n = parseFloat(s7n.win_rate || 0);
+
+        var statusBadge = ret7n > 0 ? '<span class="badge b-green">PROFITABLE</span>'
+                        : retDt > 0 ? '<span class="badge b-yellow">FIXABLE</span>'
+                        : '<span class="badge b-red">FAILING</span>';
+
+        html += '<div class="algo-card">'
+            + '<h4>' + a.algorithm + ' ' + statusBadge + '</h4>'
+            + '<div class="algo-row"><span>Picks</span><span>' + (a.picks || 0) + '</span></div>'
+            + '<div class="algo-row"><span>7-Day Return (w/ $10 comm)</span><span class="' + (ret7 >= 0 ? 'pos' : 'neg') + '">' + fmt(ret7) + '</span></div>'
+            + '<div class="algo-row"><span>7-Day Return ($0 comm)</span><span class="' + (ret7n >= 0 ? 'pos' : 'neg') + '">' + fmt(ret7n) + '</span></div>'
+            + '<div class="algo-row"><span>Win Rate ($0 comm)</span><span>' + wr7n + '%</span></div>'
+            + '<div class="algo-row"><span>Daytrader 2d ($0 comm)</span><span class="' + (retDt >= 0 ? 'pos' : 'neg') + '">' + fmt(retDt) + '</span></div>'
+            + '<div class="algo-row"><span>Sharpe (7d $0 comm)</span><span>' + (s7n.sharpe_ratio || '—') + '</span></div>'
+            + '</div>';
+    }
+    document.getElementById('algoCards').innerHTML = html || '<p style="color:var(--dim)">No algorithm data available</p>';
+}
+
+// ─── Top/Worst Trades ───
+function renderTopTrades() {
+    renderTradeTable('topTable', R.top_trades || []);
+    renderTradeTable('worstTable', R.worst_trades || []);
+}
+function renderTradeTable(id, trades) {
+    var tb = document.getElementById(id).querySelector('tbody');
+    var h = '';
+    for (var i = 0; i < trades.length; i++) {
+        var t = trades[i];
+        var r = parseFloat(t.return_pct || 0);
+        h += '<tr><td><strong>' + t.ticker + '</strong></td><td>' + (t.algo || '') + '</td>'
+           + '<td>$' + pf(t.entry) + '</td><td>$' + pf(t.exit) + '</td>'
+           + '<td class="' + (r >= 0 ? 'pos' : 'neg') + '">' + fmt(r) + '</td></tr>';
+    }
+    tb.innerHTML = h || '<tr><td colspan="5" style="color:var(--dim);text-align:center">No data</td></tr>';
+}
+
+// ─── Best Possible ───
+function renderBestPossible() {
+    var tb = document.getElementById('bestTable').querySelector('tbody');
+    var bp = R.best_possible || [];
+    var h = '';
+    for (var i = 0; i < bp.length; i++) {
+        var b = bp[i];
+        h += '<tr><td><strong>' + b.ticker + '</strong></td><td>' + (b.algo || '') + '</td>'
+           + '<td class="pos">+' + b.max_gain_pct + '%</td>'
+           + '<td>' + (b.best_month ? b.best_month.buy_date || b.entry_date : b.entry_date) + '</td>'
+           + '<td>' + (b.best_month ? b.best_month.sell_date || '—' : '—') + '</td>'
+           + '<td class="pos">+' + (b.best_week ? b.best_week.gain_pct || '—' : '—') + '%</td>'
+           + '<td>+' + (b.best_day ? b.best_day.gain_pct || '—' : '—') + '%</td>'
+           + '<td class="' + (parseFloat(b.actual_return_pct) >= 0 ? 'pos' : 'neg') + '">' + fmt(b.actual_return_pct) + '</td>'
+           + '</tr>';
+    }
+    tb.innerHTML = h || '<tr><td colspan="8" style="color:var(--dim);text-align:center">No data</td></tr>';
+}
+
+// ─── Scenario Table ───
+function renderScenarioTable() {
+    var tb = document.getElementById('scenarioTable').querySelector('tbody');
+    var sc = R.scenarios || [];
+    var h = '';
+    for (var i = 0; i < sc.length; i++) {
+        var s = sc[i]; var sm = s.summary || {};
+        var ret = parseFloat(sm.total_return_pct || 0);
+        var p = s.params || {};
+        h += '<tr><td><strong>' + s.name + '</strong></td>'
+           + '<td>' + (p.tp >= 999 ? '—' : p.tp + '%') + '</td>'
+           + '<td>' + (p.sl >= 999 ? '—' : p.sl + '%') + '</td>'
+           + '<td>' + p.hold + 'd</td>'
+           + '<td>$' + (p.comm || 10) + '</td>'
+           + '<td>' + (sm.total_trades || 0) + '</td>'
+           + '<td>' + (sm.win_rate || 0) + '%</td>'
+           + '<td class="' + (ret >= 0 ? 'pos' : 'neg') + '">' + fmt(ret) + '</td>'
+           + '<td>$' + pf(sm.final_value) + '</td>'
+           + '<td class="neg">' + fmt(-(sm.max_drawdown_pct || 0)) + '</td>'
+           + '<td>' + (sm.sharpe_ratio || '—') + '</td></tr>';
+    }
+    tb.innerHTML = h;
+}
+
+// ─── Recommendations ───
+function renderRecs() {
+    var recs = R.recommendations || [];
+    var h = '';
+    for (var i = 0; i < recs.length; i++) {
+        var r = recs[i];
+        var cls = r.status === 'profitable' ? 'profitable' : r.status === 'fixable' ? 'fixable' : 'failing';
+        var icon = r.status === 'profitable' ? 'PROFITABLE' : r.status === 'fixable' ? 'FIXABLE' : 'FAILING';
+        h += '<div class="rec ' + cls + '">'
+           + '<h4>' + r.algorithm + ' — <span class="badge b-' + (cls === 'profitable' ? 'green' : cls === 'fixable' ? 'yellow' : 'red') + '">' + icon + '</span></h4>';
+        if (r.recommended) {
+            h += '<p>Current: Hold 7d, no stops &rarr; P/L: $' + pf(r.current.pnl) + ', Win: ' + r.current.win_rate + '%</p>';
+            h += '<p>Recommended: TP=' + (r.recommended.tp >= 999 ? 'none' : r.recommended.tp + '%') + ', SL=' + (r.recommended.sl >= 999 ? 'none' : r.recommended.sl + '%') + ', Hold=' + r.recommended.hold + 'd &rarr; P/L: $' + pf(r.recommended.pnl) + ', Win: ' + r.recommended.win_rate + '%</p>';
+            if (r.improvement_dollars !== 0) h += '<p>Improvement: <strong>+$' + pf(r.improvement_dollars) + '</strong> per $10K</p>';
+        }
+        var notes = r.notes || [];
+        for (var j = 0; j < notes.length; j++) h += '<p>' + notes[j] + '</p>';
+        h += '</div>';
+    }
+    document.getElementById('recs').innerHTML = h || '<p style="color:var(--dim)">No recommendations</p>';
+}
+
+// ─── Charts ───
+function renderCharts() {
+    // Strategy comparison chart
+    var sc = R.scenarios || [];
+    var labels = [], rets = [], colors = [];
+    for (var i = 0; i < sc.length; i++) {
+        labels.push(sc[i].name.replace(/_/g, ' '));
+        var r = parseFloat(sc[i].summary.total_return_pct || 0);
+        rets.push(r);
+        colors.push(r >= 0 ? 'rgba(34,197,94,.7)' : 'rgba(239,68,68,.7)');
+    }
+    new Chart(document.getElementById('stratChart'), {
+        type: 'bar', data: { labels: labels, datasets: [{ label: 'Return %', data: rets, backgroundColor: colors, borderRadius: 6 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+            scales: { y: { grid: { color: 'rgba(42,42,74,.5)' }, ticks: { color: '#8888aa', callback: function(v){return v+'%';} } }, x: { grid: { display: false }, ticks: { color: '#8888aa', maxRotation: 45, font: { size: 9 } } } }
+        }
+    });
+
+    // Algorithm returns chart (grouped: with comm vs without)
+    var algos = R.per_algorithm || [];
+    var aLabels = [], aComm = [], aNoComm = [], aDt = [];
+    for (var i = 0; i < algos.length; i++) {
+        aLabels.push(algos[i].algorithm);
+        aComm.push(parseFloat((algos[i].hold_7d_comm || {}).total_return_pct || 0));
+        aNoComm.push(parseFloat((algos[i].hold_7d_nocomm || {}).total_return_pct || 0));
+        aDt.push(parseFloat((algos[i].daytrader_nocomm || {}).total_return_pct || 0));
+    }
+    new Chart(document.getElementById('algoChart'), {
+        type: 'bar',
+        data: { labels: aLabels, datasets: [
+            { label: '7d w/ Comm', data: aComm, backgroundColor: 'rgba(239,68,68,.6)', borderRadius: 4 },
+            { label: '7d No Comm', data: aNoComm, backgroundColor: 'rgba(99,102,241,.6)', borderRadius: 4 },
+            { label: 'Daytrader No Comm', data: aDt, backgroundColor: 'rgba(34,197,94,.6)', borderRadius: 4 }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#8888aa', font: { size: 10 } } } },
+            scales: { y: { grid: { color: 'rgba(42,42,74,.5)' }, ticks: { color: '#8888aa', callback: function(v){return v+'%';} } }, x: { grid: { display: false }, ticks: { color: '#8888aa', maxRotation: 45, font: { size: 9 } } } }
+        }
+    });
+}
+
+// ─── Commission Impact Chart ───
+function renderCommission() {
+    var sc = R.scenarios || [];
+    var withComm = null, noComm = null;
+    for (var i = 0; i < sc.length; i++) {
+        if (sc[i].name === 'weekly_10') withComm = sc[i].summary;
+        if (sc[i].name === 'pure_hold_7d_nocomm') noComm = sc[i].summary;
+    }
+    if (!withComm || !noComm) return;
+
+    var commLoss = parseFloat(withComm.total_commissions || 0);
+    var algoLoss = Math.abs(parseFloat(noComm.total_return_pct || 0)) * 100;
+    var totalLoss = Math.abs(parseFloat(withComm.total_return_pct || 0)) * 100;
+
+    new Chart(document.getElementById('commChart'), {
+        type: 'doughnut',
+        data: { labels: ['Commission Drag ($' + commLoss + ')', 'Algo Signal Loss'], datasets: [{ data: [commLoss, Math.max(0, totalLoss - commLoss)], backgroundColor: ['rgba(239,68,68,.7)', 'rgba(99,102,241,.5)'], borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8888aa' } } } }
+    });
+
+    var pctFromComm = commLoss > 0 ? Math.round(commLoss / (commLoss + Math.abs(parseFloat(noComm.total_return_pct || 1) / 100 * 10000)) * 100) : 0;
+    document.getElementById('commInsight').innerHTML = '<div class="finding"><strong>' + pctFromComm + '% of total losses come from commissions.</strong> '
+        + 'With $0 commission (Robinhood, Webull, etc.), overall return improves from ' + fmt(withComm.total_return_pct) + ' to ' + fmt(noComm.total_return_pct) + '. '
+        + 'Total fees paid: <strong>$' + commLoss + '</strong> across ' + withComm.total_trades + ' trades.</div>';
+}
+
+// ─── Helpers ───
+function fmt(v) { v = parseFloat(v); return (v >= 0 ? '+' : '') + v.toFixed(2) + '%'; }
+function pf(v) { return parseFloat(v || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+</script>
+</body>
+</html>
