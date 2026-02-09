@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Analysis | Find Stocks</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ─── Header ─── */
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--accent), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-links { display: flex; gap: 1rem; font-size: 0.9rem; }
+        .header-links a { color: var(--text-dim); }
+        .header-links a:hover { color: var(--text); }
+
+        /* ─── Layout ─── */
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+        @media (max-width: 1024px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .container { padding: 1rem; } }
+
+        /* ─── Cards ─── */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+        }
+        .card h2 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--text); }
+        .card h3 { font-size: 0.95rem; color: var(--text-dim); margin-bottom: 0.5rem; }
+
+        /* ─── Stat Cards ─── */
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-card .label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-card .value { font-size: 1.5rem; font-weight: 700; margin-top: 0.25rem; }
+        .stat-card .value.positive { color: var(--green); }
+        .stat-card .value.negative { color: var(--red); }
+        .stat-card .value.neutral { color: var(--text); }
+
+        /* ─── Forms ─── */
+        label { display: block; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.03em; }
+        select, input[type="number"], input[type="text"] {
+            width: 100%;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        select:focus, input:focus { border-color: var(--accent); }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .form-group { display: flex; flex-direction: column; }
+
+        /* ─── Buttons ─── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: #5558e6; box-shadow: 0 0 20px var(--accent-glow); }
+        .btn-secondary { background: var(--bg-dark); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { border-color: var(--accent); }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+        .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+        /* ─── Checkboxes ─── */
+        .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.5rem; }
+        .checkbox-item {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 0.6rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .checkbox-item:hover { border-color: var(--accent); }
+        .checkbox-item input { accent-color: var(--accent); }
+
+        /* ─── Tables ─── */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        thead th {
+            text-align: left;
+            padding: 0.6rem 0.8rem;
+            background: var(--bg-dark);
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        thead th:hover { color: var(--text); }
+        tbody td {
+            padding: 0.5rem 0.8rem;
+            border-bottom: 1px solid rgba(42, 42, 74, 0.5);
+            white-space: nowrap;
+        }
+        tbody tr:hover { background: rgba(99, 102, 241, 0.05); }
+        .positive { color: var(--green); }
+        .negative { color: var(--red); }
+
+        /* ─── Tabs ─── */
+        .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+        .tab {
+            padding: 0.75rem 1.25rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: var(--text-dim);
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: var(--text); }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* ─── Scenario Cards ─── */
+        .scenario-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .scenario-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .scenario-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .scenario-card.selected { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+        .scenario-card h4 { font-size: 1rem; margin-bottom: 0.5rem; }
+        .scenario-card p { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.75rem; }
+        .scenario-meta { display: flex; gap: 1rem; font-size: 0.8rem; }
+        .scenario-meta span { background: var(--bg-dark); padding: 0.2rem 0.5rem; border-radius: 4px; }
+
+        /* ─── Comparison Table ─── */
+        .comparison-row { display: grid; grid-template-columns: 200px 1fr; gap: 1rem; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid rgba(42,42,74,0.5); }
+        .comparison-bar { height: 24px; border-radius: 4px; position: relative; min-width: 2px; }
+        .comparison-label { font-size: 0.85rem; }
+        .comparison-value { position: absolute; right: 8px; top: 3px; font-size: 0.75rem; font-weight: 600; }
+
+        /* ─── Charts ─── */
+        .chart-container { position: relative; height: 300px; }
+
+        /* ─── Loading ─── */
+        .loading { text-align: center; padding: 2rem; color: var(--text-dim); }
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px; height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ─── Badge ─── */
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-green { background: var(--green-dim); color: var(--green); }
+        .badge-red { background: var(--red-dim); color: var(--red); }
+        .badge-yellow { background: var(--yellow-dim); color: var(--yellow); }
+        .badge-blue { background: rgba(59,130,246,0.15); color: var(--blue); }
+
+        /* ─── Disclaimer ─── */
+        .disclaimer {
+            background: rgba(234, 179, 8, 0.08);
+            border: 1px solid rgba(234, 179, 8, 0.2);
+            border-radius: var(--radius);
+            padding: 1rem 1.5rem;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 1.5rem;
+        }
+        .disclaimer strong { color: var(--yellow); }
+
+        /* ─── Export ─── */
+        .export-btns { display: flex; gap: 0.5rem; margin-top: 1rem; }
+
+        /* ─── Section spacing ─── */
+        .section { margin-bottom: 2rem; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem; }
+    </style>
+</head>
+<body>
+
+<!-- ─── Header ─── -->
+<div class="header">
+    <h1>Portfolio Analysis Tool</h1>
+    <div class="header-links">
+        <a href="/findstocks/portfolio/report.html">Daily Report</a>
+        <a href="/findstocks/portfolio/stats.html">Stats</a>
+        <a href="/findstocks/">Stock Picks</a>
+        <a href="/findstocks/research/">Research</a>
+        <a href="/">Events</a>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- ─── Status Bar ─── -->
+    <div id="statusBar" class="stat-grid">
+        <div class="stat-card"><div class="label">Stocks</div><div class="value neutral" id="statStocks">—</div></div>
+        <div class="stat-card"><div class="label">Picks</div><div class="value neutral" id="statPicks">—</div></div>
+        <div class="stat-card"><div class="label">Price Records</div><div class="value neutral" id="statPrices">—</div></div>
+        <div class="stat-card"><div class="label">Algorithms</div><div class="value neutral" id="statAlgos">—</div></div>
+        <div class="stat-card"><div class="label">Backtests Run</div><div class="value neutral" id="statBacktests">—</div></div>
+    </div>
+
+    <!-- ─── Setup Banner ─── -->
+    <div id="setupBanner" class="card section" style="display:none; border-color: var(--yellow);">
+        <h2>Setup Required</h2>
+        <p style="color:var(--text-dim); margin-bottom:1rem;">The database needs to be initialized. Click the buttons below in order:</p>
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="runSetup()">1. Create Tables</button>
+            <button class="btn btn-secondary" onclick="importPicks()">2. Import Picks</button>
+            <button class="btn btn-secondary" onclick="fetchPrices()">3. Fetch Price Data</button>
+        </div>
+        <div id="setupLog" style="margin-top:1rem; font-size:0.85rem; color:var(--text-dim);"></div>
+    </div>
+
+    <!-- ─── Tabs ─── -->
+    <div class="tabs">
+        <div class="tab active" data-tab="whatif">What-If Analysis</div>
+        <div class="tab" data-tab="compare">Compare Strategies</div>
+        <div class="tab" data-tab="picks">Stock Picks</div>
+        <div class="tab" data-tab="history">Backtest History</div>
+    </div>
+
+    <!-- ═══════════ TAB: What-If Analysis ═══════════ -->
+    <div class="tab-content active" id="tab-whatif">
+        <div class="grid-2">
+            <!-- Left: Controls -->
+            <div>
+                <div class="card section">
+                    <h2>Preset Scenarios</h2>
+                    <div class="scenario-grid" id="scenarioGrid"></div>
+                </div>
+                <div class="card section">
+                    <h2>Custom Parameters</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Strategy Type</label>
+                            <select id="strategyType" onchange="onStrategyChange()">
+                                <option value="custom">Custom</option>
+                                <option value="daytrader">Day Trader</option>
+                                <option value="swing">Swing Trader</option>
+                                <option value="conservative">Conservative</option>
+                                <option value="aggressive">Aggressive</option>
+                                <option value="buy_hold">Buy & Hold</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Take Profit %</label>
+                            <input type="number" id="takeProfit" value="10" min="1" max="999" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Stop Loss %</label>
+                            <input type="number" id="stopLoss" value="5" min="1" max="999" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Max Hold (Days)</label>
+                            <input type="number" id="maxHoldDays" value="7" min="1" max="365" step="1">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Initial Capital ($)</label>
+                            <input type="number" id="initialCapital" value="10000" min="100" step="100">
+                        </div>
+                        <div class="form-group">
+                            <label>Commission Per Trade ($)</label>
+                            <input type="number" id="commission" value="10" min="0" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Slippage %</label>
+                            <input type="number" id="slippage" value="0.5" min="0" max="5" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label>Position Size % of Capital</label>
+                            <input type="number" id="positionSize" value="10" min="1" max="100" step="1">
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top:1rem;">Filter by Algorithm</h3>
+                    <div class="checkbox-grid" id="algoCheckboxes"></div>
+
+                    <div style="margin-top:1.5rem;">
+                        <button class="btn btn-primary" onclick="runWhatIf()">Run What-If Analysis</button>
+                        <button class="btn btn-secondary" onclick="runWhatIf(true)" style="margin-left:0.5rem;">Run & Save</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Results -->
+            <div>
+                <div id="whatifResults" style="display:none;">
+                    <div class="stat-grid" id="whatifStats"></div>
+                    <div class="card section">
+                        <h2>Equity Curve</h2>
+                        <div class="chart-container"><canvas id="equityChart"></canvas></div>
+                    </div>
+                    <div class="card section">
+                        <h2>Returns by Algorithm</h2>
+                        <div class="chart-container"><canvas id="algoChart"></canvas></div>
+                    </div>
+                    <div class="card section">
+                        <div class="section-header">
+                            <h2>Trade Log</h2>
+                            <div class="export-btns">
+                                <button class="btn btn-sm btn-secondary" onclick="exportCSV()">Export CSV</button>
+                            </div>
+                        </div>
+                        <div class="table-wrap">
+                            <table id="tradeTable">
+                                <thead>
+                                    <tr>
+                                        <th onclick="sortTable(0)">Ticker</th>
+                                        <th onclick="sortTable(1)">Algorithm</th>
+                                        <th onclick="sortTable(2)">Entry Date</th>
+                                        <th onclick="sortTable(3)">Entry $</th>
+                                        <th onclick="sortTable(4)">Exit Date</th>
+                                        <th onclick="sortTable(5)">Exit $</th>
+                                        <th onclick="sortTable(6)">Shares</th>
+                                        <th onclick="sortTable(7)">Net P/L</th>
+                                        <th onclick="sortTable(8)">Return %</th>
+                                        <th onclick="sortTable(9)">Exit Reason</th>
+                                        <th onclick="sortTable(10)">Hold Days</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div id="whatifEmpty" class="card" style="text-align:center; padding:3rem;">
+                    <p style="font-size:1.1rem; margin-bottom:0.5rem;">Select a scenario or configure custom parameters</p>
+                    <p style="color:var(--text-dim);">Results will appear here after running the analysis</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ TAB: Compare Strategies ═══════════ -->
+    <div class="tab-content" id="tab-compare">
+        <div class="card section">
+            <div class="section-header">
+                <h2>Strategy Comparison</h2>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="runComparison()">Compare All Scenarios</button>
+                </div>
+            </div>
+            <h3 style="margin-bottom:0.5rem;">Filter by Algorithm (optional)</h3>
+            <div class="checkbox-grid" id="compareAlgoCheckboxes"></div>
+        </div>
+        <div id="comparisonResults" style="display:none;">
+            <div class="card section">
+                <h2>Return Comparison</h2>
+                <div class="chart-container" style="height:400px;"><canvas id="comparisonChart"></canvas></div>
+            </div>
+            <div class="card section">
+                <h2>Detailed Comparison</h2>
+                <div class="table-wrap">
+                    <table id="comparisonTable">
+                        <thead>
+                            <tr>
+                                <th>Scenario</th>
+                                <th>TP%</th>
+                                <th>SL%</th>
+                                <th>Hold</th>
+                                <th>Trades</th>
+                                <th>Win Rate</th>
+                                <th>Return %</th>
+                                <th>Final Value</th>
+                                <th>Max DD%</th>
+                                <th>Commissions</th>
+                                <th>Sharpe</th>
+                                <th>P/F</th>
+                                <th>Expectancy</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ TAB: Stock Picks ═══════════ -->
+    <div class="tab-content" id="tab-picks">
+        <div class="card section">
+            <div class="section-header">
+                <h2>Imported Stock Picks</h2>
+                <select id="picksAlgoFilter" onchange="loadPicks()" style="width:auto;">
+                    <option value="">All Algorithms</option>
+                </select>
+            </div>
+            <div class="table-wrap">
+                <table id="picksTable">
+                    <thead>
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Company</th>
+                            <th>Algorithm</th>
+                            <th>Pick Date</th>
+                            <th>Entry Price</th>
+                            <th>Score</th>
+                            <th>Rating</th>
+                            <th>Risk</th>
+                            <th>Timeframe</th>
+                            <th>Stop Loss</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ TAB: Backtest History ═══════════ -->
+    <div class="tab-content" id="tab-history">
+        <div class="card section">
+            <h2>Saved Backtest Results</h2>
+            <div class="table-wrap">
+                <table id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>Run Name</th>
+                            <th>Strategy</th>
+                            <th>Algorithms</th>
+                            <th>Trades</th>
+                            <th>Win Rate</th>
+                            <th>Return %</th>
+                            <th>Final Value</th>
+                            <th>Max DD%</th>
+                            <th>Sharpe</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Disclaimer ─── -->
+    <div class="disclaimer">
+        <strong>Disclaimer:</strong> This tool is for <strong>research and educational purposes only</strong>.
+        Past performance does not guarantee future results. Backtests use historical data and may not reflect real-world execution.
+        All simulations include a $10/trade commission and configurable slippage. Investing involves risk of loss.
+        Consult a licensed financial adviser before making investment decisions.
+        Results are based on our algorithm picks and the
+        <a href="/findstocks/research/" style="color:var(--yellow);">Bet-Your-Life immutable ledger protocol</a>
+        for data integrity.
+    </div>
+</div>
+
+<script>
+// ─── Config ───
+const API_BASE = '/findstocks/api';
+let allAlgorithms = [];
+let currentTrades = [];
+let equityChartInstance = null;
+let algoChartInstance = null;
+let comparisonChartInstance = null;
+
+// ─── Init ───
+document.addEventListener('DOMContentLoaded', function() {
+    initTabs();
+    loadStats();
+    loadAlgorithms();
+    loadScenarios();
+});
+
+// ─── Tab Navigation ───
+function initTabs() {
+    var tabs = document.querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) {
+        tabs[i].addEventListener('click', function() {
+            var target = this.getAttribute('data-tab');
+            var allTabs = document.querySelectorAll('.tab');
+            var allContent = document.querySelectorAll('.tab-content');
+            for (var j = 0; j < allTabs.length; j++) allTabs[j].classList.remove('active');
+            for (var j = 0; j < allContent.length; j++) allContent[j].classList.remove('active');
+            this.classList.add('active');
+            document.getElementById('tab-' + target).classList.add('active');
+            // Load data for tab
+            if (target === 'picks') loadPicks();
+            if (target === 'history') loadHistory();
+        });
+    }
+}
+
+// ─── API Helper ───
+function apiCall(endpoint, params, callback) {
+    var qs = [];
+    for (var k in params) {
+        if (params.hasOwnProperty(k) && params[k] !== '') {
+            qs.push(encodeURIComponent(k) + '=' + encodeURIComponent(params[k]));
+        }
+    }
+    var url = API_BASE + '/' + endpoint + (qs.length > 0 ? '?' + qs.join('&') : '');
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url);
+    xhr.onload = function() {
+        try {
+            var data = JSON.parse(xhr.responseText);
+            callback(null, data);
+        } catch(e) {
+            callback('Parse error: ' + e.message);
+        }
+    };
+    xhr.onerror = function() { callback('Network error'); };
+    xhr.send();
+}
+
+// ─── Load Stats ───
+function loadStats() {
+    apiCall('data.php', {type: 'stats'}, function(err, data) {
+        if (err || !data || !data.ok) {
+            document.getElementById('setupBanner').style.display = 'block';
+            return;
+        }
+        var s = data.stats;
+        document.getElementById('statStocks').textContent = s.total_stocks || 0;
+        document.getElementById('statPicks').textContent = s.total_picks || 0;
+        document.getElementById('statPrices').textContent = s.total_price_records || 0;
+        document.getElementById('statAlgos').textContent = s.active_algorithms || 0;
+        document.getElementById('statBacktests').textContent = s.total_backtests || 0;
+
+        if (s.total_picks === 0) {
+            document.getElementById('setupBanner').style.display = 'block';
+        }
+    });
+}
+
+// ─── Load Algorithms ───
+function loadAlgorithms() {
+    apiCall('data.php', {type: 'algorithms'}, function(err, data) {
+        if (err || !data || !data.algorithms) return;
+        allAlgorithms = data.algorithms;
+        renderAlgoCheckboxes('algoCheckboxes');
+        renderAlgoCheckboxes('compareAlgoCheckboxes');
+        renderAlgoFilter();
+    });
+}
+
+function renderAlgoCheckboxes(containerId) {
+    var html = '';
+    for (var i = 0; i < allAlgorithms.length; i++) {
+        var a = allAlgorithms[i];
+        var count = a.pick_count || 0;
+        html += '<label class="checkbox-item">'
+             + '<input type="checkbox" value="' + a.name + '" checked>'
+             + a.name + ' (' + count + ')'
+             + '</label>';
+    }
+    document.getElementById(containerId).innerHTML = html;
+}
+
+function renderAlgoFilter() {
+    var sel = document.getElementById('picksAlgoFilter');
+    for (var i = 0; i < allAlgorithms.length; i++) {
+        var opt = document.createElement('option');
+        opt.value = allAlgorithms[i].name;
+        opt.textContent = allAlgorithms[i].name;
+        sel.appendChild(opt);
+    }
+}
+
+function getSelectedAlgos(containerId) {
+    var cbs = document.getElementById(containerId).querySelectorAll('input[type="checkbox"]:checked');
+    var selected = [];
+    for (var i = 0; i < cbs.length; i++) selected.push(cbs[i].value);
+    return selected.join(',');
+}
+
+// ─── Load Scenarios ───
+function loadScenarios() {
+    apiCall('data.php', {type: 'scenarios'}, function(err, data) {
+        if (err || !data || !data.scenarios) return;
+        var grid = document.getElementById('scenarioGrid');
+        var html = '';
+        for (var i = 0; i < data.scenarios.length; i++) {
+            var sc = data.scenarios[i];
+            html += '<div class="scenario-card" data-key="' + sc.key + '" onclick="selectScenario(this, \'' + sc.key + '\',' + sc.tp + ',' + sc.sl + ',' + sc.hold + ')">'
+                 + '<h4>' + sc.name + '</h4>'
+                 + '<div class="scenario-meta">'
+                 + '<span>TP: ' + (sc.tp >= 999 ? 'None' : sc.tp + '%') + '</span>'
+                 + '<span>SL: ' + (sc.sl >= 999 ? 'None' : sc.sl + '%') + '</span>'
+                 + '<span>Hold: ' + sc.hold + 'd</span>'
+                 + '</div></div>';
+        }
+        grid.innerHTML = html;
+    });
+}
+
+function selectScenario(el, key, tp, sl, hold) {
+    var cards = document.querySelectorAll('.scenario-card');
+    for (var i = 0; i < cards.length; i++) cards[i].classList.remove('selected');
+    el.classList.add('selected');
+    document.getElementById('takeProfit').value = tp >= 999 ? 999 : tp;
+    document.getElementById('stopLoss').value = sl >= 999 ? 999 : sl;
+    document.getElementById('maxHoldDays').value = hold;
+}
+
+function onStrategyChange() {
+    var strat = document.getElementById('strategyType').value;
+    var presets = {
+        daytrader:    {tp: 5,   sl: 3,  hold: 2},
+        swing:        {tp: 15,  sl: 5,  hold: 14},
+        conservative: {tp: 10,  sl: 5,  hold: 30},
+        aggressive:   {tp: 30,  sl: 15, hold: 30},
+        buy_hold:     {tp: 999, sl: 999, hold: 90}
+    };
+    if (presets[strat]) {
+        document.getElementById('takeProfit').value = presets[strat].tp;
+        document.getElementById('stopLoss').value = presets[strat].sl;
+        document.getElementById('maxHoldDays').value = presets[strat].hold;
+    }
+}
+
+// ─── Run What-If ───
+function runWhatIf(save) {
+    var algos = getSelectedAlgos('algoCheckboxes');
+    var params = {
+        algorithms: algos,
+        strategy: document.getElementById('strategyType').value,
+        take_profit: document.getElementById('takeProfit').value,
+        stop_loss: document.getElementById('stopLoss').value,
+        max_hold_days: document.getElementById('maxHoldDays').value,
+        initial_capital: document.getElementById('initialCapital').value,
+        commission: document.getElementById('commission').value,
+        slippage: document.getElementById('slippage').value,
+        position_size: document.getElementById('positionSize').value
+    };
+    if (save) params.save = '1';
+
+    document.getElementById('whatifResults').style.display = 'none';
+    document.getElementById('whatifEmpty').innerHTML = '<div class="loading">Running analysis</div>';
+    document.getElementById('whatifEmpty').style.display = 'block';
+
+    apiCall('backtest.php', params, function(err, data) {
+        if (err || !data || !data.ok) {
+            document.getElementById('whatifEmpty').innerHTML = '<p style="color:var(--red);">Error: ' + (err || (data && data.error ? data.error : 'Unknown error')) + '</p>';
+            return;
+        }
+        document.getElementById('whatifEmpty').style.display = 'none';
+        document.getElementById('whatifResults').style.display = 'block';
+        currentTrades = data.trades || [];
+        renderWhatIfResults(data);
+    });
+}
+
+function renderWhatIfResults(data) {
+    var s = data.summary;
+    var statsHtml = ''
+        + statCard('Total Return', fmtPct(s.total_return_pct), s.total_return_pct)
+        + statCard('Final Value', '$' + fmtNum(s.final_value), s.final_value - data.params.initial_capital)
+        + statCard('Win Rate', s.win_rate + '%', s.win_rate - 50)
+        + statCard('Total Trades', s.total_trades, 0)
+        + statCard('Avg Win', fmtPct(s.avg_win_pct), 1)
+        + statCard('Avg Loss', fmtPct(-s.avg_loss_pct), -1)
+        + statCard('Max Drawdown', fmtPct(-s.max_drawdown_pct), -1)
+        + statCard('Commissions', '$' + fmtNum(s.total_commissions), -1)
+        + statCard('Sharpe Ratio', s.sharpe_ratio, s.sharpe_ratio)
+        + statCard('Profit Factor', s.profit_factor, s.profit_factor - 1)
+        + statCard('Expectancy', fmtPct(s.expectancy), s.expectancy);
+    document.getElementById('whatifStats').innerHTML = statsHtml;
+
+    renderTradeTable(data.trades);
+    renderEquityChart(data);
+    renderAlgoChart(data);
+}
+
+function statCard(label, value, sentiment) {
+    var cls = sentiment > 0 ? 'positive' : (sentiment < 0 ? 'negative' : 'neutral');
+    return '<div class="stat-card"><div class="label">' + label + '</div><div class="value ' + cls + '">' + value + '</div></div>';
+}
+
+function fmtPct(v) { return (v >= 0 ? '+' : '') + parseFloat(v).toFixed(2) + '%'; }
+function fmtNum(v) { return parseFloat(v).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+
+// ─── Trade Table ───
+function renderTradeTable(trades) {
+    var tbody = document.getElementById('tradeTable').querySelector('tbody');
+    var html = '';
+    for (var i = 0; i < trades.length; i++) {
+        var t = trades[i];
+        var cls = t.net_profit >= 0 ? 'positive' : 'negative';
+        var reasonBadge = t.exit_reason === 'take_profit' ? '<span class="badge badge-green">TP</span>'
+                       : t.exit_reason === 'stop_loss' ? '<span class="badge badge-red">SL</span>'
+                       : t.exit_reason === 'max_hold' ? '<span class="badge badge-yellow">MAX</span>'
+                       : '<span class="badge badge-blue">' + t.exit_reason + '</span>';
+        html += '<tr>'
+             + '<td><strong>' + t.ticker + '</strong></td>'
+             + '<td>' + t.algorithm + '</td>'
+             + '<td>' + t.entry_date + '</td>'
+             + '<td>$' + parseFloat(t.entry_price).toFixed(2) + '</td>'
+             + '<td>' + (t.exit_date || '—') + '</td>'
+             + '<td>$' + parseFloat(t.exit_price).toFixed(2) + '</td>'
+             + '<td>' + t.shares + '</td>'
+             + '<td class="' + cls + '">$' + parseFloat(t.net_profit).toFixed(2) + '</td>'
+             + '<td class="' + cls + '">' + fmtPct(t.return_pct) + '</td>'
+             + '<td>' + reasonBadge + '</td>'
+             + '<td>' + t.hold_days + '</td>'
+             + '</tr>';
+    }
+    tbody.innerHTML = html || '<tr><td colspan="11" style="text-align:center; color:var(--text-dim);">No trades executed</td></tr>';
+}
+
+// ─── Sort Table ───
+var sortDir = {};
+function sortTable(colIdx) {
+    var table = document.getElementById('tradeTable');
+    var tbody = table.querySelector('tbody');
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+    var dir = sortDir[colIdx] === 'asc' ? 'desc' : 'asc';
+    sortDir[colIdx] = dir;
+    rows.sort(function(a, b) {
+        var aVal = a.cells[colIdx].textContent.replace(/[$%+,]/g, '');
+        var bVal = b.cells[colIdx].textContent.replace(/[$%+,]/g, '');
+        var aNum = parseFloat(aVal);
+        var bNum = parseFloat(bVal);
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+            return dir === 'asc' ? aNum - bNum : bNum - aNum;
+        }
+        return dir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
+    for (var i = 0; i < rows.length; i++) tbody.appendChild(rows[i]);
+}
+
+// ─── Charts ───
+function renderEquityChart(data) {
+    var ctx = document.getElementById('equityChart').getContext('2d');
+    if (equityChartInstance) equityChartInstance.destroy();
+
+    var trades = data.trades || [];
+    var capital = data.params.initial_capital || 10000;
+    var labels = ['Start'];
+    var values = [capital];
+    for (var i = 0; i < trades.length; i++) {
+        capital += parseFloat(trades[i].net_profit);
+        labels.push(trades[i].ticker);
+        values.push(Math.round(capital * 100) / 100);
+    }
+
+    equityChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Portfolio Value ($)',
+                data: values,
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 3,
+                pointBackgroundColor: function(context) {
+                    var idx = context.dataIndex;
+                    if (idx === 0) return '#6366f1';
+                    return values[idx] >= values[idx - 1] ? '#22c55e' : '#ef4444';
+                }
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { color: 'rgba(42,42,74,0.5)' }, ticks: { color: '#8888aa' } },
+                x: { grid: { display: false }, ticks: { color: '#8888aa', maxRotation: 45 } }
+            }
+        }
+    });
+}
+
+function renderAlgoChart(data) {
+    var ctx = document.getElementById('algoChart').getContext('2d');
+    if (algoChartInstance) algoChartInstance.destroy();
+
+    var trades = data.trades || [];
+    var algoMap = {};
+    for (var i = 0; i < trades.length; i++) {
+        var algo = trades[i].algorithm;
+        if (!algoMap[algo]) algoMap[algo] = {wins: 0, losses: 0, totalReturn: 0, count: 0};
+        algoMap[algo].count++;
+        algoMap[algo].totalReturn += parseFloat(trades[i].return_pct);
+        if (parseFloat(trades[i].net_profit) >= 0) algoMap[algo].wins++;
+        else algoMap[algo].losses++;
+    }
+
+    var labels = [], returns = [], colors = [];
+    for (var name in algoMap) {
+        labels.push(name);
+        var avg = algoMap[name].totalReturn / algoMap[name].count;
+        returns.push(Math.round(avg * 100) / 100);
+        colors.push(avg >= 0 ? '#22c55e' : '#ef4444');
+    }
+
+    algoChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Avg Return %',
+                data: returns,
+                backgroundColor: colors,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { color: 'rgba(42,42,74,0.5)' }, ticks: { color: '#8888aa', callback: function(v) { return v + '%'; } } },
+                x: { grid: { display: false }, ticks: { color: '#8888aa', maxRotation: 45 } }
+            }
+        }
+    });
+}
+
+// ─── Comparison ───
+function runComparison() {
+    var algos = getSelectedAlgos('compareAlgoCheckboxes');
+    document.getElementById('comparisonResults').style.display = 'none';
+
+    apiCall('whatif.php', {compare: '1', algorithms: algos, initial_capital: document.getElementById('initialCapital').value, commission: document.getElementById('commission').value}, function(err, data) {
+        if (err || !data || !data.ok) return;
+        document.getElementById('comparisonResults').style.display = 'block';
+        renderComparison(data);
+    });
+}
+
+function renderComparison(data) {
+    var scenarios = data.scenarios || [];
+
+    // Table
+    var tbody = document.getElementById('comparisonTable').querySelector('tbody');
+    var html = '';
+    for (var i = 0; i < scenarios.length; i++) {
+        var sc = scenarios[i];
+        var s = sc.summary;
+        var cls = s.total_return_pct >= 0 ? 'positive' : 'negative';
+        html += '<tr>'
+             + '<td><strong>' + sc.name + '</strong></td>'
+             + '<td>' + (sc.params.take_profit >= 999 ? '—' : sc.params.take_profit + '%') + '</td>'
+             + '<td>' + (sc.params.stop_loss >= 999 ? '—' : sc.params.stop_loss + '%') + '</td>'
+             + '<td>' + sc.params.max_hold_days + 'd</td>'
+             + '<td>' + s.total_trades + '</td>'
+             + '<td>' + s.win_rate + '%</td>'
+             + '<td class="' + cls + '">' + fmtPct(s.total_return_pct) + '</td>'
+             + '<td>$' + fmtNum(s.final_value) + '</td>'
+             + '<td class="negative">' + fmtPct(-s.max_drawdown_pct) + '</td>'
+             + '<td>$' + fmtNum(s.total_commissions) + '</td>'
+             + '<td>' + s.sharpe_ratio + '</td>'
+             + '<td>' + s.profit_factor + '</td>'
+             + '<td class="' + (s.expectancy >= 0 ? 'positive' : 'negative') + '">' + fmtPct(s.expectancy) + '</td>'
+             + '</tr>';
+    }
+    tbody.innerHTML = html;
+
+    // Chart
+    var ctx = document.getElementById('comparisonChart').getContext('2d');
+    if (comparisonChartInstance) comparisonChartInstance.destroy();
+
+    var labels = [], returns = [], winRates = [], colors = [];
+    for (var i = 0; i < scenarios.length; i++) {
+        labels.push(scenarios[i].name);
+        returns.push(scenarios[i].summary.total_return_pct);
+        winRates.push(scenarios[i].summary.win_rate);
+        colors.push(scenarios[i].summary.total_return_pct >= 0 ? 'rgba(34,197,94,0.7)' : 'rgba(239,68,68,0.7)');
+    }
+
+    comparisonChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Total Return %', data: returns, backgroundColor: colors, borderRadius: 6 },
+                { label: 'Win Rate %', data: winRates, backgroundColor: 'rgba(99,102,241,0.5)', borderRadius: 6 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#8888aa' } } },
+            scales: {
+                y: { grid: { color: 'rgba(42,42,74,0.5)' }, ticks: { color: '#8888aa', callback: function(v) { return v + '%'; } } },
+                x: { grid: { display: false }, ticks: { color: '#8888aa', maxRotation: 45, font: { size: 10 } } }
+            }
+        }
+    });
+}
+
+// ─── Picks ───
+function loadPicks() {
+    var algo = document.getElementById('picksAlgoFilter').value;
+    var params = {type: 'picks'};
+    if (algo) params.algorithm = algo;
+
+    apiCall('data.php', params, function(err, data) {
+        if (err || !data || !data.picks) return;
+        var tbody = document.getElementById('picksTable').querySelector('tbody');
+        var html = '';
+        for (var i = 0; i < data.picks.length; i++) {
+            var p = data.picks[i];
+            var riskCls = p.risk_level === 'High' || p.risk_level === 'Very High' ? 'badge-red' : (p.risk_level === 'Medium' ? 'badge-yellow' : 'badge-green');
+            html += '<tr>'
+                 + '<td><strong>' + p.ticker + '</strong></td>'
+                 + '<td>' + (p.company_name || '') + '</td>'
+                 + '<td>' + p.algorithm_name + '</td>'
+                 + '<td>' + p.pick_date + '</td>'
+                 + '<td>$' + parseFloat(p.entry_price).toFixed(2) + '</td>'
+                 + '<td>' + p.score + '</td>'
+                 + '<td><span class="badge badge-green">' + p.rating + '</span></td>'
+                 + '<td><span class="badge ' + riskCls + '">' + p.risk_level + '</span></td>'
+                 + '<td>' + p.timeframe + '</td>'
+                 + '<td>$' + parseFloat(p.stop_loss_price).toFixed(2) + '</td>'
+                 + '</tr>';
+        }
+        tbody.innerHTML = html || '<tr><td colspan="10" style="text-align:center; color:var(--text-dim);">No picks found</td></tr>';
+    });
+}
+
+// ─── History ───
+function loadHistory() {
+    apiCall('data.php', {type: 'backtests'}, function(err, data) {
+        if (err || !data || !data.backtests) return;
+        var tbody = document.getElementById('historyTable').querySelector('tbody');
+        var html = '';
+        for (var i = 0; i < data.backtests.length; i++) {
+            var b = data.backtests[i];
+            var cls = parseFloat(b.total_return_pct) >= 0 ? 'positive' : 'negative';
+            html += '<tr>'
+                 + '<td>' + b.run_name + '</td>'
+                 + '<td>' + b.strategy_type + '</td>'
+                 + '<td>' + (b.algorithm_filter || 'All') + '</td>'
+                 + '<td>' + b.total_trades + '</td>'
+                 + '<td>' + b.win_rate + '%</td>'
+                 + '<td class="' + cls + '">' + fmtPct(b.total_return_pct) + '</td>'
+                 + '<td>$' + fmtNum(b.final_value) + '</td>'
+                 + '<td>' + fmtPct(-parseFloat(b.max_drawdown_pct)) + '</td>'
+                 + '<td>' + b.sharpe_ratio + '</td>'
+                 + '<td>' + b.created_at + '</td>'
+                 + '</tr>';
+        }
+        tbody.innerHTML = html || '<tr><td colspan="10" style="text-align:center; color:var(--text-dim);">No saved backtests yet</td></tr>';
+    });
+}
+
+// ─── Export CSV ───
+function exportCSV() {
+    if (!currentTrades || currentTrades.length === 0) return;
+    var csv = 'Ticker,Company,Algorithm,Entry Date,Entry Price,Exit Date,Exit Price,Shares,Net P/L,Return %,Exit Reason,Hold Days\n';
+    for (var i = 0; i < currentTrades.length; i++) {
+        var t = currentTrades[i];
+        csv += [t.ticker, '"' + (t.company || '') + '"', t.algorithm, t.entry_date, t.entry_price, t.exit_date, t.exit_price, t.shares, t.net_profit, t.return_pct, t.exit_reason, t.hold_days].join(',') + '\n';
+    }
+    var blob = new Blob([csv], {type: 'text/csv'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'backtest_trades_' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+}
+
+// ─── Setup Functions ───
+function runSetup() {
+    logSetup('Creating tables...');
+    apiCall('setup_schema.php', {}, function(err, data) {
+        if (err) { logSetup('Error: ' + err); return; }
+        logSetup('Schema: ' + JSON.stringify(data.actions));
+    });
+}
+
+function importPicks() {
+    logSetup('Importing picks...');
+    apiCall('import_picks.php', {}, function(err, data) {
+        if (err) { logSetup('Error: ' + err); return; }
+        logSetup('Imported: ' + data.imported + ' picks, skipped: ' + data.skipped);
+        loadStats();
+    });
+}
+
+function fetchPrices() {
+    logSetup('Fetching price data (this may take a moment)...');
+    apiCall('fetch_prices.php', {range: '1y'}, function(err, data) {
+        if (err) { logSetup('Error: ' + err); return; }
+        var msg = 'Fetched: ' + data.fetched + ' tickers.';
+        if (data.errors && data.errors.length > 0) msg += ' Errors: ' + data.errors.join(', ');
+        if (data.note) msg += ' Note: ' + data.note;
+        logSetup(msg);
+        loadStats();
+        // Fetch remaining tickers
+        if (data.note && data.note.indexOf('Limited') >= 0) {
+            logSetup('Fetching next batch...');
+            setTimeout(function() { fetchPricesRemaining(); }, 2000);
+        }
+    });
+}
+
+function fetchPricesRemaining() {
+    apiCall('fetch_prices.php', {range: '1y'}, function(err, data) {
+        if (err) { logSetup('Error on batch 2: ' + err); return; }
+        logSetup('Batch 2: Fetched ' + data.fetched + ' more tickers.');
+        loadStats();
+        if (data.note && data.note.indexOf('Limited') >= 0) {
+            setTimeout(function() {
+                apiCall('fetch_prices.php', {range: '1y'}, function(err2, data2) {
+                    if (!err2 && data2) logSetup('Batch 3: Fetched ' + data2.fetched + ' more.');
+                    loadStats();
+                });
+            }, 2000);
+        }
+    });
+}
+
+function logSetup(msg) {
+    var log = document.getElementById('setupLog');
+    log.innerHTML += '<div>' + new Date().toLocaleTimeString() + ': ' + msg + '</div>';
+}
+</script>
+</body>
+</html>

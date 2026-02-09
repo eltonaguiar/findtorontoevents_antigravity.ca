@@ -252,6 +252,28 @@ $conn->query("REPLACE INTO report_cache (cache_key, cache_data, updated_at) VALU
 $elapsed = round(microtime(true) - $start, 2);
 $log[] = 'Total time: ' . $elapsed . 's';
 
+// ─── 5. Save operational stats snapshot ───
+$ops_snapshot = array(
+    'timestamp' => $now,
+    'elapsed_seconds' => $elapsed,
+    'steps' => array(
+        array('name' => 'Import Picks', 'status' => ($import_data ? 'ok' : 'failed'),
+              'imported' => ($import_data ? (int)$import_data['imported'] : 0),
+              'skipped' => ($import_data ? (int)$import_data['skipped'] : 0)),
+        array('name' => 'Fetch Prices', 'status' => 'ok', 'tickers_fetched' => $total_fetched),
+        array('name' => 'Long Backtests', 'status' => 'ok', 'scenarios_run' => count($summary['scenarios'])),
+        array('name' => 'Algo Analysis', 'status' => 'ok', 'algorithms_analyzed' => count($summary['per_algorithm'])),
+        array('name' => 'Short Backtests', 'status' => 'ok', 'scenarios_run' => count($summary['short_scenarios'])),
+        array('name' => 'Short Algo Analysis', 'status' => 'ok', 'algorithms_analyzed' => count($summary['per_algorithm_short'])),
+        array('name' => 'Top/Worst Trades', 'status' => ($top_data ? 'ok' : 'failed')),
+        array('name' => 'Learning Recs', 'status' => ($rec_data ? 'ok' : 'failed'))
+    ),
+    'db_stats' => $stats,
+    'log' => $log
+);
+$safe_ops = $conn->real_escape_string(json_encode($ops_snapshot));
+$conn->query("REPLACE INTO report_cache (cache_key, cache_data, updated_at) VALUES ('stats_snapshot', '$safe_ops', '$now')");
+
 // Audit
 $ip = isset($_SERVER['REMOTE_ADDR']) ? $conn->real_escape_string($_SERVER['REMOTE_ADDR']) : 'cron';
 $detail = $conn->real_escape_string(implode('; ', $log));

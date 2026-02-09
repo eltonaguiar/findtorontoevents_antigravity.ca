@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Stats | Find Stocks</title>
+    <style>
+        :root {
+            --bg:#0a0a1a; --card:#12122a; --card2:#1a1a3a; --border:#2a2a4a;
+            --text:#e0e0f0; --dim:#8888aa; --accent:#6366f1; --glow:rgba(99,102,241,.3);
+            --green:#22c55e; --green-bg:rgba(34,197,94,.12);
+            --red:#ef4444; --red-bg:rgba(239,68,68,.12);
+            --yellow:#eab308; --yellow-bg:rgba(234,179,8,.12);
+            --blue:#3b82f6; --blue-bg:rgba(59,130,246,.12);
+            --r:12px;
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+        a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+
+        .hdr{background:linear-gradient(135deg,#12122a,#1e1e3f);border-bottom:1px solid var(--border);padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+        .hdr h1{font-size:1.4rem;background:linear-gradient(135deg,var(--accent),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .hdr-links{display:flex;gap:1rem;font-size:.85rem}
+        .hdr-links a{color:var(--dim)} .hdr-links a:hover{color:var(--text)}
+        .wrap{max-width:1200px;margin:0 auto;padding:1.5rem}
+
+        .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;margin-bottom:1.5rem}
+        .card h2{font-size:1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+        .card h3{font-size:.9rem;color:var(--dim);margin:1rem 0 .5rem}
+
+        /* Health indicators */
+        .health-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
+        .hc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1rem;text-align:center;position:relative;overflow:hidden}
+        .hc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+        .hc.ok::before{background:var(--green)} .hc.warn::before{background:var(--yellow)} .hc.err::before{background:var(--red)}
+        .hc .lb{font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:.04em}
+        .hc .vl{font-size:1.3rem;font-weight:700;margin:.25rem 0}
+        .hc .sub{font-size:.72rem;color:var(--dim)}
+
+        .badge{display:inline-block;padding:.1rem .5rem;border-radius:4px;font-size:.72rem;font-weight:600}
+        .b-green{background:var(--green-bg);color:var(--green)}
+        .b-red{background:var(--red-bg);color:var(--red)}
+        .b-yellow{background:var(--yellow-bg);color:var(--yellow)}
+        .b-blue{background:var(--blue-bg);color:var(--blue)}
+
+        .tbl-wrap{overflow-x:auto}
+        table{width:100%;border-collapse:collapse;font-size:.82rem}
+        thead th{text-align:left;padding:.5rem .65rem;background:var(--bg);color:var(--dim);font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);white-space:nowrap}
+        tbody td{padding:.4rem .65rem;border-bottom:1px solid rgba(42,42,74,.4);white-space:nowrap}
+        tbody tr:hover{background:rgba(99,102,241,.04)}
+
+        .step-row{display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid rgba(42,42,74,.3)}
+        .step-row:last-child{border-bottom:none}
+        .step-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+        .step-dot.ok{background:var(--green)} .step-dot.failed{background:var(--red)}
+        .step-name{font-size:.85rem;flex:1}
+        .step-detail{font-size:.78rem;color:var(--dim)}
+
+        .g2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+        .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+        @media(max-width:900px){.g2,.g3{grid-template-columns:1fr}.wrap{padding:1rem}}
+
+        .log-entry{padding:.6rem .85rem;border-radius:6px;margin-bottom:.5rem;font-size:.8rem;background:rgba(99,102,241,.04);border-left:3px solid var(--border)}
+        .log-entry .ts{color:var(--dim);font-size:.72rem}
+        .log-entry .type{font-weight:600;color:var(--accent)}
+        .log-entry .det{color:var(--dim);margin-top:.15rem;font-size:.76rem;word-break:break-all}
+
+        .pbar{background:rgba(42,42,74,.5);border-radius:6px;height:18px;overflow:hidden;margin:.5rem 0}
+        .pbar-fill{height:100%;border-radius:6px;transition:width .5s}
+        .pbar-fill.ok{background:linear-gradient(90deg,var(--accent),var(--green))}
+
+        .loading{text-align:center;padding:3rem;color:var(--dim);font-size:1.1rem}
+        .loading::after{content:'';display:inline-block;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;margin-left:.5rem;vertical-align:middle}
+        @keyframes sp{to{transform:rotate(360deg)}}
+
+        .btn{background:var(--accent);color:#fff;border:none;padding:.5rem 1.2rem;border-radius:6px;font-size:.82rem;cursor:pointer;font-weight:600}
+        .btn:hover{background:#5558e6}
+        .btn.sm{padding:.3rem .8rem;font-size:.75rem}
+        .btn-row{display:flex;gap:.75rem;margin-top:1rem;flex-wrap:wrap}
+
+        .pos{color:var(--green)} .neg{color:var(--red)}
+    </style>
+</head>
+<body>
+
+<div class="hdr">
+    <h1>System Stats & Operations</h1>
+    <div class="hdr-links">
+        <a href="/findstocks/portfolio/">Portfolio</a>
+        <a href="/findstocks/portfolio/report.html">Daily Report</a>
+        <a href="/findstocks/">Stock Picks</a>
+        <a href="/">Events</a>
+    </div>
+</div>
+
+<div class="wrap">
+    <div id="content" style="display:none">
+
+        <!-- ═══ HEALTH INDICATORS ═══ -->
+        <div class="health-grid" id="healthGrid"></div>
+
+        <!-- ═══ LAST REFRESH DETAILS ═══ -->
+        <div class="card">
+            <h2>Last Daily Refresh</h2>
+            <div id="lastRefresh"></div>
+            <div class="btn-row">
+                <button class="btn" onclick="triggerRefresh()">Run Manual Refresh Now</button>
+                <span id="refreshStatus" style="font-size:.82rem;color:var(--dim);align-self:center"></span>
+            </div>
+        </div>
+
+        <!-- ═══ DATABASE TABLES ═══ -->
+        <div class="g2">
+            <div class="card">
+                <h2>Database Tables</h2>
+                <div class="tbl-wrap"><table id="tablesTable"><thead><tr><th>Table</th><th>Rows</th><th>Status</th></tr></thead><tbody></tbody></table></div>
+            </div>
+            <div class="card">
+                <h2>Data Freshness</h2>
+                <div id="freshnessContent"></div>
+            </div>
+        </div>
+
+        <!-- ═══ SIMULATION STATUS ═══ -->
+        <div class="card">
+            <h2>Exhaustive Simulation Status</h2>
+            <div id="simStatus"></div>
+        </div>
+
+        <!-- ═══ ALGORITHMS & COVERAGE ═══ -->
+        <div class="g2">
+            <div class="card">
+                <h2>Algorithm Coverage</h2>
+                <div class="tbl-wrap"><table id="algoTable"><thead><tr><th>Algorithm</th><th>Picks</th><th>First Pick</th><th>Last Pick</th></tr></thead><tbody></tbody></table></div>
+            </div>
+            <div class="card">
+                <h2>Ticker Price Coverage</h2>
+                <div class="tbl-wrap"><table id="tickerTable"><thead><tr><th>Ticker</th><th>Price Records</th><th>Oldest</th><th>Newest</th></tr></thead><tbody></tbody></table></div>
+            </div>
+        </div>
+
+        <!-- ═══ CACHE STATUS ═══ -->
+        <div class="card">
+            <h2>Report Caches</h2>
+            <div class="tbl-wrap"><table id="cacheTable"><thead><tr><th>Cache Key</th><th>Last Updated</th><th>Data Size</th><th>Age</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <!-- ═══ AUDIT LOG ═══ -->
+        <div class="card">
+            <h2>Audit Log (Recent Activity)</h2>
+            <h3>Action Summary</h3>
+            <div class="tbl-wrap"><table id="auditSummary"><thead><tr><th>Action</th><th>Total Runs</th><th>First Run</th><th>Last Run</th></tr></thead><tbody></tbody></table></div>
+            <h3>Recent Entries</h3>
+            <div id="auditEntries"></div>
+        </div>
+
+        <!-- ═══ REFRESH HISTORY ═══ -->
+        <div class="card">
+            <h2>Daily Refresh History (Last 14 Runs)</h2>
+            <div class="tbl-wrap"><table id="refreshHistory"><thead><tr><th>Date/Time</th><th>Details</th><th>Source</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <!-- ═══ GITHUB ACTIONS ═══ -->
+        <div class="card">
+            <h2>GitHub Actions Workflows</h2>
+            <div class="g3" id="workflowCards">
+                <div class="hc ok">
+                    <div class="lb">Daily Stock Refresh</div>
+                    <div class="vl" style="font-size:.9rem">Mon-Fri</div>
+                    <div class="sub">5:30 PM + 9:00 AM EST</div>
+                    <div style="margin-top:.5rem"><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/workflows/daily-stock-refresh.yml" target="_blank" class="badge b-blue">View Runs</a></div>
+                </div>
+                <div class="hc ok">
+                    <div class="lb">Weekly Simulation</div>
+                    <div class="vl" style="font-size:.9rem">Sundays</div>
+                    <div class="sub">1:00 AM EST &mdash; 22K+ permutations</div>
+                    <div style="margin-top:.5rem"><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/workflows/weekly-stock-simulation.yml" target="_blank" class="badge b-blue">View Runs</a></div>
+                </div>
+                <div class="hc ok">
+                    <div class="lb">Manual Trigger</div>
+                    <div class="vl" style="font-size:.9rem">On Demand</div>
+                    <div class="sub">Use buttons or GitHub Actions tab</div>
+                    <div style="margin-top:.5rem"><a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions" target="_blank" class="badge b-blue">All Workflows</a></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div id="loadingState" class="loading">Loading system stats</div>
+</div>
+
+<script>
+var API = '/findstocks/api';
+var S = null;
+
+document.addEventListener('DOMContentLoaded', function() { loadStats(); });
+
+function loadStats() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API + '/get_stats.php');
+    xhr.onload = function() {
+        try {
+            S = JSON.parse(xhr.responseText);
+            if (S.ok) {
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+                render();
+            } else {
+                document.getElementById('loadingState').textContent = 'Error: ' + (S.error || 'Unknown');
+            }
+        } catch(e) {
+            document.getElementById('loadingState').textContent = 'Error: ' + e.message;
+        }
+    };
+    xhr.onerror = function() { document.getElementById('loadingState').textContent = 'Network error'; };
+    xhr.send();
+}
+
+function render() {
+    renderHealth();
+    renderLastRefresh();
+    renderTables();
+    renderFreshness();
+    renderSimulation();
+    renderAlgoCoverage();
+    renderTickerCoverage();
+    renderCaches();
+    renderAuditSummary();
+    renderAuditLog();
+    renderRefreshHistory();
+}
+
+// ─── Health Indicators ───
+function renderHealth() {
+    var h = S.health || {};
+    var f = S.freshness || {};
+
+    var refreshedToday = h.refreshed_today;
+    var priceStatus = h.price_status || 'unknown';
+    var reportStatus = h.report_status || 'unknown';
+    var cacheAge = h.report_cache_hours_old || 0;
+    var priceDays = h.price_days_stale || 0;
+    var sim = S.simulation || {};
+    var simPct = parseFloat(sim.progress_pct) || 0;
+
+    var html = '';
+    // Refresh status
+    html += hc(refreshedToday ? 'ok' : 'warn', 'Daily Refresh', refreshedToday ? 'RAN TODAY' : 'NOT YET', refreshedToday ? 'All systems operational' : 'Waiting for next scheduled run');
+    // Price freshness
+    html += hc(priceStatus === 'fresh' ? 'ok' : priceStatus === 'stale' ? 'warn' : 'err', 'Price Data', priceDays + ' days old', 'Latest: ' + (h.latest_price_date || '—'));
+    // Report cache
+    html += hc(reportStatus === 'fresh' ? 'ok' : reportStatus === 'stale' ? 'warn' : 'err', 'Report Cache', cacheAge + 'h old', reportStatus === 'fresh' ? 'Up to date' : 'Needs refresh');
+    // Algorithms
+    html += hc('ok', 'Algorithms', f.algorithm_count || 0, 'Active picking algorithms');
+    // Tickers
+    html += hc(f.tickers_missing_prices > 0 ? 'warn' : 'ok', 'Ticker Coverage', f.tickers_with_prices + ' / ' + ((f.tickers_with_prices || 0) + (f.tickers_missing_prices || 0)), (f.tickers_missing_prices || 0) + ' missing prices');
+    // Simulation
+    var simCls = simPct >= 100 ? 'ok' : simPct > 0 ? 'warn' : 'err';
+    html += hc(simCls, 'Simulation', simPct + '%', sim.rows + ' combos tested');
+
+    document.getElementById('healthGrid').innerHTML = html;
+}
+function hc(cls, lb, vl, sub) {
+    return '<div class="hc ' + cls + '"><div class="lb">' + lb + '</div><div class="vl">' + vl + '</div><div class="sub">' + sub + '</div></div>';
+}
+
+// ─── Last Refresh ───
+function renderLastRefresh() {
+    var rh = S.refresh_history || [];
+    if (rh.length === 0) {
+        document.getElementById('lastRefresh').innerHTML = '<p style="color:var(--dim)">No refresh runs recorded yet.</p>';
+        return;
+    }
+    var last = rh[0];
+    var details = last.details || '';
+    var steps = details.split('; ');
+    var html = '<div style="margin-bottom:.75rem;font-size:.82rem;color:var(--dim)">Last run: <strong style="color:var(--accent)">' + last.created_at + ' UTC</strong> &mdash; Source: ' + last.ip_address + '</div>';
+    for (var i = 0; i < steps.length; i++) {
+        var s = steps[i];
+        var ok = s.indexOf('failed') === -1;
+        html += '<div class="step-row"><div class="step-dot ' + (ok ? 'ok' : 'failed') + '"></div><div class="step-name">' + s + '</div></div>';
+    }
+    document.getElementById('lastRefresh').innerHTML = html;
+}
+
+// ─── Tables ───
+function renderTables() {
+    var tables = S.tables || [];
+    var tb = document.getElementById('tablesTable').querySelector('tbody');
+    var html = '';
+    var totalRows = 0;
+    for (var i = 0; i < tables.length; i++) {
+        var t = tables[i];
+        var rows = t.rows;
+        totalRows += (rows > 0 ? rows : 0);
+        var status = rows < 0 ? '<span class="badge b-red">MISSING</span>' : rows === 0 ? '<span class="badge b-yellow">EMPTY</span>' : '<span class="badge b-green">OK</span>';
+        html += '<tr><td><strong>' + t.table + '</strong></td><td>' + (rows >= 0 ? rows.toLocaleString() : '—') + '</td><td>' + status + '</td></tr>';
+    }
+    html += '<tr style="border-top:2px solid var(--border)"><td><strong>TOTAL</strong></td><td><strong>' + totalRows.toLocaleString() + '</strong></td><td></td></tr>';
+    tb.innerHTML = html;
+}
+
+// ─── Freshness ───
+function renderFreshness() {
+    var f = S.freshness || {};
+    var html = '';
+    html += '<div class="step-row"><div class="step-name">Latest Pick Date</div><div class="step-detail"><strong>' + (f.latest_pick_date || '—') + '</strong></div></div>';
+    html += '<div class="step-row"><div class="step-name">Latest Price Date</div><div class="step-detail"><strong>' + (f.latest_price_date || '—') + '</strong></div></div>';
+    html += '<div class="step-row"><div class="step-name">Tickers with Prices</div><div class="step-detail"><strong>' + (f.tickers_with_prices || 0) + '</strong></div></div>';
+    html += '<div class="step-row"><div class="step-name">Tickers Missing Prices</div><div class="step-detail"><strong style="color:' + ((f.tickers_missing_prices || 0) > 0 ? 'var(--yellow)' : 'var(--green)') + '">' + (f.tickers_missing_prices || 0) + '</strong></div></div>';
+    html += '<div class="step-row"><div class="step-name">Active Algorithms</div><div class="step-detail"><strong>' + (f.algorithm_count || 0) + '</strong></div></div>';
+    document.getElementById('freshnessContent').innerHTML = html;
+}
+
+// ─── Simulation ───
+function renderSimulation() {
+    var sim = S.simulation || {};
+    var pct = parseFloat(sim.progress_pct) || 0;
+    var rows = parseInt(sim.rows) || 0;
+    var total = parseInt(sim.total_combos) || 0;
+    var status = sim.status || 'not_started';
+    var badge = status === 'complete' ? '<span class="badge b-green">COMPLETE</span>' : status === 'running' ? '<span class="badge b-yellow">RUNNING</span>' : '<span class="badge b-red">NOT STARTED</span>';
+
+    var html = '<div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">'
+        + '<span style="font-size:.85rem">Status: ' + badge + '</span>'
+        + '<span style="font-size:.82rem;color:var(--dim)">' + rows.toLocaleString() + ' / ' + total.toLocaleString() + ' combos</span>'
+        + '</div>';
+    html += '<div class="pbar"><div class="pbar-fill ok" style="width:' + Math.min(pct, 100) + '%"></div></div>';
+    html += '<div style="text-align:center;font-size:.8rem;color:var(--dim)">' + pct + '% complete</div>';
+
+    // Direction breakdown
+    var bd = sim.by_direction || {};
+    if (bd['LONG'] || bd['SHORT']) {
+        html += '<div class="g2" style="margin-top:1rem">';
+        if (bd['LONG']) {
+            var l = bd['LONG'];
+            html += '<div style="font-size:.82rem"><strong>LONG:</strong> ' + l.cnt + ' combos, ' + l.profitable + ' profitable, avg ' + parseFloat(l.avg_ret).toFixed(2) + '%, best ' + parseFloat(l.best_ret).toFixed(2) + '%</div>';
+        }
+        if (bd['SHORT']) {
+            var s = bd['SHORT'];
+            html += '<div style="font-size:.82rem"><strong>SHORT:</strong> ' + s.cnt + ' combos, ' + s.profitable + ' profitable, avg ' + parseFloat(s.avg_ret).toFixed(2) + '%, best ' + parseFloat(s.best_ret).toFixed(2) + '%</div>';
+        }
+        html += '</div>';
+    }
+
+    if (sim.last_batch) {
+        html += '<div style="font-size:.78rem;color:var(--dim);margin-top:.5rem">Last batch: #' + sim.last_batch + '</div>';
+    }
+
+    document.getElementById('simStatus').innerHTML = html;
+}
+
+// ─── Algo Coverage ───
+function renderAlgoCoverage() {
+    var pa = (S.freshness || {}).picks_per_algorithm || [];
+    var tb = document.getElementById('algoTable').querySelector('tbody');
+    var html = '';
+    for (var i = 0; i < pa.length; i++) {
+        var a = pa[i];
+        html += '<tr><td><strong>' + a.algorithm_name + '</strong></td><td>' + a.cnt + '</td><td>' + a.first_pick + '</td><td>' + a.last_pick + '</td></tr>';
+    }
+    tb.innerHTML = html || '<tr><td colspan="4" style="color:var(--dim)">No data</td></tr>';
+}
+
+// ─── Ticker Coverage ───
+function renderTickerCoverage() {
+    var tc = (S.freshness || {}).ticker_coverage || [];
+    var tb = document.getElementById('tickerTable').querySelector('tbody');
+    var html = '';
+    for (var i = 0; i < tc.length; i++) {
+        var t = tc[i];
+        html += '<tr><td><strong>' + t.ticker + '</strong></td><td>' + t.cnt + '</td><td>' + t.oldest + '</td><td>' + t.newest + '</td></tr>';
+    }
+    tb.innerHTML = html || '<tr><td colspan="4" style="color:var(--dim)">No data</td></tr>';
+}
+
+// ─── Caches ───
+function renderCaches() {
+    var caches = S.caches || [];
+    var tb = document.getElementById('cacheTable').querySelector('tbody');
+    var html = '';
+    for (var i = 0; i < caches.length; i++) {
+        var c = caches[i];
+        var sizeKB = Math.round(parseInt(c.data_size) / 1024);
+        var ageH = Math.round((Date.now() - new Date(c.updated_at + ' UTC').getTime()) / 3600000);
+        var ageBadge = ageH <= 24 ? '<span class="badge b-green">' + ageH + 'h ago</span>' : '<span class="badge b-yellow">' + ageH + 'h ago</span>';
+        html += '<tr><td><strong>' + c.cache_key + '</strong></td><td>' + c.updated_at + '</td><td>' + sizeKB + ' KB</td><td>' + ageBadge + '</td></tr>';
+    }
+    tb.innerHTML = html || '<tr><td colspan="4" style="color:var(--dim)">No caches</td></tr>';
+}
+
+// ─── Audit Summary ───
+function renderAuditSummary() {
+    var as = S.audit_summary || [];
+    var tb = document.getElementById('auditSummary').querySelector('tbody');
+    var html = '';
+    for (var i = 0; i < as.length; i++) {
+        var a = as[i];
+        html += '<tr><td><strong>' + a.action_type + '</strong></td><td>' + a.total_runs + '</td><td>' + a.first_run + '</td><td>' + a.last_run + '</td></tr>';
+    }
+    tb.innerHTML = html || '<tr><td colspan="4" style="color:var(--dim)">No audit data</td></tr>';
+}
+
+// ─── Audit Log Entries ───
+function renderAuditLog() {
+    var al = S.audit_log || [];
+    var html = '';
+    var limit = Math.min(al.length, 20);
+    for (var i = 0; i < limit; i++) {
+        var e = al[i];
+        html += '<div class="log-entry">'
+            + '<div><span class="type">' + e.action_type + '</span> <span class="ts">' + e.created_at + '</span> <span class="ts">from ' + e.ip_address + '</span></div>'
+            + '<div class="det">' + (e.details || '').substring(0, 300) + '</div>'
+            + '</div>';
+    }
+    document.getElementById('auditEntries').innerHTML = html || '<p style="color:var(--dim)">No entries</p>';
+}
+
+// ─── Refresh History ───
+function renderRefreshHistory() {
+    var rh = S.refresh_history || [];
+    var tb = document.getElementById('refreshHistory').querySelector('tbody');
+    var html = '';
+    for (var i = 0; i < rh.length; i++) {
+        var r = rh[i];
+        html += '<tr><td>' + r.created_at + '</td><td style="white-space:normal;max-width:500px;font-size:.78rem">' + (r.details || '') + '</td><td>' + r.ip_address + '</td></tr>';
+    }
+    tb.innerHTML = html || '<tr><td colspan="3" style="color:var(--dim)">No history</td></tr>';
+}
+
+// ─── Manual Refresh ───
+function triggerRefresh() {
+    var btn = document.querySelector('.btn');
+    var status = document.getElementById('refreshStatus');
+    btn.disabled = true;
+    btn.textContent = 'Running...';
+    status.textContent = 'Sending refresh request...';
+    status.style.color = 'var(--yellow)';
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API + '/daily_refresh.php?key=stocksrefresh2026');
+    xhr.onload = function() {
+        try {
+            var d = JSON.parse(xhr.responseText);
+            if (d.ok) {
+                status.textContent = 'Refresh complete in ' + d.elapsed_seconds + 's. Reloading stats...';
+                status.style.color = 'var(--green)';
+                setTimeout(function() { location.reload(); }, 1500);
+            } else {
+                status.textContent = 'Error: ' + (d.error || 'Unknown');
+                status.style.color = 'var(--red)';
+            }
+        } catch(e) {
+            status.textContent = 'Parse error: ' + e.message;
+            status.style.color = 'var(--red)';
+        }
+        btn.disabled = false;
+        btn.textContent = 'Run Manual Refresh Now';
+    };
+    xhr.onerror = function() {
+        status.textContent = 'Network error';
+        status.style.color = 'var(--red)';
+        btn.disabled = false;
+        btn.textContent = 'Run Manual Refresh Now';
+    };
+    xhr.send();
+}
+</script>
+</body>
+</html>
