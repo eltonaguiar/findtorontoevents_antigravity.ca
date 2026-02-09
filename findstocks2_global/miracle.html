@@ -293,12 +293,99 @@ tr:hover { background: rgba(255,255,255,0.03); }
     text-align: center;
 }
 
+/* Budget Section */
+.budget-input-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+.budget-input-row input {
+    background: var(--surface);
+    border: 2px solid var(--gold);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 1.3rem;
+    color: var(--gold);
+    width: 180px;
+    font-weight: 700;
+    outline: none;
+}
+.budget-input-row input:focus { border-color: var(--cyan); color: var(--cyan); }
+.budget-presets { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.budget-presets button {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+.budget-presets button:hover, .budget-presets button.active { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 700; }
+
+.rec-hero {
+    background: linear-gradient(135deg, #0a2a1e, #1a1a3e);
+    border: 2px solid var(--green);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.rec-hero .rec-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--green);
+    margin-bottom: 0.5rem;
+}
+.rec-hero .rec-ticker {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--cyan);
+    margin-bottom: 0.3rem;
+}
+.rec-hero .rec-company {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+.rec-hero .rec-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text);
+}
+.scenario-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+.scenario-card {
+    background: rgba(0,0,0,0.3);
+    border-radius: 10px;
+    padding: 1rem;
+    border: 1px solid var(--border);
+}
+.scenario-card.win { border-color: var(--green); }
+.scenario-card.loss { border-color: var(--red); }
+.scenario-card h4 { font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.5rem; }
+.scenario-card.win h4 { color: var(--green); }
+.scenario-card.loss h4 { color: var(--red); }
+.scenario-card .amount { font-size: 1.5rem; font-weight: 800; }
+.scenario-card.win .amount { color: var(--green); }
+.scenario-card.loss .amount { color: var(--red); }
+.scenario-card .detail { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.3rem; }
+
 @media (max-width: 768px) {
     .header h1 { font-size: 1.4rem; }
     .content { padding: 1rem; }
     .stats-row { grid-template-columns: repeat(2, 1fr); }
     .strategy-grid { grid-template-columns: 1fr; }
+    .scenario-grid { grid-template-columns: 1fr; }
     td, th { padding: 6px 8px; font-size: 0.8rem; }
+    .budget-input-row input { width: 140px; font-size: 1.1rem; }
 }
 </style>
 </head>
@@ -311,6 +398,7 @@ tr:hover { background: rgba(255,255,255,0.03); }
 
 <div class="tabs" id="tabs">
     <div class="tab active" data-tab="overview">Overview</div>
+    <div class="tab" data-tab="budget">My Budget</div>
     <div class="tab" data-tab="picks">Today's Picks</div>
     <div class="tab" data-tab="leaderboard">Strategy Leaderboard</div>
     <div class="tab" data-tab="learning">Self-Learning AI</div>
@@ -330,6 +418,31 @@ tr:hover { background: rgba(255,255,255,0.03); }
     <div id="recent-picks-table"><div class="loading">Loading...</div></div>
     <h3 class="section-title">Best & Worst All-Time</h3>
     <div id="best-worst-table"><div class="loading">Loading...</div></div>
+</div>
+
+<!-- ═══ MY BUDGET ═══ -->
+<div class="panel" id="panel-budget">
+    <h3 class="section-title">How much do you want to invest?</h3>
+    <div class="budget-input-row">
+        <span style="font-size:1.3rem;color:var(--gold);font-weight:700;">$</span>
+        <input type="number" id="budget-amount" placeholder="250" min="10" max="100000" value="250">
+        <button class="btn btn-primary" onclick="loadBudgetPicks()">Find My Best Pick</button>
+    </div>
+    <div class="budget-presets">
+        <button onclick="setBudget(100)">$100</button>
+        <button onclick="setBudget(250)" class="active">$250</button>
+        <button onclick="setBudget(500)">$500</button>
+        <button onclick="setBudget(1000)">$1,000</button>
+        <button onclick="setBudget(2500)">$2,500</button>
+        <button onclick="setBudget(5000)">$5,000</button>
+        <button onclick="setBudget(10000)">$10,000</button>
+    </div>
+    <div style="margin-top:0.8rem;margin-bottom:1rem;">
+        <label style="color:var(--text-dim);font-size:0.85rem;cursor:pointer;">
+            <input type="checkbox" id="budget-cdr-only" style="margin-right:4px;"> CDR only (zero commission)
+        </label>
+    </div>
+    <div id="budget-result"><p style="color:var(--text-dim);text-align:center;padding:2rem;">Enter your budget and click "Find My Best Pick" to get a personalized recommendation with exact shares, fees, and profit targets.</p></div>
 </div>
 
 <!-- ═══ TODAY'S PICKS ═══ -->
@@ -406,6 +519,7 @@ document.getElementById('tabs').addEventListener('click', function(e) {
     var tabId = e.target.getAttribute('data-tab');
     document.getElementById('panel-' + tabId).classList.add('active');
     // Load data for the tab
+    if (tabId === 'budget') loadBudgetPicks();
     if (tabId === 'picks') loadPicks('');
     if (tabId === 'leaderboard') loadLeaderboard();
     if (tabId === 'learning') loadLearning();
@@ -779,6 +893,108 @@ function loadWatchlist() {
         }
         html += '</table>';
         document.getElementById('watchlist-content').innerHTML = html;
+    });
+}
+
+// ─── BUDGET PICKS ───
+function setBudget(amount) {
+    document.getElementById('budget-amount').value = amount;
+    var btns = document.querySelectorAll('.budget-presets button');
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+    // Find and activate the matching button
+    for (var i = 0; i < btns.length; i++) {
+        if (btns[i].textContent.replace(/[$,]/g, '') == amount) btns[i].classList.add('active');
+    }
+    loadBudgetPicks();
+}
+
+function loadBudgetPicks() {
+    var amount = parseFloat(document.getElementById('budget-amount').value);
+    if (!amount || amount < 10) { document.getElementById('budget-result').innerHTML = '<p style="color:var(--red)">Please enter a budget of at least $10.</p>'; return; }
+    var cdrOnly = document.getElementById('budget-cdr-only').checked ? '&cdr_only=1' : '';
+    document.getElementById('budget-result').innerHTML = '<div class="loading"><div class="spinner"></div><br>Finding the best pick for $' + amount.toLocaleString() + '...</div>';
+    apiCall('budget_pick2.php?budget=' + amount + '&top=5' + cdrOnly, function(data) {
+        if (!data.ok) { document.getElementById('budget-result').innerHTML = '<p style="color:var(--red)">' + (data.error || 'Error') + '</p>'; return; }
+
+        var html = '';
+
+        // Summary stats
+        html += '<div class="stats-row">';
+        html += statCard('$' + amount.toLocaleString(), 'Your Budget', 'gold');
+        html += statCard(data.affordable, 'Affordable Picks', 'blue');
+        html += statCard(data.cdr_affordable, 'CDR (Zero-Fee)', 'cyan');
+        html += statCard(data.avg_fee_drag + '%', 'Avg Fee Drag', data.avg_fee_drag < 10 ? 'green' : 'red');
+        html += '</div>';
+
+        if (data.picks.length === 0) {
+            html += '<p style="color:var(--text-dim);text-align:center;padding:2rem;">No affordable picks found for this budget. Try increasing your budget or running the scanner first.</p>';
+            document.getElementById('budget-result').innerHTML = html;
+            return;
+        }
+
+        // #1 Recommendation Hero Card
+        var best = data.picks[0];
+        html += '<div class="rec-hero">';
+        html += '<div class="rec-label">#1 Recommended Pick for $' + amount.toLocaleString() + '</div>';
+        html += '<div class="rec-ticker">' + best.ticker + (best.is_cdr ? ' <span class="cdr-badge">CDR $0 FEE</span>' : '') + '</div>';
+        html += '<div class="rec-company">' + (best.company || '') + ' &mdash; ' + best.strategy + '</div>';
+        html += '<div class="rec-text">';
+        html += '<strong>Buy ' + best.shares + ' share' + (best.shares > 1 ? 's' : '') + '</strong> at <strong>$' + parseFloat(best.entry_price).toFixed(2) + '</strong>';
+        html += ' &nbsp;|&nbsp; Investing: <strong>$' + parseFloat(best.invested).toFixed(2) + '</strong>';
+        if (best.leftover > 0) html += ' &nbsp;|&nbsp; Leftover: $' + parseFloat(best.leftover).toFixed(2);
+        html += '</div>';
+
+        // Win/Loss scenario cards
+        html += '<div class="scenario-grid">';
+        html += '<div class="scenario-card win">';
+        html += '<h4>If Take-Profit Hits ($' + parseFloat(best.tp_price).toFixed(2) + ')</h4>';
+        html += '<div class="amount">+$' + parseFloat(best.net_profit).toFixed(2) + '</div>';
+        html += '<div class="detail">Gross: +$' + parseFloat(best.gross_profit).toFixed(2) + ' &minus; Fees: $' + parseFloat(best.total_fees).toFixed(2) + ' = Net: +$' + parseFloat(best.net_profit).toFixed(2) + ' (' + best.net_return_pct + '%)</div>';
+        html += '</div>';
+
+        html += '<div class="scenario-card loss">';
+        html += '<h4>If Stop-Loss Hits ($' + parseFloat(best.sl_price).toFixed(2) + ')</h4>';
+        html += '<div class="amount">-$' + Math.abs(parseFloat(best.net_loss)).toFixed(2) + '</div>';
+        html += '<div class="detail">Loss + Fees = Net: $' + parseFloat(best.net_loss).toFixed(2) + ' (' + best.net_loss_pct + '%)</div>';
+        html += '</div>';
+        html += '</div>';
+
+        // Fee & breakeven info
+        html += '<div style="margin-top:1rem;font-size:0.85rem;color:var(--text-dim)">';
+        html += 'Risk/Reward: <strong style="color:var(--cyan)">' + best.risk_reward + ':1</strong>';
+        html += ' &nbsp;|&nbsp; Fee drag: <strong>' + best.fee_drag_pct + '%</strong> of profit goes to fees';
+        html += ' &nbsp;|&nbsp; Breakeven move: <strong>' + best.breakeven_pct + '%</strong>';
+        html += ' &nbsp;|&nbsp; Buy fees: ' + best.fee_breakdown_buy;
+        html += ' &nbsp;|&nbsp; Score: ' + fmtScore(best.budget_score);
+        html += '</div>';
+        html += '</div>';
+
+        // Other picks table
+        if (data.picks.length > 1) {
+            html += '<h3 class="section-title">Other Options for $' + amount.toLocaleString() + '</h3>';
+            html += '<table><tr><th>#</th><th>Ticker</th><th>Strategy</th><th>Shares</th><th>Invested</th><th>Entry</th><th>TP</th><th>SL</th><th>Net Profit</th><th>Net Loss</th><th>Fee Drag</th><th>R:R</th><th>Score</th></tr>';
+            for (var i = 0; i < data.picks.length; i++) {
+                var p = data.picks[i];
+                html += '<tr' + (i === 0 ? ' style="background:rgba(0,255,136,0.06)"' : '') + '>';
+                html += '<td>' + p.rank + '</td>';
+                html += '<td class="ticker-cell">' + p.ticker + fmtCdr(p.is_cdr) + '</td>';
+                html += '<td>' + p.strategy + '</td>';
+                html += '<td>' + p.shares + '</td>';
+                html += '<td>$' + parseFloat(p.invested).toFixed(2) + '</td>';
+                html += '<td>$' + parseFloat(p.entry_price).toFixed(2) + '</td>';
+                html += '<td>$' + parseFloat(p.tp_price).toFixed(2) + '</td>';
+                html += '<td>$' + parseFloat(p.sl_price).toFixed(2) + '</td>';
+                html += '<td class="pct-positive">+$' + parseFloat(p.net_profit).toFixed(2) + '</td>';
+                html += '<td class="pct-negative">-$' + Math.abs(parseFloat(p.net_loss)).toFixed(2) + '</td>';
+                html += '<td>' + p.fee_drag_pct + '%</td>';
+                html += '<td>' + p.risk_reward + ':1</td>';
+                html += '<td>' + fmtScore(p.budget_score) + '</td>';
+                html += '</tr>';
+            }
+            html += '</table>';
+        }
+
+        document.getElementById('budget-result').innerHTML = html;
     });
 }
 

@@ -485,3 +485,107 @@ test.describe('DayTrades Miracle Claude — Data Integrity', () => {
     }
   });
 });
+
+// ═══════════════════════════════════════════════
+// Budget Pick API Tests
+// ═══════════════════════════════════════════════
+
+test.describe('DayTrades Miracle Claude — Budget Picks', () => {
+  test('budget_pick2.php requires a budget parameter', async ({ request }) => {
+    const res = await request.get(`${API_BASE}/budget_pick2.php`);
+    expect(res.ok()).toBe(true);
+    const data = await res.json();
+    expect(data.ok).toBe(false);
+    expect(data.error).toContain('budget');
+  });
+
+  test('budget_pick2.php returns picks for $250', async ({ request }) => {
+    const res = await request.get(`${API_BASE}/budget_pick2.php?budget=250`);
+    expect(res.ok()).toBe(true);
+    const data = await res.json();
+    expect(data.ok).toBe(true);
+    expect(data.budget).toBe(250);
+    expect(data.affordable).toBeGreaterThanOrEqual(0);
+    expect(data.cdr_affordable).toBeGreaterThanOrEqual(0);
+    expect(typeof data.avg_fee_drag).toBe('number');
+    expect(data.recommendation).toBeDefined();
+    expect(Array.isArray(data.picks)).toBe(true);
+  });
+
+  test('budget picks have correct structure', async ({ request }) => {
+    const res = await request.get(`${API_BASE}/budget_pick2.php?budget=1000&top=3`);
+    const data = await res.json();
+    expect(data.ok).toBe(true);
+    if (data.picks.length > 0) {
+      const p = data.picks[0];
+      expect(p.rank).toBe(1);
+      expect(p.ticker).toBeDefined();
+      expect(p.shares).toBeGreaterThanOrEqual(1);
+      expect(p.invested).toBeGreaterThan(0);
+      expect(p.invested).toBeLessThanOrEqual(1000);
+      expect(p.entry_price).toBeGreaterThan(0);
+      expect(p.tp_price).toBeGreaterThan(p.entry_price);
+      expect(p.sl_price).toBeLessThan(p.entry_price);
+      expect(p.net_profit).toBeGreaterThan(0);
+      expect(p.net_loss).toBeLessThan(0);
+      expect(typeof p.fee_drag_pct).toBe('number');
+      expect(typeof p.breakeven_pct).toBe('number');
+      expect(typeof p.risk_reward).toBe('number');
+      expect(typeof p.budget_score).toBe('number');
+      expect(p.confidence).toBeDefined();
+    }
+  });
+
+  test('budget picks respect CDR filter', async ({ request }) => {
+    const res = await request.get(`${API_BASE}/budget_pick2.php?budget=500&cdr_only=1`);
+    const data = await res.json();
+    expect(data.ok).toBe(true);
+    for (const p of data.picks) {
+      expect(p.is_cdr).toBe(1);
+    }
+  });
+
+  test('budget picks: invested never exceeds budget', async ({ request }) => {
+    const res = await request.get(`${API_BASE}/budget_pick2.php?budget=100&top=10`);
+    const data = await res.json();
+    expect(data.ok).toBe(true);
+    for (const p of data.picks) {
+      expect(p.invested).toBeLessThanOrEqual(100);
+      expect(p.shares).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  test('budget picks: CDR stocks have zero fees', async ({ request }) => {
+    const res = await request.get(`${API_BASE}/budget_pick2.php?budget=5000&cdr_only=1`);
+    const data = await res.json();
+    expect(data.ok).toBe(true);
+    for (const p of data.picks) {
+      if (p.is_cdr === 1) {
+        expect(p.total_fees).toBe(0);
+        expect(p.fee_drag_pct).toBe(0);
+        expect(p.breakeven_pct).toBe(0);
+      }
+    }
+  });
+
+  test('budget picks: recommendation text is non-empty for valid budget', async ({ request }) => {
+    const res = await request.get(`${API_BASE}/budget_pick2.php?budget=500`);
+    const data = await res.json();
+    expect(data.ok).toBe(true);
+    if (data.picks.length > 0) {
+      expect(data.recommendation.length).toBeGreaterThan(50);
+      expect(data.recommendation).toContain('buy');
+      expect(data.recommendation).toContain('stop-loss');
+      expect(data.recommendation).toContain('take-profit');
+    }
+  });
+
+  test('miracle.html budget tab exists and works', async ({ page }) => {
+    await page.goto(PAGE_URL);
+    await page.locator('.tab:has-text("My Budget")').click();
+    await expect(page.locator('#panel-budget')).toBeVisible();
+    await expect(page.locator('#budget-amount')).toBeVisible();
+    // Budget presets should be visible
+    await expect(page.locator('.budget-presets button').first()).toBeVisible();
+  });
+});
