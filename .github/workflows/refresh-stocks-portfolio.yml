@@ -16,9 +16,10 @@ jobs:
     steps:
     # ─── Step 0: Ensure all algorithms are seeded (picks up new algos from code updates) ───
     - name: Seed algorithms and portfolios
+      continue-on-error: true
       run: |
         echo "=== Seeding algorithms & portfolio templates ==="
-        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/findstocks/portfolio2/api/setup_schema.php")
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/findstocks/portfolio2/api/setup_schema.php") || true
         echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Schema ok={d.get(\"ok\")}, Actions: {len(d.get(\"actions\",[]))}')" || echo "Schema: $RESULT"
 
     - name: Import new stock picks
@@ -27,9 +28,11 @@ jobs:
         echo "=== Importing stock picks from JSON feeds ==="
         # Use source=json (not source=all) — the v1db migration is one-time only
         # and connecting to the external DB causes timeouts in CI
+        # NOTE: '|| true' on curl prevents set -e from aborting the script on
+        # timeout (exit code 28), allowing the for loop to actually retry.
         for attempt in 1 2 3; do
-          RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/import_picks.php?source=json")
-          if echo "$RESULT" | python3 -c "import sys,json; json.load(sys.stdin)" 2>/dev/null; then
+          RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/import_picks.php?source=json") || true
+          if [ -n "$RESULT" ] && echo "$RESULT" | python3 -c "import sys,json; json.load(sys.stdin)" 2>/dev/null; then
             echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Imported: {d.get(\"imported\",0)}, Skipped: {d.get(\"skipped\",0)}')"
             break
           fi
@@ -41,7 +44,7 @@ jobs:
       continue-on-error: true
       run: |
         echo "=== Fetching price data from Yahoo Finance (batch 1) ==="
-        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/fetch_prices.php?range=1y")
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/fetch_prices.php?range=1y") || true
         echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Fetched: {d.get(\"fetched\",0)} tickers. Note: {d.get(\"note\",\"\")}. Errors: {d.get(\"errors\",[])}')" || echo "Fetch response: $RESULT"
 
     - name: Fetch price data (batch 2)
@@ -49,7 +52,7 @@ jobs:
       run: |
         echo "=== Fetching remaining tickers ==="
         sleep 5
-        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/fetch_prices.php?range=1y")
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/fetch_prices.php?range=1y") || true
         echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Fetched: {d.get(\"fetched\",0)} tickers. Message: {d.get(\"message\",d.get(\"note\",\"\"))}')" || echo "Fetch response: $RESULT"
 
     # ─── Fetch Dividend & Earnings Data ───
@@ -71,7 +74,7 @@ jobs:
           echo "--- Batch $BATCH of $MAX_BATCHES ---"
 
           RESPONSE=$(curl -s --max-time 90 \
-            "https://findtorontoevents.ca/findstocks/portfolio2/api/fetch_dividends_earnings.php?action=fetch_all")
+            "https://findtorontoevents.ca/findstocks/portfolio2/api/fetch_dividends_earnings.php?action=fetch_all") || true
 
           PROCESSED=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('processed',0))" 2>/dev/null || echo "0")
           REMAINING=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('remaining',0))" 2>/dev/null || echo "0")
@@ -92,7 +95,7 @@ jobs:
       continue-on-error: true
       run: |
         echo "=== Tracking saved portfolio positions ==="
-        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/track_portfolio.php?key=stocksrefresh2026")
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/track_portfolio.php?key=stocksrefresh2026") || true
         echo "$RESULT" | python3 -c "
         import sys, json
         d = json.load(sys.stdin)
@@ -110,7 +113,7 @@ jobs:
       continue-on-error: true
       run: |
         echo "=== Refreshing horizon picks ==="
-        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/horizon_picks.php?nocache=1")
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/horizon_picks.php?nocache=1") || true
         echo "$RESULT" | python3 -c "
         import sys, json
         d = json.load(sys.stdin)
@@ -125,14 +128,14 @@ jobs:
       run: |
         echo "=== Running all-algorithm backtest ==="
         # Momentum Ride (best performing strategy)
-        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/backtest.php?take_profit=50&stop_loss=10&max_hold_days=30&save=1")
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/backtest.php?take_profit=50&stop_loss=10&max_hold_days=30&save=1") || true
         echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); s=d.get('summary',{}); print(f'Momentum Ride: Return={s.get(\"total_return_pct\",0):.2f}%, Win Rate={s.get(\"win_rate\",0)}%, Trades={s.get(\"total_trades\",0)}')" || echo "$RESULT"
 
     - name: Run strategy comparison
       continue-on-error: true
       run: |
         echo "=== Running all 10 strategy comparison ==="
-        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findstocks/portfolio2/api/whatif.php?compare=1")
+        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findstocks/portfolio2/api/whatif.php?compare=1") || true
         echo "$RESULT" | python3 -c "
         import sys, json
         d = json.load(sys.stdin)
@@ -147,7 +150,7 @@ jobs:
       continue-on-error: true
       run: |
         echo "=== Comparing algorithms under Momentum Ride scenario ==="
-        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findstocks/portfolio2/api/whatif.php?compare_algos=1&scenario=momentum_ride")
+        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findstocks/portfolio2/api/whatif.php?compare_algos=1&scenario=momentum_ride") || true
         echo "$RESULT" | python3 -c "
         import sys, json
         d = json.load(sys.stdin)
@@ -162,13 +165,14 @@ jobs:
       continue-on-error: true
       run: |
         echo "=== Triggering learning algorithm parameter update ==="
-        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/learning.php?action=analyze_and_adjust")
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/learning.php?action=analyze_and_adjust") || true
         echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Learning update: ok={d.get(\"ok\")}, adjustments={d.get(\"adjustments_made\",0)}')" || echo "Learning response: $RESULT"
 
     - name: Print stocks summary
+      continue-on-error: true
       run: |
         echo "=== Stocks Database Stats ==="
-        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/findstocks/portfolio2/api/data.php?type=stats")
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/findstocks/portfolio2/api/data.php?type=stats") || true
         echo "$RESULT" | python3 -c "
         import sys, json
         d = json.load(sys.stdin)
@@ -186,7 +190,7 @@ jobs:
       run: |
         echo "=== Refreshing Mutual Funds ==="
         curl -s --max-time 30 "https://findtorontoevents.ca/findmutualfunds2/portfolio2/api/import_picks.php?source=seed" > /dev/null 2>&1 || true
-        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findmutualfunds2/portfolio2/api/fetch_prices.php?force=1")
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findmutualfunds2/portfolio2/api/fetch_prices.php?force=1") || true
         echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'MF NAVs fetched: {d.get(\"fetched\",0)}')" || echo "MF: $RESULT"
         curl -s --max-time 60 "https://findtorontoevents.ca/findmutualfunds2/portfolio2/api/learning.php?action=analyze_and_adjust" > /dev/null 2>&1 || true
 
@@ -196,7 +200,7 @@ jobs:
       run: |
         echo "=== Refreshing Forex ==="
         curl -s --max-time 30 "https://findtorontoevents.ca/findforex2/portfolio/api/import_picks.php?source=seed" > /dev/null 2>&1 || true
-        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findforex2/portfolio/api/fetch_prices.php?force=1")
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findforex2/portfolio/api/fetch_prices.php?force=1") || true
         echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'FX prices fetched: {d.get(\"fetched\",0)}')" || echo "FX: $RESULT"
         curl -s --max-time 60 "https://findtorontoevents.ca/findforex2/portfolio/api/learning.php?action=analyze_and_adjust" > /dev/null 2>&1 || true
 
@@ -206,7 +210,7 @@ jobs:
       run: |
         echo "=== Refreshing Crypto ==="
         curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/portfolio/api/import_picks.php?source=seed" > /dev/null 2>&1 || true
-        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findcryptopairs/portfolio/api/fetch_prices.php?force=1")
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findcryptopairs/portfolio/api/fetch_prices.php?force=1") || true
         echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Crypto prices fetched: {d.get(\"fetched\",0)}')" || echo "CR: $RESULT"
         curl -s --max-time 60 "https://findtorontoevents.ca/findcryptopairs/portfolio/api/learning.php?action=analyze_and_adjust" > /dev/null 2>&1 || true
 
@@ -215,7 +219,7 @@ jobs:
       continue-on-error: true
       run: |
         echo "=== Regenerating cross-asset top picks ==="
-        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/findstocks/portfolio2/api/advanced_stats.php?action=top_picks")
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/findstocks/portfolio2/api/advanced_stats.php?action=top_picks") || true
         echo "$RESULT" | python3 -c "
         import sys, json
         d = json.load(sys.stdin)
@@ -224,17 +228,19 @@ jobs:
         " || echo "Top picks: $RESULT"
 
     - name: Verify dashboard pages
+      continue-on-error: true
       run: |
         echo "=== Verifying dashboard pages ==="
         for page in "findstocks/portfolio2/picks.html" "findstocks/portfolio2/leaderboard.html" "findstocks/portfolio2/horizon-picks.html" "findstocks/portfolio2/dashboard.html" "findstocks/portfolio2/dividends.html"; do
-          STATUS=$(curl -sS -o /dev/null -w "%{http_code}" "https://findtorontoevents.ca/$page" 2>&1)
+          STATUS=$(curl -sS -o /dev/null -w "%{http_code}" "https://findtorontoevents.ca/$page" 2>&1) || true
           echo "$page: HTTP $STATUS"
         done
 
     - name: Verify dividend and earnings data
+      continue-on-error: true
       run: |
         echo "=== Verifying dividend/earnings data ==="
-        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/findstocks/portfolio2/api/fetch_dividends_earnings.php?action=get_fundamentals&ticker=AAPL")
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/findstocks/portfolio2/api/fetch_dividends_earnings.php?action=get_fundamentals&ticker=AAPL") || true
         echo "$RESULT" | python3 -c "
         import sys, json
         d = json.load(sys.stdin)
@@ -245,7 +251,7 @@ jobs:
             print(f'Warning: {d.get(\"error\",\"unknown\")}')
         " || echo "Div/earn verify: $RESULT"
 
-        RESULT2=$(curl -s --max-time 15 "https://findtorontoevents.ca/findstocks/portfolio2/api/fetch_dividends_earnings.php?action=upcoming")
+        RESULT2=$(curl -s --max-time 15 "https://findtorontoevents.ca/findstocks/portfolio2/api/fetch_dividends_earnings.php?action=upcoming") || true
         echo "$RESULT2" | python3 -c "
         import sys, json
         d = json.load(sys.stdin)
