@@ -31,7 +31,10 @@ jobs:
         echo "Sending daily dating event notifications..."
         response=$(curl -s -w "\n%{http_code}" \
           -X POST \
+          -H "Content-Type: application/json" \
           -H "X-API-Key: $EVENT_NOTIFY_API_KEY" \
+          -A "Mozilla/5.0 (compatible; FindTorontoEvents-Notify/1.0)" \
+          -d '{"type":"daily"}' \
           "https://findtorontoevents.ca/fc/api/send_event_notifications.php?type=daily")
         
         http_code=$(echo "$response" | tail -n1)
@@ -68,7 +71,10 @@ jobs:
         echo "Sending weekly dating event notifications..."
         response=$(curl -s -w "\n%{http_code}" \
           -X POST \
+          -H "Content-Type: application/json" \
           -H "X-API-Key: $EVENT_NOTIFY_API_KEY" \
+          -A "Mozilla/5.0 (compatible; FindTorontoEvents-Notify/1.0)" \
+          -d '{"type":"weekly"}' \
           "https://findtorontoevents.ca/fc/api/send_event_notifications.php?type=weekly")
         
         http_code=$(echo "$response" | tail -n1)

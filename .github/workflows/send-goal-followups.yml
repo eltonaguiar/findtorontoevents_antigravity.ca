@@ -30,17 +30,36 @@ jobs:
 
         if [ "$DRY_RUN" = "true" ]; then
           URL="${URL}?dry_run=1"
-          echo "🔍 Dry run mode — no DMs will be sent"
+          echo "Dry run mode — no DMs will be sent"
         fi
 
-        echo "☀️ Sending morning goal follow-ups..."
+        echo "Sending morning goal follow-ups..."
         response=$(curl -s -w "\n%{http_code}" \
           -X POST \
+          -H "Content-Type: application/json" \
           -H "X-API-Key: $EVENT_NOTIFY_API_KEY" \
+          -A "Mozilla/5.0 (compatible; FindTorontoEvents-Followups/1.0)" \
+          -d '{"action":"send_followups"}' \
           "$URL")
 
         http_code=$(echo "$response" | tail -n1)
         body=$(echo "$response" | sed '$d')
+
+        # ModSecurity fallback: if POST was blocked (412/403), retry as GET
+        if [ "$http_code" = "412" ] || [ "$http_code" = "403" ]; then
+          echo "POST blocked by ModSecurity (HTTP $http_code), retrying as GET..."
+          if echo "$URL" | grep -q '?'; then
+            FALLBACK_URL="${URL}&method=post"
+          else
+            FALLBACK_URL="${URL}?method=post"
+          fi
+          response=$(curl -s -w "\n%{http_code}" \
+            -H "X-API-Key: $EVENT_NOTIFY_API_KEY" \
+            -A "Mozilla/5.0 (compatible; FindTorontoEvents-Followups/1.0)" \
+            "$FALLBACK_URL")
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+        fi
 
         echo "HTTP Status: $http_code"
         echo "Response: $body"
@@ -61,7 +80,7 @@ jobs:
             previews = data.get('previews', [])
             print(f\"Preview count: {len(previews)}\")
             for p in previews[:10]:
-                print(f\"  → {p.get('discord_id')}: {p.get('tasks')} tasks, top streak: {p.get('top_streak')}\")
+                print(f\"  -> {p.get('discord_id')}: {p.get('tasks')} tasks, top streak: {p.get('top_streak')}\")
         if data.get('errors'):
             for e in data['errors']:
                 print(f\"Error: {e}\")
