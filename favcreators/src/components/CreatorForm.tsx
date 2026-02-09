@@ -17,6 +17,7 @@ const ACCOUNT_PLATFORMS: { value: Platform; label: string }[] = [
   { value: "instagram", label: "Instagram" },
   { value: "kick", label: "Kick" },
   { value: "twitch", label: "Twitch" },
+  { value: "twitter", label: "Twitter" },
   { value: "spotify", label: "Spotify" },
   { value: "other", label: "Other" },
 ];
