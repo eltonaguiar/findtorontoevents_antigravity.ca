@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DayTrades Miracle Claude | AI-Powered Day Trading Scanner</title>
+<style>
+:root {
+    --bg: #0a0a1a;
+    --surface: #111128;
+    --card: #1a1a3e;
+    --border: #2a2a5e;
+    --text: #e0e0ff;
+    --text-dim: #8888aa;
+    --green: #00ff88;
+    --green-dim: #00cc66;
+    --red: #ff4466;
+    --red-dim: #cc3355;
+    --gold: #ffd700;
+    --blue: #4488ff;
+    --purple: #aa66ff;
+    --cyan: #00ddff;
+    --orange: #ff8844;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+.header {
+    background: linear-gradient(135deg, #1a0a3e 0%, #0a1a3e 50%, #0a2a1e 100%);
+    border-bottom: 2px solid var(--gold);
+    padding: 1.5rem 2rem;
+    text-align: center;
+}
+.header h1 {
+    font-size: 2rem;
+    background: linear-gradient(135deg, var(--gold), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.3rem;
+}
+.header .subtitle {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+}
+.header .live-badge {
+    display: inline-block;
+    background: var(--green);
+    color: #000;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-left: 8px;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+}
+.tab {
+    padding: 12px 20px;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+.tab:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* Content */
+.content { padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* Stat Cards */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+}
+.stat-card .value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+}
+.stat-card .label {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.stat-card.green .value { color: var(--green); }
+.stat-card.red .value { color: var(--red); }
+.stat-card.gold .value { color: var(--gold); }
+.stat-card.blue .value { color: var(--blue); }
+.stat-card.purple .value { color: var(--purple); }
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+th {
+    background: var(--surface);
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+}
+td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 0.9rem;
+}
+tr:hover { background: rgba(255,255,255,0.03); }
+.ticker-cell {
+    font-weight: 700;
+    color: var(--cyan);
+}
+.score-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+.score-high { background: rgba(0,255,136,0.2); color: var(--green); }
+.score-med { background: rgba(255,215,0,0.2); color: var(--gold); }
+.score-low { background: rgba(255,68,102,0.2); color: var(--red); }
+.cdr-badge {
+    display: inline-block;
+    background: rgba(0,221,255,0.15);
+    color: var(--cyan);
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-left: 4px;
+}
+.outcome-winner { color: var(--green); font-weight: 700; }
+.outcome-loser { color: var(--red); font-weight: 700; }
+.outcome-pending { color: var(--gold); }
+.outcome-expired { color: var(--text-dim); }
+.pct-positive { color: var(--green); }
+.pct-negative { color: var(--red); }
+
+/* Strategy Cards */
+.strategy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.strategy-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+}
+.strategy-card .name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 0.3rem;
+}
+.strategy-card .desc {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 0.8rem;
+    line-height: 1.4;
+}
+.strategy-card .meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+}
+.strategy-card .meta span {
+    background: rgba(255,255,255,0.05);
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+.grade-A { color: var(--green); font-weight: 700; }
+.grade-B { color: var(--cyan); font-weight: 700; }
+.grade-C { color: var(--gold); font-weight: 700; }
+.grade-D { color: var(--orange); font-weight: 700; }
+.grade-F { color: var(--red); font-weight: 700; }
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+.btn:hover { background: var(--surface); border-color: var(--gold); }
+.btn-primary { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 700; }
+.btn-primary:hover { background: #ffcc00; }
+.btn-danger { border-color: var(--red); color: var(--red); }
+.btn-danger:hover { background: rgba(255,68,102,0.15); }
+.btn-group { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+
+/* Learning Section */
+.rec-card {
+    background: var(--card);
+    border-left: 4px solid var(--gold);
+    border-radius: 0 12px 12px 0;
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+}
+.rec-card.high { border-left-color: var(--red); }
+.rec-card.medium { border-left-color: var(--gold); }
+.rec-card.low { border-left-color: var(--green); }
+.rec-card .priority {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.3rem;
+}
+.rec-card .priority.high { color: var(--red); }
+.rec-card .priority.medium { color: var(--gold); }
+.rec-card .priority.low { color: var(--green); }
+
+/* Loading */
+.loading {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-dim);
+}
+.spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 1rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.section-title {
+    font-size: 1.2rem;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.disclaimer {
+    background: rgba(255,68,102,0.1);
+    border: 1px solid rgba(255,68,102,0.3);
+    border-radius: 8px;
+    padding: 0.8rem;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-top: 2rem;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .header h1 { font-size: 1.4rem; }
+    .content { padding: 1rem; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .strategy-grid { grid-template-columns: 1fr; }
+    td, th { padding: 6px 8px; font-size: 0.8rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>DayTrades Miracle Claude <span class="live-badge">LIVE</span></h1>
+    <div class="subtitle">AI-Powered Day Trading Scanner | 8 Strategies | Questrade-Optimized | Self-Learning</div>
+</div>
+
+<div class="tabs" id="tabs">
+    <div class="tab active" data-tab="overview">Overview</div>
+    <div class="tab" data-tab="picks">Today's Picks</div>
+    <div class="tab" data-tab="leaderboard">Strategy Leaderboard</div>
+    <div class="tab" data-tab="learning">Self-Learning AI</div>
+    <div class="tab" data-tab="history">Pick History</div>
+    <div class="tab" data-tab="portfolios">Portfolios</div>
+    <div class="tab" data-tab="watchlist">Watchlist</div>
+</div>
+
+<div class="content">
+
+<!-- ═══ OVERVIEW ═══ -->
+<div class="panel active" id="panel-overview">
+    <div class="stats-row" id="overview-stats">
+        <div class="loading"><div class="spinner"></div><br>Loading dashboard...</div>
+    </div>
+    <h3 class="section-title">Recent Resolved Picks</h3>
+    <div id="recent-picks-table"><div class="loading">Loading...</div></div>
+    <h3 class="section-title">Best & Worst All-Time</h3>
+    <div id="best-worst-table"><div class="loading">Loading...</div></div>
+</div>
+
+<!-- ═══ TODAY'S PICKS ═══ -->
+<div class="panel" id="panel-picks">
+    <div class="btn-group">
+        <button class="btn btn-primary" onclick="runScan()">Run Scanner Now</button>
+        <button class="btn" onclick="loadPicks('')">All</button>
+        <button class="btn" onclick="loadPicks('cdr_only=1')">CDR Only</button>
+        <button class="btn" onclick="loadPicks('confidence=high')">High Confidence</button>
+        <button class="btn" onclick="loadPicks('sort=risk_reward')">Best R:R</button>
+        <button class="btn" onclick="loadPicks('sort=net_profit')">Best Net Profit</button>
+    </div>
+    <div id="picks-summary"></div>
+    <div id="picks-table"><div class="loading"><div class="spinner"></div><br>Loading today's picks...</div></div>
+</div>
+
+<!-- ═══ STRATEGY LEADERBOARD ═══ -->
+<div class="panel" id="panel-leaderboard">
+    <div id="leaderboard-content"><div class="loading"><div class="spinner"></div><br>Loading leaderboard...</div></div>
+</div>
+
+<!-- ═══ SELF-LEARNING AI ═══ -->
+<div class="panel" id="panel-learning">
+    <div class="btn-group">
+        <button class="btn btn-primary" onclick="runLearning('report')">Generate Report</button>
+        <button class="btn btn-danger" onclick="runLearning('adjust')">Auto-Adjust Strategies</button>
+    </div>
+    <div id="learning-content"><div class="loading"><div class="spinner"></div><br>Analyzing patterns...</div></div>
+</div>
+
+<!-- ═══ PICK HISTORY ═══ -->
+<div class="panel" id="panel-history">
+    <div class="btn-group">
+        <button class="btn active" onclick="loadHistory(7)">7 Days</button>
+        <button class="btn" onclick="loadHistory(14)">14 Days</button>
+        <button class="btn" onclick="loadHistory(30)">30 Days</button>
+        <button class="btn" onclick="loadHistory(0, 'winner')">Winners Only</button>
+        <button class="btn" onclick="loadHistory(0, 'loser')">Losers Only</button>
+    </div>
+    <div id="history-table"><div class="loading"><div class="spinner"></div><br>Loading history...</div></div>
+</div>
+
+<!-- ═══ PORTFOLIOS ═══ -->
+<div class="panel" id="panel-portfolios">
+    <div id="portfolios-content"><div class="loading"><div class="spinner"></div><br>Loading portfolios...</div></div>
+</div>
+
+<!-- ═══ WATCHLIST ═══ -->
+<div class="panel" id="panel-watchlist">
+    <div id="watchlist-content"><div class="loading"><div class="spinner"></div><br>Loading watchlist...</div></div>
+</div>
+
+<div class="disclaimer">
+    For research and educational purposes only. Past performance does not guarantee future results. Not financial advice. Trade at your own risk.
+</div>
+
+</div>
+
+<script>
+var API_BASE = '/findstocks2_global/api';
+// Detect if running locally
+if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+    API_BASE = 'api';
+}
+
+// ─── Tab Navigation ───
+document.getElementById('tabs').addEventListener('click', function(e) {
+    if (!e.target.classList.contains('tab')) return;
+    var tabs = document.querySelectorAll('.tab');
+    var panels = document.querySelectorAll('.panel');
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+    for (var i = 0; i < panels.length; i++) panels[i].classList.remove('active');
+    e.target.classList.add('active');
+    var tabId = e.target.getAttribute('data-tab');
+    document.getElementById('panel-' + tabId).classList.add('active');
+    // Load data for the tab
+    if (tabId === 'picks') loadPicks('');
+    if (tabId === 'leaderboard') loadLeaderboard();
+    if (tabId === 'learning') loadLearning();
+    if (tabId === 'history') loadHistory(7);
+    if (tabId === 'portfolios') loadPortfolios();
+    if (tabId === 'watchlist') loadWatchlist();
+});
+
+// ─── API Helper ───
+function apiCall(endpoint, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API_BASE + '/' + endpoint, true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            try {
+                var data = JSON.parse(xhr.responseText);
+                callback(data);
+            } catch(e) {
+                callback({ ok: false, error: 'Parse error: ' + e.message });
+            }
+        }
+    };
+    xhr.onerror = function() { callback({ ok: false, error: 'Network error' }); };
+    xhr.send();
+}
+
+// ─── Formatting Helpers ───
+function fmtPct(v) {
+    var n = parseFloat(v);
+    if (isNaN(n)) return '—';
+    var cls = n >= 0 ? 'pct-positive' : 'pct-negative';
+    return '<span class="' + cls + '">' + (n >= 0 ? '+' : '') + n.toFixed(2) + '%</span>';
+}
+
+function fmtPrice(v) {
+    var n = parseFloat(v);
+    return isNaN(n) ? '—' : '$' + n.toFixed(2);
+}
+
+function fmtScore(score) {
+    var s = parseInt(score);
+    var cls = s >= 70 ? 'score-high' : (s >= 50 ? 'score-med' : 'score-low');
+    return '<span class="score-badge ' + cls + '">' + s + '</span>';
+}
+
+function fmtOutcome(o) {
+    var cls = 'outcome-' + o;
+    var label = o.charAt(0).toUpperCase() + o.slice(1);
+    return '<span class="' + cls + '">' + label + '</span>';
+}
+
+function fmtCdr(is_cdr) {
+    return is_cdr == 1 ? '<span class="cdr-badge">CDR</span>' : '';
+}
+
+function fmtGrade(g) {
+    return '<span class="grade-' + g + '">' + g + '</span>';
+}
+
+// ─── OVERVIEW ───
+function loadOverview() {
+    apiCall('dashboard2.php?action=full', function(data) {
+        if (!data.ok) return;
+        var s = data.summary || {};
+        var html = '';
+        html += statCard(s.total_picks || 0, 'Total Picks', 'blue');
+        html += statCard(s.today_picks || 0, 'Today', 'gold');
+        html += statCard((s.win_rate || 0) + '%', 'Win Rate', s.win_rate >= 50 ? 'green' : 'red');
+        html += statCard(s.winners || 0, 'Winners', 'green');
+        html += statCard(s.losers || 0, 'Losers', 'red');
+        html += statCard(s.pending || 0, 'Pending', 'purple');
+        html += statCard(s.profit_factor || '—', 'Profit Factor', s.profit_factor >= 1 ? 'green' : 'red');
+        html += statCard(fmtPctRaw(s.expectancy), 'Expectancy', s.expectancy >= 0 ? 'green' : 'red');
+        document.getElementById('overview-stats').innerHTML = html;
+
+        // Recent picks
+        var recent = data.recent || [];
+        if (recent.length > 0) {
+            document.getElementById('recent-picks-table').innerHTML = buildPicksTable(recent, true);
+        } else {
+            document.getElementById('recent-picks-table').innerHTML = '<p style="color:var(--text-dim)">No resolved picks yet. Run the scanner first!</p>';
+        }
+
+        // Best/worst
+        var bw = '';
+        if (data.best_picks && data.best_picks.length > 0) {
+            bw += '<table><tr><th>Ticker</th><th>Strategy</th><th>Date</th><th>Return</th></tr>';
+            for (var i = 0; i < data.best_picks.length; i++) {
+                var p = data.best_picks[i];
+                bw += '<tr><td class="ticker-cell">' + p.ticker + '</td><td>' + p.strategy_name + '</td><td>' + p.scan_date + '</td><td>' + fmtPct(p.outcome_pct) + '</td></tr>';
+            }
+            bw += '</table>';
+        }
+        if (data.worst_picks && data.worst_picks.length > 0) {
+            bw += '<table><tr><th>Ticker</th><th>Strategy</th><th>Date</th><th>Return</th></tr>';
+            for (var i = 0; i < data.worst_picks.length; i++) {
+                var p = data.worst_picks[i];
+                bw += '<tr><td class="ticker-cell">' + p.ticker + '</td><td>' + p.strategy_name + '</td><td>' + p.scan_date + '</td><td>' + fmtPct(p.outcome_pct) + '</td></tr>';
+            }
+            bw += '</table>';
+        }
+        document.getElementById('best-worst-table').innerHTML = bw || '<p style="color:var(--text-dim)">No resolved picks yet.</p>';
+    });
+}
+
+function statCard(value, label, color) {
+    return '<div class="stat-card ' + color + '"><div class="value">' + value + '</div><div class="label">' + label + '</div></div>';
+}
+function fmtPctRaw(v) {
+    var n = parseFloat(v);
+    return isNaN(n) ? '—' : (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+}
+
+// ─── TODAY'S PICKS ───
+function loadPicks(filter) {
+    var url = 'picks2.php?' + (filter || '');
+    document.getElementById('picks-table').innerHTML = '<div class="loading"><div class="spinner"></div><br>Loading picks...</div>';
+    apiCall(url, function(data) {
+        if (!data.ok) { document.getElementById('picks-table').innerHTML = '<p>Error loading picks</p>'; return; }
+        var s = data.summary || {};
+        document.getElementById('picks-summary').innerHTML =
+            '<div class="stats-row">' +
+            statCard(data.total, 'Picks Found', 'blue') +
+            statCard(s.avg_score || 0, 'Avg Score', 'gold') +
+            statCard(s.cdr_count || 0, 'CDR Picks', 'cyan') +
+            statCard(s.pending || 0, 'Pending', 'purple') +
+            '</div>';
+
+        if (data.picks && data.picks.length > 0) {
+            document.getElementById('picks-table').innerHTML = buildPicksTable(data.picks, false);
+        } else {
+            document.getElementById('picks-table').innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:2rem;">No picks found. Click "Run Scanner Now" to generate today\'s picks.</p>';
+        }
+    });
+}
+
+function buildPicksTable(picks, showOutcome) {
+    var html = '<table><tr><th>Ticker</th><th>Strategy</th><th>Score</th><th>Entry</th><th>Stop Loss</th><th>Take Profit</th><th>R:R</th><th>Fee</th><th>Net Profit</th>';
+    if (showOutcome) html += '<th>Outcome</th><th>Return</th>';
+    html += '</tr>';
+    for (var i = 0; i < picks.length; i++) {
+        var p = picks[i];
+        html += '<tr>';
+        html += '<td class="ticker-cell">' + p.ticker + fmtCdr(p.is_cdr) + '</td>';
+        html += '<td>' + (p.strategy_name || p.strategy || '') + '</td>';
+        html += '<td>' + fmtScore(p.score) + '</td>';
+        html += '<td>' + fmtPrice(p.entry_price) + '</td>';
+        html += '<td>' + fmtPrice(p.stop_loss_price) + ' <small>(' + fmtPctRaw(-parseFloat(p.stop_loss_pct)) + ')</small></td>';
+        html += '<td>' + fmtPrice(p.take_profit_price) + ' <small>(' + fmtPctRaw(parseFloat(p.take_profit_pct)) + ')</small></td>';
+        html += '<td>' + parseFloat(p.risk_reward_ratio || p.risk_reward || 0).toFixed(1) + ':1</td>';
+        html += '<td>$' + parseFloat(p.questrade_fee || 0).toFixed(2) + '</td>';
+        html += '<td>' + fmtPct(p.net_profit_if_tp) + '</td>';
+        if (showOutcome) {
+            html += '<td>' + fmtOutcome(p.outcome) + '</td>';
+            html += '<td>' + fmtPct(p.outcome_pct) + '</td>';
+        }
+        html += '</tr>';
+    }
+    html += '</table>';
+    return html;
+}
+
+function runScan() {
+    document.getElementById('picks-table').innerHTML = '<div class="loading"><div class="spinner"></div><br>Running scanner across all watchlist tickers...<br>This may take 30-60 seconds.</div>';
+    apiCall('scanner2.php?top=25', function(data) {
+        if (!data.ok) { document.getElementById('picks-table').innerHTML = '<p>Scanner error: ' + (data.errors ? data.errors.join(', ') : 'unknown') + '</p>'; return; }
+        var info = '<div class="stats-row">' +
+                   statCard(data.scanned, 'Tickers Scanned', 'blue') +
+                   statCard(data.total_signals, 'Signals Found', 'gold') +
+                   statCard(data.saved, 'Picks Saved', 'green') +
+                   statCard(data.scan_time, 'Scan Time', 'purple') +
+                   '</div>';
+        document.getElementById('picks-summary').innerHTML = info;
+        if (data.picks && data.picks.length > 0) {
+            document.getElementById('picks-table').innerHTML = buildPicksTable(data.picks, false);
+        } else {
+            document.getElementById('picks-table').innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:2rem;">No signals found in current market conditions.</p>';
+        }
+    });
+}
+
+// ─── LEADERBOARD ───
+function loadLeaderboard() {
+    apiCall('dashboard2.php?action=leaderboard', function(data) {
+        if (!data.ok || !data.leaderboard) return;
+        var lb = data.leaderboard;
+        var html = '<table><tr><th>Strategy</th><th>Total</th><th>Wins</th><th>Losses</th><th>Win Rate</th><th>Avg Win</th><th>Avg Loss</th><th>Expectancy</th><th>Avg R:R</th><th>Avg Fee</th><th>PnL</th></tr>';
+        for (var i = 0; i < lb.length; i++) {
+            var s = lb[i];
+            html += '<tr>';
+            html += '<td><strong>' + s.strategy_name + '</strong></td>';
+            html += '<td>' + s.total + '</td>';
+            html += '<td class="pct-positive">' + s.wins + '</td>';
+            html += '<td class="pct-negative">' + s.losses + '</td>';
+            html += '<td>' + fmtPct(s.win_rate) + '</td>';
+            html += '<td>' + fmtPct(s.avg_win) + '</td>';
+            html += '<td>' + fmtPct(s.avg_loss) + '</td>';
+            html += '<td>' + fmtPct(s.expectancy) + '</td>';
+            html += '<td>' + s.avg_rr + ':1</td>';
+            html += '<td>$' + s.avg_fee + '</td>';
+            html += '<td>' + fmtPct(s.total_pnl) + '</td>';
+            html += '</tr>';
+        }
+        html += '</table>';
+        document.getElementById('leaderboard-content').innerHTML = html || '<p style="color:var(--text-dim)">No data yet.</p>';
+    });
+}
+
+// ─── LEARNING ───
+function loadLearning() {
+    runLearning('report');
+}
+
+function runLearning(action) {
+    document.getElementById('learning-content').innerHTML = '<div class="loading"><div class="spinner"></div><br>Analyzing patterns and generating insights...</div>';
+    apiCall('learning2.php?action=' + action, function(data) {
+        if (!data.ok) { document.getElementById('learning-content').innerHTML = '<p>Error</p>'; return; }
+        var html = '';
+
+        // Strategy Analysis
+        if (data.strategy_analysis && data.strategy_analysis.length > 0) {
+            html += '<h3 class="section-title">Strategy Grades</h3>';
+            html += '<div class="strategy-grid">';
+            for (var i = 0; i < data.strategy_analysis.length; i++) {
+                var s = data.strategy_analysis[i];
+                html += '<div class="strategy-card">';
+                html += '<div class="name">' + s.strategy_name + ' ' + fmtGrade(s.grade) + '</div>';
+                html += '<div class="meta">';
+                html += '<span>Win Rate: ' + s.win_rate + '%</span>';
+                html += '<span>Trades: ' + s.total + '</span>';
+                html += '<span>Expectancy: ' + fmtPctRaw(s.expectancy) + '</span>';
+                html += '<span>R:R: ' + s.avg_rr + ':1</span>';
+                html += '</div></div>';
+            }
+            html += '</div>';
+        }
+
+        // Score Calibration
+        if (data.score_calibration && data.score_calibration.length > 0) {
+            html += '<h3 class="section-title">Score Calibration</h3>';
+            html += '<table><tr><th>Score Band</th><th>Total Picks</th><th>Winners</th><th>Win Rate</th></tr>';
+            for (var i = 0; i < data.score_calibration.length; i++) {
+                var b = data.score_calibration[i];
+                html += '<tr><td>' + b.band + '</td><td>' + b.total + '</td><td>' + b.wins + '</td><td>' + fmtPct(b.rate) + '</td></tr>';
+            }
+            html += '</table>';
+        }
+
+        // CDR vs Non-CDR
+        if (data.cdr_vs_noncdr) {
+            html += '<h3 class="section-title">CDR vs Non-CDR Performance</h3>';
+            html += '<div class="stats-row">';
+            html += statCard((data.cdr_vs_noncdr.cdr.rate || 0) + '%', 'CDR Win Rate (' + data.cdr_vs_noncdr.cdr.total + ' trades)', 'cyan');
+            html += statCard((data.cdr_vs_noncdr.non_cdr.rate || 0) + '%', 'Non-CDR Win Rate (' + data.cdr_vs_noncdr.non_cdr.total + ' trades)', 'blue');
+            html += '</div>';
+        }
+
+        // Day of Week
+        if (data.day_of_week && data.day_of_week.length > 0) {
+            html += '<h3 class="section-title">Day-of-Week Performance</h3>';
+            html += '<table><tr><th>Day</th><th>Total</th><th>Wins</th><th>Win Rate</th></tr>';
+            for (var i = 0; i < data.day_of_week.length; i++) {
+                var d = data.day_of_week[i];
+                html += '<tr><td>' + d.day + '</td><td>' + d.total + '</td><td>' + d.wins + '</td><td>' + fmtPct(d.win_rate) + '</td></tr>';
+            }
+            html += '</table>';
+        }
+
+        // Adjustments
+        if (data.adjustments && data.adjustments.length > 0) {
+            html += '<h3 class="section-title">Auto-Adjustments ' + (action === 'adjust' ? '(APPLIED)' : '(Preview)') + '</h3>';
+            for (var i = 0; i < data.adjustments.length; i++) {
+                var a = data.adjustments[i];
+                html += '<div class="rec-card medium"><div class="priority medium">' + a.strategy + ' (Win Rate: ' + a.current_win_rate + '%, ' + a.samples + ' samples)</div>';
+                for (var j = 0; j < a.adjustments.length; j++) {
+                    var adj = a.adjustments[j];
+                    html += '<p>' + adj.reason + '</p>';
+                    if (adj.param !== 'note') {
+                        html += '<p style="color:var(--cyan);font-size:0.85rem">' + adj.param + ': ' + adj.old + ' &rarr; ' + adj.new + '</p>';
+                    }
+                }
+                html += '</div>';
+            }
+        }
+
+        // Recommendations
+        if (data.recommendations && data.recommendations.length > 0) {
+            html += '<h3 class="section-title">AI Recommendations</h3>';
+            for (var i = 0; i < data.recommendations.length; i++) {
+                var r = data.recommendations[i];
+                html += '<div class="rec-card ' + r.priority + '"><div class="priority ' + r.priority + '">' + r.priority.toUpperCase() + ' — ' + r.area + '</div>';
+                html += '<p>' + r.recommendation + '</p></div>';
+            }
+        }
+
+        // Ticker performance
+        if (data.ticker_performance && data.ticker_performance.length > 0) {
+            html += '<h3 class="section-title">Top Tickers by Total Return</h3>';
+            html += '<table><tr><th>Ticker</th><th>CDR</th><th>Trades</th><th>Win Rate</th><th>Avg Return</th><th>Total Return</th><th>Best</th><th>Worst</th></tr>';
+            for (var i = 0; i < data.ticker_performance.length; i++) {
+                var t = data.ticker_performance[i];
+                html += '<tr><td class="ticker-cell">' + t.ticker + '</td><td>' + fmtCdr(t.is_cdr) + '</td><td>' + t.total + '</td><td>' + fmtPct(t.win_rate) + '</td><td>' + fmtPct(t.avg_return) + '</td><td>' + fmtPct(t.total_return) + '</td><td>' + fmtPct(t.best) + '</td><td>' + fmtPct(t.worst) + '</td></tr>';
+            }
+            html += '</table>';
+        }
+
+        document.getElementById('learning-content').innerHTML = html || '<p style="color:var(--text-dim)">No data to analyze yet. Run the scanner first and wait for picks to resolve.</p>';
+    });
+}
+
+// ─── HISTORY ───
+function loadHistory(days, outcome) {
+    var params = [];
+    if (days > 0) params.push('days=' + days);
+    if (outcome) params.push('outcome=' + outcome);
+    params.push('limit=200');
+    var url = 'picks2.php?' + params.join('&');
+    document.getElementById('history-table').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    apiCall(url, function(data) {
+        if (!data.ok) return;
+        if (data.picks && data.picks.length > 0) {
+            document.getElementById('history-table').innerHTML = buildPicksTable(data.picks, true);
+        } else {
+            document.getElementById('history-table').innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:2rem;">No picks found for this filter.</p>';
+        }
+    });
+}
+
+// ─── PORTFOLIOS ───
+function loadPortfolios() {
+    apiCall('dashboard2.php?action=portfolios', function(data) {
+        if (!data.ok || !data.portfolios) return;
+        var html = '<div class="strategy-grid">';
+        for (var i = 0; i < data.portfolios.length; i++) {
+            var p = data.portfolios[i];
+            html += '<div class="strategy-card">';
+            html += '<div class="name">' + p.name + '</div>';
+            html += '<div class="desc">' + (p.description || '') + '</div>';
+            html += '<div class="meta">';
+            html += '<span>Capital: $' + parseFloat(p.initial_capital).toLocaleString() + '</span>';
+            html += '<span>Position: ' + p.position_size_pct + '%</span>';
+            html += '<span>Max Pos: ' + p.max_positions + '</span>';
+            html += '<span>CDR Pref: ' + (p.prefer_cdr == 1 ? 'Yes' : 'No') + '</span>';
+            html += '</div>';
+            if (p.strategy_filter) {
+                html += '<div style="margin-top:8px;font-size:0.8rem;color:var(--text-dim)">Strategies: ' + p.strategy_filter + '</div>';
+            }
+            html += '</div>';
+        }
+        html += '</div>';
+        document.getElementById('portfolios-content').innerHTML = html;
+    });
+}
+
+// ─── WATCHLIST ───
+function loadWatchlist() {
+    apiCall('dashboard2.php?action=watchlist', function(data) {
+        if (!data.ok || !data.watchlist) return;
+        var wl = data.watchlist;
+        var html = '<p style="margin-bottom:1rem;color:var(--text-dim)">' + wl.length + ' tickers in watchlist</p>';
+        html += '<table><tr><th>Ticker</th><th>Company</th><th>Sector</th><th>CDR</th><th>Reason</th></tr>';
+        for (var i = 0; i < wl.length; i++) {
+            var w = wl[i];
+            html += '<tr>';
+            html += '<td class="ticker-cell">' + w.ticker + '</td>';
+            html += '<td>' + (w.company_name || '') + '</td>';
+            html += '<td>' + (w.sector || '') + '</td>';
+            html += '<td>' + fmtCdr(w.is_cdr) + '</td>';
+            html += '<td style="font-size:0.8rem;color:var(--text-dim)">' + (w.reason || '') + '</td>';
+            html += '</tr>';
+        }
+        html += '</table>';
+        document.getElementById('watchlist-content').innerHTML = html;
+    });
+}
+
+// ─── Init ───
+loadOverview();
+</script>
+</body>
+</html>
