@@ -51,6 +51,60 @@ $action = isset($_GET['action']) ? trim($_GET['action']) : '';
 $ticker = isset($_GET['ticker']) ? strtoupper(trim($_GET['ticker'])) : '';
 
 // ═══════════════════════════════════════════════
+// Yahoo Finance v10 crumb authentication
+// v10 quoteSummary requires cookie + crumb
+// ═══════════════════════════════════════════════
+$_yahoo_cookie = '';
+$_yahoo_crumb  = '';
+
+function _yahoo_get_crumb() {
+    global $_yahoo_cookie, $_yahoo_crumb;
+    if ($_yahoo_crumb !== '') return true;
+
+    // Step 1: hit fc.yahoo.com to get a cookie
+    $ctx1 = stream_context_create(array(
+        'http' => array(
+            'method' => 'GET',
+            'header' => "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\r\n",
+            'timeout' => 10,
+            'ignore_errors' => true
+        )
+    ));
+    @file_get_contents('https://fc.yahoo.com', false, $ctx1);
+    // Extract Set-Cookie from response headers
+    if (isset($http_response_header) && is_array($http_response_header)) {
+        foreach ($http_response_header as $hdr) {
+            if (stripos($hdr, 'Set-Cookie:') === 0) {
+                $parts = explode(';', substr($hdr, 12));
+                $cookie_part = trim($parts[0]);
+                if ($_yahoo_cookie !== '') $_yahoo_cookie .= '; ';
+                $_yahoo_cookie .= $cookie_part;
+            }
+        }
+    }
+
+    if ($_yahoo_cookie === '') return false;
+
+    // Step 2: fetch crumb using the cookie
+    $ctx2 = stream_context_create(array(
+        'http' => array(
+            'method' => 'GET',
+            'header' => "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\r\n"
+                      . "Cookie: " . $_yahoo_cookie . "\r\n",
+            'timeout' => 10,
+            'ignore_errors' => true
+        )
+    ));
+    $crumb = @file_get_contents('https://query2.finance.yahoo.com/v1/test/getcrumb', false, $ctx2);
+    if ($crumb !== false && strlen($crumb) > 0 && strlen($crumb) < 50 && strpos($crumb, '<') === false) {
+        $_yahoo_crumb = trim($crumb);
+        return true;
+    }
+
+    return false;
+}
+
+// ═══════════════════════════════════════════════
 // Helper: safe value extraction from Yahoo JSON
 // ═══════════════════════════════════════════════
 function _yraw($obj, $key) {
@@ -111,15 +165,24 @@ function fetch_dividend_events($tk) {
 // Yahoo Finance v10: fetch quoteSummary
 // ═══════════════════════════════════════════════
 function fetch_quote_summary($tk) {
+    global $_yahoo_cookie, $_yahoo_crumb;
+
+    // Ensure we have a valid crumb
+    if (!_yahoo_get_crumb()) {
+        return array('_error' => 'Failed to obtain Yahoo crumb. Cookie: ' . substr($_yahoo_cookie, 0, 50));
+    }
+
     $modules = 'earningsHistory,calendarEvents,summaryDetail,defaultKeyStatistics,financialData';
-    $url = 'https://query1.finance.yahoo.com/v10/finance/quoteSummary/'
+    $url = 'https://query2.finance.yahoo.com/v10/finance/quoteSummary/'
          . urlencode($tk)
-         . '?modules=' . $modules;
+         . '?modules=' . $modules
+         . '&crumb=' . urlencode($_yahoo_crumb);
 
     $ctx = stream_context_create(array(
         'http' => array(
             'method' => 'GET',
-            'header' => "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\r\n",
+            'header' => "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\r\n"
+                      . "Cookie: " . $_yahoo_cookie . "\r\n",
             'timeout' => 15,
             'ignore_errors' => true
         )

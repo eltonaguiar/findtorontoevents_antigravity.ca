@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dividends &amp; Earnings | Multi-Asset Intelligence</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --gold: #f59e0b;
+            --cyan: #06b6d4;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--green), var(--gold));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .header-links { display: flex; gap: 1rem; font-size: 0.9rem; }
+        .header-links a { color: var(--text-dim); }
+        .header-links a:hover { color: var(--text); }
+
+        .container { max-width: 1300px; margin: 0 auto; padding: 1.5rem; }
+
+        .section-title {
+            font-size: 1.3rem; font-weight: 700; margin: 2rem 0 1rem;
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+        .section-title .icon { font-size: 1.5rem; }
+        .section-title .badge {
+            font-size: 0.65rem; padding: 0.2rem 0.6rem; border-radius: 99px;
+            background: var(--accent); color: white; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .badge-live { background: var(--green); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+        .stats-row {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem; margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 1rem; text-align: center;
+        }
+        .stat-card .value { font-size: 1.6rem; font-weight: 800; }
+        .stat-card .label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.3rem; }
+        .stat-card .value.green { color: var(--green); }
+        .stat-card .value.gold { color: var(--gold); }
+        .stat-card .value.blue { color: var(--blue); }
+        .stat-card .value.cyan { color: var(--cyan); }
+        .stat-card .value.red { color: var(--red); }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .tab {
+            padding: 0.75rem 1.5rem; cursor: pointer; color: var(--text-dim); font-size: 0.9rem;
+            border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s;
+        }
+        .tab:hover { color: var(--text); }
+        .tab.active { color: var(--green); border-bottom-color: var(--green); font-weight: 700; }
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.85rem; }
+        th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: var(--bg-card); color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; cursor: pointer; }
+        th:hover { color: var(--text); }
+        tr:hover { background: var(--bg-card-hover); }
+        .ticker-cell { font-weight: 700; color: var(--cyan); }
+        .pct-positive { color: var(--green); font-weight: 600; }
+        .pct-negative { color: var(--red); font-weight: 600; }
+        .beat-badge { background: var(--green-dim); color: var(--green); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+        .miss-badge { background: var(--red-dim); color: var(--red); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+        .safety-safe { color: var(--green); }
+        .safety-caution { color: var(--yellow); }
+        .safety-danger { color: var(--red); }
+        .rec-buy { background: var(--green-dim); color: var(--green); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+        .rec-hold { background: var(--yellow-dim); color: var(--yellow); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+        .rec-sell { background: var(--red-dim); color: var(--red); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+
+        .loading { text-align: center; padding: 3rem; color: var(--text-dim); }
+        .spinner { display: inline-block; width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .empty-msg { text-align: center; padding: 2rem; color: var(--text-dim); font-style: italic; }
+        .refresh-btn { padding: 6px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-dim); cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+        .refresh-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+        @media (max-width: 768px) {
+            .header { padding: 1rem; }
+            .header h1 { font-size: 1.2rem; }
+            .container { padding: 1rem; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            td, th { padding: 6px 8px; font-size: 0.8rem; }
+            .tab { padding: 0.5rem 0.8rem; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Dividends &amp; Earnings Intelligence</h1>
+    <div class="header-links">
+        <a href="/findstocks/portfolio2/picks.html">Top Picks</a>
+        <a href="/findstocks/portfolio2/leaderboard.html">Leaderboard</a>
+        <a href="/findstocks2_global/miracle.html">Miracle</a>
+        <a href="/findstocks2_global/">Global Dashboard</a>
+        <a href="/findstocks/">Stocks Home</a>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="stats-row" id="stats-row">
+        <div class="stat-card"><div class="value cyan" id="stat-total">--</div><div class="label">Tickers Tracked</div></div>
+        <div class="stat-card"><div class="value green" id="stat-payers">--</div><div class="label">Dividend Payers</div></div>
+        <div class="stat-card"><div class="value gold" id="stat-avg-yield">--</div><div class="label">Avg Div Yield</div></div>
+        <div class="stat-card"><div class="value blue" id="stat-upcoming-div">--</div><div class="label">Upcoming Dividends</div></div>
+        <div class="stat-card"><div class="value cyan" id="stat-upcoming-earn">--</div><div class="label">Upcoming Earnings</div></div>
+        <div class="stat-card"><div class="value green" id="stat-beats">--</div><div class="label">Earnings Beats (90d)</div></div>
+    </div>
+
+    <div class="tabs" id="tabs">
+        <div class="tab active" data-tab="upcoming">Upcoming Events</div>
+        <div class="tab" data-tab="dividends">Dividend Leaders</div>
+        <div class="tab" data-tab="earnings">Earnings Surprises</div>
+        <div class="tab" data-tab="fundamentals">All Fundamentals</div>
+    </div>
+
+    <!-- Upcoming Events -->
+    <div class="panel active" id="panel-upcoming">
+        <div class="section-title"><span class="icon">&#128197;</span> Upcoming Dividends (Next 30 Days) <span class="badge badge-live">LIVE</span></div>
+        <div id="upcoming-divs"><div class="loading"><div class="spinner"></div><br>Loading...</div></div>
+
+        <div class="section-title"><span class="icon">&#128200;</span> Upcoming Earnings (Next 30 Days)</div>
+        <div id="upcoming-earnings"><div class="loading"><div class="spinner"></div><br>Loading...</div></div>
+    </div>
+
+    <!-- Dividend Leaders -->
+    <div class="panel" id="panel-dividends">
+        <div class="section-title"><span class="icon">&#128176;</span> Top Dividend Yielders <span class="badge">TOP 20</span></div>
+        <div id="div-leaders"><div class="loading"><div class="spinner"></div><br>Loading...</div></div>
+    </div>
+
+    <!-- Earnings Surprises -->
+    <div class="panel" id="panel-earnings">
+        <div class="section-title"><span class="icon">&#9889;</span> Recent Earnings Surprises (90 Days) <span class="badge">LATEST</span></div>
+        <div id="earn-surprises"><div class="loading"><div class="spinner"></div><br>Loading...</div></div>
+    </div>
+
+    <!-- All Fundamentals -->
+    <div class="panel" id="panel-fundamentals">
+        <div class="section-title"><span class="icon">&#128202;</span> Fundamental Data — All Tickers <button class="refresh-btn" onclick="loadFundamentals()" style="margin-left:auto">Refresh</button></div>
+        <div id="fundamentals-table"><div class="loading"><div class="spinner"></div><br>Loading...</div></div>
+    </div>
+
+</div>
+
+<script>
+var API = '/findstocks/portfolio2/api/fetch_dividends_earnings.php';
+
+function api(action, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API + '?action=' + action, true);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try { cb(JSON.parse(xhr.responseText)); } catch(e) { cb({ok:false, error:'Parse error'}); }
+        } else { cb({ok:false, error:'HTTP ' + xhr.status}); }
+    };
+    xhr.onerror = function() { cb({ok:false, error:'Network error'}); };
+    xhr.send();
+}
+
+function fmtPct(v) { return v !== null && v !== undefined ? (v * 100).toFixed(2) + '%' : '—'; }
+function fmtPctRaw(v) { return v !== null && v !== undefined ? parseFloat(v).toFixed(2) + '%' : '—'; }
+function fmtMoney(v) { if (!v) return '—'; var n = parseInt(v); if (n >= 1e12) return '$' + (n/1e12).toFixed(1) + 'T'; if (n >= 1e9) return '$' + (n/1e9).toFixed(1) + 'B'; if (n >= 1e6) return '$' + (n/1e6).toFixed(1) + 'M'; return '$' + n.toLocaleString(); }
+function fmtNum(v, d) { return v !== null && v !== undefined ? parseFloat(v).toFixed(d || 2) : '—'; }
+function fmtDate(d) { if (!d) return '—'; var p = d.split('-'); var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return months[parseInt(p[1])-1] + ' ' + parseInt(p[2]) + ', ' + p[0]; }
+
+function payoutClass(v) {
+    if (v === null || v === undefined) return '';
+    var pct = parseFloat(v);
+    if (pct < 0.6) return 'safety-safe';
+    if (pct < 1.0) return 'safety-caution';
+    return 'safety-danger';
+}
+
+function recBadge(key) {
+    if (!key) return '—';
+    if (key === 'buy' || key === 'strong_buy') return '<span class="rec-buy">' + key.toUpperCase().replace('_',' ') + '</span>';
+    if (key === 'hold') return '<span class="rec-hold">HOLD</span>';
+    return '<span class="rec-sell">' + key.toUpperCase().replace('_',' ') + '</span>';
+}
+
+// ─── Tab switching ───
+document.getElementById('tabs').addEventListener('click', function(e) {
+    if (!e.target.classList.contains('tab')) return;
+    var tabs = document.querySelectorAll('.tab');
+    var panels = document.querySelectorAll('.panel');
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+    for (var i = 0; i < panels.length; i++) panels[i].classList.remove('active');
+    e.target.classList.add('active');
+    var tabId = e.target.getAttribute('data-tab');
+    document.getElementById('panel-' + tabId).classList.add('active');
+    if (tabId === 'dividends') loadDividendLeaders();
+    if (tabId === 'earnings') loadEarningsSurprises();
+    if (tabId === 'fundamentals') loadFundamentals();
+});
+
+// ─── Upcoming Events ───
+function loadUpcoming() {
+    api('upcoming', function(data) {
+        if (!data.ok) return;
+
+        document.getElementById('stat-upcoming-div').textContent = data.dividend_count || 0;
+        document.getElementById('stat-upcoming-earn').textContent = data.earnings_count || 0;
+
+        // Upcoming dividends
+        var divs = data.upcoming_dividends || [];
+        if (divs.length === 0) {
+            document.getElementById('upcoming-divs').innerHTML = '<div class="empty-msg">No upcoming ex-dividend dates in the next 30 days.</div>';
+        } else {
+            var h = '<table><tr><th>Ticker</th><th>Company</th><th>Ex-Dividend Date</th><th>Amount</th><th>Div Yield</th></tr>';
+            for (var i = 0; i < divs.length; i++) {
+                var d = divs[i];
+                h += '<tr><td class="ticker-cell">' + d.ticker + '</td>';
+                h += '<td>' + (d.company_name || '') + '</td>';
+                h += '<td>' + fmtDate(d.ex_date) + '</td>';
+                h += '<td>$' + parseFloat(d.amount).toFixed(4) + '</td>';
+                h += '<td>' + (d.dividend_yield ? fmtPct(d.dividend_yield) : '—') + '</td></tr>';
+            }
+            h += '</table>';
+            document.getElementById('upcoming-divs').innerHTML = h;
+        }
+
+        // Upcoming earnings
+        var earn = data.upcoming_earnings || [];
+        if (earn.length === 0) {
+            document.getElementById('upcoming-earnings').innerHTML = '<div class="empty-msg">No upcoming earnings dates in the next 30 days.</div>';
+        } else {
+            var h2 = '<table><tr><th>Ticker</th><th>Company</th><th>Earnings Date</th><th>Trailing EPS</th><th>Forward EPS</th></tr>';
+            for (var i = 0; i < earn.length; i++) {
+                var e = earn[i];
+                h2 += '<tr><td class="ticker-cell">' + e.ticker + '</td>';
+                h2 += '<td>' + (e.company_name || '') + '</td>';
+                h2 += '<td>' + fmtDate(e.next_earnings_date) + '</td>';
+                h2 += '<td>' + fmtNum(e.trailing_eps) + '</td>';
+                h2 += '<td>' + fmtNum(e.forward_eps) + '</td></tr>';
+            }
+            h2 += '</table>';
+            document.getElementById('upcoming-earnings').innerHTML = h2;
+        }
+    });
+}
+
+// ─── Dividend Leaders ───
+function loadDividendLeaders() {
+    document.getElementById('div-leaders').innerHTML = '<div class="loading"><div class="spinner"></div><br>Loading...</div>';
+    api('dividend_leaders', function(data) {
+        if (!data.ok || !data.leaders || data.leaders.length === 0) {
+            document.getElementById('div-leaders').innerHTML = '<div class="empty-msg">No dividend data available yet. Run the fetcher first.</div>';
+            return;
+        }
+        var h = '<table><tr><th>#</th><th>Ticker</th><th>Company</th><th>Div Yield</th><th>Annual Rate</th><th>Payout Ratio</th><th>Safety</th><th>EPS</th><th>P/E</th><th>Ex-Div Date</th></tr>';
+        for (var i = 0; i < data.leaders.length; i++) {
+            var l = data.leaders[i];
+            var pr = l.payout_ratio;
+            var safety = '—';
+            var sc = '';
+            if (pr !== null) {
+                if (pr < 0.6) { safety = 'SAFE'; sc = 'safety-safe'; }
+                else if (pr < 1.0) { safety = 'CAUTION'; sc = 'safety-caution'; }
+                else { safety = 'DANGER'; sc = 'safety-danger'; }
+            }
+            h += '<tr>';
+            h += '<td>' + (i+1) + '</td>';
+            h += '<td class="ticker-cell">' + l.ticker + '</td>';
+            h += '<td>' + (l.company_name || '') + '</td>';
+            h += '<td class="pct-positive">' + fmtPct(l.dividend_yield) + '</td>';
+            h += '<td>$' + fmtNum(l.trailing_annual_div_rate) + '</td>';
+            h += '<td class="' + payoutClass(pr) + '">' + fmtPct(pr) + '</td>';
+            h += '<td class="' + sc + '" style="font-weight:700">' + safety + '</td>';
+            h += '<td>' + fmtNum(l.trailing_eps) + '</td>';
+            h += '<td>' + fmtNum(l.trailing_pe) + '</td>';
+            h += '<td>' + fmtDate(l.ex_dividend_date) + '</td>';
+            h += '</tr>';
+        }
+        h += '</table>';
+        document.getElementById('div-leaders').innerHTML = h;
+    });
+}
+
+// ─── Earnings Surprises ───
+function loadEarningsSurprises() {
+    document.getElementById('earn-surprises').innerHTML = '<div class="loading"><div class="spinner"></div><br>Loading...</div>';
+    api('earnings_surprises', function(data) {
+        if (!data.ok || !data.surprises || data.surprises.length === 0) {
+            document.getElementById('earn-surprises').innerHTML = '<div class="empty-msg">No earnings surprise data available yet.</div>';
+            return;
+        }
+
+        var beats = 0;
+        for (var i = 0; i < data.surprises.length; i++) { if (data.surprises[i].beat) beats++; }
+        document.getElementById('stat-beats').textContent = beats;
+
+        var h = '<table><tr><th>#</th><th>Ticker</th><th>Company</th><th>Quarter</th><th>EPS Actual</th><th>EPS Estimate</th><th>Surprise</th><th>Surprise %</th><th>Result</th></tr>';
+        for (var i = 0; i < data.surprises.length; i++) {
+            var s = data.surprises[i];
+            var badge = s.beat ? '<span class="beat-badge">BEAT</span>' : '<span class="miss-badge">MISS</span>';
+            h += '<tr>';
+            h += '<td>' + (i+1) + '</td>';
+            h += '<td class="ticker-cell">' + s.ticker + '</td>';
+            h += '<td>' + (s.company_name || '') + '</td>';
+            h += '<td>' + fmtDate(s.quarter_end) + '</td>';
+            h += '<td>' + fmtNum(s.eps_actual) + '</td>';
+            h += '<td>' + fmtNum(s.eps_estimate) + '</td>';
+            h += '<td class="' + (s.beat ? 'pct-positive' : 'pct-negative') + '">' + (s.eps_surprise > 0 ? '+' : '') + fmtNum(s.eps_surprise) + '</td>';
+            h += '<td class="' + (s.beat ? 'pct-positive' : 'pct-negative') + '">' + (s.surprise_pct > 0 ? '+' : '') + fmtPctRaw(s.surprise_pct) + '</td>';
+            h += '<td>' + badge + '</td>';
+            h += '</tr>';
+        }
+        h += '</table>';
+        document.getElementById('earn-surprises').innerHTML = h;
+    });
+}
+
+// ─── All Fundamentals ───
+var _sortCol = null, _sortDir = 1;
+function loadFundamentals() {
+    document.getElementById('fundamentals-table').innerHTML = '<div class="loading"><div class="spinner"></div><br>Loading all fundamentals...</div>';
+    api('get_fundamentals&ticker=all', function(data) {
+        if (!data.ok || !data.fundamentals || data.fundamentals.length === 0) {
+            document.getElementById('fundamentals-table').innerHTML = '<div class="empty-msg">No fundamental data available yet. Run fetch_all first.</div>';
+            return;
+        }
+
+        var funds = data.fundamentals;
+
+        // Update stats
+        document.getElementById('stat-total').textContent = funds.length;
+        var payers = 0, yieldSum = 0, yieldCount = 0;
+        for (var i = 0; i < funds.length; i++) {
+            if (funds[i].dividend_yield && funds[i].dividend_yield > 0) { payers++; yieldSum += funds[i].dividend_yield; yieldCount++; }
+        }
+        document.getElementById('stat-payers').textContent = payers;
+        document.getElementById('stat-avg-yield').textContent = yieldCount > 0 ? (yieldSum / yieldCount * 100).toFixed(2) + '%' : '—';
+
+        renderFundamentals(funds);
+    });
+}
+
+function renderFundamentals(funds) {
+    var h = '<table id="fund-table"><tr>';
+    var cols = [
+        {key:'ticker', label:'Ticker'},
+        {key:'company_name', label:'Company'},
+        {key:'dividend_yield', label:'Div Yield'},
+        {key:'trailing_eps', label:'EPS'},
+        {key:'trailing_pe', label:'P/E'},
+        {key:'forward_pe', label:'Fwd P/E'},
+        {key:'peg_ratio', label:'PEG'},
+        {key:'payout_ratio', label:'Payout'},
+        {key:'roe', label:'ROE'},
+        {key:'gross_margins', label:'Gross Margin'},
+        {key:'recommendation_key', label:'Rec'},
+        {key:'target_mean_price', label:'Target'},
+        {key:'next_earnings_date', label:'Next Earnings'}
+    ];
+    for (var c = 0; c < cols.length; c++) {
+        h += '<th data-col="' + cols[c].key + '">' + cols[c].label + '</th>';
+    }
+    h += '</tr>';
+
+    for (var i = 0; i < funds.length; i++) {
+        var f = funds[i];
+        h += '<tr>';
+        h += '<td class="ticker-cell">' + (f.ticker || '') + '</td>';
+        h += '<td>' + (f.company_name || '') + '</td>';
+        h += '<td class="' + (f.dividend_yield > 0 ? 'pct-positive' : '') + '">' + (f.dividend_yield ? fmtPct(f.dividend_yield) : '—') + '</td>';
+        h += '<td>' + fmtNum(f.trailing_eps) + '</td>';
+        h += '<td>' + fmtNum(f.trailing_pe) + '</td>';
+        h += '<td>' + fmtNum(f.forward_pe) + '</td>';
+        h += '<td>' + fmtNum(f.peg_ratio) + '</td>';
+        h += '<td class="' + payoutClass(f.payout_ratio) + '">' + (f.payout_ratio ? fmtPct(f.payout_ratio) : '—') + '</td>';
+        h += '<td>' + (f.roe ? fmtPct(f.roe) : '—') + '</td>';
+        h += '<td>' + (f.gross_margins ? fmtPct(f.gross_margins) : '—') + '</td>';
+        h += '<td>' + recBadge(f.recommendation_key) + '</td>';
+        h += '<td>$' + fmtNum(f.target_mean_price) + '</td>';
+        h += '<td>' + fmtDate(f.next_earnings_date) + '</td>';
+        h += '</tr>';
+    }
+    h += '</table>';
+    document.getElementById('fundamentals-table').innerHTML = h;
+}
+
+// ─── Init ───
+loadUpcoming();
+// Pre-load earnings surprises for the stat
+api('earnings_surprises', function(data) {
+    if (data.ok && data.surprises) {
+        var beats = 0;
+        for (var i = 0; i < data.surprises.length; i++) { if (data.surprises[i].beat) beats++; }
+        document.getElementById('stat-beats').textContent = beats;
+    }
+});
+// Pre-load fundamentals for stats
+api('get_fundamentals&ticker=all', function(data) {
+    if (data.ok && data.fundamentals) {
+        var funds = data.fundamentals;
+        document.getElementById('stat-total').textContent = funds.length;
+        var payers = 0, yieldSum = 0, yieldCount = 0;
+        for (var i = 0; i < funds.length; i++) {
+            if (funds[i].dividend_yield && funds[i].dividend_yield > 0) { payers++; yieldSum += funds[i].dividend_yield; yieldCount++; }
+        }
+        document.getElementById('stat-payers').textContent = payers;
+        document.getElementById('stat-avg-yield').textContent = yieldCount > 0 ? (yieldSum / yieldCount * 100).toFixed(2) + '%' : '—';
+    }
+});
+</script>
+</body>
+</html>

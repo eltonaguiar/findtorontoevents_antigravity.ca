@@ -71,6 +71,7 @@ export default defineConfig({
     /(?:^|\/)tests\/fps-v5-debug\.spec\.ts$/,
     /(?:^|\/)tests\/full_site_js_errors\.spec\.ts$/,
     /(?:^|\/)tests\/miracle-daytrades\.spec\.ts$/,
+    /(?:^|\/)tests\/dividends-earnings\.spec\.ts$/,
   ],
   timeout: isRemoteVerify ? 90000 : 30000,
   retries: isRemoteVerify ? 1 : 0,

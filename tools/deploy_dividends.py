@@ -22,6 +22,7 @@ files_to_deploy = [
     ('findstocks/portfolio2/api/dividend_earnings_schema.php', 'findstocks/portfolio2/api/dividend_earnings_schema.php'),
     ('findstocks/portfolio2/api/fetch_dividends_earnings.php', 'findstocks/portfolio2/api/fetch_dividends_earnings.php'),
     ('findstocks/portfolio2/api/setup_schema.php', 'findstocks/portfolio2/api/setup_schema.php'),
+    ('findstocks/portfolio2/dividends.html', 'findstocks/portfolio2/dividends.html'),
 ]
 
 print(f"Connecting to {server}...")
