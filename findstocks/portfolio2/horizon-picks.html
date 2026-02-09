@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invest by Time Horizon | FindStocks</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+<style>
+:root {
+    --bg-dark: #0a0a1a;
+    --bg-card: #12122a;
+    --bg-card-hover: #1a1a3a;
+    --border: #2a2a4a;
+    --text: #e0e0f0;
+    --text-dim: #8888aa;
+    --accent: #6366f1;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #eab308;
+    --gold: #f59e0b;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.header h1 { font-size: 1.5rem; font-weight: 700; }
+.header-links { display: flex; gap: 16px; flex-wrap: wrap; }
+.header-links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+.header-links a:hover { color: var(--accent); }
+.container { max-width: 1280px; margin: 0 auto; padding: 24px 20px 60px; }
+
+/* Loading spinner */
+.loader-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 120px 0;
+}
+.spinner {
+    width: 48px; height: 48px;
+    border: 4px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-wrap p { margin-top: 16px; color: var(--text-dim); }
+
+/* Horizon section */
+.horizon-section { margin-bottom: 40px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+.horizon-section.highlight { animation: pulseHighlight 1.5s ease-in-out 3; }
+@keyframes pulseHighlight {
+    0%, 100% { box-shadow: 0 0 0 0 transparent; }
+    50% { box-shadow: 0 0 24px 4px rgba(99, 102, 241, 0.5); }
+}
+.horizon-header {
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.horizon-header-left h2 { font-size: 1.3rem; font-weight: 700; }
+.horizon-header-left .subtitle { font-size: 0.85rem; opacity: 0.7; margin-top: 2px; }
+.risk-badge {
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: rgba(255,255,255,0.1);
+}
+.horizon-body { padding: 0 24px 24px; background: var(--bg-card); }
+
+/* Projection banner */
+.projection-banner {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 14px 20px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    font-size: 0.9rem;
+}
+.projection-banner .label { color: var(--text-dim); font-weight: 600; margin-right: 4px; }
+.projection-banner .value { font-weight: 700; font-size: 1rem; }
+.projection-banner .best { color: var(--green); }
+.projection-banner .worst { color: var(--red); }
+.projection-banner .winrate-chip {
+    margin-left: auto;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+/* Stats row */
+.stats-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+}
+.stats-row .stat-item span { color: var(--text); font-weight: 600; }
+.donut-wrap { width: 60px; height: 60px; flex-shrink: 0; }
+
+/* Picks grid */
+.picks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+.pick-card {
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    transition: background 0.2s, border-color 0.2s;
+}
+.pick-card:hover { background: var(--bg-card-hover); border-color: var(--accent); }
+.pick-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.pick-ticker { font-size: 1.3rem; font-weight: 800; letter-spacing: 0.5px; }
+.pick-company { font-size: 0.8rem; color: var(--text-dim); margin-top: 2px; }
+.algo-badge {
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: rgba(99,102,241,0.2);
+    color: var(--accent);
+    font-weight: 600;
+}
+.status-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-top: 4px;
+}
+.status-active { background: rgba(99,102,241,0.2); color: var(--accent); }
+.status-tp { background: rgba(34,197,94,0.2); color: var(--green); }
+.status-sl { background: rgba(239,68,68,0.2); color: var(--red); }
+
+/* Score bar */
+.score-bar-wrap { margin: 10px 0; }
+.score-bar-label { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 4px; display: flex; justify-content: space-between; }
+.score-bar-bg { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.score-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+
+/* Price columns */
+.price-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin: 12px 0;
+    text-align: center;
+}
+.price-col label { display: block; font-size: 0.7rem; color: var(--text-dim); margin-bottom: 2px; }
+.price-col .price { font-size: 0.95rem; font-weight: 700; }
+.price-col .price.green { color: var(--green); }
+.price-col .price.red { color: var(--red); }
+
+.current-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+}
+.current-row .return-pct { font-weight: 700; }
+.return-positive { color: var(--green); }
+.return-negative { color: var(--red); }
+
+/* Save button */
+.save-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.save-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(99,102,241,0.05); }
+
+/* Modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    width: 90%;
+    max-width: 440px;
+}
+.modal h3 { margin-bottom: 20px; font-size: 1.2rem; }
+.modal label { display: block; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 4px; margin-top: 14px; }
+.modal input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-dark);
+    color: var(--text);
+    font-size: 0.95rem;
+}
+.modal input:focus { outline: none; border-color: var(--accent); }
+.modal .settings-preview {
+    margin-top: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    line-height: 1.8;
+}
+.modal-buttons { display: flex; gap: 10px; margin-top: 22px; }
+.modal-buttons button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.2s;
+}
+.modal-buttons button:hover { opacity: 0.85; }
+.btn-create { background: var(--accent); color: #fff; }
+.btn-cancel { background: var(--border); color: var(--text); }
+.modal .success-msg { color: var(--green); margin-top: 12px; font-size: 0.9rem; }
+.modal .error-msg { color: var(--red); margin-top: 12px; font-size: 0.9rem; }
+
+/* Disclaimer */
+.disclaimer {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    padding: 32px 20px;
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+}
+
+@media (max-width: 600px) {
+    .header { padding: 14px 16px; }
+    .header h1 { font-size: 1.15rem; }
+    .container { padding: 14px 10px 40px; }
+    .picks-grid { grid-template-columns: 1fr; }
+    .horizon-body { padding: 0 14px 18px; }
+    .projection-banner { gap: 10px; font-size: 0.82rem; }
+    .stats-row { gap: 10px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Invest by Time Horizon</h1>
+    <div class="header-links">
+        <a href="/findstocks/portfolio2/">Dashboard</a>
+        <a href="/findstocks/portfolio2/picks.html">All Picks</a>
+        <a href="/findstocks/portfolio2/dashboard.html">My Portfolios</a>
+        <a href="/findstocks/">Home</a>
+    </div>
+</div>
+
+<div class="container">
+    <div id="loader" class="loader-wrap">
+        <div class="spinner"></div>
+        <p>Loading horizon picks...</p>
+    </div>
+    <div id="content" style="display:none;"></div>
+</div>
+
+<div class="modal-overlay" id="saveModal">
+    <div class="modal">
+        <h3 id="modalTitle">Save as Portfolio</h3>
+        <label for="portfolioName">Portfolio Name</label>
+        <input type="text" id="portfolioName" placeholder="e.g. My Quick Gains">
+        <label for="portfolioCapital">Starting Capital ($)</label>
+        <input type="number" id="portfolioCapital" value="1000" min="100" step="100">
+        <div class="settings-preview" id="modalSettings"></div>
+        <div class="modal-buttons">
+            <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="btn-create" id="btnCreate" onclick="createPortfolio()">Create Portfolio</button>
+        </div>
+        <div id="modalMsg"></div>
+    </div>
+</div>
+
+<div class="disclaimer">
+    This dashboard is for educational and research purposes only. Not financial advice.
+    Past performance does not guarantee future results.
+</div>
+
+<script>
+var API = (function() {
+    var loc = window.location;
+    if (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1') return './api/';
+    return '/findstocks/portfolio2/api/';
+})();
+
+function apiGet(endpoint, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API + endpoint, true);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try { cb(JSON.parse(xhr.responseText)); } catch(e) { cb(null); }
+        } else { cb(null); }
+    };
+    xhr.onerror = function() { cb(null); };
+    xhr.send();
+}
+
+function apiPost(endpoint, data, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', API + endpoint, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try { cb(JSON.parse(xhr.responseText)); } catch(e) { cb(null); }
+        } else { cb(null); }
+    };
+    xhr.onerror = function() { cb(null); };
+    xhr.send(JSON.stringify(data));
+}
+
+var HORIZONS = {
+    quick:    { label: 'Quick Gains',       sub: '1-2 Weeks',    color: '#eab308', risk: 'Higher Risk'    },
+    swing:    { label: 'Swing Trades',       sub: '1-3 Months',   color: '#6366f1', risk: 'Moderate Risk'  },
+    longterm: { label: 'Long-Term Growth',   sub: '6-12 Months',  color: '#22c55e', risk: 'Lower Risk'     }
+};
+
+var horizonData = {};
+var donutCharts = {};
+
+function fmt(n) {
+    if (n == null) return '--';
+    return '$' + parseFloat(n).toFixed(2);
+}
+
+function fmtPct(n) {
+    if (n == null) return '--';
+    return parseFloat(n).toFixed(1) + '%';
+}
+
+function statusBadge(status) {
+    if (!status) return '';
+    var s = status.toLowerCase();
+    if (s === 'active')  return '<span class="status-badge status-active">Active</span>';
+    if (s === 'tp_hit' || s === 'tp hit')  return '<span class="status-badge status-tp">TP Hit</span>';
+    if (s === 'sl_hit' || s === 'sl hit')  return '<span class="status-badge status-sl">SL Hit</span>';
+    return '<span class="status-badge status-active">' + status + '</span>';
+}
+
+function buildProjection(stats, color) {
+    if (!stats) return '';
+    var winRate = stats.win_rate || 0;
+    var avgWin = stats.avg_win_pct || 0;
+    var avgLoss = stats.avg_loss_pct || 0;
+    var expected = 1000 * (1 + (winRate / 100 * avgWin / 100) - ((100 - winRate) / 100 * Math.abs(avgLoss) / 100));
+    var best = 1000 * (1 + avgWin / 100);
+    var worst = 1000 * (1 - Math.abs(avgLoss) / 100);
+
+    return '<div class="projection-banner">' +
+        '<span><span class="label">If you invested $1,000:</span></span>' +
+        '<span><span class="label">Expected</span> <span class="value">' + fmt(expected.toFixed(2)) + '</span></span>' +
+        '<span><span class="label">Best Case</span> <span class="value best">' + fmt(best.toFixed(2)) + '</span></span>' +
+        '<span><span class="label">Worst Case</span> <span class="value worst">' + fmt(worst.toFixed(2)) + '</span></span>' +
+        '<span class="winrate-chip" style="background:' + color + '22;color:' + color + '">' +
+        fmtPct(winRate) + ' Win Rate</span>' +
+        '</div>';
+}
+
+function buildStatsRow(stats, canvasId) {
+    if (!stats) return '';
+    return '<div class="stats-row">' +
+        '<div class="donut-wrap"><canvas id="' + canvasId + '"></canvas></div>' +
+        '<div class="stat-item">Win Rate: <span>' + fmtPct(stats.win_rate) + '</span></div>' +
+        '<div class="stat-item">Avg Win: <span class="return-positive">+' + fmtPct(stats.avg_win_pct) + '</span></div>' +
+        '<div class="stat-item">Avg Loss: <span class="return-negative">' + fmtPct(stats.avg_loss_pct) + '</span></div>' +
+        '<div class="stat-item">Backtested Trades: <span>' + (stats.total_trades || 0) + '</span></div>' +
+        '</div>';
+}
+
+function buildPickCard(pick) {
+    var returnPct = pick.current_return_pct || 0;
+    var retClass = returnPct >= 0 ? 'return-positive' : 'return-negative';
+    var retSign = returnPct >= 0 ? '+' : '';
+    var score = pick.score || 0;
+    var scoreColor = score >= 70 ? 'var(--green)' : score >= 50 ? 'var(--yellow)' : 'var(--red)';
+
+    return '<div class="pick-card">' +
+        '<div class="pick-top">' +
+            '<div>' +
+                '<div class="pick-ticker">' + (pick.ticker || '???') + '</div>' +
+                '<div class="pick-company">' + (pick.company || '') + '</div>' +
+            '</div>' +
+            '<div style="text-align:right">' +
+                '<span class="algo-badge">' + (pick.algorithm || 'algo') + '</span><br>' +
+                statusBadge(pick.status) +
+            '</div>' +
+        '</div>' +
+        '<div class="score-bar-wrap">' +
+            '<div class="score-bar-label"><span>Score</span><span>' + score + '/100</span></div>' +
+            '<div class="score-bar-bg"><div class="score-bar-fill" style="width:' + score + '%;background:' + scoreColor + '"></div></div>' +
+        '</div>' +
+        '<div class="price-row">' +
+            '<div class="price-col"><label>Entry</label><div class="price">' + fmt(pick.entry_price) + '</div></div>' +
+            '<div class="price-col"><label>Target</label><div class="price green">' + fmt(pick.target_price) + '</div></div>' +
+            '<div class="price-col"><label>Stop Loss</label><div class="price red">' + fmt(pick.stop_loss) + '</div></div>' +
+        '</div>' +
+        '<div class="current-row">' +
+            '<span>Current: <strong>' + fmt(pick.current_price) + '</strong></span>' +
+            '<span class="return-pct ' + retClass + '">' + retSign + fmtPct(returnPct) + '</span>' +
+        '</div>' +
+        '</div>';
+}
+
+function buildHorizonSection(key, data) {
+    var meta = HORIZONS[key];
+    if (!meta) return '';
+    var picks = data.picks || [];
+    var stats = data.backtest || {};
+    var canvasId = 'donut-' + key;
+
+    var html = '<div class="horizon-section" id="horizon-' + key + '">';
+
+    /* Header bar */
+    html += '<div class="horizon-header" style="background:' + meta.color + '18;border-bottom:2px solid ' + meta.color + '">';
+    html += '<div class="horizon-header-left">';
+    html += '<h2 style="color:' + meta.color + '">' + meta.label + '</h2>';
+    html += '<div class="subtitle">' + meta.sub + '</div>';
+    html += '</div>';
+    html += '<span class="risk-badge" style="border:1px solid ' + meta.color + ';color:' + meta.color + '">' + meta.risk + '</span>';
+    html += '</div>';
+
+    /* Body */
+    html += '<div class="horizon-body">';
+    html += buildProjection(stats, meta.color);
+    html += buildStatsRow(stats, canvasId);
+
+    /* Picks grid */
+    html += '<div class="picks-grid">';
+    for (var i = 0; i < picks.length; i++) {
+        html += buildPickCard(picks[i]);
+    }
+    if (picks.length === 0) {
+        html += '<p style="color:var(--text-dim);padding:20px;text-align:center;grid-column:1/-1">No picks available for this horizon.</p>';
+    }
+    html += '</div>';
+
+    /* Save button */
+    html += '<button class="save-btn" onclick="openSaveModal(\'' + key + '\')">Save These Picks as Portfolio</button>';
+
+    html += '</div></div>';
+    return html;
+}
+
+function renderDonut(canvasId, winRate) {
+    var ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+    var losses = 100 - (winRate || 0);
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: [winRate || 0, losses],
+                backgroundColor: ['#22c55e', '#ef4444'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '70%',
+            plugins: { legend: { display: false }, tooltip: { enabled: false } }
+        }
+    });
+}
+
+function render(apiData) {
+    var container = document.getElementById('content');
+    var html = '';
+    var order = ['quick', 'swing', 'longterm'];
+
+    for (var i = 0; i < order.length; i++) {
+        var key = order[i];
+        var section = apiData[key] || { picks: [], backtest: {} };
+        horizonData[key] = section;
+        html += buildHorizonSection(key, section);
+    }
+
+    container.innerHTML = html;
+    container.style.display = 'block';
+    document.getElementById('loader').style.display = 'none';
+
+    /* Render donut charts */
+    for (var j = 0; j < order.length; j++) {
+        var k = order[j];
+        var bt = (apiData[k] || {}).backtest || {};
+        renderDonut('donut-' + k, bt.win_rate || 0);
+    }
+
+    /* Handle urgency param */
+    handleUrgency();
+}
+
+function handleUrgency() {
+    var params = new URLSearchParams(window.location.search);
+    var urgency = parseInt(params.get('urgency'), 10);
+    if (!urgency) return;
+
+    var targetKey;
+    if (urgency <= 14) targetKey = 'quick';
+    else if (urgency <= 90) targetKey = 'swing';
+    else targetKey = 'longterm';
+
+    var el = document.getElementById('horizon-' + targetKey);
+    if (el) {
+        el.classList.add('highlight');
+        setTimeout(function() {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
+    }
+}
+
+/* Save modal */
+var currentSaveHorizon = null;
+
+function openSaveModal(key) {
+    currentSaveHorizon = key;
+    var meta = HORIZONS[key];
+    var data = horizonData[key] || {};
+    var bt = data.backtest || {};
+
+    document.getElementById('modalTitle').textContent = 'Save ' + meta.label + ' as Portfolio';
+    document.getElementById('portfolioName').value = meta.label + ' Portfolio';
+    document.getElementById('portfolioCapital').value = '1000';
+
+    var tp = bt.tp_pct || (key === 'quick' ? 5 : key === 'swing' ? 12 : 25);
+    var sl = bt.sl_pct || (key === 'quick' ? 3 : key === 'swing' ? 6 : 10);
+    var hold = bt.max_hold_days || (key === 'quick' ? 14 : key === 'swing' ? 90 : 365);
+
+    document.getElementById('modalSettings').innerHTML =
+        'Take Profit: <strong>' + tp + '%</strong><br>' +
+        'Stop Loss: <strong>' + sl + '%</strong><br>' +
+        'Max Hold: <strong>' + hold + ' days</strong><br>' +
+        'Picks: <strong>' + ((data.picks || []).length) + ' tickers</strong>';
+
+    document.getElementById('modalMsg').innerHTML = '';
+    document.getElementById('btnCreate').disabled = false;
+    document.getElementById('saveModal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('saveModal').classList.remove('active');
+    currentSaveHorizon = null;
+}
+
+function createPortfolio() {
+    if (!currentSaveHorizon) return;
+    var data = horizonData[currentSaveHorizon] || {};
+    var bt = data.backtest || {};
+    var picks = data.picks || [];
+    var tickers = picks.map(function(p) { return p.ticker; }).join(',');
+
+    var name = document.getElementById('portfolioName').value.trim();
+    var capital = parseFloat(document.getElementById('portfolioCapital').value) || 1000;
+
+    if (!name) {
+        document.getElementById('modalMsg').innerHTML = '<div class="error-msg">Please enter a portfolio name.</div>';
+        return;
+    }
+    if (!tickers) {
+        document.getElementById('modalMsg').innerHTML = '<div class="error-msg">No picks to save.</div>';
+        return;
+    }
+
+    var tp = bt.tp_pct || (currentSaveHorizon === 'quick' ? 5 : currentSaveHorizon === 'swing' ? 12 : 25);
+    var sl = bt.sl_pct || (currentSaveHorizon === 'quick' ? 3 : currentSaveHorizon === 'swing' ? 6 : 10);
+    var hold = bt.max_hold_days || (currentSaveHorizon === 'quick' ? 14 : currentSaveHorizon === 'swing' ? 90 : 365);
+
+    document.getElementById('btnCreate').disabled = true;
+    document.getElementById('modalMsg').innerHTML = '<div style="color:var(--text-dim)">Creating portfolio...</div>';
+
+    apiPost('saved_portfolio.php?action=create', {
+        name: name,
+        capital: capital,
+        horizon: currentSaveHorizon,
+        tp_pct: tp,
+        sl_pct: sl,
+        max_hold_days: hold,
+        tickers: tickers
+    }, function(resp) {
+        if (resp && resp.ok) {
+            if (resp.portfolio_key) {
+                var keys = JSON.parse(localStorage.getItem('horizon_portfolio_keys') || '[]');
+                keys.push(resp.portfolio_key);
+                localStorage.setItem('horizon_portfolio_keys', JSON.stringify(keys));
+            }
+            document.getElementById('modalMsg').innerHTML =
+                '<div class="success-msg">Portfolio created! ' +
+                '<a href="dashboard.html" style="color:var(--accent)">View on Dashboard</a></div>';
+        } else {
+            var err = (resp && resp.error) ? resp.error : 'Failed to create portfolio.';
+            document.getElementById('modalMsg').innerHTML = '<div class="error-msg">' + err + '</div>';
+            document.getElementById('btnCreate').disabled = false;
+        }
+    });
+}
+
+/* Close modal on overlay click */
+document.getElementById('saveModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+
+/* Close modal on Escape */
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+});
+
+/* Init */
+apiGet('horizon_picks.php', function(data) {
+    if (!data) {
+        document.getElementById('loader').innerHTML =
+            '<p style="color:var(--red)">Failed to load horizon picks. Please try again later.</p>';
+        return;
+    }
+    render(data);
+});
+</script>
+
+<div style="text-align:center;font-size:0.7rem;color:#8888aa;padding:2rem 1.5rem;border-top:1px solid #2a2a4a;margin-top:2rem;max-width:900px;margin-left:auto;margin-right:auto;line-height:1.6;">
+    <strong>Important Disclaimer</strong><br>
+    This tool is for <strong>educational and research purposes only</strong> and does not constitute financial advice, investment advice, trading advice, or any other sort of advice.
+    Nothing on this page should be construed as a recommendation or solicitation to buy or sell any security or financial product.<br><br>
+    <strong>No fiduciary relationship</strong> is created between you and the operators of this website by your use of this tool.
+    You are solely responsible for your own investment decisions. <strong>All investments involve risk</strong>, including the possible loss of principal.
+    Past performance does not guarantee future results. Backtests and algorithm rankings are based on historical data, may contain errors, and may not reflect real-world execution, slippage, or market conditions.<br><br>
+    Data is sourced from third parties (Yahoo Finance) and may be delayed, inaccurate, or incomplete. The operators of this website make no warranties regarding the accuracy, completeness, or timeliness of any information provided.
+    <strong>Consult a licensed financial adviser</strong> before making any investment decisions.<br><br>
+    <span style="opacity:0.7;">By using this tool you acknowledge that you have read and understood this disclaimer and agree that the operators shall not be held liable for any losses arising from your use of this information.</span>
+</div>
+</body>
+</html>

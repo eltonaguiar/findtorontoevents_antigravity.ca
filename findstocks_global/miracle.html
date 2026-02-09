@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DayTraders Miracle | Claude-Generated Stock Scanner</title>
+    <title>DayTraders Miracle Cursor | Claude-Generated Stock Scanner</title>
     <style>
         :root {
             --bg-dark: #0a0a1a;
@@ -113,18 +113,94 @@
         .status-msg.success { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
         .status-msg.error { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
 
+        /* ── Budget Picker ── */
+        .budget-section { background: linear-gradient(135deg, #12122a, #1e1e3f); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; }
+        .budget-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+        .budget-header h2 { font-size: 1.1rem; font-weight: 700; }
+        .budget-header .badge-new { font-size: 0.55rem; padding: 0.15rem 0.5rem; border-radius: 99px; background: var(--green); color: #000; font-weight: 800; text-transform: uppercase; }
+
+        .budget-form { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; }
+        .budget-field { display: flex; flex-direction: column; gap: 0.35rem; }
+        .budget-field label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+        .budget-input { background: var(--bg-dark); border: 1px solid var(--border); color: var(--text); padding: 0.6rem 0.8rem; border-radius: 8px; font-size: 1.1rem; font-weight: 700; width: 180px; outline: none; transition: border-color 0.2s; }
+        .budget-input:focus { border-color: var(--accent); }
+        .budget-input::placeholder { color: var(--text-dim); font-weight: 400; font-size: 0.85rem; }
+
+        .tf-group { display: flex; gap: 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+        .tf-btn { padding: 0.55rem 0.75rem; background: var(--bg-dark); color: var(--text-dim); border: none; cursor: pointer; font-size: 0.72rem; font-weight: 600; white-space: nowrap; transition: all 0.2s; position: relative; }
+        .tf-btn:not(:last-child) { border-right: 1px solid var(--border); }
+        .tf-btn:hover { background: var(--bg-card-hover); color: var(--text); }
+        .tf-btn.active { background: var(--accent); color: #fff; }
+        .tf-btn.active[data-tf="intraday"] { background: #ef4444; }
+        .tf-btn.active[data-tf="daytrade"] { background: #eab308; color: #000; }
+        .tf-btn.active[data-tf="swing"] { background: #6366f1; }
+        .tf-btn.active[data-tf="longterm"] { background: #22c55e; color: #000; }
+        .tf-btn .tf-sub { display: block; font-size: 0.5rem; font-weight: 400; opacity: 0.75; margin-top: 0.1rem; }
+
+        .budget-go { padding: 0.6rem 1.4rem; background: linear-gradient(135deg, var(--accent), #8b5cf6); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 700; transition: all 0.2s; }
+        .budget-go:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(99,102,241,0.4); }
+        .budget-go:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .budget-presets { display: flex; gap: 0.4rem; margin-top: 0.75rem; flex-wrap: wrap; }
+        .preset-btn { padding: 0.25rem 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-dark); color: var(--text-dim); font-size: 0.7rem; cursor: pointer; transition: all 0.15s; }
+        .preset-btn:hover { border-color: var(--accent); color: var(--text); }
+
+        /* Budget results */
+        .budget-results { margin-top: 1rem; }
+        .budget-profile { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 8px; background: var(--bg-dark); border: 1px solid var(--border); margin-bottom: 1rem; flex-wrap: wrap; }
+        .profile-badge { font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.6rem; border-radius: 6px; color: #000; }
+        .profile-info { font-size: 0.75rem; color: var(--text-dim); flex: 1; }
+        .profile-info strong { color: var(--text); }
+        .profile-stats { display: flex; gap: 1rem; font-size: 0.75rem; }
+        .profile-stats span { white-space: nowrap; }
+
+        .budget-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.5rem; margin-bottom: 1rem; }
+        .bsum-card { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.65rem; text-align: center; }
+        .bsum-card .val { font-size: 1.2rem; font-weight: 800; }
+        .bsum-card .lbl { font-size: 0.55rem; color: var(--text-dim); text-transform: uppercase; }
+
+        /* Budget pick cards — slightly different from scanner picks */
+        .bp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 0.75rem; }
+        .bp-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; transition: all 0.2s; position: relative; overflow: hidden; }
+        .bp-card:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,0,0,0.3); }
+        .bp-card.cdr { border-left: 3px solid var(--gold); }
+        .bp-card.non-cdr { border-left: 3px solid var(--blue); }
+
+        .bp-position { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem; margin: 0.5rem 0; padding: 0.5rem; border-radius: 8px; background: rgba(0,0,0,0.25); }
+        .bp-position .bp-item { text-align: center; }
+        .bp-position .bp-item .lbl { font-size: 0.5rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+        .bp-position .bp-item .val { font-size: 0.85rem; font-weight: 700; }
+
+        .bp-pnl { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin: 0.5rem 0; }
+        .bp-pnl-box { text-align: center; padding: 0.4rem; border-radius: 6px; }
+        .bp-pnl-box.profit { background: var(--green-dim); border: 1px solid rgba(34,197,94,0.3); }
+        .bp-pnl-box.loss { background: var(--red-dim); border: 1px solid rgba(239,68,68,0.3); }
+        .bp-pnl-box.neutral { background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3); }
+        .bp-pnl-box .lbl { font-size: 0.5rem; color: var(--text-dim); text-transform: uppercase; }
+        .bp-pnl-box .val { font-size: 0.9rem; font-weight: 800; }
+
+        .bp-rr-bar { height: 6px; border-radius: 3px; overflow: hidden; display: flex; margin: 0.5rem 0 0.3rem; }
+        .bp-rr-green { background: var(--green); }
+        .bp-rr-red { background: var(--red); }
+
         @media (max-width: 600px) {
             .picks-grid { grid-template-columns: 1fr; }
+            .bp-grid { grid-template-columns: 1fr; }
             .header { padding: 0.75rem 1rem; }
             .container { padding: 0.75rem; }
             .stats-row { grid-template-columns: repeat(3, 1fr); }
+            .budget-form { flex-direction: column; }
+            .budget-input { width: 100%; }
+            .tf-group { flex-wrap: wrap; }
+            .budget-summary { grid-template-columns: repeat(2, 1fr); }
+            .bp-pnl { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <div class="header">
         <div>
-            <h1>DayTraders Miracle</h1>
+            <h1>DayTraders Miracle Cursor</h1>
             <div class="subtitle">Claude-Generated AI Stock Scanner &mdash; v3 (miracle3_ tables)</div>
         </div>
         <div class="header-links">
@@ -138,6 +214,58 @@
     <div class="container">
         <div id="status-area"></div>
 
+        <!-- ═══ BUDGET PICKER ═══ -->
+        <div class="budget-section" id="budget-section">
+            <div class="budget-header">
+                <h2>My Budget Picks</h2>
+                <span class="badge-new">NEW</span>
+                <span style="font-size:0.7rem;color:var(--text-dim);margin-left:auto;">Personalized picks sized to your budget</span>
+            </div>
+
+            <div class="budget-form">
+                <div class="budget-field">
+                    <label>Your Budget (CAD/USD)</label>
+                    <input type="text" id="budget-input" class="budget-input" placeholder="$500" value="" inputmode="decimal">
+                </div>
+                <div class="budget-field">
+                    <label>Trading Timeframe</label>
+                    <div class="tf-group" id="tf-group">
+                        <button class="tf-btn" data-tf="intraday" onclick="pickTF(this)">
+                            Intraday<span class="tf-sub">Exit today</span>
+                        </button>
+                        <button class="tf-btn active" data-tf="daytrade" onclick="pickTF(this)">
+                            Day Trade<span class="tf-sub">Next day close</span>
+                        </button>
+                        <button class="tf-btn" data-tf="swing" onclick="pickTF(this)">
+                            Swing<span class="tf-sub">Up to 1 week</span>
+                        </button>
+                        <button class="tf-btn" data-tf="longterm" onclick="pickTF(this)">
+                            Buy &amp; Hold<span class="tf-sub">Weeks to months</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="budget-field" style="display:flex;align-items:flex-end;">
+                    <button class="budget-go" id="budget-go" onclick="loadBudgetPicks()">Get My Picks</button>
+                </div>
+            </div>
+
+            <div class="budget-presets">
+                <span style="font-size:0.6rem;color:var(--text-dim);line-height:1.8;">Quick:</span>
+                <button class="preset-btn" onclick="setBudget(100)">$100</button>
+                <button class="preset-btn" onclick="setBudget(250)">$250</button>
+                <button class="preset-btn" onclick="setBudget(500)">$500</button>
+                <button class="preset-btn" onclick="setBudget(1000)">$1K</button>
+                <button class="preset-btn" onclick="setBudget(2500)">$2.5K</button>
+                <button class="preset-btn" onclick="setBudget(5000)">$5K</button>
+                <button class="preset-btn" onclick="setBudget(10000)">$10K</button>
+                <button class="preset-btn" onclick="setBudget(25000)">$25K</button>
+                <button class="preset-btn" onclick="setBudget(50000)">$50K</button>
+            </div>
+
+            <div id="budget-results" class="budget-results"></div>
+        </div>
+
+        <!-- ═══ SCANNER CONTROLS ═══ -->
         <div class="actions">
             <button class="btn btn-green" onclick="runScan()">Run Scan Now</button>
             <button class="btn" onclick="runResolve()">Resolve Outcomes</button>
@@ -160,8 +288,18 @@
         </div>
 
         <div class="disclaimer">
-            DayTraders Miracle_CURSOR &mdash; Generated by Claude (Anthropic). For educational and research purposes only.<br>
-            Past performance does not guarantee future results. Always do your own research. Questrade fee model used for P&L calculations.
+            <strong>Important Disclaimer</strong><br>
+            This tool is for <strong>educational and research purposes only</strong> and does not constitute financial advice, investment advice, trading advice, or any other sort of advice.
+            Nothing on this page should be construed as a recommendation or solicitation to buy or sell any security or financial product.
+            <strong>No fiduciary relationship</strong> is created between you and the operators of this website by your use of this tool.<br><br>
+            You are solely responsible for your own investment decisions. <strong>All investments involve risk</strong>, including the possible loss of principal.
+            <strong>Day trading involves substantial risk of rapid financial loss.</strong> Statistics show the majority of day traders lose money.
+            Past performance does not guarantee future results. All picks are algorithm-generated based on historical data and may not reflect current market conditions, slippage, or liquidity.
+            Questrade fee model is used for illustrative P&amp;L calculations only and may not reflect your actual brokerage costs.<br><br>
+            Data is sourced from third parties (Yahoo Finance) and may be delayed, inaccurate, or incomplete. The operators make no warranties regarding the accuracy, completeness, or timeliness of any information.
+            <strong>Consult a licensed financial adviser</strong> before making any investment decisions.<br><br>
+            <span style="opacity:0.7;">By using this tool you acknowledge that you have read and understood this disclaimer and agree that the operators shall not be held liable for any losses arising from your use of this information.</span><br>
+            <span style="opacity:0.5;margin-top:0.5rem;display:inline-block;">DayTraders Miracle_CURSOR v3 &mdash; Generated by Claude (Anthropic)</span>
         </div>
     </div>
 
@@ -334,6 +472,173 @@ function toggleCDR() {
     document.getElementById('btn-cdr').classList.toggle('active', cdrOnly);
     loadAll();
 }
+
+// ═══════════════════════════════════════════════
+// BUDGET PICKER
+// ═══════════════════════════════════════════════
+var selectedTF = 'daytrade';
+var budgetLoading = false;
+
+function pickTF(btn) {
+    var btns = document.getElementById('tf-group').children;
+    for (var i = 0; i < btns.length; i++) btns[i].className = 'tf-btn';
+    btn.className = 'tf-btn active';
+    selectedTF = btn.getAttribute('data-tf');
+}
+
+function setBudget(val) {
+    document.getElementById('budget-input').value = val;
+    loadBudgetPicks();
+}
+
+function parseBudget() {
+    var raw = document.getElementById('budget-input').value.replace(/[\$,\s]/g, '');
+    var n = parseFloat(raw);
+    if (isNaN(n) || n < 50) return 0;
+    return n;
+}
+
+function loadBudgetPicks() {
+    var budget = parseBudget();
+    if (budget <= 0) {
+        showStatus('Please enter a budget of at least $50.', 'error');
+        return;
+    }
+    if (budgetLoading) return;
+    budgetLoading = true;
+    var goBtn = document.getElementById('budget-go');
+    goBtn.disabled = true;
+    goBtn.textContent = 'Loading...';
+
+    var url = 'budget_picks3.php?budget=' + budget + '&timeframe=' + selectedTF + (cdrOnly ? '&cdr_only=1' : '');
+    apiGet(url, function(data) {
+        budgetLoading = false;
+        goBtn.disabled = false;
+        goBtn.textContent = 'Get My Picks';
+        renderBudgetResults(data);
+    });
+}
+
+function renderBudgetResults(data) {
+    var container = document.getElementById('budget-results');
+    if (!data || !data.ok) {
+        container.innerHTML = '<div class="status-msg error">' + (data && data.error ? data.error : 'Failed to load picks. Try again.') + '</div>';
+        return;
+    }
+    if (!data.picks || data.picks.length === 0) {
+        container.innerHTML = '<div class="status-msg error">No picks found for your budget of $' + fmtMoney(data.budget) + '. Try a larger budget or run a new scan first.</div>';
+        return;
+    }
+
+    var p = data.profile;
+    var s = data.summary;
+    var html = '';
+
+    // Profile info bar
+    html += '<div class="budget-profile">'
+        + '<span class="profile-badge" style="background:' + p.color + ';">' + p.name + '</span>'
+        + '<span class="profile-info">' + p.description + ' <strong>Max hold: ' + p.max_hold + '</strong></span>'
+        + '<span class="profile-stats">'
+        + '<span>TP: ' + p.tp_range + '</span>'
+        + '<span>SL: ' + p.sl_range + '</span>'
+        + '</span></div>';
+
+    // Summary cards
+    html += '<div class="budget-summary">'
+        + '<div class="bsum-card"><div class="val" style="color:var(--accent);">$' + fmtMoney(data.budget) + '</div><div class="lbl">Budget</div></div>'
+        + '<div class="bsum-card"><div class="val">' + data.count + '</div><div class="lbl">Picks Found</div></div>'
+        + '<div class="bsum-card"><div class="val val-green">$' + fmtMoney(s.total_potential_profit) + '</div><div class="lbl">Total Profit If All TP</div></div>'
+        + '<div class="bsum-card"><div class="val val-red">-$' + fmtMoney(s.total_potential_risk) + '</div><div class="lbl">Total Risk If All SL</div></div>'
+        + '<div class="bsum-card"><div class="val" style="color:var(--gold);">' + s.cdr_picks + '</div><div class="lbl">CDR ($0 Fee)</div></div>'
+        + '<div class="bsum-card"><div class="val" style="color:var(--green);">' + (s.best_pick || '-') + '</div><div class="lbl">Best Pick</div></div>'
+        + '</div>';
+
+    // Pick cards
+    html += '<div class="bp-grid">';
+    for (var i = 0; i < data.picks.length; i++) {
+        html += renderBPCard(data.picks[i], i + 1, p.color);
+    }
+    html += '</div>';
+
+    container.innerHTML = html;
+}
+
+function renderBPCard(pk, rank, accentColor) {
+    var isCDR = parseInt(pk.is_cdr) === 1;
+    var score = pk.score || 0;
+    var conf = pk.confidence || 'Okay';
+    var totalRange = pk.take_profit_pct + pk.stop_loss_pct;
+    var rrPct = totalRange > 0 ? Math.round(pk.take_profit_pct / totalRange * 100) : 50;
+
+    var h = '<div class="bp-card ' + (isCDR ? 'cdr' : 'non-cdr') + '">';
+
+    // Rank
+    h += '<div class="pick-rank ' + rankClass(rank) + '">' + rank + '</div>';
+
+    // Header: ticker, name, confidence
+    h += '<div class="pick-header">'
+        + '<span class="pick-ticker">' + pk.ticker + '</span>'
+        + '<span class="pick-name">' + (pk.company_name || '') + '</span>'
+        + '<span class="conf-badge ' + confClass(conf) + '">' + conf + '</span>'
+        + '</div>';
+
+    // Entry / Target / Stop row
+    h += '<div class="pick-prices">'
+        + '<div class="price-item"><div class="lbl">Entry</div><div class="val">$' + fmt(pk.entry_price) + '</div></div>'
+        + '<div class="price-item"><div class="lbl">Target +' + fmt(pk.take_profit_pct, 1) + '%</div><div class="val val-green">$' + fmt(pk.take_profit_price) + '</div></div>'
+        + '<div class="price-item"><div class="lbl">Stop -' + fmt(pk.stop_loss_pct, 1) + '%</div><div class="val val-red">$' + fmt(pk.stop_loss_price) + '</div></div>'
+        + '</div>';
+
+    // Position details (budget-specific)
+    h += '<div class="bp-position">'
+        + '<div class="bp-item"><div class="lbl">Shares</div><div class="val" style="color:var(--accent);">' + pk.shares + '</div></div>'
+        + '<div class="bp-item"><div class="lbl">Position</div><div class="val">$' + fmtMoney(pk.position_value) + '</div></div>'
+        + '<div class="bp-item"><div class="lbl">Fees (Round-Trip)</div><div class="val">' + (isCDR ? '<span style="color:var(--gold);">$0 CDR</span>' : '$' + fmt(pk.fees_roundtrip)) + '</div></div>'
+        + '<div class="bp-item"><div class="lbl">Budget Used</div><div class="val">' + fmt(pk.budget_utilization, 0) + '%</div></div>'
+        + '</div>';
+
+    // P&L boxes
+    h += '<div class="bp-pnl">'
+        + '<div class="bp-pnl-box profit"><div class="lbl">If Target Hit</div><div class="val val-green">+$' + fmtMoney(pk.net_profit) + '</div></div>'
+        + '<div class="bp-pnl-box loss"><div class="lbl">If Stop Hit</div><div class="val val-red">-$' + fmtMoney(Math.abs(pk.net_loss)) + '</div></div>'
+        + '<div class="bp-pnl-box neutral"><div class="lbl">Risk:Reward</div><div class="val" style="color:var(--accent);">' + fmt(pk.risk_reward, 1) + ':1</div></div>'
+        + '</div>';
+
+    // R:R visual bar
+    h += '<div class="bp-rr-bar">'
+        + '<div class="bp-rr-green" style="width:' + rrPct + '%;"></div>'
+        + '<div class="bp-rr-red" style="width:' + (100 - rrPct) + '%;"></div>'
+        + '</div>';
+
+    // Meta row
+    h += '<div class="pick-meta">'
+        + '<span class="strat-badge">' + (pk.strategy_name || '') + '</span>'
+        + '<span class="score-bar">Score: <span class="mini-bar"><span class="mini-fill ' + barClass(score) + '" style="width:' + score + '%;"></span></span> ' + score + '</span>'
+        + (isCDR ? '<span class="cdr-tag">CDR $0 FEE</span>' : '<span class="fee-tag">Fee drag: ' + fmt(pk.fee_drag_pct, 2) + '%</span>')
+        + '</div>';
+
+    h += '</div>';
+    return h;
+}
+
+function fmtMoney(n) {
+    if (n === null || n === undefined || isNaN(n)) return '0.00';
+    var num = parseFloat(n);
+    if (num >= 1000) {
+        return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+    return num.toFixed(2);
+}
+
+// Budget input: Enter key support
+(function() {
+    var inp = document.getElementById('budget-input');
+    if (inp) {
+        inp.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.keyCode === 13) loadBudgetPicks();
+        });
+    }
+})();
 
 loadAll();
 </script>

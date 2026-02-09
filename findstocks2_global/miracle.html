@@ -326,6 +326,53 @@ tr:hover { background: rgba(255,255,255,0.03); }
 }
 .budget-presets button:hover, .budget-presets button.active { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 700; }
 
+/* Trading Style Selector */
+.style-selector { margin-top: 1rem; margin-bottom: 0.5rem; }
+.style-selector .style-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+.style-pills { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.style-pills button {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: var(--card);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.82rem;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 120px;
+}
+.style-pills button .style-icon { font-size: 1.2rem; }
+.style-pills button .style-name { font-weight: 700; color: var(--text); font-size: 0.85rem; }
+.style-pills button .style-desc { font-size: 0.68rem; color: var(--text-dim); }
+.style-pills button:hover { border-color: var(--cyan); background: rgba(6,182,212,0.08); }
+.style-pills button.active { border-color: var(--cyan); background: rgba(6,182,212,0.15); }
+.style-pills button.active .style-name { color: var(--cyan); }
+.hold-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 6px;
+}
+.hold-badge.intraday { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+.hold-badge.overnight { background: rgba(249,115,22,0.15); color: #f97316; border: 1px solid rgba(249,115,22,0.3); }
+.hold-badge.swing { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+.hold-badge.longterm { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+
 .rec-hero {
     background: linear-gradient(135deg, #0a2a1e, #1a1a3e);
     border: 2px solid var(--green);
@@ -437,12 +484,44 @@ tr:hover { background: rgba(255,255,255,0.03); }
         <button onclick="setBudget(5000)">$5,000</button>
         <button onclick="setBudget(10000)">$10,000</button>
     </div>
+
+    <div class="style-selector">
+        <div class="style-label">Trading Style</div>
+        <div class="style-pills" id="style-pills">
+            <button onclick="setStyle('')" class="active" data-style="">
+                <span class="style-icon">&#x1F50E;</span>
+                <span class="style-name">All Styles</span>
+                <span class="style-desc">Best overall pick</span>
+            </button>
+            <button onclick="setStyle('intraday')" data-style="intraday">
+                <span class="style-icon">&#x26A1;</span>
+                <span class="style-name">Day Trade</span>
+                <span class="style-desc">Exit before close today</span>
+            </button>
+            <button onclick="setStyle('overnight')" data-style="overnight">
+                <span class="style-icon">&#x1F319;</span>
+                <span class="style-name">Overnight</span>
+                <span class="style-desc">Hold til next day close</span>
+            </button>
+            <button onclick="setStyle('swing')" data-style="swing">
+                <span class="style-icon">&#x1F4C8;</span>
+                <span class="style-name">Swing Trade</span>
+                <span class="style-desc">Hold up to 1 week</span>
+            </button>
+            <button onclick="setStyle('longterm')" data-style="longterm">
+                <span class="style-icon">&#x1F3E6;</span>
+                <span class="style-name">Buy &amp; Hold</span>
+                <span class="style-desc">Weeks to months</span>
+            </button>
+        </div>
+    </div>
+
     <div style="margin-top:0.8rem;margin-bottom:1rem;">
         <label style="color:var(--text-dim);font-size:0.85rem;cursor:pointer;">
             <input type="checkbox" id="budget-cdr-only" style="margin-right:4px;"> CDR only (zero commission)
         </label>
     </div>
-    <div id="budget-result"><p style="color:var(--text-dim);text-align:center;padding:2rem;">Enter your budget and click "Find My Best Pick" to get a personalized recommendation with exact shares, fees, and profit targets.</p></div>
+    <div id="budget-result"><p style="color:var(--text-dim);text-align:center;padding:2rem;">Enter your budget, choose a trading style, and click "Find My Best Pick" to get a personalized recommendation with exact shares, fees, and profit targets.</p></div>
 </div>
 
 <!-- ═══ TODAY'S PICKS ═══ -->
@@ -496,7 +575,18 @@ tr:hover { background: rgba(255,255,255,0.03); }
 </div>
 
 <div class="disclaimer">
-    For research and educational purposes only. Past performance does not guarantee future results. Not financial advice. Trade at your own risk.
+    <strong>Important Disclaimer</strong><br>
+    This tool is for <strong>educational and research purposes only</strong> and does not constitute financial advice, investment advice, trading advice, or any other sort of advice.
+    Nothing on this page should be construed as a recommendation or solicitation to buy or sell any security or financial product.
+    <strong>No fiduciary relationship</strong> is created between you and the operators of this website by your use of this tool.<br><br>
+    You are solely responsible for your own investment decisions. <strong>All investments involve risk</strong>, including the possible loss of principal.
+    <strong>Day trading involves substantial risk of rapid financial loss.</strong> Statistics show the majority of day traders lose money.
+    Past performance does not guarantee future results. All picks are algorithm-generated based on historical data and may not reflect current market conditions, slippage, or liquidity.
+    Questrade fee model is used for illustrative P&amp;L calculations only and may not reflect your actual brokerage costs.<br><br>
+    Data is sourced from third parties (Yahoo Finance) and may be delayed, inaccurate, or incomplete. The operators make no warranties regarding the accuracy, completeness, or timeliness of any information.
+    <strong>Consult a licensed financial adviser</strong> before making any investment decisions.<br><br>
+    <span style="opacity:0.7;">By using this tool you acknowledge that you have read and understood this disclaimer and agree that the operators shall not be held liable for any losses arising from your use of this information.</span><br>
+    <span style="opacity:0.5;margin-top:0.5rem;display:inline-block;">DayTrades Miracle Claude v2</span>
 </div>
 
 </div>
@@ -897,23 +987,44 @@ function loadWatchlist() {
 }
 
 // ─── BUDGET PICKS ───
+var _selectedStyle = '';
+
 function setBudget(amount) {
     document.getElementById('budget-amount').value = amount;
     var btns = document.querySelectorAll('.budget-presets button');
     for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
-    // Find and activate the matching button
     for (var i = 0; i < btns.length; i++) {
         if (btns[i].textContent.replace(/[$,]/g, '') == amount) btns[i].classList.add('active');
     }
     loadBudgetPicks();
 }
 
+function setStyle(style) {
+    _selectedStyle = style;
+    var btns = document.querySelectorAll('.style-pills button');
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+    for (var i = 0; i < btns.length; i++) {
+        if (btns[i].getAttribute('data-style') === style) btns[i].classList.add('active');
+    }
+    loadBudgetPicks();
+}
+
+function fmtHoldBadge(style, holdPeriod) {
+    if (!style && !holdPeriod) return '';
+    var cls = style || 'swing';
+    var text = holdPeriod || style;
+    return ' <span class="hold-badge ' + cls + '">' + text + '</span>';
+}
+
 function loadBudgetPicks() {
     var amount = parseFloat(document.getElementById('budget-amount').value);
     if (!amount || amount < 10) { document.getElementById('budget-result').innerHTML = '<p style="color:var(--red)">Please enter a budget of at least $10.</p>'; return; }
     var cdrOnly = document.getElementById('budget-cdr-only').checked ? '&cdr_only=1' : '';
-    document.getElementById('budget-result').innerHTML = '<div class="loading"><div class="spinner"></div><br>Finding the best pick for $' + amount.toLocaleString() + '...</div>';
-    apiCall('budget_pick2.php?budget=' + amount + '&top=5' + cdrOnly, function(data) {
+    var styleParam = _selectedStyle ? '&style=' + _selectedStyle : '';
+    var styleNames = {intraday:'Day Trade (Today)',overnight:'Overnight (Next Day)',swing:'Swing Trade',longterm:'Buy & Hold'};
+    var styleSuffix = _selectedStyle ? ' for ' + (styleNames[_selectedStyle]||_selectedStyle) : '';
+    document.getElementById('budget-result').innerHTML = '<div class="loading"><div class="spinner"></div><br>Finding the best pick for $' + amount.toLocaleString() + styleSuffix + '...</div>';
+    apiCall('budget_pick2.php?budget=' + amount + '&top=5' + cdrOnly + styleParam, function(data) {
         if (!data.ok) { document.getElementById('budget-result').innerHTML = '<p style="color:var(--red)">' + (data.error || 'Error') + '</p>'; return; }
 
         var html = '';
@@ -921,13 +1032,13 @@ function loadBudgetPicks() {
         // Summary stats
         html += '<div class="stats-row">';
         html += statCard('$' + amount.toLocaleString(), 'Your Budget', 'gold');
+        html += statCard(data.style_label || 'All Styles', 'Trading Style', 'cyan');
         html += statCard(data.affordable, 'Affordable Picks', 'blue');
-        html += statCard(data.cdr_affordable, 'CDR (Zero-Fee)', 'cyan');
         html += statCard(data.avg_fee_drag + '%', 'Avg Fee Drag', data.avg_fee_drag < 10 ? 'green' : 'red');
         html += '</div>';
 
         if (data.picks.length === 0) {
-            html += '<p style="color:var(--text-dim);text-align:center;padding:2rem;">No affordable picks found for this budget. Try increasing your budget or running the scanner first.</p>';
+            html += '<p style="color:var(--text-dim);text-align:center;padding:2rem;">No affordable picks found for this budget' + styleSuffix + '. Try a different style or increase your budget.</p>';
             document.getElementById('budget-result').innerHTML = html;
             return;
         }
@@ -935,13 +1046,14 @@ function loadBudgetPicks() {
         // #1 Recommendation Hero Card
         var best = data.picks[0];
         html += '<div class="rec-hero">';
-        html += '<div class="rec-label">#1 Recommended Pick for $' + amount.toLocaleString() + '</div>';
-        html += '<div class="rec-ticker">' + best.ticker + (best.is_cdr ? ' <span class="cdr-badge">CDR $0 FEE</span>' : '') + '</div>';
+        html += '<div class="rec-label">#1 Recommended Pick for $' + amount.toLocaleString() + styleSuffix + '</div>';
+        html += '<div class="rec-ticker">' + best.ticker + (best.is_cdr ? ' <span class="cdr-badge">CDR $0 FEE</span>' : '') + fmtHoldBadge(data.style, best.hold_period) + '</div>';
         html += '<div class="rec-company">' + (best.company || '') + ' &mdash; ' + best.strategy + '</div>';
         html += '<div class="rec-text">';
         html += '<strong>Buy ' + best.shares + ' share' + (best.shares > 1 ? 's' : '') + '</strong> at <strong>$' + parseFloat(best.entry_price).toFixed(2) + '</strong>';
         html += ' &nbsp;|&nbsp; Investing: <strong>$' + parseFloat(best.invested).toFixed(2) + '</strong>';
         if (best.leftover > 0) html += ' &nbsp;|&nbsp; Leftover: $' + parseFloat(best.leftover).toFixed(2);
+        if (best.hold_period) html += ' &nbsp;|&nbsp; Max hold: <strong>' + best.hold_period + '</strong>';
         html += '</div>';
 
         // Win/Loss scenario cards
@@ -967,11 +1079,22 @@ function loadBudgetPicks() {
         html += ' &nbsp;|&nbsp; Buy fees: ' + best.fee_breakdown_buy;
         html += ' &nbsp;|&nbsp; Score: ' + fmtScore(best.budget_score);
         html += '</div>';
+
+        // Style explanation
+        if (data.style && data.style_label) {
+            html += '<div style="margin-top:0.8rem;padding:0.6rem 1rem;background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);border-radius:8px;font-size:0.8rem;color:var(--text-dim)">';
+            html += '<strong style="color:var(--cyan)">' + data.style_label + '</strong>: ';
+            if (data.style === 'intraday') html += 'TP/SL tightened for same-day exit. Prioritizes gap-up and sector momentum plays with fast resolution.';
+            else if (data.style === 'overnight') html += 'Moderate TP/SL for next-day hold. Favors volume surge and gap strategies that resolve within 1-2 days.';
+            else if (data.style === 'swing') html += 'Standard TP/SL levels. Favors momentum continuation, mean reversion, and earnings plays that develop over days.';
+            else if (data.style === 'longterm') html += 'Widened TP (2x) and SL (1.5x) for patient holding. Favors trend-following and deep value setups with larger moves.';
+            html += '</div>';
+        }
         html += '</div>';
 
         // Other picks table
         if (data.picks.length > 1) {
-            html += '<h3 class="section-title">Other Options for $' + amount.toLocaleString() + '</h3>';
+            html += '<h3 class="section-title">Other Options for $' + amount.toLocaleString() + styleSuffix + '</h3>';
             html += '<table><tr><th>#</th><th>Ticker</th><th>Strategy</th><th>Shares</th><th>Invested</th><th>Entry</th><th>TP</th><th>SL</th><th>Net Profit</th><th>Net Loss</th><th>Fee Drag</th><th>R:R</th><th>Score</th></tr>';
             for (var i = 0; i < data.picks.length; i++) {
                 var p = data.picks[i];
