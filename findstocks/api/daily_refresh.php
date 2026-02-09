@@ -18,6 +18,11 @@ if ($auth_key !== 'stocksrefresh2026') {
 
 require_once dirname(__FILE__) . '/db_config.php';
 
+// Extend execution time — this script makes many HTTP sub-requests
+// and the default 30s limit is not enough.
+@set_time_limit(300);
+@ini_set('max_execution_time', '300');
+
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     header('Content-Type: application/json');
@@ -29,9 +34,18 @@ $conn->set_charset('utf8');
 $log = array();
 $start = microtime(true);
 
+// Helper: fetch URL with a per-call timeout via stream context
+function dr_fetch($url, $timeout) {
+    $ctx = stream_context_create(array(
+        'http' => array('timeout' => $timeout)
+    ));
+    $result = @file_get_contents($url, false, $ctx);
+    return ($result !== false) ? $result : false;
+}
+
 // ─── 1. Import latest picks ───
 $import_url = 'https://findtorontoevents.ca/findstocks/api/import_picks.php';
-$import_json = @file_get_contents($import_url);
+$import_json = dr_fetch($import_url, 20);
 $import_data = ($import_json !== false) ? json_decode($import_json, true) : null;
 $log[] = 'Import: ' . ($import_data ? ('imported=' . $import_data['imported'] . ' skipped=' . $import_data['skipped']) : 'failed');
 
@@ -39,7 +53,7 @@ $log[] = 'Import: ' . ($import_data ? ('imported=' . $import_data['imported'] . 
 $total_fetched = 0;
 for ($batch = 0; $batch < 3; $batch++) {
     $fetch_url = 'https://findtorontoevents.ca/findstocks/api/fetch_prices.php?range=1y';
-    $fetch_json = @file_get_contents($fetch_url);
+    $fetch_json = dr_fetch($fetch_url, 30);
     $fetch_data = ($fetch_json !== false) ? json_decode($fetch_json, true) : null;
     if ($fetch_data && isset($fetch_data['fetched'])) {
         $total_fetched += (int)$fetch_data['fetched'];
@@ -53,37 +67,37 @@ $log[] = 'Prices: fetched ' . $total_fetched . ' tickers';
 
 // ─── 2a. Seed Blue Chip Growth picks (monthly DCA entries) ───
 $bc_url = 'https://findtorontoevents.ca/findstocks/api/blue_chip_picks.php?action=seed';
-$bc_json = @file_get_contents($bc_url);
+$bc_json = dr_fetch($bc_url, 15);
 $bc_data = ($bc_json !== false) ? json_decode($bc_json, true) : null;
 $log[] = 'Blue Chip: ' . ($bc_data ? ('seeded=' . $bc_data['seeded'] . ' skipped=' . $bc_data['skipped'] . ' tickers=' . $bc_data['ticker_count']) : 'failed');
 
 // ─── 2a2. Seed Cursor Genius picks ───
 $cg_url = 'https://findtorontoevents.ca/findstocks/api/cursor_genius.php?action=seed';
-$cg_json = @file_get_contents($cg_url);
+$cg_json = dr_fetch($cg_url, 15);
 $cg_data = ($cg_json !== false) ? json_decode($cg_json, true) : null;
 $log[] = 'Cursor Genius: ' . ($cg_data ? ('seeded=' . $cg_data['seeded'] . ' skipped=' . $cg_data['skipped']) : 'failed');
 
 // ─── 2a3. Seed ETF Masters picks ───
 $etf_url = 'https://findtorontoevents.ca/findstocks/api/etf_portfolio.php?action=seed';
-$etf_json = @file_get_contents($etf_url);
+$etf_json = dr_fetch($etf_url, 15);
 $etf_data = ($etf_json !== false) ? json_decode($etf_json, true) : null;
 $log[] = 'ETF Masters: ' . ($etf_data ? ('seeded=' . $etf_data['seeded'] . ' skipped=' . $etf_data['skipped']) : 'failed');
 
 // ─── 2a4. Seed Sector Rotation picks ───
 $sr_url = 'https://findtorontoevents.ca/findstocks/api/sector_rotation.php?action=seed';
-$sr_json = @file_get_contents($sr_url);
+$sr_json = dr_fetch($sr_url, 15);
 $sr_data = ($sr_json !== false) ? json_decode($sr_json, true) : null;
 $log[] = 'Sector Rotation: ' . ($sr_data ? ('seeded=' . $sr_data['seeded'] . ' skipped=' . $sr_data['skipped']) : 'failed');
 
 // ─── 2a5. Seed Sector Momentum picks ───
 $sm_url = 'https://findtorontoevents.ca/findstocks/api/sector_momentum.php?action=seed';
-$sm_json = @file_get_contents($sm_url);
+$sm_json = dr_fetch($sm_url, 15);
 $sm_data = ($sm_json !== false) ? json_decode($sm_json, true) : null;
 $log[] = 'Sector Momentum: ' . ($sm_data ? ('seeded=' . $sm_data['seeded'] . ' skipped=' . $sm_data['skipped']) : 'failed');
 
 // ─── 2b. Fetch VIX + SPY data for volatility regimes ───
 $vix_url = 'https://findtorontoevents.ca/findstocks/api/fetch_vix.php?range=2y';
-$vix_json = @file_get_contents($vix_url);
+$vix_json = dr_fetch($vix_url, 30);
 $vix_data = ($vix_json !== false) ? json_decode($vix_json, true) : null;
 $log[] = 'VIX: ' . ($vix_data ? ('classified ' . $vix_data['regimes_classified'] . ' days') : 'failed');
 
@@ -158,7 +172,7 @@ foreach ($scenarios as $sc) {
     if (isset($sc['algo']) && $sc['algo'] !== '') {
         $url .= '&algorithms=' . urlencode($sc['algo']);
     }
-    $json = @file_get_contents($url);
+    $json = dr_fetch($url, 20);
     $data = ($json !== false) ? json_decode($json, true) : null;
     if ($data && $data['ok']) {
         $summary['scenarios'][] = array(
@@ -179,13 +193,13 @@ foreach ($algo_names as $algo) {
     $encoded = urlencode($algo);
     // 7-day hold with commission
     $url1 = 'https://findtorontoevents.ca/findstocks/api/backtest.php?algorithms=' . $encoded . '&take_profit=999&stop_loss=999&max_hold_days=7&commission=10&slippage=0.5';
-    $d1 = json_decode(@file_get_contents($url1), true);
+    $d1 = json_decode(dr_fetch($url1, 20), true);
     // 7-day hold zero commission
     $url2 = 'https://findtorontoevents.ca/findstocks/api/backtest.php?algorithms=' . $encoded . '&take_profit=999&stop_loss=999&max_hold_days=7&commission=0&slippage=0';
-    $d2 = json_decode(@file_get_contents($url2), true);
+    $d2 = json_decode(dr_fetch($url2, 20), true);
     // 2-day daytrader zero commission
     $url3 = 'https://findtorontoevents.ca/findstocks/api/backtest.php?algorithms=' . $encoded . '&take_profit=10&stop_loss=5&max_hold_days=2&commission=0&slippage=0';
-    $d3 = json_decode(@file_get_contents($url3), true);
+    $d3 = json_decode(dr_fetch($url3, 20), true);
 
     $entry = array('algorithm' => $algo, 'picks' => 0);
     if ($d1 && $d1['ok']) {
@@ -201,7 +215,7 @@ foreach ($algo_names as $algo) {
 $log[] = 'Algo analysis: ' . count($summary['per_algorithm']) . ' algorithms';
 
 // Top/worst trades (use analyze endpoint)
-$top_json = @file_get_contents('https://findtorontoevents.ca/findstocks/api/analyze.php?type=top_trades');
+$top_json = dr_fetch('https://findtorontoevents.ca/findstocks/api/analyze.php?type=top_trades', 20);
 $top_data = ($top_json !== false) ? json_decode($top_json, true) : null;
 if ($top_data && $top_data['ok']) {
     $summary['top_trades'] = isset($top_data['top_winners']) ? array_slice($top_data['top_winners'], 0, 5) : array();
@@ -210,7 +224,7 @@ if ($top_data && $top_data['ok']) {
 }
 
 // Learning recommendations
-$rec_json = @file_get_contents('https://findtorontoevents.ca/findstocks/api/analyze.php?type=learning_recs');
+$rec_json = dr_fetch('https://findtorontoevents.ca/findstocks/api/analyze.php?type=learning_recs', 20);
 $rec_data = ($rec_json !== false) ? json_decode($rec_json, true) : null;
 if ($rec_data && $rec_data['ok']) {
     $summary['recommendations'] = isset($rec_data['recommendations']) ? $rec_data['recommendations'] : array();
@@ -233,7 +247,7 @@ foreach ($short_scenarios as $sc) {
          . '&max_hold_days=' . $sc['hold']
          . '&commission=' . $sc['comm']
          . '&slippage=0.5';
-    $json = @file_get_contents($url);
+    $json = dr_fetch($url, 20);
     $data = ($json !== false) ? json_decode($json, true) : null;
     if ($data && $data['ok']) {
         $summary['short_scenarios'][] = array(
@@ -251,9 +265,9 @@ $summary['per_algorithm_short'] = array();
 foreach ($algo_names as $algo) {
     $encoded = urlencode($algo);
     $url_s1 = 'https://findtorontoevents.ca/findstocks/api/short_backtest.php?algorithms=' . $encoded . '&take_profit=10&stop_loss=5&max_hold_days=7&commission=0&slippage=0.5';
-    $ds1 = json_decode(@file_get_contents($url_s1), true);
+    $ds1 = json_decode(dr_fetch($url_s1, 20), true);
     $url_s2 = 'https://findtorontoevents.ca/findstocks/api/short_backtest.php?algorithms=' . $encoded . '&take_profit=999&stop_loss=999&max_hold_days=7&commission=0&slippage=0';
-    $ds2 = json_decode(@file_get_contents($url_s2), true);
+    $ds2 = json_decode(dr_fetch($url_s2, 20), true);
 
     $sentry = array('algorithm' => $algo);
     if ($ds1 && $ds1['ok']) {

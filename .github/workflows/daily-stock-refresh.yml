@@ -25,7 +25,7 @@ on:
 jobs:
   refresh-stock-data:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
 
     steps:
 
@@ -108,6 +108,9 @@ jobs:
         echo "=== Running full daily refresh (backtests + analysis) ==="
 
         # Retry up to 3 times — the PHP server can be slow on 50webs
+        # NOTE: curl exit code 28 = timeout. We must use '|| true' to
+        # prevent set -e from aborting the script before the retry loop
+        # gets a chance to run the next attempt.
         ATTEMPT=0
         MAX_ATTEMPTS=3
         SUCCESS=false
@@ -116,11 +119,22 @@ jobs:
           ATTEMPT=$((ATTEMPT + 1))
           echo "--- Attempt $ATTEMPT of $MAX_ATTEMPTS ---"
 
-          RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 120 \
-            "https://findtorontoevents.ca/findstocks/api/daily_refresh.php?key=stocksrefresh2026")
+          # '|| true' prevents set -e from killing the script on curl timeout (exit 28)
+          RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 180 \
+            "https://findtorontoevents.ca/findstocks/api/daily_refresh.php?key=stocksrefresh2026") || true
 
           HTTP_CODE=$(echo "$RESPONSE" | tail -1)
           BODY=$(echo "$RESPONSE" | head -n -1)
+
+          # Handle empty response (curl timeout returns nothing useful)
+          if [ -z "$RESPONSE" ] || [ -z "$HTTP_CODE" ]; then
+            echo "::warning::Attempt $ATTEMPT — curl timeout or empty response"
+            if [ "$ATTEMPT" -lt "$MAX_ATTEMPTS" ]; then
+              echo "Waiting 15s before retry..."
+              sleep 15
+            fi
+            continue
+          fi
 
           echo "HTTP: $HTTP_CODE"
 
@@ -138,8 +152,8 @@ jobs:
           else
             echo "::warning::Attempt $ATTEMPT failed (HTTP $HTTP_CODE)"
             if [ "$ATTEMPT" -lt "$MAX_ATTEMPTS" ]; then
-              echo "Waiting 10s before retry..."
-              sleep 10
+              echo "Waiting 15s before retry..."
+              sleep 15
             fi
           fi
         done
