@@ -1,0 +1,188 @@
+name: Weekly Exhaustive Stock Simulation
+
+on:
+  schedule:
+    # Run every Sunday at 06:00 UTC (1:00 AM EST)
+    # Full permutation simulation — tests thousands of parameter combos
+    - cron: '0 6 * * 0'
+  workflow_dispatch:
+    inputs:
+      max_batches:
+        description: 'Max batches to run (each = ~30 combos, default 200)'
+        required: false
+        default: '200'
+        type: choice
+        options:
+          - '50'
+          - '100'
+          - '200'
+          - '500'
+
+jobs:
+  run-exhaustive-simulation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+
+    # ──────────────────────────────────────────────
+    # Step 1: Reset previous simulation data
+    # ──────────────────────────────────────────────
+    - name: Reset simulation grid
+      run: |
+        echo "=== Resetting previous simulation data ==="
+        RESPONSE=$(curl -s --max-time 30 \
+          "https://findtorontoevents.ca/findstocks/api/exhaustive_sim.php?key=stocksrefresh2026&reset=1")
+        echo "$RESPONSE"
+
+    # ──────────────────────────────────────────────
+    # Step 2: Run batches sequentially
+    # ──────────────────────────────────────────────
+    - name: Run exhaustive simulation batches
+      run: |
+        MAX_BATCHES="${{ github.event.inputs.max_batches || '200' }}"
+        BATCH=0
+        TOTAL_RAN=0
+        CONSECUTIVE_EMPTY=0
+
+        echo "=== Running exhaustive simulation (up to $MAX_BATCHES batches) ==="
+
+        while [ "$BATCH" -lt "$MAX_BATCHES" ]; do
+          echo "--- Batch $BATCH ---"
+
+          RESPONSE=$(curl -s --max-time 60 \
+            "https://findtorontoevents.ca/findstocks/api/exhaustive_sim.php?key=stocksrefresh2026&batch=$BATCH")
+
+          # Check if response is valid
+          if ! echo "$RESPONSE" | grep -q '"ok":true'; then
+            echo "::warning::Batch $BATCH failed or returned invalid response"
+            echo "Response: $RESPONSE"
+
+            # Retry once
+            sleep 5
+            RESPONSE=$(curl -s --max-time 60 \
+              "https://findtorontoevents.ca/findstocks/api/exhaustive_sim.php?key=stocksrefresh2026&batch=$BATCH")
+
+            if ! echo "$RESPONSE" | grep -q '"ok":true'; then
+              echo "::error::Batch $BATCH failed after retry"
+              break
+            fi
+          fi
+
+          # Parse results
+          COMBOS_RAN=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('combos_ran',0))" 2>/dev/null || echo "0")
+          STATUS=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('status','unknown'))" 2>/dev/null || echo "unknown")
+          ELAPSED=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('elapsed_seconds','?'))" 2>/dev/null || echo "?")
+
+          echo "  Combos ran: $COMBOS_RAN | Status: $STATUS | Time: ${ELAPSED}s"
+          TOTAL_RAN=$((TOTAL_RAN + COMBOS_RAN))
+
+          # Check if simulation is complete
+          if [ "$STATUS" = "complete" ]; then
+            echo "Simulation complete!"
+            break
+          fi
+
+          # Track empty batches (past all combos)
+          if [ "$COMBOS_RAN" = "0" ]; then
+            CONSECUTIVE_EMPTY=$((CONSECUTIVE_EMPTY + 1))
+            if [ "$CONSECUTIVE_EMPTY" -ge 3 ]; then
+              echo "3 consecutive empty batches — all combos covered"
+              break
+            fi
+          else
+            CONSECUTIVE_EMPTY=0
+          fi
+
+          BATCH=$((BATCH + 1))
+
+          # Brief pause between batches to not overwhelm the server
+          sleep 2
+        done
+
+        echo ""
+        echo "=== Simulation Summary ==="
+        echo "Batches run: $BATCH"
+        echo "Total combos tested: $TOTAL_RAN"
+        echo "Final status: $STATUS"
+
+    # ──────────────────────────────────────────────
+    # Step 3: Verify simulation results
+    # ──────────────────────────────────────────────
+    - name: Check simulation status
+      run: |
+        echo "=== Checking simulation results ==="
+        RESPONSE=$(curl -s --max-time 30 \
+          "https://findtorontoevents.ca/findstocks/api/exhaustive_sim.php?key=stocksrefresh2026&status=1")
+
+        echo "$RESPONSE" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        print(f'Status:          {d.get(\"status\", \"?\")}')
+        print(f'Completed rows:  {d.get(\"completed_rows\", 0)}')
+        print(f'Total planned:   {d.get(\"total_planned\", 0)}')
+        print(f'Progress:        {d.get(\"progress_pct\", 0)}%')
+        print(f'Last batch:      {d.get(\"last_batch\", 0)}')
+        " 2>/dev/null || echo "Response: $RESPONSE"
+
+    # ──────────────────────────────────────────────
+    # Step 4: Refresh daily report to include simulation results
+    # ──────────────────────────────────────────────
+    - name: Refresh daily report with simulation data
+      run: |
+        echo "=== Re-running daily refresh to incorporate simulation results ==="
+        RESPONSE=$(curl -s --max-time 120 \
+          "https://findtorontoevents.ca/findstocks/api/daily_refresh.php?key=stocksrefresh2026")
+
+        if echo "$RESPONSE" | grep -q '"ok":true'; then
+          echo "Daily refresh updated with simulation data!"
+          echo "$RESPONSE" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        for line in d.get('log', []):
+            print(f'  {line}')
+        " 2>/dev/null
+        else
+          echo "::warning::Daily refresh after simulation returned unexpected response"
+          echo "$RESPONSE"
+        fi
+
+    # ──────────────────────────────────────────────
+    # Step 5: Pull top results for the job summary
+    # ──────────────────────────────────────────────
+    - name: Display top results
+      if: always()
+      run: |
+        echo "=== Top Simulation Results ==="
+        RESPONSE=$(curl -s --max-time 30 \
+          "https://findtorontoevents.ca/findstocks/api/exhaustive_sim.php?key=stocksrefresh2026&results=1&limit=5")
+
+        echo "$RESPONSE" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+
+        print('--- LONG SUMMARY ---')
+        ls = d.get('summary', {}).get('LONG', {})
+        if ls:
+            print(f'  Combos: {ls.get(\"total_combos\",0)} | Profitable: {ls.get(\"profitable_combos\",0)} | Avg Return: {ls.get(\"avg_return\",0):.2f}% | Best: {ls.get(\"best_return\",0):.2f}%')
+
+        print('--- SHORT SUMMARY ---')
+        ss = d.get('summary', {}).get('SHORT', {})
+        if ss:
+            print(f'  Combos: {ss.get(\"total_combos\",0)} | Profitable: {ss.get(\"profitable_combos\",0)} | Avg Return: {ss.get(\"avg_return\",0):.2f}% | Best: {ss.get(\"best_return\",0):.2f}%')
+
+        print()
+        print('--- TOP 5 OVERALL ---')
+        for r in d.get('top_performers', [])[:5]:
+            algo = r.get('algorithm') or r.get('algo_combo') or 'ALL'
+            print(f'  {r[\"direction\"]} | {algo} | TP={r[\"tp\"]} SL={r[\"sl\"]} Hold={r[\"hold_days\"]}d Comm=\${r[\"commission\"]} | Return={r[\"total_return_pct\"]}% WR={r[\"win_rate\"]}%')
+
+        print()
+        print('--- TOP 5 SHORTS ---')
+        for r in d.get('best_shorts', [])[:5]:
+            algo = r.get('algorithm') or r.get('algo_combo') or 'ALL'
+            print(f'  SHORT | {algo} | TP={r[\"tp\"]} SL={r[\"sl\"]} Hold={r[\"hold_days\"]}d | Return={r[\"total_return_pct\"]}% WR={r[\"win_rate\"]}%')
+        " 2>/dev/null || echo "Could not parse results"
+
+        echo ""
+        echo "Full results: https://findtorontoevents.ca/findstocks/portfolio/report.html"

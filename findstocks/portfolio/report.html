@@ -174,6 +174,46 @@
 
         <hr class="separator">
 
+        <!-- ═══ SHORT-SELLING ANALYSIS ═══ -->
+        <div class="card">
+            <h2>Short-Selling Analysis (Bear Market Strategies)</h2>
+            <p style="color:var(--dim);font-size:.82rem;margin-bottom:1rem;">What if we shorted every stock our algorithms picked? Profits when the stock DROPS. This tests whether our "buy" signals are actually "sell" signals in disguise, or whether the market was in a bearish phase we missed.</p>
+            <div class="g2" style="margin-bottom:1rem;">
+                <div class="chart-box"><canvas id="shortChart"></canvas></div>
+                <div id="shortCards" class="algo-grid"></div>
+            </div>
+            <h3>Short Strategy Scenarios</h3>
+            <div class="tbl-wrap"><table id="shortTable"><thead><tr><th>Strategy</th><th>TP%</th><th>SL%</th><th>Hold</th><th>Comm</th><th>Trades</th><th>Win Rate</th><th>Return</th><th>Sharpe</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <!-- ═══ BULL vs BEAR REGIME ═══ -->
+        <div class="card">
+            <h2>Bull vs Bear Market Regime Analysis</h2>
+            <p style="color:var(--dim);font-size:.82rem;margin-bottom:1rem;">Performance breakdown by detected market regime (SPY trend). Shows whether our algorithms work better in bull, bear, or sideways markets — and whether shorting outperforms in bear regimes.</p>
+            <div class="g2">
+                <div class="chart-box"><canvas id="regimeChart"></canvas></div>
+                <div id="regimeInsights"></div>
+            </div>
+        </div>
+
+        <!-- ═══ LONG vs SHORT HEAD-TO-HEAD ═══ -->
+        <div class="card">
+            <h2>Long vs Short — Head to Head</h2>
+            <p style="color:var(--dim);font-size:.82rem;margin-bottom:1rem;">Direct comparison: for each algorithm, would you have made more money going LONG or going SHORT on the same picks?</p>
+            <div class="tbl-wrap"><table id="longVsShortTable"><thead><tr><th>Algorithm</th><th>Long 7d Return</th><th>Long Win Rate</th><th>Short 7d Return</th><th>Short Win Rate</th><th>Verdict</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <hr class="separator">
+
+        <!-- ═══ EXHAUSTIVE SIMULATION ═══ -->
+        <div class="card" id="exhaustiveCard">
+            <h2>Exhaustive Permutation Simulation</h2>
+            <p style="color:var(--dim);font-size:.82rem;margin-bottom:1rem;">Every combination of TP% (9 values), SL% (8 values), hold period (9 values), commission (3 levels), direction (LONG/SHORT), per algorithm and across algorithm combos. Thousands of permutations to find the absolute best and worst parameter sets.</p>
+            <div id="exhaustiveContent"></div>
+        </div>
+
+        <hr class="separator">
+
         <!-- ═══ METHODOLOGY ═══ -->
         <div class="card">
             <h2>Methodology & Trust</h2>
@@ -231,6 +271,10 @@ function render() {
     renderRecs();
     renderCharts();
     renderCommission();
+    renderShortAnalysis();
+    renderRegimeAnalysis();
+    renderLongVsShort();
+    renderExhaustive();
 }
 
 // ─── Stats Bar ───
@@ -299,6 +343,42 @@ function renderFindings() {
     }
     if (failing > 0) {
         f.push('<strong>' + failing + ' of ' + recs.length + ' algorithms are currently failing</strong> under all tested parameter combinations. Consider adding market regime filters or suspending picks during high-volatility periods.');
+    }
+
+    // Short-selling findings
+    var shortScenarios = R.short_scenarios || [];
+    var bestShort = null, bestShortRet = -999;
+    for (var i = 0; i < shortScenarios.length; i++) {
+        var sr = parseFloat(shortScenarios[i].summary.total_return_pct || 0);
+        if (sr > bestShortRet) { bestShortRet = sr; bestShort = shortScenarios[i]; }
+    }
+    if (bestShort && bestShortRet > 0) {
+        f.push('<strong>Short-selling is profitable!</strong> Best short strategy "' + bestShort.name.replace(/_/g, ' ') + '" returns ' + fmt(bestShortRet) + '. This means some of our picks are better used as SHORT signals.');
+    } else if (bestShort) {
+        f.push('Short-selling all strategies are negative (best: ' + fmt(bestShortRet) + '). Our algorithms genuinely pick stocks that tend to go UP — the long bias is correct.');
+    }
+
+    // Long vs Short verdict
+    var shortAlgos = R.per_algorithm_short || [];
+    var shortWinners = 0;
+    for (var i = 0; i < shortAlgos.length; i++) {
+        var sRet = parseFloat((shortAlgos[i].short_7d_nostops || {}).total_return_pct || 0);
+        if (sRet > 0) shortWinners++;
+    }
+    if (shortWinners > 0 && shortAlgos.length > 0) {
+        f.push('<strong>' + shortWinners + ' of ' + shortAlgos.length + ' algorithms would be profitable as SHORT strategies.</strong> Consider adding inverse/short variants for these algorithms, especially during bearish market regimes.');
+    }
+
+    // Exhaustive sim finding
+    var ex = R.exhaustive || {};
+    if (ex.status === 'complete') {
+        var statsL = ex.stats_long || {};
+        var statsS = ex.stats_short || {};
+        var totalCombos = (parseInt(statsL.total_combos) || 0) + (parseInt(statsS.total_combos) || 0);
+        var totalProf = (parseInt(statsL.profitable) || 0) + (parseInt(statsS.profitable) || 0);
+        if (totalCombos > 0) {
+            f.push('<strong>Exhaustive simulation: ' + totalCombos + ' parameter permutations tested, ' + totalProf + ' profitable (' + Math.round(totalProf/totalCombos*100) + '%).</strong> Best LONG: ' + fmt(statsL.best_ret) + ', Best SHORT: ' + fmt(statsS.best_ret) + '.');
+        }
     }
 
     var html = '';
@@ -486,6 +566,235 @@ function renderCommission() {
     document.getElementById('commInsight').innerHTML = '<div class="finding"><strong>' + pctFromComm + '% of total losses come from commissions.</strong> '
         + 'With $0 commission (Robinhood, Webull, etc.), overall return improves from ' + fmt(withComm.total_return_pct) + ' to ' + fmt(noComm.total_return_pct) + '. '
         + 'Total fees paid: <strong>$' + commLoss + '</strong> across ' + withComm.total_trades + ' trades.</div>';
+}
+
+// ─── Short-Selling Analysis ───
+function renderShortAnalysis() {
+    var ss = R.short_scenarios || [];
+    if (ss.length === 0) { document.getElementById('shortTable').querySelector('tbody').innerHTML = '<tr><td colspan="9" style="color:var(--dim);text-align:center">Short-selling data not yet available — will populate on next daily refresh</td></tr>'; return; }
+
+    // Short scenario table
+    var tb = document.getElementById('shortTable').querySelector('tbody');
+    var h = '';
+    for (var i = 0; i < ss.length; i++) {
+        var s = ss[i]; var sm = s.summary || {}; var p = s.params || {};
+        var ret = parseFloat(sm.total_return_pct || 0);
+        h += '<tr><td><strong>' + s.name.replace(/_/g, ' ') + '</strong></td>'
+           + '<td>' + (p.tp >= 999 ? '—' : p.tp + '%') + '</td>'
+           + '<td>' + (p.sl >= 999 ? '—' : p.sl + '%') + '</td>'
+           + '<td>' + p.hold + 'd</td>'
+           + '<td>$' + (p.comm || 10) + '</td>'
+           + '<td>' + (sm.total_trades || 0) + '</td>'
+           + '<td>' + (sm.win_rate || 0) + '%</td>'
+           + '<td class="' + (ret >= 0 ? 'pos' : 'neg') + '">' + fmt(ret) + '</td>'
+           + '<td>' + (sm.sharpe_ratio || '—') + '</td></tr>';
+    }
+    tb.innerHTML = h;
+
+    // Short chart
+    var labels = [], rets = [], colors = [];
+    for (var i = 0; i < ss.length; i++) {
+        labels.push(ss[i].name.replace(/short_/g, '').replace(/_/g, ' '));
+        var r = parseFloat(ss[i].summary.total_return_pct || 0);
+        rets.push(r);
+        colors.push(r >= 0 ? 'rgba(34,197,94,.7)' : 'rgba(239,68,68,.7)');
+    }
+    new Chart(document.getElementById('shortChart'), {
+        type: 'bar', data: { labels: labels, datasets: [{ label: 'Short Return %', data: rets, backgroundColor: colors, borderRadius: 6 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+            scales: { y: { grid: { color: 'rgba(42,42,74,.5)' }, ticks: { color: '#8888aa', callback: function(v){return v+'%';} } }, x: { grid: { display: false }, ticks: { color: '#8888aa', maxRotation: 45, font: { size: 9 } } } }
+        }
+    });
+
+    // Per-algo short cards
+    var sa = R.per_algorithm_short || [];
+    var ch = '';
+    for (var i = 0; i < sa.length; i++) {
+        var a = sa[i];
+        var ss7 = a.short_7d_stops || {};
+        var ssn = a.short_7d_nostops || {};
+        var retS = parseFloat(ss7.total_return_pct || 0);
+        var retSn = parseFloat(ssn.total_return_pct || 0);
+        var badge = retSn > 0 ? '<span class="badge b-green">SHORT WINS</span>' : '<span class="badge b-red">SHORT LOSES</span>';
+        ch += '<div class="algo-card">'
+            + '<h4>' + a.algorithm + ' ' + badge + '</h4>'
+            + '<div class="algo-row"><span>Short 7d (10/5 stops)</span><span class="' + (retS >= 0 ? 'pos' : 'neg') + '">' + fmt(retS) + '</span></div>'
+            + '<div class="algo-row"><span>Short 7d (no stops)</span><span class="' + (retSn >= 0 ? 'pos' : 'neg') + '">' + fmt(retSn) + '</span></div>'
+            + '<div class="algo-row"><span>Win Rate</span><span>' + (ss7.win_rate || 0) + '%</span></div>'
+            + '<div class="algo-row"><span>Sharpe</span><span>' + (ss7.sharpe_ratio || '—') + '</span></div>'
+            + '</div>';
+    }
+    document.getElementById('shortCards').innerHTML = ch;
+}
+
+// ─── Regime Analysis (Bull vs Bear) ───
+function renderRegimeAnalysis() {
+    var sa = R.per_algorithm_short || [];
+    if (sa.length === 0) return;
+
+    // Aggregate regime data across algorithms
+    var regimes = {};
+    for (var i = 0; i < sa.length; i++) {
+        var rd = sa[i].regime || {};
+        for (var rname in rd) {
+            if (!rd.hasOwnProperty(rname)) continue;
+            if (!regimes[rname]) regimes[rname] = { trades: 0, wins: 0, losses: 0, pnl: 0 };
+            regimes[rname].trades += rd[rname].trades || 0;
+            regimes[rname].wins += rd[rname].wins || 0;
+            regimes[rname].losses += rd[rname].losses || 0;
+            regimes[rname].pnl += rd[rname].total_pnl || 0;
+        }
+    }
+
+    // Render chart
+    var rNames = ['bull', 'bear', 'sideways', 'unknown'];
+    var rLabels = ['Bull Market', 'Bear Market', 'Sideways', 'Unknown'];
+    var rColors = ['rgba(34,197,94,.7)', 'rgba(239,68,68,.7)', 'rgba(234,179,8,.7)', 'rgba(136,136,170,.5)'];
+    var rTrades = [], rWR = [], rPnl = [];
+    for (var i = 0; i < rNames.length; i++) {
+        var rg = regimes[rNames[i]] || { trades: 0, wins: 0, pnl: 0 };
+        rTrades.push(rg.trades);
+        rWR.push(rg.trades > 0 ? Math.round(rg.wins / rg.trades * 100) : 0);
+        rPnl.push(Math.round(rg.pnl * 100) / 100);
+    }
+
+    new Chart(document.getElementById('regimeChart'), {
+        type: 'bar',
+        data: { labels: rLabels, datasets: [
+            { label: 'Trades', data: rTrades, backgroundColor: rColors, borderRadius: 4, yAxisID: 'y' },
+            { label: 'Win Rate %', data: rWR, type: 'line', borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,.2)', yAxisID: 'y1', tension: 0.3, pointRadius: 6 }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#8888aa', font: { size: 10 } } } },
+            scales: {
+                y: { position: 'left', grid: { color: 'rgba(42,42,74,.5)' }, ticks: { color: '#8888aa' }, title: { display: true, text: 'Trades', color: '#8888aa' } },
+                y1: { position: 'right', grid: { display: false }, ticks: { color: '#6366f1', callback: function(v){return v+'%';} }, title: { display: true, text: 'Win Rate', color: '#6366f1' }, min: 0, max: 100 },
+                x: { grid: { display: false }, ticks: { color: '#8888aa' } }
+            }
+        }
+    });
+
+    // Insights
+    var html = '';
+    for (var i = 0; i < rNames.length; i++) {
+        var rg = regimes[rNames[i]] || { trades: 0, wins: 0, pnl: 0 };
+        if (rg.trades === 0) continue;
+        var wr = Math.round(rg.wins / rg.trades * 100);
+        var cls = rg.pnl > 0 ? 'pos' : 'neg';
+        html += '<div class="finding"><strong>' + rLabels[i] + ':</strong> ' + rg.trades + ' short trades, '
+              + wr + '% win rate, <span class="' + cls + '">$' + pf(rg.pnl) + ' P/L</span>. '
+              + (rg.pnl > 0 ? 'Shorting is profitable in this regime!' : 'Going long is better in this regime.') + '</div>';
+    }
+    document.getElementById('regimeInsights').innerHTML = html || '<p style="color:var(--dim)">No regime data available (SPY price history needed)</p>';
+}
+
+// ─── Long vs Short Head-to-Head ───
+function renderLongVsShort() {
+    var longA = R.per_algorithm || [];
+    var shortA = R.per_algorithm_short || [];
+    if (longA.length === 0 || shortA.length === 0) return;
+
+    var tb = document.getElementById('longVsShortTable').querySelector('tbody');
+    var h = '';
+    for (var i = 0; i < longA.length; i++) {
+        var la = longA[i];
+        var sa = null;
+        for (var j = 0; j < shortA.length; j++) {
+            if (shortA[j].algorithm === la.algorithm) { sa = shortA[j]; break; }
+        }
+        if (!sa) continue;
+
+        var longRet = parseFloat((la.hold_7d_nocomm || {}).total_return_pct || 0);
+        var longWR = parseFloat((la.hold_7d_nocomm || {}).win_rate || 0);
+        var shortRet = parseFloat((sa.short_7d_nostops || {}).total_return_pct || 0);
+        var shortWR = parseFloat((sa.short_7d_nostops || {}).win_rate || 0);
+
+        var verdict = '';
+        if (longRet > 0 && shortRet > 0) verdict = '<span class="badge b-blue">BOTH WORK</span>';
+        else if (longRet > shortRet) verdict = '<span class="badge b-green">GO LONG</span>';
+        else if (shortRet > longRet) verdict = '<span class="badge b-red">GO SHORT</span>';
+        else verdict = '<span class="badge b-yellow">NEITHER</span>';
+
+        h += '<tr><td><strong>' + la.algorithm + '</strong></td>'
+           + '<td class="' + (longRet >= 0 ? 'pos' : 'neg') + '">' + fmt(longRet) + '</td>'
+           + '<td>' + longWR + '%</td>'
+           + '<td class="' + (shortRet >= 0 ? 'pos' : 'neg') + '">' + fmt(shortRet) + '</td>'
+           + '<td>' + shortWR + '%</td>'
+           + '<td>' + verdict + '</td></tr>';
+    }
+    tb.innerHTML = h || '<tr><td colspan="6" style="color:var(--dim);text-align:center">Awaiting next daily refresh with short data</td></tr>';
+}
+
+// ─── Exhaustive Simulation ───
+function renderExhaustive() {
+    var ex = R.exhaustive || {};
+    var el = document.getElementById('exhaustiveContent');
+    if (!ex || !ex.status) {
+        el.innerHTML = '<p style="color:var(--dim)">Exhaustive simulation not yet run. It will be triggered by the weekly GitHub Actions workflow, running thousands of parameter permutations in batches.</p>';
+        return;
+    }
+    if (ex.status !== 'complete') {
+        el.innerHTML = '<p style="color:var(--yellow)">Simulation status: <strong>' + ex.status + '</strong>. Check back after the next weekly run completes.</p>';
+        return;
+    }
+
+    var html = '';
+
+    // Overall stats
+    var statsL = ex.stats_long || {};
+    var statsS = ex.stats_short || {};
+    html += '<div class="stats">'
+        + st('LONG Combos Tested', statsL.total_combos || 0, 'neu')
+        + st('LONG Profitable', statsL.profitable || 0, 'pos')
+        + st('LONG Best Return', fmt(statsL.best_ret), (parseFloat(statsL.best_ret) > 0 ? 'pos' : 'neg'))
+        + st('SHORT Combos Tested', statsS.total_combos || 0, 'neu')
+        + st('SHORT Profitable', statsS.profitable || 0, 'pos')
+        + st('SHORT Best Return', fmt(statsS.best_ret), (parseFloat(statsS.best_ret) > 0 ? 'pos' : 'neg'))
+        + '</div>';
+
+    // Profitability rate
+    var longProfRate = (parseInt(statsL.total_combos) > 0) ? Math.round(parseInt(statsL.profitable) / parseInt(statsL.total_combos) * 100) : 0;
+    var shortProfRate = (parseInt(statsS.total_combos) > 0) ? Math.round(parseInt(statsS.profitable) / parseInt(statsS.total_combos) * 100) : 0;
+
+    html += '<div class="finding"><strong>' + longProfRate + '% of LONG parameter combos are profitable</strong>, vs <strong>' + shortProfRate + '% of SHORT combos</strong>. '
+          + (longProfRate > shortProfRate ? 'Long strategies have a wider profitable zone — our algorithms generally pick stocks that go UP.' : 'Short strategies have an edge — suggesting our picks are better at identifying stocks that DROP.')
+          + '</div>';
+
+    // Top LONG combos
+    var topL = ex.long || [];
+    if (topL.length > 0) {
+        html += '<h3>Top 10 LONG Parameter Combinations</h3><div class="tbl-wrap"><table><thead><tr><th>Algo</th><th>TP</th><th>SL</th><th>Hold</th><th>Comm</th><th>Trades</th><th>Win%</th><th>Return</th><th>Sharpe</th></tr></thead><tbody>';
+        for (var i = 0; i < topL.length; i++) {
+            var r = topL[i]; var ret = parseFloat(r.total_return_pct || 0);
+            html += '<tr><td><strong>' + (r.algorithm || r.algo_combo || 'ALL') + '</strong></td>'
+                  + '<td>' + (parseFloat(r.tp) >= 999 ? '—' : r.tp + '%') + '</td>'
+                  + '<td>' + (parseFloat(r.sl) >= 999 ? '—' : r.sl + '%') + '</td>'
+                  + '<td>' + r.hold_days + 'd</td><td>$' + r.commission + '</td>'
+                  + '<td>' + r.total_trades + '</td><td>' + r.win_rate + '%</td>'
+                  + '<td class="' + (ret >= 0 ? 'pos' : 'neg') + '">' + fmt(ret) + '</td>'
+                  + '<td>' + (r.sharpe_ratio || '—') + '</td></tr>';
+        }
+        html += '</tbody></table></div>';
+    }
+
+    // Top SHORT combos
+    var topS = ex.short || [];
+    if (topS.length > 0) {
+        html += '<h3>Top 10 SHORT Parameter Combinations</h3><div class="tbl-wrap"><table><thead><tr><th>Algo</th><th>TP</th><th>SL</th><th>Hold</th><th>Comm</th><th>Trades</th><th>Win%</th><th>Return</th><th>Sharpe</th></tr></thead><tbody>';
+        for (var i = 0; i < topS.length; i++) {
+            var r = topS[i]; var ret = parseFloat(r.total_return_pct || 0);
+            html += '<tr><td><strong>' + (r.algorithm || r.algo_combo || 'ALL') + '</strong></td>'
+                  + '<td>' + (parseFloat(r.tp) >= 999 ? '—' : r.tp + '%') + '</td>'
+                  + '<td>' + (parseFloat(r.sl) >= 999 ? '—' : r.sl + '%') + '</td>'
+                  + '<td>' + r.hold_days + 'd</td><td>$' + r.commission + '</td>'
+                  + '<td>' + r.total_trades + '</td><td>' + r.win_rate + '%</td>'
+                  + '<td class="' + (ret >= 0 ? 'pos' : 'neg') + '">' + fmt(ret) + '</td>'
+                  + '<td>' + (r.sharpe_ratio || '—') + '</td></tr>';
+        }
+        html += '</tbody></table></div>';
+    }
+
+    el.innerHTML = html;
 }
 
 // ─── Helpers ───

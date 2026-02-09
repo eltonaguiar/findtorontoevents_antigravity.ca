@@ -142,6 +142,87 @@ if ($rec_data && $rec_data['ok']) {
     $summary['recommendations'] = isset($rec_data['recommendations']) ? $rec_data['recommendations'] : array();
 }
 
+// ─── 3b. Short-selling backtests ───
+$short_scenarios = array(
+    array('name' => 'short_daytrader_2d',     'tp' => 5,   'sl' => 3,  'hold' => 2,  'comm' => 10),
+    array('name' => 'short_weekly',           'tp' => 10,  'sl' => 5,  'hold' => 7,  'comm' => 10),
+    array('name' => 'short_swing',            'tp' => 15,  'sl' => 8,  'hold' => 14, 'comm' => 10),
+    array('name' => 'short_aggressive',       'tp' => 20,  'sl' => 10, 'hold' => 30, 'comm' => 10),
+    array('name' => 'short_weekly_nocomm',    'tp' => 10,  'sl' => 5,  'hold' => 7,  'comm' => 0),
+    array('name' => 'short_hold_7d_nocomm',   'tp' => 999, 'sl' => 999,'hold' => 7,  'comm' => 0)
+);
+$summary['short_scenarios'] = array();
+foreach ($short_scenarios as $sc) {
+    $url = 'https://findtorontoevents.ca/findstocks/api/short_backtest.php'
+         . '?take_profit=' . $sc['tp']
+         . '&stop_loss=' . $sc['sl']
+         . '&max_hold_days=' . $sc['hold']
+         . '&commission=' . $sc['comm']
+         . '&slippage=0.5';
+    $json = @file_get_contents($url);
+    $data = ($json !== false) ? json_decode($json, true) : null;
+    if ($data && $data['ok']) {
+        $summary['short_scenarios'][] = array(
+            'name' => $sc['name'],
+            'params' => $sc,
+            'summary' => $data['summary'],
+            'regime_breakdown' => isset($data['regime_breakdown']) ? $data['regime_breakdown'] : array()
+        );
+    }
+}
+$log[] = 'Short backtests: ran ' . count($summary['short_scenarios']) . ' scenarios';
+
+// ─── 3c. Per-algorithm short analysis ───
+$summary['per_algorithm_short'] = array();
+foreach ($algo_names as $algo) {
+    $encoded = urlencode($algo);
+    $url_s1 = 'https://findtorontoevents.ca/findstocks/api/short_backtest.php?algorithms=' . $encoded . '&take_profit=10&stop_loss=5&max_hold_days=7&commission=0&slippage=0.5';
+    $ds1 = json_decode(@file_get_contents($url_s1), true);
+    $url_s2 = 'https://findtorontoevents.ca/findstocks/api/short_backtest.php?algorithms=' . $encoded . '&take_profit=999&stop_loss=999&max_hold_days=7&commission=0&slippage=0';
+    $ds2 = json_decode(@file_get_contents($url_s2), true);
+
+    $sentry = array('algorithm' => $algo);
+    if ($ds1 && $ds1['ok']) {
+        $sentry['short_7d_stops'] = $ds1['summary'];
+        $sentry['regime'] = isset($ds1['regime_breakdown']) ? $ds1['regime_breakdown'] : array();
+    }
+    if ($ds2 && $ds2['ok']) $sentry['short_7d_nostops'] = $ds2['summary'];
+    $summary['per_algorithm_short'][] = $sentry;
+}
+$log[] = 'Short algo analysis: ' . count($summary['per_algorithm_short']) . ' algorithms';
+
+// ─── 3d. Exhaustive simulation summary (if available) ───
+$summary['exhaustive'] = array();
+$sim_r = $conn->query("SELECT meta_value FROM simulation_meta WHERE meta_key='status'");
+if ($sim_r && $srow = $sim_r->fetch_assoc()) {
+    if ($srow['meta_value'] === 'complete') {
+        // Pull summary from simulation_grid
+        $esim = array('status' => 'complete', 'long' => array(), 'short' => array(), 'best_overall' => array());
+
+        // Best LONG combos
+        $r = $conn->query("SELECT * FROM simulation_grid WHERE direction='LONG' AND total_trades>0 ORDER BY total_return_pct DESC LIMIT 10");
+        if ($r) { while ($row = $r->fetch_assoc()) $esim['long'][] = $row; }
+
+        // Best SHORT combos
+        $r = $conn->query("SELECT * FROM simulation_grid WHERE direction='SHORT' AND total_trades>0 ORDER BY total_return_pct DESC LIMIT 10");
+        if ($r) { while ($row = $r->fetch_assoc()) $esim['short'][] = $row; }
+
+        // Overall stats
+        $r = $conn->query("SELECT direction, COUNT(*) as total_combos,
+                            SUM(CASE WHEN total_return_pct > 0 THEN 1 ELSE 0 END) as profitable,
+                            AVG(total_return_pct) as avg_ret, MAX(total_return_pct) as best_ret,
+                            MIN(total_return_pct) as worst_ret
+                           FROM simulation_grid WHERE total_trades>0 GROUP BY direction");
+        if ($r) { while ($row = $r->fetch_assoc()) $esim['stats_' . strtolower($row['direction'])] = $row; }
+
+        $summary['exhaustive'] = $esim;
+        $log[] = 'Exhaustive sim: loaded cached results';
+    } else {
+        $summary['exhaustive'] = array('status' => $srow['meta_value']);
+        $log[] = 'Exhaustive sim: ' . $srow['meta_value'];
+    }
+}
+
 // DB stats
 $stats = array();
 $r = $conn->query("SELECT COUNT(*) as c FROM stocks"); $stats['total_stocks'] = ($r) ? (int)$r->fetch_assoc() : 0;
