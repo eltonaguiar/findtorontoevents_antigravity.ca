@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Picks - Ready-Made Stock Picks | Find Stocks</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --orange: #f97316;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ─── Header ─── */
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--yellow), var(--orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-links { display: flex; gap: 1rem; font-size: 0.9rem; }
+        .header-links a { color: var(--text-dim); }
+        .header-links a:hover { color: var(--text); }
+
+        /* ─── Container ─── */
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+        /* ─── Hero Banner ─── */
+        .hero {
+            background: linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(234,179,8,0.1) 100%);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .hero h2 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .hero p {
+            color: var(--text-dim);
+            font-size: 1rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* ─── Urgency Selector ─── */
+        .urgency-bar {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        .urgency-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 99px;
+            border: 2px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .urgency-btn:hover {
+            border-color: var(--accent);
+            color: var(--text);
+            transform: translateY(-2px);
+        }
+        .urgency-btn.active {
+            border-color: var(--accent);
+            background: rgba(99,102,241,0.15);
+            color: var(--text);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+        .urgency-btn .icon { font-size: 1.2rem; }
+
+        /* ─── Category Section ─── */
+        .category-section {
+            margin-bottom: 3rem;
+            animation: fadeUp 0.4s ease-out;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .category-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+        .category-title {
+            flex: 1;
+        }
+        .category-title h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        .category-title p {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+        .category-meta {
+            display: flex;
+            gap: 0.75rem;
+        }
+        .meta-badge {
+            padding: 0.3rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        /* ─── Save Portfolio Button ─── */
+        .save-portfolio-btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            border: 2px solid var(--green);
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--green);
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .save-portfolio-btn:hover {
+            background: var(--green);
+            color: #000;
+            box-shadow: 0 0 20px rgba(34,197,94,0.3);
+        }
+        .save-portfolio-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .save-portfolio-btn.saved {
+            background: var(--green);
+            color: #000;
+            border-color: var(--green);
+        }
+
+        /* ─── Picks Grid ─── */
+        .picks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1rem;
+        }
+
+        /* ─── Pick Card ─── */
+        .pick-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+        .pick-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .pick-card.day { border-left: 4px solid var(--yellow); }
+        .pick-card.swing { border-left: 4px solid var(--accent); }
+        .pick-card.longterm { border-left: 4px solid var(--green); }
+
+        .pick-card .status-ribbon {
+            position: absolute;
+            top: 12px;
+            right: -32px;
+            transform: rotate(45deg);
+            font-size: 0.55rem;
+            font-weight: 800;
+            padding: 0.15rem 2rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .status-ribbon.tp_hit { background: var(--green); color: #000; }
+        .status-ribbon.sl_hit { background: var(--red); color: #fff; }
+
+        .pick-top {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .pick-ticker {
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+        .pick-name {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
+        }
+        .pick-algo {
+            margin-left: auto;
+            font-size: 0.6rem;
+            padding: 0.15rem 0.5rem;
+            background: rgba(99,102,241,0.15);
+            color: var(--accent);
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* ─── Price Grid (Entry / TP / SL) ─── */
+        .price-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .price-cell {
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 8px;
+            background: rgba(10,10,26,0.5);
+        }
+        .price-cell .label {
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.2rem;
+        }
+        .price-cell .val {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        .price-cell.tp .val { color: var(--green); }
+        .price-cell.sl .val { color: var(--red); }
+        .price-cell.entry .val { color: var(--text); }
+
+        /* ─── Risk/Reward Bar ─── */
+        .rr-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.75rem;
+        }
+        .rr-visual {
+            flex: 1;
+            height: 8px;
+            background: var(--red);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        .rr-reward {
+            height: 100%;
+            background: var(--green);
+            border-radius: 4px;
+        }
+        .rr-label {
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+        }
+
+        /* ─── Current Status Row ─── */
+        .current-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+        }
+        .current-price-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+        .current-price-val {
+            font-weight: 700;
+        }
+        .return-badge {
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+        }
+        .return-badge.positive { background: var(--green-dim); color: var(--green); }
+        .return-badge.negative { background: var(--red-dim); color: var(--red); }
+
+        /* ─── Score + Distance Row ─── */
+        .bottom-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+        }
+        .score-bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .mini-bar {
+            width: 40px;
+            height: 5px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .mini-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+        .mini-fill.high { background: var(--green); }
+        .mini-fill.mid { background: var(--yellow); }
+        .mini-fill.low { background: var(--red); }
+
+        /* ─── Tracked Portfolios Section ─── */
+        .tracked-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+        .tracked-section h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+        .portfolio-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .portfolio-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        .portfolio-card h4 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .portfolio-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+        .portfolio-stat .label {
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+        .portfolio-stat .val { font-weight: 700; }
+
+        /* ─── Portfolio Detail Modal ─── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            max-width: 900px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+        .modal-close {
+            float: right;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .modal-close:hover { color: var(--text); }
+
+        /* ─── Save Name Input ─── */
+        .save-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        .save-modal.active { display: flex; }
+        .save-form {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            max-width: 450px;
+            width: 100%;
+        }
+        .save-form h3 { margin-bottom: 1rem; }
+        .save-form input {
+            width: 100%;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        .save-form input:focus { border-color: var(--accent); outline: none; }
+        .save-form .btn-row {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: #5558e6; }
+        .btn-cancel { background: var(--bg-dark); color: var(--text); border: 1px solid var(--border); }
+        .btn-cancel:hover { border-color: var(--accent); }
+
+        /* ─── Table ─── */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        thead th {
+            text-align: left;
+            padding: 0.6rem 0.8rem;
+            background: var(--bg-dark);
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+        tbody td {
+            padding: 0.5rem 0.8rem;
+            border-bottom: 1px solid rgba(42,42,74,0.5);
+        }
+        tbody tr:hover { background: rgba(99,102,241,0.05); }
+        .positive { color: var(--green); }
+        .negative { color: var(--red); }
+
+        /* ─── Loading ─── */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-dim);
+        }
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ─── Toast ─── */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--green);
+            color: #000;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* ─── Disclaimer ─── */
+        .disclaimer {
+            background: rgba(234, 179, 8, 0.08);
+            border: 1px solid rgba(234, 179, 8, 0.2);
+            border-radius: var(--radius);
+            padding: 1rem 1.5rem;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 2rem;
+            text-align: center;
+        }
+        .disclaimer strong { color: var(--yellow); }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .header { padding: 0.75rem 1rem; }
+            .picks-grid { grid-template-columns: 1fr; }
+            .urgency-bar { gap: 0.3rem; }
+            .urgency-btn { padding: 0.5rem 0.8rem; font-size: 0.8rem; }
+            .hero { padding: 1.5rem; }
+            .hero h2 { font-size: 1.3rem; }
+            .category-meta { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ─── Header ─── -->
+<div class="header">
+    <h1>Quick Picks</h1>
+    <div class="header-links">
+        <a href="/findstocks/portfolio/">Portfolio Analysis</a>
+        <a href="/findstocks/portfolio/report.html">Daily Report</a>
+        <a href="/findstocks/">Stock Picks</a>
+        <a href="/findstocks/research/">Research</a>
+        <a href="/">Events</a>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- ─── Hero ─── -->
+    <div class="hero">
+        <h2>Ready-Made Stock Picks with Entry, TP &amp; Stop Loss</h2>
+        <p>No fiddling required. Pick a timeframe, grab the picks, and go. Each pick comes with exact entry price, take profit target, and stop loss level.</p>
+    </div>
+
+    <!-- ─── Urgency Selector ─── -->
+    <div class="urgency-bar" id="urgencyBar">
+        <button class="urgency-btn active" data-filter="all" onclick="filterCategory('all', this)">
+            <span class="icon">&#x1F4CA;</span> Show All
+        </button>
+        <button class="urgency-btn" data-filter="day" onclick="filterCategory('day', this)">
+            <span class="icon">&#x26A1;</span> I Need Money in 1-2 Days
+        </button>
+        <button class="urgency-btn" data-filter="swing" onclick="filterCategory('swing', this)">
+            <span class="icon">&#x1F4C8;</span> I Can Wait 2-4 Weeks
+        </button>
+        <button class="urgency-btn" data-filter="longterm" onclick="filterCategory('longterm', this)">
+            <span class="icon">&#x1F6E1;</span> I Can Wait 3-12 Months
+        </button>
+    </div>
+
+    <!-- ─── Loading ─── -->
+    <div id="loadingArea" class="loading">
+        <div class="spinner"></div>
+        <p style="margin-top:1rem;">Loading curated picks across all timeframes...</p>
+    </div>
+
+    <!-- ─── Picks Content ─── -->
+    <div id="picksContent" style="display:none;"></div>
+
+    <!-- ─── Tracked Portfolios ─── -->
+    <div class="tracked-section" id="trackedSection" style="display:none;">
+        <h2>&#x1F4BC; My Tracked Portfolios</h2>
+        <div class="portfolio-grid" id="portfolioGrid"></div>
+    </div>
+
+    <!-- ─── Disclaimer ─── -->
+    <div class="disclaimer">
+        <strong>Disclaimer:</strong> This tool is for <strong>research and educational purposes only</strong>.
+        Past performance does not guarantee future results. All picks are algorithm-generated.
+        Always do your own research before investing. Consult a licensed financial adviser.
+    </div>
+</div>
+
+<!-- ─── Save Portfolio Modal ─── -->
+<div class="save-modal" id="saveModal">
+    <div class="save-form">
+        <h3>Save as Tracked Portfolio</h3>
+        <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:1rem;">
+            Save these picks and track their progress daily. TP/SL hits will be monitored automatically.
+        </p>
+        <input type="text" id="portfolioName" placeholder="Portfolio name (e.g. My Swing Picks Feb 9)">
+        <div class="btn-row">
+            <button class="btn btn-cancel" onclick="closeSaveModal()">Cancel</button>
+            <button class="btn btn-primary" id="confirmSaveBtn" onclick="confirmSave()">Save &amp; Track</button>
+        </div>
+    </div>
+</div>
+
+<!-- ─── Portfolio Detail Modal ─── -->
+<div class="modal-overlay" id="detailModal">
+    <div class="modal-content" id="detailContent"></div>
+</div>
+
+<!-- ─── Toast ─── -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── Config ───
+var API_BASE = (function() {
+    var loc = window.location;
+    if (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1') return '/findstocks/api/';
+    return '/findstocks/api/';
+})();
+
+var allData = null;
+var currentFilter = 'all';
+var savingCategory = '';
+var savingPicks = [];
+
+// ─── Load Data ───
+function loadQuickPicks() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API_BASE + 'quick_picks.php', true);
+    xhr.onload = function() {
+        document.getElementById('loadingArea').style.display = 'none';
+        document.getElementById('picksContent').style.display = 'block';
+        try {
+            allData = JSON.parse(xhr.responseText);
+            if (!allData || !allData.ok) {
+                document.getElementById('picksContent').innerHTML = '<div class="loading" style="color:var(--red)">Failed to load picks. Server returned an error.</div>';
+                return;
+            }
+            renderAllCategories();
+        } catch(e) {
+            document.getElementById('picksContent').innerHTML = '<div class="loading" style="color:var(--red)">Failed to parse response: ' + e.message + '</div>';
+        }
+    };
+    xhr.onerror = function() {
+        document.getElementById('loadingArea').style.display = 'none';
+        document.getElementById('picksContent').style.display = 'block';
+        document.getElementById('picksContent').innerHTML = '<div class="loading" style="color:var(--red)">Network error. Check your connection.</div>';
+    };
+    xhr.send();
+}
+
+// ─── Render All Categories ───
+function renderAllCategories() {
+    if (!allData || !allData.categories) return;
+    var html = '';
+    for (var i = 0; i < allData.categories.length; i++) {
+        html += renderCategory(allData.categories[i]);
+    }
+    document.getElementById('picksContent').innerHTML = html;
+}
+
+// ─── Render Single Category ───
+function renderCategory(cat) {
+    var display = (currentFilter === 'all' || currentFilter === cat.key) ? 'block' : 'none';
+    var iconMap = { day: '&#x26A1;', swing: '&#x1F4C8;', longterm: '&#x1F6E1;' };
+    var icon = iconMap[cat.key] || '&#x1F4CA;';
+    var colorMap = { day: '#eab308', swing: '#6366f1', longterm: '#22c55e' };
+    var color = colorMap[cat.key] || '#6366f1';
+
+    var html = '<div class="category-section" id="cat-' + cat.key + '" style="display:' + display + ';">';
+    html += '<div class="category-header">';
+    html += '<div class="category-icon" style="background:' + color + '20;color:' + color + ';">' + icon + '</div>';
+    html += '<div class="category-title"><h3>' + cat.name + '</h3><p>' + cat.description + '</p></div>';
+    html += '<div class="category-meta">';
+    html += '<span class="meta-badge" style="background:' + color + '20;color:' + color + ';">TP: +' + cat.tp_pct + '%</span>';
+    html += '<span class="meta-badge" style="background:var(--red-dim);color:var(--red);">SL: -' + cat.sl_pct + '%</span>';
+    html += '<span class="meta-badge" style="background:var(--bg-dark);color:var(--text-dim);">Hold: ' + cat.hold_days + 'd</span>';
+    html += '<span class="meta-badge" style="background:rgba(59,130,246,0.15);color:var(--blue);">R:R ' + cat.risk_reward + ':1</span>';
+    html += '</div>';
+    html += '<button class="save-portfolio-btn" onclick="openSaveModal(\'' + cat.key + '\')">';
+    html += '&#x1F4BE; Save as Portfolio</button>';
+    html += '</div>';
+
+    if (cat.picks && cat.picks.length > 0) {
+        html += '<div class="picks-grid">';
+        for (var j = 0; j < cat.picks.length; j++) {
+            html += renderPickCard(cat.picks[j], cat.key);
+        }
+        html += '</div>';
+    } else {
+        html += '<div style="text-align:center;padding:2rem;color:var(--text-dim);">No picks available for this category. Check back after the next data refresh.</div>';
+    }
+
+    html += '</div>';
+    return html;
+}
+
+// ─── Render Pick Card ───
+function renderPickCard(pick, catKey) {
+    var retClass = pick.current_return >= 0 ? 'positive' : 'negative';
+    var retSign = pick.current_return >= 0 ? '+' : '';
+    var scoreClass = pick.score >= 75 ? 'high' : (pick.score >= 50 ? 'mid' : 'low');
+
+    // R:R visual percentage (reward portion of total range)
+    var totalRange = pick.tp_pct + pick.sl_pct;
+    var rewardPct = totalRange > 0 ? Math.round(pick.tp_pct / totalRange * 100) : 50;
+
+    var html = '<div class="pick-card ' + catKey + '">';
+
+    // TP/SL hit ribbon
+    if (pick.status === 'tp_hit') {
+        html += '<div class="status-ribbon tp_hit">TP HIT</div>';
+    } else if (pick.status === 'sl_hit') {
+        html += '<div class="status-ribbon sl_hit">SL HIT</div>';
+    }
+
+    // Top row: ticker, name, algo
+    html += '<div class="pick-top">';
+    html += '<span class="pick-ticker">' + pick.ticker + '</span>';
+    html += '<span class="pick-name">' + (pick.company_name || '') + '</span>';
+    html += '<span class="pick-algo">' + (pick.algorithm || '') + '</span>';
+    html += '</div>';
+
+    // Price grid: Entry / TP / SL
+    html += '<div class="price-grid">';
+    html += '<div class="price-cell entry"><div class="label">Entry</div><div class="val">$' + fmt(pick.entry_price) + '</div></div>';
+    html += '<div class="price-cell tp"><div class="label">Take Profit</div><div class="val">$' + fmt(pick.take_profit) + '</div></div>';
+    html += '<div class="price-cell sl"><div class="label">Stop Loss</div><div class="val">$' + fmt(pick.stop_loss) + '</div></div>';
+    html += '</div>';
+
+    // Risk:Reward bar
+    html += '<div class="rr-bar">';
+    html += '<span style="color:var(--red);font-weight:600;">-' + pick.sl_pct + '%</span>';
+    html += '<div class="rr-visual"><div class="rr-reward" style="width:' + rewardPct + '%;"></div></div>';
+    html += '<span style="color:var(--green);font-weight:600;">+' + pick.tp_pct + '%</span>';
+    html += '<span class="rr-label">' + pick.risk_reward + ':1</span>';
+    html += '</div>';
+
+    // Current price and return
+    html += '<div class="current-row">';
+    html += '<span class="current-price-label">Now: <span class="current-price-val">$' + fmt(pick.current_price) + '</span></span>';
+    html += '<span class="return-badge ' + retClass + '">' + retSign + fmt(pick.current_return) + '%</span>';
+    html += '</div>';
+
+    // Score + distances
+    html += '<div class="bottom-row">';
+    html += '<div class="score-bar-wrap"><span>Score: ' + pick.score + '</span>';
+    html += '<div class="mini-bar"><div class="mini-fill ' + scoreClass + '" style="width:' + pick.score + '%;"></div></div></div>';
+    if (pick.status === 'active') {
+        html += '<span>TP: ' + fmt(pick.dist_to_tp) + '% away | SL: ' + fmt(pick.dist_to_sl) + '% buffer</span>';
+    } else {
+        html += '<span style="color:' + (pick.status === 'tp_hit' ? 'var(--green)' : 'var(--red)') + ';font-weight:600;">' + pick.status.replace('_', ' ').toUpperCase() + '</span>';
+    }
+    html += '</div>';
+
+    html += '</div>';
+    return html;
+}
+
+// ─── Filter by Category ───
+function filterCategory(filter, btn) {
+    currentFilter = filter;
+    var btns = document.querySelectorAll('.urgency-btn');
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+    btn.classList.add('active');
+    renderAllCategories();
+}
+
+// ─── Save Portfolio ───
+function openSaveModal(catKey) {
+    savingCategory = catKey;
+    // Find picks for this category
+    savingPicks = [];
+    if (allData && allData.categories) {
+        for (var i = 0; i < allData.categories.length; i++) {
+            if (allData.categories[i].key === catKey) {
+                savingPicks = allData.categories[i].picks || [];
+                break;
+            }
+        }
+    }
+    var catNames = { day: 'Day Trade', swing: 'Swing Trade', longterm: 'Long-Term' };
+    var defaultName = (catNames[catKey] || 'Custom') + ' Picks ' + new Date().toLocaleDateString('en-US', {month:'short', day:'numeric'});
+    document.getElementById('portfolioName').value = defaultName;
+    document.getElementById('saveModal').classList.add('active');
+}
+
+function closeSaveModal() {
+    document.getElementById('saveModal').classList.remove('active');
+}
+
+function confirmSave() {
+    var name = document.getElementById('portfolioName').value.trim();
+    if (!name) name = 'My Portfolio';
+    if (savingPicks.length === 0) {
+        showToast('No picks to save!', true);
+        closeSaveModal();
+        return;
+    }
+
+    var btn = document.getElementById('confirmSaveBtn');
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+
+    var payload = {
+        name: name,
+        category: savingCategory,
+        initial_capital: 10000,
+        picks: []
+    };
+    for (var i = 0; i < savingPicks.length; i++) {
+        var p = savingPicks[i];
+        payload.picks.push({
+            ticker: p.ticker,
+            company_name: p.company_name,
+            algorithm: p.algorithm,
+            entry_price: p.entry_price,
+            current_price: p.current_price,
+            take_profit: p.take_profit,
+            stop_loss: p.stop_loss,
+            tp_pct: p.tp_pct,
+            sl_pct: p.sl_pct,
+            hold_days: p.hold_days,
+            entry_date: p.pick_date
+        });
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', API_BASE + 'tracked_portfolios.php?action=save', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onload = function() {
+        btn.textContent = 'Save & Track';
+        btn.disabled = false;
+        closeSaveModal();
+        try {
+            var res = JSON.parse(xhr.responseText);
+            if (res.ok) {
+                showToast('Portfolio "' + name + '" saved! Tracking ' + res.picks_saved + ' picks.');
+                loadTrackedPortfolios();
+            } else {
+                showToast('Error: ' + (res.error || 'Unknown'), true);
+            }
+        } catch(e) {
+            showToast('Save failed: ' + e.message, true);
+        }
+    };
+    xhr.onerror = function() {
+        btn.textContent = 'Save & Track';
+        btn.disabled = false;
+        closeSaveModal();
+        showToast('Network error while saving', true);
+    };
+    xhr.send(JSON.stringify(payload));
+}
+
+// ─── Load Tracked Portfolios ───
+function loadTrackedPortfolios() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API_BASE + 'tracked_portfolios.php?action=list', true);
+    xhr.onload = function() {
+        try {
+            var res = JSON.parse(xhr.responseText);
+            if (res.ok && res.portfolios && res.portfolios.length > 0) {
+                document.getElementById('trackedSection').style.display = 'block';
+                renderTrackedPortfolios(res.portfolios);
+            }
+        } catch(e) { /* silently fail */ }
+    };
+    xhr.send();
+}
+
+function renderTrackedPortfolios(portfolios) {
+    var html = '';
+    for (var i = 0; i < portfolios.length; i++) {
+        var p = portfolios[i];
+        var retClass = parseFloat(p.total_return_pct) >= 0 ? 'positive' : 'negative';
+        var retSign = parseFloat(p.total_return_pct) >= 0 ? '+' : '';
+        var statusColor = p.status === 'active' ? 'var(--green)' : 'var(--text-dim)';
+        var catIcon = {day:'&#x26A1;', swing:'&#x1F4C8;', longterm:'&#x1F6E1;'}[p.category] || '&#x1F4CA;';
+
+        html += '<div class="portfolio-card" onclick="openPortfolioDetail(' + p.id + ')">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">';
+        html += '<h4>' + catIcon + ' ' + p.name + '</h4>';
+        html += '<span style="font-size:0.7rem;color:' + statusColor + ';text-transform:uppercase;font-weight:700;">' + p.status + '</span>';
+        html += '</div>';
+        html += '<div class="portfolio-stats">';
+        html += '<div class="portfolio-stat"><div class="label">Return</div><div class="val ' + retClass + '">' + retSign + fmt(p.total_return_pct) + '%</div></div>';
+        html += '<div class="portfolio-stat"><div class="label">TP Hits</div><div class="val positive">' + (p.tp_hits || 0) + '</div></div>';
+        html += '<div class="portfolio-stat"><div class="label">SL Hits</div><div class="val negative">' + (p.sl_hits || 0) + '</div></div>';
+        html += '<div class="portfolio-stat"><div class="label">Active</div><div class="val">' + (p.active_picks || 0) + '/' + (p.total_picks || 0) + '</div></div>';
+        html += '<div class="portfolio-stat"><div class="label">Best</div><div class="val positive">' + (p.best_pick || '-') + '</div></div>';
+        html += '<div class="portfolio-stat"><div class="label">Worst</div><div class="val negative">' + (p.worst_pick || '-') + '</div></div>';
+        html += '</div>';
+        html += '<div style="font-size:0.7rem;color:var(--text-dim);margin-top:0.5rem;">Created: ' + (p.created_at || '-') + '</div>';
+        html += '</div>';
+    }
+    document.getElementById('portfolioGrid').innerHTML = html;
+}
+
+// ─── Portfolio Detail ───
+function openPortfolioDetail(id) {
+    var modal = document.getElementById('detailModal');
+    var content = document.getElementById('detailContent');
+    content.innerHTML = '<div class="loading"><div class="spinner"></div><p style="margin-top:1rem;">Loading portfolio...</p></div>';
+    modal.classList.add('active');
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API_BASE + 'tracked_portfolios.php?action=get&id=' + id, true);
+    xhr.onload = function() {
+        try {
+            var res = JSON.parse(xhr.responseText);
+            if (res.ok && res.portfolio) {
+                renderPortfolioDetail(res.portfolio);
+            } else {
+                content.innerHTML = '<p style="color:var(--red)">Failed to load portfolio.</p>';
+            }
+        } catch(e) {
+            content.innerHTML = '<p style="color:var(--red)">Parse error.</p>';
+        }
+    };
+    xhr.send();
+}
+
+function renderPortfolioDetail(port) {
+    var content = document.getElementById('detailContent');
+    var retClass = parseFloat(port.total_return_pct) >= 0 ? 'positive' : 'negative';
+    var retSign = parseFloat(port.total_return_pct) >= 0 ? '+' : '';
+
+    var html = '<button class="modal-close" onclick="closeDetailModal()">&times;</button>';
+    html += '<h2 style="margin-bottom:0.5rem;">' + port.name + '</h2>';
+    html += '<p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:1.5rem;">Category: ' + (port.category || '-') + ' | Status: ' + port.status + ' | Created: ' + port.created_at + '</p>';
+
+    // Summary stats
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.75rem;margin-bottom:1.5rem;">';
+    html += miniStat('Avg Return', retSign + fmt(port.total_return_pct) + '%', retClass);
+    html += miniStat('TP Hits', port.tp_hits || 0, 'positive');
+    html += miniStat('SL Hits', port.sl_hits || 0, 'negative');
+    html += miniStat('Active', (port.active_picks || 0) + '/' + (port.total_picks || 0), '');
+    html += '</div>';
+
+    // Picks table
+    var picks = port.picks || [];
+    if (picks.length > 0) {
+        html += '<div class="table-wrap"><table>';
+        html += '<thead><tr>';
+        html += '<th>Ticker</th><th>Entry</th><th>Current</th><th>TP</th><th>SL</th><th>Return</th><th>Days</th><th>Status</th>';
+        html += '</tr></thead><tbody>';
+        for (var i = 0; i < picks.length; i++) {
+            var pk = picks[i];
+            var pkRetClass = parseFloat(pk.current_return_pct) >= 0 ? 'positive' : 'negative';
+            var pkRetSign = parseFloat(pk.current_return_pct) >= 0 ? '+' : '';
+            var statusStyle = '';
+            if (pk.status === 'tp_hit') statusStyle = 'color:var(--green);font-weight:700;';
+            else if (pk.status === 'sl_hit') statusStyle = 'color:var(--red);font-weight:700;';
+            else if (pk.status === 'expired') statusStyle = 'color:var(--yellow);';
+
+            html += '<tr>';
+            html += '<td><strong>' + pk.ticker + '</strong><br><span style="font-size:0.7rem;color:var(--text-dim);">' + (pk.company_name || '') + '</span></td>';
+            html += '<td>$' + fmt(pk.entry_price) + '</td>';
+            html += '<td>$' + fmt(pk.current_price) + '</td>';
+            html += '<td class="positive">$' + fmt(pk.take_profit) + '</td>';
+            html += '<td class="negative">$' + fmt(pk.stop_loss) + '</td>';
+            html += '<td class="' + pkRetClass + '">' + pkRetSign + fmt(pk.current_return_pct) + '%</td>';
+            html += '<td>' + (pk.days_held || 0) + '</td>';
+            html += '<td style="' + statusStyle + '">' + (pk.status || '').replace('_', ' ').toUpperCase() + '</td>';
+            html += '</tr>';
+        }
+        html += '</tbody></table></div>';
+    }
+
+    // Refresh button
+    html += '<div style="margin-top:1.5rem;text-align:center;">';
+    html += '<button class="btn btn-primary" onclick="refreshPortfolio(' + port.id + ')">Refresh Prices</button>';
+    html += '</div>';
+
+    content.innerHTML = html;
+}
+
+function closeDetailModal() {
+    document.getElementById('detailModal').classList.remove('active');
+}
+
+function refreshPortfolio(id) {
+    showToast('Refreshing prices...');
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API_BASE + 'tracked_portfolios.php?action=refresh&id=' + id, true);
+    xhr.onload = function() {
+        try {
+            var res = JSON.parse(xhr.responseText);
+            if (res.ok) {
+                showToast('Prices refreshed! Reloading...');
+                setTimeout(function() {
+                    openPortfolioDetail(id);
+                    loadTrackedPortfolios();
+                }, 500);
+            }
+        } catch(e) { showToast('Refresh failed', true); }
+    };
+    xhr.send();
+}
+
+function miniStat(label, value, cls) {
+    return '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:0.75rem;text-align:center;">'
+        + '<div style="font-size:0.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em;">' + label + '</div>'
+        + '<div style="font-size:1.2rem;font-weight:700;" class="' + cls + '">' + value + '</div></div>';
+}
+
+// ─── Helpers ───
+function fmt(n) {
+    if (n === null || n === undefined) return '-';
+    return parseFloat(n).toFixed(2);
+}
+
+function showToast(msg, isError) {
+    var toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.style.background = isError ? 'var(--red)' : 'var(--green)';
+    toast.style.color = isError ? '#fff' : '#000';
+    toast.classList.add('show');
+    setTimeout(function() { toast.classList.remove('show'); }, 3000);
+}
+
+// ─── Click outside modal to close ───
+document.getElementById('saveModal').addEventListener('click', function(e) {
+    if (e.target === this) closeSaveModal();
+});
+document.getElementById('detailModal').addEventListener('click', function(e) {
+    if (e.target === this) closeDetailModal();
+});
+
+// ─── Init ───
+loadQuickPicks();
+loadTrackedPortfolios();
+
+// Setup tracked portfolios table on first load (silent)
+(function() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API_BASE + 'tracked_portfolios.php?action=setup', true);
+    xhr.send();
+})();
+</script>
+</body>
+</html>

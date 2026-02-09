@@ -1760,21 +1760,130 @@
       target.parentNode.insertBefore(d,target.nextSibling);
     }
 
-    // 2. Inject nav link in Quick Navigation sidebar
+    // 2. Inject DayTrades Miracle Claude card after Global Dashboard
+    if(target){
+      var mc=document.createElement('div');
+      mc.className='mt-4 max-w-4xl mx-auto';
+      mc.innerHTML='<a class="block group" href="/findstocks2_global/miracle.html">'
+        +'<div class="glass-panel p-6 rounded-[2rem] border-2 border-amber-500/50 bg-gradient-to-r from-amber-500/10 via-transparent to-orange-500/10 hover:border-amber-400 transition-all">'
+        +'<div class="flex flex-wrap items-center justify-between gap-6 px-4">'
+        +'<div class="text-left">'
+        +'<div class="flex items-center gap-3 mb-2">'
+        +'<span class="px-2 py-0.5 rounded bg-amber-500 text-[10px] font-black tracking-tighter uppercase text-black">Day Trading AI</span>'
+        +'<h2 class="text-xl font-bold text-white">DayTrades Miracle Claude</h2>'
+        +'</div>'
+        +'<p class="text-sm text-neutral-400 max-w-xl"><strong>8 strategies</strong> scanning <strong>68 tickers</strong> &mdash; Gap-up momentum, volume surge, oversold bounce, CDR zero-fee plays &amp; more. Self-learning AI with budget-aware picks.</p>'
+        +'</div>'
+        +'<div class="px-8 py-3 bg-amber-500 text-black text-sm font-black rounded-full group-hover:scale-105 transition-transform">Open Miracle Dashboard &rarr;</div>'
+        +'</div></div></a>';
+      // Insert after the Global Dashboard card (or after target if that wasn't inserted)
+      var globalCard=target.nextSibling;
+      while(globalCard && globalCard.nodeType!==1) globalCard=globalCard.nextSibling;
+      if(globalCard && globalCard.innerHTML && globalCard.innerHTML.indexOf('findstocks2_global')!==-1){
+        globalCard.parentNode.insertBefore(mc,globalCard.nextSibling);
+      } else {
+        target.parentNode.insertBefore(mc,target.nextSibling);
+      }
+    }
+
+    // 3. Inject Quick Picks card after Miracle
+    var miracleCard2 = mc;
+    if(miracleCard2 && miracleCard2.parentNode){
+      var qp=document.createElement('div');
+      qp.className='mt-4 max-w-4xl mx-auto';
+      qp.innerHTML='<a class="block group" href="/findstocks/portfolio/quick-picks.html">'
+        +'<div class="glass-panel p-6 rounded-[2rem] border-2 border-yellow-500/50 bg-gradient-to-r from-yellow-500/10 via-transparent to-red-500/10 hover:border-yellow-400 transition-all">'
+        +'<div class="flex flex-wrap items-center justify-between gap-6 px-4">'
+        +'<div class="text-left">'
+        +'<div class="flex items-center gap-3 mb-2">'
+        +'<span class="px-2 py-0.5 rounded bg-yellow-500 text-[10px] font-black tracking-tighter uppercase text-black">NEW</span>'
+        +'<h2 class="text-xl font-bold text-white">Quick Picks \u2014 Ready-Made Stock Picks</h2>'
+        +'</div>'
+        +'<p class="text-sm text-neutral-400 max-w-xl">No fiddling. Pick a timeframe and go. <strong>Day Trade</strong> (1-2 days), <strong>Swing Trade</strong> (2-4 weeks), or <strong>Long-Term</strong> (3-12 months). Each pick has exact entry, take profit &amp; stop loss. Save as tracked portfolio.</p>'
+        +'</div>'
+        +'<div class="px-8 py-3 bg-yellow-500 text-black text-sm font-black rounded-full group-hover:scale-105 transition-transform">Get Quick Picks \u2192</div>'
+        +'</div></div></a>';
+      miracleCard2.parentNode.insertBefore(qp,miracleCard2.nextSibling);
+    }
+
+    // 4. Inject DayTraders Miracle v3 card
+    var qpCard = qp;
+    if(qpCard && qpCard.parentNode){
+      var m3=document.createElement('div');
+      m3.className='mt-4 max-w-4xl mx-auto';
+      m3.innerHTML='<a class="block group" href="/findstocks_global/miracle.html">'
+        +'<div class="glass-panel p-6 rounded-[2rem] border-2 border-rose-500/50 bg-gradient-to-r from-rose-500/10 via-transparent to-purple-500/10 hover:border-rose-400 transition-all">'
+        +'<div class="flex flex-wrap items-center justify-between gap-6 px-4">'
+        +'<div class="text-left">'
+        +'<div class="flex items-center gap-3 mb-2">'
+        +'<span class="px-2 py-0.5 rounded bg-rose-500 text-[10px] font-black tracking-tighter uppercase">V3 Scanner</span>'
+        +'<h2 class="text-xl font-bold text-white">DayTraders Miracle v3</h2>'
+        +'</div>'
+        +'<p class="text-sm text-neutral-400 max-w-xl">Claude-generated AI stock scanner. Self-learning strategies, confidence scoring, CDR zero-fee detection &amp; outcome resolution. Latest generation miracle tables.</p>'
+        +'</div>'
+        +'<div class="px-8 py-3 bg-rose-500 text-white text-sm font-black rounded-full group-hover:scale-105 transition-transform">Open v3 Scanner \u2192</div>'
+        +'</div></div></a>';
+      qpCard.parentNode.insertBefore(m3,qpCard.nextSibling);
+    }
+
+    // 5. Latest Updates banner
+    var lastCard = m3 || qpCard || mc;
+    if(lastCard && lastCard.parentNode){
+      var ub=document.createElement('div');
+      ub.className='mt-6 max-w-4xl mx-auto';
+      ub.innerHTML='<div class="glass-panel p-5 rounded-2xl border border-white/10 bg-white/[0.02]">'
+        +'<div class="flex items-center gap-3 mb-3">'
+        +'<span class="px-2 py-0.5 rounded bg-indigo-500 text-[10px] font-black tracking-tighter uppercase">Latest Updates</span>'
+        +'<span class="text-sm text-neutral-400">Feb 9, 2026</span>'
+        +'</div>'
+        +'<div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">'
+        +'<div class="flex items-start gap-2"><span class="text-yellow-400">\u26A1</span><span class="text-neutral-300"><strong>Quick Picks</strong> \u2014 Ready-made picks for day trade, swing, and long-term with TP/SL</span></div>'
+        +'<div class="flex items-start gap-2"><span class="text-green-400">\uD83D\uDCBC</span><span class="text-neutral-300"><strong>Portfolio Tracker</strong> \u2014 Save picks, monitor TP/SL hits daily via GitHub Actions</span></div>'
+        +'<div class="flex items-start gap-2"><span class="text-rose-400">\uD83D\uDD2C</span><span class="text-neutral-300"><strong>DayTraders Miracle v3</strong> \u2014 Latest AI scanner with self-learning strategies</span></div>'
+        +'<div class="flex items-start gap-2"><span class="text-amber-400">\uD83D\uDCC8</span><span class="text-neutral-300"><strong>Multi-Asset Picks</strong> \u2014 Cross-asset top picks: stocks, mutual funds, forex, crypto</span></div>'
+        +'</div>'
+        +'<div class="mt-3 flex flex-wrap gap-3 text-xs">'
+        +'<a href="/findstocks/portfolio/quick-picks.html" class="text-yellow-400 hover:text-yellow-300">Quick Picks \u2192</a>'
+        +'<a href="/findstocks/portfolio/" class="text-indigo-400 hover:text-indigo-300">Portfolio Analysis \u2192</a>'
+        +'<a href="/findstocks/portfolio2/picks.html" class="text-emerald-400 hover:text-emerald-300">Top Picks Dashboard \u2192</a>'
+        +'<a href="/findstocks/portfolio2/leaderboard.html" class="text-cyan-400 hover:text-cyan-300">Algorithm Leaderboard \u2192</a>'
+        +'<a href="/findstocks_global/miracle.html" class="text-rose-400 hover:text-rose-300">Miracle v3 \u2192</a>'
+        +'<a href="/findstocks2_global/miracle.html" class="text-amber-400 hover:text-amber-300">Miracle v2 \u2192</a>'
+        +'<a href="/findstocks_global/" class="text-neutral-400 hover:text-neutral-300">Investment Hub \u2192</a>'
+        +'<a href="/updates/" class="text-neutral-500 hover:text-neutral-300">Full Changelog \u2192</a>'
+        +'</div>'
+        +'</div>';
+      lastCard.parentNode.insertBefore(ub,lastCard.nextSibling);
+    }
+
+    // 6. Inject nav links in Quick Navigation sidebar
     var navLinks = document.querySelectorAll('a[href="/findstocks"]');
     for(var j=0;j<navLinks.length;j++){
       var lnk=navLinks[j];
       if(lnk.textContent.indexOf('Find Stocks')!==-1 && lnk.className.indexOf('rounded-xl')!==-1){
+        // Quick Picks link
+        var ql=document.createElement('a');
+        ql.href='/findstocks/portfolio/quick-picks.html';
+        ql.className='w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-yellow-500/20 text-yellow-200 hover:text-white transition-all border border-transparent hover:border-yellow-500/30';
+        ql.innerHTML='<span class="text-lg">\u26A1</span> Quick Picks';
+        lnk.parentNode.insertBefore(ql,lnk.nextSibling);
+        // Miracle link
+        var ml=document.createElement('a');
+        ml.href='/findstocks_global/miracle.html';
+        ml.className='w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-rose-500/20 text-rose-200 hover:text-white transition-all border border-transparent hover:border-rose-500/30';
+        ml.innerHTML='<span class="text-lg">\uD83D\uDD2C</span> Miracle v3 Scanner';
+        ql.parentNode.insertBefore(ml,ql.nextSibling);
+        // Global Dashboard link
         var nl=document.createElement('a');
         nl.href='/findstocks2_global/';
         nl.className='w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-emerald-500/20 text-emerald-200 hover:text-white transition-all border border-transparent hover:border-emerald-500/30';
         nl.innerHTML='<span class="text-lg">\uD83C\uDF0D</span> Global Portfolio Dashboard';
-        lnk.parentNode.insertBefore(nl,lnk.nextSibling);
+        ml.parentNode.insertBefore(nl,ml.nextSibling);
         break;
       }
     }
 
-    // 3. Fix broken /findstocks2/ link → redirect to /findstocks2_global/
+    // 7. Fix broken /findstocks2/ link → redirect to /findstocks2_global/
     var brokenLinks = document.querySelectorAll('a[href="/findstocks2/"]');
     for(var k=0;k<brokenLinks.length;k++){
       brokenLinks[k].href='/findstocks2_global/';

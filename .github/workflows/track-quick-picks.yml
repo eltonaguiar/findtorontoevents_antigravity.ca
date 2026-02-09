@@ -1,0 +1,95 @@
+name: Track Quick Pick Portfolios
+
+on:
+  schedule:
+    # Run daily at 11 PM UTC (6 PM ET) - after market close
+    - cron: '0 23 * * 1-5'
+    # Run Sunday for weekly summary
+    - cron: '0 12 * * 0'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  track-portfolios:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - name: Setup tracked portfolios table
+      run: |
+        echo "=== Ensuring tracked_portfolios table exists ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/findstocks/api/tracked_portfolios.php?action=setup")
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            print(f'Setup ok={d.get(\"ok\")}, Tables created: {d.get(\"tables_created\", 0)}')
+        except:
+            print('Setup response not JSON')
+        " || echo "Setup: $RESULT"
+
+    - name: Refresh all active portfolios
+      run: |
+        echo "=== Refreshing all active tracked portfolios ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/api/tracked_portfolios.php?action=refresh_all")
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            print(f'Refreshed: {d.get(\"refreshed\", 0)} portfolios')
+            for r in d.get('results', []):
+                print(f'  Portfolio #{r[\"portfolio_id\"]}: {r[\"picks_updated\"]} updated, TP hits: {r.get(\"tp_hits\",0)}, SL hits: {r.get(\"sl_hits\",0)}, Expired: {r.get(\"expired\",0)}')
+        except Exception as e:
+            print(f'Parse error: {e}')
+        " || echo "Refresh: $RESULT"
+
+    - name: List portfolio summaries
+      run: |
+        echo "=== Active Portfolio Summaries ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/findstocks/api/tracked_portfolios.php?action=list")
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            portfolios = d.get('portfolios', [])
+            print(f'Total portfolios: {len(portfolios)}')
+            for p in portfolios:
+                status = p.get('status', 'unknown')
+                ret = float(p.get('total_return_pct', 0))
+                sign = '+' if ret >= 0 else ''
+                active = p.get('active_picks', 0)
+                total = p.get('total_picks', 0)
+                tp = p.get('tp_hits', 0)
+                sl = p.get('sl_hits', 0)
+                print(f'  [{status.upper()}] {p[\"name\"]}: {sign}{ret:.2f}% return, {active}/{total} active, TP:{tp} SL:{sl}')
+        except Exception as e:
+            print(f'Parse error: {e}')
+        " || echo "List: $RESULT"
+
+    - name: Regenerate quick picks
+      run: |
+        echo "=== Regenerating quick picks for all categories ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/findstocks/api/quick_picks.php")
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            print(f'Quick picks generated: {d.get(\"total_picks\", 0)} total')
+            for cat in d.get('categories', []):
+                picks = cat.get('picks', [])
+                print(f'  {cat[\"name\"]}: {len(picks)} picks (TP:{cat[\"tp_pct\"]}% SL:{cat[\"sl_pct\"]}%)')
+                for p in picks[:3]:
+                    ret = float(p.get('current_return', 0))
+                    sign = '+' if ret >= 0 else ''
+                    print(f'    {p[\"ticker\"]} @ \${p[\"entry_price\"]} -> TP \${p[\"take_profit\"]} / SL \${p[\"stop_loss\"]} ({sign}{ret:.1f}%)')
+        except Exception as e:
+            print(f'Parse error: {e}')
+        " || echo "Quick picks: $RESULT"
+
+    - name: Verify quick picks page
+      run: |
+        echo "=== Verifying Quick Picks page ==="
+        STATUS=$(curl -sS -o /dev/null -w "%{http_code}" "https://findtorontoevents.ca/findstocks/portfolio/quick-picks.html" 2>&1)
+        echo "Quick Picks page: HTTP $STATUS"
+        if [ "$STATUS" != "200" ]; then
+          echo "::warning::Quick Picks page returned HTTP $STATUS"
+        fi
