@@ -16,7 +16,11 @@ $LP_ADMIN_KEY = 'livetrader2026';
 
 $LP_CRYPTO_SYMBOLS = array(
     'BTCUSD', 'ETHUSD', 'SOLUSD', 'BNBUSD', 'XRPUSD', 'ADAUSD', 'DOTUSD',
-    'MATICUSD', 'LINKUSD', 'AVAXUSD', 'DOGEUSD', 'SHIBUSD', 'UNIUSD', 'ATOMUSD'
+    'MATICUSD', 'LINKUSD', 'AVAXUSD', 'DOGEUSD', 'SHIBUSD', 'UNIUSD', 'ATOMUSD',
+    // Expanded volatile altcoins
+    'EOSUSD', 'NEARUSD', 'FILUSD', 'TRXUSD', 'LTCUSD', 'BCHUSD',
+    'APTUSD', 'ARBUSD', 'FTMUSD', 'AXSUSD', 'HBARUSD', 'AAVEUSD',
+    'OPUSD', 'MKRUSD', 'INJUSD', 'SUIUSD', 'PEPEUSD', 'FLOKIUSD'
 );
 
 $LP_FOREX_SYMBOLS = array(
@@ -483,7 +487,26 @@ function _lp_symbol_to_coingecko($symbol) {
         'DOGEUSD'  => 'dogecoin',
         'SHIBUSD'  => 'shiba-inu',
         'UNIUSD'   => 'uniswap',
-        'ATOMUSD'  => 'cosmos'
+        'ATOMUSD'  => 'cosmos',
+        // Expanded altcoins
+        'EOSUSD'   => 'eos',
+        'NEARUSD'  => 'near',
+        'FILUSD'   => 'filecoin',
+        'TRXUSD'   => 'tron',
+        'LTCUSD'   => 'litecoin',
+        'BCHUSD'   => 'bitcoin-cash',
+        'APTUSD'   => 'aptos',
+        'ARBUSD'   => 'arbitrum',
+        'FTMUSD'   => 'fantom',
+        'AXSUSD'   => 'axie-infinity',
+        'HBARUSD'  => 'hedera-hashgraph',
+        'AAVEUSD'  => 'aave',
+        'OPUSD'    => 'optimism',
+        'MKRUSD'   => 'maker',
+        'INJUSD'   => 'injective-protocol',
+        'SUIUSD'   => 'sui',
+        'PEPEUSD'  => 'pepe',
+        'FLOKIUSD' => 'floki'
     );
     return isset($map[$symbol]) ? $map[$symbol] : '';
 }

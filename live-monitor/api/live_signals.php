@@ -1,10 +1,10 @@
 <?php
 /**
- * Live Signal Generator — 13 Hour-Trade Algorithms for Crypto, Forex & Stocks
+ * Live Signal Generator — 19 Hour-Trade Algorithms for Crypto, Forex & Stocks
  * PHP 5.2 compatible (no short arrays, no http_response_code, no spread operator)
  *
  * Actions:
- *   ?action=scan&key=livetrader2026   — Run all 13 algorithms, generate signals (admin only)
+ *   ?action=scan&key=livetrader2026   — Run all 19 algorithms, generate signals (admin only)
  *   ?action=list[&asset_class=CRYPTO] — Show active (non-expired) signals (public)
  *   ?action=expire                    — Mark expired signals
  *
@@ -18,12 +18,20 @@
  *   7. Consensus             — 2+ daily algo picks on same symbol
  *   8. Volatility Breakout   — ATR spike + upward move
  *
- * Science-Backed Algorithms (New 5):
+ * Science-Backed Algorithms (5):
  *   9.  Trend Sniper         — 6-indicator confluence + regime gate (Brock et al. 1992)
  *   10. Dip Recovery          — Multi-candle reversal detector (Lo et al. 2000)
  *   11. Volume Spike          — Whale/institutional Z-Score detection (NBER 2024)
  *   12. VAM                   — Volatility-Adjusted Momentum / Martin Ratio (Moskowitz 2012)
  *   13. Mean Reversion Sniper — Bollinger + RSI + MACD convergence (academic consensus)
+ *
+ * Repo-Sourced Algorithms (6 — from eltonaguiar stock repos):
+ *   14. ADX Trend Strength    — ADX(14) > 25 + DI directional (STOCKSUNIFY2 Alpha Predator)
+ *   15. StochRSI Crossover    — StochRSI(14,14,3,3) K/D crossover at extremes
+ *   16. Awesome Oscillator    — AO zero-line cross (STOCKSUNIFY2, Bill Williams)
+ *   17. RSI(2) Scalp          — Ultra-short mean reversion (STOCKSUNIFY2)
+ *   18. Ichimoku Cloud        — Tenkan/Kijun cross + cloud position
+ *   19. Alpha Predator        — 4-factor alignment: ADX+RSI+AO+Volume (STOCKSUNIFY2)
  */
 
 require_once dirname(__FILE__) . '/db_connect.php';
@@ -61,7 +69,11 @@ $conn->query("CREATE TABLE IF NOT EXISTS lm_signals (
 $crypto_symbols = array(
     'BTCUSD', 'ETHUSD', 'SOLUSD', 'BNBUSD', 'XRPUSD',
     'ADAUSD', 'DOTUSD', 'LINKUSD', 'AVAXUSD', 'DOGEUSD',
-    'MATICUSD', 'SHIBUSD'
+    'MATICUSD', 'SHIBUSD', 'UNIUSD', 'ATOMUSD',
+    // Expanded volatile altcoins
+    'EOSUSD', 'NEARUSD', 'FILUSD', 'TRXUSD', 'LTCUSD', 'BCHUSD',
+    'APTUSD', 'ARBUSD', 'FTMUSD', 'AXSUSD', 'HBARUSD', 'AAVEUSD',
+    'OPUSD', 'MKRUSD', 'INJUSD', 'SUIUSD', 'PEPEUSD', 'FLOKIUSD'
 );
 
 $forex_symbols = array(
@@ -79,17 +91,19 @@ $stock_symbols = array(
 // ────────────────────────────────────────────────────────────
 
 function _ls_to_binance($s) {
-    // BTCUSD -> BTCUSDT
+    // BTCUSD -> BTCUSDT — generic: append T to USD-ending symbols
+    // Special cases only needed if the ticker name differs
     $map = array(
-        'BTCUSD'   => 'BTCUSDT',  'ETHUSD'   => 'ETHUSDT',
-        'SOLUSD'   => 'SOLUSDT',  'BNBUSD'   => 'BNBUSDT',
-        'XRPUSD'   => 'XRPUSDT',  'ADAUSD'   => 'ADAUSDT',
-        'DOTUSD'   => 'DOTUSDT',  'LINKUSD'  => 'LINKUSDT',
-        'AVAXUSD'  => 'AVAXUSDT', 'DOGEUSD'  => 'DOGEUSDT',
-        'MATICUSD' => 'MATICUSDT','SHIBUSD'   => 'SHIBUSDT'
+        'MATICUSD' => 'MATICUSDT',
+        'SHIBUSD'  => 'SHIBUSDT',
+        'PEPEUSD'  => 'PEPEUSDT',
+        'FLOKIUSD' => 'FLOKIUSDT',
+        'HBARUSD'  => 'HBARUSDT'
     );
     if (isset($map[$s])) return $map[$s];
-    return str_replace('USD', 'USDT', $s);
+    // Generic: XXXUSD -> XXXUSDT
+    if (substr($s, -3) === 'USD') return $s . 'T';
+    return $s;
 }
 
 function _ls_to_twelvedata($s) {
@@ -144,15 +158,19 @@ function _ls_http_get($url) {
 }
 
 // ────────────────────────────────────────────────────────────
-//  Candle fetching — Binance (crypto)
+//  Candle fetching — Crypto (CoinGecko OHLC primary, Binance fallback)
 // ────────────────────────────────────────────────────────────
 
 function _ls_fetch_binance_klines($symbol, $limit) {
     $limit = (int)$limit;
     if ($limit < 1) $limit = 24;
-    $bin = _ls_to_binance($symbol);
 
-    // File cache 30 seconds
+    // Try CoinGecko OHLC first (works on shared hosting)
+    $candles = _ls_fetch_coingecko_ohlc($symbol, $limit);
+    if (count($candles) >= 2) return $candles;
+
+    // Fallback: Binance klines (may be blocked on shared hosting)
+    $bin = _ls_to_binance($symbol);
     $cache_file = sys_get_temp_dir() . '/lm_klines_' . md5($bin . '_' . $limit) . '.json';
     if (file_exists($cache_file) && (time() - filemtime($cache_file)) < 30) {
         $cached = @file_get_contents($cache_file);
@@ -172,7 +190,6 @@ function _ls_fetch_binance_klines($symbol, $limit) {
 
     $candles = array();
     foreach ($raw as $k) {
-        // Binance kline format: [openTime, open, high, low, close, volume, closeTime, ...]
         $candles[] = array(
             'time'   => (float)$k[0] / 1000,
             'open'   => (float)$k[1],
@@ -185,6 +202,73 @@ function _ls_fetch_binance_klines($symbol, $limit) {
 
     @file_put_contents($cache_file, json_encode($candles));
     return $candles;
+}
+
+// CoinGecko OHLC — hourly candles (free, no auth, works from shared hosting)
+function _ls_fetch_coingecko_ohlc($symbol, $limit) {
+    $cg_id = _ls_symbol_to_coingecko($symbol);
+    if ($cg_id === '') return array();
+
+    $cache_file = sys_get_temp_dir() . '/lm_cg_ohlc_ls_' . md5($cg_id . '_' . $limit) . '.json';
+    if (file_exists($cache_file) && (time() - filemtime($cache_file)) < 60) {
+        $cached = @file_get_contents($cache_file);
+        if ($cached !== false) {
+            $arr = json_decode($cached, true);
+            if (is_array($arr) && count($arr) > 0) return $arr;
+        }
+    }
+
+    // days=2 gives ~48 hourly candles
+    $url = 'https://api.coingecko.com/api/v3/coins/' . urlencode($cg_id)
+         . '/ohlc?vs_currency=usd&days=2';
+    $body = _ls_http_get($url);
+    if ($body === null) return array();
+
+    $raw = json_decode($body, true);
+    if (!is_array($raw)) return array();
+
+    $candles = array();
+    foreach ($raw as $k) {
+        if (!is_array($k) || count($k) < 5) continue;
+        $candles[] = array(
+            'time'   => (float)$k[0] / 1000,
+            'open'   => (float)$k[1],
+            'high'   => (float)$k[2],
+            'low'    => (float)$k[3],
+            'close'  => (float)$k[4],
+            'volume' => 0
+        );
+    }
+
+    if (count($candles) > $limit) {
+        $candles = array_slice($candles, count($candles) - $limit);
+    }
+
+    @file_put_contents($cache_file, json_encode($candles));
+    return $candles;
+}
+
+// CoinGecko ID map for signal scanner
+function _ls_symbol_to_coingecko($symbol) {
+    $map = array(
+        'BTCUSD'   => 'bitcoin',       'ETHUSD'   => 'ethereum',
+        'SOLUSD'   => 'solana',         'BNBUSD'   => 'binancecoin',
+        'XRPUSD'   => 'ripple',         'ADAUSD'   => 'cardano',
+        'DOTUSD'   => 'polkadot',       'MATICUSD' => 'polygon-ecosystem-token',
+        'LINKUSD'  => 'chainlink',      'AVAXUSD'  => 'avalanche-2',
+        'DOGEUSD'  => 'dogecoin',       'SHIBUSD'  => 'shiba-inu',
+        'UNIUSD'   => 'uniswap',        'ATOMUSD'  => 'cosmos',
+        'EOSUSD'   => 'eos',            'NEARUSD'  => 'near',
+        'FILUSD'   => 'filecoin',        'TRXUSD'   => 'tron',
+        'LTCUSD'   => 'litecoin',        'BCHUSD'   => 'bitcoin-cash',
+        'APTUSD'   => 'aptos',           'ARBUSD'   => 'arbitrum',
+        'FTMUSD'   => 'fantom',          'AXSUSD'   => 'axie-infinity',
+        'HBARUSD'  => 'hedera-hashgraph','AAVEUSD'  => 'aave',
+        'OPUSD'    => 'optimism',        'MKRUSD'   => 'maker',
+        'INJUSD'   => 'injective-protocol', 'SUIUSD' => 'sui',
+        'PEPEUSD'  => 'pepe',            'FLOKIUSD' => 'floki'
+    );
+    return isset($map[$symbol]) ? $map[$symbol] : '';
 }
 
 // ────────────────────────────────────────────────────────────
@@ -1958,6 +2042,528 @@ function _ls_algo_mean_reversion_sniper($candles, $price, $symbol, $asset) {
 }
 
 // ────────────────────────────────────────────────────────────
+//  Algorithm #14: ADX Trend Strength
+//  Science: STOCKSUNIFY2 Alpha Predator — ADX(14) > 25 = strong trend
+//  +DI > -DI = bullish, -DI > +DI = bearish. ADX measures trend strength.
+// ────────────────────────────────────────────────────────────
+
+function _ls_algo_adx_trend($candles, $price, $symbol, $asset) {
+    $closes = _ls_extract_closes($candles);
+    $highs  = _ls_extract_highs($candles);
+    $lows   = _ls_extract_lows($candles);
+    $n = count($closes);
+    if ($n < 20) return null;
+
+    $adx_data = _ls_calc_adx($highs, $lows, $closes, 14);
+    if ($adx_data === null) return null;
+
+    $adx = $adx_data['adx'];
+    $plus_di = $adx_data['plus_di'];
+    $minus_di = $adx_data['minus_di'];
+
+    // ADX must be above 25 (strong trend)
+    if ($adx < 25) return null;
+
+    // DI spread must be meaningful (> 5 points)
+    $di_spread = abs($plus_di - $minus_di);
+    if ($di_spread < 5) return null;
+
+    // Direction from DI
+    $direction = ($plus_di > $minus_di) ? 'BUY' : 'SHORT';
+
+    // Strength: higher ADX + wider DI spread = stronger
+    $strength = min(100, (int)(($adx - 20) * 2 + $di_spread));
+
+    // Asset-class TP/SL
+    $tp = 1.5; $sl = 0.75; $hold = 6;
+    if ($asset === 'FOREX') { $tp = 0.4; $sl = 0.2; $hold = 6; }
+    if ($asset === 'STOCK') { $tp = 1.0; $sl = 0.5; $hold = 6; }
+
+    // Check learned params
+    global $conn;
+    $learned = _ls_get_learned_params($conn, 'ADX Trend Strength', $asset);
+    if ($learned) {
+        $tp = (float)$learned['best_tp_pct'];
+        $sl = (float)$learned['best_sl_pct'];
+        $hold = (int)$learned['best_hold_hours'];
+    }
+
+    return array(
+        'algorithm_name'  => 'ADX Trend Strength',
+        'signal_type'     => $direction,
+        'signal_strength' => $strength,
+        'target_tp_pct'   => $tp,
+        'target_sl_pct'   => $sl,
+        'max_hold_hours'  => $hold,
+        'timeframe'       => '1h',
+        'rationale'       => json_encode(array(
+            'reason'   => 'ADX(' . round($adx, 1) . ') > 25 = strong trend. +DI=' . round($plus_di, 1) . ' -DI=' . round($minus_di, 1) . ' spread=' . round($di_spread, 1),
+            'adx'      => round($adx, 1),
+            'plus_di'  => round($plus_di, 1),
+            'minus_di' => round($minus_di, 1),
+            'di_spread' => round($di_spread, 1),
+            'source'   => 'STOCKSUNIFY2 Alpha Predator (Wilder ADX)'
+        ))
+    );
+}
+
+// ────────────────────────────────────────────────────────────
+//  Algorithm #15: Stochastic RSI Crossover
+//  Science: StochRSI(14,14,3,3) K/D crossover at oversold/overbought
+//  Combines momentum (RSI) with mean reversion (Stochastic) for better timing
+// ────────────────────────────────────────────────────────────
+
+function _ls_algo_stoch_rsi_cross($candles, $price, $symbol, $asset) {
+    $closes = _ls_extract_closes($candles);
+    $n = count($closes);
+    if ($n < 30) return null;
+
+    $stoch = _ls_calc_stoch_rsi($closes, 14, 14, 3, 3);
+    if ($stoch === null) return null;
+
+    $k = $stoch['k'];
+    $d = $stoch['d'];
+    $prev_k = $stoch['prev_k'];
+    $prev_d = $stoch['prev_d'];
+
+    $signal = null;
+
+    // Bullish crossover: K crosses above D in oversold zone (< 20)
+    if ($prev_k <= $prev_d && $k > $d && $k < 30) {
+        $signal = 'BUY';
+    }
+    // Bearish crossover: K crosses below D in overbought zone (> 80)
+    if ($prev_k >= $prev_d && $k < $d && $k > 70) {
+        $signal = 'SHORT';
+    }
+
+    if ($signal === null) return null;
+
+    // Strength based on how extreme the zone is
+    if ($signal === 'BUY') {
+        $strength = min(100, (int)((30 - $k) * 3 + abs($k - $d) * 5));
+    } else {
+        $strength = min(100, (int)(($k - 70) * 3 + abs($k - $d) * 5));
+    }
+    $strength = max(30, $strength);
+
+    // Asset-class TP/SL
+    $tp = 2.0; $sl = 1.0; $hold = 6;
+    if ($asset === 'FOREX') { $tp = 0.5; $sl = 0.25; $hold = 6; }
+    if ($asset === 'STOCK') { $tp = 1.2; $sl = 0.6; $hold = 6; }
+
+    global $conn;
+    $learned = _ls_get_learned_params($conn, 'StochRSI Crossover', $asset);
+    if ($learned) {
+        $tp = (float)$learned['best_tp_pct'];
+        $sl = (float)$learned['best_sl_pct'];
+        $hold = (int)$learned['best_hold_hours'];
+    }
+
+    return array(
+        'algorithm_name'  => 'StochRSI Crossover',
+        'signal_type'     => $signal,
+        'signal_strength' => $strength,
+        'target_tp_pct'   => $tp,
+        'target_sl_pct'   => $sl,
+        'max_hold_hours'  => $hold,
+        'timeframe'       => '1h',
+        'rationale'       => json_encode(array(
+            'reason'  => 'StochRSI K(' . round($k, 1) . ') crossed ' . ($signal === 'BUY' ? 'above' : 'below') . ' D(' . round($d, 1) . ') in ' . ($signal === 'BUY' ? 'oversold' : 'overbought') . ' zone',
+            'k'       => round($k, 1),
+            'd'       => round($d, 1),
+            'prev_k'  => round($prev_k, 1),
+            'prev_d'  => round($prev_d, 1),
+            'source'  => 'StochRSI momentum+mean-reversion hybrid'
+        ))
+    );
+}
+
+// ────────────────────────────────────────────────────────────
+//  Algorithm #16: Awesome Oscillator Zero-Line Cross
+//  Science: Bill Williams AO, used in STOCKSUNIFY2 — momentum shift detection
+//  AO = SMA(5,median) - SMA(34,median). Zero-line cross = momentum shift.
+// ────────────────────────────────────────────────────────────
+
+function _ls_algo_awesome_osc($candles, $price, $symbol, $asset) {
+    $highs = _ls_extract_highs($candles);
+    $lows  = _ls_extract_lows($candles);
+    $n = count($highs);
+    if ($n < 36) return null;
+
+    $ao_data = _ls_calc_awesome_oscillator($highs, $lows);
+    if ($ao_data === null) return null;
+
+    $ao = $ao_data['ao'];
+    $prev_ao = $ao_data['prev_ao'];
+
+    $signal = null;
+
+    // Bullish: AO crosses from negative to positive (zero-line cross up)
+    if ($prev_ao <= 0 && $ao > 0) {
+        $signal = 'BUY';
+    }
+    // Bearish: AO crosses from positive to negative
+    if ($prev_ao >= 0 && $ao < 0) {
+        $signal = 'SHORT';
+    }
+
+    if ($signal === null) return null;
+
+    // Strength: magnitude of AO relative to price (percentage)
+    $ao_pct = abs($ao / $price) * 100;
+    $strength = min(100, max(30, (int)($ao_pct * 500)));
+
+    // Asset-class TP/SL
+    $tp = 1.8; $sl = 0.9; $hold = 6;
+    if ($asset === 'FOREX') { $tp = 0.4; $sl = 0.2; $hold = 6; }
+    if ($asset === 'STOCK') { $tp = 1.0; $sl = 0.5; $hold = 6; }
+
+    global $conn;
+    $learned = _ls_get_learned_params($conn, 'Awesome Oscillator', $asset);
+    if ($learned) {
+        $tp = (float)$learned['best_tp_pct'];
+        $sl = (float)$learned['best_sl_pct'];
+        $hold = (int)$learned['best_hold_hours'];
+    }
+
+    return array(
+        'algorithm_name'  => 'Awesome Oscillator',
+        'signal_type'     => $signal,
+        'signal_strength' => $strength,
+        'target_tp_pct'   => $tp,
+        'target_sl_pct'   => $sl,
+        'max_hold_hours'  => $hold,
+        'timeframe'       => '1h',
+        'rationale'       => json_encode(array(
+            'reason'  => 'AO zero-line cross: prev=' . round($prev_ao, 4) . ' now=' . round($ao, 4) . ' (' . $signal . ' momentum shift)',
+            'ao'      => round($ao, 6),
+            'prev_ao' => round($prev_ao, 6),
+            'ao_pct'  => round($ao_pct, 4),
+            'source'  => 'STOCKSUNIFY2 Awesome Oscillator (Bill Williams)'
+        ))
+    );
+}
+
+// ────────────────────────────────────────────────────────────
+//  Algorithm #17: RSI(2) Scalp — ultra-short-term mean reversion
+//  Science: STOCKSUNIFY2 mean reversion — RSI(2) < 10 oversold, > 90 overbought
+//  With SMA(20) trend filter: only buy in uptrend, short in downtrend
+// ────────────────────────────────────────────────────────────
+
+function _ls_algo_rsi2_scalp($candles, $price, $symbol, $asset) {
+    $closes = _ls_extract_closes($candles);
+    $n = count($closes);
+    if ($n < 22) return null;
+
+    // RSI(2) — ultra-short period
+    $rsi2 = _ls_calc_rsi($closes, 2);
+    if ($rsi2 === null) return null;
+
+    // SMA(20) trend filter
+    $sma20_slice = array_slice($closes, $n - 20, 20);
+    $sma20 = array_sum($sma20_slice) / 20;
+
+    $signal = null;
+
+    // RSI(2) < 10 AND price above SMA(20) = oversold in uptrend = BUY
+    if ($rsi2 < 10 && $price > $sma20) {
+        $signal = 'BUY';
+    }
+    // RSI(2) > 90 AND price below SMA(20) = overbought in downtrend = SHORT
+    if ($rsi2 > 90 && $price < $sma20) {
+        $signal = 'SHORT';
+    }
+
+    if ($signal === null) return null;
+
+    // Strength: more extreme RSI = stronger
+    if ($signal === 'BUY') {
+        $strength = min(100, (int)((10 - $rsi2) * 10));
+    } else {
+        $strength = min(100, (int)(($rsi2 - 90) * 10));
+    }
+    $strength = max(30, $strength);
+
+    // Shorter hold for scalp trades
+    $tp = 1.2; $sl = 0.6; $hold = 3;
+    if ($asset === 'FOREX') { $tp = 0.3; $sl = 0.15; $hold = 3; }
+    if ($asset === 'STOCK') { $tp = 0.8; $sl = 0.4; $hold = 3; }
+
+    global $conn;
+    $learned = _ls_get_learned_params($conn, 'RSI(2) Scalp', $asset);
+    if ($learned) {
+        $tp = (float)$learned['best_tp_pct'];
+        $sl = (float)$learned['best_sl_pct'];
+        $hold = (int)$learned['best_hold_hours'];
+    }
+
+    return array(
+        'algorithm_name'  => 'RSI(2) Scalp',
+        'signal_type'     => $signal,
+        'signal_strength' => $strength,
+        'target_tp_pct'   => $tp,
+        'target_sl_pct'   => $sl,
+        'max_hold_hours'  => $hold,
+        'timeframe'       => '1h',
+        'rationale'       => json_encode(array(
+            'reason'   => 'RSI(2)=' . round($rsi2, 1) . ($signal === 'BUY' ? ' < 10 oversold' : ' > 90 overbought') . ' + price ' . ($price > $sma20 ? 'above' : 'below') . ' SMA(20)=' . round($sma20, 4),
+            'rsi2'     => round($rsi2, 1),
+            'sma20'    => round($sma20, 4),
+            'price_vs_sma' => round(($price - $sma20) / $sma20 * 100, 2),
+            'source'   => 'STOCKSUNIFY2 ultra-short mean reversion'
+        ))
+    );
+}
+
+// ────────────────────────────────────────────────────────────
+//  Algorithm #18: Ichimoku Cloud — Tenkan/Kijun cross + cloud position
+//  Science: Ichimoku Kinko Hyo — complete trend + momentum system
+//  Adapted for hourly: Tenkan(9), Kijun(26), Senkou B(26)
+// ────────────────────────────────────────────────────────────
+
+function _ls_algo_ichimoku_cloud($candles, $price, $symbol, $asset) {
+    $highs  = _ls_extract_highs($candles);
+    $lows   = _ls_extract_lows($candles);
+    $closes = _ls_extract_closes($candles);
+    $n = count($closes);
+    if ($n < 28) return null;
+
+    $ichi = _ls_calc_ichimoku($highs, $lows, 9, 26, 26);
+    if ($ichi === null) return null;
+
+    $tenkan = $ichi['tenkan'];
+    $kijun = $ichi['kijun'];
+    $prev_tenkan = $ichi['prev_tenkan'];
+    $prev_kijun = $ichi['prev_kijun'];
+    $cloud_top = $ichi['cloud_top'];
+    $cloud_bottom = $ichi['cloud_bottom'];
+
+    $signal = null;
+    $factors = 0;
+
+    // Factor 1: Tenkan/Kijun crossover
+    $tk_cross_up = ($prev_tenkan <= $prev_kijun && $tenkan > $kijun);
+    $tk_cross_down = ($prev_tenkan >= $prev_kijun && $tenkan < $kijun);
+
+    // Factor 2: Price position relative to cloud
+    $price_above_cloud = ($price > $cloud_top);
+    $price_below_cloud = ($price < $cloud_bottom);
+
+    // Factor 3: Tenkan above/below Kijun (trend direction)
+    $tenkan_above = ($tenkan > $kijun);
+
+    // Bullish: TK cross up OR (price above cloud AND Tenkan above Kijun)
+    if ($tk_cross_up && $price_above_cloud) {
+        $signal = 'BUY';
+        $factors = 3; // cross + cloud + alignment
+    } elseif ($tk_cross_up && $price > $cloud_bottom) {
+        $signal = 'BUY';
+        $factors = 2; // cross + partial cloud
+    } elseif ($price_above_cloud && $tenkan_above && ($tenkan - $kijun) / $price * 100 > 0.1) {
+        $signal = 'BUY';
+        $factors = 2; // cloud + separation
+    }
+
+    // Bearish: TK cross down OR (price below cloud AND Tenkan below Kijun)
+    if ($signal === null) {
+        if ($tk_cross_down && $price_below_cloud) {
+            $signal = 'SHORT';
+            $factors = 3;
+        } elseif ($tk_cross_down && $price < $cloud_top) {
+            $signal = 'SHORT';
+            $factors = 2;
+        } elseif ($price_below_cloud && !$tenkan_above && ($kijun - $tenkan) / $price * 100 > 0.1) {
+            $signal = 'SHORT';
+            $factors = 2;
+        }
+    }
+
+    if ($signal === null) return null;
+
+    // Strength based on factor count and cloud distance
+    $cloud_dist_pct = 0;
+    if ($signal === 'BUY') {
+        $cloud_dist_pct = ($price - $cloud_top) / $price * 100;
+    } else {
+        $cloud_dist_pct = ($cloud_bottom - $price) / $price * 100;
+    }
+    $strength = min(100, max(30, (int)($factors * 25 + $cloud_dist_pct * 10)));
+
+    // TP/SL
+    $tp = 2.0; $sl = 1.0; $hold = 8;
+    if ($asset === 'FOREX') { $tp = 0.5; $sl = 0.25; $hold = 8; }
+    if ($asset === 'STOCK') { $tp = 1.2; $sl = 0.6; $hold = 8; }
+
+    global $conn;
+    $learned = _ls_get_learned_params($conn, 'Ichimoku Cloud', $asset);
+    if ($learned) {
+        $tp = (float)$learned['best_tp_pct'];
+        $sl = (float)$learned['best_sl_pct'];
+        $hold = (int)$learned['best_hold_hours'];
+    }
+
+    $reason_parts = array();
+    if ($tk_cross_up) $reason_parts[] = 'TK bullish cross';
+    if ($tk_cross_down) $reason_parts[] = 'TK bearish cross';
+    if ($price_above_cloud) $reason_parts[] = 'price above cloud';
+    if ($price_below_cloud) $reason_parts[] = 'price below cloud';
+    if ($tenkan_above && $signal === 'BUY') $reason_parts[] = 'Tenkan > Kijun';
+    if (!$tenkan_above && $signal === 'SHORT') $reason_parts[] = 'Kijun > Tenkan';
+
+    return array(
+        'algorithm_name'  => 'Ichimoku Cloud',
+        'signal_type'     => $signal,
+        'signal_strength' => $strength,
+        'target_tp_pct'   => $tp,
+        'target_sl_pct'   => $sl,
+        'max_hold_hours'  => $hold,
+        'timeframe'       => '1h',
+        'rationale'       => json_encode(array(
+            'reason'       => implode(' + ', $reason_parts) . '. T=' . round($tenkan, 4) . ' K=' . round($kijun, 4) . ' Cloud=' . round($cloud_bottom, 4) . '-' . round($cloud_top, 4),
+            'tenkan'       => round($tenkan, 4),
+            'kijun'        => round($kijun, 4),
+            'cloud_top'    => round($cloud_top, 4),
+            'cloud_bottom' => round($cloud_bottom, 4),
+            'factors'      => $factors,
+            'source'       => 'Ichimoku Kinko Hyo (adapted for hourly)'
+        ))
+    );
+}
+
+// ────────────────────────────────────────────────────────────
+//  Algorithm #19: Alpha Predator — 4-factor alignment from STOCKSUNIFY2
+//  Science: ADX > 25 + RSI 40-70 (healthy trend zone) + AO > 0 + Volume > 1.2x avg
+//  All 4 must pass simultaneously for high-conviction signal
+// ────────────────────────────────────────────────────────────
+
+function _ls_algo_alpha_predator($candles, $price, $symbol, $asset) {
+    $closes  = _ls_extract_closes($candles);
+    $highs   = _ls_extract_highs($candles);
+    $lows    = _ls_extract_lows($candles);
+    $volumes = _ls_extract_volumes($candles);
+    $n = count($closes);
+    if ($n < 36) return null;
+
+    // Factor 1: ADX > 25 (strong trend)
+    $adx_data = _ls_calc_adx($highs, $lows, $closes, 14);
+    if ($adx_data === null) return null;
+    $adx = $adx_data['adx'];
+    $plus_di = $adx_data['plus_di'];
+    $minus_di = $adx_data['minus_di'];
+    if ($adx < 25) return null;
+
+    // Factor 2: RSI(14) in healthy trend zone (40-70 for BUY, 30-60 for SHORT)
+    $rsi = _ls_calc_rsi($closes, 14);
+    if ($rsi === null) return null;
+
+    // Factor 3: Awesome Oscillator confirms momentum direction
+    $ao_data = _ls_calc_awesome_oscillator($highs, $lows);
+    if ($ao_data === null) return null;
+    $ao = $ao_data['ao'];
+
+    // Factor 4: Volume > 1.2x 20-candle average
+    $vol_count = count($volumes);
+    $vol_lookback = min($vol_count - 1, 20);
+    $vol_sum = 0;
+    for ($i = $vol_count - 1 - $vol_lookback; $i < $vol_count - 1; $i++) {
+        $vol_sum += $volumes[$i];
+    }
+    $vol_avg = ($vol_lookback > 0) ? $vol_sum / $vol_lookback : 0;
+    $vol_ratio = ($vol_avg > 0) ? $volumes[$vol_count - 1] / $vol_avg : 0;
+
+    $signal = null;
+    $factors_passed = 0;
+    $factor_details = array();
+
+    // Bullish: ADX>25 + +DI>-DI + RSI 40-70 + AO>0 + Vol>1.2x
+    if ($plus_di > $minus_di) {
+        $factors_passed++;
+        $factor_details[] = '+DI>' . round($plus_di, 1) . '>-DI' . round($minus_di, 1);
+    }
+    if ($rsi >= 40 && $rsi <= 70) {
+        $factors_passed++;
+        $factor_details[] = 'RSI=' . round($rsi, 1) . ' healthy';
+    }
+    if ($ao > 0) {
+        $factors_passed++;
+        $factor_details[] = 'AO=' . round($ao, 4) . '>0';
+    }
+    if ($vol_ratio > 1.2) {
+        $factors_passed++;
+        $factor_details[] = 'Vol=' . round($vol_ratio, 1) . 'x avg';
+    }
+
+    if ($factors_passed >= 4 && $plus_di > $minus_di) {
+        $signal = 'BUY';
+    }
+
+    // Bearish: ADX>25 + -DI>+DI + RSI 30-60 + AO<0 + Vol>1.2x
+    if ($signal === null) {
+        $factors_passed = 0;
+        $factor_details = array();
+
+        if ($minus_di > $plus_di) {
+            $factors_passed++;
+            $factor_details[] = '-DI>' . round($minus_di, 1) . '>+DI' . round($plus_di, 1);
+        }
+        if ($rsi >= 30 && $rsi <= 60) {
+            $factors_passed++;
+            $factor_details[] = 'RSI=' . round($rsi, 1) . ' healthy';
+        }
+        if ($ao < 0) {
+            $factors_passed++;
+            $factor_details[] = 'AO=' . round($ao, 4) . '<0';
+        }
+        if ($vol_ratio > 1.2) {
+            $factors_passed++;
+            $factor_details[] = 'Vol=' . round($vol_ratio, 1) . 'x avg';
+        }
+
+        if ($factors_passed >= 4 && $minus_di > $plus_di) {
+            $signal = 'SHORT';
+        }
+    }
+
+    if ($signal === null) return null;
+
+    // High conviction — all 4 factors aligned
+    $strength = min(100, max(60, (int)($adx * 1.5 + $factors_passed * 10)));
+
+    // TP/SL: tighter for high-conviction
+    $tp = 2.0; $sl = 1.0; $hold = 6;
+    if ($asset === 'FOREX') { $tp = 0.5; $sl = 0.25; $hold = 6; }
+    if ($asset === 'STOCK') { $tp = 1.2; $sl = 0.6; $hold = 6; }
+
+    global $conn;
+    $learned = _ls_get_learned_params($conn, 'Alpha Predator', $asset);
+    if ($learned) {
+        $tp = (float)$learned['best_tp_pct'];
+        $sl = (float)$learned['best_sl_pct'];
+        $hold = (int)$learned['best_hold_hours'];
+    }
+
+    return array(
+        'algorithm_name'  => 'Alpha Predator',
+        'signal_type'     => $signal,
+        'signal_strength' => $strength,
+        'target_tp_pct'   => $tp,
+        'target_sl_pct'   => $sl,
+        'max_hold_hours'  => $hold,
+        'timeframe'       => '1h',
+        'rationale'       => json_encode(array(
+            'reason'    => 'All 4 factors aligned: ' . implode(', ', $factor_details) . '. ADX=' . round($adx, 1),
+            'adx'       => round($adx, 1),
+            'rsi'       => round($rsi, 1),
+            'ao'        => round($ao, 6),
+            'vol_ratio' => round($vol_ratio, 2),
+            'factors'   => $factors_passed,
+            'source'    => 'STOCKSUNIFY2 Alpha Predator (4-factor alignment)'
+        ))
+    );
+}
+
+// ────────────────────────────────────────────────────────────
 //  Signal dedup check
 // ────────────────────────────────────────────────────────────
 
@@ -2018,7 +2624,7 @@ function _ls_get_cached_price($conn, $symbol) {
 }
 
 // ────────────────────────────────────────────────────────────
-//  ACTION: scan — Run all 13 algorithms
+//  ACTION: scan — Run all 19 algorithms
 // ────────────────────────────────────────────────────────────
 
 function _ls_action_scan($conn) {
@@ -2053,7 +2659,7 @@ function _ls_action_scan($conn) {
         }
         if ($price <= 0) continue;
 
-        // Run all 13 algorithms
+        // Run all 19 algorithms
         $algo_results = array(
             _ls_algo_momentum_burst($candles, $price, $sym, 'CRYPTO'),
             _ls_algo_rsi_reversal($candles, $price, $sym, 'CRYPTO'),
@@ -2067,7 +2673,13 @@ function _ls_action_scan($conn) {
             _ls_algo_dip_recovery($candles, $price, $sym, 'CRYPTO'),
             _ls_algo_volume_spike($candles, $price, $sym, 'CRYPTO'),
             _ls_algo_vam($candles, $price, $sym, 'CRYPTO'),
-            _ls_algo_mean_reversion_sniper($candles, $price, $sym, 'CRYPTO')
+            _ls_algo_mean_reversion_sniper($candles, $price, $sym, 'CRYPTO'),
+            _ls_algo_adx_trend($candles, $price, $sym, 'CRYPTO'),
+            _ls_algo_stoch_rsi_cross($candles, $price, $sym, 'CRYPTO'),
+            _ls_algo_awesome_osc($candles, $price, $sym, 'CRYPTO'),
+            _ls_algo_rsi2_scalp($candles, $price, $sym, 'CRYPTO'),
+            _ls_algo_ichimoku_cloud($candles, $price, $sym, 'CRYPTO'),
+            _ls_algo_alpha_predator($candles, $price, $sym, 'CRYPTO')
         );
 
         foreach ($algo_results as $sig) {
@@ -2108,7 +2720,7 @@ function _ls_action_scan($conn) {
         }
         if ($price <= 0) continue;
 
-        // Run all 13 algorithms
+        // Run all 19 algorithms
         $algo_results = array(
             _ls_algo_momentum_burst($candles, $price, $sym, 'FOREX'),
             _ls_algo_rsi_reversal($candles, $price, $sym, 'FOREX'),
@@ -2122,7 +2734,13 @@ function _ls_action_scan($conn) {
             _ls_algo_dip_recovery($candles, $price, $sym, 'FOREX'),
             _ls_algo_volume_spike($candles, $price, $sym, 'FOREX'),
             _ls_algo_vam($candles, $price, $sym, 'FOREX'),
-            _ls_algo_mean_reversion_sniper($candles, $price, $sym, 'FOREX')
+            _ls_algo_mean_reversion_sniper($candles, $price, $sym, 'FOREX'),
+            _ls_algo_adx_trend($candles, $price, $sym, 'FOREX'),
+            _ls_algo_stoch_rsi_cross($candles, $price, $sym, 'FOREX'),
+            _ls_algo_awesome_osc($candles, $price, $sym, 'FOREX'),
+            _ls_algo_rsi2_scalp($candles, $price, $sym, 'FOREX'),
+            _ls_algo_ichimoku_cloud($candles, $price, $sym, 'FOREX'),
+            _ls_algo_alpha_predator($candles, $price, $sym, 'FOREX')
         );
 
         foreach ($algo_results as $sig) {
@@ -2168,7 +2786,7 @@ function _ls_action_scan($conn) {
             }
             if ($price <= 0) continue;
 
-            // Run all 13 algorithms
+            // Run all 19 algorithms
             $algo_results = array(
                 _ls_algo_momentum_burst($candles, $price, $sym, 'STOCK'),
                 _ls_algo_rsi_reversal($candles, $price, $sym, 'STOCK'),
@@ -2182,7 +2800,13 @@ function _ls_action_scan($conn) {
                 _ls_algo_dip_recovery($candles, $price, $sym, 'STOCK'),
                 _ls_algo_volume_spike($candles, $price, $sym, 'STOCK'),
                 _ls_algo_vam($candles, $price, $sym, 'STOCK'),
-                _ls_algo_mean_reversion_sniper($candles, $price, $sym, 'STOCK')
+                _ls_algo_mean_reversion_sniper($candles, $price, $sym, 'STOCK'),
+                _ls_algo_adx_trend($candles, $price, $sym, 'STOCK'),
+                _ls_algo_stoch_rsi_cross($candles, $price, $sym, 'STOCK'),
+                _ls_algo_awesome_osc($candles, $price, $sym, 'STOCK'),
+                _ls_algo_rsi2_scalp($candles, $price, $sym, 'STOCK'),
+                _ls_algo_ichimoku_cloud($candles, $price, $sym, 'STOCK'),
+                _ls_algo_alpha_predator($candles, $price, $sym, 'STOCK')
             );
 
             foreach ($algo_results as $sig) {

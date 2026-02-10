@@ -23,6 +23,7 @@ FILES = [
     ('live-monitor/api/live_trade.php',      '/live-monitor/api/live_trade.php'),
     ('live-monitor/api/hour_learning.php',   '/live-monitor/api/hour_learning.php'),
     ('live-monitor/api/breaker_live.php',    '/live-monitor/api/breaker_live.php'),
+    ('live-monitor/api/discover_movers.php', '/live-monitor/api/discover_movers.php'),
     # Dashboards
     ('live-monitor/live-monitor.html',       '/live-monitor/live-monitor.html'),
     ('live-monitor/hour-learning.html',      '/live-monitor/hour-learning.html'),
