@@ -254,6 +254,24 @@
         .tag-backtest { background:rgba(234,179,8,0.15); color:#eab308; border:1px solid rgba(234,179,8,0.3); }
         .tag-live { background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3); }
         .tag-forward { background:rgba(99,102,241,0.15); color:#6366f1; border:1px solid rgba(99,102,241,0.3); }
+        /* Glossary */
+        .info-tip{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(99,102,241,0.2);color:var(--accent);font-size:10px;font-weight:700;cursor:help;position:relative;vertical-align:middle;margin-left:4px;flex-shrink:0;font-style:normal}
+        .info-tip:hover{background:rgba(99,102,241,0.4)}
+        .info-tip .tip-text{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1e1e3a;border:1px solid var(--accent);border-radius:8px;padding:10px 12px;font-size:12px;font-weight:400;color:var(--text);width:260px;line-height:1.5;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.5);pointer-events:none}
+        .info-tip:hover .tip-text{display:block}
+        .info-tip .tip-text::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--accent)}
+        .edu-section{background:var(--bg-card,#12122a);border:1px solid var(--border);border-radius:12px;margin-top:1.5rem;overflow:hidden}
+        .edu-header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;cursor:pointer;user-select:none}
+        .edu-header:hover{background:rgba(255,255,255,0.02)}
+        .edu-header h3{font-size:15px;font-weight:600;margin:0;display:flex;align-items:center;gap:8px}
+        .edu-arrow{font-size:12px;color:var(--text-dim);transition:transform 0.2s}
+        .edu-arrow.open{transform:rotate(180deg)}
+        .edu-body{padding:0 18px 18px;display:none}
+        .edu-body.open{display:block}
+        .glossary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:8px}
+        .glossary-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:12px}
+        .glossary-card .g-term{font-weight:700;color:#fff;font-size:13px;margin-bottom:4px}
+        .glossary-card .g-desc{font-size:12px;color:#bbb;line-height:1.6}
     </style>
 </head>
 <body>
@@ -326,6 +344,24 @@
             <div id="cr-picks" class="asset-row"></div>
         </div>
 
+        <!-- Glossary -->
+        <div class="edu-section">
+          <div class="edu-header" onclick="toggleEdu(this)">
+            <h3>Understanding Stock Picks <i class="info-tip">i<span class="tip-text">What each metric means and how picks are selected.</span></i></h3>
+            <span class="edu-arrow">&#9660;</span>
+          </div>
+          <div class="edu-body">
+            <div class="glossary-grid">
+              <div class="glossary-card"><div class="g-term">Score</div><div class="g-desc">A composite rating (0-100) based on multiple factors: momentum, value, growth, and technical strength. Higher score = more factors aligned bullishly. Scores are recalculated nightly.</div></div>
+              <div class="glossary-card"><div class="g-term">Target Price</div><div class="g-desc">The algorithm's estimated fair value. If the current price is below the target, the stock is considered undervalued. The gap between current and target represents the expected upside.</div></div>
+              <div class="glossary-card"><div class="g-term">Momentum</div><div class="g-desc">How strongly the stock has been trending recently. Positive momentum means the price has been consistently rising. It measures the speed and direction of price changes.</div></div>
+              <div class="glossary-card"><div class="g-term">Risk Level</div><div class="g-desc">How volatile the stock is. <strong>Low</strong> = stable blue-chip (like JNJ, WMT). <strong>Medium</strong> = normal volatility. <strong>High</strong> = can swing 3-5%+ daily (like NVDA, NFLX). Higher risk = higher potential reward but also larger losses.</div></div>
+              <div class="glossary-card"><div class="g-term">SL / TP / Max Hold</div><div class="g-desc"><strong>SL (Stop Loss)</strong> = sell if down X%. <strong>TP (Take Profit)</strong> = sell if up X%. <strong>Max Hold</strong> = sell after N days regardless. These define the exit strategy for each pick.</div></div>
+              <div class="glossary-card"><div class="g-term">Win Rate</div><div class="g-desc">Historical percentage of picks from this algorithm that hit their take profit before hitting their stop loss. A 70% win rate means 7 of 10 past picks were profitable.</div></div>
+            </div>
+          </div>
+        </div>
+
         <div class="disclaimer">
             This dashboard is for educational and research purposes only. Not financial advice.<br>
             Past performance does not guarantee future results. Always do your own research before investing.<br>
@@ -334,6 +370,7 @@
     </div>
 
 <script>
+function toggleEdu(el){var b=el.nextElementSibling,a=el.querySelector('.edu-arrow');if(b.classList.contains('open')){b.classList.remove('open');a.classList.remove('open');}else{b.classList.add('open');a.classList.add('open');}}
 var API = (function() {
     var loc = window.location;
     if (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1') return './api/';
@@ -390,10 +427,11 @@ function renderStockCard(pick) {
         + '</div>'
         + '<div class="pick-meta">'
         + '<div class="pick-score"><span>Score:</span>'
-        + '<div class="score-bar"><div class="score-fill ' + scoreClass(pick.score) + '" style="width:' + pick.score + '%;"></div></div>'
-        + '<span>' + pick.score + '</span></div>'
+        + '<div class="score-bar"><div class="score-fill ' + scoreClass(pick.score) + '" style="width:' + (pick.score || 0) + '%;"></div></div>'
+        + '<span>' + (pick.score || 0) + '</span></div>'
         + '<span class="pick-algo">' + pick.algorithm + '</span>'
         + '</div>'
+        + (pick.pick_date ? '<div style="font-size:0.65rem;color:#8888aa;margin-top:0.3rem;">Picked: ' + pick.pick_date + '</div>' : '')
         + '</div>';
 }
 
@@ -411,10 +449,11 @@ function renderDayCard(pick) {
         + '</div>'
         + '<div class="pick-meta">'
         + '<div class="pick-score"><span>Score:</span>'
-        + '<div class="score-bar"><div class="score-fill ' + scoreClass(pick.score) + '" style="width:' + pick.score + '%;"></div></div>'
-        + '<span>' + pick.score + '</span></div>'
+        + '<div class="score-bar"><div class="score-fill ' + scoreClass(pick.score) + '" style="width:' + (pick.score || 0) + '%;"></div></div>'
+        + '<span>' + (pick.score || 0) + '</span></div>'
         + '<span class="pick-algo">' + pick.algorithm + '</span>'
         + '</div>'
+        + (pick.pick_date ? '<div style="font-size:0.65rem;color:#8888aa;margin-top:0.3rem;">Picked: ' + pick.pick_date + '</div>' : '')
         + '</div>';
 }
 
@@ -455,6 +494,7 @@ function renderFXCard(pick) {
         + '<div class="price-item"><div class="label">Rating</div><div class="val" style="font-size:0.8rem;">' + (pick.rating || '-') + '</div></div>'
         + '</div>'
         + '<div class="pick-meta"><span class="pick-algo">' + (pick.algorithm_name || '') + '</span><span>' + (pick.risk_level || '') + '</span></div>'
+        + (pick.pick_date ? '<div style="font-size:0.65rem;color:#8888aa;margin-top:0.3rem;">Picked: ' + pick.pick_date + '</div>' : '')
         + '</div>';
 }
 
@@ -472,6 +512,7 @@ function renderCryptoCard(pick) {
         + '<div class="price-item"><div class="label">Rating</div><div class="val" style="font-size:0.8rem;">' + (pick.rating || '-') + '</div></div>'
         + '</div>'
         + '<div class="pick-meta"><span class="pick-algo">' + (pick.algorithm_name || '') + '</span><span>' + (pick.risk_level || '') + '</span></div>'
+        + (pick.pick_date ? '<div style="font-size:0.65rem;color:#8888aa;margin-top:0.3rem;">Picked: ' + pick.pick_date + '</div>' : '')
         + '</div>';
 }
 
@@ -522,5 +563,6 @@ function loadPicks() {
 
 loadPicks();
 </script>
+<script src="/findstocks/portfolio2/stock-nav.js"></script>
 </body>
 </html>

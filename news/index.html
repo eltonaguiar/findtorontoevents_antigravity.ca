@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Feed | FindTorontoEvents</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --blue: #3b82f6;
+            --orange: #f97316;
+            --purple: #a855f7;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--accent), #a78bfa, var(--blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.25rem;
+        }
+        .header .subtitle {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+        .header .back-link {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+
+        /* Tabs */
+        .tabs-bar {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 0;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 0.85rem 1.8rem;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-dim);
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .tab:hover {
+            color: var(--text);
+            background: rgba(99, 102, 241, 0.05);
+        }
+        .tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+        .tab .tab-count {
+            font-size: 0.75rem;
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent);
+            padding: 1px 7px;
+            border-radius: 10px;
+            margin-left: 6px;
+            font-weight: 500;
+        }
+
+        /* Controls */
+        .controls {
+            max-width: 1400px;
+            margin: 1rem auto;
+            padding: 0 1.5rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.65rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-box:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .search-box::placeholder { color: var(--text-dim); }
+        .source-filter {
+            padding: 0.65rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+            min-width: 180px;
+        }
+        .source-filter:focus { border-color: var(--accent); }
+        .source-filter option { background: var(--bg-card); color: var(--text); }
+
+        /* Stats row */
+        .stats-row {
+            max-width: 1400px;
+            margin: 0.75rem auto;
+            padding: 0 1.5rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .stat-pill {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 0.35rem 1rem;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+        .stat-pill b { color: var(--text); }
+        .stat-pill .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        .dot-green { background: var(--green); box-shadow: 0 0 4px var(--green); }
+        .dot-yellow { background: var(--yellow); animation: pulse 2s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Articles grid */
+        .articles-grid {
+            max-width: 1400px;
+            margin: 1rem auto;
+            padding: 0 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 1rem;
+        }
+
+        /* Article card */
+        .news-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+            display: flex;
+            flex-direction: column;
+        }
+        .news-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.12);
+        }
+        .news-card-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: var(--bg-card-hover);
+        }
+        .news-card-body {
+            padding: 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .news-source-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 0.5rem;
+        }
+        .source-logo {
+            width: 18px;
+            height: 18px;
+            border-radius: 3px;
+        }
+        .source-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        .time-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-left: auto;
+        }
+        .news-card h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 0.4rem;
+        }
+        .news-card h3 a {
+            color: var(--text);
+            transition: color 0.15s;
+        }
+        .news-card h3 a:hover {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .news-card .desc {
+            font-size: 0.82rem;
+            color: var(--text-dim);
+            line-height: 1.5;
+            flex: 1;
+        }
+        .news-card .category-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-toronto  { background: rgba(99,102,241,0.15); color: var(--accent); }
+        .badge-canada   { background: rgba(239,68,68,0.15);  color: var(--red); }
+        .badge-us       { background: rgba(59,130,246,0.15);  color: var(--blue); }
+        .badge-world    { background: rgba(34,197,94,0.15);   color: var(--green); }
+
+        /* Load more */
+        .load-more-row {
+            text-align: center;
+            padding: 2rem;
+        }
+        .btn-load-more {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.7rem 2rem;
+            border-radius: var(--radius);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn-load-more:hover { background: #5558e6; transform: translateY(-1px); }
+        .btn-load-more:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+        /* Loading / Empty */
+        .loading-spinner {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-dim);
+        }
+        .spinner {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-dim);
+        }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+
+        /* Refresh indicator */
+        .refresh-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            text-align: right;
+        }
+        .refresh-bar span {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        /* Read Aloud Controls */
+        .tts-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-tts {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0.55rem 1.1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg-card);
+            color: var(--text);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-tts:hover {
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.1);
+        }
+        .btn-tts.speaking {
+            border-color: var(--orange);
+            background: rgba(249, 115, 22, 0.12);
+            color: var(--orange);
+        }
+        .btn-tts.speaking .tts-icon { animation: pulse 1.5s infinite; }
+        .btn-tts-stop {
+            display: none;
+            align-items: center;
+            gap: 5px;
+            padding: 0.55rem 1rem;
+            border: 1px solid var(--red);
+            border-radius: var(--radius);
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--red);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-tts-stop:hover { background: rgba(239, 68, 68, 0.2); }
+        .btn-tts-stop.visible { display: inline-flex; }
+        .tts-progress {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            min-width: 50px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1000px) {
+            .articles-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+        }
+        @media (max-width: 600px) {
+            .header { padding: 1rem; }
+            .header h1 { font-size: 1.5rem; }
+            .tabs-bar { gap: 0; }
+            .tab { padding: 0.7rem 1rem; font-size: 0.85rem; }
+            .controls { padding: 0 1rem; }
+            .articles-grid {
+                grid-template-columns: 1fr;
+                padding: 0 1rem;
+            }
+            .news-card-img { height: 150px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>News Feed</h1>
+    <div class="subtitle">Toronto &bull; Canadian &bull; US &bull; World — Live RSS Aggregator</div>
+    <a class="back-link" href="/">&larr; Back to FindTorontoEvents</a>
+</div>
+
+<div class="tabs-bar" id="tabsBar">
+    <div class="tab active" data-cat="toronto">Toronto <span class="tab-count" id="cnt-toronto">-</span></div>
+    <div class="tab" data-cat="canada">Canadian <span class="tab-count" id="cnt-canada">-</span></div>
+    <div class="tab" data-cat="us">US <span class="tab-count" id="cnt-us">-</span></div>
+    <div class="tab" data-cat="world">World <span class="tab-count" id="cnt-world">-</span></div>
+</div>
+
+<div class="controls">
+    <input type="text" class="search-box" id="searchBox" placeholder="Search headlines...">
+    <select class="source-filter" id="sourceFilter">
+        <option value="">All Sources</option>
+    </select>
+    <div class="tts-controls">
+        <button class="btn-tts" id="btnReadAloud" title="Read headlines aloud">
+            <span class="tts-icon">&#128266;</span> Read Aloud
+        </button>
+        <button class="btn-tts-stop" id="btnStopTTS" title="Stop reading">
+            &#9209; Stop
+        </button>
+        <span class="tts-progress" id="ttsProgress"></span>
+    </div>
+</div>
+
+<div class="stats-row" id="statsRow">
+    <div class="stat-pill"><span class="dot dot-green"></span> <b id="statArticles">-</b> articles</div>
+    <div class="stat-pill"><b id="statSources">-</b> sources active</div>
+    <div class="stat-pill">Updated: <b id="statUpdated">-</b></div>
+</div>
+
+<div class="refresh-bar"><span id="refreshLabel"></span></div>
+
+<div id="articlesContainer">
+    <div class="loading-spinner">
+        <div class="spinner"></div>
+        <div>Loading news feeds...</div>
+    </div>
+</div>
+
+<div class="load-more-row" id="loadMoreRow" style="display:none;">
+    <button class="btn-load-more" id="btnLoadMore">Load More</button>
+</div>
+
+<script>
+(function() {
+    var API = '/fc/api/news_feed.php';
+    var state = {
+        category: 'toronto',
+        page: 1,
+        perPage: 21,
+        search: '',
+        source: '',
+        articles: [],
+        total: 0,
+        loading: false,
+        sources: []
+    };
+    var searchTimer = null;
+    var refreshTimer = null;
+
+    // DOM refs
+    var container = document.getElementById('articlesContainer');
+    var tabsBar = document.getElementById('tabsBar');
+    var searchBox = document.getElementById('searchBox');
+    var sourceFilter = document.getElementById('sourceFilter');
+    var btnLoadMore = document.getElementById('btnLoadMore');
+    var loadMoreRow = document.getElementById('loadMoreRow');
+
+    // ── Tab switching ──
+    tabsBar.addEventListener('click', function(e) {
+        var tab = e.target.closest('.tab');
+        if (!tab) return;
+        var cat = tab.getAttribute('data-cat');
+        if (cat === state.category) return;
+
+        var tabs = tabsBar.querySelectorAll('.tab');
+        for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+        tab.classList.add('active');
+
+        state.category = cat;
+        state.page = 1;
+        state.articles = [];
+        state.source = '';
+        sourceFilter.value = '';
+        populateSourceFilter(cat);
+        loadArticles(false);
+    });
+
+    // ── Search ──
+    searchBox.addEventListener('input', function() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function() {
+            state.search = searchBox.value.trim();
+            state.page = 1;
+            state.articles = [];
+            loadArticles(false);
+        }, 300);
+    });
+
+    // ── Source filter ──
+    sourceFilter.addEventListener('change', function() {
+        state.source = sourceFilter.value;
+        state.page = 1;
+        state.articles = [];
+        loadArticles(false);
+    });
+
+    // ── Load more ──
+    btnLoadMore.addEventListener('click', function() {
+        if (state.loading) return;
+        state.page++;
+        loadArticles(true);
+    });
+
+    // ── Load articles ──
+    function loadArticles(append) {
+        if (state.loading) return;
+        state.loading = true;
+
+        if (!append) {
+            container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><div>Loading news feeds...</div></div>';
+            loadMoreRow.style.display = 'none';
+        } else {
+            btnLoadMore.disabled = true;
+            btnLoadMore.textContent = 'Loading...';
+        }
+
+        var url = API + '?action=get&category=' + encodeURIComponent(state.category)
+            + '&page=' + state.page
+            + '&per_page=' + state.perPage;
+        if (state.source) url += '&source=' + encodeURIComponent(state.source);
+        if (state.search) url += '&search=' + encodeURIComponent(state.search);
+
+        fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                state.loading = false;
+                if (!data.ok) {
+                    if (!append) {
+                        container.innerHTML = '<div class="empty-state"><div class="icon">&#9888;</div><div>Could not load news. Try again later.</div></div>';
+                    }
+                    return;
+                }
+
+                var arts = data.articles || [];
+                state.total = data.total || arts.length;
+
+                if (append) {
+                    for (var i = 0; i < arts.length; i++) state.articles.push(arts[i]);
+                } else {
+                    state.articles = arts;
+                }
+
+                renderArticles();
+                updateStats(data);
+                updateTabCount(state.category, state.total);
+
+                // Load more visibility
+                var loaded = state.articles.length;
+                if (loaded < state.total) {
+                    loadMoreRow.style.display = '';
+                    btnLoadMore.disabled = false;
+                    btnLoadMore.textContent = 'Load More (' + (state.total - loaded) + ' remaining)';
+                } else {
+                    loadMoreRow.style.display = 'none';
+                }
+            })
+            .catch(function(err) {
+                state.loading = false;
+                if (!append) {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">&#9888;</div><div>Could not load news. Check your connection.</div></div>';
+                }
+                btnLoadMore.disabled = false;
+                btnLoadMore.textContent = 'Load More';
+            });
+    }
+
+    // ── Render articles ──
+    function renderArticles() {
+        if (state.articles.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="icon">&#128240;</div><div>No articles found' + (state.search ? ' for "' + escHtml(state.search) + '"' : '') + '.</div></div>';
+            return;
+        }
+
+        var html = '<div class="articles-grid">';
+        for (var i = 0; i < state.articles.length; i++) {
+            html += renderCard(state.articles[i]);
+        }
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    function renderCard(art) {
+        var cat = art.category || state.category;
+        var badgeClass = 'badge-' + cat;
+        var catLabel = {toronto:'Toronto',canada:'Canada',us:'US',world:'World'}[cat] || cat;
+
+        var imgHtml = '';
+        if (art.image_url) {
+            imgHtml = '<img class="news-card-img" src="' + escAttr(art.image_url) + '" alt="" onerror="this.style.display=\'none\'" loading="lazy">';
+        }
+
+        var timeAgo = art.time_ago || formatTimeAgo(art.pub_date);
+        var desc = art.description || '';
+        if (desc.length > 160) desc = desc.substring(0, 157) + '...';
+
+        return '<div class="news-card">'
+            + imgHtml
+            + '<div class="news-card-body">'
+            + '<div class="news-source-row">'
+            + '<img class="source-logo" src="' + escAttr(art.source_logo || '') + '" alt="" onerror="this.style.display=\'none\'">'
+            + '<span class="source-label">' + escHtml(art.source_name || '') + '</span>'
+            + '<span class="time-label">' + escHtml(timeAgo) + '</span>'
+            + '</div>'
+            + '<h3><a href="' + escAttr(art.link) + '" target="_blank" rel="noopener">' + escHtml(art.title) + '</a></h3>'
+            + (desc ? '<div class="desc">' + escHtml(desc) + '</div>' : '')
+            + '<span class="category-badge ' + badgeClass + '">' + escHtml(catLabel) + '</span>'
+            + '</div></div>';
+    }
+
+    // ── Stats ──
+    function updateStats(data) {
+        document.getElementById('statArticles').textContent = state.total;
+        document.getElementById('statUpdated').textContent = data.fetched_at || '-';
+        document.getElementById('refreshLabel').textContent = 'Auto-refreshes every 5 min';
+    }
+
+    function updateTabCount(cat, n) {
+        var el = document.getElementById('cnt-' + cat);
+        if (el) el.textContent = n;
+    }
+
+    // ── Sources ──
+    function loadSources() {
+        fetch(API + '?action=sources')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.ok) return;
+                state.sources = data.sources || [];
+                document.getElementById('statSources').textContent = state.sources.length;
+                populateSourceFilter(state.category);
+            })
+            .catch(function(){});
+    }
+
+    function populateSourceFilter(cat) {
+        var html = '<option value="">All Sources</option>';
+        for (var i = 0; i < state.sources.length; i++) {
+            var s = state.sources[i];
+            if (s.category !== cat) continue;
+            html += '<option value="' + escAttr(s.key) + '">' + escHtml(s.name) + '</option>';
+        }
+        sourceFilter.innerHTML = html;
+    }
+
+    // ── Auto-refresh ──
+    function startAutoRefresh() {
+        if (refreshTimer) clearInterval(refreshTimer);
+        refreshTimer = setInterval(function() {
+            state.page = 1;
+            state.articles = [];
+            loadArticles(false);
+        }, 300000); // 5 minutes
+    }
+
+    // ── Helpers ──
+    function escHtml(s) {
+        if (!s) return '';
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function escAttr(s) {
+        if (!s) return '';
+        return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function formatTimeAgo(dateStr) {
+        if (!dateStr) return '';
+        var ts = new Date(dateStr).getTime();
+        var now = Date.now();
+        var diff = Math.floor((now - ts) / 1000);
+        if (diff < 0) return 'just now';
+        if (diff < 60) return 'just now';
+        if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+        if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+        if (diff < 172800) return 'yesterday';
+        if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+        var d = new Date(ts);
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return months[d.getMonth()] + ' ' + d.getDate();
+    }
+
+    // ── Preload tab counts ──
+    function preloadCounts() {
+        var cats = ['toronto','canada','us','world'];
+        for (var c = 0; c < cats.length; c++) {
+            (function(cat) {
+                fetch(API + '?action=get&category=' + cat + '&per_page=1')
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.ok) updateTabCount(cat, data.total || 0);
+                    })
+                    .catch(function(){});
+            })(cats[c]);
+        }
+    }
+
+    // ── Init ──
+    loadSources();
+    loadArticles(false);
+    preloadCounts();
+    startAutoRefresh();
+
+    // ═══════════════════════════════════════════════════════════
+    // TEXT-TO-SPEECH — Read Headlines Aloud
+    // ═══════════════════════════════════════════════════════════
+    var ttsBtn = document.getElementById('btnReadAloud');
+    var ttsStopBtn = document.getElementById('btnStopTTS');
+    var ttsProgress = document.getElementById('ttsProgress');
+    var ttsActive = false;
+    var ttsQueue = [];
+    var ttsIndex = 0;
+
+    ttsBtn.addEventListener('click', function() {
+        if (ttsActive) return;
+        if (!('speechSynthesis' in window)) {
+            alert('Text-to-speech is not supported in this browser.');
+            return;
+        }
+        startReadAloud();
+    });
+
+    ttsStopBtn.addEventListener('click', function() {
+        stopReadAloud();
+    });
+
+    function startReadAloud() {
+        window.speechSynthesis.cancel();
+        ttsActive = true;
+        ttsIndex = 0;
+
+        // Build queue from current visible articles
+        ttsQueue = [];
+        var catLabels = {toronto:'Toronto', canada:'Canadian', us:'US', world:'World'};
+        var catName = catLabels[state.category] || state.category;
+
+        // Intro
+        ttsQueue.push('Here are the latest ' + catName + ' headlines.');
+
+        // Article titles + source
+        var arts = state.articles;
+        var count = Math.min(arts.length, 10);
+        for (var i = 0; i < count; i++) {
+            var a = arts[i];
+            var text = a.title;
+            if (a.source_name) text += '. From ' + a.source_name + '.';
+            if (a.description) {
+                var desc = a.description;
+                if (desc.length > 200) desc = desc.substring(0, 197) + '...';
+                text += ' ' + desc;
+            }
+            ttsQueue.push(text);
+        }
+
+        if (count === 0) {
+            ttsQueue = ['No articles loaded yet. Please wait for the feed to refresh.'];
+        } else {
+            ttsQueue.push('That covers the top ' + count + ' ' + catName + ' headlines. Visit the AI assistant for more details on any story.');
+        }
+
+        // UI
+        ttsBtn.classList.add('speaking');
+        ttsBtn.innerHTML = '<span class="tts-icon">&#128266;</span> Reading...';
+        ttsStopBtn.classList.add('visible');
+        ttsProgress.textContent = '0/' + Math.min(count, ttsQueue.length);
+
+        speakNext();
+    }
+
+    function speakNext() {
+        if (!ttsActive || ttsIndex >= ttsQueue.length) {
+            finishReadAloud();
+            return;
+        }
+
+        var utter = new SpeechSynthesisUtterance(ttsQueue[ttsIndex]);
+        utter.rate = 1.0;
+        utter.pitch = 1;
+        utter.lang = 'en-US';
+        utter.onend = function() {
+            ttsIndex++;
+            // Update progress (skip intro/outro)
+            var artCount = Math.min(state.articles.length, 10);
+            if (ttsIndex > 0 && ttsIndex <= artCount) {
+                ttsProgress.textContent = ttsIndex + '/' + artCount;
+                // Highlight current card
+                highlightCard(ttsIndex - 1);
+            }
+            speakNext();
+        };
+        utter.onerror = function() {
+            ttsIndex++;
+            speakNext();
+        };
+        window.speechSynthesis.speak(utter);
+    }
+
+    function highlightCard(idx) {
+        // Remove previous highlights
+        var cards = document.querySelectorAll('.news-card');
+        for (var c = 0; c < cards.length; c++) {
+            cards[c].style.boxShadow = '';
+            cards[c].style.borderColor = '';
+        }
+        // Highlight current
+        if (cards[idx]) {
+            cards[idx].style.boxShadow = '0 0 20px rgba(249,115,22,0.4)';
+            cards[idx].style.borderColor = 'var(--orange)';
+            cards[idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    function stopReadAloud() {
+        ttsActive = false;
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        finishReadAloud();
+    }
+
+    function finishReadAloud() {
+        ttsActive = false;
+        ttsBtn.classList.remove('speaking');
+        ttsBtn.innerHTML = '<span class="tts-icon">&#128266;</span> Read Aloud';
+        ttsStopBtn.classList.remove('visible');
+        ttsProgress.textContent = '';
+        // Clear highlights
+        var cards = document.querySelectorAll('.news-card');
+        for (var c = 0; c < cards.length; c++) {
+            cards[c].style.boxShadow = '';
+            cards[c].style.borderColor = '';
+        }
+    }
+
+})();
+</script>
+
+<!-- AI Assistant: context-aware chat + voice assistant -->
+<script src="/ai-assistant.js"></script>
+</body>
+</html>

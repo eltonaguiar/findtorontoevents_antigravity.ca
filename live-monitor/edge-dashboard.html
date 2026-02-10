@@ -86,7 +86,27 @@
         .no-data { text-align:center; padding:2rem; color:var(--dim); font-style:italic; }
         .refresh-info { text-align:center; font-size:0.8rem; color:var(--dim); margin-top:0.5rem; }
 
-        @media (max-width:768px) { .setup-grid { grid-template-columns:1fr; } .container { padding:1rem; } .header h1 { font-size:1.6rem; } }
+        /* Glossary / Education */
+        .info-tip{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(99,102,241,0.2);color:var(--accent);font-size:10px;font-weight:700;cursor:help;position:relative;vertical-align:middle;margin-left:4px;flex-shrink:0;font-style:normal}
+        .info-tip:hover{background:rgba(99,102,241,0.4)}
+        .info-tip .tip-text{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1e1e3a;border:1px solid var(--accent);border-radius:8px;padding:10px 12px;font-size:12px;font-weight:400;color:var(--text);width:260px;line-height:1.5;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.5);pointer-events:none}
+        .info-tip:hover .tip-text{display:block}
+        .info-tip .tip-text::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--accent)}
+        .edu-section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-top:1.5rem;overflow:hidden}
+        .edu-header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;cursor:pointer;user-select:none}
+        .edu-header:hover{background:rgba(255,255,255,0.02)}
+        .edu-header h3{font-size:15px;font-weight:600;margin:0;display:flex;align-items:center;gap:8px}
+        .edu-arrow{font-size:12px;color:var(--dim);transition:transform 0.2s}
+        .edu-arrow.open{transform:rotate(180deg)}
+        .edu-body{padding:0 18px 18px;display:none}
+        .edu-body.open{display:block}
+        .glossary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-top:8px}
+        .glossary-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:12px}
+        .glossary-card .g-term{font-weight:700;color:#fff;font-size:13px;margin-bottom:4px}
+        .glossary-card .g-desc{font-size:12px;color:#bbb;line-height:1.6}
+        .glossary-card .g-why{font-size:11px;color:var(--dim);margin-top:5px;font-style:italic}
+
+        @media (max-width:768px) { .setup-grid { grid-template-columns:1fr; } .container { padding:1rem; } .header h1 { font-size:1.6rem; } .glossary-grid{grid-template-columns:1fr} .info-tip .tip-text{width:200px;left:0;transform:none} }
     </style>
 </head>
 <body>
@@ -95,6 +115,7 @@
         <p>High conviction trades — CDR stocks, zero commission, 72-86% proven win rate algorithms</p>
         <div class="nav">
             <a href="live-monitor.html">Live Monitor</a>
+            <a href="sports-betting.html">Sports Betting</a>
             <a href="winning-patterns.html">Winning Patterns</a>
             <a href="hour-learning.html">Hour Learning</a>
             <a href="/findstocks/portfolio2/consolidated.html">Consensus Picks</a>
@@ -146,10 +167,54 @@
             </div>
         </div>
 
+        <!-- ═══ GLOSSARY ═══ -->
+        <div class="edu-section">
+          <div class="edu-header" onclick="toggleEdu(this)">
+            <h3>Glossary of Terms <i class="info-tip">i<span class="tip-text">Plain-language explanations of every term on this page.</span></i></h3>
+            <span class="edu-arrow">&#9660;</span>
+          </div>
+          <div class="edu-body">
+            <div class="glossary-grid">
+              <div class="glossary-card">
+                <div class="g-term">CDR (Canadian Depository Receipt)</div>
+                <div class="g-desc">A way to buy fractions of US stocks (like Apple, Google) on Canadian exchanges in Canadian dollars. CDRs trade on NEO Exchange and TSX. <strong>Commission-free</strong> on platforms like Wealthsimple Trade and Neo.</div>
+                <div class="g-why">Why it matters: $0 commission means even small gains are pure profit — no fees eating into your returns.</div>
+              </div>
+              <div class="glossary-card">
+                <div class="g-term">Conviction Tier</div>
+                <div class="g-desc"><strong>VERY HIGH</strong> — multiple independent algorithms + multiple data sources all agree. Strongest consensus.<br><strong>HIGH</strong> — strong algorithm agreement with solid technical backing.<br><strong>MEDIUM</strong> — single strong signal or weaker multi-signal alignment.</div>
+                <div class="g-why">Higher conviction = more independent systems agreeing = lower chance of being wrong.</div>
+              </div>
+              <div class="glossary-card">
+                <div class="g-term">Win Rate</div>
+                <div class="g-desc">Percentage of past trades from this algorithm that made money. Example: "85% win rate" means 85 out of 100 trades were profitable based on 30-day historical backtesting.</div>
+                <div class="g-why">We only use algorithms with 72%+ proven win rate — well above the 50% coin-flip threshold.</div>
+              </div>
+              <div class="glossary-card">
+                <div class="g-term">Algorithm Consensus</div>
+                <div class="g-desc">When multiple independent stock-picking systems (stock_picks, miracle v2, miracle v3) all recommend the same ticker. Each uses different logic, so agreement is meaningful — not echo-chamber overlap.</div>
+                <div class="g-why">One algorithm being right could be luck. Three independent ones agreeing is a pattern.</div>
+              </div>
+              <div class="glossary-card">
+                <div class="g-term">Edge</div>
+                <div class="g-desc">A statistical advantage over random chance. If a strategy wins 70% of the time, the "edge" is 20% above the 50/50 baseline. The Edge Finder specifically looks for setups where the historical edge is largest.</div>
+              </div>
+              <div class="glossary-card">
+                <div class="g-term">Backtested</div>
+                <div class="g-desc">Tested against historical data. "30-day backtest" means we replayed the last 30 days of real market data through the algorithm to see how it would have performed. <strong>Caution:</strong> past performance does not guarantee future results.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="refresh-info" id="refreshInfo">Auto-refreshes every 5 minutes during market hours</div>
+        <div style="text-align:center;font-size:0.75rem;color:#555;margin-top:1rem;padding:0.8rem;border:1px solid rgba(255,255,255,0.04);border-radius:8px">
+          <strong>Not financial advice.</strong> For educational and research purposes only. Past performance does not guarantee future results. Always do your own research before trading.
+        </div>
     </div>
 
 <script>
+function toggleEdu(el){var b=el.nextElementSibling,a=el.querySelector('.edu-arrow');if(b.classList.contains('open')){b.classList.remove('open');a.classList.remove('open');}else{b.classList.add('open');a.classList.add('open');}}
 var API = window.location.hostname === 'localhost' ? 'api' : '/live-monitor/api';
 var refreshTimer = null;
 
@@ -218,8 +283,8 @@ function loadSetups() {
 
             for (var j = 0; j < setups.length; j++) {
                 var s = setups[j];
-                var retCls = s.current_return_pct >= 0 ? 'green' : 'red';
-                var retSign = s.current_return_pct >= 0 ? '+' : '';
+                var retCls = s.current_return_pct > 0 ? 'green' : (s.current_return_pct < 0 ? 'red' : 'dim');
+                var retSign = s.current_return_pct > 0 ? '+' : '';
 
                 // Source tags
                 var srcHtml = '';
@@ -325,5 +390,6 @@ function loadHistory() {
 loadAll();
 refreshTimer = setInterval(loadAll, 300000);
 </script>
+<script src="/findstocks/portfolio2/stock-nav.js"></script>
 </body>
 </html>

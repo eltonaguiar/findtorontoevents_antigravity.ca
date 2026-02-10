@@ -26,6 +26,12 @@ function _discord_read_env($key, $default = '') {
             // Remove quotes
             if (strlen($val) >= 2 && $val[0] === '"' && $val[strlen($val)-1] === '"') {
                 $val = substr($val, 1, -1);
+            } else {
+                // Strip inline # comments for unquoted values
+                $hashPos = strpos($val, '#');
+                if ($hashPos !== false) {
+                    $val = rtrim(substr($val, 0, $hashPos));
+                }
             }
             if ($k === $key) return $val;
         }

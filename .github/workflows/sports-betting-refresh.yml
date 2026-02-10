@@ -1,0 +1,151 @@
+name: Sports Betting — Odds Refresh & Auto-Settle
+
+on:
+  schedule:
+    # 5x daily: 10am, 1pm, 4pm, 7pm, 10pm EST (15,18,21,0,3 UTC)
+    - cron: '0 15,18,21,0,3 * * *'
+  workflow_dispatch:
+
+jobs:
+  odds-refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: Check active sports
+      continue-on-error: true
+      run: |
+        echo "=== Checking active sports ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/sports_odds.php?action=sports") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                sports = d.get('active_sports', [])
+                print(f'Active sports: {len(sports)}/{d.get(\"all_target\",8)}')
+                for s in sports:
+                    print(f'  {s.get(\"short_name\",\"?\")} - {s.get(\"title\",\"?\")}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Sports: $RESULT"
+
+    - name: Fetch odds (budget-safe)
+      continue-on-error: true
+      run: |
+        echo "=== Fetching odds from The Odds API ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/live-monitor/api/sports_odds.php?action=fetch&key=livetrader2026&budget_safe=1") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Sports fetched: {d.get(\"sports_fetched\",0)}')
+                print(f'Events cached: {d.get(\"events_cached\",0)}')
+                print(f'Odds rows: {d.get(\"odds_rows\",0)}')
+                print(f'Credits used (request): {d.get(\"credits_used\",0)}')
+                print(f'Credits remaining: {d.get(\"credits_remaining\",\"?\")}')
+                print(f'Monthly used: {d.get(\"monthly_used\",\"?\")}')
+                for sd in d.get('sport_details', []):
+                    print(f'  {sd.get(\"short_name\",sd.get(\"sport\",\"?\"))}: {sd.get(\"events\",0)} events, {sd.get(\"odds_rows\",0)} odds')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Fetch: $RESULT"
+
+    - name: Analyze value bets
+      continue-on-error: true
+      run: |
+        echo "=== Analyzing value bets ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=analyze&key=livetrader2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Value bets found: {d.get(\"value_bets_found\",0)}')
+                print(f'New bets inserted: {d.get(\"new_bets_inserted\",0)}')
+                for vb in d.get('top_bets', [])[:5]:
+                    print(f'  {vb.get(\"sport\",\"?\")} {vb.get(\"away_team\",\"?\")} @ {vb.get(\"home_team\",\"?\")} — {vb.get(\"bet_type\",\"?\")} EV={vb.get(\"ev_pct\",0)}%')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Analyze: $RESULT"
+
+    - name: Generate daily picks snapshot
+      continue-on-error: true
+      run: |
+        echo "=== Daily Picks Snapshot ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=daily_picks&key=livetrader2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Picks generated: {d.get(\"picks_generated\",0)}')
+                print(f'Generated at: {d.get(\"generated_at\",\"?\")}')
+                print(f'Pick date: {d.get(\"pick_date\",\"?\")}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Daily picks: $RESULT"
+
+    - name: Auto-settle completed bets
+      continue-on-error: true
+      run: |
+        echo "=== Settling completed bets ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/sports_bets.php?action=settle&key=livetrader2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Settled: {d.get(\"settled\",0)} bets')
+                print(f'Won: {d.get(\"won\",0)}, Lost: {d.get(\"lost\",0)}, Push: {d.get(\"push\",0)}')
+                print(f'Voided: {d.get(\"voided\",0)}')
+                print(f'Net PnL: \${d.get(\"net_pnl\",0):.2f}')
+                print(f'Bankroll: \${d.get(\"bankroll\",1000):.2f}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Settle: $RESULT"
+
+    - name: Dashboard summary
+      continue-on-error: true
+      run: |
+        echo "=== Sports Betting Dashboard ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/sports_bets.php?action=dashboard") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Bankroll: \${d.get(\"bankroll\",1000):.2f}')
+                print(f'Total Bets: {d.get(\"total_bets\",0)} (W:{d.get(\"total_wins\",0)} L:{d.get(\"total_losses\",0)} P:{d.get(\"total_pushes\",0)})')
+                print(f'Win Rate: {d.get(\"win_rate\",0)}%')
+                print(f'ROI: {d.get(\"roi_pct\",0)}%')
+                print(f'Total PnL: \${d.get(\"total_pnl\",0):.2f}')
+                print(f'Active Bets: {d.get(\"active_bets\",0)}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Dashboard: $RESULT"
+
+    - name: Credit usage check
+      continue-on-error: true
+      run: |
+        echo "=== API Credit Usage ==="
+        RESULT=$(curl -s --max-time 10 "https://findtorontoevents.ca/live-monitor/api/sports_odds.php?action=credit_usage") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Monthly used: {d.get(\"monthly_used\",0)}/{d.get(\"monthly_limit\",500)}')
+                print(f'Remaining: {d.get(\"monthly_remaining\",\"?\")}')
+                print(f'Used: {d.get(\"pct_used\",0)}%')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Credits: $RESULT"

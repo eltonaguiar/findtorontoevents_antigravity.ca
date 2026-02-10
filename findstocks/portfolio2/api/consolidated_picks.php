@@ -120,6 +120,7 @@ if ($action === 'consensus') {
 
     // 1. stock_picks — main portfolio algorithms (55+)
     $res = $conn->query("SELECT ticker, algorithm_name AS source_algo, pick_date, entry_price, score,
+                                NULL AS stop_loss_price, NULL AS take_profit_price,
                                 'stock_picks' AS source_table
                          FROM stock_picks
                          WHERE pick_date >= DATE_SUB(CURDATE(), INTERVAL $days DAY)
@@ -131,6 +132,7 @@ if ($action === 'consensus') {
 
     // 2. miracle_picks2 — DayTrades Miracle v2
     $res = $conn->query("SELECT ticker, strategy_name AS source_algo, scan_date AS pick_date, entry_price, score,
+                                stop_loss_price, take_profit_price,
                                 'miracle_picks2' AS source_table
                          FROM miracle_picks2
                          WHERE scan_date >= DATE_SUB(CURDATE(), INTERVAL $days DAY)
@@ -142,6 +144,7 @@ if ($action === 'consensus') {
 
     // 3. miracle_picks3 — DayTraders Miracle v3 (Claude-generated)
     $res = $conn->query("SELECT ticker, strategy_name AS source_algo, scan_date AS pick_date, entry_price, score,
+                                stop_loss_price, take_profit_price,
                                 'miracle_picks3' AS source_table
                          FROM miracle_picks3
                          WHERE scan_date >= DATE_SUB(CURDATE(), INTERVAL $days DAY)
@@ -164,7 +167,10 @@ if ($action === 'consensus') {
                 'tables' => array(),
                 'scores' => array(),
                 'entry_prices' => array(),
-                'latest_pick_date' => ''
+                'latest_pick_date' => '',
+                'earliest_pick_date' => '9999-12-31',
+                'tp_prices' => array(),
+                'sl_prices' => array()
             );
         }
         $by_ticker[$t]['picks'][] = $p;
@@ -178,8 +184,17 @@ if ($action === 'consensus') {
         }
         $by_ticker[$t]['scores'][] = (int)$p['score'];
         $by_ticker[$t]['entry_prices'][] = (float)$p['entry_price'];
+        if (isset($p['take_profit_price']) && $p['take_profit_price'] > 0) {
+            $by_ticker[$t]['tp_prices'][] = (float)$p['take_profit_price'];
+        }
+        if (isset($p['stop_loss_price']) && $p['stop_loss_price'] > 0) {
+            $by_ticker[$t]['sl_prices'][] = (float)$p['stop_loss_price'];
+        }
         if ($p['pick_date'] > $by_ticker[$t]['latest_pick_date']) {
             $by_ticker[$t]['latest_pick_date'] = $p['pick_date'];
+        }
+        if ($p['pick_date'] < $by_ticker[$t]['earliest_pick_date']) {
+            $by_ticker[$t]['earliest_pick_date'] = $p['pick_date'];
         }
     }
 
@@ -261,6 +276,42 @@ if ($action === 'consensus') {
         $current_return = ($avg_entry > 0 && $latest_price > 0)
             ? round(($latest_price - $avg_entry) / $avg_entry * 100, 2) : 0;
 
+        // ── Corrective scoring: penalize/boost based on real performance ──
+        $score_adjustments = array();
+        $original_score = $weighted_score;
+
+        // Penalty 1: Momentum lag — losing picks with high consensus get penalized
+        if ($current_return < -3 && $consensus_count >= 5) {
+            $penalty = 0.7; // -30%
+            $weighted_score *= $penalty;
+            $score_adjustments[] = 'Momentum lag penalty (-30%): down ' . $current_return . '% despite ' . $consensus_count . ' algos';
+        } elseif ($current_return < -1 && $consensus_count >= 3) {
+            $penalty = 0.85; // -15%
+            $weighted_score *= $penalty;
+            $score_adjustments[] = 'Declining trend penalty (-15%): ' . $current_return . '% return';
+        }
+
+        // Penalty 2: Falling knife — deep losses get heavy penalty
+        if ($current_return < -5) {
+            $weighted_score *= 0.6;
+            $score_adjustments[] = 'Falling knife penalty (-40%): down ' . $current_return . '%';
+        }
+
+        // Boost 1: Winning picks get momentum boost
+        if ($current_return > 3) {
+            $weighted_score *= 1.2;
+            $score_adjustments[] = 'Winner momentum boost (+20%): up +' . $current_return . '%';
+        } elseif ($current_return > 1) {
+            $weighted_score *= 1.1;
+            $score_adjustments[] = 'Positive trend boost (+10%): +' . $current_return . '%';
+        }
+
+        // Penalty 3: No price data at all
+        if ($latest_price <= 0) {
+            $weighted_score *= 0.5;
+            $score_adjustments[] = 'No price data penalty (-50%): ticker not in price database';
+        }
+
         // Build source details
         $sources = array();
         $seen_sources = array();
@@ -268,7 +319,7 @@ if ($action === 'consensus') {
             $key = $p['source_table'] . ':' . $p['source_algo'];
             if (isset($seen_sources[$key])) continue;
             $seen_sources[$key] = true;
-            $sources[] = array(
+            $src_entry = array(
                 'table' => $p['source_table'],
                 'label' => _source_label($p['source_table']),
                 'algorithm' => $p['source_algo'],
@@ -277,6 +328,13 @@ if ($action === 'consensus') {
                 'score' => (int)$p['score'],
                 'page_link' => _source_page_link($p['source_table'])
             );
+            if (isset($p['take_profit_price']) && $p['take_profit_price'] > 0) {
+                $src_entry['take_profit_price'] = (float)$p['take_profit_price'];
+            }
+            if (isset($p['stop_loss_price']) && $p['stop_loss_price'] > 0) {
+                $src_entry['stop_loss_price'] = (float)$p['stop_loss_price'];
+            }
+            $sources[] = $src_entry;
         }
 
         // Determine direction: check miracle_picks3 explicit direction, others are LONG-only
@@ -322,6 +380,39 @@ if ($action === 'consensus') {
 
         $verdict = implode('. ', $verdict_parts) . '.';
 
+        // Determine pick classification based on source tables
+        $has_daytrade = in_array('miracle_picks2', $data['tables']) || in_array('miracle_picks3', $data['tables']);
+        $has_swing = in_array('stock_picks', $data['tables']);
+        if ($has_daytrade && $has_swing) {
+            $pick_classification = 'Mixed (Day Trade + Swing)';
+            $default_tp_pct = 5.0;
+            $default_sl_pct = 3.0;
+        } elseif ($has_daytrade) {
+            $pick_classification = 'Day Trade';
+            $default_tp_pct = 5.0;
+            $default_sl_pct = 3.0;
+        } else {
+            $pick_classification = 'Swing Trade';
+            $default_tp_pct = 8.0;
+            $default_sl_pct = 4.0;
+        }
+
+        // Use actual TP/SL from sources if available, otherwise compute from defaults
+        $tp_price = null;
+        $sl_price = null;
+        if (count($data['tp_prices']) > 0) {
+            $tp_price = round(array_sum($data['tp_prices']) / count($data['tp_prices']), 2);
+        } elseif ($avg_entry > 0) {
+            $tp_price = round($avg_entry * (1 + $default_tp_pct / 100), 2);
+        }
+        if (count($data['sl_prices']) > 0) {
+            $sl_price = round(array_sum($data['sl_prices']) / count($data['sl_prices']), 2);
+        } elseif ($avg_entry > 0) {
+            $sl_price = round($avg_entry * (1 - $default_sl_pct / 100), 2);
+        }
+
+        $earliest = ($data['earliest_pick_date'] !== '9999-12-31') ? $data['earliest_pick_date'] : $data['latest_pick_date'];
+
         $consensus_list[] = array(
             'ticker' => $t,
             'company_name' => $company_name,
@@ -335,10 +426,19 @@ if ($action === 'consensus') {
             'current_return_pct' => $current_return,
             'direction' => $direction,
             'verdict' => $verdict,
+            'earliest_pick_date' => $earliest,
             'latest_pick_date' => $data['latest_pick_date'],
+            'pick_classification' => $pick_classification,
+            'suggested_tp_pct' => $default_tp_pct,
+            'suggested_sl_pct' => $default_sl_pct,
+            'tp_price' => $tp_price,
+            'sl_price' => $sl_price,
             'source_tables' => $data['tables'],
             'sources' => $sources,
-            'total_picks' => count($data['picks'])
+            'total_picks' => count($data['picks']),
+            'score_adjustments' => $score_adjustments,
+            'original_score' => round($original_score, 2),
+            'auto_notes' => (count($score_adjustments) > 0) ? implode(' | ', $score_adjustments) : null
         );
     }
 

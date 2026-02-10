@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toronto Deals & Freebies | Find Toronto Events</title>
+    <meta name="description" content="Curated birthday freebies, daily deals, and Canadian savings in Toronto. Find free food, BOGO offers, and verified deals near you.">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --bg-card-hover: #222;
+            --bg-elevated: #141414;
+            --border: #2a2a2a;
+            --border-light: #333;
+            --text: #e8e8e8;
+            --text-dim: #888;
+            --text-muted: #666;
+            --accent: #00e676;
+            --accent-dim: rgba(0, 230, 118, 0.12);
+            --accent-glow: rgba(0, 230, 118, 0.25);
+            --gold: #ffd700;
+            --gold-dim: rgba(255, 215, 0, 0.12);
+            --blue: #42a5f5;
+            --blue-dim: rgba(66, 165, 245, 0.12);
+            --orange: #ff9800;
+            --orange-dim: rgba(255, 152, 0, 0.12);
+            --red: #ef5350;
+            --red-dim: rgba(239, 83, 80, 0.12);
+            --purple: #ab47bc;
+            --purple-dim: rgba(171, 71, 188, 0.12);
+            --pink: #ec407a;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 2px 12px rgba(0,0,0,0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ===== STICKY HEADER ===== */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 10, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.7rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .sticky-header .back-link {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .sticky-header .back-link:hover { color: var(--accent); text-decoration: none; }
+        .sticky-header .site-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+        }
+        .sticky-header .header-right {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            text-align: center;
+            padding: 2.5rem 1.2rem 1.5rem;
+            background: linear-gradient(180deg, #0f1a0f 0%, var(--bg) 100%);
+        }
+        .hero h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.4rem;
+            background: linear-gradient(135deg, var(--accent), #69f0ae, #b9f6ca);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero .subtitle {
+            color: var(--text-dim);
+            font-size: 1rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .hero .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.2rem;
+            flex-wrap: wrap;
+        }
+        .hero .stat { text-align: center; }
+        .hero .stat-num {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+        .hero .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        /* ===== TABS ===== */
+        .tab-bar {
+            display: flex;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-elevated);
+            padding: 0 1rem;
+        }
+        .tab-bar::-webkit-scrollbar { display: none; }
+        .tab-btn {
+            flex-shrink: 0;
+            padding: 0.85rem 1.2rem;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-family: inherit;
+        }
+        .tab-btn:hover { color: var(--text); }
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        /* ===== TOOLBAR ===== */
+        .toolbar {
+            padding: 1rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+        }
+        .search-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .search-input {
+            flex: 1;
+            padding: 0.65rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 0.9rem;
+            outline: none;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        .search-input:focus { border-color: var(--accent); }
+        .search-input::placeholder { color: var(--text-muted); }
+
+        .near-me-btn {
+            padding: 0.65rem 1rem;
+            background: var(--accent-dim);
+            border: 1px solid rgba(0,230,118,0.25);
+            border-radius: var(--radius);
+            color: var(--accent);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            font-family: inherit;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .near-me-btn:hover { background: rgba(0,230,118,0.2); }
+        .near-me-btn.active { background: var(--accent); color: #0a0a0a; }
+        .near-me-btn .icon { font-size: 1rem; }
+
+        /* Category chips */
+        .chip-row {
+            display: flex;
+            gap: 0.4rem;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding-bottom: 0.2rem;
+        }
+        .chip-row::-webkit-scrollbar { display: none; }
+        .chip {
+            flex-shrink: 0;
+            padding: 0.4rem 0.8rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .chip:hover { border-color: var(--accent); color: var(--text); }
+        .chip.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+        .type-chips { margin-top: 0; }
+
+        /* ===== CONTENT AREA ===== */
+        .content { padding: 1rem 1.2rem 4rem; max-width: 1200px; margin: 0 auto; }
+
+        /* ===== SECTION HEADERS ===== */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 1.8rem 0 1rem;
+        }
+        .section-header:first-child { margin-top: 0.5rem; }
+        .section-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .section-title .emoji { font-size: 1.3rem; }
+        .section-count {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+        .sort-select {
+            padding: 0.35rem 0.7rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-dim);
+            font-size: 0.78rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* ===== DEAL CARDS ===== */
+        .deals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 0.8rem;
+        }
+        .deal-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.1rem;
+            transition: all 0.2s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .deal-card:hover {
+            border-color: var(--border-light);
+            background: var(--bg-card-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+        .deal-card .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+        .deal-card .card-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.3;
+            flex: 1;
+            margin-right: 0.5rem;
+        }
+        .deal-card .card-emoji {
+            font-size: 1.6rem;
+            line-height: 1;
+        }
+        .deal-card .card-desc {
+            color: var(--text-dim);
+            font-size: 0.88rem;
+            margin-bottom: 0.6rem;
+            line-height: 1.5;
+        }
+        .deal-card .card-desc strong { color: var(--accent); font-weight: 600; }
+
+        /* Badges */
+        .badge-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-bottom: 0.6rem;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .badge-free { background: var(--accent-dim); color: var(--accent); }
+        .badge-bogo { background: var(--blue-dim); color: var(--blue); }
+        .badge-discount { background: var(--orange-dim); color: var(--orange); }
+        .badge-purchase { background: var(--purple-dim); color: var(--purple); }
+        .badge-value { background: var(--gold-dim); color: var(--gold); }
+        .badge-category { background: rgba(255,255,255,0.06); color: var(--text-dim); }
+        .badge-distance { background: var(--blue-dim); color: var(--blue); }
+        .badge-day { background: rgba(255,255,255,0.08); color: var(--text-dim); }
+        .badge-new { background: var(--red-dim); color: var(--red); }
+        .badge-canadian { background: var(--red-dim); color: var(--red); }
+        .badge-no-signup { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(0,230,118,0.2); }
+        .badge-high-value { background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(255,215,0,0.2); }
+
+        /* Card conditions */
+        .card-conditions {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.6rem;
+            padding: 0.5rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: var(--radius-sm);
+            line-height: 1.5;
+        }
+        .card-conditions .cond-label { color: var(--text-dim); font-weight: 600; }
+
+        /* Card footer */
+        .card-footer {
+            margin-top: auto;
+            padding-top: 0.6rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            color: var(--accent);
+        }
+        .verified-badge .check { font-size: 0.85rem; }
+        .source-link {
+            font-size: 0.78rem;
+            color: var(--blue);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
+        }
+        .source-link:hover { color: var(--accent); }
+
+        /* ===== WEEKLY CALENDAR ===== */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .cal-day {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.8rem 0.5rem;
+            text-align: center;
+            min-height: 100px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .cal-day:hover { border-color: var(--border-light); }
+        .cal-day.today {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+        .cal-day-name {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-dim);
+            margin-bottom: 0.4rem;
+        }
+        .cal-day.today .cal-day-name { color: var(--accent); }
+        .cal-day-count {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1.2;
+        }
+        .cal-day.today .cal-day-count { color: var(--accent); }
+        .cal-day-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
+        }
+        .cal-day-items {
+            margin-top: 0.4rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+        .cal-item {
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0.1rem 0.3rem;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.04);
+        }
+
+        /* Mobile calendar stacks */
+        @media (max-width: 700px) {
+            .calendar-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .cal-day { min-height: 80px; }
+        }
+        @media (max-width: 400px) {
+            .calendar-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== QUICK REFERENCE BOXES ===== */
+        .quick-ref {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .quick-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+        }
+        .quick-box h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .quick-box.no-signup h3 { color: var(--accent); }
+        .quick-box.high-value h3 { color: var(--gold); }
+        .quick-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 0.85rem;
+        }
+        .quick-item:last-child { border-bottom: none; }
+        .quick-item .qi-name { color: var(--text); }
+        .quick-item .qi-val { color: var(--gold); font-weight: 700; font-size: 0.8rem; }
+        .quick-item .qi-free { color: var(--accent); font-weight: 600; font-size: 0.8rem; }
+
+        /* ===== BIRTHDAY PLAN ===== */
+        .bday-plan {
+            background: linear-gradient(135deg, rgba(0,230,118,0.06), rgba(255,215,0,0.06));
+            border: 1px solid rgba(0,230,118,0.2);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .bday-plan h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.3rem;
+        }
+        .bday-plan .plan-subtitle {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        .plan-timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        .plan-timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 0.5rem;
+            bottom: 0.5rem;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--accent), var(--gold));
+            border-radius: 2px;
+        }
+        .plan-stop {
+            position: relative;
+            padding: 0.6rem 0;
+        }
+        .plan-stop::before {
+            content: '';
+            position: absolute;
+            left: -1.65rem;
+            top: 1rem;
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+            border: 2px solid var(--bg);
+        }
+        .plan-time {
+            font-size: 0.75rem;
+            color: var(--accent);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .plan-place {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .plan-detail {
+            font-size: 0.82rem;
+            color: var(--text-dim);
+        }
+        .plan-value {
+            font-size: 0.78rem;
+            color: var(--gold);
+            font-weight: 600;
+        }
+        .plan-total {
+            margin-top: 1rem;
+            padding-top: 0.8rem;
+            border-top: 1px solid rgba(0,230,118,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .plan-total .total-label { color: var(--text-dim); font-size: 0.9rem; }
+        .plan-total .total-value { font-size: 1.4rem; font-weight: 800; color: var(--gold); }
+
+        /* ===== DEAL SITES TAB ===== */
+        .sites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 0.8rem;
+        }
+        .site-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.1rem;
+            transition: all 0.2s;
+        }
+        .site-card:hover {
+            border-color: var(--border-light);
+            transform: translateY(-1px);
+        }
+        .site-card .site-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.3rem;
+        }
+        .site-card .site-desc {
+            font-size: 0.82rem;
+            color: var(--text-dim);
+            margin-bottom: 0.6rem;
+            line-height: 1.5;
+        }
+        .site-card .site-link {
+            font-size: 0.82rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* ===== TAB PANELS ===== */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-dim);
+        }
+        .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+        .empty-state p { font-size: 0.95rem; }
+
+        /* ===== LOADING ===== */
+        .loading {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-dim);
+        }
+        .loading .spinner {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading p { margin-top: 0.6rem; font-size: 0.9rem; }
+
+        /* ===== SCROLL TO TOP ===== */
+        .scroll-top {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 42px;
+            height: 42px;
+            background: var(--accent);
+            color: #0a0a0a;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0,230,118,0.3);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            transition: all 0.2s;
+        }
+        .scroll-top:hover { transform: scale(1.1); }
+        .scroll-top.visible { display: flex; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6rem; }
+            .hero .stats-row { gap: 1.2rem; }
+            .hero .stat-num { font-size: 1.3rem; }
+            .deals-grid { grid-template-columns: 1fr; }
+            .sites-grid { grid-template-columns: 1fr; }
+            .quick-ref { grid-template-columns: 1fr; }
+            .content { padding: 0.8rem 0.8rem 4rem; }
+            .toolbar { padding: 0.8rem; }
+            .sticky-header { padding: 0.6rem 0.8rem; }
+            .section-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+            .bday-plan { padding: 1rem; }
+        }
+
+        /* Hide content that hasn't loaded */
+        [data-loaded="false"] { opacity: 0.4; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+<!-- STICKY HEADER -->
+<header class="sticky-header">
+    <a href="https://findtorontoevents.ca/" class="back-link">&larr; Home</a>
+    <span class="site-name">Toronto Deals</span>
+    <span class="header-right" id="lastUpdated"></span>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+    <h1>Toronto Deals & Freebies</h1>
+    <p class="subtitle">Curated birthday freebies, daily deals, and verified Canadian savings</p>
+    <div class="stats-row">
+        <div class="stat">
+            <div class="stat-num" id="statTotal">--</div>
+            <div class="stat-label">Total Deals</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num" id="statFree">--</div>
+            <div class="stat-label">Free Items</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num" id="statValue">--</div>
+            <div class="stat-label">Total Value</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num" id="statSources">--</div>
+            <div class="stat-label">Sources</div>
+        </div>
+    </div>
+</section>
+
+<!-- TABS -->
+<nav class="tab-bar" id="tabBar">
+    <button class="tab-btn active" data-tab="birthday">Birthday Freebies</button>
+    <button class="tab-btn" data-tab="free-today">Free Today</button>
+    <button class="tab-btn" data-tab="calendar">Weekly Calendar</button>
+    <button class="tab-btn" data-tab="canadian">Canadian Deals</button>
+    <button class="tab-btn" data-tab="sites">Deal Sites</button>
+</nav>
+
+<!-- TOOLBAR -->
+<div class="toolbar" id="toolbar">
+    <div class="search-row">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search deals, restaurants, brands...">
+        <button class="near-me-btn" id="nearMeBtn" title="Sort by distance from your location">
+            <span class="icon">&#9737;</span> Near Me
+        </button>
+    </div>
+    <div class="chip-row" id="categoryChips">
+        <!-- Filled by JS -->
+    </div>
+    <div class="chip-row type-chips" id="typeChips">
+        <!-- Filled by JS -->
+    </div>
+</div>
+
+<!-- CONTENT -->
+<main class="content">
+    <!-- LOADING STATE -->
+    <div class="loading" id="loadingState">
+        <div class="spinner"></div>
+        <p>Loading deals...</p>
+    </div>
+
+    <!-- BIRTHDAY TAB -->
+    <div class="tab-panel active" id="panel-birthday">
+        <div id="bdayPlanSection"></div>
+        <div id="bdayQuickRef"></div>
+        <div class="section-header">
+            <div class="section-title"><span class="emoji">&#127874;</span> Birthday Freebies</div>
+            <select class="sort-select" id="bdaySortSelect">
+                <option value="value-desc">Highest Value</option>
+                <option value="value-asc">Lowest Value</option>
+                <option value="name-asc">A-Z</option>
+                <option value="no-signup">No Signup First</option>
+            </select>
+        </div>
+        <div class="deals-grid" id="bdayGrid"></div>
+    </div>
+
+    <!-- FREE TODAY TAB -->
+    <div class="tab-panel" id="panel-free-today">
+        <div class="section-header">
+            <div class="section-title"><span class="emoji">&#127873;</span> Free Today <span class="section-count" id="freeTodayCount">0</span></div>
+        </div>
+        <div class="deals-grid" id="freeTodayGrid"></div>
+    </div>
+
+    <!-- WEEKLY CALENDAR TAB -->
+    <div class="tab-panel" id="panel-calendar">
+        <div class="section-header">
+            <div class="section-title"><span class="emoji">&#128197;</span> Weekly Deal Calendar</div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+        <div class="section-header">
+            <div class="section-title"><span class="emoji">&#128205;</span> Selected Day Deals</div>
+        </div>
+        <div class="deals-grid" id="calDayDeals"></div>
+    </div>
+
+    <!-- CANADIAN DEALS TAB -->
+    <div class="tab-panel" id="panel-canadian">
+        <div class="section-header">
+            <div class="section-title"><span class="emoji">&#127809;</span> Canadian Deals <span class="section-count" id="canadianCount">0</span></div>
+        </div>
+        <div class="deals-grid" id="canadianGrid"></div>
+    </div>
+
+    <!-- DEAL SITES TAB -->
+    <div class="tab-panel" id="panel-sites">
+        <div class="section-header">
+            <div class="section-title"><span class="emoji">&#127760;</span> Top Deal Sites & Resources</div>
+        </div>
+        <div class="sites-grid" id="sitesGrid"></div>
+    </div>
+</main>
+
+<!-- SCROLL TO TOP -->
+<button class="scroll-top" id="scrollTopBtn" title="Scroll to top">&#8593;</button>
+
+<script>
+(function() {
+    'use strict';
+
+    // ===== DATA =====
+    // Comprehensive curated dataset — also used as fallback if API is unavailable
+    const BUILTIN_DEALS = [
+        // ====== BIRTHDAY FREEBIES ======
+        { id: 'bd-starbucks', name: 'Starbucks', category: 'Coffee', type: 'Free', deal_type: 'birthday', what: 'Free birthday drink (any size, any drink)', value: 8, conditions: 'Must be a Starbucks Rewards member. Earn on your birthday. Redeemable for 4 days.', signup: 'Starbucks Rewards app (free)', source_name: 'Starbucks Rewards', source_url: 'https://www.starbucks.ca/rewards', no_signup: false, lat: 43.6532, lng: -79.3832, days: [], canadian: true, emoji: '&#9749;', verified_sources: 3 },
+        { id: 'bd-sephora', name: 'Sephora', category: 'Beauty', type: 'Free', deal_type: 'birthday', what: 'Free birthday gift set (mini luxury products)', value: 25, conditions: 'Beauty Insider membership required. Redeem during birth month.', signup: 'Beauty Insider (free)', source_name: 'Sephora Beauty Insider', source_url: 'https://www.sephora.com/beauty/birthday-gift', no_signup: false, lat: 43.6543, lng: -79.3832, days: [], canadian: true, emoji: '&#128132;', verified_sources: 3 },
+        { id: 'bd-dq', name: 'Dairy Queen', category: 'Desserts', type: 'Free', deal_type: 'birthday', what: 'Free Blizzard (any size)', value: 7, conditions: 'Blizzard Fan Club member. Birthday reward loaded to app.', signup: 'DQ App / Blizzard Fan Club (free)', source_name: 'Dairy Queen', source_url: 'https://www.dairyqueen.com/en-ca/', no_signup: false, lat: 43.6572, lng: -79.3810, days: [], canadian: true, emoji: '&#127846;', verified_sources: 2 },
+        { id: 'bd-booster', name: 'Booster Juice', category: 'Food', type: 'Free', deal_type: 'birthday', what: 'Free smoothie on your birthday', value: 7, conditions: 'Must be in the loyalty program.', signup: 'Booster Juice app (free)', source_name: 'Booster Juice', source_url: 'https://www.boosterjuice.com/', no_signup: false, lat: 43.6550, lng: -79.3840, days: [], canadian: true, emoji: '&#129380;', verified_sources: 2 },
+        { id: 'bd-marble', name: 'Marble Slab Creamery', category: 'Desserts', type: 'Free', deal_type: 'birthday', what: 'Free ice cream creation on your birthday', value: 8, conditions: 'Join the Slab Happy rewards. Walk in on your birthday.', signup: 'Slab Happy Club (free email signup)', source_name: 'Marble Slab', source_url: 'https://www.marbleslab.ca/', no_signup: false, lat: 43.6558, lng: -79.3797, days: [], canadian: true, emoji: '&#127846;', verified_sources: 2 },
+        { id: 'bd-davids', name: "David's Tea", category: 'Coffee', type: 'Free', deal_type: 'birthday', what: 'Free tea of your choice + $5 coupon', value: 10, conditions: 'Frequent Steeper loyalty member. Birthday month.', signup: 'Frequent Steeper (free)', source_name: "David's Tea", source_url: 'https://www.davidstea.com/', no_signup: false, lat: 43.6534, lng: -79.3841, days: [], canadian: true, emoji: '&#127861;', verified_sources: 2 },
+        { id: 'bd-dennyus', name: "Denny's", category: 'Food', type: 'Free', deal_type: 'birthday', what: "Free Grand Slam breakfast on your birthday", value: 15, conditions: 'Show valid ID on your birthday. No purchase necessary.', signup: 'None required', source_name: "Denny's", source_url: 'https://www.dennys.ca/', no_signup: true, lat: 43.6575, lng: -79.3800, days: [], canadian: true, emoji: '&#127859;', verified_sources: 3 },
+        { id: 'bd-ihop', name: 'IHOP', category: 'Food', type: 'Free', deal_type: 'birthday', what: 'Free stack of Rooty Tooty Fresh N Fruity pancakes', value: 12, conditions: 'Join the International Bank of Pancakes (loyalty program). Birthday email.', signup: 'IHOP loyalty (free)', source_name: 'IHOP', source_url: 'https://www.ihop.ca/', no_signup: false, lat: 43.6560, lng: -79.3820, days: [], canadian: true, emoji: '&#129374;', verified_sources: 2 },
+        { id: 'bd-shopper', name: 'Shoppers Drug Mart', category: 'Retail', type: 'Free', deal_type: 'birthday', what: '10,000 bonus Optimum points (up to $15 value)', value: 15, conditions: 'PC Optimum member. Points auto-loaded on birthday.', signup: 'PC Optimum (free)', source_name: 'Shoppers Drug Mart', source_url: 'https://www.shoppersdrugmart.ca/', no_signup: false, lat: 43.6545, lng: -79.3835, days: [], canadian: true, emoji: '&#128176;', verified_sources: 2 },
+        { id: 'bd-cineplex', name: 'Cineplex', category: 'Entertainment', type: 'Free', deal_type: 'birthday', what: 'Free movie ticket or upgrade on your birthday', value: 16, conditions: 'SCENE+ member. Birthday reward credited to account.', signup: 'SCENE+ (free)', source_name: 'Cineplex', source_url: 'https://www.cineplex.com/', no_signup: false, lat: 43.6561, lng: -79.3830, days: [], canadian: true, emoji: '&#127909;', verified_sources: 3 },
+        { id: 'bd-baskin', name: 'Baskin-Robbins', category: 'Desserts', type: 'Free', deal_type: 'birthday', what: 'Free regular scoop on your birthday', value: 5, conditions: 'Join the Birthday Club. Coupon emailed before birthday.', signup: 'Birthday Club email signup (free)', source_name: 'Baskin-Robbins', source_url: 'https://www.baskinrobbins.ca/', no_signup: false, lat: 43.6548, lng: -79.3828, days: [], canadian: true, emoji: '&#127846;', verified_sources: 2 },
+        { id: 'bd-pizza-pizza', name: 'Pizza Pizza', category: 'Food', type: 'Free', deal_type: 'birthday', what: 'Free personal pizza on your birthday', value: 8, conditions: 'Club 11-11 member. Birthday reward in app.', signup: 'Pizza Pizza app / Club 11-11 (free)', source_name: 'Pizza Pizza', source_url: 'https://www.pizzapizza.ca/', no_signup: false, lat: 43.6549, lng: -79.3837, days: [], canadian: true, emoji: '&#127829;', verified_sources: 2 },
+        { id: 'bd-swiss', name: 'Swiss Chalet', category: 'Food', type: 'Free', deal_type: 'birthday', what: 'Free dessert or appetizer on your birthday', value: 8, conditions: 'Swiss Chalet Rotisserie eClub member.', signup: 'eClub email signup (free)', source_name: 'Swiss Chalet', source_url: 'https://www.swisschalet.com/', no_signup: false, lat: 43.6571, lng: -79.3808, days: [], canadian: true, emoji: '&#127831;', verified_sources: 2 },
+        { id: 'bd-chatime', name: 'Chatime', category: 'Bubble Tea', type: 'Free', deal_type: 'birthday', what: 'Free birthday drink (any regular size)', value: 7, conditions: 'Must be a Chatime rewards member.', signup: 'Chatime app (free)', source_name: 'Chatime', source_url: 'https://chatime.com/', no_signup: false, lat: 43.6555, lng: -79.3825, days: [], canadian: true, emoji: '&#129483;', verified_sources: 2 },
+        { id: 'bd-cobs', name: 'COBS Bread', category: 'Bakery', type: 'Free', deal_type: 'birthday', what: 'Free loaf of bread on your birthday', value: 7, conditions: 'Join the Dough Getters program. Birthday reward in app.', signup: 'Dough Getters (free)', source_name: 'COBS Bread', source_url: 'https://www.cobsbread.com/', no_signup: false, lat: 43.6540, lng: -79.3830, days: [], canadian: true, emoji: '&#127838;', verified_sources: 2 },
+        { id: 'bd-tims', name: "Tim Hortons", category: 'Coffee', type: 'Free', deal_type: 'birthday', what: 'Free beverage and baked good on your birthday', value: 6, conditions: 'Tims Rewards member. Birthday reward loaded to app.', signup: 'Tims Rewards app (free)', source_name: "Tim Hortons", source_url: 'https://www.timhortons.ca/', no_signup: false, lat: 43.6538, lng: -79.3829, days: [], canadian: true, emoji: '&#9749;', verified_sources: 3 },
+        { id: 'bd-kelseys', name: "Kelsey's", category: 'Food', type: 'Free', deal_type: 'birthday', what: 'Free entree on your birthday (with guest)', value: 18, conditions: "Kelsey's eClub member. Must dine with at least one other person.", signup: 'eClub email signup (free)', source_name: "Kelsey's", source_url: 'https://www.kelseys.ca/', no_signup: false, lat: 43.6563, lng: -79.3813, days: [], canadian: true, emoji: '&#127869;', verified_sources: 2 },
+        { id: 'bd-tgifridays', name: "TGI Friday's", category: 'Food', type: 'Free', deal_type: 'birthday', what: 'Free dessert on your birthday', value: 10, conditions: 'Friday Rewards member. Birthday coupon emailed.', signup: 'Friday Rewards (free)', source_name: "TGI Friday's", source_url: 'https://www.tgifridays.com/', no_signup: false, lat: 43.6570, lng: -79.3807, days: [], canadian: false, emoji: '&#127856;', verified_sources: 2 },
+        { id: 'bd-body-shop', name: 'The Body Shop', category: 'Beauty', type: 'Free', deal_type: 'birthday', what: '$10 birthday reward certificate', value: 10, conditions: 'Love Your Body Club member. Usable during birth month.', signup: 'Love Your Body Club (free)', source_name: 'The Body Shop', source_url: 'https://www.thebodyshop.com/en-ca/', no_signup: false, lat: 43.6550, lng: -79.3834, days: [], canadian: true, emoji: '&#127807;', verified_sources: 2 },
+        { id: 'bd-auntie', name: "Auntie Anne's", category: 'Food', type: 'Free', deal_type: 'birthday', what: 'Free classic pretzel on your birthday', value: 5, conditions: "Auntie Anne's Pretzel Perks member.", signup: 'Pretzel Perks (free)', source_name: "Auntie Anne's", source_url: 'https://www.auntieannes.ca/', no_signup: false, lat: 43.6554, lng: -79.3833, days: [], canadian: true, emoji: '&#129384;', verified_sources: 2 },
+
+        // ====== DAILY / WEEKLY DEALS ======
+        { id: 'dd-dominos', name: 'Dominos 50% Off', category: 'Food', type: 'Discount', deal_type: 'daily', what: '50% off all pizzas ordered online at regular menu price', value: 10, conditions: 'Online orders only. Regular price items.', signup: 'None', source_name: 'Dominos Canada', source_url: 'https://www.dominos.ca/', no_signup: true, lat: 43.6540, lng: -79.3830, days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], canadian: true, emoji: '&#127829;', verified_sources: 2 },
+        { id: 'dd-mc-monday', name: "McDonald's McHappy Day", category: 'Food', type: 'Free', deal_type: 'weekly', what: "Free small coffee every Monday via McDonald's app", value: 2, conditions: 'Download the app. Offer refreshes weekly.', signup: "McDonald's App (free)", source_name: "McDonald's Canada", source_url: 'https://www.mcdonalds.com/ca/en-ca.html', no_signup: false, lat: 43.6544, lng: -79.3831, days: ['Monday'], canadian: true, emoji: '&#9749;', verified_sources: 2 },
+        { id: 'dd-taco-tues', name: 'Taco Bell $2 Tuesday', category: 'Food', type: 'Discount', deal_type: 'weekly', what: '$2 Crunchy Tacos on Tuesdays', value: 4, conditions: 'In-store or drive-through. Select locations.', signup: 'None', source_name: 'Taco Bell Canada', source_url: 'https://www.tacobell.ca/', no_signup: true, lat: 43.6552, lng: -79.3838, days: ['Tuesday'], canadian: true, emoji: '&#127790;', verified_sources: 2 },
+        { id: 'dd-wing-wed', name: 'Wild Wing Wednesday', category: 'Food', type: 'Discount', deal_type: 'weekly', what: 'Half-price wings every Wednesday', value: 8, conditions: 'Dine-in only. All flavours included.', signup: 'None', source_name: 'Wild Wing', source_url: 'https://www.wildwingrestaurants.com/', no_signup: true, lat: 43.6548, lng: -79.3820, days: ['Wednesday'], canadian: true, emoji: '&#127831;', verified_sources: 2 },
+        { id: 'dd-sbux-thurs', name: 'Starbucks Happy Hour', category: 'Coffee', type: 'BOGO', deal_type: 'weekly', what: 'BOGO on select drinks every Thursday afternoon (2-7pm)', value: 6, conditions: 'Offer varies by week. Check the Starbucks app for current deal.', signup: 'Starbucks App', source_name: 'Starbucks Canada', source_url: 'https://www.starbucks.ca/', no_signup: false, lat: 43.6532, lng: -79.3832, days: ['Thursday'], canadian: true, emoji: '&#9749;', verified_sources: 2 },
+        { id: 'dd-pizza-hut-deal', name: 'Pizza Hut $10 Deal', category: 'Food', type: 'Discount', deal_type: 'daily', what: '$10 medium 2-topping pizza carryout deal', value: 6, conditions: 'Carryout only. Select locations.', signup: 'None', source_name: 'Pizza Hut Canada', source_url: 'https://www.pizzahut.ca/', no_signup: true, lat: 43.6558, lng: -79.3815, days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], canadian: true, emoji: '&#127829;', verified_sources: 2 },
+        { id: 'dd-kfc-tuesday', name: 'KFC Toonie Tuesday', category: 'Food', type: 'Discount', deal_type: 'weekly', what: '2-piece chicken + fries for $3.99 on Tuesdays', value: 5, conditions: 'In-store or drive-through. Participating locations.', signup: 'None', source_name: 'KFC Canada', source_url: 'https://www.kfc.ca/', no_signup: true, lat: 43.6551, lng: -79.3827, days: ['Tuesday'], canadian: true, emoji: '&#127831;', verified_sources: 2 },
+        { id: 'dd-free-museum', name: 'AGO Free Wednesday Nights', category: 'Entertainment', type: 'Free', deal_type: 'weekly', what: 'Free admission to AGO every Wednesday 6-9pm', value: 25, conditions: 'Walk-in. Some special exhibits may have separate fees.', signup: 'None', source_name: 'Art Gallery of Ontario', source_url: 'https://ago.ca/', no_signup: true, lat: 43.6536, lng: -79.3925, days: ['Wednesday'], canadian: true, emoji: '&#127912;', verified_sources: 3 },
+        { id: 'dd-rom-third', name: 'ROM Third Tuesday', category: 'Entertainment', type: 'Free', deal_type: 'weekly', what: 'Free admission on third Tuesday of every month (5:30-8:30pm)', value: 23, conditions: 'Monthly event. Walk-in, limited capacity.', signup: 'None', source_name: 'Royal Ontario Museum', source_url: 'https://www.rom.on.ca/', no_signup: true, lat: 43.6677, lng: -79.3948, days: ['Tuesday'], canadian: true, emoji: '&#127963;', verified_sources: 3 },
+        { id: 'dd-aga-khan', name: 'Aga Khan Museum Free Wed', category: 'Entertainment', type: 'Free', deal_type: 'weekly', what: 'Free admission every Wednesday 4-8pm', value: 20, conditions: 'Walk-in. All galleries accessible.', signup: 'None', source_name: 'Aga Khan Museum', source_url: 'https://www.agakhanmuseum.org/', no_signup: true, lat: 43.7254, lng: -79.3347, days: ['Wednesday'], canadian: true, emoji: '&#127963;', verified_sources: 2 },
+        { id: 'dd-bata', name: 'Bata Shoe Museum Free Thurs', category: 'Entertainment', type: 'Free', deal_type: 'weekly', what: 'Free admission on Thursdays 5-8pm', value: 14, conditions: 'Walk-in. All exhibits open.', signup: 'None', source_name: 'Bata Shoe Museum', source_url: 'https://batashoemuseum.ca/', no_signup: true, lat: 43.6672, lng: -79.4001, days: ['Thursday'], canadian: true, emoji: '&#128095;', verified_sources: 2 },
+        { id: 'dd-textile', name: 'Textile Museum Free Sun', category: 'Entertainment', type: 'Free', deal_type: 'weekly', what: 'Pay-what-you-can admission on Sundays', value: 15, conditions: 'Walk-in. Suggested donation.', signup: 'None', source_name: 'Textile Museum of Canada', source_url: 'https://www.textilemuseum.ca/', no_signup: true, lat: 43.6540, lng: -79.3896, days: ['Sunday'], canadian: true, emoji: '&#129525;', verified_sources: 2 },
+        { id: 'dd-costco-samples', name: 'Costco Free Samples', category: 'Food', type: 'Free', deal_type: 'daily', what: 'Free food samples every day (especially weekends)', value: 3, conditions: 'Costco membership required for entry. Samples free inside.', signup: 'Costco Membership ($65/yr)', source_name: 'Costco', source_url: 'https://www.costco.ca/', no_signup: false, lat: 43.6383, lng: -79.4297, days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], canadian: true, emoji: '&#127859;', verified_sources: 2 },
+        { id: 'dd-tims-rollup', name: 'Tim Hortons Roll Up', category: 'Coffee', type: 'Free', deal_type: 'daily', what: 'Roll Up to Win: Free coffee, donuts, prizes (seasonal)', value: 3, conditions: 'Seasonal (usually Feb-April). Any hot drink purchase.', signup: 'Tims App', source_name: 'Tim Hortons', source_url: 'https://www.timhortons.ca/', no_signup: false, lat: 43.6538, lng: -79.3829, days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], canadian: true, emoji: '&#127922;', verified_sources: 3 },
+        { id: 'dd-spa-tues', name: 'Body Blitz Spa Discount Tues', category: 'Beauty', type: 'Discount', deal_type: 'weekly', what: '20% off spa day passes on Tuesdays', value: 15, conditions: 'Book online for Tuesday. Women-only spa.', signup: 'None', source_name: 'Body Blitz Spa', source_url: 'https://www.bodyblitzspa.com/', no_signup: true, lat: 43.6376, lng: -79.4274, days: ['Tuesday'], canadian: true, emoji: '&#128134;', verified_sources: 1 },
+        { id: 'dd-kids-bowl', name: 'Kids Bowl Free', category: 'Kids', type: 'Free', deal_type: 'daily', what: 'Kids bowl 2 free games per day all summer', value: 10, conditions: 'Register kids in advance online. Summer only (May-Sept). Shoe rental extra.', signup: 'Online registration (free)', source_name: 'Kids Bowl Free', source_url: 'https://www.kidsbowlfree.com/', no_signup: false, lat: 43.6500, lng: -79.3700, days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], canadian: true, emoji: '&#127923;', verified_sources: 2 },
+        { id: 'dd-loblaws-fri', name: 'PC Optimum Bonus Offers', category: 'Retail', type: 'Discount', deal_type: 'weekly', what: 'Personal offers loaded every Friday. 20x points events monthly.', value: 10, conditions: 'PC Optimum member. Load offers in app before shopping.', signup: 'PC Optimum (free)', source_name: 'Loblaws', source_url: 'https://www.loblaws.ca/', no_signup: false, lat: 43.6541, lng: -79.3841, days: ['Friday'], canadian: true, emoji: '&#128722;', verified_sources: 2 },
+        { id: 'dd-popeyes-tues', name: "Popeyes Tuesday Deal", category: 'Food', type: 'Discount', deal_type: 'weekly', what: '2 pieces + biscuit for $5 on Tuesdays', value: 5, conditions: 'In-store. Participating locations.', signup: 'None', source_name: "Popeyes Canada", source_url: 'https://www.popeyeschicken.ca/', no_signup: true, lat: 43.6557, lng: -79.3822, days: ['Tuesday'], canadian: true, emoji: '&#127831;', verified_sources: 2 },
+        { id: 'dd-subway-sub-day', name: 'Subway Sub of the Day', category: 'Food', type: 'Discount', deal_type: 'daily', what: 'Rotating $5.49 Sub of the Day', value: 4, conditions: 'Regular footlong prices vary. Different sub each day.', signup: 'None', source_name: 'Subway Canada', source_url: 'https://www.subway.com/en-ca', no_signup: true, lat: 43.6545, lng: -79.3830, days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], canadian: true, emoji: '&#129386;', verified_sources: 2 },
+        { id: 'dd-library', name: 'Toronto Library Free Programs', category: 'Kids', type: 'Free', deal_type: 'daily', what: 'Free activities: storytelling, coding, 3D printing, museum passes', value: 20, conditions: 'Library card required (free for Toronto residents). Book programs online.', signup: 'TPL Card (free)', source_name: 'Toronto Public Library', source_url: 'https://www.torontopubliclibrary.ca/', no_signup: false, lat: 43.6577, lng: -79.3831, days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'], canadian: true, emoji: '&#128218;', verified_sources: 3 },
+        { id: 'dd-harbour', name: 'Harbourfront Centre Free Events', category: 'Entertainment', type: 'Free', deal_type: 'weekly', what: 'Free concerts, art installations, cultural events every weekend', value: 15, conditions: 'Outdoor events free. Check website for schedule.', signup: 'None', source_name: 'Harbourfront Centre', source_url: 'https://www.harbourfrontcentre.com/', no_signup: true, lat: 43.6389, lng: -79.3816, days: ['Saturday', 'Sunday'], canadian: true, emoji: '&#127926;', verified_sources: 2 },
+        { id: 'dd-kens-sat', name: "Kensington Market Pedestrian Sundays", category: 'Entertainment', type: 'Free', deal_type: 'weekly', what: 'Car-free streets, live music, street food, free entertainment (seasonal)', value: 10, conditions: 'Last Sunday of each month May-October. 12-7pm.', signup: 'None', source_name: 'Kensington Market BIA', source_url: 'https://www.kensingtonmarketbia.com/', no_signup: true, lat: 43.6547, lng: -79.4005, days: ['Sunday'], canadian: true, emoji: '&#127931;', verified_sources: 2 },
+        { id: 'dd-raps-arena', name: "Sport Chek Free Skate", category: 'Kids', type: 'Free', deal_type: 'weekly', what: 'Free public skating at Nathan Phillips Square (seasonal)', value: 8, conditions: 'Nov-March. Bring your own skates or rent ($). NPS rink.', signup: 'None', source_name: 'City of Toronto', source_url: 'https://www.toronto.ca/explore-enjoy/recreation/', no_signup: true, lat: 43.6525, lng: -79.3832, days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], canadian: true, emoji: '&#9971;', verified_sources: 2 },
+
+        // ====== CANADIAN-ONLY DEALS ======
+        { id: 'ca-scene', name: 'SCENE+ Movie Deals', category: 'Entertainment', type: 'Discount', deal_type: 'daily', what: 'Earn points on Cineplex, groceries, Scotiabank. Free movie for ~10K points.', value: 16, conditions: 'SCENE+ membership. Earn at Cineplex, Sobeys, Scotiabank.', signup: 'SCENE+ (free)', source_name: 'SCENE+', source_url: 'https://www.sceneplus.ca/', no_signup: false, lat: 43.6561, lng: -79.3830, days: [], canadian: true, emoji: '&#127909;', verified_sources: 3 },
+        { id: 'ca-ctfs', name: 'Canadian Tire Money', category: 'Retail', type: 'Discount', deal_type: 'daily', what: "Earn 4% back in e-CT Money on in-store purchases with Triangle card", value: 8, conditions: 'Triangle Rewards membership. Free to join.', signup: 'Triangle Rewards (free)', source_name: 'Canadian Tire', source_url: 'https://www.canadiantire.ca/', no_signup: false, lat: 43.6529, lng: -79.3846, days: [], canadian: true, emoji: '&#128176;', verified_sources: 2 },
+        { id: 'ca-tsc', name: "The Shopping Channel Flash Sales", category: 'Retail', type: 'Discount', deal_type: 'daily', what: 'Daily flash sales up to 60% off, free shipping over $75', value: 30, conditions: 'Check daily for rotating flash sales.', signup: 'None', source_name: 'TSC', source_url: 'https://www.theshoppingchannel.com/', no_signup: true, lat: null, lng: null, days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], canadian: true, emoji: '&#128717;', verified_sources: 1 },
+        { id: 'ca-winners', name: 'Winners / Marshalls Clearance', category: 'Retail', type: 'Discount', deal_type: 'daily', what: 'Up to 60% off designer brands. New markdowns every week.', value: 40, conditions: 'In-store. Yellow-tag clearance for best deals.', signup: 'None', source_name: 'Winners', source_url: 'https://www.winners.ca/', no_signup: true, lat: 43.6555, lng: -79.3830, days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], canadian: true, emoji: '&#127991;', verified_sources: 2 },
+        { id: 'ca-flashfood', name: 'Flashfood App', category: 'Food', type: 'Discount', deal_type: 'daily', what: 'Up to 50% off groceries nearing best-before date', value: 20, conditions: 'Flashfood app. Available at Loblaws, No Frills, Independent.', signup: 'Flashfood App (free)', source_name: 'Flashfood', source_url: 'https://www.flashfood.com/', no_signup: false, lat: null, lng: null, days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], canadian: true, emoji: '&#127822;', verified_sources: 2 },
+        { id: 'ca-too-good', name: 'Too Good To Go', category: 'Food', type: 'Discount', deal_type: 'daily', what: 'Surprise bags from restaurants and bakeries for 1/3 of the price', value: 12, conditions: 'App-based. Pick up at store. Contents vary daily.', signup: 'Too Good To Go App (free)', source_name: 'Too Good To Go', source_url: 'https://www.toogoodtogo.com/en-ca', no_signup: false, lat: null, lng: null, days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], canadian: true, emoji: '&#127869;', verified_sources: 3 },
+        { id: 'ca-rcss', name: 'No Frills Price Match', category: 'Retail', type: 'Discount', deal_type: 'daily', what: 'Price match any competitor flyer. Bring flyer to cashier.', value: 15, conditions: 'Must show flyer (paper or digital). Identical item. Some exclusions.', signup: 'None', source_name: 'No Frills', source_url: 'https://www.nofrills.ca/', no_signup: true, lat: null, lng: null, days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], canadian: true, emoji: '&#128722;', verified_sources: 2 },
+        { id: 'ca-dollarama', name: 'Dollarama New Arrivals', category: 'Retail', type: 'Discount', deal_type: 'daily', what: 'Household, snacks, beauty items from $1.25-$5. New stock Tuesdays.', value: 5, conditions: 'In-store. Inventory varies by location.', signup: 'None', source_name: 'Dollarama', source_url: 'https://www.dollarama.com/', no_signup: true, lat: 43.6540, lng: -79.3828, days: ['Tuesday'], canadian: true, emoji: '&#128181;', verified_sources: 1 },
+        { id: 'ca-gocoupons', name: 'GoCoupons.ca', category: 'Retail', type: 'Discount', deal_type: 'daily', what: 'Aggregated Canadian coupon codes for major retailers', value: 20, conditions: 'Online shopping. Codes vary in validity.', signup: 'None', source_name: 'GoCoupons.ca', source_url: 'https://www.gocoupons.ca/', no_signup: true, lat: null, lng: null, days: [], canadian: true, emoji: '&#127991;', verified_sources: 1 },
+        { id: 'ca-checkout51', name: 'Checkout 51 Cashback', category: 'Retail', type: 'Discount', deal_type: 'daily', what: 'Upload grocery receipts for cashback on specific products', value: 5, conditions: 'Snap receipt in app. Minimum $20 to cash out.', signup: 'Checkout 51 App (free)', source_name: 'Checkout 51', source_url: 'https://www.checkout51.com/', no_signup: false, lat: null, lng: null, days: [], canadian: true, emoji: '&#128184;', verified_sources: 2 },
+    ];
+
+    const DEAL_SITES = [
+        { name: 'RedFlagDeals', desc: 'Canada\'s largest deal-finding community. Forums, hot deals, and flyer alerts.', url: 'https://www.redflagdeals.com/' },
+        { name: 'SmartCanucks', desc: 'Canadian coupons, deals, and freebies. Flyer previews and price matching.', url: 'https://www.smartcanucks.ca/' },
+        { name: 'Narcity Toronto', desc: 'Toronto-specific freebies, cheap eats, and local deal roundups.', url: 'https://www.narcity.com/toronto' },
+        { name: 'BlogTO Deals', desc: 'Toronto food deals, cheap eats, and restaurant promotions.', url: 'https://www.blogto.com/eat/' },
+        { name: 'Checkout 51', desc: 'Upload grocery receipts for cashback on specific products.', url: 'https://www.checkout51.com/' },
+        { name: 'Flashfood', desc: 'Up to 50% off groceries nearing best-before at Loblaws, No Frills.', url: 'https://www.flashfood.com/' },
+        { name: 'Too Good To Go', desc: 'Surprise bags from restaurants/bakeries for 1/3 the price.', url: 'https://www.toogoodtogo.com/en-ca' },
+        { name: 'Flipp', desc: 'Digital flyer browser. All Canadian store flyers in one app.', url: 'https://flipp.com/' },
+        { name: 'Rakuten Canada', desc: 'Cashback on online shopping at 750+ stores (previously eBates).', url: 'https://www.rakuten.ca/' },
+        { name: 'GoCoupons.ca', desc: 'Aggregated coupon codes for Canadian online retailers.', url: 'https://www.gocoupons.ca/' },
+        { name: 'Groupon Toronto', desc: 'Discounted local experiences, restaurants, spas, and activities.', url: 'https://www.groupon.com/local/toronto' },
+        { name: 'Honey (PayPal)', desc: 'Browser extension auto-applies coupon codes at checkout.', url: 'https://www.joinhoney.com/' },
+        { name: 'Caddle', desc: 'Canadian cashback app for everyday purchases. Upload receipts.', url: 'https://caddle.ca/' },
+        { name: 'Save.ca', desc: 'Printable and digital coupons from major Canadian brands.', url: 'https://save.ca/' },
+    ];
+
+    const CATEGORIES = [
+        { key: 'All', emoji: '&#10024;' },
+        { key: 'Food', emoji: '&#127829;' },
+        { key: 'Coffee', emoji: '&#9749;' },
+        { key: 'Bubble Tea', emoji: '&#129483;' },
+        { key: 'Desserts', emoji: '&#127846;' },
+        { key: 'Bakery', emoji: '&#127838;' },
+        { key: 'Beauty', emoji: '&#128132;' },
+        { key: 'Retail', emoji: '&#128717;' },
+        { key: 'Entertainment', emoji: '&#127912;' },
+        { key: 'Kids', emoji: '&#128118;' },
+    ];
+
+    const TYPE_FILTERS = [
+        { key: 'All', label: 'All Types' },
+        { key: 'Free', label: 'Free' },
+        { key: 'BOGO', label: 'BOGO' },
+        { key: 'Discount', label: 'Discount' },
+        { key: 'Requires Purchase', label: 'Requires Purchase' },
+    ];
+
+    const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const DAY_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+    // ===== STATE =====
+    let allDeals = [];
+    let filteredDeals = [];
+    let activeTab = 'birthday';
+    let activeCategory = 'All';
+    let activeType = 'All';
+    let searchQuery = '';
+    let userLat = null;
+    let userLng = null;
+    let nearMeActive = false;
+    let bdaySort = 'value-desc';
+    let selectedCalDay = null;
+
+    // ===== INIT =====
+    async function init() {
+        buildChips();
+        bindEvents();
+        await loadDeals();
+        renderAll();
+        document.getElementById('loadingState').style.display = 'none';
+    }
+
+    async function loadDeals() {
+        try {
+            const resp = await fetch('https://findtorontoevents.ca/fc/api/deals.php?action=all');
+            if (!resp.ok) throw new Error('API returned ' + resp.status);
+            const data = await resp.json();
+            if (data.ok && data.deals && data.deals.length > 0) {
+                allDeals = data.deals;
+                document.getElementById('lastUpdated').textContent = 'Live API';
+                return;
+            }
+        } catch(e) {
+            // API not available, use built-in data
+        }
+        allDeals = BUILTIN_DEALS;
+        document.getElementById('lastUpdated').textContent = 'Curated data';
+    }
+
+    // ===== CHIPS =====
+    function buildChips() {
+        var catHtml = '';
+        CATEGORIES.forEach(function(c) {
+            catHtml += '<button class="chip' + (c.key === activeCategory ? ' active' : '') + '" data-cat="' + c.key + '">' + c.emoji + ' ' + c.key + '</button>';
+        });
+        document.getElementById('categoryChips').innerHTML = catHtml;
+
+        var typeHtml = '';
+        TYPE_FILTERS.forEach(function(t) {
+            typeHtml += '<button class="chip' + (t.key === activeType ? ' active' : '') + '" data-type="' + t.key + '">' + t.label + '</button>';
+        });
+        document.getElementById('typeChips').innerHTML = typeHtml;
+    }
+
+    // ===== EVENTS =====
+    function bindEvents() {
+        // Tabs
+        document.querySelectorAll('.tab-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                activeTab = this.getAttribute('data-tab');
+                document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+                this.classList.add('active');
+                document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+                var panel = document.getElementById('panel-' + activeTab);
+                if (panel) panel.classList.add('active');
+                // Show/hide toolbar for sites tab
+                document.getElementById('toolbar').style.display = activeTab === 'sites' ? 'none' : '';
+                renderAll();
+            });
+        });
+
+        // Category chips
+        document.getElementById('categoryChips').addEventListener('click', function(e) {
+            var chip = e.target.closest('.chip');
+            if (!chip) return;
+            activeCategory = chip.getAttribute('data-cat');
+            document.querySelectorAll('#categoryChips .chip').forEach(function(c) { c.classList.remove('active'); });
+            chip.classList.add('active');
+            renderAll();
+        });
+
+        // Type chips
+        document.getElementById('typeChips').addEventListener('click', function(e) {
+            var chip = e.target.closest('.chip');
+            if (!chip) return;
+            activeType = chip.getAttribute('data-type');
+            document.querySelectorAll('#typeChips .chip').forEach(function(c) { c.classList.remove('active'); });
+            chip.classList.add('active');
+            renderAll();
+        });
+
+        // Search
+        var searchTimeout;
+        document.getElementById('searchInput').addEventListener('input', function() {
+            var self = this;
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                searchQuery = self.value.trim().toLowerCase();
+                renderAll();
+            }, 200);
+        });
+
+        // Near Me
+        document.getElementById('nearMeBtn').addEventListener('click', toggleNearMe);
+
+        // Birthday sort
+        document.getElementById('bdaySortSelect').addEventListener('change', function() {
+            bdaySort = this.value;
+            renderBirthday();
+        });
+
+        // Scroll to top
+        window.addEventListener('scroll', function() {
+            var btn = document.getElementById('scrollTopBtn');
+            btn.classList.toggle('visible', window.scrollY > 400);
+        });
+        document.getElementById('scrollTopBtn').addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    // ===== NEAR ME =====
+    function toggleNearMe() {
+        var btn = document.getElementById('nearMeBtn');
+        if (nearMeActive) {
+            nearMeActive = false;
+            userLat = null;
+            userLng = null;
+            btn.classList.remove('active');
+            btn.innerHTML = '<span class="icon">&#9737;</span> Near Me';
+            renderAll();
+            return;
+        }
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser.');
+            return;
+        }
+        btn.innerHTML = '<span class="icon">&#9737;</span> Locating...';
+        navigator.geolocation.getCurrentPosition(function(pos) {
+            userLat = pos.coords.latitude;
+            userLng = pos.coords.longitude;
+            nearMeActive = true;
+            btn.classList.add('active');
+            btn.innerHTML = '<span class="icon">&#9737;</span> Near Me &#10003;';
+            renderAll();
+        }, function() {
+            btn.innerHTML = '<span class="icon">&#9737;</span> Near Me';
+            alert('Could not get your location. Please allow location access.');
+        }, { enableHighAccuracy: true, timeout: 10000 });
+    }
+
+    // ===== DISTANCE =====
+    function haversine(lat1, lng1, lat2, lng2) {
+        var R = 6371;
+        var dLat = (lat2 - lat1) * Math.PI / 180;
+        var dLng = (lng2 - lng1) * Math.PI / 180;
+        var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLng/2) * Math.sin(dLng/2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    function formatDist(km) {
+        if (km < 1) return Math.round(km * 1000) + 'm';
+        return km.toFixed(1) + 'km';
+    }
+
+    // ===== FILTERS =====
+    function filterDeals(deals, opts) {
+        opts = opts || {};
+        var result = deals.filter(function(d) {
+            // Tab filter
+            if (opts.dealType && d.deal_type !== opts.dealType && opts.dealType !== 'all') {
+                if (opts.dealType === 'birthday' && d.deal_type !== 'birthday') return false;
+                if (opts.dealType === 'daily' && d.deal_type === 'birthday') return false;
+                if (opts.dealType === 'weekly' && d.deal_type === 'birthday') return false;
+                if (opts.dealType === 'canadian' && !d.canadian) return false;
+            }
+            // Category filter
+            if (activeCategory !== 'All' && d.category !== activeCategory) return false;
+            // Type filter
+            if (activeType !== 'All' && d.type !== activeType) return false;
+            // Search
+            if (searchQuery) {
+                var hay = (d.name + ' ' + d.what + ' ' + d.category + ' ' + (d.conditions || '')).toLowerCase();
+                if (hay.indexOf(searchQuery) === -1) return false;
+            }
+            return true;
+        });
+
+        // Distance sort if near me
+        if (nearMeActive && userLat && userLng) {
+            result.forEach(function(d) {
+                if (d.lat && d.lng) {
+                    d._dist = haversine(userLat, userLng, d.lat, d.lng);
+                } else {
+                    d._dist = 9999;
+                }
+            });
+            result.sort(function(a, b) { return a._dist - b._dist; });
+        }
+
+        return result;
+    }
+
+    // ===== RENDER ALL =====
+    function renderAll() {
+        updateStats();
+        if (activeTab === 'birthday') renderBirthday();
+        else if (activeTab === 'free-today') renderFreeToday();
+        else if (activeTab === 'calendar') renderCalendar();
+        else if (activeTab === 'canadian') renderCanadian();
+        else if (activeTab === 'sites') renderSites();
+    }
+
+    // ===== UPDATE STATS =====
+    function updateStats() {
+        var total = allDeals.length;
+        var freeCount = allDeals.filter(function(d) { return d.type === 'Free'; }).length;
+        var totalValue = 0;
+        allDeals.forEach(function(d) { totalValue += (d.value || 0); });
+        var sourcesCount = 0;
+        allDeals.forEach(function(d) { sourcesCount += (d.verified_sources || 1); });
+
+        document.getElementById('statTotal').textContent = total;
+        document.getElementById('statFree').textContent = freeCount;
+        document.getElementById('statValue').textContent = '$' + totalValue.toLocaleString();
+        document.getElementById('statSources').textContent = sourcesCount;
+    }
+
+    // ===== CARD HTML =====
+    function buildCard(deal) {
+        var distBadge = '';
+        if (nearMeActive && deal._dist !== undefined && deal._dist < 9999) {
+            distBadge = '<span class="badge badge-distance">&#128205; ' + formatDist(deal._dist) + '</span>';
+        }
+
+        var typeBadgeClass = 'badge-free';
+        if (deal.type === 'BOGO') typeBadgeClass = 'badge-bogo';
+        else if (deal.type === 'Discount') typeBadgeClass = 'badge-discount';
+        else if (deal.type === 'Requires Purchase') typeBadgeClass = 'badge-purchase';
+
+        var badges = '<span class="badge ' + typeBadgeClass + '">' + escapeHtml(deal.type) + '</span>';
+        if (deal.value) badges += '<span class="badge badge-value">$' + deal.value + ' value</span>';
+        badges += '<span class="badge badge-category">' + escapeHtml(deal.category) + '</span>';
+        if (deal.no_signup) badges += '<span class="badge badge-no-signup">No Signup</span>';
+        if (deal.canadian) badges += '<span class="badge badge-canadian">&#127809; CA</span>';
+        if (deal.days && deal.days.length > 0 && deal.days.length < 7) {
+            badges += '<span class="badge badge-day">' + deal.days.join(', ') + '</span>';
+        }
+        badges += distBadge;
+
+        var conditions = '';
+        if (deal.conditions || deal.signup) {
+            conditions = '<div class="card-conditions">';
+            if (deal.conditions) conditions += '<div><span class="cond-label">Conditions:</span> ' + escapeHtml(deal.conditions) + '</div>';
+            if (deal.signup && deal.signup !== 'None') conditions += '<div><span class="cond-label">Signup:</span> ' + escapeHtml(deal.signup) + '</div>';
+            conditions += '</div>';
+        }
+
+        var footer = '<div class="card-footer">';
+        footer += '<span class="verified-badge"><span class="check">&#10003;</span> ' + (deal.verified_sources || 1) + ' source' + ((deal.verified_sources || 1) > 1 ? 's' : '') + ' verified</span>';
+        if (deal.source_url) {
+            footer += '<a href="' + escapeHtml(deal.source_url) + '" target="_blank" rel="noopener" class="source-link">' + escapeHtml(deal.source_name || 'Source') + ' &#8599;</a>';
+        }
+        footer += '</div>';
+
+        return '<div class="deal-card">' +
+            '<div class="card-top">' +
+                '<div class="card-name">' + escapeHtml(deal.name) + '</div>' +
+                '<div class="card-emoji">' + (deal.emoji || '') + '</div>' +
+            '</div>' +
+            '<div class="card-desc"><strong>' + escapeHtml(deal.what) + '</strong></div>' +
+            '<div class="badge-row">' + badges + '</div>' +
+            conditions +
+            footer +
+        '</div>';
+    }
+
+    // ===== BIRTHDAY TAB =====
+    function renderBirthday() {
+        var deals = filterDeals(allDeals.filter(function(d) { return d.deal_type === 'birthday'; }));
+
+        // Sort
+        if (bdaySort === 'value-desc') deals.sort(function(a, b) { return (b.value||0) - (a.value||0); });
+        else if (bdaySort === 'value-asc') deals.sort(function(a, b) { return (a.value||0) - (b.value||0); });
+        else if (bdaySort === 'name-asc') deals.sort(function(a, b) { return a.name.localeCompare(b.name); });
+        else if (bdaySort === 'no-signup') deals.sort(function(a, b) { return (a.no_signup ? 0 : 1) - (b.no_signup ? 0 : 1) || (b.value||0) - (a.value||0); });
+
+        // Quick reference
+        renderBdayQuickRef();
+
+        // Birthday plan
+        renderBdayPlan();
+
+        // Grid
+        if (deals.length === 0) {
+            document.getElementById('bdayGrid').innerHTML = '<div class="empty-state"><div class="empty-icon">&#127874;</div><p>No birthday deals match your filters.</p></div>';
+        } else {
+            document.getElementById('bdayGrid').innerHTML = deals.map(buildCard).join('');
+        }
+    }
+
+    function renderBdayQuickRef() {
+        var bdayDeals = allDeals.filter(function(d) { return d.deal_type === 'birthday'; });
+        var noSignup = bdayDeals.filter(function(d) { return d.no_signup; }).sort(function(a,b) { return (b.value||0)-(a.value||0); });
+        var highValue = bdayDeals.slice().sort(function(a,b) { return (b.value||0)-(a.value||0); }).slice(0, 8);
+
+        var html = '<div class="quick-ref">';
+
+        // No signup box
+        html += '<div class="quick-box no-signup"><h3>&#9889; No Strings Attached</h3>';
+        if (noSignup.length === 0) {
+            html += '<div style="color:var(--text-dim);font-size:0.85rem;">All birthday deals require a free signup.</div>';
+        } else {
+            noSignup.forEach(function(d) {
+                html += '<div class="quick-item"><span class="qi-name">' + escapeHtml(d.name) + '</span><span class="qi-free">' + escapeHtml(d.what.substring(0, 40)) + '</span></div>';
+            });
+        }
+        html += '</div>';
+
+        // High value box
+        html += '<div class="quick-box high-value"><h3>&#128176; Highest Value</h3>';
+        highValue.forEach(function(d) {
+            html += '<div class="quick-item"><span class="qi-name">' + escapeHtml(d.name) + '</span><span class="qi-val">$' + d.value + '</span></div>';
+        });
+        html += '</div>';
+
+        html += '</div>';
+        document.getElementById('bdayQuickRef').innerHTML = html;
+    }
+
+    function renderBdayPlan() {
+        var bdayDeals = allDeals.filter(function(d) { return d.deal_type === 'birthday'; });
+        var sorted = bdayDeals.slice().sort(function(a,b) { return (b.value||0)-(a.value||0); });
+
+        // Pick a curated plan
+        var plan = [
+            { time: '9:00 AM — Breakfast', place: "Denny's", detail: "Free Grand Slam birthday breakfast (no signup needed!)", value: 15 },
+            { time: '10:30 AM — Coffee', place: "Tim Hortons", detail: "Free birthday beverage + baked good via Tims Rewards", value: 6 },
+            { time: '11:30 AM — Beauty', place: "Sephora", detail: "Pick up your free birthday gift set (Beauty Insider)", value: 25 },
+            { time: '12:30 PM — Lunch', place: "Pizza Pizza", detail: "Free personal pizza via Club 11-11 app", value: 8 },
+            { time: '2:00 PM — Sweet Treat', place: "Dairy Queen", detail: "Free Blizzard of your choice (any size)", value: 7 },
+            { time: '3:00 PM — Boba Break', place: "Chatime", detail: "Free birthday bubble tea via Chatime rewards", value: 7 },
+            { time: '4:30 PM — Shopping', place: "Shoppers Drug Mart", detail: "10,000 bonus Optimum points auto-loaded", value: 15 },
+            { time: '6:00 PM — Dinner', place: "Kelsey's", detail: "Free birthday entree (dine with a friend)", value: 18 },
+            { time: '8:00 PM — Movie', place: "Cineplex", detail: "Free movie ticket via SCENE+ birthday reward", value: 16 },
+            { time: '9:30 PM — Nightcap', place: "Starbucks", detail: "Free birthday drink (any size, any customization)", value: 8 },
+        ];
+        var totalVal = 0;
+        plan.forEach(function(s) { totalVal += s.value; });
+
+        var html = '<div class="bday-plan">' +
+            '<h3>&#127874; Suggested Birthday Plan</h3>' +
+            '<div class="plan-subtitle">An optimized day of freebies across Toronto — all verified, all free on your birthday</div>' +
+            '<div class="plan-timeline">';
+
+        plan.forEach(function(stop) {
+            html += '<div class="plan-stop">' +
+                '<div class="plan-time">' + stop.time + '</div>' +
+                '<div class="plan-place">' + escapeHtml(stop.place) + '</div>' +
+                '<div class="plan-detail">' + escapeHtml(stop.detail) + '</div>' +
+                '<div class="plan-value">Value: $' + stop.value + '</div>' +
+            '</div>';
+        });
+
+        html += '</div>' +
+            '<div class="plan-total">' +
+                '<span class="total-label">Total birthday freebies value</span>' +
+                '<span class="total-value">$' + totalVal + '</span>' +
+            '</div>' +
+            '<div style="margin-top:0.8rem;font-size:0.78rem;color:var(--text-muted);">* Some require free app signups in advance. Denny\'s requires ID only.</div>' +
+        '</div>';
+
+        document.getElementById('bdayPlanSection').innerHTML = html;
+    }
+
+    // ===== FREE TODAY TAB =====
+    function renderFreeToday() {
+        var today = DAY_NAMES[new Date().getDay()];
+        var deals = filterDeals(allDeals.filter(function(d) {
+            if (d.deal_type === 'birthday') return false;
+            if (d.type !== 'Free') return false;
+            if (d.days && d.days.length > 0) return d.days.indexOf(today) !== -1;
+            return true;
+        }));
+
+        document.getElementById('freeTodayCount').textContent = deals.length;
+
+        if (deals.length === 0) {
+            document.getElementById('freeTodayGrid').innerHTML = '<div class="empty-state"><div class="empty-icon">&#128532;</div><p>No free deals match your filters for today (' + today + ').</p></div>';
+        } else {
+            document.getElementById('freeTodayGrid').innerHTML = deals.map(buildCard).join('');
+        }
+    }
+
+    // ===== CALENDAR TAB =====
+    function renderCalendar() {
+        var todayIdx = new Date().getDay();
+
+        // Reorder to start with Monday
+        var orderedDays = [1, 2, 3, 4, 5, 6, 0]; // Mon-Sun
+
+        var html = '';
+        orderedDays.forEach(function(dayIdx) {
+            var dayName = DAY_NAMES[dayIdx];
+            var dayShort = DAY_SHORT[dayIdx];
+            var isToday = dayIdx === todayIdx;
+            var dayDeals = allDeals.filter(function(d) {
+                if (d.deal_type === 'birthday') return false;
+                if (!d.days || d.days.length === 0) return false;
+                if (d.days.length === 7) return false; // Skip "every day" for calendar
+                return d.days.indexOf(dayName) !== -1;
+            });
+
+            var itemsHtml = '';
+            dayDeals.slice(0, 4).forEach(function(d) {
+                itemsHtml += '<div class="cal-item">' + escapeHtml(d.name) + '</div>';
+            });
+            if (dayDeals.length > 4) {
+                itemsHtml += '<div class="cal-item" style="color:var(--accent)">+' + (dayDeals.length - 4) + ' more</div>';
+            }
+
+            html += '<div class="cal-day' + (isToday ? ' today' : '') + '" data-day="' + dayName + '">' +
+                '<div class="cal-day-name">' + dayShort + '</div>' +
+                '<div class="cal-day-count">' + dayDeals.length + '</div>' +
+                '<div class="cal-day-label">deal' + (dayDeals.length !== 1 ? 's' : '') + '</div>' +
+                '<div class="cal-day-items">' + itemsHtml + '</div>' +
+            '</div>';
+        });
+
+        document.getElementById('calendarGrid').innerHTML = html;
+
+        // Bind click
+        document.querySelectorAll('.cal-day').forEach(function(el) {
+            el.addEventListener('click', function() {
+                selectedCalDay = this.getAttribute('data-day');
+                document.querySelectorAll('.cal-day').forEach(function(d) {
+                    d.style.borderColor = '';
+                    d.style.background = '';
+                });
+                // Keep "today" styling for today
+                var todayEl = document.querySelector('.cal-day.today');
+                if (todayEl) {
+                    todayEl.style.borderColor = 'var(--accent)';
+                    todayEl.style.background = 'var(--accent-dim)';
+                }
+                this.style.borderColor = 'var(--accent)';
+                renderCalDayDeals();
+            });
+        });
+
+        // Default: show today
+        if (!selectedCalDay) selectedCalDay = DAY_NAMES[todayIdx];
+        renderCalDayDeals();
+    }
+
+    function renderCalDayDeals() {
+        if (!selectedCalDay) {
+            document.getElementById('calDayDeals').innerHTML = '<div class="empty-state"><p>Click a day to see its deals.</p></div>';
+            return;
+        }
+        var deals = filterDeals(allDeals.filter(function(d) {
+            if (d.deal_type === 'birthday') return false;
+            return d.days && d.days.indexOf(selectedCalDay) !== -1;
+        }));
+
+        if (deals.length === 0) {
+            document.getElementById('calDayDeals').innerHTML = '<div class="empty-state"><div class="empty-icon">&#128197;</div><p>No deals for ' + selectedCalDay + ' matching your filters.</p></div>';
+        } else {
+            document.getElementById('calDayDeals').innerHTML = deals.map(buildCard).join('');
+        }
+    }
+
+    // ===== CANADIAN TAB =====
+    function renderCanadian() {
+        var deals = filterDeals(allDeals.filter(function(d) {
+            return d.canadian && d.deal_type !== 'birthday';
+        }));
+
+        document.getElementById('canadianCount').textContent = deals.length;
+
+        if (deals.length === 0) {
+            document.getElementById('canadianGrid').innerHTML = '<div class="empty-state"><div class="empty-icon">&#127809;</div><p>No Canadian deals match your filters.</p></div>';
+        } else {
+            document.getElementById('canadianGrid').innerHTML = deals.map(buildCard).join('');
+        }
+    }
+
+    // ===== DEAL SITES TAB =====
+    function renderSites() {
+        var html = '';
+        DEAL_SITES.forEach(function(site) {
+            html += '<div class="site-card">' +
+                '<div class="site-name">' + escapeHtml(site.name) + '</div>' +
+                '<div class="site-desc">' + escapeHtml(site.desc) + '</div>' +
+                '<a href="' + escapeHtml(site.url) + '" target="_blank" rel="noopener" class="site-link">Visit ' + escapeHtml(site.name) + ' &#8599;</a>' +
+            '</div>';
+        });
+        document.getElementById('sitesGrid').innerHTML = html;
+    }
+
+    // ===== UTILITY =====
+    function escapeHtml(str) {
+        if (!str) return '';
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    }
+
+    // ===== START =====
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+})();
+</script>
+</body>
+</html>

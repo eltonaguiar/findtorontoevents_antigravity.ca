@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Bet Winner Finder | Find Toronto Events</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --orange: #f97316;
+            --purple: #a855f7;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark); color: var(--text);
+            min-height: 100vh; line-height: 1.6;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem 1rem; text-align: center;
+        }
+        .header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--green), #22d3ee, var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; margin-bottom: 0.3rem;
+        }
+        .header p { color: var(--text-dim); font-size: 0.95rem; }
+        .header-links {
+            margin-top: 0.8rem; display: flex; gap: 1.5rem;
+            justify-content: center; font-size: 0.9rem; flex-wrap: wrap;
+        }
+        .header-links a { color: var(--text-dim); }
+        .header-links a:hover { color: var(--text); }
+        .status-bar {
+            display: flex; align-items: center; justify-content: center;
+            gap: 1.5rem; padding: 0.6rem 1rem;
+            background: var(--bg-card); border-bottom: 1px solid var(--border);
+            font-size: 0.8rem; color: var(--text-dim); flex-wrap: wrap;
+        }
+        .status-bar .status-item { display: flex; align-items: center; gap: 0.4rem; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .status-dot.connected { background: var(--green); box-shadow: 0 0 6px var(--green); }
+        .status-dot.warning { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+        .status-value { color: var(--text); font-weight: 600; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 1rem; }
+        .disclaimer {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 0.8rem 1.2rem;
+            font-size: 0.82rem; color: var(--text-dim); margin-bottom: 1rem; text-align: center;
+        }
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 0.8rem; margin-bottom: 1rem;
+        }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1rem; text-align: center;
+        }
+        .stat-card .stat-label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card .stat-value { font-size: 1.6rem; font-weight: 700; margin-top: 0.2rem; }
+        .stat-card .stat-sub { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.2rem; }
+        .sport-filters {
+            display: flex; gap: 0.5rem; flex-wrap: wrap;
+            justify-content: center; margin-bottom: 1rem;
+        }
+        .sport-btn {
+            background: var(--bg-card); border: 1px solid var(--border);
+            color: var(--text-dim); padding: 0.4rem 0.9rem;
+            border-radius: 20px; cursor: pointer; font-size: 0.82rem; transition: all 0.2s;
+        }
+        .sport-btn:hover { border-color: var(--accent); color: var(--text); }
+        .sport-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .tab-nav {
+            display: flex; gap: 0.5rem; margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; flex-wrap: wrap;
+        }
+        .tab-btn {
+            background: transparent; border: 1px solid transparent;
+            color: var(--text-dim); padding: 0.5rem 1rem;
+            border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;
+        }
+        .tab-btn:hover { color: var(--text); background: var(--bg-card); }
+        .tab-btn.active { background: var(--bg-card); border-color: var(--border); border-bottom-color: var(--bg-dark); color: var(--accent); font-weight: 600; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .picks-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1rem; margin-bottom: 1.5rem;
+        }
+        .pick-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1rem; transition: border-color 0.2s;
+        }
+        .pick-card:hover { border-color: var(--accent); }
+        .pick-card .pick-header, .pick-card-enhanced .pick-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; }
+        .pick-card .pick-sport, .pick-card-enhanced .pick-sport { font-size: 0.75rem; color: var(--accent); font-weight: 600; text-transform: uppercase; }
+        .pick-card .pick-time, .pick-card-enhanced .pick-time { font-size: 0.75rem; color: var(--text-dim); }
+        .pick-card .pick-teams, .pick-card-enhanced .pick-teams { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .pick-card .pick-detail, .pick-card-enhanced .pick-detail { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.3rem; }
+        .pick-card .pick-detail strong, .pick-card-enhanced .pick-detail strong { color: var(--text); }
+        .badge {
+            display: inline-block; padding: 0.15rem 0.5rem;
+            border-radius: 10px; font-size: 0.72rem; font-weight: 600;
+        }
+        .badge-green { background: var(--green-dim); color: var(--green); }
+        .badge-red { background: var(--red-dim); color: var(--red); }
+        .badge-yellow { background: var(--yellow-dim); color: var(--yellow); }
+        .badge-blue { background: rgba(59, 130, 246, 0.15); color: var(--blue); }
+        .badge-ca { background: rgba(239, 68, 68, 0.1); color: #ff6b6b; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .badge-purple { background: rgba(168, 85, 247, 0.15); color: var(--purple); }
+        .badge-orange { background: rgba(249, 115, 22, 0.15); color: var(--orange); }
+
+        /* Rating system */
+        .rating-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 42px; height: 42px; border-radius: 10px;
+            font-size: 1.1rem; font-weight: 800; letter-spacing: -0.5px;
+            flex-shrink: 0;
+        }
+        .rating-Aplus { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; box-shadow: 0 0 12px rgba(34,197,94,0.4); }
+        .rating-A { background: linear-gradient(135deg, #22c55e, #4ade80); color: #fff; }
+        .rating-Bplus { background: linear-gradient(135deg, #3b82f6, #60a5fa); color: #fff; }
+        .rating-B { background: linear-gradient(135deg, #3b82f6, #93c5fd); color: #fff; }
+        .rating-Cplus { background: linear-gradient(135deg, #eab308, #facc15); color: #1a1a2e; }
+        .rating-C { background: linear-gradient(135deg, #f97316, #fb923c); color: #1a1a2e; }
+        .rating-D { background: linear-gradient(135deg, #ef4444, #f87171); color: #fff; }
+
+        .rec-badge {
+            display: inline-block; padding: 0.2rem 0.6rem;
+            border-radius: 6px; font-size: 0.75rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .rec-strong-take { background: var(--green); color: #fff; animation: pulse-green 2s infinite; }
+        .rec-take { background: var(--blue); color: #fff; }
+        .rec-lean { background: var(--yellow); color: #1a1a2e; }
+        .rec-wait { background: var(--orange); color: #fff; }
+        .rec-skip { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+        }
+
+        .pick-card-enhanced {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1rem; transition: all 0.2s;
+            position: relative;
+        }
+        .pick-card-enhanced:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .pick-card-enhanced.grade-A { border-left: 3px solid var(--green); }
+        .pick-card-enhanced.grade-B { border-left: 3px solid var(--blue); }
+        .pick-card-enhanced.grade-C { border-left: 3px solid var(--yellow); }
+        .pick-card-enhanced.grade-D { border-left: 3px solid var(--red); }
+        .pick-top-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.8rem; margin-bottom: 0.6rem; }
+        .pick-rating-col { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; min-width: 50px; }
+        .pick-main-col { flex: 1; }
+        .pick-score-bar { width: 42px; height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
+        .pick-score-fill { height: 100%; border-radius: 2px; }
+        .pick-win-prob { font-size: 0.72rem; color: var(--text-dim); text-align: center; }
+        .pick-reasons { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border); }
+        .pick-reasons ul { list-style: none; padding: 0; margin: 0; }
+        .pick-reasons li { font-size: 0.75rem; color: var(--text-dim); padding: 0.1rem 0; }
+        .pick-reasons li::before { content: '\2022'; color: var(--accent); margin-right: 0.4rem; }
+        .btn {
+            background: var(--accent); color: #fff; border: none;
+            padding: 0.4rem 0.8rem; border-radius: 6px;
+            cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn-green { background: var(--green); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { background: var(--bg-card); color: var(--text-dim); font-weight: 600; text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); font-size: 0.75rem; text-transform: uppercase; }
+        td { padding: 0.5rem 0.8rem; border-bottom: 1px solid rgba(42, 42, 74, 0.5); }
+        tr:hover td { background: var(--bg-card-hover); }
+        .text-green { color: var(--green); }
+        .text-red { color: var(--red); }
+        .text-yellow { color: var(--yellow); }
+        .text-dim { color: var(--text-dim); }
+        .odds-event { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem; overflow: hidden; }
+        .odds-event-header { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .odds-event-header h3 { font-size: 0.95rem; }
+        .odds-table { overflow-x: auto; }
+        .odds-table table { min-width: 600px; }
+        .odds-table td.best-odds { background: var(--green-dim); color: var(--green); font-weight: 700; }
+        .odds-table td.worst-odds { background: var(--red-dim); color: var(--text-dim); }
+        .chart-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem; }
+        .chart-container h3 { font-size: 0.95rem; margin-bottom: 0.8rem; }
+        .history-day {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 0.8rem 1rem;
+            margin-bottom: 0.6rem; display: flex; justify-content: space-between;
+            align-items: center; cursor: pointer; transition: border-color 0.2s;
+        }
+        .history-day:hover { border-color: var(--accent); }
+        .history-day .day-date { font-weight: 600; }
+        .history-day .day-stats { display: flex; gap: 1rem; font-size: 0.85rem; }
+        .section-title { font-size: 1.1rem; font-weight: 600; margin: 1rem 0 0.8rem; }
+        .empty-state { text-align: center; padding: 3rem; color: var(--text-dim); }
+        .empty-state p { font-size: 1.1rem; margin-bottom: 0.5rem; }
+        .loading { text-align: center; padding: 2rem; color: var(--text-dim); }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.5rem; }
+            .stats-grid { grid-template-columns: repeat(3, 1fr); }
+            .picks-grid { grid-template-columns: 1fr; }
+            .container { padding: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Sports Bet Winner Finder</h1>
+        <p>Value bets + line shopping across Canadian sportsbooks &mdash; paper betting tracker</p>
+        <div class="header-links">
+            <a href="live-monitor.html">Live Monitor</a>
+            <a href="edge-dashboard.html">Edge Finder</a>
+            <a href="opportunity-scanner.html">Scanner</a>
+            <a href="/findstocks/portfolio2/hub.html">Hub</a>
+            <a href="/">Events</a>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-item">
+            <span class="status-dot connected" id="status-dot"></span>
+            <span>Last refresh: <span class="status-value" id="last-refresh">--</span></span>
+        </div>
+        <div class="status-item">Bankroll: <span class="status-value" id="status-bankroll">$1,000</span></div>
+        <div class="status-item">API Credits: <span class="status-value" id="status-credits">--/500</span></div>
+        <div class="status-item">Active Bets: <span class="status-value" id="status-active">0</span></div>
+    </div>
+
+    <div class="container">
+        <div class="disclaimer">
+            Paper betting simulation only. Not gambling advice. Past performance does not predict future results.<br>
+            <strong>Odds data:</strong> The Odds API (refreshed every 2-3 hours) &bull;
+            <strong>Books:</strong> bet365, FanDuel, DraftKings, BetMGM, PointsBet, Caesars &bull;
+            Ontario/Canada legal sportsbooks
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-label">Bankroll</div><div class="stat-value" id="stat-bankroll">$1,000</div><div class="stat-sub" id="stat-bankroll-change">+$0.00</div></div>
+            <div class="stat-card"><div class="stat-label">Total Bets</div><div class="stat-value" id="stat-total-bets">0</div><div class="stat-sub" id="stat-wlp">W:0 L:0 P:0</div></div>
+            <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value" id="stat-win-rate">0%</div><div class="stat-sub">settled bets</div></div>
+            <div class="stat-card"><div class="stat-label">ROI</div><div class="stat-value" id="stat-roi">0%</div><div class="stat-sub" id="stat-pnl">$0.00 P&amp;L</div></div>
+            <div class="stat-card"><div class="stat-label">Today's Picks</div><div class="stat-value" id="stat-picks">0</div><div class="stat-sub" id="stat-avg-ev">Avg EV: --%</div></div>
+            <div class="stat-card"><div class="stat-label">Active Bets</div><div class="stat-value" id="stat-active">0</div><div class="stat-sub" id="stat-reserved">$0 reserved</div></div>
+        </div>
+
+        <div class="sport-filters">
+            <button class="sport-btn active" onclick="filterSport('all')">All Sports</button>
+            <button class="sport-btn" onclick="filterSport('icehockey_nhl')">NHL</button>
+            <button class="sport-btn" onclick="filterSport('basketball_nba')">NBA</button>
+            <button class="sport-btn" onclick="filterSport('americanfootball_nfl')">NFL</button>
+            <button class="sport-btn" onclick="filterSport('baseball_mlb')">MLB</button>
+            <button class="sport-btn" onclick="filterSport('americanfootball_cfl')">CFL</button>
+            <button class="sport-btn" onclick="filterSport('soccer_usa_mls')">MLS</button>
+            <button class="sport-btn" onclick="filterSport('americanfootball_ncaaf')">NCAAF</button>
+            <button class="sport-btn" onclick="filterSport('basketball_ncaab')">NCAAB</button>
+        </div>
+
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('picks')">Today's Picks</button>
+            <button class="tab-btn" onclick="switchTab('odds')">Odds Comparison</button>
+            <button class="tab-btn" onclick="switchTab('bets')">My Bets</button>
+            <button class="tab-btn" onclick="switchTab('performance')">Performance</button>
+            <button class="tab-btn" onclick="switchTab('history')">Pick History</button>
+        </div>
+
+        <div class="tab-panel active" id="tab-picks">
+            <div class="loading" id="picks-loading">Loading today's picks...</div>
+            <div id="picks-content" style="display:none;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.8rem;">
+                    <h3 class="section-title" style="margin:0;">Value Bets <span class="badge badge-green" id="vb-count">0</span></h3>
+                    <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;font-size:0.75rem;">
+                        <span class="rec-badge rec-strong-take" style="animation:none;font-size:0.65rem;">STRONG TAKE</span>
+                        <span class="rec-badge rec-take" style="font-size:0.65rem;">TAKE</span>
+                        <span class="rec-badge rec-lean" style="font-size:0.65rem;">LEAN</span>
+                        <span class="rec-badge rec-wait" style="font-size:0.65rem;">WAIT</span>
+                        <span class="rec-badge rec-skip" style="font-size:0.65rem;">SKIP</span>
+                    </div>
+                </div>
+                <div id="picks-summary" style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:0.8rem 1rem;margin-bottom:1rem;display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;font-size:0.85rem;">
+                    <span>Strong Takes: <strong class="text-green" id="sum-strong">0</strong></span>
+                    <span>Takes: <strong style="color:var(--blue)" id="sum-takes">0</strong></span>
+                    <span>Waits: <strong class="text-yellow" id="sum-waits">0</strong></span>
+                    <span>Avg Win Prob: <strong id="sum-winprob">--%</strong></span>
+                </div>
+                <div class="picks-grid" id="value-bets-grid"></div>
+                <h3 class="section-title">Line Shopping Opportunities</h3>
+                <div id="line-shop-content"></div>
+            </div>
+        </div>
+
+        <div class="tab-panel" id="tab-odds">
+            <div class="loading" id="odds-loading">Loading odds...</div>
+            <div id="odds-content" style="display:none;"></div>
+        </div>
+
+        <div class="tab-panel" id="tab-bets">
+            <div style="display:flex;gap:0.5rem;margin-bottom:1rem;">
+                <button class="btn" onclick="loadBets('active')" id="bets-tab-active">Active</button>
+                <button class="btn" onclick="loadBets('history')" id="bets-tab-history" style="background:var(--bg-card);color:var(--text-dim);border:1px solid var(--border);">Settled</button>
+            </div>
+            <div id="bets-content"><div class="loading">Loading bets...</div></div>
+        </div>
+
+        <div class="tab-panel" id="tab-performance">
+            <div class="chart-container">
+                <h3>Bankroll Growth</h3>
+                <canvas id="bankroll-chart" height="250"></canvas>
+            </div>
+            <div id="perf-tables"></div>
+        </div>
+
+        <div class="tab-panel" id="tab-history">
+            <div id="history-content"><div class="loading">Loading pick history...</div></div>
+        </div>
+    </div>
+
+<script>
+var API_BASE = '/live-monitor/api/';
+var currentSport = 'all';
+var bankrollChart = null;
+
+function switchTab(tab) {
+    document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.getElementById('tab-' + tab).classList.add('active');
+    var tabs = {'picks':'Today','odds':'Odds','bets':'My Bets','performance':'Performance','history':'Pick History'};
+    var btns = document.querySelectorAll('.tab-btn');
+    for (var i = 0; i < btns.length; i++) {
+        if (btns[i].textContent === tabs[tab]) btns[i].classList.add('active');
+    }
+    if (tab === 'picks') fetchPicks();
+    if (tab === 'odds') fetchOdds();
+    if (tab === 'bets') loadBets('active');
+    if (tab === 'performance') fetchPerformance();
+    if (tab === 'history') fetchPickHistory();
+}
+
+function filterSport(sport) {
+    currentSport = sport;
+    document.querySelectorAll('.sport-btn').forEach(function(b) { b.classList.remove('active'); });
+    var btns = document.querySelectorAll('.sport-btn');
+    for (var i = 0; i < btns.length; i++) {
+        var oc = btns[i].getAttribute('onclick') || '';
+        if (oc.indexOf("'" + sport + "'") >= 0) btns[i].classList.add('active');
+    }
+    var activeTab = document.querySelector('.tab-panel.active');
+    if (activeTab) switchTab(activeTab.id.replace('tab-', ''));
+}
+
+function fmtUsd(v) { return '$' + parseFloat(v).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+function fmtPct(v) { return parseFloat(v).toFixed(1) + '%'; }
+function fmtOdds(v) {
+    v = parseFloat(v);
+    if (v >= 2.0) return '+' + Math.round((v - 1) * 100);
+    return '-' + Math.round(100 / (v - 1));
+}
+function fmtTime(dt) {
+    if (!dt) return '--';
+    var d = new Date(dt + (dt.indexOf('Z') < 0 && dt.indexOf('+') < 0 ? ' UTC' : ''));
+    return d.toLocaleDateString('en-US', {month:'short',day:'numeric'}) + ' ' + d.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'});
+}
+function sportParam() { return currentSport !== 'all' ? '&sport=' + currentSport : ''; }
+
+function fetchJson(url, cb) {
+    var x = new XMLHttpRequest();
+    x.open('GET', url);
+    x.onload = function() { try { cb(JSON.parse(x.responseText)); } catch(e) { cb({ok:false,error:'Parse error'}); } };
+    x.onerror = function() { cb({ok:false,error:'Network error'}); };
+    x.send();
+}
+
+function fetchDashboard() {
+    fetchJson(API_BASE + 'sports_bets.php?action=dashboard', function(d) {
+        if (!d.ok) return;
+        document.getElementById('stat-bankroll').textContent = fmtUsd(d.bankroll);
+        document.getElementById('status-bankroll').textContent = fmtUsd(d.bankroll);
+        var ch = d.bankroll_change || 0;
+        var chEl = document.getElementById('stat-bankroll-change');
+        chEl.textContent = (ch >= 0 ? '+' : '') + fmtUsd(ch);
+        chEl.style.color = ch >= 0 ? 'var(--green)' : 'var(--red)';
+        document.getElementById('stat-bankroll').style.color = ch >= 0 ? 'var(--green)' : 'var(--red)';
+        document.getElementById('stat-total-bets').textContent = d.total_bets || 0;
+        document.getElementById('stat-wlp').textContent = 'W:' + (d.total_wins||0) + ' L:' + (d.total_losses||0) + ' P:' + (d.total_pushes||0);
+        document.getElementById('stat-win-rate').textContent = fmtPct(d.win_rate || 0);
+        document.getElementById('stat-roi').textContent = fmtPct(d.roi_pct || 0);
+        document.getElementById('stat-roi').style.color = (d.roi_pct||0) >= 0 ? 'var(--green)' : 'var(--red)';
+        document.getElementById('stat-pnl').textContent = fmtUsd(d.total_pnl || 0) + ' P&L';
+        document.getElementById('stat-active').textContent = d.active_bets || 0;
+        document.getElementById('status-active').textContent = d.active_bets || 0;
+        document.getElementById('stat-reserved').textContent = fmtUsd(d.reserved_amount || 0) + ' reserved';
+    });
+    fetchJson(API_BASE + 'sports_odds.php?action=credit_usage', function(d) {
+        if (!d.ok) return;
+        document.getElementById('status-credits').textContent = (d.monthly_used||0) + '/500';
+    });
+}
+
+function fetchPicks() {
+    document.getElementById('picks-loading').style.display = 'block';
+    document.getElementById('picks-content').style.display = 'none';
+    fetchJson(API_BASE + 'sports_picks.php?action=today' + sportParam(), function(d) {
+        document.getElementById('picks-loading').style.display = 'none';
+        document.getElementById('picks-content').style.display = 'block';
+        if (!d.ok) { document.getElementById('value-bets-grid').innerHTML = '<div class="empty-state"><p>Failed to load picks</p></div>'; return; }
+        if (d.last_updated) document.getElementById('last-refresh').textContent = fmtTime(d.last_updated);
+        if (d.generated_at) document.getElementById('last-refresh').textContent = d.generated_at;
+        document.getElementById('stat-picks').textContent = d.value_bet_count || 0;
+        document.getElementById('vb-count').textContent = d.value_bet_count || 0;
+        if (d.summary) document.getElementById('stat-avg-ev').textContent = 'Avg EV: ' + fmtPct(d.summary.avg_ev_pct || 0);
+
+        var vb = d.value_bets || [];
+        var grid = document.getElementById('value-bets-grid');
+        if (vb.length === 0) {
+            grid.innerHTML = '<div class="empty-state"><p>No value bets detected right now</p><p class="text-dim" style="font-size:0.85rem">Picks appear when odds are refreshed and our algorithm detects mispriced lines.<br>You need a valid Odds API key in db_config.php and run ?action=fetch to populate data.</p></div>';
+            document.getElementById('picks-summary').style.display = 'none';
+            return;
+        }
+
+        // Update summary counts
+        var sumEl = document.getElementById('picks-summary');
+        sumEl.style.display = 'flex';
+        document.getElementById('sum-strong').textContent = d.summary.strong_takes || 0;
+        document.getElementById('sum-takes').textContent = d.summary.takes || 0;
+        document.getElementById('sum-waits').textContent = d.summary.waits || 0;
+        var avgWP = 0; var wpCount = 0;
+        for (var w = 0; w < vb.length; w++) { if (vb[w].win_probability) { avgWP += parseFloat(vb[w].win_probability); wpCount++; } }
+        document.getElementById('sum-winprob').textContent = wpCount > 0 ? (avgWP/wpCount).toFixed(1) + '%' : '--%';
+
+        var mktLabel = {h2h:'Moneyline',spreads:'Spread',totals:'Total'};
+        var html = '';
+        for (var i = 0; i < vb.length; i++) {
+            var b = vb[i];
+            var isCa = b.is_canadian_book ? ' <span class="badge badge-ca">CA Legal</span>' : '';
+            var grade = b.rating_grade || 'C';
+            var gradeClass = grade.replace('+', 'plus');
+            var rec = b.recommendation || 'WAIT';
+            var recClass = 'rec-' + rec.toLowerCase().replace(' ', '-');
+            var recDetail = b.rec_detail || '';
+            var scoreVal = b.rating_score || 0;
+            var scoreColor = scoreVal >= 80 ? 'var(--green)' : scoreVal >= 60 ? 'var(--blue)' : scoreVal >= 40 ? 'var(--yellow)' : 'var(--red)';
+            var winProb = b.win_probability ? b.win_probability + '% win prob' : '';
+            var amOdds = b.american_odds || fmtOdds(b.best_odds);
+
+            // Grade class for border
+            var borderGrade = scoreVal >= 70 ? 'grade-A' : scoreVal >= 50 ? 'grade-B' : scoreVal >= 35 ? 'grade-C' : 'grade-D';
+
+            html += '<div class="pick-card-enhanced ' + borderGrade + '">'
+                + '<div class="pick-top-row">'
+                +   '<div class="pick-main-col">'
+                +     '<div class="pick-header"><span class="pick-sport">' + (b.sport_short || b.sport) + ' &bull; ' + (mktLabel[b.market] || b.market || '') + '</span><span class="pick-time">' + fmtTime(b.commence_time) + '</span></div>'
+                +     '<div class="pick-teams">' + (b.away_team||'') + ' @ ' + (b.home_team||'') + '</div>'
+                +   '</div>'
+                +   '<div class="pick-rating-col">'
+                +     '<div class="rating-badge rating-' + gradeClass + '">' + grade + '</div>'
+                +     '<div class="pick-score-bar"><div class="pick-score-fill" style="width:' + scoreVal + '%;background:' + scoreColor + '"></div></div>'
+                +     (winProb ? '<div class="pick-win-prob">' + winProb + '</div>' : '')
+                +   '</div>'
+                + '</div>'
+                + '<div class="pick-detail">Pick: <strong>' + (b.outcome_name||b.bet_type||'') + '</strong> at <strong>' + (b.best_book||'') + '</strong>' + isCa + '</div>'
+                + '<div class="pick-detail">Odds: <strong>' + parseFloat(b.best_odds||0).toFixed(2) + '</strong> (' + amOdds + ') &bull; EV: <span class="text-green"><strong>+' + fmtPct(b.ev_pct) + '</strong></span></div>'
+                + '<div class="pick-detail">Kelly bet: <strong>' + fmtUsd(b.kelly_bet||0) + '</strong></div>'
+                + '<div style="margin-top:0.6rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">'
+                + '<span class="rec-badge ' + recClass + '">' + rec + '</span>'
+                + '<span class="badge badge-green">+EV ' + fmtPct(b.ev_pct) + '</span>'
+                + (recDetail ? '<span style="font-size:0.75rem;color:var(--text-dim)">' + recDetail + '</span>' : '')
+                + '</div>';
+
+            // Rating reasons
+            var reasons = b.rating_reasons || [];
+            if (reasons.length > 0) {
+                html += '<div class="pick-reasons"><ul>';
+                for (var r = 0; r < reasons.length; r++) {
+                    html += '<li>' + reasons[r] + '</li>';
+                }
+                html += '</ul></div>';
+            }
+            html += '</div>';
+        }
+        grid.innerHTML = html;
+
+        var shops = d.line_shops || [];
+        var shopEl = document.getElementById('line-shop-content');
+        if (shops.length === 0) { shopEl.innerHTML = '<div class="empty-state"><p>No line shopping data</p></div>'; return; }
+        var shopHtml = '';
+        for (var s = 0; s < Math.min(shops.length, 10); s++) {
+            var ev = shops[s];
+            shopHtml += '<div class="odds-event"><div class="odds-event-header"><h3>' + (ev.sport_short||'') + ': ' + (ev.away_team||'') + ' @ ' + (ev.home_team||'') + '</h3><span class="text-dim">' + fmtTime(ev.commence_time) + '</span></div>';
+            shopHtml += '<div class="odds-table"><table><tr><th>Market</th><th>Outcome</th><th>Best Book</th><th>Best Odds</th><th>Worst Book</th><th>Worst Odds</th><th>Savings</th></tr>';
+            var mkts = ev.markets || [];
+            for (var m = 0; m < mkts.length; m++) {
+                var ocs = mkts[m].outcomes || [];
+                for (var o = 0; o < ocs.length; o++) {
+                    var oc = ocs[o];
+                    var savCls = oc.savings_pct > 5 ? 'text-green' : oc.savings_pct > 2 ? 'text-yellow' : 'text-dim';
+                    var keyAlert = oc.key_number_alert ? ' <span class="badge badge-yellow">KEY#</span>' : '';
+                    shopHtml += '<tr><td>' + mkts[m].market + keyAlert + '</td><td>' + oc.outcome_name + '</td><td><strong>' + oc.best_book + '</strong></td><td class="best-odds">' + parseFloat(oc.best_price).toFixed(2) + '</td><td>' + oc.worst_book + '</td><td class="worst-odds">' + parseFloat(oc.worst_price).toFixed(2) + '</td><td class="' + savCls + '">+' + fmtPct(oc.savings_pct) + '</td></tr>';
+                }
+            }
+            shopHtml += '</table></div></div>';
+        }
+        shopEl.innerHTML = shopHtml;
+    });
+}
+
+function fetchOdds() {
+    document.getElementById('odds-loading').style.display = 'block';
+    document.getElementById('odds-content').style.display = 'none';
+    fetchJson(API_BASE + 'sports_odds.php?action=get&hours=48' + sportParam(), function(d) {
+        document.getElementById('odds-loading').style.display = 'none';
+        document.getElementById('odds-content').style.display = 'block';
+        if (!d.ok || !d.events || d.events.length === 0) { document.getElementById('odds-content').innerHTML = '<div class="empty-state"><p>No upcoming odds data</p></div>'; return; }
+        var html = '';
+        for (var e = 0; e < Math.min(d.events.length, 20); e++) {
+            var ev = d.events[e];
+            html += '<div class="odds-event"><div class="odds-event-header"><h3>' + (ev.sport_short||'') + ': ' + (ev.away_team||'') + ' @ ' + (ev.home_team||'') + '</h3><span class="text-dim">' + fmtTime(ev.commence_time) + '</span></div>';
+            var bookNames = {}, bms = ev.bookmakers || [];
+            for (var b = 0; b < bms.length; b++) { if (bms[b].is_canadian) bookNames[bms[b].key] = bms[b].name; }
+            var bookKeys = Object.keys(bookNames);
+            if (bookKeys.length === 0) { for (var b = 0; b < bms.length; b++) bookNames[bms[b].key] = bms[b].name; bookKeys = Object.keys(bookNames); }
+            html += '<div class="odds-table"><table><tr><th>Market</th><th>Outcome</th>';
+            for (var bk = 0; bk < bookKeys.length; bk++) html += '<th>' + bookNames[bookKeys[bk]] + '</th>';
+            html += '</tr>';
+            var oddsMap = {};
+            for (var b = 0; b < bms.length; b++) { var bm = bms[b]; oddsMap[bm.key] = {}; var mkts = bm.markets || []; for (var m = 0; m < mkts.length; m++) { oddsMap[bm.key][mkts[m].key] = {}; var ocs = mkts[m].outcomes || []; for (var o = 0; o < ocs.length; o++) oddsMap[bm.key][mkts[m].key][ocs[o].name] = ocs[o].price; } }
+            var mktOrder = ['h2h','spreads','totals'];
+            var mktLabels = {h2h:'Moneyline',spreads:'Spread',totals:'Total'};
+            for (var mi = 0; mi < mktOrder.length; mi++) {
+                var mk = mktOrder[mi];
+                var outcomes = {};
+                for (var b = 0; b < bms.length; b++) { var mkts = bms[b].markets || []; for (var m = 0; m < mkts.length; m++) { if (mkts[m].key !== mk) continue; var ocs = mkts[m].outcomes || []; for (var o = 0; o < ocs.length; o++) outcomes[ocs[o].name] = true; } }
+                var ocNames = Object.keys(outcomes);
+                for (var oi = 0; oi < ocNames.length; oi++) {
+                    var ocName = ocNames[oi];
+                    html += '<tr><td>' + (mktLabels[mk]||mk) + '</td><td>' + ocName + '</td>';
+                    var bestP = 0, worstP = 999;
+                    for (var bk = 0; bk < bookKeys.length; bk++) { var p = oddsMap[bookKeys[bk]] && oddsMap[bookKeys[bk]][mk] && oddsMap[bookKeys[bk]][mk][ocName] ? parseFloat(oddsMap[bookKeys[bk]][mk][ocName]) : 0; if (p > bestP) bestP = p; if (p > 0 && p < worstP) worstP = p; }
+                    for (var bk = 0; bk < bookKeys.length; bk++) { var p = oddsMap[bookKeys[bk]] && oddsMap[bookKeys[bk]][mk] && oddsMap[bookKeys[bk]][mk][ocName] ? parseFloat(oddsMap[bookKeys[bk]][mk][ocName]) : 0; var cls = p > 0 && p === bestP ? ' class="best-odds"' : (p > 0 && p === worstP && bookKeys.length > 2 ? ' class="worst-odds"' : ''); html += '<td' + cls + '>' + (p > 0 ? p.toFixed(2) : '--') + '</td>'; }
+                    html += '</tr>';
+                }
+            }
+            html += '</table></div></div>';
+        }
+        document.getElementById('odds-content').innerHTML = html;
+    });
+}
+
+function loadBets(type) {
+    document.getElementById('bets-tab-active').style.background = type === 'active' ? 'var(--accent)' : 'var(--bg-card)';
+    document.getElementById('bets-tab-active').style.color = type === 'active' ? '#fff' : 'var(--text-dim)';
+    document.getElementById('bets-tab-history').style.background = type === 'history' ? 'var(--accent)' : 'var(--bg-card)';
+    document.getElementById('bets-tab-history').style.color = type === 'history' ? '#fff' : 'var(--text-dim)';
+    var url = type === 'active' ? API_BASE + 'sports_bets.php?action=active' : API_BASE + 'sports_bets.php?action=history' + sportParam();
+    document.getElementById('bets-content').innerHTML = '<div class="loading">Loading...</div>';
+    fetchJson(url, function(d) {
+        if (!d.ok || !d.bets || d.bets.length === 0) { document.getElementById('bets-content').innerHTML = '<div class="empty-state"><p>No ' + type + ' bets</p></div>'; return; }
+        var html = '<table><tr><th>Sport</th><th>Event</th><th>Pick</th><th>Book</th><th>Odds</th><th>Amount</th>';
+        html += type === 'history' ? '<th>Result</th><th>P&amp;L</th>' : '<th>Game Time</th><th>EV%</th>';
+        html += '</tr>';
+        for (var i = 0; i < d.bets.length; i++) {
+            var b = d.bets[i];
+            var ml = {h2h:'Moneyline',spreads:'Spread',totals:'Total'};
+            html += '<tr><td>' + (b.sport_short||b.sport) + '</td><td>' + (b.away_team||'') + ' @ ' + (b.home_team||'') + '</td><td><strong>' + (b.pick||'') + '</strong> (' + (ml[b.market]||b.market||'') + ')</td><td>' + (b.bookmaker||'') + '</td><td>' + parseFloat(b.odds||0).toFixed(2) + '</td><td>' + fmtUsd(b.bet_amount||0) + '</td>';
+            if (type === 'history') {
+                var rCls = b.result === 'won' ? 'text-green' : b.result === 'lost' ? 'text-red' : 'text-yellow';
+                html += '<td class="' + rCls + '"><strong>' + (b.result||'').toUpperCase() + '</strong></td>';
+                html += '<td class="' + (parseFloat(b.pnl||0) >= 0 ? 'text-green' : 'text-red') + '">' + (parseFloat(b.pnl||0) >= 0 ? '+' : '') + fmtUsd(b.pnl||0) + '</td>';
+            } else {
+                html += '<td>' + fmtTime(b.commence_time) + '</td><td class="text-green">+' + fmtPct(b.ev_pct||0) + '</td>';
+            }
+            html += '</tr>';
+        }
+        html += '</table>';
+        document.getElementById('bets-content').innerHTML = html;
+    });
+}
+
+function fetchPerformance() {
+    fetchJson(API_BASE + 'sports_bets.php?action=dashboard', function(d) {
+        if (!d.ok) return;
+        var history = d.bankroll_history || [];
+        if (history.length > 0 && typeof Chart !== 'undefined') {
+            var labels = [], data = [];
+            for (var i = 0; i < history.length; i++) { labels.push(history[i].snapshot_date); data.push(parseFloat(history[i].bankroll)); }
+            if (bankrollChart) bankrollChart.destroy();
+            var ctx = document.getElementById('bankroll-chart').getContext('2d');
+            bankrollChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: labels, datasets: [{ label: 'Bankroll ($)', data: data, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', fill: true, tension: 0.3, pointRadius: 3 }, { label: 'Starting ($1000)', data: labels.map(function() { return 1000; }), borderColor: '#8888aa', borderDash: [5,5], pointRadius: 0, fill: false }] },
+                options: { responsive: true, plugins: { legend: { labels: { color: '#e0e0f0' } } }, scales: { x: { ticks: { color: '#8888aa' }, grid: { color: 'rgba(42,42,74,0.5)' } }, y: { ticks: { color: '#8888aa', callback: function(v) { return '$'+v; } }, grid: { color: 'rgba(42,42,74,0.5)' } } } }
+            });
+        }
+        var tablesHtml = '';
+        if (d.by_sport && d.by_sport.length > 0) {
+            tablesHtml += '<h3 class="section-title">Performance by Sport</h3><table><tr><th>Sport</th><th>Bets</th><th>Wins</th><th>Losses</th><th>Win Rate</th><th>P&amp;L</th><th>ROI</th></tr>';
+            for (var i = 0; i < d.by_sport.length; i++) { var s = d.by_sport[i]; var pc = parseFloat(s.pnl) >= 0 ? 'text-green' : 'text-red'; tablesHtml += '<tr><td><strong>' + (s.sport_short||s.sport) + '</strong></td><td>' + s.bets + '</td><td>' + s.wins + '</td><td>' + s.losses + '</td><td>' + fmtPct(s.win_rate) + '</td><td class="' + pc + '">' + fmtUsd(s.pnl) + '</td><td class="' + pc + '">' + fmtPct(s.roi) + '</td></tr>'; }
+            tablesHtml += '</table>';
+        }
+        if (d.by_algorithm && d.by_algorithm.length > 0) {
+            tablesHtml += '<h3 class="section-title" style="margin-top:1.5rem">Performance by Algorithm</h3><table><tr><th>Algorithm</th><th>Bets</th><th>Wins</th><th>Losses</th><th>Win Rate</th><th>P&amp;L</th><th>ROI</th></tr>';
+            for (var i = 0; i < d.by_algorithm.length; i++) { var a = d.by_algorithm[i]; var pc = parseFloat(a.pnl) >= 0 ? 'text-green' : 'text-red'; tablesHtml += '<tr><td><strong>' + a.algorithm + '</strong></td><td>' + a.bets + '</td><td>' + a.wins + '</td><td>' + a.losses + '</td><td>' + fmtPct(a.win_rate) + '</td><td class="' + pc + '">' + fmtUsd(a.pnl) + '</td><td class="' + pc + '">' + fmtPct(a.roi) + '</td></tr>'; }
+            tablesHtml += '</table>';
+        }
+        document.getElementById('perf-tables').innerHTML = tablesHtml || '<div class="empty-state"><p>No performance data yet</p></div>';
+    });
+    fetchJson(API_BASE + 'sports_picks.php?action=performance', function(d) {
+        if (!d.ok) return;
+        var html = document.getElementById('perf-tables').innerHTML;
+        if (d.ev_buckets && d.ev_buckets.length > 0) {
+            html += '<h3 class="section-title" style="margin-top:1.5rem">EV Bucket Analysis</h3><p class="text-dim" style="font-size:0.85rem;margin-bottom:0.5rem">Do higher EV picks actually win more often?</p>';
+            html += '<table><tr><th>EV Range</th><th>Picks</th><th>Wins</th><th>Losses</th><th>Win Rate</th><th>P&amp;L</th></tr>';
+            for (var i = 0; i < d.ev_buckets.length; i++) { var b = d.ev_buckets[i]; var pc = b.pnl >= 0 ? 'text-green' : 'text-red'; html += '<tr><td><strong>' + b.range + '</strong></td><td>' + b.total + '</td><td>' + b.wins + '</td><td>' + b.losses + '</td><td>' + fmtPct(b.win_rate) + '</td><td class="' + pc + '">' + fmtUsd(b.pnl) + '</td></tr>'; }
+            html += '</table>';
+        }
+        if (d.streaks) {
+            html += '<h3 class="section-title" style="margin-top:1.5rem">Streaks</h3><div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">';
+            html += '<div class="stat-card"><div class="stat-label">Current Streak</div><div class="stat-value" style="color:' + (d.streaks.current_type === 'won' ? 'var(--green)' : 'var(--red)') + '">' + d.streaks.current + ' ' + (d.streaks.current_type || 'N/A') + '</div></div>';
+            html += '<div class="stat-card"><div class="stat-label">Longest Win</div><div class="stat-value text-green">' + d.streaks.longest_win + '</div></div>';
+            html += '<div class="stat-card"><div class="stat-label">Longest Loss</div><div class="stat-value text-red">' + d.streaks.longest_loss + '</div></div>';
+            html += '<div class="stat-card"><div class="stat-label">Generated</div><div class="stat-value" style="font-size:0.85rem">' + (d.generated_at||'--') + '</div></div></div>';
+        }
+        if (d.by_book && d.by_book.length > 0) {
+            html += '<h3 class="section-title" style="margin-top:1.5rem">Performance by Sportsbook</h3><table><tr><th>Sportsbook</th><th>Picks</th><th>Wins</th><th>Win Rate</th><th>P&amp;L</th></tr>';
+            for (var i = 0; i < d.by_book.length; i++) { var b = d.by_book[i]; var pc = b.pnl >= 0 ? 'text-green' : 'text-red'; html += '<tr><td><strong>' + b.best_book + '</strong></td><td>' + b.total + '</td><td>' + b.wins + '</td><td>' + fmtPct(b.win_rate) + '</td><td class="' + pc + '">' + fmtUsd(b.pnl) + '</td></tr>'; }
+            html += '</table>';
+        }
+        document.getElementById('perf-tables').innerHTML = html;
+    });
+}
+
+function fetchPickHistory() {
+    document.getElementById('history-content').innerHTML = '<div class="loading">Loading pick history...</div>';
+    fetchJson(API_BASE + 'sports_picks.php?action=pick_history&days=30', function(d) {
+        if (!d.ok || !d.days || d.days.length === 0) { document.getElementById('history-content').innerHTML = '<div class="empty-state"><p>No pick history yet</p><p class="text-dim" style="font-size:0.85rem">Daily picks are generated when the odds refresh workflow runs</p></div>'; return; }
+        var html = '';
+        if (d.overall) {
+            var o = d.overall;
+            html += '<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1rem">';
+            html += '<div class="stat-card"><div class="stat-label">All-Time Picks</div><div class="stat-value">' + o.total + '</div></div>';
+            html += '<div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value">' + fmtPct(o.win_rate) + '</div></div>';
+            html += '<div class="stat-card"><div class="stat-label">Total P&amp;L</div><div class="stat-value" style="color:' + (o.total_pnl >= 0 ? 'var(--green)' : 'var(--red)') + '">' + fmtUsd(o.total_pnl) + '</div></div>';
+            html += '<div class="stat-card"><div class="stat-label">W / L</div><div class="stat-value">' + o.wins + ' / ' + o.losses + '</div></div></div>';
+        }
+        html += '<h3 class="section-title">Daily Pick History</h3>';
+        for (var i = 0; i < d.days.length; i++) {
+            var day = d.days[i]; var pCls = parseFloat(day.total_pnl) >= 0 ? 'text-green' : 'text-red';
+            html += '<div class="history-day" onclick="loadDayPicks(\'' + day.pick_date + '\')">';
+            html += '<div><span class="day-date">' + day.pick_date + '</span><span class="text-dim" style="margin-left:0.5rem;font-size:0.75rem">Generated: ' + (day.last_generated||'').substr(11,5) + ' UTC</span></div>';
+            html += '<div class="day-stats"><span>' + day.total_picks + ' picks</span><span>Avg EV: ' + fmtPct(day.avg_ev) + '</span><span class="text-green">W:' + (day.wins||0) + '</span><span class="text-red">L:' + (day.losses||0) + '</span>';
+            if (parseInt(day.pending||0) > 0) html += '<span class="text-yellow">' + day.pending + ' pending</span>';
+            html += '<span class="' + pCls + '">' + fmtUsd(day.total_pnl) + '</span></div></div>';
+        }
+        document.getElementById('history-content').innerHTML = html;
+    });
+}
+
+function loadDayPicks(date) {
+    document.getElementById('history-content').innerHTML = '<div class="loading">Loading picks for ' + date + '...</div>';
+    fetchJson(API_BASE + 'sports_picks.php?action=pick_history&date=' + date, function(d) {
+        if (!d.ok || !d.picks || d.picks.length === 0) { document.getElementById('history-content').innerHTML = '<div class="empty-state"><p>No picks for ' + date + '</p></div><button class="btn" onclick="fetchPickHistory()">Back</button>'; return; }
+        var html = '<button class="btn" onclick="fetchPickHistory()" style="margin-bottom:1rem">&#8592; Back to History</button>';
+        html += '<h3 class="section-title">Picks for ' + date + ' (' + d.count + ' picks)</h3>';
+        html += '<table><tr><th>Sport</th><th>Event</th><th>Market</th><th>Pick</th><th>Book</th><th>Odds</th><th>EV%</th><th>Confidence</th><th>Result</th><th>Generated</th></tr>';
+        for (var i = 0; i < d.picks.length; i++) {
+            var p = d.picks[i]; var rCls = p.result === 'won' ? 'text-green' : p.result === 'lost' ? 'text-red' : p.result === 'push' ? 'text-yellow' : 'text-dim';
+            var cBadge = p.confidence === 'high' ? 'badge-green' : p.confidence === 'medium' ? 'badge-yellow' : 'badge-blue';
+            html += '<tr><td>' + (p.sport_short||p.sport) + '</td><td>' + (p.away_team||'') + ' @ ' + (p.home_team||'') + '</td><td>' + (p.market||'') + '</td><td><strong>' + (p.outcome_name||'') + '</strong></td><td>' + (p.best_book||'') + '</td><td>' + parseFloat(p.best_odds||0).toFixed(2) + '</td><td class="text-green">+' + fmtPct(p.ev_pct) + '</td><td><span class="badge ' + cBadge + '">' + (p.confidence||'') + '</span></td><td class="' + rCls + '"><strong>' + (p.result ? p.result.toUpperCase() : 'PENDING') + '</strong></td><td class="text-dim">' + (p.generated_at||'').substr(11,5) + ' UTC</td></tr>';
+        }
+        html += '</table>';
+        document.getElementById('history-content').innerHTML = html;
+    });
+}
+
+// Init
+fetchDashboard();
+fetchPicks();
+setInterval(function() { fetchDashboard(); var at = document.querySelector('.tab-panel.active'); if (at && at.id === 'tab-picks') fetchPicks(); }, 300000);
+</script>
+</body>
+</html>

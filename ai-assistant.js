@@ -54,7 +54,8 @@
     defaultTheaterKey: 'fte_default_theater',
     guestUsageApi: 'https://findtorontoevents.ca/fc/api/guest_usage.php',
     guestAiUsedKey: 'fte_ai_guest_used',
-    verifyBusinessApi: 'https://findtorontoevents.ca/fc/api/verify_business.php'
+    verifyBusinessApi: 'https://findtorontoevents.ca/fc/api/verify_business.php',
+    dealsApi: 'https://findtorontoevents.ca/fc/api/deals.php'
   };
 
   // ═══════════════════════════════════════════════════════════
@@ -1038,6 +1039,36 @@
       return;
     }
 
+    // ── READ LAST RESPONSE ──
+    if (/read\s*(me\s*)?(your\s*|the\s*)?last\s*(response|reply|message|answer)/i.test(lower) ||
+        /repeat\s*(your\s*|the\s*)?last\s*(response|reply|message|answer)/i.test(lower) ||
+        /say\s*that\s*again/i.test(lower) ||
+        /read\s*(that|it)\s*(back|again|aloud|out\s*loud)/i.test(lower) ||
+        /what\s*did\s*you\s*(just\s*)?say/i.test(lower) ||
+        /speak\s*(your\s*|the\s*)?last\s*(response|reply|message|answer)/i.test(lower) ||
+        /read\s*(it\s*)?back\s*(to\s*me)?/i.test(lower)) {
+      var lastAi = null;
+      for (var hi = state.chatHistory.length - 1; hi >= 0; hi--) {
+        if (state.chatHistory[hi].type === 'ai') { lastAi = state.chatHistory[hi]; break; }
+      }
+      if (!lastAi) {
+        addMessage('ai', 'I haven\'t said anything yet! Ask me something first.', false);
+      } else {
+        var tmp = document.createElement('div');
+        tmp.innerHTML = lastAi.text;
+        var plainText = (tmp.textContent || tmp.innerText || '').trim();
+        if (!plainText) {
+          addMessage('ai', 'My last response didn\'t have any readable text.', false);
+        } else {
+          if (plainText.length > 1500) plainText = plainText.substring(0, 1497) + '...';
+          addMessage('ai', 'Reading my last response aloud...', false);
+          speakText(plainText);
+        }
+      }
+      setStatus('Ready', '#64748b');
+      return;
+    }
+
     // ── GUIDED FLOW INPUT ──
     if (state.flow) {
       state.processing = true;
@@ -1408,7 +1439,8 @@
       }
 
       // ── NAVIGATION ──
-      if (/^(go to|open|take me to|navigate to|show me) /i.test(lower)) {
+      // Exclude deals/freebies queries so "show me freebies" routes to deals, not navigation
+      if (/^(go to|open|take me to|navigate to|show me) /i.test(lower) && !_isDealsQuery(lower)) {
         handleNavigation(lower, raw);
         return;
       }
@@ -1534,9 +1566,21 @@
         return;
       }
 
+      // ── TODAY'S TOP STORIES (RSS summary with TTS) ──
+      if (_isTopStoriesQuery(lower)) {
+        await handleTopStories(lower);
+        return;
+      }
+
       // ── WORLD EVENTS / WHAT'S HAPPENING IN THE WORLD ──
       if (_isWorldEventsQuery(lower)) {
         await handleWorldEvents(lower);
+        return;
+      }
+
+      // ── NEWS FEED (Toronto/Canadian/US/World RSS) ──
+      if (_isNewsFeedQuery(lower)) {
+        await handleNewsFeed(lower);
         return;
       }
 
@@ -1549,6 +1593,12 @@
       // ── BUSINESS VERIFY (is X still open?) ──
       if (_isBusinessVerifyQuery(lower)) {
         await handleBusinessVerify(lower);
+        return;
+      }
+
+      // ── DEALS & FREEBIES ──
+      if (_isDealsQuery(lower)) {
+        await handleDeals(lower);
         return;
       }
 
@@ -1601,6 +1651,12 @@
         return;
       }
 
+      // ── DAILY PICKS (crypto, forex, live signals, momentum) — BEFORE stocks ──
+      if (_isDailyPicksQuery(lower)) {
+        await handleDailyPicks(lower);
+        return;
+      }
+
       // ── STOCKS (expanded) ──
       if (/stock/i.test(lower) || /pick/i.test(lower) || /trading/i.test(lower) || /investment/i.test(lower) ||
         /market/i.test(lower) || /portfolio/i.test(lower) || /ticker/i.test(lower) ||
@@ -1609,9 +1665,8 @@
         /best.*buy/i.test(lower) || /stock.*tip/i.test(lower) || /stock.*recommend/i.test(lower) ||
         /what.*invest/i.test(lower) || /should i (buy|sell)/i.test(lower) ||
         /penny stock/i.test(lower) || /growth stock/i.test(lower) || /value stock/i.test(lower) ||
-        /s&p|nasdaq|dow jones|tsx/i.test(lower) || /etf/i.test(lower) || /crypto/i.test(lower) ||
-        /algo.*pick|algorithm.*pick/i.test(lower) || /can.*slim/i.test(lower) ||
-        /momentum/i.test(lower) || /alpha predator/i.test(lower) ||
+        /s&p|nasdaq|dow jones|tsx/i.test(lower) || /etf/i.test(lower) ||
+        /algo.*pick|algorithm.*pick/i.test(lower) || /can.*slim/i.test(lower) || /alpha predator/i.test(lower) ||
         /explain.*algorithm/i.test(lower) || /algorithm.*explain/i.test(lower) || /algorithm.*mean/i.test(lower) ||
         /what.*algorithm/i.test(lower) || /describe.*algorithm/i.test(lower) ||
         /what is (can slim|technical momentum|alpha predator|penny sniper|composite rating|ml ensemble|statistical arbitrage)/i.test(lower) ||
@@ -2763,6 +2818,291 @@
       bestFor: 'sector pairs, mean reversion'
     }
   };
+
+  // ═══════════════════════════════════════════════════════════════
+  // DAILY PICKS — Crypto, Forex, Live Signals, Momentum
+  // ═══════════════════════════════════════════════════════════════
+
+  function _isDailyPicksQuery(lower) {
+    // Crypto-specific
+    if (/crypto.*(pick|signal|buy|trade|daily)/i.test(lower)) return true;
+    if (/\b(btc|eth|sol|bnb|xrp|ada|doge|shib|avax|link|dot|matic)\b/i.test(lower) && /pick|signal|buy|trade/i.test(lower)) return true;
+    if (/best.*crypto/i.test(lower)) return true;
+    if (/crypto.*(scalp|daytrad|swing)/i.test(lower)) return true;
+
+    // Forex-specific
+    if (/forex.*(pick|signal|daily|trade)/i.test(lower)) return true;
+    if (/\b(eur|gbp|usd|jpy|cad|aud|nzd|chf)\b.*\b(pick|signal|trade|buy)/i.test(lower)) return true;
+    if (/currency.*(pick|signal|trade)/i.test(lower)) return true;
+
+    // Momentum / trending
+    if (/what.*(trending|going) up/i.test(lower)) return true;
+    if (/most likely.*(continue|keep|go).*(up|rising)/i.test(lower)) return true;
+    if (/momentum pick/i.test(lower)) return true;
+    if (/high.*conviction/i.test(lower)) return true;
+
+    // Recent wins
+    if (/recent.*(win|winning)/i.test(lower)) return true;
+    if (/realtime.*win/i.test(lower)) return true;
+    if (/winning.*trade/i.test(lower)) return true;
+
+    // Timeline-specific
+    if (/scalp.*(pick|signal|trade)/i.test(lower)) return true;
+    if (/daytrad.*(pick|signal|crypto|forex)/i.test(lower)) return true;
+    if (/swing.*(pick|signal|crypto|forex)/i.test(lower)) return true;
+
+    // Budget-specific
+    if (/pick.*\$\d/i.test(lower) || /\$\d+.*budget/i.test(lower)) return true;
+    if (/(small|medium|large).*budget.*(pick|trade)/i.test(lower)) return true;
+
+    // Daily picks
+    if (/daily.*pick/i.test(lower) && !/stock/i.test(lower)) return true;
+    if (/live.*signal/i.test(lower)) return true;
+    if (/all.*market.*(pick|signal)/i.test(lower)) return true;
+
+    return false;
+  }
+
+  async function handleDailyPicks(lower) {
+    setStatus('Fetching live signals...', '#6366f1');
+
+    // Detect asset class
+    var action = 'all';
+    if (/crypto|btc|eth|sol|bnb|xrp|ada|doge|shib/i.test(lower)) action = 'crypto';
+    else if (/forex|eur|gbp|usd.*jpy|currency/i.test(lower)) action = 'forex';
+    else if (/momentum|trending|going up|continue.*up|high.*conviction/i.test(lower)) action = 'momentum';
+    else if (/recent.*win|realtime.*win|winning.*trade/i.test(lower)) action = 'wins';
+
+    // Detect timeline
+    var timeline = 'all';
+    if (/scalp/i.test(lower)) timeline = 'scalp';
+    else if (/daytrad|day.?trad/i.test(lower)) timeline = 'daytrader';
+    else if (/swing/i.test(lower)) timeline = 'swing';
+
+    // Detect budget
+    var budget = '';
+    if (/\$[0-4]?\d{2}(?!\d)|under.*500|small.*budget/i.test(lower)) budget = 'small';
+    else if (/\$[5-9]\d{2}|\$[1-4]\d{3}|medium.*budget/i.test(lower)) budget = 'medium';
+    else if (/\$[5-9]\d{3}|\$\d{5}|large.*budget|big.*budget/i.test(lower)) budget = 'large';
+
+    var url = '/live-monitor/api/daily_picks.php?action=' + action;
+    if (timeline !== 'all') url += '&timeline=' + timeline;
+    if (budget) url += '&budget=' + budget;
+
+    try {
+      var resp = await fetch(url);
+      var data = await resp.json();
+
+      if (!data.ok) {
+        addMessage('ai', '<div class="fte-ai-summary">Could not fetch live signals right now. Try again in a few minutes.</div>');
+        setStatus('Ready', '#64748b');
+        return;
+      }
+
+      var html = '<div class="fte-ai-summary">';
+
+      // Title based on action
+      if (action === 'crypto') {
+        html += '<b>\u20BF Daily Crypto Picks</b>';
+      } else if (action === 'forex') {
+        html += '<b>\uD83D\uDCB1 Daily Forex Picks</b>';
+      } else if (action === 'momentum') {
+        html += '<b>\uD83D\uDE80 Momentum Picks \u2014 Most Likely to Continue Up</b>';
+      } else if (action === 'wins') {
+        html += '<b>\uD83C\uDFC6 Recent Winning Trades</b>';
+      } else {
+        html += '<b>\uD83D\uDCCA Daily Picks \u2014 All Markets</b>';
+      }
+
+      html += ' <span style="color:#64748b;font-size:10px;">' + (data.generated_at || '') + '</span><br><br>';
+
+      // Timeline label
+      if (timeline !== 'all') {
+        var tlLabels = {scalp: 'Scalp (1-4h)', daytrader: 'Day Trade (4-24h)', swing: 'Swing (1-7d)'};
+        html += '<span style="background:#6366f1;color:white;padding:2px 8px;border-radius:10px;font-size:10px;">' + (tlLabels[timeline] || timeline) + '</span><br><br>';
+      }
+
+      // Format picks
+      var picks = data.picks || [];
+      if (action === 'all') {
+        // All markets: show each section
+        var sections = [
+          {key: 'crypto', icon: '\u20BF', label: 'Crypto', data: data.crypto || {}},
+          {key: 'forex', icon: '\uD83D\uDCB1', label: 'Forex', data: data.forex || {}},
+          {key: 'stocks', icon: '\uD83D\uDCC8', label: 'Stocks', data: data.stocks || {}}
+        ];
+        for (var si = 0; si < sections.length; si++) {
+          var sec = sections[si];
+          var secPicks = sec.data.picks || [];
+          html += '<b>' + sec.icon + ' ' + sec.label + '</b> (' + secPicks.length + ' signals)<br>';
+          if (secPicks.length === 0) {
+            html += '<span style="color:#64748b;">No active signals</span><br>';
+          } else {
+            var showSec = Math.min(secPicks.length, 3);
+            for (var pi = 0; pi < showSec; pi++) {
+              html += _formatPickHtml(secPicks[pi]);
+            }
+            if (secPicks.length > showSec) {
+              html += '<span style="color:#64748b;font-size:10px;">+' + (secPicks.length - showSec) + ' more</span><br>';
+            }
+          }
+          html += '<br>';
+        }
+      } else if (action === 'wins') {
+        var wins = data.wins || [];
+        if (wins.length === 0) {
+          html += 'No winning trades in the last 7 days.<br>';
+        } else {
+          for (var wi = 0; wi < Math.min(wins.length, 8); wi++) {
+            html += _formatWinHtml(wins[wi]);
+          }
+          if (wins.length > 8) html += '<span style="color:#64748b;font-size:10px;">+' + (wins.length - 8) + ' more</span><br>';
+        }
+      } else {
+        // Single asset class or momentum
+        if (picks.length === 0) {
+          html += '<span style="color:#64748b;">No active signals right now. Signals refresh every 30 minutes across 36 assets (14 crypto, 8 forex, 12 stocks).</span><br>';
+        } else {
+          var showCount = Math.min(picks.length, 6);
+          for (var k = 0; k < showCount; k++) {
+            html += _formatPickHtml(picks[k]);
+          }
+          if (picks.length > showCount) {
+            html += '<span style="color:#64748b;font-size:10px;">+' + (picks.length - showCount) + ' more signals</span><br>';
+          }
+        }
+
+        // Win streaks (momentum)
+        if (data.win_streaks && data.win_streaks.length > 0) {
+          html += '<br><b>\uD83D\uDD25 Win Streaks:</b><br>';
+          for (var ws = 0; ws < data.win_streaks.length; ws++) {
+            var streak = data.win_streaks[ws];
+            html += '\u2022 <b>' + escapeHtml(streak.symbol) + '</b> (' + streak.asset_class + ') \u2014 ' + streak.win_streak + ' consecutive wins<br>';
+          }
+        }
+
+        // Recent wins
+        var recentWins = data.recent_wins || [];
+        if (recentWins.length > 0) {
+          html += '<br><b>Recent Wins (7d):</b><br>';
+          for (var rw = 0; rw < Math.min(recentWins.length, 3); rw++) {
+            html += _formatWinHtml(recentWins[rw]);
+          }
+        }
+      }
+
+      // Performance summary
+      var perf = data.performance_summary || {};
+      if (perf.total_trades_30d > 0) {
+        html += '<br><div style="padding:8px;border-left:3px solid #6366f1;background:rgba(99,102,241,0.08);border-radius:4px;">';
+        html += '<b>30-Day Performance:</b> ' + perf.total_trades_30d + ' trades | ';
+        html += 'Win Rate: ' + perf.win_rate + '% | ';
+        html += 'Avg Win: +' + perf.avg_win_pct + '% | Avg Loss: ' + perf.avg_loss_pct + '%<br>';
+        if (perf.best_algorithm) html += 'Best Algo: ' + escapeHtml(perf.best_algorithm);
+        html += '</div>';
+      }
+
+      // Budget guidance
+      if (budget && data.budget_guidance && data.budget_guidance.guidance) {
+        html += '<br><b>\uD83D\uDCB0 Budget Guidance (' + budget + '):</b> ' + escapeHtml(data.budget_guidance.guidance) + '<br>';
+      } else if (!budget && data.budget_guidance && data.budget_guidance.small) {
+        html += '<br><div style="padding:8px;background:rgba(34,197,94,0.06);border-radius:4px;font-size:11px;">';
+        html += '<b>\uD83D\uDCB0 Position Sizing:</b><br>';
+        html += '\u2022 <b>Under $500:</b> ' + escapeHtml(data.budget_guidance.small) + '<br>';
+        html += '\u2022 <b>$500-$5K:</b> ' + escapeHtml(data.budget_guidance.medium) + '<br>';
+        html += '\u2022 <b>Over $5K:</b> ' + escapeHtml(data.budget_guidance.large);
+        html += '</div>';
+      }
+
+      html += '<br><span style="color:#64748b;font-size:10px;">' + (data.disclaimer || 'Not financial advice.') + '</span>';
+      html += '</div>';
+
+      addMessage('ai', html, false);
+
+      // Speak summary
+      var spk = (picks.length || (data.total_picks || 0)) + ' active signals found. ';
+      if (perf.win_rate > 0) spk += 'The 30-day win rate is ' + perf.win_rate + ' percent. ';
+      spk += 'Not financial advice.';
+      speakText(spk);
+
+      setPrompts(['Crypto picks', 'Forex picks', "What's trending up?", 'Recent wins', 'Daytrader crypto picks', 'Stock picks']);
+      setStatus('Ready', '#64748b');
+
+    } catch (err) {
+      addMessage('ai', '<div class="fte-ai-summary">Could not connect to the live signal server. Please try again later.</div>');
+      setStatus('Ready', '#64748b');
+    }
+  }
+
+  function _formatPickHtml(pick) {
+    var sym = pick.symbol || '???';
+    var type = pick.signal_type || 'BUY';
+    var entry = pick.entry_price || 0;
+    var curr = pick.current_price || entry;
+    var tp = pick.target_tp_pct || 0;
+    var sl = pick.target_sl_pct || 0;
+    var algo = pick.algorithm || '';
+    var strength = pick.signal_strength || 0;
+    var hold = pick.max_hold_hours || 0;
+    var tlLabel = pick.timeline_label || '';
+    var streak = pick.win_streak || 0;
+    var ac = pick.asset_class || '';
+
+    var dirColor = (type === 'BUY' || type === 'LONG') ? '#22c55e' : '#ef4444';
+    var dirIcon = (type === 'BUY' || type === 'LONG') ? '\u25B2' : '\u25BC';
+
+    // Format price
+    var entryStr, currStr;
+    if (ac === 'FOREX') { entryStr = entry.toFixed(5); currStr = curr.toFixed(5); }
+    else if (entry > 1) { entryStr = '$' + entry.toFixed(2); currStr = '$' + curr.toFixed(2); }
+    else { entryStr = '$' + entry.toFixed(6); currStr = '$' + curr.toFixed(6); }
+
+    var changePct = entry > 0 ? ((curr - entry) / entry * 100).toFixed(2) : 0;
+    var changeIcon = changePct >= 0 ? '+' : '';
+    var changeColor = changePct >= 0 ? '#22c55e' : '#ef4444';
+
+    // Strength bar
+    var barHtml = '';
+    var filled = Math.round(strength / 20);
+    for (var b = 0; b < 5; b++) {
+      barHtml += '<span style="color:' + (b < filled ? '#6366f1' : '#e2e8f0') + ';">\u2588</span>';
+    }
+
+    var html = '<div style="padding:6px 8px;margin:3px 0;border-left:3px solid ' + dirColor + ';background:rgba(99,102,241,0.04);border-radius:4px;">';
+    html += '<span style="color:' + dirColor + ';font-weight:bold;">' + dirIcon + '</span> ';
+    html += '<b>' + escapeHtml(sym) + '</b> ' + type + ' @ ' + entryStr;
+    if (curr !== entry && curr > 0) {
+      html += ' <span style="color:' + changeColor + ';">(' + changeIcon + changePct + '%)</span>';
+    }
+    html += '<br>';
+    html += '<span style="font-size:11px;color:#64748b;">';
+    html += 'TP: +' + tp + '% | SL: -' + sl + '% | Hold: ' + hold + 'h (' + tlLabel + ')<br>';
+    html += 'Algo: ' + escapeHtml(algo) + ' | Strength: ' + barHtml + ' ' + strength + '/100';
+    if (streak >= 2) html += ' | <span style="color:#f59e0b;">\uD83D\uDD25 ' + streak + ' wins</span>';
+    html += '</span></div>';
+
+    return html;
+  }
+
+  function _formatWinHtml(win) {
+    var sym = win.symbol || '???';
+    var asset = win.asset_class || '';
+    var pnl = win.realized_pnl || 0;
+    var pct = win.realized_pct || 0;
+    var algo = win.algorithm || '';
+    var hold = win.hold_hours ? win.hold_hours.toFixed(1) : '0';
+
+    var assetIcon = asset === 'CRYPTO' ? '\u20BF' : (asset === 'FOREX' ? '\uD83D\uDCB1' : '\uD83D\uDCC8');
+    var pnlStr = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(2);
+    var pctStr = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+
+    var html = '<div style="padding:4px 8px;margin:2px 0;border-left:3px solid #22c55e;background:rgba(34,197,94,0.06);border-radius:4px;font-size:12px;">';
+    html += '\u2705 ' + assetIcon + ' <b>' + escapeHtml(sym) + '</b> ';
+    html += '<span style="color:#22c55e;">' + pnlStr + ' (' + pctStr + ')</span>';
+    html += ' in ' + hold + 'h \u2014 ' + escapeHtml(algo);
+    html += '</div>';
+    return html;
+  }
 
   function handleStocks(lower) {
     var stocks = getStocksFromPage();
@@ -4254,9 +4594,8 @@
     if (/what'?s?\s+(happening|going on)\s+(in|around)\s+the\s+world/i.test(lower)) return true;
     if (/major\s*(event|news|headline)/i.test(lower)) return true;
     if (/big\s*(event|news|headline)/i.test(lower)) return true;
-    if (/today'?s?\s*(headline|news|big\s*event)/i.test(lower)) return true;
+    if (/today'?s?\s*(headline|big\s*event)/i.test(lower)) return true;
     if (/headline/i.test(lower) && !/toronto/i.test(lower)) return true;
-    if (/top\s*(news|stories|headline)/i.test(lower)) return true;
     if (/breaking\s*news/i.test(lower)) return true;
     if (/^world$/i.test(lower.trim())) return true;
     if (/^news$/i.test(lower.trim())) return true;
@@ -4665,6 +5004,312 @@
   }
 
   // ═══════════════════════════════════════════════════════════
+  // TODAY'S TOP STORIES — Summary with TTS + Typewriter
+  // ═══════════════════════════════════════════════════════════
+
+  var _topStoriesStopped = false;
+
+  function _isTopStoriesQuery(lower) {
+    if (/top\s*(news|stories|headlines?)/i.test(lower)) return true;
+    if (/today'?s?\s*(top|big|main|latest)\s*(stories|news|headlines?)/i.test(lower)) return true;
+    if (/today'?s?\s*news\s*summary/i.test(lower)) return true;
+    if (/read\s*(me\s*)?(the\s*)?(top|today|latest)\s*(stories|news|headlines?)/i.test(lower)) return true;
+    if (/summarize\s*(the\s*)?(news|headlines?|stories)/i.test(lower)) return true;
+    if (/news\s*summary/i.test(lower)) return true;
+    if (/brief\s*(me|us)\s*(on\s*)?(the\s*)?(news|stories|headlines?)/i.test(lower)) return true;
+    if (/catch\s*(me\s*)?up\s*(on\s*)?(the\s*)?(news|stories|headlines?)/i.test(lower)) return true;
+    if (/what'?s?\s*(the\s*)?latest\s*(news|stories)/i.test(lower)) return true;
+    if (/morning\s*(news|briefing|update)/i.test(lower)) return true;
+    if (/daily\s*(news|briefing|update|digest)/i.test(lower)) return true;
+    return false;
+  }
+
+  async function handleTopStories(lower) {
+    _topStoriesStopped = false;
+    setStatus('Gathering top stories...', '#6366f1');
+    state.processing = true;
+    showStopBtn(true);
+
+    try {
+      // Fetch from all categories in parallel
+      var categories = ['toronto', 'canada', 'us', 'world'];
+      var catLabels = { toronto: 'Toronto', canada: 'Canadian', us: 'US', world: 'World' };
+      var catIcons = { toronto: '\uD83C\uDDE8\uD83C\uDDE6', canada: '\uD83C\uDDE8\uD83C\uDDE6', us: '\uD83C\uDDFA\uD83C\uDDF8', world: '\uD83C\uDF0E' };
+
+      var results = {};
+      var fetches = categories.map(function(cat) {
+        return fetch('/fc/api/news_feed.php?action=get&category=' + cat + '&per_page=5')
+          .then(function(r) { return r.json(); })
+          .then(function(data) { results[cat] = data; })
+          .catch(function() { results[cat] = null; });
+      });
+
+      await Promise.all(fetches);
+
+      if (_topStoriesStopped) return;
+
+      // Build summary HTML
+      var summaryParts = [];
+      var speechParts = [];
+      var totalArticles = 0;
+
+      // Header
+      var now = new Date();
+      var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      var dateStr = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate();
+      summaryParts.push('<div style="text-align:center;margin-bottom:12px;">');
+      summaryParts.push('\uD83D\uDCF0 <b style="font-size:1.1em;">Today\'s Top Stories</b>');
+      summaryParts.push('<br><span style="color:#64748b;font-size:0.82rem;">' + dateStr + '</span>');
+      summaryParts.push('</div>');
+
+      speechParts.push("Here's your news briefing for " + dateStr + '.');
+
+      for (var ci = 0; ci < categories.length; ci++) {
+        var cat = categories[ci];
+        var data = results[cat];
+        if (!data || !data.ok || !data.articles || data.articles.length === 0) continue;
+
+        var arts = data.articles;
+        var showCount = Math.min(arts.length, 3);
+        totalArticles += showCount;
+
+        summaryParts.push('');
+        summaryParts.push(catIcons[cat] + ' <b>' + catLabels[cat] + '</b>');
+        speechParts.push(catLabels[cat] + ' news.');
+
+        for (var ai = 0; ai < showCount; ai++) {
+          var a = arts[ai];
+          var desc = a.description || '';
+          if (desc.length > 120) desc = desc.substring(0, 117) + '...';
+
+          summaryParts.push('<div style="margin:4px 0 4px 8px;padding:6px 10px;background:rgba(99,102,241,0.06);border-radius:6px;border-left:3px solid ' +
+            (cat === 'toronto' ? '#6366f1' : cat === 'canada' ? '#ef4444' : cat === 'us' ? '#3b82f6' : '#22c55e') + ';">');
+          summaryParts.push('<a href="' + escapeHtml(a.link) + '" target="_blank" rel="noopener" style="font-weight:600;color:' +
+            (cat === 'toronto' ? '#6366f1' : cat === 'canada' ? '#f87171' : cat === 'us' ? '#60a5fa' : '#4ade80') + ';font-size:0.9rem;">' +
+            escapeHtml(a.title) + '</a>');
+          summaryParts.push('<br><span style="color:#8888aa;font-size:0.75rem;">' + escapeHtml(a.source_name) + ' \u00B7 ' + escapeHtml(a.time_ago || '') + '</span>');
+          if (desc) {
+            summaryParts.push('<br><span style="font-size:0.82rem;color:#aaaacc;">' + escapeHtml(desc) + '</span>');
+          }
+          summaryParts.push('</div>');
+
+          speechParts.push(a.title + '. From ' + a.source_name + '.');
+        }
+      }
+
+      if (totalArticles === 0) {
+        addMessage('ai', '<div class="fte-ai-summary">No news articles available right now. Try again in a few minutes or visit the <a href="/news/" target="_blank">News Dashboard</a>.</div>');
+        setStatus('Ready', '#64748b');
+        state.processing = false;
+        showStopBtn(false);
+        return;
+      }
+
+      // Footer
+      summaryParts.push('');
+      summaryParts.push('<div style="text-align:center;margin-top:10px;">');
+      summaryParts.push('<a href="/news/" target="_blank" style="background:linear-gradient(135deg,#6366f1,#818cf8);color:white;padding:6px 18px;border-radius:8px;font-size:0.85rem;text-decoration:none;display:inline-block;font-weight:600;">Open Full News Dashboard</a>');
+      summaryParts.push('<br><span id="fte-top-stories-stop-btn" style="display:inline-flex;cursor:pointer;align-items:center;gap:4px;margin-top:8px;padding:4px 12px;background:rgba(239,68,68,0.12);color:#f87171;border-radius:6px;font-size:0.8rem;font-weight:600;">\u23F9 Stop Reading</span>');
+      summaryParts.push('</div>');
+
+      speechParts.push("That's your top stories briefing. Visit the news dashboard for the full feed.");
+
+      var fullHTML = summaryParts.join('');
+      var fullText = speechParts.join(' ');
+
+      // Display with typewriter effect
+      var msgEl = addMessage('ai', '<div id="fte-top-stories-text" class="fte-ai-summary" style="padding:12px;line-height:1.6;"></div>', false);
+      var targetEl = document.getElementById('fte-top-stories-text');
+      if (!targetEl) { state.processing = false; showStopBtn(false); return; }
+
+      // Split HTML into safe tokens
+      var tokens = fullHTML.split(/(?=<)|(?<=>)/);
+      var displayed = '';
+      var tokenIdx = 0;
+
+      // TTS simultaneously
+      state.speaking = true;
+      updateBtnState();
+      if (!state.muteTTS && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        var utter = new SpeechSynthesisUtterance(fullText);
+        utter.rate = 1.0;
+        utter.pitch = 1;
+        utter.lang = 'en-US';
+        utter.onend = function() {
+          state.speaking = false;
+          updateBtnState();
+          _topStoriesFinished();
+        };
+        utter.onerror = function() {
+          state.speaking = false;
+          updateBtnState();
+          _topStoriesFinished();
+        };
+        window.speechSynthesis.speak(utter);
+      }
+
+      // Typewriter interval
+      var typeInterval = setInterval(function() {
+        if (_topStoriesStopped) {
+          clearInterval(typeInterval);
+          return;
+        }
+        if (tokenIdx >= tokens.length) {
+          clearInterval(typeInterval);
+          targetEl.innerHTML = fullHTML;
+          _attachTopStoriesStopBtn();
+          if (state.muteTTS || !('speechSynthesis' in window)) _topStoriesFinished();
+          return;
+        }
+        var chunk = '';
+        for (var t = 0; t < 4 && tokenIdx < tokens.length; t++, tokenIdx++) {
+          chunk += tokens[tokenIdx];
+        }
+        displayed += chunk;
+        targetEl.innerHTML = displayed;
+        var cont = document.getElementById('fte-ai-messages');
+        if (cont) cont.scrollTop = cont.scrollHeight;
+      }, 40);
+
+      setPrompts(['Toronto news', 'Canadian news', 'US news', 'World news', 'News dashboard']);
+      setStatus('Reading top stories...', '#f97316');
+
+    } catch (err) {
+      addMessage('ai', '<div class="fte-ai-summary">Could not load top stories right now. Visit the <a href="/news/" target="_blank">News Dashboard</a> directly.</div>');
+      setStatus('Ready', '#64748b');
+      state.processing = false;
+      showStopBtn(false);
+    }
+  }
+
+  function _attachTopStoriesStopBtn() {
+    var stopBtn = document.getElementById('fte-top-stories-stop-btn');
+    if (stopBtn) {
+      stopBtn.onclick = function() { _stopTopStories(); return false; };
+    }
+  }
+
+  function _topStoriesFinished() {
+    var stopBtn = document.getElementById('fte-top-stories-stop-btn');
+    if (stopBtn) {
+      stopBtn.textContent = '\u2705 Briefing complete';
+      stopBtn.style.background = 'rgba(34,197,94,0.15)';
+      stopBtn.style.color = '#4ade80';
+      stopBtn.style.cursor = 'default';
+      stopBtn.onclick = function() { return false; };
+    }
+    setStatus('Ready', '#64748b');
+    state.processing = false;
+    showStopBtn(false);
+  }
+
+  function _stopTopStories() {
+    _topStoriesStopped = true;
+    stopSpeaking();
+    var stopBtn = document.getElementById('fte-top-stories-stop-btn');
+    if (stopBtn) {
+      stopBtn.textContent = '\u23F9 Stopped';
+      stopBtn.style.display = 'none';
+    }
+    var textEl = document.getElementById('fte-top-stories-text');
+    if (textEl) {
+      textEl.innerHTML += '<br><span style="color:#f87171;font-size:0.8rem;">(Reading stopped)</span>';
+    }
+    setStatus('Ready', '#64748b');
+    state.processing = false;
+    showStopBtn(false);
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // NEWS FEED — Toronto / Canadian / US / World RSS Aggregator
+  // ═══════════════════════════════════════════════════════════
+
+  function _isNewsFeedQuery(lower) {
+    // Specific news feed / dashboard requests
+    if (/news\s*feed/i.test(lower)) return true;
+    if (/news\s*dashboard/i.test(lower)) return true;
+    if (/read\s*(the\s*)?news/i.test(lower)) return true;
+    if (/show\s*(me\s*)?(the\s*)?news/i.test(lower)) return true;
+    if (/toronto\s*news/i.test(lower)) return true;
+    if (/canadian\s*news/i.test(lower)) return true;
+    if (/canada\s*news/i.test(lower)) return true;
+    if (/\bus\b\s*news/i.test(lower)) return true;
+    if (/american\s*news/i.test(lower)) return true;
+    if (/local\s*news/i.test(lower)) return true;
+    // Source names
+    if (/blogto|narcity|daily\s*hive|now\s*toronto|streets\s*of\s*toronto/i.test(lower)) return true;
+    if (/toronto\s*sun|toronto\s*star/i.test(lower)) return true;
+    if (/national\s*post/i.test(lower)) return true;
+    // International sources + news context
+    if (/(cnn|npr|nbc|bbc|al\s*jazeera|guardian|ap\s*news)/i.test(lower) && /news|latest|feed/i.test(lower)) return true;
+    // CBC with regional context (not caught by world events)
+    if (/cbc\s*(toronto|canada|news\s*feed)/i.test(lower)) return true;
+    if (/rss/i.test(lower) && /news|feed/i.test(lower)) return true;
+    return false;
+  }
+
+  async function handleNewsFeed(lower) {
+    setStatus('Fetching news...', '#6366f1');
+
+    // Detect category
+    var category = 'all';
+    if (/toronto|local|blogto|narcity|daily\s*hive|now\s*toronto|streets|toronto\s*sun|toronto\s*star/i.test(lower)) category = 'toronto';
+    else if (/canad|cbc|ctv|national\s*post|globe|maclean/i.test(lower)) category = 'canada';
+    else if (/\bus\b|american|cnn|npr|nbc|ap\s*news/i.test(lower)) category = 'us';
+    else if (/world|bbc|al\s*jazeera|guardian|international|global/i.test(lower)) category = 'world';
+
+    var url = '/fc/api/news_feed.php?action=get&category=' + category + '&per_page=8';
+
+    try {
+      var resp = await fetch(url);
+      var data = await resp.json();
+
+      if (!data.ok || !data.articles || data.articles.length === 0) {
+        addMessage('ai', '<div class="fte-ai-summary">No news articles available right now. Try again in a few minutes or visit the <a href="/news/" target="_blank">News Dashboard</a>.</div>');
+        setStatus('Ready', '#64748b');
+        return;
+      }
+
+      var catLabels = {toronto:'Toronto', canada:'Canadian', us:'US', world:'World', all:'Latest'};
+      var html = '<div class="fte-ai-summary">';
+      html += '<b>' + (catLabels[category] || 'Latest') + ' News</b>';
+      html += ' <span style="color:#64748b;font-size:10px;">' + (data.fetched_at || '') + '</span><br><br>';
+
+      var articles = data.articles;
+      var showCount = Math.min(articles.length, 6);
+      for (var i = 0; i < showCount; i++) {
+        var art = articles[i];
+        html += '<div style="margin-bottom:10px;padding:8px;background:rgba(99,102,241,0.06);border-radius:6px;">';
+        html += '<a href="' + escapeHtml(art.link) + '" target="_blank" rel="noopener" style="font-weight:600;color:#6366f1;">' + escapeHtml(art.title) + '</a><br>';
+        html += '<span style="color:#8888aa;font-size:11px;">' + escapeHtml(art.source_name) + ' &middot; ' + escapeHtml(art.time_ago || '') + '</span>';
+        if (art.description) {
+          var desc = art.description.length > 120 ? art.description.substring(0, 120) + '...' : art.description;
+          html += '<br><span style="font-size:12px;color:#aaaacc;">' + escapeHtml(desc) + '</span>';
+        }
+        html += '</div>';
+      }
+
+      if (articles.length > showCount) {
+        html += '<span style="color:#64748b;font-size:10px;">+' + (data.total - showCount) + ' more articles</span><br>';
+      }
+
+      html += '<br><a href="/news/" target="_blank" style="background:#6366f1;color:white;padding:5px 14px;border-radius:8px;font-size:12px;text-decoration:none;display:inline-block;">Open News Dashboard</a>';
+      html += '</div>';
+
+      addMessage('ai', html, false);
+      speakText(showCount + ' ' + (catLabels[category] || '') + ' news articles found. Visit the news dashboard for more.');
+      setPrompts(["Today's top stories", 'Toronto news', 'Canadian news', 'US news', 'World news']);
+      setStatus('Ready', '#64748b');
+
+    } catch (err) {
+      addMessage('ai', '<div class="fte-ai-summary">Could not load news right now. Visit the <a href="/news/" target="_blank">News Dashboard</a> directly.</div>');
+      setStatus('Ready', '#64748b');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
   // MOVIES NOW PLAYING / SHOWTIMES DETECTION
   // ═══════════════════════════════════════════════════════════
 
@@ -4841,6 +5486,310 @@
       banner.style.borderColor = 'rgba(251,191,36,0.2)';
     }
   };
+
+  // ═══════════════════════════════════════════════════════════
+  // DEALS & FREEBIES
+  // ═══════════════════════════════════════════════════════════
+
+  /** Detect if user query is asking about deals, freebies, or free stuff */
+  function _isDealsQuery(lower) {
+    // Birthday freebies / rewards (allow words between birthday and deal-word)
+    if (/birthday.{0,20}(freebie|deal|reward|gift|perk|treat|offer)s?/i.test(lower)) return true;
+    if (/free\s*(on|for)\s*my\s*birthday/i.test(lower)) return true;
+    if (/\b(sephora|starbucks|denny|dennys|ihop|baskin|dairy queen|tim hortons|shoppers)\s*birthday/i.test(lower)) return true;
+    if (/birthday\s*(at|from)\s*.{2,30}/i.test(lower)) return true;
+
+    // Deals/freebies near me / with location
+    if (/deal(s)?\s*(near|nearby|around|close)/i.test(lower)) return true;
+    if (/freebie(s)?\s*(near|nearby|around|close|in\s+|at\s+|for\s+|around\s+)/i.test(lower)) return true;
+    if (/free\s*(stuff|things)\s*(near|nearby|around|close)/i.test(lower)) return true;
+
+    // Free stuff/things standalone (not followed by "to do")
+    if (/^free\s+(stuff|things)\s*$/i.test(lower.trim())) return true;
+    if (/\bfree\s+(stuff|things)\b/i.test(lower) && !/to\s+do/i.test(lower)) return true;
+
+    // Free stuff today / free things today
+    if (/free\s*(stuff|things|activities|events)\s*today/i.test(lower)) return true;
+    if (/what('s|s| is)\s*free\s*today/i.test(lower)) return true;
+    if (/anything\s*free\s*today/i.test(lower)) return true;
+
+    // Toronto / Canadian deals
+    if (/free\s*(stuff|things)\s*in\s*(toronto|canada|ontario|my\s*area)/i.test(lower)) return true;
+    if (/toronto\s*(freebie|deal|coupon)s?/i.test(lower)) return true;
+    if (/canadian\s*(deal|freebie|coupon|discount|free)/i.test(lower)) return true;
+
+    // Free samples
+    if (/free\s*sample/i.test(lower)) return true;
+
+    // Free admission / museums / galleries
+    if (/free\s*(museum|gallery|admission|entry|entrance)/i.test(lower)) return true;
+    if (/museum.{0,10}free/i.test(lower)) return true;
+
+    // Generic deals/freebies/coupons with verb prefixes (allow words between verb and deal-word)
+    if (/\b(show|find|get|list|any|best|top|latest|what|give|tell)\b.{0,20}\b(deal|freebie|coupon|discount)s?\b/i.test(lower)) return true;
+    // "show me freebies", "give me deals", "what are the freebies"
+    if (/\b(show|give|tell)\s+me\b.{0,20}\b(deal|freebie|coupon|discount|free stuff|free things|birthday)s?\b/i.test(lower)) return true;
+    // "I want freebies", "looking for freebies/deals"
+    if (/\b(want|looking for|need|searching for)\s*.{0,10}\b(deal|freebie|coupon|discount)s?\b/i.test(lower)) return true;
+    // Standalone deal words
+    if (/^deals?\s*$/i.test(lower.trim())) return true;
+    if (/^freebies?\s*$/i.test(lower.trim())) return true;
+    if (/^coupons?\s*$/i.test(lower.trim())) return true;
+    if (/^discounts?\s*$/i.test(lower.trim())) return true;
+    // "where can I get/find free/deals"
+    if (/where\s*(can\s*i|do\s*i|to)\s*(get|find)\s*(free|deal|freebie|coupon|discount)/i.test(lower)) return true;
+    // "what are some/the deals/freebies"
+    if (/what\s*(are|is)\s*(some|the|any)?\s*(deal|freebie|coupon|discount|free stuff|free things)s?/i.test(lower)) return true;
+    // "any freebies/deals" standalone or with context
+    if (/\bany\s+(deal|freebie|coupon|discount)s?\b/i.test(lower)) return true;
+
+    return false;
+  }
+
+  /** Determine the deals sub-type from the query */
+  function _parseDealsType(lower) {
+    if (/birthday/i.test(lower)) return 'birthday';
+    if (/free\s*today|what('s|s| is)\s*free\s*today|anything\s*free\s*today/i.test(lower)) return 'free_today';
+    if (/canadian|canada|ontario/i.test(lower)) return 'canadian_deals';
+    if (/free\s*sample/i.test(lower)) return 'samples';
+    if (/free\s*(museum|gallery|admission|entry|entrance)|museum.{0,10}free/i.test(lower)) return 'free_admission';
+    if (/near\s*me|nearby|around\s*me|close\s*to\s*me/i.test(lower)) return 'near_me';
+    return 'search';
+  }
+
+  /** Extract search keywords from a deals query */
+  function _parseDealsSearch(lower) {
+    var cleaned = lower
+      .replace(/\b(show|find|get|list|any|best|top|latest|me|the|some|what|are|is|where|can|i|near|nearby|around|close|to|in|for|my|today|now|right now)\b/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    return cleaned || '';
+  }
+
+  /** Replace the deals loading placeholder */
+  function _replaceDealsLoading(html) {
+    var el = document.getElementById('fte-ai-deals-loading');
+    if (el) {
+      el.outerHTML = html;
+    } else {
+      addMessage('ai', html);
+    }
+  }
+
+  /** Main handler for deals & freebies queries */
+  async function handleDeals(lower) {
+    var dealType = _parseDealsType(lower);
+    var isNearMe = /near\s*me|nearby|around\s*me|close\s*to\s*me/i.test(lower);
+
+    // Show loading message
+    var loadingLabel = 'deals';
+    if (dealType === 'birthday') loadingLabel = 'birthday freebies';
+    else if (dealType === 'free_today') loadingLabel = 'free stuff today';
+    else if (dealType === 'samples') loadingLabel = 'free samples';
+    else if (dealType === 'free_admission') loadingLabel = 'free admission venues';
+    else if (dealType === 'canadian_deals') loadingLabel = 'Canadian deals';
+
+    setStatus('Searching for ' + loadingLabel + '...', '#10b981');
+    addMessage('ai', '<div id="fte-ai-deals-loading" class="fte-ai-summary">' +
+      '<b>\uD83C\uDF81 Searching for ' + escapeHtml(loadingLabel) + '...</b>' +
+      (isNearMe ? '<br><span style="color:#a78bfa;">Getting your location...</span>' : '') +
+      '</div>');
+
+    // Build API URL
+    var action = 'search';
+    if (dealType === 'birthday') action = 'birthday';
+    else if (dealType === 'free_today') action = 'free_today';
+    else if (dealType === 'canadian_deals') action = 'canadian';
+    else if (dealType === 'samples') action = 'samples';
+    else if (dealType === 'free_admission') action = 'free_admission';
+
+    var params = 'action=' + encodeURIComponent(action);
+
+    // Add search term for generic searches
+    if (action === 'search') {
+      var searchTerm = _parseDealsSearch(lower);
+      if (searchTerm) {
+        params += '&q=' + encodeURIComponent(searchTerm);
+      }
+    }
+
+    // Get location for near-me queries
+    if (isNearMe) {
+      var userLoc = await _getNearMeLocation();
+      if (userLoc && userLoc.lat && userLoc.lng) {
+        params += '&lat=' + userLoc.lat + '&lng=' + userLoc.lng;
+      } else {
+        // Fallback: downtown Toronto
+        params += '&lat=43.6532&lng=-79.3832';
+      }
+    }
+
+    var url = CONFIG.dealsApi + '?' + params;
+
+    try {
+      var resp = await fetch(url);
+      var data = await resp.json();
+
+      if (!data.ok) {
+        _replaceDealsLoading('<div class="fte-ai-summary"><b>Deals Error</b><br><br>' +
+          escapeHtml(data.error || 'Could not fetch deals right now. Try again later.') + '</div>');
+        setStatus('Ready', '#64748b');
+        state.processing = false;
+        showStopBtn(false);
+        return;
+      }
+
+      _renderDealsResults(data, dealType, isNearMe);
+      state.processing = false;
+      showStopBtn(false);
+
+    } catch (err) {
+      _replaceDealsLoading('<div class="fte-ai-summary"><b>Connection Error</b><br><br>' +
+        'Could not reach the deals service. Please try again later.<br>' +
+        '<span style="color:#94a3b8;">' + escapeHtml(err.message || 'Network error') + '</span></div>');
+      setStatus('Ready', '#64748b');
+      state.processing = false;
+      showStopBtn(false);
+    }
+  }
+
+  /** Render deals/freebies results as chat cards */
+  function _renderDealsResults(data, dealType, isNearMe) {
+    var deals = data.deals || data.results || [];
+    var total = data.total || deals.length;
+
+    var html = '<div class="fte-ai-summary">';
+
+    // Header based on type
+    if (dealType === 'birthday') {
+      html += '<b>\uD83C\uDF82 Birthday Freebies & Deals</b>';
+      html += ' <span style="color:#64748b;font-size:0.8em;">(' + total + ' found)</span><br>';
+      html += '<span style="color:#a78bfa;font-size:0.85em;">Sign up for rewards programs in advance to claim these!</span><br><br>';
+    } else if (dealType === 'free_today') {
+      html += '<b>\uD83C\uDD93 Free Stuff Today</b>';
+      html += ' <span style="color:#64748b;font-size:0.8em;">(' + total + ' available)</span><br><br>';
+    } else if (dealType === 'samples') {
+      html += '<b>\uD83E\uDDEA Free Samples</b>';
+      html += ' <span style="color:#64748b;font-size:0.8em;">(' + total + ' found)</span><br><br>';
+    } else if (dealType === 'free_admission') {
+      html += '<b>\uD83C\uDFDB\uFE0F Free Admission</b>';
+      html += ' <span style="color:#64748b;font-size:0.8em;">(' + total + ' venues)</span><br><br>';
+    } else if (dealType === 'canadian_deals') {
+      html += '<b>\uD83C\uDDE8\uD83C\uDDE6 Canadian Deals & Freebies</b>';
+      html += ' <span style="color:#64748b;font-size:0.8em;">(' + total + ' found)</span><br><br>';
+    } else {
+      html += '<b>\uD83D\uDCB0 Deals & Freebies</b>';
+      html += ' <span style="color:#64748b;font-size:0.8em;">(' + total + ' found)</span><br><br>';
+    }
+
+    if (deals.length === 0) {
+      html += '<span style="color:#94a3b8;">No deals found matching your search. Try:</span><br>';
+      html += '\u2022 "birthday freebies"<br>';
+      html += '\u2022 "free stuff today"<br>';
+      html += '\u2022 "Canadian deals"<br>';
+      html += '\u2022 "free museum admission"<br>';
+      html += '</div>';
+      _replaceDealsLoading(html);
+      speakText('No deals found. Try asking about birthday freebies, free stuff today, or Canadian deals.');
+      setStatus('Ready', '#64748b');
+      return;
+    }
+
+    // Show deals cards (limit to 10 for birthday, 8 for others)
+    var showCount = dealType === 'birthday' ? Math.min(deals.length, 10) : Math.min(deals.length, 8);
+
+    for (var i = 0; i < showCount; i++) {
+      var deal = deals[i];
+      html += '<div style="margin-bottom:10px;padding:8px 10px;background:rgba(16,185,129,0.06);border-radius:8px;border-left:3px solid #10b981;">';
+
+      // Deal name + value badge
+      html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">';
+      html += '<b style="font-size:0.95em;">' + escapeHtml(deal.name || deal.title || 'Deal') + '</b>';
+      if (deal.value) {
+        html += ' <span style="display:inline-block;background:#10b981;color:#fff;font-size:0.7rem;padding:1px 6px;border-radius:3px;font-weight:600;">' + escapeHtml(deal.value) + '</span>';
+      }
+      if (deal.category) {
+        html += ' <span style="display:inline-block;background:rgba(99,102,241,0.15);color:#a5b4fc;font-size:0.65rem;padding:1px 5px;border-radius:3px;">' + escapeHtml(deal.category) + '</span>';
+      }
+      html += '</div>';
+
+      // Description
+      if (deal.description) {
+        var desc = deal.description;
+        if (desc.length > 200) desc = desc.substring(0, 200) + '...';
+        html += '<div style="color:#cbd5e1;font-size:0.88em;margin-top:4px;line-height:1.4;">' + escapeHtml(desc) + '</div>';
+      }
+
+      // Conditions / requirements
+      if (deal.conditions || deal.requirements) {
+        html += '<div style="color:#fbbf24;font-size:0.8em;margin-top:3px;">';
+        html += '\u26A0\uFE0F ' + escapeHtml(deal.conditions || deal.requirements);
+        html += '</div>';
+      }
+
+      // Expiry
+      if (deal.expires || deal.expiry) {
+        html += '<div style="color:#f87171;font-size:0.78em;margin-top:2px;">';
+        html += '\u23F0 Expires: ' + escapeHtml(deal.expires || deal.expiry);
+        html += '</div>';
+      }
+
+      // Distance (for near-me mode)
+      if (isNearMe && deal.distance_m) {
+        html += '<div style="color:#60a5fa;font-size:0.8em;margin-top:2px;">';
+        html += '\uD83D\uDCCD ' + _formatDistance(deal.distance_m) + ' away';
+        if (deal.address) html += ' \u2014 ' + escapeHtml(deal.address);
+        html += '</div>';
+      } else if (deal.address) {
+        html += '<div style="color:#94a3b8;font-size:0.78em;margin-top:2px;">';
+        html += '\uD83D\uDCCD ' + escapeHtml(deal.address);
+        html += '</div>';
+      }
+
+      // Source link
+      if (deal.url || deal.source_url || deal.link) {
+        var dealUrl = deal.url || deal.source_url || deal.link;
+        html += '<div style="margin-top:4px;">';
+        html += '<a href="' + escapeHtml(dealUrl) + '" target="_blank" style="color:#60a5fa;font-size:0.82em;text-decoration:none;">';
+        html += '\u2197\uFE0F ' + escapeHtml(deal.source || 'View Deal') + '</a>';
+        html += '</div>';
+      }
+
+      html += '</div>';
+    }
+
+    // "See all" link if there are more
+    if (total > showCount) {
+      html += '<div style="margin-top:8px;padding:6px 10px;background:rgba(16,185,129,0.1);border-radius:6px;text-align:center;">';
+      html += '<a href="/deals/" target="_blank" style="color:#10b981;font-weight:600;text-decoration:none;font-size:0.9em;">';
+      html += 'See all ' + total + ' deals \u2192</a>';
+      html += '</div>';
+    }
+
+    // Tips section
+    if (dealType === 'birthday') {
+      html += '<div style="margin-top:8px;padding:6px 10px;background:rgba(250,204,21,0.08);border-radius:6px;font-size:0.82rem;">';
+      html += '\uD83D\uDCA1 <b>Tip:</b> Sign up for loyalty programs 2-4 weeks before your birthday. Most require an existing account to send you the freebie.';
+      html += '</div>';
+    } else if (dealType === 'free_admission') {
+      html += '<div style="margin-top:8px;padding:6px 10px;background:rgba(250,204,21,0.08);border-radius:6px;font-size:0.82rem;">';
+      html += '\uD83D\uDCA1 <b>Tip:</b> Many Toronto museums offer free admission on specific evenings or first-Sunday-of-the-month. Check hours before visiting.';
+      html += '</div>';
+    }
+
+    html += '</div>';
+    _replaceDealsLoading(html);
+
+    // Speak summary
+    var spoken = 'Found ' + total + ' ' + (dealType === 'birthday' ? 'birthday freebies' : 'deals') + '. ';
+    if (deals.length > 0) {
+      spoken += 'Top pick: ' + (deals[0].name || deals[0].title || 'a great deal');
+      if (deals[0].value) spoken += ', valued at ' + deals[0].value;
+      spoken += '.';
+    }
+    speakText(spoken);
+    setStatus('Ready', '#64748b');
+  }
 
   // ═══════════════════════════════════════════════════════════
   // BUSINESS VERIFICATION (is X still open?)

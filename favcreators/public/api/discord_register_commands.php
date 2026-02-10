@@ -472,6 +472,147 @@ $commands = array(
                 )
             )
         )
+    ),
+    // ─── Daily Picks Commands ───────────────────────────────
+    array(
+        'name' => 'fc-crypto',
+        'description' => 'Daily crypto picks from 19 algorithms (BTC, ETH, SOL, etc.)',
+        'type' => 1,
+        'options' => array(
+            array(
+                'name' => 'timeline',
+                'description' => 'Trading timeline',
+                'type' => 3,
+                'required' => false,
+                'choices' => array(
+                    array('name' => 'Scalp (1-4 hours)', 'value' => 'scalp'),
+                    array('name' => 'Day Trade (4-24 hours)', 'value' => 'daytrader'),
+                    array('name' => 'Swing (1-7 days)', 'value' => 'swing'),
+                    array('name' => 'All timeframes', 'value' => 'all')
+                )
+            ),
+            array(
+                'name' => 'budget',
+                'description' => 'Your trading budget for position sizing guidance',
+                'type' => 3,
+                'required' => false,
+                'choices' => array(
+                    array('name' => 'Under $500', 'value' => 'small'),
+                    array('name' => '$500-$5,000', 'value' => 'medium'),
+                    array('name' => 'Over $5,000', 'value' => 'large')
+                )
+            )
+        )
+    ),
+    array(
+        'name' => 'fc-forex',
+        'description' => 'Daily forex picks (EUR/USD, GBP/USD, USD/JPY, etc.)',
+        'type' => 1,
+        'options' => array(
+            array(
+                'name' => 'timeline',
+                'description' => 'Trading timeline',
+                'type' => 3,
+                'required' => false,
+                'choices' => array(
+                    array('name' => 'Scalp (1-4 hours)', 'value' => 'scalp'),
+                    array('name' => 'Day Trade (4-24 hours)', 'value' => 'daytrader'),
+                    array('name' => 'Swing (1-7 days)', 'value' => 'swing'),
+                    array('name' => 'All timeframes', 'value' => 'all')
+                )
+            ),
+            array(
+                'name' => 'budget',
+                'description' => 'Your trading budget for position sizing guidance',
+                'type' => 3,
+                'required' => false,
+                'choices' => array(
+                    array('name' => 'Under $500', 'value' => 'small'),
+                    array('name' => '$500-$5,000', 'value' => 'medium'),
+                    array('name' => 'Over $5,000', 'value' => 'large')
+                )
+            )
+        )
+    ),
+    array(
+        'name' => 'fc-realtime',
+        'description' => 'See recent winning trades across stocks, crypto and forex',
+        'type' => 1,
+        'options' => array(
+            array(
+                'name' => 'asset',
+                'description' => 'Filter by asset class',
+                'type' => 3,
+                'required' => false,
+                'choices' => array(
+                    array('name' => 'Crypto', 'value' => 'CRYPTO'),
+                    array('name' => 'Forex', 'value' => 'FOREX'),
+                    array('name' => 'Stocks', 'value' => 'STOCK'),
+                    array('name' => 'All', 'value' => 'all')
+                )
+            )
+        )
+    ),
+    array(
+        'name' => 'fc-momentum',
+        'description' => 'Highest-conviction picks most likely to continue going up',
+        'type' => 1,
+        'options' => array(
+            array(
+                'name' => 'asset',
+                'description' => 'Filter by asset class',
+                'type' => 3,
+                'required' => false,
+                'choices' => array(
+                    array('name' => 'Crypto', 'value' => 'CRYPTO'),
+                    array('name' => 'Forex', 'value' => 'FOREX'),
+                    array('name' => 'Stocks', 'value' => 'STOCK'),
+                    array('name' => 'All', 'value' => 'all')
+                )
+            )
+        )
+    ),
+    array(
+        'name' => 'fc-picks',
+        'description' => 'Daily picks across all markets with budget and timeline options',
+        'type' => 1,
+        'options' => array(
+            array(
+                'name' => 'asset',
+                'description' => 'Asset class',
+                'type' => 3,
+                'required' => false,
+                'choices' => array(
+                    array('name' => 'Crypto', 'value' => 'CRYPTO'),
+                    array('name' => 'Forex', 'value' => 'FOREX'),
+                    array('name' => 'Stocks', 'value' => 'STOCK'),
+                    array('name' => 'All Markets', 'value' => 'all')
+                )
+            ),
+            array(
+                'name' => 'timeline',
+                'description' => 'Trading timeline',
+                'type' => 3,
+                'required' => false,
+                'choices' => array(
+                    array('name' => 'Scalp (1-4 hours)', 'value' => 'scalp'),
+                    array('name' => 'Day Trade (4-24 hours)', 'value' => 'daytrader'),
+                    array('name' => 'Swing (1-7 days)', 'value' => 'swing'),
+                    array('name' => 'All timeframes', 'value' => 'all')
+                )
+            ),
+            array(
+                'name' => 'budget',
+                'description' => 'Your trading budget for position sizing guidance',
+                'type' => 3,
+                'required' => false,
+                'choices' => array(
+                    array('name' => 'Under $500', 'value' => 'small'),
+                    array('name' => '$500-$5,000', 'value' => 'medium'),
+                    array('name' => 'Over $5,000', 'value' => 'large')
+                )
+            )
+        )
     )
 );
 

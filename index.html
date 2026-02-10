@@ -558,6 +558,24 @@
       padding: 6px 14px 2px; font-size: 0.65rem; font-weight: 700;
       text-transform: uppercase; letter-spacing: 0.1em; color: #555;
     }
+    /* Collapsible section headers */
+    .os-section-header {
+      display: flex; align-items: center; padding: 6px 14px 2px;
+      cursor: pointer; user-select: none; border-radius: 6px;
+      transition: background 0.15s;
+    }
+    .os-section-header:hover { background: rgba(255,255,255,0.04); }
+    .os-section-title {
+      font-size: 0.65rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em; color: #555;
+      flex: 1;
+    }
+    .os-section-chevron {
+      font-size: 0.75rem; color: #555; transition: transform 0.25s;
+      transform: rotate(90deg);
+    }
+    .os-section-header.collapsed .os-section-chevron { transform: rotate(0deg); }
+    .os-section-body.collapsed { display: none; }
 
     /* Expandable sub-menu accordion for Investment Hub */
     .os-submenu-toggle {
@@ -657,51 +675,38 @@
                 NETWORK <span class="group-open/nav-section:rotate-180 transition-transform">▼</span>
               </summary>
               <div class="space-y-1 mt-1">
+                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-red-500/20 text-red-200 hover:text-white transition-all border border-transparent hover:border-red-500/30 overflow-hidden"
+                  href="/news/"><span class="text-lg">📰</span> News Aggregator</a>
+                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-amber-500/20 text-amber-200 hover:text-white transition-all border border-transparent hover:border-amber-500/30 overflow-hidden"
+                  href="/deals/"><span class="text-lg">💸</span> Deals &amp; Freebies</a>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-green-500/20 text-green-200 hover:text-white transition-all border border-transparent hover:border-green-500/30 overflow-hidden"
-                  href="/MENTALHEALTHRESOURCES/"><span class="text-lg">🌟</span> Mental Health Resources</a>
+                  href="/MENTALHEALTHRESOURCES/"><span class="text-lg">🧠</span> Mental Health Resources</a>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-yellow-500/20 text-yellow-200 hover:text-white transition-all border border-transparent hover:border-yellow-500/30 overflow-hidden"
                   href="/investments/"><span class="text-lg">💰</span> Investment Tools</a>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-indigo-500/20 text-indigo-200 hover:text-white transition-all border border-transparent hover:border-indigo-500/30 overflow-hidden"
                   href="/findstocks"><span class="text-lg">📈</span> Find Stocks</a>
                 <details class="group/movies-section">
                   <summary class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-amber-500/20 text-amber-200 hover:text-white transition-all border border-transparent hover:border-amber-500/30 cursor-pointer list-none">
-                    <span class="text-lg">🎬</span> Movies &amp; TV &amp; Trailers <span class="ml-auto group-open/movies-section:rotate-180 transition-transform text-xs opacity-60">▼</span>
+                    <span class="text-lg">&#127916;</span> Movies &amp; TV &amp; Trailers <span class="ml-auto group-open/movies-section:rotate-180 transition-transform text-xs opacity-60">&#9660;</span>
                   </summary>
                   <div class="space-y-1 mt-1 ml-6">
                     <a class="w-full text-left px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-amber-500/20 text-amber-200 hover:text-white transition-all text-sm border border-transparent hover:border-amber-500/30"
                       href="/MOVIESHOWS/"
-                      title="TikTok-style trailer scroll with Toronto Cineplex &amp; Imagine Cinemas showtimes, IMDb &amp; Rotten Tomatoes ratings"><span class="text-base">🎬</span> V1 — Now Showing</a>
+                      title="TikTok-style trailer scroll with Toronto Cineplex &amp; Imagine Cinemas showtimes, IMDb &amp; Rotten Tomatoes ratings"><span class="text-base">&#127916;</span> V1 &#8212; Now Showing</a>
                     <a class="w-full text-left px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-orange-500/20 text-orange-200 hover:text-white transition-all text-sm border border-transparent hover:border-orange-500/30"
                       href="/movieshows2/"
-                      title="4,000+ curated titles with genre filters, playlist export &amp; import, and deep TMDB integration"><span class="text-base">🎞️</span> V2 — The Film Vault</a>
+                      title="4,000+ curated titles with genre filters, playlist export &amp; import, and deep TMDB integration"><span class="text-base">&#127916;</span> V2 &#8212; The Film Vault</a>
                     <a class="w-full text-left px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-rose-500/20 text-rose-200 hover:text-white transition-all text-sm border border-transparent hover:border-rose-500/30"
                       href="/MOVIESHOWS3/"
-                      title="Create an account, like &amp; save trailers, build your watchlist queue — TikTok-style auto-scroll player"><span class="text-base">🍿</span> V3 — Binge Mode</a>
+                      title="Create an account, like &amp; save trailers, build your watchlist queue — TikTok-style auto-scroll player"><span class="text-base">&#127871;</span> V3 &#8212; Binge Mode</a>
                   </div>
                 </details>
-                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-orange-500/20 text-orange-200 hover:text-white transition-all border border-transparent hover:border-orange-500/30 overflow-hidden"
-                  href="/fc/#/guest"><span class="text-lg">⭐</span> Favorite Creators</a>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-rose-500/20 text-rose-200 hover:text-white transition-all border border-transparent hover:border-rose-500/30 overflow-hidden"
                   href="/fc/#/guest"><span class="text-lg">💎</span> FAVCREATORS</a>
-                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-red-500/20 text-red-200 hover:text-white transition-all border border-transparent hover:border-red-500/30 overflow-hidden"
-                  href="/fc/#/guest"><span class="text-lg">🔴</span> are your favorite creators live?</a>
-                <details class="group/vr-section">
-                  <summary class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-fuchsia-500/20 text-fuchsia-200 hover:text-white transition-all border border-transparent hover:border-fuchsia-500/30 cursor-pointer list-none">
-                    <span class="text-lg">🥽</span> VR Experience <span class="ml-auto group-open/vr-section:rotate-180 transition-transform text-xs opacity-60">▼</span>
-                  </summary>
-                  <div class="space-y-1 mt-1 ml-6">
-                    <a class="w-full text-left px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-fuchsia-500/20 text-fuchsia-200 hover:text-white transition-all text-sm border border-transparent hover:border-fuchsia-500/30"
-                      href="/vr/"><span class="text-base">🖥️</span> VR Desktop</a>
-                    <a class="w-full text-left px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-violet-500/20 text-violet-200 hover:text-white transition-all text-sm border border-transparent hover:border-violet-500/30"
-                      href="/vr/mobile-index.html"><span class="text-base">📱</span> VR Mobile</a>
-                  </div>
-                </details>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-red-500/20 text-red-200 hover:text-white transition-all border border-transparent hover:border-red-500/30 overflow-hidden"
                   href="/vr/game-arena/fps-v5/"><span class="text-lg">🎮</span> Game Prototypes</a>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-red-500/20 text-red-200 hover:text-white transition-all border border-transparent hover:border-red-500/30 overflow-hidden"
                   href="/FIGHTGAME/"><span class="text-lg">⚔️</span> Shadow Arena (Fight Game)</a>
-                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-amber-500/20 text-amber-200 hover:text-white transition-all border border-transparent hover:border-amber-500/30 overflow-hidden"
-                  href="/fc/#/accountability"><span class="text-lg">🎯</span> Accountability Dashboard</a>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-blue-500/20 text-blue-200 hover:text-white transition-all border border-transparent hover:border-blue-500/30 overflow-hidden"
                   href="/WINDOWSFIXER/"
                   title="Fixes boot issues such as EFI corrupt, winload.efi missing, or INACCESSIBLE_BOOT_DEVICE."><span
@@ -3629,15 +3634,22 @@
     + '<div class="os-text"><div class="os-title" style="color:#34d399;">Latest Updates</div>'
     + '<div class="os-desc">New features, improvements & bug fixes</div></div>'
     + '<span class="os-arrow">\u203A</span></a>'
-    // Divider: Apps & Tools
-    + '<div class="otherstuff-divider"></div>'
-    + '<div class="otherstuff-section-label">Apps & Tools</div>'
-    // Investment Tools (Landing)
-    + '<a href="/investments/" class="otherstuff-item" target="_blank">'
-    + '<div class="os-icon" style="background:rgba(99,102,241,0.15);">\u{1F4B0}</div>'
-    + '<div class="os-text"><div class="os-title">Investment Tools</div>'
-    + '<div class="os-desc">Stocks, mutual funds, portfolio analysis & backtesting</div></div>'
+    // News Aggregator
+    + '<a href="/news/" class="otherstuff-item" target="_blank">'
+    + '<div class="os-icon" style="background:rgba(239,68,68,0.15);">\u{1F4F0}</div>'
+    + '<div class="os-text"><div class="os-title" style="color:#f87171;">News Aggregator</div>'
+    + '<div class="os-desc">Toronto, Canada & world news from 20+ sources</div></div>'
     + '<span class="os-arrow">\u203A</span></a>'
+    // Deals & Freebies (moved up beside News)
+    + '<a href="/deals/" class="otherstuff-item" target="_blank">'
+    + '<div class="os-icon" style="background:rgba(251,191,36,0.15);">\u{1F4B8}</div>'
+    + '<div class="os-text"><div class="os-title" style="color:#fbbf24;">Deals & Freebies</div>'
+    + '<div class="os-desc">78 birthday freebies, free stuff today, Canadian deals & coupons</div></div>'
+    + '<span class="os-arrow">\u203A</span></a>'
+    // ═══ Section: Apps & Tools (collapsible) ═══
+    + '<div class="otherstuff-divider"></div>'
+    + '<div class="os-section-header" data-section="apps-tools"><span class="os-section-title">Apps & Tools</span><span class="os-section-chevron">\u203A</span></div>'
+    + '<div class="os-section-body" data-sectionbody="apps-tools">'
     // Investment Hub (Expandable with sub-menus)
     + '<div class="os-submenu-toggle" data-submenu="investment-hub">'
     + '<div class="os-icon" style="background:rgba(34,197,94,0.15);">\u{1F4CA}</div>'
@@ -3645,6 +3657,7 @@
     + '<div class="os-desc">All portfolios, analytics & tools in one place</div></div>'
     + '<span class="os-chevron">\u203A</span></div>'
     + '<div class="os-submenu-panel" data-panel="investment-hub">'
+    + '<a href="/investments/" class="os-sub-link" target="_blank" style="border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:4px;padding-bottom:10px;"><span class="os-sub-dot" style="background:#6366f1;"></span><span class="os-sub-text">Investment Tools \u2014 Overview</span><span class="os-sub-arrow">\u203A</span></a>'
     // ── Stocks sub-category ──
     + '<div class="os-category-toggle" data-category="stocks"><span class="os-cat-icon">\u{1F4C8}</span><span class="os-cat-title">Stocks</span><span class="os-cat-chevron">\u203A</span></div>'
     + '<div class="os-category-panel" data-catpanel="stocks">'
@@ -3657,7 +3670,9 @@
     + '<a href="/findstocks/portfolio2/smart-learning.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#a78bfa;"></span><span class="os-sub-text">Smart Learning</span><span class="os-sub-arrow">\u203A</span></a>'
     + '<a href="/findstocks/portfolio2/stock-intel.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#a78bfa;"></span><span class="os-sub-text">Stock Intel</span><span class="os-sub-arrow">\u203A</span></a>'
     + '<a href="/findstocks/portfolio2/daytrader-sim.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#f43f5e;"></span><span class="os-sub-text">Day Trader Sim</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findstocks/portfolio2/penny-stocks.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#84cc16;"></span><span class="os-sub-text">Penny Stock Finder</span><span class="os-sub-arrow">\u203A</span></a>'
     + '<a href="/findstocks_global/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#22c55e;"></span><span class="os-sub-text">Global Stocks Hub</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/updates/?category=stocks" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#64748b;"></span><span class="os-sub-text">Stock Updates & Changelog</span><span class="os-sub-arrow">\u203A</span></a>'
     + '</div>'
     // ── Mutual Funds sub-category ──
     + '<div class="os-category-toggle" data-category="mutualfunds"><span class="os-cat-icon">\u{1F4CA}</span><span class="os-cat-title">Mutual Funds</span><span class="os-cat-chevron">\u203A</span></div>'
@@ -3674,6 +3689,7 @@
     + '<a href="/findcryptopairs/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#f59e0b;"></span><span class="os-sub-text">Crypto Pairs Scanner</span><span class="os-sub-arrow">\u203A</span></a>'
     + '<a href="/findcryptopairs/portfolio/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#f59e0b;"></span><span class="os-sub-text">Crypto Portfolio</span><span class="os-sub-arrow">\u203A</span></a>'
     + '<a href="/findcryptopairs/portfolio/stats/index.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#f59e0b;"></span><span class="os-sub-text">Crypto Stats</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findcryptopairs/meme.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#d946ef;"></span><span class="os-sub-text">Meme Coin Scanner</span><span class="os-sub-arrow">\u203A</span></a>'
     + '</div>'
     // ── Forex sub-category ──
     + '<div class="os-category-toggle" data-category="forex"><span class="os-cat-icon">\u{1F4B1}</span><span class="os-cat-title">Forex</span><span class="os-cat-chevron">\u203A</span></div>'
@@ -3683,6 +3699,12 @@
     + '<a href="/findforex2/portfolio/stats/index.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#06b6d4;"></span><span class="os-sub-text">Forex Stats</span><span class="os-sub-arrow">\u203A</span></a>'
     + '</div>'
     + '</div>'
+    // Sports Betting
+    + '<a href="/live-monitor/sports-betting.html" class="otherstuff-item" target="_blank">'
+    + '<div class="os-icon" style="background:rgba(34,197,94,0.15);">\u26BD</div>'
+    + '<div class="os-text"><div class="os-title" style="color:#4ade80;">Sports Bet Finder</div>'
+    + '<div class="os-desc">NHL, NBA, NFL & more \u2014 value bets, odds comparison & paper trading</div></div>'
+    + '<span class="os-arrow">\u203A</span></a>'
     // Mental Health
     + '<a href="/MENTALHEALTHRESOURCES/" class="otherstuff-item" target="_blank">'
     + '<div class="os-icon" style="background:rgba(16,185,129,0.15);">\u{1F9E0}</div>'
@@ -3695,21 +3717,17 @@
     + '<div class="os-text"><div class="os-title">Fav Creators</div>'
     + '<div class="os-desc">Track streamers across Twitch, YouTube, Kick & TikTok</div></div>'
     + '<span class="os-arrow">\u203A</span></a>'
-    // Accountability
-    + '<a href="/fc/#/accountability" class="otherstuff-item" target="_blank">'
-    + '<div class="os-icon" style="background:rgba(245,158,11,0.15);">\u{1F3AF}</div>'
-    + '<div class="os-text"><div class="os-title">Accountability</div>'
-    + '<div class="os-desc">Track goals & stay on course</div></div>'
+    // Windows Boot Fixer (moved into Apps & Tools)
+    + '<a href="/WINDOWSFIXER/" class="otherstuff-item" target="_blank">'
+    + '<div class="os-icon" style="background:rgba(102,126,234,0.15);">\u{1F6E0}\uFE0F</div>'
+    + '<div class="os-text"><div class="os-title">Windows Boot Fixer</div>'
+    + '<div class="os-desc">Fix BSOD, bootloader & recovery issues</div></div>'
     + '<span class="os-arrow">\u203A</span></a>'
-    // GotJob - Jobs Database
-    + '<a href="/gotjob/" class="otherstuff-item" target="_blank">'
-    + '<div class="os-icon" style="background:rgba(6,182,212,0.15);">\u{1F4BC}</div>'
-    + '<div class="os-text"><div class="os-title" style="color:#22d3ee;">GotJob \u2014 Your Job Finding Hub</div>'
-    + '<div class="os-desc">Toronto tech jobs: ServiceNow, VBA, Alteryx, Full Stack & more</div></div>'
-    + '<span class="os-arrow">\u203A</span></a>'
-    // Divider: Movies & TV & Trailers
+    + '</div>' // close os-section-body[apps-tools]
+    // ═══ Section: Movies & TV & Trailers (collapsible) ═══
     + '<div class="otherstuff-divider"></div>'
-    + '<div class="otherstuff-section-label">Movies & TV & Trailers</div>'
+    + '<div class="os-section-header" data-section="movies-tv"><span class="os-section-title">Movies & TV & Trailers</span><span class="os-section-chevron">\u203A</span></div>'
+    + '<div class="os-section-body" data-sectionbody="movies-tv">'
     // Now Showing (V1)
     + '<a href="/MOVIESHOWS/" class="otherstuff-item" target="_blank">'
     + '<div class="os-icon" style="background:rgba(245,158,11,0.15);">\u{1F3AC}</div>'
@@ -3728,9 +3746,11 @@
     + '<div class="os-text"><div class="os-title" style="color:#fb923c;">Binge Mode</div>'
     + '<div class="os-desc">Accounts, likes, watchlist queue & TikTok-style auto-scroll</div></div>'
     + '<span class="os-arrow">\u203A</span></a>'
-    // Divider: Immersive
+    + '</div>' // close os-section-body[movies-tv]
+    // ═══ Section: Immersive (collapsible) ═══
     + '<div class="otherstuff-divider"></div>'
-    + '<div class="otherstuff-section-label">Immersive</div>'
+    + '<div class="os-section-header" data-section="immersive"><span class="os-section-title">Immersive</span><span class="os-section-chevron">\u203A</span></div>'
+    + '<div class="os-section-body" data-sectionbody="immersive">'
     // Games & VR (Expandable with sub-menus)
     + '<div class="os-submenu-toggle" data-submenu="games-vr">'
     + '<div class="os-icon" style="background:rgba(168,85,247,0.15);">\u{1F3AE}</div>'
@@ -3774,12 +3794,27 @@
     + '<a href="/vr/game-arena/fighting-arena.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#e74c3c;"></span><span class="os-sub-text">VR Fighting Arena</span><span class="os-sub-arrow">\u203A</span></a>'
     + '</div>'
     + '</div>'
-    // Windows Fixer
-    + '<a href="/WINDOWSFIXER/" class="otherstuff-item" target="_blank">'
-    + '<div class="os-icon" style="background:rgba(102,126,234,0.15);">\u{1F6E0}\uFE0F</div>'
-    + '<div class="os-text"><div class="os-title">Windows Boot Fixer</div>'
-    + '<div class="os-desc">Fix BSOD, bootloader & recovery issues</div></div>'
+    + '</div>' // close os-section-body[immersive]
+    // ═══ Section: Drafts (collapsible, default EXPANDED) ═══
+    + '<div class="otherstuff-divider"></div>'
+    + '<div class="os-section-header expanded" data-section="drafts"><span class="os-section-title">Drafts</span><span class="os-section-chevron">\u203A</span></div>'
+    + '<div class="os-section-body" data-sectionbody="drafts" style="display:block;">'
+    + '<a href="/fc/taste-profile/" class="otherstuff-item" target="_blank">'
+    + '<div class="os-icon" style="background:rgba(139,92,246,0.15);">\u{1F3B5}</div>'
+    + '<div class="os-text"><div class="os-title" style="color:#a78bfa;">Taste Profile</div>'
+    + '<div class="os-desc" style="color:#64748b;">Discover your true favorites across YouTube, Spotify & Instagram</div></div>'
     + '<span class="os-arrow">\u203A</span></a>'
+    + '<a href="/fc/#/accountability" class="otherstuff-item" target="_blank">'
+    + '<div class="os-icon" style="background:rgba(245,158,11,0.12);">\u{1F3AF}</div>'
+    + '<div class="os-text"><div class="os-title" style="color:#94a3b8;">Accountability</div>'
+    + '<div class="os-desc" style="color:#64748b;">Track goals & stay on course</div></div>'
+    + '<span class="os-arrow">\u203A</span></a>'
+    + '<a href="/gotjob/" class="otherstuff-item" target="_blank">'
+    + '<div class="os-icon" style="background:rgba(6,182,212,0.12);">\u{1F4BC}</div>'
+    + '<div class="os-text"><div class="os-title" style="color:#94a3b8;">GotJob \u2014 Your Job Finding Hub</div>'
+    + '<div class="os-desc" style="color:#64748b;">Toronto tech jobs: ServiceNow, VBA, Alteryx, Full Stack & more</div></div>'
+    + '<span class="os-arrow">\u203A</span></a>'
+    + '</div>' // close os-section-body[drafts]
     + '</div>'
     // Sticky footer: Back to Events
     + '<div class="otherstuff-popup-footer">'
@@ -3862,6 +3897,25 @@
       openOtherStuffMenu();
       return;
     }
+    // Collapsible section toggle
+    var secHeader = target.closest && target.closest('.os-section-header');
+    if (secHeader) {
+      e.preventDefault();
+      e.stopPropagation();
+      var secKey = secHeader.getAttribute('data-section');
+      var secBody = document.querySelector('.os-section-body[data-sectionbody="' + secKey + '"]');
+      if (secBody) {
+        var isColl = secHeader.classList.contains('collapsed');
+        secHeader.classList.toggle('collapsed', !isColl);
+        secBody.classList.toggle('collapsed', !isColl);
+        try {
+          var states = JSON.parse(localStorage.getItem('fte_os_sections') || '{}');
+          states[secKey] = !isColl ? 'collapsed' : 'open';
+          localStorage.setItem('fte_os_sections', JSON.stringify(states));
+        } catch(e2) {}
+      }
+      return;
+    }
     // Investment Hub top-level toggle
     var subToggle = target.closest && target.closest('.os-submenu-toggle');
     if (subToggle) {
@@ -3897,9 +3951,27 @@
     if (e.key === 'Escape') closeOtherStuffMenu();
   });
 
+  function restoreSectionStates() {
+    try {
+      var states = JSON.parse(localStorage.getItem('fte_os_sections') || '{}');
+      var defaults = {'apps-tools':'open','movies-tv':'open','immersive':'open','drafts':'open'};
+      var allSections = ['apps-tools','movies-tv','immersive','drafts'];
+      for (var i = 0; i < allSections.length; i++) {
+        var k = allSections[i];
+        var st = states[k] || defaults[k] || 'open';
+        var hdr = document.querySelector('.os-section-header[data-section="' + k + '"]');
+        var bdy = document.querySelector('.os-section-body[data-sectionbody="' + k + '"]');
+        if (hdr && bdy) {
+          if (st === 'collapsed') { hdr.classList.add('collapsed'); bdy.classList.add('collapsed'); }
+          else { hdr.classList.remove('collapsed'); bdy.classList.remove('collapsed'); }
+        }
+      }
+    } catch(e) {}
+  }
+
   // Create popup immediately and also on delays to survive React hydration
-  ensurePopup();
-  [500, 2000, 5000, 8000].forEach(function(d) { setTimeout(ensurePopup, d); });
+  ensurePopup(); restoreSectionStates();
+  [500, 2000, 5000, 8000].forEach(function(d) { setTimeout(function(){ ensurePopup(); restoreSectionStates(); }, d); });
 })();
 </script>
 

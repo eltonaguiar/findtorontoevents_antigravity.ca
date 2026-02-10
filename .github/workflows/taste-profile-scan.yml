@@ -1,0 +1,86 @@
+name: Taste Profile Scanner
+
+on:
+  workflow_dispatch:
+    inputs:
+      youtube_channel:
+        description: 'YouTube channel handle (e.g., @tobedeleted2030)'
+        required: true
+        default: '@tobedeleted2030'
+  schedule:
+    # Run weekly on Sundays at 3am UTC
+    - cron: '0 3 * * 0'
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install yt-dlp
+        run: pip install yt-dlp
+      
+      - name: Run Taste Profile Scanner
+        run: |
+          CHANNEL="${{ github.event.inputs.youtube_channel || '@tobedeleted2030' }}"
+          echo "Scanning YouTube channel: $CHANNEL"
+          python tools/taste_profile_scanner.py \
+            --youtube "$CHANNEL" \
+            --output taste_profile.json \
+            --summary
+      
+      - name: Copy to web directory
+        run: |
+          cp taste_profile.json favcreators/public/taste-profile/taste_profile.json
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: taste-profile-data
+          path: taste_profile.json
+      
+      - name: Deploy to FTP (if secrets available)
+        if: env.FTP_SERVER != ''
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          # Deploy the taste profile JSON and HTML page
+          python tools/deploy_to_ftp.py \
+            --files taste_profile.json \
+                    favcreators/public/taste-profile/index.html \
+                    favcreators/public/taste-profile/taste_profile.json \
+            || echo "FTP deploy skipped (credentials may not be set)"
+      
+      - name: Summary
+        run: |
+          echo "## Taste Profile Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          python -c "
+          import json
+          d = json.load(open('taste_profile.json'))
+          print(f\"**Channel:** {d['channel']['name']}\")
+          print(f\"**Playlists:** {d['summary']['total_playlists']}\")
+          print(f\"**Total Tracks:** {d['summary']['total_tracks']}\")
+          print(f\"**Unique Artists:** {d['summary']['unique_artists']}\")
+          print()
+          print('### Top 15 Artists')
+          print('| Rank | Artist | Appearances |')
+          print('|------|--------|-------------|')
+          for a in d['top_artists'][:15]:
+              print(f\"| {a['rank']} | {a['name']} | {a['count']} |\")
+          print()
+          print('### Genre Breakdown')
+          print('| Genre | Tracks |')
+          print('|-------|--------|')
+          for g in d.get('genres', []):
+              print(f\"| {g['name']} | {g['track_count']} |\")
+          " >> $GITHUB_STEP_SUMMARY

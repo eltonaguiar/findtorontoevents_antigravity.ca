@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithm Performance: Learned vs Original | Find Toronto Events</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --orange: #f97316;
+            --purple: #a855f7;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-dark); color: var(--text); min-height: 100vh; line-height: 1.6; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .header { background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%); border-bottom: 1px solid var(--border); padding: 1.5rem 2rem; text-align: center; }
+        .header h1 { font-size: 2rem; background: linear-gradient(135deg, var(--accent), #a78bfa, var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.3rem; }
+        .header p { color: var(--text-dim); font-size: 0.95rem; }
+
+        .container { max-width: 1300px; margin: 0 auto; padding: 1.5rem; }
+
+        /* ── Cards ── */
+        .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .kpi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem; }
+        .kpi-card h3 { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+        .kpi-card .value { font-size: 2rem; font-weight: 700; }
+        .kpi-card .sub { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+        .kpi-card .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+        .tag-learned { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+        .tag-original { background: rgba(234, 179, 8, 0.15); color: #facc15; }
+        .pos { color: var(--green); }
+        .neg { color: var(--red); }
+
+        /* ── Comparison boxes ── */
+        .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+        .compare-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
+        .compare-box.learned-box { border-left: 3px solid var(--accent); }
+        .compare-box.original-box { border-left: 3px solid var(--yellow); }
+        .compare-box h2 { font-size: 1.1rem; margin-bottom: 1rem; }
+        .compare-box .metric-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(42, 42, 74, 0.5); font-size: 14px; }
+        .compare-box .metric-row:last-child { border-bottom: none; }
+        .compare-box .metric-label { color: var(--text-dim); }
+        .compare-box .metric-value { font-weight: 600; }
+
+        /* ── Table ── */
+        .section-title { font-size: 1.1rem; color: var(--text-dim); margin: 1.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+        .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1.5rem; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        thead th { background: var(--bg-card); color: var(--text-dim); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; padding: 10px 12px; text-align: left; white-space: nowrap; position: sticky; top: 0; }
+        tbody tr { border-top: 1px solid var(--border); }
+        tbody tr:hover { background: var(--bg-card-hover); }
+        td { padding: 8px 12px; white-space: nowrap; }
+        .badge-win { background: var(--green-dim); color: var(--green); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .badge-loss { background: var(--red-dim); color: var(--red); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+
+        /* ── Chart ── */
+        .chart-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; }
+        .chart-box h3 { font-size: 14px; color: var(--text-dim); margin-bottom: 1rem; }
+        canvas { max-height: 350px; }
+
+        /* ── Tabs ── */
+        .tabs { display: flex; gap: 0; margin-bottom: 1.5rem; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+        .tab-btn { flex: 1; background: var(--bg-dark); color: var(--text-dim); border: none; padding: 10px 16px; font-size: 13px; cursor: pointer; text-align: center; transition: all 0.15s; }
+        .tab-btn:not(:last-child) { border-right: 1px solid var(--border); }
+        .tab-btn.active { background: var(--accent); color: #fff; font-weight: 600; }
+        .tab-btn:hover:not(.active) { background: var(--bg-card-hover); color: var(--text); }
+
+        .loading { text-align: center; padding: 3rem; color: var(--text-dim); }
+        .error-box { background: var(--red-dim); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 1rem; color: #fca5a5; text-align: center; margin-bottom: 1rem; }
+        .backfill-bar { background: var(--yellow-dim); border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 8px; padding: 0.6rem 1rem; font-size: 13px; color: #facc15; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .backfill-bar button { background: var(--yellow); color: #000; border: none; padding: 4px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
+        .footer { text-align: center; padding: 2rem; color: var(--text-dim); font-size: 0.8rem; border-top: 1px solid var(--border); margin-top: 2rem; }
+
+        @media (max-width: 768px) {
+            .compare-grid { grid-template-columns: 1fr; }
+            .kpi-row { grid-template-columns: 1fr 1fr; }
+            .header h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Self-Learning vs Original</h1>
+        <p>Performance comparison: adaptive algorithm parameters vs hardcoded defaults</p>
+    </div>
+
+    <div class="container">
+        <div id="backfill-bar" class="backfill-bar" style="display:none;">
+            <span><strong id="untagged-count">0</strong> historical signals need param tagging</span>
+            <button onclick="runBackfill()">Run Backfill</button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+            <button class="tab-btn" onclick="switchTab('algorithms')">By Algorithm</button>
+            <button class="tab-btn" onclick="switchTab('params')">Param Comparison</button>
+            <button class="tab-btn" onclick="switchTab('trades')">Recent Trades</button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="tab-overview">
+            <div class="kpi-row" id="kpi-row"></div>
+            <div class="compare-grid" id="compare-grid"></div>
+            <div class="chart-box">
+                <h3>Win Rate: Self-Learning vs Original by Asset Class</h3>
+                <canvas id="chart-wr"></canvas>
+            </div>
+        </div>
+
+        <!-- Algorithms Tab -->
+        <div id="tab-algorithms" style="display:none;">
+            <div class="section-title">Per-Algorithm Performance</div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Algorithm</th>
+                            <th>Source</th>
+                            <th>Trades</th>
+                            <th>Win Rate</th>
+                            <th>Avg PnL</th>
+                            <th>Total PnL</th>
+                            <th>Avg TP</th>
+                            <th>Avg SL</th>
+                            <th>Avg Hold</th>
+                        </tr>
+                    </thead>
+                    <tbody id="algo-tbody"></tbody>
+                </table>
+            </div>
+            <div class="chart-box">
+                <h3>Avg PnL per Algorithm: Learned vs Original</h3>
+                <canvas id="chart-algo-pnl"></canvas>
+            </div>
+        </div>
+
+        <!-- Params Tab -->
+        <div id="tab-params" style="display:none;">
+            <div class="section-title">Current Parameters: Original Defaults vs Self-Learned</div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Algorithm</th>
+                            <th>Asset</th>
+                            <th>Orig TP%</th>
+                            <th>Learned TP%</th>
+                            <th>Orig SL%</th>
+                            <th>Learned SL%</th>
+                            <th>Orig Hold</th>
+                            <th>Learned Hold</th>
+                            <th>Orig WR</th>
+                            <th>Learned WR</th>
+                            <th>Verdict</th>
+                        </tr>
+                    </thead>
+                    <tbody id="params-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Trades Tab -->
+        <div id="tab-trades" style="display:none;">
+            <div class="section-title">Recent Closed Trades (with param source)</div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Symbol</th>
+                            <th>Algorithm</th>
+                            <th>Dir</th>
+                            <th>Source</th>
+                            <th>Entry</th>
+                            <th>Exit</th>
+                            <th>PnL%</th>
+                            <th>Reason</th>
+                            <th>TP/SL/Hold Used</th>
+                            <th>TP/SL/Hold Original</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trades-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Self-Learning Performance Tracker &mdash; findtorontoevents.ca &mdash; Feb 2026</p>
+        <p style="margin-top:0.3rem;">Compares hardcoded algorithm defaults vs adaptively-learned parameters from grid search optimization.</p>
+    </div>
+
+<script>
+var API = '/live-monitor/api/algo_performance.php';
+var chartWr = null, chartPnl = null;
+
+function switchTab(tab) {
+    var tabs = ['overview', 'algorithms', 'params', 'trades'];
+    tabs.forEach(function(t) {
+        document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
+    });
+    document.querySelectorAll('.tab-btn').forEach(function(btn, i) {
+        btn.classList.toggle('active', tabs[i] === tab);
+    });
+    if (tab === 'algorithms') loadAlgorithms();
+    if (tab === 'params') loadParams();
+    if (tab === 'trades') loadTrades();
+}
+
+// ── Overview Tab ──
+function loadSummary() {
+    fetch(API + '?action=summary&days=30')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (!d.ok) return;
+            var perf = d.performance;
+            var learned = perf['learned'] || {trades:0,wins:0,losses:0,win_rate:0,avg_pnl:0,total_pnl:0,best_trade:0,worst_trade:0,avg_hold_hrs:0};
+            var original = perf['original'] || {trades:0,wins:0,losses:0,win_rate:0,avg_pnl:0,total_pnl:0,best_trade:0,worst_trade:0,avg_hold_hrs:0};
+
+            // Backfill bar
+            if (d.untagged_signals > 0) {
+                document.getElementById('backfill-bar').style.display = 'flex';
+                document.getElementById('untagged-count').textContent = d.untagged_signals;
+            }
+
+            // KPI cards
+            var totalTrades = learned.trades + original.trades;
+            var kpiHtml = '<div class="kpi-card"><h3>Total Closed Trades</h3><div class="value">' + totalTrades + '</div>'
+                + '<div class="sub"><span class="tag tag-learned">Learned: ' + learned.trades + '</span> <span class="tag tag-original">Original: ' + original.trades + '</span></div></div>';
+
+            var wrDelta = learned.win_rate - original.win_rate;
+            var wrClass = wrDelta > 0 ? 'pos' : (wrDelta < 0 ? 'neg' : '');
+            kpiHtml += '<div class="kpi-card"><h3>Win Rate Delta (L vs O)</h3><div class="value ' + wrClass + '">'
+                + (wrDelta > 0 ? '+' : '') + wrDelta.toFixed(1) + '%</div>'
+                + '<div class="sub">Learned: ' + learned.win_rate + '% | Original: ' + original.win_rate + '%</div></div>';
+
+            var pnlDelta = learned.avg_pnl - original.avg_pnl;
+            var pnlClass = pnlDelta > 0 ? 'pos' : (pnlDelta < 0 ? 'neg' : '');
+            kpiHtml += '<div class="kpi-card"><h3>Avg PnL Delta</h3><div class="value ' + pnlClass + '">'
+                + (pnlDelta > 0 ? '+' : '') + pnlDelta.toFixed(4) + '%</div>'
+                + '<div class="sub">Learned: ' + learned.avg_pnl.toFixed(4) + '% | Original: ' + original.avg_pnl.toFixed(4) + '%</div></div>';
+
+            kpiHtml += '<div class="kpi-card"><h3>Total PnL (30d)</h3>'
+                + '<div class="value">L: <span class="' + (learned.total_pnl >= 0 ? 'pos' : 'neg') + '">' + learned.total_pnl.toFixed(2) + '%</span></div>'
+                + '<div class="sub">Original: <span class="' + (original.total_pnl >= 0 ? 'pos' : 'neg') + '">' + original.total_pnl.toFixed(2) + '%</span></div></div>';
+            document.getElementById('kpi-row').innerHTML = kpiHtml;
+
+            // Compare boxes
+            var cHtml = '';
+            cHtml += renderCompareBox('Self-Learned Parameters', 'learned-box', learned);
+            cHtml += renderCompareBox('Original Defaults', 'original-box', original);
+            document.getElementById('compare-grid').innerHTML = cHtml;
+        });
+
+    // Asset-class chart
+    fetch(API + '?action=by_asset&days=30')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (!d.ok) return;
+            var labels = [], lData = [], oData = [];
+            for (var ac in d.assets) {
+                labels.push(ac);
+                lData.push(d.assets[ac]['learned'] ? d.assets[ac]['learned'].win_rate : 0);
+                oData.push(d.assets[ac]['original'] ? d.assets[ac]['original'].win_rate : 0);
+            }
+            if (chartWr) chartWr.destroy();
+            chartWr = new Chart(document.getElementById('chart-wr'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Learned', data: lData, backgroundColor: 'rgba(99,102,241,0.7)' },
+                        { label: 'Original', data: oData, backgroundColor: 'rgba(234,179,8,0.7)' }
+                    ]
+                },
+                options: { responsive: true, plugins: { legend: { labels: { color: '#8888aa' } } }, scales: { x: { ticks: { color: '#8888aa' } }, y: { ticks: { color: '#8888aa' }, title: { display: true, text: 'Win Rate %', color: '#8888aa' } } } }
+            });
+        });
+}
+
+function renderCompareBox(title, cls, data) {
+    return '<div class="compare-box ' + cls + '">'
+        + '<h2>' + title + '</h2>'
+        + metric('Trades', data.trades)
+        + metric('Wins / Losses', data.wins + ' / ' + data.losses)
+        + metric('Win Rate', data.win_rate + '%', data.win_rate >= 50 ? 'pos' : 'neg')
+        + metric('Avg PnL', data.avg_pnl.toFixed(4) + '%', data.avg_pnl >= 0 ? 'pos' : 'neg')
+        + metric('Total PnL', data.total_pnl.toFixed(2) + '%', data.total_pnl >= 0 ? 'pos' : 'neg')
+        + metric('Best Trade', '+' + data.best_trade.toFixed(2) + '%', 'pos')
+        + metric('Worst Trade', data.worst_trade.toFixed(2) + '%', 'neg')
+        + metric('Avg Hold', data.avg_hold_hrs + 'h')
+        + '</div>';
+}
+function metric(label, value, cls) {
+    return '<div class="metric-row"><span class="metric-label">' + label + '</span><span class="metric-value ' + (cls||'') + '">' + value + '</span></div>';
+}
+
+// ── Algorithms Tab ──
+function loadAlgorithms() {
+    fetch(API + '?action=by_algorithm&days=30')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (!d.ok) return;
+            var tbody = document.getElementById('algo-tbody');
+            tbody.innerHTML = '';
+            var chartLabels = [], chartL = [], chartO = [];
+            d.algorithms.forEach(function(a) {
+                ['learned', 'original'].forEach(function(src) {
+                    var data = a[src];
+                    if (!data) return;
+                    var tr = document.createElement('tr');
+                    var pnlCls = data.avg_pnl >= 0 ? 'pos' : 'neg';
+                    tr.innerHTML = '<td><strong>' + esc(a.algorithm) + '</strong></td>'
+                        + '<td><span class="tag tag-' + src + '">' + src + '</span></td>'
+                        + '<td>' + data.trades + '</td>'
+                        + '<td class="' + (data.win_rate >= 50 ? 'pos' : 'neg') + '">' + data.win_rate + '%</td>'
+                        + '<td class="' + pnlCls + '">' + data.avg_pnl.toFixed(4) + '%</td>'
+                        + '<td class="' + (data.total_pnl >= 0 ? 'pos' : 'neg') + '">' + data.total_pnl.toFixed(2) + '%</td>'
+                        + '<td>' + data.avg_tp + '%</td>'
+                        + '<td>' + data.avg_sl + '%</td>'
+                        + '<td>' + data.avg_hold + 'h</td>';
+                    tbody.appendChild(tr);
+                });
+                // Chart data
+                chartLabels.push(a.algorithm.substring(0, 12));
+                chartL.push(a.learned ? a.learned.avg_pnl : 0);
+                chartO.push(a.original ? a.original.avg_pnl : 0);
+            });
+            if (chartPnl) chartPnl.destroy();
+            chartPnl = new Chart(document.getElementById('chart-algo-pnl'), {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [
+                        { label: 'Learned Avg PnL%', data: chartL, backgroundColor: 'rgba(99,102,241,0.7)' },
+                        { label: 'Original Avg PnL%', data: chartO, backgroundColor: 'rgba(234,179,8,0.7)' }
+                    ]
+                },
+                options: { responsive: true, indexAxis: 'y', plugins: { legend: { labels: { color: '#8888aa' } } }, scales: { x: { ticks: { color: '#8888aa' } }, y: { ticks: { color: '#8888aa', font: { size: 10 } } } } }
+            });
+        });
+}
+
+// ── Params Tab ──
+function loadParams() {
+    fetch(API + '?action=learned_params')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (!d.ok) return;
+            var tbody = document.getElementById('params-tbody');
+            tbody.innerHTML = '';
+            d.params.forEach(function(p) {
+                var tr = document.createElement('tr');
+                var verdictCls = p.verdict === 'IMPROVED' ? 'pos' : (p.verdict === 'NO_PROFITABLE_PARAMS' ? 'neg' : '');
+                var wrDelta = p.learned_wr - p.original_wr;
+                tr.innerHTML = '<td><strong>' + esc(p.algorithm) + '</strong></td>'
+                    + '<td>' + p.asset_class + '</td>'
+                    + '<td>' + p.original.tp + '%</td>'
+                    + '<td style="color:var(--accent)">' + p.learned.tp + '%</td>'
+                    + '<td>' + p.original.sl + '%</td>'
+                    + '<td style="color:var(--accent)">' + p.learned.sl + '%</td>'
+                    + '<td>' + p.original.hold + 'h</td>'
+                    + '<td style="color:var(--accent)">' + p.learned.hold + 'h</td>'
+                    + '<td>' + p.original_wr.toFixed(1) + '%</td>'
+                    + '<td class="' + (wrDelta >= 0 ? 'pos' : 'neg') + '">' + p.learned_wr.toFixed(1) + '%</td>'
+                    + '<td class="' + verdictCls + '">' + p.verdict + '</td>';
+                tbody.appendChild(tr);
+            });
+        });
+}
+
+// ── Trades Tab ──
+function loadTrades() {
+    fetch(API + '?action=trades&limit=100')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (!d.ok) return;
+            var tbody = document.getElementById('trades-tbody');
+            tbody.innerHTML = '';
+            d.trades.forEach(function(t) {
+                var tr = document.createElement('tr');
+                var pnlCls = t.pnl_pct > 0 ? 'pos' : 'neg';
+                var badge = t.pnl_pct > 0 ? '<span class="badge-win">WIN</span>' : '<span class="badge-loss">LOSS</span>';
+                tr.innerHTML = '<td style="font-size:11px">' + (t.exit_time || '').substring(0, 16) + '</td>'
+                    + '<td><strong>' + esc(t.symbol) + '</strong></td>'
+                    + '<td style="font-size:12px">' + esc(t.algorithm) + '</td>'
+                    + '<td>' + t.direction + '</td>'
+                    + '<td><span class="tag tag-' + t.param_source + '">' + t.param_source + '</span></td>'
+                    + '<td>$' + t.entry_price.toFixed(4) + '</td>'
+                    + '<td>$' + t.exit_price.toFixed(4) + '</td>'
+                    + '<td class="' + pnlCls + '">' + (t.pnl_pct > 0 ? '+' : '') + t.pnl_pct.toFixed(4) + '% ' + badge + '</td>'
+                    + '<td>' + (t.exit_reason || '') + '</td>'
+                    + '<td style="font-size:11px">' + t.params_used.tp + '/' + t.params_used.sl + '/' + t.params_used.hold + 'h</td>'
+                    + '<td style="font-size:11px;color:var(--text-dim)">' + t.params_original.tp + '/' + t.params_original.sl + '/' + t.params_original.hold + 'h</td>';
+                tbody.appendChild(tr);
+            });
+        });
+}
+
+function runBackfill() {
+    fetch(API + '?action=backfill&key=livetrader2026')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.ok) {
+                alert('Backfill complete: ' + d.tagged_learned + ' learned, ' + d.tagged_original + ' original. ' + d.remaining + ' remaining.');
+                if (d.remaining === 0) document.getElementById('backfill-bar').style.display = 'none';
+                loadSummary();
+            } else {
+                alert('Backfill error: ' + (d.error || 'unknown'));
+            }
+        });
+}
+
+function esc(s) { if (!s) return ''; var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// Auto-load
+loadSummary();
+</script>
+<script src="/findstocks/portfolio2/stock-nav.js"></script>
+</body>
+</html>

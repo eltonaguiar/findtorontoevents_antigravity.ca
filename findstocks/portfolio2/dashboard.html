@@ -239,6 +239,24 @@ tr:hover td { background: rgba(99,102,241,0.04); }
 .tag-backtest { background:rgba(234,179,8,0.15); color:#eab308; border:1px solid rgba(234,179,8,0.3); }
 .tag-live { background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3); }
 .tag-forward { background:rgba(99,102,241,0.15); color:#6366f1; border:1px solid rgba(99,102,241,0.3); }
+/* Glossary */
+.info-tip{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(99,102,241,0.2);color:var(--accent);font-size:10px;font-weight:700;cursor:help;position:relative;vertical-align:middle;margin-left:4px;flex-shrink:0;font-style:normal}
+.info-tip:hover{background:rgba(99,102,241,0.4)}
+.info-tip .tip-text{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1e1e3a;border:1px solid var(--accent);border-radius:8px;padding:10px 12px;font-size:12px;font-weight:400;color:var(--text);width:260px;line-height:1.5;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.5);pointer-events:none}
+.info-tip:hover .tip-text{display:block}
+.info-tip .tip-text::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--accent)}
+.edu-section{background:var(--bg-card,#12122a);border:1px solid var(--border);border-radius:12px;margin-top:1.5rem;overflow:hidden}
+.edu-header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;cursor:pointer;user-select:none}
+.edu-header:hover{background:rgba(255,255,255,0.02)}
+.edu-header h3{font-size:15px;font-weight:600;margin:0;display:flex;align-items:center;gap:8px}
+.edu-arrow{font-size:12px;color:var(--text-dim);transition:transform 0.2s}
+.edu-arrow.open{transform:rotate(180deg)}
+.edu-body{padding:0 18px 18px;display:none}
+.edu-body.open{display:block}
+.glossary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:8px}
+.glossary-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:12px}
+.glossary-card .g-term{font-weight:700;color:#fff;font-size:13px;margin-bottom:4px}
+.glossary-card .g-desc{font-size:12px;color:#bbb;line-height:1.6}
 </style>
 </head>
 <body>
@@ -336,6 +354,26 @@ tr:hover td { background: rgba(99,102,241,0.04); }
         </div>
     </div>
 
+    <!-- Glossary -->
+    <div class="edu-section">
+      <div class="edu-header" onclick="toggleEdu(this)">
+        <h3>Glossary of Portfolio Terms <i class="info-tip">i<span class="tip-text">Plain-language explanations of the metrics and terms on this dashboard.</span></i></h3>
+        <span class="edu-arrow">&#9660;</span>
+      </div>
+      <div class="edu-body">
+        <div class="glossary-grid">
+          <div class="glossary-card"><div class="g-term">Equity Curve</div><div class="g-desc">A chart of the portfolio's total value over time. An upward slope means the strategy is making money. Dips are drawdowns. The smoother the curve, the more consistent the returns.</div></div>
+          <div class="glossary-card"><div class="g-term">P&amp;L (Profit &amp; Loss)</div><div class="g-desc">The net gain or loss. Shows both dollar amount and percentage. Unrealized P&L = positions still open. Realized P&L = positions already closed.</div></div>
+          <div class="glossary-card"><div class="g-term">Stop Loss (SL)</div><div class="g-desc">Automatic sell trigger if a position drops below a set threshold. Limits maximum loss per trade. Example: -5% SL means the position is sold if it falls 5%.</div></div>
+          <div class="glossary-card"><div class="g-term">Take Profit (TP)</div><div class="g-desc">Automatic sell trigger when a position reaches its profit target. Locks in gains before a potential reversal. Example: +10% TP sells at 10% profit.</div></div>
+          <div class="glossary-card"><div class="g-term">Max Hold Period</div><div class="g-desc">Maximum time a position stays open (e.g., 30 days). If TP and SL haven't triggered, the position is closed at market price. Prevents capital from being stuck indefinitely.</div></div>
+          <div class="glossary-card"><div class="g-term">Win Rate</div><div class="g-desc">Percentage of closed trades that were profitable. 60% = 6 of 10 trades made money. Combined with average win/loss size, this determines overall profitability.</div></div>
+          <div class="glossary-card"><div class="g-term">Alpha (vs SPY)</div><div class="g-desc">Excess return compared to the S&P 500 index. Positive alpha means the portfolio outperformed the market. Negative alpha means it underperformed. The goal is consistent positive alpha.</div></div>
+          <div class="glossary-card"><div class="g-term">Backtest vs Live vs Forward</div><div class="g-desc"><strong>Backtest</strong>: tested on historical data (less reliable). <strong>Live</strong>: real-time paper trading with real prices. <strong>Forward</strong>: predictions being tracked going forward. Live and forward results are most trustworthy.</div></div>
+        </div>
+      </div>
+    </div>
+
     <div class="disclaimer">
         Simulated portfolio tracking for educational purposes only. Past performance does not guarantee future results.
         Not financial advice. Data may be delayed or inaccurate.
@@ -354,6 +392,7 @@ tr:hover td { background: rgba(99,102,241,0.04); }
 </div>
 
 <script>
+function toggleEdu(el){var b=el.nextElementSibling,a=el.querySelector('.edu-arrow');if(b.classList.contains('open')){b.classList.remove('open');a.classList.remove('open');}else{b.classList.add('open');a.classList.add('open');}}
 var API = (function() {
     var loc = window.location;
     if (loc.hostname === 'localhost' || loc.hostname === '127.0.0.1') return './api/';
@@ -656,8 +695,10 @@ function renderOpenPositions(positions) {
         html += '<td>' + fmtDollar(p.entry_price) + '</td>';
         html += '<td>' + fmtDollar(p.current_price) + '</td>';
         html += '<td>' + (p.shares || '--') + '</td>';
-        html += '<td class="' + pnlClass(pnlDollar) + '">' + (pnlDollar >= 0 ? '+' : '') + pnlDollar.toFixed(2) + '</td>';
-        html += '<td class="' + pnlClass(pnlPct) + '">' + fmtPct(pnlPct) + '</td>';
+        var pnlDollarStr = (isNaN(pnlDollar) ? '--' : (pnlDollar >= 0 ? '+$' : '-$') + Math.abs(pnlDollar).toFixed(2));
+        var pnlPctStr = isNaN(pnlPct) ? '--' : fmtPct(pnlPct);
+        html += '<td class="' + pnlClass(pnlDollar) + '">' + pnlDollarStr + '</td>';
+        html += '<td class="' + pnlClass(pnlPct) + '">' + pnlPctStr + '</td>';
         html += '<td>' + daysHeld + '</td>';
         html += '<td>' + tpDist + '</td>';
         html += '<td>' + slDist + '</td>';
@@ -699,7 +740,8 @@ function renderClosedPositions(positions) {
         html += '<td>' + fmtDollar(p.entry_price) + '</td>';
         html += '<td>' + fmtDollar(p.exit_price) + '</td>';
         html += '<td>' + (p.shares || '--') + '</td>';
-        html += '<td class="' + pnlClass(pnlDollar) + '">' + (pnlDollar >= 0 ? '+' : '') + pnlDollar.toFixed(2) + '</td>';
+        var closedPnlStr = (isNaN(pnlDollar) ? '--' : (pnlDollar >= 0 ? '+$' : '-$') + Math.abs(pnlDollar).toFixed(2));
+        html += '<td class="' + pnlClass(pnlDollar) + '">' + closedPnlStr + '</td>';
         html += '<td class="' + pnlClass(retPct) + '">' + fmtPct(retPct) + '</td>';
         html += '<td><span class="exit-badge exit-' + reason + '">' + reasonLabel + '</span></td>';
         html += '<td>' + (p.hold_days || p.days_held || '--') + '</td>';
@@ -790,5 +832,6 @@ document.addEventListener('keydown', function(e) {
 // ---- Boot ----
 init();
 </script>
+<script src="/findstocks/portfolio2/stock-nav.js"></script>
 </body>
 </html>

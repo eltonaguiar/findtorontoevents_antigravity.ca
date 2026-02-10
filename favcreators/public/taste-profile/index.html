@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taste Profile - Discover Your True Favorites</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-card: #13131a;
+            --bg-card-hover: #1a1a24;
+            --border: #2a2a3a;
+            --text-primary: #e8e8f0;
+            --text-secondary: #8888a0;
+            --text-muted: #555570;
+            --accent-spotify: #1DB954;
+            --accent-youtube: #FF0000;
+            --accent-instagram: #E4405F;
+            --accent-tiktok: #00f2ea;
+            --accent-apple: #fc3c44;
+            --accent-purple: #8b5cf6;
+            --accent-blue: #3b82f6;
+            --accent-pink: #ec4899;
+            --accent-orange: #f59e0b;
+            --gradient-main: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-spotify: linear-gradient(135deg, #1DB954 0%, #1ed760 100%);
+            --gradient-youtube: linear-gradient(135deg, #FF0000 0%, #ff4444 100%);
+            --gradient-instagram: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        /* Animated background */
+        .bg-animation {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none; opacity: 0.15;
+            background: radial-gradient(ellipse at 20% 50%, #667eea33 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 20%, #764ba233 0%, transparent 50%),
+                        radial-gradient(ellipse at 50% 80%, #ec489933 0%, transparent 50%);
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+        
+        /* Header */
+        .header {
+            text-align: center; padding: 40px 20px 30px;
+        }
+        .header h1 {
+            font-size: 2.8rem; font-weight: 800;
+            background: var(--gradient-main); -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent; background-clip: text;
+            margin-bottom: 8px; letter-spacing: -1px;
+        }
+        .header p { color: var(--text-secondary); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+        
+        /* Connect section */
+        .connect-section {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px; margin: 30px 0;
+        }
+        .connect-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 24px; text-align: center;
+            transition: all 0.3s ease; cursor: pointer;
+        }
+        .connect-card:hover { background: var(--bg-card-hover); transform: translateY(-2px); }
+        .connect-card .icon { font-size: 2rem; margin-bottom: 12px; }
+        .connect-card h3 { font-size: 1.1rem; margin-bottom: 6px; }
+        .connect-card p { color: var(--text-secondary); font-size: 0.85rem; }
+        .connect-card .status {
+            display: inline-block; margin-top: 12px; padding: 6px 16px;
+            border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+        }
+        .status-connect { background: var(--accent-purple); color: white; }
+        .status-connected { background: #1a3a1a; color: var(--accent-spotify); border: 1px solid #1a4a1a; }
+        .status-scanning { background: #3a2a1a; color: var(--accent-orange); border: 1px solid #4a3a1a; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+        
+        /* YouTube input */
+        .yt-input-group {
+            display: flex; gap: 8px; margin-top: 12px;
+        }
+        .yt-input-group input {
+            flex: 1; padding: 8px 14px; border-radius: 10px;
+            border: 1px solid var(--border); background: var(--bg-primary);
+            color: var(--text-primary); font-size: 0.9rem; outline: none;
+        }
+        .yt-input-group input:focus { border-color: var(--accent-youtube); }
+        .yt-input-group button {
+            padding: 8px 18px; border-radius: 10px; border: none;
+            background: var(--accent-youtube); color: white; font-weight: 600;
+            cursor: pointer; font-size: 0.85rem; white-space: nowrap;
+        }
+        .yt-input-group button:hover { opacity: 0.9; }
+        .yt-input-group button:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* Instagram input */
+        .ig-input-group { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        .ig-input-group input {
+            flex: 1; min-width: 140px; padding: 8px 14px; border-radius: 10px;
+            border: 1px solid var(--border); background: var(--bg-primary);
+            color: var(--text-primary); font-size: 0.9rem; outline: none;
+        }
+        .ig-input-group input:focus { border-color: var(--accent-instagram); }
+        .ig-input-group button {
+            padding: 8px 18px; border-radius: 10px; border: none;
+            background: var(--accent-instagram); color: white; font-weight: 600;
+            cursor: pointer; font-size: 0.85rem;
+        }
+        
+        /* Results sections */
+        .results-header {
+            display: flex; align-items: center; gap: 12px;
+            margin: 40px 0 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+        }
+        .results-header h2 { font-size: 1.5rem; font-weight: 700; }
+        .results-header .badge {
+            padding: 4px 12px; border-radius: 12px; font-size: 0.75rem;
+            font-weight: 600; background: var(--accent-purple); color: white;
+        }
+        
+        /* Stats row */
+        .stats-row {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px; margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px; text-align: center;
+        }
+        .stat-card .number {
+            font-size: 2rem; font-weight: 800;
+            background: var(--gradient-main); -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .stat-card .label { color: var(--text-secondary); font-size: 0.8rem; margin-top: 4px; }
+        
+        /* Artist grid */
+        .artist-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px; margin-bottom: 30px;
+        }
+        .artist-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 16px; display: flex;
+            align-items: center; gap: 14px; transition: all 0.2s ease;
+        }
+        .artist-card:hover { background: var(--bg-card-hover); }
+        .artist-rank {
+            font-size: 1.5rem; font-weight: 800; color: var(--text-muted);
+            min-width: 36px; text-align: right;
+        }
+        .artist-rank.top3 {
+            background: var(--gradient-main); -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .artist-info { flex: 1; }
+        .artist-name { font-weight: 600; font-size: 0.95rem; }
+        .artist-meta { color: var(--text-secondary); font-size: 0.8rem; margin-top: 2px; }
+        .artist-bar {
+            height: 4px; border-radius: 2px; background: var(--border); margin-top: 6px;
+        }
+        .artist-bar-fill {
+            height: 100%; border-radius: 2px;
+            background: var(--gradient-main); transition: width 0.8s ease;
+        }
+        .artist-platforms { display: flex; gap: 4px; }
+        .platform-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+        }
+        .platform-dot.youtube { background: var(--accent-youtube); }
+        .platform-dot.spotify { background: var(--accent-spotify); }
+        .platform-dot.instagram { background: var(--accent-instagram); }
+        
+        /* Genre chart */
+        .genre-chart { margin-bottom: 30px; }
+        .genre-bar-row {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 8px; padding: 8px 12px;
+            background: var(--bg-card); border-radius: 10px;
+        }
+        .genre-label { min-width: 100px; font-weight: 600; font-size: 0.9rem; text-transform: capitalize; }
+        .genre-bar-outer { flex: 1; height: 24px; background: var(--border); border-radius: 12px; overflow: hidden; }
+        .genre-bar-inner {
+            height: 100%; border-radius: 12px; transition: width 1s ease;
+            display: flex; align-items: center; padding-left: 10px;
+            font-size: 0.75rem; font-weight: 600; color: white;
+        }
+        .genre-count { min-width: 60px; text-align: right; color: var(--text-secondary); font-size: 0.85rem; }
+        
+        /* Playlist grid */
+        .playlist-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 12px; margin-bottom: 30px;
+        }
+        .playlist-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; overflow: hidden; transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .playlist-card:hover { background: var(--bg-card-hover); transform: translateY(-2px); }
+        .playlist-thumb {
+            width: 100%; height: 140px; object-fit: cover;
+            background: var(--border);
+        }
+        .playlist-info { padding: 14px; }
+        .playlist-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 4px; }
+        .playlist-meta { color: var(--text-secondary); font-size: 0.8rem; }
+        .playlist-artists { color: var(--text-muted); font-size: 0.75rem; margin-top: 6px; }
+        
+        /* Cross-platform section */
+        .cross-platform {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 30px; margin: 30px 0;
+        }
+        .cross-platform h3 {
+            font-size: 1.3rem; margin-bottom: 16px;
+            background: var(--gradient-main); -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .cross-match {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px; border-radius: 10px; margin-bottom: 8px;
+            background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.15);
+        }
+        .cross-match .artist-name { font-weight: 700; }
+        .cross-match .platforms {
+            display: flex; gap: 6px; margin-left: auto;
+        }
+        .cross-match .platform-badge {
+            padding: 3px 10px; border-radius: 8px; font-size: 0.7rem;
+            font-weight: 600; color: white;
+        }
+        .platform-badge.youtube { background: var(--accent-youtube); }
+        .platform-badge.spotify { background: var(--accent-spotify); }
+        .platform-badge.instagram { background: var(--accent-instagram); }
+        
+        /* Spotify section */
+        .spotify-tracks {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 10px; margin: 16px 0;
+        }
+        .spotify-track {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+        .spotify-track img { width: 44px; height: 44px; border-radius: 6px; }
+        .spotify-track .track-info { flex: 1; }
+        .spotify-track .track-name { font-weight: 600; font-size: 0.85rem; }
+        .spotify-track .track-artist { color: var(--text-secondary); font-size: 0.8rem; }
+        
+        /* Loading */
+        .loading { text-align: center; padding: 40px; color: var(--text-secondary); }
+        .spinner {
+            width: 40px; height: 40px; border: 3px solid var(--border);
+            border-top: 3px solid var(--accent-purple); border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 0 auto 16px;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        /* Hidden sections */
+        .hidden { display: none !important; }
+        
+        /* Responsive */
+        @media (max-width: 640px) {
+            .header h1 { font-size: 2rem; }
+            .connect-section { grid-template-columns: 1fr; }
+            .artist-grid { grid-template-columns: 1fr; }
+            .playlist-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Taste Profile</h1>
+            <p>Connect your music platforms to discover your true favorite artists and creators across YouTube, Spotify, Instagram & more</p>
+        </div>
+        
+        <!-- Connect Platforms -->
+        <div class="connect-section">
+            <!-- YouTube -->
+            <div class="connect-card" id="yt-card">
+                <div class="icon">&#9654;</div>
+                <h3>YouTube Playlists</h3>
+                <p>Scan your playlists to find artists</p>
+                <div class="yt-input-group">
+                    <input type="text" id="yt-handle" placeholder="@tobedeleted2030" value="@tobedeleted2030">
+                    <button id="yt-scan-btn" onclick="scanYouTube()">Scan</button>
+                </div>
+                <div id="yt-status"></div>
+            </div>
+            
+            <!-- Spotify -->
+            <div class="connect-card" onclick="connectSpotify()">
+                <div class="icon" style="color: var(--accent-spotify);">&#9835;</div>
+                <h3>Spotify</h3>
+                <p>Top artists, saved songs, playlists</p>
+                <span class="status" id="spotify-status">Connect</span>
+            </div>
+            
+            <!-- Instagram -->
+            <div class="connect-card" id="ig-card">
+                <div class="icon" style="color: var(--accent-instagram);">&#128247;</div>
+                <h3>Instagram</h3>
+                <p>Analyze public profiles for music</p>
+                <div class="ig-input-group">
+                    <input type="text" id="ig-handle" placeholder="eltoront0">
+                    <button onclick="scanInstagram()">Scan</button>
+                </div>
+                <div id="ig-status"></div>
+            </div>
+        </div>
+        
+        <!-- Loading -->
+        <div id="loading-section" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Analyzing your taste profile...</p>
+        </div>
+        
+        <!-- YouTube Results -->
+        <div id="yt-results" class="hidden">
+            <div class="results-header">
+                <h2>&#9654; YouTube Taste Profile</h2>
+                <span class="badge" id="yt-channel-name"></span>
+            </div>
+            
+            <div class="stats-row" id="yt-stats"></div>
+            
+            <h3 style="margin-bottom: 14px; color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Genre Breakdown</h3>
+            <div class="genre-chart" id="genre-chart"></div>
+            
+            <h3 style="margin-bottom: 14px; color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Top Artists</h3>
+            <div class="artist-grid" id="yt-artists"></div>
+            
+            <h3 style="margin-bottom: 14px; color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Playlists</h3>
+            <div class="playlist-grid" id="yt-playlists"></div>
+        </div>
+        
+        <!-- Spotify Results -->
+        <div id="spotify-results" class="hidden">
+            <div class="results-header">
+                <h2 style="color: var(--accent-spotify);">&#9835; Spotify Taste Profile</h2>
+                <span class="badge" style="background: var(--accent-spotify);" id="spotify-user-name"></span>
+            </div>
+            
+            <div class="stats-row" id="spotify-stats"></div>
+            
+            <h3 style="margin-bottom: 14px; color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Your Top Artists</h3>
+            <div class="artist-grid" id="spotify-artists"></div>
+            
+            <h3 style="margin-bottom: 14px; color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Your Top Tracks</h3>
+            <div class="spotify-tracks" id="spotify-tracks"></div>
+        </div>
+        
+        <!-- Cross-Platform Matches -->
+        <div id="cross-platform" class="cross-platform hidden">
+            <h3>Cross-Platform True Favorites</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 0.9rem;">
+                Artists that appear across multiple platforms are your <strong>true favorites</strong>
+            </p>
+            <div id="cross-matches"></div>
+        </div>
+    </div>
+
+<script>
+// ===== STATE =====
+const state = {
+    youtube: null,      // { top_artists: [...], genres: [...], playlists: [...] }
+    spotify: null,      // { top_artists: [...], top_tracks: [...], saved: [...] }
+    instagram: null,    // { posts: [...], music_tags: [...] }
+};
+
+// Genre colors
+const GENRE_COLORS = {
+    workout: '#f59e0b',
+    sad: '#6366f1',
+    love: '#ec4899',
+    rap: '#ef4444',
+    rock: '#f97316',
+    sleep: '#8b5cf6',
+    emo: '#a855f7',
+    happy: '#22c55e',
+    motivation: '#3b82f6',
+    reggae: '#10b981',
+    country: '#eab308',
+    edm: '#06b6d4',
+};
+
+// ===== YOUTUBE SCANNING =====
+
+// Load from pre-scanned JSON (generated by taste_profile_scanner.py)
+async function scanYouTube() {
+    const handle = document.getElementById('yt-handle').value.trim();
+    if (!handle) return;
+    
+    const btn = document.getElementById('yt-scan-btn');
+    btn.disabled = true;
+    btn.textContent = 'Scanning...';
+    document.getElementById('yt-status').innerHTML = '<span class="status status-scanning">Scanning playlists...</span>';
+    
+    // Try loading pre-generated JSON first (for server-side scanned data)
+    try {
+        // Try local taste_profile.json (generated by scanner)
+        const urls = [
+            '/taste_profile.json',
+            '/fc/taste-profile/taste_profile.json',
+            'taste_profile.json',
+        ];
+        
+        let data = null;
+        for (const url of urls) {
+            try {
+                const resp = await fetch(url);
+                if (resp.ok) {
+                    data = await resp.json();
+                    break;
+                }
+            } catch(e) { /* try next */ }
+        }
+        
+        if (!data) {
+            // If no pre-scanned data, show instructions
+            document.getElementById('yt-status').innerHTML = 
+                '<span class="status" style="background:#2a1a1a;color:#ff6666;border:1px solid #3a1a1a;">No scan data found. Run: python tools/taste_profile_scanner.py --youtube ' + handle + '</span>';
+            btn.disabled = false;
+            btn.textContent = 'Scan';
+            return;
+        }
+        
+        state.youtube = data;
+        renderYouTubeResults(data);
+        document.getElementById('yt-status').innerHTML = '<span class="status status-connected">Connected</span>';
+        btn.textContent = 'Rescan';
+        btn.disabled = false;
+        
+        // Check for cross-platform matches
+        updateCrossPlatform();
+        
+    } catch (err) {
+        console.error('YouTube scan error:', err);
+        document.getElementById('yt-status').innerHTML = '<span class="status" style="background:#2a1a1a;color:#ff6666;">Error: ' + err.message + '</span>';
+        btn.disabled = false;
+        btn.textContent = 'Scan';
+    }
+}
+
+function renderYouTubeResults(data) {
+    document.getElementById('yt-results').classList.remove('hidden');
+    document.getElementById('yt-channel-name').textContent = data.channel.name;
+    
+    // Stats
+    const statsHtml = `
+        <div class="stat-card"><div class="number">${data.summary.total_playlists}</div><div class="label">Playlists</div></div>
+        <div class="stat-card"><div class="number">${data.summary.total_tracks.toLocaleString()}</div><div class="label">Total Tracks</div></div>
+        <div class="stat-card"><div class="number">${data.summary.unique_artists.toLocaleString()}</div><div class="label">Unique Artists</div></div>
+        <div class="stat-card"><div class="number">${data.genres ? data.genres.length : 0}</div><div class="label">Genres</div></div>
+    `;
+    document.getElementById('yt-stats').innerHTML = statsHtml;
+    
+    // Genre chart
+    if (data.genres && data.genres.length > 0) {
+        const maxTracks = data.genres[0].track_count;
+        let genreHtml = '';
+        for (const g of data.genres) {
+            const pct = Math.round((g.track_count / maxTracks) * 100);
+            const color = GENRE_COLORS[g.name] || '#8b5cf6';
+            genreHtml += `
+                <div class="genre-bar-row">
+                    <span class="genre-label">${g.name}</span>
+                    <div class="genre-bar-outer">
+                        <div class="genre-bar-inner" style="width: ${pct}%; background: ${color};">${pct > 15 ? g.track_count + ' tracks' : ''}</div>
+                    </div>
+                    <span class="genre-count">${g.track_count} tracks</span>
+                </div>
+            `;
+        }
+        document.getElementById('genre-chart').innerHTML = genreHtml;
+    }
+    
+    // Top artists
+    if (data.top_artists) {
+        const maxCount = data.top_artists[0].count;
+        let artistHtml = '';
+        for (const a of data.top_artists.slice(0, 30)) {
+            const pct = Math.round((a.count / maxCount) * 100);
+            const rankClass = a.rank <= 3 ? 'top3' : '';
+            artistHtml += `
+                <div class="artist-card">
+                    <span class="artist-rank ${rankClass}">${a.rank}</span>
+                    <div class="artist-info">
+                        <div class="artist-name">${escHtml(a.name)}</div>
+                        <div class="artist-meta">${a.count} appearances across playlists</div>
+                        <div class="artist-bar"><div class="artist-bar-fill" style="width: ${pct}%;"></div></div>
+                    </div>
+                    <div class="artist-platforms">
+                        <span class="platform-dot youtube" title="YouTube"></span>
+                    </div>
+                </div>
+            `;
+        }
+        document.getElementById('yt-artists').innerHTML = artistHtml;
+    }
+    
+    // Playlists
+    if (data.playlists) {
+        let plHtml = '';
+        for (const pl of data.playlists) {
+            const topArtists = pl.top_artists ? pl.top_artists.slice(0, 3).map(a => a.name).join(', ') : '';
+            plHtml += `
+                <div class="playlist-card" onclick="window.open('${escHtml(pl.url)}','_blank')">
+                    ${pl.thumbnail ? '<img class="playlist-thumb" src="' + escHtml(pl.thumbnail) + '" alt="" loading="lazy">' : '<div class="playlist-thumb"></div>'}
+                    <div class="playlist-info">
+                        <div class="playlist-title">${escHtml(pl.title)}</div>
+                        <div class="playlist-meta">${pl.track_count} tracks</div>
+                        <div class="playlist-artists">${escHtml(topArtists)}</div>
+                    </div>
+                </div>
+            `;
+        }
+        document.getElementById('yt-playlists').innerHTML = plHtml;
+    }
+}
+
+
+// ===== SPOTIFY OAUTH PKCE =====
+
+// IMPORTANT: Replace with your own Spotify Client ID from developer.spotify.com
+const SPOTIFY_CLIENT_ID = 'YOUR_SPOTIFY_CLIENT_ID';
+const SPOTIFY_REDIRECT_URI = window.location.origin + window.location.pathname;
+const SPOTIFY_SCOPES = 'user-top-read user-library-read user-read-recently-played playlist-read-private';
+
+function generateRandomString(length) {
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let text = '';
+    for (let i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+}
+
+async function generateCodeChallenge(verifier) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(verifier);
+    const digest = await window.crypto.subtle.digest('SHA-256', data);
+    return btoa(String.fromCharCode(...new Uint8Array(digest)))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function connectSpotify() {
+    if (SPOTIFY_CLIENT_ID === 'YOUR_SPOTIFY_CLIENT_ID') {
+        alert('To connect Spotify, you need a Client ID.\n\n1. Go to developer.spotify.com/dashboard\n2. Create an app\n3. Set redirect URI to: ' + SPOTIFY_REDIRECT_URI + '\n4. Copy the Client ID and paste it in the code');
+        return;
+    }
+    
+    const verifier = generateRandomString(128);
+    const challenge = await generateCodeChallenge(verifier);
+    
+    localStorage.setItem('spotify_verifier', verifier);
+    
+    const params = new URLSearchParams({
+        client_id: SPOTIFY_CLIENT_ID,
+        response_type: 'code',
+        redirect_uri: SPOTIFY_REDIRECT_URI,
+        scope: SPOTIFY_SCOPES,
+        code_challenge_method: 'S256',
+        code_challenge: challenge,
+    });
+    
+    window.location = 'https://accounts.spotify.com/authorize?' + params.toString();
+}
+
+async function handleSpotifyCallback(code) {
+    const verifier = localStorage.getItem('spotify_verifier');
+    if (!verifier) return;
+    
+    document.getElementById('spotify-status').textContent = 'Connecting...';
+    document.getElementById('spotify-status').className = 'status status-scanning';
+    
+    try {
+        // Exchange code for token
+        const resp = await fetch('https://accounts.spotify.com/api/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                client_id: SPOTIFY_CLIENT_ID,
+                grant_type: 'authorization_code',
+                code: code,
+                redirect_uri: SPOTIFY_REDIRECT_URI,
+                code_verifier: verifier,
+            }),
+        });
+        
+        const tokenData = await resp.json();
+        if (tokenData.error) throw new Error(tokenData.error_description || tokenData.error);
+        
+        localStorage.setItem('spotify_token', tokenData.access_token);
+        localStorage.removeItem('spotify_verifier');
+        
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        await loadSpotifyData(tokenData.access_token);
+    } catch (err) {
+        console.error('Spotify auth error:', err);
+        document.getElementById('spotify-status').textContent = 'Error: ' + err.message;
+    }
+}
+
+async function spotifyApi(endpoint, token) {
+    const resp = await fetch('https://api.spotify.com/v1' + endpoint, {
+        headers: { 'Authorization': 'Bearer ' + token },
+    });
+    if (!resp.ok) throw new Error('Spotify API error: ' + resp.status);
+    return resp.json();
+}
+
+async function loadSpotifyData(token) {
+    document.getElementById('spotify-status').textContent = 'Loading...';
+    document.getElementById('spotify-status').className = 'status status-scanning';
+    
+    try {
+        // Fetch in parallel: top artists, top tracks, user profile
+        const [topArtistsShort, topArtistsMed, topArtistsLong, topTracks, me] = await Promise.all([
+            spotifyApi('/me/top/artists?limit=50&time_range=short_term', token),
+            spotifyApi('/me/top/artists?limit=50&time_range=medium_term', token),
+            spotifyApi('/me/top/artists?limit=50&time_range=long_term', token),
+            spotifyApi('/me/top/tracks?limit=50&time_range=medium_term', token),
+            spotifyApi('/me', token),
+        ]);
+        
+        // Merge artist rankings with weighted scoring
+        const artistScores = {};
+        function addArtists(items, weight) {
+            items.forEach((a, i) => {
+                const key = a.name.toLowerCase();
+                if (!artistScores[key]) {
+                    artistScores[key] = { name: a.name, score: 0, genres: a.genres || [], image: (a.images && a.images[0]) ? a.images[0].url : null, id: a.id };
+                }
+                artistScores[key].score += weight * (50 - i);
+            });
+        }
+        addArtists(topArtistsShort.items, 3);   // Recent = 3x weight
+        addArtists(topArtistsMed.items, 2);     // Medium = 2x
+        addArtists(topArtistsLong.items, 1);    // All time = 1x
+        
+        const rankedArtists = Object.values(artistScores)
+            .sort((a, b) => b.score - a.score)
+            .map((a, i) => ({ ...a, rank: i + 1 }));
+        
+        state.spotify = {
+            user: me,
+            top_artists: rankedArtists,
+            top_tracks: topTracks.items,
+            genres: extractSpotifyGenres(rankedArtists),
+        };
+        
+        renderSpotifyResults(state.spotify);
+        
+        document.getElementById('spotify-status').textContent = 'Connected';
+        document.getElementById('spotify-status').className = 'status status-connected';
+        
+        updateCrossPlatform();
+        
+    } catch (err) {
+        console.error('Spotify data error:', err);
+        document.getElementById('spotify-status').textContent = 'Error';
+        document.getElementById('spotify-status').className = 'status status-connect';
+    }
+}
+
+function extractSpotifyGenres(artists) {
+    const genreCounts = {};
+    for (const a of artists) {
+        for (const g of (a.genres || [])) {
+            genreCounts[g] = (genreCounts[g] || 0) + a.score;
+        }
+    }
+    return Object.entries(genreCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15)
+        .map(([name, score]) => ({ name, score }));
+}
+
+function renderSpotifyResults(data) {
+    document.getElementById('spotify-results').classList.remove('hidden');
+    document.getElementById('spotify-user-name').textContent = data.user.display_name || data.user.id;
+    
+    // Stats
+    document.getElementById('spotify-stats').innerHTML = `
+        <div class="stat-card"><div class="number">${data.top_artists.length}</div><div class="label">Top Artists</div></div>
+        <div class="stat-card"><div class="number">${data.top_tracks.length}</div><div class="label">Top Tracks</div></div>
+        <div class="stat-card"><div class="number">${data.genres.length}</div><div class="label">Genres</div></div>
+        <div class="stat-card"><div class="number">${data.user.followers ? data.user.followers.total : '?'}</div><div class="label">Followers</div></div>
+    `;
+    
+    // Top artists
+    const maxScore = data.top_artists[0].score;
+    let artistHtml = '';
+    for (const a of data.top_artists.slice(0, 25)) {
+        const pct = Math.round((a.score / maxScore) * 100);
+        const rankClass = a.rank <= 3 ? 'top3' : '';
+        const img = a.image ? `<img src="${escHtml(a.image)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">` : '';
+        artistHtml += `
+            <div class="artist-card">
+                <span class="artist-rank ${rankClass}">${a.rank}</span>
+                ${img}
+                <div class="artist-info">
+                    <div class="artist-name">${escHtml(a.name)}</div>
+                    <div class="artist-meta">${a.genres.slice(0, 3).join(', ')}</div>
+                    <div class="artist-bar"><div class="artist-bar-fill" style="width: ${pct}%; background: var(--gradient-spotify);"></div></div>
+                </div>
+                <div class="artist-platforms">
+                    <span class="platform-dot spotify" title="Spotify"></span>
+                </div>
+            </div>
+        `;
+    }
+    document.getElementById('spotify-artists').innerHTML = artistHtml;
+    
+    // Top tracks
+    let trackHtml = '';
+    for (const t of data.top_tracks.slice(0, 20)) {
+        const img = (t.album && t.album.images && t.album.images.length > 1) ? t.album.images[1].url : '';
+        const artists = t.artists.map(a => a.name).join(', ');
+        trackHtml += `
+            <div class="spotify-track">
+                ${img ? '<img src="' + escHtml(img) + '" alt="">' : ''}
+                <div class="track-info">
+                    <div class="track-name">${escHtml(t.name)}</div>
+                    <div class="track-artist">${escHtml(artists)}</div>
+                </div>
+            </div>
+        `;
+    }
+    document.getElementById('spotify-tracks').innerHTML = trackHtml;
+}
+
+
+// ===== INSTAGRAM SCANNING =====
+
+async function scanInstagram() {
+    const handle = document.getElementById('ig-handle').value.trim().replace(/^@/, '');
+    if (!handle) return;
+    
+    document.getElementById('ig-status').innerHTML = '<span class="status status-scanning">Scanning @' + handle + '...</span>';
+    
+    // Server-side PHP endpoint for Instagram scraping
+    try {
+        const resp = await fetch('/fc/api/taste_instagram.php?handle=' + encodeURIComponent(handle));
+        if (resp.ok) {
+            const data = await resp.json();
+            state.instagram = data;
+            document.getElementById('ig-status').innerHTML = '<span class="status status-connected">Found ' + (data.music_tags || []).length + ' music references</span>';
+            updateCrossPlatform();
+        } else {
+            document.getElementById('ig-status').innerHTML = '<span class="status" style="background:#2a1a1a;color:#ff6666;">Instagram blocks server-side scraping. Try using the browser extension approach.</span>';
+        }
+    } catch (err) {
+        document.getElementById('ig-status').innerHTML = '<span class="status" style="background:#1a1a2a;color:#6688ff;">Server endpoint not deployed yet. Coming soon.</span>';
+    }
+}
+
+
+// ===== CROSS-PLATFORM MATCHING =====
+
+// Normalize artist name for matching
+function normalizeArtist(name) {
+    return name.toLowerCase()
+        .replace(/\s*\(.*?\)\s*/g, '')  // Remove parentheticals
+        .replace(/\s*\[.*?\]\s*/g, '')  // Remove brackets
+        .replace(/\s*feat\.?\s*.*/i, '') // Remove feat. and everything after
+        .replace(/\s*ft\.?\s*.*/i, '')   // Remove ft. and everything after
+        .replace(/[^a-z0-9\s]/g, '')     // Remove non-alphanumeric
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function updateCrossPlatform() {
+    const ytArtists = new Map();
+    const spotifyArtists = new Map();
+    const igArtists = new Map();
+    
+    if (state.youtube && state.youtube.top_artists) {
+        for (const a of state.youtube.top_artists) {
+            const key = normalizeArtist(a.name);
+            if (key.length > 1) {
+                ytArtists.set(key, { name: a.name, count: a.count });
+            }
+        }
+    }
+    
+    if (state.spotify && state.spotify.top_artists) {
+        for (const a of state.spotify.top_artists) {
+            const key = normalizeArtist(a.name);
+            if (key.length > 1) {
+                spotifyArtists.set(key, { name: a.name, score: a.score, image: a.image });
+            }
+        }
+    }
+    
+    if (state.instagram && state.instagram.music_tags) {
+        for (const tag of state.instagram.music_tags) {
+            const key = normalizeArtist(tag);
+            if (key.length > 1) {
+                igArtists.set(key, { name: tag, count: 1 });
+            }
+        }
+    }
+    
+    // Find cross-platform matches (fuzzy matching via normalized names)
+    const matches = [];
+    const allKeys = new Set([...ytArtists.keys(), ...spotifyArtists.keys(), ...igArtists.keys()]);
+    
+    for (const key of allKeys) {
+        const platforms = [];
+        let name = '';
+        let score = 0;
+        let image = null;
+        
+        if (ytArtists.has(key)) {
+            platforms.push('youtube');
+            name = ytArtists.get(key).name;
+            score += ytArtists.get(key).count * 10;
+        }
+        if (spotifyArtists.has(key)) {
+            platforms.push('spotify');
+            name = name || spotifyArtists.get(key).name;
+            score += spotifyArtists.get(key).score;
+            image = spotifyArtists.get(key).image;
+        }
+        if (igArtists.has(key)) {
+            platforms.push('instagram');
+            name = name || igArtists.get(key).name;
+            score += 50;
+        }
+        
+        if (platforms.length >= 2) {
+            matches.push({ name, platforms, score, image });
+        }
+    }
+    
+    matches.sort((a, b) => b.score - a.score);
+    
+    if (matches.length > 0) {
+        document.getElementById('cross-platform').classList.remove('hidden');
+        let html = '<p style="color:var(--accent-purple);font-size:0.85rem;margin-bottom:12px;">Found <strong>' + matches.length + '</strong> artists across multiple platforms</p>';
+        for (const m of matches.slice(0, 25)) {
+            const badges = m.platforms.map(p => '<span class="platform-badge ' + p + '">' + p + '</span>').join('');
+            const img = m.image ? '<img src="' + escHtml(m.image) + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">' : '';
+            html += '\n                <div class="cross-match">\n                    ' + img + '\n                    <span class="artist-name">' + escHtml(m.name) + '</span>\n                    <div class="platforms">' + badges + '</div>\n                </div>\n            ';
+        }
+        document.getElementById('cross-matches').innerHTML = html;
+    } else if (state.youtube && !state.spotify) {
+        // Show hint to connect more platforms
+        document.getElementById('cross-platform').classList.remove('hidden');
+        document.getElementById('cross-matches').innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px;">Connect Spotify or add Instagram handles to see cross-platform matches</p>';
+    }
+}
+
+
+// ===== UTILS =====
+
+function escHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+
+// ===== INIT =====
+
+window.addEventListener('DOMContentLoaded', function() {
+    // Check for Spotify callback
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('code')) {
+        handleSpotifyCallback(params.get('code'));
+    }
+    
+    // Check for existing Spotify token
+    const token = localStorage.getItem('spotify_token');
+    if (token) {
+        loadSpotifyData(token).catch(function() {
+            localStorage.removeItem('spotify_token');
+        });
+    }
+    
+    // Auto-load YouTube data if available
+    scanYouTube();
+});
+</script>
+</body>
+</html>

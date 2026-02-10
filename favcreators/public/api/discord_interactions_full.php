@@ -185,6 +185,25 @@ function handle_interaction($interaction) {
                 handle_nearme_command($nm_query, $nm_location, $nm_filter, $nm_dietary, $nm_radius);
                 break;
                 
+            // Daily Picks commands (crypto, forex, realtime wins, momentum, unified picks)
+            case 'crypto':
+                handle_crypto_picks_command($options);
+                break;
+            case 'forex':
+                handle_forex_picks_command($options);
+                break;
+            case 'realtime':
+                $rt_asset = get_option_value($options, 'asset');
+                handle_realtime_wins_command($rt_asset);
+                break;
+            case 'momentum':
+                $mom_asset = get_option_value($options, 'asset');
+                handle_momentum_command($mom_asset);
+                break;
+            case 'picks':
+                handle_daily_picks_command($options);
+                break;
+
             default:
                 send_response("Unknown command. Use /fc-help to see available commands.");
         }
@@ -1922,6 +1941,13 @@ function handle_help_command() {
     $content .= "`/fc-stats` - Set/view personal stats\n";
     $content .= "🌐 Web: https://findtorontoevents.ca/fc/#/accountability\n\n";
     
+    $content .= "**📊 Daily Picks — Live Signals**\n";
+    $content .= "`/fc-crypto [timeline] [budget]` - Daily crypto picks from 19 algorithms\n";
+    $content .= "`/fc-forex [timeline] [budget]` - Daily forex picks (8 pairs)\n";
+    $content .= "`/fc-realtime [asset]` - Recent winning trades across all markets\n";
+    $content .= "`/fc-momentum [asset]` - Highest-conviction picks most likely to continue up\n";
+    $content .= "`/fc-picks [asset] [timeline] [budget]` - Unified picks across all markets\n\n";
+
     $content .= "**ℹ️ General**\n";
     $content .= "`/info [feature]` - See all site apps & features\n";
     $content .= "`/link` - Link your Discord account\n";
@@ -2560,6 +2586,198 @@ function handle_worldevents_command($range) {
     
     $content .= "\n\xF0\x9F\x8C\x90 **Website:** https://findtorontoevents.ca/\n";
     $content .= "_Sources: Wikipedia, BBC World News, Curated Calendar_";
-    
+
+    send_response($content);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DAILY PICKS — Crypto, Forex, Realtime Wins, Momentum, Unified
+// ═══════════════════════════════════════════════════════════════════
+
+function _dp_fetch($action, $extra_params) {
+    $url = "https://findtorontoevents.ca/live-monitor/api/daily_picks.php?action=" . urlencode($action);
+    if ($extra_params) $url .= '&' . $extra_params;
+    $context = stream_context_create(array('http' => array('timeout' => 15, 'user_agent' => 'FavCreators-Bot/1.0')));
+    $json = @file_get_contents($url, false, $context);
+    if (!$json) return null;
+    return json_decode($json, true);
+}
+
+function _dp_format_pick($pick) {
+    $sym = isset($pick['symbol']) ? $pick['symbol'] : '???';
+    $type = isset($pick['signal_type']) ? $pick['signal_type'] : 'BUY';
+    $entry = isset($pick['entry_price']) ? $pick['entry_price'] : 0;
+    $curr = isset($pick['current_price']) ? $pick['current_price'] : $entry;
+    $tp = isset($pick['target_tp_pct']) ? $pick['target_tp_pct'] : 0;
+    $sl = isset($pick['target_sl_pct']) ? $pick['target_sl_pct'] : 0;
+    $algo = isset($pick['algorithm']) ? $pick['algorithm'] : '';
+    $strength = isset($pick['signal_strength']) ? $pick['signal_strength'] : 0;
+    $hold = isset($pick['max_hold_hours']) ? $pick['max_hold_hours'] : 0;
+    $tl = isset($pick['timeline_label']) ? $pick['timeline_label'] : '';
+    $streak = isset($pick['win_streak']) ? (int)$pick['win_streak'] : 0;
+    $dir_icon = ($type === 'BUY' || $type === 'LONG') ? "\xF0\x9F\x9F\xA2" : "\xF0\x9F\x94\xB4";
+    $bar = '';
+    $filled = (int)round($strength / 20);
+    for ($i = 0; $i < 5; $i++) { $bar .= ($i < $filled) ? "\xe2\x96\x88" : "\xe2\x96\x91"; }
+    $ac = isset($pick['asset_class']) ? $pick['asset_class'] : '';
+    if ($ac === 'FOREX') { $es = number_format($entry, 5); $cs = number_format($curr, 5); }
+    elseif ($entry > 1) { $es = '$' . number_format($entry, 2); $cs = '$' . number_format($curr, 2); }
+    else { $es = '$' . number_format($entry, 6); $cs = '$' . number_format($curr, 6); }
+    $line = "$dir_icon **$sym** $type @ $es";
+    if ($curr != $entry && $curr > 0) {
+        $cp = $entry > 0 ? round(($curr - $entry) / $entry * 100, 2) : 0;
+        $ci = $cp >= 0 ? '+' : '';
+        $line .= " (now $cs, {$ci}{$cp}%)";
+    }
+    $line .= "\n   TP: +{$tp}% | SL: -{$sl}% | Hold: {$hold}h ($tl)\n";
+    $line .= "   Algo: $algo | Strength: $bar $strength/100\n";
+    if ($streak >= 2) $line .= "   \xF0\x9F\x94\xA5 $streak consecutive wins!\n";
+    return $line;
+}
+
+function _dp_format_win($win) {
+    $sym = isset($win['symbol']) ? $win['symbol'] : '???';
+    $asset = isset($win['asset_class']) ? $win['asset_class'] : '';
+    $pnl = isset($win['realized_pnl']) ? $win['realized_pnl'] : 0;
+    $pct = isset($win['realized_pct']) ? $win['realized_pct'] : 0;
+    $algo = isset($win['algorithm']) ? $win['algorithm'] : '';
+    $hold = isset($win['hold_hours']) ? round($win['hold_hours'], 1) : 0;
+    $exit_time = isset($win['exit_time']) ? $win['exit_time'] : '';
+    $pnl_str = ($pnl >= 0 ? '+' : '') . '$' . number_format(abs($pnl), 2);
+    $pct_str = ($pct >= 0 ? '+' : '') . number_format($pct, 2) . '%';
+    if ($asset === 'CRYPTO') $ai = "\xE2\x82\xBF";
+    elseif ($asset === 'FOREX') $ai = "\xF0\x9F\x92\xB1";
+    else $ai = "\xF0\x9F\x93\x88";
+    $ts = ''; if ($exit_time && ($t = strtotime($exit_time))) $ts = ' (' . date('M j, g:ia', $t) . ')';
+    return "\xe2\x9c\x85 $ai **$sym** $pnl_str ($pct_str) in {$hold}h \xe2\x80\x94 $algo$ts\n";
+}
+
+function _dp_format_perf($perf) {
+    $total = isset($perf['total_trades_30d']) ? $perf['total_trades_30d'] : 0;
+    $wr = isset($perf['win_rate']) ? $perf['win_rate'] : 0;
+    $w = isset($perf['wins']) ? $perf['wins'] : 0;
+    $l = isset($perf['losses']) ? $perf['losses'] : 0;
+    $aw = isset($perf['avg_win_pct']) ? $perf['avg_win_pct'] : 0;
+    $al = isset($perf['avg_loss_pct']) ? $perf['avg_loss_pct'] : 0;
+    $best = isset($perf['best_algorithm']) ? $perf['best_algorithm'] : 'N/A';
+    return "\n**30-Day Performance:**\nTrades: $total (W:$w L:$l) | Win Rate: {$wr}%\nAvg Win: +{$aw}% | Avg Loss: {$al}%\nBest Algo: $best\n";
+}
+
+function handle_crypto_picks_command($options) {
+    $tl = get_option_value($options, 'timeline'); $bd = get_option_value($options, 'budget');
+    if (!$tl) $tl = 'all';
+    $params = "timeline=" . urlencode($tl); if ($bd) $params .= "&budget=" . urlencode($bd);
+    $data = _dp_fetch('crypto', $params);
+    if (!$data || !$data['ok']) { send_response("Could not fetch crypto picks. Try again later.\n\xE2\x82\xBF https://findtorontoevents.ca/live-monitor/live-monitor.html"); return; }
+    $picks = isset($data['picks']) ? $data['picks'] : array();
+    $c = count($picks); $gen = isset($data['generated_at']) ? $data['generated_at'] : '';
+    $content = "**\xE2\x82\xBF Daily Crypto Picks**\n$c active signals | $gen\n";
+    if ($tl !== 'all') { $labels = array('scalp'=>'Scalp (1-4h)','daytrader'=>'Day Trade (4-24h)','swing'=>'Swing (1-7d)'); $content .= "Timeline: " . (isset($labels[$tl]) ? $labels[$tl] : $tl) . "\n"; }
+    $content .= "\n";
+    if ($c === 0) { $content .= "_No active crypto signals. Signals refresh every 30 minutes._\n"; }
+    else { $s = ($c > 5) ? 5 : $c; for ($i = 0; $i < $s; $i++) $content .= _dp_format_pick($picks[$i]) . "\n"; if ($c > $s) $content .= "_...and " . ($c-$s) . " more signals_\n"; }
+    $wins = isset($data['recent_wins']) ? $data['recent_wins'] : array();
+    if (count($wins) > 0) { $content .= "\n**Recent Crypto Wins (7d):**\n"; $sw = (count($wins) > 3) ? 3 : count($wins); for ($i = 0; $i < $sw; $i++) $content .= _dp_format_win($wins[$i]); }
+    if (isset($data['performance_summary'])) $content .= _dp_format_perf($data['performance_summary']);
+    if ($bd && isset($data['budget_guidance']['guidance'])) $content .= "\n\xF0\x9F\x92\xB0 **Budget ($bd):** " . $data['budget_guidance']['guidance'] . "\n";
+    $content .= "\n\xE2\x82\xBF **Live Monitor:** https://findtorontoevents.ca/live-monitor/live-monitor.html\n";
+    $content .= "_" . (isset($data['disclaimer']) ? $data['disclaimer'] : 'Not financial advice.') . "_";
+    send_response($content);
+}
+
+function handle_forex_picks_command($options) {
+    $tl = get_option_value($options, 'timeline'); $bd = get_option_value($options, 'budget');
+    if (!$tl) $tl = 'all';
+    $params = "timeline=" . urlencode($tl); if ($bd) $params .= "&budget=" . urlencode($bd);
+    $data = _dp_fetch('forex', $params);
+    if (!$data || !$data['ok']) { send_response("Could not fetch forex picks. Try again later.\n\xF0\x9F\x92\xB1 https://findtorontoevents.ca/live-monitor/live-monitor.html"); return; }
+    $picks = isset($data['picks']) ? $data['picks'] : array();
+    $c = count($picks); $gen = isset($data['generated_at']) ? $data['generated_at'] : '';
+    $content = "**\xF0\x9F\x92\xB1 Daily Forex Picks**\n$c active signals | $gen\n";
+    if ($tl !== 'all') { $labels = array('scalp'=>'Scalp (1-4h)','daytrader'=>'Day Trade (4-24h)','swing'=>'Swing (1-7d)'); $content .= "Timeline: " . (isset($labels[$tl]) ? $labels[$tl] : $tl) . "\n"; }
+    $content .= "\n";
+    if ($c === 0) { $content .= "_No active forex signals. Signals refresh every 30 minutes._\n_Pairs: EUR/USD, GBP/USD, USD/JPY, USD/CAD, AUD/USD, NZD/USD, USD/CHF, EUR/GBP_\n"; }
+    else { $s = ($c > 5) ? 5 : $c; for ($i = 0; $i < $s; $i++) $content .= _dp_format_pick($picks[$i]) . "\n"; if ($c > $s) $content .= "_...and " . ($c-$s) . " more signals_\n"; }
+    $wins = isset($data['recent_wins']) ? $data['recent_wins'] : array();
+    if (count($wins) > 0) { $content .= "\n**Recent Forex Wins (7d):**\n"; $sw = (count($wins) > 3) ? 3 : count($wins); for ($i = 0; $i < $sw; $i++) $content .= _dp_format_win($wins[$i]); }
+    if (isset($data['performance_summary'])) $content .= _dp_format_perf($data['performance_summary']);
+    if ($bd && isset($data['budget_guidance']['guidance'])) $content .= "\n\xF0\x9F\x92\xB0 **Budget ($bd):** " . $data['budget_guidance']['guidance'] . "\n";
+    $content .= "\n\xF0\x9F\x92\xB1 **Live Monitor:** https://findtorontoevents.ca/live-monitor/live-monitor.html\n";
+    $content .= "_" . (isset($data['disclaimer']) ? $data['disclaimer'] : 'Not financial advice.') . "_";
+    send_response($content);
+}
+
+function handle_realtime_wins_command($asset_filter) {
+    $params = ($asset_filter && $asset_filter !== 'all') ? 'asset=' . urlencode($asset_filter) : '';
+    $data = _dp_fetch('wins', $params);
+    if (!$data || !$data['ok']) { send_response("Could not fetch recent wins. Try again later."); return; }
+    $wins = isset($data['wins']) ? $data['wins'] : array();
+    $gen = isset($data['generated_at']) ? $data['generated_at'] : '';
+    $al = ($asset_filter && $asset_filter !== 'all') ? ' (' . strtoupper($asset_filter) . ')' : '';
+    $content = "**\xF0\x9F\x8F\x86 Recent Winning Trades$al**\n" . count($wins) . " wins (7d) | $gen\n\n";
+    if (count($wins) === 0) $content .= "_No winning trades in the last 7 days._\n";
+    else { $s = (count($wins) > 10) ? 10 : count($wins); for ($i = 0; $i < $s; $i++) $content .= _dp_format_win($wins[$i]); if (count($wins) > $s) $content .= "_...and " . (count($wins)-$s) . " more_\n"; }
+    if (isset($data['performance_summary'])) $content .= _dp_format_perf($data['performance_summary']);
+    $content .= "\n\xF0\x9F\x93\x8A **Live Monitor:** https://findtorontoevents.ca/live-monitor/live-monitor.html\n";
+    $content .= "_" . (isset($data['disclaimer']) ? $data['disclaimer'] : 'Not financial advice.') . "_";
+    send_response($content);
+}
+
+function handle_momentum_command($asset_filter) {
+    $params = ($asset_filter && $asset_filter !== 'all') ? 'asset=' . urlencode($asset_filter) : '';
+    $data = _dp_fetch('momentum', $params);
+    if (!$data || !$data['ok']) { send_response("Could not fetch momentum picks. Try again later."); return; }
+    $picks = isset($data['picks']) ? $data['picks'] : array();
+    $streaks = isset($data['win_streaks']) ? $data['win_streaks'] : array();
+    $gen = isset($data['generated_at']) ? $data['generated_at'] : '';
+    $al = ($asset_filter && $asset_filter !== 'all') ? ' (' . strtoupper($asset_filter) . ')' : '';
+    $content = "**\xF0\x9F\x9A\x80 Momentum Picks$al \xe2\x80\x94 Most Likely to Continue Up**\n" . count($picks) . " high-conviction signals (70+) | $gen\n\n";
+    if (count($picks) === 0) { $content .= "_No high-conviction signals now. Algorithms require strong multi-indicator confluence._\n_Signals refresh every 30 min across 36 assets._\n"; }
+    else { $s = (count($picks) > 5) ? 5 : count($picks); for ($i = 0; $i < $s; $i++) $content .= _dp_format_pick($picks[$i]) . "\n"; if (count($picks) > $s) $content .= "_...and " . (count($picks)-$s) . " more_\n"; }
+    if (count($streaks) > 0) { $content .= "\n**\xF0\x9F\x94\xA5 Win Streaks:**\n"; foreach ($streaks as $sk) $content .= "\xe2\x80\xa2 **" . $sk['symbol'] . "** (" . $sk['asset_class'] . ") \xe2\x80\x94 " . $sk['win_streak'] . " consecutive wins\n"; }
+    if (isset($data['performance_summary'])) $content .= _dp_format_perf($data['performance_summary']);
+    $content .= "\n\xF0\x9F\x9A\x80 **Live Monitor:** https://findtorontoevents.ca/live-monitor/live-monitor.html\n";
+    $content .= "_" . (isset($data['disclaimer']) ? $data['disclaimer'] : 'Not financial advice.') . "_";
+    send_response($content);
+}
+
+function handle_daily_picks_command($options) {
+    $asset = get_option_value($options, 'asset');
+    $tl = get_option_value($options, 'timeline'); $bd = get_option_value($options, 'budget');
+    if (!$tl) $tl = 'all';
+    if ($asset === 'CRYPTO') { handle_crypto_picks_command($options); return; }
+    if ($asset === 'FOREX')  { handle_forex_picks_command($options); return; }
+    if ($asset === 'STOCK') {
+        $params = "timeline=" . urlencode($tl); if ($bd) $params .= "&budget=" . urlencode($bd);
+        $data = _dp_fetch('stocks', $params);
+        if (!$data || !$data['ok']) { send_response("Could not fetch stock signals. Try `/fc-stocks` for daily picks.\n\xF0\x9F\x93\x88 https://findtorontoevents.ca/findstocks/"); return; }
+        $picks = isset($data['picks']) ? $data['picks'] : array();
+        $content = "**\xF0\x9F\x93\x88 Stock Signals (Live Monitor)**\n" . count($picks) . " active | " . (isset($data['generated_at']) ? $data['generated_at'] : '') . "\n\n";
+        if (count($picks) === 0) $content .= "_No active stock signals. NYSE hours only (9:30am-4pm ET). Try `/fc-stocks`._\n";
+        else { $s = (count($picks) > 5) ? 5 : count($picks); for ($i = 0; $i < $s; $i++) $content .= _dp_format_pick($picks[$i]) . "\n"; }
+        if (isset($data['performance_summary'])) $content .= _dp_format_perf($data['performance_summary']);
+        $content .= "\n\xF0\x9F\x93\x88 https://findtorontoevents.ca/findstocks/\n_Not financial advice._";
+        send_response($content); return;
+    }
+    // ALL
+    $params = "timeline=" . urlencode($tl); if ($bd) $params .= "&budget=" . urlencode($bd);
+    $data = _dp_fetch('all', $params);
+    if (!$data || !$data['ok']) { send_response("Could not fetch daily picks. Try again later."); return; }
+    $gen = isset($data['generated_at']) ? $data['generated_at'] : '';
+    $tot = isset($data['total_picks']) ? $data['total_picks'] : 0;
+    $content = "**\xF0\x9F\x93\x8A Daily Picks \xe2\x80\x94 All Markets**\n$tot active signals | $gen\n";
+    if ($tl !== 'all') { $labels = array('scalp'=>'Scalp (1-4h)','daytrader'=>'Day Trade (4-24h)','swing'=>'Swing (1-7d)'); $content .= "Timeline: " . (isset($labels[$tl]) ? $labels[$tl] : $tl) . "\n"; }
+    $content .= "\n";
+    foreach (array('crypto' => "\xE2\x82\xBF Crypto", 'forex' => "\xF0\x9F\x92\xB1 Forex", 'stocks' => "\xF0\x9F\x93\x88 Stocks") as $key => $label) {
+        $sec = isset($data[$key]['picks']) ? $data[$key]['picks'] : array();
+        $content .= "**$label** (" . count($sec) . " signals)\n";
+        if (count($sec) === 0) { $content .= "_No active signals_\n"; }
+        else { $show = (count($sec) > 3) ? 3 : count($sec); for ($i = 0; $i < $show; $i++) $content .= _dp_format_pick($sec[$i]); if (count($sec) > $show) $content .= "_+" . (count($sec)-$show) . " more_\n"; }
+        $content .= "\n";
+    }
+    if (isset($data['performance_summary'])) $content .= _dp_format_perf($data['performance_summary']);
+    if ($bd && isset($data['budget_guidance']['guidance'])) $content .= "\n\xF0\x9F\x92\xB0 **Budget ($bd):** " . $data['budget_guidance']['guidance'] . "\n";
+    $content .= "\n\xF0\x9F\x93\x8A **Live Monitor:** https://findtorontoevents.ca/live-monitor/live-monitor.html\n";
+    $content .= "_" . (isset($data['disclaimer']) ? $data['disclaimer'] : 'Not financial advice.') . "_";
     send_response($content);
 }

@@ -16,4 +16,14 @@ $dbname     = 'ejaguiar1_stocks';
 $FREECRYPTO_API_KEY    = 'qb8ddikglknpseumlz4w';
 $CURRENCYLAYER_API_KEY = 'd7ea1ac2fe1deb49ed6f8e07c882b341';
 $FINNHUB_API_KEY       = 'cvstlkhr01qhup0t0j7gcvstlkhr01qhup0t0j80';
+
+// Sports Betting — separate database
+$sports_servername = 'mysql.50webs.com';
+$sports_username   = 'ejaguiar1_sportsbet';
+$sports_password   = 'eltonsportsbets';
+$sports_dbname     = 'ejaguiar1_sportsbet';
+
+// Sports Betting - The Odds API (free tier: 500 credits/month)
+// Sign up at https://the-odds-api.com to get your key
+$THE_ODDS_API_KEY      = 'b91c3bedfe2553cf90a5fa2003417b2a';
 ?>

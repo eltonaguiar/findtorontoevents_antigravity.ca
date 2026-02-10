@@ -1179,9 +1179,14 @@ function _ls_algo_momentum_burst($candles, $price, $symbol, $asset) {
     $signal_type = ($change_pct > 0) ? 'BUY' : 'SHORT';
     $strength = min(100, (int)(abs($change_pct) * 20));
 
+    // Regime gate — suppress counter-regime signals
+    $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
+    if ($signal_type === 'BUY' && $regime === 'bear') return null;
+    if ($signal_type === 'SHORT' && $regime === 'bull') return null;
+
     $tp  = 3.0;
     $sl  = 1.5;
-    $hold = 4;
+    $hold = 8;
 
     // Check learned params
     $lp = _ls_get_learned_params($conn, 'Momentum Burst', $asset);
@@ -1225,9 +1230,13 @@ function _ls_algo_rsi_reversal($candles, $price, $symbol, $asset) {
     $signal_type = ($rsi < 30) ? 'BUY' : 'SHORT';
     $strength = min(100, (int)(abs($rsi - 50) * 2));
 
+    // Regime gate — suppress BUY in bear (falling knife risk for mean-reversion)
+    $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
+    if ($signal_type === 'BUY' && $regime === 'bear') return null;
+
     $tp   = 2.0;
     $sl   = 1.0;
-    $hold = 6;
+    $hold = 12;
 
     $lp = _ls_get_learned_params($conn, 'RSI Reversal', $asset);
     if ($lp !== null) {
@@ -1290,9 +1299,13 @@ function _ls_algo_breakout_24h($candles, $price, $symbol, $asset) {
     $strength = min(100, (int)($breakout_pct * 15 + ($vol_ok ? 30 : 0)));
     if ($strength < 20) $strength = 20;
 
-    $tp   = 3.0;
+    // Regime gate — suppress breakout BUY in bear market
+    $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
+    if ($regime === 'bear') return null;
+
+    $tp   = 8.0;
     $sl   = 2.0;
-    $hold = 8;
+    $hold = 16;
 
     $lp = _ls_get_learned_params($conn, 'Breakout 24h', $asset);
     if ($lp !== null) {
@@ -1337,14 +1350,20 @@ function _ls_algo_dca_dip($candles, $price, $symbol, $asset) {
 
     $change_24h_pct = (($price - $old_close) / $old_close) * 100;
 
-    if ($change_24h_pct >= -5.0) return null;
+    // Asset-class thresholds: stocks need shallower dip (-2%) vs crypto (-5%)
+    $dip_threshold = ($asset === 'STOCK') ? -2.0 : -5.0;
+    if ($change_24h_pct >= $dip_threshold) return null;
 
     $dip_magnitude = abs($change_24h_pct);
     $strength = min(100, (int)($dip_magnitude * 8));
 
+    // Regime gate — suppress dip buying in bear (falling knife risk)
+    $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
+    if ($regime === 'bear') return null;
+
     $tp   = 5.0;
     $sl   = 3.0;
-    $hold = 24;
+    $hold = 48;
 
     $lp = _ls_get_learned_params($conn, 'DCA Dip', $asset);
     if ($lp !== null) {
@@ -1408,9 +1427,13 @@ function _ls_algo_bollinger_squeeze($candles, $price, $symbol, $asset) {
     $breakout_pct = (($price - $bb['upper']) / $bb['upper']) * 100;
     $strength = min(100, 50 + (int)($breakout_pct * 20));
 
+    // Regime gate — suppress squeeze breakout BUY in bear
+    $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
+    if ($regime === 'bear') return null;
+
     $tp   = 2.5;
     $sl   = 1.5;
-    $hold = 4;
+    $hold = 8;
 
     $lp = _ls_get_learned_params($conn, 'Bollinger Squeeze', $asset);
     if ($lp !== null) {
@@ -1466,9 +1489,14 @@ function _ls_algo_macd_crossover($candles, $price, $symbol, $asset) {
     if ($strength > 100) $strength = 100;
     if ($strength < 30) $strength = 30;
 
+    // Regime gate — suppress counter-regime signals
+    $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
+    if ($signal_type === 'BUY' && $regime === 'bear') return null;
+    if ($signal_type === 'SHORT' && $regime === 'bull') return null;
+
     $tp   = 2.0;
     $sl   = 1.0;
-    $hold = 6;
+    $hold = 12;
 
     $lp = _ls_get_learned_params($conn, 'MACD Crossover', $asset);
     if ($lp !== null) {
@@ -1534,7 +1562,7 @@ function _ls_algo_consensus($conn, $price, $symbol, $asset) {
 
     $tp   = 3.0;
     $sl   = 2.0;
-    $hold = 12;
+    $hold = 24;
 
     // Try to get average TP/SL from the picks if columns exist
     // (Pick tables may not have TP/SL columns; use defaults if so)
@@ -1604,9 +1632,13 @@ function _ls_algo_volatility_breakout($candles, $price, $symbol, $asset) {
     $atr_ratio = $cur_atr / $avg_atr;
     $strength = min(100, (int)($atr_ratio * 30 + 20));
 
+    // Regime gate — suppress volatility breakout BUY in bear
+    $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
+    if ($regime === 'bear') return null;
+
     $tp   = 3.0;
     $sl   = 2.0;
-    $hold = 8;
+    $hold = 16;
 
     $lp = _ls_get_learned_params($conn, 'Volatility Breakout', $asset);
     if ($lp !== null) {
@@ -1769,11 +1801,11 @@ function _ls_algo_trend_sniper($candles, $price, $symbol, $asset) {
 
     // TP/SL by asset class
     if ($asset === 'CRYPTO') {
-        $tp = 1.5; $sl = 0.75; $hold = 4;
+        $tp = 1.5; $sl = 0.75; $hold = 8;
     } elseif ($asset === 'FOREX') {
-        $tp = 0.4; $sl = 0.2; $hold = 4;
+        $tp = 0.4; $sl = 0.2; $hold = 8;
     } else {
-        $tp = 1.0; $sl = 0.5; $hold = 4;
+        $tp = 1.0; $sl = 0.5; $hold = 8;
     }
 
     $lp = _ls_get_learned_params($conn, 'Trend Sniper', $asset);
@@ -1882,12 +1914,16 @@ function _ls_algo_dip_recovery($candles, $price, $symbol, $asset) {
     $strength = min(100, (int)(abs($best_dip) * 10 + $reversal_pct * 10 + $vol_bonus));
     if ($strength < 25) $strength = 25;
 
+    // Regime gate — suppress dip recovery BUY in bear (falling knife)
+    $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
+    if ($regime === 'bear') return null;
+
     if ($asset === 'CRYPTO') {
-        $tp = 2.5; $sl = 1.5; $hold = 8;
+        $tp = 2.5; $sl = 1.5; $hold = 16;
     } elseif ($asset === 'FOREX') {
-        $tp = 0.6; $sl = 0.4; $hold = 8;
+        $tp = 0.6; $sl = 0.4; $hold = 16;
     } else {
-        $tp = 1.5; $sl = 1.0; $hold = 8;
+        $tp = 1.5; $sl = 1.0; $hold = 16;
     }
 
     $lp = _ls_get_learned_params($conn, 'Dip Recovery', $asset);
@@ -1942,12 +1978,17 @@ function _ls_algo_volume_spike($candles, $price, $symbol, $asset) {
     $signal_type = ($change_pct > 0) ? 'BUY' : 'SHORT';
     $strength = min(100, (int)($zscore * 25));
 
+    // Regime gate — suppress counter-regime volume signals
+    $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
+    if ($signal_type === 'BUY' && $regime === 'bear') return null;
+    if ($signal_type === 'SHORT' && $regime === 'bull') return null;
+
     if ($asset === 'CRYPTO') {
-        $tp = 2.0; $sl = 1.0; $hold = 6;
+        $tp = 2.0; $sl = 1.0; $hold = 12;
     } elseif ($asset === 'FOREX') {
-        $tp = 0.5; $sl = 0.3; $hold = 6;
+        $tp = 0.5; $sl = 0.3; $hold = 12;
     } else {
-        $tp = 1.5; $sl = 0.8; $hold = 6;
+        $tp = 1.5; $sl = 0.8; $hold = 12;
     }
 
     $lp = _ls_get_learned_params($conn, 'Volume Spike', $asset);
@@ -2002,12 +2043,17 @@ function _ls_algo_vam($candles, $price, $symbol, $asset) {
     $signal_type = ($martin > 0) ? 'BUY' : 'SHORT';
     $strength = min(100, (int)(abs($martin) * 20));
 
+    // Regime gate — suppress counter-regime VAM signals
+    $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
+    if ($signal_type === 'BUY' && $regime === 'bear') return null;
+    if ($signal_type === 'SHORT' && $regime === 'bull') return null;
+
     if ($asset === 'CRYPTO') {
-        $tp = 2.0; $sl = 1.0; $hold = 6;
+        $tp = 2.0; $sl = 1.0; $hold = 12;
     } elseif ($asset === 'FOREX') {
-        $tp = 0.4; $sl = 0.2; $hold = 6;
+        $tp = 0.4; $sl = 0.2; $hold = 12;
     } else {
-        $tp = 1.2; $sl = 0.6; $hold = 6;
+        $tp = 1.2; $sl = 0.6; $hold = 12;
     }
 
     $lp = _ls_get_learned_params($conn, 'VAM', $asset);
@@ -2069,19 +2115,23 @@ function _ls_algo_mean_reversion_sniper($candles, $price, $symbol, $asset) {
     $strength = min(100, (int)((35 - $rsi) * 3 + (0.15 - $pct_b) * 200));
     if ($strength < 25) $strength = 25;
 
+    // Regime gate — suppress mean reversion BUY in bear (falling knife)
+    $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
+    if ($regime === 'bear') return null;
+
     // TP targets middle Bollinger band
     $tp_from_bb = (($bb['middle'] - $price) / $price) * 100;
     if ($tp_from_bb < 0.3) $tp_from_bb = 0.3;
 
     if ($asset === 'CRYPTO') {
         $tp = min(3.0, max(0.5, $tp_from_bb));
-        $sl = 1.0; $hold = 6;
+        $sl = 1.0; $hold = 12;
     } elseif ($asset === 'FOREX') {
         $tp = min(0.8, max(0.15, $tp_from_bb));
-        $sl = 0.3; $hold = 6;
+        $sl = 0.3; $hold = 12;
     } else {
         $tp = min(2.0, max(0.3, $tp_from_bb));
-        $sl = 0.7; $hold = 6;
+        $sl = 0.7; $hold = 12;
     }
 
     $lp = _ls_get_learned_params($conn, 'Mean Reversion Sniper', $asset);
@@ -2131,8 +2181,8 @@ function _ls_algo_adx_trend($candles, $price, $symbol, $asset) {
     $plus_di = $adx_data['plus_di'];
     $minus_di = $adx_data['minus_di'];
 
-    // ADX must be above 25 (strong trend)
-    if ($adx < 25) return null;
+    // ADX must be above 20 (moderate-to-strong trend, per academic optimal)
+    if ($adx < 20) return null;
 
     // DI spread must be meaningful (> 5 points)
     $di_spread = abs($plus_di - $minus_di);
@@ -2144,10 +2194,16 @@ function _ls_algo_adx_trend($candles, $price, $symbol, $asset) {
     // Strength: higher ADX + wider DI spread = stronger
     $strength = min(100, (int)(($adx - 20) * 2 + $di_spread));
 
+    // Regime gate — suppress counter-regime ADX signals
+    global $conn;
+    $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
+    if ($direction === 'BUY' && $regime === 'bear') return null;
+    if ($direction === 'SHORT' && $regime === 'bull') return null;
+
     // Asset-class TP/SL
-    $tp = 1.5; $sl = 0.75; $hold = 6;
-    if ($asset === 'FOREX') { $tp = 0.4; $sl = 0.2; $hold = 6; }
-    if ($asset === 'STOCK') { $tp = 1.0; $sl = 0.5; $hold = 6; }
+    $tp = 1.5; $sl = 0.75; $hold = 12;
+    if ($asset === 'FOREX') { $tp = 0.4; $sl = 0.2; $hold = 12; }
+    if ($asset === 'STOCK') { $tp = 1.0; $sl = 0.5; $hold = 12; }
 
     // Check learned params
     global $conn;
@@ -2217,12 +2273,17 @@ function _ls_algo_stoch_rsi_cross($candles, $price, $symbol, $asset) {
     }
     $strength = max(30, $strength);
 
-    // Asset-class TP/SL
-    $tp = 2.0; $sl = 1.0; $hold = 6;
-    if ($asset === 'FOREX') { $tp = 0.5; $sl = 0.25; $hold = 6; }
-    if ($asset === 'STOCK') { $tp = 1.2; $sl = 0.6; $hold = 6; }
-
+    // Regime gate — suppress counter-regime StochRSI signals
     global $conn;
+    $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
+    if ($signal === 'BUY' && $regime === 'bear') return null;
+    if ($signal === 'SHORT' && $regime === 'bull') return null;
+
+    // Asset-class TP/SL
+    $tp = 2.0; $sl = 1.0; $hold = 12;
+    if ($asset === 'FOREX') { $tp = 0.5; $sl = 0.25; $hold = 12; }
+    if ($asset === 'STOCK') { $tp = 1.2; $sl = 0.6; $hold = 12; }
+
     $learned = _ls_get_learned_params($conn, 'StochRSI Crossover', $asset);
     if ($learned) {
         $tp = (float)$learned['best_tp_pct'];
@@ -2284,12 +2345,26 @@ function _ls_algo_awesome_osc($candles, $price, $symbol, $asset) {
     $ao_pct = abs($ao / $price) * 100;
     $strength = min(100, max(30, (int)($ao_pct * 500)));
 
-    // Asset-class TP/SL
-    $tp = 1.8; $sl = 0.9; $hold = 6;
-    if ($asset === 'FOREX') { $tp = 0.4; $sl = 0.2; $hold = 6; }
-    if ($asset === 'STOCK') { $tp = 1.0; $sl = 0.5; $hold = 6; }
-
+    // Regime gate — suppress counter-regime AO signals
     global $conn;
+    $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
+    if ($signal === 'BUY' && $regime === 'bear') return null;
+    if ($signal === 'SHORT' && $regime === 'bull') return null;
+
+    // Confirmation gate — AO demoted to confirmation-only (weak standalone per academic research)
+    // Require RSI(14) directional agreement to filter false zero-line crosses
+    $closes_conf = _ls_extract_closes($candles);
+    $rsi_conf = _ls_calc_rsi($closes_conf, 14);
+    if ($rsi_conf !== null) {
+        if ($signal === 'BUY' && $rsi_conf < 45) return null;
+        if ($signal === 'SHORT' && $rsi_conf > 55) return null;
+    }
+
+    // Asset-class TP/SL
+    $tp = 1.8; $sl = 0.9; $hold = 12;
+    if ($asset === 'FOREX') { $tp = 0.4; $sl = 0.2; $hold = 12; }
+    if ($asset === 'STOCK') { $tp = 1.0; $sl = 0.5; $hold = 12; }
+
     $learned = _ls_get_learned_params($conn, 'Awesome Oscillator', $asset);
     if ($learned) {
         $tp = (float)$learned['best_tp_pct'];
@@ -2355,12 +2430,16 @@ function _ls_algo_rsi2_scalp($candles, $price, $symbol, $asset) {
     }
     $strength = max(30, $strength);
 
-    // Shorter hold for scalp trades
-    $tp = 1.2; $sl = 0.6; $hold = 3;
-    if ($asset === 'FOREX') { $tp = 0.3; $sl = 0.15; $hold = 3; }
-    if ($asset === 'STOCK') { $tp = 0.8; $sl = 0.4; $hold = 3; }
-
+    // Regime gate — suppress BUY in bear (mean-reversion falling knife risk)
     global $conn;
+    $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
+    if ($signal === 'BUY' && $regime === 'bear') return null;
+
+    // Shorter hold for scalp trades
+    $tp = 1.2; $sl = 0.6; $hold = 6;
+    if ($asset === 'FOREX') { $tp = 0.3; $sl = 0.15; $hold = 6; }
+    if ($asset === 'STOCK') { $tp = 0.8; $sl = 0.4; $hold = 6; }
+
     $learned = _ls_get_learned_params($conn, 'RSI(2) Scalp', $asset);
     if ($learned) {
         $tp = (float)$learned['best_tp_pct'];
@@ -2460,12 +2539,22 @@ function _ls_algo_ichimoku_cloud($candles, $price, $symbol, $asset) {
     }
     $strength = min(100, max(30, (int)($factors * 25 + $cloud_dist_pct * 10)));
 
-    // TP/SL
-    $tp = 2.0; $sl = 1.0; $hold = 8;
-    if ($asset === 'FOREX') { $tp = 0.5; $sl = 0.25; $hold = 8; }
-    if ($asset === 'STOCK') { $tp = 1.2; $sl = 0.6; $hold = 8; }
-
+    // Regime gate — suppress counter-regime Ichimoku signals
     global $conn;
+    $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
+    if ($signal === 'BUY' && $regime === 'bear') return null;
+    if ($signal === 'SHORT' && $regime === 'bull') return null;
+
+    // Confirmation gate — Ichimoku demoted (underperforms buy-and-hold 90% of time per research)
+    // Require ADX > 20 (trending market) to filter signals in choppy conditions
+    $adx_conf = _ls_calc_adx($highs, $lows, $closes, 14);
+    if ($adx_conf === null || $adx_conf['adx'] < 20) return null;
+
+    // TP/SL
+    $tp = 2.0; $sl = 1.0; $hold = 16;
+    if ($asset === 'FOREX') { $tp = 0.5; $sl = 0.25; $hold = 16; }
+    if ($asset === 'STOCK') { $tp = 1.2; $sl = 0.6; $hold = 16; }
+
     $learned = _ls_get_learned_params($conn, 'Ichimoku Cloud', $asset);
     if ($learned) {
         $tp = (float)$learned['best_tp_pct'];
@@ -2521,7 +2610,7 @@ function _ls_algo_alpha_predator($candles, $price, $symbol, $asset) {
     $adx = $adx_data['adx'];
     $plus_di = $adx_data['plus_di'];
     $minus_di = $adx_data['minus_di'];
-    if ($adx < 25) return null;
+    if ($adx < 20) return null;
 
     // Factor 2: RSI(14) in healthy trend zone (40-70 for BUY, 30-60 for SHORT)
     $rsi = _ls_calc_rsi($closes, 14);
@@ -2600,12 +2689,17 @@ function _ls_algo_alpha_predator($candles, $price, $symbol, $asset) {
     // High conviction — all 4 factors aligned
     $strength = min(100, max(60, (int)($adx * 1.5 + $factors_passed * 10)));
 
-    // TP/SL: tighter for high-conviction
-    $tp = 2.0; $sl = 1.0; $hold = 6;
-    if ($asset === 'FOREX') { $tp = 0.5; $sl = 0.25; $hold = 6; }
-    if ($asset === 'STOCK') { $tp = 1.2; $sl = 0.6; $hold = 6; }
-
+    // Regime gate — suppress counter-regime Alpha Predator signals
     global $conn;
+    $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
+    if ($signal === 'BUY' && $regime === 'bear') return null;
+    if ($signal === 'SHORT' && $regime === 'bull') return null;
+
+    // TP/SL: tighter for high-conviction
+    $tp = 2.0; $sl = 1.0; $hold = 12;
+    if ($asset === 'FOREX') { $tp = 0.5; $sl = 0.25; $hold = 12; }
+    if ($asset === 'STOCK') { $tp = 1.2; $sl = 0.6; $hold = 12; }
+
     $learned = _ls_get_learned_params($conn, 'Alpha Predator', $asset);
     if ($learned) {
         $tp = (float)$learned['best_tp_pct'];
@@ -2665,14 +2759,70 @@ function _ls_insert_signal($conn, $asset_class, $symbol, $price, $sig) {
     $tf          = $conn->real_escape_string($sig['timeframe']);
     $rationale   = $conn->real_escape_string($sig['rationale']);
 
+    // ── Determine param_source: learned vs original ──
+    $orig = _ls_get_original_defaults($sig['algorithm_name'], $asset_class);
+    $orig_tp   = $orig['tp'];
+    $orig_sl   = $orig['sl'];
+    $orig_hold = $orig['hold'];
+
+    // If signal params differ from hardcoded defaults, self-learning overrode them
+    $param_source = 'original';
+    if (abs((float)$sig['target_tp_pct'] - $orig_tp) > 0.05
+        || abs((float)$sig['target_sl_pct'] - $orig_sl) > 0.05
+        || abs($hold - $orig_hold) > 0) {
+        $param_source = 'learned';
+    }
+
     $sql = "INSERT INTO lm_signals (asset_class, symbol, algorithm_name, signal_type, signal_strength,
                 entry_price, target_tp_pct, target_sl_pct, max_hold_hours, timeframe,
-                rationale, signal_time, expires_at, status)
+                rationale, param_source, tp_original, sl_original, hold_original,
+                signal_time, expires_at, status)
             VALUES ('$safe_asset', '$safe_sym', '$safe_algo', '$safe_type', $strength,
                 $entry, $tp, $sl, $hold, '$tf',
-                '$rationale', '$now', '$expires', 'active')";
-    $conn->query($sql);
+                '$rationale', '$param_source', $orig_tp, $orig_sl, $orig_hold,
+                '$now', '$expires', 'active')";
+    $ok = $conn->query($sql);
+    if (!$ok) {
+        // Fallback: columns may not exist yet, insert without param tracking
+        $sql = "INSERT INTO lm_signals (asset_class, symbol, algorithm_name, signal_type, signal_strength,
+                    entry_price, target_tp_pct, target_sl_pct, max_hold_hours, timeframe,
+                    rationale, signal_time, expires_at, status)
+                VALUES ('$safe_asset', '$safe_sym', '$safe_algo', '$safe_type', $strength,
+                    $entry, $tp, $sl, $hold, '$tf',
+                    '$rationale', '$now', '$expires', 'active')";
+        $conn->query($sql);
+    }
     return $conn->insert_id;
+}
+
+// ── Hardcoded default params for each algorithm (pre-learning) ──
+function _ls_get_original_defaults($algo_name, $asset_class) {
+    $d = array(
+        'Momentum Burst'        => array('CRYPTO' => array(3.0, 1.5, 8),   'FOREX' => array(1.5, 0.75, 8),  'STOCK' => array(1.0, 0.5, 8)),
+        'RSI Reversal'          => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(2.0, 1.0, 12),  'STOCK' => array(2.0, 1.0, 12)),
+        'Breakout 24h'          => array('CRYPTO' => array(8.0, 2.0, 16),  'FOREX' => array(8.0, 2.0, 16),  'STOCK' => array(8.0, 2.0, 16)),
+        'DCA Dip'               => array('CRYPTO' => array(5.0, 3.0, 48),  'FOREX' => array(5.0, 3.0, 48),  'STOCK' => array(5.0, 3.0, 48)),
+        'Bollinger Squeeze'     => array('CRYPTO' => array(2.5, 1.5, 8),   'FOREX' => array(2.5, 1.5, 8),   'STOCK' => array(2.5, 1.5, 8)),
+        'MACD Crossover'        => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(2.0, 1.0, 12),  'STOCK' => array(2.0, 1.0, 12)),
+        'Consensus'             => array('CRYPTO' => array(3.0, 2.0, 24),  'FOREX' => array(3.0, 2.0, 24),  'STOCK' => array(3.0, 2.0, 24)),
+        'Volatility Breakout'   => array('CRYPTO' => array(3.0, 2.0, 16),  'FOREX' => array(3.0, 2.0, 16),  'STOCK' => array(3.0, 2.0, 16)),
+        'Trend Sniper'          => array('CRYPTO' => array(1.5, 0.75, 8),  'FOREX' => array(0.4, 0.2, 8),   'STOCK' => array(1.0, 0.5, 8)),
+        'Dip Recovery'          => array('CRYPTO' => array(2.5, 1.5, 16),  'FOREX' => array(0.6, 0.4, 16),  'STOCK' => array(1.5, 1.0, 16)),
+        'Volume Spike'          => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.3, 12),  'STOCK' => array(1.5, 0.8, 12)),
+        'VAM'                   => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.2, 0.6, 12)),
+        'Mean Reversion Sniper' => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.3, 12),  'STOCK' => array(1.5, 0.8, 12)),
+        'ADX Trend Strength'    => array('CRYPTO' => array(1.5, 0.75, 12), 'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.0, 0.5, 12)),
+        'StochRSI Crossover'    => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.25, 12), 'STOCK' => array(1.2, 0.6, 12)),
+        'Awesome Oscillator'    => array('CRYPTO' => array(1.8, 0.9, 12),  'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.0, 0.5, 12)),
+        'RSI(2) Scalp'          => array('CRYPTO' => array(1.2, 0.6, 6),   'FOREX' => array(0.3, 0.15, 6),  'STOCK' => array(0.8, 0.4, 6)),
+        'Ichimoku Cloud'        => array('CRYPTO' => array(2.0, 1.0, 16),  'FOREX' => array(0.5, 0.25, 16), 'STOCK' => array(1.2, 0.6, 16)),
+        'Alpha Predator'        => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.25, 12), 'STOCK' => array(1.2, 0.6, 12))
+    );
+    if (isset($d[$algo_name]) && isset($d[$algo_name][$asset_class])) {
+        $v = $d[$algo_name][$asset_class];
+        return array('tp' => $v[0], 'sl' => $v[1], 'hold' => $v[2]);
+    }
+    return array('tp' => 3.0, 'sl' => 2.0, 'hold' => 12);
 }
 
 // ────────────────────────────────────────────────────────────
@@ -2691,6 +2841,42 @@ function _ls_get_cached_price($conn, $symbol) {
         return (float)$row['price'];
     }
     return 0;
+}
+
+// ────────────────────────────────────────────────────────────
+//  Sector mapping for stock concentration cap
+// ────────────────────────────────────────────────────────────
+
+function _ls_get_stock_sector($symbol) {
+    $map = array(
+        'AAPL'  => 'Technology',
+        'MSFT'  => 'Technology',
+        'GOOGL' => 'Technology',
+        'NVDA'  => 'Technology',
+        'META'  => 'Technology',
+        'AMZN'  => 'Consumer',
+        'NFLX'  => 'Consumer',
+        'WMT'   => 'Consumer',
+        'JPM'   => 'Financial',
+        'BAC'   => 'Financial',
+        'XOM'   => 'Energy',
+        'JNJ'   => 'Healthcare'
+    );
+    return isset($map[$symbol]) ? $map[$symbol] : 'Other';
+}
+
+function _ls_count_sector_signals($conn, $sector, $sector_map) {
+    // Count active stock signals in the same sector
+    $now = date('Y-m-d H:i:s');
+    $res = $conn->query("SELECT symbol FROM lm_signals
+        WHERE asset_class='STOCK' AND status='active' AND expires_at > '$now'");
+    if (!$res) return 0;
+    $count = 0;
+    while ($row = $res->fetch_assoc()) {
+        $sym_sector = isset($sector_map[$row['symbol']]) ? $sector_map[$row['symbol']] : 'Other';
+        if ($sym_sector === $sector) $count++;
+    }
+    return $count;
 }
 
 // ────────────────────────────────────────────────────────────
@@ -2879,9 +3065,24 @@ function _ls_action_scan($conn) {
                 _ls_algo_alpha_predator($candles, $price, $sym, 'STOCK')
             );
 
+            // Sector map for concentration cap
+            $sector_map = array(
+                'AAPL' => 'Technology', 'MSFT' => 'Technology', 'GOOGL' => 'Technology',
+                'NVDA' => 'Technology', 'META' => 'Technology',
+                'AMZN' => 'Consumer', 'NFLX' => 'Consumer', 'WMT' => 'Consumer',
+                'JPM'  => 'Financial', 'BAC' => 'Financial',
+                'XOM'  => 'Energy', 'JNJ' => 'Healthcare'
+            );
+
             foreach ($algo_results as $sig) {
                 if ($sig === null) continue;
                 if (_ls_signal_exists($conn, $sym, $sig['algorithm_name'])) continue;
+
+                // Sector concentration cap — max 3 active signals per sector
+                $sym_sector = isset($sector_map[$sym]) ? $sector_map[$sym] : 'Other';
+                $sector_count = _ls_count_sector_signals($conn, $sym_sector, $sector_map);
+                if ($sector_count >= 3) continue;
+
                 $insert_id = _ls_insert_signal($conn, 'STOCK', $sym, $price, $sig);
                 if ($insert_id > 0) {
                     $generated[] = array(
@@ -2899,6 +3100,17 @@ function _ls_action_scan($conn) {
                 }
             }
         }
+    }
+
+    // Discord alert for strong signals (strength >= 80)
+    $strong_signals = array();
+    foreach ($generated as $g) {
+        if (intval($g['signal_strength']) >= 80) {
+            $strong_signals[] = $g;
+        }
+    }
+    if (count($strong_signals) > 0) {
+        _ls_discord_alert($strong_signals, count($generated), $symbols_scanned);
     }
 
     echo json_encode(array(
@@ -2987,6 +3199,169 @@ function _ls_action_expire($conn) {
 }
 
 // ────────────────────────────────────────────────────────────
+//  Discord alert for strong signals
+// ────────────────────────────────────────────────────────────
+function _ls_discord_alert($strong_signals, $total_generated, $symbols_scanned) {
+    // Read webhook URL from .env
+    $env_file = dirname(__FILE__) . '/../../favcreators/public/api/.env';
+    $webhook_url = '';
+    if (file_exists($env_file)) {
+        $lines = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            if (strpos($line, 'DISCORD_WEBHOOK_URL=') === 0) {
+                $webhook_url = trim(substr($line, 20));
+                break;
+            }
+        }
+    }
+    if (!$webhook_url) return;
+
+    $lines = array();
+    foreach (array_slice($strong_signals, 0, 10) as $s) {
+        $emoji = (intval($s['signal_strength']) >= 90) ? '🔴' : '🟠';
+        $lines[] = $emoji . ' **' . $s['symbol'] . '** — ' . $s['algorithm_name'] . ' | Strength: ' . $s['signal_strength'] . ' | TP: +' . $s['target_tp_pct'] . '% SL: -' . $s['target_sl_pct'] . '%';
+    }
+    if (count($strong_signals) > 10) {
+        $lines[] = '... and ' . (count($strong_signals) - 10) . ' more';
+    }
+
+    $embed = array(
+        'title' => '⚡ Live Monitor: ' . count($strong_signals) . ' strong signal' . (count($strong_signals) > 1 ? 's' : '') . ' (of ' . $total_generated . ' total)',
+        'description' => implode("\n", $lines),
+        'color' => 15105570,
+        'footer' => array('text' => $symbols_scanned . ' symbols scanned | ' . date('H:i:s') . ' UTC'),
+        'url' => 'https://findtorontoevents.ca/live-monitor/live-monitor.html'
+    );
+
+    $payload = json_encode(array('embeds' => array($embed)));
+    $ch = curl_init($webhook_url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_exec($ch);
+    curl_close($ch);
+}
+
+// ────────────────────────────────────────────────────────────
+//  ACTION: regime — public market regime classification
+// ────────────────────────────────────────────────────────────
+function _ls_action_regime($conn) {
+    $regimes = array();
+
+    // Crypto regime: BTC trend + volatility
+    $btc_candles = _ls_fetch_binance_klines('BTCUSD', 48);
+    $btc_closes = _ls_extract_closes($btc_candles);
+    $bc = count($btc_closes);
+    $crypto_regime = 'unknown';
+    $btc_details = array();
+    if ($bc >= 20) {
+        // SMA 20
+        $sum20 = 0;
+        for ($i = $bc - 20; $i < $bc; $i++) $sum20 += $btc_closes[$i];
+        $sma20 = $sum20 / 20;
+        $price = $btc_closes[$bc - 1];
+
+        // Volatility: std dev of returns over last 20 candles
+        $returns = array();
+        for ($i = $bc - 20; $i < $bc; $i++) {
+            if ($btc_closes[$i - 1] > 0) {
+                $returns[] = ($btc_closes[$i] - $btc_closes[$i - 1]) / $btc_closes[$i - 1];
+            }
+        }
+        $vol = 0;
+        if (count($returns) > 1) {
+            $mean = array_sum($returns) / count($returns);
+            $sum_sq = 0;
+            foreach ($returns as $r) $sum_sq += ($r - $mean) * ($r - $mean);
+            $vol = sqrt($sum_sq / (count($returns) - 1)) * 100; // as percentage
+        }
+
+        // Classify: bull if above SMA and trending up, bear if below, sideways if near SMA + low vol
+        $pct_from_sma = (($price - $sma20) / $sma20) * 100;
+        if (abs($pct_from_sma) < 1.0 && $vol < 1.5) {
+            $crypto_regime = 'sideways';
+        } elseif ($price > $sma20) {
+            $crypto_regime = ($vol > 3.0) ? 'volatile_bull' : 'bull';
+        } else {
+            $crypto_regime = ($vol > 3.0) ? 'volatile_bear' : 'bear';
+        }
+
+        $btc_details = array(
+            'price' => round($price, 2),
+            'sma20' => round($sma20, 2),
+            'pct_from_sma' => round($pct_from_sma, 2),
+            'volatility_pct' => round($vol, 2),
+            'candles_used' => $bc
+        );
+    }
+    $regimes['crypto'] = array('regime' => $crypto_regime, 'benchmark' => 'BTC', 'details' => $btc_details);
+
+    // Forex regime: USDJPY trend
+    $jpy_candles = _ls_fetch_twelvedata_series('USDJPY', 48);
+    $jpy_closes = _ls_extract_closes($jpy_candles);
+    $jc = count($jpy_closes);
+    $fx_regime = 'unknown';
+    $fx_details = array();
+    if ($jc >= 20) {
+        $sum20 = 0;
+        for ($i = $jc - 20; $i < $jc; $i++) $sum20 += $jpy_closes[$i];
+        $sma20 = $sum20 / 20;
+        $price = $jpy_closes[$jc - 1];
+        $pct_from_sma = (($price - $sma20) / $sma20) * 100;
+
+        $returns = array();
+        for ($i = $jc - 20; $i < $jc; $i++) {
+            if ($jpy_closes[$i - 1] > 0) {
+                $returns[] = ($jpy_closes[$i] - $jpy_closes[$i - 1]) / $jpy_closes[$i - 1];
+            }
+        }
+        $vol = 0;
+        if (count($returns) > 1) {
+            $mean = array_sum($returns) / count($returns);
+            $sum_sq = 0;
+            foreach ($returns as $r) $sum_sq += ($r - $mean) * ($r - $mean);
+            $vol = sqrt($sum_sq / (count($returns) - 1)) * 100;
+        }
+
+        if (abs($pct_from_sma) < 0.3 && $vol < 0.3) {
+            $fx_regime = 'sideways';
+        } elseif ($price > $sma20) {
+            $fx_regime = 'usd_strong';
+        } else {
+            $fx_regime = 'usd_weak';
+        }
+
+        $fx_details = array(
+            'price' => round($price, 4),
+            'sma20' => round($sma20, 4),
+            'pct_from_sma' => round($pct_from_sma, 2),
+            'volatility_pct' => round($vol, 3)
+        );
+    }
+    $regimes['forex'] = array('regime' => $fx_regime, 'benchmark' => 'USDJPY', 'details' => $fx_details);
+
+    // Stock regime: SPY/general market via cached stock prices
+    $spy_res = $conn->query("SELECT price, last_updated FROM lm_price_cache WHERE symbol = 'AAPL' ORDER BY last_updated DESC LIMIT 1");
+    $stock_regime = 'unknown';
+    $stk_details = array('note' => 'Stock regime uses individual SMA during scan');
+    if ($spy_res && $spy_row = $spy_res->fetch_assoc()) {
+        $stk_details['sample_price'] = $spy_row['price'];
+        $stk_details['last_updated'] = $spy_row['last_updated'];
+        $stock_regime = 'check_individual';
+    }
+    $regimes['stocks'] = array('regime' => $stock_regime, 'benchmark' => 'individual SMA', 'details' => $stk_details);
+
+    echo json_encode(array(
+        'ok' => true,
+        'regimes' => $regimes,
+        'timestamp' => date('Y-m-d H:i:s')
+    ));
+}
+
+// ────────────────────────────────────────────────────────────
 //  Router
 // ────────────────────────────────────────────────────────────
 
@@ -3002,10 +3377,13 @@ switch ($action) {
     case 'expire':
         _ls_action_expire($conn);
         break;
+    case 'regime':
+        _ls_action_regime($conn);
+        break;
     default:
         echo json_encode(array(
             'ok'    => false,
-            'error' => 'Unknown action: ' . $action . '. Valid actions: scan, list, expire'
+            'error' => 'Unknown action: ' . $action . '. Valid actions: scan, list, expire, regime'
         ));
         break;
 }

@@ -251,6 +251,24 @@
             .container { padding: 1rem; }
             .header h1 { font-size: 1.5rem; }
         }
+        /* Glossary */
+        .info-tip{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(99,102,241,0.2);color:var(--accent);font-size:10px;font-weight:700;cursor:help;position:relative;vertical-align:middle;margin-left:4px;flex-shrink:0;font-style:normal}
+        .info-tip:hover{background:rgba(99,102,241,0.4)}
+        .info-tip .tip-text{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1e1e3a;border:1px solid var(--accent);border-radius:8px;padding:10px 12px;font-size:12px;font-weight:400;color:var(--text);width:260px;line-height:1.5;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.5);pointer-events:none}
+        .info-tip:hover .tip-text{display:block}
+        .info-tip .tip-text::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--accent)}
+        .edu-section{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-top:1.5rem;overflow:hidden}
+        .edu-header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;cursor:pointer;user-select:none}
+        .edu-header:hover{background:rgba(255,255,255,0.02)}
+        .edu-header h3{font-size:15px;font-weight:600;margin:0;display:flex;align-items:center;gap:8px}
+        .edu-arrow{font-size:12px;color:var(--text-dim);transition:transform 0.2s}
+        .edu-arrow.open{transform:rotate(180deg)}
+        .edu-body{padding:0 18px 18px;display:none}
+        .edu-body.open{display:block}
+        .glossary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:8px}
+        .glossary-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:12px}
+        .glossary-card .g-term{font-weight:700;color:#fff;font-size:13px;margin-bottom:4px}
+        .glossary-card .g-desc{font-size:12px;color:#bbb;line-height:1.6}
     </style>
 </head>
 <body>
@@ -259,6 +277,7 @@
         <p>Analyze when, where, and how trades win — find your edge in real-time markets</p>
         <div class="header-links">
             <a href="live-monitor.html">Live Monitor</a>
+            <a href="sports-betting.html">Sports Betting</a>
             <a href="hour-learning.html">Hour Learning</a>
             <a href="/investments/">All Investments</a>
             <a href="/findstocks/portfolio2/picks.html">Stock Picks</a>
@@ -417,6 +436,35 @@
         </div>
     </div>
 
+<!-- Glossary & Education -->
+<div style="max-width:1400px;margin:0 auto;padding:0 1.5rem 1.5rem">
+  <div class="edu-section">
+    <div class="edu-header" onclick="toggleEdu(this)">
+      <h3>Glossary of Pattern Analysis Terms <i class="info-tip">i<span class="tip-text">What each metric on this page means in plain language.</span></i></h3>
+      <span class="edu-arrow">&#9660;</span>
+    </div>
+    <div class="edu-body">
+      <div class="glossary-grid">
+        <div class="glossary-card"><div class="g-term">Win Rate</div><div class="g-desc">Percentage of trades that made money. Shown by hour, day, algorithm, and asset. A 60% win rate at 10 AM means 6 out of 10 trades placed around 10 AM were profitable.</div></div>
+        <div class="glossary-card"><div class="g-term">Profit Factor</div><div class="g-desc">Total profits divided by total losses. A profit factor of 1.5 means for every $1 lost, $1.50 was gained. Above 1.0 = profitable overall. Above 2.0 = excellent.</div></div>
+        <div class="glossary-card"><div class="g-term">Market Session</div><div class="g-desc">Trading hours grouped by global region: <strong>Asia Pre-Market</strong> (0-3 AM EST), <strong>Europe</strong> (3-8 AM), <strong>US Morning</strong> (8-12 PM), <strong>US Afternoon</strong> (12-4 PM), <strong>After-Hours</strong> (4-8 PM), <strong>Asia Evening</strong> (8 PM-12 AM).</div></div>
+        <div class="glossary-card"><div class="g-term">Win/Loss Streak</div><div class="g-desc">Consecutive wins or losses in a row. Long win streaks suggest the strategy is in sync with market conditions. Long loss streaks may indicate a regime change (market shift).</div></div>
+        <div class="glossary-card"><div class="g-term">Recovery Rate</div><div class="g-desc">How often the system recovers after a loss — specifically, the percentage of losing trades followed by a winning trade. Higher = more resilient strategy.</div></div>
+        <div class="glossary-card"><div class="g-term">Exit Reason (TP / SL / Max Hold)</div><div class="g-desc"><strong>TP (Take Profit)</strong> = closed at the profit target — ideal outcome. <strong>SL (Stop Loss)</strong> = closed at the loss limit — damage controlled. <strong>Max Hold</strong> = closed after the time limit — indeterminate result.</div></div>
+        <div class="glossary-card"><div class="g-term">Best Setups</div><div class="g-desc">The highest-performing combination of algorithm + asset + time. Example: "RSI Reversal on FOREX @ 10 AM" means that specific algorithm on forex pairs at that time has the best track record.</div></div>
+        <div class="glossary-card"><div class="g-term">Algorithm Matrix</div><div class="g-desc">A cross-reference table showing how each of the 19 algorithms performs on each asset class (crypto, forex, stocks). Identifies which algorithms work best on which markets.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;font-size:0.75rem;color:#555;margin-top:1rem;padding:0.8rem;border:1px solid rgba(255,255,255,0.04);border-radius:8px">
+    Paper trading simulation. Not financial advice. For educational and research purposes only. Past patterns do not guarantee future results.
+  </div>
+</div>
+
+<script>
+function toggleEdu(el){var b=el.nextElementSibling,a=el.querySelector('.edu-arrow');if(b.classList.contains('open')){b.classList.remove('open');a.classList.remove('open');}else{b.classList.add('open');a.classList.add('open');}}
+</script>
 <script>
 var API_BASE = window.location.hostname === 'localhost' ? 'api' : '/live-monitor/api';
 var hourlyChart = null, dailyChart = null;
@@ -711,5 +759,6 @@ function loadStreaks() {
 // Load on start
 loadAll();
 </script>
+<script src="/findstocks/portfolio2/stock-nav.js"></script>
 </body>
 </html>

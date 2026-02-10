@@ -164,6 +164,24 @@
         .tag-backtest { background:rgba(234,179,8,0.15); color:#eab308; border:1px solid rgba(234,179,8,0.3); }
         .tag-live { background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3); }
         .tag-forward { background:rgba(99,102,241,0.15); color:#6366f1; border:1px solid rgba(99,102,241,0.3); }
+        /* Glossary */
+        .info-tip{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(99,102,241,0.2);color:var(--accent);font-size:10px;font-weight:700;cursor:help;position:relative;vertical-align:middle;margin-left:4px;flex-shrink:0;font-style:normal}
+        .info-tip:hover{background:rgba(99,102,241,0.4)}
+        .info-tip .tip-text{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1e1e3a;border:1px solid var(--accent);border-radius:8px;padding:10px 12px;font-size:12px;font-weight:400;color:var(--text);width:260px;line-height:1.5;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.5);pointer-events:none}
+        .info-tip:hover .tip-text{display:block}
+        .info-tip .tip-text::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--accent)}
+        .edu-section{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-top:1.5rem;overflow:hidden}
+        .edu-header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;cursor:pointer;user-select:none}
+        .edu-header:hover{background:rgba(255,255,255,0.02)}
+        .edu-header h3{font-size:15px;font-weight:600;margin:0;display:flex;align-items:center;gap:8px}
+        .edu-arrow{font-size:12px;color:var(--text-dim);transition:transform 0.2s}
+        .edu-arrow.open{transform:rotate(180deg)}
+        .edu-body{padding:0 18px 18px;display:none}
+        .edu-body.open{display:block}
+        .glossary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:8px}
+        .glossary-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:12px}
+        .glossary-card .g-term{font-weight:700;color:#fff;font-size:13px;margin-bottom:4px}
+        .glossary-card .g-desc{font-size:12px;color:#bbb;line-height:1.6}
     </style>
 </head>
 <body>
@@ -789,10 +807,34 @@ api('get_fundamentals&ticker=all', function(data) {
 });
 </script>
 
-<div style="max-width:1200px;margin:2rem auto 1rem;padding:0.6rem 1rem;font-size:0.68rem;color:#666680;background:rgba(234,179,8,0.04);border:1px solid rgba(234,179,8,0.12);border-radius:6px;line-height:1.6;">
+<div style="max-width:1200px;margin:1.5rem auto 0;padding:0">
+  <div class="edu-section">
+    <div class="edu-header" onclick="toggleEdu(this)">
+      <h3>Glossary of Dividend &amp; Earnings Terms <i class="info-tip">i<span class="tip-text">What each column and metric means in plain language.</span></i></h3>
+      <span class="edu-arrow">&#9660;</span>
+    </div>
+    <div class="edu-body">
+      <div class="glossary-grid">
+        <div class="glossary-card"><div class="g-term">Dividend</div><div class="g-desc">A cash payment companies make to shareholders, usually quarterly. Example: Apple pays ~$0.25 per share every 3 months. It's like earning interest for holding the stock.</div></div>
+        <div class="glossary-card"><div class="g-term">Dividend Yield</div><div class="g-desc">Annual dividend as a percentage of the stock price. A $100 stock paying $3/year has a 3% yield. Higher yield = more income per dollar invested. But unusually high yields (8%+) may signal trouble.</div></div>
+        <div class="glossary-card"><div class="g-term">Ex-Dividend Date</div><div class="g-desc">The cutoff date. You must own the stock BEFORE this date to receive the next dividend. Buy on or after this date and you miss the payment.</div></div>
+        <div class="glossary-card"><div class="g-term">Payout Ratio</div><div class="g-desc">What percentage of earnings the company pays as dividends. 40% = healthy (keeps 60% for growth). 90%+ = company is paying out almost everything, which may not be sustainable.</div></div>
+        <div class="glossary-card"><div class="g-term">EPS (Earnings Per Share)</div><div class="g-desc">The company's profit divided by total shares outstanding. Higher EPS = more profitable per share. The most basic measure of "how much money is the company making?"</div></div>
+        <div class="glossary-card"><div class="g-term">P/E Ratio</div><div class="g-desc">Price divided by earnings. A P/E of 20 means you're paying $20 for every $1 of annual profit. Lower P/E = cheaper stock (value play). Higher P/E = investors expect fast growth (growth play). Average S&P 500 P/E is ~20-25.</div></div>
+        <div class="glossary-card"><div class="g-term">Earnings Surprise</div><div class="g-desc">The difference between what analysts predicted and what the company actually earned. A positive surprise (+5%) means the company beat expectations — usually bullish. Negative surprise = missed expectations — usually bearish.</div></div>
+        <div class="glossary-card"><div class="g-term">Market Cap</div><div class="g-desc">The total value of all the company's shares. Stock price x total shares = market cap. <strong>Large cap</strong> ($10B+) = stable blue chips. <strong>Mid cap</strong> ($2-10B) = moderate growth. <strong>Small cap</strong> (&lt;$2B) = higher risk/reward.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>function toggleEdu(el){var b=el.nextElementSibling,a=el.querySelector('.edu-arrow');if(b.classList.contains('open')){b.classList.remove('open');a.classList.remove('open');}else{b.classList.add('open');a.classList.add('open');}}</script>
+
+<div style="max-width:1200px;margin:1rem auto 1rem;padding:0.6rem 1rem;font-size:0.68rem;color:#666680;background:rgba(234,179,8,0.04);border:1px solid rgba(234,179,8,0.12);border-radius:6px;line-height:1.6;">
     <strong>Data delays:</strong> Dividend, earnings, and fundamentals data sourced from Yahoo Finance and updated nightly via automated refresh. Data may be delayed or incomplete. Ex-dividend dates and earnings estimates are approximate and subject to change.<br>
     <strong>Disclaimer:</strong> This dashboard is for educational and research purposes only. Not financial advice. Past dividends do not guarantee future payments. Always verify data with your broker before making investment decisions.
 </div>
 
+<script src="/findstocks/portfolio2/stock-nav.js"></script>
 </body>
 </html>

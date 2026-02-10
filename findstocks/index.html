@@ -1743,6 +1743,8 @@
       if(cards[i].innerHTML.indexOf('STOCKSUNIFY2')!==-1){target=cards[i];break;}
     }
     if(target){
+      // Hide the STOCKSUNIFY2 Architecture card (dead link to /findstocks2/)
+      target.style.display='none';
       var d=document.createElement('div');
       d.className='mt-4 max-w-4xl mx-auto';
       d.innerHTML='<a class="block group" href="/findstocks2_global/">'
@@ -1889,31 +1891,73 @@
       lastCard = ca;
     }
 
-    // 5c. Latest Updates banner
+    // 5c. Penny Stock Finder card
+    if(lastCard && lastCard.parentNode){
+      var ps=document.createElement('div');
+      ps.className='mt-4 max-w-4xl mx-auto';
+      ps.innerHTML='<a class="block group" href="/findstocks/portfolio2/penny-stocks.html">'
+        +'<div class="glass-panel p-6 rounded-[2rem] border-2 border-lime-500/50 bg-gradient-to-r from-lime-500/10 via-transparent to-green-500/10 hover:border-lime-400 transition-all">'
+        +'<div class="flex flex-wrap items-center justify-between gap-6 px-4">'
+        +'<div class="text-left">'
+        +'<div class="flex items-center gap-3 mb-2">'
+        +'<span class="px-2 py-0.5 rounded bg-lime-500 text-[10px] font-black tracking-tighter uppercase text-black">New</span>'
+        +'<h2 class="text-xl font-bold text-white">Penny Stock Finder</h2>'
+        +'</div>'
+        +'<p class="text-sm text-neutral-400 max-w-xl">High-volume penny stocks on <strong>regulated exchanges only</strong>. RRSP-eligible, no OTC/Pink Sheets. Filter by Canada vs US, price, volume &amp; market cap.</p>'
+        +'</div>'
+        +'<div class="px-8 py-3 bg-lime-500 text-black text-sm font-black rounded-full group-hover:scale-105 transition-transform">Find Penny Stocks \u2192</div>'
+        +'</div></div></a>';
+      lastCard.parentNode.insertBefore(ps,lastCard.nextSibling);
+      lastCard = ps;
+    }
+
+    // 5d. Meme Coin Scanner card
+    if(lastCard && lastCard.parentNode){
+      var mm=document.createElement('div');
+      mm.className='mt-4 max-w-4xl mx-auto';
+      mm.innerHTML='<a class="block group" href="/findcryptopairs/meme.html">'
+        +'<div class="glass-panel p-6 rounded-[2rem] border-2 border-fuchsia-500/50 bg-gradient-to-r from-fuchsia-500/10 via-transparent to-pink-500/10 hover:border-fuchsia-400 transition-all">'
+        +'<div class="flex flex-wrap items-center justify-between gap-6 px-4">'
+        +'<div class="text-left">'
+        +'<div class="flex items-center gap-3 mb-2">'
+        +'<span class="px-2 py-0.5 rounded bg-fuchsia-500 text-[10px] font-black tracking-tighter uppercase">New</span>'
+        +'<h2 class="text-xl font-bold text-white">Meme Coin Scanner</h2>'
+        +'</div>'
+        +'<p class="text-sm text-neutral-400 max-w-xl">Short-term momentum plays with <strong>7 meme-specific indicators</strong>. Tiered discovery, volatility-adjusted targets &amp; DOGE/SHIB/PEPE tracking.</p>'
+        +'</div>'
+        +'<div class="px-8 py-3 bg-fuchsia-500 text-white text-sm font-black rounded-full group-hover:scale-105 transition-transform">Open Meme Scanner \u2192</div>'
+        +'</div></div></a>';
+      lastCard.parentNode.insertBefore(mm,lastCard.nextSibling);
+      lastCard = mm;
+    }
+
+    // 5e. Latest Updates banner
     if(lastCard && lastCard.parentNode){
       var ub=document.createElement('div');
       ub.className='mt-6 max-w-4xl mx-auto';
       ub.innerHTML='<div class="glass-panel p-5 rounded-2xl border border-white/10 bg-white/[0.02]">'
         +'<div class="flex items-center gap-3 mb-3">'
         +'<span class="px-2 py-0.5 rounded bg-indigo-500 text-[10px] font-black tracking-tighter uppercase">Latest Updates</span>'
-        +'<span class="text-sm text-neutral-400">Feb 9, 2026</span>'
+        +'<span class="text-sm text-neutral-400">Feb 10, 2026</span>'
         +'</div>'
         +'<div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">'
-        +'<div class="flex items-start gap-2"><span class="text-indigo-400">\uD83D\uDD17</span><span class="text-neutral-300"><strong>Consolidated Picks</strong> \u2014 Cross-algorithm consensus detection for stocks</span></div>'
-        +'<div class="flex items-start gap-2"><span class="text-yellow-400">\u26A1</span><span class="text-neutral-300"><strong>Quick Picks</strong> \u2014 Ready-made picks for day trade, swing, and long-term</span></div>'
-        +'<div class="flex items-start gap-2"><span class="text-green-400">\uD83E\uDDEA</span><span class="text-neutral-300"><strong>Learning Lab</strong> \u2014 Track how all 6 self-learning systems are improving</span></div>'
-        +'<div class="flex items-start gap-2"><span class="text-rose-400">\uD83D\uDD2C</span><span class="text-neutral-300"><strong>DayTraders Miracle v3</strong> \u2014 Latest AI scanner with self-learning strategies</span></div>'
+        +'<div class="flex items-start gap-2"><span class="text-lime-400">\uD83D\uDCB0</span><span class="text-neutral-300"><strong>Penny Stock Finder</strong> \u2014 RRSP-eligible high-volume screener, Canada &amp; US</span></div>'
+        +'<div class="flex items-start gap-2"><span class="text-fuchsia-400">\uD83E\uDD84</span><span class="text-neutral-300"><strong>Meme Coin Scanner</strong> \u2014 7 meme-specific indicators, tiered discovery</span></div>'
+        +'<div class="flex items-start gap-2"><span class="text-cyan-400">\uD83E\uDDEA</span><span class="text-neutral-300"><strong>Self-Learning vs Original</strong> \u2014 Algorithm performance comparison dashboard</span></div>'
+        +'<div class="flex items-start gap-2"><span class="text-indigo-400">\uD83D\uDD17</span><span class="text-neutral-300"><strong>Consolidated Picks</strong> \u2014 55+ algorithms, consensus detection</span></div>'
         +'</div>'
         +'<div class="mt-3 flex flex-wrap gap-3 text-xs">'
+        +'<a href="/findstocks/portfolio2/penny-stocks.html" class="text-lime-400 hover:text-lime-300">Penny Stocks \u2192</a>'
+        +'<a href="/findcryptopairs/meme.html" class="text-fuchsia-400 hover:text-fuchsia-300">Meme Scanner \u2192</a>'
         +'<a href="/findstocks/portfolio2/consolidated.html" class="text-indigo-400 hover:text-indigo-300">Consolidated Picks \u2192</a>'
         +'<a href="/findstocks/portfolio2/stock-intel.html?ticker=AAPL" class="text-cyan-400 hover:text-cyan-300">Stock Intelligence \u2192</a>'
         +'<a href="/findstocks/portfolio2/learning-lab.html" class="text-purple-400 hover:text-purple-300">Learning Lab \u2192</a>'
         +'<a href="/findstocks/portfolio2/daytrader-sim.html" class="text-yellow-400 hover:text-yellow-300">$500/Day Simulator \u2192</a>'
-        +'<a href="/findstocks/portfolio2/leaderboard.html" class="text-emerald-400 hover:text-emerald-300">Algorithm Leaderboard \u2192</a>'
-        +'<a href="/findstocks_global/miracle.html" class="text-rose-400 hover:text-rose-300">Miracle v3 \u2192</a>'
-        +'<a href="/findforex2/portfolio/" class="text-teal-400 hover:text-teal-300">Forex \u2192</a>'
+        +'<a href="/findstocks/portfolio2/leaderboard.html" class="text-emerald-400 hover:text-emerald-300">Leaderboard \u2192</a>'
+        +'<a href="/live-monitor/algo-performance.html" class="text-cyan-400 hover:text-cyan-300">Self-Learning vs Original \u2192</a>'
         +'<a href="/findcryptopairs/portfolio/" class="text-orange-400 hover:text-orange-300">Crypto \u2192</a>'
-        +'<a href="/findmutualfunds2/portfolio2/" class="text-sky-400 hover:text-sky-300">Mutual Funds \u2192</a>'
+        +'<a href="/findforex2/portfolio/" class="text-teal-400 hover:text-teal-300">Forex \u2192</a>'
+        +'<a href="/updates/?category=stocks" class="text-neutral-400 hover:text-neutral-200">Stock Updates \u2192</a>'
         +'<a href="/updates/" class="text-neutral-500 hover:text-neutral-300">Full Changelog \u2192</a>'
         +'</div>'
         +'</div>';
@@ -1943,6 +1987,18 @@
         nl.className='w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-emerald-500/20 text-emerald-200 hover:text-white transition-all border border-transparent hover:border-emerald-500/30';
         nl.innerHTML='<span class="text-lg">\uD83C\uDF0D</span> Global Portfolio Dashboard';
         ml.parentNode.insertBefore(nl,ml.nextSibling);
+        // Penny Stocks link
+        var pl=document.createElement('a');
+        pl.href='/findstocks/portfolio2/penny-stocks.html';
+        pl.className='w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-lime-500/20 text-lime-200 hover:text-white transition-all border border-transparent hover:border-lime-500/30';
+        pl.innerHTML='<span class="text-lg">\uD83D\uDCB0</span> Penny Stock Finder';
+        nl.parentNode.insertBefore(pl,nl.nextSibling);
+        // Meme Coin Scanner link
+        var mcl=document.createElement('a');
+        mcl.href='/findcryptopairs/meme.html';
+        mcl.className='w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-fuchsia-500/20 text-fuchsia-200 hover:text-white transition-all border border-transparent hover:border-fuchsia-500/30';
+        mcl.innerHTML='<span class="text-lg">\uD83E\uDD84</span> Meme Coin Scanner';
+        pl.parentNode.insertBefore(mcl,pl.nextSibling);
         break;
       }
     }

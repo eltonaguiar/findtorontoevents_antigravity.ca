@@ -1,0 +1,91 @@
+name: Daily Picks Snapshot — Crypto, Forex & Stocks
+
+on:
+  schedule:
+    # Weekdays 5 PM EST (22:00 UTC) — after market close
+    - cron: '0 22 * * 1-5'
+    # Sunday midnight EST (05:00 UTC Monday) — weekly summary
+    - cron: '0 5 * * 1'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  daily-snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+    # ─── Step 1: Generate daily picks snapshot ───
+    - name: Generate daily picks snapshot
+      run: |
+        echo "=== Daily Picks Snapshot ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/daily_picks.php?action=all&snapshot=1&key=livetrader2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            print(f'Snapshot time: {d.get(\"snapshot_time\",\"?\")}')
+            print(f'Crypto picks: {d.get(\"crypto_count\",0)}')
+            print(f'Forex picks:  {d.get(\"forex_count\",0)}')
+            print(f'Stock picks:  {d.get(\"stock_count\",0)}')
+            print(f'Total:        {d.get(\"total\",0)}')
+            print(f'Wins (7d):    {d.get(\"wins_7d\",0)}')
+        else:
+            print(f'Error: {d.get(\"error\",\"unknown\")}')
+        " || echo "Snapshot: $RESULT"
+
+    # ─── Step 2: Verify crypto picks ───
+    - name: Verify crypto picks
+      continue-on-error: true
+      run: |
+        echo "=== Crypto Picks Check ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/daily_picks.php?action=crypto") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            picks = d.get('picks', [])
+            print(f'{len(picks)} active crypto signals')
+            for p in picks[:3]:
+                print(f'  {p[\"symbol\"]:10s} {p[\"signal_type\"]:5s} strength={p[\"signal_strength\"]} algo={p[\"algorithm\"]}')
+            perf = d.get('performance_summary', {})
+            print(f'30d: {perf.get(\"total_trades_30d\",0)} trades, {perf.get(\"win_rate\",0)}% WR')
+        " || echo "Crypto: $RESULT"
+
+    # ─── Step 3: Verify momentum picks ───
+    - name: Verify momentum picks
+      continue-on-error: true
+      run: |
+        echo "=== Momentum Picks Check ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/daily_picks.php?action=momentum") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            picks = d.get('picks', [])
+            streaks = d.get('win_streaks', [])
+            print(f'{len(picks)} high-conviction signals (strength 70+)')
+            for p in picks[:3]:
+                ws = p.get('win_streak', 0)
+                extra = f' STREAK={ws}' if ws >= 2 else ''
+                print(f'  {p[\"symbol\"]:10s} {p[\"asset_class\"]:6s} strength={p[\"signal_strength\"]}{extra}')
+            if streaks:
+                print(f'{len(streaks)} win streaks:')
+                for s in streaks:
+                    print(f'  {s[\"symbol\"]} ({s[\"asset_class\"]}): {s[\"win_streak\"]} consecutive wins')
+        " || echo "Momentum: $RESULT"
+
+    # ─── Step 4: Verify recent wins ───
+    - name: Verify recent wins
+      continue-on-error: true
+      run: |
+        echo "=== Recent Wins Check ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/daily_picks.php?action=wins") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            wins = d.get('wins', [])
+            print(f'{len(wins)} winning trades (7d)')
+            for w in wins[:5]:
+                print(f'  {w[\"symbol\"]:10s} {w[\"asset_class\"]:6s} +\${w[\"realized_pnl\"]:.2f} (+{w[\"realized_pct\"]:.2f}%) {w[\"algorithm\"]}')
+        " || echo "Wins: $RESULT"

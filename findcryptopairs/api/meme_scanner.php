@@ -34,10 +34,22 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'winners';
 $key    = isset($_GET['key']) ? $_GET['key'] : '';
 $ADMIN_KEY = 'memescan2026';
 
-// Tier 1: established meme coins (always scanned)
+// Tier 1: established meme coins (always scanned — NO filters applied)
 $MEME_TIER1 = array(
     'DOGE_USDT', 'SHIB_USDT', 'PEPE_USDT', 'FLOKI_USDT',
-    'BONK_USDT', 'WIF_USDT', 'MEME_USDT'
+    'BONK_USDT', 'WIF_USDT', 'TURBO_USDT', 'NEIRO_USDT'
+);
+
+// CoinGecko IDs for Tier 1 (fallback when not on Crypto.com Exchange)
+$CG_TIER1_IDS = array(
+    'DOGE_USDT'  => 'dogecoin',
+    'SHIB_USDT'  => 'shiba-inu',
+    'PEPE_USDT'  => 'pepe',
+    'FLOKI_USDT' => 'floki',
+    'BONK_USDT'  => 'bonk',
+    'WIF_USDT'   => 'dogwifhat',
+    'TURBO_USDT' => 'turbo',
+    'NEIRO_USDT' => 'neiro-3'
 );
 
 // Meme keyword fragments for dynamic discovery
@@ -92,67 +104,83 @@ switch ($action) {
 //  SCAN — the meme engine
 // ═══════════════════════════════════════════════════════════════════════
 function _mc_action_scan($conn) {
-    global $MEME_TIER1, $MEME_KEYWORDS;
+    global $MEME_TIER1, $MEME_KEYWORDS, $CG_TIER1_IDS;
     $start = microtime(true);
 
-    // 1. Get all instruments from Crypto.com
+    // ── PHASE 1: Crypto.com Exchange data ──
     $instruments = _mc_api('public/get-instruments');
-    if (!$instruments || !isset($instruments['result']['data'])) {
-        _mc_err('Failed to fetch instruments from Crypto.com');
-    }
-
     $all_usdt_pairs = array();
-    foreach ($instruments['result']['data'] as $inst) {
-        $sym = isset($inst['symbol']) ? $inst['symbol'] : (isset($inst['instrument_name']) ? $inst['instrument_name'] : '');
-        $itype = isset($inst['inst_type']) ? $inst['inst_type'] : '';
-        if ($itype === 'CCY_PAIR' && _mc_ends_with($sym, '_USDT')) {
-            $all_usdt_pairs[] = $sym;
+    if ($instruments && isset($instruments['result']['data'])) {
+        foreach ($instruments['result']['data'] as $inst) {
+            $sym = isset($inst['symbol']) ? $inst['symbol'] : (isset($inst['instrument_name']) ? $inst['instrument_name'] : '');
+            $itype = isset($inst['inst_type']) ? $inst['inst_type'] : '';
+            if ($itype === 'CCY_PAIR' && _mc_ends_with($sym, '_USDT')) {
+                $all_usdt_pairs[] = $sym;
+            }
         }
     }
 
-    // 2. Get all tickers
     $tickers_raw = _mc_api('public/get-tickers');
-    if (!$tickers_raw || !isset($tickers_raw['result']['data'])) {
-        _mc_err('Failed to fetch tickers');
-    }
     $tickers = array();
-    foreach ($tickers_raw['result']['data'] as $t) {
-        $k = isset($t['i']) ? $t['i'] : (isset($t['symbol']) ? $t['symbol'] : '');
-        if ($k) $tickers[$k] = $t;
+    if ($tickers_raw && isset($tickers_raw['result']['data'])) {
+        foreach ($tickers_raw['result']['data'] as $t) {
+            $k = isset($t['i']) ? $t['i'] : (isset($t['symbol']) ? $t['symbol'] : '');
+            if ($k) $tickers[$k] = $t;
+        }
     }
 
-    // 3. Build candidate list: Tier 1 (always) + Tier 2 (dynamic discovery)
+    // ── PHASE 2: CoinGecko meme discovery (aggregated across ALL exchanges) ──
+    $cg_memes = _mc_coingecko_meme_market();
+
+    // ── PHASE 3: Build candidate list ──
     $candidates = array();
     $tier1_found = 0;
     $tier2_found = 0;
+    $seen_pairs = array();
 
-    // Tier 1: established memes — always include if they have volume
+    // Tier 1: established memes — ALWAYS include, NO volume/change filters
     foreach ($MEME_TIER1 as $meme) {
-        if (!isset($tickers[$meme])) continue;
-        $t = $tickers[$meme];
-        $price  = isset($t['a']) ? floatval($t['a']) : 0;
-        $volUsd = isset($t['vv']) ? floatval($t['vv']) : (floatval(isset($t['v']) ? $t['v'] : 0) * $price);
-        $chg24  = isset($t['c']) ? floatval($t['c']) * 100 : 0;
+        $has_cc = isset($tickers[$meme]);
+        $cg_match = _mc_find_cg_match($meme, $cg_memes, $CG_TIER1_IDS);
 
-        if ($volUsd < 50000) continue; // lower threshold for established memes
-        if ($chg24 <= -5) continue;    // allow small dips for tier 1
+        if (!$has_cc && !$cg_match) continue;
+
+        if ($has_cc) {
+            $t = $tickers[$meme];
+            $price  = isset($t['a']) ? floatval($t['a']) : 0;
+            $volUsd = isset($t['vv']) ? floatval($t['vv']) : (floatval(isset($t['v']) ? $t['v'] : 0) * $price);
+            $chg24  = isset($t['c']) ? floatval($t['c']) * 100 : 0;
+            // Use CoinGecko aggregate volume if available (much more representative)
+            if ($cg_match && $cg_match['total_volume'] > $volUsd) {
+                $volUsd = floatval($cg_match['total_volume']);
+                $chg24  = floatval($cg_match['price_change_percentage_24h']);
+            }
+        } else {
+            $price  = floatval($cg_match['current_price']);
+            $volUsd = floatval($cg_match['total_volume']);
+            $chg24  = floatval($cg_match['price_change_percentage_24h']);
+        }
 
         $candidates[] = array(
-            'pair'     => $meme,
-            'price'    => $price,
-            'vol_usd'  => $volUsd,
-            'chg_24h'  => $chg24,
-            'high_24h' => isset($t['h']) ? floatval($t['h']) : $price,
-            'low_24h'  => isset($t['l']) ? floatval($t['l']) : $price,
-            'tier'     => 'tier1'
+            'pair'       => $meme,
+            'price'      => $price,
+            'vol_usd'    => $volUsd,
+            'chg_24h'    => $chg24,
+            'high_24h'   => $has_cc && isset($tickers[$meme]['h']) ? floatval($tickers[$meme]['h']) : ($cg_match ? floatval($cg_match['high_24h']) : $price),
+            'low_24h'    => $has_cc && isset($tickers[$meme]['l']) ? floatval($tickers[$meme]['l']) : ($cg_match ? floatval($cg_match['low_24h']) : $price),
+            'tier'       => 'tier1',
+            'source'     => $has_cc ? 'crypto_com' : 'coingecko',
+            'cg_id'      => $cg_match ? $cg_match['id'] : (isset($CG_TIER1_IDS[$meme]) ? $CG_TIER1_IDS[$meme] : null),
+            'has_cc'     => $has_cc
         );
+        $seen_pairs[$meme] = true;
         $tier1_found++;
     }
 
-    // Tier 2: dynamic discovery — find pumping meme-like coins
+    // Tier 2 from Crypto.com: relaxed filters
     $tier2_pool = array();
     foreach ($all_usdt_pairs as $pair) {
-        if (in_array($pair, $MEME_TIER1)) continue; // skip tier 1
+        if (isset($seen_pairs[$pair])) continue;
         if (!isset($tickers[$pair])) continue;
 
         $t = $tickers[$pair];
@@ -160,12 +188,10 @@ function _mc_action_scan($conn) {
         $volUsd = isset($t['vv']) ? floatval($t['vv']) : (floatval(isset($t['v']) ? $t['v'] : 0) * $price);
         $chg24  = isset($t['c']) ? floatval($t['c']) * 100 : 0;
 
-        // Tier 2 filters: pumping + small-to-mid cap + meme-like
-        if ($chg24 < 5) continue;         // must be pumping
-        if ($volUsd < 100000) continue;    // minimum liquidity
-        if ($volUsd > 500000000) continue; // skip mega-caps (BTC, ETH)
+        if ($chg24 < 2) continue;          // relaxed from 5% to 2%
+        if ($volUsd < 25000) continue;      // relaxed from 100K to 25K
+        if ($volUsd > 500000000) continue;
 
-        // Check if it matches meme keywords
         $is_meme = false;
         $base = str_replace('_USDT', '', $pair);
         foreach ($MEME_KEYWORDS as $kw) {
@@ -174,11 +200,7 @@ function _mc_action_scan($conn) {
                 break;
             }
         }
-
-        // Also accept extreme volume spikes as "meme-like" behavior
-        // even without keyword match (new memes we don't know yet)
-        $is_extreme_pump = ($chg24 >= 15 && $volUsd >= 500000);
-
+        $is_extreme_pump = ($chg24 >= 10 && $volUsd >= 100000);
         if (!$is_meme && !$is_extreme_pump) continue;
 
         $tier2_pool[] = array(
@@ -188,31 +210,80 @@ function _mc_action_scan($conn) {
             'chg_24h'  => $chg24,
             'high_24h' => isset($t['h']) ? floatval($t['h']) : $price,
             'low_24h'  => isset($t['l']) ? floatval($t['l']) : $price,
-            'tier'     => 'tier2'
+            'tier'     => 'tier2',
+            'source'   => 'crypto_com',
+            'cg_id'    => null,
+            'has_cc'   => true
         );
     }
 
-    // Sort tier 2 by 24h change, take top 15
+    // Tier 2 from CoinGecko: find pumping meme coins not already seen
+    foreach ($cg_memes as $cg) {
+        $pair = strtoupper($cg['symbol']) . '_USDT';
+        if (isset($seen_pairs[$pair])) continue;
+
+        $vol   = floatval($cg['total_volume']);
+        $chg24 = floatval($cg['price_change_percentage_24h']);
+        $mcap  = floatval($cg['market_cap']);
+
+        // CoinGecko Tier 2 filters (these are aggregate volumes, so higher thresholds)
+        if ($chg24 < 3) continue;
+        if ($vol < 1000000) continue;        // $1M aggregate min
+        if ($mcap > 10000000000) continue;   // skip $10B+ (BTC, ETH not in meme category anyway)
+
+        $tier2_pool[] = array(
+            'pair'     => $pair,
+            'price'    => floatval($cg['current_price']),
+            'vol_usd'  => $vol,
+            'chg_24h'  => $chg24,
+            'high_24h' => floatval($cg['high_24h']),
+            'low_24h'  => floatval($cg['low_24h']),
+            'tier'     => 'tier2',
+            'source'   => isset($tickers[$pair]) ? 'crypto_com' : 'coingecko',
+            'cg_id'    => $cg['id'],
+            'has_cc'   => isset($tickers[$pair])
+        );
+        $seen_pairs[$pair] = true;
+    }
+
     usort($tier2_pool, '_mc_sort_by_change');
     $tier2_pool = array_slice($tier2_pool, 0, 15);
     foreach ($tier2_pool as $t2) {
         $candidates[] = $t2;
+        $seen_pairs[$t2['pair']] = true;
         $tier2_found++;
     }
 
-    // 4. Deep analysis with meme-specific scoring
+    // ── PHASE 4: Deep analysis with candles ──
     $scored = array();
     foreach ($candidates as $c) {
-        // Get 15m candles (96 = 24h) and 5m candles (48 = 4h)
-        $candles_15m = _mc_api('public/get-candlestick?instrument_name=' . $c['pair'] . '&timeframe=M15');
-        $candles_5m  = _mc_api('public/get-candlestick?instrument_name=' . $c['pair'] . '&timeframe=M5');
+        $c15m = array();
+        $c5m  = array();
+        $has_volume_data = false;
 
-        $c15m = isset($candles_15m['result']['data']) ? $candles_15m['result']['data'] : array();
-        $c5m  = isset($candles_5m['result']['data']) ? $candles_5m['result']['data'] : array();
+        // Try Crypto.com candles first (best: 5m + 15m with volume)
+        if ($c['has_cc']) {
+            $candles_15m = _mc_api('public/get-candlestick?instrument_name=' . $c['pair'] . '&timeframe=M15');
+            $candles_5m  = _mc_api('public/get-candlestick?instrument_name=' . $c['pair'] . '&timeframe=M5');
+            $c15m = isset($candles_15m['result']['data']) ? $candles_15m['result']['data'] : array();
+            $c5m  = isset($candles_5m['result']['data']) ? $candles_5m['result']['data'] : array();
+            $has_volume_data = (count($c15m) >= 8);
+        }
 
-        if (count($c15m) < 8 || count($c5m) < 8) continue;
+        // Fallback to CoinGecko OHLC (30-min candles, no volume)
+        if (count($c15m) < 8 && isset($c['cg_id']) && $c['cg_id']) {
+            $cg_ohlc = _mc_coingecko_ohlc($c['cg_id']);
+            if (count($cg_ohlc) >= 8) {
+                $c15m = $cg_ohlc;
+                $c5m  = $cg_ohlc; // same granularity, less ideal but functional
+                $has_volume_data = false;
+            }
+        }
 
-        $score_details = _mc_score_pair($c, $c15m, $c5m);
+        if (count($c15m) < 8) continue;
+        if (count($c5m) < 8) $c5m = $c15m;
+
+        $score_details = _mc_score_pair($c, $c15m, $c5m, $has_volume_data);
         $c['score']      = $score_details['total'];
         $c['factors']    = $score_details['factors'];
         $c['verdict']    = $score_details['verdict'];
@@ -272,7 +343,8 @@ function _mc_action_scan($conn) {
             'verdict' => $tc['verdict'],
             'tier' => $tc['tier'],
             'chg_24h' => round($tc['chg_24h'], 2),
-            'vol_usd' => round($tc['vol_usd'], 0)
+            'vol_usd' => round($tc['vol_usd'], 0),
+            'source' => isset($tc['source']) ? $tc['source'] : 'crypto_com'
         );
     }
 
@@ -280,6 +352,7 @@ function _mc_action_scan($conn) {
         'ok' => true,
         'scan_id' => $scan_id,
         'total_usdt_pairs' => count($all_usdt_pairs),
+        'coingecko_memes' => count($cg_memes),
         'tier1_found' => $tier1_found,
         'tier2_found' => $tier2_found,
         'deep_analyzed' => count($scored),
@@ -294,37 +367,44 @@ function _mc_action_scan($conn) {
 // ═══════════════════════════════════════════════════════════════════════
 //  SCORING ENGINE — meme-specific factors
 // ═══════════════════════════════════════════════════════════════════════
-function _mc_score_pair($candidate, $candles_15m, $candles_5m) {
+function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data = true) {
     $total = 0;
     $factors = array();
     $current_price = $candidate['price'];
     $vol_usd = $candidate['vol_usd'];
 
-    // Extract close prices
+    // Extract close prices — handle both Crypto.com objects and CoinGecko arrays
     $closes_15m = array();
     $volumes_15m = array();
     foreach ($candles_15m as $c) {
-        $closes_15m[] = floatval($c['c']);
-        $volumes_15m[] = floatval(isset($c['v']) ? $c['v'] : 0);
+        if (is_array($c) && isset($c[4])) {
+            // CoinGecko format: [timestamp, open, high, low, close]
+            $closes_15m[] = floatval($c[4]);
+            $volumes_15m[] = 0; // CoinGecko OHLC has no volume
+        } else {
+            // Crypto.com format: {t, o, h, l, c, v}
+            $closes_15m[] = floatval($c['c']);
+            $volumes_15m[] = floatval(isset($c['v']) ? $c['v'] : 0);
+        }
     }
     $closes_5m = array();
     foreach ($candles_5m as $c) {
-        $closes_5m[] = floatval($c['c']);
+        if (is_array($c) && isset($c[4])) {
+            $closes_5m[] = floatval($c[4]);
+        } else {
+            $closes_5m[] = floatval($c['c']);
+        }
     }
 
     $n15 = count($closes_15m);
     $n5  = count($closes_5m);
 
     // ── Factor 1: Explosive Volume (0-25 pts) ──
-    // Compare recent volume to average
+    // Compare recent volume to average (candle data) or use aggregate volume rank (CoinGecko)
     $vol_score = 0;
-    if (count($volumes_15m) >= 10) {
-        $recent_vol = 0;
-        $avg_vol = 0;
+    if ($has_volume_data && count($volumes_15m) >= 10) {
         $vol_count = count($volumes_15m);
-        // Average of all candles
         $avg_vol = array_sum($volumes_15m) / $vol_count;
-        // Recent 3 candles
         $recent_3 = array_slice($volumes_15m, -3);
         $recent_vol = array_sum($recent_3) / 3;
 
@@ -340,10 +420,24 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m) {
             'score' => $vol_score,
             'max' => 25,
             'ratio' => round($vol_ratio, 1),
-            'recent_avg' => round($recent_vol, 2)
+            'recent_avg' => round($recent_vol, 2),
+            'method' => 'candle'
         );
     } else {
-        $factors['explosive_volume'] = array('score' => 0, 'max' => 25, 'ratio' => 0);
+        // No per-candle volume — use 24h aggregate volume as proxy
+        // Award points based on volume tier (higher aggregate vol = more interest)
+        if ($vol_usd >= 100000000) $vol_score = 20;       // $100M+ = very active meme
+        elseif ($vol_usd >= 50000000) $vol_score = 15;
+        elseif ($vol_usd >= 10000000) $vol_score = 10;
+        elseif ($vol_usd >= 1000000) $vol_score = 6;
+        elseif ($vol_usd >= 100000) $vol_score = 3;
+
+        $factors['explosive_volume'] = array(
+            'score' => $vol_score,
+            'max' => 25,
+            'vol_usd_24h' => round($vol_usd, 0),
+            'method' => 'aggregate'
+        );
     }
     $total += $vol_score;
 
@@ -396,7 +490,7 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m) {
     // ── Factor 4: Social Momentum Proxy (0-15 pts) ──
     // Velocity = price_chg_1h × volume_surge_ratio — proxy for hype/social buzz
     $social_score = 0;
-    if ($n15 >= 4 && count($volumes_15m) >= 10) {
+    if ($n15 >= 4 && $has_volume_data && count($volumes_15m) >= 10) {
         $mom_1h = ($closes_15m[$n15 - 4] > 0) ? abs(($closes_15m[$n15 - 1] - $closes_15m[$n15 - 4]) / $closes_15m[$n15 - 4]) * 100 : 0;
         $vol_count2 = count($volumes_15m);
         $avg_v = array_sum($volumes_15m) / $vol_count2;
@@ -416,7 +510,33 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m) {
             'max' => 15,
             'velocity' => round($velocity, 1),
             'mom_1h' => round($mom_1h, 2),
-            'vol_ratio' => round($vr, 1)
+            'vol_ratio' => round($vr, 1),
+            'method' => 'candle'
+        );
+    } elseif ($n15 >= 4) {
+        // No per-candle volume — use price momentum × aggregate volume rank
+        $mom_1h = ($closes_15m[$n15 - 4] > 0) ? abs(($closes_15m[$n15 - 1] - $closes_15m[$n15 - 4]) / $closes_15m[$n15 - 4]) * 100 : 0;
+        $vol_rank = 1.0;
+        if ($vol_usd >= 100000000) $vol_rank = 3.0;
+        elseif ($vol_usd >= 50000000) $vol_rank = 2.5;
+        elseif ($vol_usd >= 10000000) $vol_rank = 2.0;
+        elseif ($vol_usd >= 1000000) $vol_rank = 1.5;
+
+        $velocity = $mom_1h * $vol_rank;
+
+        if ($velocity >= 15) $social_score = 15;
+        elseif ($velocity >= 8) $social_score = 12;
+        elseif ($velocity >= 4) $social_score = 8;
+        elseif ($velocity >= 2) $social_score = 5;
+        elseif ($velocity >= 0.5) $social_score = 2;
+
+        $factors['social_proxy'] = array(
+            'score' => $social_score,
+            'max' => 15,
+            'velocity' => round($velocity, 1),
+            'mom_1h' => round($mom_1h, 2),
+            'vol_rank' => $vol_rank,
+            'method' => 'aggregate'
         );
     } else {
         $factors['social_proxy'] = array('score' => 0, 'max' => 15, 'velocity' => 0);
@@ -426,23 +546,54 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m) {
     // ── Factor 5: Volume Concentration (0-10 pts) ──
     // What % of recent volume is in the last 3 candles? Burst = pump starting
     $conc_score = 0;
-    if (count($volumes_15m) >= 12) {
+    if ($has_volume_data && count($volumes_15m) >= 12) {
         $last12_vol = array_sum(array_slice($volumes_15m, -12));
         $last3_vol  = array_sum(array_slice($volumes_15m, -3));
         $conc_pct = ($last12_vol > 0) ? ($last3_vol / $last12_vol) * 100 : 0;
 
-        if ($conc_pct >= 60) $conc_score = 10;       // 60%+ in last 3 of 12 = massive burst
+        if ($conc_pct >= 60) $conc_score = 10;
         elseif ($conc_pct >= 45) $conc_score = 7;
         elseif ($conc_pct >= 35) $conc_score = 4;
-        elseif ($conc_pct >= 28) $conc_score = 2;    // 25% would be even distribution
+        elseif ($conc_pct >= 28) $conc_score = 2;
 
         $factors['volume_concentration'] = array(
             'score' => $conc_score,
             'max' => 10,
-            'pct' => round($conc_pct, 1)
+            'pct' => round($conc_pct, 1),
+            'method' => 'candle'
         );
     } else {
-        $factors['volume_concentration'] = array('score' => 0, 'max' => 10, 'pct' => 0);
+        // No per-candle volume — use price-range concentration as proxy
+        // If recent candles have larger price swings = activity concentrating
+        if ($n15 >= 12) {
+            $ranges_all = array();
+            for ($ri = max(0, $n15 - 12); $ri < $n15; $ri++) {
+                if (is_array($candles_15m[$ri]) && isset($candles_15m[$ri][2])) {
+                    $rh = floatval($candles_15m[$ri][2]);
+                    $rl = floatval($candles_15m[$ri][3]);
+                } else {
+                    $rh = floatval($candles_15m[$ri]['h']);
+                    $rl = floatval($candles_15m[$ri]['l']);
+                }
+                $ranges_all[] = ($rl > 0) ? ($rh - $rl) / $rl * 100 : 0;
+            }
+            $total_range = array_sum($ranges_all);
+            $recent_range = array_sum(array_slice($ranges_all, -3));
+            $range_pct = ($total_range > 0) ? ($recent_range / $total_range) * 100 : 0;
+
+            if ($range_pct >= 50) $conc_score = 8;
+            elseif ($range_pct >= 40) $conc_score = 5;
+            elseif ($range_pct >= 30) $conc_score = 3;
+
+            $factors['volume_concentration'] = array(
+                'score' => $conc_score,
+                'max' => 10,
+                'pct' => round($range_pct, 1),
+                'method' => 'price_range'
+            );
+        } else {
+            $factors['volume_concentration'] = array('score' => 0, 'max' => 10, 'pct' => 0, 'method' => 'none');
+        }
     }
     $total += $conc_score;
 
@@ -450,10 +601,14 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m) {
     // Is price breaking above its recent 4-hour high?
     $breakout_score = 0;
     if ($n15 >= 16) {
-        // 4h high = max of last 16 × 15m candles
+        // 4h high = max of last 16 candles
         $high_4h = 0;
         for ($i = max(0, $n15 - 16); $i < $n15 - 1; $i++) {
-            $ch = floatval($candles_15m[$i]['h']);
+            if (is_array($candles_15m[$i]) && isset($candles_15m[$i][2])) {
+                $ch = floatval($candles_15m[$i][2]); // CoinGecko: [ts, o, h, l, c]
+            } else {
+                $ch = floatval($candles_15m[$i]['h']); // Crypto.com
+            }
             if ($ch > $high_4h) $high_4h = $ch;
         }
         if ($high_4h > 0) {
@@ -869,9 +1024,17 @@ function _mc_calc_atr($candles, $period = 14) {
 
     $trs = array();
     for ($i = 1; $i < $n; $i++) {
-        $high = floatval($candles[$i]['h']);
-        $low  = floatval($candles[$i]['l']);
-        $prev_close = floatval($candles[$i - 1]['c']);
+        if (is_array($candles[$i]) && isset($candles[$i][2])) {
+            // CoinGecko format: [timestamp, open, high, low, close]
+            $high = floatval($candles[$i][2]);
+            $low  = floatval($candles[$i][3]);
+            $prev_close = floatval($candles[$i - 1][4]);
+        } else {
+            // Crypto.com format
+            $high = floatval($candles[$i]['h']);
+            $low  = floatval($candles[$i]['l']);
+            $prev_close = floatval($candles[$i - 1]['c']);
+        }
         $tr = max($high - $low, abs($high - $prev_close), abs($low - $prev_close));
         $trs[] = $tr;
     }
@@ -944,6 +1107,59 @@ function _mc_binomial_significance($wins, $total, $null_p) {
 // ═══════════════════════════════════════════════════════════════════════
 //  HELPERS
 // ═══════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════
+//  COINGECKO HELPERS — supplementary data source for better meme coverage
+// ═══════════════════════════════════════════════════════════════════════
+
+function _mc_coingecko_meme_market() {
+    // Fetch top meme coins by volume from CoinGecko (free, no key, 30 calls/min)
+    $url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=meme-token&order=volume_desc&per_page=50&page=1';
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 12);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_USERAGENT, 'MemeScanner/1.0');
+    $resp = curl_exec($ch);
+    curl_close($ch);
+    if (!$resp) return array();
+    $data = json_decode($resp, true);
+    if (!is_array($data)) return array();
+    return $data;
+}
+
+function _mc_coingecko_ohlc($coin_id) {
+    // Fetch 1-day OHLC (30-min candles, ~48 candles)
+    // Format: [[timestamp, open, high, low, close], ...]
+    $url = 'https://api.coingecko.com/api/v3/coins/' . urlencode($coin_id) . '/ohlc?vs_currency=usd&days=1';
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_USERAGENT, 'MemeScanner/1.0');
+    $resp = curl_exec($ch);
+    curl_close($ch);
+    if (!$resp) return array();
+    $data = json_decode($resp, true);
+    if (!is_array($data)) return array();
+    return $data;
+}
+
+function _mc_find_cg_match($pair, $cg_memes, $cg_id_map) {
+    // Try explicit ID mapping first
+    if (isset($cg_id_map[$pair])) {
+        $target_id = $cg_id_map[$pair];
+        foreach ($cg_memes as $cg) {
+            if ($cg['id'] === $target_id) return $cg;
+        }
+    }
+    // Fall back to symbol match
+    $base = strtolower(str_replace('_USDT', '', $pair));
+    foreach ($cg_memes as $cg) {
+        if ($cg['symbol'] === $base) return $cg;
+    }
+    return null;
+}
 
 function _mc_api($endpoint) {
     $url = 'https://api.crypto.com/exchange/v1/' . $endpoint;

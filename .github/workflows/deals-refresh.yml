@@ -1,0 +1,152 @@
+name: Deals & Freebies — Verify & Refresh
+
+on:
+  schedule:
+    # Every Monday 9 AM EST (14:00 UTC) — weekly verification
+    - cron: '0 14 * * 1'
+    # 1st of each month 9 AM EST — monthly full check
+    - cron: '0 14 1 * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  verify-deals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    # ─── Step 1: Verify API health ───
+    - name: Verify deals API health
+      run: |
+        echo "=== Deals API Health Check ==="
+        echo "Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/fc/api/deals.php?action=categories") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            cats = d.get('categories', [])
+            print(f'API OK — {len(cats)} categories available')
+            print(f'Last updated: {d.get(\"last_updated\", \"unknown\")}')
+            print(f'Data version: {d.get(\"data_version\", \"unknown\")}')
+            for c in cats:
+                print(f'  {c[\"icon\"]} {c[\"label\"]} ({c[\"key\"]})')
+        else:
+            print(f'ERROR: {d.get(\"error\", \"unknown\")}')
+            sys.exit(1)
+        " || echo "API response: $RESULT"
+
+    # ─── Step 2: Verify birthday freebies ───
+    - name: Verify birthday freebies
+      continue-on-error: true
+      run: |
+        echo "=== Birthday Freebies Check ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/fc/api/deals.php?action=birthday") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            count = d.get('birthday_count', 0)
+            deals = d.get('birthday_freebies', [])
+            print(f'{count} birthday freebies loaded')
+            cats = {}
+            for deal in deals:
+                cat = deal.get('category', 'other')
+                cats[cat] = cats.get(cat, 0) + 1
+            for cat, n in sorted(cats.items(), key=lambda x: -x[1]):
+                print(f'  {cat}: {n} deals')
+            # Top 5 by value
+            by_val = sorted(deals, key=lambda x: -x.get('value_est', 0))[:5]
+            print('Top 5 by value:')
+            for d2 in by_val:
+                print(f'  \${d2[\"value_est\"]} — {d2[\"name\"]}: {d2.get(\"freebie\",\"\")}')
+        else:
+            print(f'Error: {d.get(\"error\", \"unknown\")}')
+        " || echo "Birthday: $RESULT"
+
+    # ─── Step 3: Verify free today ───
+    - name: Verify free today
+      continue-on-error: true
+      run: |
+        echo "=== Free Today Check ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/fc/api/deals.php?action=free_today") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            today = d.get('today_day', '?')
+            count = d.get('free_today_count', 0)
+            items = d.get('free_today', [])
+            print(f'{today.title()}: {count} free things available today')
+            for item in items[:8]:
+                name = item.get('name', '?')
+                desc = item.get('description', item.get('freebie', ''))[:60]
+                print(f'  {name} — {desc}')
+        else:
+            print(f'Error: {d.get(\"error\", \"unknown\")}')
+        " || echo "Free today: $RESULT"
+
+    # ─── Step 4: Verify Canadian deals ───
+    - name: Verify Canadian deals
+      continue-on-error: true
+      run: |
+        echo "=== Canadian Deals Check ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/fc/api/deals.php?action=canadian_deals") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            cd = d.get('canadian_deals', {})
+            active = len(cd.get('active_today', []))
+            upcoming = len(cd.get('upcoming', []))
+            samples = len(cd.get('samples_by_mail', []))
+            sites = len(cd.get('deal_sites', []))
+            print(f'Active today: {active}')
+            print(f'Upcoming: {upcoming}')
+            print(f'Samples by mail: {samples}')
+            print(f'Deal sites: {sites}')
+            # Check for expired deals
+            from datetime import datetime
+            today = datetime.now().strftime('%Y-%m-%d')
+            expired = 0
+            for deal in cd.get('active_today', []):
+                exp = deal.get('expiry', 'permanent')
+                if exp != 'permanent' and exp < today:
+                    expired += 1
+                    print(f'  EXPIRED: {deal[\"name\"]} (expired {exp})')
+            if expired:
+                print(f'WARNING: {expired} deal(s) may have expired!')
+            else:
+                print('All active deals are current.')
+        else:
+            print(f'Error: {d.get(\"error\", \"unknown\")}')
+        " || echo "Canadian deals: $RESULT"
+
+    # ─── Step 5: Verify deals page loads ───
+    - name: Verify deals page loads
+      continue-on-error: true
+      run: |
+        echo "=== Deals Page Check ==="
+        STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "https://findtorontoevents.ca/deals/") || true
+        if [ "$STATUS" = "200" ]; then
+          echo "Deals page: HTTP 200 OK"
+        else
+          echo "WARNING: Deals page returned HTTP $STATUS"
+        fi
+
+    # ─── Step 6: Verify search functionality ───
+    - name: Verify search functionality
+      continue-on-error: true
+      run: |
+        echo "=== Search Test ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/fc/api/deals.php?action=search&q=starbucks") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            bday = len(d.get('birthday_freebies', []))
+            print(f'Search \"starbucks\": {bday} birthday freebie matches')
+            if bday > 0:
+                print('  Search is working correctly.')
+            else:
+                print('  WARNING: Expected at least 1 Starbucks result')
+        " || echo "Search: $RESULT"

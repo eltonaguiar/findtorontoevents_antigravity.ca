@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithm Study | Our 19 Algorithms vs. Academic Research</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --gold: #f59e0b;
+            --cyan: #06b6d4;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--cyan), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-links { display: flex; gap: 1rem; font-size: 0.85rem; flex-wrap: wrap; }
+        .header-links a { color: var(--text-dim); }
+        .header-links a:hover { color: var(--text); }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 1.5rem; }
+
+        .section-title {
+            font-size: 1.1rem; font-weight: 700; margin: 2rem 0 1rem;
+            padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .section-title .tag {
+            font-size: 0.6rem; padding: 0.15rem 0.5rem; border-radius: 4px;
+            font-weight: 700; text-transform: uppercase;
+        }
+        .tag-research { background: rgba(6,182,212,0.15); color: var(--cyan); border: 1px solid rgba(6,182,212,0.3); }
+        .tag-live { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+        .tag-warning { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+
+        .intro-box {
+            background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(6,182,212,0.06));
+            border: 1px solid rgba(99,102,241,0.2);
+            border-radius: var(--radius); padding: 1.25rem; margin-bottom: 2rem;
+            font-size: 0.85rem; color: var(--text-dim); line-height: 1.7;
+        }
+        .intro-box strong { color: var(--text); }
+
+        /* Collapsible sections */
+        .collapse-toggle {
+            display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; user-select: none;
+            font-size: 1.05rem; font-weight: 700; margin: 1.5rem 0 0.5rem;
+            padding: 0.75rem 1rem; border-radius: var(--radius);
+            background: var(--bg-card); border: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+        .collapse-toggle:hover { background: var(--bg-card-hover); }
+        .collapse-toggle .arrow { transition: transform 0.3s; font-size: 0.8rem; color: var(--text-dim); }
+        .collapse-toggle.open .arrow { transform: rotate(180deg); }
+        .collapse-body {
+            max-height: 0; overflow: hidden; transition: max-height 0.4s ease;
+        }
+        .collapse-body.open { max-height: 20000px; }
+        .collapse-inner { padding: 1rem 0; }
+
+        /* Tables */
+        .study-table {
+            width: 100%; border-collapse: collapse; font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+        .study-table th {
+            text-align: left; padding: 0.6rem 0.75rem;
+            background: var(--bg-card); color: var(--text-dim);
+            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+        .study-table td {
+            padding: 0.6rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.04);
+            vertical-align: top;
+        }
+        .study-table tr:hover td { background: rgba(99,102,241,0.04); }
+        .positive { color: var(--green); }
+        .negative { color: var(--red); }
+        .neutral { color: var(--yellow); }
+
+        /* Grade badges */
+        .grade {
+            display: inline-block; width: 28px; height: 28px; line-height: 28px;
+            text-align: center; font-weight: 800; font-size: 0.75rem; border-radius: 6px;
+        }
+        .grade-A { background: rgba(34,197,94,0.2); color: var(--green); }
+        .grade-B { background: rgba(59,130,246,0.2); color: var(--blue); }
+        .grade-C { background: rgba(234,179,8,0.2); color: var(--yellow); }
+        .grade-D { background: rgba(239,68,68,0.15); color: #f97316; }
+        .grade-F { background: rgba(239,68,68,0.2); color: var(--red); }
+
+        /* Verdict badges */
+        .verdict {
+            display: inline-block; font-size: 0.65rem; padding: 0.15rem 0.5rem;
+            border-radius: 4px; font-weight: 700; text-transform: uppercase;
+        }
+        .verdict-keep { background: var(--green-dim); color: var(--green); }
+        .verdict-tweak { background: var(--yellow-dim); color: var(--yellow); }
+        .verdict-remove { background: var(--red-dim); color: var(--red); }
+        .verdict-add { background: rgba(99,102,241,0.15); color: var(--accent); }
+
+        /* Algo card */
+        .algo-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1rem;
+        }
+        .algo-card-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;
+        }
+        .algo-card-title {
+            font-size: 0.95rem; font-weight: 700;
+        }
+        .algo-card-num {
+            font-size: 0.7rem; color: var(--text-dim);
+            margin-right: 0.4rem;
+        }
+        .algo-card-body { font-size: 0.8rem; color: var(--text-dim); line-height: 1.6; }
+        .algo-card-body strong { color: var(--text); }
+        .algo-metric-row {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.5rem; margin: 0.75rem 0;
+        }
+        .algo-metric {
+            background: rgba(255,255,255,0.03); border-radius: 6px; padding: 0.4rem 0.6rem;
+        }
+        .algo-metric .lbl { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.03em; }
+        .algo-metric .val { font-size: 0.85rem; font-weight: 700; }
+
+        .finding-box {
+            background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.15);
+            border-radius: 8px; padding: 0.6rem 0.8rem; margin-top: 0.5rem;
+            font-size: 0.78rem; line-height: 1.5;
+        }
+        .finding-box.danger { background: rgba(239,68,68,0.06); border-color: rgba(239,68,68,0.15); }
+        .finding-box.success { background: rgba(34,197,94,0.06); border-color: rgba(34,197,94,0.15); }
+
+        /* Key takeaways */
+        .takeaway {
+            display: flex; gap: 0.75rem; padding: 0.75rem; margin-bottom: 0.75rem;
+            background: var(--bg-card); border-radius: var(--radius);
+            border-left: 3px solid var(--accent);
+        }
+        .takeaway.good { border-left-color: var(--green); }
+        .takeaway.bad { border-left-color: var(--red); }
+        .takeaway.idea { border-left-color: var(--cyan); }
+        .takeaway-num {
+            font-size: 1.1rem; font-weight: 800; color: var(--text-dim);
+            min-width: 24px;
+        }
+        .takeaway-text { font-size: 0.82rem; color: var(--text-dim); line-height: 1.5; }
+        .takeaway-text strong { color: var(--text); }
+
+        .source-list {
+            list-style: none; padding: 0; margin: 0.5rem 0;
+        }
+        .source-list li {
+            font-size: 0.72rem; color: var(--text-dim); padding: 0.2rem 0;
+            padding-left: 1rem; position: relative;
+        }
+        .source-list li::before { content: '\2192'; position: absolute; left: 0; color: var(--accent); }
+
+        .disclaimer {
+            text-align: center; font-size: 0.7rem; color: var(--text-dim);
+            padding: 2rem 1.5rem; border-top: 1px solid var(--border);
+            margin-top: 2rem; line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .header { padding: 0.75rem 1rem; }
+            .header h1 { font-size: 1.2rem; }
+            .container { padding: 1rem; }
+            .algo-metric-row { grid-template-columns: 1fr 1fr; }
+            .study-table { font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Algorithm Study</h1>
+    <div class="header-links">
+        <a href="hub.html">Hub</a>
+        <a href="consolidated.html">Consolidated Picks</a>
+        <a href="leaderboard.html">Leaderboard</a>
+        <a href="/live-monitor/live-monitor.html">Live Monitor</a>
+        <a href="/updates/">Changelog</a>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="intro-box">
+        <strong>What is this page?</strong> We compared all 19 of our live-monitor trading algorithms against
+        published academic research and proven quant strategies. Every algorithm was evaluated against peer-reviewed
+        studies (Jegadeesh &amp; Titman 1993, Brock et al. 1992, Moskowitz et al. 2012, Connors 2009, and more).
+        This page documents what&rsquo;s working, what&rsquo;s not, and why &mdash; with citations.<br><br>
+        <strong>Study date:</strong> February 10, 2026 &nbsp;|&nbsp;
+        <strong>Data source:</strong> 58 tracked consensus picks, 24 algorithms graded, 19 live-monitor algos analyzed &nbsp;|&nbsp;
+        <strong>Performance window:</strong> Genesis (Feb 10, 2026) to present
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SECTION 1: SYSTEM PERFORMANCE OVERVIEW -->
+    <!-- ═══════════════════════════════════════════════════ -->
+
+    <div class="section-title">System Performance Overview <span class="tag tag-live">Live Data</span></div>
+
+    <table class="study-table">
+        <thead><tr><th>Metric</th><th>Our System</th><th>Industry Benchmark</th><th>Verdict</th></tr></thead>
+        <tbody>
+            <tr>
+                <td><strong>Average Return</strong></td>
+                <td class="positive">+0.58%</td>
+                <td>Good retail: +0.5&ndash;1.5%/trade</td>
+                <td><span class="verdict verdict-keep">On Track</span></td>
+            </tr>
+            <tr>
+                <td><strong>Win Rate</strong></td>
+                <td>60% (21W / 14L)</td>
+                <td>Balanced system: 50&ndash;60%</td>
+                <td><span class="verdict verdict-keep">Solid</span></td>
+            </tr>
+            <tr>
+                <td><strong>Position Sizing</strong></td>
+                <td>5% fixed</td>
+                <td>Quarter Kelly (6.25%)</td>
+                <td><span class="verdict verdict-keep">Conservative</span></td>
+            </tr>
+            <tr>
+                <td><strong>Open Positions</strong></td>
+                <td>58</td>
+                <td>10&ndash;20 max for active mgmt</td>
+                <td><span class="verdict verdict-tweak">Too Many</span></td>
+            </tr>
+            <tr>
+                <td><strong>Holding Periods</strong></td>
+                <td>3&ndash;24 hours</td>
+                <td>Days to weeks (academic)</td>
+                <td><span class="verdict verdict-remove">Too Short</span></td>
+            </tr>
+            <tr>
+                <td><strong>Regime Gating</strong></td>
+                <td>1 of 19 algos</td>
+                <td>All algos should gate</td>
+                <td><span class="verdict verdict-tweak">Expand</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SECTION 2: ALGORITHM REPORT CARD -->
+    <!-- ═══════════════════════════════════════════════════ -->
+
+    <div class="section-title">Algorithm Report Card vs. Academia <span class="tag tag-research">Research</span></div>
+
+    <!-- Grade A -->
+    <div class="collapse-toggle open" onclick="toggleCollapse(this)">
+        <span><span class="grade grade-A">A</span> &nbsp; Top Performers &mdash; Keep &amp; Enhance</span>
+        <span class="arrow">&#9660;</span>
+    </div>
+    <div class="collapse-body open">
+    <div class="collapse-inner">
+        <table class="study-table">
+            <thead><tr><th>Algorithm</th><th>Our Return</th><th>Picks</th><th>Win Rate</th><th>Academic Benchmark</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Sector Momentum</strong></td><td class="positive">+5.17%</td><td>4</td><td class="positive">100%</td><td>Factor rotation: 4x S&amp;P Sharpe (Fama-French)</td></tr>
+                <tr><td><strong>Sector Rotation</strong></td><td class="positive">+2.88%</td><td>6</td><td>66.7%</td><td>Sector rotation: 10&ndash;15% annualized</td></tr>
+            </tbody>
+        </table>
+        <div class="finding-box success">
+            These strategies align with decades of factor investing research. Sector momentum captures
+            capital flows between industries &mdash; currently Energy/Staples/Industrials winning while Tech bleeds.
+            Small sample size but thesis is sound.
+        </div>
+    </div>
+    </div>
+
+    <!-- Grade B -->
+    <div class="collapse-toggle" onclick="toggleCollapse(this)">
+        <span><span class="grade grade-B">B</span> &nbsp; Solid Performers &mdash; Minor Tweaks</span>
+        <span class="arrow">&#9660;</span>
+    </div>
+    <div class="collapse-body">
+    <div class="collapse-inner">
+        <table class="study-table">
+            <thead><tr><th>Algorithm</th><th>Return</th><th>Picks</th><th>Win Rate</th><th>Academic Benchmark</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Blue Chip Growth</strong></td><td class="positive">+1.31%</td><td>20</td><td class="positive">77.8%</td><td>Value/growth factor: 2&ndash;5% annual</td></tr>
+                <tr><td><strong>Alpha Factor Momentum</strong></td><td class="positive">+1.25%</td><td>11</td><td class="positive">75%</td><td>Jegadeesh &amp; Titman: ~1%/month</td></tr>
+                <tr><td><strong>Alpha Factor Safe Bets</strong></td><td class="positive">+0.78%</td><td>16</td><td class="positive">83.3%</td><td>Low-vol anomaly: 0.5&ndash;1% premium</td></tr>
+                <tr><td><strong>Alpha Factor Composite</strong></td><td class="positive">+0.64%</td><td>19</td><td>62.5%</td><td>Multi-factor: varies by implementation</td></tr>
+                <tr><td><strong>Cursor Genius</strong></td><td class="positive">+0.90%</td><td>7</td><td>57.1%</td><td>Mixed factor: varies</td></tr>
+            </tbody>
+        </table>
+        <div class="finding-box success">
+            Alpha Factor Safe Bets at 83.3% WR is exceptional. Blue Chip Growth&rsquo;s 78% WR across 20 picks
+            is statistically meaningful. These are outperforming their academic benchmarks.
+        </div>
+    </div>
+    </div>
+
+    <!-- Grade C -->
+    <div class="collapse-toggle" onclick="toggleCollapse(this)">
+        <span><span class="grade grade-C">C</span> &nbsp; Mediocre &mdash; Need Attention</span>
+        <span class="arrow">&#9660;</span>
+    </div>
+    <div class="collapse-body">
+    <div class="collapse-inner">
+        <table class="study-table">
+            <thead><tr><th>Algorithm</th><th>Return</th><th>Picks</th><th>Win Rate</th><th>Problem</th></tr></thead>
+            <tbody>
+                <tr><td><strong>CDR Zero-Fee Play</strong></td><td class="positive">+0.18%</td><td>16</td><td>55.6%</td><td>Returns barely positive after fees</td></tr>
+                <tr><td><strong>Alpha Factor Value</strong></td><td>0.00%</td><td>10</td><td class="negative">33.3%</td><td>Value factor dead since 2020</td></tr>
+                <tr><td><strong>Composite Rating</strong></td><td class="negative">-0.25%</td><td>12</td><td>50%</td><td>50% WR + negative return = fees eating gains</td></tr>
+                <tr><td><strong>Alpha Factor Growth</strong></td><td class="negative">-0.36%</td><td>16</td><td class="negative">28.6%</td><td>Growth stocks crushed in sector rotation</td></tr>
+            </tbody>
+        </table>
+        <div class="finding-box danger">
+            Alpha Factor Growth at 29% WR is a disaster &mdash; worse than random. Alpha Factor Value at 33% reflects
+            the well-documented death of the traditional value premium post-2020. Both need regime filters to pause
+            during unfavorable rotations.
+        </div>
+    </div>
+    </div>
+
+    <!-- Grade D-F -->
+    <div class="collapse-toggle" onclick="toggleCollapse(this)">
+        <span><span class="grade grade-F">D-F</span> &nbsp; Underperformers &mdash; Fix or Remove</span>
+        <span class="arrow">&#9660;</span>
+    </div>
+    <div class="collapse-body">
+    <div class="collapse-inner">
+        <table class="study-table">
+            <thead><tr><th>Algorithm</th><th>Return</th><th>Picks</th><th>Win Rate</th><th>Root Cause</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Momentum Continuation</strong></td><td class="negative">-0.92%</td><td>8</td><td class="negative">0%</td><td>Holding period too short for momentum edge</td></tr>
+                <tr><td><strong>Technical Momentum</strong></td><td class="negative">-1.49%</td><td>12</td><td class="negative">20%</td><td>Hourly momentum &ne; academic momentum</td></tr>
+                <tr><td><strong>Mean Reversion Sniper</strong></td><td class="negative">-1.82%</td><td>2</td><td class="negative">0%</td><td>Wrong regime (trending, not range-bound)</td></tr>
+                <tr><td><strong>ETF Masters</strong></td><td class="negative">-1.00%</td><td>3</td><td class="negative">0%</td><td>Small sample, timing issue</td></tr>
+            </tbody>
+        </table>
+        <div class="finding-box danger">
+            <strong>Critical:</strong> Momentum Continuation at 0% WR across 8 picks is a clear regime mismatch.
+            Academic momentum (Jegadeesh &amp; Titman 1993) works over 3&ndash;12 months, not hours.
+            Mean Reversion Sniper works in range-bound markets but fails in trending environments.
+        </div>
+    </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SECTION 3: LIVE MONITOR 19 ALGORITHMS DEEP DIVE -->
+    <!-- ═══════════════════════════════════════════════════ -->
+
+    <div class="section-title">Live Monitor: 19 Algorithms Deep Dive <span class="tag tag-research">Research</span></div>
+
+    <div class="collapse-toggle" onclick="toggleCollapse(this)">
+        <span>Holding Period Mismatch &mdash; Our #1 Issue</span>
+        <span class="arrow">&#9660;</span>
+    </div>
+    <div class="collapse-body">
+    <div class="collapse-inner">
+        <table class="study-table">
+            <thead><tr><th>Algorithm</th><th>Our Hold</th><th>Academic Optimal</th><th>Mismatch Factor</th></tr></thead>
+            <tbody>
+                <tr><td>Momentum Burst</td><td>4h</td><td>Days to weeks</td><td class="negative">10&ndash;50x too short</td></tr>
+                <tr><td>RSI Reversal</td><td>6h</td><td>1&ndash;5 days</td><td class="negative">4&ndash;20x too short</td></tr>
+                <tr><td>MACD Crossover</td><td>6h</td><td>2&ndash;10 days</td><td class="negative">8&ndash;40x too short</td></tr>
+                <tr><td>DCA Dip</td><td>24h</td><td>Weeks to months</td><td class="negative">7&ndash;30x too short</td></tr>
+                <tr><td>Trend Sniper</td><td>4h</td><td>Days to weeks</td><td class="negative">6&ndash;24x too short</td></tr>
+                <tr><td>Ichimoku Cloud</td><td>8h</td><td>Days (designed for daily)</td><td class="negative">3&ndash;6x too short</td></tr>
+                <tr><td>RSI(2) Scalp</td><td>3h</td><td>1&ndash;3 hours</td><td class="positive">Aligned</td></tr>
+            </tbody>
+        </table>
+        <div class="finding-box danger">
+            Academic evidence overwhelmingly shows momentum persists over weeks&ndash;months, trend following works over
+            days&ndash;weeks, and mean reversion needs 1&ndash;5 day windows. Our hourly holds are capturing noise, not signal.
+            Only RSI(2) Scalp is correctly matched to its academic source.
+        </div>
+    </div>
+    </div>
+
+    <!-- Individual Algo Cards -->
+    <div class="collapse-toggle" onclick="toggleCollapse(this)">
+        <span>Algorithm-by-Algorithm Academic Comparison (all 19)</span>
+        <span class="arrow">&#9660;</span>
+    </div>
+    <div class="collapse-body">
+    <div class="collapse-inner">
+
+        <!-- Algo 1 -->
+        <div class="algo-card">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#1</span> Momentum Burst</div>
+                <span class="verdict verdict-tweak">Tweak</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val">45&ndash;55%</div></div>
+                <div class="algo-metric"><div class="lbl">Our Hold</div><div class="val">4h</div></div>
+                <div class="algo-metric"><div class="lbl">Optimal Hold</div><div class="val">Days&ndash;Weeks</div></div>
+                <div class="algo-metric"><div class="lbl">TP/SL</div><div class="val">3%/1.5%</div></div>
+            </div>
+            <div class="algo-card-body">
+                Detects &gt;2% hourly candle moves. The 2% threshold is reasonable for crypto but too loose for stocks
+                (where 2% hourly is rare and significant). The 4h hold is far too short for momentum strategies &mdash;
+                academic evidence shows momentum persists over weeks to months.
+            </div>
+        </div>
+
+        <!-- Algo 2 -->
+        <div class="algo-card">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#2</span> RSI Reversal</div>
+                <span class="verdict verdict-keep">Keep</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val">55&ndash;65%</div></div>
+                <div class="algo-metric"><div class="lbl">Thresholds</div><div class="val">RSI 30/70</div></div>
+                <div class="algo-metric"><div class="lbl">Our Hold</div><div class="val">6h</div></div>
+                <div class="algo-metric"><div class="lbl">Status</div><div class="val positive">Standard</div></div>
+            </div>
+            <div class="algo-card-body">
+                Solid textbook implementation. RSI(14) at 30/70 thresholds is the industry standard.
+                Degrades in strong trends where RSI stays overbought/oversold for extended periods.
+                More selective thresholds (20/80) trade frequency for accuracy.
+            </div>
+        </div>
+
+        <!-- Algo 3 -->
+        <div class="algo-card">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#3</span> Breakout 24h</div>
+                <span class="verdict verdict-tweak">Tweak R:R</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val negative">20&ndash;40%</div></div>
+                <div class="algo-metric"><div class="lbl">Our R:R</div><div class="val neutral">3:2 (1.5:1)</div></div>
+                <div class="algo-metric"><div class="lbl">Needed R:R</div><div class="val">4:1 or 5:1</div></div>
+                <div class="algo-metric"><div class="lbl">Vol Confirm</div><div class="val positive">1.5x avg</div></div>
+            </div>
+            <div class="algo-card-body">
+                Volume confirmation at 1.5x is best practice. However, breakout strategies have inherently low
+                win rates (20&ndash;40%). Our 3:2 TP/SL ratio won&rsquo;t compensate &mdash; need 4:1+ to profit at &lt;40% WR.
+            </div>
+        </div>
+
+        <!-- Algo 4 -->
+        <div class="algo-card">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#4</span> DCA Dip</div>
+                <span class="verdict verdict-tweak">Tweak</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val">60&ndash;70%</div></div>
+                <div class="algo-metric"><div class="lbl">Threshold</div><div class="val">-5% in 24h</div></div>
+                <div class="algo-metric"><div class="lbl">Issue</div><div class="val neutral">Crypto only</div></div>
+                <div class="algo-metric"><div class="lbl">Stock Fix</div><div class="val">-2% threshold</div></div>
+            </div>
+            <div class="algo-card-body">
+                A 5% drop in 24 hours almost never happens for individual stocks &mdash; this algo effectively only fires
+                for crypto. Vanguard research shows lump sum beats DCA 68&ndash;75% of the time, but during corrections
+                dip-buying outperforms. Needs stock-specific threshold of -2%.
+            </div>
+        </div>
+
+        <!-- Algo 5 -->
+        <div class="algo-card">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#5</span> Bollinger Squeeze</div>
+                <span class="verdict verdict-tweak">Weak Evidence</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val neutral">40&ndash;55%</div></div>
+                <div class="algo-metric"><div class="lbl">Evidence</div><div class="val negative">Weak</div></div>
+                <div class="algo-metric"><div class="lbl">Our BW</div><div class="val">20th pctile</div></div>
+                <div class="algo-metric"><div class="lbl">Best Use</div><div class="val">Confirmation</div></div>
+            </div>
+            <div class="algo-card-body">
+                Academic backtests show BB squeeze &ldquo;does not do particularly well for most assets tested.&rdquo;
+                Our 20th percentile bandwidth threshold is a smart quantitative approach. Works better as a
+                secondary confirmation rather than standalone entry signal.
+            </div>
+        </div>
+
+        <!-- Algo 6 -->
+        <div class="algo-card">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#6</span> MACD Crossover</div>
+                <span class="verdict verdict-tweak">Needs Filter</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val negative">&lt;50%</div></div>
+                <div class="algo-metric"><div class="lbl">Evidence</div><div class="val neutral">Limited standalone</div></div>
+                <div class="algo-metric"><div class="lbl">Params</div><div class="val positive">12,26,9</div></div>
+                <div class="algo-metric"><div class="lbl">Fix</div><div class="val">Add trend filter</div></div>
+            </div>
+            <div class="algo-card-body">
+                &ldquo;MACD has limited use as a standalone signal&rdquo; &mdash; academic consensus is clear.
+                Standard 12-26-9 parameters are correct, but win rate is below 50% without additional filters.
+                Our Trend Sniper (#9) uses MACD correctly as one of 6 weighted factors.
+            </div>
+        </div>
+
+        <!-- Algo 7 -->
+        <div class="algo-card">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#7</span> Consensus</div>
+                <span class="verdict verdict-keep">Best Design</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val positive">55&ndash;70%</div></div>
+                <div class="algo-metric"><div class="lbl">Evidence</div><div class="val positive">Strong</div></div>
+                <div class="algo-metric"><div class="lbl">Logic</div><div class="val">2+ algos agree</div></div>
+                <div class="algo-metric"><div class="lbl">Reference</div><div class="val">Brock 1992</div></div>
+            </div>
+            <div class="algo-card-body">
+                <strong>Strongest approach in our system.</strong> Multi-indicator confluence is consistently validated
+                by academic research. When 2&ndash;3 independent systems agree, false signal rates drop dramatically.
+                This is the core thesis behind our Consolidated Picks page.
+            </div>
+        </div>
+
+        <!-- Algo 8 -->
+        <div class="algo-card">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#8</span> Volatility Breakout</div>
+                <span class="verdict verdict-keep">Solid</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val">35&ndash;50%</div></div>
+                <div class="algo-metric"><div class="lbl">ATR Mult</div><div class="val positive">1.5x</div></div>
+                <div class="algo-metric"><div class="lbl">Style</div><div class="val">CTA/Trend</div></div>
+                <div class="algo-metric"><div class="lbl">Hold</div><div class="val neutral">8h (short)</div></div>
+            </div>
+            <div class="algo-card-body">
+                Standard Donchian breakout + ATR approach used by professional CTA (Commodity Trading Advisor) funds.
+                ATR ratio of 1.5x is a reasonable threshold. Hold time of 8h may be too short for CTA-style strategies
+                which typically hold days to weeks.
+            </div>
+        </div>
+
+        <!-- Algo 9 -->
+        <div class="algo-card" style="border-color: rgba(34,197,94,0.3);">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#9</span> Trend Sniper</div>
+                <span class="verdict verdict-keep">Best Algorithm</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val positive">55&ndash;65%</div></div>
+                <div class="algo-metric"><div class="lbl">Factors</div><div class="val positive">6 weighted</div></div>
+                <div class="algo-metric"><div class="lbl">Regime Gate</div><div class="val positive">Yes</div></div>
+                <div class="algo-metric"><div class="lbl">Reference</div><div class="val">Brock 1992, Moskowitz 2012</div></div>
+            </div>
+            <div class="algo-card-body">
+                <strong>Most sophisticated algorithm.</strong> 6-factor weighted composite (RSI 20%, MACD 25%,
+                EMA Stack 25%, BB %B 15%, ATR 10%, Volume 5%) with a 4+/6 agreement threshold.
+                The regime gate that suppresses crypto BUY signals in bear markets is the gold standard approach.
+                Only algorithm with academic-grade risk management built in.
+            </div>
+        </div>
+
+        <!-- Algo 10 -->
+        <div class="algo-card">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#10</span> Dip Recovery</div>
+                <span class="verdict verdict-keep">Well-Designed</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val">55&ndash;65%</div></div>
+                <div class="algo-metric"><div class="lbl">Reference</div><div class="val">Lo et al. 2000</div></div>
+                <div class="algo-metric"><div class="lbl">Lookbacks</div><div class="val positive">2,3,4 candles</div></div>
+                <div class="algo-metric"><div class="lbl">Asset-Aware</div><div class="val positive">Yes</div></div>
+            </div>
+            <div class="algo-card-body">
+                Multi-lookback approach (2, 3, and 4 candle dips) tests multiple patterns rather than relying on a
+                single formation. Asset-specific thresholds (2% for crypto/stocks, 0.5% for forex) are appropriate.
+                Volume bonus for institutional confirmation is a smart addition.
+            </div>
+        </div>
+
+        <!-- Algo 11 -->
+        <div class="algo-card">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#11</span> Volume Spike</div>
+                <span class="verdict verdict-keep">Solid</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val">50&ndash;60%</div></div>
+                <div class="algo-metric"><div class="lbl">Z-Score</div><div class="val positive">2.0 (standard)</div></div>
+                <div class="algo-metric"><div class="lbl">Min Move</div><div class="val positive">0.3%</div></div>
+                <div class="algo-metric"><div class="lbl">Reference</div><div class="val">NBER 2024</div></div>
+            </div>
+            <div class="algo-card-body">
+                Z-Score of 2.0 is the correct statistical threshold for &ldquo;unusual&rdquo; activity. The directional
+                filter (0.3% minimum candle move) prevents triggering on volume spikes with no price movement.
+                Clean, statistically sound implementation.
+            </div>
+        </div>
+
+        <!-- Algo 12 -->
+        <div class="algo-card" style="border-color: rgba(34,197,94,0.3);">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#12</span> VAM (Martin Ratio)</div>
+                <span class="verdict verdict-keep">Excellent</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val positive">55&ndash;65%</div></div>
+                <div class="algo-metric"><div class="lbl">Metric</div><div class="val positive">Martin Ratio</div></div>
+                <div class="algo-metric"><div class="lbl">Threshold</div><div class="val">&ge;2.0</div></div>
+                <div class="algo-metric"><div class="lbl">Reference</div><div class="val">Moskowitz 2012</div></div>
+            </div>
+            <div class="algo-card-body">
+                <strong>Sophisticated and rare in retail systems.</strong> The Martin Ratio (momentum / Ulcer Index)
+                penalizes volatile pumps and rewards smooth trends. Based on Moskowitz, Ooi &amp; Pedersen 2012
+                Time Series Momentum paper &mdash; one of the most cited in momentum research.
+            </div>
+        </div>
+
+        <!-- Algo 13 -->
+        <div class="algo-card">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#13</span> Mean Reversion Sniper</div>
+                <span class="verdict verdict-tweak">Regime-Dependent</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val positive">60&ndash;75%</div></div>
+                <div class="algo-metric"><div class="lbl">Conditions</div><div class="val positive">Triple-confirmed</div></div>
+                <div class="algo-metric"><div class="lbl">TP Target</div><div class="val positive">BB Middle (dynamic)</div></div>
+                <div class="algo-metric"><div class="lbl">Weakness</div><div class="val negative">Trending markets</div></div>
+            </div>
+            <div class="algo-card-body">
+                Triple confirmation (%B &lt;0.15 + RSI &lt;35 + MACD histogram turning up) is one of the strongest
+                mean-reversion setups. Dynamic TP targeting the Bollinger middle band is data-driven rather than arbitrary.
+                Needs a regime gate: suppress in trending markets, activate in range-bound.
+            </div>
+        </div>
+
+        <!-- Algo 14 -->
+        <div class="algo-card">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#14</span> ADX Trend Strength</div>
+                <span class="verdict verdict-tweak">Lower Threshold</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val">50&ndash;60%</div></div>
+                <div class="algo-metric"><div class="lbl">Our Threshold</div><div class="val neutral">ADX &gt; 25</div></div>
+                <div class="algo-metric"><div class="lbl">Optimal (hourly)</div><div class="val">ADX &gt; 20</div></div>
+                <div class="algo-metric"><div class="lbl">DI Spread</div><div class="val positive">&gt;5 pts</div></div>
+            </div>
+            <div class="algo-card-body">
+                ADX &gt;25 is the industry standard for daily/weekly charts, but research suggests &gt;20 for intraday
+                data where trends are naturally weaker. The DI spread requirement of &gt;5 points adds valuable
+                directional confirmation.
+            </div>
+        </div>
+
+        <!-- Algo 15 -->
+        <div class="algo-card">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#15</span> StochRSI Crossover</div>
+                <span class="verdict verdict-keep">Solid</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val positive">52&ndash;73%</div></div>
+                <div class="algo-metric"><div class="lbl">Params</div><div class="val positive">14,14,3,3</div></div>
+                <div class="algo-metric"><div class="lbl">Zones</div><div class="val positive">&lt;30 / &gt;70</div></div>
+                <div class="algo-metric"><div class="lbl">Avg Gain</div><div class="val">0.88%/trade</div></div>
+            </div>
+            <div class="algo-card-body">
+                Standard StochRSI parameters with zone-filtered crossovers. Requiring the crossover to happen
+                specifically in oversold/overbought zones (not just any crossover) is a best practice that filters noise.
+                Backtests report 52&ndash;73% win rates.
+            </div>
+        </div>
+
+        <!-- Algo 16 -->
+        <div class="algo-card" style="border-color: rgba(239,68,68,0.3);">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#16</span> Awesome Oscillator</div>
+                <span class="verdict verdict-remove">Remove / Demote</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val negative">Low</div></div>
+                <div class="algo-metric"><div class="lbl">Evidence</div><div class="val negative">Not viable standalone</div></div>
+                <div class="algo-metric"><div class="lbl">Source</div><div class="val">QuantifiedStrategies</div></div>
+                <div class="algo-metric"><div class="lbl">Better Use</div><div class="val">Confirmation only</div></div>
+            </div>
+            <div class="algo-card-body">
+                <strong>Weakest algorithm by academic evidence.</strong> Extensive backtesting by QuantifiedStrategies.com
+                found the AO is &ldquo;not a viable trading strategy&rdquo; on multiple asset classes when used standalone.
+                The zero-line cross generates too many false signals. Should be removed as a standalone algo or
+                restricted to confirmation role (as it&rsquo;s used in Alpha Predator #19).
+            </div>
+        </div>
+
+        <!-- Algo 17 -->
+        <div class="algo-card">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#17</span> RSI(2) Scalp</div>
+                <span class="verdict verdict-keep">Aligned</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val positive">75%</div></div>
+                <div class="algo-metric"><div class="lbl">Source</div><div class="val">Connors 2009</div></div>
+                <div class="algo-metric"><div class="lbl">Our Hold</div><div class="val positive">3h (correct)</div></div>
+                <div class="algo-metric"><div class="lbl">Caveat</div><div class="val neutral">Degraded edge</div></div>
+            </div>
+            <div class="algo-card-body">
+                The 75% historical win rate is impressive. SMA(20) trend filter is the correct enhancement per academic
+                literature. The 3h hold is correctly aligned with ultra-short-term RSI(2) signals. However, the strategy
+                has &ldquo;lost most of its power since Connors published in 2008&rdquo; due to widespread adoption.
+            </div>
+        </div>
+
+        <!-- Algo 18 -->
+        <div class="algo-card" style="border-color: rgba(239,68,68,0.3);">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#18</span> Ichimoku Cloud</div>
+                <span class="verdict verdict-remove">Demote</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val negative">10&ndash;55%</div></div>
+                <div class="algo-metric"><div class="lbl">vs Buy&amp;Hold</div><div class="val negative">Loses 90% of time</div></div>
+                <div class="algo-metric"><div class="lbl">20yr Backtest</div><div class="val negative">5.2% vs 6.9% S&amp;P</div></div>
+                <div class="algo-metric"><div class="lbl">Best Use</div><div class="val">Drawdown reducer</div></div>
+            </div>
+            <div class="algo-card-body">
+                Academic evidence is unfavorable. A 20-year backtest on US equities shows Ichimoku underperforms
+                buy-and-hold 90% of the time (5.2% CAGR vs 6.9% for S&amp;P 500). Its main value is reducing
+                maximum drawdown by ~50%. Originally designed for daily charts; hourly adaptation compounds the issue.
+                Should be demoted to secondary confirmation only.
+            </div>
+        </div>
+
+        <!-- Algo 19 -->
+        <div class="algo-card" style="border-color: rgba(34,197,94,0.3);">
+            <div class="algo-card-header">
+                <div class="algo-card-title"><span class="algo-card-num">#19</span> Alpha Predator</div>
+                <span class="verdict verdict-keep">High Conviction</span>
+            </div>
+            <div class="algo-metric-row">
+                <div class="algo-metric"><div class="lbl">Academic WR</div><div class="val positive">55&ndash;65%</div></div>
+                <div class="algo-metric"><div class="lbl">Factors Required</div><div class="val positive">All 4</div></div>
+                <div class="algo-metric"><div class="lbl">RSI Zone</div><div class="val positive">40&ndash;70 (healthy)</div></div>
+                <div class="algo-metric"><div class="lbl">Weak Link</div><div class="val neutral">AO component</div></div>
+            </div>
+            <div class="algo-card-body">
+                High-conviction signal requiring all 4 factors aligned (ADX &gt;25, DI direction, RSI 40&ndash;70,
+                AO &gt;0, Volume &gt;1.2x avg). The RSI &ldquo;healthy trend zone&rdquo; (not overbought/oversold)
+                is sophisticated &mdash; identifies trends with room to run. Generates very few signals but each
+                has multi-factor confirmation. Weakest link is the AO component.
+            </div>
+        </div>
+
+    </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SECTION 4: SECTOR PERFORMANCE -->
+    <!-- ═══════════════════════════════════════════════════ -->
+
+    <div class="section-title">Sector Rotation Analysis <span class="tag tag-live">Live Data</span></div>
+
+    <div class="collapse-toggle open" onclick="toggleCollapse(this)">
+        <span>Current Sector Performance (58 picks)</span>
+        <span class="arrow">&#9660;</span>
+    </div>
+    <div class="collapse-body open">
+    <div class="collapse-inner">
+        <table class="study-table">
+            <thead><tr><th>Sector</th><th>Picks</th><th>Avg Return</th><th>W/L</th><th>Status</th></tr></thead>
+            <tbody>
+                <tr><td>ETF-Energy</td><td>1</td><td class="positive">+6.29%</td><td>1/0</td><td><span class="verdict verdict-keep">Strong</span></td></tr>
+                <tr><td>ETF-Staples</td><td>1</td><td class="positive">+4.99%</td><td>1/0</td><td><span class="verdict verdict-keep">Strong</span></td></tr>
+                <tr><td>ETF-Industrial</td><td>1</td><td class="positive">+4.82%</td><td>1/0</td><td><span class="verdict verdict-keep">Strong</span></td></tr>
+                <tr><td>Consumer</td><td>9</td><td class="positive">+3.03%</td><td>9/0</td><td><span class="verdict verdict-keep">Strong</span></td></tr>
+                <tr><td>Energy</td><td>3</td><td class="positive">+0.78%</td><td>1/0</td><td>Neutral</td></tr>
+                <tr><td>Industrial</td><td>6</td><td class="positive">+0.64%</td><td>2/0</td><td>Neutral</td></tr>
+                <tr><td>Healthcare</td><td>7</td><td class="positive">+0.31%</td><td>2/1</td><td>Neutral</td></tr>
+                <tr><td>Finance</td><td>6</td><td class="positive">+0.30%</td><td>1/1</td><td>Neutral</td></tr>
+                <tr><td>Tech</td><td>13</td><td class="negative">-1.16%</td><td>1/6</td><td><span class="verdict verdict-remove">Weak</span></td></tr>
+                <tr><td>ETF-Tech</td><td>2</td><td class="negative">-1.34%</td><td>0/2</td><td><span class="verdict verdict-remove">Weak</span></td></tr>
+                <tr><td>Real Estate</td><td>2</td><td class="negative">-1.38%</td><td>0/1</td><td><span class="verdict verdict-remove">Weak</span></td></tr>
+                <tr><td>Auto</td><td>2</td><td class="negative">-1.71%</td><td>0/2</td><td><span class="verdict verdict-remove">Weak</span></td></tr>
+            </tbody>
+        </table>
+        <div class="finding-box">
+            <strong>Sector Rotation Detected:</strong> Capital flowing from Tech/Auto/Real Estate into Energy/Staples/Industrials.
+            Consumer sector is a perfect 9-for-9. Our sector-aware algorithms (Sector Momentum, Sector Rotation)
+            correctly identified this shift and are our top-performing strategies.
+        </div>
+    </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SECTION 5: MISSING STRATEGIES -->
+    <!-- ═══════════════════════════════════════════════════ -->
+
+    <div class="section-title">Missing Strategies We Should Consider <span class="tag tag-research">Research</span></div>
+
+    <div class="collapse-toggle" onclick="toggleCollapse(this)">
+        <span>Proven Strategies Not In Our System</span>
+        <span class="arrow">&#9660;</span>
+    </div>
+    <div class="collapse-body">
+    <div class="collapse-inner">
+        <table class="study-table">
+            <thead><tr><th>Strategy</th><th>Typical Returns</th><th>Sharpe</th><th>Why Add It?</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Pairs Trading</strong></td>
+                    <td class="positive">16&ndash;27% CAGR</td>
+                    <td>1.0&ndash;3.0</td>
+                    <td>Market-neutral, works in all regimes. We have correlated stocks (GOOGL/GOOG, JPM/BAC/WFC)</td>
+                </tr>
+                <tr>
+                    <td><strong>VWAP Mean Reversion</strong></td>
+                    <td>0.5&ndash;1.5%/trade</td>
+                    <td>0.8&ndash;1.5</td>
+                    <td>Institutional standard. Better than BB-based for intraday. Widely used by prop desks</td>
+                </tr>
+                <tr>
+                    <td><strong>Factor Rotation</strong></td>
+                    <td>4x S&amp;P Sharpe</td>
+                    <td>1.5&ndash;2.0</td>
+                    <td>Our sector rotation is strong &mdash; formalize with Fama-French factors</td>
+                </tr>
+                <tr>
+                    <td><strong>Overnight Gap</strong></td>
+                    <td>55&ndash;65% WR</td>
+                    <td>0.7&ndash;1.0</td>
+                    <td>Stocks tend to gap up overnight (documented anomaly in academic literature)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SECTION 6: KEY TAKEAWAYS -->
+    <!-- ═══════════════════════════════════════════════════ -->
+
+    <div class="section-title">Key Takeaways <span class="tag tag-live">Actionable</span></div>
+
+    <h3 style="font-size:0.9rem; color:var(--green); margin:1rem 0 0.75rem;">What We&rsquo;re Doing Right</h3>
+
+    <div class="takeaway good"><div class="takeaway-num">1</div><div class="takeaway-text"><strong>Consensus/multi-indicator approach</strong> &mdash; Academically proven to outperform any single indicator. Brock et al. 1992 validates this across decades of data.</div></div>
+    <div class="takeaway good"><div class="takeaway-num">2</div><div class="takeaway-text"><strong>Trend Sniper&rsquo;s regime gate</strong> &mdash; Suppressing crypto buys in bear markets is aligned with CTA research. Only algo with academic-grade risk management.</div></div>
+    <div class="takeaway good"><div class="takeaway-num">3</div><div class="takeaway-text"><strong>VAM / Martin Ratio</strong> &mdash; Sophisticated risk-adjusted metric (momentum / Ulcer Index) rarely seen in retail systems. Based on Moskowitz 2012.</div></div>
+    <div class="takeaway good"><div class="takeaway-num">4</div><div class="takeaway-text"><strong>Self-learning system</strong> &mdash; Adaptive TP/SL/hold via walk-forward optimization. 392 parameter combinations tested per algo per asset class.</div></div>
+    <div class="takeaway good"><div class="takeaway-num">5</div><div class="takeaway-text"><strong>Corrective scoring</strong> &mdash; Penalizing losers (momentum lag, falling knife) and boosting winners provides a real-time feedback loop on pick quality.</div></div>
+
+    <h3 style="font-size:0.9rem; color:var(--red); margin:1.5rem 0 0.75rem;">What Needs Fixing (Priority Order)</h3>
+
+    <div class="takeaway bad"><div class="takeaway-num">1</div><div class="takeaway-text"><strong>Extend holding periods</strong> &mdash; Our #1 issue. Academic momentum/trend works over days&ndash;weeks, not hours. At minimum, double all hold times.</div></div>
+    <div class="takeaway bad"><div class="takeaway-num">2</div><div class="takeaway-text"><strong>Remove Awesome Oscillator standalone</strong> &mdash; &ldquo;Not viable as a standalone strategy&rdquo; per extensive backtesting. Demote to confirmation-only role.</div></div>
+    <div class="takeaway bad"><div class="takeaway-num">3</div><div class="takeaway-text"><strong>Reduce Ichimoku weight</strong> &mdash; Underperforms buy-and-hold on US equities 90% of the time in 20-year backtests. Demote to secondary confirmation.</div></div>
+    <div class="takeaway bad"><div class="takeaway-num">4</div><div class="takeaway-text"><strong>Expand regime gating to all algorithms</strong> &mdash; Currently only Trend Sniper (#9) uses it. All algos should gate: suppress momentum buys in bear markets, suppress mean-reversion shorts in bull markets.</div></div>
+    <div class="takeaway bad"><div class="takeaway-num">5</div><div class="takeaway-text"><strong>Fix Breakout R:R ratio</strong> &mdash; 3:2 TP/SL won&rsquo;t compensate for 20&ndash;40% win rates. Need 4:1 or 5:1 risk-reward for breakout strategies.</div></div>
+    <div class="takeaway bad"><div class="takeaway-num">6</div><div class="takeaway-text"><strong>Add position correlation check</strong> &mdash; 5 tech stocks losing simultaneously = correlated drawdown. Cap sector concentration at max 3 same-sector positions.</div></div>
+    <div class="takeaway bad"><div class="takeaway-num">7</div><div class="takeaway-text"><strong>Lower ADX threshold to 20</strong> for hourly data &mdash; 25 is designed for daily/weekly charts. Intraday trends are weaker.</div></div>
+    <div class="takeaway bad"><div class="takeaway-num">8</div><div class="takeaway-text"><strong>DCA Dip stock-specific threshold</strong> &mdash; -5% in 24h is crypto-appropriate but almost never triggers for stocks. Use -2% for stocks.</div></div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SECTION 7: ACADEMIC SOURCES -->
+    <!-- ═══════════════════════════════════════════════════ -->
+
+    <div class="section-title">Academic Sources &amp; References</div>
+
+    <div class="collapse-toggle" onclick="toggleCollapse(this)">
+        <span>Key Papers &amp; Data Sources</span>
+        <span class="arrow">&#9660;</span>
+    </div>
+    <div class="collapse-body">
+    <div class="collapse-inner">
+        <ul class="source-list">
+            <li><strong>Jegadeesh &amp; Titman 1993</strong> &mdash; &ldquo;Returns to Buying Winners and Selling Losers&rdquo; &mdash; foundational momentum paper. 12-month lookback, ~1%/month premium.</li>
+            <li><strong>Brock, Lakonishok &amp; LeBaron 1992</strong> &mdash; &ldquo;Simple Technical Trading Rules and the Stochastic Properties of Stock Returns&rdquo; &mdash; validates technical analysis on DJIA.</li>
+            <li><strong>Moskowitz, Ooi &amp; Pedersen 2012</strong> &mdash; &ldquo;Time Series Momentum&rdquo; &mdash; TSM across 58 liquid instruments. Basis for our VAM algorithm.</li>
+            <li><strong>Lo, Mamaysky &amp; Wang 2000</strong> &mdash; &ldquo;Foundations of Technical Analysis&rdquo; &mdash; pattern recognition in prices. Basis for our Dip Recovery algorithm.</li>
+            <li><strong>Fama &amp; French 2015</strong> &mdash; Five-Factor Asset Pricing Model. Profitability and investment factors explain most value premium.</li>
+            <li><strong>Connors &amp; Alvarez 2009</strong> &mdash; &ldquo;Short-Term Trading Strategies That Work&rdquo; &mdash; RSI(2) strategy with 75% historical WR.</li>
+            <li><strong>Vanguard DCA Study</strong> &mdash; Lump sum beats DCA 68&ndash;75% of the time across US, UK, and Australian markets.</li>
+            <li><strong>NBER 2024</strong> &mdash; Trading Volume Alpha &mdash; volume anomalies as predictive signals.</li>
+        </ul>
+
+        <h4 style="margin:1rem 0 0.5rem; font-size:0.85rem; color:var(--text-dim);">Backtest Data Sources</h4>
+        <ul class="source-list">
+            <li><a href="https://www.quantifiedstrategies.com/" target="_blank">QuantifiedStrategies.com</a> &mdash; AO, MACD, Bollinger, Ichimoku, StochRSI backtests</li>
+            <li><a href="https://www.liberatedstocktrader.com/" target="_blank">LiberatedStockTrader.com</a> &mdash; Ichimoku 15,024-trade backtest, VWAP testing</li>
+            <li><a href="https://www.toptradersunplugged.com/" target="_blank">TopTradersUnplugged.com</a> &mdash; CTA/trend-following performance index (30+ years)</li>
+            <li><a href="https://www.aqr.com/" target="_blank">AQR Capital</a> &mdash; Managed futures research, factor investing</li>
+        </ul>
+    </div>
+    </div>
+
+    <div class="disclaimer">
+        <strong>Disclaimer:</strong> This analysis is for educational and research purposes only. Past academic results do not
+        guarantee future performance. All trading involves risk. Our algorithms are paper-traded and have no audited
+        live-money track record. Academic benchmarks reflect historical averages and may not apply to current market
+        conditions. Always do your own research before making investment decisions.
+    </div>
+
+</div>
+
+<script>
+function toggleCollapse(el) {
+    el.classList.toggle('open');
+    var body = el.nextElementSibling;
+    body.classList.toggle('open');
+}
+</script>
+<script src="/findstocks/portfolio2/stock-nav.js"></script>
+</body>
+</html>

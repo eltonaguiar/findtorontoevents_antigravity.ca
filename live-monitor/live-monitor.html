@@ -632,6 +632,26 @@
         .empty-state .icon { font-size: 3rem; margin-bottom: 0.5rem; opacity: 0.4; }
         .empty-state p { font-size: 0.9rem; }
 
+        /* ===== GLOSSARY / EDUCATION ===== */
+        .info-tip{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(99,102,241,0.2);color:var(--accent);font-size:10px;font-weight:700;cursor:help;position:relative;vertical-align:middle;margin-left:4px;flex-shrink:0;font-style:normal}
+        .info-tip:hover{background:rgba(99,102,241,0.4)}
+        .info-tip .tip-text{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1e1e3a;border:1px solid var(--accent);border-radius:8px;padding:10px 12px;font-size:12px;font-weight:400;color:var(--text);width:260px;line-height:1.5;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.5);pointer-events:none}
+        .info-tip:hover .tip-text{display:block}
+        .info-tip .tip-text::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--accent)}
+        .edu-section{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-top:1.5rem;overflow:hidden}
+        .edu-header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;cursor:pointer;user-select:none}
+        .edu-header:hover{background:rgba(255,255,255,0.02)}
+        .edu-header h3{font-size:15px;font-weight:600;margin:0;display:flex;align-items:center;gap:8px}
+        .edu-arrow{font-size:12px;color:var(--text-dim);transition:transform 0.2s}
+        .edu-arrow.open{transform:rotate(180deg)}
+        .edu-body{padding:0 18px 18px;display:none}
+        .edu-body.open{display:block}
+        .glossary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-top:8px}
+        .glossary-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:12px}
+        .glossary-card .g-term{font-weight:700;color:#fff;font-size:13px;margin-bottom:4px}
+        .glossary-card .g-desc{font-size:12px;color:#bbb;line-height:1.6}
+        .glossary-card .g-why{font-size:11px;color:var(--text-dim);margin-top:5px;font-style:italic}
+
         /* ===== FOOTER ===== */
         .footer {
             text-align: center;
@@ -675,6 +695,21 @@
             .summary-stats { grid-template-columns: 1fr 1fr; }
             .perf-grid { grid-template-columns: 1fr 1fr; }
         }
+        /* System Health Panel */
+        .sys-health{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px}
+        .sys-health h3{font-size:14px;font-weight:700;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+        .sys-health-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+        .sh-item{display:flex;align-items:center;gap:8px;font-size:12px}
+        .sh-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+        .sh-dot.green{background:var(--green);box-shadow:0 0 6px var(--green)}
+        .sh-dot.yellow{background:var(--yellow);box-shadow:0 0 6px var(--yellow)}
+        .sh-dot.red{background:var(--red);box-shadow:0 0 6px var(--red)}
+        .sh-dot.gray{background:#666}
+        .sh-label{color:var(--text-dim)}
+        .sh-val{color:var(--text);font-weight:600}
+        .sys-health-note{font-size:11px;color:var(--text-dim);margin-top:10px;line-height:1.6;padding-top:10px;border-top:1px solid rgba(255,255,255,0.05)}
+        .flaw-item{display:flex;gap:8px;margin:8px 0;font-size:12px;line-height:1.5;color:#ccc}
+        .flaw-icon{font-size:14px;flex-shrink:0;margin-top:1px}
     </style>
 </head>
 <body>
@@ -684,7 +719,9 @@
     <h1>Live Trading Monitor</h1>
     <p>Real-time crypto &amp; forex paper trading with AI-powered signals</p>
     <div class="header-links">
-        <a href="edge-dashboard.html" style="color:#22c55e;font-weight:600">Edge Finder</a>
+        <a href="sports-betting.html" style="color:#22c55e;font-weight:600">Sports Betting</a>
+        <a href="opportunity-scanner.html" style="color:#f97316;font-weight:600">Opportunity Scanner</a>
+        <a href="edge-dashboard.html">Edge Finder</a>
         <a href="winning-patterns.html">Winning Patterns</a>
         <a href="hour-learning.html">Hour Learning</a>
         <a href="/findstocks/portfolio2/hub.html">Hub</a>
@@ -716,6 +753,21 @@
     <div class="disclaimer">
         Paper trading simulation only. Not financial advice.<br>
         <strong>Data delays:</strong> Crypto ~2-5s (Kraken/FreeCryptoAPI) &bull; Forex ~15s (TwelveData), cross-pairs ~60s (CurrencyLayer) &bull; Stocks real-time quotes (Finnhub, NYSE hours only) &bull; Candles from Kraken (w/ volume)/CoinGecko/Finnhub. Kraken = Ontario-valid exchange with real bid/ask spreads.
+    </div>
+
+    <!-- ===== SYSTEM HEALTH ===== -->
+    <div class="sys-health" id="sys-health">
+        <h3>System Health</h3>
+        <div class="sys-health-grid" id="sys-health-grid">
+            <div class="sh-item"><span class="sh-dot gray" id="sh-prices-dot"></span><span class="sh-label">Prices:</span> <span class="sh-val" id="sh-prices">checking...</span></div>
+            <div class="sh-item"><span class="sh-dot gray" id="sh-signals-dot"></span><span class="sh-label">Signals:</span> <span class="sh-val" id="sh-signals">checking...</span></div>
+            <div class="sh-item"><span class="sh-dot gray" id="sh-trades-dot"></span><span class="sh-label">Trades:</span> <span class="sh-val" id="sh-trades">checking...</span></div>
+            <div class="sh-item"><span class="sh-dot gray" id="sh-portfolio-dot"></span><span class="sh-label">Portfolio:</span> <span class="sh-val" id="sh-portfolio">checking...</span></div>
+            <div class="sh-item"><span class="sh-dot gray" id="sh-winrate-dot"></span><span class="sh-label">Win Rate:</span> <span class="sh-val" id="sh-winrate">checking...</span></div>
+            <div class="sh-item"><span class="sh-dot gray" id="sh-autoexec-dot"></span><span class="sh-label">Auto-Execute:</span> <span class="sh-val" id="sh-autoexec">checking...</span></div>
+            <div class="sh-item"><span class="sh-dot gray" id="sh-regime-dot"></span><span class="sh-label">Market Regime:</span> <span class="sh-val" id="sh-regime">checking...</span></div>
+        </div>
+        <div class="sys-health-note" id="sys-health-note">Loading system diagnostics...</div>
     </div>
 
     <!-- ===== SUMMARY STATS ===== -->
@@ -1043,6 +1095,175 @@
 
 </div><!-- /.container -->
 
+<!-- ===== GLOSSARY & EDUCATION ===== -->
+<div style="max-width:1400px;margin:0 auto;padding:0 1.5rem">
+
+  <div class="edu-section">
+    <div class="edu-header" onclick="toggleEdu(this)">
+      <h3>Glossary of Trading Terms <i class="info-tip">i<span class="tip-text">Plain-language explanations of every term used on this dashboard.</span></i></h3>
+      <span class="edu-arrow">&#9660;</span>
+    </div>
+    <div class="edu-body">
+      <div class="glossary-grid">
+        <div class="glossary-card">
+          <div class="g-term">Paper Trading</div>
+          <div class="g-desc">Simulated trading with fake money ($10,000 starting balance). No real money is risked. The system pretends to buy and sell at real market prices to test strategies.</div>
+          <div class="g-why">Why it matters: Lets you evaluate strategy performance without financial risk.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Signal</div>
+          <div class="g-desc">An alert generated when one of the 19 algorithms detects a trading opportunity. A signal says "this asset might go up (or down) based on these technical patterns." Not all signals become trades.</div>
+          <div class="g-why">Signals are suggestions, not guarantees. The system filters for the strongest ones.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Win Rate</div>
+          <div class="g-desc">The percentage of closed trades that made money. Example: 60% win rate means 6 out of 10 trades were profitable. A win rate above 50% is good; above 60% is excellent.</div>
+          <div class="g-why">Win rate alone doesn't tell the whole story — you also need to know HOW MUCH each win/loss was.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Take Profit (TP)</div>
+          <div class="g-desc">The price target where a trade automatically closes to lock in profit. Example: TP of +2% means the system sells when the price goes up 2% from entry.</div>
+          <div class="g-why">Locks in gains before the price reverses. Prevents greed from turning a winner into a loser.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Stop Loss (SL)</div>
+          <div class="g-desc">The price level where a trade automatically closes to limit damage. Example: SL of -1.5% means the system sells if the price drops 1.5% from entry.</div>
+          <div class="g-why">The most important risk management tool. Limits the maximum you can lose on any single trade.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Drawdown</div>
+          <div class="g-desc">The percentage drop from the portfolio's peak value. If the portfolio hit $10,500 then dropped to $10,200, the drawdown is ~2.9%. Measures "how much pain" the strategy experiences.</div>
+          <div class="g-why">High drawdown = the strategy goes through rough patches. Even profitable systems have drawdowns.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Circuit Breaker</div>
+          <div class="g-desc">Safety limits that automatically stop trading when losses get too large. Like a fuse box for your portfolio. If too many trades lose in a row, or daily losses exceed a threshold, trading pauses.</div>
+          <div class="g-why">Prevents a bad day from becoming a catastrophe. The system protects itself from runaway losses.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Position Sizing (5%)</div>
+          <div class="g-desc">Each trade uses 5% of the total portfolio. With a $10,000 portfolio, each trade risks ~$500. This limits exposure — even if a trade goes wrong, only 5% is affected.</div>
+          <div class="g-why">Professional risk management. Never bet everything on one trade.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">P&amp;L (Profit &amp; Loss)</div>
+          <div class="g-desc">The net gain or loss on a trade or the entire portfolio. Shown as both a dollar amount ($+50) and a percentage (+0.5%). Green = profit, red = loss.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Equity Curve</div>
+          <div class="g-desc">A chart showing the portfolio's total value over time. An upward-sloping equity curve means the strategy is making money overall. Dips are normal but the trend should be up.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="edu-section">
+    <div class="edu-header" onclick="toggleEdu(this)">
+      <h3>Understanding the 19 Algorithms <i class="info-tip">i<span class="tip-text">Each algorithm looks for different patterns. Multiple algorithms agreeing = stronger signal.</span></i></h3>
+      <span class="edu-arrow">&#9660;</span>
+    </div>
+    <div class="edu-body">
+      <p style="font-size:13px;color:#bbb;margin-bottom:10px">The system runs 19 independent algorithms simultaneously. Each one looks for a different type of pattern. They fall into three categories:</p>
+      <div class="glossary-grid">
+        <div class="glossary-card">
+          <div class="g-term" style="color:var(--accent)">Core Algorithms (8)</div>
+          <div class="g-desc">
+            <strong>Momentum Burst</strong> — detects sudden price acceleration<br>
+            <strong>RSI Reversal</strong> — finds oversold bounces (RSI below 30 then rising)<br>
+            <strong>Breakout 24h</strong> — price breaking above its 24-hour high<br>
+            <strong>DCA Dip</strong> — identifies dips in an uptrend worth buying<br>
+            <strong>Bollinger Squeeze</strong> — low volatility about to expand (like a spring)<br>
+            <strong>MACD Crossover</strong> — momentum shifting from bearish to bullish<br>
+            <strong>Consensus</strong> — only fires when 3+ other algorithms agree<br>
+            <strong>Volatility Breakout</strong> — price breaking out of a tight range
+          </div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term" style="color:var(--green)">Science-Backed (5)</div>
+          <div class="g-desc">
+            <strong>Trend Sniper</strong> — multi-timeframe trend alignment (ADX + SMA)<br>
+            <strong>Dip Recovery</strong> — buying dips confirmed by volume recovery<br>
+            <strong>Volume Spike</strong> — abnormal volume preceding price moves<br>
+            <strong>VAM (Vol-Adjusted Momentum)</strong> — momentum weighted by volume conviction<br>
+            <strong>Mean Reversion Sniper</strong> — extreme deviation from average, likely to snap back
+          </div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term" style="color:var(--gold)">Advanced Technical (6)</div>
+          <div class="g-desc">
+            <strong>ADX Trend Strength</strong> — measures how strong a trend is (not direction)<br>
+            <strong>StochRSI Crossover</strong> — momentum oscillator with faster response<br>
+            <strong>Awesome Oscillator</strong> — market momentum using median price<br>
+            <strong>RSI(2) Scalp</strong> — ultra-short 2-period RSI for quick reversals<br>
+            <strong>Ichimoku Cloud</strong> — Japanese system using support/resistance clouds<br>
+            <strong>Alpha Predator</strong> — multi-indicator composite for highest-conviction trades
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="edu-section">
+    <div class="edu-header" onclick="toggleEdu(this)">
+      <h3>Asset Classes Explained <i class="info-tip">i<span class="tip-text">We trade 3 different types of assets, each with different characteristics.</span></i></h3>
+      <span class="edu-arrow">&#9660;</span>
+    </div>
+    <div class="edu-body">
+      <div class="glossary-grid">
+        <div class="glossary-card">
+          <div class="g-term">Crypto (32 pairs)</div>
+          <div class="g-desc">Cryptocurrencies like Bitcoin, Ethereum, Solana. Traded 24/7, never closes. Most volatile — can move 5-20% in a day. Prices via Kraken/FreeCryptoAPI (2-5 second delay). Fee: 0.20% per trade (NDAX rate).</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Forex (10 pairs)</div>
+          <div class="g-desc">Currency pairs like EUR/USD, GBP/JPY. Trades Mon-Fri, 24 hours. Less volatile than crypto — typical daily moves of 0.5-2%. Prices via TwelveData (~15s delay). Fee: 0 (cost is in the spread).</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Stocks (12 symbols)</div>
+          <div class="g-desc">Major US stocks: AAPL, MSFT, GOOGL, AMZN, NVDA, META, JPM, WMT, XOM, NFLX, JNJ, BAC. NYSE hours only (Mon-Fri 9:30-4:00 ET). Prices via Finnhub (real-time). Fee: $0.0099/share, min $1.99 (Moomoo rate).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ WHAT WE DON'T HAVE (YET) ═══ -->
+  <div class="edu-section">
+    <div class="edu-header" onclick="toggleEdu(this)">
+      <h3>What We Don't Have (Yet) <i class="info-tip">i<span class="tip-text">Full transparency about what this system can't do today. We believe listing our gaps is as important as listing our features.</span></i></h3>
+      <span class="edu-arrow">&#9660;</span>
+    </div>
+    <div class="edu-body">
+      <p style="font-size:13px;color:#bbb;margin-bottom:12px">No system is complete. Here's what's honestly missing and what we're working toward:</p>
+
+      <div style="font-size:13px;font-weight:700;color:var(--red);margin:12px 0 8px">Current Gaps</div>
+
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>No auto-execution.</strong> The system generates 26+ signals per scan every 30 minutes, but signals must be manually executed via the Execute button. Signals expire after 30 minutes &mdash; meaning the page often shows 0 active signals between scans. Auto-execution of high-conviction signals is planned.</span></div>
+
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>No historical stress tests.</strong> Our algorithms haven't been backtested against the 2008 crash, COVID crash, or other black-swan events. Self-learning only trains on recent trades, so extreme tail-risk scenarios are uncharted territory.</span></div>
+
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>No statistical significance testing.</strong> When self-learning says "win rate improved 3%", we don't yet test whether that improvement is statistically meaningful or just noise. Small sample sizes can create illusions of improvement that vanish with more data.</span></div>
+
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>No real-money track record.</strong> Everything is paper-traded or backtested. We have no audited live-money performance. Paper trading doesn't account for slippage, partial fills, or the psychological pressure of real capital.</span></div>
+
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>Recency bias in learning.</strong> The self-learning system optimizes against recent closed trades. If market regime shifts dramatically (bull &rarr; bear, low vol &rarr; high vol), learned parameters may become stale before the system adapts. There's no mechanism yet to detect regime changes proactively.</span></div>
+
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>Limited trade history.</strong> The system launched Feb 9, 2026. With only a handful of closed trades, performance metrics (win rate, profit factor, max drawdown) are not statistically reliable yet. Hundreds of trades are needed before the numbers stabilize.</span></div>
+
+      <div style="font-size:13px;font-weight:700;color:var(--green);margin:20px 0 8px">Recently Implemented</div>
+
+      <div class="flaw-item"><span class="flaw-icon" style="color:var(--green)">&#10004;</span><span><strong>Statistical significance testing.</strong> Binomial confidence intervals and p-value testing now applied to win rates. Reports whether performance is statistically better than coin flip or just noise. Wilson confidence intervals on all tier breakdowns.</span></div>
+      <div class="flaw-item"><span class="flaw-icon" style="color:var(--green)">&#10004;</span><span><strong>Regime detection.</strong> Market classified as bull/bear/sideways/volatile for crypto (BTC SMA + volatility), forex (USDJPY trend), and stocks (individual SMA). Regime data shown in System Health panel and used to gate signal generation.</span></div>
+      <div class="flaw-item"><span class="flaw-icon" style="color:var(--green)">&#10004;</span><span><strong>Discord alerts.</strong> Strong signals (strength 80+) now trigger Discord webhook notifications with symbol, algorithm, and trade parameters. No need to watch the page constantly.</span></div>
+
+      <div style="font-size:13px;font-weight:700;color:var(--yellow);margin:20px 0 8px">Still Planned</div>
+
+      <div class="flaw-item"><span class="flaw-icon">&#10003;</span><span><strong>Auto-execute strong signals.</strong> Automatically enter trades when consensus signals score above a threshold, with proper position sizing and risk management already in place.</span></div>
+      <div class="flaw-item"><span class="flaw-icon">&#10003;</span><span><strong>Historical backtesting engine.</strong> Replay algorithms against historical data covering multiple market regimes (crashes, rallies, sideways) to stress-test each strategy before deploying it live.</span></div>
+    </div>
+  </div>
+
+</div>
+
 <!-- ===== FOOTER ===== -->
 <div class="footer">
     <p>Live Trading Monitor &mdash; findtorontoevents.ca &mdash; Paper Trading Simulation</p>
@@ -1055,6 +1276,9 @@
 <!-- ============================================================== -->
 <!-- JAVASCRIPT                                                      -->
 <!-- ============================================================== -->
+<script>
+function toggleEdu(el){var b=el.nextElementSibling,a=el.querySelector('.edu-arrow');if(b.classList.contains('open')){b.classList.remove('open');a.classList.remove('open');}else{b.classList.add('open');a.classList.add('open');}}
+</script>
 <script>
 (function() {
     'use strict';
@@ -1461,10 +1685,10 @@
             var s = signals[i];
             var sigType = (s.signal_type || s.direction || 'BUY').toUpperCase();
             var isBuy = sigType === 'BUY' || sigType === 'LONG';
-            var strength = parseInt(s.strength) || 0;
+            var strength = parseInt(s.signal_strength || s.strength) || 0;
             var strengthColor = strength > 70 ? 'var(--green)' : (strength >= 40 ? 'var(--yellow)' : 'var(--red)');
-            var tp = parseFloat(s.take_profit_pct) || 0;
-            var sl = parseFloat(s.stop_loss_pct) || 0;
+            var tp = parseFloat(s.target_tp_pct || s.take_profit_pct) || 0;
+            var sl = parseFloat(s.target_sl_pct || s.stop_loss_pct) || 0;
             var holdMax = s.max_hold_hours || '--';
             var rowId = 'signal-row-' + (s.id || i);
 
@@ -1483,9 +1707,9 @@
 
             html += '<tr class="expand-row" onclick="toggleRationale(\'' + rowId + '\')">'
                 + '<td><span class="expand-icon" id="icon-' + rowId + '">&#x25B6;</span></td>'
-                + '<td>' + formatDateShort(s.created_at) + '</td>'
+                + '<td>' + formatDateShort(s.signal_time || s.created_at) + '</td>'
                 + '<td class="fw-700">' + escapeHtml(s.symbol) + '</td>'
-                + '<td><span class="badge badge-accent">' + escapeHtml(s.algorithm || '--') + '</span></td>'
+                + '<td><span class="badge badge-accent">' + escapeHtml(s.algorithm_name || s.algorithm || '--') + '</span></td>'
                 + '<td><span class="badge ' + (isBuy ? 'badge-green' : 'badge-red') + '">' + sigType + '</span></td>'
                 + '<td><span class="strength-bar"><span class="fill" style="width:' + strength + '%;background:' + strengthColor + '"></span></span> ' + strength + '</td>'
                 + '<td class="font-mono">' + formatPrice(s.entry_price, s.symbol) + '</td>'
@@ -1577,8 +1801,8 @@
             + '&asset_class=' + encodeURIComponent(assetClass)
             + '&direction=' + currentDirection
             + '&position_pct=' + size
-            + '&take_profit_pct=' + tp
-            + '&stop_loss_pct=' + sl
+            + '&tp_pct=' + tp
+            + '&sl_pct=' + sl
             + '&max_hold_hours=' + hold
             + '&algorithm=Manual'
             + '&key=' + ADMIN_KEY;
@@ -1651,8 +1875,8 @@
             var pnlPct = parseFloat(p.unrealized_pct) || 0;
             var pnlUsd = parseFloat(p.unrealized_pnl_usd) || 0;
             var holdHours = parseFloat(p.hold_hours) || 0;
-            var slPct = parseFloat(p.stop_loss_pct) || 1.5;
-            var tpPct = parseFloat(p.take_profit_pct) || 3;
+            var slPct = parseFloat(p.target_sl_pct || p.stop_loss_pct) || 1.5;
+            var tpPct = parseFloat(p.target_tp_pct || p.take_profit_pct) || 3;
 
             // SL/TP bar position: map pnlPct from [-slPct, +tpPct] to [0%, 100%]
             var range = slPct + tpPct;
@@ -1753,7 +1977,7 @@
                 + '<td class="font-mono">' + formatPrice(t.exit_price || t.close_price, t.symbol) + '</td>'
                 + '<td class="font-mono fw-700 ' + pctClass(pnlPct) + '">' + formatPct(pnlPct) + '</td>'
                 + '<td><span class="badge ' + reasonBadge + '">' + escapeHtml(reasonLabel) + '</span></td>'
-                + '<td><span class="badge badge-accent">' + escapeHtml(t.algorithm || '--') + '</span></td>'
+                + '<td><span class="badge badge-accent">' + escapeHtml(t.algorithm_name || t.algorithm || '--') + '</span></td>'
                 + '<td>' + formatHoldTime(t.hold_hours) + '</td>'
                 + '</tr>';
         }
@@ -2229,10 +2453,168 @@
         // Countdowns are handled via the refresh interval
     }
 
+    // ===== SYSTEM HEALTH =====
+    function loadSystemHealth() {
+        var pricesOk = false, signalsOk = false, dashOk = false;
+        var priceCount = 0, priceAge = 0;
+        var sigCount = 0;
+        var totalTrades = 0, wins = 0, losses = 0, portfolio = 10000, totalPnl = 0;
+
+        function setDot(id, color) {
+            var el = document.getElementById(id);
+            if (el) { el.className = 'sh-dot ' + color; }
+        }
+        function setVal(id, text) {
+            var el = document.getElementById(id);
+            if (el) { el.textContent = text; }
+        }
+        function renderNote() {
+            var note = document.getElementById('sys-health-note');
+            if (!note) return;
+            var lines = [];
+            lines.push('System launched Feb 9, 2026. Scans run every 30 min via GitHub Actions.');
+            if (priceCount > 0) {
+                var ageMins = Math.round(priceAge / 60);
+                lines.push('Price cache: ' + priceCount + ' symbols, last updated ' + ageMins + ' min ago.');
+            }
+            lines.push('Signals generated per scan: ~26 across 19 algorithms. Signals expire after 30 min.');
+            if (totalTrades > 0) {
+                lines.push('Trade history: ' + totalTrades + ' trades (' + wins + 'W/' + losses + 'L). Portfolio: $' + portfolio.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' (' + (totalPnl >= 0 ? '+' : '') + '$' + totalPnl.toFixed(2) + ').');
+            } else {
+                lines.push('No trades executed yet. Signals require manual execution via the Execute button.');
+            }
+            lines.push('Auto-execute is OFF. Strong signals must be executed manually from the Signals tab.');
+            note.innerHTML = lines.join('<br>');
+        }
+
+        // Fetch price status
+        fetch(API_BASE + '/live_prices.php?action=status')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                pricesOk = true;
+                if (d.ok) {
+                    priceCount = d.total_cached || 0;
+                    priceAge = d.newest_cache_age_seconds || 0;
+                    var ageMins = Math.round(priceAge / 60);
+                    setVal('sh-prices', priceCount + ' symbols (' + ageMins + 'm ago)');
+                    if (priceCount >= 30 && ageMins < 60) setDot('sh-prices-dot', 'green');
+                    else if (priceCount > 0 && ageMins < 120) setDot('sh-prices-dot', 'yellow');
+                    else setDot('sh-prices-dot', 'red');
+                } else {
+                    setVal('sh-prices', 'error');
+                    setDot('sh-prices-dot', 'red');
+                }
+                renderNote();
+            })
+            .catch(function() {
+                setVal('sh-prices', 'offline');
+                setDot('sh-prices-dot', 'red');
+                renderNote();
+            });
+
+        // Fetch active signals
+        fetch(API_BASE + '/live_signals.php?action=list')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                signalsOk = true;
+                if (d.ok) {
+                    sigCount = (d.signals || []).length;
+                    setVal('sh-signals', sigCount + ' active');
+                    if (sigCount >= 5) setDot('sh-signals-dot', 'green');
+                    else if (sigCount > 0) setDot('sh-signals-dot', 'yellow');
+                    else setDot('sh-signals-dot', 'gray');
+                } else {
+                    setVal('sh-signals', '0 active');
+                    setDot('sh-signals-dot', 'gray');
+                }
+                renderNote();
+            })
+            .catch(function() {
+                setVal('sh-signals', 'offline');
+                setDot('sh-signals-dot', 'red');
+                renderNote();
+            });
+
+        // Fetch dashboard for trades + portfolio
+        fetch(API_BASE + '/live_trade.php?action=dashboard')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                dashOk = true;
+                if (d.ok) {
+                    var stats = d.stats || d;
+                    totalTrades = parseInt(stats.total_trades) || 0;
+                    wins = parseInt(stats.wins) || 0;
+                    losses = parseInt(stats.losses) || 0;
+                    portfolio = parseFloat(stats.portfolio_value) || 10000;
+                    totalPnl = parseFloat(stats.total_pnl) || 0;
+                    var winRate = totalTrades > 0 ? ((wins / totalTrades) * 100).toFixed(1) : '--';
+
+                    // Trades
+                    setVal('sh-trades', totalTrades + ' total (' + wins + 'W/' + losses + 'L)');
+                    if (totalTrades >= 10 && wins > losses) setDot('sh-trades-dot', 'green');
+                    else if (totalTrades > 0) setDot('sh-trades-dot', 'yellow');
+                    else setDot('sh-trades-dot', 'gray');
+
+                    // Portfolio
+                    setVal('sh-portfolio', '$' + portfolio.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0}) + ' (' + (totalPnl >= 0 ? '+' : '') + '$' + totalPnl.toFixed(2) + ')');
+                    if (totalPnl > 0) setDot('sh-portfolio-dot', 'green');
+                    else if (totalPnl > -100) setDot('sh-portfolio-dot', 'yellow');
+                    else setDot('sh-portfolio-dot', 'red');
+
+                    // Win rate
+                    setVal('sh-winrate', winRate !== '--' ? winRate + '%' : 'N/A');
+                    if (parseFloat(winRate) >= 50) setDot('sh-winrate-dot', 'green');
+                    else if (parseFloat(winRate) >= 40) setDot('sh-winrate-dot', 'yellow');
+                    else if (totalTrades > 0) setDot('sh-winrate-dot', 'red');
+                    else setDot('sh-winrate-dot', 'gray');
+                } else {
+                    setVal('sh-trades', 'error');
+                    setDot('sh-trades-dot', 'red');
+                }
+                renderNote();
+            })
+            .catch(function() {
+                setVal('sh-trades', 'offline');
+                setDot('sh-trades-dot', 'red');
+                renderNote();
+            });
+
+        // Auto-execute is always OFF for now
+        setVal('sh-autoexec', 'OFF — manual only');
+        setDot('sh-autoexec-dot', 'yellow');
+
+        // Fetch market regime
+        fetch(API_BASE + '/live_signals.php?action=regime')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d.ok && d.regimes) {
+                    var parts = [];
+                    var regimeColors = {bull: 'green', volatile_bull: 'green', bear: 'red', volatile_bear: 'red', sideways: 'yellow', usd_strong: 'green', usd_weak: 'yellow'};
+                    var bestColor = 'gray';
+                    if (d.regimes.crypto) {
+                        var cr = d.regimes.crypto.regime;
+                        parts.push('Crypto: ' + cr);
+                        if (regimeColors[cr]) bestColor = regimeColors[cr];
+                    }
+                    if (d.regimes.forex) {
+                        var fr = d.regimes.forex.regime;
+                        parts.push('FX: ' + fr);
+                    }
+                    setVal('sh-regime', parts.join(' | ') || 'unknown');
+                    setDot('sh-regime-dot', bestColor);
+                }
+            })
+            .catch(function() {
+                setVal('sh-regime', 'offline');
+                setDot('sh-regime-dot', 'gray');
+            });
+    }
+
     // ===== INITIALIZE =====
     function init() {
         switchTab('prices');
         updateMarketStatus();
+        loadSystemHealth();
         fetchPrices();
         fetchSignals();
         fetchPositions();
@@ -2344,5 +2726,6 @@
 })();
 </script>
 
+<script src="/findstocks/portfolio2/stock-nav.js"></script>
 </body>
 </html>

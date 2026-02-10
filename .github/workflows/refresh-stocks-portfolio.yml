@@ -367,6 +367,28 @@ jobs:
             print(f'Error: {d.get(\"error\",\"unknown\")}')
         " || echo "DayTrader sim: $RESULT"
 
+    # ─── Consensus Performance Tracking + $200/Day Challenge ───
+    - name: Track consensus performance and run challenge
+      continue-on-error: true
+      run: |
+        echo "=== Tracking consensus pick performance ==="
+        RESULT=$(curl -s --max-time 90 "https://findtorontoevents.ca/findstocks/portfolio2/api/consensus_performance.php?action=track&key=stocksrefresh2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            print(f'New entries: {d.get(\"new_entries\",0)}, Updated: {d.get(\"updated\",0)}, Closed: {d.get(\"closed\",0)}')
+            print(f'Lessons detected: {d.get(\"lessons_detected\",0)}')
+            cc = d.get('challenge_consensus', {})
+            cm = d.get('challenge_ml', {})
+            if not cc.get('already_run'):
+                print(f'Challenge Consensus: {cc.get(\"picks\",0)} picks, PnL=\${cc.get(\"total_pnl\",0):.2f} ({cc.get(\"daily_return_pct\",0):.2f}%)')
+            if not cm.get('already_run'):
+                print(f'Challenge ML: {cm.get(\"picks\",0)} picks, PnL=\${cm.get(\"total_pnl\",0):.2f} ({cm.get(\"daily_return_pct\",0):.2f}%)')
+        else:
+            print(f'Error: {d.get(\"error\",\"unknown\")}')
+        " || echo "Consensus perf: $RESULT"
+
     - name: Refresh learning dashboard data
       continue-on-error: true
       run: |

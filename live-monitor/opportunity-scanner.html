@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opportunity Scanner | Live Trading Monitor</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --orange: #f97316;
+            --purple: #a855f7;
+            --radius: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem 1rem;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--orange), var(--yellow), var(--green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.3rem;
+        }
+        .header p { color: var(--text-dim); font-size: 0.95rem; }
+        .header-links {
+            margin-top: 0.8rem;
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-wrap: wrap;
+        }
+        .header-links a { color: var(--text-dim); }
+        .header-links a:hover { color: var(--text); }
+
+        /* ===== STATUS BAR ===== */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 0.6rem 1rem;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            flex-wrap: wrap;
+        }
+        .status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+        .status-dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+        .status-dot.red { background: var(--red); }
+        .status-dot.yellow { background: var(--yellow); animation: pulse 2s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* ===== FILTER BAR ===== */
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 1rem 2rem;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+        .filter-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+        .confidence-filter {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+        .confidence-filter input[type="range"] {
+            width: 120px;
+            accent-color: var(--accent);
+        }
+
+        /* ===== SUMMARY STATS ===== */
+        .summary-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            padding: 1rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .summary-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+        }
+        .summary-card .label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+        .summary-card .value { font-size: 1.5rem; font-weight: 700; margin-top: 0.2rem; }
+
+        /* ===== OPPORTUNITIES GRID ===== */
+        .opp-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem 2rem 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .opp-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .opp-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 4px 24px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+        .opp-card.strong-card { border-left: 4px solid var(--green); }
+        .opp-card.moderate-card { border-left: 4px solid var(--yellow); }
+        .opp-card.weak-card { border-left: 4px solid var(--orange); }
+
+        /* Card header */
+        .opp-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.2rem 0.5rem;
+        }
+        .opp-symbol {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        .opp-badge {
+            display: inline-block;
+            padding: 0.15rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .badge-crypto { background: var(--green-dim); color: var(--green); }
+        .badge-forex { background: rgba(59, 130, 246, 0.15); color: var(--blue); }
+        .badge-stock { background: rgba(168, 85, 247, 0.15); color: var(--purple); }
+        .badge-buy { background: var(--green-dim); color: var(--green); }
+        .badge-short { background: var(--red-dim); color: var(--red); }
+
+        .opp-badges { display: flex; gap: 0.4rem; align-items: center; }
+
+        /* Confidence gauge */
+        .confidence-gauge {
+            position: relative;
+            width: 56px; height: 56px;
+            margin: 0 auto;
+        }
+        .confidence-gauge svg {
+            width: 56px; height: 56px;
+            transform: rotate(-90deg);
+        }
+        .confidence-gauge .bg-ring {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 5;
+        }
+        .confidence-gauge .fg-ring {
+            fill: none;
+            stroke-width: 5;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.6s ease;
+        }
+        .confidence-gauge .score-text {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        /* Price section */
+        .opp-price-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            padding: 0 1.2rem;
+        }
+        .opp-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        .opp-change {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .opp-change.pos { color: var(--green); }
+        .opp-change.neg { color: var(--red); }
+
+        /* Trend & hold */
+        .opp-meta {
+            display: flex;
+            gap: 0.6rem;
+            padding: 0.5rem 1.2rem;
+            flex-wrap: wrap;
+        }
+        .meta-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-dim);
+        }
+
+        /* Why Now section */
+        .why-now {
+            margin: 0.6rem 1.2rem;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(234, 179, 8, 0.08));
+            border: 1px solid rgba(249, 115, 22, 0.2);
+            border-radius: 8px;
+            font-size: 0.82rem;
+            line-height: 1.5;
+            color: var(--text);
+        }
+        .why-now-label {
+            font-weight: 700;
+            color: var(--orange);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.3rem;
+        }
+
+        /* Signals list */
+        .signal-list {
+            padding: 0.5rem 1.2rem 0.8rem;
+        }
+        .signal-list-title {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
+        }
+        .signal-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.2rem 0;
+            font-size: 0.78rem;
+            color: var(--text-dim);
+        }
+        .signal-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+        }
+
+        /* TP/SL bar */
+        .tp-sl-bar {
+            padding: 0.3rem 1.2rem 1rem;
+        }
+        .tp-sl-visual {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+        .tp-sl-track {
+            flex: 1;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+        }
+        .tp-zone {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            background: var(--green);
+            opacity: 0.4;
+            border-radius: 0 3px 3px 0;
+        }
+        .sl-zone {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: var(--red);
+            opacity: 0.4;
+            border-radius: 3px 0 0 3px;
+        }
+
+        /* Data footer */
+        .opp-footer {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 1.2rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.7rem;
+            color: var(--text-dim);
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-dim);
+        }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+        .empty-state h3 { color: var(--text); margin-bottom: 0.5rem; }
+
+        /* ===== LOADING ===== */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-dim);
+        }
+        .spinner {
+            width: 32px; height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .opp-grid { grid-template-columns: 1fr; padding: 1rem; }
+            .header h1 { font-size: 1.5rem; }
+            .filter-bar { padding: 0.8rem 1rem; }
+            .summary-row { padding: 0.5rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <h1>Opportunity Scanner</h1>
+    <p>Multi-algorithm confluence detection — high-conviction buy signals only</p>
+    <div class="header-links">
+        <a href="live-monitor.html">Live Monitor</a>
+        <a href="sports-betting.html">Sports Betting</a>
+        <a href="hour-learning.html">Learning Results</a>
+        <a href="../findstocks/portfolio2/dashboard.html">Portfolio</a>
+        <a href="../findstocks/portfolio2/picks.html">Picks</a>
+    </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+    <span><span class="status-dot yellow" id="statusDot"></span> <span id="statusText">Connecting...</span></span>
+    <span>Last scan: <strong id="lastScan">—</strong></span>
+    <span>Opportunities: <strong id="oppCount">—</strong></span>
+    <span>Next refresh: <strong id="countdown">30s</strong></span>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+    <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All</button>
+    <button class="filter-btn" data-filter="crypto" onclick="setFilter('crypto')">Crypto</button>
+    <button class="filter-btn" data-filter="forex" onclick="setFilter('forex')">Forex</button>
+    <button class="filter-btn" data-filter="stock" onclick="setFilter('stock')">Stocks</button>
+    <div class="confidence-filter">
+        <span>Min Confidence:</span>
+        <input type="range" id="minConfidence" min="0" max="100" value="0" oninput="updateConfFilter(this.value)">
+        <span id="confValue">0</span>
+    </div>
+</div>
+
+<!-- SUMMARY STATS -->
+<div class="summary-row" id="summaryRow">
+    <div class="summary-card">
+        <div class="label">Total Opportunities</div>
+        <div class="value" id="sumTotal">—</div>
+    </div>
+    <div class="summary-card">
+        <div class="label">Strong Signals</div>
+        <div class="value" style="color: var(--green)" id="sumStrong">—</div>
+    </div>
+    <div class="summary-card">
+        <div class="label">Avg Confidence</div>
+        <div class="value" id="sumAvgConf">—</div>
+    </div>
+    <div class="summary-card">
+        <div class="label">Asset Classes</div>
+        <div class="value" id="sumClasses">—</div>
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="mainContent">
+    <div class="loading">
+        <div class="spinner"></div>
+        <p>Scanning for high-conviction opportunities...</p>
+    </div>
+</div>
+
+<script>
+// ===== STATE =====
+var API_BASE = 'api/opportunity_scanner.php';
+var currentFilter = 'all';
+var minConfidence = 0;
+var refreshTimer = null;
+var countdownVal = 30;
+var allOpportunities = [];
+
+// ===== INIT =====
+window.addEventListener('load', function() {
+    fetchOpportunities();
+    startRefreshCycle();
+});
+
+// ===== DATA FETCHING =====
+function fetchOpportunities() {
+    var url = API_BASE + '?action=opportunities&limit=50';
+    if (currentFilter !== 'all') {
+        url += '&asset_class=' + currentFilter;
+    }
+    if (minConfidence > 0) {
+        url += '&min_confidence=' + minConfidence;
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data.ok) {
+                        allOpportunities = data.opportunities || [];
+                        updateStatus(data);
+                        renderOpportunities(allOpportunities);
+                        updateSummary(allOpportunities);
+                    } else {
+                        showError(data.error || 'Unknown error');
+                    }
+                } catch (e) {
+                    showError('Failed to parse response');
+                }
+            } else {
+                showError('Server error: ' + xhr.status);
+            }
+        }
+    };
+    xhr.send();
+}
+
+// ===== REFRESH CYCLE =====
+function startRefreshCycle() {
+    if (refreshTimer) clearInterval(refreshTimer);
+    countdownVal = 30;
+    refreshTimer = setInterval(function() {
+        countdownVal--;
+        document.getElementById('countdown').textContent = countdownVal + 's';
+        if (countdownVal <= 0) {
+            countdownVal = 30;
+            fetchOpportunities();
+        }
+    }, 1000);
+}
+
+// ===== STATUS UPDATE =====
+function updateStatus(data) {
+    var dot = document.getElementById('statusDot');
+    var text = document.getElementById('statusText');
+    var lastScan = document.getElementById('lastScan');
+    var oppCount = document.getElementById('oppCount');
+
+    if (data.is_stale) {
+        dot.className = 'status-dot yellow';
+        text.textContent = 'Stale (' + data.cache_age_seconds + 's ago)';
+    } else {
+        dot.className = 'status-dot green';
+        text.textContent = 'Live';
+    }
+
+    if (data.scan_timestamp) {
+        var d = new Date(data.scan_timestamp);
+        lastScan.textContent = d.toLocaleTimeString();
+    }
+    oppCount.textContent = data.opportunity_count || 0;
+}
+
+// ===== SUMMARY =====
+function updateSummary(opps) {
+    document.getElementById('sumTotal').textContent = opps.length;
+
+    var strong = 0;
+    var totalConf = 0;
+    var classes = {};
+    for (var i = 0; i < opps.length; i++) {
+        if (opps[i].trend_strength === 'strong') strong++;
+        totalConf += opps[i].confidence_score;
+        classes[opps[i].asset_class] = true;
+    }
+
+    document.getElementById('sumStrong').textContent = strong;
+    document.getElementById('sumAvgConf').textContent = opps.length > 0 ? Math.round(totalConf / opps.length) : '—';
+
+    var classNames = [];
+    for (var c in classes) classNames.push(c.charAt(0).toUpperCase() + c.slice(1));
+    document.getElementById('sumClasses').textContent = classNames.length > 0 ? classNames.join(', ') : '—';
+}
+
+// ===== RENDER OPPORTUNITIES =====
+function renderOpportunities(opps) {
+    var container = document.getElementById('mainContent');
+
+    if (opps.length === 0) {
+        container.innerHTML = '<div class="empty-state">' +
+            '<div class="icon">&#128269;</div>' +
+            '<h3>No High-Conviction Opportunities Right Now</h3>' +
+            '<p>The scanner requires 3+ algorithms to agree on the same asset.<br>' +
+            'Check back in a few minutes — the scanner runs every 5 minutes.</p>' +
+            '</div>';
+        return;
+    }
+
+    var html = '<div class="opp-grid">';
+    for (var i = 0; i < opps.length; i++) {
+        html += renderCard(opps[i]);
+    }
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function renderCard(opp) {
+    var strengthClass = opp.trend_strength === 'strong' ? 'strong-card' :
+                        opp.trend_strength === 'moderate' ? 'moderate-card' : 'weak-card';
+
+    var assetBadge = opp.asset_class === 'crypto' ? 'badge-crypto' :
+                     opp.asset_class === 'forex' ? 'badge-forex' : 'badge-stock';
+
+    var dirBadge = opp.direction === 'BUY' ? 'badge-buy' : 'badge-short';
+
+    // Gauge colors
+    var gaugeColor = opp.confidence_score >= 70 ? 'var(--green)' :
+                     opp.confidence_score >= 40 ? 'var(--yellow)' : 'var(--red)';
+    var circumference = 2 * Math.PI * 23;
+    var dashOffset = circumference - (opp.confidence_score / 100) * circumference;
+
+    // Format price
+    var price = opp.current_price;
+    var priceStr;
+    if (price >= 1000) priceStr = '$' + price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    else if (price >= 1) priceStr = '$' + price.toFixed(4);
+    else priceStr = '$' + price.toFixed(6);
+
+    // Extract 24h change from notes
+    var changeMatch = opp.notes ? opp.notes.match(/24h change: ([-\d.]+)%/) : null;
+    var change24h = changeMatch ? parseFloat(changeMatch[1]) : null;
+    var changeHtml = '';
+    if (change24h !== null) {
+        var changeClass = change24h >= 0 ? 'pos' : 'neg';
+        var changeSign = change24h >= 0 ? '+' : '';
+        changeHtml = '<span class="opp-change ' + changeClass + '">' + changeSign + change24h.toFixed(2) + '%</span>';
+    }
+
+    // Signals (max 5)
+    var signalHtml = '';
+    var maxShow = Math.min(opp.momentum_signals.length, 5);
+    for (var s = 0; s < maxShow; s++) {
+        signalHtml += '<div class="signal-item"><span class="signal-dot"></span>' + escapeHtml(opp.momentum_signals[s]) + '</div>';
+    }
+    if (opp.momentum_signals.length > 5) {
+        signalHtml += '<div class="signal-item" style="color:var(--accent)">+' + (opp.momentum_signals.length - 5) + ' more signals</div>';
+    }
+
+    // TP/SL widths (scale to percentage of bar, cap at 50%)
+    var tpWidth = Math.min(opp.avg_tp_pct * 5, 50);
+    var slWidth = Math.min(opp.avg_sl_pct * 5, 50);
+
+    var html = '<div class="opp-card ' + strengthClass + '">' +
+        // Header
+        '<div class="opp-header">' +
+            '<div>' +
+                '<span class="opp-symbol">' + escapeHtml(opp.symbol) + '</span>' +
+                '<div class="opp-badges" style="margin-top:0.3rem">' +
+                    '<span class="opp-badge ' + assetBadge + '">' + opp.asset_class + '</span>' +
+                    '<span class="opp-badge ' + dirBadge + '">' + opp.direction + '</span>' +
+                    '<span class="opp-badge" style="background:rgba(255,255,255,0.05);color:var(--text-dim)">' + opp.signal_count + ' algos</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="confidence-gauge">' +
+                '<svg viewBox="0 0 56 56">' +
+                    '<circle class="bg-ring" cx="28" cy="28" r="23"></circle>' +
+                    '<circle class="fg-ring" cx="28" cy="28" r="23" ' +
+                        'stroke="' + gaugeColor + '" ' +
+                        'stroke-dasharray="' + circumference.toFixed(1) + '" ' +
+                        'stroke-dashoffset="' + dashOffset.toFixed(1) + '"></circle>' +
+                '</svg>' +
+                '<div class="score-text" style="color:' + gaugeColor + '">' + opp.confidence_score + '</div>' +
+            '</div>' +
+        '</div>' +
+
+        // Price
+        '<div class="opp-price-row">' +
+            '<span class="opp-price">' + priceStr + '</span>' +
+            changeHtml +
+        '</div>' +
+
+        // Meta chips
+        '<div class="opp-meta">' +
+            '<span class="meta-chip">Trend: ' + opp.trend_strength + '</span>' +
+            '<span class="meta-chip">Hold: ' + opp.holding_period + '</span>' +
+            '<span class="meta-chip">TP: +' + opp.avg_tp_pct + '%</span>' +
+            '<span class="meta-chip">SL: -' + opp.avg_sl_pct + '%</span>' +
+        '</div>' +
+
+        // Why Now
+        '<div class="why-now">' +
+            '<div class="why-now-label">Why Now</div>' +
+            escapeHtml(opp.key_reason_now) +
+        '</div>' +
+
+        // Signals
+        '<div class="signal-list">' +
+            '<div class="signal-list-title">Confirming Algorithms (' + opp.signal_count + ')</div>' +
+            signalHtml +
+        '</div>' +
+
+        // TP/SL bar
+        '<div class="tp-sl-bar">' +
+            '<div class="tp-sl-visual">' +
+                '<span style="color:var(--red)">SL -' + opp.avg_sl_pct + '%</span>' +
+                '<div class="tp-sl-track">' +
+                    '<div class="sl-zone" style="width:' + slWidth + '%"></div>' +
+                    '<div class="tp-zone" style="width:' + tpWidth + '%"></div>' +
+                '</div>' +
+                '<span style="color:var(--green)">TP +' + opp.avg_tp_pct + '%</span>' +
+            '</div>' +
+        '</div>' +
+
+        // Volume
+        (opp.volume_confirmation ? '<div style="padding:0 1.2rem 0.5rem;font-size:0.78rem;color:var(--text-dim)">' + escapeHtml(opp.volume_confirmation) + '</div>' : '') +
+
+        // Footer
+        '<div class="opp-footer">' +
+            '<span>Source: ' + escapeHtml(opp.data_source) + '</span>' +
+            '<span>Latency: ' + opp.data_latency_seconds + 's</span>' +
+        '</div>' +
+    '</div>';
+
+    return html;
+}
+
+// ===== FILTERS =====
+function setFilter(filter) {
+    currentFilter = filter;
+    var btns = document.querySelectorAll('.filter-btn');
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].className = btns[i].getAttribute('data-filter') === filter ? 'filter-btn active' : 'filter-btn';
+    }
+    fetchOpportunities();
+}
+
+function updateConfFilter(val) {
+    minConfidence = parseInt(val);
+    document.getElementById('confValue').textContent = val;
+    fetchOpportunities();
+}
+
+// ===== HELPERS =====
+function escapeHtml(text) {
+    if (!text) return '';
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(text));
+    return div.innerHTML;
+}
+
+function showError(msg) {
+    var dot = document.getElementById('statusDot');
+    var text = document.getElementById('statusText');
+    dot.className = 'status-dot red';
+    text.textContent = 'Error: ' + msg;
+}
+</script>
+<script src="/findstocks/portfolio2/stock-nav.js"></script>
+</body>
+</html>

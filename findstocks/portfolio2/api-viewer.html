@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Viewer | Find Toronto Events</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #eab308;
+            --blue: #3b82f6;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--accent), #a78bfa, var(--blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header p { color: var(--text-dim); font-size: 0.9rem; margin-top: 0.3rem; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 1.5rem; }
+        .url-bar {
+            display: flex; gap: 8px; margin-bottom: 1.5rem;
+        }
+        .url-bar input {
+            flex: 1; padding: 10px 14px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-card);
+            color: var(--text); font-size: 14px; font-family: 'Consolas', monospace;
+        }
+        .url-bar input:focus { outline: none; border-color: var(--accent); }
+        .url-bar button {
+            padding: 10px 20px; border-radius: 8px; border: none;
+            background: var(--accent); color: #fff; font-weight: 600;
+            cursor: pointer; font-size: 14px;
+        }
+        .url-bar button:hover { opacity: 0.9; }
+        .status { margin-bottom: 1rem; font-size: 13px; color: var(--text-dim); }
+        .status .ok { color: var(--green); }
+        .status .err { color: var(--red); }
+        .json-box {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.5rem; overflow-x: auto;
+            font-family: 'Consolas', 'Courier New', monospace; font-size: 13px;
+            line-height: 1.5; white-space: pre-wrap; word-break: break-word;
+            min-height: 200px; max-height: 80vh; overflow-y: auto;
+        }
+        .json-key { color: #7dd3fc; }
+        .json-str { color: #86efac; }
+        .json-num { color: #fbbf24; }
+        .json-bool { color: #c084fc; }
+        .json-null { color: #f87171; }
+        .loading { text-align: center; padding: 3rem; color: var(--text-dim); }
+        .summary-bar {
+            display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;
+        }
+        .summary-pill {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 8px; padding: 6px 12px; font-size: 12px;
+            color: var(--text-dim);
+        }
+        .summary-pill b { color: var(--text); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>API Viewer</h1>
+        <p>Formatted view of JSON API endpoints</p>
+    </div>
+    <div class="container">
+        <div class="url-bar">
+            <input type="text" id="api-url" placeholder="Enter API URL (e.g. /findstocks/portfolio2/api/advanced_stats.php?action=leaderboard)" />
+            <button onclick="fetchApi()">Fetch</button>
+        </div>
+        <div class="status" id="status"></div>
+        <div class="summary-bar" id="summary" style="display:none;"></div>
+        <div class="json-box" id="output"><span style="color:var(--text-dim);">Enter an API URL above and click Fetch, or use a ?url= parameter in the address bar.</span></div>
+    </div>
+
+<script>
+function syntaxHighlight(json) {
+    if (typeof json !== 'string') json = JSON.stringify(json, null, 2);
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(
+        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+        function(match) {
+            var cls = 'json-num';
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = 'json-key';
+                    match = match.slice(0, -1) + ':';
+                } else {
+                    cls = 'json-str';
+                }
+            } else if (/true|false/.test(match)) {
+                cls = 'json-bool';
+            } else if (/null/.test(match)) {
+                cls = 'json-null';
+            }
+            return '<span class="' + cls + '">' + match + '</span>';
+        }
+    );
+}
+
+function showSummary(data) {
+    var summary = document.getElementById('summary');
+    var pills = [];
+    if (data.ok !== undefined) {
+        pills.push('<span class="summary-pill"><b>Status:</b> ' + (data.ok ? '<span style="color:var(--green)">OK</span>' : '<span style="color:var(--red)">Error</span>') + '</span>');
+    }
+    if (data.action) pills.push('<span class="summary-pill"><b>Action:</b> ' + data.action + '</span>');
+    if (Array.isArray(data.data)) pills.push('<span class="summary-pill"><b>Records:</b> ' + data.data.length + '</span>');
+    if (Array.isArray(data.leaderboard)) pills.push('<span class="summary-pill"><b>Algorithms:</b> ' + data.leaderboard.length + '</span>');
+    if (Array.isArray(data.factors)) pills.push('<span class="summary-pill"><b>Factors:</b> ' + data.factors.length + '</span>');
+    if (data.regime) pills.push('<span class="summary-pill"><b>Regime:</b> ' + data.regime + '</span>');
+    if (pills.length > 0) {
+        summary.innerHTML = pills.join('');
+        summary.style.display = 'flex';
+    } else {
+        summary.style.display = 'none';
+    }
+}
+
+function fetchApi(url) {
+    url = url || document.getElementById('api-url').value.trim();
+    if (!url) return;
+    document.getElementById('api-url').value = url;
+    document.getElementById('status').innerHTML = '<span style="color:var(--text-dim)">Fetching...</span>';
+    document.getElementById('output').innerHTML = '<div class="loading">Loading...</div>';
+    document.getElementById('summary').style.display = 'none';
+    var start = Date.now();
+    fetch(url)
+        .then(function(r) {
+            var ms = Date.now() - start;
+            var statusHtml = '<span class="' + (r.ok ? 'ok' : 'err') + '">' + r.status + ' ' + r.statusText + '</span>';
+            statusHtml += ' &mdash; ' + ms + 'ms';
+            document.getElementById('status').innerHTML = statusHtml;
+            return r.json();
+        })
+        .then(function(data) {
+            showSummary(data);
+            document.getElementById('output').innerHTML = syntaxHighlight(data);
+        })
+        .catch(function(err) {
+            document.getElementById('status').innerHTML = '<span class="err">Error: ' + err.message + '</span>';
+            document.getElementById('output').textContent = 'Failed to fetch or parse response.';
+        });
+}
+
+// Auto-load from ?url= parameter
+var params = new URLSearchParams(window.location.search);
+var autoUrl = params.get('url');
+if (autoUrl) {
+    document.getElementById('api-url').value = autoUrl;
+    fetchApi(autoUrl);
+}
+</script>
+<script src="/findstocks/portfolio2/stock-nav.js"></script>
+</body>
+</html>

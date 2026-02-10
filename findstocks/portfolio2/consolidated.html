@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consolidated Stock Picks | Cross-Algorithm Consensus</title>
+    <title>Consolidated Stock Picks | Performance Tracker</title>
     <style>
         :root {
             --bg-dark: #0a0a1a;
@@ -55,6 +55,29 @@
 
         .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
 
+        /* Tab navigation */
+        .tab-nav {
+            display: flex; gap: 0; margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border);
+            overflow-x: auto;
+        }
+        .tab-btn {
+            padding: 0.75rem 1.25rem; font-size: 0.85rem; font-weight: 600;
+            color: var(--text-dim); cursor: pointer;
+            border: none; background: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px; white-space: nowrap;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .tab-btn:hover { color: var(--text); }
+        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab-btn .tab-badge {
+            font-size: 0.6rem; padding: 0.1rem 0.4rem; border-radius: 99px;
+            background: var(--accent); color: #fff; margin-left: 0.4rem; vertical-align: middle;
+        }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
         /* Freshness banner */
         .freshness-banner {
             display: flex; gap: 0.75rem; flex-wrap: wrap;
@@ -64,16 +87,14 @@
         .freshness-item {
             display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem;
         }
-        .freshness-dot {
-            width: 8px; height: 8px; border-radius: 50%;
-        }
+        .freshness-dot { width: 8px; height: 8px; border-radius: 50%; }
         .freshness-dot.fresh { background: var(--green); }
         .freshness-dot.stale { background: var(--yellow); }
         .freshness-dot.outdated { background: var(--red); }
 
         .section-title {
             font-size: 1.2rem; font-weight: 700;
-            margin: 2rem 0 1rem;
+            margin: 1.5rem 0 1rem;
             display: flex; align-items: center; gap: 0.75rem;
         }
         .badge {
@@ -82,10 +103,55 @@
             text-transform: uppercase; letter-spacing: 0.05em;
         }
         .badge-consensus { background: var(--gold); color: #000; }
-        .badge-count { background: var(--accent); color: #fff; }
-        .badge-fresh { background: var(--green); color: #000; }
-        .badge-stale { background: var(--yellow); color: #000; }
-        .badge-outdated { background: var(--red); color: #fff; }
+        .badge-green { background: var(--green); color: #000; }
+        .badge-red { background: var(--red); color: #fff; }
+
+        /* Transparency banner */
+        .transparency-banner {
+            background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(6,182,212,0.08));
+            border: 1px solid rgba(99,102,241,0.25);
+            border-radius: var(--radius); padding: 0.9rem 1.25rem; margin-bottom: 1.5rem;
+            font-size: 0.78rem; color: var(--text-dim); line-height: 1.6;
+        }
+        .transparency-banner strong { color: var(--text); }
+        .transparency-banner .genesis-date { color: var(--cyan); font-weight: 700; }
+        .transparency-banner .live-date { color: var(--green); font-weight: 700; }
+        .date-tag {
+            font-size: 0.6rem; padding: 0.12rem 0.45rem; border-radius: 4px;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em;
+            display: inline-block; vertical-align: middle; margin-left: 0.3rem;
+        }
+        .date-tag.genesis { background: rgba(6,182,212,0.2); color: var(--cyan); }
+        .date-tag.live { background: rgba(34,197,94,0.2); color: var(--green); }
+
+        /* Diagnosis cards */
+        .diag-card {
+            background: var(--bg-card); border-radius: var(--radius); padding: 0.9rem 1.1rem;
+            margin-bottom: 0.75rem; border-left: 3px solid var(--border);
+        }
+        .diag-card.sev-danger { border-left-color: var(--red); }
+        .diag-card.sev-warning { border-left-color: var(--yellow); }
+        .diag-card.sev-positive { border-left-color: var(--green); }
+        .diag-card.sev-neutral { border-left-color: var(--accent); }
+        .diag-card .diag-title { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.3rem; }
+        .diag-card .diag-text { font-size: 0.78rem; color: var(--text-dim); line-height: 1.5; }
+        .sector-bar {
+            display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .sector-bar .sector-name { width: 110px; font-size: 0.8rem; font-weight: 600; }
+        .sector-bar .sector-meter { flex: 1; height: 20px; background: rgba(255,255,255,0.05); border-radius: 4px; position: relative; overflow: hidden; }
+        .sector-bar .sector-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+        .sector-bar .sector-val { width: 70px; text-align: right; font-size: 0.8rem; font-weight: 700; }
+        .algo-grade {
+            display: inline-block; width: 28px; height: 28px; line-height: 28px; text-align: center;
+            font-weight: 800; font-size: 0.75rem; border-radius: 6px;
+        }
+        .algo-grade.grade-A { background: rgba(34,197,94,0.2); color: var(--green); }
+        .algo-grade.grade-B { background: rgba(59,130,246,0.2); color: var(--blue); }
+        .algo-grade.grade-C { background: rgba(234,179,8,0.2); color: var(--yellow); }
+        .algo-grade.grade-D { background: rgba(239,68,68,0.15); color: #f97316; }
+        .algo-grade.grade-F { background: rgba(239,68,68,0.2); color: var(--red); }
 
         /* Filter bar */
         .filter-bar {
@@ -99,22 +165,23 @@
         .filter-bar label { font-size: 0.8rem; color: var(--text-dim); }
         .filter-bar button {
             background: var(--accent); color: #fff; border: none;
-            padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer;
-            font-size: 0.85rem;
+            padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem;
         }
         .filter-bar button:hover { opacity: 0.85; }
 
         /* Stats row */
         .stats-row {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
             gap: 0.75rem; margin-bottom: 1.5rem;
         }
         .stat-card {
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: var(--radius); padding: 1rem; text-align: center;
         }
-        .stat-card .num { font-size: 1.8rem; font-weight: 800; }
-        .stat-card .label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; }
+        .stat-card .num { font-size: 1.6rem; font-weight: 800; }
+        .stat-card .label { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; }
+        .stat-card .num.positive { color: var(--green); }
+        .stat-card .num.negative { color: var(--red); }
 
         /* Consensus cards */
         .picks-grid {
@@ -127,9 +194,7 @@
             transition: border-color 0.2s, transform 0.1s;
             position: relative;
         }
-        .pick-card:hover {
-            border-color: var(--accent); transform: translateY(-2px);
-        }
+        .pick-card:hover { border-color: var(--accent); transform: translateY(-2px); }
         .pick-card .rank-badge {
             position: absolute; top: -8px; left: 12px;
             width: 28px; height: 28px; border-radius: 50%;
@@ -145,19 +210,15 @@
             display: flex; justify-content: space-between; align-items: flex-start;
             margin-bottom: 0.75rem; padding-left: 24px;
         }
-        .pick-ticker {
-            font-size: 1.3rem; font-weight: 800;
-            color: var(--cyan);
-        }
+        .pick-ticker { font-size: 1.3rem; font-weight: 800; color: var(--cyan); }
         .pick-company { font-size: 0.75rem; color: var(--text-dim); }
         .consensus-badge {
             font-size: 0.7rem; padding: 0.25rem 0.6rem;
-            border-radius: 99px; font-weight: 700;
-            border: 1px solid;
+            border-radius: 99px; font-weight: 700; border: 1px solid;
         }
-        .consensus-high { background: rgba(245, 158, 11, 0.15); border-color: var(--gold); color: var(--gold); }
-        .consensus-medium { background: rgba(99, 102, 241, 0.15); border-color: var(--accent); color: var(--accent); }
-        .consensus-low { background: rgba(136, 136, 170, 0.1); border-color: var(--text-dim); color: var(--text-dim); }
+        .consensus-high { background: rgba(245,158,11,0.15); border-color: var(--gold); color: var(--gold); }
+        .consensus-medium { background: rgba(99,102,241,0.15); border-color: var(--accent); color: var(--accent); }
+        .consensus-low { background: rgba(136,136,170,0.1); border-color: var(--text-dim); color: var(--text-dim); }
 
         .pick-metrics {
             display: grid; grid-template-columns: 1fr 1fr 1fr;
@@ -169,19 +230,14 @@
         .val.positive { color: var(--green); }
         .val.negative { color: var(--red); }
 
-        .pick-sources {
-            border-top: 1px solid var(--border); padding-top: 0.75rem;
-        }
+        .pick-sources { border-top: 1px solid var(--border); padding-top: 0.75rem; }
         .source-tag {
             display: inline-block; font-size: 0.65rem;
             padding: 0.15rem 0.5rem; border-radius: 4px;
-            background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3);
+            background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3);
             color: var(--accent); margin: 0.15rem 0.1rem;
         }
-        .source-link {
-            font-size: 0.65rem; color: var(--text-dim);
-            margin-top: 0.4rem; display: block;
-        }
+        .source-link { font-size: 0.65rem; color: var(--text-dim); margin-top: 0.4rem; display: block; }
 
         .pick-direction {
             display: inline-flex; align-items: center; gap: 0.3rem;
@@ -197,9 +253,29 @@
         }
         .stale-note { font-size: 0.65rem; color: var(--yellow); font-style: italic; }
 
-        .pick-actions {
-            margin-top: 0.75rem; display: flex; gap: 0.5rem;
+        .pick-meta-row {
+            display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem; align-items: center;
         }
+        .pick-date-stamp {
+            font-size: 0.65rem; color: var(--text-dim); display: flex; align-items: center; gap: 0.25rem;
+        }
+        .pick-date-stamp .dv { color: var(--text); font-weight: 600; }
+        .classification-badge {
+            font-size: 0.6rem; padding: 0.15rem 0.5rem; border-radius: 4px;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+        }
+        .cls-daytrade { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+        .cls-swing { background: rgba(99,102,241,0.15); color: var(--accent); border: 1px solid rgba(99,102,241,0.3); }
+        .cls-mixed { background: rgba(234,179,8,0.15); color: var(--yellow); border: 1px solid rgba(234,179,8,0.3); }
+        .tpsl-row {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;
+            margin-bottom: 0.5rem; padding: 0.4rem; border-radius: 8px;
+            background: rgba(99,102,241,0.04); border: 1px solid rgba(99,102,241,0.08);
+        }
+        .tpsl-row .metric .val.tp { color: var(--green); }
+        .tpsl-row .metric .val.sl { color: var(--red); }
+
+        .pick-actions { margin-top: 0.75rem; display: flex; gap: 0.5rem; }
         .btn-sm {
             font-size: 0.7rem; padding: 0.3rem 0.6rem;
             border-radius: 6px; border: 1px solid var(--border);
@@ -207,13 +283,111 @@
         }
         .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
 
+        /* Performance styles */
+        .perf-hero {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .perf-hero-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.5rem; text-align: center;
+        }
+        .perf-hero-card .hero-num {
+            font-size: 2.5rem; font-weight: 900; line-height: 1;
+        }
+        .perf-hero-card .hero-label {
+            font-size: 0.75rem; color: var(--text-dim); margin-top: 0.5rem;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .perf-hero-card .hero-sub {
+            font-size: 0.8rem; color: var(--text-dim); margin-top: 0.25rem;
+        }
+
+        /* Position cards */
+        .pos-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .pos-table th {
+            text-align: left; padding: 0.5rem 0.75rem; font-size: 0.65rem;
+            color: var(--text-dim); text-transform: uppercase; border-bottom: 1px solid var(--border);
+        }
+        .pos-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid rgba(42,42,74,0.5); }
+        .pos-table tr:hover td { background: rgba(99,102,241,0.05); }
+        .pos-table .ticker-cell { font-weight: 800; color: var(--cyan); }
+
+        /* Challenge styles */
+        .challenge-mode-toggle {
+            display: flex; gap: 0; margin-bottom: 1.5rem;
+            background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        .mode-btn {
+            flex: 1; padding: 0.75rem 1rem; text-align: center;
+            font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            border: none; background: none; color: var(--text-dim);
+            transition: all 0.2s;
+        }
+        .mode-btn.active { background: var(--accent); color: #fff; }
+        .mode-btn:hover:not(.active) { color: var(--text); }
+
+        .challenge-target {
+            text-align: center; padding: 1.5rem; margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(245,158,11,0.1));
+            border: 1px solid var(--border); border-radius: var(--radius);
+        }
+        .challenge-target .target-amt {
+            font-size: 3rem; font-weight: 900;
+            background: linear-gradient(135deg, var(--gold), var(--green));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .challenge-target .target-label {
+            font-size: 0.85rem; color: var(--text-dim); margin-top: 0.25rem;
+        }
+
+        /* Lesson cards */
+        .lesson-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem;
+            border-left: 3px solid var(--accent);
+        }
+        .lesson-card.high-conf { border-left-color: var(--gold); }
+        .lesson-card .lesson-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .lesson-card .lesson-title { font-weight: 700; font-size: 0.9rem; }
+        .lesson-card .lesson-type {
+            font-size: 0.6rem; padding: 0.15rem 0.5rem; border-radius: 4px;
+            text-transform: uppercase; font-weight: 700;
+        }
+        .lt-pattern { background: rgba(99,102,241,0.15); color: var(--accent); }
+        .lt-algo_insight { background: rgba(6,182,212,0.15); color: var(--cyan); }
+        .lt-timing { background: rgba(234,179,8,0.15); color: var(--yellow); }
+        .lt-risk { background: rgba(239,68,68,0.15); color: var(--red); }
+        .lt-improvement { background: rgba(34,197,94,0.15); color: var(--green); }
+        .lt-consensus_strength { background: rgba(245,158,11,0.15); color: var(--gold); }
+        .lesson-card .lesson-text { font-size: 0.8rem; color: var(--text-dim); line-height: 1.6; }
+        .lesson-card .lesson-conf {
+            font-size: 0.7rem; color: var(--text-dim); margin-top: 0.5rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .conf-bar {
+            height: 4px; border-radius: 2px; background: var(--border); flex: 1; max-width: 100px;
+        }
+        .conf-fill { height: 100%; border-radius: 2px; background: var(--accent); }
+
+        /* Chart placeholder */
+        .chart-container {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1rem; margin-bottom: 1.5rem;
+            min-height: 200px; position: relative;
+        }
+        .chart-container canvas { width: 100% !important; }
+
         /* Loading / Error */
         .loading { text-align: center; padding: 3rem; color: var(--text-dim); }
         .spinner { display: inline-block; width: 32px; height: 32px;
             border: 3px solid var(--border); border-top: 3px solid var(--accent);
             border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
         .error-box {
             background: var(--red-dim); border: 1px solid var(--red);
             border-radius: var(--radius); padding: 1rem; margin: 1rem 0;
@@ -226,22 +400,30 @@
             line-height: 1.6;
         }
 
+        .data-type-tag { font-size:0.6rem; padding:0.15rem 0.5rem; border-radius:4px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; vertical-align:middle; }
+        .tag-live { background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3); }
+        .tag-forward { background:rgba(99,102,241,0.15); color:#6366f1; border:1px solid rgba(99,102,241,0.3); }
+
+        .empty-state {
+            text-align: center; padding: 3rem 1rem; color: var(--text-dim);
+        }
+        .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .empty-state p { font-size: 0.85rem; max-width: 400px; margin: 0 auto; }
+
         @media (max-width: 768px) {
             .header { padding: 0.75rem 1rem; }
             .header h1 { font-size: 1.2rem; }
             .container { padding: 1rem; }
             .picks-grid { grid-template-columns: 1fr; }
             .pick-metrics { grid-template-columns: 1fr 1fr; }
+            .perf-hero { grid-template-columns: 1fr; }
+            .pos-table { font-size: 0.7rem; }
         }
-        .data-type-tag { font-size:0.6rem; padding:0.15rem 0.5rem; border-radius:4px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; vertical-align:middle; }
-        .tag-backtest { background:rgba(234,179,8,0.15); color:#eab308; border:1px solid rgba(234,179,8,0.3); }
-        .tag-live { background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3); }
-        .tag-forward { background:rgba(99,102,241,0.15); color:#6366f1; border:1px solid rgba(99,102,241,0.3); }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Consolidated Stock Picks</h1>
+        <h1>Consolidated Picks + Performance</h1>
         <div class="header-links">
             <a href="hub.html">Hub</a>
             <a href="picks.html">Top Picks</a>
@@ -250,71 +432,235 @@
             <a href="daytrader-sim.html">DayTrader Sim</a>
             <a href="horizon-picks.html">Horizons</a>
             <a href="/findstocks_global/miracle.html">Miracle v3</a>
-            <a href="/findstocks2_global/miracle.html">Miracle v2</a>
         </div>
     </div>
 
     <div class="container">
-        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;font-size:0.72rem;color:#8888aa;margin-bottom:1rem;padding:0.5rem 0.75rem;background:rgba(234,179,8,0.04);border:1px solid rgba(234,179,8,0.15);border-radius:8px;">
-            <span>Data on this page:</span>
-            <span class="data-type-tag tag-forward">Forward-Looking</span> <span>Consensus picks</span>
-            <span style="opacity:0.3;">|</span>
-            <span class="data-type-tag tag-live">Live</span> <span>Data freshness status</span>
-        </div>
-        <!-- Freshness Banner -->
-        <div class="freshness-banner" id="freshnessBanner">
-            <div class="freshness-item"><div class="spinner" style="width:14px;height:14px;border-width:2px;"></div> Checking data freshness...</div>
+        <!-- Tab Navigation -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('consensus')">Consensus Picks</button>
+            <button class="tab-btn" onclick="switchTab('performance')">Performance <span class="tab-badge" id="perfBadge">-</span></button>
+            <button class="tab-btn" onclick="switchTab('challenge')">$200/Day Challenge</button>
+            <button class="tab-btn" onclick="switchTab('learning')">Self-Learning</button>
         </div>
 
-        <!-- Stats Row -->
-        <div class="stats-row" id="statsRow">
-            <div class="stat-card"><div class="num" id="statConsensus">-</div><div class="label">Consensus Picks</div></div>
-            <div class="stat-card"><div class="num" id="statTotal">-</div><div class="label">Total Raw Picks</div></div>
-            <div class="stat-card"><div class="num" id="statAlgos">-</div><div class="label">Algorithms</div></div>
-            <div class="stat-card"><div class="num" id="statSources">-</div><div class="label">Data Sources</div></div>
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- TAB 1: CONSENSUS PICKS -->
+        <!-- ═══════════════════════════════════════════ -->
+        <div class="tab-panel active" id="tab-consensus">
+            <div class="freshness-banner" id="freshnessBanner">
+                <div class="freshness-item"><div class="spinner" style="width:14px;height:14px;border-width:2px;"></div> Checking data freshness...</div>
+            </div>
+
+            <div class="stats-row" id="statsRow">
+                <div class="stat-card"><div class="num" id="statConsensus">-</div><div class="label">Consensus Picks</div></div>
+                <div class="stat-card"><div class="num" id="statTotal">-</div><div class="label">Total Raw Picks</div></div>
+                <div class="stat-card"><div class="num" id="statAlgos">-</div><div class="label">Algorithms</div></div>
+                <div class="stat-card"><div class="num" id="statSources">-</div><div class="label">Data Sources</div></div>
+            </div>
+
+            <div class="filter-bar">
+                <label>Days:
+                    <select id="filterDays">
+                        <option value="3">3 days</option>
+                        <option value="7">7 days</option>
+                        <option value="14" selected>14 days</option>
+                        <option value="30">30 days</option>
+                    </select>
+                </label>
+                <label>Min Consensus:
+                    <select id="filterMinConsensus">
+                        <option value="1">1+ (all)</option>
+                        <option value="2" selected>2+ (consensus)</option>
+                        <option value="3">3+ (strong)</option>
+                        <option value="5">5+ (very strong)</option>
+                    </select>
+                </label>
+                <button onclick="loadConsensus()">Apply Filters</button>
+            </div>
+
+            <div class="section-title">
+                Cross-Algorithm Consensus <span class="badge badge-consensus" id="consensusBadge">Loading...</span>
+                <span class="data-type-tag tag-forward">Forward-Looking</span>
+            </div>
+            <div id="consensusGrid" class="picks-grid">
+                <div class="loading"><div class="spinner"></div><br>Loading consensus data...</div>
+            </div>
         </div>
 
-        <!-- Filters -->
-        <div class="filter-bar">
-            <label>Days:
-                <select id="filterDays">
-                    <option value="3">3 days</option>
-                    <option value="7">7 days</option>
-                    <option value="14" selected>14 days</option>
-                    <option value="30">30 days</option>
-                </select>
-            </label>
-            <label>Min Consensus:
-                <select id="filterMinConsensus">
-                    <option value="1">1+ (all)</option>
-                    <option value="2" selected>2+ (consensus)</option>
-                    <option value="3">3+ (strong)</option>
-                    <option value="5">5+ (very strong)</option>
-                </select>
-            </label>
-            <button onclick="loadConsensus()">Apply Filters</button>
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- TAB 2: PERFORMANCE TRACKER -->
+        <!-- ═══════════════════════════════════════════ -->
+        <div class="tab-panel" id="tab-performance">
+            <div class="transparency-banner">
+                <strong>Transparency Notice:</strong> Performance tracking began on
+                <span class="genesis-date">Feb 10, 2026</span> (genesis date).
+                Positions entered on that date are initial seeds based on existing consensus at launch.
+                All picks from <span class="live-date" id="perfLiveDate">Feb 11, 2026</span> onward are
+                real-time tracked picks with verifiable entry dates and prices.
+                This is NOT backtesting — no hindsight bias. Every pick is recorded BEFORE we know the outcome.
+                <br><span style="color:var(--text-dim);">Last tracked: <span id="perfLastTracked">-</span></span>
+            </div>
+            <div class="section-title">Honest Performance Tracking <span class="data-type-tag tag-live">Live</span></div>
+            <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1.5rem;">
+                Every consensus pick is tracked as a virtual position. Results are reported honestly — wins AND losses.
+                TP: +8%, SL: -4%, Max hold: 14 days. Positions also close when consensus drops.
+            </p>
+
+            <!-- Hero stats -->
+            <div class="perf-hero" id="perfHero">
+                <div class="perf-hero-card">
+                    <div class="hero-num" id="perfWinRate">-</div>
+                    <div class="hero-label">Win Rate</div>
+                    <div class="hero-sub" id="perfWinSub">-</div>
+                </div>
+                <div class="perf-hero-card">
+                    <div class="hero-num" id="perfPortfolio">-</div>
+                    <div class="hero-label">Portfolio Value</div>
+                    <div class="hero-sub" id="perfPortSub">Started at $10,000</div>
+                </div>
+            </div>
+
+            <div class="stats-row" id="perfStats">
+                <div class="stat-card"><div class="num" id="pOpen">-</div><div class="label">Open Positions</div></div>
+                <div class="stat-card"><div class="num" id="pClosed">-</div><div class="label">Closed Trades</div></div>
+                <div class="stat-card"><div class="num" id="pAvgWin">-</div><div class="label">Avg Win</div></div>
+                <div class="stat-card"><div class="num" id="pAvgLoss">-</div><div class="label">Avg Loss</div></div>
+                <div class="stat-card"><div class="num" id="pPF">-</div><div class="label">Profit Factor</div></div>
+                <div class="stat-card"><div class="num" id="pStreak">-</div><div class="label">Streak</div></div>
+                <div class="stat-card"><div class="num" id="pAvgHold">-</div><div class="label">Avg Hold Days</div></div>
+                <div class="stat-card"><div class="num" id="pTotalRet">-</div><div class="label">Total Return %</div></div>
+            </div>
+
+            <!-- Portfolio chart -->
+            <div class="section-title">Portfolio Value Over Time</div>
+            <div class="chart-container">
+                <canvas id="perfChart" height="200"></canvas>
+            </div>
+
+            <!-- Auto-Diagnosis -->
+            <div class="section-title">Auto-Diagnosis <span class="data-type-tag tag-live">AI Analysis</span></div>
+            <div id="diagnosisNotes" style="margin-bottom:1.5rem;">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+
+            <!-- Sector Performance -->
+            <div class="section-title">Sector Performance</div>
+            <div id="sectorPerf" style="margin-bottom:1.5rem;"></div>
+
+            <!-- Algorithm Report Card -->
+            <div class="section-title">Algorithm Report Card</div>
+            <div id="algoReport" style="margin-bottom:1.5rem;overflow-x:auto;"></div>
+
+            <!-- Exit reason breakdown -->
+            <div class="section-title">Exit Reason Breakdown</div>
+            <div id="exitReasons" style="margin-bottom:1.5rem;"></div>
+
+            <!-- Open positions -->
+            <div class="section-title">Open Positions <span class="badge badge-green" id="openBadge">-</span></div>
+            <div id="openPositions" style="overflow-x:auto;margin-bottom:1.5rem;">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+
+            <!-- Recent closed -->
+            <div class="section-title">Recent Closed Trades</div>
+            <div id="closedPositions" style="overflow-x:auto;">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
         </div>
 
-        <!-- Consensus Picks Section -->
-        <div class="section-title">
-            Cross-Algorithm Consensus <span class="badge badge-consensus" id="consensusBadge">Loading...</span> <span class="data-type-tag tag-forward">Forward-Looking</span>
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- TAB 3: $200/DAY CHALLENGE -->
+        <!-- ═══════════════════════════════════════════ -->
+        <div class="tab-panel" id="tab-challenge">
+            <div class="transparency-banner">
+                <strong>Transparency Notice:</strong> The $200/day challenge started on
+                <span class="genesis-date">Feb 10, 2026</span>.
+                Day 1 results use the genesis consensus snapshot. All subsequent days are
+                <span class="live-date">real-time picks</span> selected each morning before market open.
+                Both modes (Consensus and ML-Enhanced) trade the same $5,000 capital with identical rules.
+                <br><span style="color:var(--text-dim);">Results include ALL trades — winners and losers. No cherry-picking.</span>
+            </div>
+            <div class="challenge-target">
+                <div class="target-amt">$200/Day</div>
+                <div class="target-label">Can our algorithms consistently make $200/day from $5,000 capital?</div>
+            </div>
+
+            <div class="challenge-mode-toggle">
+                <button class="mode-btn active" onclick="switchChallengeMode('consensus')">Consensus Mode</button>
+                <button class="mode-btn" onclick="switchChallengeMode('ml')">ML-Enhanced Mode</button>
+            </div>
+
+            <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1.5rem;" id="challengeDesc">
+                <strong>Consensus Mode:</strong> Picks top 5 consensus stocks daily, allocates $1,000 each.
+                Pure algorithm agreement — no tweaks, no bias. Honest results.
+            </p>
+
+            <!-- Challenge stats -->
+            <div class="stats-row" id="challengeStats">
+                <div class="stat-card"><div class="num" id="cDays">-</div><div class="label">Days Tracked</div></div>
+                <div class="stat-card"><div class="num" id="cTotalPnl">-</div><div class="label">Total P&L</div></div>
+                <div class="stat-card"><div class="num" id="cAvgReturn">-</div><div class="label">Avg Daily Return</div></div>
+                <div class="stat-card"><div class="num" id="cTargetRate">-</div><div class="label">$200 Target Hit Rate</div></div>
+                <div class="stat-card"><div class="num" id="cWinRate">-</div><div class="label">Trade Win Rate</div></div>
+                <div class="stat-card"><div class="num" id="cPeakPnl">-</div><div class="label">Peak P&L</div></div>
+            </div>
+
+            <!-- Challenge chart -->
+            <div class="section-title">Cumulative P&L</div>
+            <div class="chart-container">
+                <canvas id="challengeChart" height="200"></canvas>
+            </div>
+
+            <!-- Latest trades -->
+            <div class="section-title">Latest Challenge Trades</div>
+            <div id="challengeTrades" style="overflow-x:auto;margin-bottom:1.5rem;">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+
+            <!-- Daily history -->
+            <div class="section-title">Daily Results History</div>
+            <div id="challengeHistory" style="overflow-x:auto;">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
         </div>
-        <div id="consensusGrid" class="picks-grid">
-            <div class="loading"><div class="spinner"></div><br>Loading consensus data...</div>
+
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- TAB 4: SELF-LEARNING -->
+        <!-- ═══════════════════════════════════════════ -->
+        <div class="tab-panel" id="tab-learning">
+            <div class="transparency-banner">
+                <strong>Transparency Notice:</strong> Self-learning insights are generated from
+                <span class="live-date">real closed positions only</span> — never from backtests.
+                Lessons require a minimum of 5 closed trades before pattern detection activates.
+                Each lesson shows its detection date, confidence level, and supporting data.
+                ML-Enhanced mode in the $200/day challenge applies these lessons automatically.
+            </div>
+            <div class="section-title">Self-Learning Insights <span class="data-type-tag tag-live">Auto-Detected</span></div>
+            <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1.5rem;">
+                The system automatically analyzes closed positions to detect patterns, rank algorithms,
+                and suggest improvements. These lessons are applied to the ML-Enhanced challenge mode.
+            </p>
+
+            <!-- Lesson type summary -->
+            <div class="stats-row" id="lessonSummary"></div>
+
+            <!-- Lessons list -->
+            <div id="lessonsList">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
         </div>
 
         <!-- Disclaimer -->
         <div class="disclaimer">
             <strong>Important Disclaimer</strong><br>
-            This tool is for <strong>educational and research purposes only</strong> and does not constitute financial advice, investment recommendations, or solicitation to buy or sell securities.
-            <strong>No fiduciary relationship</strong> is created by using this tool.
+            This tool is for <strong>educational and research purposes only</strong> and does not constitute financial advice.
             <strong>All investments involve risk</strong>, including the possible loss of principal. Past performance does not guarantee future results.
-            Data is sourced from third parties (Yahoo Finance) and may be delayed, inaccurate, or incomplete.
-            <strong>Consult a licensed financial adviser</strong> before making any investment decisions.<br><br>
-            <span style="opacity:0.7;">By using this tool you acknowledge that you have read and understood this disclaimer and accept full responsibility for your own investment decisions.</span>
+            <strong>Consult a licensed financial adviser</strong> before making any investment decisions.
         </div>
     </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
 var API_BASE = (function() {
     var h = window.location.hostname;
@@ -324,6 +670,15 @@ var API_BASE = (function() {
     return 'api/';
 })();
 
+// Transparency: genesis date = when tracking started. Before this = seed data, after = live tracked.
+var GENESIS_DATE = '2026-02-10';
+function dateTag(d) {
+    if (!d) return '';
+    return d === GENESIS_DATE
+        ? ' <span class="date-tag genesis">Genesis</span>'
+        : ' <span class="date-tag live">Live</span>';
+}
+
 function apiGet(endpoint, cb) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', API_BASE + endpoint, true);
@@ -331,15 +686,32 @@ function apiGet(endpoint, cb) {
         if (xhr.status >= 200 && xhr.status < 400) {
             try { cb(null, JSON.parse(xhr.responseText)); }
             catch(e) { cb('JSON parse error'); }
-        } else {
-            cb('HTTP ' + xhr.status);
-        }
+        } else { cb('HTTP ' + xhr.status); }
     };
     xhr.onerror = function() { cb('Network error'); };
     xhr.send();
 }
 
-// ─── Load freshness data ───
+// ─── Tab switching ───
+function switchTab(name) {
+    var btns = document.querySelectorAll('.tab-btn');
+    var panels = document.querySelectorAll('.tab-panel');
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+    for (var i = 0; i < panels.length; i++) panels[i].classList.remove('active');
+    document.getElementById('tab-' + name).classList.add('active');
+    // Activate button
+    for (var i = 0; i < btns.length; i++) {
+        if (btns[i].textContent.toLowerCase().indexOf(name === 'consensus' ? 'consensus' : name === 'performance' ? 'performance' : name === 'challenge' ? '$200' : 'learning') >= 0) {
+            btns[i].classList.add('active');
+        }
+    }
+    // Load data on first visit
+    if (name === 'performance' && !window._perfLoaded) { loadPerformance(); window._perfLoaded = true; }
+    if (name === 'challenge' && !window._challengeLoaded) { loadChallenge(); window._challengeLoaded = true; }
+    if (name === 'learning' && !window._learningLoaded) { loadLearning(); window._learningLoaded = true; }
+}
+
+// ─── Load freshness ───
 function loadFreshness() {
     apiGet('consolidated_picks.php?action=freshness', function(err, data) {
         var banner = document.getElementById('freshnessBanner');
@@ -353,20 +725,9 @@ function loadFreshness() {
             var s = sources[i];
             var status = s.status || 'unknown';
             var dotClass = status === 'fresh' ? 'fresh' : (status === 'stale' ? 'stale' : 'outdated');
-            var label = s.label || s.table;
-            var dateStr = s.latest_pick_date || s.latest_date || 'N/A';
-            html += '<div class="freshness-item">' +
-                '<div class="freshness-dot ' + dotClass + '"></div>' +
-                '<span>' + label + ': ' + dateStr + '</span>' +
-                '</div>';
-        }
-        if (data.warnings && data.warnings.length > 0) {
-            html += '<div class="freshness-item" style="color:var(--yellow);margin-left:auto;">' +
-                data.warnings.length + ' warning(s)</div>';
+            html += '<div class="freshness-item"><div class="freshness-dot ' + dotClass + '"></div><span>' + (s.label || s.table) + ': ' + (s.latest_pick_date || s.latest_date || 'N/A') + '</span></div>';
         }
         banner.innerHTML = html;
-
-        // Update source count stat
         document.getElementById('statSources').textContent = sources.length;
     });
 }
@@ -380,27 +741,23 @@ function loadConsensus() {
 
     apiGet('consolidated_picks.php?action=consensus&days=' + days + '&min_consensus=' + minCons + '&limit=100', function(err, data) {
         if (err || !data || !data.ok) {
-            grid.innerHTML = '<div class="error-box">Failed to load consensus data: ' + (err || 'Unknown error') + '</div>';
+            grid.innerHTML = '<div class="error-box">Failed to load: ' + (err || 'Unknown error') + '</div>';
             return;
         }
-
         var picks = data.consensus_picks || [];
         document.getElementById('statConsensus').textContent = picks.length;
         document.getElementById('statTotal').textContent = data.total_raw_picks || 0;
         document.getElementById('consensusBadge').textContent = picks.length + ' tickers';
 
-        // Count distinct algos
         var algoSet = {};
         for (var i = 0; i < picks.length; i++) {
-            var sources = picks[i].sources || [];
-            for (var j = 0; j < sources.length; j++) {
-                algoSet[sources[j].algorithm] = true;
-            }
+            var srcs = picks[i].sources || [];
+            for (var j = 0; j < srcs.length; j++) algoSet[srcs[j].algorithm] = true;
         }
         document.getElementById('statAlgos').textContent = Object.keys(algoSet).length;
 
         if (picks.length === 0) {
-            grid.innerHTML = '<div class="loading" style="color:var(--text-dim);">No consensus picks found for the selected filters. Try widening the date range or lowering the minimum consensus.</div>';
+            grid.innerHTML = '<div class="loading" style="color:var(--text-dim);">No consensus picks found. Try widening filters.</div>';
             return;
         }
 
@@ -416,95 +773,603 @@ function loadConsensus() {
             html += '<div class="pick-card">';
             html += '<div class="rank-badge ' + rankClass + '">' + rank + '</div>';
             html += '<div class="pick-header">';
-            html += '<div><div class="pick-ticker">' + escHtml(p.ticker) + '</div>';
-            html += '<div class="pick-company">' + escHtml(p.company_name || '') + '</div></div>';
+            html += '<div><div class="pick-ticker">' + esc(p.ticker) + '</div>';
+            html += '<div class="pick-company">' + esc(p.company_name || '') + '</div></div>';
             html += '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.3rem;">';
             var dirClass = (p.direction === 'SHORT') ? 'dir-short' : 'dir-long';
             var dirLabel = (p.direction === 'SHORT') ? '&#9660; SHORT' : '&#9650; LONG';
             html += '<span class="pick-direction ' + dirClass + '">' + dirLabel + '</span>';
-            html += '<div class="consensus-badge ' + consClass + '">' + p.consensus_count + ' algorithms agree</div>';
+            html += '<div class="consensus-badge ' + consClass + '">' + p.consensus_count + ' algos</div>';
             html += '</div></div>';
+
+            // Classification + entry date row
+            html += '<div class="pick-meta-row">';
+            var ct = p.pick_classification || 'Swing Trade';
+            var cc = ct.indexOf('Day Trade') >= 0 ? (ct.indexOf('Mixed') >= 0 ? 'cls-mixed' : 'cls-daytrade') : 'cls-swing';
+            html += '<span class="classification-badge ' + cc + '">' + esc(ct) + '</span>';
+            html += '<span class="pick-date-stamp">Picked: <span class="dv">' + esc(p.earliest_pick_date || p.latest_pick_date || '') + '</span>';
+            if (p.earliest_pick_date && p.latest_pick_date && p.earliest_pick_date !== p.latest_pick_date) {
+                html += ' &rarr; <span class="dv">' + esc(p.latest_pick_date) + '</span>';
+            }
+            html += '</span></div>';
 
             html += '<div class="pick-metrics">';
             html += '<div class="metric"><div class="val">$' + fmtPrice(p.avg_entry_price) + '</div><div class="lbl">Avg Entry</div></div>';
-            html += '<div class="metric"><div class="val">$' + fmtPrice(p.latest_price) + '</div><div class="lbl">Latest Price';
-            if (p.price_age_days >= 2) html += ' <span class="stale-note">(' + p.price_age_days + 'd old)</span>';
+            html += '<div class="metric"><div class="val">$' + fmtPrice(p.latest_price) + '</div><div class="lbl">Latest';
+            if (p.price_age_days >= 2) html += ' <span class="stale-note">(' + p.price_age_days + 'd)</span>';
             html += '</div></div>';
-            html += '<div class="metric"><div class="val ' + returnClass + '">' + returnSign + p.current_return_pct + '%</div><div class="lbl">Return Since Entry</div></div>';
+            var retDisp = (p.current_return_pct === 0 && p.price_age_days >= 1) ? '<span class="stale-note">awaiting update</span>' : returnSign + p.current_return_pct + '%';
+            html += '<div class="metric"><div class="val ' + returnClass + '">' + retDisp + '</div><div class="lbl">Return</div></div>';
+            html += '</div>';
+
+            // TP/SL row
+            html += '<div class="tpsl-row">';
+            html += '<div class="metric"><div class="val tp">' + (p.tp_price ? '$' + fmtPrice(p.tp_price) : '—') + '</div><div class="lbl">Target (+' + (p.suggested_tp_pct || 0) + '%)</div></div>';
+            html += '<div class="metric"><div class="val sl">' + (p.sl_price ? '$' + fmtPrice(p.sl_price) : '—') + '</div><div class="lbl">Stop Loss (-' + (p.suggested_sl_pct || 0) + '%)</div></div>';
+            var rr = (p.suggested_sl_pct > 0) ? (p.suggested_tp_pct / p.suggested_sl_pct).toFixed(1) : '—';
+            html += '<div class="metric"><div class="val">' + rr + ':1</div><div class="lbl">Risk / Reward</div></div>';
             html += '</div>';
 
             html += '<div class="pick-metrics" style="margin-bottom:0.5rem;">';
-            html += '<div class="metric"><div class="val">' + fmtNum(p.consensus_score) + '</div><div class="lbl">Consensus Score</div></div>';
-            html += '<div class="metric"><div class="val">' + fmtNum(p.avg_score) + '</div><div class="lbl">Avg Algo Score</div></div>';
-            html += '<div class="metric"><div class="val">' + p.total_picks + '</div><div class="lbl">Total Picks</div></div>';
+            html += '<div class="metric"><div class="val">' + fmtNum(p.consensus_score) + '</div><div class="lbl">Score</div></div>';
+            html += '<div class="metric"><div class="val">' + fmtNum(p.avg_score) + '</div><div class="lbl">Avg Algo</div></div>';
+            html += '<div class="metric"><div class="val">' + p.total_picks + '</div><div class="lbl">Picks</div></div>';
             html += '</div>';
 
-            // Verdict
             if (p.verdict) {
-                var vBorder = p.current_return_pct >= 0 ? 'var(--green)' : (p.price_age_days >= 2 ? 'var(--yellow)' : 'var(--accent)');
-                html += '<div class="pick-verdict" style="border-left-color:' + vBorder + ';">' + escHtml(p.verdict) + '</div>';
+                var vBorder = p.current_return_pct >= 0 ? 'var(--green)' : 'var(--accent)';
+                html += '<div class="pick-verdict" style="border-left-color:' + vBorder + ';">' + esc(p.verdict) + '</div>';
             }
 
-            // Sources
-            html += '<div class="pick-sources">';
-            var srcs = p.sources || [];
-            for (var j = 0; j < srcs.length; j++) {
-                var s = srcs[j];
-                html += '<span class="source-tag">' + escHtml(s.algorithm) + ' <span style="opacity:0.5;">(' + escHtml(s.label) + ')</span></span>';
-            }
-            // Page links
-            var pageLinks = {};
-            for (var j = 0; j < srcs.length; j++) {
-                if (srcs[j].page_link && !pageLinks[srcs[j].page_link]) {
-                    pageLinks[srcs[j].page_link] = srcs[j].label;
-                }
-            }
-            var linkKeys = Object.keys(pageLinks);
-            if (linkKeys.length > 0) {
-                html += '<div class="source-link">View on: ';
-                for (var k = 0; k < linkKeys.length; k++) {
-                    if (k > 0) html += ' | ';
-                    html += '<a href="' + linkKeys[k] + '">' + pageLinks[linkKeys[k]] + '</a>';
+            // Auto-notes from corrective scoring
+            if (p.auto_notes) {
+                var noteColor = p.current_return_pct < -3 ? 'var(--red)' : (p.current_return_pct < 0 ? 'var(--yellow)' : 'var(--green)');
+                html += '<div style="font-size:0.68rem;color:' + noteColor + ';padding:0.35rem 0.5rem;margin-top:0.4rem;background:rgba(255,255,255,0.03);border-radius:4px;line-height:1.4;">';
+                html += '<strong>Auto-Analysis:</strong> ' + esc(p.auto_notes);
+                if (p.original_score && p.consensus_score !== p.original_score) {
+                    html += ' <span style="opacity:0.6;">(Score: ' + fmtNum(p.original_score) + ' → ' + fmtNum(p.consensus_score) + ')</span>';
                 }
                 html += '</div>';
             }
+
+            html += '<div class="pick-sources">';
+            var srcs = p.sources || [];
+            for (var j = 0; j < srcs.length; j++) {
+                html += '<span class="source-tag">' + esc(srcs[j].algorithm) + ' <span style="opacity:0.5;">' + esc(srcs[j].pick_date || '') + '</span></span>';
+            }
             html += '</div>';
 
-            // Actions
             html += '<div class="pick-actions">';
-            html += '<button class="btn-sm" onclick="viewIntel(\'' + escHtml(p.ticker) + '\')">Deep Dive</button>';
-            html += '<button class="btn-sm" onclick="window.open(\'https://finance.yahoo.com/quote/' + encodeURIComponent(p.ticker) + '\',\'_blank\')">Yahoo Finance</button>';
-            html += '</div>';
-
-            html += '</div>';
+            html += '<button class="btn-sm" onclick="window.location.href=\'stock-intel.html?ticker=' + encodeURIComponent(p.ticker) + '\'">Deep Dive</button>';
+            html += '<button class="btn-sm" onclick="window.open(\'https://finance.yahoo.com/quote/' + encodeURIComponent(p.ticker) + '\',\'_blank\')">Yahoo</button>';
+            html += '</div></div>';
         }
         grid.innerHTML = html;
     });
 }
 
-function viewIntel(ticker) {
-    window.location.href = 'stock-intel.html?ticker=' + encodeURIComponent(ticker);
+
+// ═══════════════════════════════════════════
+// PERFORMANCE TAB
+// ═══════════════════════════════════════════
+var perfChartInstance = null;
+
+function loadPerformance() {
+    // Load dashboard
+    apiGet('consensus_performance.php?action=dashboard', function(err, data) {
+        if (err || !data || !data.ok) {
+            document.getElementById('perfHero').innerHTML = '<div class="error-box">Performance data not available yet. Run the daily tracker first.</div>';
+            return;
+        }
+        // Update last tracked timestamp
+        var lte = document.getElementById('perfLastTracked');
+        if (lte && data.generated_at) lte.textContent = data.generated_at + ' UTC';
+        var s = data.stats || {};
+        var wr = s.win_rate || 0;
+        var wrColor = wr >= 55 ? 'positive' : (wr < 45 ? 'negative' : '');
+        document.getElementById('perfWinRate').className = 'hero-num ' + wrColor;
+        document.getElementById('perfWinRate').textContent = wr + '%';
+        document.getElementById('perfWinSub').textContent = s.total_wins + 'W / ' + s.total_losses + 'L of ' + s.total_closed + ' closed';
+        document.getElementById('perfBadge').textContent = wr + '%';
+
+        var pv = s.total_tracked || 0;
+        var pvNum = document.getElementById('perfPortfolio');
+        // If no chart data yet, show total return
+        pvNum.textContent = '$' + fmtComma(10000 + (s.total_return_pct || 0) * 100);
+        pvNum.className = 'hero-num ' + ((s.total_return_pct || 0) >= 0 ? 'positive' : 'negative');
+        document.getElementById('perfPortSub').textContent = 'Total return: ' + ((s.total_return_pct || 0) >= 0 ? '+' : '') + (s.total_return_pct || 0) + '%';
+
+        document.getElementById('pOpen').textContent = s.open_positions || 0;
+        document.getElementById('pClosed').textContent = s.total_closed || 0;
+        var aw = document.getElementById('pAvgWin');
+        aw.textContent = '+' + (s.avg_win_pct || 0) + '%';
+        aw.className = 'num positive';
+        var al = document.getElementById('pAvgLoss');
+        al.textContent = (s.avg_loss_pct || 0) + '%';
+        al.className = 'num negative';
+        document.getElementById('pPF').textContent = s.profit_factor || '0';
+        var streak = s.current_streak || 0;
+        var sk = document.getElementById('pStreak');
+        sk.textContent = (streak > 0 ? '+' : '') + streak;
+        sk.className = 'num ' + (streak > 0 ? 'positive' : (streak < 0 ? 'negative' : ''));
+        document.getElementById('pAvgHold').textContent = (s.avg_hold_days || 0) + 'd';
+        var tr = document.getElementById('pTotalRet');
+        tr.textContent = ((s.total_return_pct || 0) >= 0 ? '+' : '') + (s.total_return_pct || 0) + '%';
+        tr.className = 'num ' + ((s.total_return_pct || 0) >= 0 ? 'positive' : 'negative');
+
+        // Exit reasons
+        var exits = data.exit_reasons || [];
+        if (exits.length > 0) {
+            var ehtml = '<div class="stats-row">';
+            for (var i = 0; i < exits.length; i++) {
+                var e = exits[i];
+                var label = e.reason.replace(/_/g, ' ').replace(/\b\w/g, function(c){return c.toUpperCase();});
+                ehtml += '<div class="stat-card"><div class="num">' + e.count + '</div><div class="label">' + label + '</div>';
+                ehtml += '<div style="font-size:0.7rem;color:' + (e.avg_return >= 0 ? 'var(--green)' : 'var(--red)') + ';">';
+                ehtml += 'avg ' + (e.avg_return >= 0 ? '+' : '') + e.avg_return + '%</div></div>';
+            }
+            ehtml += '</div>';
+            document.getElementById('exitReasons').innerHTML = ehtml;
+        }
+
+        // Chart
+        var chart = data.chart || [];
+        if (chart.length > 0) {
+            renderPerfChart(chart);
+        }
+    });
+
+    // Load positions
+    apiGet('consensus_performance.php?action=positions', function(err, data) {
+        if (err || !data || !data.ok) return;
+
+        // Open positions
+        var open = data.open || [];
+        document.getElementById('openBadge').textContent = open.length;
+        if (open.length === 0) {
+            document.getElementById('openPositions').innerHTML = '<div class="empty-state"><p>No open positions. Positions are created when the daily tracker runs.</p></div>';
+        } else {
+            var h = '<table class="pos-table"><thead><tr><th>Ticker</th><th>Entry</th><th>Current</th><th>Return</th><th>Days</th><th>Consensus</th><th>Diagnosis</th></tr></thead><tbody>';
+            for (var i = 0; i < open.length; i++) {
+                var p = open[i];
+                var ret = parseFloat(p.current_return_pct) || 0;
+                var rc = ret >= 0 ? 'positive' : 'negative';
+                var diag = p.diagnosis || {};
+                var diagNotes = diag.notes || [];
+                var sev = diag.severity || 'info';
+                var sevColor = sev === 'danger' ? 'var(--red)' : (sev === 'warning' ? 'var(--yellow)' : 'var(--text-dim)');
+                h += '<tr>';
+                h += '<td class="ticker-cell">' + esc(p.ticker) + '<br><span style="font-size:0.65rem;color:var(--text-dim);">' + esc(p.company_name || '') + '</span>';
+                if (p.sector) h += '<br><span style="font-size:0.6rem;color:var(--accent);">' + esc(p.sector) + '</span>';
+                h += '</td>';
+                h += '<td>$' + fmtPrice(p.entry_price) + '<br><span style="font-size:0.65rem;color:var(--text-dim);">' + esc(p.entry_date || '') + dateTag(p.entry_date) + '</span></td>';
+                h += '<td>$' + fmtPrice(p.current_price) + '</td>';
+                h += '<td class="' + rc + '" style="font-weight:700;">' + (ret >= 0 ? '+' : '') + ret + '%</td>';
+                h += '<td>' + (p.hold_days || 0) + '</td>';
+                h += '<td>' + (p.consensus_count || 0) + ' algos</td>';
+                h += '<td style="max-width:280px;font-size:0.7rem;">';
+                if (diag.summary) {
+                    h += '<div style="color:' + sevColor + ';font-weight:600;margin-bottom:0.2rem;">' + esc(diag.summary) + '</div>';
+                }
+                for (var j = 0; j < Math.min(diagNotes.length, 2); j++) {
+                    var n = diagNotes[j];
+                    var nc = n.severity === 'danger' ? 'var(--red)' : (n.severity === 'warning' ? 'var(--yellow)' : 'var(--text-dim)');
+                    h += '<div style="color:' + nc + ';font-size:0.65rem;line-height:1.3;margin-top:0.15rem;">' + esc(n.text) + '</div>';
+                }
+                if (diagNotes.length > 2) {
+                    h += '<div style="color:var(--text-dim);font-size:0.6rem;margin-top:0.1rem;">+' + (diagNotes.length - 2) + ' more notes</div>';
+                }
+                h += '</td>';
+                h += '</tr>';
+            }
+            h += '</tbody></table>';
+            document.getElementById('openPositions').innerHTML = h;
+        }
+
+        // Closed positions
+        var closed = data.closed || [];
+        if (closed.length === 0) {
+            document.getElementById('closedPositions').innerHTML = '<div class="empty-state"><p>No closed trades yet. Positions close when they hit TP (+8%), SL (-4%), max hold (14d), or consensus drops.</p></div>';
+        } else {
+            var h = '<table class="pos-table"><thead><tr><th>Ticker</th><th>Entry</th><th>Exit</th><th>Return</th><th>Days</th><th>Reason</th></tr></thead><tbody>';
+            for (var i = 0; i < closed.length; i++) {
+                var p = closed[i];
+                var ret = parseFloat(p.final_return_pct) || 0;
+                var rc = ret >= 0 ? 'positive' : 'negative';
+                var reason = (p.exit_reason || '').replace(/_/g, ' ');
+                h += '<tr>';
+                h += '<td class="ticker-cell">' + esc(p.ticker) + '</td>';
+                h += '<td>$' + fmtPrice(p.entry_price) + ' <span style="font-size:0.65rem;color:var(--text-dim);">' + esc(p.entry_date || '') + dateTag(p.entry_date) + '</span></td>';
+                h += '<td>$' + fmtPrice(p.exit_price) + ' <span style="font-size:0.65rem;color:var(--text-dim);">' + esc(p.exit_date || '') + '</span></td>';
+                h += '<td class="' + rc + '" style="font-weight:700;">' + (ret >= 0 ? '+' : '') + ret + '%</td>';
+                h += '<td>' + (p.hold_days || 0) + 'd</td>';
+                h += '<td><span style="font-size:0.7rem;">' + reason + '</span></td>';
+                h += '</tr>';
+            }
+            h += '</tbody></table>';
+            document.getElementById('closedPositions').innerHTML = h;
+        }
+    });
+
+    // Load auto-diagnosis
+    apiGet('consensus_performance.php?action=diagnose', function(err, data) {
+        if (err || !data || !data.ok) {
+            document.getElementById('diagnosisNotes').innerHTML = '<div class="empty-state"><p>Diagnosis data not available.</p></div>';
+            return;
+        }
+
+        // Market notes
+        var mn = data.market_notes || [];
+        var dh = '';
+        for (var i = 0; i < mn.length; i++) {
+            var n = mn[i];
+            var sev = n.severity || 'neutral';
+            dh += '<div class="diag-card sev-' + sev + '">';
+            if (n.title) dh += '<div class="diag-title">' + esc(n.title) + '</div>';
+            dh += '<div class="diag-text">' + esc(n.text) + '</div>';
+            dh += '</div>';
+        }
+        if (mn.length === 0) dh = '<div class="empty-state"><p>No market diagnosis notes yet. Data will populate after price updates.</p></div>';
+        document.getElementById('diagnosisNotes').innerHTML = dh;
+
+        // Sector performance bars
+        var sectors = data.sector_performance || [];
+        if (sectors.length > 0) {
+            var sh = '';
+            var maxAbs = 1;
+            for (var i = 0; i < sectors.length; i++) {
+                if (Math.abs(sectors[i].avg_return) > maxAbs) maxAbs = Math.abs(sectors[i].avg_return);
+            }
+            for (var i = 0; i < sectors.length; i++) {
+                var s = sectors[i];
+                var pct = Math.min(100, Math.abs(s.avg_return) / maxAbs * 100);
+                var color = s.avg_return >= 0 ? 'var(--green)' : 'var(--red)';
+                var valColor = s.avg_return >= 0 ? 'positive' : 'negative';
+                sh += '<div class="sector-bar">';
+                sh += '<div class="sector-name">' + esc(s.sector) + '</div>';
+                sh += '<div class="sector-meter"><div class="sector-fill" style="width:' + pct + '%;background:' + color + ';"></div></div>';
+                sh += '<div class="sector-val ' + valColor + '">' + (s.avg_return >= 0 ? '+' : '') + s.avg_return + '%</div>';
+                sh += '<div style="font-size:0.65rem;color:var(--text-dim);width:60px;text-align:right;">' + s.winners + 'W/' + s.losers + 'L</div>';
+                sh += '</div>';
+            }
+            document.getElementById('sectorPerf').innerHTML = sh;
+        } else {
+            document.getElementById('sectorPerf').innerHTML = '<div class="empty-state"><p>No sector data.</p></div>';
+        }
+
+        // Algorithm report card
+        var algos = data.algo_performance || [];
+        if (algos.length > 0) {
+            var ah = '<table class="pos-table"><thead><tr><th>Grade</th><th>Algorithm</th><th>Picks</th><th>Avg Return</th><th>W/L</th><th>Win Rate</th></tr></thead><tbody>';
+            for (var i = 0; i < Math.min(algos.length, 20); i++) {
+                var a = algos[i];
+                var rc = a.avg_return >= 0 ? 'positive' : 'negative';
+                ah += '<tr>';
+                ah += '<td><span class="algo-grade grade-' + a.grade + '">' + a.grade + '</span></td>';
+                ah += '<td style="font-size:0.8rem;">' + esc(a.algorithm) + '</td>';
+                ah += '<td>' + a.picks + '</td>';
+                ah += '<td class="' + rc + '" style="font-weight:700;">' + (a.avg_return >= 0 ? '+' : '') + a.avg_return + '%</td>';
+                ah += '<td>' + a.winners + '/' + a.losers + '</td>';
+                ah += '<td>' + a.win_rate + '%</td>';
+                ah += '</tr>';
+            }
+            ah += '</tbody></table>';
+            document.getElementById('algoReport').innerHTML = ah;
+        } else {
+            document.getElementById('algoReport').innerHTML = '<div class="empty-state"><p>No algorithm data.</p></div>';
+        }
+    });
 }
 
-function escHtml(s) {
+function renderPerfChart(chart) {
+    var ctx = document.getElementById('perfChart').getContext('2d');
+    if (perfChartInstance) perfChartInstance.destroy();
+
+    var labels = [];
+    var values = [];
+    for (var i = 0; i < chart.length; i++) {
+        labels.push(chart[i].date);
+        values.push(chart[i].value);
+    }
+
+    perfChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Portfolio Value ($)',
+                data: values,
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99,102,241,0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 2
+            }, {
+                label: 'Baseline ($10,000)',
+                data: labels.map(function() { return 10000; }),
+                borderColor: '#8888aa',
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { labels: { color: '#8888aa', font: { size: 11 } } } },
+            scales: {
+                x: { ticks: { color: '#8888aa', font: { size: 10 }, maxTicksLimit: 10 }, grid: { color: 'rgba(42,42,74,0.5)' } },
+                y: { ticks: { color: '#8888aa', font: { size: 10 }, callback: function(v) { return '$' + v.toLocaleString(); } }, grid: { color: 'rgba(42,42,74,0.5)' } }
+            }
+        }
+    });
+}
+
+
+// ═══════════════════════════════════════════
+// $200/DAY CHALLENGE TAB
+// ═══════════════════════════════════════════
+var challengeChartInstance = null;
+var currentChallengeMode = 'consensus';
+
+function switchChallengeMode(mode) {
+    currentChallengeMode = mode;
+    var btns = document.querySelectorAll('.mode-btn');
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+    if (mode === 'consensus') {
+        btns[0].classList.add('active');
+        document.getElementById('challengeDesc').innerHTML = '<strong>Consensus Mode:</strong> Picks top 5 consensus stocks daily, allocates $1,000 each. Pure algorithm agreement — no tweaks, no bias. Honest results.';
+    } else {
+        btns[1].classList.add('active');
+        document.getElementById('challengeDesc').innerHTML = '<strong>ML-Enhanced Mode:</strong> Uses self-learning insights to optimize picks. Applies algorithm win-rate weighting, optimal consensus count, and momentum filters. Should outperform pure consensus over time.';
+    }
+    loadChallenge();
+}
+
+function loadChallenge() {
+    var mode = currentChallengeMode;
+
+    apiGet('consensus_performance.php?action=challenge&mode=' + mode + '&days=60', function(err, data) {
+        if (err || !data || !data.ok) {
+            document.getElementById('challengeStats').innerHTML = '<div class="error-box">Challenge data not available yet.</div>';
+            return;
+        }
+
+        var ms = null;
+        var stats = data.mode_stats || [];
+        for (var i = 0; i < stats.length; i++) {
+            if (stats[i].mode === mode) { ms = stats[i]; break; }
+        }
+
+        if (!ms) {
+            document.getElementById('cDays').textContent = '0';
+            document.getElementById('cTotalPnl').textContent = '$0';
+            document.getElementById('cAvgReturn').textContent = '0%';
+            document.getElementById('cTargetRate').textContent = '0%';
+            document.getElementById('cWinRate').textContent = '0%';
+            document.getElementById('cPeakPnl').textContent = '$0';
+        } else {
+            document.getElementById('cDays').textContent = ms.days_tracked;
+            var tp = document.getElementById('cTotalPnl');
+            tp.textContent = '$' + fmtComma(ms.total_pnl);
+            tp.className = 'num ' + (ms.total_pnl >= 0 ? 'positive' : 'negative');
+            var ar = document.getElementById('cAvgReturn');
+            ar.textContent = (ms.avg_daily_return >= 0 ? '+' : '') + ms.avg_daily_return + '%';
+            ar.className = 'num ' + (ms.avg_daily_return >= 0 ? 'positive' : 'negative');
+            document.getElementById('cTargetRate').textContent = ms.target_hit_rate + '%';
+            document.getElementById('cWinRate').textContent = ms.win_rate + '%';
+            var pp = document.getElementById('cPeakPnl');
+            pp.textContent = '$' + fmtComma(ms.peak_pnl);
+            pp.className = 'num positive';
+        }
+
+        // Chart
+        var history = data.history || [];
+        var filtered = [];
+        for (var i = 0; i < history.length; i++) {
+            if (history[i].mode === mode) filtered.push(history[i]);
+        }
+        filtered.reverse(); // chronological
+        if (filtered.length > 0) {
+            renderChallengeChart(filtered);
+        }
+
+        // Latest trades
+        var trades = data.latest_trades || [];
+        var ft = [];
+        for (var i = 0; i < trades.length; i++) {
+            if (trades[i].mode === mode) ft.push(trades[i]);
+        }
+        if (ft.length === 0) {
+            document.getElementById('challengeTrades').innerHTML = '<div class="empty-state"><p>No challenge trades yet. The daily tracker will generate picks.</p></div>';
+        } else {
+            var h = '<table class="pos-table"><thead><tr><th>Ticker</th><th>Date</th><th>Entry</th><th>Shares</th><th>Invested</th><th>P&L</th><th>Return</th></tr></thead><tbody>';
+            for (var i = 0; i < ft.length; i++) {
+                var t = ft[i];
+                var ret = parseFloat(t.return_pct) || 0;
+                var rc = ret >= 0 ? 'positive' : 'negative';
+                h += '<tr>';
+                h += '<td class="ticker-cell">' + esc(t.ticker) + '<br><span style="font-size:0.65rem;color:var(--text-dim);">' + esc(t.company_name || '') + '</span></td>';
+                h += '<td style="font-size:0.8rem;">' + esc(t.challenge_date || '') + dateTag(t.challenge_date) + '</td>';
+                h += '<td>$' + fmtPrice(t.entry_price) + '</td>';
+                h += '<td>' + parseFloat(t.shares || 0).toFixed(2) + '</td>';
+                h += '<td>$' + fmtComma(t.invested) + '</td>';
+                h += '<td class="' + rc + '" style="font-weight:700;">$' + fmtComma(t.pnl) + '</td>';
+                h += '<td class="' + rc + '">' + (ret >= 0 ? '+' : '') + ret + '%</td>';
+                h += '</tr>';
+            }
+            h += '</tbody></table>';
+            document.getElementById('challengeTrades').innerHTML = h;
+        }
+
+        // History table
+        if (filtered.length === 0) {
+            document.getElementById('challengeHistory').innerHTML = '<div class="empty-state"><p>No daily results yet.</p></div>';
+        } else {
+            var h = '<table class="pos-table"><thead><tr><th>Date</th><th>Picks</th><th>Daily P&L</th><th>Return</th><th>$200 Target</th><th>Cumulative</th><th>Streak</th></tr></thead><tbody>';
+            for (var i = filtered.length - 1; i >= 0; i--) {
+                var d = filtered[i];
+                var pnl = parseFloat(d.daily_pnl) || 0;
+                var rc = pnl >= 0 ? 'positive' : 'negative';
+                var target = parseInt(d.target_hit) === 1;
+                h += '<tr>';
+                h += '<td>' + esc(d.challenge_date) + dateTag(d.challenge_date) + '</td>';
+                h += '<td>' + (d.picks_count || 0) + '</td>';
+                h += '<td class="' + rc + '" style="font-weight:700;">$' + fmtComma(pnl) + '</td>';
+                h += '<td class="' + rc + '">' + (pnl >= 0 ? '+' : '') + (d.daily_return_pct || 0) + '%</td>';
+                h += '<td>' + (target ? '<span style="color:var(--green);">HIT</span>' : '<span style="color:var(--red);">MISS</span>') + '</td>';
+                h += '<td>$' + fmtComma(d.cumulative_pnl) + '</td>';
+                h += '<td>' + (parseInt(d.win_streak || 0) > 0 ? '+' : '') + (d.win_streak || 0) + '</td>';
+                h += '</tr>';
+            }
+            h += '</tbody></table>';
+            document.getElementById('challengeHistory').innerHTML = h;
+        }
+    });
+}
+
+function renderChallengeChart(history) {
+    var ctx = document.getElementById('challengeChart').getContext('2d');
+    if (challengeChartInstance) challengeChartInstance.destroy();
+
+    var labels = [];
+    var cum = [];
+    var daily = [];
+    for (var i = 0; i < history.length; i++) {
+        labels.push(history[i].challenge_date);
+        cum.push(parseFloat(history[i].cumulative_pnl) || 0);
+        daily.push(parseFloat(history[i].daily_pnl) || 0);
+    }
+
+    challengeChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Cumulative P&L ($)',
+                data: cum,
+                borderColor: '#22c55e',
+                backgroundColor: 'rgba(34,197,94,0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 3
+            }, {
+                label: 'Daily P&L ($)',
+                data: daily,
+                type: 'bar',
+                backgroundColor: daily.map(function(v) { return v >= 0 ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'; }),
+                borderColor: daily.map(function(v) { return v >= 0 ? '#22c55e' : '#ef4444'; }),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { labels: { color: '#8888aa', font: { size: 11 } } } },
+            scales: {
+                x: { ticks: { color: '#8888aa', font: { size: 10 }, maxTicksLimit: 10 }, grid: { color: 'rgba(42,42,74,0.5)' } },
+                y: { ticks: { color: '#8888aa', font: { size: 10 }, callback: function(v) { return '$' + v; } }, grid: { color: 'rgba(42,42,74,0.5)' } }
+            }
+        }
+    });
+}
+
+
+// ═══════════════════════════════════════════
+// SELF-LEARNING TAB
+// ═══════════════════════════════════════════
+function loadLearning() {
+    apiGet('consensus_performance.php?action=lessons&limit=30', function(err, data) {
+        if (err || !data || !data.ok) {
+            document.getElementById('lessonsList').innerHTML = '<div class="empty-state"><p>No lessons detected yet. The system needs closed trades to analyze patterns.</p></div>';
+            return;
+        }
+
+        // Summary
+        var summary = data.summary || [];
+        if (summary.length > 0) {
+            var h = '';
+            for (var i = 0; i < summary.length; i++) {
+                var s = summary[i];
+                var label = s.type.replace(/_/g, ' ').replace(/\b\w/g, function(c){return c.toUpperCase();});
+                h += '<div class="stat-card"><div class="num">' + s.count + '</div>';
+                h += '<div class="label">' + label + '</div>';
+                h += '<div style="font-size:0.7rem;color:var(--text-dim);">avg conf: ' + s.avg_confidence + '%</div></div>';
+            }
+            document.getElementById('lessonSummary').innerHTML = h;
+        }
+
+        // Lessons
+        var lessons = data.lessons || [];
+        if (lessons.length === 0) {
+            document.getElementById('lessonsList').innerHTML = '<div class="empty-state"><div class="empty-icon">&#129504;</div><p>No lessons detected yet. The system needs at least 5 closed trades to begin detecting patterns. Run the daily tracker to start building data.</p></div>';
+            return;
+        }
+
+        var h = '';
+        for (var i = 0; i < lessons.length; i++) {
+            var l = lessons[i];
+            var conf = parseInt(l.confidence) || 50;
+            var isHigh = conf >= 70;
+            var typeClass = 'lt-' + (l.lesson_type || 'pattern');
+
+            h += '<div class="lesson-card' + (isHigh ? ' high-conf' : '') + '">';
+            h += '<div class="lesson-header">';
+            h += '<div class="lesson-title">' + esc(l.lesson_title) + '</div>';
+            h += '<span class="lesson-type ' + typeClass + '">' + esc((l.lesson_type || '').replace(/_/g, ' ')) + '</span>';
+            h += '</div>';
+            h += '<div class="lesson-text">' + esc(l.lesson_text) + '</div>';
+            h += '<div class="lesson-conf">';
+            h += '<span>Confidence: ' + conf + '%</span>';
+            h += '<div class="conf-bar"><div class="conf-fill" style="width:' + conf + '%;"></div></div>';
+            h += '<span style="font-size:0.65rem;">' + esc(l.lesson_date) + '</span>';
+            h += '</div>';
+
+            // Supporting data visualization
+            if (l.supporting_data && Array.isArray(l.supporting_data) && l.supporting_data.length > 0) {
+                h += '<div style="margin-top:0.75rem;display:flex;gap:0.5rem;flex-wrap:wrap;">';
+                for (var j = 0; j < l.supporting_data.length; j++) {
+                    var d = l.supporting_data[j];
+                    var label = d.bucket || d.bracket || d.reason || d.algorithm || ('Count: ' + (d.consensus_count || '?'));
+                    var wr = d.win_rate || 0;
+                    var wrColor = wr >= 55 ? 'var(--green)' : (wr < 45 ? 'var(--red)' : 'var(--text-dim)');
+                    h += '<div style="background:var(--bg-dark);border:1px solid var(--border);border-radius:6px;padding:0.4rem 0.6rem;font-size:0.7rem;text-align:center;">';
+                    h += '<div style="font-weight:700;color:var(--text);">' + esc(String(label)) + '</div>';
+                    h += '<div style="color:' + wrColor + ';font-weight:700;">' + wr + '% WR</div>';
+                    h += '<div style="color:var(--text-dim);">' + (d.trades || d.count || 0) + ' trades</div>';
+                    h += '</div>';
+                }
+                h += '</div>';
+            }
+
+            h += '</div>';
+        }
+        document.getElementById('lessonsList').innerHTML = h;
+    });
+}
+
+
+// ─── Helpers ───
+function esc(s) {
     if (!s) return '';
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
 function fmtPrice(n) {
     if (!n || n === 0) return '0.00';
     return parseFloat(n).toFixed(2);
 }
-
 function fmtNum(n) {
     if (!n) return '0';
     var v = parseFloat(n);
     return v >= 1000 ? (v/1000).toFixed(1) + 'k' : v.toFixed(v < 10 ? 1 : 0);
+}
+function fmtComma(n) {
+    var v = parseFloat(n) || 0;
+    return v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 // ─── Init ───
 loadFreshness();
 loadConsensus();
 </script>
+<script src="/findstocks/portfolio2/stock-nav.js"></script>
 </body>
 </html>

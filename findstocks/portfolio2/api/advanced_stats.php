@@ -1243,7 +1243,7 @@ if ($action === 'ticker_profile') {
     $response['top_stocks'] = $top_stocks;
 
     // --- Day Trading Picks (highest score, tightest params) ---
-    $day_sql = "SELECT sp.ticker, sp.algorithm_name, sp.entry_price, sp.score, sp.rating,
+    $day_sql = "SELECT sp.ticker, sp.algorithm_name, sp.pick_date, sp.entry_price, sp.score, sp.rating,
                        s.company_name, dp.close_price as latest_price
                 FROM stock_picks sp
                 LEFT JOIN stocks s ON sp.ticker = s.ticker
@@ -1260,6 +1260,7 @@ if ($action === 'ticker_profile') {
                 'ticker' => $row['ticker'],
                 'company_name' => $row['company_name'],
                 'algorithm' => $row['algorithm_name'],
+                'pick_date' => $row['pick_date'],
                 'entry_price' => $entry,
                 'target' => round($entry * (1 + $day_tp / 100), 2),
                 'stop_loss' => round($entry * (1 - $day_sl / 100), 2),

@@ -406,12 +406,16 @@ function statusBadge(status) {
 
 function buildProjection(stats, color) {
     if (!stats) return '';
-    var winRate = stats.win_rate || 0;
-    var avgWin = stats.avg_win_pct || 0;
-    var avgLoss = stats.avg_loss_pct || 0;
+    var winRate = parseFloat(stats.win_rate) || 0;
+    var avgWin = parseFloat(stats.avg_win_pct) || 0;
+    var avgLoss = parseFloat(stats.avg_loss_pct) || 0;
+    if (winRate === 0 && avgWin === 0) return '';
     var expected = 1000 * (1 + (winRate / 100 * avgWin / 100) - ((100 - winRate) / 100 * Math.abs(avgLoss) / 100));
     var best = 1000 * (1 + avgWin / 100);
     var worst = 1000 * (1 - Math.abs(avgLoss) / 100);
+    if (isNaN(expected)) expected = 1000;
+    if (isNaN(best)) best = 1000;
+    if (isNaN(worst)) worst = 1000;
 
     return '<div class="projection-banner">' +
         '<span><span class="data-type-tag tag-backtest" style="margin-right:6px;">Backtest</span> <span class="label">If you invested $1,000:</span></span>' +
@@ -465,6 +469,7 @@ function buildPickCard(pick) {
             '<span>Current: <strong>' + fmt(pick.current_price) + '</strong></span>' +
             '<span class="return-pct ' + retClass + '">' + retSign + fmtPct(returnPct) + '</span>' +
         '</div>' +
+        (pick.pick_date ? '<div style="font-size:0.65rem;color:#8888aa;margin-top:0.3rem;">Picked: ' + pick.pick_date + '</div>' : '') +
         '</div>';
 }
 
@@ -693,5 +698,6 @@ apiGet('horizon_picks.php', function(data) {
     <strong>Consult a licensed financial adviser</strong> before making any investment decisions.<br><br>
     <span style="opacity:0.7;">By using this tool you acknowledge that you have read and understood this disclaimer and agree that the operators shall not be held liable for any losses arising from your use of this information.</span>
 </div>
+<script src="/findstocks/portfolio2/stock-nav.js"></script>
 </body>
 </html>
