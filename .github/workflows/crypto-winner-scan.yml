@@ -1,0 +1,86 @@
+name: Crypto Winner Scanner — Auto Scan
+
+on:
+  schedule:
+    # Every 15 minutes — scan 600+ pairs, find momentum winners
+    - cron: '*/15 * * * *'
+    # Every 6 hours — resolve past signals, measure actual win rates
+    - cron: '0 */6 * * *'
+    # Weekly — self-learning: analyze which score tiers/factors actually win
+    - cron: '0 3 * * 0'
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  scan-and-track:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    # ─── Step 1: Scan for new winners ───
+    - name: Scan 600+ crypto pairs
+      continue-on-error: true
+      run: |
+        echo "=== Scanning Crypto.com for momentum winners ==="
+        RESULT=$(curl -s --max-time 90 "https://findtorontoevents.ca/findcryptopairs/api/crypto_winners.php?action=scan&key=cryptoscan2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Pairs scanned: {d.get(\"total_pairs\",0)}')
+                print(f'Candidates after filter: {d.get(\"candidates_filtered\",0)}')
+                print(f'Deep analyzed: {d.get(\"deep_analyzed\",0)}')
+                print(f'Winners found: {d.get(\"winners_found\",0)}')
+                print(f'Elapsed: {d.get(\"elapsed_sec\",0)}s')
+                for w in d.get('winners', [])[:10]:
+                    pair = w.get('pair','?').replace('_USDT','/USDT')
+                    print(f'  {pair:12s} score={w.get(\"score\",0):3d} {w.get(\"verdict\",\"?\")} +{w.get(\"chg_24h\",0):.1f}% 24h  vol=\${w.get(\"vol_usd\",0)/1000:.0f}K')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Parse error')
+        " || echo "Scan: $RESULT"
+
+    # ─── Step 2: Resolve past winners (check if they actually went up) ───
+    - name: Resolve past signals
+      continue-on-error: true
+      run: |
+        echo "=== Resolving past winner signals (4h+ old) ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findcryptopairs/api/crypto_winners.php?action=resolve&key=cryptoscan2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Resolved: {d.get(\"resolved\",0)} signals')
+                print(f'Wins: {d.get(\"wins\",0)} | Losses: {d.get(\"losses\",0)} | Win Rate: {d.get(\"win_rate\",0)}%')
+                for det in d.get('details', [])[:10]:
+                    sym = det.get('pair','?').replace('_USDT','/USDT')
+                    pnl = det.get('pnl_pct', 0)
+                    print(f'  {sym:12s} score={det.get(\"score\",0)} {det.get(\"outcome\",\"?\")} PnL={pnl:+.2f}%')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Parse error')
+        " || echo "Resolve: $RESULT"
+
+    # ─── Step 3: Print leaderboard ───
+    - name: Print leaderboard
+      continue-on-error: true
+      run: |
+        echo "=== Scanner Performance Leaderboard ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/findcryptopairs/api/crypto_winners.php?action=stats") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                s = d.get('stats', {})
+                print(f'Total signals: {s.get(\"total_signals\",0)}')
+                print(f'Win rate: {s.get(\"overall_win_rate\",\"--\")}%')
+                print(f'Avg PnL: {s.get(\"avg_pnl\",\"--\")}%')
+                print(f'Best: +{s.get(\"best_trade\",0)}% | Worst: {s.get(\"worst_trade\",0)}%')
+                print(f'Resolved: {s.get(\"resolved\",0)} | Pending: {s.get(\"pending\",0)}')
+        except:
+            print('Parse error')
+        " || echo "Stats: $RESULT"

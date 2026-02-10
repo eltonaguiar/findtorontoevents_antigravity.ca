@@ -157,9 +157,10 @@ function _dm_action_discover($conn) {
         $price   = $m['price'];
         $cg_id   = isset($m['coingecko_id']) ? $m['coingecko_id'] : '';
 
-        // Fetch hourly candles — try CoinGecko OHLC first, Binance klines as fallback
+        // Fetch hourly candles — try Kraken (has volume), CoinGecko OHLC, Binance fallback
         $candles = array();
-        if ($cg_id !== '') {
+        $candles = _dm_fetch_kraken_ohlc($sym, 48);
+        if (count($candles) < 2 && $cg_id !== '') {
             $candles = _dm_fetch_coingecko_ohlc($cg_id, 48);
         }
         if (count($candles) < 2) {
@@ -355,6 +356,74 @@ function _dm_fetch_coinlore_tickers() {
 
     @file_put_contents($cache_file, json_encode($result));
     return $result;
+}
+
+
+// =====================================================================
+//  Kraken OHLC — hourly candles WITH volume (free, no auth, Ontario-valid)
+//  GET https://api.kraken.com/0/public/OHLC?pair=XXXUSD&interval=60
+//  Returns: [time, open, high, low, close, vwap, volume, count]
+// =====================================================================
+function _dm_fetch_kraken_ohlc($symbol, $limit) {
+    // Convert internal symbol (e.g. EOSUSD) to Kraken pair
+    $kr_pair = _dm_symbol_to_kraken($symbol);
+    if ($kr_pair === '') return array();
+
+    $cache_file = sys_get_temp_dir() . '/lm_kr_ohlc_dm_' . md5($kr_pair) . '.json';
+    if (file_exists($cache_file) && (time() - filemtime($cache_file)) < 120) {
+        $cached = @file_get_contents($cache_file);
+        if ($cached !== false) {
+            $arr = json_decode($cached, true);
+            if (is_array($arr) && count($arr) > 0) return $arr;
+        }
+    }
+
+    $url = 'https://api.kraken.com/0/public/OHLC?pair=' . urlencode($kr_pair) . '&interval=60';
+    $body = _dm_http_get($url, 15);
+    if ($body === null) return array();
+
+    $data = json_decode($body, true);
+    if (!is_array($data) || !isset($data['result'])) return array();
+
+    $ohlc_raw = null;
+    foreach ($data['result'] as $key => $val) {
+        if ($key === 'last') continue;
+        $ohlc_raw = $val;
+        break;
+    }
+    if (!is_array($ohlc_raw) || count($ohlc_raw) === 0) return array();
+
+    $candles = array();
+    foreach ($ohlc_raw as $k) {
+        if (!is_array($k) || count($k) < 7) continue;
+        $candles[] = array(
+            'time'   => (float)$k[0],
+            'open'   => (float)$k[1],
+            'high'   => (float)$k[2],
+            'low'    => (float)$k[3],
+            'close'  => (float)$k[4],
+            'volume' => (float)$k[6]
+        );
+    }
+
+    if (count($candles) > $limit) {
+        $candles = array_slice($candles, count($candles) - $limit);
+    }
+
+    @file_put_contents($cache_file, json_encode($candles));
+    return $candles;
+}
+
+function _dm_symbol_to_kraken($symbol) {
+    // Internal XXXUSD -> Kraken pair
+    $base = str_replace('USD', '', $symbol);
+    $map = array(
+        'BTC' => 'XBTUSD',
+        'DOGE' => 'XDGUSD',
+        'BNB' => ''          // BNB not on Kraken
+    );
+    if (isset($map[$base])) return $map[$base];
+    return $symbol; // Most coins: EOSUSD stays EOSUSD
 }
 
 

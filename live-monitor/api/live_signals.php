@@ -165,7 +165,11 @@ function _ls_fetch_binance_klines($symbol, $limit) {
     $limit = (int)$limit;
     if ($limit < 1) $limit = 24;
 
-    // Try CoinGecko OHLC first (works on shared hosting)
+    // Try Kraken OHLC first (Ontario-valid exchange, includes volume, no auth)
+    $candles = _ls_fetch_kraken_ohlc($symbol, $limit);
+    if (count($candles) >= 2) return $candles;
+
+    // Try CoinGecko OHLC second (works on shared hosting, but no volume)
     $candles = _ls_fetch_coingecko_ohlc($symbol, $limit);
     if (count($candles) >= 2) return $candles;
 
@@ -202,6 +206,72 @@ function _ls_fetch_binance_klines($symbol, $limit) {
 
     @file_put_contents($cache_file, json_encode($candles));
     return $candles;
+}
+
+// Kraken OHLC — hourly candles WITH volume (free, no auth, Ontario-valid exchange)
+// Endpoint: GET https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=60
+// Returns: [time, open, high, low, close, vwap, volume, count]
+function _ls_fetch_kraken_ohlc($symbol, $limit) {
+    $kr_pair = _ls_symbol_to_kraken($symbol);
+    if ($kr_pair === '') return array();
+
+    $cache_file = sys_get_temp_dir() . '/lm_kr_ohlc_ls_' . md5($kr_pair . '_' . $limit) . '.json';
+    if (file_exists($cache_file) && (time() - filemtime($cache_file)) < 60) {
+        $cached = @file_get_contents($cache_file);
+        if ($cached !== false) {
+            $arr = json_decode($cached, true);
+            if (is_array($arr) && count($arr) > 0) return $arr;
+        }
+    }
+
+    // interval=60 gives hourly candles, up to 720 entries
+    $url = 'https://api.kraken.com/0/public/OHLC?pair=' . urlencode($kr_pair) . '&interval=60';
+    $body = _ls_http_get($url);
+    if ($body === null) return array();
+
+    $data = json_decode($body, true);
+    if (!is_array($data) || !isset($data['result'])) return array();
+
+    // Find OHLC data (first key that's not 'last')
+    $ohlc_raw = null;
+    foreach ($data['result'] as $key => $val) {
+        if ($key === 'last') continue;
+        $ohlc_raw = $val;
+        break;
+    }
+    if (!is_array($ohlc_raw) || count($ohlc_raw) === 0) return array();
+
+    $candles = array();
+    foreach ($ohlc_raw as $k) {
+        // [time, open, high, low, close, vwap, volume, count]
+        if (!is_array($k) || count($k) < 7) continue;
+        $candles[] = array(
+            'time'   => (float)$k[0],
+            'open'   => (float)$k[1],
+            'high'   => (float)$k[2],
+            'low'    => (float)$k[3],
+            'close'  => (float)$k[4],
+            'volume' => (float)$k[6]
+        );
+    }
+
+    if (count($candles) > $limit) {
+        $candles = array_slice($candles, count($candles) - $limit);
+    }
+
+    @file_put_contents($cache_file, json_encode($candles));
+    return $candles;
+}
+
+// Kraken symbol mapping: BTCUSD -> XBTUSD, DOGEUSD -> XDGUSD, etc.
+function _ls_symbol_to_kraken($symbol) {
+    $map = array(
+        'BTCUSD'   => 'XBTUSD',
+        'DOGEUSD'  => 'XDGUSD',
+        'BNBUSD'   => ''         // BNB not on Kraken
+    );
+    if (isset($map[$symbol])) return $map[$symbol];
+    return $symbol;
 }
 
 // CoinGecko OHLC — hourly candles (free, no auth, works from shared hosting)

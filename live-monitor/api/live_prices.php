@@ -101,7 +101,7 @@ function _lp_action_fetch($conn, $admin_key, $crypto_symbols, $forex_symbols, $s
         'total_updated' => 0
     );
 
-    // ── Fetch crypto: FreeCryptoAPI batch (primary), CoinGecko batch (fallback) ──
+    // ── Fetch crypto: FreeCryptoAPI batch (primary), CoinGecko batch (fallback), Kraken (enrichment) ──
     $batch_data = array();
 
     // Try FreeCryptoAPI first (includes technical data: RSI, MACD, signal)
@@ -120,6 +120,28 @@ function _lp_action_fetch($conn, $admin_key, $crypto_symbols, $forex_symbols, $s
         $cg_batch = _lp_fetch_all_crypto_coingecko($remaining_for_cg);
         foreach ($cg_batch as $sym => $d) {
             $batch_data[$sym] = $d;
+        }
+    }
+
+    // Kraken enrichment: fetch bid/ask/spread, VWAP, trade count, high/low
+    // Kraken gives richer data (real bid/ask, VWAP) than CoinGecko or FreeCryptoAPI
+    $kraken_data = _lp_fetch_all_crypto_kraken($crypto_symbols);
+    foreach ($kraken_data as $sym => $kd) {
+        if (isset($batch_data[$sym])) {
+            // Enrich existing data with Kraken's superior bid/ask/spread
+            if ($kd['bid_price'] > 0) $batch_data[$sym]['bid_price'] = $kd['bid_price'];
+            if ($kd['ask_price'] > 0) $batch_data[$sym]['ask_price'] = $kd['ask_price'];
+            if ($kd['spread_pct'] > 0) $batch_data[$sym]['spread_pct'] = $kd['spread_pct'];
+            if ($kd['high_24h'] > 0) $batch_data[$sym]['high_24h'] = $kd['high_24h'];
+            if ($kd['low_24h'] > 0) $batch_data[$sym]['low_24h'] = $kd['low_24h'];
+            // Add Kraken VWAP + trade count as extra metadata in data_source
+            $src = $batch_data[$sym]['data_source'];
+            if (isset($kd['vwap'])) {
+                $batch_data[$sym]['data_source'] = $src . ' +kraken';
+            }
+        } else {
+            // Kraken as primary price source for anything still missing
+            $batch_data[$sym] = $kd;
         }
     }
 
@@ -512,6 +534,70 @@ function _lp_symbol_to_coingecko($symbol) {
 }
 
 /**
+ * BTCUSD -> XBTUSD (Kraken query pair format)
+ * Kraken uses XBT for Bitcoin, XDG for DOGE. Most others work as-is.
+ */
+function _lp_symbol_to_kraken($symbol) {
+    $map = array(
+        'BTCUSD'   => 'XBTUSD',
+        'DOGEUSD'  => 'XDGUSD',
+        'BNBUSD'   => '',        // BNB not on Kraken (Binance native token)
+        'SHIBUSD'  => 'SHIBUSD',
+        'MATICUSD' => 'MATICUSD',
+        'PEPEUSD'  => 'PEPEUSD',
+        'FLOKIUSD' => 'FLOKIUSD'
+    );
+    if (isset($map[$symbol])) return $map[$symbol];
+    // Most symbols: ETHUSD stays ETHUSD, etc.
+    return $symbol;
+}
+
+/**
+ * Reverse map: Kraken response keys -> internal symbols
+ * Kraken response keys use X/Z prefixes for legacy assets:
+ * XXBTZUSD -> BTCUSD, XETHZUSD -> ETHUSD, etc.
+ */
+function _lp_kraken_reverse_map() {
+    return array(
+        'XXBTZUSD'  => 'BTCUSD',
+        'XETHZUSD'  => 'ETHUSD',
+        'XXRPZUSD'  => 'XRPUSD',
+        'XLTCZUSD'  => 'LTCUSD',
+        'XDGZUSD'   => 'DOGEUSD',
+        'XXLMZUSD'  => 'XLMUSD',
+        'XXMRZUSD'  => 'XMRUSD',
+        'XZECZUSD'  => 'ZECUSD',
+        // Newer coins use simple format — mapped in _lp_symbol_to_kraken
+        'ADAUSD'    => 'ADAUSD',
+        'SOLUSD'    => 'SOLUSD',
+        'DOTUSD'    => 'DOTUSD',
+        'LINKUSD'   => 'LINKUSD',
+        'AVAXUSD'   => 'AVAXUSD',
+        'UNIUSD'    => 'UNIUSD',
+        'ATOMUSD'   => 'ATOMUSD',
+        'EOSUSD'    => 'EOSUSD',
+        'NEARUSD'   => 'NEARUSD',
+        'FILUSD'    => 'FILUSD',
+        'TRXUSD'    => 'TRXUSD',
+        'BCHUSD'    => 'BCHUSD',
+        'APTUSD'    => 'APTUSD',
+        'ARBUSD'    => 'ARBUSD',
+        'FTMUSD'    => 'FTMUSD',
+        'AXSUSD'    => 'AXSUSD',
+        'HBARUSD'   => 'HBARUSD',
+        'AAVEUSD'   => 'AAVEUSD',
+        'OPUSD'     => 'OPUSD',
+        'MKRUSD'    => 'MKRUSD',
+        'INJUSD'    => 'INJUSD',
+        'SUIUSD'    => 'SUIUSD',
+        'MATICUSD'  => 'MATICUSD',
+        'SHIBUSD'   => 'SHIBUSD',
+        'PEPEUSD'   => 'PEPEUSD',
+        'FLOKIUSD'  => 'FLOKIUSD'
+    );
+}
+
+/**
  * EURUSD -> EUR/USD (TwelveData format)
  */
 function _lp_symbol_to_twelvedata($symbol) {
@@ -661,6 +747,124 @@ function _lp_fetch_all_crypto_coingecko($symbols) {
         );
     }
 
+    return $result;
+}
+
+
+// =====================================================================
+//  Data Source: Kraken BATCH (crypto) — enrichment / fallback
+//  Public API, no auth needed. Ticker gives bid/ask, VWAP, trade count, high/low.
+//  Ontario-valid exchange. Rate limit: ~1 req/sec.
+//  Endpoint: GET https://api.kraken.com/0/public/Ticker?pair=XBTUSD,ETHUSD,...
+// =====================================================================
+function _lp_fetch_all_crypto_kraken($symbols) {
+    $result = array();
+
+    // Build comma-separated Kraken pair list + reverse map
+    $kr_pairs = array();
+    $sym_to_kr = array(); // internal -> kraken query pair
+    foreach ($symbols as $symbol) {
+        $kr = _lp_symbol_to_kraken($symbol);
+        if ($kr !== '') {
+            $kr_pairs[] = $kr;
+            $sym_to_kr[$symbol] = $kr;
+        }
+    }
+    if (count($kr_pairs) === 0) return $result;
+
+    // File cache: 30 seconds (respect rate limits)
+    $cache_key = md5(implode(',', $kr_pairs));
+    $cache_file = sys_get_temp_dir() . '/lm_kraken_ticker_' . $cache_key . '.json';
+    if (file_exists($cache_file) && (time() - filemtime($cache_file)) < 30) {
+        $cached = @file_get_contents($cache_file);
+        if ($cached !== false) {
+            $arr = json_decode($cached, true);
+            if (is_array($arr) && count($arr) > 0) return $arr;
+        }
+    }
+
+    $url = 'https://api.kraken.com/0/public/Ticker?pair=' . implode(',', $kr_pairs);
+    $data = _lp_http_get($url, 15);
+    if ($data === null || !is_array($data)) return $result;
+    if (!isset($data['result']) || !is_array($data['result'])) return $result;
+    if (isset($data['error']) && is_array($data['error']) && count($data['error']) > 0) {
+        // Kraken returned errors — still try to parse partial results
+    }
+
+    $ticker_data = $data['result'];
+
+    // Build reverse map: kraken response key -> internal symbol
+    // Kraken response keys vary: XXBTZUSD, XETHZUSD, SOLUSD, etc.
+    $kr_reverse = _lp_kraken_reverse_map();
+
+    foreach ($ticker_data as $kr_key => $tick) {
+        // Find internal symbol for this Kraken key
+        $internal = '';
+        if (isset($kr_reverse[$kr_key])) {
+            $internal = $kr_reverse[$kr_key];
+        } else {
+            // Try matching against query pairs (some keys match the query format)
+            foreach ($sym_to_kr as $sym => $qp) {
+                if ($kr_key === $qp) { $internal = $sym; break; }
+            }
+        }
+        if ($internal === '') continue;
+
+        // Kraken ticker fields:
+        // a = ask [price, whole_lot_vol, lot_vol]
+        // b = bid [price, whole_lot_vol, lot_vol]
+        // c = last trade [price, lot_vol]
+        // v = volume [today, 24h]
+        // p = vwap [today, 24h]
+        // t = trades [today, 24h]
+        // l = low [today, 24h]
+        // h = high [today, 24h]
+        // o = opening price
+        $last  = isset($tick['c'][0]) ? (float)$tick['c'][0] : 0;
+        $bid   = isset($tick['b'][0]) ? (float)$tick['b'][0] : 0;
+        $ask   = isset($tick['a'][0]) ? (float)$tick['a'][0] : 0;
+        $vol   = isset($tick['v'][1]) ? (float)$tick['v'][1] : 0;
+        $vwap  = isset($tick['p'][1]) ? (float)$tick['p'][1] : 0;
+        $trades= isset($tick['t'][1]) ? (int)$tick['t'][1]   : 0;
+        $low   = isset($tick['l'][1]) ? (float)$tick['l'][1] : 0;
+        $high  = isset($tick['h'][1]) ? (float)$tick['h'][1] : 0;
+        $open  = isset($tick['o'])    ? (float)$tick['o']     : 0;
+
+        if ($last <= 0) continue;
+
+        // Spread calculation
+        $spread_pct = 0;
+        if ($ask > 0 && $bid > 0 && $last > 0) {
+            $spread_pct = round((($ask - $bid) / $last) * 100, 4);
+        }
+
+        // 24h change from opening price
+        $change_24h = 0;
+        if ($open > 0) {
+            $change_24h = round((($last - $open) / $open) * 100, 4);
+        }
+
+        // Volume in USD (vol is in base currency, multiply by VWAP for USD value)
+        $vol_usd = ($vwap > 0) ? round($vol * $vwap, 2) : 0;
+
+        $result[$internal] = array(
+            'price'             => $last,
+            'bid_price'         => $bid,
+            'ask_price'         => $ask,
+            'spread_pct'        => $spread_pct,
+            'volume_24h'        => $vol_usd,
+            'change_1h_pct'     => 0,
+            'change_24h_pct'    => $change_24h,
+            'high_24h'          => $high,
+            'low_24h'           => $low,
+            'data_source'       => 'kraken',
+            'data_delay_seconds'=> 2,
+            'vwap'              => $vwap,
+            'trades_24h'        => $trades
+        );
+    }
+
+    @file_put_contents($cache_file, json_encode($result));
     return $result;
 }
 
@@ -973,6 +1177,11 @@ function _lp_fetch_forex_yahoo($symbol) {
 //  Data Source: Binance klines (candles)
 // =====================================================================
 function _lp_fetch_crypto_klines($symbol, $interval, $limit) {
+    // Try Kraken OHLC first (Ontario-valid, includes volume, no auth needed)
+    $candles = _lp_fetch_kraken_ohlc($symbol, $interval, $limit);
+    if ($candles !== null && count($candles) >= 2) return $candles;
+
+    // Fallback: Binance klines (may be blocked on shared hosting)
     $binance_sym = _lp_symbol_to_binance($symbol);
 
     $url = 'https://api.binance.com/api/v3/klines'
@@ -1001,6 +1210,72 @@ function _lp_fetch_crypto_klines($symbol, $interval, $limit) {
     }
 
     return count($candles) > 0 ? $candles : null;
+}
+
+
+// =====================================================================
+//  Kraken OHLC — hourly candles with volume (public, no auth)
+//  Endpoint: GET https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=60
+//  Returns up to 720 candles: [time, open, high, low, close, vwap, volume, count]
+// =====================================================================
+function _lp_fetch_kraken_ohlc($symbol, $interval, $limit) {
+    $kr_pair = _lp_symbol_to_kraken($symbol);
+    if ($kr_pair === '') return null;
+
+    // Map interval string to Kraken minutes: 1h->60, 4h->240, 1d->1440, etc.
+    $interval_map = array(
+        '1m' => 1, '5m' => 5, '15m' => 15, '30m' => 30,
+        '1h' => 60, '4h' => 240, '1d' => 1440
+    );
+    $kr_interval = isset($interval_map[$interval]) ? $interval_map[$interval] : 60;
+
+    $cache_file = sys_get_temp_dir() . '/lm_kr_ohlc_' . md5($kr_pair . '_' . $kr_interval . '_' . $limit) . '.json';
+    if (file_exists($cache_file) && (time() - filemtime($cache_file)) < 30) {
+        $cached = @file_get_contents($cache_file);
+        if ($cached !== false) {
+            $arr = json_decode($cached, true);
+            if (is_array($arr) && count($arr) > 0) return $arr;
+        }
+    }
+
+    $url = 'https://api.kraken.com/0/public/OHLC?pair=' . urlencode($kr_pair)
+         . '&interval=' . $kr_interval;
+
+    $data = _lp_http_get($url, 15);
+    if ($data === null || !is_array($data)) return null;
+    if (!isset($data['result']) || !is_array($data['result'])) return null;
+
+    // Result keys vary — take the first non-"last" key
+    $ohlc_data = null;
+    foreach ($data['result'] as $key => $val) {
+        if ($key === 'last') continue;
+        $ohlc_data = $val;
+        break;
+    }
+    if (!is_array($ohlc_data) || count($ohlc_data) === 0) return null;
+
+    $candles = array();
+    foreach ($ohlc_data as $k) {
+        // Kraken OHLC: [time, open, high, low, close, vwap, volume, count]
+        if (!is_array($k) || count($k) < 7) continue;
+        $candles[] = array(
+            'date'   => date('Y-m-d H:i:s', (int)$k[0]),
+            'open'   => (float)$k[1],
+            'high'   => (float)$k[2],
+            'low'    => (float)$k[3],
+            'close'  => (float)$k[4],
+            'volume' => (float)$k[6]
+        );
+    }
+
+    // Trim to requested limit (take most recent)
+    if (count($candles) > $limit) {
+        $candles = array_slice($candles, count($candles) - $limit);
+    }
+
+    if (count($candles) === 0) return null;
+    @file_put_contents($cache_file, json_encode($candles));
+    return $candles;
 }
 
 

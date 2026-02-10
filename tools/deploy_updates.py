@@ -17,8 +17,6 @@ LOCAL_BASE = r'e:\findtorontoevents_antigravity.ca'
 REMOTE_ROOT = '/findtorontoevents.ca'
 
 files_to_deploy = [
-    ('findstocks/index.html', 'findstocks/index.html'),
-    ('findstocks2_global/index.html', 'findstocks2_global/index.html'),
     ('updates/index.html', 'updates/index.html'),
 ]
 

@@ -715,7 +715,7 @@
     <!-- ===== DISCLAIMER ===== -->
     <div class="disclaimer">
         Paper trading simulation only. Not financial advice.<br>
-        <strong>Data delays:</strong> Crypto ~5s (FreeCryptoAPI/Binance) &bull; Forex ~15s (TwelveData), cross-pairs ~60s (CurrencyLayer) &bull; Stocks real-time quotes (Finnhub, NYSE hours only) &bull; Candles from Binance/TwelveData/Finnhub may lag 1-5 min. See source badges per asset.
+        <strong>Data delays:</strong> Crypto ~2-5s (Kraken/FreeCryptoAPI) &bull; Forex ~15s (TwelveData), cross-pairs ~60s (CurrencyLayer) &bull; Stocks real-time quotes (Finnhub, NYSE hours only) &bull; Candles from Kraken (w/ volume)/CoinGecko/Finnhub. Kraken = Ontario-valid exchange with real bid/ask spreads.
     </div>
 
     <!-- ===== SUMMARY STATS ===== -->
@@ -1318,10 +1318,14 @@
             else if (curPrice < prevPrice) flashClass = 'flash-red';
             previousPrices[prevKey] = curPrice;
 
-            var change1h = parseFloat(p.change_1h) || 0;
-            var change24h = parseFloat(p.change_24h) || 0;
+            var change1h = parseFloat(p.change_1h_pct) || 0;
+            var change24h = parseFloat(p.change_24h_pct) || 0;
             var high24 = parseFloat(p.high_24h) || curPrice;
             var low24 = parseFloat(p.low_24h) || curPrice;
+            var bidPrice = parseFloat(p.bid_price) || 0;
+            var askPrice = parseFloat(p.ask_price) || 0;
+            var spreadPct = parseFloat(p.spread_pct) || 0;
+            var vol24h = parseFloat(p.volume_24h) || 0;
 
             // Range bar position
             var rangeWidth = high24 - low24;
@@ -1330,9 +1334,10 @@
             if (rangePos > 100) rangePos = 100;
 
             // Source badge
-            var source = p.source || 'Unknown';
+            var source = p.data_source || 'Unknown';
             var sourceClass = 'badge-blue';
-            if (source.toLowerCase().indexOf('twelve') >= 0) sourceClass = 'badge-purple';
+            if (source.toLowerCase().indexOf('kraken') >= 0) sourceClass = 'badge-accent';
+            else if (source.toLowerCase().indexOf('twelve') >= 0) sourceClass = 'badge-purple';
             else if (source.toLowerCase().indexOf('binance') >= 0) sourceClass = 'badge-blue';
             else if (source.toLowerCase().indexOf('finnhub') >= 0) sourceClass = 'badge-accent';
             else if (source.toLowerCase().indexOf('coinbase') >= 0) sourceClass = 'badge-accent';
@@ -1340,18 +1345,34 @@
             else if (source.toLowerCase().indexOf('yahoo') >= 0) sourceClass = 'badge-purple';
 
             // Delay badge
-            var delay = p.delay || '~15s';
+            var delay = p.data_delay_seconds !== undefined ? p.data_delay_seconds + 's' : '~15s';
             var delayClass = 'badge-green';
             if (delay.indexOf('15') >= 0 || delay.indexOf('30') >= 0) delayClass = 'badge-yellow';
             else if (delay.indexOf('60') >= 0 || delay.indexOf('min') >= 0) delayClass = 'badge-orange';
 
+            // Build spread + volume line if Kraken bid/ask is available
+            var spreadLine = '';
+            if (spreadPct > 0 && bidPrice > 0) {
+                spreadLine = '<div class="spread-row" style="font-size:0.7rem;color:var(--text-dim);margin:2px 0">'
+                    + 'Bid ' + formatPrice(bidPrice, sym) + ' / Ask ' + formatPrice(askPrice, sym)
+                    + ' <span style="color:var(--accent)">(spread ' + spreadPct.toFixed(3) + '%)</span>'
+                    + '</div>';
+            }
+            var volLine = '';
+            if (vol24h > 1000) {
+                var volStr = vol24h >= 1e9 ? (vol24h/1e9).toFixed(1) + 'B' : vol24h >= 1e6 ? (vol24h/1e6).toFixed(1) + 'M' : vol24h >= 1e3 ? (vol24h/1e3).toFixed(0) + 'K' : vol24h.toFixed(0);
+                volLine = '<div style="font-size:0.7rem;color:var(--text-dim)">Vol 24h: $' + volStr + '</div>';
+            }
+
             var card = '<div class="price-card ' + flashClass + '" id="price-' + sym + '">'
                 + '<div class="symbol">' + escapeHtml(displaySym) + '</div>'
                 + '<div class="price-main font-mono">' + formatPrice(curPrice, sym) + '</div>'
+                + spreadLine
                 + '<div class="change-row">'
                 + '  <span class="badge ' + (change1h >= 0 ? 'badge-green' : 'badge-red') + '">1h: ' + formatPct(change1h) + '</span>'
                 + '  <span class="badge ' + (change24h >= 0 ? 'badge-green' : 'badge-red') + '">24h: ' + formatPct(change24h) + '</span>'
                 + '</div>'
+                + volLine
                 + '<div class="range-bar">'
                 + '  <div class="range-fill" style="width:100%"></div>'
                 + '  <div class="range-marker" style="left:' + rangePos + '%"></div>'

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto Winner Scanner | Multi-Asset Intelligence</title>
+<style>
+:root{--bg:#0a0a1a;--card:#12122a;--border:#2a2a4a;--text:#e0e0f0;--dim:#8888aa;--green:#22c55e;--red:#ef4444;--gold:#f59e0b;--accent:#6366f1;--cyan:#06b6d4;--radius:12px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:#88aaff;text-decoration:none}a:hover{text-decoration:underline}
+.header{text-align:center;padding:40px 20px 24px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.header h1{font-size:28px;font-weight:200;letter-spacing:4px;text-transform:uppercase;color:#fff}
+.header .sub{color:var(--dim);font-size:13px;margin-top:6px}
+.nav{display:flex;gap:8px;justify-content:center;padding:16px;flex-wrap:wrap}
+.nav a{font-size:12px;padding:4px 14px;border-radius:20px;border:1px solid var(--border);color:var(--dim);transition:all 0.15s}
+.nav a:hover,.nav a.active{border-color:var(--accent);color:var(--accent);text-decoration:none;background:rgba(99,102,241,0.08)}
+.container{max-width:1200px;margin:0 auto;padding:20px}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+.stat-card .label{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+.stat-card .value{font-size:24px;font-weight:700;margin-top:4px}
+.stat-card .sub{font-size:11px;color:var(--dim);margin-top:2px}
+.green{color:var(--green)}.red{color:var(--red)}.gold{color:var(--gold)}.cyan{color:var(--cyan)}
+.section-title{font-size:18px;font-weight:600;margin:24px 0 12px;display:flex;align-items:center;gap:8px}
+.badge{font-size:10px;padding:2px 8px;border-radius:4px;text-transform:uppercase;font-weight:700;letter-spacing:1px}
+.badge-strong{background:rgba(34,197,94,0.15);color:var(--green);border:1px solid rgba(34,197,94,0.3)}
+.badge-buy{background:rgba(99,102,241,0.15);color:var(--accent);border:1px solid rgba(99,102,241,0.3)}
+.badge-lean{background:rgba(234,179,8,0.15);color:var(--gold);border:1px solid rgba(234,179,8,0.3)}
+.winner-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;transition:border-color 0.2s}
+.winner-card:hover{border-color:var(--accent)}
+.winner-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.winner-pair{font-size:18px;font-weight:700;color:#fff}
+.winner-score{font-size:28px;font-weight:800}
+.winner-meta{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--dim)}
+.winner-meta span{display:flex;align-items:center;gap:4px}
+.factors{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:12px}
+.factor{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:8px 10px;font-size:11px}
+.factor-name{color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;font-size:10px}
+.factor-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:4px;overflow:hidden}
+.factor-fill{height:100%;border-radius:2px;transition:width 0.5s}
+.history-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
+.history-table th{text-align:left;padding:8px;color:var(--dim);border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:1px}
+.history-table td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
+.outcome-win{color:var(--green);font-weight:700}
+.outcome-loss{color:var(--red);font-weight:700}
+.outcome-pending{color:var(--dim)}
+.loading{text-align:center;padding:40px;color:var(--dim)}
+.disclaimer{font-size:11px;color:#555;margin-top:32px;padding:12px;border:1px solid rgba(255,255,255,0.04);border-radius:8px;line-height:1.6}
+@media(max-width:600px){.header h1{font-size:20px}.stats-row{grid-template-columns:repeat(2,1fr)}.factors{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Crypto Winner Scanner</h1>
+  <div class="sub">Multi-factor momentum scanner across 600+ crypto pairs on Crypto.com Exchange</div>
+</div>
+<div class="nav">
+  <a href="/findcryptopairs/portfolio/">Crypto Portfolio</a>
+  <a href="/live-monitor/live-monitor.html">Live Monitor</a>
+  <a href="/investments/">Investment Hub</a>
+  <a href="/updates/">Changelog</a>
+  <a href="/">&larr; Home</a>
+</div>
+<div class="container">
+  <div class="stats-row" id="stats-row">
+    <div class="stat-card"><div class="label">Win Rate</div><div class="value" id="s-wr">--</div><div class="sub">Resolved signals</div></div>
+    <div class="stat-card"><div class="label">Avg P&L</div><div class="value" id="s-pnl">--</div><div class="sub">Per signal</div></div>
+    <div class="stat-card"><div class="label">Total Signals</div><div class="value" id="s-total">--</div><div class="sub" id="s-resolved">--</div></div>
+    <div class="stat-card"><div class="label">Best Trade</div><div class="value green" id="s-best">--</div><div class="sub" id="s-worst">--</div></div>
+    <div class="stat-card"><div class="label">Unique Pairs</div><div class="value cyan" id="s-pairs">--</div><div class="sub" id="s-scans">--</div></div>
+    <div class="stat-card"><div class="label">Last Scan</div><div class="value" id="s-last" style="font-size:14px">--</div><div class="sub" id="s-first">--</div></div>
+  </div>
+
+  <div class="section-title">Current Winners <span class="badge badge-strong" id="winner-count">loading...</span></div>
+  <div id="winners-list"><div class="loading">Loading winners...</div></div>
+
+  <div class="section-title" style="margin-top:32px">Win Rate by Confidence Tier</div>
+  <div id="tier-table"></div>
+
+  <div class="section-title" style="margin-top:32px">Recent Signal History</div>
+  <div id="history-list"><div class="loading">Loading history...</div></div>
+
+  <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:16px;margin-top:24px;line-height:1.7">
+    <div style="font-size:16px;font-weight:700;color:#ef4444;margin-bottom:8px">Before You Do Anything With This Page</div>
+    <div style="font-size:13px;color:#ccc">
+      <strong>What this page does:</strong> Every 15 minutes, our scanner checks 600+ cryptocurrencies on Crypto.com Exchange. It looks at 7 different technical indicators (momentum, volume, RSI, moving averages, MACD, price patterns, and breakout proximity). If 5 or more indicators agree that a coin is likely to keep going up, it appears here as a "winner."<br><br>
+      <strong>What the score means:</strong> Each coin gets a score from 0-100. Scores 85+ = "Strong Buy" (very high confidence), 75-84 = "Buy" (high confidence), 70-74 = "Lean Buy" (moderate confidence). We track every single signal and publicly show the actual win rate — no hiding losses.<br><br>
+      <strong>What "win" means:</strong> We check every signal 4 hours later. If the price went up by the target % = win. If it dropped past the risk % = loss. We show the real numbers, not cherry-picked ones.<br><br>
+      <strong style="color:#ef4444">The honest truth:</strong> No scanner in the world can predict crypto prices with certainty. Crypto can drop 10-50% in hours. This tool finds patterns that have historically worked more often than not — but "more often than not" still means you WILL lose sometimes. <strong>Never put in money you can't afford to lose.</strong> This is a research tool, not a money printer.
+    </div>
+  </div>
+  <div class="disclaimer" style="margin-top:12px">
+    <strong>Data source:</strong> Crypto.com Exchange public API (real-time, no delay). Scanner runs every 15 minutes via GitHub Actions. All signals are tracked and outcomes publicly verifiable.<br>
+    <strong>Platforms available in Ontario, Canada:</strong> Kraken (lowest fees, most pairs), Coinbase Advanced Trade (registered restricted dealer), Crypto.com Exchange (600+ pairs, 0.25% maker fee), Bitbuy (100% Canadian).<br>
+    <strong>Not financial advice.</strong> For educational and research purposes only. Past performance does not guarantee future results.
+  </div>
+</div>
+
+<script>
+var API = '/findcryptopairs/api/crypto_winners.php';
+
+function api(action, cb) {
+    var x = new XMLHttpRequest();
+    x.open('GET', API + '?action=' + action);
+    x.onload = function() {
+        try { cb(JSON.parse(x.responseText)); } catch(e) { console.error(e); }
+    };
+    x.onerror = function() { console.error('API error'); };
+    x.send();
+}
+
+function formatPnl(v) {
+    v = parseFloat(v);
+    if (isNaN(v)) return '--';
+    var cls = v >= 0 ? 'green' : 'red';
+    return '<span class="' + cls + '">' + (v >= 0 ? '+' : '') + v.toFixed(2) + '%</span>';
+}
+
+function verdictBadge(v) {
+    if (v === 'STRONG_BUY') return '<span class="badge badge-strong">Strong Buy</span>';
+    if (v === 'BUY') return '<span class="badge badge-buy">Buy</span>';
+    return '<span class="badge badge-lean">Lean Buy</span>';
+}
+
+function factorBar(score, max) {
+    var pct = Math.round((score / max) * 100);
+    var color = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--red)';
+    return '<div class="factor-bar"><div class="factor-fill" style="width:' + pct + '%;background:' + color + '"></div></div>';
+}
+
+function renderWinners(data) {
+    if (!data.ok || data.count === 0) {
+        document.getElementById('winners-list').innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--dim);font-size:14px;background:var(--card);border:1px solid var(--border);border-radius:12px"><div style="font-size:40px;margin-bottom:12px">&#128522;</div><div style="font-size:18px;color:#fff;margin-bottom:8px">No Strong Picks Right Now</div><div>The market is quiet or bearish — none of the 600+ coins scored high enough on all 7 indicators to be recommended. This is the scanner being cautious, not broken.<br><br><strong>What this means:</strong> Right now, the smartest move is to wait. When multiple indicators line up on a coin, it will appear here automatically.<br><br>The scanner checks every 15 minutes, 24/7. Check back soon!</div></div>';
+        document.getElementById('winner-count').textContent = '0 winners';
+        return;
+    }
+    document.getElementById('winner-count').textContent = data.count + ' winners';
+    var html = '';
+    for (var i = 0; i < data.winners.length; i++) {
+        var w = data.winners[i];
+        var f = w.factors_json || {};
+        var scoreColor = w.score >= 85 ? 'green' : w.score >= 75 ? 'gold' : 'cyan';
+        var pair = (w.pair || '').replace('_USDT', '/USDT');
+
+        html += '<div class="winner-card">';
+        html += '<div class="winner-header">';
+        html += '<div><span class="winner-pair">' + pair + '</span> ' + verdictBadge(w.verdict) + '</div>';
+        html += '<div class="winner-score ' + scoreColor + '">' + w.score + '<span style="font-size:12px;color:var(--dim)">/100</span></div>';
+        html += '</div>';
+        html += '<div class="winner-meta">';
+        html += '<span>Price: $' + parseFloat(w.price_at_signal).toFixed(6) + '</span>';
+        html += '<span>24h: ' + formatPnl(w.chg_24h) + '</span>';
+        html += '<span>Vol: $' + (parseFloat(w.vol_usd_24h)/1000).toFixed(0) + 'K</span>';
+        html += '<span>Target: +' + w.target_pct + '% / Risk: -' + w.risk_pct + '%</span>';
+        html += '<span>' + (w.created_at || '') + ' UTC</span>';
+        html += '</div>';
+
+        // Factor breakdown
+        html += '<div class="factors">';
+        var factorNames = {
+            'multi_timeframe_momentum': 'Momentum',
+            'volume_surge': 'Volume Surge',
+            'rsi_sweet_spot': 'RSI Sweet Spot',
+            'above_moving_averages': 'Above MAs',
+            'macd_bullish': 'MACD Bullish',
+            'higher_highs_lows': 'HH/HL Pattern',
+            'near_24h_high': 'Near 24h High'
+        };
+        for (var key in factorNames) {
+            if (f[key]) {
+                html += '<div class="factor"><div class="factor-name">' + factorNames[key] + ' (' + f[key].score + '/' + f[key].max + ')</div>' + factorBar(f[key].score, f[key].max) + '</div>';
+            }
+        }
+        html += '</div></div>';
+    }
+    document.getElementById('winners-list').innerHTML = html;
+}
+
+function renderStats(data) {
+    if (!data.ok || !data.stats) return;
+    var s = data.stats;
+    document.getElementById('s-wr').innerHTML = s.overall_win_rate !== null ? '<span class="' + (s.overall_win_rate >= 60 ? 'green' : s.overall_win_rate >= 50 ? 'gold' : 'red') + '">' + s.overall_win_rate + '%</span>' : '--';
+    document.getElementById('s-pnl').innerHTML = s.avg_pnl !== null ? formatPnl(s.avg_pnl) : '--';
+    document.getElementById('s-total').textContent = s.total_signals || 0;
+    document.getElementById('s-resolved').textContent = (s.resolved || 0) + ' resolved, ' + (s.pending || 0) + ' pending';
+    document.getElementById('s-best').textContent = s.best_trade ? '+' + parseFloat(s.best_trade).toFixed(1) + '%' : '--';
+    document.getElementById('s-worst').textContent = s.worst_trade ? 'Worst: ' + parseFloat(s.worst_trade).toFixed(1) + '%' : '';
+    document.getElementById('s-pairs').textContent = s.unique_pairs || 0;
+    document.getElementById('s-scans').textContent = (s.total_scans || 0) + ' scans';
+    document.getElementById('s-last').textContent = s.last_scan ? s.last_scan.substring(5, 16) : '--';
+    document.getElementById('s-first').textContent = s.first_scan ? 'Since ' + s.first_scan.substring(0, 10) : '';
+}
+
+function renderLeaderboard(data) {
+    if (!data.ok || !data.by_tier || data.by_tier.length === 0) {
+        document.getElementById('tier-table').innerHTML = '<div class="loading">No resolved data yet. Check back after signals have been tracked for 4+ hours.</div>';
+        return;
+    }
+    var html = '<table class="history-table"><tr><th>Tier</th><th>Signals</th><th>Wins</th><th>Losses</th><th>Win Rate</th><th>Avg P&L</th></tr>';
+    for (var i = 0; i < data.by_tier.length; i++) {
+        var t = data.by_tier[i];
+        var wrClass = t.win_rate >= 60 ? 'green' : t.win_rate >= 50 ? 'gold' : 'red';
+        html += '<tr><td>' + t.tier + '</td><td>' + t.total + '</td><td class="green">' + t.wins + '</td><td class="red">' + t.losses + '</td>';
+        html += '<td class="' + wrClass + '">' + (t.win_rate !== null ? t.win_rate + '%' : '--') + '</td>';
+        html += '<td>' + formatPnl(t.avg_pnl) + '</td></tr>';
+    }
+    html += '</table>';
+    document.getElementById('tier-table').innerHTML = html;
+}
+
+function renderHistory(data) {
+    if (!data.ok || data.count === 0) {
+        document.getElementById('history-list').innerHTML = '<div class="loading">No signal history yet.</div>';
+        return;
+    }
+    var html = '<table class="history-table"><tr><th>Pair</th><th>Score</th><th>Entry</th><th>Resolve</th><th>P&L</th><th>Outcome</th><th>Time</th></tr>';
+    for (var i = 0; i < Math.min(data.history.length, 50); i++) {
+        var h = data.history[i];
+        var pair = (h.pair || '').replace('_USDT', '/USDT');
+        var outcomeClass = '';
+        if (h.outcome === 'win' || h.outcome === 'partial_win') outcomeClass = 'outcome-win';
+        else if (h.outcome === 'loss' || h.outcome === 'partial_loss') outcomeClass = 'outcome-loss';
+        else outcomeClass = 'outcome-pending';
+
+        html += '<tr>';
+        html += '<td>' + pair + '</td>';
+        html += '<td>' + h.score + '</td>';
+        html += '<td>$' + parseFloat(h.price_at_signal).toFixed(4) + '</td>';
+        html += '<td>' + (h.price_at_resolve ? '$' + parseFloat(h.price_at_resolve).toFixed(4) : '--') + '</td>';
+        html += '<td>' + (h.pnl_pct !== null ? formatPnl(h.pnl_pct) : '--') + '</td>';
+        html += '<td class="' + outcomeClass + '">' + (h.outcome || 'pending') + '</td>';
+        html += '<td>' + (h.created_at || '').substring(5, 16) + '</td>';
+        html += '</tr>';
+    }
+    html += '</table>';
+    document.getElementById('history-list').innerHTML = html;
+}
+
+// Load all data
+api('stats', renderStats);
+api('winners', renderWinners);
+api('leaderboard', renderLeaderboard);
+api('history&limit=50', renderHistory);
+
+// Auto-refresh every 2 minutes
+setInterval(function() {
+    api('winners', renderWinners);
+    api('stats', renderStats);
+}, 120000);
+</script>
+</body>
+</html>

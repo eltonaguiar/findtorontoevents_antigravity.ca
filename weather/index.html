@@ -255,6 +255,67 @@
     .hour-item .h-time { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; }
     .hour-item .h-emoji { font-size: 1.2rem; margin: 4px 0; }
     .hour-item .h-temp { font-weight: 700; font-size: 0.9rem; }
+
+    /* ===== AUDIO BUTTON ===== */
+    .audio-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 14px; padding: 10px 22px; border-radius: 28px;
+      border: 1px solid var(--border-color); background: rgba(255,255,255,0.05);
+      color: var(--text-secondary); font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; transition: all 0.3s ease;
+    }
+    .audio-btn:hover {
+      background: rgba(0,212,255,0.12); color: var(--accent-blue);
+      border-color: rgba(0,212,255,0.3); transform: scale(1.04);
+    }
+    .audio-btn.speaking {
+      background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4);
+      color: #f87171; animation: pulse-speak 1.5s ease-in-out infinite;
+    }
+    .audio-btn .btn-icon { font-size: 1.1rem; }
+    @keyframes pulse-speak {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.3); }
+      50% { box-shadow: 0 0 16px 4px rgba(239,68,68,0.15); }
+    }
+
+    /* ===== FROSTBITE CARD ===== */
+    .frostbite-card { position: relative; overflow: hidden; }
+    .frostbite-card::before {
+      content: ''; position: absolute; top: -30%; right: -20%; width: 60%; height: 160%;
+      background: radial-gradient(ellipse, rgba(99,102,241,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .frostbite-hidden { display: none; }
+    .frostbite-time {
+      font-size: 2.2rem; font-weight: 800; line-height: 1.1; margin: 8px 0;
+    }
+    .frostbite-risk-label {
+      display: inline-block; padding: 4px 14px; border-radius: 12px;
+      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .frostbite-risk-label.risk-none { background: rgba(34,197,94,0.2); color: #4ade80; }
+    .frostbite-risk-label.risk-low { background: rgba(14,165,233,0.2); color: #38bdf8; }
+    .frostbite-risk-label.risk-moderate { background: rgba(234,179,8,0.2); color: #facc15; }
+    .frostbite-risk-label.risk-high { background: rgba(249,115,22,0.2); color: #fb923c; }
+    .frostbite-risk-label.risk-very-high { background: rgba(239,68,68,0.2); color: #f87171; }
+    .frostbite-risk-label.risk-extreme { background: rgba(220,38,38,0.25); color: #fca5a5; }
+    .frostbite-desc {
+      color: var(--text-secondary); font-size: 0.88rem; margin-top: 8px; line-height: 1.5;
+    }
+    .frostbite-tips {
+      margin-top: 14px; padding: 12px 16px; border-radius: 12px;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border-color);
+      font-size: 0.82rem; color: var(--text-secondary); line-height: 1.6;
+    }
+    .frostbite-tips strong { color: var(--text-primary); }
+    .frostbite-bar-track {
+      width: 100%; height: 8px; border-radius: 4px;
+      background: rgba(255,255,255,0.06); margin-top: 12px; overflow: hidden;
+    }
+    .frostbite-bar-fill {
+      height: 100%; border-radius: 4px; transition: width 1s ease, background 1s ease;
+    }
   </style>
 </head>
 <body>
@@ -293,6 +354,10 @@
           <div class="hero-temp" id="hero-temp">--°</div>
           <div class="hero-condition" id="hero-condition">Loading...</div>
           <div class="hero-updated" id="hero-updated">--</div>
+          <button class="audio-btn" id="audio-btn" title="Listen to weather summary">
+            <span class="btn-icon" id="audio-icon">🔊</span>
+            <span id="audio-label">Listen</span>
+          </button>
         </div>
 
         <!-- Feels Like -->
@@ -310,6 +375,18 @@
         <div class="card advice-card" id="advice-card" style="background: var(--bg-card);">
           <div class="card-label" style="color:rgba(255,255,255,0.5);">👕 What to Wear</div>
           <div id="advice-text">Loading advice...</div>
+        </div>
+
+        <!-- Frostbite Risk -->
+        <div class="card frostbite-card span-2 frostbite-hidden" id="frostbite-card">
+          <div class="card-label">🥶 Frostbite Risk</div>
+          <span class="frostbite-risk-label" id="frostbite-risk-label">--</span>
+          <div class="frostbite-time" id="frostbite-time">--</div>
+          <div class="frostbite-desc" id="frostbite-desc"></div>
+          <div class="frostbite-bar-track">
+            <div class="frostbite-bar-fill" id="frostbite-bar" style="width:0%;"></div>
+          </div>
+          <div class="frostbite-tips" id="frostbite-tips"></div>
         </div>
 
         <!-- Details -->
@@ -447,6 +524,165 @@
       return { level: 'EXTREME HEAT', color: '#ef4444', pct: 100 };
     }
 
+    // ===== FROSTBITE RISK =====
+    function getFrostbiteRisk(tempC, windKmh) {
+      var wc = calcWindChill(tempC, windKmh);
+      var effectiveTemp = (wc !== null && wc < tempC) ? wc : tempC;
+
+      // Frostbite only relevant when effective temp is below about -10°C
+      if (effectiveTemp > -10) {
+        return { show: false, risk: 'none', label: 'No Risk', time: 'N/A',
+          desc: 'Current conditions do not pose a frostbite risk.',
+          color: '#22c55e', pct: 0, tips: '' };
+      }
+
+      var risk, label, time, desc, color, pct, tips;
+
+      if (effectiveTemp <= -55) {
+        risk = 'extreme'; label = 'EXTREME DANGER';
+        time = '< 2 minutes'; pct = 100; color = '#dc2626';
+        desc = 'Frostbite can occur in less than 2 minutes on any exposed skin. Wind chill is ' + Math.round(effectiveTemp) + '°C — this is life-threatening.';
+        tips = '<strong>Do not go outside</strong> unless absolutely necessary. If you must, cover ALL exposed skin including face, ears, fingers, and toes. Wear a balaclava, insulated gloves, and multiple thermal layers. Seek warm shelter immediately if you feel numbness or tingling.';
+      } else if (effectiveTemp <= -45) {
+        risk = 'extreme'; label = 'EXTREME';
+        time = '2 – 5 minutes'; pct = 92; color = '#ef4444';
+        desc = 'Exposed skin can freeze in as little as 2 to 5 minutes at ' + Math.round(effectiveTemp) + '°C wind chill. Extremely dangerous conditions.';
+        tips = '<strong>Minimize time outdoors.</strong> Cover every inch of exposed skin. Wear a face shield or balaclava, ski goggles, insulated waterproof gloves, and thermal boots. Watch for white or grey patches on skin — first sign of frostbite.';
+      } else if (effectiveTemp <= -35) {
+        risk = 'very-high'; label = 'VERY HIGH';
+        time = '5 – 10 minutes'; pct = 78; color = '#f97316';
+        desc = 'Frostbite can develop in 5 to 10 minutes on exposed skin at ' + Math.round(effectiveTemp) + '°C wind chill.';
+        tips = '<strong>Limit outdoor exposure.</strong> Wear a warm hat covering ears, insulated gloves (not just knit), scarf over your nose and cheeks, and windproof outer layers. Keep moving to maintain circulation. Come inside to warm up frequently.';
+      } else if (effectiveTemp <= -27) {
+        risk = 'high'; label = 'HIGH';
+        time = '10 – 30 minutes'; pct = 60; color = '#eab308';
+        desc = 'Exposed skin (especially fingers, toes, nose, and ears) can get frostbite in 10 to 30 minutes at ' + Math.round(effectiveTemp) + '°C wind chill.';
+        tips = '<strong>Wear warm layers.</strong> Insulated gloves, warm hat, scarf, and a winter coat are essential. Avoid prolonged exposure — take breaks indoors. Wiggle fingers and toes to maintain blood flow. Stay dry; wet clothing accelerates heat loss.';
+      } else if (effectiveTemp <= -20) {
+        risk = 'moderate'; label = 'MODERATE';
+        time = '30 – 60 minutes'; pct = 40; color = '#38bdf8';
+        desc = 'Prolonged exposure (30+ minutes) with skin exposed to ' + Math.round(effectiveTemp) + '°C wind chill can lead to frostbite, especially on extremities.';
+        tips = 'Wear gloves, a hat, and a scarf. Keep outdoor sessions shorter than 30 minutes if possible. Watch for tingling or numbness in fingers, toes, and ears — early signs of frostnip.';
+      } else {
+        risk = 'low'; label = 'LOW';
+        time = '> 60 minutes'; pct = 20; color = '#14b8a6';
+        desc = 'At ' + Math.round(effectiveTemp) + '°C wind chill, frostbite risk is low for most people, but prolonged exposure (1+ hour) with bare skin can still cause frostnip.';
+        tips = 'Dress warmly with gloves and a hat. Most people are safe for typical outdoor activities, but don\'t stay out for extended periods with bare hands or ears.';
+      }
+
+      return { show: true, risk: risk, label: label, time: time,
+        desc: desc, color: color, pct: pct, tips: tips };
+    }
+
+    function renderFrostbite(tempC, windKmh) {
+      var fb = getFrostbiteRisk(tempC, windKmh);
+      var card = document.getElementById('frostbite-card');
+
+      if (!fb.show) {
+        card.classList.add('frostbite-hidden');
+        return fb;
+      }
+
+      card.classList.remove('frostbite-hidden');
+      var rl = document.getElementById('frostbite-risk-label');
+      rl.textContent = fb.label;
+      rl.className = 'frostbite-risk-label risk-' + fb.risk;
+      document.getElementById('frostbite-time').textContent = fb.time;
+      document.getElementById('frostbite-time').style.color = fb.color;
+      document.getElementById('frostbite-desc').textContent = fb.desc;
+      document.getElementById('frostbite-tips').innerHTML = fb.tips;
+
+      var bar = document.getElementById('frostbite-bar');
+      bar.style.width = fb.pct + '%';
+      bar.style.background = fb.color;
+
+      return fb;
+    }
+
+    // ===== SPEECH SYNTHESIS =====
+    var speechUtterance = null;
+    var isSpeaking = false;
+
+    function buildWeatherSpeechText(data, realFeel, info, comfort, advice, fb) {
+      var c = data.current;
+      var temp = Math.round(c.temperature_2m);
+      var windKmh = Math.round(c.wind_speed_10m);
+      var humidity = c.relative_humidity_2m;
+
+      var text = 'Current Toronto weather. ';
+      text += 'It is ' + temp + ' degrees Celsius, ' + info.desc + '. ';
+      text += 'It feels like ' + realFeel.value + ' degrees. ' + realFeel.description + ' ';
+      text += 'Wind speed is ' + windKmh + ' kilometres per hour';
+      if (c.wind_gusts_10m > 0) {
+        text += ' with gusts up to ' + Math.round(c.wind_gusts_10m) + ' kilometres per hour';
+      }
+      text += '. ';
+      text += 'Humidity is ' + humidity + ' percent. ';
+      text += 'Comfort level: ' + comfort.level + '. ';
+      text += advice.text.replace(/[🥶❄️🧥🧤🧣👕☀️🌡️🔥☔💨]/g, '') + ' ';
+
+      // Frostbite info if applicable
+      if (fb && fb.show) {
+        text += 'Frostbite warning. Risk level: ' + fb.label + '. ';
+        text += 'Exposed skin can get frostbite in ' + fb.time + '. ';
+      }
+
+      // Wind chill or humidex
+      if (realFeel.windChill !== null) {
+        text += 'Wind chill is ' + Math.round(realFeel.windChill) + ' degrees. ';
+      }
+      if (realFeel.humidex !== null) {
+        text += 'Humidex is ' + realFeel.humidex + '. ';
+      }
+
+      return text;
+    }
+
+    function toggleSpeech() {
+      var btn = document.getElementById('audio-btn');
+      var icon = document.getElementById('audio-icon');
+      var label = document.getElementById('audio-label');
+
+      if (isSpeaking) {
+        window.speechSynthesis.cancel();
+        isSpeaking = false;
+        btn.classList.remove('speaking');
+        icon.textContent = '🔊';
+        label.textContent = 'Listen';
+        return;
+      }
+
+      if (!window._weatherSpeechText) return;
+
+      speechUtterance = new SpeechSynthesisUtterance(window._weatherSpeechText);
+      speechUtterance.lang = 'en-CA';
+      speechUtterance.rate = 0.95;
+      speechUtterance.pitch = 1.0;
+
+      speechUtterance.onstart = function() {
+        isSpeaking = true;
+        btn.classList.add('speaking');
+        icon.textContent = '⏹️';
+        label.textContent = 'Stop';
+      };
+
+      speechUtterance.onend = function() {
+        isSpeaking = false;
+        btn.classList.remove('speaking');
+        icon.textContent = '🔊';
+        label.textContent = 'Listen';
+      };
+
+      speechUtterance.onerror = function() {
+        isSpeaking = false;
+        btn.classList.remove('speaking');
+        icon.textContent = '🔊';
+        label.textContent = 'Listen';
+      };
+
+      window.speechSynthesis.speak(speechUtterance);
+    }
+
     function getClothingAdvice(realFeel, weatherCode, windKmh) {
       let text = '', bg = '';
       if (realFeel <= -20) { text = '🥶 EXTREME COLD — Stay indoors if possible. Heavy winter coat, thermal layers, face cover required.'; bg = '#7c3aed'; }
@@ -565,6 +801,12 @@
       }
       document.getElementById('s-uv').textContent = daily && daily.uv_index_max ? daily.uv_index_max[0].toFixed(1) : '--';
       document.getElementById('s-pressure').textContent = Math.round(c.pressure_msl) + ' hPa';
+
+      // Frostbite risk
+      var fb = renderFrostbite(c.temperature_2m, c.wind_speed_10m);
+
+      // Build speech text for audio button
+      window._weatherSpeechText = buildWeatherSpeechText(data, realFeel, info, comfort, advice, fb);
 
       // Hourly
       renderHourly(hourly);
@@ -686,6 +928,9 @@
     loadWeather();
     // Refresh every 10 minutes
     setInterval(loadWeather, 600000);
+
+    // Audio button
+    document.getElementById('audio-btn').addEventListener('click', toggleSpeech);
   })();
   </script>
 
