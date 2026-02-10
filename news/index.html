@@ -375,9 +375,164 @@
             min-width: 50px;
         }
 
+        /* ── VIDEO SECTION ── */
+        .video-section { display: none; max-width: 1400px; margin: 1rem auto; padding: 0 1.5rem; }
+        .video-section.active { display: block; }
+
+        .video-player-wrap {
+            background: #000;
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+        .video-player-wrap iframe {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            display: block;
+            border: none;
+        }
+        .video-now-playing {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.75rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+        }
+        .video-now-playing .vnp-dot {
+            width: 10px; height: 10px;
+            background: var(--red);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+            flex-shrink: 0;
+        }
+        .vnp-dot.clips { background: var(--blue); animation: none; }
+        .video-now-playing .vnp-name {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .video-now-playing .vnp-cat {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-left: auto;
+        }
+        .video-now-playing .vnp-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .vnp-badge.live { background: rgba(239,68,68,0.2); color: var(--red); }
+        .vnp-badge.clips-badge { background: rgba(59,130,246,0.2); color: var(--blue); }
+
+        /* Video category filter chips */
+        .video-filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .video-filters .vf-label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-weight: 600;
+            margin-right: 4px;
+        }
+        .vf-chip {
+            padding: 5px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-dim);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .vf-chip:hover { border-color: var(--accent); color: var(--text); }
+        .vf-chip.active {
+            background: rgba(99,102,241,0.15);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Channel grid */
+        .channels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 0.75rem;
+        }
+        .channel-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.85rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .channel-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(99,102,241,0.1);
+        }
+        .channel-card.active-channel {
+            border-color: var(--red);
+            box-shadow: 0 0 16px rgba(239,68,68,0.2);
+            background: rgba(239,68,68,0.05);
+        }
+        .channel-card.active-channel.clips-channel {
+            border-color: var(--blue);
+            box-shadow: 0 0 16px rgba(59,130,246,0.2);
+            background: rgba(59,130,246,0.05);
+        }
+        .ch-logo {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--bg-card-hover);
+            flex-shrink: 0;
+        }
+        .ch-info { flex: 1; min-width: 0; }
+        .ch-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .ch-desc {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .ch-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+        .ch-badge.live { background: rgba(239,68,68,0.2); color: var(--red); }
+        .ch-badge.clips-b { background: rgba(59,130,246,0.2); color: var(--blue); }
+
         /* Responsive */
         @media (max-width: 1000px) {
             .articles-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+            .channels-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
         }
         @media (max-width: 600px) {
             .header { padding: 1rem; }
@@ -390,6 +545,8 @@
                 padding: 0 1rem;
             }
             .news-card-img { height: 150px; }
+            .video-section { padding: 0 1rem; }
+            .channels-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -397,7 +554,7 @@
 
 <div class="header">
     <h1>News Feed</h1>
-    <div class="subtitle">Toronto &bull; Canadian &bull; US &bull; World — Live RSS Aggregator</div>
+    <div class="subtitle">Toronto &bull; Canadian &bull; US &bull; World — Live News &amp; Video</div>
     <a class="back-link" href="/">&larr; Back to FindTorontoEvents</a>
 </div>
 
@@ -406,6 +563,7 @@
     <div class="tab" data-cat="canada">Canadian <span class="tab-count" id="cnt-canada">-</span></div>
     <div class="tab" data-cat="us">US <span class="tab-count" id="cnt-us">-</span></div>
     <div class="tab" data-cat="world">World <span class="tab-count" id="cnt-world">-</span></div>
+    <div class="tab" data-cat="videos">&#9654; Videos <span class="tab-count" style="background:rgba(239,68,68,0.2);color:var(--red);">LIVE</span></div>
 </div>
 
 <div class="controls">
@@ -443,6 +601,28 @@
     <button class="btn-load-more" id="btnLoadMore">Load More</button>
 </div>
 
+<!-- ═══════════ VIDEO SECTION ═══════════ -->
+<div class="video-section" id="videoSection">
+    <div class="video-player-wrap" id="videoPlayerWrap">
+        <iframe id="videoPlayer" src="" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+    <div class="video-now-playing" id="videoNowPlaying">
+        <span class="vnp-dot" id="vnpDot"></span>
+        <span class="vnp-name" id="vnpName">Select a channel</span>
+        <span class="vnp-badge live" id="vnpBadge">LIVE</span>
+        <span class="vnp-cat" id="vnpCat"></span>
+    </div>
+    <div class="video-filters" id="videoFilters">
+        <span class="vf-label">Filter:</span>
+        <span class="vf-chip active" data-vcat="all">All</span>
+        <span class="vf-chip" data-vcat="canada">Canada</span>
+        <span class="vf-chip" data-vcat="us">US</span>
+        <span class="vf-chip" data-vcat="world">World</span>
+        <span class="vf-chip" data-vcat="business">Business</span>
+    </div>
+    <div class="channels-grid" id="channelsGrid"></div>
+</div>
+
 <script>
 (function() {
     var API = '/fc/api/news_feed.php';
@@ -468,6 +648,12 @@
     var btnLoadMore = document.getElementById('btnLoadMore');
     var loadMoreRow = document.getElementById('loadMoreRow');
 
+    // DOM refs for video section
+    var videoSection = document.getElementById('videoSection');
+    var controlsEl = document.querySelector('.controls');
+    var statsRowEl = document.getElementById('statsRow');
+    var refreshBarEl = document.querySelector('.refresh-bar');
+
     // ── Tab switching ──
     tabsBar.addEventListener('click', function(e) {
         var tab = e.target.closest('.tab');
@@ -478,6 +664,26 @@
         var tabs = tabsBar.querySelectorAll('.tab');
         for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
         tab.classList.add('active');
+
+        // Toggle articles vs video view
+        if (cat === 'videos') {
+            state.category = cat;
+            container.style.display = 'none';
+            loadMoreRow.style.display = 'none';
+            controlsEl.style.display = 'none';
+            statsRowEl.style.display = 'none';
+            refreshBarEl.style.display = 'none';
+            videoSection.classList.add('active');
+            initVideoSection();
+            return;
+        }
+
+        // Switch back to articles
+        container.style.display = '';
+        controlsEl.style.display = '';
+        statsRowEl.style.display = '';
+        refreshBarEl.style.display = '';
+        videoSection.classList.remove('active');
 
         state.category = cat;
         state.page = 1;
@@ -711,6 +917,145 @@
     loadArticles(false);
     preloadCounts();
     startAutoRefresh();
+
+    // ═══════════════════════════════════════════════════════════
+    // VIDEO SECTION — Live News Channels
+    // ═══════════════════════════════════════════════════════════
+    var VIDEO_CHANNELS = [
+        // ── CANADA ──
+        { id: 'cbc',      name: 'CBC News',       channelId: 'UCuFFtHWoLl5fauMMD5Ww2jA', cat: 'canada', live: false, desc: 'Canada\'s public broadcaster' },
+        { id: 'global',   name: 'Global News',    channelId: 'UChLtXXpo4Ge1ReTEboVvTDg', cat: 'canada', live: false, desc: 'National & local Canadian news' },
+        { id: 'cp24',     name: 'CP24',           url: 'https://www.cp24.com/video/live',  cat: 'canada', live: true,  desc: 'Toronto\'s 24hr breaking news', external: true },
+        // ── US ──
+        { id: 'abc',      name: 'ABC News',       channelId: 'UCBi2mrWuNuyYy4gbM6fU18Q', cat: 'us', live: true,  desc: 'US network — 24/7 live' },
+        { id: 'nbc',      name: 'NBC News',       channelId: 'UCeY0bbntWzzVIaj2z3QigXg', cat: 'us', live: false, desc: 'NBC News clips & reports' },
+        { id: 'cnn',      name: 'CNN',            channelId: 'UCupvZG-5ko_eiXAupbDfxWw', cat: 'us', live: false, desc: 'US cable news clips' },
+        // ── WORLD (24/7 LIVE) ──
+        { id: 'sky',      name: 'Sky News',       channelId: 'UCoMdktPbSTixAyNGwb-UYkQ', cat: 'world', live: true, desc: 'UK — 24/7 live since 2014' },
+        { id: 'aje',      name: 'Al Jazeera',     channelId: 'UCNye-wNBqNL5ZzHSJj3l8Bg', cat: 'world', live: true, desc: 'Qatar — 24/7 English live' },
+        { id: 'f24',      name: 'France 24',      channelId: 'UCQfwfsi5VrQ8yKZ-UWmAEFg', cat: 'world', live: true, desc: 'France — 24/7 English live' },
+        { id: 'dw',       name: 'DW News',        channelId: 'UCknLrEdhRCp1aegoMqRaCZg', cat: 'world', live: true, desc: 'Germany — Deutsche Welle 24/7' },
+        { id: 'nhk',      name: 'NHK World',      channelId: 'UCSPEjw8F2nQDtmUKPFNF7_A', cat: 'world', live: true, desc: 'Japan — English service 24/7' },
+        { id: 'euro',     name: 'Euronews',       channelId: 'UCSrZ3UV4jOidv8ppoVuvW9Q', cat: 'world', live: true, desc: 'Pan-European 24/7 live' },
+        { id: 'trt',      name: 'TRT World',      channelId: 'UC7fWeaHhqgM4Ry-RMpM2YYw', cat: 'world', live: true, desc: 'Turkey — English service 24/7' },
+        { id: 'wion',     name: 'WION',           channelId: 'UC_gUM8rL-Lrg6O3adPW9K1g', cat: 'world', live: true, desc: 'India — global perspective 24/7' },
+        { id: 'intoday',  name: 'India Today',    channelId: 'UCYPvAwZP8pZhSMW8qs7cVCw', cat: 'world', live: true, desc: 'India — 24/7 English live' },
+        // ── BUSINESS ──
+        { id: 'bloom',    name: 'Bloomberg',      channelId: 'UChirEOpgFCupRAk5etXqPaA', cat: 'business', live: false, desc: 'Global business & markets' },
+        { id: 'cnbc',     name: 'CNBC',           channelId: 'UCvJJ_dzjViJCoLf5uKUTwoA', cat: 'business', live: false, desc: 'Business news clips' }
+    ];
+
+    var videoInitialized = false;
+    var currentChannel = null;
+    var videoFilter = 'all';
+
+    function initVideoSection() {
+        if (videoInitialized) return;
+        videoInitialized = true;
+        renderChannels('all');
+        // Load first live channel by default
+        loadChannel(VIDEO_CHANNELS[3]); // ABC News — reliable 24/7
+
+        // Category filter clicks
+        var filters = document.getElementById('videoFilters');
+        filters.addEventListener('click', function(e) {
+            var chip = e.target.closest('.vf-chip');
+            if (!chip) return;
+            var vcat = chip.getAttribute('data-vcat');
+            var chips = filters.querySelectorAll('.vf-chip');
+            for (var i = 0; i < chips.length; i++) chips[i].classList.remove('active');
+            chip.classList.add('active');
+            videoFilter = vcat;
+            renderChannels(vcat);
+        });
+    }
+
+    function renderChannels(filterCat) {
+        var grid = document.getElementById('channelsGrid');
+        var html = '';
+        for (var i = 0; i < VIDEO_CHANNELS.length; i++) {
+            var ch = VIDEO_CHANNELS[i];
+            if (filterCat !== 'all' && ch.cat !== filterCat) continue;
+            var isActive = currentChannel && currentChannel.id === ch.id;
+            var isLive = ch.live;
+            var catLabels = {canada:'Canada', us:'US', world:'World', business:'Business'};
+            var logoUrl = ch.external ? 'https://www.google.com/s2/favicons?domain=cp24.com&sz=64'
+                : 'https://yt3.googleusercontent.com/ytc/' + ch.id; // placeholder — use favicon
+            // Use YouTube favicon via channel
+            logoUrl = 'https://www.google.com/s2/favicons?domain=youtube.com&sz=64';
+            if (ch.id === 'cp24') logoUrl = 'https://www.google.com/s2/favicons?domain=cp24.com&sz=64';
+
+            html += '<div class="channel-card' + (isActive ? (isLive ? ' active-channel' : ' active-channel clips-channel') : '') + '" data-chidx="' + i + '">'
+                + '<img class="ch-logo" src="' + logoUrl + '" alt="" onerror="this.src=\'https://www.google.com/s2/favicons?domain=youtube.com&sz=64\'">'
+                + '<div class="ch-info">'
+                + '<div class="ch-name">' + escHtml(ch.name) + '</div>'
+                + '<div class="ch-desc">' + escHtml(ch.desc) + '</div>'
+                + '</div>'
+                + '<span class="ch-badge ' + (isLive ? 'live' : 'clips-b') + '">' + (isLive ? 'LIVE' : 'CLIPS') + '</span>'
+                + '</div>';
+        }
+        grid.innerHTML = html;
+
+        // Click handler
+        grid.addEventListener('click', function(e) {
+            var card = e.target.closest('.channel-card');
+            if (!card) return;
+            var idx = parseInt(card.getAttribute('data-chidx'), 10);
+            if (isNaN(idx) || !VIDEO_CHANNELS[idx]) return;
+            loadChannel(VIDEO_CHANNELS[idx]);
+            renderChannels(videoFilter);
+        });
+    }
+
+    function loadChannel(ch) {
+        currentChannel = ch;
+        var player = document.getElementById('videoPlayer');
+        var wrap = document.getElementById('videoPlayerWrap');
+
+        if (ch.external) {
+            // External site (CP24) — open in new tab, show message
+            window.open(ch.url, '_blank');
+            player.src = '';
+            wrap.innerHTML = '<div style="aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--text-dim);padding:2rem;">'
+                + '<div style="font-size:2.5rem;">&#128250;</div>'
+                + '<div style="font-size:1rem;font-weight:600;color:var(--text);">' + escHtml(ch.name) + ' opened in a new tab</div>'
+                + '<div style="font-size:0.85rem;">This channel streams on their own website</div>'
+                + '<a href="' + escAttr(ch.url) + '" target="_blank" style="padding:8px 20px;background:var(--accent);color:white;border-radius:8px;font-weight:600;text-decoration:none;">Open ' + escHtml(ch.name) + '</a>'
+                + '</div>';
+        } else {
+            // Restore iframe if it was replaced
+            if (!document.getElementById('videoPlayer')) {
+                wrap.innerHTML = '<iframe id="videoPlayer" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+                player = document.getElementById('videoPlayer');
+            }
+            if (ch.live) {
+                player.src = 'https://www.youtube.com/embed/live_stream?channel=' + ch.channelId + '&autoplay=1&mute=1';
+            } else {
+                // For clips channels, load their latest uploads playlist (UU prefix)
+                var uploadsPlaylist = 'UU' + ch.channelId.substring(2);
+                player.src = 'https://www.youtube.com/embed/videoseries?list=' + uploadsPlaylist + '&autoplay=1&mute=1';
+            }
+        }
+
+        // Update now-playing bar
+        var dot = document.getElementById('vnpDot');
+        var nameEl = document.getElementById('vnpName');
+        var badge = document.getElementById('vnpBadge');
+        var catEl = document.getElementById('vnpCat');
+        var catLabels = {canada:'Canada', us:'US', world:'World', business:'Business'};
+
+        nameEl.textContent = ch.name;
+        catEl.textContent = (catLabels[ch.cat] || ch.cat) + ' — ' + ch.desc;
+        if (ch.live) {
+            dot.className = 'vnp-dot';
+            badge.className = 'vnp-badge live';
+            badge.textContent = 'LIVE 24/7';
+        } else {
+            dot.className = 'vnp-dot clips';
+            badge.className = 'vnp-badge clips-badge';
+            badge.textContent = 'CLIPS';
+        }
+    }
 
     // ═══════════════════════════════════════════════════════════
     // TEXT-TO-SPEECH — Read Headlines Aloud
