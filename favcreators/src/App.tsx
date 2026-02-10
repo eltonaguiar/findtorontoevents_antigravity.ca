@@ -3274,7 +3274,7 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* Guest day-limit login wall: shown after 2 days of guest usage */}
+      {/* Guest day-limit login wall: shown after 7 days of guest usage */}
       {guestDayLimitReached && !authUser && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 9998,
@@ -3296,7 +3296,7 @@ function App() {
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
             }}>Sign in to continue</h2>
             <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: 1.6, margin: '0 0 1.5rem 0' }}>
-              You&apos;ve been using Favorite Creators for a couple of days! Create a free account to keep tracking your creators and unlock all features.
+              You&apos;ve been using Favorite Creators for a while! Create a free account to keep tracking your creators and unlock all features.
             </p>
             <div style={{ textAlign: 'left', color: '#cbd5e1', fontSize: '0.85rem', marginBottom: '1.5rem', paddingLeft: '1rem' }}>
               &bull; Track creators across Twitch, Kick, TikTok &amp; YouTube<br/>

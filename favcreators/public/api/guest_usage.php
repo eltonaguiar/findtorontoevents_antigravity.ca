@@ -4,7 +4,7 @@
  *
  * Tracks guest (non-logged-in) usage by IP address for:
  * - AI bot message limits (1 free message)
- * - Site day limits (2 days free, then login required)
+ * - Site day limits (7 days free, then login required)
  *
  * Actions:
  *   GET  ?action=check_ai   — Check if guest IP can send an AI message
@@ -28,7 +28,7 @@ require_once dirname(__FILE__) . '/db_connect.php';
 require_once dirname(__FILE__) . '/guest_usage_schema.php';
 
 $AI_MESSAGE_LIMIT = 1;
-$SITE_DAY_LIMIT   = 2;
+$SITE_DAY_LIMIT   = 7;
 
 // Get client IP
 $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
@@ -179,7 +179,8 @@ if ($action === 'check_site') {
             $conn->query($sql);
         }
 
-        $guest_allowed = ($distinct_days <= $SITE_DAY_LIMIT) && ($event_click_count <= $EVENT_CLICK_LIMIT);
+        // Only check day limit — no restriction on number of events viewed
+        $guest_allowed = ($distinct_days <= $SITE_DAY_LIMIT);
 
         echo json_encode(array(
             'ok'                 => true,
