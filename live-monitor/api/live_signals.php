@@ -1,6 +1,6 @@
 <?php
 /**
- * Live Signal Generator — 19 Hour-Trade Algorithms for Crypto, Forex & Stocks
+ * Live Signal Generator — 22 Algorithms for Crypto, Forex & Stocks (19 Technical + 3 Fundamental)
  * PHP 5.2 compatible (no short arrays, no http_response_code, no spread operator)
  *
  * Actions:
@@ -3042,7 +3042,7 @@ function _ls_action_scan($conn) {
             }
             if ($price <= 0) continue;
 
-            // Run all 19 algorithms
+            // Run all 22 algorithms (19 technical + 3 fundamental)
             $algo_results = array(
                 _ls_algo_momentum_burst($candles, $price, $sym, 'STOCK'),
                 _ls_algo_rsi_reversal($candles, $price, $sym, 'STOCK'),
@@ -3062,7 +3062,11 @@ function _ls_action_scan($conn) {
                 _ls_algo_awesome_osc($candles, $price, $sym, 'STOCK'),
                 _ls_algo_rsi2_scalp($candles, $price, $sym, 'STOCK'),
                 _ls_algo_ichimoku_cloud($candles, $price, $sym, 'STOCK'),
-                _ls_algo_alpha_predator($candles, $price, $sym, 'STOCK')
+                _ls_algo_alpha_predator($candles, $price, $sym, 'STOCK'),
+                // Fundamental algorithms (#20-22) — stock-only
+                _ls_algo_insider_cluster($conn, $price, $sym, 'STOCK'),
+                _ls_algo_13f_new_position($conn, $price, $sym, 'STOCK'),
+                _ls_algo_sentiment_divergence($conn, $candles, $price, $sym, 'STOCK')
             );
 
             // Sector map for concentration cap
@@ -3359,6 +3363,211 @@ function _ls_action_regime($conn) {
         'regimes' => $regimes,
         'timestamp' => date('Y-m-d H:i:s')
     ));
+}
+
+// ════════════════════════════════════════════════════════════
+//  FUNDAMENTAL ALGORITHMS (#20-22) — Read from goldmine DB tables
+// ════════════════════════════════════════════════════════════
+
+/**
+ * Algorithm 20: Insider Cluster Buy
+ * Trigger: 3+ distinct insiders buying same stock within 14 days (SEC Form 4)
+ * Basis: Lakonishok & Lee 2001 — insider clusters predict +7-12% outperformance
+ * STOCKS ONLY (insiders only exist for stocks)
+ */
+function _ls_algo_insider_cluster($conn, $price, $symbol, $asset) {
+    if ($asset !== 'STOCK') return null;
+    if ($price <= 0) return null;
+
+    // Query gm_sec_insider_trades for cluster buys
+    $r = $conn->query("SELECT COUNT(DISTINCT filer_name) as insider_count,
+        SUM(total_value) as total_bought, SUM(shares) as total_shares,
+        MAX(CASE WHEN is_officer = 1 THEN 1 ELSE 0 END) as has_officer,
+        MAX(CASE WHEN is_director = 1 THEN 1 ELSE 0 END) as has_director
+        FROM gm_sec_insider_trades
+        WHERE ticker = '" . $conn->real_escape_string($symbol) . "'
+        AND transaction_type = 'P'
+        AND transaction_date >= DATE_SUB(CURDATE(), INTERVAL 14 DAY)");
+
+    if (!$r || $r->num_rows === 0) return null;
+    $row = $r->fetch_assoc();
+
+    $insiders = intval($row['insider_count']);
+    if ($insiders < 3) return null;
+
+    $total_val = floatval($row['total_bought']);
+    $has_officer = intval($row['has_officer']);
+    $has_director = intval($row['has_director']);
+
+    // Strength: base 60 + 5 per extra insider + 10 if officer + 5 if director + value bonus
+    $strength = 60 + ($insiders - 3) * 5;
+    if ($has_officer) $strength += 10;
+    if ($has_director) $strength += 5;
+    if ($total_val > 1000000) $strength += 10;
+    elseif ($total_val > 500000) $strength += 5;
+    $strength = min(95, $strength);
+
+    $rationale = json_encode(array(
+        'insider_count' => $insiders,
+        'total_value' => $total_val,
+        'has_officer' => $has_officer,
+        'has_director' => $has_director,
+        'basis' => 'Lakonishok & Lee 2001: insider cluster buys predict +7-12% outperformance'
+    ));
+
+    return array(
+        'algorithm_name' => 'Insider Cluster Buy',
+        'signal_type' => 'BUY',
+        'signal_strength' => $strength,
+        'target_tp_pct' => 8,
+        'target_sl_pct' => 4,
+        'max_hold_hours' => 336,
+        'timeframe' => '14d',
+        'rationale' => $rationale
+    );
+}
+
+/**
+ * Algorithm 21: 13F New Position
+ * Trigger: 2+ top hedge funds open NEW position in same ticker
+ * Basis: SSRN 4767576 (2024) — 24.3% annualized from 13F cloning
+ * STOCKS ONLY
+ */
+function _ls_algo_13f_new_position($conn, $price, $symbol, $asset) {
+    if ($asset !== 'STOCK') return null;
+    if ($price <= 0) return null;
+
+    // Find latest quarter in DB
+    $qr = $conn->query("SELECT MAX(filing_quarter) as latest_q FROM gm_sec_13f_holdings");
+    if (!$qr || $qr->num_rows === 0) return null;
+    $qrow = $qr->fetch_assoc();
+    $latest_q = $qrow['latest_q'];
+    if (!$latest_q) return null;
+
+    // Query for multi-fund new positions
+    $r = $conn->query("SELECT COUNT(DISTINCT fund_name) as fund_count,
+        SUM(value_thousands) as total_value_k,
+        GROUP_CONCAT(DISTINCT fund_name SEPARATOR ', ') as funds
+        FROM gm_sec_13f_holdings
+        WHERE ticker = '" . $conn->real_escape_string($symbol) . "'
+        AND filing_quarter = '" . $conn->real_escape_string($latest_q) . "'
+        AND change_type = 'new'");
+
+    if (!$r || $r->num_rows === 0) return null;
+    $row = $r->fetch_assoc();
+
+    $fund_count = intval($row['fund_count']);
+    if ($fund_count < 2) return null;
+
+    $total_val = floatval($row['total_value_k']) * 1000;
+
+    // Strength: base 55 + 10 per fund + value bonus
+    $strength = 55 + ($fund_count - 2) * 10;
+    if ($total_val > 100000000) $strength += 15;
+    elseif ($total_val > 50000000) $strength += 10;
+    elseif ($total_val > 10000000) $strength += 5;
+    $strength = min(95, $strength);
+
+    $rationale = json_encode(array(
+        'fund_count' => $fund_count,
+        'funds' => $row['funds'],
+        'total_value' => $total_val,
+        'quarter' => $latest_q,
+        'basis' => 'SSRN 4767576: 13F cloning achieves 24.3% annualized returns'
+    ));
+
+    return array(
+        'algorithm_name' => '13F New Position',
+        'signal_type' => 'BUY',
+        'signal_strength' => $strength,
+        'target_tp_pct' => 10,
+        'target_sl_pct' => 5,
+        'max_hold_hours' => 672,
+        'timeframe' => '28d',
+        'rationale' => $rationale
+    );
+}
+
+/**
+ * Algorithm 22: Sentiment Divergence
+ * Trigger: Finnhub sentiment diverges from price action
+ * Positive divergence (sentiment high, price falling) = BUY
+ * Negative divergence (sentiment low, price rising) = SHORT
+ * STOCKS ONLY (sentiment data is for stocks)
+ */
+function _ls_algo_sentiment_divergence($conn, $candles, $price, $symbol, $asset) {
+    if ($asset !== 'STOCK') return null;
+    if ($price <= 0 || count($candles) < 10) return null;
+
+    // Get latest sentiment
+    $r = $conn->query("SELECT sentiment_score, relative_sentiment, buzz_score, articles_analyzed
+        FROM gm_news_sentiment
+        WHERE ticker = '" . $conn->real_escape_string($symbol) . "'
+        ORDER BY fetch_date DESC LIMIT 1");
+    if (!$r || $r->num_rows === 0) return null;
+    $sent = $r->fetch_assoc();
+
+    $score = floatval($sent['sentiment_score']);
+    $buzz  = floatval($sent['buzz_score']);
+    $articles = intval($sent['articles_analyzed']);
+
+    // Need at least 5 articles to trust the sentiment
+    if ($articles < 5) return null;
+
+    // Calculate price trend: 10-candle return
+    $old_price = floatval($candles[count($candles) - 10]['close']);
+    if ($old_price <= 0) return null;
+    $price_return = (($price - $old_price) / $old_price) * 100;
+
+    // Positive divergence: sentiment > 0.15 but price falling > 2%
+    if ($score > 0.15 && $price_return < -2) {
+        $div_magnitude = abs($score) + abs($price_return) / 10;
+        $strength = min(85, intval(50 + $div_magnitude * 20));
+        if ($buzz > 2) $strength += 5;
+
+        return array(
+            'algorithm_name' => 'Sentiment Divergence',
+            'signal_type' => 'BUY',
+            'signal_strength' => $strength,
+            'target_tp_pct' => 3,
+            'target_sl_pct' => 2,
+            'max_hold_hours' => 168,
+            'timeframe' => '7d',
+            'rationale' => json_encode(array(
+                'sentiment_score' => $score,
+                'price_return_10c' => round($price_return, 2),
+                'divergence' => 'positive',
+                'buzz' => $buzz,
+                'articles' => $articles
+            ))
+        );
+    }
+
+    // Negative divergence: sentiment < -0.15 but price rising > 2%
+    if ($score < -0.15 && $price_return > 2) {
+        $div_magnitude = abs($score) + abs($price_return) / 10;
+        $strength = min(85, intval(50 + $div_magnitude * 20));
+        if ($buzz > 2) $strength += 5;
+
+        return array(
+            'algorithm_name' => 'Sentiment Divergence',
+            'signal_type' => 'SHORT',
+            'signal_strength' => $strength,
+            'target_tp_pct' => 3,
+            'target_sl_pct' => 2,
+            'max_hold_hours' => 168,
+            'timeframe' => '7d',
+            'rationale' => json_encode(array(
+                'sentiment_score' => $score,
+                'price_return_10c' => round($price_return, 2),
+                'divergence' => 'negative',
+                'buzz' => $buzz,
+                'articles' => $articles
+            ))
+        );
+    }
+
+    return null;
 }
 
 // ────────────────────────────────────────────────────────────

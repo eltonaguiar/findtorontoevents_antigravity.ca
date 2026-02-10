@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Health Alerts | Goldmine Checker</title>
+    <style>
+        :root {
+            --bg-dark: #0a0e1a;
+            --bg-card: #111827;
+            --bg-card-hover: #1a2235;
+            --border: #1e293b;
+            --text: #e2e8f0;
+            --text-dim: #94a3b8;
+            --green: #10b981;
+            --green-dim: rgba(16, 185, 129, 0.12);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.12);
+            --yellow: #f59e0b;
+            --yellow-dim: rgba(245, 158, 11, 0.12);
+            --blue: #3b82f6;
+            --blue-dim: rgba(59, 130, 246, 0.12);
+            --purple: #a855f7;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        a { color: var(--blue); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(135deg, #111827 0%, #1a1030 50%, #1e1020 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--red), var(--yellow), #fb923c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.3rem;
+            letter-spacing: 1px;
+        }
+        .header p { color: var(--text-dim); font-size: 0.95rem; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+        .back-link:hover { color: var(--text); text-decoration: none; }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+
+        /* ── Summary KPI row ── */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            text-align: center;
+        }
+        .kpi-card h3 {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 0.4rem;
+        }
+        .kpi-card .value {
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+        .kpi-card .sub {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        /* ── Alert Cards ── */
+        .alert-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.4rem 1.4rem 1.4rem 1.6rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--border);
+            transition: background 0.15s;
+        }
+        .alert-card:hover { background: var(--bg-card-hover); }
+        .alert-card.severity-critical { border-left-color: var(--red); }
+        .alert-card.severity-warning  { border-left-color: var(--yellow); }
+
+        .alert-top {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.6rem;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .badge-critical { background: var(--red-dim); color: var(--red); }
+        .badge-warning  { background: var(--yellow-dim); color: var(--yellow); }
+        .badge-system   { background: var(--blue-dim); color: var(--blue); }
+        .badge-type     { background: rgba(168, 85, 247, 0.12); color: var(--purple); }
+
+        .alert-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .alert-desc {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 0.7rem;
+            line-height: 1.5;
+        }
+
+        .alert-metrics {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.6rem;
+        }
+        .metric-item {
+            font-size: 0.85rem;
+        }
+        .metric-label { color: var(--text-dim); }
+        .metric-value { font-weight: 600; }
+        .metric-value.bad { color: var(--red); }
+        .metric-value.thresh { color: var(--yellow); }
+
+        .alert-tickers {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.6rem;
+        }
+        .ticker-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            background: rgba(226, 232, 240, 0.08);
+            color: var(--text);
+        }
+
+        .alert-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .alert-date {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+        .btn-view {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.15s;
+        }
+        .btn-view:hover { opacity: 0.85; text-decoration: none; }
+        .btn-view-critical { background: var(--red); color: #fff; }
+        .btn-view-warning  { background: var(--yellow); color: #000; }
+
+        /* ── Suggested Actions ── */
+        .actions-section {
+            margin-top: 2rem;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        .action-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+        }
+        .action-card h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .action-card .icon {
+            font-size: 1.1rem;
+        }
+        .action-card ul {
+            list-style: none;
+            padding: 0;
+        }
+        .action-card li {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            padding: 4px 0;
+            padding-left: 16px;
+            position: relative;
+            line-height: 1.5;
+        }
+        .action-card li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 11px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-dim);
+        }
+        .action-card.active { border-color: var(--yellow); }
+        .action-card.active h4 { color: var(--yellow); }
+        .action-card.active li::before { background: var(--yellow); }
+
+        /* ── Empty / Loading ── */
+        .loading {
+            text-align: center;
+            padding: 4rem 1rem;
+            color: var(--text-dim);
+            font-size: 1rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 4rem 1rem;
+        }
+        .empty-state .icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.6;
+        }
+        .empty-state h2 {
+            color: var(--green);
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+        .empty-state p {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+        }
+
+        .error-box {
+            background: var(--red-dim);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            color: #fca5a5;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+
+        .refresh-btn {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.15s;
+            margin-top: 0.5rem;
+        }
+        .refresh-btn:hover {
+            background: var(--bg-card-hover);
+            color: var(--text);
+            border-color: var(--text-dim);
+        }
+
+        .pulse { animation: pulse-anim 2s ease-in-out infinite; }
+        @keyframes pulse-anim {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.4rem; }
+            .kpi-row { grid-template-columns: 1fr 1fr; }
+            .action-grid { grid-template-columns: 1fr; }
+            .container { padding: 1rem; }
+            .alert-card { padding: 1rem 1rem 1rem 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="goldmine-dashboard.html" class="back-link">&larr; Back to Goldmine Dashboard</a>
+        <h1>SYSTEM HEALTH ALERTS</h1>
+        <p>Action Required &mdash; Algorithm Performance Issues</p>
+    </div>
+
+    <div class="container">
+        <!-- Summary KPIs -->
+        <div class="kpi-row" id="kpi-row">
+            <div class="kpi-card">
+                <h3>Total Active Alerts</h3>
+                <div class="value" id="kpi-total">--</div>
+                <div class="sub" id="kpi-total-sub">Loading...</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Critical</h3>
+                <div class="value" id="kpi-critical" style="color: var(--red);">--</div>
+                <div class="sub">Immediate attention needed</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Warning</h3>
+                <div class="value" id="kpi-warning" style="color: var(--yellow);">--</div>
+                <div class="sub">Monitor closely</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Most Affected System</h3>
+                <div class="value" id="kpi-system" style="font-size: 1.4rem; color: var(--blue);">--</div>
+                <div class="sub" id="kpi-system-sub">&nbsp;</div>
+            </div>
+        </div>
+
+        <!-- Alert Cards -->
+        <div id="alerts-container">
+            <div class="loading" id="loading-indicator">
+                <div class="pulse">Loading alerts...</div>
+            </div>
+        </div>
+
+        <!-- Suggested Actions -->
+        <div class="actions-section" id="actions-section" style="display: none;">
+            <h3 class="section-title">Suggested Actions by Alert Type</h3>
+            <div class="action-grid" id="action-grid"></div>
+        </div>
+
+        <div style="text-align: center; margin-top: 1.5rem;">
+            <button class="refresh-btn" onclick="loadAlerts()">Refresh Alerts</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        Goldmine Checker &mdash; System Health Alerts &bull; Auto-generated from algorithm performance monitoring
+    </div>
+
+    <script>
+        var API_BASE = '/live-monitor/api/goldmine_tracker.php';
+
+        // All suggested actions keyed by alert_type
+        var SUGGESTED_ACTIONS = {
+            accuracy_drop: {
+                title: 'Accuracy Drop',
+                icon: '#',
+                items: [
+                    'Review algorithm parameters and consider re-tuning',
+                    'Check if market regime has changed (bull/bear/sideways)',
+                    'Compare learned vs original parameter performance',
+                    'Consider pausing this system until accuracy recovers',
+                    'Check for overfitting on recent walk-forward window'
+                ]
+            },
+            losing_streak: {
+                title: 'Losing Streak',
+                icon: '!',
+                items: [
+                    'Check for data source issues or delayed feeds',
+                    'Verify price feeds are returning accurate data',
+                    'Review entry conditions and signal strength thresholds',
+                    'Check if correlated assets are all failing (sector issue)',
+                    'Verify regime gate is functioning (BTC SMA for crypto, USDJPY for forex)'
+                ]
+            },
+            stale_data: {
+                title: 'Stale Data',
+                icon: '~',
+                items: [
+                    'Check GitHub Actions workflow run history',
+                    'Verify API keys have not expired or been rotated',
+                    'Check server cron jobs and refresh schedules',
+                    'Test data source endpoints manually for errors',
+                    'Review server error logs for timeouts or 5xx errors'
+                ]
+            },
+            zero_picks: {
+                title: 'Zero Picks',
+                icon: '0',
+                items: [
+                    'Data pipeline may be broken — check refresh workflows',
+                    'Verify upstream data sources are returning results',
+                    'Check if signal strength thresholds are too strict',
+                    'Review screener filters (volume, price range, etc.)',
+                    'Run a manual archive to see if picks exist but were not captured'
+                ]
+            },
+            rapid_decline: {
+                title: 'Rapid Decline',
+                icon: 'v',
+                items: [
+                    'Compare 7-day vs 30-day accuracy to see decline rate',
+                    'Check if a specific ticker is dragging down performance',
+                    'Review if a recent parameter change caused degradation',
+                    'Consider reverting to original (hardcoded) parameters',
+                    'Investigate if external event impacted correlated assets'
+                ]
+            }
+        };
+
+        function loadAlerts() {
+            var container = document.getElementById('alerts-container');
+            container.innerHTML = '<div class="loading"><div class="pulse">Loading alerts...</div></div>';
+
+            fetch(API_BASE + '?action=alerts')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (!data.ok) {
+                        container.innerHTML = '<div class="error-box">Failed to load alerts: ' + (data.error || 'Unknown error') + '</div>';
+                        return;
+                    }
+                    renderAlerts(data);
+                })
+                .catch(function(err) {
+                    container.innerHTML = '<div class="error-box">Network error: ' + err.message + '</div>';
+                });
+        }
+
+        function renderAlerts(data) {
+            var alerts = data.alerts || [];
+            var count = data.active_count || alerts.length;
+
+            // Compute summaries
+            var criticalCount = 0;
+            var warningCount = 0;
+            var systemCounts = {};
+            var alertTypes = {};
+
+            for (var i = 0; i < alerts.length; i++) {
+                var a = alerts[i];
+                if (a.severity === 'critical') criticalCount++;
+                else warningCount++;
+
+                var sys = a.source_system || 'unknown';
+                systemCounts[sys] = (systemCounts[sys] || 0) + 1;
+                alertTypes[a.alert_type] = true;
+            }
+
+            // Most affected system
+            var mostAffected = '--';
+            var mostCount = 0;
+            for (var s in systemCounts) {
+                if (systemCounts[s] > mostCount) {
+                    mostCount = systemCounts[s];
+                    mostAffected = s;
+                }
+            }
+
+            // Update KPIs
+            document.getElementById('kpi-total').textContent = count;
+            document.getElementById('kpi-total').style.color = count > 0 ? 'var(--red)' : 'var(--green)';
+            document.getElementById('kpi-total-sub').textContent = count === 0 ? 'All systems healthy' : 'Across all systems';
+            document.getElementById('kpi-critical').textContent = criticalCount;
+            document.getElementById('kpi-warning').textContent = warningCount;
+            document.getElementById('kpi-system').textContent = formatSystemName(mostAffected);
+            document.getElementById('kpi-system-sub').textContent = mostCount > 0 ? mostCount + ' alert' + (mostCount > 1 ? 's' : '') : '';
+
+            // Render alerts
+            var container = document.getElementById('alerts-container');
+
+            if (alerts.length === 0) {
+                container.innerHTML =
+                    '<div class="empty-state">' +
+                        '<div class="icon">&#10004;</div>' +
+                        '<h2>All Systems Healthy</h2>' +
+                        '<p>No active alerts. All algorithms are performing within acceptable thresholds.</p>' +
+                    '</div>';
+                document.getElementById('actions-section').style.display = 'none';
+                return;
+            }
+
+            var html = '';
+            for (var i = 0; i < alerts.length; i++) {
+                html += renderAlertCard(alerts[i]);
+            }
+            container.innerHTML = html;
+
+            // Render suggested actions for active alert types
+            renderSuggestedActions(alertTypes);
+        }
+
+        function renderAlertCard(alert) {
+            var sev = alert.severity || 'warning';
+            var sevClass = 'severity-' + sev;
+            var badgeClass = 'badge-' + sev;
+            var btnClass = 'btn-view-' + sev;
+
+            var metricVal = parseFloat(alert.metric_value) || 0;
+            var threshVal = parseFloat(alert.threshold_value) || 0;
+
+            // Format metric display based on type
+            var metricDisplay = formatMetric(alert.alert_type, metricVal, threshVal);
+
+            // Tickers
+            var tickersHtml = '';
+            if (alert.affected_tickers && alert.affected_tickers.trim() !== '') {
+                var tickers = alert.affected_tickers.split(',');
+                tickersHtml = '<div class="alert-tickers">';
+                for (var t = 0; t < tickers.length; t++) {
+                    var tk = tickers[t].trim();
+                    if (tk) tickersHtml += '<span class="ticker-tag">' + escHtml(tk) + '</span>';
+                }
+                tickersHtml += '</div>';
+            }
+
+            // Page URL
+            var viewBtn = '';
+            if (alert.page_url && alert.page_url.trim() !== '') {
+                viewBtn = '<a href="' + escHtml(alert.page_url) + '" class="btn-view ' + btnClass + '">View Page</a>';
+            }
+
+            // Date
+            var dateStr = '';
+            if (alert.created_at) {
+                dateStr = formatDate(alert.created_at);
+            } else if (alert.alert_date) {
+                dateStr = alert.alert_date;
+            }
+
+            return '<div class="alert-card ' + sevClass + '">' +
+                '<div class="alert-top">' +
+                    '<span class="badge ' + badgeClass + '">' + sev.toUpperCase() + '</span>' +
+                    '<span class="alert-title">' + escHtml(alert.title || 'Alert') + '</span>' +
+                    '<span class="badge badge-system">' + escHtml(formatSystemName(alert.source_system)) + '</span>' +
+                    '<span class="badge badge-type">' + escHtml(formatAlertType(alert.alert_type)) + '</span>' +
+                '</div>' +
+                '<div class="alert-desc">' + escHtml(alert.description || '') + '</div>' +
+                metricDisplay +
+                tickersHtml +
+                '<div class="alert-footer">' +
+                    '<span class="alert-date">' + escHtml(dateStr) + '</span>' +
+                    viewBtn +
+                '</div>' +
+            '</div>';
+        }
+
+        function formatMetric(alertType, actual, threshold) {
+            var label = 'Actual';
+            var threshLabel = 'Threshold';
+            var unit = '';
+
+            if (alertType === 'accuracy_drop' || alertType === 'rapid_decline') {
+                unit = '%';
+                label = 'Win Rate';
+                threshLabel = 'Min Threshold';
+            } else if (alertType === 'losing_streak') {
+                label = 'Consecutive Losses';
+                threshLabel = 'Max Allowed';
+            } else if (alertType === 'stale_data') {
+                label = 'Days Since Last Pick';
+                threshLabel = 'Max Days';
+            } else if (alertType === 'zero_picks') {
+                label = 'Picks Generated';
+                threshLabel = 'Expected Min';
+            }
+
+            var actualFormatted = (unit === '%') ? actual.toFixed(1) + unit : Math.round(actual);
+            var threshFormatted = (unit === '%') ? threshold.toFixed(1) + unit : Math.round(threshold);
+
+            return '<div class="alert-metrics">' +
+                '<span class="metric-item"><span class="metric-label">' + label + ': </span><span class="metric-value bad">' + actualFormatted + '</span></span>' +
+                '<span class="metric-item"><span class="metric-label">' + threshLabel + ': </span><span class="metric-value thresh">' + threshFormatted + '</span></span>' +
+            '</div>';
+        }
+
+        function renderSuggestedActions(activeTypes) {
+            var section = document.getElementById('actions-section');
+            var grid = document.getElementById('action-grid');
+            var html = '';
+            var anyVisible = false;
+
+            // Always show all action types, but highlight active ones
+            var allTypes = ['accuracy_drop', 'losing_streak', 'stale_data', 'zero_picks', 'rapid_decline'];
+
+            for (var i = 0; i < allTypes.length; i++) {
+                var type = allTypes[i];
+                var info = SUGGESTED_ACTIONS[type];
+                if (!info) continue;
+
+                var isActive = !!activeTypes[type];
+                if (isActive) anyVisible = true;
+
+                var activeClass = isActive ? ' active' : '';
+
+                html += '<div class="action-card' + activeClass + '">';
+                html += '<h4><span class="icon">[' + info.icon + ']</span> ' + escHtml(info.title);
+                if (isActive) html += ' <span class="badge badge-warning" style="font-size:9px;">ACTIVE</span>';
+                html += '</h4>';
+                html += '<ul>';
+                for (var j = 0; j < info.items.length; j++) {
+                    html += '<li>' + escHtml(info.items[j]) + '</li>';
+                }
+                html += '</ul></div>';
+            }
+
+            grid.innerHTML = html;
+            section.style.display = anyVisible ? '' : 'none';
+        }
+
+        function formatSystemName(sys) {
+            if (!sys || sys === '--') return '--';
+            var names = {
+                'consolidated': 'Consolidated Picks',
+                'live_signal': 'Live Signals',
+                'edge': 'Edge Dashboard',
+                'meme': 'Meme Scanner',
+                'sports': 'Sports Betting',
+                'horizon': 'Horizon Picks',
+                'top_picks': 'Top Picks',
+                'penny': 'Penny Stocks'
+            };
+            return names[sys] || sys.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+        }
+
+        function formatAlertType(type) {
+            if (!type) return '';
+            return type.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            try {
+                var d = new Date(dateStr);
+                if (isNaN(d.getTime())) return dateStr;
+                var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                var h = d.getHours();
+                var m = d.getMinutes();
+                var ampm = h >= 12 ? 'PM' : 'AM';
+                h = h % 12;
+                if (h === 0) h = 12;
+                var mStr = m < 10 ? '0' + m : '' + m;
+                return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear() + ' at ' + h + ':' + mStr + ' ' + ampm;
+            } catch(e) {
+                return dateStr;
+            }
+        }
+
+        function escHtml(s) {
+            if (!s) return '';
+            return String(s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // Load on page ready
+        loadAlerts();
+    </script>
+    <script src="/findstocks/portfolio2/stock-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+name: Goldmine Tracker — Archive, Outcomes & Health Check
+
+on:
+  schedule:
+    # Daily at 7 PM EST (00:00 UTC next day) — after stocks portfolio refresh
+    - cron: '0 0 * * 2-6'
+    # Intraday update at 1 PM EST (18:00 UTC) — midday outcome check
+    - cron: '0 18 * * 1-5'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  goldmine-refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    # ─── Step 1: Ensure schema ───
+    - name: Ensure schema
+      run: |
+        echo "=== Ensuring Goldmine Schema ==="
+        curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/goldmine_tracker.php?action=schema" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        print(f'Schema: {d.get(\"message\", d.get(\"error\", \"?\"))}')
+        " || echo "Schema check completed"
+
+    # ─── Step 2: Archive picks from all systems ───
+    - name: Archive picks from all systems
+      run: |
+        echo "=== Archiving Picks ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/live-monitor/api/goldmine_tracker.php?action=archive&key=livetrader2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            stats = d.get('stats', {})
+            total = 0
+            for system, info in stats.items():
+                ins = info.get('inserted', 0)
+                total += ins
+                err = info.get('error', '')
+                status = f' (error: {err})' if err else ''
+                print(f'  {system:15s}: +{ins} archived{status}')
+            print(f'  Total new picks archived: {total}')
+        else:
+            print(f'Error: {d.get(\"error\",\"unknown\")}')
+        " || echo "Archive: $RESULT"
+
+    # ─── Step 3: Update outcomes ───
+    - name: Update outcomes (prices + TP/SL checks)
+      run: |
+        echo "=== Updating Outcomes ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/live-monitor/api/goldmine_tracker.php?action=update_outcomes&key=livetrader2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            r = d.get('result', {})
+            print(f'  Open picks checked: {r.get(\"open_picks\", 0)}')
+            print(f'  Updated: {r.get(\"updated\", 0)}')
+            print(f'  Newly closed: {r.get(\"newly_closed\", 0)}')
+        else:
+            print(f'Error: {d.get(\"error\",\"unknown\")}')
+        " || echo "Outcomes: $RESULT"
+
+    # ─── Step 4: Check system health ───
+    - name: Check system health + generate alerts
+      run: |
+        echo "=== Health Check ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/goldmine_tracker.php?action=check_health&key=livetrader2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            r = d.get('result', {})
+            print(f'  Health snapshots: {r.get(\"health_snapshots\", 0)}')
+            print(f'  Alerts created: {r.get(\"alerts_created\", 0)}')
+        else:
+            print(f'Error: {d.get(\"error\",\"unknown\")}')
+        " || echo "Health: $RESULT"
+
+    # ─── Step 5: Fetch news sentiment ───
+    - name: Fetch news sentiment
+      continue-on-error: true
+      run: |
+        echo "=== News Sentiment ==="
+        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/live-monitor/api/news_sentiment.php?action=fetch&key=livetrader2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            print(f'  Tickers fetched: {d.get(\"fetched\", 0)}/{d.get(\"total_tickers\", 0)}')
+            errs = d.get('errors', [])
+            if errs:
+                print(f'  Errors: {len(errs)}')
+                for e in errs[:3]:
+                    print(f'    {e}')
+        else:
+            print(f'Error: {d.get(\"error\",\"unknown\")}')
+        " || echo "Sentiment: $RESULT"
+
+    # ─── Step 6: Dashboard summary ───
+    - name: Dashboard summary
+      continue-on-error: true
+      run: |
+        echo "=== Goldmine Dashboard Summary ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/goldmine_tracker.php?action=dashboard") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            systems = d.get('systems', [])
+            alerts = d.get('active_alerts', 0)
+            print(f'  Systems tracked: {len(systems)}')
+            print(f'  Active alerts: {alerts}')
+            for s in systems:
+                wr = s.get('win_rate', 0)
+                status = 'OK' if float(wr) >= 40 else 'WARNING' if float(wr) >= 25 else 'CRITICAL'
+                print(f'    {s[\"source_system\"]:15s} picks={s[\"total_picks\"]:>4s} WR={wr}% [{status}]')
+            winners = d.get('top_winners', [])
+            if winners:
+                print(f'  Recent winners:')
+                for w in winners[:3]:
+                    print(f'    {w[\"ticker\"]} ({w[\"source_system\"]}): +{w[\"final_return_pct\"]}%')
+        " || echo "Dashboard: $RESULT"

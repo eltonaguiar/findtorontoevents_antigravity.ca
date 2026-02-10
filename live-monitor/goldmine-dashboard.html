@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goldmine Checker | Find Toronto Events</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0e1a;
+            --bg-card: #111827;
+            --bg-card-hover: #1a2236;
+            --border: #1e293b;
+            --text: #e2e8f0;
+            --text-dim: #8892a8;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #10b981;
+            --green-dim: rgba(16, 185, 129, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #f59e0b;
+            --yellow-dim: rgba(245, 158, 11, 0.15);
+            --blue: #3b82f6;
+            --blue-dim: rgba(59, 130, 246, 0.15);
+            --orange: #f97316;
+            --purple: #a855f7;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, #111827 0%, #1e293b 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem 1rem;
+            text-align: center;
+            position: relative;
+        }
+        .header-logo {
+            position: absolute;
+            top: 1rem;
+            left: 1.5rem;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--yellow), var(--orange), var(--red));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.3rem;
+            letter-spacing: 1px;
+        }
+        .header p { color: var(--text-dim); font-size: 0.9rem; }
+
+        /* ===== ALERT BANNER ===== */
+        .alert-banner {
+            background: var(--red-dim);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            padding: 0.7rem 1.2rem;
+            text-align: center;
+            font-size: 0.85rem;
+            display: none;
+            animation: pulse-alert 3s infinite;
+        }
+        .alert-banner strong { color: var(--red); }
+        @keyframes pulse-alert {
+            0%, 100% { border-color: rgba(239, 68, 68, 0.4); }
+            50% { border-color: rgba(239, 68, 68, 0.8); }
+        }
+
+        /* ===== CONTAINER ===== */
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+        /* ===== TABS ===== */
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            flex: 1;
+            background: var(--bg-dark);
+            color: var(--text-dim);
+            border: none;
+            padding: 10px 16px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s;
+            min-width: 120px;
+        }
+        .tab-btn:not(:last-child) { border-right: 1px solid var(--border); }
+        .tab-btn.active { background: var(--accent); color: #fff; font-weight: 600; }
+        .tab-btn:hover:not(.active) { background: var(--bg-card-hover); color: var(--text); }
+
+        /* ===== STAT CARDS ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem 1.2rem;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+        .stat-card:hover { border-color: var(--accent); }
+        .stat-card .stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-dim);
+            margin-bottom: 0.3rem;
+        }
+        .stat-card .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .stat-card .stat-sub {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 0.2rem;
+        }
+
+        /* ===== HEALTH CARDS ===== */
+        .health-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .health-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            transition: border-color 0.3s;
+        }
+        .health-card:hover { border-color: var(--accent); }
+        .health-card .hc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+        .health-card .hc-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+        .health-card .hc-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 0.82rem;
+            border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+        }
+        .health-card .hc-row:last-child { border-bottom: none; }
+        .health-card .hc-label { color: var(--text-dim); }
+        .health-card .hc-val { font-weight: 600; }
+
+        /* ===== BADGES ===== */
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.55rem;
+            border-radius: 10px;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+        .badge-green { background: var(--green-dim); color: var(--green); }
+        .badge-red { background: var(--red-dim); color: var(--red); }
+        .badge-yellow { background: var(--yellow-dim); color: var(--yellow); }
+        .badge-blue { background: var(--blue-dim); color: var(--blue); }
+        .badge-purple { background: rgba(168, 85, 247, 0.15); color: var(--purple); }
+        .badge-orange { background: rgba(249, 115, 22, 0.15); color: var(--orange); }
+
+        .status-active { background: var(--green); color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; }
+        .status-inactive { background: var(--red-dim); color: var(--red); padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; }
+        .status-online { background: var(--green-dim); color: var(--green); }
+        .status-offline { background: var(--red-dim); color: var(--red); }
+        .status-degraded { background: var(--yellow-dim); color: var(--yellow); }
+
+        /* ===== CHART ===== */
+        .chart-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .chart-box h3 {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        canvas { max-height: 350px; }
+
+        /* ===== LISTS (Winners/Losers) ===== */
+        .dual-lists {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .list-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+        }
+        .list-box h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .list-box h3.winners { color: var(--green); }
+        .list-box h3.losers { color: var(--red); }
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.45rem 0;
+            font-size: 0.82rem;
+            border-bottom: 1px solid rgba(30, 41, 59, 0.4);
+        }
+        .list-item:last-child { border-bottom: none; }
+        .list-item .li-ticker { font-weight: 600; }
+        .list-item .li-source { color: var(--text-dim); font-size: 0.75rem; }
+        .list-item .li-return { font-weight: 600; }
+
+        /* ===== TABLES ===== */
+        .section-title {
+            font-size: 1.05rem;
+            color: var(--text-dim);
+            margin: 1.5rem 0 0.8rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        thead th {
+            background: var(--bg-card);
+            color: var(--text-dim);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            padding: 10px 12px;
+            text-align: left;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            font-weight: 600;
+        }
+        tbody tr { border-top: 1px solid var(--border); }
+        tbody tr:hover { background: var(--bg-card-hover); }
+        td { padding: 8px 12px; white-space: nowrap; }
+
+        .row-tp-hit { background: rgba(16, 185, 129, 0.08); }
+        .row-sl-hit { background: rgba(239, 68, 68, 0.08); }
+        .row-expired { background: rgba(136, 146, 168, 0.06); }
+
+        /* ===== FILTER BAR ===== */
+        .filter-bar {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.8rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+        .filter-bar label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .filter-bar select, .filter-bar input[type="text"] {
+            background: var(--bg-dark);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.4rem 0.6rem;
+            font-size: 0.82rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .filter-bar select:focus, .filter-bar input[type="text"]:focus {
+            border-color: var(--accent);
+        }
+        .filter-bar input[type="text"] { width: 130px; }
+        .filter-bar button {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.4rem 0.9rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        .filter-bar button:hover { opacity: 0.85; }
+
+        /* ===== PAGINATION ===== */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .pagination button {
+            background: var(--bg-card);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            transition: all 0.2s;
+        }
+        .pagination button:hover:not(:disabled) { border-color: var(--accent); color: var(--text); }
+        .pagination button:disabled { opacity: 0.3; cursor: not-allowed; }
+        .pagination button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .pagination .page-info { font-size: 0.8rem; color: var(--text-dim); }
+
+        /* ===== SYSTEM DEEP DIVE ===== */
+        .system-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+        .system-selector label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+        .system-selector select {
+            background: var(--bg-dark);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.5rem 0.8rem;
+            font-size: 0.9rem;
+            outline: none;
+            min-width: 240px;
+        }
+        .system-selector select:focus { border-color: var(--accent); }
+
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+        }
+        .kpi-card h4 {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.3rem;
+        }
+        .kpi-card .kpi-val {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        /* ===== FUNDAMENTALS PLACEHOLDERS ===== */
+        .fundamentals-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .fundamentals-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .fundamentals-section .placeholder {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            font-style: italic;
+            padding: 1.5rem;
+            text-align: center;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            border: 1px dashed var(--border);
+        }
+
+        /* ===== FAILURE LOG ===== */
+        .alert-row-active td { border-left: 3px solid var(--red); }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+
+        /* ===== LOADING / ERROR ===== */
+        .loading { text-align: center; padding: 3rem; color: var(--text-dim); }
+        .error-box {
+            background: var(--red-dim);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            color: #fca5a5;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        /* ===== UTILITY ===== */
+        .text-green { color: var(--green); }
+        .text-red { color: var(--red); }
+        .text-yellow { color: var(--yellow); }
+        .text-dim { color: var(--text-dim); }
+        .text-blue { color: var(--blue); }
+        .pos { color: var(--green); }
+        .neg { color: var(--red); }
+        .fw-bold { font-weight: 600; }
+        .hidden { display: none; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.4rem; }
+            .header-logo { position: static; text-align: center; margin-bottom: 0.5rem; }
+            .header { padding: 1rem 1rem 0.8rem; }
+            .container { padding: 1rem; }
+            .dual-lists { grid-template-columns: 1fr; }
+            .health-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+            .tab-btn { font-size: 0.75rem; padding: 8px 10px; min-width: 0; }
+            .filter-bar { flex-direction: column; align-items: stretch; }
+            .filter-bar select, .filter-bar input[type="text"] { width: 100%; }
+            td, th { padding: 6px 8px; font-size: 0.75rem; }
+        }
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .kpi-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-logo">FTE Invest</div>
+        <h1>GOLDMINE CHECKER</h1>
+        <p>Recommendations vs Reality &mdash; Every Pick, Every Page, Tracked</p>
+    </div>
+
+    <!-- ALERT BANNER -->
+    <div id="alert-banner" class="alert-banner"></div>
+
+    <div class="container">
+
+        <!-- TABS -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+            <button class="tab-btn" onclick="switchTab('picks')">All Picks</button>
+            <button class="tab-btn" onclick="switchTab('deepdive')">System Deep Dive</button>
+            <button class="tab-btn" onclick="switchTab('fundamentals')">Fundamentals</button>
+            <button class="tab-btn" onclick="switchTab('failures')">Failure Log</button>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 1: OVERVIEW -->
+        <!-- ============================================================ -->
+        <div id="tab-overview">
+            <div id="overview-health" class="health-grid">
+                <div class="loading">Loading system health...</div>
+            </div>
+
+            <div class="chart-box">
+                <h3>Systems Ranked by 30-Day Win Rate</h3>
+                <canvas id="chart-systems-wr"></canvas>
+            </div>
+
+            <div id="overview-lists" class="dual-lists">
+                <div class="list-box">
+                    <h3 class="winners">Recent Winners</h3>
+                    <div id="winners-list"><div class="loading">Loading...</div></div>
+                </div>
+                <div class="list-box">
+                    <h3 class="losers">Recent Losers</h3>
+                    <div id="losers-list"><div class="loading">Loading...</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 2: ALL PICKS -->
+        <!-- ============================================================ -->
+        <div id="tab-picks" style="display:none;">
+            <div class="filter-bar">
+                <label>System:</label>
+                <select id="filter-system" onchange="applyPickFilters()">
+                    <option value="">All Systems</option>
+                </select>
+                <label>Asset:</label>
+                <select id="filter-asset" onchange="applyPickFilters()">
+                    <option value="">All Assets</option>
+                    <option value="crypto">Crypto</option>
+                    <option value="forex">Forex</option>
+                    <option value="stock">Stocks</option>
+                </select>
+                <label>Status:</label>
+                <select id="filter-status" onchange="applyPickFilters()">
+                    <option value="">All</option>
+                    <option value="open">Open</option>
+                    <option value="tp_hit">TP Hit</option>
+                    <option value="sl_hit">SL Hit</option>
+                    <option value="max_hold">Max Hold</option>
+                    <option value="expired">Expired</option>
+                </select>
+                <label>Ticker:</label>
+                <input type="text" id="filter-ticker" placeholder="e.g. BTC" onkeyup="tickerSearchDebounce()">
+                <button onclick="applyPickFilters()">Search</button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Source</th>
+                            <th>Ticker</th>
+                            <th>Dir</th>
+                            <th>Entry</th>
+                            <th>Target</th>
+                            <th>SL</th>
+                            <th>Conf</th>
+                            <th>Current</th>
+                            <th>Return%</th>
+                            <th>Status</th>
+                            <th>Hold Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="picks-tbody">
+                        <tr><td colspan="12" class="loading">Loading picks...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="picks-pagination" class="pagination"></div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 3: SYSTEM DEEP DIVE -->
+        <!-- ============================================================ -->
+        <div id="tab-deepdive" style="display:none;">
+            <div class="system-selector">
+                <label>Select System:</label>
+                <select id="deepdive-system" onchange="loadSystemDetail()">
+                    <option value="">-- Choose a system --</option>
+                </select>
+            </div>
+
+            <div id="deepdive-content">
+                <div class="loading" id="deepdive-placeholder">Select a system above to view detailed analytics.</div>
+            </div>
+
+            <div id="deepdive-kpis" class="kpi-row" style="display:none;"></div>
+
+            <div id="deepdive-chart-box" class="chart-box" style="display:none;">
+                <h3>Daily Win Rate Trend (Last 30 Days)</h3>
+                <canvas id="chart-deepdive-wr"></canvas>
+            </div>
+
+            <div id="deepdive-algos-section" style="display:none;">
+                <div class="section-title">Top Algorithms</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Algorithm</th>
+                                <th>Trades</th>
+                                <th>Win Rate</th>
+                                <th>Avg Return</th>
+                                <th>Total Return</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deepdive-algos-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="deepdive-recent-section" style="display:none;">
+                <div class="section-title">Recent 20 Picks</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Ticker</th>
+                                <th>Dir</th>
+                                <th>Entry</th>
+                                <th>Exit</th>
+                                <th>Return%</th>
+                                <th>Status</th>
+                                <th>Algorithm</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deepdive-recent-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 4: FUNDAMENTALS -->
+        <!-- ============================================================ -->
+        <div id="tab-fundamentals" style="display:none;">
+            <div class="fundamentals-section">
+                <h3><span class="text-blue">&#9679;</span> Insider Activity</h3>
+                <div class="placeholder">SEC EDGAR data loading... This section will display insider cluster buy alerts from SEC Form 4 filings once sec_edgar.php is deployed.</div>
+            </div>
+
+            <div class="fundamentals-section">
+                <h3><span class="text-green">&#9679;</span> Fund Holdings</h3>
+                <div class="placeholder">13F new position data loading... This section will show newly opened fund positions from 13F filings once the data pipeline is deployed.</div>
+            </div>
+
+            <div class="fundamentals-section">
+                <h3><span class="text-yellow">&#9679;</span> Sentiment</h3>
+                <div class="placeholder">News sentiment scores loading... This section will display aggregated sentiment analysis from financial news sources once news_sentiment.php is deployed.</div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 5: FAILURE LOG -->
+        <!-- ============================================================ -->
+        <div id="tab-failures" style="display:none;">
+            <div class="section-title">Active &amp; Recent Alerts</div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>System</th>
+                            <th>Type</th>
+                            <th>Severity</th>
+                            <th>Title</th>
+                            <th>Affected Tickers</th>
+                            <th>Metric / Threshold</th>
+                            <th>Status</th>
+                            <th>Link</th>
+                        </tr>
+                    </thead>
+                    <tbody id="failures-tbody">
+                        <tr><td colspan="9" class="loading">Loading alerts...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div><!-- /.container -->
+
+    <div class="footer">
+        <p>Goldmine Checker &mdash; Multi-Page Recommendation Tracker &mdash; findtorontoevents.ca</p>
+        <p style="margin-top:0.3rem;">Tracks every pick from every source system. Paper results only &mdash; not financial advice.</p>
+    </div>
+
+<script>
+/* ===================================================================
+   GOLDMINE DASHBOARD — Vanilla JS
+   =================================================================== */
+
+var API = '/live-monitor/api/goldmine_tracker.php';
+var chartSystemsWr = null;
+var chartDeepdiveWr = null;
+var picksPage = 1;
+var tickerTimer = null;
+var systemsList = [];
+
+// ── Tab Switching ──
+function switchTab(tab) {
+    var tabs = ['overview', 'picks', 'deepdive', 'fundamentals', 'failures'];
+    for (var i = 0; i < tabs.length; i++) {
+        var el = document.getElementById('tab-' + tabs[i]);
+        if (el) el.style.display = tabs[i] === tab ? 'block' : 'none';
+    }
+    var btns = document.querySelectorAll('.tab-btn');
+    for (var j = 0; j < btns.length; j++) {
+        btns[j].classList.toggle('active', j < tabs.length && tabs[j] === tab);
+    }
+    if (tab === 'picks') loadPicks();
+    if (tab === 'deepdive') populateSystemDropdowns();
+    if (tab === 'failures') loadFailures();
+}
+
+// ── Utility ──
+function fetchJSON(url, cb) {
+    fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(d) { cb(null, d); })
+        .catch(function(e) { cb(e, null); });
+}
+
+function fmtNum(n, dec) {
+    if (n === null || n === undefined || isNaN(n)) return '--';
+    return parseFloat(n).toFixed(dec !== undefined ? dec : 2);
+}
+
+function fmtPct(n) {
+    if (n === null || n === undefined || isNaN(n)) return '--';
+    var v = parseFloat(n);
+    var cls = v > 0 ? 'pos' : (v < 0 ? 'neg' : '');
+    return '<span class="' + cls + '">' + (v > 0 ? '+' : '') + v.toFixed(2) + '%</span>';
+}
+
+function wrColor(wr) {
+    var v = parseFloat(wr);
+    if (v > 60) return 'text-green';
+    if (v > 40) return 'text-yellow';
+    return 'text-red';
+}
+
+function statusBadge(status) {
+    if (!status) return '<span class="badge badge-blue">unknown</span>';
+    var s = status.toLowerCase();
+    if (s === 'tp_hit' || s === 'win') return '<span class="badge badge-green">TP Hit</span>';
+    if (s === 'sl_hit' || s === 'loss') return '<span class="badge badge-red">SL Hit</span>';
+    if (s === 'max_hold') return '<span class="badge badge-yellow">Max Hold</span>';
+    if (s === 'expired') return '<span class="badge badge-yellow">Expired</span>';
+    if (s === 'open') return '<span class="badge badge-blue">Open</span>';
+    return '<span class="badge badge-blue">' + status + '</span>';
+}
+
+function severityBadge(sev) {
+    if (!sev) return '<span class="badge badge-blue">info</span>';
+    var s = sev.toLowerCase();
+    if (s === 'critical') return '<span class="badge badge-red">CRITICAL</span>';
+    if (s === 'high') return '<span class="badge badge-orange">HIGH</span>';
+    if (s === 'medium') return '<span class="badge badge-yellow">MEDIUM</span>';
+    return '<span class="badge badge-blue">LOW</span>';
+}
+
+function alertStatusBadge(status) {
+    if (!status) return '';
+    var s = status.toLowerCase();
+    if (s === 'active') return '<span class="status-active">Active</span>';
+    return '<span class="status-inactive">Resolved</span>';
+}
+
+function rowClass(status) {
+    if (!status) return '';
+    var s = status.toLowerCase();
+    if (s === 'tp_hit' || s === 'win') return 'row-tp-hit';
+    if (s === 'sl_hit' || s === 'loss') return 'row-sl-hit';
+    if (s === 'max_hold' || s === 'expired') return 'row-expired';
+    return '';
+}
+
+function fmtDate(d) {
+    if (!d) return '--';
+    try {
+        var dt = new Date(d);
+        var m = dt.getMonth() + 1;
+        var day = dt.getDate();
+        var h = dt.getHours();
+        var mi = dt.getMinutes();
+        return m + '/' + day + ' ' + (h < 10 ? '0' : '') + h + ':' + (mi < 10 ? '0' : '') + mi;
+    } catch (e) { return d; }
+}
+
+function fmtHoldTime(hours) {
+    if (hours === null || hours === undefined || isNaN(hours)) return '--';
+    var h = parseFloat(hours);
+    if (h < 1) return Math.round(h * 60) + 'm';
+    if (h < 24) return h.toFixed(1) + 'h';
+    return (h / 24).toFixed(1) + 'd';
+}
+
+
+/* ===================================================================
+   TAB 1: OVERVIEW
+   =================================================================== */
+function loadOverview() {
+    fetchJSON(API + '?action=dashboard', function(err, data) {
+        if (err || !data || !data.ok) {
+            document.getElementById('overview-health').innerHTML = '<div class="error-box">Failed to load dashboard data. API may be unavailable.</div>';
+            return;
+        }
+
+        var systems = data.systems || [];
+        systemsList = systems;
+
+        // Health cards
+        var html = '';
+        for (var i = 0; i < systems.length; i++) {
+            var sys = systems[i];
+            var wr = parseFloat(sys.win_rate || 0);
+            var wrCls = wrColor(wr);
+            var statusCls = 'status-online';
+            var statusLabel = 'Online';
+            if (sys.status === 'offline') { statusCls = 'status-offline'; statusLabel = 'Offline'; }
+            if (sys.status === 'degraded') { statusCls = 'status-degraded'; statusLabel = 'Degraded'; }
+
+            html += '<div class="health-card">'
+                + '<div class="hc-header">'
+                + '<span class="hc-name">' + (sys.name || sys.system || 'Unknown') + '</span>'
+                + '<span class="badge ' + statusCls + '">' + statusLabel + '</span>'
+                + '</div>'
+                + '<div class="hc-row"><span class="hc-label">Total Picks</span><span class="hc-val">' + (sys.total_picks || 0) + '</span></div>'
+                + '<div class="hc-row"><span class="hc-label">Win Rate</span><span class="hc-val ' + wrCls + '">' + fmtNum(wr, 1) + '%</span></div>'
+                + '<div class="hc-row"><span class="hc-label">Avg Return</span><span class="hc-val">' + fmtPct(sys.avg_return) + '</span></div>'
+                + '</div>';
+        }
+        if (systems.length === 0) {
+            html = '<div class="loading">No systems found. Run the goldmine tracker to start collecting data.</div>';
+        }
+        document.getElementById('overview-health').innerHTML = html;
+
+        // Chart: systems ranked by win rate
+        renderSystemsChart(systems);
+
+        // Winners / Losers lists
+        renderWinnersLosers(data.recent_winners || [], data.recent_losers || []);
+
+        // Populate system dropdowns
+        populateSystemDropdowns();
+    });
+
+    // Check alerts
+    loadAlertBanner();
+}
+
+function loadAlertBanner() {
+    fetchJSON(API + '?action=alerts', function(err, data) {
+        if (err || !data || !data.ok) return;
+        var alerts = data.alerts || [];
+        var active = [];
+        for (var i = 0; i < alerts.length; i++) {
+            if (alerts[i].status && alerts[i].status.toLowerCase() === 'active') {
+                active.push(alerts[i]);
+            }
+        }
+        if (active.length > 0) {
+            var banner = document.getElementById('alert-banner');
+            banner.style.display = 'block';
+            var msg = '<strong>' + active.length + ' active alert' + (active.length > 1 ? 's' : '') + ':</strong> ';
+            var titles = [];
+            for (var j = 0; j < Math.min(active.length, 3); j++) {
+                titles.push(active[j].title || active[j].type || 'Alert');
+            }
+            msg += titles.join(' | ');
+            if (active.length > 3) msg += ' + ' + (active.length - 3) + ' more';
+            banner.innerHTML = msg;
+        }
+    });
+}
+
+function renderSystemsChart(systems) {
+    if (!systems || systems.length === 0) return;
+
+    var sorted = systems.slice().sort(function(a, b) {
+        return parseFloat(b.win_rate || 0) - parseFloat(a.win_rate || 0);
+    });
+
+    var labels = [];
+    var values = [];
+    var colors = [];
+    for (var i = 0; i < sorted.length; i++) {
+        labels.push(sorted[i].name || sorted[i].system || 'Unknown');
+        var wr = parseFloat(sorted[i].win_rate || 0);
+        values.push(wr);
+        if (wr > 60) colors.push('#10b981');
+        else if (wr > 40) colors.push('#f59e0b');
+        else colors.push('#ef4444');
+    }
+
+    var ctx = document.getElementById('chart-systems-wr');
+    if (chartSystemsWr) chartSystemsWr.destroy();
+
+    chartSystemsWr = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '30-Day Win Rate %',
+                data: values,
+                backgroundColor: colors,
+                borderRadius: 4,
+                barThickness: 28
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) { return ctx.parsed.x.toFixed(1) + '% win rate'; }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: { color: 'rgba(30,41,59,0.5)' },
+                    ticks: { color: '#8892a8', callback: function(v) { return v + '%'; } }
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: { color: '#e2e8f0', font: { size: 12 } }
+                }
+            }
+        }
+    });
+
+    // Set canvas height based on number of systems
+    ctx.parentElement.style.minHeight = Math.max(200, sorted.length * 45) + 'px';
+}
+
+function renderWinnersLosers(winners, losers) {
+    var wHtml = '';
+    if (winners.length === 0) {
+        wHtml = '<div class="text-dim" style="padding:1rem;text-align:center;font-size:0.82rem;">No recent winners yet</div>';
+    }
+    for (var i = 0; i < Math.min(winners.length, 10); i++) {
+        var w = winners[i];
+        wHtml += '<div class="list-item">'
+            + '<div><span class="li-ticker">' + (w.ticker || '--') + '</span> <span class="li-source">' + (w.source_system || '') + '</span></div>'
+            + '<div class="li-return pos">+' + fmtNum(w.return_pct) + '%</div>'
+            + '</div>';
+    }
+    document.getElementById('winners-list').innerHTML = wHtml;
+
+    var lHtml = '';
+    if (losers.length === 0) {
+        lHtml = '<div class="text-dim" style="padding:1rem;text-align:center;font-size:0.82rem;">No recent losers yet</div>';
+    }
+    for (var j = 0; j < Math.min(losers.length, 10); j++) {
+        var l = losers[j];
+        lHtml += '<div class="list-item">'
+            + '<div><span class="li-ticker">' + (l.ticker || '--') + '</span> <span class="li-source">' + (l.source_system || '') + '</span></div>'
+            + '<div class="li-return neg">' + fmtNum(l.return_pct) + '%</div>'
+            + '</div>';
+    }
+    document.getElementById('losers-list').innerHTML = lHtml;
+}
+
+
+/* ===================================================================
+   TAB 2: ALL PICKS
+   =================================================================== */
+function loadPicks() {
+    var sys = document.getElementById('filter-system').value;
+    var asset = document.getElementById('filter-asset').value;
+    var status = document.getElementById('filter-status').value;
+    var ticker = document.getElementById('filter-ticker').value.trim();
+
+    var url = API + '?action=picks&page=' + picksPage + '&limit=50';
+    if (sys) url += '&system=' + encodeURIComponent(sys);
+    if (asset) url += '&asset=' + encodeURIComponent(asset);
+    if (status) url += '&status=' + encodeURIComponent(status);
+    if (ticker) url += '&ticker=' + encodeURIComponent(ticker);
+
+    document.getElementById('picks-tbody').innerHTML = '<tr><td colspan="12" class="loading">Loading picks...</td></tr>';
+
+    fetchJSON(url, function(err, data) {
+        if (err || !data || !data.ok) {
+            document.getElementById('picks-tbody').innerHTML = '<tr><td colspan="12" class="error-box">Failed to load picks</td></tr>';
+            return;
+        }
+
+        var picks = data.picks || [];
+        var total = data.total || picks.length;
+        var perPage = 50;
+        var totalPages = Math.ceil(total / perPage) || 1;
+
+        if (picks.length === 0) {
+            document.getElementById('picks-tbody').innerHTML = '<tr><td colspan="12" class="text-dim" style="text-align:center;padding:2rem;">No picks match the current filters.</td></tr>';
+            document.getElementById('picks-pagination').innerHTML = '';
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < picks.length; i++) {
+            var p = picks[i];
+            var cls = rowClass(p.status);
+            html += '<tr class="' + cls + '">'
+                + '<td>' + fmtDate(p.created_at || p.date) + '</td>'
+                + '<td>' + (p.source_system || '--') + '</td>'
+                + '<td class="fw-bold">' + (p.ticker || '--') + '</td>'
+                + '<td>' + (p.direction || '--') + '</td>'
+                + '<td>' + fmtNum(p.entry_price) + '</td>'
+                + '<td>' + fmtNum(p.target_price) + '</td>'
+                + '<td>' + fmtNum(p.stop_loss) + '</td>'
+                + '<td>' + fmtNum(p.confidence, 0) + '</td>'
+                + '<td>' + fmtNum(p.current_price) + '</td>'
+                + '<td>' + fmtPct(p.return_pct) + '</td>'
+                + '<td>' + statusBadge(p.status) + '</td>'
+                + '<td>' + fmtHoldTime(p.hold_hours) + '</td>'
+                + '</tr>';
+        }
+        document.getElementById('picks-tbody').innerHTML = html;
+
+        // Pagination
+        renderPagination(totalPages);
+    });
+}
+
+function renderPagination(totalPages) {
+    if (totalPages <= 1) {
+        document.getElementById('picks-pagination').innerHTML = '';
+        return;
+    }
+
+    var html = '<button ' + (picksPage <= 1 ? 'disabled' : '') + ' onclick="goPage(' + (picksPage - 1) + ')">Prev</button>';
+
+    var startPage = Math.max(1, picksPage - 2);
+    var endPage = Math.min(totalPages, picksPage + 2);
+
+    if (startPage > 1) {
+        html += '<button onclick="goPage(1)">1</button>';
+        if (startPage > 2) html += '<span class="page-info">...</span>';
+    }
+
+    for (var i = startPage; i <= endPage; i++) {
+        html += '<button class="' + (i === picksPage ? 'active' : '') + '" onclick="goPage(' + i + ')">' + i + '</button>';
+    }
+
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) html += '<span class="page-info">...</span>';
+        html += '<button onclick="goPage(' + totalPages + ')">' + totalPages + '</button>';
+    }
+
+    html += '<button ' + (picksPage >= totalPages ? 'disabled' : '') + ' onclick="goPage(' + (picksPage + 1) + ')">Next</button>';
+    html += '<span class="page-info">Page ' + picksPage + ' of ' + totalPages + '</span>';
+
+    document.getElementById('picks-pagination').innerHTML = html;
+}
+
+function goPage(p) {
+    picksPage = p;
+    loadPicks();
+}
+
+function applyPickFilters() {
+    picksPage = 1;
+    loadPicks();
+}
+
+function tickerSearchDebounce() {
+    if (tickerTimer) clearTimeout(tickerTimer);
+    tickerTimer = setTimeout(function() {
+        picksPage = 1;
+        loadPicks();
+    }, 400);
+}
+
+
+/* ===================================================================
+   TAB 3: SYSTEM DEEP DIVE
+   =================================================================== */
+function populateSystemDropdowns() {
+    var filterSel = document.getElementById('filter-system');
+    var ddSel = document.getElementById('deepdive-system');
+
+    // Only populate if empty (beyond the default option)
+    if (filterSel.options.length <= 1 && systemsList.length > 0) {
+        for (var i = 0; i < systemsList.length; i++) {
+            var sysName = systemsList[i].name || systemsList[i].system || '';
+            if (!sysName) continue;
+
+            var opt1 = document.createElement('option');
+            opt1.value = sysName;
+            opt1.textContent = sysName;
+            filterSel.appendChild(opt1);
+
+            var opt2 = document.createElement('option');
+            opt2.value = sysName;
+            opt2.textContent = sysName;
+            ddSel.appendChild(opt2);
+        }
+    }
+}
+
+function loadSystemDetail() {
+    var system = document.getElementById('deepdive-system').value;
+    if (!system) {
+        document.getElementById('deepdive-placeholder').style.display = 'block';
+        document.getElementById('deepdive-kpis').style.display = 'none';
+        document.getElementById('deepdive-chart-box').style.display = 'none';
+        document.getElementById('deepdive-algos-section').style.display = 'none';
+        document.getElementById('deepdive-recent-section').style.display = 'none';
+        return;
+    }
+
+    document.getElementById('deepdive-placeholder').style.display = 'block';
+    document.getElementById('deepdive-placeholder').textContent = 'Loading data for ' + system + '...';
+
+    fetchJSON(API + '?action=system_detail&system=' + encodeURIComponent(system), function(err, data) {
+        if (err || !data || !data.ok) {
+            document.getElementById('deepdive-placeholder').textContent = 'Failed to load system detail. API may be unavailable.';
+            return;
+        }
+
+        document.getElementById('deepdive-placeholder').style.display = 'none';
+
+        // KPI cards
+        var stats = data.stats || {};
+        var kpiFields = [
+            { label: 'Total Picks', key: 'total', fmt: 'int' },
+            { label: 'Closed', key: 'closed', fmt: 'int' },
+            { label: 'Wins', key: 'wins', fmt: 'int', cls: 'pos' },
+            { label: 'Losses', key: 'losses', fmt: 'int', cls: 'neg' },
+            { label: 'Win Rate', key: 'win_rate', fmt: 'pct' },
+            { label: 'Avg Return', key: 'avg_return', fmt: 'rpct' },
+            { label: 'Total Return', key: 'total_return', fmt: 'rpct' }
+        ];
+
+        var kpiHtml = '';
+        for (var i = 0; i < kpiFields.length; i++) {
+            var f = kpiFields[i];
+            var val = stats[f.key];
+            var display = '--';
+            var valCls = '';
+
+            if (f.fmt === 'int') {
+                display = val !== undefined ? parseInt(val) : '--';
+                if (f.cls) valCls = f.cls;
+            } else if (f.fmt === 'pct') {
+                var pv = parseFloat(val || 0);
+                display = fmtNum(pv, 1) + '%';
+                valCls = wrColor(pv);
+            } else if (f.fmt === 'rpct') {
+                var rv = parseFloat(val || 0);
+                display = (rv > 0 ? '+' : '') + fmtNum(rv) + '%';
+                valCls = rv > 0 ? 'pos' : (rv < 0 ? 'neg' : '');
+            }
+
+            kpiHtml += '<div class="kpi-card"><h4>' + f.label + '</h4><div class="kpi-val ' + valCls + '">' + display + '</div></div>';
+        }
+        document.getElementById('deepdive-kpis').innerHTML = kpiHtml;
+        document.getElementById('deepdive-kpis').style.display = 'grid';
+
+        // Win rate trend chart
+        var trend = data.daily_trend || [];
+        if (trend.length > 0) {
+            renderDeepdiveChart(trend);
+            document.getElementById('deepdive-chart-box').style.display = 'block';
+        } else {
+            document.getElementById('deepdive-chart-box').style.display = 'none';
+        }
+
+        // Top algorithms table
+        var algos = data.algorithms || [];
+        if (algos.length > 0) {
+            var aHtml = '';
+            for (var j = 0; j < algos.length; j++) {
+                var a = algos[j];
+                aHtml += '<tr>'
+                    + '<td class="fw-bold">' + (a.algorithm || '--') + '</td>'
+                    + '<td>' + (a.trades || 0) + '</td>'
+                    + '<td class="' + wrColor(a.win_rate) + '">' + fmtNum(a.win_rate, 1) + '%</td>'
+                    + '<td>' + fmtPct(a.avg_return) + '</td>'
+                    + '<td>' + fmtPct(a.total_return) + '</td>'
+                    + '</tr>';
+            }
+            document.getElementById('deepdive-algos-tbody').innerHTML = aHtml;
+            document.getElementById('deepdive-algos-section').style.display = 'block';
+        } else {
+            document.getElementById('deepdive-algos-section').style.display = 'none';
+        }
+
+        // Recent picks table
+        var recent = data.recent_picks || [];
+        if (recent.length > 0) {
+            var rHtml = '';
+            for (var k = 0; k < recent.length; k++) {
+                var rp = recent[k];
+                rHtml += '<tr class="' + rowClass(rp.status) + '">'
+                    + '<td>' + fmtDate(rp.created_at || rp.date) + '</td>'
+                    + '<td class="fw-bold">' + (rp.ticker || '--') + '</td>'
+                    + '<td>' + (rp.direction || '--') + '</td>'
+                    + '<td>' + fmtNum(rp.entry_price) + '</td>'
+                    + '<td>' + fmtNum(rp.exit_price) + '</td>'
+                    + '<td>' + fmtPct(rp.return_pct) + '</td>'
+                    + '<td>' + statusBadge(rp.status) + '</td>'
+                    + '<td>' + (rp.algorithm || '--') + '</td>'
+                    + '</tr>';
+            }
+            document.getElementById('deepdive-recent-tbody').innerHTML = rHtml;
+            document.getElementById('deepdive-recent-section').style.display = 'block';
+        } else {
+            document.getElementById('deepdive-recent-section').style.display = 'none';
+        }
+    });
+}
+
+function renderDeepdiveChart(trend) {
+    var labels = [];
+    var values = [];
+    for (var i = 0; i < trend.length; i++) {
+        labels.push(trend[i].date || trend[i].day || '');
+        values.push(parseFloat(trend[i].win_rate || 0));
+    }
+
+    var ctx = document.getElementById('chart-deepdive-wr');
+    if (chartDeepdiveWr) chartDeepdiveWr.destroy();
+
+    chartDeepdiveWr = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Daily Win Rate %',
+                data: values,
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 3,
+                pointBackgroundColor: '#6366f1',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) { return ctx.parsed.y.toFixed(1) + '% win rate'; }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(30,41,59,0.5)' },
+                    ticks: { color: '#8892a8', maxRotation: 45, font: { size: 10 } }
+                },
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: { color: 'rgba(30,41,59,0.5)' },
+                    ticks: { color: '#8892a8', callback: function(v) { return v + '%'; } }
+                }
+            }
+        }
+    });
+
+    ctx.parentElement.style.minHeight = '280px';
+}
+
+
+/* ===================================================================
+   TAB 5: FAILURE LOG
+   =================================================================== */
+function loadFailures() {
+    document.getElementById('failures-tbody').innerHTML = '<tr><td colspan="9" class="loading">Loading alerts...</td></tr>';
+
+    fetchJSON(API + '?action=alerts', function(err, data) {
+        if (err || !data || !data.ok) {
+            document.getElementById('failures-tbody').innerHTML = '<tr><td colspan="9" class="error-box">Failed to load alerts</td></tr>';
+            return;
+        }
+
+        var alerts = data.alerts || [];
+        if (alerts.length === 0) {
+            document.getElementById('failures-tbody').innerHTML = '<tr><td colspan="9" class="text-dim" style="text-align:center;padding:2rem;">No alerts found. All systems operating normally.</td></tr>';
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < alerts.length; i++) {
+            var a = alerts[i];
+            var isActive = a.status && a.status.toLowerCase() === 'active';
+            var rowCls = isActive ? 'alert-row-active' : '';
+
+            var metricStr = '--';
+            if (a.metric_value !== undefined && a.threshold !== undefined) {
+                metricStr = fmtNum(a.metric_value) + ' / ' + fmtNum(a.threshold);
+            } else if (a.metric) {
+                metricStr = a.metric;
+            }
+
+            var linkStr = '';
+            if (a.page_link) {
+                linkStr = '<a href="' + a.page_link + '" target="_blank">View</a>';
+            } else {
+                linkStr = '<a href="/live-monitor/goldmine-alerts.html" target="_blank">Details</a>';
+            }
+
+            var tickers = a.affected_tickers || a.tickers || '--';
+            if (Array.isArray(tickers)) tickers = tickers.join(', ');
+
+            html += '<tr class="' + rowCls + '">'
+                + '<td>' + fmtDate(a.created_at || a.date) + '</td>'
+                + '<td>' + (a.system || a.source_system || '--') + '</td>'
+                + '<td>' + (a.type || '--') + '</td>'
+                + '<td>' + severityBadge(a.severity) + '</td>'
+                + '<td>' + (a.title || a.message || '--') + '</td>'
+                + '<td>' + tickers + '</td>'
+                + '<td>' + metricStr + '</td>'
+                + '<td>' + alertStatusBadge(a.status) + '</td>'
+                + '<td>' + linkStr + '</td>'
+                + '</tr>';
+        }
+        document.getElementById('failures-tbody').innerHTML = html;
+    });
+}
+
+
+/* ===================================================================
+   INIT + AUTO-REFRESH
+   =================================================================== */
+loadOverview();
+
+// Auto-refresh overview every 5 minutes
+setInterval(function() {
+    var overviewTab = document.getElementById('tab-overview');
+    if (overviewTab && overviewTab.style.display !== 'none') {
+        loadOverview();
+    }
+}, 300000);
+</script>
+
+<script src="/findstocks/portfolio2/stock-nav.js"></script>
+</body>
+</html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,7 +22,13 @@
             --red: #ef4444;
             --radius: 16px;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
@@ -29,56 +36,120 @@
             min-height: 100vh;
             overflow-x: hidden;
         }
-        a { color: inherit; text-decoration: none; }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
 
         /* ─── Animated Background ─── */
         .bg-glow {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
             background:
-                radial-gradient(ellipse 600px 400px at 20% 30%, rgba(99,102,241,0.08), transparent),
-                radial-gradient(ellipse 500px 300px at 80% 60%, rgba(14,165,233,0.06), transparent),
-                radial-gradient(ellipse 400px 250px at 50% 80%, rgba(245,158,11,0.04), transparent);
+                radial-gradient(ellipse 600px 400px at 20% 30%, rgba(99, 102, 241, 0.08), transparent),
+                radial-gradient(ellipse 500px 300px at 80% 60%, rgba(14, 165, 233, 0.06), transparent),
+                radial-gradient(ellipse 400px 250px at 50% 80%, rgba(245, 158, 11, 0.04), transparent);
         }
 
         /* ─── Header ─── */
         .header {
-            position: relative; z-index: 10;
-            background: rgba(12,12,32,0.8);
+            position: relative;
+            z-index: 10;
+            background: rgba(12, 12, 32, 0.8);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
             padding: 1.2rem 2rem;
-            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
+
         .header h1 {
-            font-size: 1.6rem; font-weight: 800;
+            font-size: 1.6rem;
+            font-weight: 800;
             background: linear-gradient(135deg, var(--accent-stocks), var(--accent-funds), var(--accent-picks));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .header-nav { display: flex; gap: 1.2rem; font-size: 0.9rem; }
-        .header-nav a { color: var(--text-dim); transition: color 0.2s; }
-        .header-nav a:hover { color: var(--text); }
+
+        .header-nav {
+            display: flex;
+            gap: 1.2rem;
+            font-size: 0.9rem;
+        }
+
+        .header-nav a {
+            color: var(--text-dim);
+            transition: color 0.2s;
+        }
+
+        .header-nav a:hover {
+            color: var(--text);
+        }
 
         /* ─── Container ─── */
-        .container { position: relative; z-index: 5; max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+        .container {
+            position: relative;
+            z-index: 5;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
 
         /* ─── Hero ─── */
         .hero {
-            text-align: center; padding: 3rem 1rem 2rem;
+            text-align: center;
+            padding: 3rem 1rem 2rem;
         }
+
         .hero h2 {
-            font-size: 2.5rem; font-weight: 800; margin-bottom: 0.75rem;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
             background: linear-gradient(135deg, #fff 0%, #c4b5fd 50%, #93c5fd 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .hero p { font-size: 1.1rem; color: var(--text-dim); max-width: 600px; margin: 0 auto; line-height: 1.6; }
-        @media (max-width: 640px) { .hero h2 { font-size: 1.6rem; } .hero p { font-size: 0.95rem; } }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 640px) {
+            .hero h2 {
+                font-size: 1.6rem;
+            }
+
+            .hero p {
+                font-size: 0.95rem;
+            }
+        }
 
         /* ─── Tool Cards Grid ─── */
         .tools-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 1.5rem;
             margin-top: 2rem;
         }
-        @media (max-width: 740px) { .tools-grid { grid-template-columns: 1fr; } }
+
+        @media (max-width: 740px) {
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
 
         .tool-card {
             position: relative;
@@ -89,81 +160,233 @@
             transition: all 0.3s ease;
             overflow: hidden;
         }
+
         .tool-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
         }
+
         .tool-card::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
             border-radius: var(--radius) var(--radius) 0 0;
         }
-        .tool-card.stocks::before { background: linear-gradient(90deg, var(--accent-stocks), #a78bfa); }
-        .tool-card.stocks:hover { border-color: rgba(99,102,241,0.4); }
-        .tool-card.funds::before { background: linear-gradient(90deg, var(--accent-funds), #14b8a6); }
-        .tool-card.funds:hover { border-color: rgba(14,165,233,0.4); }
-        .tool-card.picks::before { background: linear-gradient(90deg, var(--accent-picks), #f97316); }
-        .tool-card.picks:hover { border-color: rgba(245,158,11,0.4); }
-        .tool-card.forex::before { background: linear-gradient(90deg, var(--accent-forex), #06b6d4); }
-        .tool-card.forex:hover { border-color: rgba(20,184,166,0.4); }
-        .tool-card.crypto::before { background: linear-gradient(90deg, var(--accent-crypto), #eab308); }
-        .tool-card.crypto:hover { border-color: rgba(249,115,22,0.4); }
+
+        .tool-card.stocks::before {
+            background: linear-gradient(90deg, var(--accent-stocks), #a78bfa);
+        }
+
+        .tool-card.stocks:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+
+        .tool-card.funds::before {
+            background: linear-gradient(90deg, var(--accent-funds), #14b8a6);
+        }
+
+        .tool-card.funds:hover {
+            border-color: rgba(14, 165, 233, 0.4);
+        }
+
+        .tool-card.picks::before {
+            background: linear-gradient(90deg, var(--accent-picks), #f97316);
+        }
+
+        .tool-card.picks:hover {
+            border-color: rgba(245, 158, 11, 0.4);
+        }
+
+        .tool-card.forex::before {
+            background: linear-gradient(90deg, var(--accent-forex), #06b6d4);
+        }
+
+        .tool-card.forex:hover {
+            border-color: rgba(20, 184, 166, 0.4);
+        }
+
+        .tool-card.crypto::before {
+            background: linear-gradient(90deg, var(--accent-crypto), #eab308);
+        }
+
+        .tool-card.crypto:hover {
+            border-color: rgba(249, 115, 22, 0.4);
+        }
 
         .card-icon {
-            width: 56px; height: 56px; border-radius: 14px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.6rem; margin-bottom: 1.2rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            margin-bottom: 1.2rem;
         }
-        .stocks .card-icon { background: rgba(99,102,241,0.12); }
-        .funds .card-icon { background: rgba(14,165,233,0.12); }
-        .picks .card-icon { background: rgba(245,158,11,0.12); }
-        .forex .card-icon { background: rgba(20,184,166,0.12); }
-        .crypto .card-icon { background: rgba(249,115,22,0.12); }
 
-        .tool-card h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
-        .tool-card .desc { font-size: 0.9rem; color: var(--text-dim); line-height: 1.5; margin-bottom: 1.2rem; }
+        .stocks .card-icon {
+            background: rgba(99, 102, 241, 0.12);
+        }
 
-        .tag-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.2rem; }
+        .funds .card-icon {
+            background: rgba(14, 165, 233, 0.12);
+        }
+
+        .picks .card-icon {
+            background: rgba(245, 158, 11, 0.12);
+        }
+
+        .forex .card-icon {
+            background: rgba(20, 184, 166, 0.12);
+        }
+
+        .crypto .card-icon {
+            background: rgba(249, 115, 22, 0.12);
+        }
+
+        .tool-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .tool-card .desc {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            line-height: 1.5;
+            margin-bottom: 1.2rem;
+        }
+
+        .tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-bottom: 1.2rem;
+        }
+
         .tag {
-            display: inline-block; padding: 3px 10px; border-radius: 20px;
-            font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .tag.purple { background: rgba(99,102,241,0.12); color: #a78bfa; }
-        .tag.blue { background: rgba(14,165,233,0.12); color: #38bdf8; }
-        .tag.orange { background: rgba(245,158,11,0.12); color: #fbbf24; }
-        .tag.green { background: rgba(34,197,94,0.12); color: #4ade80; }
-        .tag.red { background: rgba(239,68,68,0.12); color: #f87171; }
 
-        .card-links { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+        .tag.purple {
+            background: rgba(99, 102, 241, 0.12);
+            color: #a78bfa;
+        }
+
+        .tag.blue {
+            background: rgba(14, 165, 233, 0.12);
+            color: #38bdf8;
+        }
+
+        .tag.orange {
+            background: rgba(245, 158, 11, 0.12);
+            color: #fbbf24;
+        }
+
+        .tag.green {
+            background: rgba(34, 197, 94, 0.12);
+            color: #4ade80;
+        }
+
+        .tag.red {
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+        }
+
+        .card-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+        }
+
         .card-link {
-            display: inline-flex; align-items: center; gap: 0.4rem;
-            padding: 0.5rem 1rem; border-radius: 10px;
-            font-size: 0.85rem; font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
             transition: all 0.2s;
         }
+
         .card-link.primary {
             color: #fff;
         }
-        .stocks .card-link.primary { background: var(--accent-stocks); }
-        .stocks .card-link.primary:hover { background: #5558e6; box-shadow: 0 0 20px rgba(99,102,241,0.3); }
-        .funds .card-link.primary { background: var(--accent-funds); }
-        .funds .card-link.primary:hover { background: #0891d2; box-shadow: 0 0 20px rgba(14,165,233,0.3); }
-        .picks .card-link.primary { background: var(--accent-picks); }
-        .picks .card-link.primary:hover { background: #d97706; box-shadow: 0 0 20px rgba(245,158,11,0.3); }
-        .forex .card-link.primary { background: var(--accent-forex); }
-        .forex .card-link.primary:hover { background: #0d9488; box-shadow: 0 0 20px rgba(20,184,166,0.3); }
-        .crypto .card-link.primary { background: var(--accent-crypto); }
-        .crypto .card-link.primary:hover { background: #ea580c; box-shadow: 0 0 20px rgba(249,115,22,0.3); }
+
+        .stocks .card-link.primary {
+            background: var(--accent-stocks);
+        }
+
+        .stocks .card-link.primary:hover {
+            background: #5558e6;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .funds .card-link.primary {
+            background: var(--accent-funds);
+        }
+
+        .funds .card-link.primary:hover {
+            background: #0891d2;
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+        }
+
+        .picks .card-link.primary {
+            background: var(--accent-picks);
+        }
+
+        .picks .card-link.primary:hover {
+            background: #d97706;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+        }
+
+        .forex .card-link.primary {
+            background: var(--accent-forex);
+        }
+
+        .forex .card-link.primary:hover {
+            background: #0d9488;
+            box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
+        }
+
+        .crypto .card-link.primary {
+            background: var(--accent-crypto);
+        }
+
+        .crypto .card-link.primary:hover {
+            background: #ea580c;
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
+        }
+
         .card-link.secondary {
-            background: rgba(255,255,255,0.05); color: var(--text-dim);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-dim);
             border: 1px solid var(--border);
         }
-        .card-link.secondary:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+
+        .card-link.secondary:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            color: var(--text);
+        }
 
         /* ─── Feature Highlights ─── */
         .features {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
             margin-top: 3rem;
         }
+
         .feature {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -171,20 +394,43 @@
             padding: 1.2rem;
             text-align: center;
         }
-        .feature .f-icon { font-size: 1.6rem; margin-bottom: 0.5rem; }
-        .feature .f-title { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.3rem; }
-        .feature .f-desc { font-size: 0.75rem; color: var(--text-dim); }
+
+        .feature .f-icon {
+            font-size: 1.6rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature .f-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+
+        .feature .f-desc {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
 
         /* ─── Footer ─── */
         .footer {
-            margin-top: 4rem; padding: 2rem; text-align: center;
+            margin-top: 4rem;
+            padding: 2rem;
+            text-align: center;
             border-top: 1px solid var(--border);
-            color: var(--text-dim); font-size: 0.8rem;
+            color: var(--text-dim);
+            font-size: 0.8rem;
         }
-        .footer a { color: var(--accent-stocks); }
-        .footer a:hover { text-decoration: underline; }
+
+        .footer a {
+            color: var(--accent-stocks);
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
+
 <body>
     <div class="bg-glow"></div>
 
@@ -192,6 +438,7 @@
         <h1>Investment Tools</h1>
         <nav class="header-nav">
             <a href="/">Events Home</a>
+            <a href="/investments/goldmines/">Goldmines</a>
             <a href="/findstocks/portfolio/">Stocks</a>
             <a href="/findmutualfunds/portfolio1/">Funds</a>
             <a href="/findforex2/portfolio/">Forex</a>
@@ -202,7 +449,9 @@
     <div class="container">
         <div class="hero">
             <h2>Your Financial Toolkit</h2>
-            <p>Stocks, mutual funds, forex, and crypto — backtesting with real fees, 115+ algorithms, 7 alternative data factor families (Glassdoor, BDI, GPR, Dark Pool, ESG, Patents, Congressional), optimal condition finding, What-If simulations, and daily auto-refresh across all asset classes.</p>
+            <p>Stocks, mutual funds, forex, and crypto — backtesting with real fees, 115+ algorithms, 7 alternative data
+                factor families (Glassdoor, BDI, GPR, Dark Pool, ESG, Patents, Congressional), optimal condition
+                finding, What-If simulations, and daily auto-refresh across all asset classes.</p>
         </div>
 
         <div class="tools-grid">
@@ -211,7 +460,9 @@
             <div class="tool-card stocks">
                 <div class="card-icon">&#x1F4CA;</div>
                 <h3>Stock Portfolio Analysis</h3>
-                <p class="desc">Backtest trading strategies with realistic Questrade Canada fees. 115+ algorithms across 30+ families including alt-data factors (Glassdoor, BDI, GPR, Dark Pool, ESG, Patents). CDR detection for commission-free trading.</p>
+                <p class="desc">Backtest trading strategies with realistic Questrade Canada fees. 115+ algorithms across
+                    30+ families including alt-data factors (Glassdoor, BDI, GPR, Dark Pool, ESG, Patents). CDR
+                    detection for commission-free trading.</p>
                 <div class="tag-row">
                     <span class="tag purple">115+ Algorithms</span>
                     <span class="tag green">7 Alt-Data Families</span>
@@ -231,7 +482,8 @@
             <div class="tool-card funds">
                 <div class="card-icon">&#x1F3E6;</div>
                 <h3>Mutual Fund Analysis</h3>
-                <p class="desc">Track 20+ top mutual funds from Vanguard, Fidelity, Schwab, and T. Rowe Price. NAV-based backtesting with expense ratios, front/back loads, and Questrade's $9.95 MF fee.</p>
+                <p class="desc">Track 20+ top mutual funds from Vanguard, Fidelity, Schwab, and T. Rowe Price. NAV-based
+                    backtesting with expense ratios, front/back loads, and Questrade's $9.95 MF fee.</p>
                 <div class="tag-row">
                     <span class="tag blue">10 Strategies</span>
                     <span class="tag green">Expense Tracking</span>
@@ -249,7 +501,9 @@
             <div class="tool-card picks">
                 <div class="card-icon">&#x1F4C8;</div>
                 <h3>Daily Stock Picks</h3>
-                <p class="desc">AI-validated stock picks updated daily before market open. Multiple algorithms including CAN SLIM, Technical Momentum, ML Ensemble, and Alpha Predator. SHA-256 pre-commitment protocol for trust.</p>
+                <p class="desc">AI-validated stock picks updated daily before market open. Multiple algorithms including
+                    CAN SLIM, Technical Momentum, ML Ensemble, and Alpha Predator. SHA-256 pre-commitment protocol for
+                    trust.</p>
                 <div class="tag-row">
                     <span class="tag orange">Pre-Market Picks</span>
                     <span class="tag red">SHA-256 Verified</span>
@@ -266,7 +520,8 @@
             <div class="tool-card forex">
                 <div class="card-icon">&#x1F4B1;</div>
                 <h3>Forex Pairs Analysis</h3>
-                <p class="desc">Backtest 15 major, cross, and exotic currency pairs with spread-based cost modeling. Strategies include Trend Following, Mean Reversion, Breakout, Carry Trade, and Scalping.</p>
+                <p class="desc">Backtest 15 major, cross, and exotic currency pairs with spread-based cost modeling.
+                    Strategies include Trend Following, Mean Reversion, Breakout, Carry Trade, and Scalping.</p>
                 <div class="tag-row">
                     <span class="tag green">15 Currency Pairs</span>
                     <span class="tag blue">8 Strategies</span>
@@ -282,7 +537,8 @@
             <div class="tool-card crypto">
                 <div class="card-icon">&#x20BF;</div>
                 <h3>Crypto Pairs Analysis</h3>
-                <p class="desc">Backtest 15 crypto pairs including BTC, ETH, SOL, and altcoins. Exchange fee modeling (0.1-0.5%), HODL vs DCA strategies, and alt-season rotation analysis. 24/7 market data.</p>
+                <p class="desc">Backtest 15 crypto pairs including BTC, ETH, SOL, and altcoins. Exchange fee modeling
+                    (0.1-0.5%), HODL vs DCA strategies, and alt-season rotation analysis. 24/7 market data.</p>
                 <div class="tag-row">
                     <span class="tag orange">15 Crypto Pairs</span>
                     <span class="tag green">10 Strategies</span>
@@ -294,6 +550,53 @@
                 </div>
             </div>
 
+            <!-- Master Dashboard (NEW) -->
+            <div class="tool-card picks">
+                <div class="card-icon">🎯</div>
+                <h3>Master Dashboard</h3>
+                <p class="desc">Unified performance tracking across ALL prediction systems. Real-time win rates, P&L
+                    tracking, and algorithm leaderboards for crypto, meme coins, sports betting, stocks, forex, and
+                    mutual funds.</p>
+                <div class="tag-row">
+                    <span class="tag orange">7 Asset Classes</span>
+                    <span class="tag green">Live Win Rates</span>
+                    <span class="tag purple">Algorithm Tracking</span>
+                    <span class="tag blue">Auto-Refresh</span>
+                </div>
+                <div class="card-links">
+                    <a href="/investments/master_dashboard.html" class="card-link primary">View Dashboard</a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ═══ GOLDMINES SECTION ═══ -->
+        <div style="margin-top:3rem;margin-bottom:2rem">
+            <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1.2rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border)">
+                <h2 style="font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,#fbbf24,#f59e0b,#22c55e);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Goldmines</h2>
+                <span style="font-size:0.65rem;padding:2px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;background:rgba(245,158,11,0.12);color:#fbbf24">AI Analysis</span>
+            </div>
+            <p style="font-size:0.9rem;color:var(--text-dim);margin-bottom:1.2rem;max-width:700px">Consolidated proof-tracking dashboards built by AI assistants. Each AI analyzes all prediction systems, identifies hidden winners, tracks performance with date/time proof, and benchmarks against pro algo trading firms.</p>
+
+            <div class="tools-grid">
+                <!-- Cascade AI — GOLDMINE_WS -->
+                <div class="tool-card picks" style="border-image:linear-gradient(135deg,#f59e0b,#22c55e) 1;border-image-slice:1;border-top:3px solid">
+                    <div class="card-icon" style="background:rgba(245,158,11,0.12)">&#x26A1;</div>
+                    <h3>GOLDMINE_WS <span style="font-size:0.7rem;color:var(--text-dim);font-weight:400">&mdash; Cascade AI</span></h3>
+                    <p class="desc">Consolidated proof tracker across all 9 prediction systems. Live win rates, system leaderboard with proof scores, dead data alerts, pro-firm benchmarks, and a unified audit trail of every prediction with date/time.</p>
+                    <div class="tag-row">
+                        <span class="tag orange">9 Systems</span>
+                        <span class="tag green">Live Proof</span>
+                        <span class="tag purple">Leaderboard</span>
+                        <span class="tag red">Dead Data Alerts</span>
+                        <span class="tag blue">Pro Benchmarks</span>
+                    </div>
+                    <div class="card-links">
+                        <a href="/investments/goldmines/cascade/" class="card-link primary">Open GOLDMINE_WS</a>
+                        <a href="/WINDSURF_STOCKS_ANALYSIS_2026_Feb10.md" class="card-link secondary">Full Analysis (MD)</a>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Feature Highlights -->
@@ -301,57 +604,77 @@
             <div class="feature">
                 <div class="f-icon">&#x1F1E8;&#x1F1E6;</div>
                 <div class="f-title">Questrade Canada Fees</div>
-                <div class="f-desc">$0 stock commissions. CDR auto-detection. 1.75% forex for US stocks. $9.95 mutual fund trades.</div>
+                <div class="f-desc">$0 stock commissions. CDR auto-detection. 1.75% forex for US stocks. $9.95 mutual
+                    fund trades.</div>
             </div>
             <div class="feature">
                 <div class="f-icon">&#x1F4C9;</div>
                 <div class="f-title">VIX Volatility Filter</div>
-                <div class="f-desc">Skip trades when markets are volatile. Calm-only, skip-high, and custom VIX threshold modes.</div>
+                <div class="f-desc">Skip trades when markets are volatile. Calm-only, skip-high, and custom VIX
+                    threshold modes.</div>
             </div>
             <div class="feature">
                 <div class="f-icon">&#x1F9EC;</div>
                 <div class="f-title">7 Alt-Data Families</div>
-                <div class="f-desc">Glassdoor culture, BDI supply chain, GPR geopolitical, dark pool flow, ESG climate, patent IP, congressional trades.</div>
+                <div class="f-desc">Glassdoor culture, BDI supply chain, GPR geopolitical, dark pool flow, ESG climate,
+                    patent IP, congressional trades.</div>
             </div>
             <div class="feature">
                 <div class="f-icon">&#x1F4B0;</div>
                 <div class="f-title">What-If Simulator</div>
-                <div class="f-desc">Test any combination of TP/SL, holding period, fees, and algorithms against historical data.</div>
+                <div class="f-desc">Test any combination of TP/SL, holding period, fees, and algorithms against
+                    historical data.</div>
             </div>
             <div class="feature">
                 <div class="f-icon">&#x23F0;</div>
                 <div class="f-title">Daily Auto-Refresh</div>
-                <div class="f-desc">GitHub Actions updates prices, NAV data, and analysis reports every trading day automatically.</div>
+                <div class="f-desc">GitHub Actions updates prices, NAV data, and analysis reports every trading day
+                    automatically.</div>
             </div>
             <div class="feature">
                 <div class="f-icon">&#x1F3AF;</div>
                 <div class="f-title">Optimal Finder</div>
-                <div class="f-desc">Grid search across thousands of parameter permutations to find the exact conditions that win.</div>
+                <div class="f-desc">Grid search across thousands of parameter permutations to find the exact conditions
+                    that win.</div>
             </div>
             <div class="feature">
                 <div class="f-icon">&#x1F4B1;</div>
                 <div class="f-title">Multi-Market</div>
-                <div class="f-desc">Forex spreads, crypto exchange fees, stock commissions, and mutual fund loads — each modeled accurately.</div>
+                <div class="f-desc">Forex spreads, crypto exchange fees, stock commissions, and mutual fund loads — each
+                    modeled accurately.</div>
             </div>
         </div>
     </div>
 
     <div class="footer">
-        <p>Part of <a href="/">FindTorontoEvents.ca</a> &mdash; Toronto's guide to events, activities, and now investments.</p>
+        <p>Part of <a href="/">FindTorontoEvents.ca</a> &mdash; Toronto's guide to events, activities, and now
+            investments.</p>
         <p style="margin-top:0.5rem">Market data from Yahoo Finance.</p>
     </div>
 
-    <div style="text-align:center;font-size:0.7rem;color:#8888aa;padding:2rem 1.5rem;border-top:1px solid #2a2a4a;max-width:900px;margin-left:auto;margin-right:auto;line-height:1.6;">
+    <div
+        style="text-align:center;font-size:0.7rem;color:#8888aa;padding:2rem 1.5rem;border-top:1px solid #2a2a4a;max-width:900px;margin-left:auto;margin-right:auto;line-height:1.6;">
         <strong>Important Disclaimer</strong><br>
-        All tools on this platform are for <strong>educational and research purposes only</strong> and do not constitute financial advice, investment advice, trading advice, or any other sort of advice.
-        Nothing on this website should be construed as a recommendation or solicitation to buy or sell any security, currency pair, cryptocurrency, mutual fund, or other financial product.<br><br>
-        <strong>No fiduciary relationship</strong> is created between you and the operators of this website by your use of these tools.
-        You are solely responsible for your own investment decisions. <strong>All investments involve risk</strong>, including the possible loss of all invested capital.
-        Past performance does not guarantee future results. Backtests and algorithm rankings are based on historical data, may contain errors, and may not reflect real-world execution, slippage, or market conditions.
-        Forex and cryptocurrency trading involve substantial additional risks including leverage and extreme volatility.<br><br>
-        Data is sourced from third parties (Yahoo Finance, exchange APIs) and may be delayed, inaccurate, or incomplete. The operators of this website make no warranties regarding the accuracy, completeness, or timeliness of any information provided.
+        All tools on this platform are for <strong>educational and research purposes only</strong> and do not constitute
+        financial advice, investment advice, trading advice, or any other sort of advice.
+        Nothing on this website should be construed as a recommendation or solicitation to buy or sell any security,
+        currency pair, cryptocurrency, mutual fund, or other financial product.<br><br>
+        <strong>No fiduciary relationship</strong> is created between you and the operators of this website by your use
+        of these tools.
+        You are solely responsible for your own investment decisions. <strong>All investments involve risk</strong>,
+        including the possible loss of all invested capital.
+        Past performance does not guarantee future results. Backtests and algorithm rankings are based on historical
+        data, may contain errors, and may not reflect real-world execution, slippage, or market conditions.
+        Forex and cryptocurrency trading involve substantial additional risks including leverage and extreme
+        volatility.<br><br>
+        Data is sourced from third parties (Yahoo Finance, exchange APIs) and may be delayed, inaccurate, or incomplete.
+        The operators of this website make no warranties regarding the accuracy, completeness, or timeliness of any
+        information provided.
         <strong>Consult a licensed financial adviser</strong> before making any investment decisions.<br><br>
-        <span style="opacity:0.7;">By using these tools you acknowledge that you have read and understood this disclaimer and agree that the operators shall not be held liable for any losses arising from your use of this information.</span>
+        <span style="opacity:0.7;">By using these tools you acknowledge that you have read and understood this
+            disclaimer and agree that the operators shall not be held liable for any losses arising from your use of
+            this information.</span>
     </div>
 </body>
+
 </html>

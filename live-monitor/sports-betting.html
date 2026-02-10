@@ -91,6 +91,8 @@
         }
         .sport-btn:hover { border-color: var(--accent); color: var(--text); }
         .sport-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .sport-btn.empty { opacity: 0.35; text-decoration: line-through; cursor: default; }
+        .sport-btn.empty:hover { border-color: var(--border); color: var(--text-dim); }
         .tab-nav {
             display: flex; gap: 0.5rem; margin-bottom: 1rem;
             border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; flex-wrap: wrap;
@@ -176,7 +178,32 @@
         .pick-main-col { flex: 1; }
         .pick-score-bar { width: 42px; height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
         .pick-score-fill { height: 100%; border-radius: 2px; }
-        .pick-win-prob { font-size: 0.72rem; color: var(--text-dim); text-align: center; }
+        .pick-win-prob { font-size: 0.72rem; color: var(--text-dim); text-align: center; cursor: help; }
+        .grade-info-icon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--border); color: var(--text-dim);
+            font-size: 0.6rem; font-weight: 700; cursor: help;
+            margin-left: 0.3rem; vertical-align: middle; position: relative;
+        }
+        .grade-info-icon:hover { background: var(--accent); color: #fff; }
+        .grade-tooltip {
+            display: none; position: absolute; bottom: 130%; left: 50%;
+            transform: translateX(-50%); width: 260px; padding: 0.7rem;
+            background: #1e1e3f; border: 1px solid var(--accent);
+            border-radius: 8px; font-size: 0.72rem; color: var(--text);
+            line-height: 1.5; z-index: 100; text-align: left;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .grade-info-icon:hover .grade-tooltip { display: block; }
+        .grade-explainer {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 0.7rem 1rem;
+            margin-bottom: 1rem; font-size: 0.8rem; color: var(--text-dim);
+            line-height: 1.6;
+        }
+        .grade-explainer strong { color: var(--text); }
+        .grade-explainer .ge-title { color: var(--accent); font-weight: 700; margin-bottom: 0.3rem; }
         .pick-reasons { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border); }
         .pick-reasons ul { list-style: none; padding: 0; margin: 0; }
         .pick-reasons li { font-size: 0.75rem; color: var(--text-dim); padding: 0.1rem 0; }
@@ -299,6 +326,14 @@
                         <span class="rec-badge rec-skip" style="font-size:0.65rem;">SKIP</span>
                     </div>
                 </div>
+                <div class="grade-explainer" id="grade-explainer">
+                    <div class="ge-title">How Grades Work</div>
+                    Grades are based on <strong>Expected Value (EV)</strong>, not just win probability.
+                    A pick with <strong>17% win probability at +500 odds</strong> (grade B) can outrank one with
+                    <strong>26% win probability at +290 odds</strong> (grade C+) because the potential payout per dollar
+                    risked is higher &mdash; the <strong>risk:reward ratio</strong> matters more than raw likelihood.
+                    <br>Factors: EV% (50pts), book consensus (20pts), market type (15pts), CA-legal book (10pts), timing (5pts).
+                </div>
                 <div id="picks-summary" style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:0.8rem 1rem;margin-bottom:1rem;display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;font-size:0.85rem;">
                     <span>Strong Takes: <strong class="text-green" id="sum-strong">0</strong></span>
                     <span>Takes: <strong style="color:var(--blue)" id="sum-takes">0</strong></span>
@@ -341,6 +376,8 @@
 var API_BASE = '/live-monitor/api/';
 var currentSport = 'all';
 var bankrollChart = null;
+var mktLabel = {h2h:'Moneyline',spreads:'Spread',totals:'Total'};
+var sportPickCounts = {};
 
 function switchTab(tab) {
     document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
@@ -433,6 +470,16 @@ function fetchPicks() {
 
         var vb = d.value_bets || [];
         var grid = document.getElementById('value-bets-grid');
+
+        // Track which sports have picks for filter greying
+        sportPickCounts = {};
+        for (var sc = 0; sc < vb.length; sc++) {
+            var sk = vb[sc].sport || '';
+            if (!sportPickCounts[sk]) sportPickCounts[sk] = 0;
+            sportPickCounts[sk]++;
+        }
+        _updateSportFilters();
+
         if (vb.length === 0) {
             grid.innerHTML = '<div class="empty-state"><p>No value bets detected right now</p><p class="text-dim" style="font-size:0.85rem">Picks appear when odds are refreshed and our algorithm detects mispriced lines.<br>You need a valid Odds API key in db_config.php and run ?action=fetch to populate data.</p></div>';
             document.getElementById('picks-summary').style.display = 'none';
@@ -449,7 +496,6 @@ function fetchPicks() {
         for (var w = 0; w < vb.length; w++) { if (vb[w].win_probability) { avgWP += parseFloat(vb[w].win_probability); wpCount++; } }
         document.getElementById('sum-winprob').textContent = wpCount > 0 ? (avgWP/wpCount).toFixed(1) + '%' : '--%';
 
-        var mktLabel = {h2h:'Moneyline',spreads:'Spread',totals:'Total'};
         var html = '';
         for (var i = 0; i < vb.length; i++) {
             var b = vb[i];
@@ -461,22 +507,32 @@ function fetchPicks() {
             var recDetail = b.rec_detail || '';
             var scoreVal = b.rating_score || 0;
             var scoreColor = scoreVal >= 80 ? 'var(--green)' : scoreVal >= 60 ? 'var(--blue)' : scoreVal >= 40 ? 'var(--yellow)' : 'var(--red)';
-            var winProb = b.win_probability ? b.win_probability + '% win prob' : '';
+            var winProb = b.win_probability ? parseFloat(b.win_probability).toFixed(1) + '%' : '';
             var amOdds = b.american_odds || fmtOdds(b.best_odds);
+
+            // Translate market key to friendly label (fixes h2h showing raw)
+            var marketRaw = (b.market || '').replace(/^\s+|\s+$/g, '');
+            var marketDisplay = mktLabel[marketRaw] || marketRaw || '';
 
             // Grade class for border
             var borderGrade = scoreVal >= 70 ? 'grade-A' : scoreVal >= 50 ? 'grade-B' : scoreVal >= 35 ? 'grade-C' : 'grade-D';
 
+            // Win prob tooltip explaining grade vs probability
+            var wpTooltip = '';
+            if (winProb) {
+                wpTooltip = '<div class="pick-win-prob" title="Win probability is vig-removed consensus odds. Grade is based on Expected Value (EV) which factors in payout size, not just likelihood. Higher odds = lower win prob but bigger payout per dollar.">' + winProb + ' win prob <span class="grade-info-icon">?<span class="grade-tooltip">Win prob (' + winProb + ') reflects how often this bet wins. But the <strong>grade (' + grade + ')</strong> is based on <strong>Expected Value</strong> &mdash; a bet that wins less often but pays much more can have a higher grade because the risk:reward is better.</span></span></div>';
+            }
+
             html += '<div class="pick-card-enhanced ' + borderGrade + '">'
                 + '<div class="pick-top-row">'
                 +   '<div class="pick-main-col">'
-                +     '<div class="pick-header"><span class="pick-sport">' + (b.sport_short || b.sport) + ' &bull; ' + (mktLabel[b.market] || b.market || '') + '</span><span class="pick-time">' + fmtTime(b.commence_time) + '</span></div>'
+                +     '<div class="pick-header"><span class="pick-sport">' + (b.sport_short || b.sport) + ' &bull; ' + marketDisplay + '</span><span class="pick-time">' + fmtTime(b.commence_time) + '</span></div>'
                 +     '<div class="pick-teams">' + (b.away_team||'') + ' @ ' + (b.home_team||'') + '</div>'
                 +   '</div>'
                 +   '<div class="pick-rating-col">'
-                +     '<div class="rating-badge rating-' + gradeClass + '">' + grade + '</div>'
+                +     '<div class="rating-badge rating-' + gradeClass + '" title="Score: ' + scoreVal + '/100 — based on EV%, book consensus, market type, and timing">' + grade + '</div>'
                 +     '<div class="pick-score-bar"><div class="pick-score-fill" style="width:' + scoreVal + '%;background:' + scoreColor + '"></div></div>'
-                +     (winProb ? '<div class="pick-win-prob">' + winProb + '</div>' : '')
+                +     wpTooltip
                 +   '</div>'
                 + '</div>'
                 + '<div class="pick-detail">Pick: <strong>' + (b.outcome_name||b.bet_type||'') + '</strong> at <strong>' + (b.best_book||'') + '</strong>' + isCa + '</div>'
@@ -691,6 +747,32 @@ function loadDayPicks(date) {
         html += '</table>';
         document.getElementById('history-content').innerHTML = html;
     });
+}
+
+// Update sport filter buttons — grey out sports with no picks
+function _updateSportFilters() {
+    var sportKeyMap = {
+        'icehockey_nhl': 'NHL', 'basketball_nba': 'NBA',
+        'americanfootball_nfl': 'NFL', 'baseball_mlb': 'MLB',
+        'americanfootball_cfl': 'CFL', 'soccer_usa_mls': 'MLS',
+        'americanfootball_ncaaf': 'NCAAF', 'basketball_ncaab': 'NCAAB'
+    };
+    var btns = document.querySelectorAll('.sport-btn');
+    for (var i = 0; i < btns.length; i++) {
+        var oc = btns[i].getAttribute('onclick') || '';
+        // Extract sport key from onclick="filterSport('...')"
+        var match = oc.match(/filterSport\('([^']+)'\)/);
+        if (!match || match[1] === 'all') continue;
+        var sportKey = match[1];
+        var hasData = sportPickCounts[sportKey] && sportPickCounts[sportKey] > 0;
+        if (hasData) {
+            btns[i].classList.remove('empty');
+            btns[i].title = sportPickCounts[sportKey] + ' pick' + (sportPickCounts[sportKey] > 1 ? 's' : '');
+        } else {
+            btns[i].classList.add('empty');
+            btns[i].title = 'No picks available';
+        }
+    }
 }
 
 // Init

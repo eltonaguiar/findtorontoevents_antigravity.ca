@@ -48,6 +48,13 @@
         { text: 'Global Dash', href: '/findstocks2_global/' },
         { text: 'Stock Profile', href: '/findstocks/portfolio2/stock-profile.html' }
       ]
+    },
+    {
+      label: 'Goldmines \u00b7 Opus',
+      links: [
+        { text: 'Goldmine Checker', href: '/live-monitor/goldmine-dashboard.html' },
+        { text: 'Health Alerts', href: '/live-monitor/goldmine-alerts.html' }
+      ]
     }
   ];
 
@@ -153,4 +160,35 @@
       linksContainer.classList.remove('open');
     }
   });
+
+  // Goldmine failure alert banner — inject if active alerts exist
+  setTimeout(function() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/live-monitor/api/goldmine_tracker.php?action=alerts');
+    xhr.timeout = 5000;
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          var data = JSON.parse(xhr.responseText);
+          if (data.ok && data.active_count > 0) {
+            var critical = 0;
+            for (var i = 0; i < data.alerts.length; i++) {
+              if (data.alerts[i].severity === 'critical') critical++;
+            }
+            var banner = document.createElement('div');
+            banner.style.cssText = 'background:linear-gradient(90deg,#dc2626,#b91c1c);color:white;text-align:center;padding:8px 16px;font-weight:600;font-size:13px;font-family:system-ui,sans-serif;cursor:pointer;animation:gm-pulse 2s infinite';
+            var label = critical > 0 ? 'CRITICAL' : 'WARNING';
+            banner.innerHTML = '\u26a0\ufe0f ACTION REQUIRED: ' + data.active_count + ' system(s) underperforming (' + label + '). <a href="/live-monitor/goldmine-alerts.html" style="color:#fde68a;text-decoration:underline;margin-left:8px">View Details \u2192</a>';
+            banner.onclick = function() { window.location.href = '/live-monitor/goldmine-alerts.html'; };
+            var pulseStyle = document.createElement('style');
+            pulseStyle.textContent = '@keyframes gm-pulse{0%,100%{opacity:1}50%{opacity:0.85}}';
+            document.head.appendChild(pulseStyle);
+            nav.parentNode.insertBefore(banner, nav.nextSibling);
+          }
+        } catch(e) {}
+      }
+    };
+    xhr.onerror = function() {};
+    xhr.send();
+  }, 1500);
 })();

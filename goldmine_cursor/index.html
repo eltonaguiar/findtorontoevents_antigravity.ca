@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOLDMINE CURSOR | Cross-System Prediction Intelligence</title>
+    <style>
+        :root {
+            --bg-dark: #080818; --bg-card: #0e0e24; --border: #1e1e3e;
+            --text: #e0e0f0; --text-dim: #7777aa; --text-bright: #ffffff;
+            --gold: #f59e0b; --gold-dim: rgba(245,158,11,0.15);
+            --green: #22c55e; --green-dim: rgba(34,197,94,0.12);
+            --red: #ef4444; --red-dim: rgba(239,68,68,0.12);
+            --yellow: #eab308; --yellow-dim: rgba(234,179,8,0.12);
+            --blue: #3b82f6; --blue-dim: rgba(59,130,246,0.12);
+            --purple: #a855f7; --purple-dim: rgba(168,85,247,0.12);
+            --cyan: #06b6d4;
+            --radius: 14px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg-dark); color:var(--text); min-height:100vh; line-height:1.5; }
+        a { color:var(--gold); text-decoration:none; }
+        a:hover { text-decoration:underline; }
+
+        /* Header */
+        .gm-header { background:linear-gradient(135deg,#0e0e24 0%,#1a1035 50%,#0e0e24 100%); border-bottom:1px solid var(--border); padding:1.25rem 2rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; }
+        .gm-brand { display:flex; align-items:center; gap:12px; }
+        .gm-brand-icon { font-size:1.8rem; }
+        .gm-brand h1 { font-size:1.5rem; font-weight:800; background:linear-gradient(135deg,var(--gold),#fbbf24,#f97316); -webkit-background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:-0.02em; }
+        .gm-brand .gm-subtitle { font-size:0.75rem; color:var(--text-dim); margin-top:-2px; }
+        .gm-nav { display:flex; gap:0.75rem; font-size:0.8rem; flex-wrap:wrap; }
+        .gm-nav a { color:var(--text-dim); padding:0.3rem 0.7rem; border-radius:8px; border:1px solid transparent; transition:all 0.2s; }
+        .gm-nav a:hover, .gm-nav a.active { color:var(--text); border-color:var(--border); background:rgba(255,255,255,0.03); text-decoration:none; }
+
+        .container { max-width:1400px; margin:0 auto; padding:1.5rem; }
+        .card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; margin-bottom:1.25rem; }
+        .card h2 { font-size:1.05rem; margin-bottom:1rem; color:var(--text-bright); display:flex; align-items:center; gap:8px; }
+        .card h2 .badge { font-size:0.65rem; }
+
+        /* Tabs */
+        .tab-bar { display:flex; gap:4px; margin-bottom:1.25rem; border-bottom:1px solid var(--border); padding-bottom:4px; flex-wrap:wrap; }
+        .tab-btn { padding:0.5rem 1rem; border:none; background:transparent; color:var(--text-dim); cursor:pointer; border-radius:8px 8px 0 0; font-size:0.82rem; font-weight:600; transition:all 0.2s; }
+        .tab-btn:hover { color:var(--text); background:rgba(255,255,255,0.03); }
+        .tab-btn.active { color:var(--gold); background:rgba(245,158,11,0.08); border-bottom:2px solid var(--gold); }
+        .tab-panel { display:none; }
+        .tab-panel.active { display:block; }
+
+        /* Stats grid */
+        .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:0.75rem; margin-bottom:1.25rem; }
+        .stat-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:1rem; text-align:center; }
+        .stat-card .label { font-size:0.65rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; }
+        .stat-card .value { font-size:1.4rem; font-weight:800; margin-top:0.2rem; }
+
+        .positive { color:var(--green); }
+        .negative { color:var(--red); }
+        .neutral { color:var(--text); }
+        .warning { color:var(--yellow); }
+        .gold { color:var(--gold); }
+
+        /* Tables */
+        table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+        th,td { padding:0.55rem 0.75rem; text-align:left; border-bottom:1px solid var(--border); }
+        th { color:var(--text-dim); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600; position:sticky; top:0; background:var(--bg-card); }
+        tr:hover { background:rgba(245,158,11,0.02); }
+        .table-wrap { overflow-x:auto; max-height:500px; overflow-y:auto; }
+
+        /* Badges */
+        .badge { display:inline-block; padding:0.15rem 0.55rem; border-radius:6px; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; }
+        .badge-gold { background:var(--gold-dim); color:var(--gold); }
+        .badge-green { background:var(--green-dim); color:var(--green); }
+        .badge-red { background:var(--red-dim); color:var(--red); }
+        .badge-yellow { background:var(--yellow-dim); color:var(--yellow); }
+        .badge-blue { background:var(--blue-dim); color:var(--blue); }
+        .badge-purple { background:var(--purple-dim); color:var(--purple); }
+
+        /* Health dots */
+        .health-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; }
+        .health-ok { background:var(--green); box-shadow:0 0 6px rgba(34,197,94,0.5); }
+        .health-warn { background:var(--yellow); box-shadow:0 0 6px rgba(234,179,8,0.5); }
+        .health-stale { background:var(--red); box-shadow:0 0 6px rgba(239,68,68,0.5); }
+
+        /* Equity chart */
+        .chart-area { width:100%; height:250px; background:rgba(0,0,0,0.2); border-radius:10px; position:relative; overflow:hidden; }
+        .chart-canvas { width:100%; height:100%; }
+
+        /* Grid layouts */
+        .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+        .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1.25rem; }
+
+        /* Loading */
+        .loading { text-align:center; padding:2rem; color:var(--text-dim); }
+        .spinner { display:inline-block; width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin 0.7s linear infinite; margin-right:8px; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+
+        /* Verdict icons */
+        .verdict-hidden_winner::before { content:""; margin-right:4px; }
+        .verdict-strong::before { content:""; margin-right:4px; }
+        .verdict-neutral::before { content:""; margin-right:4px; }
+        .verdict-needs_review::before { content:""; margin-right:4px; }
+        .verdict-underperform::before { content:""; margin-right:4px; }
+
+        /* Responsive */
+        @media (max-width:900px) { .grid-2,.grid-3 { grid-template-columns:1fr; } .container { padding:1rem; } .stat-grid { grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); } }
+        @media (max-width:600px) { .gm-header { padding:1rem; } .gm-brand h1 { font-size:1.15rem; } }
+
+        .footer { text-align:center; padding:2rem 1rem 1rem; color:var(--text-dim); font-size:0.75rem; }
+        .footer a { color:var(--text-dim); }
+
+        /* Refresh button */
+        .refresh-btn { background:var(--gold); color:#111; border:none; padding:0.45rem 1rem; border-radius:8px; cursor:pointer; font-size:0.8rem; font-weight:700; transition:all 0.2s; }
+        .refresh-btn:hover { background:#fbbf24; }
+        .refresh-btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+        .last-updated { font-size:0.72rem; color:var(--text-dim); margin-left:auto; }
+    </style>
+</head>
+<body>
+    <div class="gm-header">
+        <div class="gm-brand">
+            <span class="gm-brand-icon">&#x26CF;&#xFE0F;</span>
+            <div>
+                <h1>GOLDMINE CURSOR</h1>
+                <div class="gm-subtitle">Cross-System Prediction Intelligence &mdash; by Claude</div>
+            </div>
+        </div>
+        <div class="gm-nav">
+            <a href="/">Events Home</a>
+            <a href="/findstocks/portfolio2/dashboard.html">Stocks</a>
+            <a href="/findcryptopairs/portfolio/">Crypto</a>
+            <a href="/findforex2/portfolio/">Forex</a>
+            <a href="/live-monitor/sports-betting.html">Sports</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Tab Navigation -->
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="overview">Overview</button>
+            <button class="tab-btn" data-tab="proof">Track Record</button>
+            <button class="tab-btn" data-tab="scorecard">Weekly Scorecard</button>
+            <button class="tab-btn" data-tab="mission">Mission Control</button>
+            <button class="tab-btn" data-tab="hidden">Hidden Winners</button>
+            <button class="tab-btn" data-tab="regimes">Regime Analysis</button>
+            <span class="last-updated" id="last-updated"></span>
+        </div>
+
+        <!-- ═══ TAB: OVERVIEW ═══ -->
+        <div class="tab-panel active" id="panel-overview">
+            <div class="stat-grid" id="overview-stats">
+                <div class="stat-card"><div class="label">Total Predictions</div><div class="value neutral" id="s-total">--</div></div>
+                <div class="stat-card"><div class="label">Win Rate</div><div class="value" id="s-winrate">--</div></div>
+                <div class="stat-card"><div class="label">Profit Factor</div><div class="value" id="s-pf">--</div></div>
+                <div class="stat-card"><div class="label">Total P/L %</div><div class="value" id="s-pnl">--</div></div>
+                <div class="stat-card"><div class="label">Expectancy</div><div class="value" id="s-exp">--</div></div>
+                <div class="stat-card"><div class="label">Algorithms</div><div class="value gold" id="s-algos">--</div></div>
+                <div class="stat-card"><div class="label">Asset Classes</div><div class="value gold" id="s-assets">--</div></div>
+                <div class="stat-card"><div class="label">Open Positions</div><div class="value neutral" id="s-open">--</div></div>
+            </div>
+
+            <div class="grid-2">
+                <!-- Equity Curve -->
+                <div class="card">
+                    <h2>&#x1F4C8; Cumulative Equity Curve</h2>
+                    <div class="chart-area">
+                        <canvas id="equity-chart" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+                <!-- Asset Breakdown -->
+                <div class="card">
+                    <h2>&#x1F4CA; Performance by Asset Class</h2>
+                    <div class="table-wrap">
+                        <table id="asset-table">
+                            <thead><tr><th>Asset</th><th>Predictions</th><th>Win Rate</th><th>P/F</th><th>Total P/L</th></tr></thead>
+                            <tbody id="asset-body"><tr><td colspan="5" class="loading"><span class="spinner"></span> Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ TAB: TRACK RECORD (PROOF) ═══ -->
+        <div class="tab-panel" id="panel-proof">
+            <div class="card">
+                <h2>&#x1F4DC; Verified Prediction Ledger <span class="badge badge-gold">INSERT-ONLY</span></h2>
+                <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1rem;">Every prediction is recorded with a timestamp <strong>before</strong> the outcome is known. Past entries cannot be edited or deleted. This is your auditable track record.</p>
+                <div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+                    <select id="proof-filter-asset" style="background:var(--bg-dark);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.8rem;font-size:0.8rem;">
+                        <option value="">All Assets</option>
+                        <option value="stocks">Stocks</option>
+                        <option value="crypto">Crypto</option>
+                        <option value="forex">Forex</option>
+                        <option value="sports">Sports</option>
+                        <option value="penny">Penny Stocks</option>
+                        <option value="meme">Meme Coins</option>
+                        <option value="mutualfunds">Mutual Funds</option>
+                    </select>
+                    <select id="proof-filter-status" style="background:var(--bg-dark);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.8rem;font-size:0.8rem;">
+                        <option value="">All Status</option>
+                        <option value="open">Open</option>
+                        <option value="won">Won</option>
+                        <option value="lost">Lost</option>
+                        <option value="expired">Expired</option>
+                    </select>
+                    <button class="refresh-btn" onclick="loadPredictions()">Filter</button>
+                </div>
+                <div class="table-wrap">
+                    <table id="proof-table">
+                        <thead><tr><th>Logged</th><th>Asset</th><th>Ticker</th><th>Algorithm</th><th>Dir</th><th>Entry</th><th>Target</th><th>Stop</th><th>Score</th><th>Status</th><th>Exit</th><th>P/L %</th><th>vs Bench</th><th>Days</th></tr></thead>
+                        <tbody id="proof-body"><tr><td colspan="14" class="loading"><span class="spinner"></span> Loading predictions...</td></tr></tbody>
+                    </table>
+                </div>
+                <div style="display:flex;justify-content:center;gap:0.5rem;margin-top:1rem;" id="proof-pagination"></div>
+            </div>
+        </div>
+
+        <!-- ═══ TAB: WEEKLY SCORECARD ═══ -->
+        <div class="tab-panel" id="panel-scorecard">
+            <div class="card">
+                <h2>&#x1F3C6; Algorithm Rankings <span class="badge badge-gold">BY PROFIT FACTOR</span></h2>
+                <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1rem;">Algorithms ranked by profit factor (min 5 resolved trades). <span class="badge badge-green">HIDDEN WINNER</span> = Win Rate &gt; 55% AND Profit Factor &gt; 1.5. <span class="badge badge-red">NEEDS REVIEW</span> = Win Rate &lt; 40% OR Profit Factor &lt; 0.8.</p>
+                <div class="table-wrap">
+                    <table id="ranking-table">
+                        <thead><tr><th>Algorithm</th><th>Asset</th><th>Trades</th><th>W</th><th>L</th><th>Win Rate</th><th>Avg Win</th><th>Avg Loss</th><th>P/F</th><th>Expect</th><th>Total P/L</th><th>Alpha</th><th>Verdict</th></tr></thead>
+                        <tbody id="ranking-body"><tr><td colspan="13" class="loading"><span class="spinner"></span> Loading rankings...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ TAB: MISSION CONTROL ═══ -->
+        <div class="tab-panel" id="panel-mission">
+            <div class="card">
+                <h2>&#x1F6F0;&#xFE0F; Data Health Monitor</h2>
+                <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1rem;">Real-time freshness check across all prediction systems. <span class="health-dot health-ok"></span>OK = data &lt; 24h old. <span class="health-dot health-warn"></span>Warning = 24-48h. <span class="health-dot health-stale"></span>Stale = &gt; 48h.</p>
+                <div class="table-wrap">
+                    <table id="health-table">
+                        <thead><tr><th>System</th><th>Status</th><th>Last Data</th><th>Hours Stale</th><th>Details</th></tr></thead>
+                        <tbody id="health-body"><tr><td colspan="5" class="loading"><span class="spinner"></span> Checking systems...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h2>&#x26A0;&#xFE0F; Circuit Breaker Events</h2>
+                    <div class="table-wrap">
+                        <table id="breaker-table">
+                            <thead><tr><th>Algorithm</th><th>Asset</th><th>Drawdown</th><th>Threshold</th><th>Triggered</th><th>Status</th></tr></thead>
+                            <tbody id="breaker-body"><tr><td colspan="6" class="loading"><span class="spinner"></span></td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>&#x1F4AC; Quick Actions</h2>
+                    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+                        <button class="refresh-btn" onclick="runHarvest()" id="btn-harvest" style="width:100%;text-align:left;padding:0.8rem 1rem;">&#x26CF;&#xFE0F; Run Harvest &mdash; Pull latest predictions from all systems</button>
+                        <button class="refresh-btn" onclick="runHealthCheck()" id="btn-health" style="width:100%;text-align:left;padding:0.8rem 1rem;">&#x1F3E5; Health Check &mdash; Scan all data sources for freshness</button>
+                        <button class="refresh-btn" onclick="runScorecard()" id="btn-scorecard" style="width:100%;text-align:left;padding:0.8rem 1rem;">&#x1F4CA; Build Scorecard &mdash; Compute weekly algorithm rankings</button>
+                        <div style="font-size:0.72rem;color:var(--text-dim);padding:0.5rem;">Harvest key required for admin actions. Read-only views load automatically.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ TAB: HIDDEN WINNERS ═══ -->
+        <div class="tab-panel" id="panel-hidden">
+            <div class="card">
+                <h2>&#x2B50; Hidden Winners <span class="badge badge-green">WIN RATE &gt; 55% + P/F &gt; 1.5</span></h2>
+                <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1rem;">These algorithms are quietly outperforming. They deserve more attention and potentially larger position sizes.</p>
+                <div class="table-wrap">
+                    <table id="winners-table">
+                        <thead><tr><th>Algorithm</th><th>Asset</th><th>Picks</th><th>Win Rate</th><th>P/F</th><th>Expectancy</th><th>Alpha</th></tr></thead>
+                        <tbody id="winners-body"><tr><td colspan="7" class="loading"><span class="spinner"></span></td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>&#x1F6A8; Needs Review <span class="badge badge-red">WIN RATE &lt; 40% OR P/F &lt; 0.8</span></h2>
+                <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1rem;">These algorithms are underperforming. Consider disabling, retuning parameters, or investigating data issues.</p>
+                <div class="table-wrap">
+                    <table id="review-table">
+                        <thead><tr><th>Algorithm</th><th>Asset</th><th>Picks</th><th>Win Rate</th><th>P/F</th><th>Expectancy</th><th>Alpha</th></tr></thead>
+                        <tbody id="review-body"><tr><td colspan="7" class="loading"><span class="spinner"></span></td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ TAB: REGIME ANALYSIS ═══ -->
+        <div class="tab-panel" id="panel-regimes">
+            <div class="card">
+                <h2>&#x1F30D; Performance by Market Regime</h2>
+                <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1rem;">A strategy that only works in bull markets is not robust. This view segments performance by the detected market regime at the time of each trade.</p>
+                <div class="table-wrap">
+                    <table id="regime-table">
+                        <thead><tr><th>Regime</th><th>Trades</th><th>Wins</th><th>Losses</th><th>Win Rate</th><th>Profit Factor</th><th>Total P/L</th></tr></thead>
+                        <tbody id="regime-body"><tr><td colspan="7" class="loading"><span class="spinner"></span></td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        GOLDMINE CURSOR &mdash; Built by Claude for AntiGravity Prediction Suite &mdash; <a href="/">Back to Events</a>
+        <br>Data is for research/education only. Not financial advice.
+    </div>
+
+    <script>
+    /* ═══════════════════════════════════════════
+       GOLDMINE CURSOR — Dashboard JavaScript
+       ═══════════════════════════════════════════ */
+    var API = '/goldmine_cursor/api';
+    var ADMIN_KEY = 'goldmine2026';
+
+    // ── Tab switching ──
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+            btn.classList.add('active');
+            var panel = document.getElementById('panel-' + btn.getAttribute('data-tab'));
+            if (panel) panel.classList.add('active');
+        });
+    });
+
+    // ── Helpers ──
+    function fmt(v, dec) { return v !== null && v !== undefined ? parseFloat(v).toFixed(dec || 2) : '--'; }
+    function clr(v) { return parseFloat(v) >= 0 ? 'positive' : 'negative'; }
+    function verdictBadge(v) {
+        var map = {
+            'hidden_winner': 'badge-green', 'strong': 'badge-blue',
+            'neutral': 'badge-yellow', 'needs_review': 'badge-red', 'underperform': 'badge-red'
+        };
+        return '<span class="badge ' + (map[v] || 'badge-yellow') + '">' + (v || 'neutral').replace('_',' ') + '</span>';
+    }
+    function statusBadge(s) {
+        var map = { 'won': 'badge-green', 'lost': 'badge-red', 'open': 'badge-blue', 'expired': 'badge-yellow' };
+        return '<span class="badge ' + (map[s] || 'badge-yellow') + '">' + s + '</span>';
+    }
+
+    // ── API fetch wrapper ──
+    function apiFetch(endpoint, params, cb) {
+        var url = API + '/' + endpoint;
+        var qs = [];
+        for (var k in params) { if (params[k] !== '') qs.push(k + '=' + encodeURIComponent(params[k])); }
+        if (qs.length) url += '?' + qs.join('&');
+        fetch(url).then(function(r) { return r.json(); }).then(cb).catch(function(e) {
+            console.error('API error:', endpoint, e);
+            cb({ ok: false, error: e.message });
+        });
+    }
+
+    // ═══ LOAD: Summary ═══
+    function loadSummary() {
+        apiFetch('track_record.php', { action: 'summary' }, function(d) {
+            if (!d.ok || !d.summary) return;
+            var s = d.summary;
+            document.getElementById('s-total').textContent = s.total_predictions;
+            var wr = document.getElementById('s-winrate');
+            wr.textContent = s.win_rate + '%';
+            wr.className = 'value ' + (s.win_rate >= 50 ? 'positive' : s.win_rate > 0 ? 'warning' : 'neutral');
+            var pf = document.getElementById('s-pf');
+            pf.textContent = s.profit_factor;
+            pf.className = 'value ' + (s.profit_factor >= 1.5 ? 'positive' : s.profit_factor >= 1 ? 'warning' : 'negative');
+            var pnl = document.getElementById('s-pnl');
+            pnl.textContent = fmt(s.total_pnl_pct) + '%';
+            pnl.className = 'value ' + clr(s.total_pnl_pct);
+            var exp = document.getElementById('s-exp');
+            exp.textContent = fmt(s.expectancy, 4);
+            exp.className = 'value ' + clr(s.expectancy);
+            document.getElementById('s-algos').textContent = s.unique_algorithms;
+            document.getElementById('s-assets').textContent = s.unique_asset_classes;
+            document.getElementById('s-open').textContent = s.open;
+            document.getElementById('last-updated').textContent = 'Last prediction: ' + (s.last_prediction || 'N/A');
+        });
+    }
+
+    // ═══ LOAD: Asset Breakdown ═══
+    function loadAssetBreakdown() {
+        apiFetch('track_record.php', { action: 'asset_breakdown' }, function(d) {
+            var body = document.getElementById('asset-body');
+            if (!d.ok || !d.breakdown || d.breakdown.length === 0) {
+                body.innerHTML = '<tr><td colspan="5" style="color:var(--text-dim);text-align:center;">No data yet. Run Harvest from Mission Control to ingest predictions.</td></tr>';
+                return;
+            }
+            var html = '';
+            d.breakdown.forEach(function(r) {
+                html += '<tr>'
+                    + '<td><span class="badge badge-gold">' + r.asset_class + '</span></td>'
+                    + '<td>' + r.total + ' (' + r.resolved + ' resolved)</td>'
+                    + '<td class="' + (r.win_rate >= 50 ? 'positive' : 'negative') + '">' + r.win_rate + '%</td>'
+                    + '<td class="' + (r.profit_factor >= 1 ? 'positive' : 'negative') + '">' + r.profit_factor + '</td>'
+                    + '<td class="' + clr(r.total_pnl) + '">' + fmt(r.total_pnl) + '%</td>'
+                    + '</tr>';
+            });
+            body.innerHTML = html;
+        });
+    }
+
+    // ═══ LOAD: Equity Curve ═══
+    function loadEquityCurve() {
+        apiFetch('track_record.php', { action: 'equity_curve' }, function(d) {
+            if (!d.ok || !d.curve || d.curve.length === 0) return;
+            drawEquityCurve(d.curve);
+        });
+    }
+
+    function drawEquityCurve(data) {
+        var canvas = document.getElementById('equity-chart');
+        if (!canvas || !canvas.getContext) return;
+        var ctx = canvas.getContext('2d');
+        var W = canvas.parentElement.clientWidth;
+        var H = canvas.parentElement.clientHeight;
+        canvas.width = W * 2; canvas.height = H * 2;
+        canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+        ctx.scale(2, 2);
+
+        var values = data.map(function(d) { return d.cumulative_pnl; });
+        var mn = Math.min.apply(null, values);
+        var mx = Math.max.apply(null, values);
+        if (mn === mx) { mn -= 1; mx += 1; }
+        var pad = { t: 20, r: 20, b: 30, l: 50 };
+        var cw = W - pad.l - pad.r;
+        var ch = H - pad.t - pad.b;
+
+        // Grid
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.lineWidth = 0.5;
+        for (var i = 0; i <= 4; i++) {
+            var y = pad.t + ch * i / 4;
+            ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+            ctx.fillStyle = '#666';
+            ctx.font = '9px sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(fmt(mx - (mx - mn) * i / 4) + '%', pad.l - 5, y + 3);
+        }
+
+        // Zero line
+        if (mn < 0 && mx > 0) {
+            var zeroY = pad.t + ch * mx / (mx - mn);
+            ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath(); ctx.moveTo(pad.l, zeroY); ctx.lineTo(W - pad.r, zeroY); ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // Curve
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        data.forEach(function(d, idx) {
+            var x = pad.l + (idx / (data.length - 1)) * cw;
+            var y = pad.t + ((mx - d.cumulative_pnl) / (mx - mn)) * ch;
+            if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+
+        // Fill
+        ctx.lineTo(pad.l + cw, pad.t + ch);
+        ctx.lineTo(pad.l, pad.t + ch);
+        ctx.closePath();
+        var grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + ch);
+        grad.addColorStop(0, 'rgba(245,158,11,0.15)');
+        grad.addColorStop(1, 'rgba(245,158,11,0)');
+        ctx.fillStyle = grad;
+        ctx.fill();
+    }
+
+    // ═══ LOAD: Predictions ═══
+    var proofPage = 1;
+    function loadPredictions() {
+        var asset = document.getElementById('proof-filter-asset').value;
+        var status = document.getElementById('proof-filter-status').value;
+        apiFetch('track_record.php', { action: 'predictions', asset_class: asset, status: status, page: proofPage, per_page: 50 }, function(d) {
+            var body = document.getElementById('proof-body');
+            if (!d.ok || !d.predictions || d.predictions.length === 0) {
+                body.innerHTML = '<tr><td colspan="14" style="color:var(--text-dim);text-align:center;">No predictions found. Run Harvest from Mission Control to ingest data.</td></tr>';
+                document.getElementById('proof-pagination').innerHTML = '';
+                return;
+            }
+            var html = '';
+            d.predictions.forEach(function(p) {
+                var bench = p.benchmark_return_pct ? fmt(p.benchmark_return_pct) + '%' : '--';
+                html += '<tr>'
+                    + '<td style="font-size:0.72rem;white-space:nowrap;">' + (p.logged_at || '') + '</td>'
+                    + '<td><span class="badge badge-gold">' + p.asset_class + '</span></td>'
+                    + '<td style="font-weight:700;">' + p.ticker + '</td>'
+                    + '<td style="font-size:0.72rem;">' + p.algorithm + '</td>'
+                    + '<td>' + p.direction + '</td>'
+                    + '<td>' + fmt(p.entry_price, 4) + '</td>'
+                    + '<td>' + fmt(p.target_price, 4) + '</td>'
+                    + '<td>' + fmt(p.stop_loss, 4) + '</td>'
+                    + '<td>' + p.confidence_score + '</td>'
+                    + '<td>' + statusBadge(p.status) + '</td>'
+                    + '<td>' + (p.exit_price ? fmt(p.exit_price, 4) : '--') + '</td>'
+                    + '<td class="' + clr(p.pnl_pct) + '">' + (p.pnl_pct ? fmt(p.pnl_pct) + '%' : '--') + '</td>'
+                    + '<td>' + bench + '</td>'
+                    + '<td>' + (p.hold_days || '--') + '</td>'
+                    + '</tr>';
+            });
+            body.innerHTML = html;
+
+            // Pagination
+            var totalPages = Math.ceil(d.total / d.per_page);
+            var pagHtml = '';
+            for (var i = 1; i <= Math.min(totalPages, 10); i++) {
+                pagHtml += '<button class="tab-btn' + (i === proofPage ? ' active' : '') + '" onclick="proofPage=' + i + ';loadPredictions()">' + i + '</button>';
+            }
+            document.getElementById('proof-pagination').innerHTML = pagHtml;
+        });
+    }
+
+    // ═══ LOAD: Rankings ═══
+    function loadRankings() {
+        apiFetch('track_record.php', { action: 'algo_ranking' }, function(d) {
+            var body = document.getElementById('ranking-body');
+            if (!d.ok || !d.ranking || d.ranking.length === 0) {
+                body.innerHTML = '<tr><td colspan="13" style="color:var(--text-dim);text-align:center;">No rankings yet. Need at least 5 resolved trades per algorithm.</td></tr>';
+                return;
+            }
+            var html = '';
+            d.ranking.forEach(function(r) {
+                html += '<tr>'
+                    + '<td style="font-weight:700;">' + r.algorithm + '</td>'
+                    + '<td><span class="badge badge-gold">' + r.asset_class + '</span></td>'
+                    + '<td>' + r.total_resolved + '</td>'
+                    + '<td class="positive">' + r.wins + '</td>'
+                    + '<td class="negative">' + r.losses + '</td>'
+                    + '<td class="' + (r.win_rate >= 50 ? 'positive' : 'negative') + '">' + r.win_rate + '%</td>'
+                    + '<td class="positive">' + fmt(r.avg_win_pct) + '%</td>'
+                    + '<td class="negative">' + fmt(r.avg_loss_pct) + '%</td>'
+                    + '<td class="' + (r.profit_factor >= 1.5 ? 'positive' : r.profit_factor >= 1 ? 'warning' : 'negative') + '" style="font-weight:700;">' + r.profit_factor + '</td>'
+                    + '<td class="' + clr(r.expectancy) + '">' + r.expectancy + '</td>'
+                    + '<td class="' + clr(r.total_pnl_pct) + '">' + fmt(r.total_pnl_pct) + '%</td>'
+                    + '<td class="' + clr(r.alpha_vs_benchmark) + '">' + fmt(r.alpha_vs_benchmark) + '</td>'
+                    + '<td>' + verdictBadge(r.verdict) + '</td>'
+                    + '</tr>';
+            });
+            body.innerHTML = html;
+        });
+    }
+
+    // ═══ LOAD: Hidden Winners / Needs Review ═══
+    function loadWinners() {
+        apiFetch('track_record.php', { action: 'hidden_winners' }, function(d) {
+            var body = document.getElementById('winners-body');
+            if (!d.ok || !d.hidden_winners || d.hidden_winners.length === 0) {
+                body.innerHTML = '<tr><td colspan="7" style="color:var(--text-dim);text-align:center;">No hidden winners detected yet.</td></tr>';
+                return;
+            }
+            var html = '';
+            d.hidden_winners.forEach(function(r) {
+                html += '<tr><td style="font-weight:700;">' + r.algorithm + '</td><td>' + r.asset_class + '</td><td>' + r.total_picks + '</td><td class="positive">' + r.win_rate + '%</td><td class="positive">' + r.profit_factor + '</td><td>' + r.expectancy + '</td><td class="' + clr(r.alpha_pct) + '">' + fmt(r.alpha_pct) + '%</td></tr>';
+            });
+            body.innerHTML = html;
+        });
+        apiFetch('track_record.php', { action: 'needs_review' }, function(d) {
+            var body = document.getElementById('review-body');
+            if (!d.ok || !d.needs_review || d.needs_review.length === 0) {
+                body.innerHTML = '<tr><td colspan="7" style="color:var(--text-dim);text-align:center;">No algorithms need review.</td></tr>';
+                return;
+            }
+            var html = '';
+            d.needs_review.forEach(function(r) {
+                html += '<tr><td style="font-weight:700;">' + r.algorithm + '</td><td>' + r.asset_class + '</td><td>' + r.total_picks + '</td><td class="negative">' + r.win_rate + '%</td><td class="negative">' + r.profit_factor + '</td><td>' + r.expectancy + '</td><td class="' + clr(r.alpha_pct) + '">' + fmt(r.alpha_pct) + '%</td></tr>';
+            });
+            body.innerHTML = html;
+        });
+    }
+
+    // ═══ LOAD: Regimes ═══
+    function loadRegimes() {
+        apiFetch('track_record.php', { action: 'regime_performance' }, function(d) {
+            var body = document.getElementById('regime-body');
+            if (!d.ok || !d.regimes || d.regimes.length === 0) {
+                body.innerHTML = '<tr><td colspan="7" style="color:var(--text-dim);text-align:center;">No regime data yet.</td></tr>';
+                return;
+            }
+            var html = '';
+            d.regimes.forEach(function(r) {
+                var resolved = parseInt(r.wins) + parseInt(r.losses);
+                html += '<tr>'
+                    + '<td><span class="badge badge-purple">' + r.market_regime + '</span></td>'
+                    + '<td>' + resolved + '</td>'
+                    + '<td class="positive">' + r.wins + '</td>'
+                    + '<td class="negative">' + r.losses + '</td>'
+                    + '<td class="' + (r.win_rate >= 50 ? 'positive' : 'negative') + '">' + r.win_rate + '%</td>'
+                    + '<td class="' + (r.profit_factor >= 1 ? 'positive' : 'negative') + '">' + r.profit_factor + '</td>'
+                    + '<td class="' + clr(r.total_pnl) + '">' + fmt(r.total_pnl) + '%</td>'
+                    + '</tr>';
+            });
+            body.innerHTML = html;
+        });
+    }
+
+    // ═══ LOAD: Health ═══
+    function loadHealth() {
+        apiFetch('health_check.php', { action: 'check' }, function(d) {
+            var body = document.getElementById('health-body');
+            if (!d.ok || !d.systems) {
+                body.innerHTML = '<tr><td colspan="5" style="color:var(--text-dim);">Health check API not available yet. Deploy goldmine_cursor/api/health_check.php first.</td></tr>';
+                return;
+            }
+            var html = '';
+            d.systems.forEach(function(s) {
+                var dotClass = s.status === 'ok' ? 'health-ok' : (s.status === 'warning' ? 'health-warn' : 'health-stale');
+                html += '<tr>'
+                    + '<td style="font-weight:600;">' + s.source_system + '</td>'
+                    + '<td><span class="health-dot ' + dotClass + '"></span>' + s.status.toUpperCase() + '</td>'
+                    + '<td>' + (s.last_data_time || 'N/A') + '</td>'
+                    + '<td>' + (s.hours_stale !== null ? fmt(s.hours_stale, 1) + 'h' : '--') + '</td>'
+                    + '<td style="font-size:0.72rem;color:var(--text-dim);">' + (s.details || '') + '</td>'
+                    + '</tr>';
+            });
+            body.innerHTML = html;
+        });
+        // Breaker events
+        apiFetch('health_check.php', { action: 'breakers' }, function(d) {
+            var body = document.getElementById('breaker-body');
+            if (!d.ok || !d.breakers || d.breakers.length === 0) {
+                body.innerHTML = '<tr><td colspan="6" style="color:var(--text-dim);text-align:center;">No circuit breaker events. All algorithms within drawdown limits.</td></tr>';
+                return;
+            }
+            var html = '';
+            d.breakers.forEach(function(b) {
+                html += '<tr><td>' + b.algorithm + '</td><td>' + b.asset_class + '</td><td class="negative">' + fmt(b.drawdown_pct) + '%</td><td>' + fmt(b.threshold_pct) + '%</td><td>' + b.triggered_at + '</td><td>' + statusBadge(b.status) + '</td></tr>';
+            });
+            body.innerHTML = html;
+        });
+    }
+
+    // ═══ Admin Actions ═══
+    function runHarvest() {
+        var btn = document.getElementById('btn-harvest');
+        btn.disabled = true; btn.textContent = 'Harvesting...';
+        fetch(API + '/harvest.php?key=' + ADMIN_KEY).then(function(r) { return r.json(); }).then(function(d) {
+            btn.disabled = false;
+            btn.textContent = d.ok ? 'Done! ' + d.total_new_predictions + ' new, ' + d.total_resolved + ' resolved' : 'Error: ' + (d.error || 'unknown');
+            setTimeout(function() { loadSummary(); loadAssetBreakdown(); loadPredictions(); loadRankings(); }, 1000);
+        }).catch(function() { btn.disabled = false; btn.textContent = 'Error - check console'; });
+    }
+    function runHealthCheck() {
+        var btn = document.getElementById('btn-health');
+        btn.disabled = true; btn.textContent = 'Checking...';
+        fetch(API + '/health_check.php?action=run&key=' + ADMIN_KEY).then(function(r) { return r.json(); }).then(function(d) {
+            btn.disabled = false;
+            btn.textContent = d.ok ? 'Done! Check results above.' : 'Error';
+            loadHealth();
+        }).catch(function() { btn.disabled = false; btn.textContent = 'Error'; });
+    }
+    function runScorecard() {
+        var btn = document.getElementById('btn-scorecard');
+        btn.disabled = true; btn.textContent = 'Building...';
+        fetch(API + '/weekly_scorecard.php?key=' + ADMIN_KEY).then(function(r) { return r.json(); }).then(function(d) {
+            btn.disabled = false;
+            btn.textContent = d.ok ? 'Done! ' + (d.algorithms_scored || 0) + ' algorithms scored' : 'Error';
+            loadRankings(); loadWinners();
+        }).catch(function() { btn.disabled = false; btn.textContent = 'Error'; });
+    }
+
+    // ═══ Init ═══
+    loadSummary();
+    loadAssetBreakdown();
+    loadEquityCurve();
+    loadPredictions();
+    loadRankings();
+    loadWinners();
+    loadRegimes();
+    loadHealth();
+    </script>
+<!-- AI Assistant -->
+<script src="/ai-assistant.js"></script>
+</body>
+</html>
