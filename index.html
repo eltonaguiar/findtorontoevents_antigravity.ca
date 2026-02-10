@@ -3384,9 +3384,6 @@
         target_id: previewId
       });
 
-      if (window.__fte_recheckGuestLockdown) {
-        setTimeout(window.__fte_recheckGuestLockdown, 1500);
-      }
       return; // Don't double-count as a link click below
     }
 
@@ -3426,10 +3423,6 @@
       target_id: eventId
     });
 
-    // Re-check lockdown after event clicks (server needs time to record first)
-    if (clickType === 'event_click' && window.__fte_recheckGuestLockdown) {
-      setTimeout(window.__fte_recheckGuestLockdown, 1500);
-    }
   }, true);
 
   // ── Track heart/save clicks ──
@@ -3522,7 +3515,7 @@
           highlightSignInIsland();
         }
 
-        // If past the 2-day limit, show login wall
+        // If past the 7-day limit, show login wall
         if (!data.allowed && !window.__fc_logged_in_user__) {
           showLoginWall();
         }
@@ -3556,7 +3549,7 @@
         '<div style="font-size:3rem;margin-bottom:1rem;">\uD83D\uDD12</div>' +
         '<h2 style="font-size:1.5rem;font-weight:800;margin:0 0 0.75rem 0;background:linear-gradient(135deg,#a5b4fc,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Sign in to continue</h2>' +
         '<p style="color:#94a3b8;font-size:0.95rem;line-height:1.6;margin:0 0 1.5rem 0;">' +
-          'You\'ve been enjoying Toronto events for a couple of days! Create a free account to keep browsing and unlock all features.' +
+          'You\'ve been enjoying Toronto events for a while! Create a free account to keep browsing and unlock all features.' +
         '</p>' +
         '<div style="text-align:left;color:#cbd5e1;font-size:0.85rem;margin-bottom:1.5rem;padding-left:1rem;">' +
           '\u2022 Save your favorite events<br>' +
