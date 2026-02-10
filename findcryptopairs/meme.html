@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meme Coin Scanner | Quick Profit Plays</title>
+<style>
+:root{--bg:#0a0a1a;--card:#12122a;--border:#2a2a4a;--text:#e0e0f0;--dim:#8888aa;--green:#22c55e;--red:#ef4444;--gold:#f59e0b;--accent:#e879f9;--cyan:#06b6d4;--radius:12px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
+.header{text-align:center;padding:40px 20px 24px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.header h1{font-size:28px;font-weight:200;letter-spacing:4px;text-transform:uppercase;color:#fff}
+.header .sub{color:var(--dim);font-size:13px;margin-top:6px}
+.nav{display:flex;gap:8px;justify-content:center;padding:16px;flex-wrap:wrap}
+.nav a{font-size:12px;padding:4px 14px;border-radius:20px;border:1px solid var(--border);color:var(--dim);transition:all 0.15s}
+.nav a:hover,.nav a.active{border-color:var(--accent);color:var(--accent);text-decoration:none;background:rgba(232,121,249,0.08)}
+.container{max-width:1200px;margin:0 auto;padding:20px}
+.warning-bar{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;font-size:12px;color:#fca5a5}
+.warning-bar strong{color:var(--red)}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+.stat-card .label{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+.stat-card .value{font-size:24px;font-weight:700;margin-top:4px}
+.stat-card .sub{font-size:11px;color:var(--dim);margin-top:2px}
+.green{color:var(--green)}.red{color:var(--red)}.gold{color:var(--gold)}.cyan{color:var(--cyan)}.accent{color:var(--accent)}
+.section-title{font-size:18px;font-weight:600;margin:24px 0 12px;display:flex;align-items:center;gap:8px}
+.badge{font-size:10px;padding:2px 8px;border-radius:4px;text-transform:uppercase;font-weight:700;letter-spacing:1px}
+.badge-strong{background:rgba(232,121,249,0.2);color:var(--accent);border:1px solid rgba(232,121,249,0.4)}
+.badge-buy{background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.3)}
+.badge-lean{background:rgba(234,179,8,0.15);color:var(--gold);border:1px solid rgba(234,179,8,0.3)}
+.badge-tier1{background:rgba(96,165,250,0.12);color:#93c5fd;border:1px solid rgba(96,165,250,0.25);font-size:9px;padding:1px 6px}
+.badge-tier2{background:rgba(52,211,153,0.12);color:#6ee7b7;border:1px solid rgba(52,211,153,0.25);font-size:9px;padding:1px 6px}
+.winner-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;transition:border-color 0.2s}
+.winner-card:hover{border-color:var(--accent)}
+.winner-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.winner-pair{font-size:18px;font-weight:700;color:#fff}
+.winner-score{font-size:28px;font-weight:800}
+.winner-meta{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--dim)}
+.winner-meta span{display:flex;align-items:center;gap:4px}
+.factors{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:12px}
+.factor{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:8px 10px;font-size:11px}
+.factor-name{color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;font-size:10px}
+.factor-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:4px;overflow:hidden}
+.factor-fill{height:100%;border-radius:2px;transition:width 0.5s}
+.history-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
+.history-table th{text-align:left;padding:8px;color:var(--dim);border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:1px}
+.history-table td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
+.outcome-win{color:var(--green);font-weight:700}
+.outcome-loss{color:var(--red);font-weight:700}
+.outcome-pending{color:var(--dim)}
+.loading{text-align:center;padding:40px;color:var(--dim)}
+.disclaimer{font-size:11px;color:#555;margin-top:32px;padding:12px;border:1px solid rgba(255,255,255,0.04);border-radius:8px;line-height:1.6}
+.info-tip{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(232,121,249,0.2);color:var(--accent);font-size:10px;font-weight:700;cursor:help;position:relative;vertical-align:middle;margin-left:4px;flex-shrink:0;font-style:normal}
+.info-tip:hover{background:rgba(232,121,249,0.4)}
+.info-tip .tip-text{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1e1e3a;border:1px solid var(--accent);border-radius:8px;padding:10px 12px;font-size:12px;font-weight:400;color:var(--text);width:260px;line-height:1.5;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.5);pointer-events:none}
+.info-tip:hover .tip-text{display:block}
+.info-tip .tip-text::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--accent)}
+.edu-section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-top:24px;overflow:hidden}
+.edu-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;cursor:pointer;user-select:none}
+.edu-header:hover{background:rgba(255,255,255,0.02)}
+.edu-header h3{font-size:16px;font-weight:600;margin:0;display:flex;align-items:center;gap:8px}
+.edu-arrow{font-size:12px;color:var(--dim);transition:transform 0.2s}
+.edu-arrow.open{transform:rotate(180deg)}
+.edu-body{padding:0 20px 20px;display:none}
+.edu-body.open{display:block}
+.glossary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:8px}
+.glossary-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:14px}
+.glossary-card .g-term{font-weight:700;color:#fff;font-size:13px;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.glossary-card .g-term .g-pts{font-size:11px;color:var(--accent);font-weight:400}
+.glossary-card .g-desc{font-size:12px;color:#bbb;line-height:1.6}
+.glossary-card .g-why{font-size:11px;color:var(--dim);margin-top:6px;font-style:italic}
+.tier-explain{display:flex;gap:12px;margin:12px 0;flex-wrap:wrap}
+.tier-card{flex:1;min-width:180px;padding:14px;border-radius:8px;text-align:center}
+.tier-card.strong{background:rgba(232,121,249,0.08);border:1px solid rgba(232,121,249,0.2)}
+.tier-card.buy{background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2)}
+.tier-card.lean{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2)}
+.tier-card .t-label{font-size:18px;font-weight:700;margin-bottom:4px}
+.tier-card .t-range{font-size:12px;color:var(--dim);margin-bottom:8px}
+.tier-card .t-desc{font-size:12px;line-height:1.5}
+.tier-card.strong .t-label{color:var(--accent)}
+.tier-card.buy .t-label{color:#c084fc}
+.tier-card.lean .t-label{color:var(--gold)}
+.method-step{display:flex;gap:12px;margin:12px 0;align-items:flex-start}
+.method-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.method-text{font-size:13px;line-height:1.6;color:#ccc}
+.method-text strong{color:#fff}
+.flaw-item{display:flex;gap:8px;margin:8px 0;font-size:12px;line-height:1.5;color:#ccc}
+.flaw-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.scan-log-controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.scan-select{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer}
+.scan-select:focus{outline:none;border-color:var(--accent)}
+.scan-meta{font-size:11px;color:var(--dim)}
+.scan-log-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px}
+.scan-log-table th{text-align:center;padding:6px 4px;color:var(--dim);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap}
+.scan-log-table th:first-child,.scan-log-table th:nth-child(2),.scan-log-table th:nth-child(3){text-align:left}
+.scan-log-table td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:center;white-space:nowrap}
+.scan-log-table td:first-child,.scan-log-table td:nth-child(2),.scan-log-table td:nth-child(3){text-align:left}
+.scan-log-table tr:hover{background:rgba(255,255,255,0.02)}
+.scan-log-table tr.is-winner{background:rgba(232,121,249,0.04)}
+.factor-cell{display:inline-flex;align-items:center;justify-content:center;min-width:36px;padding:2px 5px;border-radius:4px;font-size:10px;font-weight:600}
+.factor-cell.f-high{background:rgba(34,197,94,0.15);color:var(--green)}
+.factor-cell.f-mid{background:rgba(245,158,11,0.15);color:var(--gold)}
+.factor-cell.f-low{background:rgba(239,68,68,0.12);color:var(--red)}
+.verdict-skip{color:var(--dim);font-size:10px}
+/* Tabs */
+.tab-row{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.tab-btn{font-size:12px;padding:6px 16px;border-radius:20px;border:1px solid var(--border);color:var(--dim);background:transparent;cursor:pointer;transition:all 0.15s}
+.tab-btn:hover,.tab-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(232,121,249,0.08)}
+/* Performance grid */
+.perf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.perf-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+.perf-card .p-label{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+.perf-card .p-val{font-size:20px;font-weight:700;margin-top:2px}
+.perf-card .p-sub{font-size:10px;color:var(--dim);margin-top:2px}
+/* Daily table */
+.daily-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+.daily-table th{text-align:left;padding:6px 8px;color:var(--dim);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase}
+.daily-table td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.03)}
+.daily-table tr:hover{background:rgba(255,255,255,0.02)}
+/* Picks date controls */
+.picks-controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.picks-date-label{font-size:13px;color:var(--dim)}
+.picks-summary{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--dim);margin-bottom:8px}
+.picks-summary span{display:flex;align-items:center;gap:4px}
+@media(max-width:600px){.header h1{font-size:20px}.stats-row{grid-template-columns:repeat(2,1fr)}.factors{grid-template-columns:1fr}.glossary-grid{grid-template-columns:1fr}.tier-explain{flex-direction:column}.info-tip .tip-text{width:200px;left:0;transform:none}}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Meme Coin Scanner</h1>
+  <div class="sub">Short-term momentum plays on meme coins &mdash; DOGE, SHIB, PEPE, FLOKI &amp; emerging pumps</div>
+</div>
+<div class="nav">
+  <a href="/findcryptopairs/winners.html">Crypto Scanner</a>
+  <a href="/findcryptopairs/portfolio/">Crypto Portfolio</a>
+  <a href="/live-monitor/live-monitor.html">Live Monitor</a>
+  <a href="/investments/">Investment Hub</a>
+  <a href="/updates/">Changelog</a>
+  <a href="/">&larr; Home</a>
+</div>
+<div class="container">
+  <div class="warning-bar">
+    <strong>&#9888; HIGH VOLATILITY:</strong>
+    <span>Meme coins can drop 30-80% in hours. This scanner finds short-term momentum patterns &mdash; NOT safe long-term investments. Wider targets &amp; stops reflect extreme volatility. Never risk money you can't lose.</span>
+  </div>
+
+  <div class="stats-row" id="stats-row">
+    <div class="stat-card"><div class="label">Win Rate</div><div class="value" id="s-wr">--</div><div class="sub">Resolved signals</div></div>
+    <div class="stat-card"><div class="label">Avg P&amp;L</div><div class="value" id="s-pnl">--</div><div class="sub">Per signal</div></div>
+    <div class="stat-card"><div class="label">Total Signals</div><div class="value" id="s-total">--</div><div class="sub" id="s-resolved">--</div></div>
+    <div class="stat-card"><div class="label">Best Trade</div><div class="value green" id="s-best">--</div><div class="sub" id="s-worst">--</div></div>
+    <div class="stat-card"><div class="label">Active Memes</div><div class="value accent" id="s-pairs">--</div><div class="sub" id="s-scans">--</div></div>
+    <div class="stat-card"><div class="label">Last Scan</div><div class="value" id="s-last" style="font-size:14px">--</div><div class="sub" id="s-first">--</div></div>
+  </div>
+
+  <div class="section-title">Current Meme Winners <span class="badge badge-strong" id="winner-count">loading...</span></div>
+  <div id="winners-list"><div class="loading">Loading winners...</div></div>
+
+  <div class="section-title" style="margin-top:32px">Win Rate by Confidence Tier</div>
+  <div id="tier-table"></div>
+
+  <div class="section-title" style="margin-top:32px">Tier 1 vs Tier 2 Comparison <i class="info-tip">i<span class="tip-text">Tier 1 = established memes (DOGE, SHIB, etc). Tier 2 = newly discovered pumping coins with meme keywords or extreme volume.</span></i></div>
+  <div id="tier-comparison"></div>
+
+  <div class="section-title" style="margin-top:32px">Recent Signal History</div>
+  <div id="history-list"><div class="loading">Loading history...</div></div>
+
+  <div class="section-title" style="margin-top:32px">Full Scan Log &mdash; All Analyzed Meme Coins <i class="info-tip">i<span class="tip-text">Every meme coin that was deeply analyzed in a scan, including those that didn't make the 70-point threshold. Shows all 7 meme-specific indicator scores.</span></i></div>
+  <div class="scan-log-controls">
+    <select class="scan-select" id="scan-picker" onchange="loadScanLog(this.value)"><option value="">Loading scans...</option></select>
+    <span class="scan-meta" id="scan-meta"></span>
+  </div>
+  <div id="scan-log-list"><div class="loading">Loading scan log...</div></div>
+
+  <!-- DAILY PICKS -->
+  <div class="section-title" style="margin-top:32px">Daily Picks <i class="info-tip">i<span class="tip-text">All algorithmic picks for a specific date, with timestamps and outcomes. Use the date picker to browse historical picks.</span></i></div>
+  <div class="picks-controls">
+    <select class="scan-select" id="picks-date" onchange="loadDailyPicks(this.value)"><option value="">Loading dates...</option></select>
+    <span class="picks-date-label" id="picks-date-label"></span>
+  </div>
+  <div class="picks-summary" id="picks-summary"></div>
+  <div id="daily-picks-list"><div class="loading">Loading daily picks...</div></div>
+
+  <!-- PERFORMANCE TRACKER -->
+  <div class="section-title" style="margin-top:32px">Performance Tracker <i class="info-tip">i<span class="tip-text">Track the scanner's performance over time. Shows daily P&amp;L, win rates, equity curve, streaks, and top-performing coins.</span></i></div>
+  <div class="tab-row" id="perf-tabs">
+    <button class="tab-btn active" onclick="loadPerf('all',this)">All Time</button>
+    <button class="tab-btn" onclick="loadPerf('30d',this)">30 Days</button>
+    <button class="tab-btn" onclick="loadPerf('7d',this)">7 Days</button>
+    <button class="tab-btn" onclick="loadPerf('today',this)">Today</button>
+  </div>
+  <div class="perf-grid" id="perf-summary"></div>
+  <div class="section-title" style="font-size:14px;margin-top:16px">Daily Breakdown</div>
+  <div id="perf-daily"><div class="loading">Loading performance data...</div></div>
+  <div class="section-title" style="font-size:14px;margin-top:16px">Top Performing Coins</div>
+  <div id="perf-top-coins"><div class="loading">Loading...</div></div>
+
+  <!-- CONFIDENCE TIERS -->
+  <div class="edu-section">
+    <div class="edu-header" onclick="toggleEdu(this)">
+      <h3>Understanding Meme Confidence Tiers <i class="info-tip">i<span class="tip-text">The scanner assigns a verdict based on the total score. Higher tiers mean more indicators agree &mdash; but remember, meme coins are inherently riskier.</span></i></h3>
+      <span class="edu-arrow">&#9660;</span>
+    </div>
+    <div class="edu-body">
+      <p style="font-size:13px;color:#bbb;margin-bottom:12px">Each meme coin is scored 0-100 across 7 meme-specific indicators. Wider targets and stops reflect the extreme volatility of meme coins.</p>
+      <div class="tier-explain">
+        <div class="tier-card strong">
+          <div class="t-label">Strong Buy</div>
+          <div class="t-range">Score 85-100</div>
+          <div class="t-desc">6-7 out of 7 indicators firing. Explosive volume, parabolic momentum, and social velocity are all aligned. <strong style="color:var(--accent)">Target: +5-15%</strong> within 2 hours. Risk: -2-5%. Maximum conviction &mdash; everything lines up for a meme pump.</div>
+        </div>
+        <div class="tier-card buy">
+          <div class="t-label">Buy</div>
+          <div class="t-range">Score 75-84</div>
+          <div class="t-desc">5-6 indicators are bullish. Strong momentum with most factors aligned. <strong style="color:#c084fc">Target: +3-10%</strong> within 2 hours. Risk: -2-4%. Solid meme setup, but not every factor is firing.</div>
+        </div>
+        <div class="tier-card lean">
+          <div class="t-label">Lean Buy</div>
+          <div class="t-range">Score 70-74</div>
+          <div class="t-desc">4-5 indicators are bullish. There's a directional edge but weaker conviction. <strong style="color:var(--gold)">Target: +2-6%</strong> within 2 hours. Risk: -1.5-3%. Exercise more caution at this level.</div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--dim);margin-top:8px"><strong>Below 70:</strong> Not shown as a winner. Even meme coins need sufficient confluence before we flag them. The scanner waits for stronger setups.</p>
+    </div>
+  </div>
+
+  <!-- GLOSSARY OF MEME INDICATORS -->
+  <div class="edu-section">
+    <div class="edu-header" onclick="toggleEdu(this)">
+      <h3>Meme Coin Indicators Explained <i class="info-tip">i<span class="tip-text">These 7 factors are specifically tuned for meme coin behavior &mdash; different from the general crypto scanner.</span></i></h3>
+      <span class="edu-arrow">&#9660;</span>
+    </div>
+    <div class="edu-body">
+      <div class="glossary-grid">
+        <div class="glossary-card">
+          <div class="g-term">Explosive Volume <span class="g-pts">0-25 pts</span></div>
+          <div class="g-desc"><strong>What it measures:</strong> How much the current trading volume exceeds the average. Volume is king for memes &mdash; pumps live and die by volume surges.<br><strong>How it scores:</strong> 3x average=+12, 5x=+18, 10x+=25 (maximum). Below 1.5x gets 0.</div>
+          <div class="g-why">Why it matters: Meme pumps are volume-driven events. When volume explodes 5-10x above normal, it signals a wave of retail buying that can push prices sharply higher in minutes.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Parabolic Momentum <span class="g-pts">0-20 pts</span></div>
+          <div class="g-desc"><strong>What it measures:</strong> Steep price acceleration on both 15-minute and 5-minute charts. Memes don't go up slowly &mdash; they go parabolic or they die.<br><strong>How it scores:</strong> +8 if both timeframes are positive. +6 more for 3%+ on 15m. +6 more for 2%+ on 5m. Capped at 20.</div>
+          <div class="g-why">Why it matters: Meme coins accelerate rapidly. If a meme is moving up fast on both short and ultra-short timeframes, the pump has real momentum behind it.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">RSI Hype Zone <span class="g-pts">0-15 pts</span></div>
+          <div class="g-desc"><strong>What it measures:</strong> RSI between 55-80 is the meme "hype zone." Unlike traditional assets, memes routinely sustain RSI above 70 during pumps. Only RSI 90+ is a clear top.<br><strong>How it scores:</strong> 15 pts for 55-80 (hype zone), 8 for 45-55, 5 for 80-90 (very hot), 3 for 35-45.</div>
+          <div class="g-why">Why it matters: Traditional analysis says "RSI 70+ is overbought, sell." Memes break this rule &mdash; they can stay "overbought" for hours during pumps. We adjusted the sweet spot upward.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Social Momentum Proxy <span class="g-pts">0-15 pts</span></div>
+          <div class="g-desc"><strong>What it measures:</strong> A proxy for social media buzz, calculated as price_change_1h multiplied by volume_surge_ratio. When both are high, it signals viral attention.<br><strong>How it scores:</strong> Velocity 20+=15pts, 10+=12pts, 5+=8pts, 2+=5pts. Below 1 gets 0.</div>
+          <div class="g-why">Why it matters: Meme coins are social-media driven. We can't read Twitter, but we CAN detect its effect: rapid price + volume surges = something went viral.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Volume Concentration <span class="g-pts">0-10 pts</span></div>
+          <div class="g-desc"><strong>What it measures:</strong> What percentage of the last 3 hours of volume happened in the last 45 minutes? A "burst" pattern means the pump is just starting.<br><strong>How it scores:</strong> 60%+ in last 3 candles=10pts, 45%+=7pts, 35%+=4pts, 28%+=2pts.</div>
+          <div class="g-why">Why it matters: Even distribution of volume = steady market. Concentrated burst in recent candles = pump is accelerating NOW, not winding down.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Breakout vs 4h High <span class="g-pts">0-10 pts</span></div>
+          <div class="g-desc"><strong>What it measures:</strong> Is the current price breaking above its 4-hour high? Breakouts above recent resistance often trigger additional buying momentum.<br><strong>How it scores:</strong> 2%+ above 4h high=10pts, 0.5%+=7pts, at the high=4pts, within 1%=2pts.</div>
+          <div class="g-why">Why it matters: Breaking above a recent high is a classic technical trigger. For memes, it often causes FOMO buying that accelerates the move further.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Low Market Cap Bonus <span class="g-pts">0-5 pts</span></div>
+          <div class="g-desc"><strong>What it measures:</strong> Smaller coins (by 24h volume) have more explosive potential. A $500K volume coin can 3x easier than a $500M one.<br><strong>How it scores:</strong> Under $1M vol=5pts, under $5M=3pts, under $20M=1pt. Larger coins get 0.</div>
+          <div class="g-why">Why it matters: Small caps move bigger on less capital. This is also the riskiest factor &mdash; small caps are more likely to rug pull or dump catastrophically.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIER 1 VS TIER 2 EXPLAINED -->
+  <div class="edu-section">
+    <div class="edu-header" onclick="toggleEdu(this)">
+      <h3>Tier 1 vs Tier 2 Memes <i class="info-tip">i<span class="tip-text">Why we separate established memes from newly discovered ones.</span></i></h3>
+      <span class="edu-arrow">&#9660;</span>
+    </div>
+    <div class="edu-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div style="background:rgba(96,165,250,0.06);border:1px solid rgba(96,165,250,0.15);border-radius:8px;padding:14px">
+          <div style="font-size:13px;font-weight:700;color:#93c5fd;margin-bottom:8px">Tier 1 &mdash; Established Memes</div>
+          <ul style="font-size:12px;color:#ccc;line-height:1.8;padding-left:16px">
+            <li><strong>DOGE, SHIB, PEPE, FLOKI, BONK, WIF, MEME</strong></li>
+            <li>Always scanned regardless of 24h change</li>
+            <li>Higher liquidity = easier entry/exit</li>
+            <li>Less likely to rug pull (but still volatile!)</li>
+            <li>Lower threshold for inclusion ($50K+ daily volume)</li>
+          </ul>
+        </div>
+        <div style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.15);border-radius:8px;padding:14px">
+          <div style="font-size:13px;font-weight:700;color:#6ee7b7;margin-bottom:8px">Tier 2 &mdash; Emerging / Discovered</div>
+          <ul style="font-size:12px;color:#ccc;line-height:1.8;padding-left:16px">
+            <li>Dynamically discovered from 600+ USDT pairs</li>
+            <li>Must have meme keyword OR extreme pump (+15%)</li>
+            <li>Requires $100K+ daily volume for analysis</li>
+            <li>Higher risk: unknown coins, possible rug pulls</li>
+            <li>Higher reward potential: early entry on new pumps</li>
+          </ul>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--dim);line-height:1.6"><strong>Key difference:</strong> Tier 1 memes are watched 24/7. Tier 2 memes are discovered in real-time when their price action matches meme pump patterns. Tier 2 signals are inherently riskier but can offer earlier entry.</p>
+    </div>
+  </div>
+
+  <!-- KNOWN RISKS -->
+  <div class="edu-section">
+    <div class="edu-header" onclick="toggleEdu(this)">
+      <h3>Known Risks &amp; Limitations <i class="info-tip">i<span class="tip-text">Meme coins carry unique risks beyond normal crypto. Read this before acting on any signal.</span></i></h3>
+      <span class="edu-arrow">&#9660;</span>
+    </div>
+    <div class="edu-body">
+      <div style="font-size:13px;font-weight:700;color:var(--red);margin:0 0 8px">Meme-Specific Dangers</div>
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>Rug pulls.</strong> Developers can drain liquidity pools instantly, making your tokens worthless. More common in Tier 2 (unknown coins). There is NO technical indicator that can predict a rug pull.</span></div>
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>Whale dumps.</strong> A single holder can own 20-40% of a meme coin. When they sell, the price crashes faster than any stop-loss can execute. Slippage on large dumps can be 50%+.</span></div>
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>Pump &amp; dump schemes.</strong> Organized groups inflate prices via social media, then dump on retail buyers. This scanner might detect the pump but CANNOT distinguish organic hype from manipulation.</span></div>
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>Exchange delistings.</strong> Meme coins can be delisted from exchanges without warning, making them untradeable. Any open position becomes worthless instantly.</span></div>
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>No fundamentals.</strong> Meme coins have no revenue, no product, no earnings. Their value is 100% speculative and sentiment-driven. Sentiment can flip from euphoria to panic in minutes.</span></div>
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>2-hour window is still slow.</strong> Meme pumps can start AND end in 15 minutes. Our 2-hour resolve window captures multi-hour moves but may miss rapid pump-and-dumps.</span></div>
+
+      <div style="font-size:13px;font-weight:700;color:var(--gold);margin:20px 0 8px">Scanner Limitations</div>
+      <div class="flaw-item"><span class="flaw-icon" style="color:var(--gold)">&#9675;</span><span><strong>No social media data.</strong> We use a proxy (price velocity x volume) but can't read Twitter, Telegram, or Discord. The actual viral trigger is invisible to us.</span></div>
+      <div class="flaw-item"><span class="flaw-icon" style="color:var(--gold)">&#9675;</span><span><strong>Single exchange.</strong> Prices on Crypto.com may differ from Binance, Uniswap, or other DEXs where meme coins often launch first.</span></div>
+      <div class="flaw-item"><span class="flaw-icon" style="color:var(--gold)">&#9675;</span><span><strong>No on-chain analysis.</strong> We don't check tokenomics, holder distribution, locked liquidity, or smart contract audits. Always DYOR (Do Your Own Research).</span></div>
+    </div>
+  </div>
+
+  <!-- PLAIN LANGUAGE WARNING -->
+  <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:16px;margin-top:24px;line-height:1.7">
+    <div style="font-size:16px;font-weight:700;color:#ef4444;margin-bottom:8px">This Is NOT Financial Advice</div>
+    <div style="font-size:13px;color:#ccc">
+      <strong>What this page does:</strong> Every 10 minutes, our scanner checks established meme coins and discovers new pumping coins from 600+ pairs on Crypto.com Exchange. It scores them using 7 meme-specific indicators: explosive volume, parabolic momentum, RSI hype zone, social momentum proxy, volume concentration, breakout confirmation, and market cap bonus.<br><br>
+      <strong>What makes this different from our general scanner:</strong> Wider targets (up to 15% vs 6%), shorter resolve window (2h vs 4h), RSI sweet spot shifted up (55-80 vs 50-70), and meme-specific factors like social velocity proxy. Meme coins behave differently from BTC/ETH &mdash; this scanner accounts for that.<br><br>
+      <strong style="color:#ef4444">The hard truth:</strong> Even the best meme coin scanner in the world is essentially gambling with better odds. Meme coins have no intrinsic value &mdash; they go up because people BELIEVE they'll go up, and they crash when belief evaporates. Use this tool to identify momentum patterns, not as investment advice. <strong>Only use money you are 100% willing to lose completely.</strong>
+    </div>
+  </div>
+  <div class="disclaimer" style="margin-top:12px">
+    <strong>Data source:</strong> Crypto.com Exchange public API (real-time). Scanner runs every 10 minutes via GitHub Actions. Signals resolved after 2 hours with continuous candle walk.<br>
+    <strong>Resolve method:</strong> Continuous &mdash; every 5-minute candle during the 2h window is checked. If target or stop was hit at ANY point, it's recorded accurately.<br>
+    <strong>Not financial advice.</strong> For educational and entertainment purposes only. Past performance does not guarantee future results. Meme coins carry extreme risk of total loss.
+  </div>
+</div>
+
+<script>
+function toggleEdu(el) {
+    var body = el.nextElementSibling;
+    var arrow = el.querySelector('.edu-arrow');
+    if (body.classList.contains('open')) {
+        body.classList.remove('open');
+        arrow.classList.remove('open');
+    } else {
+        body.classList.add('open');
+        arrow.classList.add('open');
+    }
+}
+
+var API = '/findcryptopairs/api/meme_scanner.php';
+
+function api(action, cb) {
+    var x = new XMLHttpRequest();
+    x.open('GET', API + '?action=' + action);
+    x.onload = function() {
+        try { cb(JSON.parse(x.responseText)); } catch(e) { console.error(e); }
+    };
+    x.onerror = function() { console.error('API error'); };
+    x.send();
+}
+
+function formatPnl(v) {
+    v = parseFloat(v);
+    if (isNaN(v)) return '--';
+    var cls = v >= 0 ? 'green' : 'red';
+    return '<span class="' + cls + '">' + (v >= 0 ? '+' : '') + v.toFixed(2) + '%</span>';
+}
+
+function verdictBadge(v) {
+    if (v === 'STRONG_BUY') return '<span class="badge badge-strong">Strong Buy</span>';
+    if (v === 'BUY') return '<span class="badge badge-buy">Buy</span>';
+    return '<span class="badge badge-lean">Lean Buy</span>';
+}
+
+function tierBadge(t) {
+    if (t === 'tier1') return '<span class="badge-tier1">Established</span>';
+    return '<span class="badge-tier2">Emerging</span>';
+}
+
+function factorBar(score, max) {
+    var pct = Math.round((score / max) * 100);
+    var color = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--red)';
+    return '<div class="factor-bar"><div class="factor-fill" style="width:' + pct + '%;background:' + color + '"></div></div>';
+}
+
+function renderWinners(data) {
+    if (!data.ok || data.count === 0) {
+        document.getElementById('winners-list').innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--dim);font-size:14px;background:var(--card);border:1px solid var(--border);border-radius:12px"><div style="font-size:40px;margin-bottom:12px">&#128056;</div><div style="font-size:18px;color:#fff;margin-bottom:8px">No Meme Pumps Detected</div><div>None of the monitored meme coins are scoring high enough right now. Either the market is quiet or memes are consolidating.<br><br><strong>What this means:</strong> The scanner is being selective. When volume explodes and momentum aligns on a meme coin, it will appear here instantly.<br><br>Scans every 10 minutes, 24/7. Check back soon!</div></div>';
+        document.getElementById('winner-count').textContent = '0 winners';
+        return;
+    }
+    document.getElementById('winner-count').textContent = data.count + ' winners';
+    var html = '';
+    for (var i = 0; i < data.winners.length; i++) {
+        var w = data.winners[i];
+        var f = w.factors_json || {};
+        var scoreColor = w.score >= 85 ? 'accent' : w.score >= 75 ? 'gold' : 'cyan';
+        var pair = (w.pair || '').replace('_USDT', '/USDT');
+
+        html += '<div class="winner-card">';
+        html += '<div class="winner-header">';
+        html += '<div><span class="winner-pair">' + pair + '</span> ' + verdictBadge(w.verdict) + ' ' + tierBadge(w.tier) + '</div>';
+        html += '<div class="winner-score ' + scoreColor + '">' + w.score + '<span style="font-size:12px;color:var(--dim)">/100</span></div>';
+        html += '</div>';
+        html += '<div class="winner-meta">';
+        html += '<span>Price: $' + parseFloat(w.price_at_signal).toFixed(6) + '</span>';
+        html += '<span>24h: ' + formatPnl(w.chg_24h) + '</span>';
+        html += '<span>Vol: $' + (parseFloat(w.vol_usd_24h)/1000).toFixed(0) + 'K</span>';
+        html += '<span>Target: +' + w.target_pct + '% / Risk: -' + w.risk_pct + '%</span>';
+        html += '<span>' + (w.created_at || '') + ' UTC</span>';
+        html += '</div>';
+
+        html += '<div class="factors">';
+        var factorInfo = {
+            'explosive_volume': {name: 'Expl. Volume', tip: 'Recent volume vs average. 3x=pump starting. 10x+=massive surge. Volume is the #1 indicator for meme pumps.'},
+            'parabolic_momentum': {name: 'Parabolic Mom.', tip: 'Price acceleration on 15m + 5m charts. Both positive = confirmed uptrend. Steep slope = parabolic move in progress.'},
+            'rsi_hype_zone': {name: 'RSI Hype Zone', tip: 'RSI 55-80 is the meme sweet spot. Unlike traditional assets, memes sustain high RSI during pumps. Only 90+ is danger.'},
+            'social_proxy': {name: 'Social Proxy', tip: 'Price change x volume ratio = proxy for social buzz. High velocity means something went viral or a big influencer posted.'},
+            'volume_concentration': {name: 'Vol. Concentration', tip: 'How much of recent volume is in the last 3 candles. Burst pattern = pump is accelerating NOW.'},
+            'breakout_4h': {name: 'Breakout 4h', tip: 'Price breaking above its 4-hour high. Breakouts trigger FOMO buying and can accelerate meme pumps further.'},
+            'low_cap_bonus': {name: 'Low Cap Bonus', tip: 'Smaller coins move bigger on less capital. Also riskier (rug pulls). Under $1M vol = max bonus.'}
+        };
+        for (var key in factorInfo) {
+            if (f[key]) {
+                var fi = factorInfo[key];
+                html += '<div class="factor"><div class="factor-name">' + fi.name + ' (' + f[key].score + '/' + f[key].max + ') <i class="info-tip">i<span class="tip-text">' + fi.tip + '</span></i></div>' + factorBar(f[key].score, f[key].max) + '</div>';
+            }
+        }
+        html += '</div></div>';
+    }
+    document.getElementById('winners-list').innerHTML = html;
+}
+
+function renderStats(data) {
+    if (!data.ok || !data.stats) return;
+    var s = data.stats;
+    document.getElementById('s-wr').innerHTML = s.overall_win_rate !== null ? '<span class="' + (s.overall_win_rate >= 60 ? 'green' : s.overall_win_rate >= 50 ? 'gold' : 'red') + '">' + s.overall_win_rate + '%</span>' : '--';
+    document.getElementById('s-pnl').innerHTML = s.avg_pnl !== null ? formatPnl(s.avg_pnl) : '--';
+    document.getElementById('s-total').textContent = s.total_signals || 0;
+    document.getElementById('s-resolved').textContent = (s.resolved || 0) + ' resolved, ' + (s.pending || 0) + ' pending';
+    document.getElementById('s-best').textContent = s.best_trade ? '+' + parseFloat(s.best_trade).toFixed(1) + '%' : '--';
+    document.getElementById('s-worst').textContent = s.worst_trade ? 'Worst: ' + parseFloat(s.worst_trade).toFixed(1) + '%' : '';
+    document.getElementById('s-pairs').textContent = s.unique_pairs || 0;
+    document.getElementById('s-scans').textContent = (s.total_scans || 0) + ' scans';
+    document.getElementById('s-last').textContent = s.last_scan ? s.last_scan.substring(5, 16) : '--';
+    document.getElementById('s-first').textContent = s.first_scan ? 'Since ' + s.first_scan.substring(0, 10) : '';
+}
+
+function renderLeaderboard(data) {
+    if (!data.ok) return;
+
+    // By verdict tier
+    var tiers = data.by_verdict || [];
+    if (tiers.length === 0) {
+        document.getElementById('tier-table').innerHTML = '<div class="loading">No resolved data yet. Check back after signals have been tracked for 2+ hours.</div>';
+    } else {
+        var html = '<table class="history-table"><tr><th>Tier</th><th>Signals</th><th>Wins</th><th>Losses</th><th>Win Rate</th><th>Avg P&L</th></tr>';
+        for (var i = 0; i < tiers.length; i++) {
+            var t = tiers[i];
+            var wrClass = t.win_rate >= 60 ? 'green' : t.win_rate >= 50 ? 'gold' : 'red';
+            html += '<tr><td>' + verdictBadge(t.verdict) + '</td><td>' + t.signals + '</td><td class="green">' + t.wins + '</td><td class="red">' + t.losses + '</td>';
+            html += '<td class="' + wrClass + '">' + (t.win_rate !== null ? t.win_rate + '%' : '--') + '</td>';
+            html += '<td>' + formatPnl(t.avg_pnl) + '</td></tr>';
+        }
+        html += '</table>';
+        document.getElementById('tier-table').innerHTML = html;
+    }
+
+    // Tier 1 vs Tier 2 comparison
+    var tc = data.by_tier || [];
+    if (tc.length === 0) {
+        document.getElementById('tier-comparison').innerHTML = '<div class="loading">No tier comparison data yet.</div>';
+    } else {
+        var html2 = '<table class="history-table"><tr><th>Tier</th><th>Signals</th><th>Wins</th><th>Losses</th><th>Win Rate</th><th>Avg P&L</th></tr>';
+        for (var j = 0; j < tc.length; j++) {
+            var r = tc[j];
+            var wrC = r.win_rate >= 60 ? 'green' : r.win_rate >= 50 ? 'gold' : 'red';
+            var tierLabel = r.tier === 'tier1' ? '<span class="badge-tier1">Established</span>' : '<span class="badge-tier2">Emerging</span>';
+            html2 += '<tr><td>' + tierLabel + '</td><td>' + r.signals + '</td><td class="green">' + r.wins + '</td><td class="red">' + r.losses + '</td>';
+            html2 += '<td class="' + wrC + '">' + (r.win_rate !== null ? r.win_rate + '%' : '--') + '</td>';
+            html2 += '<td>' + formatPnl(r.avg_pnl) + '</td></tr>';
+        }
+        html2 += '</table>';
+        document.getElementById('tier-comparison').innerHTML = html2;
+    }
+}
+
+function renderHistory(data) {
+    if (!data.ok || data.count === 0) {
+        document.getElementById('history-list').innerHTML = '<div class="loading">No signal history yet.</div>';
+        return;
+    }
+    var html = '<table class="history-table"><tr><th>Pair</th><th>Tier</th><th>Score</th><th>Entry</th><th>Resolve</th><th>P&L</th><th>Outcome</th><th>Time</th></tr>';
+    for (var i = 0; i < Math.min(data.history.length, 50); i++) {
+        var h = data.history[i];
+        var pair = (h.pair || '').replace('_USDT', '/USDT');
+        var outcomeClass = '';
+        if (h.outcome === 'win' || h.outcome === 'partial_win') outcomeClass = 'outcome-win';
+        else if (h.outcome === 'loss' || h.outcome === 'partial_loss') outcomeClass = 'outcome-loss';
+        else outcomeClass = 'outcome-pending';
+
+        html += '<tr>';
+        html += '<td>' + pair + '</td>';
+        html += '<td>' + tierBadge(h.tier) + '</td>';
+        html += '<td>' + h.score + '</td>';
+        html += '<td>$' + parseFloat(h.price_at_signal || 0).toFixed(4) + '</td>';
+        html += '<td>' + (h.price_at_resolve ? '$' + parseFloat(h.price_at_resolve).toFixed(4) : '--') + '</td>';
+        html += '<td>' + (h.pnl_pct !== null ? formatPnl(h.pnl_pct) : '--') + '</td>';
+        html += '<td class="' + outcomeClass + '">' + (h.outcome || 'pending') + '</td>';
+        html += '<td>' + (h.created_at || '').substring(5, 16) + '</td>';
+        html += '</tr>';
+    }
+    html += '</table>';
+    document.getElementById('history-list').innerHTML = html;
+}
+
+// Scan Log
+function factorClass(score, max) {
+    var pct = (score / max) * 100;
+    if (pct >= 70) return 'f-high';
+    if (pct >= 40) return 'f-mid';
+    return 'f-low';
+}
+
+function renderScanLog(data) {
+    if (!data.ok || data.count === 0) {
+        document.getElementById('scan-log-list').innerHTML = '<div class="loading">No scan log data yet. Log is populated after the next scan runs.</div>';
+        return;
+    }
+
+    var picker = document.getElementById('scan-picker');
+    if (data.recent_scans && data.recent_scans.length > 0 && picker.options.length <= 1) {
+        picker.innerHTML = '';
+        for (var s = 0; s < data.recent_scans.length; s++) {
+            var sc = data.recent_scans[s];
+            var label = (sc.created_at || '').substring(0, 16) + ' UTC — ' + sc.analyzed + ' analyzed, ' + sc.winners + ' winners';
+            var opt = document.createElement('option');
+            opt.value = sc.scan_id;
+            opt.textContent = label;
+            if (s === 0) opt.selected = true;
+            picker.appendChild(opt);
+        }
+    }
+
+    var log = data.log;
+    var winnersInLog = 0;
+    for (var m = 0; m < log.length; m++) { if (log[m].score >= 70) winnersInLog++; }
+    document.getElementById('scan-meta').textContent = log.length + ' memes analyzed, ' + winnersInLog + ' passed threshold (70+)';
+
+    var html = '<table class="scan-log-table">';
+    html += '<tr><th>#</th><th>Pair</th><th>Tier</th><th>Score</th><th>Decision</th>';
+    html += '<th>Expl Vol<br>0-25</th><th>Mom<br>0-20</th><th>RSI<br>0-15</th><th>Social<br>0-15</th><th>Vol Conc<br>0-10</th><th>Break<br>0-10</th><th>Cap<br>0-5</th>';
+    html += '<th>24h Chg</th><th>Volume</th></tr>';
+
+    for (var i = 0; i < log.length; i++) {
+        var r = log[i];
+        var f = r.factors_json || {};
+        var pair = (r.pair || '').replace('_USDT', '/USDT');
+        var rowClass = r.score >= 70 ? ' class="is-winner"' : '';
+
+        var vd = '';
+        if (r.verdict === 'STRONG_BUY') vd = '<span class="badge badge-strong">Strong Buy</span>';
+        else if (r.verdict === 'BUY') vd = '<span class="badge badge-buy">Buy</span>';
+        else if (r.verdict === 'LEAN_BUY') vd = '<span class="badge badge-lean">Lean Buy</span>';
+        else vd = '<span class="verdict-skip">Skip</span>';
+
+        var scColor = r.score >= 85 ? 'accent' : r.score >= 75 ? 'gold' : r.score >= 70 ? 'cyan' : 'dim';
+
+        var factors = [
+            {key: 'explosive_volume', max: 25},
+            {key: 'parabolic_momentum', max: 20},
+            {key: 'rsi_hype_zone', max: 15},
+            {key: 'social_proxy', max: 15},
+            {key: 'volume_concentration', max: 10},
+            {key: 'breakout_4h', max: 10},
+            {key: 'low_cap_bonus', max: 5}
+        ];
+
+        html += '<tr' + rowClass + '>';
+        html += '<td style="color:var(--dim)">' + (i + 1) + '</td>';
+        html += '<td style="font-weight:600;color:#fff">' + pair + '</td>';
+        html += '<td>' + tierBadge(r.tier) + '</td>';
+        html += '<td><span class="' + scColor + '" style="font-weight:700">' + r.score + '</span></td>';
+        html += '<td>' + vd + '</td>';
+
+        for (var j = 0; j < factors.length; j++) {
+            var fk = factors[j].key;
+            var fm = factors[j].max;
+            if (f[fk]) {
+                var fs = f[fk].score;
+                html += '<td><span class="factor-cell ' + factorClass(fs, fm) + '">' + fs + '/' + fm + '</span></td>';
+            } else {
+                html += '<td><span class="factor-cell f-low">0/' + fm + '</span></td>';
+            }
+        }
+
+        html += '<td>' + formatPnl(r.chg_24h) + '</td>';
+        html += '<td style="color:var(--dim)">$' + (parseFloat(r.vol_usd_24h || 0) / 1000).toFixed(0) + 'K</td>';
+        html += '</tr>';
+    }
+    html += '</table>';
+    document.getElementById('scan-log-list').innerHTML = html;
+}
+
+function loadScanLog(scanId) {
+    var q = 'scan_log';
+    if (scanId) q += '&scan_id=' + scanId;
+    api(q, function(data) {
+        if (scanId) {
+            var picker = document.getElementById('scan-picker');
+            var tempPicker = picker.innerHTML;
+            renderScanLog(data);
+            picker.innerHTML = tempPicker;
+            for (var k = 0; k < picker.options.length; k++) {
+                if (picker.options[k].value === scanId) { picker.options[k].selected = true; break; }
+            }
+        } else {
+            renderScanLog(data);
+        }
+    });
+}
+
+// ── Daily Picks ──
+function renderDailyPicks(data) {
+    if (!data.ok || data.total_picks === 0) {
+        document.getElementById('daily-picks-list').innerHTML = '<div class="loading">No picks for this date.</div>';
+        document.getElementById('picks-summary').innerHTML = '';
+        return;
+    }
+
+    // Populate date picker
+    var picker = document.getElementById('picks-date');
+    if (data.available_dates && data.available_dates.length > 0 && picker.options.length <= 1) {
+        picker.innerHTML = '';
+        for (var d = 0; d < data.available_dates.length; d++) {
+            var dt = data.available_dates[d];
+            var opt = document.createElement('option');
+            opt.value = dt.pick_date;
+            opt.textContent = dt.pick_date + ' (' + dt.cnt + ' picks)';
+            if (dt.pick_date === data.date) opt.selected = true;
+            picker.appendChild(opt);
+        }
+    }
+
+    // Day summary
+    var ds = data.day_summary || {};
+    var sumHtml = '';
+    sumHtml += '<span>Picks: <strong style="color:#fff">' + (ds.total_picks || 0) + '</strong></span>';
+    if (ds.win_rate !== null) {
+        var wrCls = ds.win_rate >= 60 ? 'green' : ds.win_rate >= 50 ? 'gold' : 'red';
+        sumHtml += '<span>Win Rate: <strong class="' + wrCls + '">' + ds.win_rate + '%</strong></span>';
+    }
+    sumHtml += '<span>Wins: <strong class="green">' + (ds.wins || 0) + '</strong> / Losses: <strong class="red">' + (ds.losses || 0) + '</strong></span>';
+    if (ds.pending > 0) sumHtml += '<span>Pending: ' + ds.pending + '</span>';
+    if (ds.avg_pnl !== null) sumHtml += '<span>Avg P&L: ' + formatPnl(ds.avg_pnl) + '</span>';
+    if (ds.best_trade) sumHtml += '<span>Best: <strong class="green">+' + parseFloat(ds.best_trade).toFixed(1) + '%</strong></span>';
+    document.getElementById('picks-summary').innerHTML = sumHtml;
+    document.getElementById('picks-date-label').textContent = data.date;
+
+    // Picks table
+    var html = '<table class="history-table"><tr><th>Time (UTC)</th><th>Pair</th><th>Tier</th><th>Score</th><th>Verdict</th><th>Entry</th><th>Target</th><th>P&L</th><th>Outcome</th></tr>';
+    for (var i = 0; i < data.picks.length; i++) {
+        var p = data.picks[i];
+        var pair = (p.pair || '').replace('_USDT', '/USDT');
+        var time = (p.created_at || '').substring(11, 16);
+        var outClass = '';
+        if (p.outcome === 'win' || p.outcome === 'partial_win') outClass = 'outcome-win';
+        else if (p.outcome === 'loss' || p.outcome === 'partial_loss') outClass = 'outcome-loss';
+        else outClass = 'outcome-pending';
+
+        html += '<tr>';
+        html += '<td style="color:var(--dim)">' + time + '</td>';
+        html += '<td style="font-weight:600;color:#fff">' + pair + '</td>';
+        html += '<td>' + tierBadge(p.tier) + '</td>';
+        html += '<td>' + p.score + '</td>';
+        html += '<td>' + verdictBadge(p.verdict) + '</td>';
+        html += '<td>$' + parseFloat(p.price_at_signal || 0).toFixed(6) + '</td>';
+        html += '<td>+' + p.target_pct + '% / -' + p.risk_pct + '%</td>';
+        html += '<td>' + (p.pnl_pct !== null ? formatPnl(p.pnl_pct) : '--') + '</td>';
+        html += '<td class="' + outClass + '">' + (p.outcome || 'pending') + '</td>';
+        html += '</tr>';
+    }
+    html += '</table>';
+    document.getElementById('daily-picks-list').innerHTML = html;
+}
+
+function loadDailyPicks(date) {
+    var q = 'daily_picks';
+    if (date) q += '&date=' + date;
+    api(q, function(data) {
+        if (date) {
+            var picker = document.getElementById('picks-date');
+            var saved = picker.innerHTML;
+            renderDailyPicks(data);
+            picker.innerHTML = saved;
+            for (var k = 0; k < picker.options.length; k++) {
+                if (picker.options[k].value === date) { picker.options[k].selected = true; break; }
+            }
+        } else {
+            renderDailyPicks(data);
+        }
+    });
+}
+
+// ── Performance Tracker ──
+function renderPerformance(data) {
+    if (!data.ok) {
+        document.getElementById('perf-summary').innerHTML = '<div class="loading">No performance data yet.</div>';
+        return;
+    }
+
+    var s = data.summary || {};
+    var streaks = data.streaks || {};
+
+    // Summary cards
+    var cards = '';
+    var wrCls = s.win_rate >= 60 ? 'green' : s.win_rate >= 50 ? 'gold' : 'red';
+    cards += '<div class="perf-card"><div class="p-label">Win Rate</div><div class="p-val ' + (s.win_rate !== null ? wrCls : '') + '">' + (s.win_rate !== null ? s.win_rate + '%' : '--') + '</div><div class="p-sub">' + (s.resolved || 0) + ' resolved</div></div>';
+    cards += '<div class="perf-card"><div class="p-label">Avg P&L</div><div class="p-val">' + (s.avg_pnl !== null ? formatPnl(s.avg_pnl) : '--') + '</div><div class="p-sub">per signal</div></div>';
+    cards += '<div class="perf-card"><div class="p-label">Total P&L</div><div class="p-val">' + (s.total_pnl !== null ? formatPnl(s.total_pnl) : '--') + '</div><div class="p-sub">' + (s.total_signals || 0) + ' signals</div></div>';
+    cards += '<div class="perf-card"><div class="p-label">Best Trade</div><div class="p-val green">' + (s.best_trade ? '+' + parseFloat(s.best_trade).toFixed(1) + '%' : '--') + '</div><div class="p-sub">Worst: ' + (s.worst_trade ? parseFloat(s.worst_trade).toFixed(1) + '%' : '--') + '</div></div>';
+    cards += '<div class="perf-card"><div class="p-label">Active Days</div><div class="p-val cyan">' + (s.active_days || 0) + '</div><div class="p-sub">' + (s.unique_coins || 0) + ' coins</div></div>';
+    cards += '<div class="perf-card"><div class="p-label">Win Streak</div><div class="p-val green">' + (streaks.max_win || 0) + '</div><div class="p-sub">Current: ' + (streaks.current || 0) + (streaks.current_type || '') + '</div></div>';
+    cards += '<div class="perf-card"><div class="p-label">Loss Streak</div><div class="p-val red">' + (streaks.max_loss || 0) + '</div><div class="p-sub">max consecutive</div></div>';
+
+    // Significance badge
+    var sig = s.significance || {};
+    var sigLabel = sig.confidence || 'insufficient_data';
+    var sigColor = sigLabel === 'highly_significant' ? 'green' : sigLabel === 'significant' ? 'cyan' : sigLabel === 'trending_positive' ? 'gold' : 'dim';
+    cards += '<div class="perf-card"><div class="p-label">Significance</div><div class="p-val ' + sigColor + '" style="font-size:12px">' + sigLabel.replace(/_/g, ' ') + '</div><div class="p-sub">' + (sig.sample_size || 0) + ' samples</div></div>';
+    document.getElementById('perf-summary').innerHTML = cards;
+
+    // Daily breakdown table
+    var daily = data.daily || [];
+    if (daily.length === 0) {
+        document.getElementById('perf-daily').innerHTML = '<div class="loading">No daily data yet.</div>';
+    } else {
+        var html = '<table class="daily-table"><tr><th>Date</th><th>Signals</th><th>W</th><th>L</th><th>Win Rate</th><th>Avg P&L</th><th>Best</th><th>Worst</th><th>Coins</th></tr>';
+        for (var i = 0; i < Math.min(daily.length, 30); i++) {
+            var d = daily[i];
+            var dWr = d.win_rate !== null ? d.win_rate : '--';
+            var dWrCls = d.win_rate >= 60 ? 'green' : d.win_rate >= 50 ? 'gold' : d.win_rate !== null ? 'red' : '';
+            html += '<tr>';
+            html += '<td style="color:#fff">' + d.trade_date + '</td>';
+            html += '<td>' + d.signals + '</td>';
+            html += '<td class="green">' + d.wins + '</td>';
+            html += '<td class="red">' + d.losses + '</td>';
+            html += '<td class="' + dWrCls + '">' + (dWr !== '--' ? dWr + '%' : '--') + '</td>';
+            html += '<td>' + (d.avg_pnl !== null ? formatPnl(d.avg_pnl) : '--') + '</td>';
+            html += '<td class="green">' + (d.best_trade ? '+' + parseFloat(d.best_trade).toFixed(1) + '%' : '--') + '</td>';
+            html += '<td class="red">' + (d.worst_trade ? parseFloat(d.worst_trade).toFixed(1) + '%' : '--') + '</td>';
+            html += '<td>' + d.unique_coins + '</td>';
+            html += '</tr>';
+        }
+        html += '</table>';
+        document.getElementById('perf-daily').innerHTML = html;
+    }
+
+    // Top coins
+    var top = data.top_coins || [];
+    if (top.length === 0) {
+        document.getElementById('perf-top-coins').innerHTML = '<div class="loading">No coin data yet.</div>';
+    } else {
+        var html2 = '<table class="daily-table"><tr><th>Coin</th><th>Tier</th><th>Signals</th><th>Win Rate</th><th>Avg P&L</th><th>Best</th><th>Days Active</th></tr>';
+        for (var j = 0; j < top.length; j++) {
+            var c = top[j];
+            var cPair = (c.pair || '').replace('_USDT', '/USDT');
+            var cWr = c.win_rate !== null ? c.win_rate + '%' : '--';
+            var cWrCls = c.win_rate >= 60 ? 'green' : c.win_rate >= 50 ? 'gold' : 'red';
+            html2 += '<tr>';
+            html2 += '<td style="font-weight:600;color:#fff">' + cPair + '</td>';
+            html2 += '<td>' + tierBadge(c.tier) + '</td>';
+            html2 += '<td>' + c.signals + '</td>';
+            html2 += '<td class="' + cWrCls + '">' + cWr + '</td>';
+            html2 += '<td>' + (c.avg_pnl !== null ? formatPnl(c.avg_pnl) : '--') + '</td>';
+            html2 += '<td class="green">' + (c.best_trade ? '+' + parseFloat(c.best_trade).toFixed(1) + '%' : '--') + '</td>';
+            html2 += '<td>' + (c.days_active || 0) + '</td>';
+            html2 += '</tr>';
+        }
+        html2 += '</table>';
+        document.getElementById('perf-top-coins').innerHTML = html2;
+    }
+}
+
+function loadPerf(period, btn) {
+    // Update tab active state
+    var tabs = document.querySelectorAll('#perf-tabs .tab-btn');
+    for (var t = 0; t < tabs.length; t++) tabs[t].className = 'tab-btn';
+    if (btn) btn.className = 'tab-btn active';
+
+    api('performance&period=' + period, renderPerformance);
+}
+
+// Load all data
+api('stats', renderStats);
+api('winners', renderWinners);
+api('leaderboard', renderLeaderboard);
+api('history&limit=50', renderHistory);
+loadScanLog('');
+loadDailyPicks('');
+loadPerf('all', null);
+
+// Auto-refresh every 90 seconds (memes move fast)
+setInterval(function() {
+    api('winners', renderWinners);
+    api('stats', renderStats);
+}, 90000);
+</script>
+</body>
+</html>

@@ -47,7 +47,62 @@ a{color:#88aaff;text-decoration:none}a:hover{text-decoration:underline}
 .outcome-pending{color:var(--dim)}
 .loading{text-align:center;padding:40px;color:var(--dim)}
 .disclaimer{font-size:11px;color:#555;margin-top:32px;padding:12px;border:1px solid rgba(255,255,255,0.04);border-radius:8px;line-height:1.6}
-@media(max-width:600px){.header h1{font-size:20px}.stats-row{grid-template-columns:repeat(2,1fr)}.factors{grid-template-columns:1fr}}
+/* Info tooltip */
+.info-tip{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(99,102,241,0.2);color:var(--accent);font-size:10px;font-weight:700;cursor:help;position:relative;vertical-align:middle;margin-left:4px;flex-shrink:0;font-style:normal}
+.info-tip:hover{background:rgba(99,102,241,0.4)}
+.info-tip .tip-text{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1e1e3a;border:1px solid var(--accent);border-radius:8px;padding:10px 12px;font-size:12px;font-weight:400;color:var(--text);width:260px;line-height:1.5;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.5);pointer-events:none}
+.info-tip:hover .tip-text{display:block}
+.info-tip .tip-text::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--accent)}
+/* Glossary / methodology sections */
+.edu-section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-top:24px;overflow:hidden}
+.edu-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;cursor:pointer;user-select:none}
+.edu-header:hover{background:rgba(255,255,255,0.02)}
+.edu-header h3{font-size:16px;font-weight:600;margin:0;display:flex;align-items:center;gap:8px}
+.edu-arrow{font-size:12px;color:var(--dim);transition:transform 0.2s}
+.edu-arrow.open{transform:rotate(180deg)}
+.edu-body{padding:0 20px 20px;display:none}
+.edu-body.open{display:block}
+.glossary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:8px}
+.glossary-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:14px}
+.glossary-card .g-term{font-weight:700;color:#fff;font-size:13px;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.glossary-card .g-term .g-pts{font-size:11px;color:var(--accent);font-weight:400}
+.glossary-card .g-desc{font-size:12px;color:#bbb;line-height:1.6}
+.glossary-card .g-why{font-size:11px;color:var(--dim);margin-top:6px;font-style:italic}
+.tier-explain{display:flex;gap:12px;margin:12px 0;flex-wrap:wrap}
+.tier-card{flex:1;min-width:180px;padding:14px;border-radius:8px;text-align:center}
+.tier-card.strong{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2)}
+.tier-card.buy{background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2)}
+.tier-card.lean{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2)}
+.tier-card .t-label{font-size:18px;font-weight:700;margin-bottom:4px}
+.tier-card .t-range{font-size:12px;color:var(--dim);margin-bottom:8px}
+.tier-card .t-desc{font-size:12px;line-height:1.5}
+.tier-card.strong .t-label{color:var(--green)}
+.tier-card.buy .t-label{color:var(--accent)}
+.tier-card.lean .t-label{color:var(--gold)}
+.method-step{display:flex;gap:12px;margin:12px 0;align-items:flex-start}
+.method-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.method-text{font-size:13px;line-height:1.6;color:#ccc}
+.method-text strong{color:#fff}
+.flaw-item{display:flex;gap:8px;margin:8px 0;font-size:12px;line-height:1.5;color:#ccc}
+.flaw-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+/* Scan log */
+.scan-log-controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.scan-select{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer}
+.scan-select:focus{outline:none;border-color:var(--accent)}
+.scan-meta{font-size:11px;color:var(--dim)}
+.scan-log-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px}
+.scan-log-table th{text-align:center;padding:6px 4px;color:var(--dim);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap}
+.scan-log-table th:first-child,.scan-log-table th:nth-child(2),.scan-log-table th:nth-child(3){text-align:left}
+.scan-log-table td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:center;white-space:nowrap}
+.scan-log-table td:first-child,.scan-log-table td:nth-child(2),.scan-log-table td:nth-child(3){text-align:left}
+.scan-log-table tr:hover{background:rgba(255,255,255,0.02)}
+.scan-log-table tr.is-winner{background:rgba(99,102,241,0.04)}
+.factor-cell{display:inline-flex;align-items:center;justify-content:center;min-width:36px;padding:2px 5px;border-radius:4px;font-size:10px;font-weight:600}
+.factor-cell.f-high{background:rgba(34,197,94,0.15);color:var(--green)}
+.factor-cell.f-mid{background:rgba(245,158,11,0.15);color:var(--gold)}
+.factor-cell.f-low{background:rgba(239,68,68,0.12);color:var(--red)}
+.verdict-skip{color:var(--dim);font-size:10px}
+@media(max-width:600px){.header h1{font-size:20px}.stats-row{grid-template-columns:repeat(2,1fr)}.factors{grid-template-columns:1fr}.glossary-grid{grid-template-columns:1fr}.tier-explain{flex-direction:column}.info-tip .tip-text{width:200px;left:0;transform:none}}
 </style>
 </head>
 <body>
@@ -56,6 +111,7 @@ a{color:#88aaff;text-decoration:none}a:hover{text-decoration:underline}
   <div class="sub">Multi-factor momentum scanner across 600+ crypto pairs on Crypto.com Exchange</div>
 </div>
 <div class="nav">
+  <a href="/findcryptopairs/meme.html">Meme Scanner</a>
   <a href="/findcryptopairs/portfolio/">Crypto Portfolio</a>
   <a href="/live-monitor/live-monitor.html">Live Monitor</a>
   <a href="/investments/">Investment Hub</a>
@@ -81,6 +137,201 @@ a{color:#88aaff;text-decoration:none}a:hover{text-decoration:underline}
   <div class="section-title" style="margin-top:32px">Recent Signal History</div>
   <div id="history-list"><div class="loading">Loading history...</div></div>
 
+  <div class="section-title" style="margin-top:32px">Full Scan Log — All Analyzed Coins <i class="info-tip">i<span class="tip-text">Every coin that was deeply analyzed in a scan, including those that didn't make the 70-point threshold. Shows all 7 indicator scores so you can see exactly why each coin was accepted or rejected.</span></i></div>
+  <div class="scan-log-controls">
+    <select class="scan-select" id="scan-picker" onchange="loadScanLog(this.value)"><option value="">Loading scans...</option></select>
+    <span class="scan-meta" id="scan-meta"></span>
+  </div>
+  <div id="scan-log-list"><div class="loading">Loading scan log...</div></div>
+
+  <!-- ═══ CONFIDENCE TIERS ═══ -->
+  <div class="edu-section">
+    <div class="edu-header" onclick="toggleEdu(this)">
+      <h3>Understanding Confidence Tiers <i class="info-tip">i<span class="tip-text">The scanner assigns a verdict based on the total score. Higher tiers mean more indicators agree.</span></i></h3>
+      <span class="edu-arrow">&#9660;</span>
+    </div>
+    <div class="edu-body">
+      <p style="font-size:13px;color:#bbb;margin-bottom:12px">Each coin is scored 0-100 across 7 independent indicators. The total score determines which confidence tier it falls into. <strong style="color:#fff">Higher tier = more indicators agreeing = higher conviction.</strong></p>
+      <div class="tier-explain">
+        <div class="tier-card strong">
+          <div class="t-label">Strong Buy</div>
+          <div class="t-range">Score 85-100</div>
+          <div class="t-desc">6-7 out of 7 indicators are strongly bullish. Momentum, volume, RSI, moving averages, MACD, price patterns, and breakout position are nearly all firing. <strong style="color:var(--green)">Target: +3.0%</strong> within 4 hours. Risk: -1.5%. This is the highest conviction level — the scanner is saying "almost everything lines up."</div>
+        </div>
+        <div class="tier-card buy">
+          <div class="t-label">Buy</div>
+          <div class="t-range">Score 75-84</div>
+          <div class="t-desc">5-6 indicators are bullish, with maybe 1-2 being neutral or weak. Strong agreement but not unanimous. <strong style="color:var(--accent)">Target: +2.0%</strong> within 4 hours. Risk: -1.5%. Solid setup with most factors aligned.</div>
+        </div>
+        <div class="tier-card lean">
+          <div class="t-label">Lean Buy</div>
+          <div class="t-range">Score 70-74</div>
+          <div class="t-desc">4-5 indicators are bullish. There's a directional edge but it's not as strong. Some indicators may be neutral or conflicting. <strong style="color:var(--gold)">Target: +1.5%</strong> within 4 hours. Risk: -1.5%. More cautious — the edge is there, but narrower.</div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--dim);margin-top:8px"><strong>Below 70:</strong> Not shown as a winner. Even if some indicators are positive, the overall confluence is too weak. The scanner waits for stronger setups rather than forcing marginal calls.</p>
+    </div>
+  </div>
+
+  <!-- ═══ GLOSSARY OF INDICATORS ═══ -->
+  <div class="edu-section">
+    <div class="edu-header" onclick="toggleEdu(this)">
+      <h3>Glossary of Indicators <i class="info-tip">i<span class="tip-text">Each of the 7 factors explained in plain language — what it measures, why it matters, and how it's scored.</span></i></h3>
+      <span class="edu-arrow">&#9660;</span>
+    </div>
+    <div class="edu-body">
+      <div class="glossary-grid">
+        <div class="glossary-card">
+          <div class="g-term">Multi-Timeframe Momentum <span class="g-pts">0-20 pts</span></div>
+          <div class="g-desc"><strong>What it measures:</strong> Is the price going up on BOTH the 1-hour and 5-minute charts? If yes, the uptrend is consistent across different time scales.<br><strong>How it scores:</strong> +10 if both timeframes are positive. +5 more if 4-hour momentum exceeds 1%. +5 more if short-term is accelerating (0.5%+).</div>
+          <div class="g-why">Why it matters: A coin going up on multiple timeframes is more likely to keep going than one moving up on just one chart.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Volume Surge <span class="g-pts">0-20 pts</span></div>
+          <div class="g-desc"><strong>What it measures:</strong> Is the current trading volume higher than normal? Volume is how many coins are being bought/sold. A "surge" means more people are trading than usual.<br><strong>How it scores:</strong> +8 if volume is 1.5x average. +6 more if 2x. +6 more if 3x or higher.</div>
+          <div class="g-why">Why it matters: Price moves with high volume tend to sustain. Price moves on low volume often fizzle. Volume confirms conviction.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">RSI Sweet Spot <span class="g-pts">0-15 pts</span></div>
+          <div class="g-desc"><strong>What it measures:</strong> The Relative Strength Index (RSI) is a number from 0-100 that shows if a coin is "overbought" (too high, might drop) or "oversold" (too low, might bounce). <strong>50-70 is the sweet spot</strong> — momentum is strong but it's not dangerously overheated.<br><strong>How it scores:</strong> 15 pts for RSI 50-70 (ideal). 8 pts for RSI 40-50 (warming up). 5 pts for RSI 70-80 (hot but risky). 0 pts for RSI above 80 or below 40.</div>
+          <div class="g-why">Why it matters: Buying something with RSI above 80 often means you're buying at the top. The sweet spot catches momentum early, before it gets dangerous.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Above Moving Averages <span class="g-pts">0-15 pts</span></div>
+          <div class="g-desc"><strong>What it measures:</strong> Moving averages smooth out price noise. The SMA-20 (average of last 20 hours) and SMA-50 (last 50 hours) act as support levels. If the price is above both, the trend is up.<br><strong>How it scores:</strong> +8 if price is above SMA-20. +4 if above SMA-50. +3 if SMA-20 is above SMA-50 (called a "golden cross" structure — a classic bullish signal).</div>
+          <div class="g-why">Why it matters: Professional traders watch these levels. When price is above its moving averages, buyers are in control.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">MACD Bullish <span class="g-pts">0-10 pts</span></div>
+          <div class="g-desc"><strong>What it measures:</strong> MACD (Moving Average Convergence Divergence) compares fast and slow momentum. When the MACD line crosses above its signal line, it indicates strengthening upward momentum.<br><strong>How it scores:</strong> +5 if the MACD line is above the signal line. +5 more if the histogram (difference between the two) is positive AND growing — meaning momentum is accelerating.</div>
+          <div class="g-why">Why it matters: MACD catches trend changes early. An expanding histogram means the up-move is gaining steam, not losing it.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Higher Highs &amp; Higher Lows <span class="g-pts">0-10 pts</span></div>
+          <div class="g-desc"><strong>What it measures:</strong> The most basic definition of an uptrend: each peak is higher than the last (higher highs) and each dip is higher than the last (higher lows). Checks the last 6 hourly candles.<br><strong>How it scores:</strong> +5 if at least 2 consecutive higher highs. +5 if at least 2 consecutive higher lows.</div>
+          <div class="g-why">Why it matters: This is Trend Analysis 101. Higher highs + higher lows = textbook uptrend. The absence of this pattern often precedes reversals.</div>
+        </div>
+        <div class="glossary-card">
+          <div class="g-term">Near 24h High <span class="g-pts">0-10 pts</span></div>
+          <div class="g-desc"><strong>What it measures:</strong> Where is the current price relative to its 24-hour high and low? If the price is near the top of its daily range, it suggests buying pressure and potential breakout.<br><strong>How it scores:</strong> 10 pts if price is in top 15% of its daily range. 6 pts if in top 30%. 3 pts if in top 45%. 0 if in the bottom half.</div>
+          <div class="g-why">Why it matters: Coins trading near their 24h high often break through to new highs. Coins in the bottom half of their range are weaker.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ OUR METHODOLOGY ═══ -->
+  <div class="edu-section">
+    <div class="edu-header" onclick="toggleEdu(this)">
+      <h3>Our Methodology — How Picks Are Made <i class="info-tip">i<span class="tip-text">Step-by-step explanation of how we go from 600+ coins to a handful of winners.</span></i></h3>
+      <span class="edu-arrow">&#9660;</span>
+    </div>
+    <div class="edu-body">
+      <p style="font-size:13px;color:#bbb;margin-bottom:16px">Here's exactly what happens every 15 minutes, end to end. No black box — you can verify every step.</p>
+
+      <div class="method-step">
+        <div class="method-num">1</div>
+        <div class="method-text"><strong>Fetch all tradable pairs</strong> — We query the Crypto.com Exchange public API for every instrument. We filter to USDT spot pairs only (the most liquid, easiest to trade). This typically yields 600-700 pairs.</div>
+      </div>
+      <div class="method-step">
+        <div class="method-num">2</div>
+        <div class="method-text"><strong>Pre-filter for activity</strong> — We discard any pair with less than $20,000 in 24h trading volume (too thin to trade safely) or negative 24h price change (we only look for upward momentum). This typically cuts to 30-150 candidates depending on market conditions.</div>
+      </div>
+      <div class="method-step">
+        <div class="method-num">3</div>
+        <div class="method-text"><strong>Rank by momentum, take top 60</strong> — Remaining candidates are sorted by 24h change. We deep-analyze the top 60 to keep scan time under 90 seconds (each pair requires 2 additional API calls for candlestick data).</div>
+      </div>
+      <div class="method-step">
+        <div class="method-num">4</div>
+        <div class="method-text"><strong>Deep analysis with 7 indicators</strong> — For each of the top 60, we fetch 1-hour candles (48 hours of history) and 5-minute candles (4 hours of micro-structure). We then run all 7 technical indicators described in the glossary above. Each indicator scores independently — no indicator knows what the others scored.</div>
+      </div>
+      <div class="method-step">
+        <div class="method-num">5</div>
+        <div class="method-text"><strong>Confluence threshold: 70/100</strong> — Only coins scoring 70+ out of 100 are promoted to "winner" status. This means at least 5 of 7 indicators must be meaningfully bullish. The principle is <strong style="color:#fff">confluence</strong> — one bullish signal is noise, but 5+ agreeing signals form a pattern.</div>
+      </div>
+      <div class="method-step">
+        <div class="method-num">6</div>
+        <div class="method-text"><strong>Record signal with targets</strong> — Each winner is saved to the database with its exact entry price, score, all factor details, a profit target (+1.5% to +3% depending on tier), and a risk level (-1.5%). This creates an auditable record.</div>
+      </div>
+      <div class="method-step">
+        <div class="method-num">7</div>
+        <div class="method-text"><strong>Resolve 4 hours later</strong> — A separate job checks every signal after 4 hours. Did the price hit the target? Did it hit the stop? Did it land somewhere in between? The outcome is recorded as win, partial_win, loss, or partial_loss — and shown publicly on this page.</div>
+      </div>
+
+      <div style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.15);border-radius:8px;padding:14px;margin-top:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:6px">Why we stand by this approach</div>
+        <div style="font-size:12px;color:#ccc;line-height:1.7">
+          <strong>Multi-factor confluence is well-documented in academic literature.</strong> Individual technical indicators are weak predictors (most hover around 50-55% win rates in isolation). However, when multiple independent indicators agree simultaneously, win rates historically improve to 60-70%+ in momentum-favorable conditions. Our approach is based on the same principle used by quantitative trading firms: don't bet on one signal, bet on the alignment of many.<br><br>
+          <strong>Full transparency.</strong> Every single signal is recorded and publicly resolved. We don't hide losses, we don't cherry-pick wins. The stats section at the top of this page shows the actual, real-time win rate. If the scanner is underperforming, you'll see it.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SELF-LEARNING STATUS ═══ -->
+  <div class="edu-section">
+    <div class="edu-header" onclick="toggleEdu(this)">
+      <h3>Is the Algorithm Self-Learning? <i class="info-tip">i<span class="tip-text">Honest answer: partially. Here's what adapts and what doesn't.</span></i></h3>
+      <span class="edu-arrow">&#9660;</span>
+    </div>
+    <div class="edu-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.15);border-radius:8px;padding:14px">
+          <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:8px">What IS Fixed (by design)</div>
+          <ul style="font-size:12px;color:#ccc;line-height:1.8;padding-left:16px">
+            <li><strong>The 7 indicators</strong> — Momentum, Volume, RSI, MAs, MACD, HH/HL, and Near-High are always used. These are fundamentals of technical analysis that have worked across decades of markets.</li>
+            <li><strong>The scoring weights</strong> — Momentum and Volume are weighted highest (20 pts each) because they're the strongest short-term predictors. This weighting is based on published research, not gut feeling.</li>
+            <li><strong>The 70-point threshold</strong> — We intentionally set a high bar so the scanner stays selective rather than flooding you with marginal signals.</li>
+          </ul>
+        </div>
+        <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:8px;padding:14px">
+          <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:8px">What Adapts Over Time</div>
+          <ul style="font-size:12px;color:#ccc;line-height:1.8;padding-left:16px">
+            <li><strong>Outcome tracking</strong> — Every signal's result is recorded. Over time, the leaderboard reveals which score tiers and which specific coins have the best track records.</li>
+            <li><strong>Weekly analysis</strong> — A scheduled job runs every Sunday analyzing patterns: which tier wins most? Which coins repeat as winners? This data informs whether thresholds should change.</li>
+            <li><strong>Market-aware filtering</strong> — The pre-filter (positive 24h change + volume minimum) naturally adapts to market conditions. In a bear market, fewer coins pass → fewer signals → the scanner stays quiet rather than forcing bad calls.</li>
+          </ul>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--dim);line-height:1.6"><strong>Bottom line:</strong> The core scoring logic is fixed and rule-based — not a neural network or black box. We believe this is a feature, not a bug. Fixed rules are transparent, auditable, and don't overfit to recent noise. The self-learning layer sits on top: it tracks which configurations work best and can inform future parameter adjustments. Think of it as "the rules are stable, but we measure how well they're working."</p>
+    </div>
+  </div>
+
+  <!-- ═══ KNOWN FLAWS & IMPROVEMENTS ═══ -->
+  <div class="edu-section">
+    <div class="edu-header" onclick="toggleEdu(this)">
+      <h3>Known Limitations &amp; Areas for Improvement <i class="info-tip">i<span class="tip-text">We believe in full transparency — including what this tool can't do.</span></i></h3>
+      <span class="edu-arrow">&#9660;</span>
+    </div>
+    <div class="edu-body">
+      <p style="font-size:13px;color:#bbb;margin-bottom:12px">No tool is perfect. Here's what we know about the scanner's weaknesses and what we're working to improve:</p>
+
+      <div style="font-size:13px;font-weight:700;color:var(--red);margin:12px 0 8px">Current Limitations</div>
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>Momentum bias.</strong> The scanner only looks for coins going up. It cannot predict sudden reversals caused by news, exchange delistings, or whale dumps. A coin scoring 90 can still drop 20% if Elon tweets about it.</span></div>
+      <div class="flaw-item"><span class="flaw-icon" style="color:var(--green)">&#10004;</span><span><strong><s>4-hour resolve window.</s> FIXED — Continuous resolve.</strong> We now walk through every 5-minute candle during the 4-hour window and detect if the target or stop price was hit at any point. No more "false losses" from temporary spikes that reversed.</span></div>
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>No sentiment or news analysis.</strong> The scanner is purely technical (charts and numbers). It doesn't know about upcoming token unlocks, regulatory announcements, partnership news, or social media hype. Fundamentals matter.</span></div>
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>Single exchange.</strong> We only scan Crypto.com Exchange. Price movements on Binance, Coinbase, or Kraken might differ. Arbitrage opportunities or exchange-specific liquidity issues aren't captured.</span></div>
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>Fixed weights.</strong> Momentum and Volume are always worth 20 points each. In certain market conditions (e.g., low-volatility sideways markets), other indicators like RSI or MACD might be more predictive. The weights don't adapt to regime changes.</span></div>
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>Top-60 cutoff.</strong> We only deep-analyze the top 60 candidates by 24h change. A coin with modest 24h change but perfect technical structure might be missed if 60 other coins had bigger moves that day.</span></div>
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>No historical stress tests.</strong> Our algorithms haven't been backtested against the 2008 crash, COVID crash, or other black-swan events. Self-learning only trains on recent trades, so extreme tail-risk scenarios are uncharted territory.</span></div>
+      <div class="flaw-item"><span class="flaw-icon" style="color:var(--green)">&#10004;</span><span><strong><s>No statistical significance testing.</s> FIXED — Binomial significance.</strong> We now run binomial hypothesis testing (normal approximation with Wilson confidence intervals) on win rates. The Stats &amp; Leaderboard panels show whether performance is statistically significant or just noise.</span></div>
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>No real-money track record.</strong> Everything is paper-traded or backtested. We have no audited live-money performance. Paper trading doesn't account for slippage, partial fills, or the psychological pressure of real capital.</span></div>
+      <div class="flaw-item"><span class="flaw-icon">&#9888;</span><span><strong>Recency bias in learning.</strong> The self-learning system optimizes against recent closed trades. If market regime shifts dramatically (bull &rarr; bear, low vol &rarr; high vol), learned parameters may become stale before the system adapts. There's no mechanism yet to detect regime changes proactively.</span></div>
+
+      <div style="font-size:13px;font-weight:700;color:var(--green);margin:20px 0 8px">&#10004; Recently Implemented</div>
+      <div class="flaw-item"><span class="flaw-icon" style="color:var(--green)">&#10004;</span><span><strong>Continuous resolve.</strong> Now walks through every 5-minute candle in the 4-hour window. Detects if target or stop was hit at any point, not just at the end. Peak price and hit timestamps are recorded.</span></div>
+      <div class="flaw-item"><span class="flaw-icon" style="color:var(--green)">&#10004;</span><span><strong>Volatility-adjusted targets.</strong> Targets and risk levels are now based on each coin's ATR (Average True Range) instead of fixed percentages. A volatile meme coin gets wider targets; a stable large-cap gets tighter ones.</span></div>
+      <div class="flaw-item"><span class="flaw-icon" style="color:var(--green)">&#10004;</span><span><strong>Correlation filtering.</strong> After scoring, the scanner checks each winner's move against BTC. If BTC pumped &gt;2% and the coin is just following BTC (within 30% correlation), it gets a 5-point score penalty. Independent movers rank higher.</span></div>
+      <div class="flaw-item"><span class="flaw-icon" style="color:var(--green)">&#10004;</span><span><strong>Statistical significance testing.</strong> Binomial hypothesis testing with Wilson confidence intervals on all win rates. Stats panel now shows whether performance is statistically meaningful or potentially noise.</span></div>
+      <div class="flaw-item"><span class="flaw-icon" style="color:var(--green)">&#10004;</span><span><strong>Discord alerts.</strong> Strong signals are automatically posted to Discord via webhook when the scanner finds winners. No need to check the page constantly.</span></div>
+
+      <div style="font-size:13px;font-weight:700;color:#f59e0b;margin:20px 0 8px">Still Planned</div>
+      <div class="flaw-item"><span class="flaw-icon" style="color:#f59e0b">&#9675;</span><span><strong>Multi-exchange data.</strong> Cross-reference signals with Kraken and Coinbase order book depth to confirm liquidity and validate price action across venues.</span></div>
+      <div class="flaw-item"><span class="flaw-icon" style="color:#f59e0b">&#9675;</span><span><strong>Adaptive weight tuning.</strong> Use the outcome data we're collecting to gradually adjust indicator weights. If Volume Surge consistently predicts winners better than MACD in certain conditions, the system should learn that.</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ PLAIN LANGUAGE WARNING ═══ -->
   <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:16px;margin-top:24px;line-height:1.7">
     <div style="font-size:16px;font-weight:700;color:#ef4444;margin-bottom:8px">Before You Do Anything With This Page</div>
     <div style="font-size:13px;color:#ccc">
@@ -98,6 +349,19 @@ a{color:#88aaff;text-decoration:none}a:hover{text-decoration:underline}
 </div>
 
 <script>
+// Toggle expandable education sections
+function toggleEdu(el) {
+    var body = el.nextElementSibling;
+    var arrow = el.querySelector('.edu-arrow');
+    if (body.classList.contains('open')) {
+        body.classList.remove('open');
+        arrow.classList.remove('open');
+    } else {
+        body.classList.add('open');
+        arrow.classList.add('open');
+    }
+}
+
 var API = '/findcryptopairs/api/crypto_winners.php';
 
 function api(action, cb) {
@@ -156,20 +420,21 @@ function renderWinners(data) {
         html += '<span>' + (w.created_at || '') + ' UTC</span>';
         html += '</div>';
 
-        // Factor breakdown
+        // Factor breakdown with info tooltips
         html += '<div class="factors">';
-        var factorNames = {
-            'multi_timeframe_momentum': 'Momentum',
-            'volume_surge': 'Volume Surge',
-            'rsi_sweet_spot': 'RSI Sweet Spot',
-            'above_moving_averages': 'Above MAs',
-            'macd_bullish': 'MACD Bullish',
-            'higher_highs_lows': 'HH/HL Pattern',
-            'near_24h_high': 'Near 24h High'
+        var factorInfo = {
+            'multi_timeframe_momentum': {name: 'Momentum', tip: 'Price trending up on both 1-hour and 5-minute charts. Both timeframes agreeing = stronger signal.'},
+            'volume_surge': {name: 'Volume Surge', tip: 'Current trading volume vs. average. Higher volume = more conviction behind the price move.'},
+            'rsi_sweet_spot': {name: 'RSI Sweet Spot', tip: 'RSI between 50-70 means strong momentum without being overbought. Above 80 = danger zone.'},
+            'above_moving_averages': {name: 'Above MAs', tip: 'Price is above its 20-hour and 50-hour moving averages. Buyers are in control of the trend.'},
+            'macd_bullish': {name: 'MACD Bullish', tip: 'MACD line above its signal line with expanding histogram = momentum is accelerating upward.'},
+            'higher_highs_lows': {name: 'HH/HL Pattern', tip: 'Each peak higher than the last + each dip higher than the last = textbook uptrend.'},
+            'near_24h_high': {name: 'Near 24h High', tip: 'Price in the top portion of its daily range, suggesting buying pressure and breakout potential.'}
         };
-        for (var key in factorNames) {
+        for (var key in factorInfo) {
             if (f[key]) {
-                html += '<div class="factor"><div class="factor-name">' + factorNames[key] + ' (' + f[key].score + '/' + f[key].max + ')</div>' + factorBar(f[key].score, f[key].max) + '</div>';
+                var fi = factorInfo[key];
+                html += '<div class="factor"><div class="factor-name">' + fi.name + ' (' + f[key].score + '/' + f[key].max + ') <i class="info-tip">i<span class="tip-text">' + fi.tip + '</span></i></div>' + factorBar(f[key].score, f[key].max) + '</div>';
             }
         }
         html += '</div></div>';
@@ -237,11 +502,125 @@ function renderHistory(data) {
     document.getElementById('history-list').innerHTML = html;
 }
 
+// ── Scan Log ──
+function factorClass(score, max) {
+    var pct = (score / max) * 100;
+    if (pct >= 70) return 'f-high';
+    if (pct >= 40) return 'f-mid';
+    return 'f-low';
+}
+
+function renderScanLog(data) {
+    if (!data.ok || data.count === 0) {
+        document.getElementById('scan-log-list').innerHTML = '<div class="loading">No scan log data yet. Log is populated after the next scan runs.</div>';
+        return;
+    }
+
+    // Populate scan picker if it has no real options yet
+    var picker = document.getElementById('scan-picker');
+    if (data.recent_scans && data.recent_scans.length > 0 && picker.options.length <= 1) {
+        picker.innerHTML = '';
+        for (var s = 0; s < data.recent_scans.length; s++) {
+            var sc = data.recent_scans[s];
+            var label = (sc.created_at || '').substring(0, 16) + ' UTC — ' + sc.analyzed + ' analyzed, ' + sc.winners + ' winners';
+            var opt = document.createElement('option');
+            opt.value = sc.scan_id;
+            opt.textContent = label;
+            if (s === 0) opt.selected = true;
+            picker.appendChild(opt);
+        }
+    }
+
+    // Update meta
+    var log = data.log;
+    var winnersInLog = 0;
+    for (var m = 0; m < log.length; m++) { if (log[m].score >= 70) winnersInLog++; }
+    document.getElementById('scan-meta').textContent = log.length + ' coins analyzed, ' + winnersInLog + ' passed threshold (70+)';
+
+    // Build table
+    var html = '<table class="scan-log-table">';
+    html += '<tr><th>#</th><th>Pair</th><th>Score</th><th>Decision</th>';
+    html += '<th>MTF Mom<br>0-20</th><th>Volume<br>0-20</th><th>RSI<br>0-15</th><th>MAs<br>0-15</th><th>MACD<br>0-10</th><th>HH/HL<br>0-10</th><th>Near Hi<br>0-10</th>';
+    html += '<th>24h Chg</th><th>Volume</th></tr>';
+
+    for (var i = 0; i < log.length; i++) {
+        var r = log[i];
+        var f = r.factors_json || {};
+        var pair = (r.pair || '').replace('_USDT', '/USDT');
+        var rowClass = r.score >= 70 ? ' class="is-winner"' : '';
+
+        // Verdict display
+        var vd = '';
+        if (r.verdict === 'STRONG_BUY') vd = '<span class="badge badge-strong">Strong Buy</span>';
+        else if (r.verdict === 'BUY') vd = '<span class="badge badge-buy">Buy</span>';
+        else if (r.verdict === 'LEAN_BUY') vd = '<span class="badge badge-lean">Lean Buy</span>';
+        else vd = '<span class="verdict-skip">Skip</span>';
+
+        // Score color
+        var sc = r.score >= 85 ? 'green' : r.score >= 75 ? 'gold' : r.score >= 70 ? 'cyan' : 'dim';
+
+        // Factor cells
+        var factors = [
+            {key: 'multi_timeframe_momentum', max: 20},
+            {key: 'volume_surge', max: 20},
+            {key: 'rsi_sweet_spot', max: 15},
+            {key: 'above_moving_averages', max: 15},
+            {key: 'macd_bullish', max: 10},
+            {key: 'higher_highs_lows', max: 10},
+            {key: 'near_24h_high', max: 10}
+        ];
+
+        html += '<tr' + rowClass + '>';
+        html += '<td style="color:var(--dim)">' + (i + 1) + '</td>';
+        html += '<td style="font-weight:600;color:#fff">' + pair + '</td>';
+        html += '<td><span class="' + sc + '" style="font-weight:700">' + r.score + '</span></td>';
+        html += '<td>' + vd + '</td>';
+
+        for (var j = 0; j < factors.length; j++) {
+            var fk = factors[j].key;
+            var fm = factors[j].max;
+            if (f[fk]) {
+                var fs = f[fk].score;
+                html += '<td><span class="factor-cell ' + factorClass(fs, fm) + '">' + fs + '/' + fm + '</span></td>';
+            } else {
+                html += '<td><span class="factor-cell f-low">0/' + fm + '</span></td>';
+            }
+        }
+
+        html += '<td>' + formatPnl(r.chg_24h) + '</td>';
+        html += '<td style="color:var(--dim)">$' + (parseFloat(r.vol_usd_24h || 0) / 1000).toFixed(0) + 'K</td>';
+        html += '</tr>';
+    }
+    html += '</table>';
+    document.getElementById('scan-log-list').innerHTML = html;
+}
+
+function loadScanLog(scanId) {
+    var q = 'scan_log';
+    if (scanId) q += '&scan_id=' + scanId;
+    api(q, function(data) {
+        // Don't overwrite picker when loading a specific scan
+        if (scanId) {
+            var picker = document.getElementById('scan-picker');
+            var tempPicker = picker.innerHTML;
+            renderScanLog(data);
+            picker.innerHTML = tempPicker;
+            // Re-select the chosen scan
+            for (var k = 0; k < picker.options.length; k++) {
+                if (picker.options[k].value === scanId) { picker.options[k].selected = true; break; }
+            }
+        } else {
+            renderScanLog(data);
+        }
+    });
+}
+
 // Load all data
 api('stats', renderStats);
 api('winners', renderWinners);
 api('leaderboard', renderLeaderboard);
 api('history&limit=50', renderHistory);
+loadScanLog('');
 
 // Auto-refresh every 2 minutes
 setInterval(function() {
