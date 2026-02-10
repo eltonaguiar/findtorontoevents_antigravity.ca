@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Learning Suite — Portfolio2</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d1117;color:#c9d1d9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;line-height:1.5}
+a{color:#58a6ff;text-decoration:none}a:hover{text-decoration:underline}
+.header{background:#161b22;border-bottom:1px solid #30363d;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.header h1{font-size:20px;color:#f0f6fc;font-weight:600}
+.header-links{display:flex;gap:16px;flex-wrap:wrap;font-size:13px}
+.container{max-width:1280px;margin:0 auto;padding:20px 24px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid #30363d;margin-bottom:20px;flex-wrap:wrap}
+.tab-btn{background:none;border:none;color:#8b949e;padding:10px 18px;font-size:14px;cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
+.tab-btn:hover{color:#c9d1d9}.tab-btn.active{color:#58a6ff;border-bottom-color:#58a6ff}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+.stat-card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;text-align:center}
+.stat-card .label{font-size:12px;color:#8b949e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.stat-card .value{font-size:28px;font-weight:700;color:#f0f6fc}
+.stat-card .value.green{color:#3fb950}.stat-card .value.red{color:#f85149}.stat-card .value.blue{color:#58a6ff}
+table{width:100%;border-collapse:collapse;background:#161b22;border:1px solid #30363d;border-radius:8px;overflow:hidden;margin-bottom:16px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid #21262d;font-size:13px}
+th{background:#1c2128;color:#8b949e;font-weight:600;cursor:pointer;user-select:none;white-space:nowrap}
+th:hover{color:#c9d1d9}th .sort-arrow{margin-left:4px;font-size:10px}
+tr:hover{background:#1c2128}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600}
+.badge-green{background:#238636;color:#fff}.badge-red{background:#da3633;color:#fff}
+.badge-gray{background:#30363d;color:#8b949e}.badge-blue{background:#1f6feb;color:#fff}
+.badge-yellow{background:#9e6a03;color:#fff}
+.refresh-btn{background:#21262d;border:1px solid #30363d;color:#c9d1d9;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;margin-bottom:16px}
+.refresh-btn:hover{background:#30363d;border-color:#58a6ff}
+.all-clear{background:#0d4429;border:1px solid #238636;border-radius:8px;padding:20px;text-align:center;font-size:18px;font-weight:600;color:#3fb950;margin-bottom:16px}
+.breaker-active{background:#490b0b;border:1px solid #da3633;border-radius:8px;padding:20px;text-align:center;font-size:18px;font-weight:600;color:#f85149;margin-bottom:16px}
+.loading{text-align:center;padding:40px;color:#8b949e;font-size:14px}
+.error-msg{background:#490b0b;border:1px solid #da3633;border-radius:8px;padding:14px;color:#f85149;margin-bottom:16px}
+.section-title{font-size:16px;font-weight:600;color:#f0f6fc;margin:18px 0 10px}
+@media(max-width:768px){.header{padding:10px 14px}.container{padding:14px}.tab-btn{padding:8px 12px;font-size:13px}th,td{padding:8px 10px;font-size:12px}.stat-card .value{font-size:22px}}
+.data-type-tag { font-size:0.6rem; padding:0.15rem 0.5rem; border-radius:4px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; vertical-align:middle; }
+.tag-backtest { background:rgba(234,179,8,0.15); color:#eab308; border:1px solid rgba(234,179,8,0.3); }
+.tag-live { background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3); }
+.tag-forward { background:rgba(99,102,241,0.15); color:#6366f1; border:1px solid rgba(99,102,241,0.3); }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Smart Learning Suite</h1>
+  <div class="header-links">
+    <a href="horizon-picks.html">Top Picks</a>
+    <a href="leaderboard.html">Leaderboard</a>
+    <a href="dividends.html">Dividends</a>
+    <a href="learning-lab.html">Learning Lab</a>
+    <a href="dashboard.html">Dashboard</a>
+  </div>
+</div>
+<div class="container">
+  <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;font-size:0.72rem;color:#8b949e;margin-bottom:14px;padding:0.5rem 0.75rem;background:rgba(234,179,8,0.04);border:1px solid rgba(234,179,8,0.15);border-radius:8px;">
+      <span>Data types:</span>
+      <span class="data-type-tag tag-backtest">Backtest</span> <span>Walk-Forward, Rolling, Paper, Kelly</span>
+      <span style="opacity:0.3;">|</span>
+      <span class="data-type-tag tag-live">Live</span> <span>Circuit Breakers</span>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="walkforward">Walk-Forward <span class="data-type-tag tag-backtest" style="font-size:0.5rem;padding:0.1rem 0.3rem;">BT</span></button>
+    <button class="tab-btn" data-tab="rolling">Rolling Performance <span class="data-type-tag tag-backtest" style="font-size:0.5rem;padding:0.1rem 0.3rem;">BT</span></button>
+    <button class="tab-btn" data-tab="paper">Paper Trading <span class="data-type-tag tag-backtest" style="font-size:0.5rem;padding:0.1rem 0.3rem;">BT</span></button>
+    <button class="tab-btn" data-tab="kelly">Kelly Sizing <span class="data-type-tag tag-backtest" style="font-size:0.5rem;padding:0.1rem 0.3rem;">BT</span></button>
+    <button class="tab-btn" data-tab="circuit">Circuit Breakers <span class="data-type-tag tag-live" style="font-size:0.5rem;padding:0.1rem 0.3rem;">LIVE</span></button>
+  </div>
+
+  <!-- Walk-Forward -->
+  <div id="tab-walkforward" class="tab-panel active">
+    <button class="refresh-btn" onclick="loadWalkForward()">Refresh</button>
+    <div id="wf-stats" class="stats-row"></div>
+    <div id="wf-content"><div class="loading">Loading walk-forward results...</div></div>
+  </div>
+
+  <!-- Rolling Performance -->
+  <div id="tab-rolling" class="tab-panel">
+    <button class="refresh-btn" onclick="loadRolling()">Refresh</button>
+    <div id="roll-stats" class="stats-row"></div>
+    <div id="roll-content"><div class="loading">Loading rolling performance...</div></div>
+  </div>
+
+  <!-- Paper Trading -->
+  <div id="tab-paper" class="tab-panel">
+    <button class="refresh-btn" onclick="loadPaper()">Refresh</button>
+    <div id="paper-stats" class="stats-row"></div>
+    <div id="paper-content"><div class="loading">Loading paper trading data...</div></div>
+  </div>
+
+  <!-- Kelly Sizing -->
+  <div id="tab-kelly" class="tab-panel">
+    <button class="refresh-btn" onclick="loadKelly()">Refresh</button>
+    <div id="kelly-stats" class="stats-row"></div>
+    <div id="kelly-content"><div class="loading">Loading Kelly sizing...</div></div>
+  </div>
+
+  <!-- Circuit Breakers -->
+  <div id="tab-circuit" class="tab-panel">
+    <button class="refresh-btn" onclick="loadCircuit()">Refresh</button>
+    <div id="circuit-status"></div>
+    <div id="circuit-content"><div class="loading">Loading circuit breakers...</div></div>
+  </div>
+</div>
+
+<script>
+var API_BASE = 'api/';
+
+// --- Tab switching ---
+var tabBtns = document.querySelectorAll('.tab-btn');
+var tabPanels = document.querySelectorAll('.tab-panel');
+var tabLoaded = {};
+
+function switchTab(name) {
+  for (var i = 0; i < tabBtns.length; i++) {
+    tabBtns[i].classList.toggle('active', tabBtns[i].getAttribute('data-tab') === name);
+  }
+  for (var j = 0; j < tabPanels.length; j++) {
+    tabPanels[j].classList.toggle('active', tabPanels[j].id === 'tab-' + name);
+  }
+  if (!tabLoaded[name]) {
+    tabLoaded[name] = true;
+    var loaders = {walkforward: loadWalkForward, rolling: loadRolling, paper: loadPaper, kelly: loadKelly, circuit: loadCircuit};
+    if (loaders[name]) loaders[name]();
+  }
+}
+
+for (var i = 0; i < tabBtns.length; i++) {
+  tabBtns[i].addEventListener('click', function() { switchTab(this.getAttribute('data-tab')); });
+}
+
+// --- XHR helper ---
+function fetchJSON(url, cb) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url, true);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        try { cb(null, JSON.parse(xhr.responseText)); }
+        catch(e) { cb('Invalid JSON response'); }
+      } else { cb('HTTP ' + xhr.status); }
+    }
+  };
+  xhr.send();
+}
+
+// --- Sorting ---
+var sortState = {};
+
+function sortTable(tableId, colIdx, dataType) {
+  var table = document.getElementById(tableId);
+  if (!table) return;
+  var tbody = table.querySelector('tbody');
+  if (!tbody) return;
+  var rows = Array.prototype.slice.call(tbody.rows);
+  var key = tableId + '-' + colIdx;
+  var asc = sortState[key] === 'asc' ? false : true;
+  sortState[key] = asc ? 'asc' : 'desc';
+
+  rows.sort(function(a, b) {
+    var av = a.cells[colIdx] ? a.cells[colIdx].getAttribute('data-val') || a.cells[colIdx].textContent.trim() : '';
+    var bv = b.cells[colIdx] ? b.cells[colIdx].getAttribute('data-val') || b.cells[colIdx].textContent.trim() : '';
+    if (dataType === 'num') {
+      av = parseFloat(av) || 0; bv = parseFloat(bv) || 0;
+      return asc ? av - bv : bv - av;
+    }
+    return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+  });
+
+  for (var r = 0; r < rows.length; r++) tbody.appendChild(rows[r]);
+
+  // Update arrows
+  var ths = table.querySelectorAll('th');
+  for (var t = 0; t < ths.length; t++) {
+    var arrow = ths[t].querySelector('.sort-arrow');
+    if (arrow) arrow.textContent = (t === colIdx) ? (asc ? '\u25B2' : '\u25BC') : '\u25B4';
+  }
+}
+
+function thClick(tableId, idx, type) {
+  return function() { sortTable(tableId, idx, type); };
+}
+
+function attachSortHandlers(tableId, colTypes) {
+  var table = document.getElementById(tableId);
+  if (!table) return;
+  var ths = table.querySelectorAll('th');
+  for (var i = 0; i < ths.length && i < colTypes.length; i++) {
+    ths[i].addEventListener('click', thClick(tableId, i, colTypes[i]));
+  }
+}
+
+// --- Helpers ---
+function pct(v) { return v != null ? (parseFloat(v) >= 0 ? '+' : '') + parseFloat(v).toFixed(2) + '%' : 'N/A'; }
+function pctRaw(v) { return v != null ? parseFloat(v).toFixed(2) + '%' : 'N/A'; }
+function num2(v) { return v != null ? parseFloat(v).toFixed(2) : 'N/A'; }
+function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+function statCard(label, value, cls) {
+  return '<div class="stat-card"><div class="label">' + esc(label) + '</div><div class="value ' + (cls||'') + '">' + esc(String(value)) + '</div></div>';
+}
+
+function showError(elId, msg) {
+  document.getElementById(elId).innerHTML = '<div class="error-msg">Error: ' + esc(msg) + '</div>';
+}
+
+// --- Walk-Forward ---
+function loadWalkForward() {
+  document.getElementById('wf-content').innerHTML = '<div class="loading">Loading walk-forward results...</div>';
+  fetchJSON(API_BASE + 'walk_forward.php?action=results', function(err, data) {
+    if (err || !data || !data.ok) { showError('wf-content', err || (data && data.error) || 'Unknown error'); return; }
+    var s = data.summaries || [];
+    document.getElementById('wf-stats').innerHTML =
+      statCard('Algorithms', s.length, 'blue') +
+      statCard('Robust', data.robust_count || 0, 'green') +
+      statCard('Overfitting', data.overfitting_count || 0, 'red');
+
+    var h = '<table id="wf-table"><thead><tr>' +
+      '<th>Algorithm <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>Strategy <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>WF Efficiency <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>OOS Return <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>IS Return <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>Folds <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>Status <span class="sort-arrow">\u25B4</span></th>' +
+      '</tr></thead><tbody>';
+    for (var i = 0; i < s.length; i++) {
+      var r = s[i];
+      var ovf = parseInt(r.overfitting_flag) === 1;
+      h += '<tr>' +
+        '<td>' + esc(r.algorithm_name || r.source_table) + '</td>' +
+        '<td>' + esc(r.strategy_name || '-') + '</td>' +
+        '<td data-val="' + (r.avg_wf_efficiency||0) + '">' + pctRaw(r.avg_wf_efficiency) + '</td>' +
+        '<td data-val="' + (r.avg_oos_return||0) + '">' + pct(r.avg_oos_return) + '</td>' +
+        '<td data-val="' + (r.avg_is_return||0) + '">' + pct(r.avg_is_return) + '</td>' +
+        '<td data-val="' + (r.total_folds||0) + '">' + (r.total_folds||0) + '</td>' +
+        '<td data-val="' + (ovf?1:0) + '"><span class="badge ' + (ovf?'badge-red':'badge-green') + '">' + (ovf?'Overfit':'Robust') + '</span></td>' +
+        '</tr>';
+    }
+    h += '</tbody></table>';
+    document.getElementById('wf-content').innerHTML = h;
+    attachSortHandlers('wf-table', ['str','str','num','num','num','num','num']);
+  });
+}
+
+// --- Rolling Performance ---
+function loadRolling() {
+  document.getElementById('roll-content').innerHTML = '<div class="loading">Loading rolling performance...</div>';
+  fetchJSON(API_BASE + 'rolling_perf.php?action=dashboard', function(err, data) {
+    if (err || !data || !data.ok) { showError('roll-content', err || (data && data.error) || 'Unknown error'); return; }
+    var algos = data.algorithms || [];
+    var sm = data.summary || {};
+    document.getElementById('roll-stats').innerHTML =
+      statCard('Total', sm.total || algos.length, 'blue') +
+      statCard('Hot Streak', sm.hot_streak || 0, 'green') +
+      statCard('Cold Streak', sm.cold_streak || 0, 'red');
+
+    var h = '<table id="roll-table"><thead><tr>' +
+      '<th>Algorithm <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>Source <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>All-Time WR <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>30d WR <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>7d WR <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>Weight <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>Trend <span class="sort-arrow">\u25B4</span></th>' +
+      '</tr></thead><tbody>';
+    for (var i = 0; i < algos.length; i++) {
+      var a = algos[i];
+      var trendCls = 'badge-gray', trendLabel = a.trend || 'stable';
+      if (a.trend === 'hot_streak') { trendCls = 'badge-green'; trendLabel = 'Hot'; }
+      else if (a.trend === 'cold_streak') { trendCls = 'badge-red'; trendLabel = 'Cold'; }
+      else if (a.trend === 'improving') { trendCls = 'badge-blue'; trendLabel = 'Improving'; }
+      else { trendLabel = 'Stable'; }
+      h += '<tr>' +
+        '<td>' + esc(a.algorithm) + '</td>' +
+        '<td>' + esc(a.source || '-') + '</td>' +
+        '<td data-val="' + (a.all_time_wr||0) + '">' + pctRaw(a.all_time_wr) + '</td>' +
+        '<td data-val="' + (a.rolling_30d_wr||0) + '">' + pctRaw(a.rolling_30d_wr) + '</td>' +
+        '<td data-val="' + (a.rolling_7d_wr||0) + '">' + pctRaw(a.rolling_7d_wr) + '</td>' +
+        '<td data-val="' + (a.blended_weight||0) + '">' + num2(a.blended_weight) + '</td>' +
+        '<td data-val="' + esc(a.trend||'') + '"><span class="badge ' + trendCls + '">' + esc(trendLabel) + '</span></td>' +
+        '</tr>';
+    }
+    h += '</tbody></table>';
+    document.getElementById('roll-content').innerHTML = h;
+    attachSortHandlers('roll-table', ['str','str','num','num','num','num','str']);
+  });
+}
+
+// --- Paper Trading ---
+function loadPaper() {
+  document.getElementById('paper-content').innerHTML = '<div class="loading">Loading paper trading data...</div>';
+  fetchJSON(API_BASE + 'paper_trade.php?action=dashboard', function(err, data) {
+    if (err || !data || !data.ok) { showError('paper-content', err || (data && data.error) || 'Unknown error'); return; }
+    var st = data.stats || {};
+    document.getElementById('paper-stats').innerHTML =
+      statCard('Win Rate', pctRaw(st.win_rate), parseFloat(st.win_rate) >= 50 ? 'green' : 'red') +
+      statCard('Avg Return', pct(st.avg_return), parseFloat(st.avg_return) >= 0 ? 'green' : 'red') +
+      statCard('Profit Factor', num2(st.profit_factor), parseFloat(st.profit_factor) >= 1 ? 'green' : 'red') +
+      statCard('Total Return', pct(st.total_return_pct), parseFloat(st.total_return_pct) >= 0 ? 'green' : 'red') +
+      statCard('Days Tracking', data.days_tracking || 0, 'blue');
+
+    var openPos = data.open_positions || [];
+    var h = '<div class="section-title">Open Positions (' + openPos.length + ')</div>';
+    if (openPos.length > 0) {
+      h += '<table id="paper-table"><thead><tr>' +
+        '<th>Ticker <span class="sort-arrow">\u25B4</span></th>' +
+        '<th>Algorithm <span class="sort-arrow">\u25B4</span></th>' +
+        '<th>Entry <span class="sort-arrow">\u25B4</span></th>' +
+        '<th>Current <span class="sort-arrow">\u25B4</span></th>' +
+        '<th>Unrealized <span class="sort-arrow">\u25B4</span></th>' +
+        '<th>Hold Days <span class="sort-arrow">\u25B4</span></th>' +
+        '</tr></thead><tbody>';
+      for (var i = 0; i < openPos.length; i++) {
+        var p = openPos[i];
+        var ur = parseFloat(p.unrealized_pct) || 0;
+        h += '<tr>' +
+          '<td><strong>' + esc(p.ticker) + '</strong></td>' +
+          '<td>' + esc(p.algorithm_name || '-') + '</td>' +
+          '<td data-val="' + (p.entry_price||0) + '">$' + num2(p.entry_price) + '</td>' +
+          '<td data-val="' + (p.current_price||0) + '">$' + num2(p.current_price) + '</td>' +
+          '<td data-val="' + ur + '" style="color:' + (ur >= 0 ? '#3fb950' : '#f85149') + '">' + pct(p.unrealized_pct) + '</td>' +
+          '<td data-val="' + (p.hold_days||0) + '">' + (p.hold_days||0) + 'd</td>' +
+          '</tr>';
+      }
+      h += '</tbody></table>';
+    } else {
+      h += '<div style="color:#8b949e;padding:14px">No open positions.</div>';
+    }
+
+    // Trade summary stats
+    h += '<div class="section-title">Trade Summary</div>';
+    h += '<div class="stats-row">' +
+      statCard('Total Trades', st.total_trades || 0, '') +
+      statCard('Closed', st.closed || 0, '') +
+      statCard('Open', st.open || 0, 'blue') +
+      statCard('Wins', st.wins || 0, 'green') +
+      statCard('Losses', st.losses || 0, 'red') +
+      statCard('Avg Hold', (st.avg_hold_days || 0) + 'd', '') +
+      '</div>';
+
+    document.getElementById('paper-content').innerHTML = h;
+    if (openPos.length > 0) {
+      attachSortHandlers('paper-table', ['str','str','num','num','num','num']);
+    }
+  });
+}
+
+// --- Kelly Sizing ---
+function loadKelly() {
+  document.getElementById('kelly-content').innerHTML = '<div class="loading">Loading Kelly sizing...</div>';
+  fetchJSON(API_BASE + 'kelly_sizing.php?action=all', function(err, data) {
+    if (err || !data || !data.ok) { showError('kelly-content', err || (data && data.error) || 'Unknown error'); return; }
+    var algos = data.algorithms || [];
+    document.getElementById('kelly-stats').innerHTML =
+      statCard('With Edge', data.with_edge || 0, 'green') +
+      statCard('Without Edge', data.without_edge || 0, 'red') +
+      statCard('Total', algos.length, 'blue');
+
+    var h = '<table id="kelly-table"><thead><tr>' +
+      '<th>Algorithm <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>Source <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>Win Rate <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>Avg Win <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>Avg Loss <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>Full Kelly <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>Recommended <span class="sort-arrow">\u25B4</span></th>' +
+      '<th>Edge <span class="sort-arrow">\u25B4</span></th>' +
+      '</tr></thead><tbody>';
+    for (var i = 0; i < algos.length; i++) {
+      var a = algos[i];
+      var hasEdge = a.has_edge === true || a.has_edge === 'true' || a.has_edge === 1 || a.has_edge === '1';
+      h += '<tr>' +
+        '<td>' + esc(a.algorithm) + '</td>' +
+        '<td>' + esc(a.source || '-') + '</td>' +
+        '<td data-val="' + (a.win_rate||0) + '">' + pctRaw(a.win_rate) + '</td>' +
+        '<td data-val="' + (a.avg_win||0) + '">' + pct(a.avg_win) + '</td>' +
+        '<td data-val="' + (a.avg_loss||0) + '">' + pct(a.avg_loss) + '</td>' +
+        '<td data-val="' + (a.full_kelly||0) + '">' + pctRaw(a.full_kelly) + '</td>' +
+        '<td data-val="' + (a.recommended_pct||0) + '" style="font-weight:600;color:' + (hasEdge?'#3fb950':'#8b949e') + '">' + pctRaw(a.recommended_pct) + '</td>' +
+        '<td data-val="' + (hasEdge?1:0) + '"><span class="badge ' + (hasEdge?'badge-green':'badge-red') + '">' + (hasEdge?'Yes':'No') + '</span></td>' +
+        '</tr>';
+    }
+    h += '</tbody></table>';
+    document.getElementById('kelly-content').innerHTML = h;
+    attachSortHandlers('kelly-table', ['str','str','num','num','num','num','num','num']);
+  });
+}
+
+// --- Circuit Breakers ---
+function loadCircuit() {
+  document.getElementById('circuit-content').innerHTML = '<div class="loading">Loading circuit breakers...</div>';
+  document.getElementById('circuit-status').innerHTML = '';
+  var statusDone = false, checkDone = false;
+  var statusData = null, checkData = null;
+
+  function renderCircuit() {
+    if (!statusDone || !checkDone) return;
+
+    // Status banner
+    var sh = '';
+    if (statusData && statusData.ok) {
+      if (statusData.all_clear) {
+        sh = '<div class="all-clear">ALL CLEAR &mdash; No active circuit breakers</div>';
+      } else {
+        sh = '<div class="breaker-active">ACTIVE BREAKERS: ' + (statusData.count || 0) + '</div>';
+        if (statusData.active_breakers && statusData.active_breakers.length > 0) {
+          sh += '<table><thead><tr><th>Breaker</th><th>Details</th></tr></thead><tbody>';
+          for (var i = 0; i < statusData.active_breakers.length; i++) {
+            var ab = statusData.active_breakers[i];
+            sh += '<tr><td>' + esc(typeof ab === 'string' ? ab : (ab.rule || ab.name || JSON.stringify(ab))) + '</td>' +
+              '<td>' + esc(ab.value != null ? 'Value: ' + ab.value + ' / Threshold: ' + ab.threshold : '') + '</td></tr>';
+          }
+          sh += '</tbody></table>';
+        }
+      }
+    } else {
+      sh = '<div class="error-msg">Could not load circuit breaker status.</div>';
+    }
+    document.getElementById('circuit-status').innerHTML = sh;
+
+    // Check rules
+    var ch = '';
+    if (checkData && checkData.ok) {
+      var breakers = checkData.breakers || [];
+      ch += '<div class="section-title">Breaker Rules (' + breakers.length + ')</div>';
+      ch += '<table id="circuit-table"><thead><tr>' +
+        '<th>Rule <span class="sort-arrow">\u25B4</span></th>' +
+        '<th>Current Value <span class="sort-arrow">\u25B4</span></th>' +
+        '<th>Threshold <span class="sort-arrow">\u25B4</span></th>' +
+        '<th>Action <span class="sort-arrow">\u25B4</span></th>' +
+        '<th>Status <span class="sort-arrow">\u25B4</span></th>' +
+        '</tr></thead><tbody>';
+      for (var j = 0; j < breakers.length; j++) {
+        var b = breakers[j];
+        var trig = b.triggered === true || b.triggered === 1 || b.triggered === '1';
+        ch += '<tr>' +
+          '<td>' + esc(b.rule) + '</td>' +
+          '<td data-val="' + (b.value||0) + '">' + esc(String(b.value != null ? b.value : '-')) + '</td>' +
+          '<td data-val="' + (b.threshold||0) + '">' + esc(String(b.threshold != null ? b.threshold : '-')) + '</td>' +
+          '<td>' + esc(b.action_if_triggered || '-') + '</td>' +
+          '<td data-val="' + (trig?1:0) + '"><span class="badge ' + (trig?'badge-red':'badge-green') + '">' + (trig?'TRIGGERED':'OK') + '</span></td>' +
+          '</tr>';
+      }
+      ch += '</tbody></table>';
+      if (checkData.recommendation) {
+        ch += '<div style="margin-top:12px;padding:12px;background:#161b22;border:1px solid #30363d;border-radius:8px"><strong>Recommendation:</strong> ' + esc(checkData.recommendation) + '</div>';
+      }
+    } else {
+      ch = '<div class="error-msg">Could not load breaker check results.</div>';
+    }
+    document.getElementById('circuit-content').innerHTML = ch;
+    attachSortHandlers('circuit-table', ['str','num','num','str','num']);
+  }
+
+  fetchJSON(API_BASE + 'circuit_breaker.php?action=status', function(err, data) {
+    statusDone = true;
+    statusData = (!err && data) ? data : {ok: false};
+    renderCircuit();
+  });
+
+  fetchJSON(API_BASE + 'circuit_breaker.php?action=check', function(err, data) {
+    checkDone = true;
+    checkData = (!err && data) ? data : {ok: false};
+    renderCircuit();
+  });
+}
+
+// --- Init: load first tab ---
+tabLoaded['walkforward'] = true;
+loadWalkForward();
+</script>
+</body>
+</html>

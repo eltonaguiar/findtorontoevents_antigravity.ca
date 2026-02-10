@@ -558,6 +558,66 @@
       padding: 6px 14px 2px; font-size: 0.65rem; font-weight: 700;
       text-transform: uppercase; letter-spacing: 0.1em; color: #555;
     }
+
+    /* Expandable sub-menu accordion for Investment Hub */
+    .os-submenu-toggle {
+      display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+      border-radius: 14px; text-decoration: none; color: #e0e0e0;
+      border: 1px solid transparent; transition: all 0.2s; cursor: pointer;
+      background: rgba(255,255,255,0.02); width: 100%;
+    }
+    .os-submenu-toggle:hover {
+      background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.08);
+    }
+    .os-submenu-toggle .os-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+    .os-submenu-toggle .os-text { flex: 1; }
+    .os-submenu-toggle .os-title { font-weight: 700; font-size: 0.92rem; }
+    .os-submenu-toggle .os-desc { font-size: 0.75rem; color: #888; margin-top: 1px; }
+    .os-submenu-toggle .os-chevron {
+      color: #555; font-size: 0.8rem; font-weight: 700; transition: transform 0.25s ease, color 0.2s;
+    }
+    .os-submenu-toggle:hover .os-chevron { color: #ccc; }
+    .os-submenu-toggle.open .os-chevron { transform: rotate(90deg); color: #67e8f9; }
+    .os-submenu-toggle.open { background: rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.15); }
+
+    .os-submenu-panel {
+      max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+      padding-left: 10px;
+    }
+    .os-submenu-panel.open { max-height: 800px; }
+
+    /* Category header inside sub-menu */
+    .os-category-toggle {
+      display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 18px;
+      border-radius: 10px; color: #ccc; cursor: pointer; transition: all 0.2s;
+      background: transparent; width: 100%; border: none; font-family: inherit;
+    }
+    .os-category-toggle:hover { background: rgba(255,255,255,0.04); }
+    .os-category-toggle .os-cat-icon { font-size: 1rem; flex-shrink: 0; width: 28px; text-align: center; }
+    .os-category-toggle .os-cat-title { font-weight: 600; font-size: 0.82rem; flex: 1; text-align: left; }
+    .os-category-toggle .os-cat-chevron {
+      font-size: 0.7rem; color: #555; transition: transform 0.2s ease, color 0.2s;
+    }
+    .os-category-toggle:hover .os-cat-chevron { color: #aaa; }
+    .os-category-toggle.open .os-cat-chevron { transform: rotate(90deg); color: #67e8f9; }
+    .os-category-toggle.open { color: #fff; }
+
+    .os-category-panel {
+      max-height: 0; overflow: hidden; transition: max-height 0.25s ease;
+      padding-left: 12px;
+    }
+    .os-category-panel.open { max-height: 500px; }
+
+    .os-sub-link {
+      display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 30px;
+      border-radius: 8px; text-decoration: none; color: #aaa; font-size: 0.78rem;
+      transition: all 0.15s; cursor: pointer;
+    }
+    .os-sub-link:hover { background: rgba(255,255,255,0.05); color: #fff; transform: translateX(3px); }
+    .os-sub-link .os-sub-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .os-sub-link .os-sub-text { flex: 1; }
+    .os-sub-link .os-sub-arrow { color: #444; font-size: 0.7rem; transition: color 0.15s; }
+    .os-sub-link:hover .os-sub-arrow { color: #888; }
   </style>
 
 </head>
@@ -624,18 +684,20 @@
                       href="/vr/mobile-index.html"><span class="text-base">📱</span> VR Mobile</a>
                   </div>
                 </details>
-                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-amber-500/20 text-amber-200 hover:text-white transition-all border border-transparent hover:border-amber-500/30 overflow-hidden"
-                  href="/fc/#/accountability"><span class="text-lg">🎯</span> Accountability Dashboard</a>
-                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-red-500/20 text-red-200 hover:text-white transition-all border border-transparent hover:border-red-500/30 overflow-hidden"
-                  href="/FIGHTGAME/"><span class="text-lg">⚔️</span> Shadow Arena (Fight Game)</a>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-red-500/20 text-red-200 hover:text-white transition-all border border-transparent hover:border-red-500/30 overflow-hidden"
                   href="/vr/game-arena/fps-v5/"><span class="text-lg">🎮</span> Game Prototypes</a>
+                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-red-500/20 text-red-200 hover:text-white transition-all border border-transparent hover:border-red-500/30 overflow-hidden"
+                  href="/FIGHTGAME/"><span class="text-lg">⚔️</span> Shadow Arena (Fight Game)</a>
+                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-amber-500/20 text-amber-200 hover:text-white transition-all border border-transparent hover:border-amber-500/30 overflow-hidden"
+                  href="/fc/#/accountability"><span class="text-lg">🎯</span> Accountability Dashboard</a>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-cyan-500/20 text-cyan-200 hover:text-white transition-all border border-transparent hover:border-cyan-500/30 overflow-hidden"
                   href="/gotjob/"><span class="text-lg">💼</span> GotJob — Your Job Finding Hub</a>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-blue-500/20 text-blue-200 hover:text-white transition-all border border-transparent hover:border-blue-500/30 overflow-hidden"
                   href="/WINDOWSFIXER/"
                   title="Fixes boot issues such as EFI corrupt, winload.efi missing, or INACCESSIBLE_BOOT_DEVICE."><span
                     class="text-lg">🛠️</span> Windows Boot Fixer</a>
+                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-amber-500/20 text-amber-200 hover:text-white transition-all border border-transparent hover:border-amber-500/30 overflow-hidden"
+                  href="/affiliates/"><span class="text-lg">🔗</span> Recommended Gear &amp; Links</a>
                 <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-emerald-500/20 text-emerald-200 hover:text-white transition-all border border-transparent hover:border-emerald-500/30 overflow-hidden"
                   href="/updates/"><span class="text-lg">📋</span> Latest Updates</a>
               </div>
@@ -648,6 +710,13 @@
               <span class="opacity-20 group-hover:opacity-100 transition-opacity">---</span> 📧 Contact Support <span
                 class="opacity-20 group-hover:opacity-100 transition-opacity">---</span>
             </button>
+          </div>
+          <div class="space-y-1 pt-4 border-t border-white/5">
+            <p class="px-4 py-2 text-[10px] font-black uppercase text-[var(--pk-300)] tracking-widest opacity-60">
+              PERSONAL</p><button
+              class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:bg-white/5 text-[var(--text-2)] hover:text-white"><span
+                class="text-lg">♥</span><span class="flex-1 truncate">My Collection</span><span
+                class="bg-black/30 px-2 py-0.5 rounded text-[10px] font-mono">0</span></button>
           </div>
           <div class="space-y-1 pt-4 border-t border-white/5">
             <p class="px-4 py-2 text-[10px] font-black uppercase text-[var(--pk-300)] tracking-widest opacity-60">Data
@@ -665,13 +734,6 @@
                   class="text-[9px] font-black uppercase tracking-wider">Calendar (ICS)</span></button></div><button
               class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-white/5 text-[var(--text-2)] hover:text-white transition-all overflow-hidden"><span
                 class="text-lg">📥</span> Import Collection</button><input accept=".json" class="hidden" type="file" />
-          </div>
-          <div class="space-y-1 pt-4 border-t border-white/5">
-            <p class="px-4 py-2 text-[10px] font-black uppercase text-[var(--pk-300)] tracking-widest opacity-60">
-              PERSONAL</p><button
-              class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:bg-white/5 text-[var(--text-2)] hover:text-white"><span
-                class="text-lg">♥</span><span class="flex-1 truncate">My Collection</span><span
-                class="bg-black/30 px-2 py-0.5 rounded text-[10px] font-mono">0</span></button>
           </div>
           <div class="space-y-1 pt-4 border-t border-white/5">
             <p class="px-4 py-2 text-[10px] font-black uppercase text-[var(--pk-300)] tracking-widest opacity-60">
@@ -914,40 +976,6 @@
             </div>
           </div>
         </div>
-        <!-- Accountability Dashboard -->
-        <div class="accountability-promo w-full">
-          <div class="promo-banner bg-white/5 rounded-2xl p-5 h-full">
-            <div class="flex items-center gap-4 transition-all duration-500 group">
-              <div class="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center shadow-lg">
-                <span class="text-3xl">🎯</span>
-              </div>
-              <div class="transition-all duration-500">
-                <div class="flex flex-col whitespace-nowrap">
-                  <span class="text-lg font-bold text-white">Accountability</span>
-                  <span class="text-sm text-[var(--text-2)]">Track goals &amp; stay on course</span>
-                </div>
-              </div>
-              <div class="relative">
-                <a class="ml-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-base font-bold text-white transition-all whitespace-nowrap" href="/fc/#/accountability" target="_blank">Open App →</a>
-              </div>
-              <div class="relative group/info">
-                <button class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-xs flex items-center justify-center cursor-pointer border-0" style="font-size:14px;">ℹ️</button>
-                <div class="absolute left-0 mt-2 w-80 p-4 bg-[#1a1a2e] border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-300 z-[9999] text-left" style="top: 100%;">
-                  <p class="text-xs font-bold text-amber-400 mb-2">🎯 Accountability Dashboard</p>
-                  <div class="space-y-2 text-xs text-[var(--text-2)]">
-                    <p>Set goals, track progress &amp; build <span class="text-white">consistent habits</span>.</p>
-                    <ul class="list-disc list-inside space-y-1 pl-1">
-                      <li><span class="text-white">📊 Progress tracking</span> — Visualize your streaks</li>
-                      <li><span class="text-white">✅ Daily check-ins</span> — Stay accountable daily</li>
-                      <li><span class="text-white">🏆 Milestones</span> — Celebrate your wins</li>
-                    </ul>
-                  </div>
-                  <p class="text-[10px] text-[var(--text-3)] mt-2 italic">Part of FavCreators suite.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
         <!-- Game Prototypes -->
         <div class="gameprototypes-promo w-full">
           <div class="promo-banner bg-white/5 rounded-2xl p-5 h-full">
@@ -978,6 +1006,40 @@
                     </ul>
                   </div>
                   <p class="text-[10px] text-[var(--text-3)] mt-2 italic">Built with Three.js &amp; A-Frame.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Accountability Dashboard -->
+        <div class="accountability-promo w-full">
+          <div class="promo-banner bg-white/5 rounded-2xl p-5 h-full">
+            <div class="flex items-center gap-4 transition-all duration-500 group">
+              <div class="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center shadow-lg">
+                <span class="text-3xl">🎯</span>
+              </div>
+              <div class="transition-all duration-500">
+                <div class="flex flex-col whitespace-nowrap">
+                  <span class="text-lg font-bold text-white">Accountability</span>
+                  <span class="text-sm text-[var(--text-2)]">Track goals &amp; stay on course</span>
+                </div>
+              </div>
+              <div class="relative">
+                <a class="ml-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-base font-bold text-white transition-all whitespace-nowrap" href="/fc/#/accountability" target="_blank">Open App &rarr;</a>
+              </div>
+              <div class="relative group/info">
+                <button class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-xs flex items-center justify-center cursor-pointer border-0" style="font-size:14px;">&#8505;&#65039;</button>
+                <div class="absolute left-0 mt-2 w-80 p-4 bg-[#1a1a2e] border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-300 z-[9999] text-left" style="top: 100%;">
+                  <p class="text-xs font-bold text-amber-400 mb-2">🎯 Accountability Dashboard</p>
+                  <div class="space-y-2 text-xs text-[var(--text-2)]">
+                    <p>Set goals, track progress &amp; build <span class="text-white">consistent habits</span>.</p>
+                    <ul class="list-disc list-inside space-y-1 pl-1">
+                      <li><span class="text-white">📊 Progress tracking</span> — Visualize your streaks</li>
+                      <li><span class="text-white">✅ Daily check-ins</span> — Stay accountable daily</li>
+                      <li><span class="text-white">🏆 Milestones</span> — Celebrate your wins</li>
+                    </ul>
+                  </div>
+                  <p class="text-[10px] text-[var(--text-3)] mt-2 italic">Part of FavCreators suite.</p>
                 </div>
               </div>
             </div>
@@ -3559,18 +3621,51 @@
     + '<div class="os-text"><div class="os-title">Investment Tools</div>'
     + '<div class="os-desc">Stocks, mutual funds, portfolio analysis & backtesting</div></div>'
     + '<span class="os-arrow">\u203A</span></a>'
-    // Investment Hub (Global Dashboard)
-    + '<a href="/findstocks_global/" class="otherstuff-item" target="_blank">'
+    // Investment Hub (Expandable with sub-menus)
+    + '<div class="os-submenu-toggle" data-submenu="investment-hub">'
     + '<div class="os-icon" style="background:rgba(34,197,94,0.15);">\u{1F4CA}</div>'
     + '<div class="os-text"><div class="os-title">Investment Hub</div>'
     + '<div class="os-desc">All portfolios, analytics & tools in one place</div></div>'
-    + '<span class="os-arrow">\u203A</span></a>'
-    // Stock Picks
-    + '<a href="/findstocks/" class="otherstuff-item" target="_blank">'
-    + '<div class="os-icon" style="background:rgba(245,158,11,0.15);">\u{1F4C8}</div>'
-    + '<div class="os-text"><div class="os-title">Stock Ideas</div>'
-    + '<div class="os-desc">AI-validated picks, updated daily</div></div>'
-    + '<span class="os-arrow">\u203A</span></a>'
+    + '<span class="os-chevron">\u203A</span></div>'
+    + '<div class="os-submenu-panel" data-panel="investment-hub">'
+    // ── Stocks sub-category ──
+    + '<div class="os-category-toggle" data-category="stocks"><span class="os-cat-icon">\u{1F4C8}</span><span class="os-cat-title">Stocks</span><span class="os-cat-chevron">\u203A</span></div>'
+    + '<div class="os-category-panel" data-catpanel="stocks">'
+    + '<a href="/findstocks/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#f59e0b;"></span><span class="os-sub-text">Stock Ideas \u2014 AI picks, updated daily</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findstocks/portfolio2/dashboard.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#6366f1;"></span><span class="os-sub-text">Portfolio Dashboard</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findstocks/portfolio2/picks.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#6366f1;"></span><span class="os-sub-text">Quick Picks</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findstocks/portfolio2/horizon-picks.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#6366f1;"></span><span class="os-sub-text">Horizon Picks</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findstocks/portfolio2/dividends.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#22c55e;"></span><span class="os-sub-text">Dividends & Earnings</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findstocks/portfolio2/stats/index.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#6366f1;"></span><span class="os-sub-text">Portfolio Stats</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findstocks/portfolio2/smart-learning.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#a78bfa;"></span><span class="os-sub-text">Smart Learning</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findstocks/portfolio2/stock-intel.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#a78bfa;"></span><span class="os-sub-text">Stock Intel</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findstocks/portfolio2/daytrader-sim.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#f43f5e;"></span><span class="os-sub-text">Day Trader Sim</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findstocks_global/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#22c55e;"></span><span class="os-sub-text">Global Stocks Hub</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '</div>'
+    // ── Mutual Funds sub-category ──
+    + '<div class="os-category-toggle" data-category="mutualfunds"><span class="os-cat-icon">\u{1F4CA}</span><span class="os-cat-title">Mutual Funds</span><span class="os-cat-chevron">\u203A</span></div>'
+    + '<div class="os-category-panel" data-catpanel="mutualfunds">'
+    + '<a href="/findmutualfunds/portfolio1/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#6366f1;"></span><span class="os-sub-text">Fund Portfolio</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findmutualfunds/portfolio1/stats.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#6366f1;"></span><span class="os-sub-text">Fund Stats</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findmutualfunds/portfolio1/report.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#6366f1;"></span><span class="os-sub-text">Fund Report</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findmutualfunds2/portfolio2/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#22c55e;"></span><span class="os-sub-text">Portfolio v2</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findmutualfunds2/portfolio2/stats/index.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#22c55e;"></span><span class="os-sub-text">Portfolio v2 Stats</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '</div>'
+    // ── Crypto sub-category ──
+    + '<div class="os-category-toggle" data-category="crypto"><span class="os-cat-icon">\u{1FA99}</span><span class="os-cat-title">Crypto</span><span class="os-cat-chevron">\u203A</span></div>'
+    + '<div class="os-category-panel" data-catpanel="crypto">'
+    + '<a href="/findcryptopairs/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#f59e0b;"></span><span class="os-sub-text">Crypto Pairs Scanner</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findcryptopairs/portfolio/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#f59e0b;"></span><span class="os-sub-text">Crypto Portfolio</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findcryptopairs/portfolio/stats/index.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#f59e0b;"></span><span class="os-sub-text">Crypto Stats</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '</div>'
+    // ── Forex sub-category ──
+    + '<div class="os-category-toggle" data-category="forex"><span class="os-cat-icon">\u{1F4B1}</span><span class="os-cat-title">Forex</span><span class="os-cat-chevron">\u203A</span></div>'
+    + '<div class="os-category-panel" data-catpanel="forex">'
+    + '<a href="/findforex2/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#06b6d4;"></span><span class="os-sub-text">Forex Scanner</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findforex2/portfolio/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#06b6d4;"></span><span class="os-sub-text">Forex Portfolio</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '<a href="/findforex2/portfolio/stats/index.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#06b6d4;"></span><span class="os-sub-text">Forex Stats</span><span class="os-sub-arrow">\u203A</span></a>'
+    + '</div>'
+    + '</div>'
     // Mental Health
     + '<a href="/MENTALHEALTHRESOURCES/" class="otherstuff-item" target="_blank">'
     + '<div class="os-icon" style="background:rgba(16,185,129,0.15);">\u{1F9E0}</div>'
@@ -3661,8 +3756,15 @@
     + '<div class="os-text"><div class="os-title">Windows Boot Fixer</div>'
     + '<div class="os-desc">Fix BSOD, bootloader & recovery issues</div></div>'
     + '<span class="os-arrow">\u203A</span></a>'
-    // Divider: Updates
+    // Divider: Recommended & Updates
     + '<div class="otherstuff-divider"></div>'
+    + '<div class="otherstuff-section-label">Recommended &amp; Updates</div>'
+    // Recommended Gear & Links
+    + '<a href="/affiliates/" class="otherstuff-item" target="_blank">'
+    + '<div class="os-icon" style="background:rgba(251,191,36,0.15);">\u{1F517}</div>'
+    + '<div class="os-text"><div class="os-title" style="color:#fbbf24;">Recommended Gear &amp; Links</div>'
+    + '<div class="os-desc">Products we personally use, trust &amp; stand behind</div></div>'
+    + '<span class="os-arrow">\u203A</span></a>'
     // Latest Updates
     + '<a href="/updates/" class="otherstuff-item" target="_blank">'
     + '<div class="os-icon" style="background:rgba(16,185,129,0.15);">\u{1F4CB}</div>'
@@ -3749,6 +3851,34 @@
       e.preventDefault();
       e.stopPropagation();
       openOtherStuffMenu();
+      return;
+    }
+    // Investment Hub top-level toggle
+    var subToggle = target.closest && target.closest('.os-submenu-toggle');
+    if (subToggle) {
+      e.preventDefault();
+      e.stopPropagation();
+      var key = subToggle.getAttribute('data-submenu');
+      var panel = document.querySelector('.os-submenu-panel[data-panel="' + key + '"]');
+      if (panel) {
+        var isOpen = panel.classList.contains('open');
+        subToggle.classList.toggle('open', !isOpen);
+        panel.classList.toggle('open', !isOpen);
+      }
+      return;
+    }
+    // Category toggle inside sub-menu (Stocks, Mutual Funds, Crypto, Forex)
+    var catToggle = target.closest && target.closest('.os-category-toggle');
+    if (catToggle) {
+      e.preventDefault();
+      e.stopPropagation();
+      var cat = catToggle.getAttribute('data-category');
+      var catPanel = document.querySelector('.os-category-panel[data-catpanel="' + cat + '"]');
+      if (catPanel) {
+        var catOpen = catPanel.classList.contains('open');
+        catToggle.classList.toggle('open', !catOpen);
+        catPanel.classList.toggle('open', !catOpen);
+      }
       return;
     }
   });

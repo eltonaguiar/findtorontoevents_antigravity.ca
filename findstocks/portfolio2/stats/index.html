@@ -19,11 +19,11 @@
         a:hover { text-decoration:underline; }
         .header { background:linear-gradient(135deg,#12122a,#1e1e3f); border-bottom:1px solid var(--border); padding:1rem 2rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; }
         .header h1 { font-size:1.5rem; background:linear-gradient(135deg,var(--accent),#a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-        .header-links { display:flex; gap:1rem; font-size:0.9rem; }
+        .header-links { display:flex; gap:1rem; font-size:0.9rem; flex-wrap:wrap; }
         .header-links a { color:var(--text-dim); }
         .container { max-width:1200px; margin:0 auto; padding:1.5rem; }
         .card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; margin-bottom:1.5rem; }
-        .card h2 { font-size:1.1rem; margin-bottom:1rem; }
+        .card h2 { font-size:1.1rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
         .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; margin-bottom:1.5rem; }
         .stat-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1rem; text-align:center; }
         .stat-card .label { font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; }
@@ -46,26 +46,42 @@
         .loading { text-align:center; padding:2rem; color:var(--text-dim); }
         .spinner { display:inline-block; width:20px; height:20px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
         @keyframes spin { to { transform:rotate(360deg); } }
-        .progress-bar { background:var(--border); border-radius:4px; height:8px; overflow:hidden; margin-top:0.5rem; }
-        .progress-fill { height:100%; border-radius:4px; transition:width 0.3s; }
         .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
         @media (max-width:768px) { .grid-2 { grid-template-columns:1fr; } .container { padding:1rem; } }
         .refresh-btn { background:var(--accent); color:white; border:none; padding:0.5rem 1rem; border-radius:8px; cursor:pointer; font-size:0.85rem; }
         .refresh-btn:hover { background:#5558e6; }
         .timestamp { font-size:0.8rem; color:var(--text-dim); }
+        .data-type-tag { font-size:0.6rem; padding:0.15rem 0.5rem; border-radius:4px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; vertical-align:middle; }
+        .tag-backtest { background:rgba(234,179,8,0.15); color:var(--yellow); border:1px solid rgba(234,179,8,0.3); }
+        .tag-live { background:rgba(34,197,94,0.15); color:var(--green); border:1px solid rgba(34,197,94,0.3); }
+        .tag-forward { background:rgba(99,102,241,0.15); color:var(--accent); border:1px solid rgba(99,102,241,0.3); }
+        .section-help { font-size:0.78rem; color:var(--text-dim); line-height:1.5; margin-bottom:1rem; padding:0.75rem; background:rgba(99,102,241,0.04); border:1px solid rgba(99,102,241,0.1); border-radius:8px; }
+        .section-help strong { color:var(--text); }
+        .section-meta { font-size:0.7rem; color:var(--text-dim); margin-top:0.75rem; display:flex; gap:1rem; flex-wrap:wrap; }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>System Status &amp; Analytics</h1>
         <div class="header-links">
+            <a href="/findstocks/portfolio2/hub.html">Hub</a>
             <a href="/findstocks/portfolio2/">Dashboard</a>
-            <a href="/findstocks/">Stock Picks</a>
-            <a href="/findstocks/research/">Research</a>
+            <a href="/findstocks/portfolio2/leaderboard.html">Leaderboard</a>
+            <a href="/findstocks/portfolio2/learning-dashboard.html">Self-Learning</a>
+            <a href="/findstocks/">Home</a>
         </div>
     </div>
 
     <div class="container">
+        <!-- Data Integrity Notice -->
+        <div style="background:rgba(234,179,8,0.06);border:1px solid rgba(234,179,8,0.2);border-radius:var(--radius);padding:1rem;margin-bottom:1.5rem;font-size:0.8rem;color:var(--text-dim);line-height:1.6;">
+            <strong style="color:var(--yellow);">Understanding This Data</strong><br>
+            <span class="data-type-tag tag-backtest">Backtest</span> = Simulated results using historical data. Shows what <em>would have</em> happened, not what <em>will</em> happen. Subject to look-ahead bias, survivorship bias, and execution assumptions.<br>
+            <span class="data-type-tag tag-live">Live Data</span> = Real-time database statistics and current prices.<br>
+            <span class="data-type-tag tag-forward">Forward-Looking</span> = Algorithm-generated picks for future trades. Unproven until markets validate them.<br>
+            <strong style="color:var(--text);">Past backtest performance does NOT predict future results.</strong> All simulations assume $10,000 starting capital, 10% position sizing, $10 round-trip commission, and 0.5% slippage unless otherwise noted.
+        </div>
+
         <div id="last-updated" class="card" style="text-align:center;">
             <span class="spinner"></span> Loading system status...
         </div>
@@ -75,48 +91,57 @@
 
         <!-- System Health -->
         <div class="card" id="health-card">
-            <h2>System Health</h2>
+            <h2><span class="data-type-tag tag-live">Live</span> System Health</h2>
+            <div class="section-help">Real-time check of database connectivity, data freshness, and price coverage. A healthy system shows all green. <strong>Data Freshness</strong> checks if the most recent picks are from 2026. <strong>Price Coverage</strong> checks if daily prices are up to date.</div>
             <div id="health-checks"></div>
         </div>
 
         <div class="grid-2">
             <!-- Algorithm Performance -->
             <div class="card">
-                <h2>Algorithm Performance Summary</h2>
+                <h2><span class="data-type-tag tag-live">Live</span> Algorithm Performance Summary</h2>
+                <div class="section-help">Each algorithm generates stock picks with a confidence score (0-100). <strong>Avg Score</strong> is the mean confidence across all picks. Status: Strong (80+), Moderate (60-79), Weak (&lt;60). Scores reflect the algorithm's internal confidence, not realized returns.</div>
                 <div class="table-wrap">
                     <table id="algo-table">
                         <thead><tr><th>Algorithm</th><th>Picks</th><th>Avg Score</th><th>Status</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
+                <div class="section-meta" id="algo-meta"></div>
             </div>
 
             <!-- Strategy Rankings -->
             <div class="card">
-                <h2>Strategy Rankings (All Algos)</h2>
-                <div class="table-wrap">
+                <h2><span class="data-type-tag tag-backtest">Backtest</span> Strategy Rankings</h2>
+                <div class="section-help">Each strategy applies different TP% / SL% / hold period rules to ALL picks and backtests against historical prices. <strong>Return %</strong> is total portfolio return on $10,000. <strong>Win Rate</strong> is % of trades that were profitable. Rankings are pre-computed by our nightly automation and cached.</div>
+                <div id="strat-loading" style="text-align:center;padding:1rem;"><span class="spinner"></span> Loading cached rankings...</div>
+                <div class="table-wrap" style="display:none;" id="strat-wrap">
                     <table id="strat-table">
                         <thead><tr><th>#</th><th>Strategy</th><th>Return %</th><th>Win Rate</th><th>Verdict</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
+                <div class="section-meta" id="strat-meta"></div>
             </div>
         </div>
 
         <!-- Top Trades -->
         <div class="card">
-            <h2>Top Performing Trades</h2>
+            <h2><span class="data-type-tag tag-backtest">Backtest</span> Top Performing Trades</h2>
+            <div class="section-help">The 10 best-performing historical trades from our backtest engine. Uses TP=50%, SL=10%, 30-day max hold on $10,000 capital. <strong>P&amp;L</strong> is net profit after $10 commission and 0.5% slippage per trade. <strong>These are simulated past results, not live trades.</strong></div>
             <div class="table-wrap">
                 <table id="top-trades-table">
                     <thead><tr><th>#</th><th>Ticker</th><th>Algorithm</th><th>Entry</th><th>Exit</th><th>Return %</th><th>P&L</th><th>Hold Days</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
+            <div class="section-meta" id="top-meta"></div>
         </div>
 
         <!-- Worst Trades -->
         <div class="card">
-            <h2>Worst Performing Trades</h2>
+            <h2><span class="data-type-tag tag-backtest">Backtest</span> Worst Performing Trades</h2>
+            <div class="section-help">The 10 worst-performing historical trades using the same backtest parameters. Reviewing losses is critical for understanding risk. <strong>These losses are simulated</strong> — they show what would have happened with those parameters on past picks.</div>
             <div class="table-wrap">
                 <table id="worst-trades-table">
                     <thead><tr><th>#</th><th>Ticker</th><th>Algorithm</th><th>Entry</th><th>Exit</th><th>Return %</th><th>P&L</th><th>Hold Days</th></tr></thead>
@@ -127,31 +152,32 @@
 
         <!-- Learning Algorithm Insights -->
         <div class="card">
-            <h2>Learning Algorithm Recommendations</h2>
-            <button class="refresh-btn" onclick="runLearning()">Run Learning Analysis</button>
-            <div id="learning-results" style="margin-top:1rem;"></div>
+            <h2><span class="data-type-tag tag-backtest">Backtest</span> Learning Algorithm Recommendations</h2>
+            <div class="section-help">Our self-learning engine tests 180 parameter combinations (6 TP x 6 SL x 5 hold periods) per algorithm to find optimal settings. It compares each algo's <strong>current return</strong> vs <strong>best possible return</strong> and recommends parameter changes. Results are pre-computed by the nightly GitHub Actions pipeline. <strong>Heavy computation — uses cached results on page load.</strong></div>
+            <div id="learning-results"><span class="spinner"></span> Loading cached recommendations...</div>
+            <div class="section-meta" id="learning-meta"></div>
         </div>
 
         <!-- Bear / Short Analysis -->
         <div class="card">
-            <h2>Bear Market / Short Opportunity Analysis</h2>
+            <h2><span class="data-type-tag tag-backtest">Backtest</span> Bear Market / Short Opportunity Analysis</h2>
+            <div class="section-help">Identifies stocks that <strong>declined</strong> after our algorithms issued a BUY signal. These "failed longs" reveal potential short/inverse opportunities. <strong>Short Profit %</strong> = what you'd earn if you shorted instead of buying. Also proposes conceptual inverse algorithms. <em>Requires on-demand computation.</em></div>
             <button class="refresh-btn" onclick="runBearAnalysis()">Analyze Short Opportunities</button>
             <div id="bear-results" style="margin-top:1rem;"></div>
         </div>
 
         <!-- Permutation Scan -->
         <div class="card">
-            <h2>Exhaustive Parameter Scan</h2>
-            <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem;">
-                Tests every combination of TP%, SL%, and hold period to find optimal parameters.
-            </p>
+            <h2><span class="data-type-tag tag-backtest">Backtest</span> Exhaustive Parameter Scan</h2>
+            <div class="section-help">Brute-force tests 1,287 combinations of Take Profit (1-50%), Stop Loss (1-25%), and Hold Period (1-60 days) to find the absolute best parameters across all algorithms. <strong>Warning:</strong> This is the most computationally intensive operation — it may take 30-60 seconds or time out on first run. Results are pre-computed when available.</div>
             <button class="refresh-btn" onclick="runPermScan()">Run Full Permutation Scan</button>
             <div id="perm-results" style="margin-top:1rem;"></div>
         </div>
 
         <!-- Audit Log -->
         <div class="card">
-            <h2>Recent Activity Log</h2>
+            <h2><span class="data-type-tag tag-live">Live</span> Recent Activity Log</h2>
+            <div class="section-help">Shows recent automated actions: learning runs, parameter adjustments, and data refreshes. Populated by the GitHub Actions nightly pipeline and on-demand analyses.</div>
             <div class="table-wrap">
                 <table id="audit-table">
                     <thead><tr><th>Time</th><th>Action</th><th>Details</th></tr></thead>
@@ -171,11 +197,13 @@ document.addEventListener('DOMContentLoaded', function() {
 function apiGet(url, cb) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', API + url, true);
+    xhr.timeout = 20000;
     xhr.onload = function() {
         try { cb(JSON.parse(xhr.responseText)); }
         catch(e) { cb({ok:false,error:'Parse error'}); }
     };
     xhr.onerror = function() { cb({ok:false,error:'Network error'}); };
+    xhr.ontimeout = function() { cb({ok:false,error:'Request timed out'}); };
     xhr.send();
 }
 
@@ -183,7 +211,7 @@ function loadAllData() {
     // Stats
     apiGet('data.php?type=stats', function(d) {
         if (!d.ok || !d.stats) {
-            document.getElementById('last-updated').innerHTML = '<span class="status-fail">Database connection failed. Check credentials.</span>';
+            document.getElementById('last-updated').innerHTML = '<span class="status-fail">Database connection failed.</span>';
             return;
         }
         var s = d.stats;
@@ -192,7 +220,8 @@ function loadAllData() {
             '<div style="font-size:1.1rem;font-weight:700;">System Online</div>'
             + '<div class="timestamp">Last checked: ' + now + '</div>'
             + '<div class="timestamp">Pick data: ' + (s.pick_date_range ? s.pick_date_range.earliest + ' to ' + s.pick_date_range.latest : 'N/A') + '</div>'
-            + '<div class="timestamp">Price data: ' + (s.price_date_range ? s.price_date_range.earliest + ' to ' + s.price_date_range.latest : 'N/A') + '</div>';
+            + '<div class="timestamp">Price data: ' + (s.price_date_range ? s.price_date_range.earliest + ' to ' + s.price_date_range.latest : 'N/A') + '</div>'
+            + '<div class="timestamp" style="margin-top:0.5rem;">Simulated capital: <strong>$10,000</strong> | Position size: <strong>10%</strong> | Commission: <strong>$10/trade</strong> | Slippage: <strong>0.5%</strong></div>';
 
         var statsHtml = '';
         var items = [
@@ -200,7 +229,8 @@ function loadAllData() {
             ['Stock Picks', s.total_picks, 'neutral'],
             ['Price Records', (s.total_price_records||0).toLocaleString(), 'neutral'],
             ['Active Algorithms', s.active_algorithms, 'neutral'],
-            ['Backtests Run', s.total_backtests, 'neutral']
+            ['Backtests Run', s.total_backtests, 'neutral'],
+            ['Sim Capital', '$10,000', 'neutral']
         ];
         for (var i = 0; i < items.length; i++) {
             statsHtml += '<div class="stat-card"><div class="label">' + items[i][0] + '</div><div class="value ' + items[i][2] + '">' + items[i][1] + '</div></div>';
@@ -221,6 +251,7 @@ function loadAllData() {
                 + '<td><span class="badge ' + status + '">' + statusText + '</span></td>';
             tbody.appendChild(tr);
         }
+        document.getElementById('algo-meta').innerHTML = 'Data source: stock_picks table | Refreshed: ' + now;
 
         // Health checks
         var hc = document.getElementById('health-checks');
@@ -240,30 +271,44 @@ function loadAllData() {
         hc.innerHTML = hhtml;
     });
 
-    // Strategy comparison
-    apiGet('whatif.php?compare=1', function(d) {
-        if (!d.ok) return;
+    // Strategy rankings — use cached endpoint
+    apiGet('whatif.php?action=cached_compare', function(d) {
+        var loadEl = document.getElementById('strat-loading');
+        var wrapEl = document.getElementById('strat-wrap');
+        if (!d.ok || !d.scenarios) {
+            loadEl.innerHTML = '<span style="color:var(--text-dim);">No cached rankings available yet. Rankings are generated nightly by our automation pipeline.</span>';
+            return;
+        }
+        loadEl.style.display = 'none';
+        wrapEl.style.display = 'block';
         var tbody = document.querySelector('#strat-table tbody');
         tbody.innerHTML = '';
         var sc = d.scenarios || [];
-        for (var i = 0; i < sc.length; i++) {
+        for (var i = 0; i < Math.min(sc.length, 20); i++) {
             var s = sc[i].summary;
             var verdict = s.total_return_pct > 0 ? 'badge-green' : s.total_return_pct > -5 ? 'badge-yellow' : 'badge-red';
             var vtext = s.total_return_pct > 0 ? 'Profitable' : s.total_return_pct > -5 ? 'Marginal' : 'Losing';
             var tr = document.createElement('tr');
-            tr.innerHTML = '<td>' + (i+1) + '</td><td>' + sc[i].name + '</td>'
+            tr.innerHTML = '<td>' + (i+1) + '</td><td title="' + (sc[i].description||'') + '">' + sc[i].name + '</td>'
                 + '<td class="' + (s.total_return_pct >= 0 ? 'positive' : 'negative') + '">' + s.total_return_pct.toFixed(2) + '%</td>'
                 + '<td>' + s.win_rate + '%</td>'
                 + '<td><span class="badge ' + verdict + '">' + vtext + '</span></td>';
             tbody.appendChild(tr);
         }
+        var metaHtml = 'Showing top ' + Math.min(sc.length, 20) + ' of ' + d.total_scenarios + ' strategies';
+        if (d.cached_at) metaHtml += ' | Computed: ' + d.cached_at;
+        if (d.cache_age_seconds) {
+            var hrs = Math.round(d.cache_age_seconds / 3600);
+            metaHtml += ' (' + (hrs < 1 ? '<1' : hrs) + 'h ago)';
+        }
+        metaHtml += ' | Capital: $' + (d.initial_capital || 10000).toLocaleString();
+        document.getElementById('strat-meta').innerHTML = metaHtml;
     });
 
     // Top/worst trades
     apiGet('backtest.php?take_profit=50&stop_loss=10&max_hold_days=30', function(d) {
         if (!d.ok || !d.trades) return;
         var trades = d.trades.slice();
-        // Sort by return desc
         trades.sort(function(a,b) { return b.return_pct - a.return_pct; });
 
         // Top 10
@@ -280,6 +325,7 @@ function loadAllData() {
                 + '<td>' + t.hold_days + 'd</td>';
             tbody.appendChild(tr);
         }
+        document.getElementById('top-meta').innerHTML = 'Backtest params: TP=50%, SL=10%, Hold=30d | Capital: $10,000 | Total trades simulated: ' + trades.length;
 
         // Worst 10
         var tbody2 = document.querySelector('#worst-trades-table tbody');
@@ -296,37 +342,39 @@ function loadAllData() {
             tbody2.appendChild(tr);
         }
     });
-}
 
-function runLearning() {
-    var el = document.getElementById('learning-results');
-    el.innerHTML = '<div class="spinner"></div> Running learning analysis (scanning 180 parameter combos per algorithm)...';
-    apiGet('learning.php?action=analyze_and_adjust', function(d) {
-        if (!d.ok) { el.innerHTML = 'Error: ' + (d.error||'Unknown'); return; }
-        var html = '<table><thead><tr><th>Algorithm</th><th>Current Return</th><th>Best Params Found</th><th>Best Return</th><th>Improvement</th><th>Verdict</th></tr></thead><tbody>';
+    // Learning recommendations — use cached
+    apiGet('learning.php?action=cached_results', function(d) {
+        var el = document.getElementById('learning-results');
+        if (!d.ok || !d.recommendations || d.recommendations.length === 0) {
+            el.innerHTML = '<span style="color:var(--text-dim);">No cached learning data yet. The learning engine runs nightly via GitHub Actions.</span>';
+            return;
+        }
+        var html = '<table><thead><tr><th>Algorithm</th><th>Strategy</th><th>Win Rate</th><th>Avg Return</th><th>Best For</th></tr></thead><tbody>';
         var recs = d.recommendations || [];
         for (var i = 0; i < recs.length; i++) {
             var r = recs[i];
-            var bp = r.best_params;
-            var verdict_cls = r.verdict === 'PROFITABLE_PARAMS_EXIST' ? 'badge-green' : r.verdict === 'IMPROVABLE_BUT_STILL_LOSING' ? 'badge-yellow' : 'badge-red';
-            html += '<tr><td>' + r.algorithm + '</td>'
-                + '<td class="' + (r.current_performance.return_pct >= 0 ? 'positive' : 'negative') + '">' + r.current_performance.return_pct.toFixed(2) + '%</td>'
-                + '<td>TP:' + bp.tp + '% SL:' + bp.sl + '% Hold:' + bp.hold + 'd</td>'
-                + '<td class="' + (r.best_return_pct >= 0 ? 'positive' : 'negative') + '">' + r.best_return_pct.toFixed(2) + '%</td>'
-                + '<td class="positive">+' + r.improvement_pct.toFixed(2) + '%</td>'
-                + '<td><span class="badge ' + verdict_cls + '">' + r.verdict.replace(/_/g,' ') + '</span></td></tr>';
+            var wr = parseFloat(r.win_rate || 0);
+            var wrClass = wr >= 50 ? 'positive' : wr > 0 ? 'warning' : 'negative';
+            var ret = parseFloat(r.avg_return_pct || 0);
+            var retClass = ret >= 0 ? 'positive' : 'negative';
+            html += '<tr><td>' + (r.algorithm_name||'-') + '</td>'
+                + '<td>' + (r.strategy_type||'-') + '</td>'
+                + '<td class="' + wrClass + '">' + wr.toFixed(1) + '%</td>'
+                + '<td class="' + retClass + '">' + ret.toFixed(2) + '%</td>'
+                + '<td>' + (r.best_for||'-') + '</td></tr>';
         }
         html += '</tbody></table>';
-        html += '<p style="margin-top:1rem;color:var(--text-dim);font-size:0.85rem;">Tested ' + (d.total_algorithms||0) + ' algorithms, ' + (d.adjustments_made||0) + ' records updated.</p>';
         el.innerHTML = html;
+        document.getElementById('learning-meta').innerHTML = 'Source: algorithm_performance table (pre-computed by nightly learning engine) | ' + recs.length + ' algorithms analyzed';
     });
 }
 
 function runBearAnalysis() {
     var el = document.getElementById('bear-results');
-    el.innerHTML = '<div class="spinner"></div> Analyzing short/bear market opportunities...';
+    el.innerHTML = '<span class="spinner"></span> Analyzing short/bear opportunities (may take 10-30 seconds)...';
     apiGet('learning.php?action=bear_analysis', function(d) {
-        if (!d.ok) { el.innerHTML = 'Error'; return; }
+        if (!d.ok) { el.innerHTML = '<span style="color:var(--text-dim);">Analysis timed out or returned an error. Try again or wait for the nightly refresh.</span>'; return; }
         var html = '<p style="color:var(--yellow);margin-bottom:1rem;">' + (d.insight||'') + '</p>';
         if (d.short_candidates && d.short_candidates.length > 0) {
             html += '<h3 style="margin-bottom:0.5rem;">Best Short Candidates (stocks that declined after our BUY signal)</h3>';
@@ -357,16 +405,15 @@ function runBearAnalysis() {
 
 function runPermScan() {
     var el = document.getElementById('perm-results');
-    el.innerHTML = '<div class="spinner"></div> Running exhaustive scan (1,287 parameter combos)... this may take 30-60 seconds.';
+    el.innerHTML = '<span class="spinner"></span> Running exhaustive scan (1,287 combos)... this may take 30-60 seconds or time out.';
     apiGet('learning.php?action=permutation_scan&top=20', function(d) {
-        if (!d.ok) { el.innerHTML = 'Error or timeout'; return; }
+        if (!d.ok) { el.innerHTML = '<span style="color:var(--text-dim);">Scan timed out. This computation is very heavy. Results are generated by our nightly automation when available.</span>'; return; }
         var html = '<div class="stat-grid" style="margin-bottom:1rem;">'
             + '<div class="stat-card"><div class="label">Total Combos</div><div class="value">' + (d.total_combos||0) + '</div></div>'
             + '<div class="stat-card"><div class="label">Profitable</div><div class="value positive">' + (d.profitable_combos||0) + '</div></div>'
             + '<div class="stat-card"><div class="label">Losing</div><div class="value negative">' + (d.losing_combos||0) + '</div></div>'
             + '<div class="stat-card"><div class="label">Profitability Rate</div><div class="value ' + ((d.profitability_rate||0) > 30 ? 'positive' : 'negative') + '">' + (d.profitability_rate||0) + '%</div></div>'
             + '</div>';
-
         if (d.top_permutations && d.top_permutations.length > 0) {
             html += '<h3>Top 20 Parameter Combinations</h3>';
             html += '<table><thead><tr><th>#</th><th>TP%</th><th>SL%</th><th>Hold Days</th><th>Return %</th><th>Win Rate</th><th>Trades</th><th>Total P&L</th></tr></thead><tbody>';
@@ -379,18 +426,6 @@ function runPermScan() {
             }
             html += '</tbody></table>';
         }
-
-        if (d.worst_permutations && d.worst_permutations.length > 0) {
-            html += '<h3 style="margin-top:1.5rem;">5 Worst Parameter Combinations (Avoid)</h3>';
-            html += '<table><thead><tr><th>TP%</th><th>SL%</th><th>Hold</th><th>Return %</th><th>Win Rate</th></tr></thead><tbody>';
-            for (var i = 0; i < d.worst_permutations.length; i++) {
-                var p = d.worst_permutations[i];
-                html += '<tr><td>' + p.take_profit + '</td><td>' + p.stop_loss + '</td><td>' + p.max_hold_days + '</td>'
-                    + '<td class="negative">' + p.return_pct.toFixed(2) + '%</td><td>' + p.win_rate + '%</td></tr>';
-            }
-            html += '</tbody></table>';
-        }
-
         el.innerHTML = html;
     });
 }

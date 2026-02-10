@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hour-Trade Learning | Live Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #1e1e3a;
+            --border-hover: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #10b981;
+            --green-dim: rgba(16, 185, 129, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --amber: #f59e0b;
+            --amber-dim: rgba(245, 158, 11, 0.15);
+            --gray: #6b7280;
+            --gray-dim: rgba(107, 114, 128, 0.15);
+            --blue: #3b82f6;
+            --purple: #a855f7;
+            --radius: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem 1rem;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--accent), #a78bfa, var(--blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.3rem;
+        }
+        .header p { color: var(--text-dim); font-size: 0.95rem; }
+
+        .breadcrumb {
+            margin-top: 0.6rem;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+        .breadcrumb a { color: var(--text-dim); }
+        .breadcrumb a:hover { color: var(--text); }
+        .breadcrumb .sep { margin: 0 0.4rem; opacity: 0.5; }
+
+        /* ===== STATUS BAR ===== */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 0.6rem 1rem;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            flex-wrap: wrap;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+        .status-dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+        .status-dot.err { background: var(--red); box-shadow: 0 0 6px var(--red); }
+        .status-dot.warn { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+        .status-value { color: var(--text); font-weight: 600; }
+
+        /* ===== CONTAINER ===== */
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+        /* ===== TOOLBAR ===== */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            padding: 0.5rem 0.8rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            outline: none;
+        }
+        .filter-select:focus { border-color: var(--accent); }
+        .filter-select option { background: var(--bg-card); color: var(--text); }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--text);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .btn:hover { border-color: var(--accent); background: var(--bg-card-hover); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-accent {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+            font-weight: 600;
+        }
+        .btn-accent:hover { background: #5558e6; }
+        .btn-sm {
+            padding: 0.3rem 0.7rem;
+            font-size: 0.78rem;
+            border-radius: 6px;
+        }
+        .btn-green { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+        .btn-green:hover { background: rgba(16, 185, 129, 0.3); }
+
+        /* ===== SUMMARY CARDS ===== */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .summary-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem 1.2rem;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+        .summary-card:hover { border-color: var(--accent); }
+        .summary-card .label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            margin-bottom: 0.3rem;
+        }
+        .summary-card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .summary-card .sub {
+            font-size: 0.75rem;
+            margin-top: 0.15rem;
+        }
+        .summary-card .value.green { color: var(--green); }
+        .summary-card .value.amber { color: var(--amber); }
+        .summary-card .value.red { color: var(--red); }
+        .summary-card .value.accent { color: var(--accent); }
+
+        /* ===== SECTION TITLE ===== */
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .section-title .icon { font-size: 1.2rem; }
+
+        /* ===== TABLE ===== */
+        .table-wrapper {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        thead th {
+            background: rgba(99, 102, 241, 0.08);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+        }
+        thead th:hover { color: var(--text); }
+        thead th .sort-arrow {
+            margin-left: 0.3rem;
+            font-size: 0.65rem;
+            opacity: 0.4;
+        }
+        thead th.sorted .sort-arrow { opacity: 1; color: var(--accent); }
+        tbody tr {
+            border-bottom: 1px solid rgba(30, 30, 58, 0.5);
+            transition: background 0.15s;
+        }
+        tbody tr:hover { background: var(--bg-card-hover); }
+        tbody td {
+            padding: 0.7rem 1rem;
+            white-space: nowrap;
+        }
+        .mono { font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace; font-size: 0.82rem; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+
+        /* ===== BADGES ===== */
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+        .badge-optimize {
+            background: var(--amber-dim);
+            color: var(--amber);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        .badge-maintain {
+            background: var(--green-dim);
+            color: var(--green);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .badge-insufficient {
+            background: var(--gray-dim);
+            color: var(--gray);
+            border: 1px solid rgba(107, 114, 128, 0.3);
+        }
+        .badge-applied {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        .badge-no-profit {
+            background: var(--red-dim);
+            color: var(--red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .badge-asset {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+        .badge-asset.CRYPTO { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+        .badge-asset.FOREX  { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .badge-asset.INDEX  { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+        .badge-asset.STOCK  { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+        .badge-asset.COMMODITY { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+
+        /* ===== DELTA CELL ===== */
+        .delta-positive { color: var(--green); font-weight: 600; }
+        .delta-negative { color: var(--red); font-weight: 600; }
+        .delta-zero { color: var(--text-dim); }
+
+        /* ===== CHART SECTION ===== */
+        .chart-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .chart-canvas-wrap {
+            position: relative;
+            height: 300px;
+        }
+        .chart-canvas-wrap canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        .chart-empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 250px;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* ===== TOAST ===== */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .toast {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.7rem 1rem;
+            font-size: 0.85rem;
+            max-width: 380px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            animation: toastIn 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .toast.success { border-color: var(--green); }
+        .toast.error { border-color: var(--red); }
+        .toast.info { border-color: var(--accent); }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(40px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateX(0); }
+            to   { opacity: 0; transform: translateX(40px); }
+        }
+
+        /* ===== CONFIRM DIALOG ===== */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 8000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s;
+        }
+        .dialog {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            max-width: 460px;
+            width: 90%;
+            box-shadow: 0 16px 64px rgba(0,0,0,0.5);
+        }
+        .dialog h3 {
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+        .dialog p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        .dialog .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3rem 0;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(30, 30, 58, 0.5);
+        }
+        .dialog .detail-row:last-child { border-bottom: none; }
+        .dialog .detail-label { color: var(--text-dim); }
+        .dialog .detail-value { color: var(--text); font-weight: 600; }
+        .dialog-actions {
+            display: flex;
+            gap: 0.8rem;
+            justify-content: flex-end;
+            margin-top: 1.2rem;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        /* ===== LOADING SPINNER ===== */
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--text-dim);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-dim);
+        }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 0.5rem; }
+        .empty-state p { font-size: 0.95rem; margin-bottom: 1rem; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 900px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .container { padding: 1rem; }
+            .header { padding: 1rem; }
+            .header h1 { font-size: 1.4rem; }
+        }
+        @media (max-width: 560px) {
+            .summary-grid { grid-template-columns: 1fr; }
+            .toolbar { flex-direction: column; align-items: stretch; }
+            .toolbar-left, .toolbar-right { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <h1>Hour-Trade Self-Learning</h1>
+    <p>Grid-search optimization engine for TP / SL / Hold parameters</p>
+    <div class="breadcrumb">
+        <a href="live-monitor.html">Live Monitor</a>
+        <span class="sep">&#x203A;</span>
+        <span>Hour Learning</span>
+    </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+    <div class="status-item">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Connecting...</span>
+    </div>
+    <div class="status-item">
+        Last updated: <span class="status-value" id="lastUpdated">--</span>
+    </div>
+    <div class="status-item">
+        Auto-refresh: <span class="status-value" id="refreshCountdown">60s</span>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <select class="filter-select" id="filterAsset" title="Filter by asset class">
+                <option value="">All Asset Classes</option>
+                <option value="CRYPTO">Crypto</option>
+                <option value="FOREX">Forex</option>
+                <option value="INDEX">Index</option>
+                <option value="STOCK">Stock</option>
+                <option value="COMMODITY">Commodity</option>
+            </select>
+            <select class="filter-select" id="filterVerdict" title="Filter by verdict">
+                <option value="">All Verdicts</option>
+                <option value="PROFITABLE_PARAMS_EXIST">Optimize</option>
+                <option value="IMPROVABLE">Improvable</option>
+                <option value="NO_PROFITABLE_PARAMS">No Profit</option>
+                <option value="APPLIED">Applied</option>
+            </select>
+        </div>
+        <div class="toolbar-right">
+            <button class="btn" id="btnRefresh" onclick="fetchData()">
+                Refresh
+            </button>
+            <button class="btn btn-accent" id="btnAnalyze" onclick="runAnalysis()">
+                Run Analysis
+            </button>
+        </div>
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="summary-grid" id="summaryGrid">
+        <div class="summary-card">
+            <div class="label">Total Algorithms</div>
+            <div class="value accent" id="sumTotal">--</div>
+            <div class="sub text-dim">analyzed</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">Profitable</div>
+            <div class="value green" id="sumProfitable">--</div>
+            <div class="sub" style="color:var(--green)">optimizable params found</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">Improvable</div>
+            <div class="value amber" id="sumImprovable">--</div>
+            <div class="sub" style="color:var(--amber)">positive returns possible</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">Avg Improvement</div>
+            <div class="value green" id="sumAvgImprove">--</div>
+            <div class="sub text-dim">win-rate delta</div>
+        </div>
+    </div>
+
+    <!-- ALGORITHM TABLE -->
+    <div class="section-title">Algorithm Recommendations</div>
+    <div class="table-wrapper">
+        <table id="algoTable">
+            <thead>
+                <tr>
+                    <th data-sort="algorithm">Algorithm <span class="sort-arrow">&#x25B4;</span></th>
+                    <th data-sort="asset_class">Asset <span class="sort-arrow">&#x25B4;</span></th>
+                    <th data-sort="current_wr" class="text-right">Current WR <span class="sort-arrow">&#x25B4;</span></th>
+                    <th data-sort="optimized_wr" class="text-right">Optimized WR <span class="sort-arrow">&#x25B4;</span></th>
+                    <th data-sort="delta" class="text-right">Delta <span class="sort-arrow">&#x25B4;</span></th>
+                    <th data-sort="best_return_pct" class="text-right">Best Return <span class="sort-arrow">&#x25B4;</span></th>
+                    <th class="text-center">TP / SL / Hold</th>
+                    <th data-sort="trades_tested" class="text-right">Trades <span class="sort-arrow">&#x25B4;</span></th>
+                    <th data-sort="profitable_combos" class="text-right">Prof. Combos <span class="sort-arrow">&#x25B4;</span></th>
+                    <th class="text-center">Verdict</th>
+                    <th class="text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody id="algoBody">
+                <tr><td colspan="11" class="text-center" style="padding:2rem;color:var(--text-dim);">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- CHART SECTION -->
+    <div class="section-title">Parameter History</div>
+    <div class="chart-panel">
+        <div class="chart-header">
+            <span style="font-size:0.85rem;color:var(--text-dim);">Optimal parameters over time (TP%, SL%, Hold Hours)</span>
+            <select class="filter-select" id="chartAlgoSelect">
+                <option value="">Select algorithm...</option>
+            </select>
+        </div>
+        <div class="chart-canvas-wrap" id="chartWrap">
+            <canvas id="paramChart"></canvas>
+        </div>
+        <div class="chart-empty" id="chartEmpty" style="display:none;">
+            Select an algorithm above to view parameter history. More data points will appear as daily analyses run.
+        </div>
+    </div>
+
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- CONFIRM OVERLAY (hidden) -->
+<div class="overlay" id="confirmOverlay" style="display:none;"></div>
+
+<script>
+/* ================================================================
+   Hour-Trade Self-Learning Dashboard
+   Uses var for older-browser compat. No let/const.
+   ================================================================ */
+
+var API_BASE = 'api/hour_learning.php';
+var ADMIN_KEY = 'livetrader2026';
+var REFRESH_INTERVAL = 60; // seconds
+
+var state = {
+    data: null,         // last API response
+    filtered: [],       // after filters applied
+    sortCol: 'best_return_pct',
+    sortDir: 'desc',
+    countdown: REFRESH_INTERVAL,
+    timer: null,
+    chart: null,
+    loading: false
+};
+
+/* ──────────────────── INIT ──────────────────── */
+(function init() {
+    fetchData();
+    startCountdown();
+    bindFilters();
+    bindSort();
+})();
+
+/* ──────────────────── FETCH DATA ──────────────────── */
+function fetchData() {
+    if (state.loading) return;
+    state.loading = true;
+    setStatus('warn', 'Fetching...');
+    var btnRefresh = document.getElementById('btnRefresh');
+    btnRefresh.disabled = true;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API_BASE + '?action=results', true);
+    xhr.timeout = 15000;
+
+    xhr.onload = function() {
+        state.loading = false;
+        btnRefresh.disabled = false;
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                var resp = JSON.parse(xhr.responseText);
+                if (resp.ok) {
+                    state.data = resp;
+                    applyFilters();
+                    renderSummary(resp.summary, resp.recommendations);
+                    renderTable();
+                    populateChartSelect(resp.recommendations);
+                    setStatus('ok', 'Connected');
+                    updateLastUpdated();
+                    state.countdown = REFRESH_INTERVAL;
+                } else {
+                    setStatus('err', 'API error: ' + (resp.error || 'Unknown'));
+                    showToast('error', 'API Error: ' + (resp.error || 'Unknown'));
+                }
+            } catch (e) {
+                setStatus('err', 'Parse error');
+                showToast('error', 'Failed to parse API response');
+            }
+        } else {
+            setStatus('err', 'HTTP ' + xhr.status);
+            showToast('error', 'HTTP error ' + xhr.status);
+        }
+    };
+
+    xhr.onerror = function() {
+        state.loading = false;
+        btnRefresh.disabled = false;
+        setStatus('err', 'Network error');
+        showToast('error', 'Network error. API unreachable.');
+    };
+
+    xhr.ontimeout = function() {
+        state.loading = false;
+        btnRefresh.disabled = false;
+        setStatus('err', 'Timeout');
+        showToast('error', 'Request timed out.');
+    };
+
+    xhr.send();
+}
+
+/* ──────────────────── FILTERS ──────────────────── */
+function bindFilters() {
+    document.getElementById('filterAsset').addEventListener('change', function() {
+        applyFilters();
+        renderSummary(null, state.filtered);
+        renderTable();
+    });
+    document.getElementById('filterVerdict').addEventListener('change', function() {
+        applyFilters();
+        renderSummary(null, state.filtered);
+        renderTable();
+    });
+}
+
+function applyFilters() {
+    if (!state.data || !state.data.recommendations) {
+        state.filtered = [];
+        return;
+    }
+    var assetFilter = document.getElementById('filterAsset').value;
+    var verdictFilter = document.getElementById('filterVerdict').value;
+    var recs = state.data.recommendations;
+    var out = [];
+
+    for (var i = 0; i < recs.length; i++) {
+        var r = recs[i];
+        if (assetFilter && r.asset_class !== assetFilter) continue;
+        if (verdictFilter && r.verdict !== verdictFilter) continue;
+        out.push(r);
+    }
+    state.filtered = out;
+}
+
+/* ──────────────────── RENDER SUMMARY ──────────────────── */
+function renderSummary(summary, recs) {
+    var totalAlgos = 0;
+    var profitable = 0;
+    var improvable = 0;
+    var totalDelta = 0;
+    var deltaCount = 0;
+
+    if (summary && !document.getElementById('filterAsset').value && !document.getElementById('filterVerdict').value) {
+        totalAlgos = summary.total_algorithms || 0;
+        profitable = summary.profitable || 0;
+        improvable = summary.improvable || 0;
+    } else if (recs) {
+        totalAlgos = recs.length;
+        for (var i = 0; i < recs.length; i++) {
+            if (recs[i].verdict === 'PROFITABLE_PARAMS_EXIST') profitable++;
+            if (recs[i].verdict === 'IMPROVABLE') improvable++;
+        }
+    }
+
+    // Calculate avg improvement from filtered recommendations
+    var items = recs || (state.data ? state.data.recommendations : []) || [];
+    for (var j = 0; j < items.length; j++) {
+        var d = items[j].optimized_wr - items[j].current_wr;
+        if (d > 0) {
+            totalDelta += d;
+            deltaCount++;
+        }
+    }
+    var avgImprove = deltaCount > 0 ? (totalDelta / deltaCount) : 0;
+
+    document.getElementById('sumTotal').textContent = totalAlgos;
+    document.getElementById('sumProfitable').textContent = profitable;
+    document.getElementById('sumImprovable').textContent = improvable;
+    document.getElementById('sumAvgImprove').textContent = avgImprove > 0 ? ('+' + avgImprove.toFixed(1) + '%') : '--';
+}
+
+/* ──────────────────── RENDER TABLE ──────────────────── */
+function renderTable() {
+    var tbody = document.getElementById('algoBody');
+    var rows = state.filtered;
+
+    if (!rows || rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center" style="padding:2rem;color:var(--text-dim);">'
+            + (state.data ? 'No algorithms match current filters.' : 'No learning data available. Run an analysis to get started.')
+            + '</td></tr>';
+        return;
+    }
+
+    // Sort
+    var sorted = rows.slice();
+    var col = state.sortCol;
+    var dir = state.sortDir === 'asc' ? 1 : -1;
+
+    sorted.sort(function(a, b) {
+        var va = getSortValue(a, col);
+        var vb = getSortValue(b, col);
+        if (va < vb) return -1 * dir;
+        if (va > vb) return 1 * dir;
+        return 0;
+    });
+
+    var html = '';
+    for (var i = 0; i < sorted.length; i++) {
+        var r = sorted[i];
+        var delta = r.optimized_wr - r.current_wr;
+        var deltaClass = delta > 0 ? 'delta-positive' : (delta < 0 ? 'delta-negative' : 'delta-zero');
+        var deltaStr = delta > 0 ? ('+' + delta.toFixed(1) + '%') : delta.toFixed(1) + '%';
+
+        var tp = r.best_params ? r.best_params.tp : 0;
+        var sl = r.best_params ? r.best_params.sl : 0;
+        var hold = r.best_params ? r.best_params.hold : 0;
+
+        var verdictBadge = getVerdictBadge(r.verdict);
+        var canApply = (r.verdict === 'PROFITABLE_PARAMS_EXIST' || r.verdict === 'IMPROVABLE');
+
+        html += '<tr>'
+            + '<td><strong>' + escHtml(r.algorithm) + '</strong></td>'
+            + '<td><span class="badge-asset ' + escHtml(r.asset_class) + '">' + escHtml(r.asset_class) + '</span></td>'
+            + '<td class="text-right mono">' + r.current_wr.toFixed(1) + '%</td>'
+            + '<td class="text-right mono">' + r.optimized_wr.toFixed(1) + '%</td>'
+            + '<td class="text-right mono ' + deltaClass + '">' + deltaStr + '</td>'
+            + '<td class="text-right mono">' + formatReturn(r.best_return_pct) + '</td>'
+            + '<td class="text-center mono">' + tp.toFixed(1) + '% / ' + sl.toFixed(1) + '% / ' + hold + 'h</td>'
+            + '<td class="text-right mono">' + r.trades_tested + '</td>'
+            + '<td class="text-right mono">' + r.profitable_combos + ' / ' + r.total_combos + '</td>'
+            + '<td class="text-center">' + verdictBadge + '</td>'
+            + '<td class="text-center">'
+            + (canApply
+                ? '<button class="btn btn-sm btn-green" onclick="confirmApply(\'' + escAttr(r.algorithm) + '\',\'' + escAttr(r.asset_class) + '\')">Apply</button>'
+                : '<span style="color:var(--text-dim);font-size:0.78rem;">--</span>')
+            + '</td>'
+            + '</tr>';
+    }
+
+    tbody.innerHTML = html;
+}
+
+function getSortValue(rec, col) {
+    if (col === 'algorithm') return (rec.algorithm || '').toLowerCase();
+    if (col === 'asset_class') return (rec.asset_class || '').toLowerCase();
+    if (col === 'current_wr') return rec.current_wr || 0;
+    if (col === 'optimized_wr') return rec.optimized_wr || 0;
+    if (col === 'delta') return (rec.optimized_wr || 0) - (rec.current_wr || 0);
+    if (col === 'best_return_pct') return rec.best_return_pct || 0;
+    if (col === 'trades_tested') return rec.trades_tested || 0;
+    if (col === 'profitable_combos') return rec.profitable_combos || 0;
+    return 0;
+}
+
+function getVerdictBadge(verdict) {
+    if (verdict === 'PROFITABLE_PARAMS_EXIST') return '<span class="badge badge-optimize">Optimize</span>';
+    if (verdict === 'IMPROVABLE') return '<span class="badge badge-maintain">Improvable</span>';
+    if (verdict === 'NO_PROFITABLE_PARAMS') return '<span class="badge badge-no-profit">No Profit</span>';
+    if (verdict === 'APPLIED') return '<span class="badge badge-applied">Applied</span>';
+    return '<span class="badge badge-insufficient">' + escHtml(verdict || 'Unknown') + '</span>';
+}
+
+function formatReturn(val) {
+    if (val === null || val === undefined) return '--';
+    var s = val.toFixed(2) + '%';
+    if (val > 0) return '<span style="color:var(--green);">+' + s + '</span>';
+    if (val < 0) return '<span style="color:var(--red);">' + s + '</span>';
+    return s;
+}
+
+/* ──────────────────── SORTING ──────────────────── */
+function bindSort() {
+    var ths = document.querySelectorAll('#algoTable thead th[data-sort]');
+    for (var i = 0; i < ths.length; i++) {
+        (function(th) {
+            th.addEventListener('click', function() {
+                var col = th.getAttribute('data-sort');
+                if (state.sortCol === col) {
+                    state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+                } else {
+                    state.sortCol = col;
+                    state.sortDir = 'desc';
+                }
+                // Update visual
+                var allThs = document.querySelectorAll('#algoTable thead th');
+                for (var j = 0; j < allThs.length; j++) {
+                    allThs[j].classList.remove('sorted');
+                    var arrow = allThs[j].querySelector('.sort-arrow');
+                    if (arrow) arrow.innerHTML = '&#x25B4;';
+                }
+                th.classList.add('sorted');
+                var arrow = th.querySelector('.sort-arrow');
+                if (arrow) arrow.innerHTML = state.sortDir === 'asc' ? '&#x25B4;' : '&#x25BE;';
+
+                renderTable();
+            });
+        })(ths[i]);
+    }
+}
+
+/* ──────────────────── RUN ANALYSIS ──────────────────── */
+function runAnalysis() {
+    var btn = document.getElementById('btnAnalyze');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Analyzing...';
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API_BASE + '?action=analyze&key=' + encodeURIComponent(ADMIN_KEY), true);
+    xhr.timeout = 120000; // analysis can take a while
+
+    xhr.onload = function() {
+        btn.disabled = false;
+        btn.innerHTML = 'Run Analysis';
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                var resp = JSON.parse(xhr.responseText);
+                if (resp.ok) {
+                    showToast('success', 'Analysis complete. ' + (resp.algorithms_analyzed || 0) + ' algorithms analyzed.');
+                    fetchData(); // Reload results
+                } else {
+                    showToast('error', 'Analysis failed: ' + (resp.error || 'Unknown'));
+                }
+            } catch (e) {
+                showToast('error', 'Failed to parse analysis response.');
+            }
+        } else {
+            showToast('error', 'Analysis HTTP error ' + xhr.status);
+        }
+    };
+
+    xhr.onerror = function() {
+        btn.disabled = false;
+        btn.innerHTML = 'Run Analysis';
+        showToast('error', 'Network error during analysis.');
+    };
+
+    xhr.ontimeout = function() {
+        btn.disabled = false;
+        btn.innerHTML = 'Run Analysis';
+        showToast('error', 'Analysis timed out (>2 min). It may still be running server-side.');
+    };
+
+    xhr.send();
+}
+
+/* ──────────────────── APPLY PARAMS ──────────────────── */
+function confirmApply(algoName, assetClass) {
+    // Find the recommendation
+    var rec = null;
+    var recs = state.data ? state.data.recommendations : [];
+    for (var i = 0; i < recs.length; i++) {
+        if (recs[i].algorithm === algoName && recs[i].asset_class === assetClass) {
+            rec = recs[i];
+            break;
+        }
+    }
+    if (!rec) {
+        showToast('error', 'Algorithm not found in current data.');
+        return;
+    }
+
+    var tp = rec.best_params ? rec.best_params.tp : 0;
+    var sl = rec.best_params ? rec.best_params.sl : 0;
+    var hold = rec.best_params ? rec.best_params.hold : 0;
+    var delta = rec.optimized_wr - rec.current_wr;
+
+    var overlay = document.getElementById('confirmOverlay');
+    overlay.innerHTML = '<div class="dialog">'
+        + '<h3>Apply Optimized Parameters?</h3>'
+        + '<p>This will mark the learned parameters as active for <strong>' + escHtml(algoName) + '</strong> (' + escHtml(assetClass) + '). The signal generator will use these params for future trades.</p>'
+        + '<div class="detail-row"><span class="detail-label">Take Profit</span><span class="detail-value">' + tp.toFixed(1) + '%</span></div>'
+        + '<div class="detail-row"><span class="detail-label">Stop Loss</span><span class="detail-value">' + sl.toFixed(1) + '%</span></div>'
+        + '<div class="detail-row"><span class="detail-label">Max Hold</span><span class="detail-value">' + hold + ' hours</span></div>'
+        + '<div class="detail-row"><span class="detail-label">Win Rate Change</span><span class="detail-value" style="color:' + (delta > 0 ? 'var(--green)' : 'var(--red)') + ';">' + rec.current_wr.toFixed(1) + '% &rarr; ' + rec.optimized_wr.toFixed(1) + '% (' + (delta > 0 ? '+' : '') + delta.toFixed(1) + '%)</span></div>'
+        + '<div class="detail-row"><span class="detail-label">Best Return</span><span class="detail-value" style="color:' + (rec.best_return_pct > 0 ? 'var(--green)' : 'var(--red)') + ';">' + (rec.best_return_pct > 0 ? '+' : '') + rec.best_return_pct.toFixed(2) + '%</span></div>'
+        + '<div class="dialog-actions">'
+        + '<button class="btn" onclick="closeConfirm()">Cancel</button>'
+        + '<button class="btn btn-accent" id="btnConfirmApply" onclick="doApply(\'' + escAttr(algoName) + '\',\'' + escAttr(assetClass) + '\')">Confirm &amp; Apply</button>'
+        + '</div>'
+        + '</div>';
+    overlay.style.display = 'flex';
+}
+
+function closeConfirm() {
+    document.getElementById('confirmOverlay').style.display = 'none';
+}
+
+function doApply(algoName, assetClass) {
+    var btn = document.getElementById('btnConfirmApply');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Applying...';
+    }
+
+    var url = API_BASE + '?action=apply&key=' + encodeURIComponent(ADMIN_KEY)
+        + '&algorithm=' + encodeURIComponent(algoName);
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.timeout = 15000;
+
+    xhr.onload = function() {
+        closeConfirm();
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                var resp = JSON.parse(xhr.responseText);
+                if (resp.ok) {
+                    var applied = resp.applied_count || 0;
+                    var skipped = resp.skipped_count || 0;
+                    showToast('success', 'Applied: ' + applied + ', Skipped: ' + skipped);
+                    fetchData(); // Reload
+                } else {
+                    showToast('error', 'Apply failed: ' + (resp.error || 'Unknown'));
+                }
+            } catch (e) {
+                showToast('error', 'Failed to parse apply response.');
+            }
+        } else {
+            showToast('error', 'Apply HTTP error ' + xhr.status);
+        }
+    };
+
+    xhr.onerror = function() {
+        closeConfirm();
+        showToast('error', 'Network error during apply.');
+    };
+
+    xhr.ontimeout = function() {
+        closeConfirm();
+        showToast('error', 'Apply request timed out.');
+    };
+
+    xhr.send();
+}
+
+/* ──────────────────── CHART ──────────────────── */
+function populateChartSelect(recs) {
+    var sel = document.getElementById('chartAlgoSelect');
+    var current = sel.value;
+
+    // Build unique algo list
+    var algos = [];
+    var seen = {};
+    for (var i = 0; i < recs.length; i++) {
+        var key = recs[i].algorithm + '|' + recs[i].asset_class;
+        if (!seen[key]) {
+            seen[key] = true;
+            algos.push({ algorithm: recs[i].algorithm, asset_class: recs[i].asset_class });
+        }
+    }
+
+    var html = '<option value="">Select algorithm...</option>';
+    for (var j = 0; j < algos.length; j++) {
+        var val = algos[j].algorithm + '|' + algos[j].asset_class;
+        var label = algos[j].algorithm + ' (' + algos[j].asset_class + ')';
+        html += '<option value="' + escAttr(val) + '"' + (val === current ? ' selected' : '') + '>' + escHtml(label) + '</option>';
+    }
+    sel.innerHTML = html;
+
+    // Rebind
+    sel.onchange = function() {
+        renderChart();
+    };
+
+    // Render if already selected
+    if (current) renderChart();
+}
+
+function renderChart() {
+    var sel = document.getElementById('chartAlgoSelect');
+    var val = sel.value;
+    var chartWrap = document.getElementById('chartWrap');
+    var chartEmpty = document.getElementById('chartEmpty');
+
+    if (!val) {
+        if (state.chart) { state.chart.destroy(); state.chart = null; }
+        chartWrap.style.display = 'none';
+        chartEmpty.style.display = 'flex';
+        return;
+    }
+
+    chartWrap.style.display = 'block';
+    chartEmpty.style.display = 'none';
+
+    var parts = val.split('|');
+    var algoName = parts[0];
+    var assetClass = parts[1];
+
+    // Gather data points from recommendations (we only have latest, but structure for history)
+    var recs = state.data ? state.data.recommendations : [];
+    var dates = [];
+    var tpData = [];
+    var slData = [];
+    var holdData = [];
+    var wrData = [];
+
+    for (var i = 0; i < recs.length; i++) {
+        var r = recs[i];
+        if (r.algorithm === algoName && r.asset_class === assetClass) {
+            var dateLabel = r.calc_date || r.created_at || 'Today';
+            dates.push(dateLabel);
+            tpData.push(r.best_params ? r.best_params.tp : 0);
+            slData.push(r.best_params ? r.best_params.sl : 0);
+            holdData.push(r.best_params ? r.best_params.hold : 0);
+            wrData.push(r.optimized_wr || 0);
+        }
+    }
+
+    if (dates.length === 0) {
+        if (state.chart) { state.chart.destroy(); state.chart = null; }
+        chartWrap.style.display = 'none';
+        chartEmpty.style.display = 'flex';
+        return;
+    }
+
+    // If only one point, add a "projected" second point for visibility
+    if (dates.length === 1) {
+        dates.push('Next');
+        tpData.push(tpData[0]);
+        slData.push(slData[0]);
+        holdData.push(holdData[0]);
+        wrData.push(wrData[0]);
+    }
+
+    if (state.chart) {
+        state.chart.destroy();
+        state.chart = null;
+    }
+
+    var ctx = document.getElementById('paramChart').getContext('2d');
+    state.chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [
+                {
+                    label: 'Take Profit %',
+                    data: tpData,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#10b981',
+                    tension: 0.3,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Stop Loss %',
+                    data: slData,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#ef4444',
+                    tension: 0.3,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Hold Hours',
+                    data: holdData,
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#6366f1',
+                    tension: 0.3,
+                    yAxisID: 'y1'
+                },
+                {
+                    label: 'Win Rate %',
+                    data: wrData,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    borderWidth: 2,
+                    borderDash: [5, 3],
+                    pointRadius: 5,
+                    pointBackgroundColor: '#f59e0b',
+                    tension: 0.3,
+                    yAxisID: 'y'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#8888aa',
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        padding: 16
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#1e1e3a',
+                    borderColor: '#2a2a4a',
+                    borderWidth: 1,
+                    titleColor: '#e0e0f0',
+                    bodyColor: '#e0e0f0',
+                    padding: 10,
+                    cornerRadius: 8
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#8888aa', font: { size: 11 } },
+                    grid: { color: 'rgba(30, 30, 58, 0.5)' }
+                },
+                y: {
+                    position: 'left',
+                    title: { display: true, text: 'Percentage (%)', color: '#8888aa' },
+                    ticks: { color: '#8888aa', font: { size: 11 } },
+                    grid: { color: 'rgba(30, 30, 58, 0.5)' }
+                },
+                y1: {
+                    position: 'right',
+                    title: { display: true, text: 'Hours', color: '#8888aa' },
+                    ticks: { color: '#8888aa', font: { size: 11 } },
+                    grid: { drawOnChartArea: false }
+                }
+            }
+        }
+    });
+}
+
+/* ──────────────────── STATUS / COUNTDOWN ──────────────────── */
+function setStatus(level, text) {
+    var dot = document.getElementById('statusDot');
+    var label = document.getElementById('statusText');
+    dot.className = 'status-dot';
+    if (level === 'ok') dot.classList.add('ok');
+    else if (level === 'err') dot.classList.add('err');
+    else dot.classList.add('warn');
+    label.textContent = text;
+}
+
+function updateLastUpdated() {
+    var now = new Date();
+    var h = now.getHours();
+    var m = now.getMinutes();
+    var s = now.getSeconds();
+    var timeStr = padZero(h) + ':' + padZero(m) + ':' + padZero(s);
+    document.getElementById('lastUpdated').textContent = timeStr;
+}
+
+function padZero(n) { return n < 10 ? '0' + n : '' + n; }
+
+function startCountdown() {
+    state.countdown = REFRESH_INTERVAL;
+    if (state.timer) clearInterval(state.timer);
+    state.timer = setInterval(function() {
+        state.countdown--;
+        if (state.countdown <= 0) {
+            state.countdown = REFRESH_INTERVAL;
+            fetchData();
+        }
+        document.getElementById('refreshCountdown').textContent = state.countdown + 's';
+    }, 1000);
+}
+
+/* ──────────────────── TOAST ──────────────────── */
+function showToast(type, message) {
+    var container = document.getElementById('toastContainer');
+    var toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+
+    var icon = '';
+    if (type === 'success') icon = '&#x2713; ';
+    else if (type === 'error') icon = '&#x2717; ';
+    else icon = '&#x2139; ';
+
+    toast.innerHTML = '<span>' + icon + '</span><span>' + escHtml(message) + '</span>';
+    container.appendChild(toast);
+
+    setTimeout(function() {
+        toast.style.animation = 'toastOut 0.3s ease-in forwards';
+        setTimeout(function() {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 300);
+    }, 4000);
+}
+
+/* ──────────────────── UTILITIES ──────────────────── */
+function escHtml(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+}
+
+function escAttr(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;')
+              .replace(/'/g, '&#39;')
+              .replace(/"/g, '&quot;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;');
+}
+</script>
+</body>
+</html>

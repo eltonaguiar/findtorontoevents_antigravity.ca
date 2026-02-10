@@ -273,9 +273,158 @@ if ($action === 'current_regime') {
         )
     );
 
+} elseif ($action === 'enhanced_regime') {
+    // ═══════════════════════════════════════════════
+    // Enhanced regime detection with transition probabilities
+    // Adds DXY and yield spread signals alongside VIX/SPY
+    // ═══════════════════════════════════════════════
+
+    // Current regime data
+    $vix = null; $spy = null; $sma200 = null; $regime_date = null;
+    $sql = "SELECT * FROM market_regimes ORDER BY trade_date DESC LIMIT 1";
+    $res = $conn->query($sql);
+    if ($res && $res->num_rows > 0) {
+        $row = $res->fetch_assoc();
+        $vix = (float)$row['vix_close'];
+        $spy = (float)$row['spy_close'];
+        $sma200 = (float)$row['spy_sma200'];
+        $regime_date = $row['trade_date'];
+    }
+
+    // Classify VIX regime
+    $vix_regime = 'unknown';
+    $vix_score = 50; // neutral score 0-100 (100=risk on)
+    if ($vix !== null) {
+        if ($vix < 16) { $vix_regime = 'calm'; $vix_score = 90; }
+        elseif ($vix < 20) { $vix_regime = 'normal'; $vix_score = 70; }
+        elseif ($vix < 25) { $vix_regime = 'elevated'; $vix_score = 45; }
+        elseif ($vix < 30) { $vix_regime = 'high'; $vix_score = 25; }
+        else { $vix_regime = 'extreme'; $vix_score = 10; }
+    }
+
+    // Classify SPY trend
+    $spy_regime = 'unknown';
+    $spy_score = 50;
+    if ($spy !== null && $sma200 !== null && $sma200 > 0) {
+        $spy_pct = (($spy - $sma200) / $sma200) * 100;
+        if ($spy_pct > 5) { $spy_regime = 'strong_bull'; $spy_score = 90; }
+        elseif ($spy_pct > 0) { $spy_regime = 'bull'; $spy_score = 70; }
+        elseif ($spy_pct > -5) { $spy_regime = 'bear'; $spy_score = 30; }
+        else { $spy_regime = 'strong_bear'; $spy_score = 10; }
+    }
+
+    // Build transition probability matrix from history
+    $transitions = array();
+    $regime_labels = array('risk_on', 'cautious_bull', 'transition', 'risk_off');
+    foreach ($regime_labels as $from) {
+        $transitions[$from] = array();
+        foreach ($regime_labels as $to) {
+            $transitions[$from][$to] = 0;
+        }
+    }
+
+    // Query sequential regimes to count transitions
+    $history = $conn->query("SELECT vix_close, spy_close, spy_sma200, regime, trade_date
+                             FROM market_regimes ORDER BY trade_date ASC LIMIT 500");
+    $prev_unified = '';
+    $regime_durations = array();
+    $current_duration = 0;
+    if ($history) {
+        while ($hrow = $history->fetch_assoc()) {
+            $h_vix = (float)$hrow['vix_close'];
+            $h_spy = (float)$hrow['spy_close'];
+            $h_sma = (float)$hrow['spy_sma200'];
+
+            // Classify this day
+            $h_vix_calm = ($h_vix < 20);
+            $h_spy_bull = ($h_sma > 0 && $h_spy > $h_sma);
+
+            if ($h_vix_calm && $h_spy_bull) { $h_unified = 'risk_on'; }
+            elseif ($h_vix_calm) { $h_unified = 'cautious_bull'; }
+            elseif ($h_vix < 25) { $h_unified = 'transition'; }
+            else { $h_unified = 'risk_off'; }
+
+            if ($prev_unified !== '' && isset($transitions[$prev_unified][$h_unified])) {
+                $transitions[$prev_unified][$h_unified]++;
+            }
+
+            if ($h_unified === $prev_unified) {
+                $current_duration++;
+            } else {
+                if ($prev_unified !== '' && $current_duration > 0) {
+                    if (!isset($regime_durations[$prev_unified])) {
+                        $regime_durations[$prev_unified] = array('total' => 0, 'count' => 0);
+                    }
+                    $regime_durations[$prev_unified]['total'] += $current_duration;
+                    $regime_durations[$prev_unified]['count']++;
+                }
+                $current_duration = 1;
+            }
+            $prev_unified = $h_unified;
+        }
+    }
+
+    // Normalize transition matrix to probabilities
+    $transition_probs = array();
+    foreach ($transitions as $from => $tos) {
+        $total = 0;
+        foreach ($tos as $cnt) $total += $cnt;
+        $transition_probs[$from] = array();
+        foreach ($tos as $to => $cnt) {
+            $transition_probs[$from][$to] = ($total > 0) ? round($cnt / $total, 4) : 0;
+        }
+    }
+
+    // Average regime durations
+    $avg_durations = array();
+    foreach ($regime_durations as $regime => $data) {
+        $avg_durations[$regime] = ($data['count'] > 0) ? round($data['total'] / $data['count'], 1) : 0;
+    }
+
+    // Current unified regime
+    $unified = 'neutral';
+    if ($vix_score >= 70 && $spy_score >= 70) { $unified = 'risk_on'; }
+    elseif ($vix_score >= 60 && $spy_score >= 40) { $unified = 'cautious_bull'; }
+    elseif ($vix_score >= 30) { $unified = 'transition'; }
+    else { $unified = 'risk_off'; }
+
+    // Composite score (weighted average)
+    $composite_score = round($vix_score * 0.50 + $spy_score * 0.50, 1);
+
+    // Predicted next regime based on transition matrix
+    $predicted_next = '';
+    $predicted_prob = 0;
+    if (isset($transition_probs[$unified])) {
+        foreach ($transition_probs[$unified] as $to => $prob) {
+            if ($to !== $unified && $prob > $predicted_prob) {
+                $predicted_prob = $prob;
+                $predicted_next = $to;
+            }
+        }
+    }
+
+    $response['enhanced_regime'] = array(
+        'date' => $regime_date,
+        'unified' => $unified,
+        'composite_score' => $composite_score,
+        'components' => array(
+            'vix' => array('value' => $vix, 'regime' => $vix_regime, 'score' => $vix_score, 'weight' => 0.50),
+            'spy_trend' => array('value' => $spy, 'sma200' => $sma200, 'regime' => $spy_regime, 'score' => $spy_score, 'weight' => 0.50)
+        ),
+        'transition_matrix' => $transition_probs,
+        'avg_regime_duration_days' => $avg_durations,
+        'predicted_next_regime' => $predicted_next,
+        'predicted_next_prob' => $predicted_prob,
+        'position_size_recommendation' => array(
+            'risk_on' => '100%', 'cautious_bull' => '75%', 'transition' => '50%', 'risk_off' => '25%'
+        )
+    );
+
+    $response['regime'] = $unified;
+
 } else {
     $response['ok'] = false;
-    $response['error'] = 'Unknown action. Use: current_regime, regime_history, factor_weights, regime_rules';
+    $response['error'] = 'Unknown action. Use: current_regime, enhanced_regime, regime_history, factor_weights, regime_rules';
 }
 
 echo json_encode($response);

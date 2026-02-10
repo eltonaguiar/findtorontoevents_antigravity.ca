@@ -1,0 +1,871 @@
+<?php
+/**
+ * Paper Trading Engine for Live Trading Monitor
+ * PHP 5.2 compatible — no short arrays, no http_response_code(), no spread operator
+ *
+ * Actions:
+ *   enter      — open a new position (admin key required)
+ *   track      — update all open positions, check exits (admin key required)
+ *   close      — manually close a position (admin key required)
+ *   positions  — list positions (public)
+ *   dashboard  — overall stats (public)
+ *   history    — paginated trade history (public)
+ */
+
+require_once dirname(__FILE__) . '/db_connect.php';
+
+// ─── Constants ───────────────────────────────────────────────────────
+$ADMIN_KEY            = 'livetrader2026';
+$INITIAL_CAPITAL      = 10000;
+$MAX_POSITIONS        = 10;
+$DEFAULT_POSITION_PCT = 5; // 5% of portfolio per trade
+
+// ─── Auto-create tables ─────────────────────────────────────────────
+$conn->query("
+CREATE TABLE IF NOT EXISTS lm_trades (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    asset_class VARCHAR(10) NOT NULL,
+    symbol VARCHAR(20) NOT NULL,
+    algorithm_name VARCHAR(100) NOT NULL DEFAULT '',
+    signal_id INT NOT NULL DEFAULT 0,
+    direction VARCHAR(10) NOT NULL DEFAULT 'LONG',
+    entry_time DATETIME NOT NULL,
+    entry_price DECIMAL(18,8) NOT NULL DEFAULT 0,
+    position_size_units DECIMAL(18,8) NOT NULL DEFAULT 0,
+    position_value_usd DECIMAL(12,2) NOT NULL DEFAULT 0,
+    target_tp_pct DECIMAL(6,2) NOT NULL DEFAULT 5,
+    target_sl_pct DECIMAL(6,2) NOT NULL DEFAULT 3,
+    max_hold_hours INT NOT NULL DEFAULT 24,
+    current_price DECIMAL(18,8) NOT NULL DEFAULT 0,
+    unrealized_pnl_usd DECIMAL(12,2) NOT NULL DEFAULT 0,
+    unrealized_pct DECIMAL(10,4) NOT NULL DEFAULT 0,
+    highest_price DECIMAL(18,8) NOT NULL DEFAULT 0,
+    lowest_price DECIMAL(18,8) NOT NULL DEFAULT 0,
+    status VARCHAR(20) NOT NULL DEFAULT 'open',
+    exit_time DATETIME,
+    exit_price DECIMAL(18,8) NOT NULL DEFAULT 0,
+    exit_reason VARCHAR(50) NOT NULL DEFAULT '',
+    realized_pnl_usd DECIMAL(12,2) NOT NULL DEFAULT 0,
+    realized_pct DECIMAL(10,4) NOT NULL DEFAULT 0,
+    fees_usd DECIMAL(8,2) NOT NULL DEFAULT 0,
+    hold_hours DECIMAL(8,2) NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL,
+    KEY idx_status (status),
+    KEY idx_asset (asset_class),
+    KEY idx_symbol (symbol),
+    KEY idx_entry (entry_time),
+    KEY idx_signal (signal_id)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8
+");
+
+$conn->query("
+CREATE TABLE IF NOT EXISTS lm_snapshots (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    snapshot_time DATETIME NOT NULL,
+    total_value_usd DECIMAL(12,2) NOT NULL DEFAULT 10000,
+    cash_usd DECIMAL(12,2) NOT NULL DEFAULT 10000,
+    invested_usd DECIMAL(12,2) NOT NULL DEFAULT 0,
+    open_positions INT NOT NULL DEFAULT 0,
+    unrealized_pnl_usd DECIMAL(12,2) NOT NULL DEFAULT 0,
+    realized_pnl_today DECIMAL(12,2) NOT NULL DEFAULT 0,
+    cumulative_pnl_usd DECIMAL(12,2) NOT NULL DEFAULT 0,
+    total_trades INT NOT NULL DEFAULT 0,
+    total_wins INT NOT NULL DEFAULT 0,
+    win_rate DECIMAL(5,2) NOT NULL DEFAULT 0,
+    peak_value DECIMAL(12,2) NOT NULL DEFAULT 10000,
+    drawdown_pct DECIMAL(8,4) NOT NULL DEFAULT 0,
+    KEY idx_time (snapshot_time)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8
+");
+
+
+// ─── Helper: calculate fees ─────────────────────────────────────────
+// Crypto: 0.20% per side (NDAX flat rate — more realistic than 0.1%)
+// Forex: spread already priced in (0 explicit fee)
+// Stocks: US$0.0099/share, min US$1.99 per side (Moomoo model)
+function _lt_calc_fees($asset_class, $entry_price, $exit_price, $units) {
+    if ($asset_class === 'CRYPTO') {
+        $entry_fee = $entry_price * $units * 0.002; // 0.20% per side (NDAX)
+        $exit_fee  = $exit_price  * $units * 0.002;
+        return round($entry_fee + $exit_fee, 2);
+    }
+    if ($asset_class === 'STOCK') {
+        // Moomoo: US$0.0099/share, min US$1.99 per side
+        $shares = abs($units);
+        $entry_fee = max(1.99, $shares * 0.0099);
+        $exit_fee  = max(1.99, $shares * 0.0099);
+        return round($entry_fee + $exit_fee, 2);
+    }
+    return 0; // forex spread already priced in
+}
+
+
+// ─── Helper: get portfolio value ────────────────────────────────────
+function _lt_get_portfolio_value($conn) {
+    global $INITIAL_CAPITAL;
+
+    $value = (float) $INITIAL_CAPITAL;
+
+    // Add cumulative realized P&L from all closed trades
+    $r = $conn->query("SELECT SUM(realized_pnl_usd) AS total_rpnl FROM lm_trades WHERE status='closed'");
+    if ($r) {
+        $row = $r->fetch_assoc();
+        if ($row && $row['total_rpnl'] !== null) {
+            $value += (float) $row['total_rpnl'];
+        }
+        $r->free();
+    }
+
+    // Add unrealized P&L from open positions
+    $r2 = $conn->query("SELECT SUM(unrealized_pnl_usd) AS total_upnl FROM lm_trades WHERE status='open'");
+    if ($r2) {
+        $row2 = $r2->fetch_assoc();
+        if ($row2 && $row2['total_upnl'] !== null) {
+            $value += (float) $row2['total_upnl'];
+        }
+        $r2->free();
+    }
+
+    // Subtract total fees
+    $r3 = $conn->query("SELECT SUM(fees_usd) AS total_fees FROM lm_trades");
+    if ($r3) {
+        $row3 = $r3->fetch_assoc();
+        if ($row3 && $row3['total_fees'] !== null) {
+            $value -= (float) $row3['total_fees'];
+        }
+        $r3->free();
+    }
+
+    return round($value, 2);
+}
+
+
+// ─── Helper: take equity snapshot ───────────────────────────────────
+function _lt_take_snapshot($conn) {
+    global $INITIAL_CAPITAL;
+
+    $now = date('Y-m-d H:i:s');
+    $total_value = _lt_get_portfolio_value($conn);
+
+    // Open positions
+    $r = $conn->query("SELECT COUNT(*) AS cnt, COALESCE(SUM(position_value_usd),0) AS invested, COALESCE(SUM(unrealized_pnl_usd),0) AS upnl FROM lm_trades WHERE status='open'");
+    $open_cnt   = 0;
+    $invested   = 0;
+    $upnl       = 0;
+    if ($r) {
+        $row = $r->fetch_assoc();
+        $open_cnt = (int) $row['cnt'];
+        $invested = (float) $row['invested'];
+        $upnl     = (float) $row['upnl'];
+        $r->free();
+    }
+
+    $cash = $total_value - $invested - $upnl;
+
+    // Cumulative realized P&L
+    $cum_pnl = 0;
+    $r2 = $conn->query("SELECT COALESCE(SUM(realized_pnl_usd),0) AS rpnl FROM lm_trades WHERE status='closed'");
+    if ($r2) {
+        $row2 = $r2->fetch_assoc();
+        $cum_pnl = (float) $row2['rpnl'];
+        $r2->free();
+    }
+
+    // Today's realized P&L
+    $today = date('Y-m-d');
+    $today_pnl = 0;
+    $r3 = $conn->query("SELECT COALESCE(SUM(realized_pnl_usd),0) AS rpnl FROM lm_trades WHERE status='closed' AND exit_time >= '" . $conn->real_escape_string($today) . " 00:00:00'");
+    if ($r3) {
+        $row3 = $r3->fetch_assoc();
+        $today_pnl = (float) $row3['rpnl'];
+        $r3->free();
+    }
+
+    // Total trades and wins
+    $total_trades = 0;
+    $total_wins   = 0;
+    $r4 = $conn->query("SELECT COUNT(*) AS cnt FROM lm_trades WHERE status='closed'");
+    if ($r4) {
+        $row4 = $r4->fetch_assoc();
+        $total_trades = (int) $row4['cnt'];
+        $r4->free();
+    }
+    $r5 = $conn->query("SELECT COUNT(*) AS cnt FROM lm_trades WHERE status='closed' AND realized_pnl_usd > 0");
+    if ($r5) {
+        $row5 = $r5->fetch_assoc();
+        $total_wins = (int) $row5['cnt'];
+        $r5->free();
+    }
+    $win_rate = ($total_trades > 0) ? round(($total_wins / $total_trades) * 100, 2) : 0;
+
+    // Peak value from previous snapshots
+    $peak = (float) $INITIAL_CAPITAL;
+    $r6 = $conn->query("SELECT MAX(total_value_usd) AS peak_val FROM lm_snapshots");
+    if ($r6) {
+        $row6 = $r6->fetch_assoc();
+        if ($row6 && $row6['peak_val'] !== null && (float) $row6['peak_val'] > $peak) {
+            $peak = (float) $row6['peak_val'];
+        }
+        $r6->free();
+    }
+    if ($total_value > $peak) {
+        $peak = $total_value;
+    }
+
+    $drawdown = ($peak > 0) ? round((($peak - $total_value) / $peak) * 100, 4) : 0;
+
+    $conn->query("INSERT INTO lm_snapshots (snapshot_time, total_value_usd, cash_usd, invested_usd, open_positions, unrealized_pnl_usd, realized_pnl_today, cumulative_pnl_usd, total_trades, total_wins, win_rate, peak_value, drawdown_pct) VALUES (
+        '" . $conn->real_escape_string($now) . "',
+        " . (float) $total_value . ",
+        " . (float) $cash . ",
+        " . (float) $invested . ",
+        " . (int) $open_cnt . ",
+        " . (float) $upnl . ",
+        " . (float) $today_pnl . ",
+        " . (float) $cum_pnl . ",
+        " . (int) $total_trades . ",
+        " . (int) $total_wins . ",
+        " . (float) $win_rate . ",
+        " . (float) $peak . ",
+        " . (float) $drawdown . "
+    )");
+
+    return array(
+        'snapshot_time'      => $now,
+        'total_value_usd'    => $total_value,
+        'cash_usd'           => round($cash, 2),
+        'invested_usd'       => round($invested, 2),
+        'open_positions'     => $open_cnt,
+        'unrealized_pnl_usd' => round($upnl, 2),
+        'realized_pnl_today' => round($today_pnl, 2),
+        'cumulative_pnl_usd' => round($cum_pnl, 2),
+        'total_trades'       => $total_trades,
+        'total_wins'         => $total_wins,
+        'win_rate'           => $win_rate,
+        'peak_value'         => round($peak, 2),
+        'drawdown_pct'       => $drawdown
+    );
+}
+
+
+// ─── Helper: close a position ───────────────────────────────────────
+function _lt_close_position($conn, $position, $exit_price, $reason) {
+    $now        = date('Y-m-d H:i:s');
+    $entry_ts   = strtotime($position['entry_time']);
+    $hold_hours = round((time() - $entry_ts) / 3600, 2);
+
+    $entry_price = (float) $position['entry_price'];
+    $units       = (float) $position['position_size_units'];
+    $pos_value   = (float) $position['position_value_usd'];
+    $direction   = $position['direction'];
+
+    // Calculate realized P&L
+    if ($direction === 'LONG') {
+        $pnl_pct = (($exit_price - $entry_price) / $entry_price) * 100;
+    } else {
+        $pnl_pct = (($entry_price - $exit_price) / $entry_price) * 100;
+    }
+    $gross_pnl = $pos_value * $pnl_pct / 100;
+
+    // Calculate fees
+    $fees = _lt_calc_fees($position['asset_class'], $entry_price, $exit_price, $units);
+
+    // Net P&L
+    $net_pnl = round($gross_pnl - $fees, 2);
+    $net_pct = round($pnl_pct - ($fees / $pos_value * 100), 4);
+
+    $id = (int) $position['id'];
+    $conn->query("UPDATE lm_trades SET
+        status            = 'closed',
+        exit_time         = '" . $conn->real_escape_string($now) . "',
+        exit_price        = " . (float) $exit_price . ",
+        exit_reason       = '" . $conn->real_escape_string($reason) . "',
+        realized_pnl_usd  = " . (float) $net_pnl . ",
+        realized_pct      = " . (float) $net_pct . ",
+        fees_usd          = " . (float) $fees . ",
+        hold_hours        = " . (float) $hold_hours . ",
+        current_price     = " . (float) $exit_price . ",
+        unrealized_pnl_usd = 0,
+        unrealized_pct     = 0
+    WHERE id = " . $id);
+
+    return array(
+        'id'              => $id,
+        'symbol'          => $position['symbol'],
+        'direction'       => $direction,
+        'entry_price'     => $entry_price,
+        'exit_price'      => $exit_price,
+        'exit_reason'     => $reason,
+        'realized_pnl_usd' => $net_pnl,
+        'realized_pct'    => $net_pct,
+        'fees_usd'        => $fees,
+        'hold_hours'      => $hold_hours
+    );
+}
+
+
+// ─── Helper: check admin key ────────────────────────────────────────
+function _lt_check_admin($key) {
+    global $ADMIN_KEY;
+    if ($key !== $ADMIN_KEY) {
+        header('HTTP/1.0 403 Forbidden');
+        echo json_encode(array('ok' => false, 'error' => 'Invalid admin key'));
+        exit;
+    }
+}
+
+
+// ─── Helper: fetch a single row as assoc array ──────────────────────
+function _lt_fetch_row($result) {
+    if (!$result) {
+        return null;
+    }
+    $row = $result->fetch_assoc();
+    $result->free();
+    return $row;
+}
+
+
+// ─── Helper: fetch all rows as array of assoc arrays ────────────────
+function _lt_fetch_all($result) {
+    $rows = array();
+    if (!$result) {
+        return $rows;
+    }
+    while ($row = $result->fetch_assoc()) {
+        $rows[] = $row;
+    }
+    $result->free();
+    return $rows;
+}
+
+
+// ─── Route action ───────────────────────────────────────────────────
+$action = isset($_GET['action']) ? $_GET['action'] : (isset($_POST['action']) ? $_POST['action'] : '');
+
+switch ($action) {
+
+// =====================================================================
+// ACTION: enter — Open new position
+// =====================================================================
+case 'enter':
+    _lt_check_admin(isset($_POST['key']) ? $_POST['key'] : (isset($_GET['key']) ? $_GET['key'] : ''));
+
+    $signal_id  = isset($_REQUEST['signal_id'])  ? (int) $_REQUEST['signal_id'] : 0;
+    $symbol     = '';
+    $asset_class = '';
+    $direction  = 'LONG';
+    $algorithm  = '';
+    $tp_pct     = 5;
+    $sl_pct     = 3;
+    $max_hold   = 24;
+
+    // If signal_id provided, look up signal from lm_signals
+    if ($signal_id > 0) {
+        $sig_r = $conn->query("SELECT * FROM lm_signals WHERE id = " . $signal_id);
+        $sig = _lt_fetch_row($sig_r);
+        if (!$sig) {
+            header('HTTP/1.0 404 Not Found');
+            echo json_encode(array('ok' => false, 'error' => 'Signal not found: ' . $signal_id));
+            exit;
+        }
+        $symbol      = $sig['symbol'];
+        $asset_class = $sig['asset_class'];
+        $direction   = isset($sig['direction']) ? $sig['direction'] : 'LONG';
+        $algorithm   = isset($sig['algorithm_name']) ? $sig['algorithm_name'] : '';
+        $tp_pct      = isset($sig['target_tp_pct']) ? (float) $sig['target_tp_pct'] : 5;
+        $sl_pct      = isset($sig['target_sl_pct']) ? (float) $sig['target_sl_pct'] : 3;
+        $max_hold    = isset($sig['max_hold_hours']) ? (int) $sig['max_hold_hours'] : 24;
+    } else {
+        // Manual entry
+        $symbol      = isset($_REQUEST['symbol'])      ? trim($_REQUEST['symbol']) : '';
+        $asset_class = isset($_REQUEST['asset_class'])  ? strtoupper(trim($_REQUEST['asset_class'])) : '';
+        $direction   = isset($_REQUEST['direction'])    ? strtoupper(trim($_REQUEST['direction'])) : 'LONG';
+        $algorithm   = isset($_REQUEST['algorithm'])    ? trim($_REQUEST['algorithm']) : '';
+        $tp_pct      = isset($_REQUEST['tp_pct'])       ? (float) $_REQUEST['tp_pct'] : 5;
+        $sl_pct      = isset($_REQUEST['sl_pct'])       ? (float) $_REQUEST['sl_pct'] : 3;
+        $max_hold    = isset($_REQUEST['max_hold_hours']) ? (int) $_REQUEST['max_hold_hours'] : 24;
+    }
+
+    if ($symbol === '' || $asset_class === '') {
+        header('HTTP/1.0 400 Bad Request');
+        echo json_encode(array('ok' => false, 'error' => 'symbol and asset_class are required'));
+        exit;
+    }
+
+    if ($direction !== 'LONG' && $direction !== 'SHORT') {
+        header('HTTP/1.0 400 Bad Request');
+        echo json_encode(array('ok' => false, 'error' => 'direction must be LONG or SHORT'));
+        exit;
+    }
+
+    // Check circuit breaker
+    $breaker_r = $conn->query("SELECT id, reason FROM lm_breaker_log WHERE active = 1 ORDER BY id DESC LIMIT 1");
+    if ($breaker_r) {
+        $breaker = $breaker_r->fetch_assoc();
+        $breaker_r->free();
+        if ($breaker) {
+            header('HTTP/1.0 403 Forbidden');
+            echo json_encode(array('ok' => false, 'error' => 'Circuit breaker active: ' . $breaker['reason']));
+            exit;
+        }
+    }
+
+    // Check max concurrent open positions
+    $open_r = $conn->query("SELECT COUNT(*) AS cnt FROM lm_trades WHERE status='open'");
+    $open_row = _lt_fetch_row($open_r);
+    $open_count = $open_row ? (int) $open_row['cnt'] : 0;
+
+    if ($open_count >= $MAX_POSITIONS) {
+        header('HTTP/1.0 400 Bad Request');
+        echo json_encode(array('ok' => false, 'error' => 'Max concurrent positions reached (' . $MAX_POSITIONS . ')'));
+        exit;
+    }
+
+    // Get current price from lm_price_cache
+    $safe_sym = $conn->real_escape_string($symbol);
+    $safe_ac  = $conn->real_escape_string($asset_class);
+    $price_r  = $conn->query("SELECT price FROM lm_price_cache WHERE symbol = '" . $safe_sym . "' AND asset_class = '" . $safe_ac . "' ORDER BY last_updated DESC LIMIT 1");
+    $price_row = _lt_fetch_row($price_r);
+    if (!$price_row || (float) $price_row['price'] <= 0) {
+        header('HTTP/1.0 400 Bad Request');
+        echo json_encode(array('ok' => false, 'error' => 'No price available for ' . $symbol . ' (' . $asset_class . ')'));
+        exit;
+    }
+    $entry_price = (float) $price_row['price'];
+
+    // Calculate position size: DEFAULT_POSITION_PCT % of portfolio
+    $portfolio_value = _lt_get_portfolio_value($conn);
+    $position_value  = round($portfolio_value * ($DEFAULT_POSITION_PCT / 100), 2);
+    $units           = $position_value / $entry_price;
+
+    // Calculate entry fees
+    $entry_fee = 0;
+    if ($asset_class === 'CRYPTO') {
+        $entry_fee = round($entry_price * $units * 0.001, 2);
+    }
+
+    $now = date('Y-m-d H:i:s');
+
+    $conn->query("INSERT INTO lm_trades (
+        asset_class, symbol, algorithm_name, signal_id, direction,
+        entry_time, entry_price, position_size_units, position_value_usd,
+        target_tp_pct, target_sl_pct, max_hold_hours,
+        current_price, highest_price, lowest_price,
+        status, fees_usd, created_at
+    ) VALUES (
+        '" . $safe_ac . "',
+        '" . $safe_sym . "',
+        '" . $conn->real_escape_string($algorithm) . "',
+        " . (int) $signal_id . ",
+        '" . $conn->real_escape_string($direction) . "',
+        '" . $conn->real_escape_string($now) . "',
+        " . (float) $entry_price . ",
+        " . (float) $units . ",
+        " . (float) $position_value . ",
+        " . (float) $tp_pct . ",
+        " . (float) $sl_pct . ",
+        " . (int) $max_hold . ",
+        " . (float) $entry_price . ",
+        " . (float) $entry_price . ",
+        " . (float) $entry_price . ",
+        'open',
+        " . (float) $entry_fee . ",
+        '" . $conn->real_escape_string($now) . "'
+    )");
+
+    $new_id = $conn->insert_id;
+
+    // Mark signal as executed if signal_id provided
+    if ($signal_id > 0) {
+        $conn->query("UPDATE lm_signals SET status = 'executed' WHERE id = " . (int) $signal_id);
+    }
+
+    echo json_encode(array(
+        'ok'       => true,
+        'action'   => 'enter',
+        'trade_id' => $new_id,
+        'position' => array(
+            'id'                  => $new_id,
+            'symbol'              => $symbol,
+            'asset_class'         => $asset_class,
+            'direction'           => $direction,
+            'algorithm_name'      => $algorithm,
+            'signal_id'           => $signal_id,
+            'entry_time'          => $now,
+            'entry_price'         => $entry_price,
+            'position_size_units' => round($units, 8),
+            'position_value_usd'  => $position_value,
+            'target_tp_pct'       => $tp_pct,
+            'target_sl_pct'       => $sl_pct,
+            'max_hold_hours'      => $max_hold,
+            'entry_fee'           => $entry_fee,
+            'portfolio_value'     => $portfolio_value
+        )
+    ));
+    break;
+
+
+// =====================================================================
+// ACTION: track — Update all open positions
+// =====================================================================
+case 'track':
+    _lt_check_admin(isset($_POST['key']) ? $_POST['key'] : (isset($_GET['key']) ? $_GET['key'] : ''));
+
+    $positions = _lt_fetch_all($conn->query("SELECT * FROM lm_trades WHERE status='open'"));
+
+    $tracked = 0;
+    $closed_list = array();
+    $still_open  = 0;
+
+    foreach ($positions as $pos) {
+        $tracked++;
+        $sym = $conn->real_escape_string($pos['symbol']);
+        $ac  = $conn->real_escape_string($pos['asset_class']);
+        $pid = (int) $pos['id'];
+
+        // Get latest price
+        $pr = $conn->query("SELECT price FROM lm_price_cache WHERE symbol = '" . $sym . "' AND asset_class = '" . $ac . "' ORDER BY last_updated DESC LIMIT 1");
+        $pr_row = _lt_fetch_row($pr);
+        if (!$pr_row) {
+            $still_open++;
+            continue; // no price available, skip
+        }
+        $current_price = (float) $pr_row['price'];
+
+        $entry_price = (float) $pos['entry_price'];
+        $units       = (float) $pos['position_size_units'];
+        $pos_value   = (float) $pos['position_value_usd'];
+        $direction   = $pos['direction'];
+
+        // Calculate unrealized P&L
+        if ($direction === 'LONG') {
+            $pnl_pct = (($current_price - $entry_price) / $entry_price) * 100;
+        } else {
+            $pnl_pct = (($entry_price - $current_price) / $entry_price) * 100;
+        }
+        $pnl_usd = round($pos_value * $pnl_pct / 100, 2);
+        $pnl_pct = round($pnl_pct, 4);
+
+        // Track highest / lowest
+        $highest = (float) $pos['highest_price'];
+        $lowest  = (float) $pos['lowest_price'];
+        if ($current_price > $highest) {
+            $highest = $current_price;
+        }
+        if ($lowest <= 0 || $current_price < $lowest) {
+            $lowest = $current_price;
+        }
+
+        // Check hold time
+        $entry_ts   = strtotime($pos['entry_time']);
+        $hold_hours = (time() - $entry_ts) / 3600;
+
+        $tp  = (float) $pos['target_tp_pct'];
+        $sl  = (float) $pos['target_sl_pct'];
+        $mhh = (int) $pos['max_hold_hours'];
+
+        $exit_reason = '';
+
+        // Exit conditions (checked in order)
+        if ($pnl_pct <= -$sl) {
+            $exit_reason = 'stop_loss';
+        } elseif ($pnl_pct >= $tp) {
+            $exit_reason = 'take_profit';
+        } elseif ($hold_hours >= $mhh) {
+            $exit_reason = 'max_hold';
+        }
+
+        if ($exit_reason !== '') {
+            // Close the position
+            $closed = _lt_close_position($conn, $pos, $current_price, $exit_reason);
+            $closed_list[] = $closed;
+        } else {
+            // Update unrealized P&L for still-open position
+            $conn->query("UPDATE lm_trades SET
+                current_price       = " . (float) $current_price . ",
+                unrealized_pnl_usd  = " . (float) $pnl_usd . ",
+                unrealized_pct      = " . (float) $pnl_pct . ",
+                highest_price       = " . (float) $highest . ",
+                lowest_price        = " . (float) $lowest . "
+            WHERE id = " . $pid);
+            $still_open++;
+        }
+    }
+
+    // Take portfolio snapshot
+    $snapshot = _lt_take_snapshot($conn);
+
+    echo json_encode(array(
+        'ok'         => true,
+        'action'     => 'track',
+        'tracked'    => $tracked,
+        'closed'     => count($closed_list),
+        'still_open' => $still_open,
+        'closed_positions' => $closed_list,
+        'snapshot'   => $snapshot
+    ));
+    break;
+
+
+// =====================================================================
+// ACTION: close — Manually close a position
+// =====================================================================
+case 'close':
+    _lt_check_admin(isset($_POST['key']) ? $_POST['key'] : (isset($_GET['key']) ? $_GET['key'] : ''));
+
+    $trade_id = isset($_REQUEST['id']) ? (int) $_REQUEST['id'] : 0;
+    if ($trade_id <= 0) {
+        header('HTTP/1.0 400 Bad Request');
+        echo json_encode(array('ok' => false, 'error' => 'id parameter required'));
+        exit;
+    }
+
+    $pos_r = $conn->query("SELECT * FROM lm_trades WHERE id = " . $trade_id . " AND status = 'open'");
+    $pos = _lt_fetch_row($pos_r);
+    if (!$pos) {
+        header('HTTP/1.0 404 Not Found');
+        echo json_encode(array('ok' => false, 'error' => 'Open position not found with id ' . $trade_id));
+        exit;
+    }
+
+    // Get current price
+    $sym = $conn->real_escape_string($pos['symbol']);
+    $ac  = $conn->real_escape_string($pos['asset_class']);
+    $pr  = $conn->query("SELECT price FROM lm_price_cache WHERE symbol = '" . $sym . "' AND asset_class = '" . $ac . "' ORDER BY last_updated DESC LIMIT 1");
+    $pr_row = _lt_fetch_row($pr);
+
+    if (!$pr_row || (float) $pr_row['price'] <= 0) {
+        header('HTTP/1.0 400 Bad Request');
+        echo json_encode(array('ok' => false, 'error' => 'No price available for ' . $pos['symbol']));
+        exit;
+    }
+
+    $exit_price = (float) $pr_row['price'];
+    $closed = _lt_close_position($conn, $pos, $exit_price, 'manual');
+
+    echo json_encode(array(
+        'ok'       => true,
+        'action'   => 'close',
+        'position' => $closed
+    ));
+    break;
+
+
+// =====================================================================
+// ACTION: positions — List positions (public)
+// =====================================================================
+case 'positions':
+    $status      = isset($_GET['status'])      ? trim($_GET['status']) : 'open';
+    $asset_filter = isset($_GET['asset_class']) ? strtoupper(trim($_GET['asset_class'])) : '';
+    $limit       = isset($_GET['limit'])        ? (int) $_GET['limit'] : 50;
+    if ($limit < 1)   $limit = 1;
+    if ($limit > 200)  $limit = 200;
+
+    $where = array();
+    if ($status !== 'all') {
+        $where[] = "status = '" . $conn->real_escape_string($status) . "'";
+    }
+    if ($asset_filter !== '') {
+        $where[] = "asset_class = '" . $conn->real_escape_string($asset_filter) . "'";
+    }
+
+    $sql = "SELECT * FROM lm_trades";
+    if (count($where) > 0) {
+        $sql .= " WHERE " . implode(' AND ', $where);
+    }
+    $sql .= " ORDER BY entry_time DESC LIMIT " . (int) $limit;
+
+    $rows = _lt_fetch_all($conn->query($sql));
+
+    echo json_encode(array(
+        'ok'        => true,
+        'action'    => 'positions',
+        'status'    => $status,
+        'count'     => count($rows),
+        'positions' => $rows
+    ));
+    break;
+
+
+// =====================================================================
+// ACTION: dashboard — Overall stats (public)
+// =====================================================================
+case 'dashboard':
+    // Closed trade stats
+    $stats = array(
+        'total_trades'    => 0,
+        'wins'            => 0,
+        'losses'          => 0,
+        'win_rate'        => 0,
+        'avg_return_pct'  => 0,
+        'avg_win_pct'     => 0,
+        'avg_loss_pct'    => 0,
+        'total_pnl_usd'   => 0,
+        'profit_factor'   => 0,
+        'avg_hold_hours'  => 0
+    );
+
+    // Total trades
+    $r = $conn->query("SELECT COUNT(*) AS cnt FROM lm_trades WHERE status='closed'");
+    $row = _lt_fetch_row($r);
+    $stats['total_trades'] = $row ? (int) $row['cnt'] : 0;
+
+    // Wins
+    $r = $conn->query("SELECT COUNT(*) AS cnt FROM lm_trades WHERE status='closed' AND realized_pnl_usd > 0");
+    $row = _lt_fetch_row($r);
+    $stats['wins'] = $row ? (int) $row['cnt'] : 0;
+
+    // Losses
+    $stats['losses'] = $stats['total_trades'] - $stats['wins'];
+
+    // Win rate
+    $stats['win_rate'] = ($stats['total_trades'] > 0) ? round(($stats['wins'] / $stats['total_trades']) * 100, 2) : 0;
+
+    // Average return %
+    $r = $conn->query("SELECT AVG(realized_pct) AS avg_ret FROM lm_trades WHERE status='closed'");
+    $row = _lt_fetch_row($r);
+    $stats['avg_return_pct'] = ($row && $row['avg_ret'] !== null) ? round((float) $row['avg_ret'], 4) : 0;
+
+    // Average win %
+    $r = $conn->query("SELECT AVG(realized_pct) AS avg_win FROM lm_trades WHERE status='closed' AND realized_pnl_usd > 0");
+    $row = _lt_fetch_row($r);
+    $stats['avg_win_pct'] = ($row && $row['avg_win'] !== null) ? round((float) $row['avg_win'], 4) : 0;
+
+    // Average loss %
+    $r = $conn->query("SELECT AVG(realized_pct) AS avg_loss FROM lm_trades WHERE status='closed' AND realized_pnl_usd <= 0");
+    $row = _lt_fetch_row($r);
+    $stats['avg_loss_pct'] = ($row && $row['avg_loss'] !== null) ? round((float) $row['avg_loss'], 4) : 0;
+
+    // Total P&L
+    $r = $conn->query("SELECT COALESCE(SUM(realized_pnl_usd), 0) AS total_pnl FROM lm_trades WHERE status='closed'");
+    $row = _lt_fetch_row($r);
+    $stats['total_pnl_usd'] = ($row) ? round((float) $row['total_pnl'], 2) : 0;
+
+    // Profit factor = sum of wins / abs(sum of losses)
+    $sum_wins = 0;
+    $sum_losses = 0;
+    $r = $conn->query("SELECT COALESCE(SUM(realized_pnl_usd), 0) AS sw FROM lm_trades WHERE status='closed' AND realized_pnl_usd > 0");
+    $row = _lt_fetch_row($r);
+    if ($row) $sum_wins = (float) $row['sw'];
+
+    $r = $conn->query("SELECT COALESCE(SUM(realized_pnl_usd), 0) AS sl FROM lm_trades WHERE status='closed' AND realized_pnl_usd <= 0");
+    $row = _lt_fetch_row($r);
+    if ($row) $sum_losses = abs((float) $row['sl']);
+
+    $stats['profit_factor'] = ($sum_losses > 0) ? round($sum_wins / $sum_losses, 4) : (($sum_wins > 0) ? 999.99 : 0);
+
+    // Average hold hours
+    $r = $conn->query("SELECT AVG(hold_hours) AS avg_hh FROM lm_trades WHERE status='closed'");
+    $row = _lt_fetch_row($r);
+    $stats['avg_hold_hours'] = ($row && $row['avg_hh'] !== null) ? round((float) $row['avg_hh'], 2) : 0;
+
+    // By-algorithm breakdown
+    $algo_stats = array();
+    $r = $conn->query("SELECT algorithm_name,
+        COUNT(*) AS total_trades,
+        SUM(CASE WHEN realized_pnl_usd > 0 THEN 1 ELSE 0 END) AS wins,
+        SUM(CASE WHEN realized_pnl_usd <= 0 THEN 1 ELSE 0 END) AS losses,
+        AVG(realized_pct) AS avg_return_pct,
+        SUM(realized_pnl_usd) AS total_pnl_usd,
+        AVG(hold_hours) AS avg_hold_hours
+    FROM lm_trades WHERE status='closed' GROUP BY algorithm_name ORDER BY total_pnl_usd DESC");
+    if ($r) {
+        while ($arow = $r->fetch_assoc()) {
+            $atotal = (int) $arow['total_trades'];
+            $awins  = (int) $arow['wins'];
+            $algo_stats[] = array(
+                'algorithm_name'  => $arow['algorithm_name'],
+                'total_trades'    => $atotal,
+                'wins'            => $awins,
+                'losses'          => (int) $arow['losses'],
+                'win_rate'        => ($atotal > 0) ? round(($awins / $atotal) * 100, 2) : 0,
+                'avg_return_pct'  => round((float) $arow['avg_return_pct'], 4),
+                'total_pnl_usd'   => round((float) $arow['total_pnl_usd'], 2),
+                'avg_hold_hours'  => round((float) $arow['avg_hold_hours'], 2)
+            );
+        }
+        $r->free();
+    }
+
+    // Open positions summary
+    $open_positions = _lt_fetch_all($conn->query("SELECT id, symbol, asset_class, direction, algorithm_name, entry_price, current_price, unrealized_pnl_usd, unrealized_pct, entry_time FROM lm_trades WHERE status='open' ORDER BY entry_time DESC"));
+
+    // Latest snapshot
+    $snapshot = _lt_fetch_row($conn->query("SELECT * FROM lm_snapshots ORDER BY id DESC LIMIT 1"));
+
+    // Current portfolio value
+    $portfolio_value = _lt_get_portfolio_value($conn);
+
+    echo json_encode(array(
+        'ok'              => true,
+        'action'          => 'dashboard',
+        'portfolio_value' => $portfolio_value,
+        'stats'           => $stats,
+        'by_algorithm'    => $algo_stats,
+        'open_positions'  => $open_positions,
+        'latest_snapshot' => $snapshot
+    ));
+    break;
+
+
+// =====================================================================
+// ACTION: history — Paginated trade history (public)
+// =====================================================================
+case 'history':
+    $page      = isset($_GET['page'])        ? max(1, (int) $_GET['page']) : 1;
+    $per_page  = isset($_GET['per_page'])     ? (int) $_GET['per_page'] : 20;
+    if ($per_page < 1)   $per_page = 1;
+    if ($per_page > 100) $per_page = 100;
+
+    $asset_filter = isset($_GET['asset_class']) ? strtoupper(trim($_GET['asset_class'])) : '';
+    $algo_filter  = isset($_GET['algorithm'])   ? trim($_GET['algorithm']) : '';
+
+    $where = array("status = 'closed'");
+    if ($asset_filter !== '') {
+        $where[] = "asset_class = '" . $conn->real_escape_string($asset_filter) . "'";
+    }
+    if ($algo_filter !== '') {
+        $where[] = "algorithm_name = '" . $conn->real_escape_string($algo_filter) . "'";
+    }
+
+    $where_sql = implode(' AND ', $where);
+
+    // Count total
+    $count_r = $conn->query("SELECT COUNT(*) AS cnt FROM lm_trades WHERE " . $where_sql);
+    $count_row = _lt_fetch_row($count_r);
+    $total = $count_row ? (int) $count_row['cnt'] : 0;
+
+    $total_pages = ($per_page > 0) ? (int) ceil($total / $per_page) : 1;
+    $offset = ($page - 1) * $per_page;
+
+    $rows = _lt_fetch_all($conn->query("SELECT * FROM lm_trades WHERE " . $where_sql . " ORDER BY exit_time DESC LIMIT " . (int) $per_page . " OFFSET " . (int) $offset));
+
+    echo json_encode(array(
+        'ok'         => true,
+        'action'     => 'history',
+        'trades'     => $rows,
+        'pagination' => array(
+            'page'        => $page,
+            'per_page'    => $per_page,
+            'total'       => $total,
+            'total_pages' => $total_pages
+        )
+    ));
+    break;
+
+
+// =====================================================================
+// Unknown or missing action
+// =====================================================================
+default:
+    header('HTTP/1.0 400 Bad Request');
+    echo json_encode(array(
+        'ok'    => false,
+        'error' => 'Unknown or missing action. Valid: enter, track, close, positions, dashboard, history'
+    ));
+    break;
+}
+
+$conn->close();
+?>

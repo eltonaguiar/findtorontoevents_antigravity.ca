@@ -138,6 +138,11 @@ th {
     letter-spacing: 0.5px;
     border-bottom: 1px solid var(--border);
 }
+th.sortable { cursor: pointer; user-select: none; position: relative; padding-right: 20px; }
+th.sortable:hover { color: var(--gold); }
+th.sortable::after { content: '\u2195'; position: absolute; right: 4px; top: 50%; transform: translateY(-50%); opacity: 0.4; font-size: 0.7rem; }
+th.sortable.sort-asc::after { content: '\u25B2'; opacity: 1; color: var(--gold); }
+th.sortable.sort-desc::after { content: '\u25BC'; opacity: 1; color: var(--gold); }
 td {
     padding: 10px 12px;
     border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -598,6 +603,35 @@ if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
     API_BASE = 'api';
 }
 
+// ─── Sort State ───
+var currentPicks = [];
+var currentPicksShowOutcome = false;
+var currentSortCol = '';
+var currentSortDir = 'desc';
+var currentSortTarget = 'picks-table';
+
+function sortPicks(col) {
+    if (currentSortCol === col) {
+        currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSortCol = col;
+        currentSortDir = 'desc';
+    }
+    var dir = currentSortDir === 'asc' ? 1 : -1;
+    currentPicks.sort(function(a, b) {
+        var va = a[col], vb = b[col];
+        if (col === 'ticker' || col === 'strategy_name' || col === 'outcome') {
+            va = (va || '').toString().toLowerCase();
+            vb = (vb || '').toString().toLowerCase();
+            return va < vb ? -dir : va > vb ? dir : 0;
+        }
+        va = parseFloat(va) || 0;
+        vb = parseFloat(vb) || 0;
+        return (va - vb) * dir;
+    });
+    document.getElementById(currentSortTarget).innerHTML = buildPicksTable(currentPicks, currentPicksShowOutcome);
+}
+
 // ─── Tab Navigation ───
 document.getElementById('tabs').addEventListener('click', function(e) {
     if (!e.target.classList.contains('tab')) return;
@@ -739,6 +773,10 @@ function loadPicks(filter) {
             '</div>';
 
         if (data.picks && data.picks.length > 0) {
+            currentPicks = data.picks;
+            currentPicksShowOutcome = false;
+            currentSortCol = '';
+            currentSortTarget = 'picks-table';
             document.getElementById('picks-table').innerHTML = buildPicksTable(data.picks, false);
         } else {
             document.getElementById('picks-table').innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:2rem;">No picks found. Click "Run Scanner Now" to generate today\'s picks.</p>';
@@ -747,8 +785,13 @@ function loadPicks(filter) {
 }
 
 function buildPicksTable(picks, showOutcome) {
-    var html = '<table><tr><th>Ticker</th><th>Strategy</th><th>Score</th><th>Entry</th><th>Stop Loss</th><th>Take Profit</th><th>R:R</th><th>Fee</th><th>Net Profit</th>';
-    if (showOutcome) html += '<th>Outcome</th><th>Return</th>';
+    function sh(label, col) {
+        var cls = 'sortable';
+        if (currentSortCol === col) cls += ' sort-' + currentSortDir;
+        return '<th class="' + cls + '" onclick="sortPicks(\'' + col + '\')">' + label + '</th>';
+    }
+    var html = '<table><tr>' + sh('Ticker','ticker') + sh('Strategy','strategy_name') + sh('Score','score') + sh('Entry','entry_price') + sh('Stop Loss','stop_loss_price') + sh('Take Profit','take_profit_price') + sh('R:R','risk_reward_ratio') + sh('Fee','questrade_fee') + sh('Net Profit','net_profit_if_tp');
+    if (showOutcome) html += sh('Outcome','outcome') + sh('Return','outcome_pct');
     html += '</tr>';
     for (var i = 0; i < picks.length; i++) {
         var p = picks[i];
@@ -784,6 +827,10 @@ function runScan() {
                    '</div>';
         document.getElementById('picks-summary').innerHTML = info;
         if (data.picks && data.picks.length > 0) {
+            currentPicks = data.picks;
+            currentPicksShowOutcome = false;
+            currentSortCol = '';
+            currentSortTarget = 'picks-table';
             document.getElementById('picks-table').innerHTML = buildPicksTable(data.picks, false);
         } else {
             document.getElementById('picks-table').innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:2rem;">No signals found in current market conditions.</p>';
@@ -931,6 +978,10 @@ function loadHistory(days, outcome) {
     apiCall(url, function(data) {
         if (!data.ok) return;
         if (data.picks && data.picks.length > 0) {
+            currentPicks = data.picks;
+            currentPicksShowOutcome = true;
+            currentSortCol = '';
+            currentSortTarget = 'history-table';
             document.getElementById('history-table').innerHTML = buildPicksTable(data.picks, true);
         } else {
             document.getElementById('history-table').innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:2rem;">No picks found for this filter.</p>';

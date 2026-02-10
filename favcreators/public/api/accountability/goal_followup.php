@@ -20,6 +20,10 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
+// Allow GET with ?method=post as ModSecurity fallback (412 on POST)
+$_is_post_intent = ($_SERVER['REQUEST_METHOD'] === 'POST')
+    || (isset($_GET['method']) && $_GET['method'] === 'post');
+
 require_once dirname(__FILE__) . '/../db_connect.php';
 require_once dirname(__FILE__) . '/../discord_config.php';
 

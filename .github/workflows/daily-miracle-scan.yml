@@ -1,0 +1,59 @@
+name: Daily Miracle DayTrades Scan
+
+on:
+  schedule:
+    # Run Mon-Fri at 11 PM UTC (6 PM ET, after market close)
+    - cron: '0 23 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  miracle-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - name: Run daily scan orchestrator
+      continue-on-error: true
+      run: |
+        echo "=== Miracle DayTrades Daily Scan ==="
+        echo "Time: $(date -u)"
+
+        RESULT=$(curl -s --max-time 120 \
+          "https://findtorontoevents.ca/findstocks2_global/api/daily_scan2.php?key=miracle2026") || true
+
+        echo "$RESULT" | head -c 5000
+
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            print()
+            print('=== Scan completed successfully ===')
+            steps = d.get('steps', d.get('results', {}))
+            if isinstance(steps, dict):
+                for k, v in steps.items():
+                    print(f'  {k}: {v}')
+            elif isinstance(steps, list):
+                for s in steps:
+                    print(f'  {s}')
+            picks = d.get('new_picks', d.get('picks_count', d.get('picks', 'N/A')))
+            resolved = d.get('resolved', d.get('resolved_count', 'N/A'))
+            print(f'New picks: {picks}')
+            print(f'Resolved: {resolved}')
+            elapsed = d.get('elapsed', d.get('elapsed_seconds', 'N/A'))
+            print(f'Elapsed: {elapsed}s')
+        else:
+            print(f'Error: {d.get(\"error\", \"unknown\")}')
+        " 2>/dev/null || echo "(Could not parse JSON response)"
+
+    - name: Verify miracle dashboard
+      continue-on-error: true
+      run: |
+        echo "=== Verifying miracle.html ==="
+        STATUS=$(curl -sS -o /dev/null -w "%{http_code}" \
+          "https://findtorontoevents.ca/findstocks2_global/miracle.html" \
+          2>&1) || true
+        echo "miracle.html: HTTP $STATUS"
+        if [ "$STATUS" != "200" ]; then
+          echo "WARNING: miracle.html returned $STATUS"
+        fi

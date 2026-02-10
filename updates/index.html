@@ -159,11 +159,62 @@ a:hover { text-decoration: underline; }
 }
 .footer a { color: #556; }
 
+/* ─── Filter Bar ─── */
+.filter-bar {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.filter-label {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #445;
+  min-width: 50px;
+}
+.filter-pill {
+  font-size: 12px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: transparent;
+  color: #778;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.filter-pill:hover { border-color: rgba(255,255,255,0.2); color: #aab; }
+.filter-pill.active { background: rgba(136,170,255,0.12); border-color: rgba(136,170,255,0.3); color: #88aaff; }
+.filter-count {
+  font-size: 11px;
+  color: #445;
+  margin-left: 4px;
+  padding: 0 4px;
+}
+.no-results {
+  text-align: center;
+  padding: 60px 20px;
+  color: #445;
+  font-size: 14px;
+  display: none;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .header h1 { font-size: 26px; letter-spacing: 4px; }
   .update-title { font-size: 17px; }
   .container { padding: 24px 16px 60px; }
+  .filter-bar { padding: 16px 16px 0; }
+  .filter-pill { font-size: 11px; padding: 3px 10px; }
 }
 </style>
 </head>
@@ -177,9 +228,139 @@ a:hover { text-decoration: underline; }
   </div>
 </div>
 
-<div class="container">
+<div class="filter-bar" id="filterBar">
+  <div class="filter-row">
+    <span class="filter-label">Date</span>
+    <button class="filter-pill active" data-filter="date" data-value="all">All</button>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Type</span>
+    <button class="filter-pill active" data-filter="type" data-value="all">All</button>
+    <button class="filter-pill" data-filter="type" data-value="feature">New</button>
+    <button class="filter-pill" data-filter="type" data-value="improvement">Improvement</button>
+    <button class="filter-pill" data-filter="type" data-value="fix">Fix</button>
+    <button class="filter-pill" data-filter="type" data-value="ui">UI</button>
+  </div>
+</div>
+
+<div class="no-results" id="noResults">No updates match the selected filters.</div>
+
+<div class="container" id="updatesContainer">
 
 <div class="section-year">February 2026</div>
+
+<!-- Feb 9, 2026 — Recommended Gear & Links Page -->
+<div class="update-entry" style="--dot-color: #fbbf24;">
+  <div class="update-date">Feb 9, 2026</div>
+  <div class="update-title">
+    Recommended Gear &amp; Links
+    <span class="badge badge-feature">New</span>
+  </div>
+  <div class="update-body">
+    <p>New <a href="/affiliates/">Recommended Gear &amp; Links</a> page &mdash; products and tools we personally use and stand behind.</p>
+    <ul>
+      <li><strong>Transparent labeling</strong> &mdash; every link marked as Affiliate, Affiliate (Contact Us), or Non-Affiliate</li>
+      <li><strong>Storage &amp; Backup</strong> &mdash; 1TB USB SSD for emergency boot toolkits (pairs with our <a href="/WINDOWSFIXER/">Miracle Boot Fixer</a>)</li>
+      <li><strong>Skincare</strong> &mdash; 42% Urea Cream &amp; Glysomed for Canadian winters</li>
+      <li><strong>Movie Night</strong> &mdash; Flavored popcorn kit for your <a href="/MOVIESHOWS/">movie nights</a></li>
+      <li><strong>Wearable Tech</strong> &mdash; RayNeo Air 3S AR glasses for portable big-screen viewing</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Feb 9, 2026 — Crypto & Forex Technical Analysis APIs -->
+<div class="update-entry" style="--dot-color: #f59e0b;">
+  <div class="update-date">Feb 9, 2026</div>
+  <div class="update-title">
+    Crypto &amp; Forex Technical Analysis APIs
+    <span class="badge badge-feature">New</span>
+  </div>
+  <div class="update-body">
+    <p>New helper APIs providing real-time technical analysis and market insights for crypto and forex portfolios:</p>
+    <ul>
+      <li><strong>Technical Indicators</strong> &mdash; SMA(20/50/200), RSI(14), MACD(12,26,9), Bollinger Bands for any pair. Composite signal: STRONG_BUY to STRONG_SELL <span class="app-tag">Crypto</span> <span class="app-tag">Forex</span></li>
+      <li><strong>Aggregate Recommendations</strong> &mdash; cross-pair buy/sell/hold verdicts ranked by confidence (0-100), with multi-factor reasoning <span class="app-tag">Crypto</span> <span class="app-tag">Forex</span></li>
+      <li><strong>Market Overview</strong> &mdash; bullish/bearish pair counts, overbought/oversold alerts, biggest 7-day movers <span class="app-tag">Crypto</span> <span class="app-tag">Forex</span></li>
+      <li><strong>Fear &amp; Greed Index</strong> &mdash; composite score (0-100) based on SMA200 breadth, average RSI, and volatility. Labels: Extreme Fear to Extreme Greed <span class="app-tag">Crypto</span></li>
+      <li><strong>Session Analysis</strong> &mdash; detects active forex sessions (Sydney/Tokyo/London/New York), session overlaps, and recommends pairs to focus on <span class="app-tag">Forex</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- Feb 9, 2026 — DayTrades Miracle Auto-Scan + Sorting -->
+<div class="update-entry" style="--dot-color: #22c55e;">
+  <div class="update-date">Feb 9, 2026</div>
+  <div class="update-title">
+    DayTrades Miracle: Auto-Scan &amp; Table Sorting
+    <span class="badge badge-improvement">Improvement</span>
+  </div>
+  <div class="update-body">
+    <p>The DayTrades Miracle scanner now runs automatically and the picks tables are sortable:</p>
+    <ul>
+      <li><strong>GitHub Actions Daily Scan</strong> &mdash; runs Mon-Fri after market close: resolves old picks, auto-adjusts strategies via self-learning AI, scans 67 tickers across 8 strategies, and saves a daily results snapshot <span class="app-tag">Stocks</span></li>
+      <li><strong>Sortable Pick Tables</strong> &mdash; click any column header (Ticker, Strategy, Score, Entry, SL, TP, R:R, Fee, Net Profit, Outcome, Return) to sort ascending/descending. Works on both Today's Picks and Pick History tabs <span class="app-tag">Stocks</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- Feb 9, 2026 — Crypto & Forex Portfolio Fixes -->
+<div class="update-entry" style="--dot-color: #ef4444;">
+  <div class="update-date">Feb 9, 2026</div>
+  <div class="update-title">
+    Crypto &amp; Forex Portfolio Dashboard Fixes
+    <span class="badge badge-fix">Fix</span>
+  </div>
+  <div class="update-body">
+    <p>Fixed data display issues on portfolio dashboards:</p>
+    <ul>
+      <li><strong>Crypto Dashboard</strong> &mdash; fixed API field name mismatch causing "0 Pairs" and "0 Signals" despite having 10 pairs and 14 picks in the database. Also fixed API base URL pointing to wrong directory <span class="app-tag">Crypto</span></li>
+      <li><strong>Forex Dashboard</strong> &mdash; same field name fix for pairs, picks, and algorithm counts. 8 pairs and 16 picks now display correctly <span class="app-tag">Forex</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- Feb 9, 2026 — Automated Daily Refresh for Consolidated Features -->
+<div class="update-entry" style="--dot-color: #3b82f6;">
+  <div class="update-date">Feb 9, 2026</div>
+  <div class="update-title">
+    Automated Daily Refresh for All New Features
+    <span class="badge badge-improvement">Improvement</span>
+  </div>
+  <div class="update-body">
+    <p>All new consolidated features now auto-refresh daily via GitHub Actions, with no manual intervention needed:</p>
+    <ul>
+      <li><strong>Consolidated Consensus Picks</strong> &mdash; automatically re-aggregated daily after market close. Cross-references 55+ algorithms across 3 databases to detect multi-algorithm consensus picks <span class="app-tag">Stocks</span></li>
+      <li><strong>$500/Day DayTrader Simulation</strong> &mdash; automatically runs daily for all 3 strategy versions (original, self-learned revised, Kelly criterion). Tracks cumulative equity curves and win rates <span class="app-tag">Stocks</span></li>
+      <li><strong>Learning Dashboard Metrics</strong> &mdash; improvement tracking refreshed daily: compares early vs recent trade outcomes for each of the 6 self-learning systems. GitHub workflow links for transparency <span class="app-tag">Stocks</span></li>
+      <li><strong>Dashboard Verification</strong> &mdash; 9 portfolio dashboard pages automatically verified for HTTP 200 after each refresh, including 4 new pages (consolidated, stock-intel, learning-lab, daytrader-sim) <span class="app-tag">Stocks</span></li>
+      <li><strong>Production Ready</strong> &mdash; all database tables created and verified: consolidated_cache, consensus_history, stock_analyst_recs, daytrader_sim_days, daytrader_sim_trades, kelly_sizing_log. 42-page Playwright test suite passes with 0 JS errors <span class="app-tag">All</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- Feb 9, 2026 — Science-Backed Signal Engine -->
+<div class="update-entry" style="--dot-color: #22c55e;">
+  <div class="update-date">Feb 9, 2026</div>
+  <div class="update-title">
+    Science-Backed Signal Engine Upgrade
+    <span class="badge badge-improvement">Upgrade</span>
+  </div>
+  <div class="update-body">
+    <p>5 new trading algorithms backed by peer-reviewed academic research, bringing the total to 13. Enhanced self-learning system with walk-forward validation and adaptive thresholds:</p>
+    <ul>
+      <li><strong>Trend Sniper</strong> &mdash; 6-indicator confluence (RSI, MACD, EMA stack, Bollinger %B, ATR strength, volume) with weighted scoring + regime gate. Based on Brock, Lakonishok &amp; LeBaron 1992 (58-65% win rate with 4+ indicator agreement) <span class="app-tag">Signals</span></li>
+      <li><strong>Dip Recovery</strong> &mdash; multi-candle reversal detector. Catches 2-4% gradual sell-offs followed by green reversal candles. Based on Lo, Mamaysky &amp; Wang 2000 (short-term mean reversion) <span class="app-tag">Signals</span></li>
+      <li><strong>Volume Spike</strong> &mdash; whale/institutional detection via volume Z-Score analysis. Enters when volume is 2+ standard deviations above mean with clear directional candle. Based on Trading Volume Alpha (NBER 2024) <span class="app-tag">Signals</span></li>
+      <li><strong>VAM (Volatility-Adjusted Momentum)</strong> &mdash; Martin Ratio = momentum / Ulcer Index. Smooth uptrends score high, volatile pumps score low. Based on Moskowitz, Ooi &amp; Pedersen 2012 (Time Series Momentum) <span class="app-tag">Signals</span></li>
+      <li><strong>Mean Reversion Sniper</strong> &mdash; Bollinger lower band + RSI &lt; 35 + MACD histogram turning up convergence. Catches oversold bounces targeting the middle Bollinger band <span class="app-tag">Signals</span></li>
+      <li><strong>Regime Gate</strong> &mdash; BTC above 24h SMA = crypto bull (suppress buys in bear). USD strength check for forex. Per-stock SMA check. Adapted from STOCKSUNIFY2 RAR (Regime-Aware Reversion) <span class="app-tag">Risk</span></li>
+      <li><strong>Walk-Forward Validation</strong> &mdash; 67% train / 33% test window prevents overfitting. Detects when in-sample success fails out-of-sample <span class="app-tag">Learning</span></li>
+      <li><strong>Adaptive Threshold Learning</strong> &mdash; optimizes signal score thresholds per algorithm from trade rationale data. Finds optimal composite scores, Z-scores, and Martin Ratios <span class="app-tag">Learning</span></li>
+      <li><strong>Regime Performance Tracking</strong> &mdash; win rate tracked separately for bull/bear regimes. Algorithms auto-evaluated for regime-conditional profitability <span class="app-tag">Learning</span></li>
+      <li><strong>MACD Fix</strong> &mdash; increased candle lookback from 24 to 48, enabling MACD Crossover and Bollinger Squeeze algorithms to fire (previously broken due to insufficient data) <span class="app-tag">Fix</span></li>
+    </ul>
+  </div>
+</div>
 
 <!-- Feb 9, 2026 — Live Trading Monitor -->
 <div class="update-entry" style="--dot-color: #f97316;">
@@ -189,14 +370,16 @@ a:hover { text-decoration: underline; }
     <span class="badge badge-feature">New</span>
   </div>
   <div class="update-body">
-    <p>Real-time multi-asset paper trading system for crypto and forex. Prices from 4 sources, 8 algorithms generate signals, and positions auto-close on SL/TP/max-hold:</p>
+    <p>Real-time multi-asset paper trading system for crypto, forex, and stocks. Prices from 5 data sources, 13 algorithms generate signals, and positions auto-close on SL/TP/max-hold:</p>
     <ul>
-      <li><strong><a href="/live-monitor/live-monitor.html">Live Trading Dashboard</a></strong> &mdash; 4-tab unified view: live prices, signals, positions, and performance. Auto-refreshing with source transparency <span class="app-tag">Crypto</span> <span class="app-tag">Forex</span></li>
-      <li><strong>4 Real-Time Data Sources</strong> &mdash; FreeCryptoAPI (Binance data, ~5s delay), CoinGecko (fallback), TwelveData (forex ~15s), CurrencyLayer (cross-pairs). Each price shows its source and delay <span class="app-tag">Multi-Asset</span></li>
-      <li><strong>8 Hour-Trade Algorithms</strong> &mdash; Momentum Burst, RSI Reversal, 24h Breakout, DCA Dip Buy, Bollinger Squeeze, MACD Crossover, Consensus, and Volatility Breakout. All computed from hourly candles without external TA libraries <span class="app-tag">Signals</span></li>
-      <li><strong>Paper Trading Engine</strong> &mdash; $10,000 virtual capital, 5% position sizing, auto SL/TP/max-hold exit. Fee modeling: 0.1% crypto, pip spread for forex. Equity curve and per-algorithm P&amp;L tracking <span class="app-tag">Trading</span></li>
-      <li><strong>Self-Learning for Hour Trades</strong> &mdash; grid search over 392 TP/SL/hold combinations per algorithm. Determines optimal parameters after 20+ closed trades <span class="app-tag">Learning</span></li>
-      <li><strong>Circuit Breakers</strong> &mdash; 5 safety rules: rapid loss (-5%/1h), drawdown (-10%), overtrading (>5/hr), loss streak (5+), volatile market (BTC >5%/1h). Auto-cooldown periods <span class="app-tag">Safety</span></li>
+      <li><strong><a href="/live-monitor/live-monitor.html">Live Trading Dashboard</a></strong> &mdash; 4-tab unified view: live prices, signals, positions, and performance. Auto-refreshing with source transparency. Market hours indicator for stocks <span class="app-tag">Crypto</span> <span class="app-tag">Forex</span> <span class="app-tag">Stocks</span></li>
+      <li><strong>5 Real-Time Data Sources</strong> &mdash; FreeCryptoAPI (Binance data, ~5s), CoinGecko (fallback), TwelveData (forex ~15s), CurrencyLayer (cross-pairs), Finnhub (stocks, real-time). Each price shows its source and delay <span class="app-tag">Multi-Asset</span></li>
+      <li><strong>36 Assets Tracked</strong> &mdash; 14 crypto pairs, 10 forex pairs, and 12 US stocks (AAPL, MSFT, GOOGL, AMZN, NVDA, META, JPM, WMT, XOM, NFLX, JNJ, BAC). Stocks fetched during NYSE hours via Finnhub <span class="app-tag">Multi-Asset</span></li>
+      <li><strong>13 Hour-Trade Algorithms</strong> &mdash; 8 original (Momentum Burst, RSI Reversal, 24h Breakout, DCA Dip, Bollinger Squeeze, MACD Crossover, Consensus, Volatility Breakout) + 5 science-backed (Trend Sniper, Dip Recovery, Volume Spike, VAM, Mean Reversion Sniper) <span class="app-tag">Signals</span></li>
+      <li><strong>Paper Trading Engine</strong> &mdash; $10,000 virtual capital, 5% position sizing, auto SL/TP/max-hold exit. Realistic fees: crypto 0.20% (NDAX), stocks $0.0099/share min $1.99 (Moomoo), forex spread-based <span class="app-tag">Trading</span></li>
+      <li><strong><a href="/live-monitor/hour-learning.html">Self-Learning Dashboard</a></strong> &mdash; grid search over 392 TP/SL/hold combinations per algorithm. Walk-forward validation, adaptive thresholds, regime tracking. Per-algorithm optimization results and parameter history <span class="app-tag">Learning</span></li>
+      <li><strong>Circuit Breakers</strong> &mdash; 5 safety rules: rapid loss (-5%/1h), drawdown (-10%), overtrading (&gt;5/hr), loss streak (5+), volatile market (BTC &gt;5%/1h). Auto-cooldown periods <span class="app-tag">Safety</span></li>
+      <li><strong>Automated Every 30 Minutes</strong> &mdash; GitHub Actions workflow fetches prices, tracks positions (auto-close on SL/TP), scans for new signals, checks circuit breakers, and logs portfolio snapshots. Weekly hour-learning optimization on Sundays <span class="app-tag">Automation</span></li>
     </ul>
   </div>
 </div>
@@ -472,5 +655,109 @@ a:hover { text-decoration: underline; }
   <a href="/">Find Toronto Events</a> &mdash; Antigravity Systems
 </div>
 
+<script>
+(function() {
+  var activeDate = 'all';
+  var activeType = 'all';
+
+  // Parse all entries to build date pill options
+  var entries = document.querySelectorAll('.update-entry');
+  var dateMap = {}; // "Feb 2026" -> count
+  for (var i = 0; i < entries.length; i++) {
+    var dateEl = entries[i].querySelector('.update-date');
+    if (!dateEl) continue;
+    var raw = dateEl.textContent.trim(); // "Feb 9, 2026" or "Dec 2025"
+    var parts = raw.split(/[\s,]+/);
+    var monthYear = parts[0] + ' ' + parts[parts.length - 1]; // "Feb 2026"
+    entries[i].setAttribute('data-month', monthYear);
+    dateMap[monthYear] = (dateMap[monthYear] || 0) + 1;
+
+    // Tag entry with its badge type
+    var badges = entries[i].querySelectorAll('.badge');
+    var types = [];
+    for (var b = 0; b < badges.length; b++) {
+      var cls = badges[b].className;
+      if (cls.indexOf('badge-feature') >= 0) types.push('feature');
+      if (cls.indexOf('badge-improvement') >= 0) types.push('improvement');
+      if (cls.indexOf('badge-fix') >= 0) types.push('fix');
+      if (cls.indexOf('badge-ui') >= 0) types.push('ui');
+    }
+    entries[i].setAttribute('data-types', types.join(','));
+  }
+
+  // Build date pills dynamically
+  var dateRow = document.querySelector('.filter-row');
+  var months = Object.keys(dateMap);
+  for (var m = 0; m < months.length; m++) {
+    var btn = document.createElement('button');
+    btn.className = 'filter-pill';
+    btn.setAttribute('data-filter', 'date');
+    btn.setAttribute('data-value', months[m]);
+    btn.innerHTML = months[m] + '<span class="filter-count">(' + dateMap[months[m]] + ')</span>';
+    dateRow.appendChild(btn);
+  }
+
+  // Click handler for all pills
+  document.getElementById('filterBar').addEventListener('click', function(e) {
+    var pill = e.target.closest('.filter-pill');
+    if (!pill) return;
+    var filterGroup = pill.getAttribute('data-filter');
+    var value = pill.getAttribute('data-value');
+
+    // Update active state within group
+    var siblings = pill.parentNode.querySelectorAll('.filter-pill');
+    for (var s = 0; s < siblings.length; s++) siblings[s].classList.remove('active');
+    pill.classList.add('active');
+
+    if (filterGroup === 'date') activeDate = value;
+    if (filterGroup === 'type') activeType = value;
+
+    applyFilters();
+  });
+
+  function applyFilters() {
+    var visibleCount = 0;
+    var visibleMonths = {};
+
+    for (var i = 0; i < entries.length; i++) {
+      var entry = entries[i];
+      var month = entry.getAttribute('data-month');
+      var types = entry.getAttribute('data-types') || '';
+
+      var dateMatch = (activeDate === 'all' || month === activeDate);
+      var typeMatch = (activeType === 'all' || types.indexOf(activeType) >= 0);
+
+      if (dateMatch && typeMatch) {
+        entry.style.display = '';
+        visibleCount++;
+        visibleMonths[month] = true;
+      } else {
+        entry.style.display = 'none';
+      }
+    }
+
+    // Show/hide section-year headers
+    var yearHeaders = document.querySelectorAll('.section-year');
+    for (var y = 0; y < yearHeaders.length; y++) {
+      var headerText = yearHeaders[y].textContent.trim(); // "February 2026", "January 2026", "December 2025"
+      var hasVisible = false;
+      // Check if any month in this header group is visible
+      for (var mk in visibleMonths) {
+        // "Feb" matches "February", "Jan" matches "January", "Dec" matches "December"
+        var shortMonth = mk.split(' ')[0];
+        if (headerText.indexOf(shortMonth) === 0 || headerText.toLowerCase().indexOf(shortMonth.toLowerCase()) >= 0) {
+          hasVisible = true;
+          break;
+        }
+      }
+      yearHeaders[y].style.display = hasVisible ? '' : 'none';
+    }
+
+    // Show/hide no results message
+    document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
+    document.getElementById('updatesContainer').style.display = visibleCount === 0 ? 'none' : '';
+  }
+})();
+</script>
 </body>
 </html>

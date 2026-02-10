@@ -636,7 +636,7 @@
 
 <script>
 // ─── Config ───
-var API_BASE = '../api/';
+var API_BASE = 'api/';
 let allStrategies = [];
 let currentTrades = [];
 let equityChartInstance = null;
@@ -701,11 +701,11 @@ function loadStats() {
         }
         var s = data.stats;
         document.getElementById('statPairs').textContent = s.total_pairs || 0;
-        document.getElementById('statSignals').textContent = s.total_signals || 0;
+        document.getElementById('statSignals').textContent = s.total_picks || 0;
         document.getElementById('statPrices').textContent = s.total_price_records || 0;
-        document.getElementById('statStrategies').textContent = s.total_strategies || 0;
+        document.getElementById('statStrategies').textContent = s.active_algorithms || 0;
 
-        if (s.total_signals === 0) {
+        if ((s.total_picks || 0) === 0) {
             document.getElementById('setupBanner').style.display = 'block';
         }
     });
@@ -713,9 +713,9 @@ function loadStats() {
 
 // ─── Load Strategies ───
 function loadStrategies() {
-    apiCall('data.php', {type: 'strategies'}, function(err, data) {
-        if (err || !data || !data.strategies) return;
-        allStrategies = data.strategies;
+    apiCall('data.php', {type: 'algorithms'}, function(err, data) {
+        if (err || !data || !data.algorithms) return;
+        allStrategies = data.algorithms;
         renderStrategyCheckboxes('strategyCheckboxes');
         renderStrategyCheckboxes('compareStrategyCheckboxes');
         renderStrategyFilter();

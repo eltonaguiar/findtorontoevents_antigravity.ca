@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self-Learning Algorithms | Investment Portfolio Hub</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --orange: #f97316;
+            --purple: #a855f7;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--accent), #a78bfa, var(--green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.3rem;
+        }
+        .header p { color: var(--text-dim); font-size: 0.95rem; }
+        .header-links { margin-top: 0.8rem; display: flex; gap: 1.5rem; justify-content: center; font-size: 0.85rem; flex-wrap: wrap; }
+        .header-links a { color: var(--text-dim); }
+        .header-links a:hover { color: var(--text); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+        .disclaimer {
+            background: var(--yellow-dim);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            font-size: 0.75rem;
+            color: var(--yellow);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            color: var(--text);
+            margin: 2rem 0 1rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .section-title .icon { font-size: 1.3rem; }
+        .info-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+        .info-box h3 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        .info-box code {
+            background: rgba(99, 102, 241, 0.15);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            color: var(--blue);
+        }
+        .param-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.8rem;
+            margin: 0.8rem 0;
+        }
+        .param-card {
+            background: rgba(99, 102, 241, 0.06);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 8px;
+            padding: 0.8rem;
+            text-align: center;
+        }
+        .param-card .label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+        .param-card .values { font-size: 0.8rem; color: var(--text); margin-top: 0.3rem; font-family: monospace; }
+        /* Loading / Status */
+        .status-bar {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        .status-chip {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 0.4rem 1rem;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .status-chip .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .dot-green { background: var(--green); }
+        .dot-yellow { background: var(--yellow); }
+        .dot-red { background: var(--red); }
+        .dot-blue { background: var(--blue); }
+        /* Algorithm table */
+        .algo-table-wrap {
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+        th {
+            background: var(--bg-card);
+            color: var(--text-dim);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            padding: 0.7rem 0.6rem;
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        th:hover { color: var(--text); }
+        td {
+            padding: 0.6rem;
+            border-bottom: 1px solid rgba(42, 42, 74, 0.5);
+            vertical-align: middle;
+        }
+        tr:hover { background: rgba(99, 102, 241, 0.04); }
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-profitable { background: var(--green-dim); color: var(--green); }
+        .badge-improvable { background: var(--yellow-dim); color: var(--yellow); }
+        .badge-losing { background: var(--red-dim); color: var(--red); }
+        .pct-positive { color: var(--green); font-weight: 600; }
+        .pct-negative { color: var(--red); font-weight: 600; }
+        .pct-neutral { color: var(--text-dim); }
+        /* Expandable row */
+        .detail-row { display: none; }
+        .detail-row.open { display: table-row; }
+        .detail-cell {
+            padding: 1rem;
+            background: rgba(99, 102, 241, 0.03);
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.6rem;
+        }
+        .detail-metric {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.6rem;
+            text-align: center;
+        }
+        .detail-metric .lbl { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; }
+        .detail-metric .val { font-size: 1rem; font-weight: 700; margin-top: 0.2rem; }
+        .arrow { display: inline-block; transition: transform 0.2s; font-size: 0.7rem; color: var(--text-dim); margin-right: 0.3rem; }
+        .arrow.open { transform: rotate(90deg); }
+        /* Refresh */
+        .refresh-btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .refresh-btn:hover { background: #5558e6; }
+        .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        #loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-dim);
+        }
+        #loading .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        .footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+        .data-type-tag { font-size:0.6rem; padding:0.15rem 0.5rem; border-radius:4px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; vertical-align:middle; }
+        .tag-backtest { background:rgba(234,179,8,0.15); color:#eab308; border:1px solid rgba(234,179,8,0.3); }
+        .tag-live { background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3); }
+        .tag-forward { background:rgba(99,102,241,0.15); color:#6366f1; border:1px solid rgba(99,102,241,0.3); }
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .header h1 { font-size: 1.4rem; }
+            .param-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Self-Learning Algorithms</h1>
+        <p>Automatic parameter optimization, inverse detection, and performance tracking</p>
+        <div class="header-links">
+            <a href="/findstocks/portfolio2/hub.html">Hub</a>
+            <a href="/findstocks/portfolio2/picks.html">Picks</a>
+            <a href="/findstocks/portfolio2/horizon-picks.html">Horizon Picks</a>
+            <a href="/findstocks/portfolio2/consolidated.html">Consensus</a>
+            <a href="/findstocks/portfolio2/leaderboard.html">Leaderboard</a>
+            <a href="/findstocks/portfolio2/dashboard.html">My Portfolios</a>
+            <a href="/findstocks/portfolio2/dividends.html">Dividends</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="disclaimer">
+            For research and educational purposes only. Past performance does not guarantee future results.
+        </div>
+
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;font-size:0.72rem;color:var(--text-dim);margin-bottom:1rem;padding:0.5rem 0.75rem;background:rgba(234,179,8,0.04);border:1px solid rgba(234,179,8,0.15);border-radius:8px;">
+            <span>Data types:</span>
+            <span class="data-type-tag tag-backtest">Backtest</span> <span>Algorithm performance from historical simulations</span>
+            <span style="opacity:0.3;">|</span>
+            <span class="data-type-tag tag-live">Live</span> <span>Current parameter values &amp; run status</span>
+            <span style="opacity:0.3;">|</span>
+            <span class="data-type-tag tag-forward">Forward-Looking</span> <span>Recommended parameter changes</span>
+        </div>
+
+        <!-- How It Works -->
+        <div class="section-title"><span class="icon">&#x1F9E0;</span> How Self-Learning Works</div>
+        <div class="info-box">
+            <h3>Daily Automated Optimization Pipeline</h3>
+            <p>Every trading day after market close (6:30 PM ET), our GitHub Actions workflow triggers the learning engine. It:</p>
+            <ol style="margin: 0.5rem 0 0.5rem 1.2rem; color: var(--text-dim);">
+                <li>Fetches latest price data from Yahoo Finance</li>
+                <li>Runs backtests for <strong>every algorithm</strong> across <strong>180 parameter combinations</strong></li>
+                <li>Identifies the <strong>optimal TP/SL/Hold</strong> for each algorithm based on historical performance</li>
+                <li>Detects algorithms that work better as <strong>inverse (SHORT) signals</strong></li>
+                <li>Stores recommendations in <code>algorithm_performance</code> table</li>
+                <li>Caches horizon picks and consensus data for 6 hours</li>
+            </ol>
+            <p style="margin-top: 0.5rem;">API endpoint: <code>learning.php?action=analyze_and_adjust</code></p>
+        </div>
+
+        <!-- Variables Being Tuned -->
+        <div class="section-title"><span class="icon">&#x2699;</span> Variables Being Tuned</div>
+        <div class="info-box">
+            <h3>Parameter Grid Search</h3>
+            <p>For each algorithm, the learning engine tests <strong>every combination</strong> of these parameters:</p>
+            <div class="param-grid">
+                <div class="param-card">
+                    <div class="label">Take Profit (TP %)</div>
+                    <div class="values">5, 10, 15, 20, 30, 50</div>
+                </div>
+                <div class="param-card">
+                    <div class="label">Stop Loss (SL %)</div>
+                    <div class="values">3, 5, 8, 10, 15</div>
+                </div>
+                <div class="param-card">
+                    <div class="label">Max Hold Days</div>
+                    <div class="values">1, 2, 5, 7, 14, 30</div>
+                </div>
+                <div class="param-card">
+                    <div class="label">Initial Capital</div>
+                    <div class="values">$10,000</div>
+                </div>
+                <div class="param-card">
+                    <div class="label">Commission / Trade</div>
+                    <div class="values">$10</div>
+                </div>
+                <div class="param-card">
+                    <div class="label">Slippage</div>
+                    <div class="values">0.5%</div>
+                </div>
+            </div>
+            <p style="margin-top: 0.6rem; font-size: 0.85rem; color: var(--text-dim);">
+                <strong>Total: 6 TP &times; 5 SL &times; 6 Hold = 180 combinations per algorithm.</strong>
+                The exhaustive <code>permutation_scan</code> tests an even larger grid of <strong>13 TP &times; 9 SL &times; 11 Hold = 1,287 combinations</strong>.
+            </p>
+        </div>
+
+        <div class="info-box">
+            <h3>What Each Variable Controls</h3>
+            <table style="margin-top: 0.5rem;">
+                <tr><td style="width:140px;color:var(--accent);font-weight:600;">Take Profit (TP)</td><td>% price increase from entry that triggers a sell. Higher = more room to run, but risk giving back gains.</td></tr>
+                <tr><td style="color:var(--red);font-weight:600;">Stop Loss (SL)</td><td>% price decrease from entry that triggers a sell. Tighter = less loss per trade, but more whipsaws.</td></tr>
+                <tr><td style="color:var(--yellow);font-weight:600;">Max Hold Days</td><td>Maximum trading days before forced exit at closing price. Prevents dead money sitting in stale positions.</td></tr>
+                <tr><td style="color:var(--text-dim);font-weight:600;">Commission</td><td>Per-trade cost ($10 buy + $10 sell = $20 round trip). Questrade CDR stocks pay $0.</td></tr>
+                <tr><td style="color:var(--text-dim);font-weight:600;">Slippage</td><td>0.5% price impact assumed on entry and exit to model real-world fills.</td></tr>
+            </table>
+        </div>
+
+        <!-- Verdicts -->
+        <div class="info-box">
+            <h3>Verdict System</h3>
+            <table style="margin-top: 0.5rem;">
+                <tr>
+                    <td><span class="badge badge-profitable">PROFITABLE_PARAMS_EXIST</span></td>
+                    <td>At least one parameter combination yields positive returns. Best params are stored.</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-improvable">IMPROVABLE_BUT_STILL_LOSING</span></td>
+                    <td>Best combo is better than default, but still negative. May work as inverse/SHORT signal.</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-losing">NO_PROFITABLE_PARAMS_FOUND</span></td>
+                    <td>No parameter combination yielded profit. Strong candidate for inverse algorithm.</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Live Data Section -->
+        <div class="section-title"><span class="icon">&#x1F4CA;</span> Algorithm Performance &amp; Recommendations</div>
+
+        <div class="status-bar" id="status-bar">
+            <div class="status-chip"><span class="dot dot-blue"></span> Loading data...</div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
+            <button class="refresh-btn" id="refresh-btn" onclick="refreshData()" title="Re-run learning engine (may take 30-60s)">
+                <span id="refresh-icon">&#x21BB;</span> Refresh Learning Data
+            </button>
+            <span style="font-size: 0.75rem; color: var(--text-dim);" id="last-updated"></span>
+        </div>
+
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>Loading algorithm recommendations...</p>
+        </div>
+
+        <div id="results" style="display:none;">
+            <div class="algo-table-wrap">
+                <table id="algo-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable(0)">Algorithm</th>
+                            <th onclick="sortTable(1)">Trades</th>
+                            <th onclick="sortTable(2)">Win Rate</th>
+                            <th onclick="sortTable(3)">Default Return</th>
+                            <th onclick="sortTable(4)">Best Return</th>
+                            <th onclick="sortTable(5)">Improvement</th>
+                            <th onclick="sortTable(6)">Best TP/SL/Hold</th>
+                            <th onclick="sortTable(7)">Profitable Combos</th>
+                            <th onclick="sortTable(8)">Verdict</th>
+                        </tr>
+                    </thead>
+                    <tbody id="algo-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Inverse / Bear Analysis -->
+        <div class="section-title"><span class="icon">&#x1F43B;</span> Inverse Algorithm Detection (Bear Analysis)</div>
+        <div class="info-box">
+            <h3>When Long Picks Fail, Short Signals Emerge</h3>
+            <p>The learning engine detects algorithms whose picks <strong>consistently decline</strong>. Instead of discarding them, we invert the signal &mdash; when they say BUY, we SHORT. This turns a losing long strategy into a potentially winning short strategy.</p>
+        </div>
+        <div id="bear-loading">
+            <div style="text-align:center; padding:1rem; color:var(--text-dim);">Loading bear analysis...</div>
+        </div>
+        <div id="bear-results" style="display:none;"></div>
+
+        <!-- Permutation Scan -->
+        <div class="section-title"><span class="icon">&#x1F50D;</span> Exhaustive Permutation Scan</div>
+        <div class="info-box">
+            <h3>1,287 Parameter Combinations</h3>
+            <p>The exhaustive scan tests a wider grid to find global optima:</p>
+            <div class="param-grid">
+                <div class="param-card">
+                    <div class="label">Take Profit Grid</div>
+                    <div class="values">3, 5, 7, 10, 15, 20, 25, 30, 40, 50, 75, 100, 999</div>
+                </div>
+                <div class="param-card">
+                    <div class="label">Stop Loss Grid</div>
+                    <div class="values">2, 3, 5, 7, 10, 15, 20, 30, 999</div>
+                </div>
+                <div class="param-card">
+                    <div class="label">Max Hold Grid</div>
+                    <div class="values">1, 2, 3, 5, 7, 10, 14, 21, 30, 60, 90</div>
+                </div>
+            </div>
+            <p style="margin-top:0.6rem; color:var(--text-dim); font-size:0.85rem;">999 = no limit (hold until other exit triggers)</p>
+        </div>
+        <div id="perm-loading">
+            <div style="text-align:center; padding:1rem; color:var(--text-dim);">Loading permutation data...</div>
+        </div>
+        <div id="perm-results" style="display:none;"></div>
+
+    </div>
+
+    <div class="footer">
+        <p>Self-Learning Algorithms Dashboard &mdash; findtorontoevents.ca &mdash; Updated Feb 2026</p>
+        <p style="margin-top:0.3rem;">Learning engine runs daily via GitHub Actions. Not financial advice.</p>
+    </div>
+
+    <script>
+    var BASE = '/findstocks/portfolio2/api';
+    var sortAsc = {};
+
+    function loadData() {
+        // Load recommendations from CACHED results (fast — reads DB, no computation)
+        fetch(BASE + '/learning.php?action=cached_results')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (!d.ok) throw new Error(d.error || 'API error');
+                renderRecommendations(d);
+            })
+            .catch(function(e) {
+                document.getElementById('loading').innerHTML =
+                    '<p style="color:var(--yellow);margin-bottom:0.5rem;">No cached learning data yet.</p>' +
+                    '<p style="color:var(--text-dim);font-size:0.85rem;">Click <strong>Refresh Learning Data</strong> to run the learning engine for the first time (takes 30-60s), or wait for the next daily GitHub Actions run.</p>';
+            });
+
+        // Load bear analysis
+        fetch(BASE + '/learning.php?action=bear_analysis')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d.ok) renderBear(d);
+            })
+            .catch(function() {
+                document.getElementById('bear-loading').innerHTML = '<p style="color:var(--text-dim);">Bear analysis unavailable — may take 30s+ to compute. Try refreshing.</p>';
+            });
+
+        // Permutation scan is too heavy for page load — show explanation instead
+        document.getElementById('perm-loading').innerHTML =
+            '<div class="info-box"><p style="color:var(--text-dim);font-size:0.85rem;">Permutation scan runs 1,287 backtests and is triggered daily by GitHub Actions. ' +
+            'Results are stored in the algorithm_performance table and shown in the table above. ' +
+            'To run a live scan, use the API directly: <code>learning.php?action=permutation_scan&top=20</code></p></div>';
+    }
+
+    function renderRecommendations(d) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('results').style.display = 'block';
+
+        var recs = d.recommendations || [];
+        var profitable = 0, improvable = 0, losing = 0;
+        for (var i = 0; i < recs.length; i++) {
+            if (recs[i].verdict === 'PROFITABLE_PARAMS_EXIST') profitable++;
+            else if (recs[i].verdict === 'IMPROVABLE_BUT_STILL_LOSING') improvable++;
+            else losing++;
+        }
+
+        document.getElementById('status-bar').innerHTML =
+            '<div class="status-chip"><span class="dot dot-green"></span> ' + d.total_algorithms + ' Algorithms Analyzed</div>' +
+            '<div class="status-chip"><span class="dot dot-green"></span> ' + profitable + ' Profitable</div>' +
+            '<div class="status-chip"><span class="dot dot-yellow"></span> ' + improvable + ' Improvable</div>' +
+            '<div class="status-chip"><span class="dot dot-red"></span> ' + losing + ' No Profit Found</div>';
+
+        var tbody = document.getElementById('algo-tbody');
+        tbody.innerHTML = '';
+
+        // Sort by best_return_pct descending
+        recs.sort(function(a, b) { return b.best_return_pct - a.best_return_pct; });
+
+        for (var i = 0; i < recs.length; i++) {
+            var r = recs[i];
+            var cur = r.current_performance || {};
+            var verdictClass = r.verdict === 'PROFITABLE_PARAMS_EXIST' ? 'badge-profitable' :
+                               r.verdict === 'IMPROVABLE_BUT_STILL_LOSING' ? 'badge-improvable' : 'badge-losing';
+            var verdictLabel = r.verdict === 'PROFITABLE_PARAMS_EXIST' ? 'Profitable' :
+                               r.verdict === 'IMPROVABLE_BUT_STILL_LOSING' ? 'Improvable' : 'No Profit';
+
+            var defRetClass = cur.return_pct > 0 ? 'pct-positive' : (cur.return_pct < 0 ? 'pct-negative' : 'pct-neutral');
+            var bestRetClass = r.best_return_pct > 0 ? 'pct-positive' : (r.best_return_pct < 0 ? 'pct-negative' : 'pct-neutral');
+            var improvClass = r.improvement_pct > 0 ? 'pct-positive' : 'pct-neutral';
+
+            var profRate = r.total_combos_tested > 0 ? Math.round(r.profitable_combos / r.total_combos_tested * 100) : 0;
+
+            var row = document.createElement('tr');
+            row.style.cursor = 'pointer';
+            row.setAttribute('data-idx', i);
+            row.onclick = (function(idx) { return function() { toggleDetail(idx); }; })(i);
+            row.innerHTML =
+                '<td><span class="arrow" id="arrow-' + i + '">&#x25B6;</span>' + escHtml(r.algorithm) + '</td>' +
+                '<td>' + cur.trades + '</td>' +
+                '<td>' + cur.win_rate + '%</td>' +
+                '<td class="' + defRetClass + '">' + cur.return_pct + '%</td>' +
+                '<td class="' + bestRetClass + '">' + r.best_return_pct + '%</td>' +
+                '<td class="' + improvClass + '">+' + r.improvement_pct + '%</td>' +
+                '<td><code>' + r.best_params.tp + '/' + r.best_params.sl + '/' + r.best_params.hold + 'd</code></td>' +
+                '<td>' + r.profitable_combos + '/' + r.total_combos_tested + ' (' + profRate + '%)</td>' +
+                '<td><span class="badge ' + verdictClass + '">' + verdictLabel + '</span></td>';
+            tbody.appendChild(row);
+
+            // Detail row
+            var detailRow = document.createElement('tr');
+            detailRow.className = 'detail-row';
+            detailRow.id = 'detail-' + i;
+            detailRow.innerHTML = '<td colspan="9" class="detail-cell">' +
+                '<div class="detail-grid">' +
+                '<div class="detail-metric"><div class="lbl">Default TP/SL/Hold</div><div class="val">10% / 5% / 7d</div></div>' +
+                '<div class="detail-metric"><div class="lbl">Optimal TP</div><div class="val" style="color:var(--green);">' + r.best_params.tp + '%</div></div>' +
+                '<div class="detail-metric"><div class="lbl">Optimal SL</div><div class="val" style="color:var(--red);">' + r.best_params.sl + '%</div></div>' +
+                '<div class="detail-metric"><div class="lbl">Optimal Hold</div><div class="val" style="color:var(--yellow);">' + r.best_params.hold + ' days</div></div>' +
+                '<div class="detail-metric"><div class="lbl">Default Return</div><div class="val ' + defRetClass + '">' + cur.return_pct + '%</div></div>' +
+                '<div class="detail-metric"><div class="lbl">Optimized Return</div><div class="val ' + bestRetClass + '">' + r.best_return_pct + '%</div></div>' +
+                '<div class="detail-metric"><div class="lbl">Improvement</div><div class="val" style="color:var(--accent);">+' + r.improvement_pct + '%</div></div>' +
+                '<div class="detail-metric"><div class="lbl">Profitable Combos</div><div class="val">' + r.profitable_combos + ' of ' + r.total_combos_tested + '</div></div>' +
+                '</div>' +
+                '<p style="margin-top:0.8rem;font-size:0.8rem;color:var(--text-dim);">' +
+                (r.verdict === 'PROFITABLE_PARAMS_EXIST'
+                    ? 'This algorithm has profitable parameter regions. The optimal params above maximize total return across all historical picks.'
+                    : r.verdict === 'IMPROVABLE_BUT_STILL_LOSING'
+                    ? 'While no combo is profitable, the best params reduce losses vs. defaults. Consider as an inverse/SHORT signal.'
+                    : 'No parameter combination yields profit. This algorithm is a strong candidate for inverse signal trading (SHORT when it says BUY).') +
+                '</p></td>';
+            tbody.appendChild(detailRow);
+        }
+
+        document.getElementById('last-updated').textContent = 'Data loaded: ' + new Date().toLocaleString();
+    }
+
+    function renderBear(d) {
+        document.getElementById('bear-loading').style.display = 'none';
+        var el = document.getElementById('bear-results');
+        el.style.display = 'block';
+
+        var shorts = d.short_candidates || [];
+        var inverse = d.inverse_algorithms || [];
+
+        var html = '<div class="info-box">' +
+            '<p style="color:var(--text-dim);font-size:0.9rem;">' + d.insight + '</p>' +
+            '<p style="margin-top:0.5rem;color:var(--text-dim);font-size:0.85rem;">Short candidates (would have been profitable as shorts): <strong>' + shorts.length + '</strong></p>' +
+            '</div>';
+
+        // Inverse algorithms
+        if (inverse.length > 0) {
+            html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem;margin-bottom:1.5rem;">';
+            for (var i = 0; i < inverse.length; i++) {
+                var inv = inverse[i];
+                html += '<div class="info-box" style="border-left:3px solid var(--red);">' +
+                    '<h3 style="color:var(--red);">' + escHtml(inv.name) + '</h3>' +
+                    '<p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:0.3rem;"><strong>Based on:</strong> ' + escHtml(inv.based_on) + '</p>' +
+                    '<p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:0.3rem;">' + escHtml(inv.concept) + '</p>' +
+                    '<p style="font-size:0.8rem;color:var(--accent);"><strong>Strategy:</strong> ' + escHtml(inv.strategy) + '</p>' +
+                    '</div>';
+            }
+            html += '</div>';
+        }
+
+        // Top short candidates table
+        if (shorts.length > 0) {
+            var show = Math.min(shorts.length, 15);
+            html += '<div class="info-box" style="margin-bottom:1rem;border-left:3px solid var(--yellow);">' +
+                '<h3 style="color:var(--yellow);">Failed Long Picks = Potential Short Signals</h3>' +
+                '<p style="font-size:0.85rem;color:var(--text-dim);line-height:1.6;">The table below shows stocks our algorithms flagged as <strong>BUY</strong>, but the price <strong>dropped instead</strong>. ' +
+                'The <strong>Change %</strong> column shows how much the stock fell from entry. The <strong>Short Profit %</strong> shows what a short-seller would have earned ' +
+                '(it\'s simply the absolute value of the decline). This reveals which algorithms are consistently wrong — making them valuable as <strong>inverse signals</strong> (SHORT when they say BUY).</p>' +
+                '</div>';
+            html += '<div class="algo-table-wrap"><table><thead><tr>' +
+                '<th>Ticker</th><th>Algorithm That Said BUY</th><th>Pick Date</th>' +
+                '<th title="Price when the algorithm recommended buying">Entry Price</th>' +
+                '<th title="Current/latest price of the stock">Current Price</th>' +
+                '<th title="% change since the BUY signal (negative = stock went down)">Long Result %</th>' +
+                '<th title="What a short-seller would have earned (absolute value of the decline)">If Shorted Instead %</th>' +
+                '</tr></thead><tbody>';
+            for (var i = 0; i < show; i++) {
+                var s = shorts[i];
+                html += '<tr><td><strong>' + escHtml(s.ticker) + '</strong>' +
+                    (s.company ? '<br><span style="font-size:0.7rem;color:var(--text-dim);">' + escHtml(s.company) + '</span>' : '') + '</td>' +
+                    '<td>' + escHtml(s.algorithm) + '</td>' +
+                    '<td>' + s.pick_date + '</td>' +
+                    '<td>$' + s.entry_price + '</td>' +
+                    '<td>$' + s.current_price + '</td>' +
+                    '<td class="pct-negative">' + s.change_pct + '% <span style="font-size:0.65rem;color:var(--text-dim);">(lost)</span></td>' +
+                    '<td class="pct-positive">+' + s.short_profit_pct + '% <span style="font-size:0.65rem;color:var(--text-dim);">(would have gained)</span></td></tr>';
+            }
+            html += '</tbody></table></div>';
+        }
+
+        el.innerHTML = html;
+    }
+
+    function renderPermutations(d) {
+        document.getElementById('perm-loading').style.display = 'none';
+        var el = document.getElementById('perm-results');
+        el.style.display = 'block';
+
+        var top = d.top_permutations || [];
+        var worst = d.worst_permutations || [];
+
+        var html = '<div class="status-bar">' +
+            '<div class="status-chip"><span class="dot dot-blue"></span> ' + d.tested + ' Combos Tested</div>' +
+            '<div class="status-chip"><span class="dot dot-green"></span> ' + d.profitable_combos + ' Profitable (' + d.profitability_rate + '%)</div>' +
+            '<div class="status-chip"><span class="dot dot-red"></span> ' + d.losing_combos + ' Losing</div>' +
+            '</div>';
+
+        if (top.length > 0) {
+            html += '<h4 style="color:var(--green);margin:0.8rem 0 0.5rem;">Top ' + top.length + ' Best Permutations</h4>';
+            html += '<div class="algo-table-wrap"><table><thead><tr>' +
+                '<th>#</th><th>Take Profit</th><th>Stop Loss</th><th>Max Hold</th><th>Return %</th><th>Win Rate</th><th>Trades</th><th>Total PnL</th>' +
+                '</tr></thead><tbody>';
+            for (var i = 0; i < top.length; i++) {
+                var p = top[i];
+                var retClass = p.return_pct > 0 ? 'pct-positive' : 'pct-negative';
+                html += '<tr>' +
+                    '<td>' + (i + 1) + '</td>' +
+                    '<td>' + (p.take_profit >= 999 ? 'None' : p.take_profit + '%') + '</td>' +
+                    '<td>' + (p.stop_loss >= 999 ? 'None' : p.stop_loss + '%') + '</td>' +
+                    '<td>' + p.max_hold_days + 'd</td>' +
+                    '<td class="' + retClass + '">' + p.return_pct + '%</td>' +
+                    '<td>' + p.win_rate + '%</td>' +
+                    '<td>' + p.trades + '</td>' +
+                    '<td class="' + retClass + '">$' + p.total_pnl + '</td></tr>';
+            }
+            html += '</tbody></table></div>';
+        }
+
+        if (worst.length > 0) {
+            html += '<h4 style="color:var(--red);margin:1rem 0 0.5rem;">Bottom ' + worst.length + ' Worst Permutations</h4>';
+            html += '<div class="algo-table-wrap"><table><thead><tr>' +
+                '<th>#</th><th>Take Profit</th><th>Stop Loss</th><th>Max Hold</th><th>Return %</th><th>Win Rate</th><th>Trades</th><th>Total PnL</th>' +
+                '</tr></thead><tbody>';
+            for (var i = 0; i < worst.length; i++) {
+                var p = worst[i];
+                html += '<tr>' +
+                    '<td>' + (i + 1) + '</td>' +
+                    '<td>' + (p.take_profit >= 999 ? 'None' : p.take_profit + '%') + '</td>' +
+                    '<td>' + (p.stop_loss >= 999 ? 'None' : p.stop_loss + '%') + '</td>' +
+                    '<td>' + p.max_hold_days + 'd</td>' +
+                    '<td class="pct-negative">' + p.return_pct + '%</td>' +
+                    '<td>' + p.win_rate + '%</td>' +
+                    '<td>' + p.trades + '</td>' +
+                    '<td class="pct-negative">$' + p.total_pnl + '</td></tr>';
+            }
+            html += '</tbody></table></div>';
+        }
+
+        el.innerHTML = html;
+    }
+
+    function toggleDetail(idx) {
+        var row = document.getElementById('detail-' + idx);
+        var arrow = document.getElementById('arrow-' + idx);
+        if (row.classList.contains('open')) {
+            row.classList.remove('open');
+            arrow.classList.remove('open');
+        } else {
+            row.classList.add('open');
+            arrow.classList.add('open');
+        }
+    }
+
+    function refreshData() {
+        var btn = document.getElementById('refresh-btn');
+        var icon = document.getElementById('refresh-icon');
+        btn.disabled = true;
+        icon.classList.add('spin');
+
+        fetch(BASE + '/learning.php?action=analyze_and_adjust')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                btn.disabled = false;
+                icon.classList.remove('spin');
+                if (d.ok) {
+                    alert('Learning engine updated! Adjustments made: ' + (d.adjustments_made || 0));
+                    loadData();
+                }
+            })
+            .catch(function(e) {
+                btn.disabled = false;
+                icon.classList.remove('spin');
+                alert('Error: ' + e.message);
+            });
+    }
+
+    function sortTable(colIdx) {
+        var tbody = document.getElementById('algo-tbody');
+        var rows = [];
+        var trs = tbody.querySelectorAll('tr:not(.detail-row)');
+        for (var i = 0; i < trs.length; i++) {
+            rows.push({ tr: trs[i], detail: document.getElementById('detail-' + i) });
+        }
+        var asc = sortAsc[colIdx] = !sortAsc[colIdx];
+        rows.sort(function(a, b) {
+            var aText = a.tr.children[colIdx].textContent.replace(/[^0-9.\-]/g, '');
+            var bText = b.tr.children[colIdx].textContent.replace(/[^0-9.\-]/g, '');
+            var aVal = parseFloat(aText) || 0;
+            var bVal = parseFloat(bText) || 0;
+            if (colIdx === 0 || colIdx === 6 || colIdx === 8) {
+                aVal = a.tr.children[colIdx].textContent;
+                bVal = b.tr.children[colIdx].textContent;
+                return asc ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1);
+            }
+            return asc ? aVal - bVal : bVal - aVal;
+        });
+        tbody.innerHTML = '';
+        for (var i = 0; i < rows.length; i++) {
+            rows[i].tr.setAttribute('data-idx', i);
+            rows[i].tr.onclick = (function(idx) { return function() { toggleDetail(idx); }; })(i);
+            var arrow = rows[i].tr.querySelector('.arrow');
+            if (arrow) arrow.id = 'arrow-' + i;
+            if (rows[i].detail) rows[i].detail.id = 'detail-' + i;
+            tbody.appendChild(rows[i].tr);
+            if (rows[i].detail) tbody.appendChild(rows[i].detail);
+        }
+    }
+
+    function escHtml(s) {
+        if (!s) return '';
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // Initial load
+    loadData();
+    </script>
+</body>
+</html>

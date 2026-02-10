@@ -256,6 +256,23 @@ jobs:
         echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Crypto prices fetched: {d.get(\"fetched\",0)}')" || echo "CR: $RESULT"
         curl -s --max-time 60 "https://findtorontoevents.ca/findcryptopairs/portfolio/api/learning.php?action=analyze_and_adjust" > /dev/null 2>&1 || true
 
+    # ─── DayTrades Miracle Scan ───
+    - name: Run DayTrades Miracle daily scan
+      continue-on-error: true
+      run: |
+        echo "=== Running DayTrades Miracle daily scan ==="
+        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findstocks2_global/api/daily_scan2.php?key=miracle2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            print('Elapsed: ' + d.get('elapsed',''))
+            for step in d.get('steps', []):
+                print('  ' + step)
+        else:
+            print('Error: ' + str(d.get('error','unknown')))
+        " || echo "Miracle: $RESULT"
+
     # ─── Regenerate Top Picks & Verify Dashboards ───
     - name: Regenerate top picks cache
       continue-on-error: true

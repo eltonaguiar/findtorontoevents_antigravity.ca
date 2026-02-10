@@ -67,7 +67,7 @@
 
         .stats-row {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 1rem; margin-bottom: 2rem;
+            gap: 1rem; margin-bottom: 1.5rem;
         }
         .stat-card {
             background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
@@ -81,6 +81,27 @@
         .stat-card .value.cyan { color: var(--cyan); }
         .stat-card .value.red { color: var(--red); }
 
+        /* Filter bar */
+        .filter-bar {
+            display: flex; gap: 0.75rem; flex-wrap: wrap;
+            align-items: center; margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+        }
+        .filter-input {
+            flex: 1; min-width: 180px;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-dark); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text); font-size: 0.85rem; outline: none;
+        }
+        .filter-input:focus { border-color: var(--accent); }
+        .filter-select {
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-dark); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text); font-size: 0.8rem; outline: none;
+        }
+        .filter-select option { background: var(--bg-dark); color: var(--text); }
+
         /* Tabs */
         .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; flex-wrap: wrap; }
         .tab {
@@ -93,12 +114,21 @@
         .panel.active { display: block; }
 
         /* Tables */
+        .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.85rem; }
         th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
-        th { background: var(--bg-card); color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; cursor: pointer; }
+        th {
+            background: var(--bg-card); color: var(--text-dim); font-size: 0.75rem;
+            text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0;
+            cursor: pointer; user-select: none; white-space: nowrap;
+        }
         th:hover { color: var(--text); }
+        th .sort-arrow { margin-left: 4px; font-size: 0.6rem; opacity: 0.3; transition: opacity 0.2s; }
+        th.sorted .sort-arrow { opacity: 1; color: var(--accent); }
         tr:hover { background: var(--bg-card-hover); }
-        .ticker-cell { font-weight: 700; color: var(--cyan); }
+        .ticker-cell { font-weight: 700; }
+        .ticker-link { color: var(--cyan); font-weight: 700; }
+        .ticker-link:hover { color: var(--accent); text-decoration: underline; }
         .pct-positive { color: var(--green); font-weight: 600; }
         .pct-negative { color: var(--red); font-weight: 600; }
         .beat-badge { background: var(--green-dim); color: var(--green); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
@@ -109,6 +139,8 @@
         .rec-buy { background: var(--green-dim); color: var(--green); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
         .rec-hold { background: var(--yellow-dim); color: var(--yellow); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
         .rec-sell { background: var(--red-dim); color: var(--red); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+        .sector-badge { background: rgba(99,102,241,0.12); color: var(--accent); padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+        .filter-count { font-size: 0.8rem; color: var(--text-dim); margin-left: auto; }
 
         .loading { text-align: center; padding: 3rem; color: var(--text-dim); }
         .spinner { display: inline-block; width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
@@ -124,7 +156,14 @@
             .stats-row { grid-template-columns: repeat(2, 1fr); }
             td, th { padding: 6px 8px; font-size: 0.8rem; }
             .tab { padding: 0.5rem 0.8rem; font-size: 0.8rem; }
+            .filter-bar { padding: 0.5rem; gap: 0.5rem; }
+            .filter-input { min-width: 140px; font-size: 0.8rem; }
+            .filter-select { font-size: 0.75rem; }
         }
+        .data-type-tag { font-size:0.6rem; padding:0.15rem 0.5rem; border-radius:4px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; vertical-align:middle; }
+        .tag-backtest { background:rgba(234,179,8,0.15); color:#eab308; border:1px solid rgba(234,179,8,0.3); }
+        .tag-live { background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3); }
+        .tag-forward { background:rgba(99,102,241,0.15); color:#6366f1; border:1px solid rgba(99,102,241,0.3); }
     </style>
 </head>
 <body>
@@ -142,6 +181,10 @@
 
 <div class="container">
 
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;font-size:0.72rem;color:#8888aa;margin-bottom:1rem;padding:0.5rem 0.75rem;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.15);border-radius:8px;">
+            <span class="data-type-tag tag-live">Live Data</span> <span>All dividend, earnings, and fundamentals data sourced from Yahoo Finance. Updated nightly via automated refresh.</span>
+        </div>
+
     <div class="stats-row" id="stats-row">
         <div class="stat-card"><div class="value cyan" id="stat-total">--</div><div class="label">Tickers Tracked</div></div>
         <div class="stat-card"><div class="value green" id="stat-payers">--</div><div class="label">Dividend Payers</div></div>
@@ -149,6 +192,32 @@
         <div class="stat-card"><div class="value blue" id="stat-upcoming-div">--</div><div class="label">Upcoming Dividends</div></div>
         <div class="stat-card"><div class="value cyan" id="stat-upcoming-earn">--</div><div class="label">Upcoming Earnings</div></div>
         <div class="stat-card"><div class="value green" id="stat-beats">--</div><div class="label">Earnings Beats (90d)</div></div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar" id="filter-bar">
+        <input type="text" id="search-input" placeholder="Search ticker or company..." class="filter-input">
+        <select id="filter-rec" class="filter-select">
+            <option value="">All Recommendations</option>
+            <option value="strong_buy">Strong Buy</option>
+            <option value="buy">Buy</option>
+            <option value="hold">Hold</option>
+            <option value="sell">Sell</option>
+            <option value="underperform">Underperform</option>
+        </select>
+        <select id="filter-safety" class="filter-select">
+            <option value="">All Payout Safety</option>
+            <option value="safe">Safe (&lt;60%)</option>
+            <option value="caution">Caution (60-100%)</option>
+            <option value="danger">Danger (&gt;100%)</option>
+        </select>
+        <select id="filter-div" class="filter-select">
+            <option value="">All Dividend Status</option>
+            <option value="payer">Dividend Payers Only</option>
+            <option value="high">High Yield (&gt;3%)</option>
+        </select>
+        <button class="refresh-btn" id="clear-filters-btn">Clear</button>
+        <span class="filter-count" id="filter-count"></span>
     </div>
 
     <div class="tabs" id="tabs">
@@ -190,6 +259,24 @@
 <script>
 var API = '/findstocks/portfolio2/api/fetch_dividends_earnings.php';
 
+// ═══════════════════════════════════════════════
+// Data stores
+// ═══════════════════════════════════════════════
+var upcomingDivData = [];
+var upcomingEarnData = [];
+var divLeadersData = [];
+var earnSurprisesData = [];
+var fundamentalsData = [];
+
+// Sort state per table container
+var sortState = {};
+
+// Track which tabs have loaded
+var tabLoaded = { upcoming: false, dividends: false, earnings: false, fundamentals: false };
+
+// ═══════════════════════════════════════════════
+// API helper
+// ═══════════════════════════════════════════════
 function api(action, cb) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', API + '?action=' + action, true);
@@ -202,11 +289,14 @@ function api(action, cb) {
     xhr.send();
 }
 
-function fmtPct(v) { return v !== null && v !== undefined ? (v * 100).toFixed(2) + '%' : '—'; }
-function fmtPctRaw(v) { return v !== null && v !== undefined ? parseFloat(v).toFixed(2) + '%' : '—'; }
-function fmtMoney(v) { if (!v) return '—'; var n = parseInt(v); if (n >= 1e12) return '$' + (n/1e12).toFixed(1) + 'T'; if (n >= 1e9) return '$' + (n/1e9).toFixed(1) + 'B'; if (n >= 1e6) return '$' + (n/1e6).toFixed(1) + 'M'; return '$' + n.toLocaleString(); }
-function fmtNum(v, d) { return v !== null && v !== undefined ? parseFloat(v).toFixed(d || 2) : '—'; }
-function fmtDate(d) { if (!d) return '—'; var p = d.split('-'); var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return months[parseInt(p[1])-1] + ' ' + parseInt(p[2]) + ', ' + p[0]; }
+// ═══════════════════════════════════════════════
+// Format helpers
+// ═══════════════════════════════════════════════
+function fmtPct(v) { return v !== null && v !== undefined ? (v * 100).toFixed(2) + '%' : '\u2014'; }
+function fmtPctRaw(v) { return v !== null && v !== undefined ? parseFloat(v).toFixed(2) + '%' : '\u2014'; }
+function fmtMoney(v) { if (!v) return '\u2014'; var n = parseInt(v); if (n >= 1e12) return '$' + (n/1e12).toFixed(1) + 'T'; if (n >= 1e9) return '$' + (n/1e9).toFixed(1) + 'B'; if (n >= 1e6) return '$' + (n/1e6).toFixed(1) + 'M'; return '$' + n.toLocaleString(); }
+function fmtNum(v, d) { return v !== null && v !== undefined ? parseFloat(v).toFixed(d || 2) : '\u2014'; }
+function fmtDate(d) { if (!d) return '\u2014'; var p = d.split('-'); var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return months[parseInt(p[1])-1] + ' ' + parseInt(p[2]) + ', ' + p[0]; }
 
 function payoutClass(v) {
     if (v === null || v === undefined) return '';
@@ -217,13 +307,156 @@ function payoutClass(v) {
 }
 
 function recBadge(key) {
-    if (!key) return '—';
+    if (!key) return '\u2014';
     if (key === 'buy' || key === 'strong_buy') return '<span class="rec-buy">' + key.toUpperCase().replace('_',' ') + '</span>';
     if (key === 'hold') return '<span class="rec-hold">HOLD</span>';
     return '<span class="rec-sell">' + key.toUpperCase().replace('_',' ') + '</span>';
 }
 
-// ─── Tab switching ───
+function tickerLink(ticker) {
+    return '<a href="stock-profile.html?ticker=' + encodeURIComponent(ticker) + '" class="ticker-link">' + ticker + '</a>';
+}
+
+function sortArrow(containerId, col) {
+    var st = sortState[containerId];
+    if (st && st.col === col) return '<span class="sort-arrow">' + (st.dir === 1 ? '\u25B2' : '\u25BC') + '</span>';
+    return '<span class="sort-arrow">\u25B2</span>';
+}
+
+function thClass(containerId, col) {
+    var st = sortState[containerId];
+    return (st && st.col === col) ? ' class="sorted"' : '';
+}
+
+// ═══════════════════════════════════════════════
+// Generic sort
+// ═══════════════════════════════════════════════
+var STRING_COLS = ['ticker', 'company_name', 'sector', 'recommendation_key', 'frequency', 'source'];
+
+function sortArray(arr, col, dir) {
+    arr.sort(function(a, b) {
+        var va = a[col], vb = b[col];
+        if (STRING_COLS.indexOf(col) !== -1 || (col.indexOf('date') !== -1) || col === 'quarter_end') {
+            return dir * ((va || '').toString().localeCompare((vb || '').toString()));
+        }
+        va = parseFloat(va) || 0;
+        vb = parseFloat(vb) || 0;
+        return dir * (va - vb);
+    });
+}
+
+// Event delegation for sort — attach to container, survives innerHTML re-renders
+function setupSortDelegation(containerId, getDataFn, renderFn) {
+    document.getElementById(containerId).addEventListener('click', function(e) {
+        // Walk up to find TH with data-col
+        var th = null;
+        var el = e.target;
+        while (el && el !== this) {
+            if (el.tagName === 'TH' && el.getAttribute('data-col')) { th = el; break; }
+            el = el.parentNode;
+        }
+        if (!th) return;
+
+        var col = th.getAttribute('data-col');
+        var st = sortState[containerId] || { col: '', dir: -1 };
+        if (st.col === col) {
+            st.dir *= -1;
+        } else {
+            st.col = col;
+            st.dir = -1;
+        }
+        sortState[containerId] = st;
+
+        var data = getDataFn();
+        sortArray(data, st.col, st.dir);
+        renderFn();
+    });
+}
+
+// ═══════════════════════════════════════════════
+// Filtering
+// ═══════════════════════════════════════════════
+function getSearchTerm() {
+    return (document.getElementById('search-input').value || '').toLowerCase();
+}
+function getFilterRec() { return document.getElementById('filter-rec').value; }
+function getFilterSafety() { return document.getElementById('filter-safety').value; }
+function getFilterDiv() { return document.getElementById('filter-div').value; }
+
+function matchesSearch(d) {
+    var search = getSearchTerm();
+    if (!search) return true;
+    var ticker = (d.ticker || '').toLowerCase();
+    var name = (d.company_name || '').toLowerCase();
+    return ticker.indexOf(search) !== -1 || name.indexOf(search) !== -1;
+}
+
+function matchesFilters(d) {
+    if (!matchesSearch(d)) return false;
+
+    var rec = getFilterRec();
+    if (rec && d.recommendation_key && d.recommendation_key !== rec) return false;
+
+    var safety = getFilterSafety();
+    if (safety && d.payout_ratio !== undefined && d.payout_ratio !== null) {
+        var pr = parseFloat(d.payout_ratio);
+        if (safety === 'safe' && pr >= 0.6) return false;
+        if (safety === 'caution' && (pr < 0.6 || pr >= 1.0)) return false;
+        if (safety === 'danger' && pr < 1.0) return false;
+    }
+
+    var divF = getFilterDiv();
+    if (divF === 'payer' && !(d.dividend_yield > 0)) return false;
+    if (divF === 'high' && !(d.dividend_yield > 0.03)) return false;
+
+    return true;
+}
+
+function filterData(data) {
+    var out = [];
+    for (var i = 0; i < data.length; i++) {
+        if (matchesSearch(data[i])) out.push(data[i]);
+    }
+    return out;
+}
+
+function filterDataFull(data) {
+    var out = [];
+    for (var i = 0; i < data.length; i++) {
+        if (matchesFilters(data[i])) out.push(data[i]);
+    }
+    return out;
+}
+
+function applyFilters() {
+    // Re-render current active tab
+    var activeTab = document.querySelector('.tab.active');
+    if (!activeTab) return;
+    var tabId = activeTab.getAttribute('data-tab');
+    if (tabId === 'upcoming') { renderUpcomingDivs(); renderUpcomingEarnings(); }
+    if (tabId === 'dividends') renderDivLeaders();
+    if (tabId === 'earnings') renderEarnSurprises();
+    if (tabId === 'fundamentals') renderFundamentals();
+}
+
+function clearFilters() {
+    document.getElementById('search-input').value = '';
+    document.getElementById('filter-rec').value = '';
+    document.getElementById('filter-safety').value = '';
+    document.getElementById('filter-div').value = '';
+    applyFilters();
+}
+
+// Wire up filter events
+document.getElementById('search-input').addEventListener('input', applyFilters);
+document.getElementById('filter-rec').addEventListener('change', applyFilters);
+document.getElementById('filter-safety').addEventListener('change', applyFilters);
+document.getElementById('filter-div').addEventListener('change', applyFilters);
+document.getElementById('clear-filters-btn').addEventListener('click', clearFilters);
+
+// ═══════════════════════════════════════════════
+// Tab switching
+// ═══════════════════════════════════════════════
 document.getElementById('tabs').addEventListener('click', function(e) {
     if (!e.target.classList.contains('tab')) return;
     var tabs = document.querySelectorAll('.tab');
@@ -233,95 +466,192 @@ document.getElementById('tabs').addEventListener('click', function(e) {
     e.target.classList.add('active');
     var tabId = e.target.getAttribute('data-tab');
     document.getElementById('panel-' + tabId).classList.add('active');
-    if (tabId === 'dividends') loadDividendLeaders();
-    if (tabId === 'earnings') loadEarningsSurprises();
-    if (tabId === 'fundamentals') loadFundamentals();
+    if (tabId === 'dividends' && !tabLoaded.dividends) loadDividendLeaders();
+    if (tabId === 'earnings' && !tabLoaded.earnings) loadEarningsSurprises();
+    if (tabId === 'fundamentals' && !tabLoaded.fundamentals) loadFundamentals();
 });
 
-// ─── Upcoming Events ───
+// ═══════════════════════════════════════════════
+// Upcoming Events
+// ═══════════════════════════════════════════════
+function renderUpcomingDivs() {
+    var data = filterData(upcomingDivData);
+    var cid = 'upcoming-divs';
+    if (data.length === 0) {
+        document.getElementById(cid).innerHTML = '<div class="empty-msg">No upcoming ex-dividend dates' + (getSearchTerm() ? ' matching filter' : ' in the next 30 days') + '.</div>';
+        return;
+    }
+    var st = sortState[cid];
+    if (st && st.col) sortArray(data, st.col, st.dir);
+
+    var h = '<div class="table-wrap"><table><tr>';
+    h += '<th data-col="ticker"' + thClass(cid,'ticker') + '>Ticker ' + sortArrow(cid,'ticker') + '</th>';
+    h += '<th data-col="company_name"' + thClass(cid,'company_name') + '>Company ' + sortArrow(cid,'company_name') + '</th>';
+    h += '<th data-col="ex_date"' + thClass(cid,'ex_date') + '>Ex-Dividend Date ' + sortArrow(cid,'ex_date') + '</th>';
+    h += '<th data-col="amount"' + thClass(cid,'amount') + '>Amount ' + sortArrow(cid,'amount') + '</th>';
+    h += '<th data-col="dividend_yield"' + thClass(cid,'dividend_yield') + '>Div Yield ' + sortArrow(cid,'dividend_yield') + '</th>';
+    h += '</tr>';
+    for (var i = 0; i < data.length; i++) {
+        var d = data[i];
+        h += '<tr><td class="ticker-cell">' + tickerLink(d.ticker) + '</td>';
+        h += '<td>' + (d.company_name || '') + '</td>';
+        h += '<td>' + fmtDate(d.ex_date) + '</td>';
+        h += '<td>$' + parseFloat(d.amount).toFixed(4) + '</td>';
+        h += '<td>' + (d.dividend_yield ? fmtPct(d.dividend_yield) : '\u2014') + '</td></tr>';
+    }
+    h += '</table></div>';
+    document.getElementById(cid).innerHTML = h;
+}
+
+function renderUpcomingEarnings() {
+    var data = filterData(upcomingEarnData);
+    var cid = 'upcoming-earnings';
+    if (data.length === 0) {
+        document.getElementById(cid).innerHTML = '<div class="empty-msg">No upcoming earnings' + (getSearchTerm() ? ' matching filter' : ' in the next 30 days') + '.</div>';
+        return;
+    }
+    var st = sortState[cid];
+    if (st && st.col) sortArray(data, st.col, st.dir);
+
+    var h = '<div class="table-wrap"><table><tr>';
+    h += '<th data-col="ticker"' + thClass(cid,'ticker') + '>Ticker ' + sortArrow(cid,'ticker') + '</th>';
+    h += '<th data-col="company_name"' + thClass(cid,'company_name') + '>Company ' + sortArrow(cid,'company_name') + '</th>';
+    h += '<th data-col="next_earnings_date"' + thClass(cid,'next_earnings_date') + '>Earnings Date ' + sortArrow(cid,'next_earnings_date') + '</th>';
+    h += '<th data-col="trailing_eps"' + thClass(cid,'trailing_eps') + '>Trailing EPS ' + sortArrow(cid,'trailing_eps') + '</th>';
+    h += '<th data-col="forward_eps"' + thClass(cid,'forward_eps') + '>Forward EPS ' + sortArrow(cid,'forward_eps') + '</th>';
+    h += '</tr>';
+    for (var i = 0; i < data.length; i++) {
+        var e = data[i];
+        h += '<tr><td class="ticker-cell">' + tickerLink(e.ticker) + '</td>';
+        h += '<td>' + (e.company_name || '') + '</td>';
+        h += '<td>' + fmtDate(e.next_earnings_date) + '</td>';
+        h += '<td>' + fmtNum(e.trailing_eps) + '</td>';
+        h += '<td>' + fmtNum(e.forward_eps) + '</td></tr>';
+    }
+    h += '</table></div>';
+    document.getElementById(cid).innerHTML = h;
+}
+
 function loadUpcoming() {
     api('upcoming', function(data) {
         if (!data.ok) return;
-
         document.getElementById('stat-upcoming-div').textContent = data.dividend_count || 0;
         document.getElementById('stat-upcoming-earn').textContent = data.earnings_count || 0;
-
-        // Upcoming dividends
-        var divs = data.upcoming_dividends || [];
-        if (divs.length === 0) {
-            document.getElementById('upcoming-divs').innerHTML = '<div class="empty-msg">No upcoming ex-dividend dates in the next 30 days.</div>';
-        } else {
-            var h = '<table><tr><th>Ticker</th><th>Company</th><th>Ex-Dividend Date</th><th>Amount</th><th>Div Yield</th></tr>';
-            for (var i = 0; i < divs.length; i++) {
-                var d = divs[i];
-                h += '<tr><td class="ticker-cell">' + d.ticker + '</td>';
-                h += '<td>' + (d.company_name || '') + '</td>';
-                h += '<td>' + fmtDate(d.ex_date) + '</td>';
-                h += '<td>$' + parseFloat(d.amount).toFixed(4) + '</td>';
-                h += '<td>' + (d.dividend_yield ? fmtPct(d.dividend_yield) : '—') + '</td></tr>';
-            }
-            h += '</table>';
-            document.getElementById('upcoming-divs').innerHTML = h;
-        }
-
-        // Upcoming earnings
-        var earn = data.upcoming_earnings || [];
-        if (earn.length === 0) {
-            document.getElementById('upcoming-earnings').innerHTML = '<div class="empty-msg">No upcoming earnings dates in the next 30 days.</div>';
-        } else {
-            var h2 = '<table><tr><th>Ticker</th><th>Company</th><th>Earnings Date</th><th>Trailing EPS</th><th>Forward EPS</th></tr>';
-            for (var i = 0; i < earn.length; i++) {
-                var e = earn[i];
-                h2 += '<tr><td class="ticker-cell">' + e.ticker + '</td>';
-                h2 += '<td>' + (e.company_name || '') + '</td>';
-                h2 += '<td>' + fmtDate(e.next_earnings_date) + '</td>';
-                h2 += '<td>' + fmtNum(e.trailing_eps) + '</td>';
-                h2 += '<td>' + fmtNum(e.forward_eps) + '</td></tr>';
-            }
-            h2 += '</table>';
-            document.getElementById('upcoming-earnings').innerHTML = h2;
-        }
+        upcomingDivData = data.upcoming_dividends || [];
+        upcomingEarnData = data.upcoming_earnings || [];
+        tabLoaded.upcoming = true;
+        renderUpcomingDivs();
+        renderUpcomingEarnings();
     });
 }
 
-// ─── Dividend Leaders ───
+// ═══════════════════════════════════════════════
+// Dividend Leaders
+// ═══════════════════════════════════════════════
+function renderDivLeaders() {
+    var data = filterData(divLeadersData);
+    var cid = 'div-leaders';
+    if (data.length === 0) {
+        document.getElementById(cid).innerHTML = '<div class="empty-msg">No dividend data' + (getSearchTerm() ? ' matching filter' : ' available') + '.</div>';
+        return;
+    }
+    var st = sortState[cid];
+    if (st && st.col) sortArray(data, st.col, st.dir);
+
+    var h = '<div class="table-wrap"><table><tr>';
+    h += '<th>#</th>';
+    h += '<th data-col="ticker"' + thClass(cid,'ticker') + '>Ticker ' + sortArrow(cid,'ticker') + '</th>';
+    h += '<th data-col="company_name"' + thClass(cid,'company_name') + '>Company ' + sortArrow(cid,'company_name') + '</th>';
+    h += '<th data-col="dividend_yield"' + thClass(cid,'dividend_yield') + '>Div Yield ' + sortArrow(cid,'dividend_yield') + '</th>';
+    h += '<th data-col="trailing_annual_div_rate"' + thClass(cid,'trailing_annual_div_rate') + '>Annual Rate ' + sortArrow(cid,'trailing_annual_div_rate') + '</th>';
+    h += '<th data-col="payout_ratio"' + thClass(cid,'payout_ratio') + '>Payout Ratio ' + sortArrow(cid,'payout_ratio') + '</th>';
+    h += '<th>Safety</th>';
+    h += '<th data-col="trailing_eps"' + thClass(cid,'trailing_eps') + '>EPS ' + sortArrow(cid,'trailing_eps') + '</th>';
+    h += '<th data-col="trailing_pe"' + thClass(cid,'trailing_pe') + '>P/E ' + sortArrow(cid,'trailing_pe') + '</th>';
+    h += '<th data-col="ex_dividend_date"' + thClass(cid,'ex_dividend_date') + '>Ex-Div Date ' + sortArrow(cid,'ex_dividend_date') + '</th>';
+    h += '</tr>';
+    for (var i = 0; i < data.length; i++) {
+        var l = data[i];
+        var pr = l.payout_ratio;
+        var safety = '\u2014', sc = '';
+        if (pr !== null && pr !== undefined) {
+            if (pr < 0.6) { safety = 'SAFE'; sc = 'safety-safe'; }
+            else if (pr < 1.0) { safety = 'CAUTION'; sc = 'safety-caution'; }
+            else { safety = 'DANGER'; sc = 'safety-danger'; }
+        }
+        h += '<tr>';
+        h += '<td>' + (i + 1) + '</td>';
+        h += '<td class="ticker-cell">' + tickerLink(l.ticker) + '</td>';
+        h += '<td>' + (l.company_name || '') + '</td>';
+        h += '<td class="pct-positive">' + fmtPct(l.dividend_yield) + '</td>';
+        h += '<td>$' + fmtNum(l.trailing_annual_div_rate) + '</td>';
+        h += '<td class="' + payoutClass(pr) + '">' + fmtPct(pr) + '</td>';
+        h += '<td class="' + sc + '" style="font-weight:700">' + safety + '</td>';
+        h += '<td>' + fmtNum(l.trailing_eps) + '</td>';
+        h += '<td>' + fmtNum(l.trailing_pe) + '</td>';
+        h += '<td>' + fmtDate(l.ex_dividend_date) + '</td>';
+        h += '</tr>';
+    }
+    h += '</table></div>';
+    document.getElementById(cid).innerHTML = h;
+}
+
 function loadDividendLeaders() {
     document.getElementById('div-leaders').innerHTML = '<div class="loading"><div class="spinner"></div><br>Loading...</div>';
     api('dividend_leaders', function(data) {
         if (!data.ok || !data.leaders || data.leaders.length === 0) {
-            document.getElementById('div-leaders').innerHTML = '<div class="empty-msg">No dividend data available yet. Run the fetcher first.</div>';
+            document.getElementById('div-leaders').innerHTML = '<div class="empty-msg">No dividend data available yet.</div>';
             return;
         }
-        var h = '<table><tr><th>#</th><th>Ticker</th><th>Company</th><th>Div Yield</th><th>Annual Rate</th><th>Payout Ratio</th><th>Safety</th><th>EPS</th><th>P/E</th><th>Ex-Div Date</th></tr>';
-        for (var i = 0; i < data.leaders.length; i++) {
-            var l = data.leaders[i];
-            var pr = l.payout_ratio;
-            var safety = '—';
-            var sc = '';
-            if (pr !== null) {
-                if (pr < 0.6) { safety = 'SAFE'; sc = 'safety-safe'; }
-                else if (pr < 1.0) { safety = 'CAUTION'; sc = 'safety-caution'; }
-                else { safety = 'DANGER'; sc = 'safety-danger'; }
-            }
-            h += '<tr>';
-            h += '<td>' + (i+1) + '</td>';
-            h += '<td class="ticker-cell">' + l.ticker + '</td>';
-            h += '<td>' + (l.company_name || '') + '</td>';
-            h += '<td class="pct-positive">' + fmtPct(l.dividend_yield) + '</td>';
-            h += '<td>$' + fmtNum(l.trailing_annual_div_rate) + '</td>';
-            h += '<td class="' + payoutClass(pr) + '">' + fmtPct(pr) + '</td>';
-            h += '<td class="' + sc + '" style="font-weight:700">' + safety + '</td>';
-            h += '<td>' + fmtNum(l.trailing_eps) + '</td>';
-            h += '<td>' + fmtNum(l.trailing_pe) + '</td>';
-            h += '<td>' + fmtDate(l.ex_dividend_date) + '</td>';
-            h += '</tr>';
-        }
-        h += '</table>';
-        document.getElementById('div-leaders').innerHTML = h;
+        divLeadersData = data.leaders;
+        tabLoaded.dividends = true;
+        renderDivLeaders();
     });
 }
 
-// ─── Earnings Surprises ───
+// ═══════════════════════════════════════════════
+// Earnings Surprises
+// ═══════════════════════════════════════════════
+function renderEarnSurprises() {
+    var data = filterData(earnSurprisesData);
+    var cid = 'earn-surprises';
+    if (data.length === 0) {
+        document.getElementById(cid).innerHTML = '<div class="empty-msg">No earnings surprise data' + (getSearchTerm() ? ' matching filter' : ' available') + '.</div>';
+        return;
+    }
+    var st = sortState[cid];
+    if (st && st.col) sortArray(data, st.col, st.dir);
+
+    var h = '<div class="table-wrap"><table><tr>';
+    h += '<th>#</th>';
+    h += '<th data-col="ticker"' + thClass(cid,'ticker') + '>Ticker ' + sortArrow(cid,'ticker') + '</th>';
+    h += '<th data-col="company_name"' + thClass(cid,'company_name') + '>Company ' + sortArrow(cid,'company_name') + '</th>';
+    h += '<th data-col="quarter_end"' + thClass(cid,'quarter_end') + '>Quarter ' + sortArrow(cid,'quarter_end') + '</th>';
+    h += '<th data-col="eps_actual"' + thClass(cid,'eps_actual') + '>EPS Actual ' + sortArrow(cid,'eps_actual') + '</th>';
+    h += '<th data-col="eps_estimate"' + thClass(cid,'eps_estimate') + '>EPS Est ' + sortArrow(cid,'eps_estimate') + '</th>';
+    h += '<th data-col="eps_surprise"' + thClass(cid,'eps_surprise') + '>Surprise ' + sortArrow(cid,'eps_surprise') + '</th>';
+    h += '<th data-col="surprise_pct"' + thClass(cid,'surprise_pct') + '>Surprise % ' + sortArrow(cid,'surprise_pct') + '</th>';
+    h += '<th>Result</th>';
+    h += '</tr>';
+    for (var i = 0; i < data.length; i++) {
+        var s = data[i];
+        var badge = s.beat ? '<span class="beat-badge">BEAT</span>' : '<span class="miss-badge">MISS</span>';
+        h += '<tr>';
+        h += '<td>' + (i + 1) + '</td>';
+        h += '<td class="ticker-cell">' + tickerLink(s.ticker) + '</td>';
+        h += '<td>' + (s.company_name || '') + '</td>';
+        h += '<td>' + fmtDate(s.quarter_end) + '</td>';
+        h += '<td>' + fmtNum(s.eps_actual) + '</td>';
+        h += '<td>' + fmtNum(s.eps_estimate) + '</td>';
+        h += '<td class="' + (s.beat ? 'pct-positive' : 'pct-negative') + '">' + (s.eps_surprise > 0 ? '+' : '') + fmtNum(s.eps_surprise) + '</td>';
+        h += '<td class="' + (s.beat ? 'pct-positive' : 'pct-negative') + '">' + (s.surprise_pct > 0 ? '+' : '') + fmtPctRaw(s.surprise_pct) + '</td>';
+        h += '<td>' + badge + '</td>';
+        h += '</tr>';
+    }
+    h += '</table></div>';
+    document.getElementById(cid).innerHTML = h;
+}
+
 function loadEarningsSurprises() {
     document.getElementById('earn-surprises').innerHTML = '<div class="loading"><div class="spinner"></div><br>Loading...</div>';
     api('earnings_surprises', function(data) {
@@ -329,62 +659,32 @@ function loadEarningsSurprises() {
             document.getElementById('earn-surprises').innerHTML = '<div class="empty-msg">No earnings surprise data available yet.</div>';
             return;
         }
-
         var beats = 0;
         for (var i = 0; i < data.surprises.length; i++) { if (data.surprises[i].beat) beats++; }
         document.getElementById('stat-beats').textContent = beats;
-
-        var h = '<table><tr><th>#</th><th>Ticker</th><th>Company</th><th>Quarter</th><th>EPS Actual</th><th>EPS Estimate</th><th>Surprise</th><th>Surprise %</th><th>Result</th></tr>';
-        for (var i = 0; i < data.surprises.length; i++) {
-            var s = data.surprises[i];
-            var badge = s.beat ? '<span class="beat-badge">BEAT</span>' : '<span class="miss-badge">MISS</span>';
-            h += '<tr>';
-            h += '<td>' + (i+1) + '</td>';
-            h += '<td class="ticker-cell">' + s.ticker + '</td>';
-            h += '<td>' + (s.company_name || '') + '</td>';
-            h += '<td>' + fmtDate(s.quarter_end) + '</td>';
-            h += '<td>' + fmtNum(s.eps_actual) + '</td>';
-            h += '<td>' + fmtNum(s.eps_estimate) + '</td>';
-            h += '<td class="' + (s.beat ? 'pct-positive' : 'pct-negative') + '">' + (s.eps_surprise > 0 ? '+' : '') + fmtNum(s.eps_surprise) + '</td>';
-            h += '<td class="' + (s.beat ? 'pct-positive' : 'pct-negative') + '">' + (s.surprise_pct > 0 ? '+' : '') + fmtPctRaw(s.surprise_pct) + '</td>';
-            h += '<td>' + badge + '</td>';
-            h += '</tr>';
-        }
-        h += '</table>';
-        document.getElementById('earn-surprises').innerHTML = h;
+        earnSurprisesData = data.surprises;
+        tabLoaded.earnings = true;
+        renderEarnSurprises();
     });
 }
 
-// ─── All Fundamentals ───
-var _sortCol = null, _sortDir = 1;
-function loadFundamentals() {
-    document.getElementById('fundamentals-table').innerHTML = '<div class="loading"><div class="spinner"></div><br>Loading all fundamentals...</div>';
-    api('get_fundamentals&ticker=all', function(data) {
-        if (!data.ok || !data.fundamentals || data.fundamentals.length === 0) {
-            document.getElementById('fundamentals-table').innerHTML = '<div class="empty-msg">No fundamental data available yet. Run fetch_all first.</div>';
-            return;
-        }
+// ═══════════════════════════════════════════════
+// All Fundamentals
+// ═══════════════════════════════════════════════
+function renderFundamentals() {
+    var data = filterDataFull(fundamentalsData);
+    var cid = 'fundamentals-table';
+    if (data.length === 0) {
+        document.getElementById(cid).innerHTML = '<div class="empty-msg">No fundamentals' + (getSearchTerm() ? ' matching filter' : ' available') + '.</div>';
+        return;
+    }
+    var st = sortState[cid];
+    if (st && st.col) sortArray(data, st.col, st.dir);
 
-        var funds = data.fundamentals;
-
-        // Update stats
-        document.getElementById('stat-total').textContent = funds.length;
-        var payers = 0, yieldSum = 0, yieldCount = 0;
-        for (var i = 0; i < funds.length; i++) {
-            if (funds[i].dividend_yield && funds[i].dividend_yield > 0) { payers++; yieldSum += funds[i].dividend_yield; yieldCount++; }
-        }
-        document.getElementById('stat-payers').textContent = payers;
-        document.getElementById('stat-avg-yield').textContent = yieldCount > 0 ? (yieldSum / yieldCount * 100).toFixed(2) + '%' : '—';
-
-        renderFundamentals(funds);
-    });
-}
-
-function renderFundamentals(funds) {
-    var h = '<table id="fund-table"><tr>';
     var cols = [
         {key:'ticker', label:'Ticker'},
         {key:'company_name', label:'Company'},
+        {key:'sector', label:'Sector'},
         {key:'dividend_yield', label:'Div Yield'},
         {key:'trailing_eps', label:'EPS'},
         {key:'trailing_pe', label:'P/E'},
@@ -397,34 +697,72 @@ function renderFundamentals(funds) {
         {key:'target_mean_price', label:'Target'},
         {key:'next_earnings_date', label:'Next Earnings'}
     ];
+
+    var h = '<div class="table-wrap"><table><tr>';
     for (var c = 0; c < cols.length; c++) {
-        h += '<th data-col="' + cols[c].key + '">' + cols[c].label + '</th>';
+        h += '<th data-col="' + cols[c].key + '"' + thClass(cid, cols[c].key) + '>' + cols[c].label + ' ' + sortArrow(cid, cols[c].key) + '</th>';
     }
     h += '</tr>';
 
-    for (var i = 0; i < funds.length; i++) {
-        var f = funds[i];
+    for (var i = 0; i < data.length; i++) {
+        var f = data[i];
         h += '<tr>';
-        h += '<td class="ticker-cell">' + (f.ticker || '') + '</td>';
+        h += '<td class="ticker-cell">' + tickerLink(f.ticker || '') + '</td>';
         h += '<td>' + (f.company_name || '') + '</td>';
-        h += '<td class="' + (f.dividend_yield > 0 ? 'pct-positive' : '') + '">' + (f.dividend_yield ? fmtPct(f.dividend_yield) : '—') + '</td>';
+        h += '<td>' + (f.sector ? '<span class="sector-badge">' + f.sector + '</span>' : '\u2014') + '</td>';
+        h += '<td class="' + (f.dividend_yield > 0 ? 'pct-positive' : '') + '">' + (f.dividend_yield ? fmtPct(f.dividend_yield) : '\u2014') + '</td>';
         h += '<td>' + fmtNum(f.trailing_eps) + '</td>';
         h += '<td>' + fmtNum(f.trailing_pe) + '</td>';
         h += '<td>' + fmtNum(f.forward_pe) + '</td>';
         h += '<td>' + fmtNum(f.peg_ratio) + '</td>';
-        h += '<td class="' + payoutClass(f.payout_ratio) + '">' + (f.payout_ratio ? fmtPct(f.payout_ratio) : '—') + '</td>';
-        h += '<td>' + (f.roe ? fmtPct(f.roe) : '—') + '</td>';
-        h += '<td>' + (f.gross_margins ? fmtPct(f.gross_margins) : '—') + '</td>';
+        h += '<td class="' + payoutClass(f.payout_ratio) + '">' + (f.payout_ratio ? fmtPct(f.payout_ratio) : '\u2014') + '</td>';
+        h += '<td>' + (f.roe ? fmtPct(f.roe) : '\u2014') + '</td>';
+        h += '<td>' + (f.gross_margins ? fmtPct(f.gross_margins) : '\u2014') + '</td>';
         h += '<td>' + recBadge(f.recommendation_key) + '</td>';
         h += '<td>$' + fmtNum(f.target_mean_price) + '</td>';
         h += '<td>' + fmtDate(f.next_earnings_date) + '</td>';
         h += '</tr>';
     }
-    h += '</table>';
-    document.getElementById('fundamentals-table').innerHTML = h;
+    h += '</table></div>';
+    document.getElementById(cid).innerHTML = h;
+    document.getElementById('filter-count').textContent = data.length + ' of ' + fundamentalsData.length + ' tickers shown';
 }
 
-// ─── Init ───
+function loadFundamentals() {
+    document.getElementById('fundamentals-table').innerHTML = '<div class="loading"><div class="spinner"></div><br>Loading all fundamentals...</div>';
+    api('get_fundamentals&ticker=all', function(data) {
+        if (!data.ok || !data.fundamentals || data.fundamentals.length === 0) {
+            document.getElementById('fundamentals-table').innerHTML = '<div class="empty-msg">No fundamental data available yet.</div>';
+            return;
+        }
+        fundamentalsData = data.fundamentals;
+        tabLoaded.fundamentals = true;
+
+        // Update stats
+        var funds = fundamentalsData;
+        document.getElementById('stat-total').textContent = funds.length;
+        var payers = 0, yieldSum = 0, yieldCount = 0;
+        for (var i = 0; i < funds.length; i++) {
+            if (funds[i].dividend_yield && funds[i].dividend_yield > 0) { payers++; yieldSum += funds[i].dividend_yield; yieldCount++; }
+        }
+        document.getElementById('stat-payers').textContent = payers;
+        document.getElementById('stat-avg-yield').textContent = yieldCount > 0 ? (yieldSum / yieldCount * 100).toFixed(2) + '%' : '\u2014';
+        renderFundamentals();
+    });
+}
+
+// ═══════════════════════════════════════════════
+// Sort delegation setup (once, at page load)
+// ═══════════════════════════════════════════════
+setupSortDelegation('upcoming-divs', function() { return upcomingDivData; }, renderUpcomingDivs);
+setupSortDelegation('upcoming-earnings', function() { return upcomingEarnData; }, renderUpcomingEarnings);
+setupSortDelegation('div-leaders', function() { return divLeadersData; }, renderDivLeaders);
+setupSortDelegation('earn-surprises', function() { return earnSurprisesData; }, renderEarnSurprises);
+setupSortDelegation('fundamentals-table', function() { return fundamentalsData; }, renderFundamentals);
+
+// ═══════════════════════════════════════════════
+// Init
+// ═══════════════════════════════════════════════
 loadUpcoming();
 // Pre-load earnings surprises for the stat
 api('earnings_surprises', function(data) {
@@ -432,19 +770,21 @@ api('earnings_surprises', function(data) {
         var beats = 0;
         for (var i = 0; i < data.surprises.length; i++) { if (data.surprises[i].beat) beats++; }
         document.getElementById('stat-beats').textContent = beats;
+        earnSurprisesData = data.surprises;
     }
 });
 // Pre-load fundamentals for stats
 api('get_fundamentals&ticker=all', function(data) {
     if (data.ok && data.fundamentals) {
-        var funds = data.fundamentals;
+        fundamentalsData = data.fundamentals;
+        var funds = fundamentalsData;
         document.getElementById('stat-total').textContent = funds.length;
         var payers = 0, yieldSum = 0, yieldCount = 0;
         for (var i = 0; i < funds.length; i++) {
             if (funds[i].dividend_yield && funds[i].dividend_yield > 0) { payers++; yieldSum += funds[i].dividend_yield; yieldCount++; }
         }
         document.getElementById('stat-payers').textContent = payers;
-        document.getElementById('stat-avg-yield').textContent = yieldCount > 0 ? (yieldSum / yieldCount * 100).toFixed(2) + '%' : '—';
+        document.getElementById('stat-avg-yield').textContent = yieldCount > 0 ? (yieldSum / yieldCount * 100).toFixed(2) + '%' : '\u2014';
     }
 });
 </script>

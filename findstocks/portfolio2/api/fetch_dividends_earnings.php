@@ -478,7 +478,7 @@ if ($action === 'fetch_one' && $ticker !== '') {
 } elseif ($action === 'get_fundamentals') {
     if ($ticker === 'ALL' || $ticker === '') {
         // All tickers
-        $sql = "SELECT sf.*, s.company_name FROM stock_fundamentals sf
+        $sql = "SELECT sf.*, s.company_name, s.sector FROM stock_fundamentals sf
                 LEFT JOIN stocks s ON sf.ticker = s.ticker
                 ORDER BY sf.ticker";
         $res = $conn->query($sql);
@@ -499,7 +499,7 @@ if ($action === 'fetch_one' && $ticker !== '') {
     } else {
         // Single ticker
         $safe_tk = $conn->real_escape_string($ticker);
-        $sql = "SELECT sf.*, s.company_name FROM stock_fundamentals sf
+        $sql = "SELECT sf.*, s.company_name, s.sector FROM stock_fundamentals sf
                 LEFT JOIN stocks s ON sf.ticker = s.ticker
                 WHERE sf.ticker='$safe_tk'";
         $res = $conn->query($sql);
@@ -522,7 +522,7 @@ if ($action === 'fetch_one' && $ticker !== '') {
     $in30 = date('Y-m-d', strtotime('+30 days'));
 
     // Upcoming dividends
-    $sql = "SELECT sd.ticker, s.company_name, sd.ex_date, sd.amount, sf.dividend_yield
+    $sql = "SELECT sd.ticker, s.company_name, s.sector, sd.ex_date, sd.amount, sf.dividend_yield
             FROM stock_dividends sd
             LEFT JOIN stocks s ON sd.ticker = s.ticker
             LEFT JOIN stock_fundamentals sf ON sd.ticker = sf.ticker
@@ -539,7 +539,7 @@ if ($action === 'fetch_one' && $ticker !== '') {
     }
 
     // Upcoming earnings
-    $sql2 = "SELECT sf.ticker, s.company_name, sf.next_earnings_date, sf.trailing_eps, sf.forward_eps
+    $sql2 = "SELECT sf.ticker, s.company_name, s.sector, sf.next_earnings_date, sf.trailing_eps, sf.forward_eps
              FROM stock_fundamentals sf
              LEFT JOIN stocks s ON sf.ticker = s.ticker
              WHERE sf.next_earnings_date >= '$today' AND sf.next_earnings_date <= '$in30'
@@ -564,7 +564,7 @@ if ($action === 'fetch_one' && $ticker !== '') {
 
 } elseif ($action === 'dividend_leaders') {
     // Top 20 by dividend yield
-    $sql = "SELECT sf.ticker, s.company_name, sf.dividend_yield, sf.dividend_rate,
+    $sql = "SELECT sf.ticker, s.company_name, s.sector, sf.dividend_yield, sf.dividend_rate,
                    sf.trailing_annual_div_rate, sf.payout_ratio, sf.ex_dividend_date,
                    sf.trailing_eps, sf.trailing_pe
             FROM stock_fundamentals sf
@@ -587,7 +587,7 @@ if ($action === 'fetch_one' && $ticker !== '') {
 } elseif ($action === 'earnings_surprises') {
     // Recent earnings surprises (last 90 days)
     $cutoff = date('Y-m-d', strtotime('-90 days'));
-    $sql = "SELECT se.ticker, s.company_name, se.quarter_end, se.eps_actual, se.eps_estimate,
+    $sql = "SELECT se.ticker, s.company_name, s.sector, se.quarter_end, se.eps_actual, se.eps_estimate,
                    se.eps_surprise, se.surprise_pct
             FROM stock_earnings se
             LEFT JOIN stocks s ON se.ticker = s.ticker

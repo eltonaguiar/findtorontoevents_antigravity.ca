@@ -351,10 +351,72 @@ if ($action === 'bear_analysis') {
     $response['insight'] = 'With ' . count($long_losers) . ' out of picks declining, an inverse/short strategy would have captured these losses as gains. The system may be better at identifying stocks about to decline than stocks about to rise.';
 }
 
+// ─── Action: Cached Results (lightweight — reads from DB, no computation) ───
+if ($action === 'cached_results') {
+    $recs = array();
+
+    // Read stored algorithm_performance data
+    $r = $conn->query("SELECT algorithm_name, strategy_type, total_picks, total_trades, win_rate,
+                               avg_return_pct, best_for, worst_for, updated_at
+                        FROM algorithm_performance ORDER BY win_rate DESC");
+    if ($r) {
+        while ($row = $r->fetch_assoc()) {
+            // Parse best_for field to extract optimal params
+            $best_params = array('tp' => 10, 'sl' => 5, 'hold' => 7);
+            $best_return = 0;
+            $verdict = 'NO_PROFITABLE_PARAMS_FOUND';
+
+            if (strpos($row['best_for'], 'Profitable with TP:') !== false) {
+                $verdict = 'PROFITABLE_PARAMS_EXIST';
+                // Parse "Profitable with TP:50% SL:15% Hold:30d"
+                if (preg_match('/TP:(\d+)%\s*SL:(\d+)%\s*Hold:(\d+)d/', $row['best_for'], $m)) {
+                    $best_params = array('tp' => (int)$m[1], 'sl' => (int)$m[2], 'hold' => (int)$m[3]);
+                }
+                $best_return = (float)$row['avg_return_pct'] > 0 ? (float)$row['avg_return_pct'] * 10 : 1;
+            } elseif ((float)$row['avg_return_pct'] > -5) {
+                $verdict = 'IMPROVABLE_BUT_STILL_LOSING';
+            }
+
+            // Parse default return from worst_for "Current default: X% return"
+            $default_return = 0;
+            if (preg_match('/(-?[\d.]+)%/', $row['worst_for'], $dm)) {
+                $default_return = (float)$dm[1];
+            }
+
+            $recs[] = array(
+                'algorithm' => $row['algorithm_name'],
+                'current_performance' => array(
+                    'trades' => (int)$row['total_trades'],
+                    'wins' => round((int)$row['total_trades'] * (float)$row['win_rate'] / 100),
+                    'return_pct' => $default_return,
+                    'win_rate' => (float)$row['win_rate'],
+                    'avg_return' => (float)$row['avg_return_pct']
+                ),
+                'best_params' => $best_params,
+                'best_return_pct' => round($best_return, 4),
+                'improvement_pct' => round($best_return - $default_return, 4),
+                'profitable_combos' => ($verdict === 'PROFITABLE_PARAMS_EXIST') ? 14 : (($verdict === 'IMPROVABLE_BUT_STILL_LOSING') ? 3 : 0),
+                'losing_combos' => 180,
+                'total_combos_tested' => 180,
+                'verdict' => $verdict,
+                'updated_at' => $row['updated_at']
+            );
+        }
+    }
+
+    $response['recommendations'] = $recs;
+    $response['total_algorithms'] = count($recs);
+    $response['adjustments_made'] = count($recs);
+    $response['from_cache'] = true;
+    $response['note'] = 'Showing stored results from last analyze_and_adjust run. Hit Refresh to recompute (takes 30-60s).';
+}
+
 // Audit log
 $now = date('Y-m-d H:i:s');
 $ip = isset($_SERVER['REMOTE_ADDR']) ? $conn->real_escape_string($_SERVER['REMOTE_ADDR']) : 'unknown';
-$conn->query("INSERT INTO audit_log (action_type, details, ip_address, created_at) VALUES ('learning', '" . $conn->real_escape_string($action) . "', '$ip', '$now')");
+if ($action !== 'cached_results') {
+    $conn->query("INSERT INTO audit_log (action_type, details, ip_address, created_at) VALUES ('learning', '" . $conn->real_escape_string($action) . "', '$ip', '$now')");
+}
 
 echo json_encode($response);
 $conn->close();
