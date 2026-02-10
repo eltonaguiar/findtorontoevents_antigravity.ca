@@ -104,7 +104,7 @@ if ($action === 'archive') {
     // 3. Edge Dashboard — from lm_opportunities
     $stats['edge'] = _gm_archive_edge($conn);
 
-    // 4. Meme Coins — from ejaguiar1_memecoin.meme_winners (cross-DB)
+    // 4. Meme Coins — from ejaguiar1_memecoin.mc_winners (cross-DB)
     $stats['meme'] = _gm_archive_meme($conn);
 
     // 5. Sports Betting — from lm_sports_daily_picks (cross-DB)
@@ -680,15 +680,15 @@ function _gm_archive_meme($conn) {
     $mc = @new mysqli('mysql.50webs.com', 'ejaguiar1_memecoin', 'testing123', 'ejaguiar1_memecoin');
     if ($mc->connect_error) return array('inserted' => 0, 'error' => 'meme DB connect failed');
 
-    $r = $mc->query("SELECT * FROM meme_winners ORDER BY created_at DESC LIMIT 100");
-    if (!$r) { $mc->close(); return array('inserted' => 0, 'error' => 'meme_winners query failed'); }
+    $r = $mc->query("SELECT * FROM mc_winners ORDER BY created_at DESC LIMIT 100");
+    if (!$r) { $mc->close(); return array('inserted' => 0, 'error' => 'mc_winners query failed'); }
 
     while ($row = $r->fetch_assoc()) {
         $sid = intval($row['id']);
         $pick_date = substr($row['created_at'], 0, 10);
 
         $dup = $conn->query("SELECT id FROM gm_unified_picks
-            WHERE source_system='meme' AND source_table='meme_winners'
+            WHERE source_system='meme' AND source_table='mc_winners'
             AND source_id=" . $sid);
         if ($dup && $dup->num_rows > 0) continue;
 
@@ -713,7 +713,7 @@ function _gm_archive_meme($conn) {
              exit_date, created_at, updated_at)
             VALUES (
              'meme', '/findcryptopairs/meme.html',
-             " . $sid . ", 'meme_winners',
+             " . $sid . ", 'mc_winners',
              '" . _gm_esc($conn, $pick_date) . "',
              '" . _gm_esc($conn, $row['created_at']) . "',
              'meme',

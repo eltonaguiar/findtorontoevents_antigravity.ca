@@ -260,53 +260,6 @@ a:hover { text-decoration: underline; }
 
 <div class="section-year">February 2026</div>
 
-<!-- Feb 10, 2026 — Deals & Freebies -->
-<div class="update-entry" style="--dot-color: #f59e0b;" data-tags="deals,freebies,birthday,toronto,ai-bot" data-category="events,tools">
-  <div class="update-date">Feb 10, 2026</div>
-  <div class="update-title">
-    Deals &amp; Freebies &mdash; 78 Birthday Freebies, Free Calendar, Canadian Deals
-    <span class="badge badge-feature">New</span>
-    <span class="badge badge-feature">Live</span>
-  </div>
-  <div class="update-body">
-    <p>Comprehensive Toronto deals hub with verified birthday freebies, a weekly free-things calendar, and curated Canadian deals from forums like RedFlagDeals.</p>
-    <ul>
-      <li><strong>78 birthday freebies:</strong> 16 categories including food, beauty, coffee, bubble tea, desserts, bakeries, entertainment, retail, kids, pets &mdash; all with verified sources</li>
-      <li><strong>Weekly calendar:</strong> 13 always-free venues + museum free days (AGO Wed, ROM 3rd Wed, Bata Shoe Sun, Aga Khan Tue/Wed, Gardiner Wed)</li>
-      <li><strong>Canadian deals:</strong> Active deals, upcoming events, free samples by mail, 10 deal-finder sites</li>
-      <li><strong>Deals Near Me:</strong> Geolocation-sorted results showing closest birthday freebies and free venues</li>
-      <li><strong>Filtering:</strong> By category (19 types), deal type (free/purchase required/BOGO/discount), and text search</li>
-      <li><strong>AI chatbot:</strong> Ask &ldquo;birthday freebies&rdquo;, &ldquo;deals near me&rdquo;, &ldquo;free stuff today&rdquo;, or &ldquo;Canadian deals&rdquo; in chat</li>
-      <li><strong>Auto-refresh:</strong> Weekly GitHub Actions workflow verifies all endpoints and flags expired deals</li>
-    </ul>
-    <p><a href="/deals/">Open Deals &amp; Freebies &rarr;</a></p>
-  </div>
-</div>
-
-<!-- Feb 10, 2026 — News Aggregator -->
-<div class="update-entry" style="--dot-color: #ef4444;" data-tags="news,rss,aggregator,toronto,canada,world" data-category="news,tools">
-  <div class="update-date">Feb 10, 2026</div>
-  <div class="update-title">
-    News Aggregator &mdash; 20+ Sources, Toronto to World
-    <span class="badge badge-feature">New</span>
-    <span class="badge badge-feature">Live</span>
-  </div>
-  <div class="update-body">
-    <p>Real-time news dashboard pulling from 20 RSS sources across 4 categories &mdash; Toronto local, Canada national, US, and World news.</p>
-    <ul>
-      <li><strong>Toronto (8 sources):</strong> BlogTO, Narcity, CBC Toronto, Global News Toronto, NOW Toronto, Toronto Sun, Daily Hive, Streets of Toronto</li>
-      <li><strong>Canada (6 sources):</strong> CBC Canada, CBC Politics, Global News, National Post, CBC Business, CBC Top Stories</li>
-      <li><strong>US (3 sources):</strong> CNN, NPR, NBC News</li>
-      <li><strong>World (3 sources):</strong> BBC World, Al Jazeera, The Guardian</li>
-      <li><strong>Smart caching:</strong> 30-minute cache per source with 2-hour stale fallback for reliability</li>
-      <li><strong>Category tabs:</strong> Filter by Toronto, Canada, US, or World with paginated results</li>
-      <li><strong>Deduplication:</strong> Articles deduped by link to prevent repeats across sources</li>
-      <li><strong>AI chatbot:</strong> Ask &ldquo;latest news&rdquo;, &ldquo;Toronto news&rdquo;, &ldquo;world news&rdquo;, or &ldquo;what&rsquo;s happening in Canada&rdquo; in chat</li>
-    </ul>
-    <p><a href="/news/">Open News Aggregator &rarr;</a></p>
-  </div>
-</div>
-
 <!-- Feb 10, 2026 — Algorithm Performance Tracking -->
 <div class="update-entry" style="--dot-color: #06b6d4;" data-tags="live-monitor,algorithms,self-learning" data-category="stocks,crypto,trading">
   <div class="update-date">Feb 10, 2026</div>
@@ -1333,18 +1286,6 @@ a:hover { text-decoration: underline; }
   var activeType = 'all';
   var activeCategory = 'all';
 
-  // URL param pre-filtering: ?category=stocks&type=feature&date=Feb%202026
-  var qs = window.location.search.substring(1);
-  if (qs) {
-    var qPairs = qs.split('&');
-    for (var q = 0; q < qPairs.length; q++) {
-      var kv = qPairs[q].split('=');
-      if (kv[0] === 'category' && kv[1]) activeCategory = decodeURIComponent(kv[1]);
-      if (kv[0] === 'type' && kv[1]) activeType = decodeURIComponent(kv[1]);
-      if (kv[0] === 'date' && kv[1]) activeDate = decodeURIComponent(kv[1]);
-    }
-  }
-
   // Parse all entries to build date pill options
   var entries = document.querySelectorAll('.update-entry');
   var dateMap = {}; // "Feb 2026" -> count
@@ -1461,21 +1402,6 @@ a:hover { text-decoration: underline; }
     // Show/hide no results message
     document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
     document.getElementById('updatesContainer').style.display = visibleCount === 0 ? 'none' : '';
-  }
-
-  // Apply URL pre-filters on load
-  if (activeCategory !== 'all' || activeType !== 'all' || activeDate !== 'all') {
-    var allFilters = [['category', activeCategory], ['type', activeType], ['date', activeDate]];
-    for (var f = 0; f < allFilters.length; f++) {
-      if (allFilters[f][1] === 'all') continue;
-      var pill = document.querySelector('[data-filter="' + allFilters[f][0] + '"][data-value="' + allFilters[f][1] + '"]');
-      if (pill) {
-        var sibs = pill.parentNode.querySelectorAll('.filter-pill');
-        for (var s = 0; s < sibs.length; s++) sibs[s].classList.remove('active');
-        pill.classList.add('active');
-      }
-    }
-    applyFilters();
   }
 })();
 </script>
