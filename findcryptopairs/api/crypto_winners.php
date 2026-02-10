@@ -10,6 +10,7 @@
  *   resolve       — check if past winners actually went up (key required)
  *   leaderboard   — best patterns by win rate (public)
  *   stats         — overall scanner stats (public)
+ *   scan_log      — full analysis log with all indicators (public)
  *
  * PHP 5.2 compatible. No short arrays, no http_response_code().
  */
@@ -47,6 +48,9 @@ switch ($action) {
         break;
     case 'stats':
         _cw_action_stats($conn);
+        break;
+    case 'scan_log':
+        _cw_action_scan_log($conn);
         break;
     default:
         _cw_err('Unknown action: ' . $action);
@@ -144,7 +148,59 @@ function _cw_action_scan($conn) {
     // Sort by score descending
     usort($scored, '_cw_sort_by_score');
 
-    // 5. Save winners (score >= 70) to DB
+    // 5a. Correlation filtering: fetch BTC candles, penalize BTC-correlated moves
+    $btc_candles = _cw_api('public/get-candlestick?instrument_name=BTC_USDT&timeframe=H1');
+    $btc_returns = array();
+    if ($btc_candles && isset($btc_candles['result']['data'])) {
+        $btc_data = $btc_candles['result']['data'];
+        for ($bi = 1; $bi < count($btc_data); $bi++) {
+            $prev = floatval($btc_data[$bi - 1]['c']);
+            if ($prev > 0) {
+                $btc_returns[] = (floatval($btc_data[$bi]['c']) - $prev) / $prev;
+            }
+        }
+    }
+    $corr_filtered = 0;
+    if (count($btc_returns) >= 10) {
+        foreach ($scored as &$sc_item) {
+            if ($sc_item['score'] < 70 || $sc_item['pair'] === 'BTC_USDT') continue;
+            // We already have candle data in factors — recalculate returns from chg_24h and momentum
+            // Simplified correlation: if coin's 24h change is within 30% of BTC's 24h change,
+            // and BTC moved > 2%, consider it BTC-correlated and penalize score by 5
+            $btc_ticker = isset($tickers['BTC_USDT']) ? $tickers['BTC_USDT'] : null;
+            if ($btc_ticker) {
+                $btc_chg = isset($btc_ticker['c']) ? floatval($btc_ticker['c']) * 100 : 0;
+                $coin_chg = $sc_item['chg_24h'];
+                if (abs($btc_chg) > 2 && abs($coin_chg - $btc_chg) < abs($btc_chg) * 0.3) {
+                    $sc_item['score'] = $sc_item['score'] - 5;
+                    $sc_item['factors']['btc_correlation'] = array(
+                        'btc_chg' => round($btc_chg, 2),
+                        'coin_chg' => round($coin_chg, 2),
+                        'penalty' => -5,
+                        'note' => 'Move correlated with BTC'
+                    );
+                    $corr_filtered++;
+                    // Re-evaluate verdict after penalty
+                    if ($sc_item['score'] >= 85) $sc_item['verdict'] = 'STRONG_BUY';
+                    elseif ($sc_item['score'] >= 75) $sc_item['verdict'] = 'BUY';
+                    elseif ($sc_item['score'] >= 70) $sc_item['verdict'] = 'LEAN_BUY';
+                    else $sc_item['verdict'] = 'SKIP';
+                } else {
+                    $sc_item['factors']['btc_correlation'] = array(
+                        'btc_chg' => round($btc_chg, 2),
+                        'coin_chg' => round($coin_chg, 2),
+                        'penalty' => 0,
+                        'note' => 'Independent move'
+                    );
+                }
+            }
+        }
+        unset($sc_item);
+        // Re-sort after penalties
+        usort($scored, '_cw_sort_by_score');
+    }
+
+    // 5b. Save winners (score >= 70) to DB
     $scan_id = date('YmdHis');
     $winners = array();
     $saved = 0;
@@ -165,6 +221,22 @@ function _cw_action_scan($conn) {
     }
 
     $elapsed = round(microtime(true) - $start, 2);
+
+    // Discord alert for strong signals
+    if (count($winners) > 0) {
+        _cw_discord_alert($winners, $scan_id, count($scored), $elapsed);
+    }
+
+    // Save ALL analyzed coins to scan_log for full transparency
+    foreach ($scored as $s) {
+        $esc_pair_log = $conn->real_escape_string($s['pair']);
+        $esc_scan_log = $conn->real_escape_string($scan_id);
+        $esc_factors_log = $conn->real_escape_string(json_encode($s['factors']));
+        $esc_verdict_log = $conn->real_escape_string($s['verdict']);
+        $sql_log = "INSERT INTO cw_scan_log (scan_id, pair, price, score, factors_json, verdict, chg_24h, vol_usd_24h, created_at)
+                    VALUES ('$esc_scan_log', '$esc_pair_log', " . floatval($s['price']) . ", " . intval($s['score']) . ", '$esc_factors_log', '$esc_verdict_log', " . floatval($s['chg_24h']) . ", " . floatval($s['vol_usd']) . ", NOW())";
+        $conn->query($sql_log);
+    }
 
     // Also include top candidates (even below threshold) for transparency
     $top_candidates = array();
@@ -187,6 +259,7 @@ function _cw_action_scan($conn) {
         'deep_analyzed' => count($scored),
         'winners_found' => count($winners),
         'winners_saved' => $saved,
+        'corr_penalized' => $corr_filtered,
         'elapsed_sec' => $elapsed,
         'winners' => array_slice($winners, 0, 15),
         'top_candidates' => $top_candidates
@@ -301,24 +374,32 @@ function _cw_score_pair($candidate, $candles_1h, $candles_5m) {
     $factors['near_24h_high'] = array('score' => $near_high_score, 'max' => 10, 'position' => round($position_in_range * 100, 1));
     $total += $near_high_score;
 
-    // ── Determine verdict and targets ──
+    // ── Volatility-adjusted targets using ATR ──
+    $atr = _cw_calc_atr($candles_1h);
+    $atr_pct = ($current_price > 0) ? ($atr / $current_price) * 100 : 1.5;
+    // Clamp ATR% to sensible range (0.5% to 8%)
+    $atr_pct = max(0.5, min(8.0, $atr_pct));
+
     $verdict = 'SKIP';
     $target_pct = 0;
     $risk_pct = 0;
 
     if ($total >= 85) {
         $verdict = 'STRONG_BUY';
-        $target_pct = 3.0;
-        $risk_pct = 1.5;
+        // Target = 1.5x ATR (volatility-adjusted), min 2%, max 6%
+        $target_pct = round(max(2.0, min(6.0, $atr_pct * 1.5)), 1);
+        $risk_pct = round(max(1.0, min(3.0, $atr_pct * 0.75)), 1);
     } elseif ($total >= 75) {
         $verdict = 'BUY';
-        $target_pct = 2.0;
-        $risk_pct = 1.5;
+        $target_pct = round(max(1.5, min(4.0, $atr_pct * 1.2)), 1);
+        $risk_pct = round(max(1.0, min(2.5, $atr_pct * 0.75)), 1);
     } elseif ($total >= 70) {
         $verdict = 'LEAN_BUY';
-        $target_pct = 1.5;
-        $risk_pct = 1.5;
+        $target_pct = round(max(1.0, min(3.0, $atr_pct * 1.0)), 1);
+        $risk_pct = round(max(1.0, min(2.0, $atr_pct * 0.75)), 1);
     }
+
+    $factors['volatility'] = array('atr' => round($atr, 8), 'atr_pct' => round($atr_pct, 2));
 
     return array(
         'total' => $total,
@@ -330,7 +411,8 @@ function _cw_score_pair($candidate, $candles_1h, $candles_5m) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-//  RESOLVE — check if past winners actually went up
+//  RESOLVE — continuous resolve: check if target was hit at ANY point
+//  in the 4-hour window by fetching 5-min candles and checking high/low
 // ═══════════════════════════════════════════════════════════════════════
 function _cw_action_resolve($conn) {
     // Find unresolved winners older than 4 hours
@@ -349,20 +431,73 @@ function _cw_action_resolve($conn) {
     $details = array();
 
     while ($row = $res->fetch_assoc()) {
-        // Get current price from Crypto.com
-        $ticker = _cw_api('public/get-tickers?instrument_name=' . $row['pair']);
-        if (!$ticker || !isset($ticker['result']['data'][0])) continue;
-
-        $current_price = floatval($ticker['result']['data'][0]['a']);
         $entry_price = floatval($row['price_at_signal']);
-        $pnl_pct = (($current_price - $entry_price) / $entry_price) * 100;
-
         $target = floatval($row['target_pct']);
         $risk = floatval($row['risk_pct']);
+        $target_price = $entry_price * (1 + $target / 100);
+        $stop_price = $entry_price * (1 - $risk / 100);
 
-        // Determine outcome
+        // Continuous resolve: fetch 5-min candles to check if target/stop was hit
+        // during the 4-hour window (48 x 5-min candles = 4 hours)
+        $candles_raw = _cw_api('public/get-candlestick?instrument_name=' . $row['pair'] . '&timeframe=M5');
+        $candles = (isset($candles_raw['result']['data'])) ? $candles_raw['result']['data'] : array();
+
+        $peak_price = $entry_price;
+        $trough_price = $entry_price;
+        $hit_target = false;
+        $hit_stop = false;
+        $hit_target_first = false;
+
+        if (count($candles) >= 10) {
+            // Walk through candles chronologically to find what was hit first
+            foreach ($candles as $c) {
+                $candle_high = floatval($c['h']);
+                $candle_low = floatval($c['l']);
+                if ($candle_high > $peak_price) $peak_price = $candle_high;
+                if ($candle_low < $trough_price) $trough_price = $candle_low;
+
+                // Check stop first within candle (conservative: assume stop hit before target)
+                if (!$hit_stop && !$hit_target && $candle_low <= $stop_price) {
+                    $hit_stop = true;
+                }
+                if (!$hit_target && !$hit_stop && $candle_high >= $target_price) {
+                    $hit_target = true;
+                    $hit_target_first = true;
+                }
+                // If both could have been hit in same candle, check which was closer
+                if (!$hit_stop && !$hit_target) {
+                    if ($candle_low <= $stop_price && $candle_high >= $target_price) {
+                        // Both in same candle — use open to guess order
+                        $candle_open = floatval($c['o']);
+                        if (abs($candle_open - $stop_price) < abs($candle_open - $target_price)) {
+                            $hit_stop = true;
+                        } else {
+                            $hit_target = true;
+                            $hit_target_first = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Also get current price for final PnL
+        $ticker = _cw_api('public/get-tickers?instrument_name=' . $row['pair']);
+        $current_price = $entry_price;
+        if ($ticker && isset($ticker['result']['data'][0])) {
+            $current_price = floatval($ticker['result']['data'][0]['a']);
+        }
+        $pnl_pct = (($current_price - $entry_price) / $entry_price) * 100;
+        $peak_pnl = (($peak_price - $entry_price) / $entry_price) * 100;
+
+        // Determine outcome using continuous data
         $outcome = 'neutral';
-        if ($pnl_pct >= $target) {
+        if ($hit_target_first || $hit_target) {
+            $outcome = 'win';
+            $wins++;
+        } elseif ($hit_stop) {
+            $outcome = 'loss';
+            $losses++;
+        } elseif ($pnl_pct >= $target) {
             $outcome = 'win';
             $wins++;
         } elseif ($pnl_pct <= -$risk) {
@@ -370,13 +505,13 @@ function _cw_action_resolve($conn) {
             $losses++;
         } elseif ($pnl_pct > 0) {
             $outcome = 'partial_win';
-            $wins++; // count as win for stats
+            $wins++;
         } else {
             $outcome = 'partial_loss';
             $losses++;
         }
 
-        // Update DB
+        // Update DB — store peak_pnl for transparency
         $esc_outcome = $conn->real_escape_string($outcome);
         $sql2 = "UPDATE cw_winners SET outcome = '$esc_outcome', price_at_resolve = $current_price, pnl_pct = " . round($pnl_pct, 4) . ", resolved_at = NOW() WHERE id = " . intval($row['id']);
         $conn->query($sql2);
@@ -386,12 +521,16 @@ function _cw_action_resolve($conn) {
             'pair' => $row['pair'],
             'entry' => $entry_price,
             'current' => $current_price,
+            'peak' => round($peak_price, 8),
+            'peak_pnl' => round($peak_pnl, 2),
             'pnl_pct' => round($pnl_pct, 2),
             'outcome' => $outcome,
+            'hit_target' => $hit_target,
+            'hit_stop' => $hit_stop,
             'score' => intval($row['score'])
         );
 
-        usleep(100000); // 100ms between ticker calls
+        usleep(100000); // 100ms between API calls
     }
 
     echo json_encode(array(
@@ -400,6 +539,7 @@ function _cw_action_resolve($conn) {
         'wins' => $wins,
         'losses' => $losses,
         'win_rate' => ($resolved > 0) ? round(($wins / $resolved) * 100, 1) : 0,
+        'resolve_method' => 'continuous',
         'details' => $details
     ));
 }
@@ -475,6 +615,7 @@ function _cw_action_leaderboard($conn) {
         while ($row = $res->fetch_assoc()) {
             $resolved = intval($row['wins']) + intval($row['losses']);
             $row['win_rate'] = ($resolved > 0) ? round(($row['wins'] / $resolved) * 100, 1) : null;
+            $row['significance'] = _cw_binomial_significance(intval($row['wins']), $resolved, 0.5);
             $tiers[] = $row;
         }
     }
@@ -533,9 +674,63 @@ function _cw_action_stats($conn) {
     $stats['overall_win_rate'] = ($resolved > 0) ? round(($stats['total_wins'] / $resolved) * 100, 1) : null;
     $stats['resolved'] = $resolved;
 
+    // Statistical significance: binomial test against 50% null hypothesis
+    // Is our win rate significantly better than coin flip?
+    $significance = _cw_binomial_significance(intval($stats['total_wins']), $resolved, 0.5);
+    $stats['significance'] = $significance;
+
     echo json_encode(array(
         'ok' => true,
         'stats' => $stats
+    ));
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  SCAN LOG — full analysis log with all indicators
+// ═══════════════════════════════════════════════════════════════════════
+function _cw_action_scan_log($conn) {
+    $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 100;
+    if ($limit > 500) $limit = 500;
+
+    $scan_filter = '';
+    if (isset($_GET['scan_id']) && $_GET['scan_id'] !== '') {
+        $scan_filter = " AND scan_id = '" . $conn->real_escape_string($_GET['scan_id']) . "'";
+    }
+
+    // If no specific scan requested, get latest scan_id
+    if ($scan_filter === '') {
+        $latest_res = $conn->query("SELECT scan_id FROM cw_scan_log ORDER BY created_at DESC LIMIT 1");
+        if ($latest_res && $latest_row = $latest_res->fetch_assoc()) {
+            $scan_filter = " AND scan_id = '" . $conn->real_escape_string($latest_row['scan_id']) . "'";
+        }
+    }
+
+    $sql = "SELECT * FROM cw_scan_log WHERE 1=1 $scan_filter ORDER BY score DESC LIMIT $limit";
+    $res = $conn->query($sql);
+    if (!$res) { _cw_err('Query failed'); }
+
+    $rows = array();
+    while ($row = $res->fetch_assoc()) {
+        $row['factors_json'] = json_decode($row['factors_json'], true);
+        $rows[] = $row;
+    }
+
+    // Recent scans for navigation
+    $scans_res = $conn->query("SELECT scan_id, MIN(created_at) as created_at, COUNT(*) as analyzed,
+            SUM(CASE WHEN score >= 70 THEN 1 ELSE 0 END) as winners
+        FROM cw_scan_log GROUP BY scan_id ORDER BY created_at DESC LIMIT 20");
+    $recent_scans = array();
+    if ($scans_res) {
+        while ($s = $scans_res->fetch_assoc()) {
+            $recent_scans[] = $s;
+        }
+    }
+
+    echo json_encode(array(
+        'ok' => true,
+        'count' => count($rows),
+        'log' => $rows,
+        'recent_scans' => $recent_scans
     ));
 }
 
@@ -629,6 +824,32 @@ function _cw_calc_macd($closes) {
     );
 }
 
+// Average True Range — measures volatility from candle high/low/close
+function _cw_calc_atr($candles_1h, $period = 14) {
+    $n = count($candles_1h);
+    if ($n < 2) return 0;
+
+    $trs = array();
+    for ($i = 1; $i < $n; $i++) {
+        $high = floatval($candles_1h[$i]['h']);
+        $low  = floatval($candles_1h[$i]['l']);
+        $prev_close = floatval($candles_1h[$i - 1]['c']);
+        $tr = max($high - $low, abs($high - $prev_close), abs($low - $prev_close));
+        $trs[] = $tr;
+    }
+
+    $cnt = count($trs);
+    if ($cnt < $period) {
+        return ($cnt > 0) ? array_sum($trs) / $cnt : 0;
+    }
+    // Simple average of last $period TRs
+    $sum = 0;
+    for ($i = $cnt - $period; $i < $cnt; $i++) {
+        $sum += $trs[$i];
+    }
+    return $sum / $period;
+}
+
 function _cw_check_higher_highs($closes) {
     $n = count($closes);
     $hh = 0;
@@ -681,6 +902,96 @@ function _cw_summarize_factors($factors) {
     return implode(' ', $parts);
 }
 
+// Binomial significance test: is observed win rate significantly better than null hypothesis (e.g. 50%)?
+// Uses normal approximation to binomial (valid when n*p >= 5 and n*(1-p) >= 5)
+// Returns: confidence level, p-value approximation, required sample size for significance
+function _cw_binomial_significance($wins, $total, $null_p) {
+    if ($total < 1) {
+        return array(
+            'is_significant' => false,
+            'confidence' => 'insufficient_data',
+            'p_value' => null,
+            'z_score' => null,
+            'sample_size' => $total,
+            'min_sample_needed' => 30,
+            'note' => 'Need at least 30 resolved signals for meaningful statistical analysis'
+        );
+    }
+
+    $observed_p = $wins / $total;
+    $se = sqrt($null_p * (1 - $null_p) / $total);
+
+    if ($se == 0) {
+        return array(
+            'is_significant' => false,
+            'confidence' => 'error',
+            'p_value' => null,
+            'z_score' => null,
+            'sample_size' => $total,
+            'min_sample_needed' => 30,
+            'note' => 'Standard error is zero'
+        );
+    }
+
+    $z = ($observed_p - $null_p) / $se;
+
+    // Approximate p-value using z-score (one-tailed: is win rate BETTER than null?)
+    // PHP 5.2 doesn't have stats functions, so we approximate
+    $abs_z = abs($z);
+    if ($abs_z >= 3.29) $p_value = 0.0005;
+    elseif ($abs_z >= 2.58) $p_value = 0.005;
+    elseif ($abs_z >= 2.33) $p_value = 0.01;
+    elseif ($abs_z >= 1.96) $p_value = 0.025;
+    elseif ($abs_z >= 1.65) $p_value = 0.05;
+    elseif ($abs_z >= 1.28) $p_value = 0.10;
+    else $p_value = 0.5;
+
+    // For negative z (worse than null), p-value is 1 - above
+    if ($z < 0) $p_value = 1 - $p_value;
+
+    $is_sig = ($z > 0 && $p_value < 0.05);
+    $confidence = 'not_significant';
+    if ($total < 30) $confidence = 'insufficient_data';
+    elseif ($is_sig && $p_value < 0.01) $confidence = 'highly_significant';
+    elseif ($is_sig) $confidence = 'significant';
+    elseif ($z > 0) $confidence = 'trending_positive';
+    else $confidence = 'not_significant';
+
+    // Wilson confidence interval for win rate
+    $z95 = 1.96;
+    $denom = 1 + $z95 * $z95 / $total;
+    $center = ($observed_p + $z95 * $z95 / (2 * $total)) / $denom;
+    $margin = $z95 * sqrt(($observed_p * (1 - $observed_p) + $z95 * $z95 / (4 * $total)) / $total) / $denom;
+    $ci_low = round(max(0, ($center - $margin)) * 100, 1);
+    $ci_high = round(min(1, ($center + $margin)) * 100, 1);
+
+    // Minimum sample size needed for current win rate to be significant at p<0.05
+    $min_needed = 30;
+    if ($observed_p > $null_p && $observed_p < 1) {
+        $effect = $observed_p - $null_p;
+        $var = $null_p * (1 - $null_p);
+        // n = (z_alpha * sqrt(var) / effect)^2
+        $min_needed = max(30, (int)ceil(pow(1.65 * sqrt($var) / $effect, 2)));
+    }
+
+    return array(
+        'is_significant' => $is_sig,
+        'confidence' => $confidence,
+        'p_value' => round($p_value, 4),
+        'z_score' => round($z, 2),
+        'observed_win_rate' => round($observed_p * 100, 1),
+        'null_hypothesis' => round($null_p * 100, 1),
+        'sample_size' => $total,
+        'min_sample_needed' => $min_needed,
+        'confidence_interval' => array('low' => $ci_low, 'high' => $ci_high),
+        'note' => $total < 30
+            ? 'Need at least 30 resolved signals. Currently have ' . $total . '.'
+            : ($is_sig
+                ? 'Win rate is statistically better than coin flip (p<' . ($p_value < 0.01 ? '0.01' : '0.05') . ')'
+                : 'Win rate is NOT yet statistically distinguishable from coin flip. More data needed.')
+    );
+}
+
 function _cw_ends_with($str, $suffix) {
     $len = strlen($suffix);
     return substr($str, -$len) === $suffix;
@@ -694,6 +1005,64 @@ function _cw_sort_by_change($a, $b) {
 function _cw_sort_by_score($a, $b) {
     if ($b['score'] == $a['score']) return 0;
     return ($b['score'] > $a['score']) ? 1 : -1;
+}
+
+// Send Discord webhook alert for new winners
+function _cw_discord_alert($winners, $scan_id, $analyzed, $elapsed) {
+    // Read webhook URL from .env file
+    $env_file = dirname(__FILE__) . '/../../favcreators/public/api/.env';
+    $webhook_url = '';
+    if (file_exists($env_file)) {
+        $lines = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            if (strpos($line, 'DISCORD_WEBHOOK_URL=') === 0) {
+                $webhook_url = trim(substr($line, 20));
+                break;
+            }
+        }
+    }
+    if (!$webhook_url) return;
+
+    // Build message
+    $strong = 0;
+    $buy = 0;
+    $lean = 0;
+    $lines = array();
+    foreach (array_slice($winners, 0, 8) as $w) {
+        $pair = str_replace('_USDT', '/USDT', $w['pair']);
+        $emoji = '';
+        if ($w['verdict'] === 'STRONG_BUY') { $emoji = '🟢'; $strong++; }
+        elseif ($w['verdict'] === 'BUY') { $emoji = '🔵'; $buy++; }
+        else { $emoji = '🟡'; $lean++; }
+        $lines[] = $emoji . ' **' . $pair . '** — Score: ' . $w['score'] . ' (' . $w['verdict'] . ') | Target: +' . $w['target_pct'] . '% | 24h: +' . round($w['chg_24h'], 1) . '%';
+    }
+    if (count($winners) > 8) {
+        $lines[] = '... and ' . (count($winners) - 8) . ' more';
+    }
+
+    $title = '🔍 Crypto Scanner: ' . count($winners) . ' winner' . (count($winners) > 1 ? 's' : '') . ' found';
+    $description = implode("\n", $lines);
+    $footer = 'Scan #' . $scan_id . ' | ' . $analyzed . ' analyzed in ' . $elapsed . 's';
+
+    $embed = array(
+        'title' => $title,
+        'description' => $description,
+        'color' => ($strong > 0) ? 3066993 : (($buy > 0) ? 3447003 : 16776960),
+        'footer' => array('text' => $footer),
+        'url' => 'https://findtorontoevents.ca/findcryptopairs/winners.html'
+    );
+
+    $payload = json_encode(array('embeds' => array($embed)));
+
+    $ch = curl_init($webhook_url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_exec($ch);
+    curl_close($ch);
 }
 
 function _cw_err($msg) {
@@ -725,5 +1094,23 @@ function _cw_ensure_schema($conn) {
         INDEX idx_outcome (outcome),
         INDEX idx_created (created_at)
     ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+    $conn->query("CREATE TABLE IF NOT EXISTS cw_scan_log (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        scan_id VARCHAR(20) NOT NULL,
+        pair VARCHAR(30) NOT NULL,
+        price DOUBLE NOT NULL,
+        score INT NOT NULL DEFAULT 0,
+        factors_json TEXT,
+        verdict VARCHAR(20) NOT NULL DEFAULT 'SKIP',
+        chg_24h DOUBLE DEFAULT 0,
+        vol_usd_24h DOUBLE DEFAULT 0,
+        created_at DATETIME NOT NULL,
+        INDEX idx_scan_log_scan (scan_id),
+        INDEX idx_scan_log_created (created_at)
+    ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+    // Purge scan_log entries older than 7 days to keep table size manageable
+    $conn->query("DELETE FROM cw_scan_log WHERE created_at < DATE_SUB(NOW(), INTERVAL 7 DAY)");
 }
 ?>

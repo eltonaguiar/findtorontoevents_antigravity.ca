@@ -1,0 +1,80 @@
+name: Meme Coin Scanner — Auto Scan & Resolve
+
+on:
+  schedule:
+    # Scan every 10 minutes (memes move fast)
+    - cron: '*/10 * * * *'
+    # Resolve past signals every 3 hours (2h window + buffer)
+    - cron: '0 */3 * * *'
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  meme-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    # Step 1: Scan meme coins
+    - name: Scan meme coins
+      continue-on-error: true
+      run: |
+        echo "=== Scanning meme coins (Tier 1 + Tier 2 discovery) ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php?action=scan&key=memescan2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            print(f'Tier 1 found: {d.get(\"tier1_found\",0)}/7')
+            print(f'Tier 2 discovered: {d.get(\"tier2_found\",0)}')
+            print(f'Deep analyzed: {d.get(\"deep_analyzed\",0)}')
+            print(f'Winners found: {d.get(\"winners_found\",0)}')
+            print(f'Elapsed: {d.get(\"elapsed_sec\",0)}s')
+            for w in d.get('winners', [])[:5]:
+                pair = w.get('pair','?').replace('_USDT','/USDT')
+                print(f'  {pair:12s} Score:{w.get(\"score\",0)} Tier:{w.get(\"tier\",\"?\")} {w.get(\"verdict\",\"?\")}')
+        else:
+            print(f'Error: {d.get(\"error\",\"unknown\")}')
+        " || echo "Scan: $RESULT"
+
+    # Step 2: Resolve past signals (runs on the 3-hourly schedule)
+    - name: Resolve past signals
+      continue-on-error: true
+      if: github.event.schedule == '0 */3 * * *' || github.event_name == 'workflow_dispatch'
+      run: |
+        echo "=== Resolving meme signals (2h window) ==="
+        RESULT=$(curl -s --max-time 45 "https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php?action=resolve&key=memescan2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            print(f'Resolved: {d.get(\"resolved\",0)} signals')
+            print(f'Wins: {d.get(\"wins\",0)} | Losses: {d.get(\"losses\",0)} | Win Rate: {d.get(\"win_rate\",0)}%')
+            for det in d.get('details', [])[:5]:
+                print(f'  {det.get(\"pair\",\"?\"):12s} PnL:{det.get(\"pnl_pct\",0):+.2f}% {det.get(\"outcome\",\"?\")}')
+        else:
+            print(f'Resolve: {d.get(\"error\",\"no signals to resolve\")}')
+        " || echo "Resolve: $RESULT"
+
+    # Step 3: Record daily snapshot
+    - name: Record daily snapshot
+      continue-on-error: true
+      run: |
+        curl -s --max-time 10 "https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php?action=snapshot&key=memescan2026" > /dev/null 2>&1 || true
+
+    # Step 4: Print stats
+    - name: Print stats
+      continue-on-error: true
+      run: |
+        echo "=== Meme Scanner Stats ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php?action=stats") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            s = d.get('stats', {})
+            print(f'Total Signals: {s.get(\"total_signals\",0)}')
+            print(f'Win Rate: {s.get(\"overall_win_rate\",\"--\")}%')
+            print(f'Avg PnL: {s.get(\"avg_pnl\",\"--\")}%')
+            print(f'Unique Pairs: {s.get(\"unique_pairs\",0)}')
+            print(f'Scans Run: {s.get(\"total_scans\",0)}')
+        " || echo "Stats: $RESULT"
