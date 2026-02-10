@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winning Trade Patterns | Live Trading Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --orange: #f97316;
+            --purple: #a855f7;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem 1rem;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--green), var(--accent), var(--blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.3rem;
+        }
+        .header p { color: var(--text-dim); font-size: 0.95rem; }
+        .header-links {
+            margin-top: 0.8rem;
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-wrap: wrap;
+        }
+        .header-links a { color: var(--text-dim); }
+        .header-links a:hover { color: var(--text); }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+        /* Filter bar */
+        .filter-bar {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+        .filter-bar label { color: var(--text-dim); font-size: 0.85rem; }
+        .filter-bar select, .filter-bar input {
+            background: var(--bg-dark);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+        .filter-bar button {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 0.4rem 1.2rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .filter-bar button:hover { opacity: 0.9; }
+
+        /* Summary cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .summary-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem 1.2rem;
+            text-align: center;
+        }
+        .summary-card .label { color: var(--text-dim); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .summary-card .value { font-size: 1.8rem; font-weight: 700; margin: 0.3rem 0; }
+        .summary-card .sub { font-size: 0.75rem; color: var(--text-dim); }
+        .value.green { color: var(--green); }
+        .value.red { color: var(--red); }
+        .value.yellow { color: var(--yellow); }
+        .value.blue { color: var(--blue); }
+        .value.purple { color: var(--purple); }
+
+        /* Insights banner */
+        .insights {
+            background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(34,197,94,0.1));
+            border: 1px solid var(--accent);
+            border-radius: var(--radius);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .insights h3 { color: var(--accent); font-size: 1rem; margin-bottom: 0.5rem; }
+        .insights ul { list-style: none; }
+        .insights li {
+            padding: 0.3rem 0;
+            padding-left: 1.2rem;
+            position: relative;
+            font-size: 0.9rem;
+        }
+        .insights li::before {
+            content: '\2022';
+            color: var(--green);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        /* Section */
+        .section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .section h2 .icon { font-size: 1.3rem; }
+
+        /* Charts */
+        .chart-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .chart-box {
+            background: var(--bg-dark);
+            border-radius: 8px;
+            padding: 1rem;
+            position: relative;
+            min-height: 280px;
+        }
+        .chart-box h3 { font-size: 0.9rem; color: var(--text-dim); margin-bottom: 0.5rem; }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .data-table th {
+            text-align: left;
+            padding: 0.6rem 0.8rem;
+            background: var(--bg-dark);
+            color: var(--text-dim);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+        .data-table td {
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid rgba(42,42,74,0.5);
+        }
+        .data-table tr:hover td { background: var(--bg-card-hover); }
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-green { background: var(--green-dim); color: var(--green); }
+        .badge-red { background: var(--red-dim); color: var(--red); }
+        .badge-yellow { background: var(--yellow-dim); color: var(--yellow); }
+        .badge-blue { background: rgba(59,130,246,0.15); color: var(--blue); }
+        .badge-purple { background: rgba(168,85,247,0.15); color: var(--purple); }
+
+        .loading { text-align: center; padding: 3rem; color: var(--text-dim); font-size: 1rem; }
+        .no-data { text-align: center; padding: 2rem; color: var(--text-dim); font-style: italic; }
+
+        /* Session bars */
+        .session-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.6rem;
+        }
+        .session-bar .session-name { width: 140px; font-size: 0.85rem; color: var(--text-dim); }
+        .session-bar .bar-bg {
+            flex: 1;
+            height: 24px;
+            background: var(--bg-dark);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        .session-bar .bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            padding: 0 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #fff;
+            min-width: 40px;
+        }
+        .session-bar .bar-stats { width: 100px; text-align: right; font-size: 0.8rem; color: var(--text-dim); }
+
+        @media (max-width: 768px) {
+            .chart-row { grid-template-columns: 1fr; }
+            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .container { padding: 1rem; }
+            .header h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Winning Trade Patterns</h1>
+        <p>Analyze when, where, and how trades win — find your edge in real-time markets</p>
+        <div class="header-links">
+            <a href="live-monitor.html">Live Monitor</a>
+            <a href="hour-learning.html">Hour Learning</a>
+            <a href="/investments/">All Investments</a>
+            <a href="/findstocks/portfolio2/picks.html">Stock Picks</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Filters -->
+        <div class="filter-bar">
+            <label>Asset Class:</label>
+            <select id="assetFilter">
+                <option value="">All</option>
+                <option value="CRYPTO">Crypto</option>
+                <option value="FOREX">Forex</option>
+                <option value="STOCK">Stocks</option>
+            </select>
+            <label>Period:</label>
+            <select id="daysFilter">
+                <option value="7">Last 7 Days</option>
+                <option value="14">Last 14 Days</option>
+                <option value="30" selected>Last 30 Days</option>
+                <option value="60">Last 60 Days</option>
+                <option value="90">Last 90 Days</option>
+                <option value="365">Last Year</option>
+            </select>
+            <button onclick="loadAll()">Apply</button>
+            <span id="lastUpdated" style="margin-left:auto; font-size:0.8rem; color:var(--text-dim)"></span>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-grid" id="summaryCards">
+            <div class="loading">Loading patterns...</div>
+        </div>
+
+        <!-- Insights -->
+        <div class="insights" id="insightsBox" style="display:none">
+            <h3>Key Insights</h3>
+            <ul id="insightsList"></ul>
+        </div>
+
+        <!-- Session Analysis -->
+        <div class="section">
+            <h2><span class="icon">&#x1F30D;</span> Market Session Performance</h2>
+            <div id="sessionBars"><div class="loading">Loading sessions...</div></div>
+        </div>
+
+        <!-- Charts: Hourly + Daily -->
+        <div class="chart-row">
+            <div class="chart-box">
+                <h3>Win Rate by Hour (EST)</h3>
+                <canvas id="hourlyChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <h3>Win Rate by Day of Week</h3>
+                <canvas id="dailyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Algorithm Rankings -->
+        <div class="section">
+            <h2><span class="icon">&#x1F3AF;</span> Algorithm Performance Rankings</h2>
+            <div style="overflow-x:auto">
+                <table class="data-table" id="algoTable">
+                    <thead>
+                        <tr>
+                            <th>Algorithm</th>
+                            <th>Trades</th>
+                            <th>Win Rate</th>
+                            <th>P&L</th>
+                            <th>Avg Return</th>
+                            <th>Profit Factor</th>
+                        </tr>
+                    </thead>
+                    <tbody id="algoBody"><tr><td colspan="6" class="loading">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Best Setups -->
+        <div class="section">
+            <h2><span class="icon">&#x2B50;</span> Top Winning Setups (Algorithm + Asset + Time)</h2>
+            <div style="overflow-x:auto">
+                <table class="data-table" id="setupsTable">
+                    <thead>
+                        <tr>
+                            <th>Setup</th>
+                            <th>Session</th>
+                            <th>Trades</th>
+                            <th>Win Rate</th>
+                            <th>P&L</th>
+                            <th>Avg Return</th>
+                        </tr>
+                    </thead>
+                    <tbody id="setupsBody"><tr><td colspan="6" class="loading">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Algorithm x Asset Matrix -->
+        <div class="section">
+            <h2><span class="icon">&#x1F4CA;</span> Algorithm x Asset Class Matrix</h2>
+            <div style="overflow-x:auto">
+                <table class="data-table" id="matrixTable">
+                    <thead>
+                        <tr>
+                            <th>Algorithm</th>
+                            <th>Asset</th>
+                            <th>Trades</th>
+                            <th>Wins</th>
+                            <th>Win Rate</th>
+                            <th>P&L</th>
+                            <th>Best Trade</th>
+                            <th>Worst Trade</th>
+                        </tr>
+                    </thead>
+                    <tbody id="matrixBody"><tr><td colspan="8" class="loading">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Top Symbols -->
+        <div class="section">
+            <h2><span class="icon">&#x1F4B0;</span> Most Profitable Symbols</h2>
+            <div style="overflow-x:auto">
+                <table class="data-table" id="symbolsTable">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Asset</th>
+                            <th>Trades</th>
+                            <th>Win Rate</th>
+                            <th>P&L</th>
+                            <th>Avg Return</th>
+                        </tr>
+                    </thead>
+                    <tbody id="symbolsBody"><tr><td colspan="6" class="loading">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Streak Analysis -->
+        <div class="section">
+            <h2><span class="icon">&#x1F525;</span> Streak &amp; Recovery Patterns</h2>
+            <div class="summary-grid" id="streakCards"><div class="loading">Loading streaks...</div></div>
+            <div style="margin-top:1rem">
+                <h3 style="font-size:0.95rem; margin-bottom:0.8rem; color:var(--text-dim)">Exit Reason Breakdown</h3>
+                <div style="overflow-x:auto">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Exit Reason</th><th>Trades</th><th>Win Rate</th><th>Avg Return</th><th>P&L</th></tr>
+                        </thead>
+                        <tbody id="exitBody"><tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+var API_BASE = window.location.hostname === 'localhost' ? 'api' : '/live-monitor/api';
+var hourlyChart = null, dailyChart = null;
+
+function apiGet(endpoint, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API_BASE + '/' + endpoint, true);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try { cb(JSON.parse(xhr.responseText)); } catch(e) { cb({ok:false, error:'Parse error'}); }
+        } else { cb({ok:false, error:'HTTP ' + xhr.status}); }
+    };
+    xhr.onerror = function() { cb({ok:false, error:'Network error'}); };
+    xhr.send();
+}
+
+function getParams() {
+    var asset = document.getElementById('assetFilter').value;
+    var days = document.getElementById('daysFilter').value;
+    var params = 'days=' + days;
+    if (asset) params += '&asset=' + asset;
+    return params;
+}
+
+function pnlColor(val) { return val > 0 ? 'green' : val < 0 ? 'red' : ''; }
+function wrBadge(wr) {
+    if (wr >= 60) return '<span class="badge badge-green">' + wr + '%</span>';
+    if (wr >= 45) return '<span class="badge badge-yellow">' + wr + '%</span>';
+    return '<span class="badge badge-red">' + wr + '%</span>';
+}
+function pnlBadge(val) {
+    var cls = val > 0 ? 'badge-green' : val < 0 ? 'badge-red' : 'badge-yellow';
+    return '<span class="badge ' + cls + '">$' + val.toFixed(2) + '</span>';
+}
+
+function loadAll() {
+    loadOverview();
+    loadTimeAnalysis();
+    loadAlgorithms();
+    loadSetups();
+    loadSessions();
+    loadStreaks();
+}
+
+function loadOverview() {
+    apiGet('winning_patterns.php?action=overview&' + getParams(), function(d) {
+        if (!d.ok) { document.getElementById('summaryCards').innerHTML = '<div class="no-data">No data available</div>'; return; }
+        var wr_cls = d.win_rate >= 55 ? 'green' : d.win_rate >= 45 ? 'yellow' : 'red';
+        var pnl_cls = d.total_pnl > 0 ? 'green' : 'red';
+        var pf_cls = d.profit_factor >= 1.5 ? 'green' : d.profit_factor >= 1 ? 'yellow' : 'red';
+        document.getElementById('summaryCards').innerHTML =
+            '<div class="summary-card"><div class="label">Total Trades</div><div class="value blue">' + d.total_trades + '</div><div class="sub">' + d.wins + 'W / ' + d.losses + 'L</div></div>' +
+            '<div class="summary-card"><div class="label">Win Rate</div><div class="value ' + wr_cls + '">' + d.win_rate + '%</div><div class="sub">Avg Win: ' + (d.avg_win_pct||0) + '% / Avg Loss: ' + (d.avg_loss_pct||0) + '%</div></div>' +
+            '<div class="summary-card"><div class="label">Total P&L</div><div class="value ' + pnl_cls + '">$' + d.total_pnl.toFixed(2) + '</div><div class="sub">$' + (d.avg_pnl_per_trade||0).toFixed(2) + ' per trade</div></div>' +
+            '<div class="summary-card"><div class="label">Profit Factor</div><div class="value ' + pf_cls + '">' + d.profit_factor + '</div><div class="sub">Avg Hold: ' + (d.avg_hold_hours||0) + 'h</div></div>' +
+            '<div class="summary-card"><div class="label">Best Algorithm</div><div class="value purple" style="font-size:1rem">' + (d.best_algorithm.name||'N/A') + '</div><div class="sub">' + (d.best_algorithm.win_rate||0) + '% WR (' + (d.best_algorithm.trades||0) + ' trades)</div></div>' +
+            '<div class="summary-card"><div class="label">Best Hour</div><div class="value blue" style="font-size:1rem">' + (d.best_hour.label||'N/A') + '</div><div class="sub">' + (d.best_hour.win_rate||0) + '% WR (' + (d.best_hour.trades||0) + ' trades)</div></div>' +
+            '<div class="summary-card"><div class="label">Best Asset</div><div class="value green" style="font-size:1rem">' + (d.best_asset_class.class||'N/A') + '</div><div class="sub">' + (d.best_asset_class.win_rate||0) + '% WR ($' + (d.best_asset_class.pnl||0) + ')</div></div>';
+        document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+    });
+
+    // Load insights from full report
+    apiGet('winning_patterns.php?action=full_report&' + getParams(), function(d) {
+        if (!d.ok || !d.insights || d.insights.length === 0) { document.getElementById('insightsBox').style.display = 'none'; return; }
+        document.getElementById('insightsBox').style.display = 'block';
+        var html = '';
+        for (var i = 0; i < d.insights.length; i++) {
+            html += '<li>' + d.insights[i] + '</li>';
+        }
+        document.getElementById('insightsList').innerHTML = html;
+    });
+}
+
+function loadTimeAnalysis() {
+    apiGet('winning_patterns.php?action=time_analysis&' + getParams(), function(d) {
+        if (!d.ok) return;
+
+        // Hourly chart
+        var hourLabels = [], hourWR = [], hourPnl = [], hourColors = [];
+        // Sort by EST hour
+        var sorted = (d.hourly || []).slice().sort(function(a,b) { return a.hour_est - b.hour_est; });
+        for (var i = 0; i < sorted.length; i++) {
+            var h = sorted[i];
+            hourLabels.push(h.label);
+            hourWR.push(h.win_rate);
+            hourPnl.push(h.pnl);
+            hourColors.push(h.win_rate >= 55 ? 'rgba(34,197,94,0.7)' : h.win_rate >= 45 ? 'rgba(234,179,8,0.7)' : 'rgba(239,68,68,0.7)');
+        }
+
+        if (hourlyChart) hourlyChart.destroy();
+        hourlyChart = new Chart(document.getElementById('hourlyChart'), {
+            type: 'bar',
+            data: {
+                labels: hourLabels,
+                datasets: [{
+                    label: 'Win Rate %',
+                    data: hourWR,
+                    backgroundColor: hourColors,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, max: 100, ticks: { color: '#8888aa' }, grid: { color: 'rgba(42,42,74,0.5)' } },
+                    x: { ticks: { color: '#8888aa', font: { size: 10 } }, grid: { display: false } }
+                }
+            }
+        });
+
+        // Daily chart
+        var dayLabels = [], dayWR = [], dayColors = [];
+        for (var j = 0; j < (d.daily || []).length; j++) {
+            var dy = d.daily[j];
+            dayLabels.push(dy.day);
+            dayWR.push(dy.win_rate);
+            dayColors.push(dy.win_rate >= 55 ? 'rgba(34,197,94,0.7)' : dy.win_rate >= 45 ? 'rgba(234,179,8,0.7)' : 'rgba(239,68,68,0.7)');
+        }
+
+        if (dailyChart) dailyChart.destroy();
+        dailyChart = new Chart(document.getElementById('dailyChart'), {
+            type: 'bar',
+            data: {
+                labels: dayLabels,
+                datasets: [{
+                    label: 'Win Rate %',
+                    data: dayWR,
+                    backgroundColor: dayColors,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, max: 100, ticks: { color: '#8888aa' }, grid: { color: 'rgba(42,42,74,0.5)' } },
+                    x: { ticks: { color: '#8888aa' }, grid: { display: false } }
+                }
+            }
+        });
+    });
+}
+
+function loadSessions() {
+    apiGet('winning_patterns.php?action=session_analysis&' + getParams(), function(d) {
+        if (!d.ok || !d.sessions) { document.getElementById('sessionBars').innerHTML = '<div class="no-data">No session data</div>'; return; }
+        var html = '';
+        var sessionColors = {
+            'asia_pre': '#a855f7',
+            'europe': '#3b82f6',
+            'us_morning': '#22c55e',
+            'us_afternoon': '#eab308',
+            'us_after_hours': '#f97316',
+            'asia_evening': '#ec4899'
+        };
+        for (var i = 0; i < d.sessions.length; i++) {
+            var s = d.sessions[i];
+            if (s.trades === 0) continue;
+            var color = sessionColors[s.key] || '#6366f1';
+            var barWidth = Math.max(5, s.win_rate);
+            html += '<div class="session-bar">' +
+                '<span class="session-name">' + s.name + '</span>' +
+                '<div class="bar-bg"><div class="bar-fill" style="width:' + barWidth + '%;background:' + color + '">' + s.win_rate + '%</div></div>' +
+                '<span class="bar-stats">' + s.trades + ' trades / $' + s.pnl.toFixed(0) + '</span>' +
+                '</div>';
+        }
+        document.getElementById('sessionBars').innerHTML = html || '<div class="no-data">No closed trades yet</div>';
+    });
+}
+
+function loadAlgorithms() {
+    apiGet('winning_patterns.php?action=algorithm_matrix&' + getParams(), function(d) {
+        if (!d.ok || !d.rankings || d.rankings.length === 0) {
+            document.getElementById('algoBody').innerHTML = '<tr><td colspan="6" class="no-data">No algorithm data</td></tr>';
+            return;
+        }
+        var html = '';
+        for (var i = 0; i < d.rankings.length; i++) {
+            var a = d.rankings[i];
+            html += '<tr>' +
+                '<td><strong>' + a.algorithm + '</strong></td>' +
+                '<td>' + a.trades + '</td>' +
+                '<td>' + wrBadge(a.win_rate) + '</td>' +
+                '<td>' + pnlBadge(a.pnl) + '</td>' +
+                '<td>' + a.avg_return + '%</td>' +
+                '<td>' + (a.profit_factor > 0 ? a.profit_factor.toFixed(2) : '-') + '</td>' +
+                '</tr>';
+        }
+        document.getElementById('algoBody').innerHTML = html;
+
+        // Matrix
+        if (d.matrix && d.matrix.length > 0) {
+            html = '';
+            for (var j = 0; j < d.matrix.length; j++) {
+                var m = d.matrix[j];
+                html += '<tr>' +
+                    '<td>' + m.algorithm + '</td>' +
+                    '<td><span class="badge badge-blue">' + m.asset_class + '</span></td>' +
+                    '<td>' + m.trades + '</td>' +
+                    '<td>' + m.wins + '</td>' +
+                    '<td>' + wrBadge(m.win_rate) + '</td>' +
+                    '<td>' + pnlBadge(m.pnl) + '</td>' +
+                    '<td style="color:var(--green)">' + m.best_trade + '%</td>' +
+                    '<td style="color:var(--red)">' + m.worst_trade + '%</td>' +
+                    '</tr>';
+            }
+            document.getElementById('matrixBody').innerHTML = html;
+        }
+    });
+}
+
+function loadSetups() {
+    apiGet('winning_patterns.php?action=best_setups&' + getParams(), function(d) {
+        if (!d.ok) return;
+
+        // Top setups
+        if (d.top_setups && d.top_setups.length > 0) {
+            var html = '';
+            for (var i = 0; i < d.top_setups.length; i++) {
+                var s = d.top_setups[i];
+                html += '<tr>' +
+                    '<td><strong>' + s.algorithm + '</strong> on <span class="badge badge-blue">' + s.asset_class + '</span> @ ' + s.hour_est + ':00 EST</td>' +
+                    '<td><span class="badge badge-purple">' + s.session + '</span></td>' +
+                    '<td>' + s.trades + '</td>' +
+                    '<td>' + wrBadge(s.win_rate) + '</td>' +
+                    '<td>' + pnlBadge(s.pnl) + '</td>' +
+                    '<td>' + s.avg_return + '%</td>' +
+                    '</tr>';
+            }
+            document.getElementById('setupsBody').innerHTML = html;
+        } else {
+            document.getElementById('setupsBody').innerHTML = '<tr><td colspan="6" class="no-data">No setups with 2+ trades yet</td></tr>';
+        }
+
+        // Top symbols
+        if (d.top_symbols && d.top_symbols.length > 0) {
+            var shtml = '';
+            for (var j = 0; j < d.top_symbols.length; j++) {
+                var sym = d.top_symbols[j];
+                shtml += '<tr>' +
+                    '<td><strong>' + sym.symbol + '</strong></td>' +
+                    '<td><span class="badge badge-blue">' + sym.asset_class + '</span></td>' +
+                    '<td>' + sym.trades + '</td>' +
+                    '<td>' + wrBadge(sym.win_rate) + '</td>' +
+                    '<td>' + pnlBadge(sym.pnl) + '</td>' +
+                    '<td>' + sym.avg_return + '%</td>' +
+                    '</tr>';
+            }
+            document.getElementById('symbolsBody').innerHTML = shtml;
+        }
+    });
+}
+
+function loadStreaks() {
+    apiGet('winning_patterns.php?action=streak_analysis&' + getParams(), function(d) {
+        if (!d.ok) { document.getElementById('streakCards').innerHTML = '<div class="no-data">No streak data</div>'; return; }
+
+        var rec = d.after_loss_recovery || {};
+        var rec_cls = (rec.recovery_rate || 0) >= 50 ? 'green' : 'red';
+
+        document.getElementById('streakCards').innerHTML =
+            '<div class="summary-card"><div class="label">Total Trades</div><div class="value blue">' + d.total_trades + '</div></div>' +
+            '<div class="summary-card"><div class="label">Best Win Streak</div><div class="value green">' + d.max_win_streak + '</div><div class="sub">consecutive wins</div></div>' +
+            '<div class="summary-card"><div class="label">Worst Loss Streak</div><div class="value red">' + d.max_loss_streak + '</div><div class="sub">consecutive losses</div></div>' +
+            '<div class="summary-card"><div class="label">Recovery Rate</div><div class="value ' + rec_cls + '">' + (rec.recovery_rate || 0) + '%</div><div class="sub">Win rate after loss (' + (rec.total || 0) + ' chances)</div></div>';
+
+        // Exit reasons
+        if (d.exit_reasons && d.exit_reasons.length > 0) {
+            var html = '';
+            for (var i = 0; i < d.exit_reasons.length; i++) {
+                var er = d.exit_reasons[i];
+                var reason_badge = 'badge-yellow';
+                if (er.reason === 'take_profit' || er.reason === 'tp_hit') reason_badge = 'badge-green';
+                else if (er.reason === 'stop_loss' || er.reason === 'sl_hit') reason_badge = 'badge-red';
+                else if (er.reason === 'max_hold') reason_badge = 'badge-yellow';
+                html += '<tr>' +
+                    '<td><span class="badge ' + reason_badge + '">' + er.reason + '</span></td>' +
+                    '<td>' + er.trades + '</td>' +
+                    '<td>' + wrBadge(er.win_rate) + '</td>' +
+                    '<td>' + er.avg_return + '%</td>' +
+                    '<td>' + pnlBadge(er.pnl) + '</td>' +
+                    '</tr>';
+            }
+            document.getElementById('exitBody').innerHTML = html;
+        }
+    });
+}
+
+// Load on start
+loadAll();
+</script>
+</body>
+</html>
