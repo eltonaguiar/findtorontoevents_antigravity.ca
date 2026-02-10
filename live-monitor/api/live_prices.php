@@ -134,6 +134,10 @@ function _lp_action_fetch($conn, $admin_key, $crypto_symbols, $forex_symbols, $s
             if ($kd['spread_pct'] > 0) $batch_data[$sym]['spread_pct'] = $kd['spread_pct'];
             if ($kd['high_24h'] > 0) $batch_data[$sym]['high_24h'] = $kd['high_24h'];
             if ($kd['low_24h'] > 0) $batch_data[$sym]['low_24h'] = $kd['low_24h'];
+            // Enrich volume if primary source didn't have it
+            if ($kd['volume_24h'] > 0 && $batch_data[$sym]['volume_24h'] <= 0) {
+                $batch_data[$sym]['volume_24h'] = $kd['volume_24h'];
+            }
             // Add Kraken VWAP + trade count as extra metadata in data_source
             $src = $batch_data[$sym]['data_source'];
             if (isset($kd['vwap'])) {
