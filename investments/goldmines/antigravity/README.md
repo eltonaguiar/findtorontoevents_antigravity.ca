@@ -22,7 +22,17 @@ Interactive dashboard showing real-time performance across all 7 prediction syst
 
 ---
 
-### 2. [GOLDMINE_ANTIGRAVITY.md](GOLDMINE_ANTIGRAVITY.md) - Master Reference
+### 2. [leaderboard.html](leaderboard.html) - Algorithm Leaderboard ⭐ NEW
+Interactive leaderboard ranking all algorithms by Sharpe ratio:
+- **Leaderboard Tab**: Top performers ranked by risk-adjusted returns
+- **Hidden Winners Tab**: Elite algorithms (Sharpe ≥ 1.0, 30+ trades)
+- **By System Tab**: Performance breakdown by asset class
+
+**Access**: `/investments/goldmines/antigravity/leaderboard.html`
+
+---
+
+### 3. [GOLDMINE_ANTIGRAVITY.md](GOLDMINE_ANTIGRAVITY.md) - Master Reference
 Comprehensive consolidation document containing:
 - Complete 7-system analysis
 - Professional algo-trader standards (Sharpe ratio, drawdown, correlation)
