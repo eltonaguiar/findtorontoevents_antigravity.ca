@@ -156,3 +156,18 @@ jobs:
         else:
             print(f'Apply: {d.get(\"error\",\"nothing to apply\")}')
         " || echo "Apply: $RESULT"
+
+    - name: Winning patterns analysis
+      continue-on-error: true
+      run: |
+        echo "=== Analyzing winning trade patterns ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/winning_patterns.php?action=full_report&days=30") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            ov = d.get('overview', {})
+            print(f'Trades: {ov.get(\"total_trades\",0)} | Win Rate: {ov.get(\"win_rate\",0)}% | PnL: \${ov.get(\"total_pnl\",0):.2f}')
+            for insight in d.get('insights', []):
+                print(f'  > {insight}')
+        " || echo "Patterns: $RESULT"
