@@ -1,7 +1,9 @@
 # Live scan with debug
+$cryptoKey = [Environment]::GetEnvironmentVariable('CRYPTO_SCAN_KEY','User')
+if (-not $cryptoKey) { Write-Host "ERROR: Set CRYPTO_SCAN_KEY env var"; exit 1 }
 Write-Host "=== LIVE SCAN v2 ==="
 try {
-    $r = Invoke-RestMethod -Uri 'https://findtorontoevents.ca/findcryptopairs/api/crypto_winners.php?action=scan&key=cryptoscan2026' -TimeoutSec 120
+    $r = Invoke-RestMethod -Uri "https://findtorontoevents.ca/findcryptopairs/api/crypto_winners.php?action=scan&key=$cryptoKey" -TimeoutSec 120
     if ($r.ok) {
         Write-Host ("USDT pairs: " + $r.total_pairs + " | Candidates: " + $r.candidates_filtered + " | Analyzed: " + $r.deep_analyzed + " | Winners: " + $r.winners_found + " | Time: " + $r.elapsed_sec + "s")
         Write-Host ""

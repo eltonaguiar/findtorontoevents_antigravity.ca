@@ -1,5 +1,7 @@
 # Trigger the live monitor workflow NOW
 $pat = [Environment]::GetEnvironmentVariable('GIT_HUB_PAT_GODMODE','User')
+$lmKey = [Environment]::GetEnvironmentVariable('LIVE_TRADER_KEY','User')
+if (-not $lmKey) { Write-Host "ERROR: Set LIVE_TRADER_KEY env var"; exit 1 }
 $h = @{ Authorization = 'token ' + $pat; Accept = 'application/vnd.github.v3+json'; 'Content-Type' = 'application/json' }
 
 Write-Host "=== Triggering live-monitor-refresh workflow ==="
@@ -14,7 +16,7 @@ try {
 # Also run a manual scan right now to generate fresh signals
 Write-Host "`n=== Running manual scan NOW ==="
 try {
-    $r = Invoke-RestMethod -Uri 'https://findtorontoevents.ca/live-monitor/api/live_signals.php?action=scan&key=livetrader2026' -TimeoutSec 120
+    $r = Invoke-RestMethod -Uri "https://findtorontoevents.ca/live-monitor/api/live_signals.php?action=scan&key=$lmKey" -TimeoutSec 120
     Write-Host ("Signals generated: " + $r.count)
     Write-Host ("Symbols scanned: " + $r.symbols_scanned)
     foreach ($s in $r.signals) {
@@ -27,7 +29,7 @@ try {
 # Track existing positions (auto-close if SL/TP hit)
 Write-Host "`n=== Tracking positions ==="
 try {
-    $r = Invoke-RestMethod -Uri 'https://findtorontoevents.ca/live-monitor/api/live_trade.php?action=track&key=livetrader2026' -TimeoutSec 30
+    $r = Invoke-RestMethod -Uri "https://findtorontoevents.ca/live-monitor/api/live_trade.php?action=track&key=$lmKey" -TimeoutSec 30
     Write-Host ("Tracked: " + $r.tracked + " | Auto-closed: " + $r.closed)
     if ($r.closed_details) {
         foreach ($c in $r.closed_details) {

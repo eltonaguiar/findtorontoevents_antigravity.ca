@@ -1,4 +1,6 @@
 # Verify disclaimers and run scan
+$lmKey = [Environment]::GetEnvironmentVariable('LIVE_TRADER_KEY','User')
+if (-not $lmKey) { Write-Host "ERROR: Set LIVE_TRADER_KEY env var"; exit 1 }
 Write-Host "=== Verify Disclaimers ==="
 try {
     $r = Invoke-WebRequest -Uri 'https://findtorontoevents.ca/findstocks/portfolio2/dividends.html' -TimeoutSec 15 -UseBasicParsing
@@ -13,7 +15,7 @@ try {
 # Run a fresh scan + track
 Write-Host "`n=== Running fresh scan ==="
 try {
-    $r = Invoke-RestMethod -Uri 'https://findtorontoevents.ca/live-monitor/api/live_signals.php?action=scan&key=livetrader2026' -TimeoutSec 120
+    $r = Invoke-RestMethod -Uri "https://findtorontoevents.ca/live-monitor/api/live_signals.php?action=scan&key=$lmKey" -TimeoutSec 120
     Write-Host ("Signals: " + $r.signals_generated + " | Scanned: " + $r.symbols_scanned)
     foreach ($s in $r.signals) {
         Write-Host ('  ' + $s.symbol + ' | ' + $s.algorithm_name + ' | ' + $s.signal_type + ' | str=' + $s.signal_strength)
@@ -22,7 +24,7 @@ try {
 
 Write-Host "`n=== Tracking positions ==="
 try {
-    $r = Invoke-RestMethod -Uri 'https://findtorontoevents.ca/live-monitor/api/live_trade.php?action=track&key=livetrader2026' -TimeoutSec 30
+    $r = Invoke-RestMethod -Uri "https://findtorontoevents.ca/live-monitor/api/live_trade.php?action=track&key=$lmKey" -TimeoutSec 30
     Write-Host ("Tracked: " + $r.tracked + " | Closed: " + $r.closed)
     if ($r.closed_details) {
         foreach ($c in $r.closed_details) {
