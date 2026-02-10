@@ -256,11 +256,11 @@ jobs:
         echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Crypto prices fetched: {d.get(\"fetched\",0)}')" || echo "CR: $RESULT"
         curl -s --max-time 60 "https://findtorontoevents.ca/findcryptopairs/portfolio/api/learning.php?action=analyze_and_adjust" > /dev/null 2>&1 || true
 
-    # ─── DayTrades Miracle Scan ───
-    - name: Run DayTrades Miracle daily scan
+    # ─── DayTrades Miracle Scan (v2 + v3) ───
+    - name: Run DayTrades Miracle v2 daily scan
       continue-on-error: true
       run: |
-        echo "=== Running DayTrades Miracle daily scan ==="
+        echo "=== Running DayTrades Miracle v2 daily scan ==="
         RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findstocks2_global/api/daily_scan2.php?key=miracle2026") || true
         echo "$RESULT" | python3 -c "
         import sys, json
@@ -271,7 +271,51 @@ jobs:
                 print('  ' + step)
         else:
             print('Error: ' + str(d.get('error','unknown')))
-        " || echo "Miracle: $RESULT"
+        " || echo "Miracle v2: $RESULT"
+
+    - name: Run DayTrades Miracle v3 daily scan
+      continue-on-error: true
+      run: |
+        echo "=== Running DayTrades Miracle v3 (Cursor) daily scan ==="
+        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findstocks_global/api/daily_scan3.php?key=miracle2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            print(f'Scanned: {d.get(\"scanned\",0)}, Signals: {d.get(\"signals\",0)}, Saved: {d.get(\"saved\",0)}')
+            print(f'Elapsed: {d.get(\"elapsed\",\"?\")}')
+            for step in d.get('steps', []):
+                print(f'  {step}')
+        else:
+            print(f'Error: {d.get(\"error\",\"unknown\")}')
+        " || echo "Miracle v3: $RESULT"
+
+    # ─── Crypto & Forex Signal Generation ───
+    - name: Generate crypto trading signals
+      continue-on-error: true
+      run: |
+        echo "=== Generating crypto technical signals ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/portfolio/api/crypto_insights.php?action=recommendations") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            r = d.get('summary', {})
+            print(f'Crypto signals: {r.get(\"buy\",0)} BUY / {r.get(\"sell\",0)} SELL / {r.get(\"hold\",0)} HOLD')
+        " || echo "Crypto signals: $RESULT"
+
+    - name: Generate forex trading signals
+      continue-on-error: true
+      run: |
+        echo "=== Generating forex technical signals ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/findforex2/portfolio/api/forex_insights.php?action=recommendations") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            r = d.get('summary', {})
+            print(f'Forex signals: {r.get(\"buy\",0)} BUY / {r.get(\"sell\",0)} SELL / {r.get(\"hold\",0)} HOLD')
+        " || echo "Forex signals: $RESULT"
 
     # ─── Regenerate Top Picks & Verify Dashboards ───
     - name: Regenerate top picks cache
