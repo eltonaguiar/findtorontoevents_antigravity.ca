@@ -26,4 +26,11 @@ $sports_dbname     = 'ejaguiar1_sportsbet';
 // Sports Betting - The Odds API (free tier: 500 credits/month)
 // Sign up at https://the-odds-api.com to get your key
 $THE_ODDS_API_KEY      = 'b91c3bedfe2553cf90a5fa2003417b2a';
+
+// Multi-Dimensional Supplemental Data API Keys
+// Get free API keys from:
+// - FMP: https://financialmodelingprep.com/register (250 calls/day)
+// - Massive: https://massive.com/signup (5 calls/min, formerly Polygon.io)
+$FMP_API_KEY           = getenv('FMP_API_KEY') ? getenv('FMP_API_KEY') : 'YOUR_FMP_KEY_HERE';
+$MASSIVE_API_KEY       = getenv('MASSIVE_API_KEY') ? getenv('MASSIVE_API_KEY') : (getenv('POLYGON_API_KEY') ? getenv('POLYGON_API_KEY') : 'YOUR_MASSIVE_KEY_HERE');
 ?>

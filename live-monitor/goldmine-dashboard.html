@@ -671,19 +671,86 @@
         <!-- TAB 4: FUNDAMENTALS -->
         <!-- ============================================================ -->
         <div id="tab-fundamentals" style="display:none;">
-            <div class="fundamentals-section">
-                <h3><span class="text-blue">&#9679;</span> Insider Activity</h3>
-                <div class="placeholder">SEC EDGAR data loading... This section will display insider cluster buy alerts from SEC Form 4 filings once sec_edgar.php is deployed.</div>
+            <!-- Insider Cluster Alerts -->
+            <div class="section-title">Insider Cluster Buy Alerts (Form 4 &mdash; 3+ insiders buying within 14 days)</div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Insiders</th>
+                            <th>Total Bought</th>
+                            <th>Total Shares</th>
+                            <th>Buy Window</th>
+                            <th>Buyers</th>
+                        </tr>
+                    </thead>
+                    <tbody id="insider-clusters-tbody">
+                        <tr><td colspan="6" class="loading">Loading insider clusters...</td></tr>
+                    </tbody>
+                </table>
             </div>
 
-            <div class="fundamentals-section">
-                <h3><span class="text-green">&#9679;</span> Fund Holdings</h3>
-                <div class="placeholder">13F new position data loading... This section will show newly opened fund positions from 13F filings once the data pipeline is deployed.</div>
+            <!-- 13F New Positions -->
+            <div class="section-title" style="margin-top:2rem;">13F New Fund Positions (Multi-fund conviction picks)</div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Funds</th>
+                            <th>Total Value</th>
+                            <th>Total Shares</th>
+                            <th>Sentiment</th>
+                            <th>Fund Names</th>
+                        </tr>
+                    </thead>
+                    <tbody id="conviction-picks-tbody">
+                        <tr><td colspan="6" class="loading">Loading fund conviction picks...</td></tr>
+                    </tbody>
+                </table>
             </div>
 
-            <div class="fundamentals-section">
-                <h3><span class="text-yellow">&#9679;</span> Sentiment</h3>
-                <div class="placeholder">News sentiment scores loading... This section will display aggregated sentiment analysis from financial news sources once news_sentiment.php is deployed.</div>
+            <!-- News Sentiment -->
+            <div class="section-title" style="margin-top:2rem;">News Sentiment (Finnhub &mdash; top buzz tickers)</div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Sentiment</th>
+                            <th>Score</th>
+                            <th>Articles</th>
+                            <th>Buzz</th>
+                            <th>Positive</th>
+                            <th>Negative</th>
+                            <th>Neutral</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sentiment-tbody">
+                        <tr><td colspan="8" class="loading">Loading sentiment data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Sector Sentiment -->
+            <div class="section-title" style="margin-top:2rem;">Sector Sentiment Overview</div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sector</th>
+                            <th>Avg Sentiment</th>
+                            <th>Label</th>
+                            <th>Total Buzz</th>
+                            <th>Most Positive</th>
+                            <th>Most Negative</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sector-sentiment-tbody">
+                        <tr><td colspan="6" class="loading">Loading sector sentiment...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -746,6 +813,7 @@ function switchTab(tab) {
     }
     if (tab === 'picks') loadPicks();
     if (tab === 'deepdive') populateSystemDropdowns();
+    if (tab === 'fundamentals') loadFundamentals();
     if (tab === 'failures') loadFailures();
 }
 
@@ -1372,6 +1440,159 @@ function loadFailures() {
     });
 }
 
+
+/* ===================================================================
+   TAB 4: FUNDAMENTALS — SEC EDGAR + News Sentiment
+   =================================================================== */
+var SEC_API = '/live-monitor/api/sec_edgar.php';
+var SENT_API = '/live-monitor/api/news_sentiment.php';
+var fundamentalsLoaded = false;
+
+function loadFundamentals() {
+    if (fundamentalsLoaded) return;
+    fundamentalsLoaded = true;
+    loadInsiderClusters();
+    loadConvictionPicks();
+    loadSentimentBuzz();
+    loadSectorSentiment();
+}
+
+function loadInsiderClusters() {
+    fetchJSON(SEC_API + '?action=insider_clusters', function(err, data) {
+        var tbody = document.getElementById('insider-clusters-tbody');
+        if (err || !data || !data.ok) {
+            tbody.innerHTML = '<tr><td colspan="6" class="loading">No insider cluster data yet. Run SEC EDGAR fetch first.</td></tr>';
+            return;
+        }
+        var clusters = data.clusters || [];
+        if (clusters.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="loading">No insider clusters detected (need 3+ insiders buying same stock in 14 days).</td></tr>';
+            return;
+        }
+        var html = '';
+        for (var i = 0; i < clusters.length; i++) {
+            var c = clusters[i];
+            html += '<tr>'
+                + '<td style="font-weight:700;color:var(--blue)">' + (c.ticker || '--') + '</td>'
+                + '<td>' + (c.insider_count || c.insiders || '--') + '</td>'
+                + '<td>$' + fmtBigNum(c.total_value || c.total_bought || 0) + '</td>'
+                + '<td>' + fmtNum(c.total_shares || 0, 0) + '</td>'
+                + '<td>' + (c.first_buy || c.window_start || '--') + ' &rarr; ' + (c.last_buy || c.window_end || '--') + '</td>'
+                + '<td style="font-size:0.8rem;max-width:300px;white-space:normal">' + (c.insiders_list || c.buyers || '--') + '</td>'
+                + '</tr>';
+        }
+        tbody.innerHTML = html;
+    });
+}
+
+function loadConvictionPicks() {
+    fetchJSON(SEC_API + '?action=conviction_picks', function(err, data) {
+        var tbody = document.getElementById('conviction-picks-tbody');
+        if (err || !data || !data.ok) {
+            tbody.innerHTML = '<tr><td colspan="6" class="loading">No 13F conviction data yet. Run SEC EDGAR 13F fetch first.</td></tr>';
+            return;
+        }
+        var picks = data.conviction_picks || data.picks || [];
+        if (picks.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="loading">No multi-fund conviction picks detected (need 3+ funds with new positions).</td></tr>';
+            return;
+        }
+        var html = '';
+        for (var i = 0; i < picks.length; i++) {
+            var p = picks[i];
+            var sentCls = (p.sentiment === 'bullish') ? 'text-green' : (p.sentiment === 'bearish') ? 'text-red' : 'text-dim';
+            html += '<tr>'
+                + '<td style="font-weight:700;color:var(--blue)">' + (p.ticker || '--') + '</td>'
+                + '<td>' + (p.fund_count || '--') + '</td>'
+                + '<td>$' + fmtBigNum(p.total_value || 0) + '</td>'
+                + '<td>' + fmtNum(p.total_shares || 0, 0) + '</td>'
+                + '<td class="' + sentCls + '">' + (p.sentiment || 'neutral') + '</td>'
+                + '<td style="font-size:0.8rem;max-width:300px;white-space:normal">' + (p.fund_names || p.funds || '--') + '</td>'
+                + '</tr>';
+        }
+        tbody.innerHTML = html;
+    });
+}
+
+function loadSentimentBuzz() {
+    fetchJSON(SENT_API + '?action=buzz', function(err, data) {
+        var tbody = document.getElementById('sentiment-tbody');
+        if (err || !data || !data.ok) {
+            tbody.innerHTML = '<tr><td colspan="8" class="loading">No sentiment data yet. Run news_sentiment fetch first.</td></tr>';
+            return;
+        }
+        var tickers = data.tickers || data.buzz || [];
+        if (tickers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="loading">No sentiment data available.</td></tr>';
+            return;
+        }
+        var html = '';
+        for (var i = 0; i < tickers.length; i++) {
+            var t = tickers[i];
+            var score = parseFloat(t.sentiment_score || 0);
+            var label = sentimentLabel(score);
+            var scoreCls = score > 0.1 ? 'text-green' : score < -0.1 ? 'text-red' : 'text-dim';
+            html += '<tr>'
+                + '<td style="font-weight:700">' + (t.ticker || '--') + '</td>'
+                + '<td class="' + scoreCls + '">' + label + '</td>'
+                + '<td class="' + scoreCls + '">' + fmtNum(score, 3) + '</td>'
+                + '<td>' + (t.articles_analyzed || t.articles || 0) + '</td>'
+                + '<td>' + fmtNum(t.buzz_score || t.buzz || 0, 2) + '</td>'
+                + '<td style="color:var(--green)">' + (t.positive_count || t.positive || 0) + '</td>'
+                + '<td style="color:var(--red)">' + (t.negative_count || t.negative || 0) + '</td>'
+                + '<td>' + (t.neutral_count || t.neutral || 0) + '</td>'
+                + '</tr>';
+        }
+        tbody.innerHTML = html;
+    });
+}
+
+function loadSectorSentiment() {
+    fetchJSON(SENT_API + '?action=sector_sentiment', function(err, data) {
+        var tbody = document.getElementById('sector-sentiment-tbody');
+        if (err || !data || !data.ok) {
+            tbody.innerHTML = '<tr><td colspan="6" class="loading">No sector sentiment data yet.</td></tr>';
+            return;
+        }
+        var sectors = data.sectors || [];
+        if (sectors.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="loading">No sector data available.</td></tr>';
+            return;
+        }
+        var html = '';
+        for (var i = 0; i < sectors.length; i++) {
+            var s = sectors[i];
+            var avg = parseFloat(s.avg_sentiment || s.average_sentiment || 0);
+            var label = s.label || s.sentiment_label || sentimentLabel(avg);
+            var cls = avg > 0.1 ? 'text-green' : avg < -0.1 ? 'text-red' : 'text-dim';
+            html += '<tr>'
+                + '<td style="font-weight:700">' + (s.sector || '--') + '</td>'
+                + '<td class="' + cls + '">' + fmtNum(avg, 3) + '</td>'
+                + '<td class="' + cls + '">' + label + '</td>'
+                + '<td>' + fmtNum(s.total_buzz || s.buzz || 0, 1) + '</td>'
+                + '<td style="color:var(--green)">' + (s.most_positive || s.most_bullish || '--') + '</td>'
+                + '<td style="color:var(--red)">' + (s.most_negative || s.most_bearish || '--') + '</td>'
+                + '</tr>';
+        }
+        tbody.innerHTML = html;
+    });
+}
+
+function sentimentLabel(score) {
+    if (score > 0.3) return 'Very Positive';
+    if (score > 0.1) return 'Positive';
+    if (score < -0.3) return 'Very Negative';
+    if (score < -0.1) return 'Negative';
+    return 'Neutral';
+}
+
+function fmtBigNum(n) {
+    n = parseFloat(n) || 0;
+    if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+    if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+    if (n >= 1e3) return (n / 1e3).toFixed(0) + 'K';
+    return n.toFixed(0);
+}
 
 /* ===================================================================
    INIT + AUTO-REFRESH

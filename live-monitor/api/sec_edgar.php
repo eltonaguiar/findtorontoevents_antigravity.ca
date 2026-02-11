@@ -50,6 +50,8 @@ if (!is_dir($SEC_CACHE_DIR)) { @mkdir($SEC_CACHE_DIR, 0755, true); }
 
 // ── Cache helpers ──
 function _sec_cache_get($cache_key, $ttl_sec) {
+    // Allow cache bypass with ?nocache=1
+    if (isset($_GET['nocache']) && $_GET['nocache'] == '1') return false;
     global $SEC_CACHE_DIR;
     $f = $SEC_CACHE_DIR . 'sec_' . md5($cache_key) . '.json';
     if (file_exists($f) && (time() - filemtime($f)) < $ttl_sec) {
@@ -338,6 +340,9 @@ if ($action === 'fetch_form4') {
         exit;
     }
 
+    set_time_limit(300);
+    ini_set('max_execution_time', '300');
+
     $cik_map = _sec_get_cik_map();
     if (empty($cik_map)) {
         echo json_encode(array('ok' => false, 'error' => 'Failed to fetch CIK mapping'));
@@ -415,7 +420,16 @@ if ($action === 'fetch_form4') {
             $acc_nodash = str_replace('-', '', $accession);
             $cik_num = ltrim($cik, '0');
             if (!$cik_num) $cik_num = '0';
-            $xml_url = 'https://www.sec.gov/Archives/edgar/data/' . $cik_num . '/' . $acc_nodash . '/' . $primary_doc;
+
+            // Strip XSL transform prefix (e.g., "xslF345X05/") to get raw XML
+            $raw_doc = $primary_doc;
+            if (strpos($primary_doc, 'xsl') === 0) {
+                $slash_pos = strpos($primary_doc, '/');
+                if ($slash_pos !== false) {
+                    $raw_doc = substr($primary_doc, $slash_pos + 1);
+                }
+            }
+            $xml_url = 'https://www.sec.gov/Archives/edgar/data/' . $cik_num . '/' . $acc_nodash . '/' . $raw_doc;
 
             usleep(150000); // rate limit
             $xml_raw = _sec_http_get($xml_url);
@@ -449,6 +463,9 @@ if ($action === 'fetch_13f') {
         echo json_encode(array('ok' => false, 'error' => 'Unauthorized'));
         exit;
     }
+
+    set_time_limit(300);
+    ini_set('max_execution_time', '300');
 
     $cusip_ticker_map = _sec_get_cusip_ticker_map();
 
@@ -523,47 +540,67 @@ if ($action === 'fetch_13f') {
         $index_url = 'https://www.sec.gov/Archives/edgar/data/' . $cik_num . '/' . $acc_nodash . '/';
         usleep(150000);
 
-        // The primary doc might be the main filing; we need the information table
-        // Try common names: infotable.xml, primary_doc.xml, or parse the index
+        // The primary doc for 13F is the cover page, NOT the holdings table.
+        // We need to find the infotable XML separately.
         $infotable_url = '';
 
-        // Strategy 1: Try the primary doc directly if it ends in .xml
-        if (preg_match('/\.xml$/i', $filing_doc)) {
-            $infotable_url = $index_url . $filing_doc;
+        // Strip XSL transform prefix if present (e.g., "xslForm13F_X02/")
+        $raw_doc = $filing_doc;
+        if (strpos($filing_doc, 'xsl') === 0) {
+            $slash_pos = strpos($filing_doc, '/');
+            if ($slash_pos !== false) {
+                $raw_doc = substr($filing_doc, $slash_pos + 1);
+            }
+        }
+
+        // Strategy 1: Parse the filing index HTML to find infotable link
+        usleep(150000);
+        $idx_raw = _sec_http_get($index_url);
+        if ($idx_raw) {
+            // Look for XML files containing "info" or "table" in filename
+            if (preg_match_all('/href="([^"]*(?:info|table)[^"]*\.xml)"/i', $idx_raw, $matches)) {
+                foreach ($matches[1] as $candidate) {
+                    // Skip the primary_doc.xml (cover page)
+                    if (stripos($candidate, 'primary_doc') !== false) continue;
+                    // Handle absolute vs relative URLs
+                    if (strpos($candidate, '/') === 0) {
+                        // Absolute path on sec.gov
+                        $infotable_url = 'https://www.sec.gov' . $candidate;
+                    } elseif (strpos($candidate, 'http') === 0) {
+                        // Full URL
+                        $infotable_url = $candidate;
+                    } else {
+                        // Relative to accession folder
+                        $infotable_url = $index_url . $candidate;
+                    }
+                    break;
+                }
+            }
         }
 
         // Strategy 2: Try common infotable filenames
         if (!$infotable_url) {
             $common_names = array('infotable.xml', 'InfoTable.xml', 'INFOTABLE.XML',
-                'information_table.xml', 'primary_doc.xml');
+                'information_table.xml', '0000infotable.xml');
             foreach ($common_names as $try_name) {
                 $try_url = $index_url . $try_name;
                 usleep(150000);
                 $try_raw = _sec_http_get($try_url);
-                if ($try_raw && strlen($try_raw) > 200 && strpos($try_raw, '<') !== false) {
+                if ($try_raw && strlen($try_raw) > 200 && strpos($try_raw, 'infoTable') !== false) {
                     $infotable_url = $try_url;
                     break;
                 }
             }
         }
 
-        // Strategy 3: Parse the filing index HTML to find infotable link
-        if (!$infotable_url) {
-            usleep(150000);
-            $idx_raw = _sec_http_get($index_url);
-            if ($idx_raw) {
-                // Look for links to XML files containing "infotable" or "information"
-                if (preg_match_all('/href="([^"]*(?:info|table)[^"]*\.xml)"/i', $idx_raw, $matches)) {
-                    if (isset($matches[1][0])) {
-                        $infotable_url = $index_url . $matches[1][0];
-                    }
-                }
-            }
+        // Strategy 3: Use primary doc only if it's not "primary_doc.xml" (which is always the cover)
+        if (!$infotable_url && $raw_doc !== 'primary_doc.xml' && preg_match('/\.xml$/i', $raw_doc)) {
+            $infotable_url = $index_url . $raw_doc;
         }
 
         if (!$infotable_url) {
-            // Fallback: use primary document
-            $infotable_url = $index_url . $filing_doc;
+            $stats['errors'][] = $fund_name . ': Could not find infotable XML in filing';
+            continue;
         }
 
         usleep(150000);

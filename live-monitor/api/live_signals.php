@@ -1,10 +1,10 @@
 <?php
 /**
- * Live Signal Generator — 22 Algorithms for Crypto, Forex & Stocks (19 Technical + 3 Fundamental)
+ * Live Signal Generator — 23 Algorithms for Crypto, Forex & Stocks (19 Technical + 4 Fundamental/Contrarian)
  * PHP 5.2 compatible (no short arrays, no http_response_code, no spread operator)
  *
  * Actions:
- *   ?action=scan&key=livetrader2026   — Run all 19 algorithms, generate signals (admin only)
+ *   ?action=scan&key=livetrader2026   — Run all 23 algorithms, generate signals (admin only)
  *   ?action=list[&asset_class=CRYPTO] — Show active (non-expired) signals (public)
  *   ?action=expire                    — Mark expired signals
  *
@@ -32,6 +32,12 @@
  *   17. RSI(2) Scalp          — Ultra-short mean reversion (STOCKSUNIFY2)
  *   18. Ichimoku Cloud        — Tenkan/Kijun cross + cloud position
  *   19. Alpha Predator        — 4-factor alignment: ADX+RSI+AO+Volume (STOCKSUNIFY2)
+ *
+ * Fundamental/Contrarian (4):
+ *   20. Insider Cluster Buy    — 3+ insiders buying same stock (Lakonishok & Lee 2001)
+ *   21. 13F New Position       — Fund opens new position (SSRN 4767576)
+ *   22. Sentiment Divergence   — News sentiment diverges from price action
+ *   23. Contrarian Fear/Greed  — Reverses crowd at extremes (Buffett contrarian)
  */
 
 require_once dirname(__FILE__) . '/db_connect.php';
@@ -2886,7 +2892,11 @@ function _ls_get_original_defaults($algo_name, $asset_class) {
         'Awesome Oscillator'    => array('CRYPTO' => array(1.8, 0.9, 12),  'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.0, 0.5, 12)),
         'RSI(2) Scalp'          => array('CRYPTO' => array(1.2, 0.6, 6),   'FOREX' => array(0.3, 0.15, 6),  'STOCK' => array(0.8, 0.4, 6)),
         'Ichimoku Cloud'        => array('CRYPTO' => array(2.0, 1.0, 16),  'FOREX' => array(0.5, 0.25, 16), 'STOCK' => array(1.2, 0.6, 16)),
-        'Alpha Predator'        => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.25, 12), 'STOCK' => array(1.2, 0.6, 12))
+        'Alpha Predator'        => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.25, 12), 'STOCK' => array(1.2, 0.6, 12)),
+        'Insider Cluster Buy'   => array('STOCK' => array(8.0, 4.0, 336)),
+        '13F New Position'      => array('STOCK' => array(10.0, 5.0, 672)),
+        'Sentiment Divergence'  => array('STOCK' => array(3.0, 2.0, 168)),
+        'Contrarian Fear/Greed' => array('CRYPTO' => array(5.0, 3.0, 168), 'FOREX' => array(2.0, 1.5, 168), 'STOCK' => array(4.0, 2.5, 336))
     );
     if (isset($d[$algo_name]) && isset($d[$algo_name][$asset_class])) {
         $v = $d[$algo_name][$asset_class];
@@ -3100,7 +3110,8 @@ function _ls_action_scan($conn) {
             _ls_algo_awesome_osc($candles, $price, $sym, 'CRYPTO'),
             _ls_algo_rsi2_scalp($candles, $price, $sym, 'CRYPTO'),
             _ls_algo_ichimoku_cloud($candles, $price, $sym, 'CRYPTO'),
-            _ls_algo_alpha_predator($candles, $price, $sym, 'CRYPTO')
+            _ls_algo_alpha_predator($candles, $price, $sym, 'CRYPTO'),
+            _ls_algo_contrarian_fg($conn, $candles, $price, $sym, 'CRYPTO')
         );
 
         // Kimi: check for extreme volatility (momentum crash protection)
@@ -3172,7 +3183,8 @@ function _ls_action_scan($conn) {
             _ls_algo_awesome_osc($candles, $price, $sym, 'FOREX'),
             _ls_algo_rsi2_scalp($candles, $price, $sym, 'FOREX'),
             _ls_algo_ichimoku_cloud($candles, $price, $sym, 'FOREX'),
-            _ls_algo_alpha_predator($candles, $price, $sym, 'FOREX')
+            _ls_algo_alpha_predator($candles, $price, $sym, 'FOREX'),
+            _ls_algo_contrarian_fg($conn, $candles, $price, $sym, 'FOREX')
         );
 
         // Kimi: check for extreme volatility (momentum crash protection)
@@ -3225,7 +3237,7 @@ function _ls_action_scan($conn) {
             }
             if ($price <= 0) continue;
 
-            // Run all 22 algorithms (19 technical + 3 fundamental)
+            // Run all 23 algorithms (19 technical + 4 fundamental/contrarian)
             $algo_results = array(
                 _ls_algo_momentum_burst($candles, $price, $sym, 'STOCK'),
                 _ls_algo_rsi_reversal($candles, $price, $sym, 'STOCK'),
@@ -3246,10 +3258,11 @@ function _ls_action_scan($conn) {
                 _ls_algo_rsi2_scalp($candles, $price, $sym, 'STOCK'),
                 _ls_algo_ichimoku_cloud($candles, $price, $sym, 'STOCK'),
                 _ls_algo_alpha_predator($candles, $price, $sym, 'STOCK'),
-                // Fundamental algorithms (#20-22) — stock-only
+                // Fundamental algorithms (#20-23) — including contrarian
                 _ls_algo_insider_cluster($conn, $price, $sym, 'STOCK'),
                 _ls_algo_13f_new_position($conn, $price, $sym, 'STOCK'),
-                _ls_algo_sentiment_divergence($conn, $candles, $price, $sym, 'STOCK')
+                _ls_algo_sentiment_divergence($conn, $candles, $price, $sym, 'STOCK'),
+                _ls_algo_contrarian_fg($conn, $candles, $price, $sym, 'STOCK')
             );
 
             // Sector map for concentration cap
@@ -3753,6 +3766,115 @@ function _ls_algo_sentiment_divergence($conn, $candles, $price, $symbol, $asset)
                 'divergence' => 'negative',
                 'buzz' => $buzz,
                 'articles' => $articles
+            ))
+        );
+    }
+
+    return null;
+}
+
+// ────────────────────────────────────────────────────────────
+//  Algorithm 23: Contrarian Fear/Greed
+//  BUY during extreme fear near support, SHORT during extreme greed near resistance
+//  Academic basis: Buffett "be greedy when others are fearful"
+//  Works on all asset classes — uses crypto F&G for crypto, composite for stocks/forex
+// ────────────────────────────────────────────────────────────
+function _ls_algo_contrarian_fg($conn, $candles, $price, $symbol, $asset) {
+    if ($price <= 0 || count($candles) < 10) return null;
+
+    // Read latest Fear & Greed scores from DB (cached by fear_greed.php)
+    $composite_score = null;
+    $crypto_score = null;
+
+    $r = $conn->query("SELECT source, score FROM lm_fear_greed WHERE source IN ('composite','crypto') AND fetch_date >= DATE_SUB(CURDATE(), INTERVAL 2 DAY) ORDER BY fetch_date DESC");
+    if ($r) {
+        while ($row = $r->fetch_assoc()) {
+            if ($row['source'] === 'composite' && $composite_score === null) $composite_score = intval($row['score']);
+            if ($row['source'] === 'crypto' && $crypto_score === null) $crypto_score = intval($row['score']);
+        }
+    }
+
+    // If no F&G data available, skip
+    if ($composite_score === null) return null;
+
+    // Effective F&G score based on asset class
+    $fg_score = $composite_score;
+    if ($asset === 'CRYPTO' && $crypto_score !== null) {
+        $fg_score = round($crypto_score * 0.6 + $composite_score * 0.4);
+    }
+
+    // Need extreme readings to trigger (<=25 extreme fear, >=75 extreme greed)
+    $is_extreme_fear = ($fg_score <= 25);
+    $is_extreme_greed = ($fg_score >= 75);
+    if (!$is_extreme_fear && !$is_extreme_greed) return null;
+
+    // Calculate support and resistance from candles
+    $support = PHP_INT_MAX;
+    $resistance = 0;
+    $lookback = min(count($candles), 20);
+    for ($i = count($candles) - $lookback; $i < count($candles); $i++) {
+        $low = (float)$candles[$i]['low'];
+        $high = (float)$candles[$i]['high'];
+        if ($low < $support) $support = $low;
+        if ($high > $resistance) $resistance = $high;
+    }
+
+    if ($support <= 0 || $resistance <= 0 || $support >= $resistance) return null;
+
+    $pct_from_support = ($price - $support) / $support * 100;
+    $pct_from_resistance = ($resistance - $price) / $resistance * 100;
+
+    // Signal strength: more extreme F&G = stronger signal
+    $base_strength = 55 + round(abs($fg_score - 50) / 2);
+    $strength = min(90, $base_strength);
+
+    // BUY: extreme fear + price near support (within 5%)
+    if ($is_extreme_fear && $pct_from_support <= 5) {
+        // Boost if very close to support
+        if ($pct_from_support <= 2) $strength = min(90, $strength + 5);
+
+        return array(
+            'algorithm_name' => 'Contrarian Fear/Greed',
+            'signal_type' => 'BUY',
+            'signal_strength' => $strength,
+            'target_tp_pct' => ($asset === 'CRYPTO') ? 5 : (($asset === 'FOREX') ? 2 : 4),
+            'target_sl_pct' => ($asset === 'CRYPTO') ? 3 : (($asset === 'FOREX') ? 1.5 : 2.5),
+            'max_hold_hours' => ($asset === 'STOCK') ? 336 : 168,
+            'timeframe' => ($asset === 'STOCK') ? '14d' : '7d',
+            'rationale' => json_encode(array(
+                'basis' => 'Buffett contrarian: be greedy when others are fearful',
+                'fg_score' => $fg_score,
+                'fg_classification' => 'extreme_fear',
+                'fg_source' => ($asset === 'CRYPTO') ? 'crypto+composite' : 'composite',
+                'support_level' => round($support, 6),
+                'resistance_level' => round($resistance, 6),
+                'distance_to_support_pct' => round($pct_from_support, 2),
+                'trigger' => 'extreme_fear + price_near_support'
+            ))
+        );
+    }
+
+    // SHORT: extreme greed + price near resistance (within 5%)
+    if ($is_extreme_greed && $pct_from_resistance <= 5) {
+        if ($pct_from_resistance <= 2) $strength = min(90, $strength + 5);
+
+        return array(
+            'algorithm_name' => 'Contrarian Fear/Greed',
+            'signal_type' => 'SHORT',
+            'signal_strength' => $strength,
+            'target_tp_pct' => ($asset === 'CRYPTO') ? 5 : (($asset === 'FOREX') ? 2 : 4),
+            'target_sl_pct' => ($asset === 'CRYPTO') ? 3 : (($asset === 'FOREX') ? 1.5 : 2.5),
+            'max_hold_hours' => ($asset === 'STOCK') ? 336 : 168,
+            'timeframe' => ($asset === 'STOCK') ? '14d' : '7d',
+            'rationale' => json_encode(array(
+                'basis' => 'Buffett contrarian: be fearful when others are greedy',
+                'fg_score' => $fg_score,
+                'fg_classification' => 'extreme_greed',
+                'fg_source' => ($asset === 'CRYPTO') ? 'crypto+composite' : 'composite',
+                'support_level' => round($support, 6),
+                'resistance_level' => round($resistance, 6),
+                'distance_to_resistance_pct' => round($pct_from_resistance, 2),
+                'trigger' => 'extreme_greed + price_near_resistance'
             ))
         );
     }

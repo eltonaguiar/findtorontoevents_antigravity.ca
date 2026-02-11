@@ -1,244 +1,397 @@
 #!/usr/bin/env python3
 """
-Deploy Toronto Events to tdotevent.ca (mirror site with updated domain links).
+Deploy full mirror of findtorontoevents.ca to tdotevent.ca via FTP_TLS.
 
-This script:
-1. Copies all files that would be deployed to findtorontoevents.ca
-2. Replaces all references of findtorontoevents.ca with tdotevent.ca in HTML/JS files
-3. Uploads to FTP path /tdotevent.ca
+Stages all site files into a temp directory with domain replacements
+(findtorontoevents.ca -> tdotevent.ca) then uploads via FTP_TLS.
 
-Uses environment variables:
-  FTP_SERVER  (or FTP_HOST) - FTP hostname
+Same databases, same hosting account, different domain.
+
+Uses Windows user environment variables:
+  FTP_SERVER  - FTP hostname
   FTP_USER    - FTP username
   FTP_PASS    - FTP password
 
 Run from project root:
-  set FTP_SERVER=... FTP_USER=... FTP_PASS=...
   python tools/deploy_to_tdotevent.py
 """
 import os
-import ftplib
+import sys
+import time
 import tempfile
 import shutil
+from ftplib import FTP_TLS, error_perm
 from pathlib import Path
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 WORKSPACE = _SCRIPT_DIR.parent
 
-# Load workspace .env so FTP_* are set when not in shell
-_env_file = WORKSPACE / ".env"
-if _env_file.exists():
-    for line in _env_file.read_text().splitlines():
-        line = line.strip()
-        if line and not line.startswith("#") and "=" in line:
-            k, _, v = line.partition("=")
-            k, v = k.strip(), v.strip()
-            if k and os.environ.get(k) in (None, ""):
-                os.environ.setdefault(k, v)
-    if "FTP_SERVER" not in os.environ and os.environ.get("FTP_HOST"):
-        os.environ.setdefault("FTP_SERVER", os.environ["FTP_HOST"])
+# ─── FTP Config ───────────────────────────────────────────────
+FTP_SERVER = os.environ.get('FTP_SERVER', '').strip()
+FTP_USER = os.environ.get('FTP_USER', '').strip()
+FTP_PASS = os.environ.get('FTP_PASS', '').strip()
+REMOTE_ROOT = 'tdotevent.ca'
 
-# Remote path for tdotevent.ca
-REMOTE_PATH = "tdotevent.ca"
-
-# Domain replacements
+# ─── Domain Replacements (order: most specific first) ────────
 REPLACEMENTS = [
-    ("findtorontoevents.ca", "tdotevent.ca"),
-    ("www.findtorontoevents.ca", "www.tdotevent.ca"),
-    ("support@findtorontoevents.ca", "support@tdotevent.ca"),
+    ('www.findtorontoevents.ca', 'www.tdotevent.ca'),
+    ('www.FindTorontoEvents.ca', 'www.tdotevent.ca'),
+    ('support@findtorontoevents.ca', 'support@tdotevent.ca'),
+    ('contact@findtorontoevents.ca', 'contact@tdotevent.ca'),
+    ('FindTorontoEvents.ca', 'TdotEvent.ca'),
+    ('findtorontoevents.ca', 'tdotevent.ca'),
+    ('FindTorontoEvents', 'TdotEvent'),
 ]
 
-# File extensions that should have domain replacements
-TEXT_EXTENSIONS = {".html", ".htm", ".js", ".css", ".json", ".php", ".txt", ".md"}
+# GitHub raw URL must NOT be replaced (events.json fallback)
+GITHUB_RAW_MARKER = 'raw.githubusercontent.com/eltonaguiar/findtorontoevents.ca'
+GITHUB_PLACEHOLDER = '___GITHUB_RAW_PRESERVE___'
+
+# Text file extensions eligible for domain replacement
+TEXT_EXTENSIONS = {
+    '.html', '.htm', '.js', '.css', '.json', '.php',
+    '.txt', '.md', '.xml', '.ics', '.svg',
+}
+
+# OAuth files: skip domain replacement (auth routes through main site)
+OAUTH_SKIP_FILES = {
+    'google_auth.php', 'google_callback.php',
+    'discord_config.php', 'discord_callback.php', 'discord_auth.php',
+}
+
+# ─── Directory Manifest ──────────────────────────────────────
+# (source_relative_path, remote_relative_path)
+DIRS_TO_DEPLOY = [
+    ('next/_next', 'next/_next'),
+    ('_next', '_next'),
+    ('favcreators/docs', 'fc'),
+    ('favcreators/public/api', 'fc/api'),
+    ('api', 'api'),
+    ('news', 'news'),
+    ('deals', 'deals'),
+    ('updates', 'updates'),
+    ('weather', 'weather'),
+    ('vr', 'vr'),
+    ('stats', 'stats'),
+    ('live-monitor', 'live-monitor'),
+    ('findstocks', 'findstocks'),
+    ('investments', 'investments'),
+    ('MOVIESHOWS', 'MOVIESHOWS'),
+    ('WINDOWSFIXER', 'WINDOWSFIXER'),
+    ('MENTALHEALTHRESOURCES', 'MENTALHEALTHRESOURCES'),
+    ('2xko', '2xko'),
+    ('findcryptopairs', 'findcryptopairs'),
+    ('findforex2', 'findforex2'),
+    ('findmutualfunds', 'findmutualfunds'),
+    ('findmutualfunds2', 'findmutualfunds2'),
+    ('data', 'data'),
+    ('images', 'images'),
+    ('alpha_engine', 'alpha_engine'),
+    ('affiliates', 'affiliates'),
+    ('luxcal', 'luxcal'),
+    ('404', '404'),
+]
+
+# Single root files
+FILES_TO_DEPLOY = [
+    ('index.html', 'index.html'),
+    ('.htaccess', '.htaccess'),
+    ('events.json', 'events.json'),
+    ('events.json', 'next/events.json'),
+    ('last_update.json', 'last_update.json'),
+    ('favicon.ico', 'favicon.ico'),
+    ('ai-assistant.js', 'ai-assistant.js'),
+]
+
+# Directories to skip during walk (anywhere in tree)
+SKIP_DIR_NAMES = {
+    'node_modules', '.git', 'tests', 'test-results', 'screenshots',
+    '__pycache__', '.cursor', '.vscode', '.vs', '.idea',
+    'src',  # Skip source dirs inside favcreators/docs (only built output)
+}
+
+# File patterns to skip
+SKIP_FILE_SUFFIXES = {'.log', '.zip', '.sql', '.bak', '.spec.ts', '.pyc'}
+SKIP_FILE_NAMES = {'nul', '.gitignore', '.gitkeep', 'package-lock.json'}
 
 
-def _env(key: str, fallback: str = "") -> str:
-    return os.environ.get(key, fallback).strip()
+# ─── Domain Replacement ──────────────────────────────────────
 
-
-def _ensure_dir(ftp: ftplib.FTP, remote_dir: str) -> bool:
-    ftp.cwd("/")
-    for part in remote_dir.split("/"):
-        if not part:
-            continue
-        try:
-            ftp.cwd(part)
-        except ftplib.error_perm:
-            try:
-                ftp.mkd(part)
-                ftp.cwd(part)
-            except Exception as e:
-                print(f"  Warning: mkd/cwd {part}: {e}")
-                return False
-    return True
-
-
-def replace_domains(content: str) -> str:
-    """Replace all findtorontoevents.ca references with tdotevent.ca."""
+def replace_domains(content):
+    """Replace findtorontoevents.ca -> tdotevent.ca, preserving GitHub raw URLs."""
+    # Protect GitHub raw URL from replacement
+    content = content.replace(GITHUB_RAW_MARKER, GITHUB_PLACEHOLDER)
+    # Apply all replacements
     for old, new in REPLACEMENTS:
         content = content.replace(old, new)
+    # Restore GitHub raw URL
+    content = content.replace(GITHUB_PLACEHOLDER, GITHUB_RAW_MARKER)
     return content
 
 
-def process_file(src_path: Path, dst_path: Path) -> None:
-    """Copy file, replacing domain references if it's a text file."""
+def should_skip_file(file_path):
+    """Check if a file should be skipped."""
+    name = file_path.name
+    suffix = file_path.suffix.lower()
+    if name in SKIP_FILE_NAMES:
+        return True
+    if suffix in SKIP_FILE_SUFFIXES:
+        return True
+    return False
+
+
+def process_file(src_path, dst_path, do_replacement=True):
+    """Copy file to staging, optionally replacing domain references."""
     dst_path.parent.mkdir(parents=True, exist_ok=True)
-    
-    if src_path.suffix.lower() in TEXT_EXTENSIONS:
+
+    if should_skip_file(src_path):
+        return False
+
+    # Check if this is an OAuth file that should skip replacement
+    skip_replace = src_path.name in OAUTH_SKIP_FILES
+
+    if do_replacement and not skip_replace and src_path.suffix.lower() in TEXT_EXTENSIONS:
         try:
-            content = src_path.read_text(encoding="utf-8", errors="replace")
+            content = src_path.read_text(encoding='utf-8', errors='replace')
             content = replace_domains(content)
-            dst_path.write_text(content, encoding="utf-8")
-        except Exception as e:
-            # If text processing fails, copy as binary
-            print(f"  Warning: Text processing failed for {src_path.name}, copying as binary: {e}")
-            shutil.copy2(src_path, dst_path)
-    else:
-        shutil.copy2(src_path, dst_path)
+            dst_path.write_text(content, encoding='utf-8')
+            return True
+        except Exception:
+            # Fall through to binary copy
+            pass
+
+    shutil.copy2(src_path, dst_path)
+    return True
 
 
-def prepare_deploy_folder(temp_dir: Path) -> None:
-    """Prepare all files with domain replacements in a temp folder."""
-    print("Preparing files with domain replacements...")
-    
-    # Directories to deploy
-    dirs_to_copy = [
-        ("next/_next", "next/_next"),
-        ("favcreators/docs", "fc"),
-        ("favcreators/public/api", "fc/api"),
-        ("api/events", "fc/events-api"),
-        ("api", "api"),
-        ("stats", "stats"),
-        ("WINDOWSFIXER", "WINDOWSFIXER"),
-        ("MENTALHEALTHRESOURCES", "MENTALHEALTHRESOURCES"),
-        ("MOVIESHOWS", "MOVIESHOWS"),
-        ("findstocks", "findstocks"),
-        ("2xko", "2xko"),
-    ]
-    
-    # Single files to copy
-    files_to_copy = [
-        ("index.html", "index.html"),
-        (".htaccess", ".htaccess"),
-        ("events.json", "events.json"),
-        ("events.json", "next/events.json"),
-        ("last_update.json", "last_update.json"),
-        ("favicon.ico", "favicon.ico"),
-    ]
-    
-    # Copy directories
-    for src_rel, dst_rel in dirs_to_copy:
+# ─── og:image Injection ──────────────────────────────────────
+
+OG_IMAGE_TAGS = (
+    '<meta property="og:image" content="https://tdotevent.ca/images/Toronto%20Events.jpg">'
+    '<meta property="og:image:width" content="800">'
+    '<meta property="og:image:height" content="600">'
+    '<meta name="twitter:image" content="https://tdotevent.ca/images/Toronto%20Events.jpg">'
+)
+
+
+def inject_og_image(index_path):
+    """Inject og:image meta tags into the staged index.html for social media previews."""
+    if not index_path.is_file():
+        return
+    content = index_path.read_text(encoding='utf-8', errors='replace')
+    # Inject before closing </head> or after first <head> tag
+    if '</head>' in content:
+        content = content.replace('</head>', OG_IMAGE_TAGS + '</head>', 1)
+    elif '<head>' in content:
+        content = content.replace('<head>', '<head>' + OG_IMAGE_TAGS, 1)
+    index_path.write_text(content, encoding='utf-8')
+    print('  Injected og:image meta tags into index.html')
+
+
+# ─── Staging ──────────────────────────────────────────────────
+
+def prepare_staging(staging_dir):
+    """Copy all site files into staging with domain replacements."""
+    file_count = 0
+
+    # Process directories
+    for src_rel, dst_rel in DIRS_TO_DEPLOY:
         src_dir = WORKSPACE / src_rel
         if not src_dir.is_dir():
-            print(f"  Skip {src_rel} (not found)")
+            print(f'  Skip dir {src_rel} (not found)')
             continue
-        
-        print(f"  Processing {src_rel} -> {dst_rel}")
+
+        dir_count = 0
         for root, dirs, files in os.walk(src_dir):
+            # Prune skipped directories
+            dirs[:] = [d for d in dirs if d not in SKIP_DIR_NAMES]
+
             for name in files:
                 src_path = Path(root) / name
                 rel_path = src_path.relative_to(src_dir)
-                dst_path = temp_dir / dst_rel / rel_path
-                process_file(src_path, dst_path)
-    
-    # Copy single files
-    for src_rel, dst_rel in files_to_copy:
+                dst_path = staging_dir / dst_rel / rel_path
+                if process_file(src_path, dst_path):
+                    dir_count += 1
+
+        print(f'  {src_rel} -> {dst_rel}  ({dir_count} files)')
+        file_count += dir_count
+
+    # Process single root files
+    for src_rel, dst_rel in FILES_TO_DEPLOY:
         src_path = WORKSPACE / src_rel
         if not src_path.is_file():
-            print(f"  Skip {src_rel} (not found)")
+            print(f'  Skip file {src_rel} (not found)')
             continue
-        
-        print(f"  Processing {src_rel} -> {dst_rel}")
-        dst_path = temp_dir / dst_rel
-        process_file(src_path, dst_path)
+        dst_path = staging_dir / dst_rel
+        if process_file(src_path, dst_path):
+            file_count += 1
+            print(f'  {src_rel} -> {dst_rel}')
+
+    # Inject og:image into index.html
+    inject_og_image(staging_dir / 'index.html')
+
+    return file_count
 
 
-def _upload_tree(ftp: ftplib.FTP, local_dir: Path, remote_base: str) -> int:
-    """Upload entire directory tree to FTP."""
-    ftp.cwd("/")
-    if not _ensure_dir(ftp, remote_base):
-        return 0
-    count = 0
+# ─── FTP Upload ──────────────────────────────────────────────
+
+def ensure_remote_dir(ftp, path):
+    """Create remote directory tree if needed."""
+    parts = path.strip('/').split('/')
+    current = ''
+    for part in parts:
+        if not part:
+            continue
+        current += '/' + part
+        try:
+            ftp.cwd(current)
+        except error_perm:
+            try:
+                ftp.mkd(current)
+                ftp.cwd(current)
+            except Exception:
+                pass
+
+
+def upload_tree(ftp, local_dir, remote_base, total_files=0):
+    """Upload entire directory tree to FTP with progress reporting."""
+    uploaded = 0
+    errors = 0
+
+    # Collect all files first for progress tracking
+    all_files = []
     for root, dirs, files in os.walk(local_dir):
         for name in files:
-            local_path = Path(root) / name
-            rel = local_path.relative_to(local_dir)
-            remote_path = remote_base + "/" + str(rel).replace("\\", "/")
-            remote_parts = remote_path.split("/")
-            remote_file = remote_parts[-1]
-            remote_parent = "/".join(remote_parts[:-1])
-            ftp.cwd("/")
-            _ensure_dir(ftp, remote_parent)
-            try:
-                with open(local_path, "rb") as f:
-                    ftp.storbinary(f"STOR {remote_file}", f)
-                print(f"  {remote_path}")
-                count += 1
-            except Exception as e:
-                print(f"  ERROR {remote_path}: {e}")
-    return count
+            all_files.append(Path(root) / name)
 
+    total = len(all_files)
+    start_time = time.time()
 
-def main() -> None:
-    host = _env("FTP_SERVER") or _env("FTP_HOST")
-    user = _env("FTP_USER")
-    password = _env("FTP_PASS")
+    for local_path in all_files:
+        rel = local_path.relative_to(local_dir)
+        remote_path = remote_base + '/' + str(rel).replace('\\', '/')
+        remote_dir = '/'.join(remote_path.split('/')[:-1])
+        remote_file = remote_path.split('/')[-1]
 
-    if not host or not user or not password:
-        print("Set FTP_SERVER (or FTP_HOST), FTP_USER, FTP_PASS in environment.")
-        raise SystemExit(1)
-
-    print(f"Deploy to tdotevent.ca via FTP: {host}")
-    print(f"Remote path: /{REMOTE_PATH}")
-    print()
-    print("Domain replacements:")
-    for old, new in REPLACEMENTS:
-        print(f"  {old} -> {new}")
-    print()
-
-    # Create temp directory for processed files
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_path = Path(temp_dir)
-        
-        # Prepare all files with domain replacements
-        prepare_deploy_folder(temp_path)
-        print()
-        
-        # Count prepared files
-        file_count = sum(1 for _ in temp_path.rglob("*") if _.is_file())
-        print(f"Prepared {file_count} files for upload.")
-        print()
-        
-        # Upload to FTP
         try:
-            with ftplib.FTP(host) as ftp:
-                ftp.login(user, password)
-                print("Connected to FTP.\n")
-                
-                print(f"Uploading to /{REMOTE_PATH}/ ...")
-                n = _upload_tree(ftp, temp_path, REMOTE_PATH)
-                print(f"\n-> Uploaded {n} files to /{REMOTE_PATH}/")
-            
-            print()
-            print("=" * 60)
-            print("Deploy complete!")
-            print("=" * 60)
-            print()
-            print("Your site is now available at: https://tdotevent.ca/")
-            print()
-            print("Post-deploy verification:")
-            print("  1. Visit https://tdotevent.ca/ - main events page")
-            print("  2. Visit https://tdotevent.ca/fc/#/guest - FavCreators")
-            print("  3. Visit https://tdotevent.ca/WINDOWSFIXER/ - Windows Fixer")
-            print("  4. Visit https://tdotevent.ca/MOVIESHOWS/ - Movie Shows")
-            print()
-            print("Setup database tables (if needed):")
-            print("  https://tdotevent.ca/fc/events-api/setup_tables.php")
-            
+            ftp.cwd('/')
+            ensure_remote_dir(ftp, remote_dir)
+            ftp.cwd('/' + remote_dir)
+            with open(local_path, 'rb') as f:
+                ftp.storbinary('STOR ' + remote_file, f)
+            uploaded += 1
+
+            # Progress every 50 files
+            if uploaded % 50 == 0:
+                elapsed = time.time() - start_time
+                rate = uploaded / elapsed if elapsed > 0 else 0
+                remaining = (total - uploaded) / rate if rate > 0 else 0
+                print(f'  Progress: {uploaded}/{total} files '
+                      f'({uploaded*100//total}%) '
+                      f'~{int(remaining)}s remaining')
+
         except Exception as e:
-            print(f"Deploy failed: {e}")
-            raise SystemExit(1)
+            errors += 1
+            if errors <= 20:
+                print(f'  ERROR {remote_path}: {e}')
+            elif errors == 21:
+                print('  ... (suppressing further errors)')
+
+            # Retry once on failure
+            try:
+                time.sleep(1)
+                ftp.cwd('/')
+                ensure_remote_dir(ftp, remote_dir)
+                ftp.cwd('/' + remote_dir)
+                with open(local_path, 'rb') as f:
+                    ftp.storbinary('STOR ' + remote_file, f)
+                uploaded += 1
+                errors -= 1  # Successful retry
+            except Exception:
+                pass
+
+    return uploaded, errors
 
 
-if __name__ == "__main__":
+# ─── Main ─────────────────────────────────────────────────────
+
+def main():
+    if not all([FTP_SERVER, FTP_USER, FTP_PASS]):
+        print('ERROR: FTP credentials not found in environment variables.')
+        print('Set FTP_SERVER, FTP_USER, FTP_PASS as Windows user environment variables.')
+        sys.exit(1)
+
+    print('=' * 60)
+    print('  Deploy Full Mirror to tdotevent.ca')
+    print('=' * 60)
+    print()
+    print(f'FTP Server: {FTP_SERVER}')
+    print(f'Remote root: /{REMOTE_ROOT}/')
+    print()
+    print('Domain replacements:')
+    for old, new in REPLACEMENTS:
+        print(f'  {old} -> {new}')
+    print()
+
+    # Phase 1: Stage files with domain replacements
+    print('Phase 1: Staging files with domain replacements...')
+    print('-' * 40)
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        staging = Path(temp_dir)
+        file_count = prepare_staging(staging)
+
+        print()
+        print(f'Staged {file_count} files for upload.')
+        print()
+
+        # Phase 2: Upload via FTP_TLS
+        print('Phase 2: Uploading via FTP_TLS...')
+        print('-' * 40)
+
+        try:
+            ftp = FTP_TLS(FTP_SERVER)
+            ftp.login(FTP_USER, FTP_PASS)
+            ftp.prot_p()
+            ftp.set_pasv(True)
+            print('Connected with TLS.')
+            print()
+
+            start = time.time()
+            uploaded, errors = upload_tree(ftp, staging, REMOTE_ROOT, file_count)
+            elapsed = time.time() - start
+
+            ftp.quit()
+
+            print()
+            print('=' * 60)
+            print(f'  Deploy complete! ({int(elapsed)}s)')
+            print(f'  Uploaded: {uploaded} files')
+            if errors:
+                print(f'  Errors: {errors}')
+            print('=' * 60)
+            print()
+            print('Your mirror site is live at: https://tdotevent.ca/')
+            print()
+            print('Verify these pages:')
+            print('  https://tdotevent.ca/                        - Main events')
+            print('  https://tdotevent.ca/fc/#/guest               - FavCreators')
+            print('  https://tdotevent.ca/deals/                   - Deals & Freebies')
+            print('  https://tdotevent.ca/news/                    - News Feed')
+            print('  https://tdotevent.ca/findstocks/portfolio2/hub.html - Stocks Hub')
+            print('  https://tdotevent.ca/live-monitor/live-monitor.html - Live Trading')
+            print('  https://tdotevent.ca/weather/                 - Weather')
+            print('  https://tdotevent.ca/vr/                      - VR Games')
+            print('  https://tdotevent.ca/investments/              - Investments')
+            print('  https://tdotevent.ca/WINDOWSFIXER/             - Windows Fixer')
+            print()
+
+        except Exception as e:
+            print(f'Deploy FAILED: {e}')
+            import traceback
+            traceback.print_exc()
+            sys.exit(1)
+
+
+if __name__ == '__main__':
     main()

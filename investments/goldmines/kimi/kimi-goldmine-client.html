@@ -261,7 +261,9 @@
                 }
                 
                 const data = await response.json();
+                console.log('Loaded data:', data);
                 allPicks = data.picks || [];
+                console.log('Picks array:', allPicks.length, 'items');
                 
                 // Also fetch stats
                 const statsRes = await fetch(`${GITHUB_BASE}/data/goldmine/stats.json?t=${Date.now()}`);
@@ -269,22 +271,17 @@
                 
                 updateStats(data, stats);
                 renderTable();
+                return; // Success - exit early
                 
                 document.getElementById('lastUpdated').textContent = 
                     'Updated: ' + new Date(data.timestamp).toLocaleString();
                     
             } catch (error) {
+                console.error('Error loading data:', error);
                 container.innerHTML = `
                     <div class="error">
-                        <h3>⏳ Waiting for First Data Collection</h3>
-                        <p style="margin-top:1rem;">
-                            The GitHub Actions workflow collects data every 15 minutes.<br>
-                            First collection happens automatically after pushing to GitHub.
-                        </p>
-                        <p style="margin-top:1rem;font-size:0.875rem;color:#ffd700;">
-                            💡 Tip: You can also use the <strong>Server-Side version</strong> (kimi-goldmine.html)<br>
-                            if you need immediate data from your local database.
-                        </p>
+                        <h3>⚠️ Error Loading Data</h3>
+                        <p style="margin-top:1rem;">${error.message}</p>
                         <button onclick="loadData()" class="refresh-btn" style="margin-top:1rem;">Try Again</button>
                     </div>
                 `;
@@ -322,6 +319,12 @@
         function renderTable() {
             const container = document.getElementById('tableContainer');
             
+            // Ensure allPicks is an array
+            if (!Array.isArray(allPicks) || allPicks.length === 0) {
+                container.innerHTML = '<div class="loading">No picks available yet</div>';
+                return;
+            }
+            
             let filtered = allPicks;
             if (currentFilter !== 'all') {
                 filtered = allPicks.filter(p => p.type === currentFilter);
@@ -346,7 +349,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${filtered.slice(0, 100).map(p => `
+                        ${filtered.slice(0, 100).map(p => {
+                            const entryPrice = parseFloat(p.entry_price);
+                            const confidence = parseFloat(p.confidence) || 0;
+                            const targetPct = parseFloat(p.target_pct);
+                            return `
                             <tr>
                                 <td>
                                     <span class="type-icon">
@@ -356,19 +363,19 @@
                                 </td>
                                 <td><strong>${p.symbol}</strong></td>
                                 <td>${p.algorithm}</td>
-                                <td>${p.entry_price ? '$' + p.entry_price.toFixed(2) : '-'}</td>
-                                <td>${p.target_pct ? '+' + p.target_pct + '%' : '-'}</td>
+                                <td>${!isNaN(entryPrice) && entryPrice > 0 ? '$' + entryPrice.toFixed(4) : '-'}</td>
+                                <td>${!isNaN(targetPct) ? '+' + targetPct + '%' : '-'}</td>
                                 <td>
                                     <div style="display:flex;align-items:center;gap:0.5rem;">
                                         <div class="confidence-bar">
-                                            <div class="confidence-fill" style="width:${p.confidence}%;background:${p.confidence >= 80 ? '#00c853' : p.confidence >= 60 ? '#ffd700' : '#ff1744'}"></div>
+                                            <div class="confidence-fill" style="width:${Math.min(100, confidence)}%;background:${confidence >= 80 ? '#00c853' : confidence >= 60 ? '#ffd700' : '#ff1744'}"></div>
                                         </div>
-                                        <span style="font-size:0.75rem;">${p.confidence}</span>
+                                        <span style="font-size:0.75rem;">${Math.round(confidence)}</span>
                                     </div>
                                 </td>
                                 <td><span class="badge badge-${p.status === 'active' ? 'green' : 'blue'}">${p.status}</span></td>
                             </tr>
-                        `).join('')}
+                        `}).join('')}
                     </tbody>
                 </table>
             `;

@@ -65,6 +65,7 @@ $NS_CACHE_DIR = dirname(__FILE__) . '/cache/';
 if (!is_dir($NS_CACHE_DIR)) { @mkdir($NS_CACHE_DIR, 0755, true); }
 
 function _ns_cache_get($key, $ttl) {
+    if (isset($_GET['nocache']) && $_GET['nocache'] == '1') return false;
     global $NS_CACHE_DIR;
     $f = $NS_CACHE_DIR . 'ns_' . md5($key) . '.json';
     if (file_exists($f) && (time() - filemtime($f)) < $ttl) {
