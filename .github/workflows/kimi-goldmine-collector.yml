@@ -168,5 +168,7 @@ jobs:
           echo "No changes to commit"
         else
           git commit -m "Update goldmine data - $(date -u '+%Y-%m-%d %H:%M UTC')"
-          git push
+          # Pull with rebase to handle concurrent changes
+          git pull --rebase origin main || git pull origin main || true
+          git push origin main || (sleep 5 && git push origin main)
         fi
