@@ -1,0 +1,134 @@
+name: World-Class Intelligence — Daily Pipeline
+
+on:
+  schedule:
+    # Daily at 6:30 AM EST (11:30 UTC) — after market pre-open, before live-monitor signals
+    - cron: '30 11 * * 1-5'
+    # Sunday comprehensive run (includes full retrain)
+    - cron: '0 14 * * 0'
+  workflow_dispatch:  # Manual trigger
+    inputs:
+      module:
+        description: 'Module to run (all, regime, macro, meta, alphas)'
+        required: false
+        default: 'all'
+
+jobs:
+  worldclass-intelligence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    # ─── Step 0: Checkout code ───
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # ─── Step 1: Setup Python ───
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        cache-dependency-path: scripts/worldclass/requirements.txt
+
+    # ─── Step 2: Install dependencies ───
+    - name: Install dependencies
+      run: |
+        pip install --quiet -r scripts/worldclass/requirements.txt
+
+    # ─── Step 3: Ensure intelligence tables exist ───
+    - name: Initialize intelligence tables
+      continue-on-error: true
+      run: |
+        echo "=== Initializing World-Class Intelligence tables ==="
+        curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/world_class_intelligence.php" || true
+
+    # ─── Step 4: Run HMM Regime + Hurst Exponent ───
+    - name: HMM Regime Detection + Hurst Exponent
+      continue-on-error: true
+      working-directory: scripts/worldclass
+      run: |
+        echo "=== HMM Regime Detection + Hurst Exponent ==="
+        python3 hmm_regime.py
+
+    # ─── Step 5: Run Macro Intelligence (FRED + VIX + Cross-Asset) ───
+    - name: Macro Intelligence (VIX + Cross-Asset)
+      continue-on-error: true
+      working-directory: scripts/worldclass
+      run: |
+        echo "=== Macro Intelligence: VIX Term Structure + Cross-Asset Spillover ==="
+        python3 macro_intelligence.py
+
+    # ─── Step 6: Run Meta-Labeling + Kelly + Alpha Decay ───
+    - name: Meta-Labeling + Kelly Fractions + Alpha Decay
+      continue-on-error: true
+      working-directory: scripts/worldclass
+      run: |
+        echo "=== Meta-Labeling + Kelly Fractions + Alpha Decay ==="
+        python3 meta_labeling.py
+
+    # ─── Step 7: Run WorldQuant 101 Alphas ───
+    - name: WorldQuant 101 Alphas
+      continue-on-error: true
+      working-directory: scripts/worldclass
+      run: |
+        echo "=== WorldQuant 101 Formulaic Alphas ==="
+        python3 worldquant_alphas.py
+
+    # ─── Step 8: Compute Kelly fractions (PHP-side, from trade history) ───
+    - name: Compute Kelly fractions (server-side)
+      continue-on-error: true
+      run: |
+        echo "=== Computing Kelly fractions from trade history ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/world_class_intelligence.php?action=compute_kelly&key=livetrader2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Computed {d.get(\"computed\",0)} Kelly fractions')
+                for k in d.get('kelly_data', [])[:10]:
+                    print(f'  {k[\"algorithm\"]:25s} WR={k[\"win_rate\"]:.2%} Kelly={k[\"half_kelly\"]:.4f} (n={k[\"sample_size\"]})')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print(f'Raw: {sys.stdin.read()[:200]}')
+        " 2>/dev/null || echo "Kelly: $RESULT"
+
+    # ─── Step 9: Compute algo health / alpha decay ───
+    - name: Compute Alpha Decay + Online Weights
+      continue-on-error: true
+      run: |
+        echo "=== Computing Alpha Decay + Online Learning Weights ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/world_class_intelligence.php?action=compute_algo_health&key=livetrader2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Computed {d.get(\"computed\",0)} algo health records')
+                for h in d.get('health', [])[:10]:
+                    status_icon = {'strong':'[+]','healthy':'[=]','warning':'[!]','decayed':'[X]'}.get(h['status'],'[?]')
+                    print(f'  {status_icon} {h[\"algorithm\"]:25s} W={h[\"weight\"]:.3f} Sharpe={h[\"sharpe_30d\"]:+.2f} WR={h[\"win_rate_30d\"]:.0%} (n={h[\"trades\"]})')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print(f'Raw: {sys.stdin.read()[:200]}')
+        " 2>/dev/null || echo "Health: $RESULT"
+
+    # ─── Step 10: Intelligence dashboard summary ───
+    - name: Intelligence Dashboard Summary
+      continue-on-error: true
+      run: |
+        echo "=== World-Class Intelligence Dashboard ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/world_class_intelligence.php?action=regime") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                regimes = d.get('regimes', {})
+                for asset, info in regimes.items():
+                    print(f'  {asset}:')
+                    for k, v in info.items():
+                        print(f'    {k}: {v}')
+        except: print(f'Raw: {sys.stdin.read()[:200]}')
+        " 2>/dev/null || echo "Dashboard: $RESULT"

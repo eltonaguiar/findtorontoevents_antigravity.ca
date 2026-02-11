@@ -1157,11 +1157,120 @@ function _ls_calc_ichimoku($highs, $lows, $tenkan_p, $kijun_p, $senkou_b_p) {
 }
 
 // ────────────────────────────────────────────────────────────
-//  Regime Detection — bull/bear market gate (for Trend Sniper)
-//  Science: STOCKSUNIFY2 RAR (Regime-Aware Reversion)
+//  Regime Detection — UPGRADED: HMM + Hurst + SMA fallback
+//  Science: Ang & Bekaert (2004) HMM, Mandelbrot (1963) Hurst
+//  Replaces simple SMA cross with 3-state HMM when available
 // ────────────────────────────────────────────────────────────
 
+// World-Class: fetch intelligence metrics from DB
+function _ls_get_intelligence($conn, $metric_name, $asset_class) {
+    if (!isset($GLOBALS['_ls_intelligence_cache'])) {
+        $GLOBALS['_ls_intelligence_cache'] = array();
+    }
+    $cache_key = $metric_name . '_' . $asset_class;
+    if (isset($GLOBALS['_ls_intelligence_cache'][$cache_key])) {
+        return $GLOBALS['_ls_intelligence_cache'][$cache_key];
+    }
+
+    $safe_metric = $conn->real_escape_string($metric_name);
+    $safe_asset = $conn->real_escape_string($asset_class);
+    $r = $conn->query("SELECT metric_value, metric_label, metadata, updated_at
+        FROM lm_intelligence
+        WHERE metric_name='$safe_metric' AND asset_class='$safe_asset'
+        ORDER BY updated_at DESC LIMIT 1");
+    if ($r && $r->num_rows > 0) {
+        $row = $r->fetch_assoc();
+        $r->free();
+        $result = array(
+            'value' => (float)$row['metric_value'],
+            'label' => $row['metric_label'],
+            'metadata' => $row['metadata'],
+            'updated' => $row['updated_at']
+        );
+        $GLOBALS['_ls_intelligence_cache'][$cache_key] = $result;
+        return $result;
+    }
+    return null;
+}
+
+// World-Class: get algo health / online learning weight
+function _ls_get_algo_weight($conn, $algo_name, $asset_class) {
+    if (!isset($GLOBALS['_ls_algo_weights'])) {
+        // Load all weights at once
+        $GLOBALS['_ls_algo_weights'] = array();
+        $r = $conn->query("SELECT algorithm_name, asset_class, online_weight, decay_status
+            FROM lm_algo_health ORDER BY algorithm_name");
+        if ($r) {
+            while ($row = $r->fetch_assoc()) {
+                $key = $row['algorithm_name'] . '|' . $row['asset_class'];
+                $GLOBALS['_ls_algo_weights'][$key] = array(
+                    'weight' => (float)$row['online_weight'],
+                    'status' => $row['decay_status']
+                );
+            }
+            $r->free();
+        }
+    }
+
+    $key = $algo_name . '|' . $asset_class;
+    if (isset($GLOBALS['_ls_algo_weights'][$key])) {
+        return $GLOBALS['_ls_algo_weights'][$key];
+    }
+    // Fallback: check ALL asset class
+    $key_all = $algo_name . '|ALL';
+    if (isset($GLOBALS['_ls_algo_weights'][$key_all])) {
+        return $GLOBALS['_ls_algo_weights'][$key_all];
+    }
+    return array('weight' => 1.0, 'status' => 'unknown');
+}
+
+// World-Class: get Hurst exponent for strategy selection
+function _ls_get_hurst($conn, $asset_class) {
+    $intel = _ls_get_intelligence($conn, 'hurst_exponent', $asset_class);
+    if ($intel) {
+        return array('value' => $intel['value'], 'label' => $intel['label']);
+    }
+    return array('value' => 0.50, 'label' => 'random_walk'); // Default
+}
+
+// World-Class: check if algo should be disabled based on Hurst exponent
+function _ls_hurst_gate($conn, $algo_name, $asset_class) {
+    $hurst = _ls_get_hurst($conn, $asset_class);
+    $h = $hurst['value'];
+
+    // Momentum algos: disable when market is mean-reverting (H < 0.45)
+    $momentum_algos = array(
+        'Momentum Burst', 'Breakout 24h', 'Volatility Breakout',
+        'Trend Sniper', 'Volume Spike', 'VAM',
+        'ADX Trend Strength', 'Alpha Predator'
+    );
+
+    // Mean-reversion algos: disable when market is trending (H > 0.55)
+    $mr_algos = array(
+        'RSI Reversal', 'DCA Dip', 'Dip Recovery', 'Mean Reversion Sniper'
+    );
+
+    if (in_array($algo_name, $momentum_algos) && $h < 0.45) {
+        return false; // Disable momentum in mean-reverting market
+    }
+    if (in_array($algo_name, $mr_algos) && $h > 0.55) {
+        return false; // Disable mean-reversion in trending market
+    }
+    return true; // Allow
+}
+
 function _ls_get_regime($conn, $asset, $candles, $symbol) {
+    // ── Try HMM regime first (from Python ML pipeline) ──
+    $hmm = _ls_get_intelligence($conn, 'hmm_regime', $asset);
+    if ($hmm) {
+        $label = $hmm['label'];
+        // Map HMM labels to existing regime gate format
+        if ($label === 'bull') return 'bull';
+        if ($label === 'bear') return 'bear';
+        if ($label === 'sideways') return 'neutral';
+    }
+
+    // ── Fallback: original SMA-based regime detection ──
     // Crypto regime: BTC above 24h SMA = bull
     if ($asset === 'CRYPTO') {
         if (!isset($GLOBALS['_ls_btc_regime'])) {
@@ -3123,6 +3232,20 @@ function _ls_action_scan($conn) {
             if ($sig === null) continue;
             // Kimi: skip momentum algos during extreme volatility
             if ($vol_extreme && _ls_is_momentum_algo($sig['algorithm_name'])) continue;
+
+            // World-Class: Hurst-based strategy selection (disable wrong-regime algos)
+            if (!_ls_hurst_gate($conn, $sig['algorithm_name'], 'CRYPTO')) continue;
+
+            // World-Class: Alpha decay check (skip decayed algorithms)
+            $algo_health = _ls_get_algo_weight($conn, $sig['algorithm_name'], 'CRYPTO');
+            if ($algo_health['status'] === 'decayed') continue;
+
+            // World-Class: Apply online learning weight to signal strength
+            if ($algo_health['weight'] > 0 && $algo_health['weight'] != 1.0) {
+                $sig['signal_strength'] = min(100, max(10,
+                    (int)($sig['signal_strength'] * $algo_health['weight'])));
+            }
+
             // Kimi: ATR-adjust TP/SL
             $sig = _ls_atr_adjust_tp_sl($candles, $price, $sig);
             // Kimi: apply funding rate signal boost/penalty (crypto only)
@@ -3194,6 +3317,20 @@ function _ls_action_scan($conn) {
             if ($sig === null) continue;
             // Kimi: skip momentum algos during extreme volatility
             if ($vol_extreme && _ls_is_momentum_algo($sig['algorithm_name'])) continue;
+
+            // World-Class: Hurst-based strategy selection
+            if (!_ls_hurst_gate($conn, $sig['algorithm_name'], 'FOREX')) continue;
+
+            // World-Class: Alpha decay check
+            $algo_health = _ls_get_algo_weight($conn, $sig['algorithm_name'], 'FOREX');
+            if ($algo_health['status'] === 'decayed') continue;
+
+            // World-Class: Apply online learning weight
+            if ($algo_health['weight'] > 0 && $algo_health['weight'] != 1.0) {
+                $sig['signal_strength'] = min(100, max(10,
+                    (int)($sig['signal_strength'] * $algo_health['weight'])));
+            }
+
             // Kimi: ATR-adjust TP/SL
             $sig = _ls_atr_adjust_tp_sl($candles, $price, $sig);
             if (_ls_signal_exists($conn, $sym, $sig['algorithm_name'])) continue;
@@ -3281,6 +3418,20 @@ function _ls_action_scan($conn) {
                 if ($sig === null) continue;
                 // Kimi: skip momentum algos during extreme volatility
                 if ($vol_extreme && _ls_is_momentum_algo($sig['algorithm_name'])) continue;
+
+                // World-Class: Hurst-based strategy selection
+                if (!_ls_hurst_gate($conn, $sig['algorithm_name'], 'STOCK')) continue;
+
+                // World-Class: Alpha decay check
+                $algo_health = _ls_get_algo_weight($conn, $sig['algorithm_name'], 'STOCK');
+                if ($algo_health['status'] === 'decayed') continue;
+
+                // World-Class: Apply online learning weight
+                if ($algo_health['weight'] > 0 && $algo_health['weight'] != 1.0) {
+                    $sig['signal_strength'] = min(100, max(10,
+                        (int)($sig['signal_strength'] * $algo_health['weight'])));
+                }
+
                 // Kimi: ATR-adjust TP/SL
                 $sig = _ls_atr_adjust_tp_sl($candles, $price, $sig);
                 if (_ls_signal_exists($conn, $sym, $sig['algorithm_name'])) continue;
