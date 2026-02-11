@@ -22,7 +22,7 @@ COINDESK_API_KEY = os.environ.get('COIN_DESK', '')
 
 # X/Twitter API (free tier: 1500 tweets/month read)
 # Used for tracking crypto sentiment and sharp bettors
-X_BEARER_TOKEN = os.environ.get('X_BEARER_TOKEN', '')
+X_BEARER_TOKEN = os.environ.get('X_BEARER', '')
 
 # Reddit API (free, needs app registration at reddit.com/prefs/apps)
 # App type: "script", redirect URI: http://localhost:8080
