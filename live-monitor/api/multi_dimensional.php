@@ -530,14 +530,28 @@ function _md_send_webhook($conn, $type, $ticker, $msg, $severity) {
     $sev_emoji = ($severity === 'critical') ? "\xF0\x9F\x9A\xA8" : (($severity === 'warning') ? "\xE2\x9A\xA0\xEF\xB8\x8F" : "\xE2\x84\xB9\xEF\xB8\x8F");
     $type_clean = str_replace('_', ' ', ucfirst($type));
 
+    // Alert type emojis for richer Discord messages
+    $type_emojis = array(
+        'insider_cluster' => "\xF0\x9F\x91\xA5",
+        'insider_massive' => "\xF0\x9F\x92\xB0",
+        'conviction_jump' => "\xF0\x9F\x93\x88",
+        'conviction_drop' => "\xF0\x9F\x93\x89",
+        'whale_accumulation' => "\xF0\x9F\x90\x8B",
+        'fear_opportunity' => "\xF0\x9F\x98\xA8",
+        'greed_extreme' => "\xF0\x9F\xA4\x91",
+        'conviction_divergence' => "\xE2\x9A\xA1"
+    );
+    $type_emoji = isset($type_emojis[$type]) ? $type_emojis[$type] : '';
+
     // Build Discord-compatible payload
     $payload = json_encode(array(
         'content' => $sev_emoji . ' **' . $type_clean . '** | ' . ($ticker ? $ticker . ' | ' : '') . $msg,
         'embeds' => array(array(
-            'title' => $type_clean . ($ticker ? ' - ' . $ticker : ''),
+            'title' => ($type_emoji ? $type_emoji . ' ' : '') . $type_clean . ($ticker ? ' - ' . $ticker : ''),
             'description' => $msg,
             'color' => ($severity === 'critical') ? 15158332 : (($severity === 'warning') ? 16776960 : 3447003),
-            'footer' => array('text' => 'Conviction Alerts | ' . gmdate('Y-m-d H:i:s') . ' UTC')
+            'footer' => array('text' => 'Conviction Alerts | ' . gmdate('Y-m-d H:i:s') . ' UTC'),
+            'url' => 'https://findtorontoevents.ca/live-monitor/conviction-alerts.html'
         ))
     ));
 
@@ -555,6 +569,57 @@ function _md_send_webhook($conn, $type, $ticker, $msg, $severity) {
         $re = $conn->real_escape_string(substr($resp, 0, 500));
         $conn->query("UPDATE lm_webhook_config SET last_sent = '$now', last_response = '$re' WHERE id = 1");
     }
+
+    // Also send critical/high alerts to #notifications webhook
+    // Only forward the most important: insider_massive, whale_accumulation, insider_cluster
+    $notify_types = array('insider_massive', 'whale_accumulation', 'insider_cluster');
+    if ($severity === 'critical' || in_array($type, $notify_types)) {
+        $notif_url = _md_get_notif_webhook();
+        if ($notif_url && $notif_url !== $url) {
+            // Build a richer notification payload
+            $notif_payload = json_encode(array(
+                'content' => "\xF0\x9F\x93\xA2" . ' **STOCK INTELLIGENCE** ' . "\xE2\x80\x94" . ' ' . $type_clean . ($ticker ? ' on **' . $ticker . '**' : ''),
+                'embeds' => array(array(
+                    'title' => ($type_emoji ? $type_emoji . ' ' : '') . $type_clean . ($ticker ? ' - ' . $ticker : ''),
+                    'description' => $msg,
+                    'color' => ($severity === 'critical') ? 15158332 : 16766720,
+                    'footer' => array('text' => 'Smart Money Intelligence | ' . gmdate('Y-m-d H:i:s') . ' UTC'),
+                    'url' => 'https://findtorontoevents.ca/live-monitor/conviction-alerts.html'
+                ))
+            ));
+
+            $ch2 = curl_init($notif_url);
+            curl_setopt($ch2, CURLOPT_POST, true);
+            curl_setopt($ch2, CURLOPT_POSTFIELDS, $notif_payload);
+            curl_setopt($ch2, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+            curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch2, CURLOPT_TIMEOUT, 5);
+            curl_setopt($ch2, CURLOPT_SSL_VERIFYPEER, false);
+            curl_exec($ch2);
+            curl_close($ch2);
+        }
+    }
+}
+
+/**
+ * Read the notifications webhook URL from .env
+ */
+function _md_get_notif_webhook() {
+    $env_file = dirname(__FILE__) . '/../../favcreators/public/api/.env';
+    $notif_webhook = '';
+    $main_webhook = '';
+    if (file_exists($env_file)) {
+        $lines = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            if (strpos($line, 'DISCORD_NOTIFICATIONS_WEBHOOK=') === 0) {
+                $notif_webhook = trim(substr($line, 30));
+            }
+            if (strpos($line, 'DISCORD_WEBHOOK_URL=') === 0) {
+                $main_webhook = trim(substr($line, 20));
+            }
+        }
+    }
+    return $notif_webhook ? $notif_webhook : $main_webhook;
 }
 
 function _md_load_alert_configs($conn) {
@@ -2016,19 +2081,31 @@ if ($action === 'performance') {
     $where = 'WHERE 1=1';
     if ($ticker_filter !== '') {
         $tf = _md_esc($conn, $ticker_filter);
-        $where .= " AND ticker = '$tf'";
+        $where .= " AND cp.ticker = '$tf'";
     }
 
-    $r = $conn->query("SELECT * FROM lm_conviction_performance $where ORDER BY conviction_date DESC LIMIT $limit");
+    $r = $conn->query("SELECT cp.*, pc.price AS current_price, pc.change_24h_pct
+        FROM lm_conviction_performance cp
+        LEFT JOIN lm_price_cache pc ON pc.symbol = cp.ticker AND pc.asset_class = 'STOCK'
+        $where ORDER BY cp.conviction_date DESC LIMIT $limit");
     $records = array();
     if ($r) {
         while ($row = $r->fetch_assoc()) {
-            $records[] = array(
+            $entry = floatval($row['entry_price']);
+            $current = floatval($row['current_price']);
+            $live_return = null;
+            if ($row['outcome_30d'] === 'pending' && $current > 0 && $entry > 0) {
+                $live_return = round(($current - $entry) / $entry * 100, 4);
+            }
+            $rec = array(
                 'ticker' => $row['ticker'],
                 'conviction_date' => $row['conviction_date'],
+                'created_at' => $row['created_at'],
                 'conviction_score' => intval($row['conviction_score']),
                 'conviction_label' => $row['conviction_label'],
-                'entry_price' => floatval($row['entry_price']),
+                'entry_price' => $entry,
+                'current_price' => $current,
+                'live_return' => $live_return,
                 'price_7d' => floatval($row['price_7d']),
                 'return_7d' => floatval($row['return_7d']),
                 'price_14d' => floatval($row['price_14d']),
@@ -2037,8 +2114,10 @@ if ($action === 'performance') {
                 'return_30d' => floatval($row['return_30d']),
                 'outcome_30d' => $row['outcome_30d'],
                 'filled_7d' => intval($row['filled_7d']),
+                'filled_14d' => intval($row['filled_14d']),
                 'filled_30d' => intval($row['filled_30d'])
             );
+            $records[] = $rec;
         }
     }
 
@@ -2287,6 +2366,76 @@ if ($action === 'test_webhook') {
 
     _md_send_webhook($conn, 'test', '', 'This is a test alert from Conviction Alerts dashboard', 'info');
     echo json_encode(array('ok' => true, 'action' => 'test_webhook', 'message' => 'Test webhook sent'));
+    $conn->close();
+    exit;
+}
+
+// ═══════════════════════════════════════════
+//  Action: live_returns — real-time unrealized P&L for pending convictions
+// ═══════════════════════════════════════════
+if ($action === 'live_returns') {
+    $ticker_filter = isset($_GET['ticker']) ? strtoupper(trim($_GET['ticker'])) : '';
+    $where = "WHERE cp.outcome_30d = 'pending' AND cp.entry_price > 0";
+    if ($ticker_filter !== '') {
+        $tf = _md_esc($conn, $ticker_filter);
+        $where .= " AND cp.ticker = '$tf'";
+    }
+
+    $records = array();
+    $sql = "SELECT cp.*, pc.price AS current_price, pc.change_24h_pct, pc.last_updated AS price_updated
+        FROM lm_conviction_performance cp
+        LEFT JOIN lm_price_cache pc ON pc.symbol = cp.ticker AND pc.asset_class = 'STOCK'
+        $where
+        ORDER BY cp.conviction_date DESC
+        LIMIT 200";
+    $r = $conn->query($sql);
+    if ($r) {
+        while ($row = $r->fetch_assoc()) {
+            $entry = floatval($row['entry_price']);
+            $current = floatval($row['current_price']);
+            $live_return = 0;
+            $has_live = 0;
+            if ($current > 0 && $entry > 0) {
+                $live_return = round(($current - $entry) / $entry * 100, 4);
+                $has_live = 1;
+            }
+            $days_held = floor((time() - strtotime($row['conviction_date'])) / 86400);
+            $records[] = array(
+                'ticker' => $row['ticker'],
+                'conviction_date' => $row['conviction_date'],
+                'created_at' => $row['created_at'],
+                'conviction_score' => intval($row['conviction_score']),
+                'conviction_label' => $row['conviction_label'],
+                'entry_price' => $entry,
+                'current_price' => $current,
+                'live_return' => $live_return,
+                'has_live_price' => $has_live,
+                'days_held' => $days_held,
+                'change_24h_pct' => floatval($row['change_24h_pct']),
+                'price_updated' => $row['price_updated'],
+                'filled_7d' => intval($row['filled_7d']),
+                'return_7d' => floatval($row['return_7d']),
+                'filled_14d' => intval($row['filled_14d']),
+                'return_14d' => floatval($row['return_14d']),
+                'outcome_30d' => $row['outcome_30d']
+            );
+        }
+    }
+
+    // Also get all current prices for the live price ticker
+    $all_prices = array();
+    $rp = $conn->query("SELECT symbol, price, change_24h_pct, updated_at FROM lm_price_cache WHERE price > 0");
+    if ($rp) {
+        while ($row = $rp->fetch_assoc()) {
+            $all_prices[$row['symbol']] = array(
+                'price' => floatval($row['price']),
+                'change_24h' => floatval($row['change_24h_pct']),
+                'updated' => $row['updated_at']
+            );
+        }
+    }
+
+    echo json_encode(array('ok' => true, 'action' => 'live_returns', 'count' => count($records), 'records' => $records, 'prices' => $all_prices));
     $conn->close();
     exit;
 }

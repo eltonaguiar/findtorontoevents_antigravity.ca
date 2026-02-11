@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Penny Stock Finder | Find Toronto Events</title>
+    <title>Penny Stock Finder &amp; Picks | Find Toronto Events</title>
     <style>
         :root {
             --bg-dark: #0a0a1a;
@@ -23,6 +23,7 @@
             --blue: #3b82f6;
             --orange: #f97316;
             --purple: #a855f7;
+            --cyan: #06b6d4;
             --radius: 12px;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -64,6 +65,41 @@
             margin-bottom: 1.5rem;
             text-align: center;
         }
+
+        /* ── Tabs ── */
+        .tabs {
+            display: flex;
+            gap: 0;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        .tab-btn {
+            flex: 1;
+            background: var(--bg-card);
+            color: var(--text-dim);
+            border: none;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: center;
+        }
+        .tab-btn:not(:last-child) { border-right: 1px solid var(--border); }
+        .tab-btn.active { background: var(--accent); color: #fff; }
+        .tab-btn:hover:not(.active) { background: var(--bg-card-hover); color: var(--text); }
+        .tab-btn .tab-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 1px 7px;
+            border-radius: 10px;
+            font-size: 11px;
+            margin-left: 6px;
+        }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
 
         /* ── Filters ── */
         .filters {
@@ -125,10 +161,7 @@
             transition: all 0.15s;
         }
         .country-btn:not(:last-child) { border-right: 1px solid var(--border); }
-        .country-btn.active {
-            background: var(--accent);
-            color: #fff;
-        }
+        .country-btn.active { background: var(--accent); color: #fff; }
         .country-btn:hover:not(.active) { background: var(--bg-card-hover); color: var(--text); }
 
         /* ── Summary Bar ── */
@@ -271,6 +304,101 @@
             max-width: 60px;
         }
 
+        /* ── Score Bar ── */
+        .score-bar {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .score-bar-bg {
+            width: 60px;
+            height: 8px;
+            background: var(--bg-dark);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .score-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        .score-val { font-weight: 700; font-size: 13px; min-width: 28px; text-align: right; }
+
+        /* ── Rating Badges ── */
+        .rating-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .rating-STRONG_BUY { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+        .rating-BUY { background: rgba(34, 197, 94, 0.12); color: #86efac; }
+        .rating-HOLD { background: rgba(234, 179, 8, 0.12); color: #facc15; }
+        .rating-SELL { background: rgba(239, 68, 68, 0.12); color: #fca5a5; }
+        .rating-STRONG_SELL { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+        /* ── Picks Cards ── */
+        .picks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .pick-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem 1.2rem;
+            transition: border-color 0.15s;
+        }
+        .pick-card:hover { border-color: var(--accent); }
+        .pick-card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.7rem;
+        }
+        .pick-card-head .sym { font-size: 18px; font-weight: 700; color: var(--accent); }
+        .pick-card-head .name { font-size: 12px; color: var(--text-dim); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .pick-card-body { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; font-size: 12px; }
+        .pick-card-body .lbl { color: var(--text-dim); }
+        .pick-card-body .val { text-align: right; font-weight: 500; }
+        .factor-bars { margin-top: 0.7rem; }
+        .factor-row { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; font-size: 11px; }
+        .factor-row .f-label { width: 70px; color: var(--text-dim); text-align: right; }
+        .factor-row .f-bar-bg { flex: 1; height: 6px; background: var(--bg-dark); border-radius: 3px; overflow: hidden; }
+        .factor-row .f-bar { height: 100%; border-radius: 3px; }
+        .factor-row .f-val { width: 24px; font-weight: 600; font-size: 10px; }
+
+        /* ── Stats Cards ── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-card .stat-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card .stat-value { font-size: 1.8rem; font-weight: 700; margin-top: 4px; }
+        .stat-card .stat-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+        /* ── Empty State ── */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-dim);
+        }
+        .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
+        .empty-state h3 { color: var(--text); margin-bottom: 0.5rem; }
+
         .footer {
             text-align: center;
             padding: 2rem;
@@ -285,110 +413,269 @@
             .filter-group select, .filter-group input { width: 100%; }
             td.name { max-width: 120px; }
             .header h1 { font-size: 1.5rem; }
+            .picks-grid { grid-template-columns: 1fr; }
+            .stats-row { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Penny Stock Finder</h1>
-        <p>High-volume, exchange-listed penny stocks &mdash; RRSP eligible &mdash; No OTC/Pink Sheets</p>
+        <h1>Penny Stock Finder &amp; Picks</h1>
+        <p>Multi-factor scored penny stocks &mdash; RRSP eligible &mdash; No OTC/Pink Sheets</p>
     </div>
 
     <div class="container">
         <div class="disclaimer">
-            Not financial advice. Penny stocks are highly volatile and risky. Always do your own research before investing. RRSP eligibility is based on exchange listing — confirm with your broker.
+            Not financial advice. Penny stocks are highly volatile and risky. Always do your own research before investing. Scores are algorithmic, not recommendations.
         </div>
 
-        <!-- Filters -->
-        <div class="filters">
-            <div class="filter-group">
-                <label>Country</label>
-                <div class="country-toggle">
-                    <button class="country-btn active" data-region="ca">Canada</button>
-                    <button class="country-btn" data-region="us">US</button>
-                    <button class="country-btn" data-region="both">Both</button>
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('scanner')">Scanner</button>
+            <button class="tab-btn" onclick="switchTab('picks')">Daily Picks <span class="tab-badge" id="picks-badge"></span></button>
+            <button class="tab-btn" onclick="switchTab('performance')">Performance</button>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- TAB 1: SCANNER (existing functionality) -->
+        <!-- ============================================ -->
+        <div class="tab-panel active" id="tab-scanner">
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Country</label>
+                    <div class="country-toggle">
+                        <button class="country-btn active" data-region="ca">Canada</button>
+                        <button class="country-btn" data-region="us">US</button>
+                        <button class="country-btn" data-region="both">Both</button>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Max Price</label>
+                    <select id="max-price">
+                        <option value="1">Under $1</option>
+                        <option value="2">Under $2</option>
+                        <option value="5" selected>Under $5</option>
+                        <option value="10">Under $10</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Min Volume</label>
+                    <select id="min-volume">
+                        <option value="50000">50K+</option>
+                        <option value="100000" selected>100K+</option>
+                        <option value="500000">500K+</option>
+                        <option value="1000000">1M+</option>
+                        <option value="5000000">5M+</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Sort By</label>
+                    <select id="sort-field">
+                        <option value="dayvolume" selected>Volume</option>
+                        <option value="percentchange">% Change</option>
+                        <option value="intradayprice">Price</option>
+                        <option value="intradaymarketcap">Market Cap</option>
+                    </select>
+                </div>
+                <button class="btn-search" id="btn-search" onclick="search(0)">Search</button>
+            </div>
+
+            <div class="summary" id="summary" style="display:none;"></div>
+
+            <div id="results">
+                <div class="loading" style="display:none;" id="loading">
+                    <span class="spinner"></span> Scanning exchanges...
+                </div>
+                <div class="error-box" style="display:none;" id="error"></div>
+                <div class="table-wrap" style="display:none;" id="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Change</th>
+                                <th>Volume</th>
+                                <th>Avg Vol (3M)</th>
+                                <th>Mkt Cap</th>
+                                <th>52W Range</th>
+                                <th>Exchange</th>
+                                <th>RRSP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody"></tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="pagination" style="display:none;">
+                    <button id="btn-prev" onclick="prevPage()">&laquo; Previous</button>
+                    <span class="page-info" id="page-info"></span>
+                    <button id="btn-next" onclick="nextPage()">Next &raquo;</button>
                 </div>
             </div>
-            <div class="filter-group">
-                <label>Max Price</label>
-                <select id="max-price">
-                    <option value="1">Under $1</option>
-                    <option value="2">Under $2</option>
-                    <option value="5" selected>Under $5</option>
-                    <option value="10">Under $10</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Min Volume</label>
-                <select id="min-volume">
-                    <option value="50000">50K+</option>
-                    <option value="100000" selected>100K+</option>
-                    <option value="500000">500K+</option>
-                    <option value="1000000">1M+</option>
-                    <option value="5000000">5M+</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Sort By</label>
-                <select id="sort-field">
-                    <option value="dayvolume" selected>Volume</option>
-                    <option value="percentchange">% Change</option>
-                    <option value="intradayprice">Price</option>
-                    <option value="intradaymarketcap">Market Cap</option>
-                </select>
-            </div>
-            <button class="btn-search" id="btn-search" onclick="search(0)">Search</button>
         </div>
 
-        <!-- Summary -->
-        <div class="summary" id="summary" style="display:none;"></div>
+        <!-- ============================================ -->
+        <!-- TAB 2: DAILY PICKS -->
+        <!-- ============================================ -->
+        <div class="tab-panel" id="tab-picks">
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Country</label>
+                    <select id="picks-country">
+                        <option value="ALL">All</option>
+                        <option value="US">US</option>
+                        <option value="CA">Canada</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Min Score</label>
+                    <select id="picks-min-score">
+                        <option value="0">All Picks</option>
+                        <option value="50">50+</option>
+                        <option value="60" selected>60+ (BUY+)</option>
+                        <option value="75">75+ (STRONG BUY)</option>
+                    </select>
+                </div>
+                <button class="btn-search" onclick="loadPicks()">Refresh</button>
+            </div>
 
-        <!-- Results -->
-        <div id="results">
-            <div class="loading" style="display:none;" id="loading">
-                <span class="spinner"></span> Scanning exchanges...
+            <div id="picks-date" style="text-align:center;margin-bottom:1rem;color:var(--text-dim);font-size:13px;"></div>
+
+            <div class="loading" style="display:none;" id="picks-loading">
+                <span class="spinner"></span> Loading daily picks...
             </div>
-            <div class="error-box" style="display:none;" id="error"></div>
-            <div class="table-wrap" style="display:none;" id="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th data-sort="symbol">Symbol <span class="arrow"></span></th>
-                            <th>Name</th>
-                            <th data-sort="intradayprice">Price <span class="arrow"></span></th>
-                            <th data-sort="percentchange">Change <span class="arrow"></span></th>
-                            <th data-sort="dayvolume">Volume <span class="arrow"></span></th>
-                            <th>Avg Vol (3M)</th>
-                            <th data-sort="intradaymarketcap">Mkt Cap <span class="arrow"></span></th>
-                            <th>52W Range</th>
-                            <th>Exchange</th>
-                            <th>RRSP</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody"></tbody>
-                </table>
+
+            <div id="picks-empty" class="empty-state" style="display:none;">
+                <div class="empty-icon">&#128202;</div>
+                <h3>No Picks Available Yet</h3>
+                <p>Daily picks are generated automatically. Check back soon!</p>
             </div>
-            <div class="pagination" id="pagination" style="display:none;">
-                <button id="btn-prev" onclick="prevPage()">&laquo; Previous</button>
-                <span class="page-info" id="page-info"></span>
-                <button id="btn-next" onclick="nextPage()">Next &raquo;</button>
+
+            <div id="picks-content" style="display:none;">
+                <div class="summary" id="picks-summary"></div>
+                <div class="picks-grid" id="picks-grid"></div>
+
+                <!-- Picks Table (detailed view) -->
+                <div class="table-wrap" id="picks-table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Symbol</th>
+                                <th>Name</th>
+                                <th>Score</th>
+                                <th>Rating</th>
+                                <th>Price</th>
+                                <th>Health</th>
+                                <th>Momentum</th>
+                                <th>Technical</th>
+                                <th>Smart $</th>
+                                <th>Z-Score</th>
+                                <th>F-Score</th>
+                                <th>RSI</th>
+                                <th>Exchange</th>
+                                <th>RRSP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="picks-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- TAB 3: PERFORMANCE -->
+        <!-- ============================================ -->
+        <div class="tab-panel" id="tab-performance">
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Period</label>
+                    <select id="perf-days">
+                        <option value="7">7 Days</option>
+                        <option value="30" selected>30 Days</option>
+                        <option value="90">90 Days</option>
+                    </select>
+                </div>
+                <button class="btn-search" onclick="loadPerformance()">Refresh</button>
+            </div>
+
+            <div class="loading" style="display:none;" id="perf-loading">
+                <span class="spinner"></span> Loading performance data...
+            </div>
+
+            <div id="perf-empty" class="empty-state" style="display:none;">
+                <div class="empty-icon">&#128200;</div>
+                <h3>No Performance Data Yet</h3>
+                <p>Performance tracking begins once daily picks are generated and tracked.</p>
+            </div>
+
+            <div id="perf-content" style="display:none;">
+                <div class="stats-row" id="perf-stats"></div>
+
+                <h3 style="margin-bottom:1rem;font-size:15px;">Performance by Rating</h3>
+                <div class="table-wrap" style="margin-bottom:1.5rem;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rating</th>
+                                <th>Picks</th>
+                                <th>Avg Return</th>
+                                <th>Win Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody id="perf-by-rating"></tbody>
+                    </table>
+                </div>
+
+                <h3 style="margin-bottom:1rem;font-size:15px;">Recent Pick History</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Symbol</th>
+                                <th>Name</th>
+                                <th>Entry</th>
+                                <th>Score</th>
+                                <th>Rating</th>
+                                <th>Status</th>
+                                <th>Return</th>
+                                <th>Exit Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody id="perf-history"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="footer">
-        <p>Data from Yahoo Finance &mdash; Refreshed every 30 minutes &mdash; findtorontoevents.ca</p>
-        <p style="margin-top:0.3rem;">Exchange-listed stocks only (TSX, TSX-V, CSE, NYSE, NASDAQ, NYSE American). OTC/Pink Sheets excluded.</p>
+        <p>Data from Yahoo Finance &mdash; Scores updated daily via multi-factor algorithm &mdash; findtorontoevents.ca</p>
+        <p style="margin-top:0.3rem;">Scoring: Financial Health (30%) + Momentum (25%) + Volume (10%) + Technical (10%) + Earnings (10%) + Smart Money (10%) + Quality (5%)</p>
+        <p style="margin-top:0.3rem;">Exchange-listed stocks only (TSX, TSX-V, CSE, NYSE, NASDAQ). OTC/Pink Sheets excluded.</p>
     </div>
 
 <script>
+// ── Global State ──
 var currentRegion = 'ca';
 var currentOffset = 0;
 var currentTotal = 0;
 var PAGE_SIZE = 50;
-var maxVolume = 0;
 
-// Country toggle
+// ── Tab Switching ──
+function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(function(b, i) {
+        b.classList.toggle('active', ['scanner','picks','performance'][i] === tab);
+    });
+    document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+    document.getElementById('tab-' + tab).classList.add('active');
+
+    if (tab === 'picks') loadPicks();
+    if (tab === 'performance') loadPerformance();
+}
+
+// ── Country toggle ──
 document.querySelectorAll('.country-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
         document.querySelectorAll('.country-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -397,6 +684,9 @@ document.querySelectorAll('.country-btn').forEach(function(btn) {
     });
 });
 
+// ============================================================================
+// SCANNER TAB
+// ============================================================================
 function search(offset) {
     currentOffset = offset || 0;
     var maxPrice = document.getElementById('max-price').value;
@@ -442,32 +732,28 @@ function search(offset) {
 
 function renderResults(data) {
     var stocks = data.stocks || [];
-
-    // Summary
     var summaryEl = document.getElementById('summary');
     var regionLabel = data.region === 'ca' ? 'Canada' : data.region === 'us' ? 'US' : 'CA + US';
     summaryEl.innerHTML = '<span class="summary-pill"><b>' + data.count + '</b> stocks found</span>'
         + '<span class="summary-pill">Region: <b>' + regionLabel + '</b></span>'
-        + '<span class="summary-pill">Price: <b>$' + data.min_price + ' – $' + data.max_price + '</b></span>'
+        + '<span class="summary-pill">Price: <b>$' + data.min_price + ' - $' + data.max_price + '</b></span>'
         + '<span class="summary-pill">Min Vol: <b>' + fmtNum(data.min_volume) + '</b></span>'
-        + (data.total > 0 ? '<span class="summary-pill">Total matches: <b class="g">' + fmtNum(data.total) + '</b></span>' : '')
+        + (data.total > 0 ? '<span class="summary-pill">Total: <b class="g">' + fmtNum(data.total) + '</b></span>' : '')
         + (data.cached ? '<span class="summary-pill">Cached</span>' : '');
     summaryEl.style.display = 'flex';
 
     if (stocks.length === 0) {
         document.getElementById('error').style.display = 'block';
-        document.getElementById('error').textContent = 'No stocks found matching your criteria. Try adjusting filters.';
+        document.getElementById('error').textContent = 'No stocks found. Try adjusting filters.';
         document.getElementById('error').style.background = 'var(--yellow-dim)';
         document.getElementById('error').style.borderColor = 'rgba(234, 179, 8, 0.3)';
         document.getElementById('error').style.color = '#facc15';
         return;
     }
 
-    // Find max volume for bar scaling
-    maxVolume = 0;
+    var maxVolume = 0;
     stocks.forEach(function(s) { if (s.volume > maxVolume) maxVolume = s.volume; });
 
-    // Render table
     var tbody = document.getElementById('tbody');
     tbody.innerHTML = '';
     stocks.forEach(function(s) {
@@ -475,10 +761,6 @@ function renderResults(data) {
         var changeClass = s.change_pct > 0 ? 'pos' : (s.change_pct < 0 ? 'neg' : '');
         var changeSign = s.change_pct > 0 ? '+' : '';
         var volWidth = maxVolume > 0 ? Math.max(2, Math.round((s.volume / maxVolume) * 60)) : 2;
-        var exchBadge = getExchangeBadge(s.exchange);
-        var rrspHtml = s.rrsp_eligible
-            ? '<span class="rrsp-yes">&#10003; Yes</span>'
-            : '<span class="rrsp-no">&#10007; No</span>';
         var profileLink = '/findstocks/portfolio2/stock-profile.html?ticker=' + encodeURIComponent(s.symbol);
 
         tr.innerHTML = '<td class="symbol"><a href="' + profileLink + '">' + esc(s.symbol) + '</a></td>'
@@ -488,15 +770,14 @@ function renderResults(data) {
             + '<td>' + fmtNum(s.volume) + '<span class="vol-bar" style="width:' + volWidth + 'px"></span></td>'
             + '<td style="color:var(--text-dim)">' + fmtNum(s.avg_volume_3m) + '</td>'
             + '<td>' + fmtMcap(s.market_cap) + '</td>'
-            + '<td style="color:var(--text-dim);font-size:12px">$' + fmtPrice(s.fifty_two_low) + ' – $' + fmtPrice(s.fifty_two_high) + '</td>'
-            + '<td>' + exchBadge + '</td>'
-            + '<td>' + rrspHtml + '</td>';
+            + '<td style="color:var(--text-dim);font-size:12px">$' + fmtPrice(s.fifty_two_low) + ' - $' + fmtPrice(s.fifty_two_high) + '</td>'
+            + '<td>' + getExchangeBadge(s.exchange) + '</td>'
+            + '<td>' + (s.rrsp_eligible ? '<span class="rrsp-yes">&#10003;</span>' : '<span class="rrsp-no">&#10007;</span>') + '</td>';
         tbody.appendChild(tr);
     });
 
     document.getElementById('table-wrap').style.display = 'block';
 
-    // Pagination
     var totalPages = Math.ceil(currentTotal / PAGE_SIZE);
     var currentPage = Math.floor(currentOffset / PAGE_SIZE) + 1;
     if (totalPages > 1) {
@@ -512,6 +793,219 @@ function renderResults(data) {
 function prevPage() { if (currentOffset >= PAGE_SIZE) search(currentOffset - PAGE_SIZE); }
 function nextPage() { search(currentOffset + PAGE_SIZE); }
 
+// ============================================================================
+// DAILY PICKS TAB
+// ============================================================================
+var picksLoaded = false;
+
+function loadPicks() {
+    var country = document.getElementById('picks-country').value;
+    var minScore = document.getElementById('picks-min-score').value;
+
+    document.getElementById('picks-loading').style.display = 'block';
+    document.getElementById('picks-empty').style.display = 'none';
+    document.getElementById('picks-content').style.display = 'none';
+
+    var url = '/findstocks/portfolio2/api/penny_stock_picks.php?action=picks'
+        + '&country=' + country
+        + '&min_score=' + minScore
+        + '&limit=20';
+
+    fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            document.getElementById('picks-loading').style.display = 'none';
+
+            if (!data.ok || !data.picks || data.picks.length === 0) {
+                document.getElementById('picks-empty').style.display = 'block';
+                document.getElementById('picks-badge').textContent = '';
+                return;
+            }
+
+            picksLoaded = true;
+            document.getElementById('picks-badge').textContent = data.picks.length;
+            document.getElementById('picks-date').textContent = 'Picks for: ' + data.date;
+            renderPicks(data.picks);
+        })
+        .catch(function(err) {
+            document.getElementById('picks-loading').style.display = 'none';
+            document.getElementById('picks-empty').style.display = 'block';
+            document.getElementById('picks-empty').querySelector('p').textContent = 'Error loading picks: ' + err.message;
+        });
+}
+
+function renderPicks(picks) {
+    document.getElementById('picks-content').style.display = 'block';
+
+    // Summary
+    var buyCount = 0, strongBuyCount = 0, avgScore = 0;
+    picks.forEach(function(p) {
+        avgScore += p.composite_score;
+        if (p.rating === 'BUY') buyCount++;
+        if (p.rating === 'STRONG_BUY') strongBuyCount++;
+    });
+    avgScore = picks.length > 0 ? (avgScore / picks.length).toFixed(1) : 0;
+
+    document.getElementById('picks-summary').innerHTML =
+        '<span class="summary-pill"><b>' + picks.length + '</b> picks</span>'
+        + '<span class="summary-pill">Avg Score: <b>' + avgScore + '</b></span>'
+        + (strongBuyCount > 0 ? '<span class="summary-pill" style="border-color:var(--green)">STRONG BUY: <b class="g">' + strongBuyCount + '</b></span>' : '')
+        + (buyCount > 0 ? '<span class="summary-pill">BUY: <b>' + buyCount + '</b></span>' : '');
+
+    // Cards (top 6)
+    var grid = document.getElementById('picks-grid');
+    grid.innerHTML = '';
+    picks.slice(0, 6).forEach(function(p, i) {
+        var card = document.createElement('div');
+        card.className = 'pick-card';
+        var fs = p.factor_scores || {};
+        var m = p.metrics || {};
+        var profileLink = '/findstocks/portfolio2/stock-profile.html?ticker=' + encodeURIComponent(p.symbol);
+
+        card.innerHTML = '<div class="pick-card-head">'
+            + '<div><a href="' + profileLink + '" class="sym">#' + (i+1) + ' ' + esc(p.symbol) + '</a>'
+            + '<div class="name">' + esc(p.name) + '</div></div>'
+            + '<div style="text-align:right">'
+            + '<span class="rating-badge rating-' + p.rating + '">' + p.rating.replace('_', ' ') + '</span>'
+            + '<div style="font-size:20px;font-weight:700;margin-top:4px">' + scoreColor(p.composite_score) + '</div></div></div>'
+            + '<div class="pick-card-body">'
+            + '<span class="lbl">Price</span><span class="val">$' + fmtPrice(p.price) + '</span>'
+            + '<span class="lbl">Mkt Cap</span><span class="val">' + fmtMcap(p.market_cap) + '</span>'
+            + '<span class="lbl">Exchange</span><span class="val">' + getExchangeBadge(p.exchange) + '</span>'
+            + '<span class="lbl">RRSP</span><span class="val">' + (p.rrsp_eligible ? '<span class="rrsp-yes">&#10003; Yes</span>' : '<span class="rrsp-no">&#10007; No</span>') + '</span>'
+            + '<span class="lbl">Z-Score</span><span class="val">' + (m.z_score || '-') + '</span>'
+            + '<span class="lbl">F-Score</span><span class="val">' + (m.f_score || '-') + '/9</span>'
+            + '<span class="lbl">RSI</span><span class="val">' + (m.rsi ? m.rsi.toFixed(0) : '-') + '</span>'
+            + '<span class="lbl">RVOL</span><span class="val">' + (m.rvol ? m.rvol.toFixed(1) + 'x' : '-') + '</span>'
+            + '</div>'
+            + '<div class="factor-bars">'
+            + factorBar('Health', fs.health, '#22c55e')
+            + factorBar('Momentum', fs.momentum, '#3b82f6')
+            + factorBar('Volume', fs.volume, '#6366f1')
+            + factorBar('Technical', fs.technical, '#f97316')
+            + factorBar('Earnings', fs.earnings, '#a855f7')
+            + factorBar('Smart $', fs.smart_money, '#eab308')
+            + factorBar('Quality', fs.quality, '#06b6d4')
+            + '</div>';
+        grid.appendChild(card);
+    });
+
+    // Table (all picks)
+    var tbody = document.getElementById('picks-tbody');
+    tbody.innerHTML = '';
+    picks.forEach(function(p, i) {
+        var tr = document.createElement('tr');
+        var fs = p.factor_scores || {};
+        var m = p.metrics || {};
+        var profileLink = '/findstocks/portfolio2/stock-profile.html?ticker=' + encodeURIComponent(p.symbol);
+
+        tr.innerHTML = '<td>' + (i + 1) + '</td>'
+            + '<td class="symbol"><a href="' + profileLink + '">' + esc(p.symbol) + '</a></td>'
+            + '<td class="name" title="' + esc(p.name) + '">' + esc(p.name) + '</td>'
+            + '<td>' + scoreBar(p.composite_score) + '</td>'
+            + '<td><span class="rating-badge rating-' + p.rating + '">' + p.rating.replace('_', ' ') + '</span></td>'
+            + '<td class="price">$' + fmtPrice(p.price) + '</td>'
+            + '<td>' + miniBar(fs.health, '#22c55e') + '</td>'
+            + '<td>' + miniBar(fs.momentum, '#3b82f6') + '</td>'
+            + '<td>' + miniBar(fs.technical, '#f97316') + '</td>'
+            + '<td>' + miniBar(fs.smart_money, '#eab308') + '</td>'
+            + '<td>' + (m.z_score ? m.z_score.toFixed(1) : '-') + '</td>'
+            + '<td>' + (m.f_score || '-') + '/9</td>'
+            + '<td>' + (m.rsi ? m.rsi.toFixed(0) : '-') + '</td>'
+            + '<td>' + getExchangeBadge(p.exchange) + '</td>'
+            + '<td>' + (p.rrsp_eligible ? '<span class="rrsp-yes">&#10003;</span>' : '<span class="rrsp-no">&#10007;</span>') + '</td>';
+        tbody.appendChild(tr);
+    });
+}
+
+// ============================================================================
+// PERFORMANCE TAB
+// ============================================================================
+var perfLoaded = false;
+
+function loadPerformance() {
+    var days = document.getElementById('perf-days').value;
+
+    document.getElementById('perf-loading').style.display = 'block';
+    document.getElementById('perf-empty').style.display = 'none';
+    document.getElementById('perf-content').style.display = 'none';
+
+    var perfUrl = '/findstocks/portfolio2/api/penny_stock_picks.php?action=performance&days=' + days;
+    var histUrl = '/findstocks/portfolio2/api/penny_stock_picks.php?action=history&days=' + days;
+
+    Promise.all([
+        fetch(perfUrl).then(function(r) { return r.json(); }),
+        fetch(histUrl).then(function(r) { return r.json(); })
+    ]).then(function(results) {
+        document.getElementById('perf-loading').style.display = 'none';
+        var perf = results[0];
+        var hist = results[1];
+
+        if (!perf.ok || !perf.stats || perf.stats.total_picks === 0) {
+            document.getElementById('perf-empty').style.display = 'block';
+            return;
+        }
+
+        perfLoaded = true;
+        renderPerformance(perf, hist);
+    }).catch(function(err) {
+        document.getElementById('perf-loading').style.display = 'none';
+        document.getElementById('perf-empty').style.display = 'block';
+    });
+}
+
+function renderPerformance(perf, hist) {
+    document.getElementById('perf-content').style.display = 'block';
+    var s = perf.stats;
+
+    // Stats cards
+    document.getElementById('perf-stats').innerHTML =
+        statCard('Total Picks', s.total_picks, '')
+        + statCard('Active', s.active, '', 'var(--blue)')
+        + statCard('Win Rate', s.win_rate + '%', s.wins + 'W / ' + s.losses + 'L', s.win_rate >= 50 ? 'var(--green)' : 'var(--red)')
+        + statCard('Avg Return', (s.avg_return >= 0 ? '+' : '') + s.avg_return + '%', '', s.avg_return >= 0 ? 'var(--green)' : 'var(--red)')
+        + statCard('Best Pick', '+' + s.best_return + '%', '', 'var(--green)')
+        + statCard('Worst Pick', s.worst_return + '%', '', 'var(--red)')
+        + statCard('Avg Score', s.avg_score, '/100', 'var(--accent)');
+
+    // By rating table
+    var ratingBody = document.getElementById('perf-by-rating');
+    ratingBody.innerHTML = '';
+    (perf.by_rating || []).forEach(function(r) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td><span class="rating-badge rating-' + r.rating + '">' + r.rating.replace('_', ' ') + '</span></td>'
+            + '<td>' + r.count + '</td>'
+            + '<td class="' + (r.avg_return >= 0 ? 'pos' : 'neg') + '">' + (r.avg_return >= 0 ? '+' : '') + r.avg_return + '%</td>'
+            + '<td>' + r.win_rate + '%</td>';
+        ratingBody.appendChild(tr);
+    });
+
+    // History table
+    var histBody = document.getElementById('perf-history');
+    histBody.innerHTML = '';
+    (hist.history || []).forEach(function(h) {
+        var tr = document.createElement('tr');
+        var retClass = h.return_pct > 0 ? 'pos' : (h.return_pct < 0 ? 'neg' : '');
+        var statusBadge = h.status === 'active'
+            ? '<span style="color:var(--blue)">Active</span>'
+            : '<span style="color:var(--text-dim)">Closed</span>';
+
+        tr.innerHTML = '<td style="color:var(--text-dim)">' + h.pick_date + '</td>'
+            + '<td class="symbol">' + esc(h.symbol) + '</td>'
+            + '<td class="name" title="' + esc(h.name) + '">' + esc(h.name) + '</td>'
+            + '<td>$' + fmtPrice(h.entry_price) + '</td>'
+            + '<td>' + scoreBar(h.score) + '</td>'
+            + '<td><span class="rating-badge rating-' + h.rating + '">' + h.rating.replace('_', ' ') + '</span></td>'
+            + '<td>' + statusBadge + '</td>'
+            + '<td class="' + retClass + '">' + (h.return_pct > 0 ? '+' : '') + h.return_pct.toFixed(2) + '%</td>'
+            + '<td style="color:var(--text-dim)">' + (h.exit_reason || '-') + '</td>';
+        histBody.appendChild(tr);
+    });
+}
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
 function getExchangeBadge(ex) {
     var cls = 'badge-other';
     if (ex === 'TSX') cls = 'badge-tsx';
@@ -522,6 +1016,43 @@ function getExchangeBadge(ex) {
     return '<span class="exchange-badge ' + cls + '">' + esc(ex) + '</span>';
 }
 
+function scoreBar(score) {
+    var c = score >= 75 ? 'var(--green)' : score >= 60 ? '#86efac' : score >= 48 ? 'var(--yellow)' : 'var(--red)';
+    return '<div class="score-bar"><span class="score-val" style="color:' + c + '">' + score.toFixed(0) + '</span>'
+        + '<div class="score-bar-bg"><div class="score-bar-fill" style="width:' + score + '%;background:' + c + '"></div></div></div>';
+}
+
+function scoreColor(score) {
+    var c = score >= 75 ? 'var(--green)' : score >= 60 ? '#86efac' : score >= 48 ? 'var(--yellow)' : 'var(--red)';
+    return '<span style="color:' + c + '">' + score.toFixed(1) + '</span>';
+}
+
+function miniBar(val, color) {
+    if (val === undefined || val === null) return '-';
+    var v = Math.round(val);
+    return '<div style="display:inline-flex;align-items:center;gap:4px">'
+        + '<div style="width:40px;height:5px;background:var(--bg-dark);border-radius:3px;overflow:hidden">'
+        + '<div style="width:' + v + '%;height:100%;background:' + color + ';border-radius:3px"></div></div>'
+        + '<span style="font-size:10px;color:var(--text-dim)">' + v + '</span></div>';
+}
+
+function factorBar(label, val, color) {
+    if (val === undefined || val === null) val = 0;
+    var v = Math.round(val);
+    return '<div class="factor-row">'
+        + '<span class="f-label">' + label + '</span>'
+        + '<div class="f-bar-bg"><div class="f-bar" style="width:' + v + '%;background:' + color + '"></div></div>'
+        + '<span class="f-val" style="color:' + color + '">' + v + '</span></div>';
+}
+
+function statCard(label, value, sub, color) {
+    return '<div class="stat-card">'
+        + '<div class="stat-label">' + label + '</div>'
+        + '<div class="stat-value" style="color:' + (color || 'var(--text)') + '">' + value + '</div>'
+        + (sub ? '<div class="stat-sub">' + sub + '</div>' : '')
+        + '</div>';
+}
+
 function fmtNum(n) {
     if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
     if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
@@ -530,7 +1061,7 @@ function fmtNum(n) {
 }
 
 function fmtMcap(n) {
-    if (!n || n <= 0) return '<span style="color:var(--text-dim)">—</span>';
+    if (!n || n <= 0) return '<span style="color:var(--text-dim)">-</span>';
     if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
     if (n >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
     if (n >= 1e3) return '$' + (n / 1e3).toFixed(0) + 'K';
@@ -538,7 +1069,7 @@ function fmtMcap(n) {
 }
 
 function fmtPrice(p) {
-    if (!p || p <= 0) return '—';
+    if (!p || p <= 0) return '-';
     if (p < 0.01) return p.toFixed(4);
     if (p < 1) return p.toFixed(3);
     return p.toFixed(2);
@@ -551,8 +1082,17 @@ function esc(s) {
     return d.innerHTML;
 }
 
-// Auto-search on load
+// Auto-search scanner on load
 search(0);
+
+// Try loading picks badge count
+fetch('/findstocks/portfolio2/api/penny_stock_picks.php?action=picks&limit=1')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.ok && d.count > 0) {
+            document.getElementById('picks-badge').textContent = d.count > 1 ? d.count : 'NEW';
+        }
+    }).catch(function() {});
 </script>
 <script src="/findstocks/portfolio2/stock-nav.js"></script>
 </body>

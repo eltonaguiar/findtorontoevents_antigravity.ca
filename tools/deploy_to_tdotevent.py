@@ -77,6 +77,11 @@ DIRS_TO_DEPLOY = [
     ('findstocks', 'findstocks'),
     ('investments', 'investments'),
     ('MOVIESHOWS', 'MOVIESHOWS'),
+    ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2', 'movieshows2'),
+    ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3', 'MOVIESHOWS3'),
+    ('CONTACTLENSES', 'CONTACTLENSES'),
+    ('daily-feed', 'daily-feed'),
+    ('gotjob', 'gotjob'),
     ('WINDOWSFIXER', 'WINDOWSFIXER'),
     ('MENTALHEALTHRESOURCES', 'MENTALHEALTHRESOURCES'),
     ('2xko', '2xko'),
@@ -406,6 +411,10 @@ def main():
             print('  https://tdotevent.ca/vr/                      - VR Games')
             print('  https://tdotevent.ca/investments/              - Investments')
             print('  https://tdotevent.ca/WINDOWSFIXER/             - Windows Fixer')
+            print('  https://tdotevent.ca/movieshows2/              - Film Vault')
+            print('  https://tdotevent.ca/MOVIESHOWS3/              - Binge Mode')
+            print('  https://tdotevent.ca/CONTACTLENSES/            - Contact Lenses')
+            print('  https://tdotevent.ca/daily-feed/               - Daily Feed')
             print()
 
         except Exception as e:

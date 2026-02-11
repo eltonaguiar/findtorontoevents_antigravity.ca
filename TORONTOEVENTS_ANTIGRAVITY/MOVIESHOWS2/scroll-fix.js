@@ -3942,43 +3942,68 @@
 
     let allMoviesData = [];
 
+    function transformDbMovie(m) {
+        return {
+            title: m.title || '',
+            type: m.type || 'movie',
+            year: String(m.release_year || m.year || '2026'),
+            rating: String(m.imdb_rating || m.rating || ''),
+            genres: m.genres || (m.genre ? m.genre.split(',').map(function(g){ return g.trim(); }).filter(Boolean) : []),
+            source: m.source || 'In Theatres',
+            trailerUrl: m.trailerUrl || (m.trailer_id ? 'https://www.youtube.com/watch?v=' + m.trailer_id : ''),
+            posterUrl: m.posterUrl || m.thumbnail || '',
+            description: m.description || '',
+            nowPlaying: m.nowPlaying || [],
+            imdb_id: m.imdb_id || '',
+            tmdb_id: m.tmdb_id || '',
+            runtime: m.runtime || ''
+        };
+    }
+
     async function loadMoviesData() {
         if (allMoviesData.length > 0) return;
 
-        // ONLY use the stable large database, with cache busting
-        const source = 'movies-database.json?v=' + new Date().getTime();
+        // Try database API first, fall back to static JSON
+        var sources = [
+            { url: 'api/get-movies.php', name: 'Database API', needsTransform: true },
+            { url: 'movies-database.json?v=' + new Date().getTime(), name: 'Static JSON', needsTransform: false }
+        ];
 
-        try {
-            console.log(`[MovieShows] Attempting to load: ${source}`);
-            const res = await fetch(source);
+        for (var i = 0; i < sources.length; i++) {
+            var src = sources[i];
+            try {
+                console.log('[MovieShows] Attempting to load from: ' + src.name + ' (' + src.url + ')');
+                var res = await fetch(src.url);
 
-            if (res.ok) {
-                const data = await res.json();
-                // Handle different possible structures
-                const items = data.items || data.movies || data;
+                if (res.ok) {
+                    var data = await res.json();
+                    var items = data.items || data.movies || data;
 
-                if (Array.isArray(items) && items.length > 0) {
-                    allMoviesData = items;
-                    // CRITICAL: Expose to window for thumbnail lookups and other features
-                    window.allMoviesData = items;
-                    console.log(`[MovieShows] SUCCESS: Loaded ${items.length} items. Data exposed to window.allMoviesData`);
+                    if (Array.isArray(items) && items.length > 0) {
+                        if (src.needsTransform) {
+                            items = items.map(transformDbMovie);
+                        }
+                        allMoviesData = items;
+                        window.allMoviesData = items;
+                        console.log('[MovieShows] SUCCESS: Loaded ' + items.length + ' items from ' + src.name + '. Data exposed to window.allMoviesData');
 
-                    // Update category button counts with real data
-                    setTimeout(() => updateCategoryButtons(), 100);
-
-                    // Immediately hydrate the UI
-                    ensureMinimumCount(20);
-                    updateUpNextCount();
-                    checkInfiniteScroll();
+                        setTimeout(function(){ updateCategoryButtons(); }, 100);
+                        ensureMinimumCount(20);
+                        updateUpNextCount();
+                        checkInfiniteScroll();
+                        return;
+                    } else {
+                        console.warn('[MovieShows] ' + src.name + ' returned empty or invalid data, trying next source...');
+                    }
                 } else {
-                    console.error(`[MovieShows] Data loaded but format incorrect or empty:`, data);
+                    console.warn('[MovieShows] ' + src.name + ' HTTP ' + res.status + ', trying next source...');
                 }
-            } else {
-                console.error(`[MovieShows] HTTP Error loading data: ${res.status}`);
+            } catch (e) {
+                console.warn('[MovieShows] ' + src.name + ' failed: ' + e.message + ', trying next source...');
             }
-        } catch (e) {
-            console.error(`[MovieShows] CRITICAL FETCH ERROR:`, e);
         }
+
+        console.error('[MovieShows] CRITICAL: All data sources failed');
     }
 
     function ensureMinimumCount(min) {

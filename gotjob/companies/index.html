@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Companies - BESTIEJOB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .company-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: var(--spacing-md);
+      margin-top: var(--spacing-lg);
+    }
+
+    .company-card {
+      padding: var(--spacing-lg);
+      cursor: pointer;
+    }
+
+    .company-logo {
+      width: 60px;
+      height: 60px;
+      background: var(--primary-gradient);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .company-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .company-stats {
+      display: flex;
+      gap: var(--spacing-md);
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="nav-menu">
+    <a href="/">Home</a>
+    <a href="/gotjob/">Find Jobs</a>
+    <a href="/gotjob/salary-insights/">Salaries</a>
+    <a href="/gotjob/companies/" class="active">Companies</a>
+    <a href="/gotjob/resources/">Resources</a>
+    <a href="/gotjob/market-report/">Market Report</a>
+    <a href="/gotjob/tracker/">Tracker</a>
+  </nav>
+  <main class="container">
+    <header class="page-header text-center">
+      <h1 class="text-gradient">Company Directory</h1>
+      <p class="subhead">Explore companies hiring in Toronto's creative and tech industries</p>
+    </header>
+
+    <section>
+      <div class="glass-card mb-lg">
+        <input type="text" id="searchCompanies" class="form-input" placeholder="Search companies...">
+      </div>
+
+      <div id="companiesGrid" class="company-grid">
+        <div class="loading flex-center" style="grid-column: 1 / -1; min-height: 400px;">
+          <div class="spinner"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script>
+    let companies = [];
+
+    async function loadCompanies() {
+      try {
+        const response = await fetch('/gotjob/jobs.json');
+        const data = await response.json();
+        const jobs = Array.isArray(data) ? data : (data.jobs || []);
+
+        const companyMap = {};
+        jobs.forEach(job => {
+          if (!job.company) return;
+          if (!companyMap[job.company]) {
+            companyMap[job.company] = { name: job.company, jobs: [], salaries: [] };
+          }
+          companyMap[job.company].jobs.push(job);
+          if (job.salary) {
+            companyMap[job.company].salaries.push((job.salary.min + job.salary.max) / 2);
+          }
+        });
+
+        companies = Object.values(companyMap).map(c => ({
+          name: c.name,
+          jobCount: c.jobs.length,
+          avgSalary: c.salaries.length > 0 ? c.salaries.reduce((a, b) => a + b, 0) / c.salaries.length : 0
+        })).sort((a, b) => b.jobCount - a.jobCount);
+
+        renderCompanies();
+      } catch (error) {
+        console.error('Error loading companies:', error);
+      }
+    }
+
+    function renderCompanies(filter = '') {
+      const grid = document.getElementById('companiesGrid');
+      const filtered = companies.filter(c => c.name.toLowerCase().includes(filter.toLowerCase()));
+
+      grid.innerHTML = filtered.map(company => `
+        <div class="company-card glass-card">
+          <div class="company-logo">${company.name.charAt(0).toUpperCase()}</div>
+          <div class="company-name">${company.name}</div>
+          <div class="company-stats">
+            <span>📋 ${company.jobCount} jobs</span>
+            ${company.avgSalary > 0 ? `<span>💰 ${formatCurrency(company.avgSalary)}</span>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function formatCurrency(value) {
+      return new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', minimumFractionDigits: 0 }).format(value);
+    }
+
+    document.getElementById('searchCompanies').addEventListener('input', (e) => {
+      renderCompanies(e.target.value);
+    });
+
+    loadCompanies();
+  </script>
+</body>
+
+</html>

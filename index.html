@@ -5,6 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <style>
+    :root {
+      --pk-200:#e9d5ff;--pk-300:#c084fc;--pk-400:#a855f7;--pk-500:#9333ea;--pk-500-rgb:147,51,234;--pk-600:#7e22ce;--pk-900:#3b0764;
+      --surface-0:#0a0a0f;--surface-1:#12121a;--surface-2:#1a1a25;
+      --text-1:#f0f0f5;--text-2:#a0a0b5;--text-3:#606075;
+      --webpage-scale:1;
+    }
+  </style>
   <script>
     window.__NEXT_ASSET_PREFIX__ = "/next";
     window.__EVENTS_JSON_PATH__ = "/next/events.json";
@@ -953,7 +961,7 @@
         </div>
         <!-- Movies & TV & Trailers -->
         <div class="movieshows-promo w-full">
-          <div class="promo-banner bg-white/5 rounded-2xl p-5 h-full">
+          <div class="promo-banner bg-white/5 rounded-2xl p-5 h-full" style="cursor:pointer;">
             <div class="flex items-center gap-4 transition-all duration-500">
               <div class="w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
                 <span class="text-3xl">🎬</span>
@@ -1237,7 +1245,7 @@
         <p class="text-lg text-[var(--text-2)] max-w-3xl mx-auto leading-relaxed">
           <a href="/" class="hover:text-[var(--pk-300)] transition">Toronto daily events</a>, 
           <a href="/fc" class="hover:text-[var(--pk-300)] transition">track your favourite livestreamers/creators</a> so they dont get lost in your feed, 
-          find your next <a href="/movieshows2" class="hover:text-[var(--pk-300)] transition">movie/show</a> in a scrolling interface, 
+          find your next <a href="/MOVIESHOWS3/" class="hover:text-[var(--pk-300)] transition">movie/show</a> in a scrolling interface, 
           fix your <a href="/WINDOWSFIXER/" class="hover:text-[var(--pk-300)] transition">windows boot issues</a>, and 
           find out if someone WITHOUT a supercomputer can beat the <a href="/findstocks/" class="hover:text-[var(--pk-300)] transition">stock</a> market with our <a href="/investments/" class="hover:text-[var(--pk-300)] transition">investment tools</a>
         </p>
@@ -4031,6 +4039,14 @@
     // Click on overlay to close
     if (target.id === 'otherstuff-overlay') {
       closeOtherStuffMenu();
+      return;
+    }
+    // Click on movieshows-promo card (go to MOVIESHOWS3, but not if clicking a sub-link)
+    var movieCard = target.closest && target.closest('.movieshows-promo .promo-banner');
+    if (movieCard && !(target.closest && target.closest('a[href]'))) {
+      e.preventDefault();
+      e.stopPropagation();
+      window.open('/MOVIESHOWS3/', '_blank');
       return;
     }
     // Click on otherstuff-promo card (the Browse button or anywhere on the card)

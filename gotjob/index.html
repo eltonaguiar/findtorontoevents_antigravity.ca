@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GotJob - Toronto Tech Jobs | ServiceNow, VBA, Alteryx & More</title>
+  <meta name="description"
+    content="Find tech jobs in Toronto: ServiceNow developer, VBA, Alteryx, Full Stack, DevOps, and more. Filter by date posted, salary, and job type." />
+  <link rel="stylesheet" href="styles.css?v=7" />
+</head>
+
+<body>
+  <nav class="nav-menu">
+    <a href="/">Home</a>
+    <a href="/gotjob/" class="active">Find Jobs</a>
+    <a href="/gotjob/salary-insights/">Salaries</a>
+    <a href="/gotjob/companies/">Companies</a>
+    <a href="/gotjob/resources/">Resources</a>
+    <a href="/gotjob/market-report/">Market Report</a>
+    <a href="/gotjob/tracker/">Tracker</a>
+    <a href="#" id="savedJobsNav" class="saved-nav">Saved <span id="savedCount" class="badge">0</span></a>
+  </nav>
+  <main class="container">
+    <header class="header">
+      <h1>GotJob</h1>
+      <p class="subhead">Toronto tech jobs: ServiceNow, VBA, Alteryx, Full Stack & more</p>
+    </header>
+
+    <section class="panel">
+      <div class="grid">
+        <label class="field">
+          <span>Location</span>
+          <input id="location" value="Toronto, ON" />
+        </label>
+
+        <label class="field">
+          <span>Keywords (comma-separated)</span>
+          <input id="keywords" value="ServiceNow, VBA, Alteryx, full stack, developer, engineer" />
+        </label>
+
+        <label class="field">
+          <span>Posted within</span>
+          <select id="dateFilter">
+            <option value="15m">Last 15 minutes</option>
+            <option value="30m">Last 30 minutes</option>
+            <option value="1h">Last hour</option>
+            <option value="2h">Last 2 hours</option>
+            <option value="4h">Last 4 hours</option>
+            <option value="8h">Last 8 hours</option>
+            <option value="12h">Last 12 hours</option>
+            <option value="24h">Last 24 hours</option>
+            <option value="2d">Last 2 days</option>
+            <option value="3d">Last 3 days</option>
+            <option value="week" selected>Last 7 days</option>
+            <option value="14d">Last 14 days</option>
+            <option value="month">Last 30 days</option>
+            <option value="any">Any time</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Application deadline</span>
+          <select id="deadlineFilter">
+            <option value="any" selected>Any / No deadline</option>
+            <option value="today">Due today</option>
+            <option value="3d">Within 3 days</option>
+            <option value="week">Within 7 days</option>
+            <option value="14d">Within 14 days</option>
+            <option value="month">Within 30 days</option>
+            <option value="hasDeadline">Has deadline (any)</option>
+            <option value="noDeadline">No deadline / N/A</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Minimum salary</span>
+          <div class="salaryRow">
+            <input id="minSalary" type="range" min="50000" max="250000" step="5000" value="80000" />
+            <div class="salaryValue" id="minSalaryValue">$80,000</div>
+          </div>
+        </label>
+
+        <label class="field">
+          <span>Work arrangement</span>
+          <select id="workArrangement">
+            <option value="any" selected>Any (Remote/Hybrid/Onsite)</option>
+            <option value="remote">Remote only</option>
+            <option value="hybrid">Hybrid</option>
+            <option value="onsite">Onsite only</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Experience level</span>
+          <select id="experienceLevel">
+            <option value="any" selected>Any level</option>
+            <option value="entry">Entry level / Junior</option>
+            <option value="mid">Mid level (2-5 years)</option>
+            <option value="senior">Senior (5+ years)</option>
+            <option value="lead">Lead / Principal</option>
+            <option value="manager">Manager / Director</option>
+          </select>
+        </label>
+
+        <div class="employment-filters">
+          <span class="filter-label">Employment Type:</span>
+          <label class="source-check">
+            <input type="checkbox" class="emp-type" value="full-time" checked />
+            <span>Full-time</span>
+          </label>
+          <label class="source-check">
+            <input type="checkbox" class="emp-type" value="contract" checked />
+            <span>Contract</span>
+          </label>
+          <label class="source-check">
+            <input type="checkbox" class="emp-type" value="part-time" />
+            <span>Part-time</span>
+          </label>
+          <label class="source-check">
+            <input type="checkbox" class="emp-type" value="internship" />
+            <span>Co-op/Intern</span>
+          </label>
+          <label class="source-check">
+            <input type="checkbox" class="emp-type" value="seasonal" />
+            <span>Seasonal/Temp</span>
+          </label>
+          <label class="source-check">
+            <input type="checkbox" class="emp-type" value="unknown" checked />
+            <span>Other</span>
+          </label>
+        </div>
+
+        <div class="source-filters">
+          <span class="filter-label">Job Aggregators:</span>
+          <label class="source-check">
+            <input id="sourceAdzuna" type="checkbox" checked data-sources="adzuna,indeed,linkedin" />
+            <span>Adzuna</span>
+          </label>
+          <label class="source-check">
+            <input id="sourceJobbank" type="checkbox" checked data-sources="jobbank" />
+            <span>Job Bank</span>
+          </label>
+          <label class="source-check">
+            <input id="sourceRemoteok" type="checkbox" checked data-sources="remoteok" />
+            <span>RemoteOK</span>
+          </label>
+        </div>
+
+        <div class="source-filters">
+          <span class="filter-label">Tech Companies:</span>
+          <label class="source-check">
+            <input id="sourceGreenhouse" type="checkbox" checked data-sources="greenhouse,lever,ashby,workable" />
+            <span>Startups (Greenhouse/Lever)</span>
+          </label>
+          <label class="source-check">
+            <input id="sourceShopify" type="checkbox" checked
+              data-sources="shopify,wealthsimple,1password,lightspeed,hootsuite,clio,ada" />
+            <span>CDN Tech</span>
+          </label>
+        </div>
+
+        <div class="source-filters">
+          <span class="filter-label">Company Careers:</span>
+          <label class="source-check">
+            <input id="sourceBanks" type="checkbox" checked data-sources="rbc,td,scotiabank,bmo,cibc" />
+            <span>Banks</span>
+          </label>
+          <label class="source-check">
+            <input id="sourceTelecom" type="checkbox" checked data-sources="rogers,bell,telus" />
+            <span>Telecom</span>
+          </label>
+          <label class="source-check">
+            <input id="sourceConsulting" type="checkbox" checked data-sources="deloitte,kpmg,pwc,ey,accenture" />
+            <span>Consulting</span>
+          </label>
+          <label class="source-check">
+            <input id="sourceInsurance" type="checkbox" checked data-sources="manulife,sunlife,intact" />
+            <span>Insurance</span>
+          </label>
+        </div>
+
+        <div class="source-filters">
+          <span class="filter-label">Recruiting Firms:</span>
+          <label class="source-check">
+            <input id="recruiterFilter" type="checkbox" />
+            <span>Show only staffing agency jobs</span>
+          </label>
+        </div>
+
+        <div class="source-filters extra-filters">
+          <span class="filter-label">Quality Filters:</span>
+          <label class="source-check">
+            <input id="salaryOnlyFilter" type="checkbox" />
+            <span>With salary info only</span>
+          </label>
+          <label class="source-check">
+            <input id="showGenericFilter" type="checkbox" />
+            <span>Include generic career pages</span>
+          </label>
+        </div>
+
+        <div class="preset-keywords">
+          <span class="filter-label">Quick search:</span>
+          <button class="preset-btn" data-keywords="ServiceNow">ServiceNow</button>
+          <button class="preset-btn" data-keywords="VBA, Excel, macros">VBA</button>
+          <button class="preset-btn" data-keywords="Alteryx, data automation">Alteryx</button>
+          <button class="preset-btn" data-keywords="full stack, React, Node.js">Full Stack</button>
+          <button class="preset-btn" data-keywords="DevOps, AWS, cloud">DevOps</button>
+          <button class="preset-btn" data-keywords="Python, data science, ML">Python/DS</button>
+        </div>
+
+        <div class="actions">
+          <button id="search">Find jobs</button>
+          <button id="preset110">Preset $110K+</button>
+          <button id="clearFilters">Clear filters</button>
+          <button id="shareSearch" title="Copy shareable link">Share search</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Dashboard -->
+    <section class="stats-dashboard" id="statsDashboard">
+      <div class="stat-card">
+        <div class="stat-value" id="statTotal">-</div>
+        <div class="stat-label">Total Jobs</div>
+      </div>
+      <div class="stat-card fresh">
+        <div class="stat-value" id="statFresh">-</div>
+        <div class="stat-label">Last 24h</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statRemote">-</div>
+        <div class="stat-label">Remote</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statWithSalary">-</div>
+        <div class="stat-label">With Salary</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statAvgSalary">-</div>
+        <div class="stat-label">Avg Salary</div>
+      </div>
+    </section>
+
+    <!-- Saved Jobs Panel (hidden by default) -->
+    <section class="saved-jobs-panel" id="savedJobsPanel" style="display: none;">
+      <div class="panel-header">
+        <h2>Saved Jobs (<span id="savedJobsCount">0</span>)</h2>
+        <button id="closeSavedPanel" class="close-btn">&times;</button>
+      </div>
+      <div id="savedJobsList" class="list"></div>
+    </section>
+
+    <section class="results">
+      <div class="results-header">
+        <div class="meta" id="meta"></div>
+        <div class="sort-controls">
+          <label>Sort by:</label>
+          <select id="sortBy">
+            <option value="date" selected>Most recent</option>
+            <option value="salary-desc">Highest salary</option>
+            <option value="salary-asc">Lowest salary</option>
+            <option value="relevance">Relevance</option>
+            <option value="company">Company A-Z</option>
+          </select>
+        </div>
+      </div>
+      <div class="keyboard-hint" id="keyboardHint">Tip: Use <kbd>j</kbd>/<kbd>k</kbd> to navigate, <kbd>s</kbd> to save,
+        <kbd>Enter</kbd> to open</div>
+      <div id="list" class="list"></div>
+    </section>
+
+    <!-- Job Detail Modal -->
+    <div class="modal-overlay" id="jobModal" style="display: none;">
+      <div class="modal-content">
+        <button class="modal-close" id="closeModal">&times;</button>
+        <div id="modalBody"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js?v=6"></script>
+</body>
+
+</html>

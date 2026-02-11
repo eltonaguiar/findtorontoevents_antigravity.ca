@@ -93,6 +93,24 @@
         .toggle.on{background:var(--green)}
         .toggle::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;left:2px;transition:transform .2s}
         .toggle.on::after{transform:translateX(16px)}
+        /* Live return badges */
+        .badge-pending-up{background:rgba(34,197,94,0.15);color:var(--green);border:1px solid rgba(34,197,94,0.3);animation:pulse-green 2s infinite}
+        .badge-pending-down{background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);animation:pulse-red 2s infinite}
+        .badge-pending-flat{background:rgba(99,102,241,0.15);color:var(--cyan);border:1px solid rgba(99,102,241,0.3)}
+        @keyframes pulse-green{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}50%{box-shadow:0 0 8px 2px rgba(34,197,94,0.2)}}
+        @keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}50%{box-shadow:0 0 8px 2px rgba(239,68,68,0.2)}}
+        .live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:4px;animation:blink 1.5s infinite}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+        .asset-section{margin-bottom:1.5rem}
+        .asset-section h3{font-size:.9rem;color:var(--text-bright);margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
+        .asset-icon{font-size:1.1rem}
+        .sub-table{font-size:.78rem}
+        .sub-table td{padding:.4rem .6rem}
+        /* Date with hover tooltip */
+        .date-cell{position:relative;cursor:default;color:var(--text-dim);border-bottom:1px dotted var(--border)}
+        .date-cell .date-tip{visibility:hidden;opacity:0;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1a1a3a;color:var(--text-bright);padding:6px 10px;border-radius:8px;font-size:.72rem;white-space:nowrap;border:1px solid var(--border);box-shadow:0 4px 12px rgba(0,0,0,.4);z-index:10;transition:opacity .15s,visibility .15s}
+        .date-cell .date-tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#1a1a3a}
+        .date-cell:hover .date-tip{visibility:visible;opacity:1}
         @media(max-width:768px){.grid-2{grid-template-columns:1fr}.header{padding:1rem}.stat-grid{grid-template-columns:repeat(2,1fr)}}
         @media(max-width:480px){.stat-grid{grid-template-columns:1fr}.tab-btn{font-size:.75rem;padding:.4rem .7rem}}
     </style>
@@ -147,6 +165,7 @@
         <div class="tab-bar">
             <button class="tab-btn active" onclick="switchTab('alerts')">Alerts</button>
             <button class="tab-btn" onclick="switchTab('performance')">Performance</button>
+            <button class="tab-btn" onclick="switchTab('livepnl')">Live P&amp;L</button>
             <button class="tab-btn" onclick="switchTab('stats')">Win Rate Stats</button>
             <button class="tab-btn" onclick="switchTab('scores')">Latest Scores</button>
             <button class="tab-btn" onclick="switchTab('configs')">Settings</button>
@@ -177,6 +196,36 @@
             <div class="card">
                 <h2>Performance Records</h2>
                 <div class="table-wrap" id="perfTable"><div class="loading"><span class="spinner"></span>Loading performance data...</div></div>
+            </div>
+        </div>
+
+        <!-- Tab: Live P&L (cross-asset) -->
+        <div id="tab-livepnl" class="tab-panel">
+            <div class="stat-grid" id="livePnlStats">
+                <div class="stat-card"><div class="label">Pending Positions</div><div class="value" id="lp-count">--</div></div>
+                <div class="stat-card"><div class="label">Avg Live Return</div><div class="value" id="lp-avg" style="color:var(--cyan)">--</div></div>
+                <div class="stat-card"><div class="label">Best Position</div><div class="value" id="lp-best" style="color:var(--green)">--</div></div>
+                <div class="stat-card"><div class="label">Worst Position</div><div class="value" id="lp-worst" style="color:var(--red)">--</div></div>
+            </div>
+            <!-- Conviction stocks -->
+            <div class="card asset-section">
+                <h2><span class="asset-icon">&#x1F4C8;</span> Conviction Stocks — Live Unrealized P&amp;L</h2>
+                <div class="table-wrap" id="liveStocksTable"><div class="loading"><span class="spinner"></span>Loading live returns...</div></div>
+            </div>
+            <!-- Crypto -->
+            <div class="card asset-section">
+                <h2><span class="asset-icon">&#x1FA99;</span> Crypto — 24h Price Action</h2>
+                <div class="table-wrap" id="liveCryptoTable"><div class="loading"><span class="spinner"></span>Loading crypto prices...</div></div>
+            </div>
+            <!-- Forex -->
+            <div class="card asset-section">
+                <h2><span class="asset-icon">&#x1F4B1;</span> Forex — 24h Price Action</h2>
+                <div class="table-wrap" id="liveForexTable"><div class="loading"><span class="spinner"></span>Loading forex prices...</div></div>
+            </div>
+            <!-- Sports Bets -->
+            <div class="card asset-section">
+                <h2><span class="asset-icon">&#x1F3C8;</span> Sports Bets — Pending Wagers</h2>
+                <div class="table-wrap" id="liveBetsTable"><div class="loading"><span class="spinner"></span>Loading pending bets...</div></div>
             </div>
         </div>
 
@@ -244,11 +293,15 @@
 
 <script>
 var API = 'api/multi_dimensional.php';
+var PRICE_API = 'api/live_prices.php';
+var BETS_API = 'api/sports_bets.php';
 var alertsData = [];
 var perfData = [];
 var statsData = [];
 var scoresData = [];
-var scoresSource = 'history'; // 'history' or 'all'
+var livePnlData = [];
+var livePrices = {};
+var scoresSource = 'history';
 var chartsReady = {};
 var currentTicker = 'all';
 
@@ -273,6 +326,7 @@ function switchTab(name) {
     if (name === 'performance') {
         if (perfData.length > 0) renderPerformance(); else loadPerformance();
     }
+    if (name === 'livepnl') { loadLivePnl(); }
     if (name === 'stats' && statsData.length === 0) loadStats();
     if (name === 'scores') {
         if (scoresData.length > 0) renderScores(); else loadScores();
@@ -369,12 +423,21 @@ function updateStatCards() {
     document.getElementById('stat-unread').textContent = unread;
 
     var filteredPerf = _filterByTicker(perfData, 'ticker');
-    var bestRet = 0;
+    var bestRet = -9999;
+    var bestTicker = '';
     for (var i = 0; i < filteredPerf.length; i++) {
-        var r7 = filteredPerf[i].return_7d || 0;
-        if (r7 > bestRet) bestRet = r7;
+        // Use live return for pending, or 7d return for filled
+        var ret = filteredPerf[i].live_return !== null && filteredPerf[i].live_return !== undefined
+            ? Number(filteredPerf[i].live_return) : (filteredPerf[i].return_7d || 0);
+        if (ret > bestRet) { bestRet = ret; bestTicker = filteredPerf[i].ticker; }
     }
-    document.getElementById('stat-bestret').textContent = bestRet > 0 ? '+' + bestRet.toFixed(1) + '%' : '--';
+    if (bestRet > -9999) {
+        var bestEl = document.getElementById('stat-bestret');
+        bestEl.textContent = bestTicker + ' ' + (bestRet >= 0 ? '+' : '') + bestRet.toFixed(1) + '%';
+        bestEl.style.color = bestRet >= 0 ? 'var(--green)' : 'var(--red)';
+    } else {
+        document.getElementById('stat-bestret').textContent = '--';
+    }
 
     var filteredScores = _filterByTicker(scoresData, 'ticker');
     var bullish = 0;
@@ -471,19 +534,33 @@ function renderPerformance() {
         buildRetDistChart([]);
         return;
     }
-    var html = '<table><thead><tr><th>Ticker</th><th>Date</th><th>Conv</th><th>Label</th><th>Entry $</th><th>7d Ret</th><th>14d Ret</th><th>30d Ret</th><th>Outcome</th></tr></thead><tbody>';
+    var html = '<table><thead><tr><th>Ticker</th><th>Date</th><th>Conv</th><th>Label</th><th>Entry $</th><th>Now $</th><th>Live P&amp;L</th><th>7d Ret</th><th>14d Ret</th><th>30d Ret</th><th>Outcome</th></tr></thead><tbody>';
     for (var i = 0; i < filtered.length; i++) {
         var p = filtered[i];
         var r7cls = retClass(p.return_7d, p.filled_7d);
         var r14cls = retClass(p.return_14d, p.filled_14d || 0);
         var r30cls = retClass(p.return_30d, p.filled_30d);
-        var outcomeHtml = outcomeLabel(p.outcome_30d);
+        var outcomeHtml = outcomeLabel(p.outcome_30d, p.live_return);
+        var nowPrice = (p.current_price && p.current_price > 0) ? '$' + Number(p.current_price).toFixed(2) : '<span style="color:var(--text-dim)">--</span>';
+        var liveHtml = '';
+        if (p.outcome_30d === 'pending' && p.live_return !== null && p.live_return !== undefined) {
+            var lrv = Number(p.live_return);
+            var lrCls = lrv >= 0 ? 'positive' : 'negative';
+            var lrPrefix = lrv >= 0 ? '+' : '';
+            liveHtml = '<span class="' + lrCls + '" style="font-weight:700">' + lrPrefix + lrv.toFixed(2) + '%</span>';
+        } else if (p.outcome_30d !== 'pending') {
+            liveHtml = '<span style="color:var(--text-dim)">settled</span>';
+        } else {
+            liveHtml = '<span style="color:var(--text-dim)">--</span>';
+        }
         html += '<tr>';
         html += '<td><strong>' + escHtml(p.ticker) + '</strong></td>';
-        html += '<td style="color:var(--text-dim)">' + escHtml(p.conviction_date) + '</td>';
+        html += '<td>' + dateWithTime(p.conviction_date, p.created_at) + '</td>';
         html += '<td>' + scoreHtml(p.conviction_score) + '</td>';
         html += '<td>' + labelBadge(p.conviction_label) + '</td>';
         html += '<td>$' + Number(p.entry_price).toFixed(2) + '</td>';
+        html += '<td>' + nowPrice + '</td>';
+        html += '<td>' + liveHtml + '</td>';
         html += '<td class="' + r7cls + '">' + fmtRet(p.return_7d, p.filled_7d) + '</td>';
         html += '<td class="' + r14cls + '">' + fmtRet(p.return_14d, p.filled_14d || 0) + '</td>';
         html += '<td class="' + r30cls + '">' + fmtRet(p.return_30d, p.filled_30d) + '</td>';
@@ -870,6 +947,18 @@ function fmtRet(ret, filled) {
     return prefix + v.toFixed(2) + '%';
 }
 
+function dateWithTime(dateStr, createdAt) {
+    if (!dateStr) return '';
+    var display = escHtml(dateStr);
+    if (!createdAt) return '<span class="date-cell">' + display + '</span>';
+    var d = new Date(createdAt.replace(' ', 'T') + 'Z');
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var tipText = days[d.getDay()] + ' ' + months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear()
+        + ' at ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds()) + ' UTC';
+    return '<span class="date-cell">' + display + '<span class="date-tip">' + tipText + '</span></span>';
+}
+
 function fmtRetVal(v) {
     if (v === undefined || v === null) return '--';
     var n = Number(v);
@@ -877,10 +966,256 @@ function fmtRetVal(v) {
     return prefix + n.toFixed(2) + '%';
 }
 
-function outcomeLabel(outcome) {
+function outcomeLabel(outcome, liveRet) {
     if (outcome === 'win') return '<span class="badge badge-green">WIN</span>';
     if (outcome === 'loss') return '<span class="badge badge-red">LOSS</span>';
+    // Pending with live return
+    if (liveRet !== null && liveRet !== undefined) {
+        var v = Number(liveRet);
+        if (v > 0.5) return '<span class="badge badge-pending-up"><span class="live-dot"></span>AHEAD +' + v.toFixed(1) + '%</span>';
+        if (v < -0.5) return '<span class="badge badge-pending-down"><span class="live-dot"></span>BEHIND ' + v.toFixed(1) + '%</span>';
+        return '<span class="badge badge-pending-flat"><span class="live-dot"></span>FLAT ' + (v >= 0 ? '+' : '') + v.toFixed(1) + '%</span>';
+    }
     return '<span class="badge badge-blue">PENDING</span>';
+}
+
+// ═══════════════════════════════════════
+//  Live P&L Tab — cross-asset live returns
+// ═══════════════════════════════════════
+function loadLivePnl() {
+    loadLiveStocks();
+    loadLiveCrypto();
+    loadLiveForex();
+    loadLiveBets();
+}
+
+function loadLiveStocks() {
+    apiGet('live_returns', {}, function(err, resp) {
+        if (err || !resp || !resp.ok) {
+            document.getElementById('liveStocksTable').innerHTML = '<div class="loading">Failed to load live returns</div>';
+            return;
+        }
+        livePnlData = resp.records || [];
+        livePrices = resp.prices || {};
+        renderLiveStocks();
+        updateLivePnlStats();
+    });
+}
+
+function renderLiveStocks() {
+    var data = livePnlData;
+    if (currentTicker !== 'all') {
+        data = [];
+        for (var i = 0; i < livePnlData.length; i++) {
+            if (livePnlData[i].ticker === currentTicker) data.push(livePnlData[i]);
+        }
+    }
+    if (data.length === 0) {
+        document.getElementById('liveStocksTable').innerHTML = '<div class="loading" style="color:var(--text-dim)">No pending conviction positions</div>';
+        return;
+    }
+    var html = '<table><thead><tr><th>Ticker</th><th>Signal Date</th><th>Days Held</th><th>Conv</th><th>Label</th><th>Entry $</th><th>Current $</th><th>24h Chg</th><th>Unrealized P&amp;L</th><th>Status</th></tr></thead><tbody>';
+    for (var i = 0; i < data.length; i++) {
+        var r = data[i];
+        var curPrice = r.current_price > 0 ? '$' + Number(r.current_price).toFixed(2) : '<span style="color:var(--text-dim)">--</span>';
+        var chg24 = '';
+        if (r.change_24h_pct) {
+            var c = Number(r.change_24h_pct);
+            var ccls = c >= 0 ? 'positive' : 'negative';
+            chg24 = '<span class="' + ccls + '">' + (c >= 0 ? '+' : '') + c.toFixed(2) + '%</span>';
+        } else { chg24 = '<span style="color:var(--text-dim)">--</span>'; }
+
+        var pnlHtml = '', statusHtml = '';
+        if (r.has_live_price) {
+            var lr = Number(r.live_return);
+            var pnlCls = lr >= 0 ? 'positive' : 'negative';
+            var pnlPrefix = lr >= 0 ? '+' : '';
+            pnlHtml = '<span class="' + pnlCls + '" style="font-weight:800;font-size:.95rem">' + pnlPrefix + lr.toFixed(2) + '%</span>';
+            if (lr > 0.5) statusHtml = '<span class="badge badge-pending-up"><span class="live-dot"></span>AHEAD</span>';
+            else if (lr < -0.5) statusHtml = '<span class="badge badge-pending-down"><span class="live-dot"></span>BEHIND</span>';
+            else statusHtml = '<span class="badge badge-pending-flat"><span class="live-dot"></span>FLAT</span>';
+        } else {
+            pnlHtml = '<span style="color:var(--text-dim)">--</span>';
+            statusHtml = '<span class="badge badge-blue">PENDING</span>';
+        }
+
+        html += '<tr>';
+        html += '<td><strong>' + escHtml(r.ticker) + '</strong></td>';
+        html += '<td>' + dateWithTime(r.conviction_date, r.created_at) + '</td>';
+        html += '<td>' + r.days_held + 'd</td>';
+        html += '<td>' + scoreHtml(r.conviction_score) + '</td>';
+        html += '<td>' + labelBadge(r.conviction_label) + '</td>';
+        html += '<td>$' + Number(r.entry_price).toFixed(2) + '</td>';
+        html += '<td>' + curPrice + '</td>';
+        html += '<td>' + chg24 + '</td>';
+        html += '<td>' + pnlHtml + '</td>';
+        html += '<td>' + statusHtml + '</td>';
+        html += '</tr>';
+    }
+    html += '</tbody></table>';
+    document.getElementById('liveStocksTable').innerHTML = html;
+}
+
+function updateLivePnlStats() {
+    var count = 0, total = 0, best = -9999, worst = 9999, bestTicker = '', worstTicker = '';
+    for (var i = 0; i < livePnlData.length; i++) {
+        if (livePnlData[i].has_live_price) {
+            count++;
+            var lr = Number(livePnlData[i].live_return);
+            total += lr;
+            if (lr > best) { best = lr; bestTicker = livePnlData[i].ticker; }
+            if (lr < worst) { worst = lr; worstTicker = livePnlData[i].ticker; }
+        }
+    }
+    document.getElementById('lp-count').textContent = count;
+    if (count > 0) {
+        var avg = total / count;
+        var avgEl = document.getElementById('lp-avg');
+        avgEl.textContent = (avg >= 0 ? '+' : '') + avg.toFixed(2) + '%';
+        avgEl.style.color = avg >= 0 ? 'var(--green)' : 'var(--red)';
+        document.getElementById('lp-best').textContent = bestTicker + ' +' + best.toFixed(1) + '%';
+        document.getElementById('lp-worst').textContent = worstTicker + ' ' + worst.toFixed(1) + '%';
+    } else {
+        document.getElementById('lp-avg').textContent = '--';
+        document.getElementById('lp-best').textContent = '--';
+        document.getElementById('lp-worst').textContent = '--';
+    }
+}
+
+function loadLiveCrypto() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', PRICE_API + '?action=get&asset_class=CRYPTO', true);
+    xhr.timeout = 15000;
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                var resp = JSON.parse(xhr.responseText);
+                renderLiveAssetTable('liveCryptoTable', resp.prices || resp.data || [], 'crypto');
+            } catch(e) { document.getElementById('liveCryptoTable').innerHTML = '<div class="loading" style="color:var(--text-dim)">No crypto data available</div>'; }
+        } else { document.getElementById('liveCryptoTable').innerHTML = '<div class="loading" style="color:var(--text-dim)">Crypto API unavailable</div>'; }
+    };
+    xhr.onerror = function() { document.getElementById('liveCryptoTable').innerHTML = '<div class="loading" style="color:var(--text-dim)">Crypto API error</div>'; };
+    xhr.send();
+}
+
+function loadLiveForex() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', PRICE_API + '?action=get&asset_class=FOREX', true);
+    xhr.timeout = 15000;
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                var resp = JSON.parse(xhr.responseText);
+                renderLiveAssetTable('liveForexTable', resp.prices || resp.data || [], 'forex');
+            } catch(e) { document.getElementById('liveForexTable').innerHTML = '<div class="loading" style="color:var(--text-dim)">No forex data available</div>'; }
+        } else { document.getElementById('liveForexTable').innerHTML = '<div class="loading" style="color:var(--text-dim)">Forex API unavailable</div>'; }
+    };
+    xhr.onerror = function() { document.getElementById('liveForexTable').innerHTML = '<div class="loading" style="color:var(--text-dim)">Forex API error</div>'; };
+    xhr.send();
+}
+
+function renderLiveAssetTable(elId, prices, assetType) {
+    if (!prices || (Array.isArray(prices) && prices.length === 0)) {
+        // Try as object
+        if (typeof prices === 'object' && !Array.isArray(prices)) {
+            var arr = [];
+            for (var k in prices) {
+                if (prices.hasOwnProperty(k)) {
+                    var item = prices[k];
+                    item.symbol = item.symbol || k;
+                    arr.push(item);
+                }
+            }
+            prices = arr;
+        }
+        if (!prices || prices.length === 0) {
+            document.getElementById(elId).innerHTML = '<div class="loading" style="color:var(--text-dim)">No data available</div>';
+            return;
+        }
+    }
+    // Normalize array
+    if (!Array.isArray(prices)) {
+        var arr2 = [];
+        for (var k2 in prices) {
+            if (prices.hasOwnProperty(k2)) {
+                var item2 = prices[k2];
+                item2.symbol = item2.symbol || k2;
+                arr2.push(item2);
+            }
+        }
+        prices = arr2;
+    }
+
+    var html = '<table class="sub-table"><thead><tr><th>Symbol</th><th>Price</th><th>24h Change</th><th>Status</th></tr></thead><tbody>';
+    for (var i = 0; i < prices.length; i++) {
+        var p = prices[i];
+        var sym = p.symbol || p.pair || p.ticker || '??';
+        var price = Number(p.price || p.current_price || p.close || 0);
+        var chg = Number(p.change_24h_pct || p.change_pct || p.percent_change || 0);
+        var chgCls = chg >= 0 ? 'positive' : 'negative';
+        var chgPrefix = chg >= 0 ? '+' : '';
+        var statusBadge = '';
+        if (Math.abs(chg) < 0.5) statusBadge = '<span class="badge badge-pending-flat">FLAT</span>';
+        else if (chg > 0) statusBadge = '<span class="badge badge-pending-up">' + chgPrefix + chg.toFixed(1) + '%</span>';
+        else statusBadge = '<span class="badge badge-pending-down">' + chg.toFixed(1) + '%</span>';
+
+        var priceStr = price > 100 ? '$' + price.toFixed(2) : (price > 1 ? '$' + price.toFixed(4) : '$' + price.toFixed(6));
+
+        html += '<tr>';
+        html += '<td><strong>' + escHtml(sym) + '</strong></td>';
+        html += '<td>' + priceStr + '</td>';
+        html += '<td class="' + chgCls + '">' + chgPrefix + chg.toFixed(2) + '%</td>';
+        html += '<td>' + statusBadge + '</td>';
+        html += '</tr>';
+    }
+    html += '</tbody></table>';
+    document.getElementById(elId).innerHTML = html;
+}
+
+function loadLiveBets() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', BETS_API + '?action=active', true);
+    xhr.timeout = 15000;
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                var resp = JSON.parse(xhr.responseText);
+                renderLiveBets(resp.bets || resp.data || []);
+            } catch(e) { document.getElementById('liveBetsTable').innerHTML = '<div class="loading" style="color:var(--text-dim)">No pending bets</div>'; }
+        } else { document.getElementById('liveBetsTable').innerHTML = '<div class="loading" style="color:var(--text-dim)">Bets API unavailable</div>'; }
+    };
+    xhr.onerror = function() { document.getElementById('liveBetsTable').innerHTML = '<div class="loading" style="color:var(--text-dim)">Bets API error</div>'; };
+    xhr.send();
+}
+
+function renderLiveBets(bets) {
+    if (!bets || bets.length === 0) {
+        document.getElementById('liveBetsTable').innerHTML = '<div class="loading" style="color:var(--text-dim)">No pending bets — all settled or none placed</div>';
+        return;
+    }
+    var html = '<table class="sub-table"><thead><tr><th>Sport</th><th>Match</th><th>Pick</th><th>Market</th><th>Odds</th><th>Wager</th><th>Potential</th><th>Status</th></tr></thead><tbody>';
+    for (var i = 0; i < bets.length; i++) {
+        var b = bets[i];
+        var matchup = escHtml((b.away_team || '?') + ' @ ' + (b.home_team || '?'));
+        var odds = Number(b.odds || 0);
+        var wager = Number(b.bet_amount || 0);
+        var potential = (wager * odds).toFixed(2);
+        var profit = (wager * (odds - 1)).toFixed(2);
+        var gameTime = b.commence_time ? formatTime(b.commence_time) : (b.game_date || '--');
+
+        html += '<tr>';
+        html += '<td><strong>' + escHtml(b.sport || '--') + '</strong></td>';
+        html += '<td>' + matchup + '<br><span style="color:var(--text-dim);font-size:.7rem">' + gameTime + '</span></td>';
+        html += '<td>' + escHtml(b.pick || '--') + '</td>';
+        html += '<td>' + escHtml(b.market || 'h2h') + '</td>';
+        html += '<td>' + odds.toFixed(2) + '</td>';
+        html += '<td>$' + wager.toFixed(2) + '</td>';
+        html += '<td class="positive">+$' + profit + '</td>';
+        html += '<td><span class="badge badge-pending-flat"><span class="live-dot"></span>IN PLAY</span></td>';
+        html += '</tr>';
+    }
+    html += '</tbody></table>';
+    document.getElementById('liveBetsTable').innerHTML = html;
 }
 
 // ── Init ──

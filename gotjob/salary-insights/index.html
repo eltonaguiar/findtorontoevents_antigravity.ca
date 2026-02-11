@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salary Insights - BESTIEJOB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+  <nav class="nav-menu">
+    <a href="/">Home</a>
+    <a href="/gotjob/">Find Jobs</a>
+    <a href="/gotjob/salary-insights/" class="active">Salaries</a>
+    <a href="/gotjob/companies/">Companies</a>
+    <a href="/gotjob/resources/">Resources</a>
+    <a href="/gotjob/market-report/">Market Report</a>
+    <a href="/gotjob/tracker/">Tracker</a>
+  </nav>
+  <main class="container">
+    <header class="page-header text-center">
+      <h1 class="text-gradient">Salary Insights Dashboard</h1>
+      <p class="subhead">Real-time salary data for Toronto creative, technology, and management roles</p>
+    </header>
+
+    <!-- Stats Overview -->
+    <section class="stats-grid">
+      <div class="stat-card glass-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-value" id="avgSalary">$0</div>
+        <div class="stat-label">Average Salary</div>
+      </div>
+
+      <div class="stat-card glass-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-value" id="totalJobs">0</div>
+        <div class="stat-label">Jobs Analyzed</div>
+      </div>
+
+      <div class="stat-card glass-card">
+        <div class="stat-icon">🏢</div>
+        <div class="stat-value" id="totalCompanies">0</div>
+        <div class="stat-label">Companies</div>
+      </div>
+
+      <div class="stat-card glass-card">
+        <div class="stat-icon">📈</div>
+        <div class="stat-value" id="salaryRange">$0 - $0</div>
+        <div class="stat-label">Salary Range</div>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="filters-section mt-lg">
+      <div class="glass-card">
+        <h3>Filter by Role Type</h3>
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-filter="all">All Roles</button>
+          <button class="filter-btn" data-filter="creative">Creative</button>
+          <button class="filter-btn" data-filter="technology">Technology</button>
+          <button class="filter-btn" data-filter="manager">Manager</button>
+          <button class="filter-btn" data-filter="management">Management</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="charts-section mt-lg">
+      <div class="grid-2">
+        <div class="chart-card glass-card">
+          <h3>Salary Distribution</h3>
+          <canvas id="salaryDistChart"></canvas>
+        </div>
+
+        <div class="chart-card glass-card">
+          <h3>Average Salary by Role Type</h3>
+          <canvas id="roleComparisonChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card glass-card mt-lg">
+        <h3>Salary Ranges by Company</h3>
+        <canvas id="companyChart"></canvas>
+      </div>
+    </section>
+
+    <!-- Salary Table -->
+    <section class="table-section mt-lg">
+      <div class="glass-card">
+        <div class="table-header">
+          <h3>Detailed Salary Breakdown</h3>
+          <div class="table-controls">
+            <input type="text" id="tableSearch" class="search-input-small" placeholder="Search jobs...">
+            <select id="sortBy" class="select-small">
+              <option value="salary-desc">Salary (High to Low)</option>
+              <option value="salary-asc">Salary (Low to High)</option>
+              <option value="company">Company (A-Z)</option>
+              <option value="title">Title (A-Z)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="salary-table">
+            <thead>
+              <tr>
+                <th>Job Title</th>
+                <th>Company</th>
+                <th>Salary Range</th>
+                <th>Location</th>
+                <th>Source</th>
+              </tr>
+            </thead>
+            <tbody id="salaryTableBody">
+              <!-- Table rows will be inserted here -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="tableLoading" class="loading">
+          <div class="spinner"></div>
+        </div>
+
+        <div id="tableEmpty" class="empty-state" style="display: none;">
+          <div class="empty-state-icon">📊</div>
+          <h3>No salary data available</h3>
+          <p>Try adjusting your filters or check back later</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Salary Calculator -->
+    <section class="calculator-section mt-lg">
+      <div class="glass-card">
+        <h2>Salary Calculator</h2>
+        <p class="mb-md">Estimate fair compensation based on role and experience</p>
+
+        <div class="calculator-form">
+          <div class="form-group">
+            <label class="form-label">Role Type</label>
+            <select id="calcRole" class="form-select">
+              <option value="creative">Creative</option>
+              <option value="technology">Technology</option>
+              <option value="manager">Manager</option>
+              <option value="management">Management</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Experience Level</label>
+            <select id="calcExperience" class="form-select">
+              <option value="junior">Junior (0-2 years)</option>
+              <option value="mid">Mid-Level (3-5 years)</option>
+              <option value="senior">Senior (6-10 years)</option>
+              <option value="lead">Lead/Principal (10+ years)</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" id="calculateBtn">Calculate Salary Range</button>
+
+          <div id="calcResult" class="calc-result" style="display: none;">
+            <h3>Estimated Salary Range</h3>
+            <div class="salary-range-display">
+              <span class="range-min" id="calcMin">$0</span>
+              <span class="range-separator">-</span>
+              <span class="range-max" id="calcMax">$0</span>
+            </div>
+            <p class="calc-note">Based on <span id="calcSampleSize">0</span> jobs in our database</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Insights -->
+    <section class="insights-section mt-lg">
+      <h2>Market Insights</h2>
+      <div class="grid-3">
+        <div class="insight-card glass-card">
+          <div class="insight-icon">🔥</div>
+          <h4>Most In-Demand</h4>
+          <p id="topRole">Loading...</p>
+        </div>
+
+        <div class="insight-card glass-card">
+          <div class="insight-icon">💎</div>
+          <h4>Highest Paying</h4>
+          <p id="highestPaying">Loading...</p>
+        </div>
+
+        <div class="insight-card glass-card">
+          <div class="insight-icon">📍</div>
+          <h4>Top Location</h4>
+          <p id="topLocation">Toronto, ON</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+
+</html>

@@ -154,9 +154,10 @@ if ($action === 'dashboard') {
     $r = $conn->query("SELECT source_system,
         COUNT(*) as total_picks,
         SUM(CASE WHEN status != 'open' THEN 1 ELSE 0 END) as closed_picks,
-        SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as wins,
+        SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as tp_wins,
         SUM(CASE WHEN status = 'sl_hit' THEN 1 ELSE 0 END) as losses,
         SUM(CASE WHEN status IN ('max_hold','expired') THEN 1 ELSE 0 END) as expired,
+        SUM(CASE WHEN status IN ('max_hold','expired') AND final_return_pct > 0 THEN 1 ELSE 0 END) as expired_wins,
         AVG(CASE WHEN status != 'open' THEN final_return_pct ELSE NULL END) as avg_return,
         SUM(CASE WHEN status != 'open' THEN final_return_pct ELSE 0 END) as total_return,
         AVG(CASE WHEN status != 'open' THEN hold_hours ELSE NULL END) as avg_hold
@@ -164,7 +165,8 @@ if ($action === 'dashboard') {
     if ($r) {
         while ($row = $r->fetch_assoc()) {
             $closed = intval($row['closed_picks']);
-            $wins   = intval($row['wins']);
+            $wins   = intval($row['tp_wins']) + intval($row['expired_wins']);
+            $row['wins'] = $wins;
             $wr = ($closed > 0) ? round(($wins / $closed) * 100, 1) : 0;
             $row['win_rate'] = $wr;
             $systems[] = $row;
@@ -252,7 +254,8 @@ if ($action === 'system_detail') {
     $r = $conn->query("SELECT
         COUNT(*) as total,
         SUM(CASE WHEN status != 'open' THEN 1 ELSE 0 END) as closed,
-        SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as wins,
+        SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as tp_wins,
+        SUM(CASE WHEN status IN ('max_hold','expired') AND final_return_pct > 0 THEN 1 ELSE 0 END) as expired_wins,
         SUM(CASE WHEN status = 'sl_hit' THEN 1 ELSE 0 END) as losses,
         AVG(CASE WHEN status != 'open' THEN final_return_pct ELSE NULL END) as avg_return,
         SUM(CASE WHEN status != 'open' THEN final_return_pct ELSE 0 END) as total_return,
@@ -260,18 +263,22 @@ if ($action === 'system_detail') {
         MAX(pick_date) as last_pick
         FROM gm_unified_picks WHERE source_system = '" . $system . "'");
     $stats = array();
-    if ($r && ($row = $r->fetch_assoc())) { $stats = $row; }
+    if ($r && ($row = $r->fetch_assoc())) {
+        $row['wins'] = intval($row['tp_wins']) + intval($row['expired_wins']);
+        $stats = $row;
+    }
 
     // By algorithm
     $algos = array();
     $r = $conn->query("SELECT algorithm_name,
         COUNT(*) as picks,
-        SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as wins,
+        SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as tp_wins,
+        SUM(CASE WHEN status IN ('max_hold','expired') AND final_return_pct > 0 THEN 1 ELSE 0 END) as expired_wins,
         SUM(CASE WHEN status = 'sl_hit' THEN 1 ELSE 0 END) as losses,
         AVG(CASE WHEN status != 'open' THEN final_return_pct ELSE NULL END) as avg_return
         FROM gm_unified_picks WHERE source_system = '" . $system . "' AND algorithm_name != ''
-        GROUP BY algorithm_name ORDER BY wins DESC LIMIT 20");
-    if ($r) { while ($row = $r->fetch_assoc()) { $algos[] = $row; } }
+        GROUP BY algorithm_name ORDER BY tp_wins DESC LIMIT 20");
+    if ($r) { while ($row = $r->fetch_assoc()) { $row['wins'] = intval($row['tp_wins']) + intval($row['expired_wins']); $algos[] = $row; } }
 
     // Recent picks
     $recent = array();
@@ -283,8 +290,10 @@ if ($action === 'system_detail') {
     $trend = array();
     $r = $conn->query("SELECT pick_date,
         COUNT(*) as picks,
-        SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as wins,
-        SUM(CASE WHEN status = 'sl_hit' THEN 1 ELSE 0 END) as losses
+        SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) +
+        SUM(CASE WHEN status IN ('max_hold','expired') AND final_return_pct > 0 THEN 1 ELSE 0 END) as wins,
+        SUM(CASE WHEN status = 'sl_hit' THEN 1 ELSE 0 END) +
+        SUM(CASE WHEN status IN ('max_hold','expired') AND final_return_pct <= 0 THEN 1 ELSE 0 END) as losses
         FROM gm_unified_picks WHERE source_system = '" . $system . "'
         AND pick_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND status != 'open'
         GROUP BY pick_date ORDER BY pick_date");
@@ -348,7 +357,8 @@ if ($action === 'leaderboard') {
     $sys_rank = array();
     $r = $conn->query("SELECT source_system,
         COUNT(*) as total,
-        SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as wins,
+        SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as tp_wins,
+        SUM(CASE WHEN status IN ('max_hold','expired') AND final_return_pct > 0 THEN 1 ELSE 0 END) as expired_wins,
         SUM(CASE WHEN status != 'open' THEN 1 ELSE 0 END) as closed,
         AVG(CASE WHEN status != 'open' THEN final_return_pct ELSE NULL END) as avg_return,
         SUM(CASE WHEN status != 'open' THEN final_return_pct ELSE 0 END) as total_return
@@ -357,7 +367,8 @@ if ($action === 'leaderboard') {
     if ($r) {
         while ($row = $r->fetch_assoc()) {
             $closed = intval($row['closed']);
-            $wins   = intval($row['wins']);
+            $wins   = intval($row['tp_wins']) + intval($row['expired_wins']);
+            $row['wins'] = $wins;
             $row['win_rate'] = ($closed > 0) ? round(($wins / $closed) * 100, 1) : 0;
             $sys_rank[] = $row;
         }
@@ -367,7 +378,8 @@ if ($action === 'leaderboard') {
     $algo_rank = array();
     $r = $conn->query("SELECT algorithm_name, source_system,
         COUNT(*) as total,
-        SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as wins,
+        SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as tp_wins,
+        SUM(CASE WHEN status IN ('max_hold','expired') AND final_return_pct > 0 THEN 1 ELSE 0 END) as expired_wins,
         SUM(CASE WHEN status != 'open' THEN 1 ELSE 0 END) as closed,
         AVG(CASE WHEN status != 'open' THEN final_return_pct ELSE NULL END) as avg_return
         FROM gm_unified_picks WHERE algorithm_name != ''
@@ -376,7 +388,8 @@ if ($action === 'leaderboard') {
     if ($r) {
         while ($row = $r->fetch_assoc()) {
             $closed = intval($row['closed']);
-            $wins   = intval($row['wins']);
+            $wins   = intval($row['tp_wins']) + intval($row['expired_wins']);
+            $row['wins'] = $wins;
             $row['win_rate'] = ($closed > 0) ? round(($wins / $closed) * 100, 1) : 0;
             $algo_rank[] = $row;
         }
@@ -386,7 +399,8 @@ if ($action === 'leaderboard') {
     $consistent = array();
     $r = $conn->query("SELECT ticker,
         COUNT(*) as times_picked,
-        SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as wins,
+        SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) +
+        SUM(CASE WHEN status IN ('max_hold','expired') AND final_return_pct > 0 THEN 1 ELSE 0 END) as wins,
         SUM(CASE WHEN status != 'open' THEN 1 ELSE 0 END) as closed,
         AVG(CASE WHEN status != 'open' THEN final_return_pct ELSE NULL END) as avg_return,
         COUNT(DISTINCT source_system) as systems
@@ -542,6 +556,11 @@ function _gm_archive_live_signals($conn) {
 
     while ($row = $r->fetch_assoc()) {
         $sid = intval($row['id']);
+
+        // Minimum signal strength filter — skip weak signals to improve win rate
+        $strength = intval($row['signal_strength']);
+        if ($strength < 50) continue;
+
         $pick_date = substr($row['signal_time'], 0, 10);
         $dup = $conn->query("SELECT id FROM gm_unified_picks
             WHERE source_system='live_signal' AND source_table='lm_signals'
@@ -1167,9 +1186,10 @@ function _gm_check_health($conn) {
         $r = $conn->query("SELECT
             COUNT(*) as total,
             SUM(CASE WHEN status != 'open' THEN 1 ELSE 0 END) as closed,
-            SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as wins,
+            SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as tp_wins,
             SUM(CASE WHEN status = 'sl_hit' THEN 1 ELSE 0 END) as losses,
             SUM(CASE WHEN status IN ('max_hold','expired') THEN 1 ELSE 0 END) as expired,
+            SUM(CASE WHEN status IN ('max_hold','expired') AND final_return_pct > 0 THEN 1 ELSE 0 END) as expired_wins,
             AVG(CASE WHEN status != 'open' THEN final_return_pct ELSE NULL END) as avg_ret,
             SUM(CASE WHEN status != 'open' THEN final_return_pct ELSE 0 END) as total_ret,
             AVG(CASE WHEN status != 'open' THEN hold_hours ELSE NULL END) as avg_hold,
@@ -1179,7 +1199,7 @@ function _gm_check_health($conn) {
         if (!$r || $r->num_rows === 0) continue;
         $s = $r->fetch_assoc();
         $total_closed = intval($s['closed']);
-        $wins = intval($s['wins']);
+        $wins = intval($s['tp_wins']) + intval($s['expired_wins']);
         $losses = intval($s['losses']);
         $win_rate = ($total_closed > 0) ? round(($wins / $total_closed) * 100, 1) : 0;
 
@@ -1261,11 +1281,93 @@ function _gm_check_health($conn) {
             }
         }
 
-        // Avg return check
+        // Rapid decline: 7d accuracy dropping significantly vs 30d
+        if ($wr7 > 0 && $wr30 > 0 && $total_closed >= 5) {
+            $decline = $wr30 - $wr7;
+            if ($decline >= 20) {
+                $is_failing = 1;
+                $fail_reasons[] = 'Rapid decline: 7d=' . $wr7 . '% vs 30d=' . $wr30 . '%';
+                _gm_create_alert($conn, $sys, 'rapid_decline', 'critical',
+                    $sys . ': Accuracy plummeting (7d: ' . $wr7 . '% vs 30d: ' . $wr30 . '%)',
+                    'Win rate has dropped ' . round($decline, 1) . ' percentage points in the last 7 days compared to 30-day average. This indicates a sudden regime change or data issue.',
+                    '', $wr7, $wr30, isset($page_urls[$sys]) ? $page_urls[$sys] : '');
+                $alerts_created++;
+            } elseif ($decline >= 12) {
+                $fail_reasons[] = 'Declining: 7d=' . $wr7 . '% vs 30d=' . $wr30 . '%';
+                _gm_create_alert($conn, $sys, 'rapid_decline', 'warning',
+                    $sys . ': Accuracy declining (7d: ' . $wr7 . '% vs 30d: ' . $wr30 . '%)',
+                    'Win rate has dropped ' . round($decline, 1) . ' percentage points recently. Monitor closely.',
+                    '', $wr7, $wr30, isset($page_urls[$sys]) ? $page_urls[$sys] : '');
+                $alerts_created++;
+            }
+        }
+
+        // Avg return check — now creates alerts
         $avg_ret = floatval($s['avg_ret']);
         if ($total_closed >= 5 && $avg_ret < $CRIT_AVG_RET) {
             $is_failing = 1;
             $fail_reasons[] = 'Average return: ' . round($avg_ret, 2) . '%';
+            _gm_create_alert($conn, $sys, 'negative_roi', 'critical',
+                $sys . ': Average return deeply negative (' . round($avg_ret, 1) . '%)',
+                'The average return per trade is ' . round($avg_ret, 2) . '%, well below the critical threshold of ' . $CRIT_AVG_RET . '%. The system is losing money on average.',
+                '', $avg_ret, $CRIT_AVG_RET, isset($page_urls[$sys]) ? $page_urls[$sys] : '');
+            $alerts_created++;
+        } elseif ($total_closed >= 5 && $avg_ret < $WARN_AVG_RET) {
+            $fail_reasons[] = 'Average return: ' . round($avg_ret, 2) . '%';
+            _gm_create_alert($conn, $sys, 'negative_roi', 'warning',
+                $sys . ': Average return negative (' . round($avg_ret, 1) . '%)',
+                'The average return per trade is ' . round($avg_ret, 2) . '%, approaching the critical threshold.',
+                '', $avg_ret, $WARN_AVG_RET, isset($page_urls[$sys]) ? $page_urls[$sys] : '');
+            $alerts_created++;
+        }
+
+        // Zero picks in last 7 days for active systems
+        $r7picks = $conn->query("SELECT COUNT(*) as cnt FROM gm_unified_picks
+            WHERE source_system = '" . _gm_esc($conn, $sys) . "'
+            AND pick_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)");
+        $recent_count = 0;
+        if ($r7picks && ($r7row = $r7picks->fetch_assoc())) { $recent_count = intval($r7row['cnt']); }
+        if ($recent_count === 0 && intval($s['total']) > 0) {
+            $fail_reasons[] = 'Zero picks in last 7 days';
+            _gm_create_alert($conn, $sys, 'zero_picks', 'warning',
+                $sys . ': No picks generated in 7 days',
+                'This system has existing picks but generated zero new picks in the last 7 days. Data pipeline may be broken.',
+                '', 0, 1, isset($page_urls[$sys]) ? $page_urls[$sys] : '');
+            $alerts_created++;
+        }
+
+        // Per-algorithm underperformance within this system
+        $algo_r = $conn->query("SELECT algorithm_name,
+            COUNT(*) as total,
+            SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as wins,
+            SUM(CASE WHEN status != 'open' THEN 1 ELSE 0 END) as closed,
+            AVG(CASE WHEN status != 'open' THEN final_return_pct ELSE NULL END) as avg_ret
+            FROM gm_unified_picks
+            WHERE source_system = '" . _gm_esc($conn, $sys) . "'
+            AND algorithm_name != '' AND status != 'open'
+            AND pick_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+            GROUP BY algorithm_name HAVING closed >= 3
+            ORDER BY avg_ret ASC LIMIT 3");
+        if ($algo_r) {
+            while ($algo = $algo_r->fetch_assoc()) {
+                $algo_closed = intval($algo['closed']);
+                $algo_wins = intval($algo['wins']);
+                $algo_wr = ($algo_closed > 0) ? round(($algo_wins / $algo_closed) * 100, 1) : 0;
+                $algo_avg = floatval($algo['avg_ret']);
+                if ($algo_wr < 20 && $algo_closed >= 5) {
+                    _gm_create_alert($conn, $sys, 'algo_underperform', 'critical',
+                        $sys . ': Algorithm "' . $algo['algorithm_name'] . '" failing (' . $algo_wr . '% win rate)',
+                        'Algorithm "' . $algo['algorithm_name'] . '" has only a ' . $algo_wr . '% win rate across ' . $algo_closed . ' trades in the last 30 days. Average return: ' . round($algo_avg, 2) . '%. Consider disabling or re-tuning.',
+                        '', $algo_wr, 20, isset($page_urls[$sys]) ? $page_urls[$sys] : '');
+                    $alerts_created++;
+                } elseif ($algo_wr < 35 && $algo_closed >= 5) {
+                    _gm_create_alert($conn, $sys, 'algo_underperform', 'warning',
+                        $sys . ': Algorithm "' . $algo['algorithm_name'] . '" underperforming (' . $algo_wr . '% win rate)',
+                        'Algorithm "' . $algo['algorithm_name'] . '" has a ' . $algo_wr . '% win rate across ' . $algo_closed . ' trades. Average return: ' . round($algo_avg, 2) . '%.',
+                        '', $algo_wr, 35, isset($page_urls[$sys]) ? $page_urls[$sys] : '');
+                    $alerts_created++;
+                }
+            }
         }
 
         // Insert health snapshot
@@ -1290,20 +1392,262 @@ function _gm_check_health($conn) {
              '" . $now . "')");
         $health_snaps++;
 
-        // Auto-resolve alerts if system recovered
+        // Auto-resolve system-level alerts if system recovered (NOT per-algo alerts)
         if ($wr30 >= $WARN_WIN_RATE && $consec < $WARN_CONSEC) {
             $conn->query("UPDATE gm_failure_alerts SET is_active = 0, resolved_at = '" . $now . "'
                 WHERE source_system = '" . _gm_esc($conn, $sys) . "' AND is_active = 1
-                AND alert_type IN ('accuracy_drop', 'losing_streak')");
+                AND alert_type IN ('accuracy_drop', 'losing_streak', 'rapid_decline', 'negative_roi')");
         }
+        // Auto-resolve algo_underperform only after 3 days (give algos time to recover)
+        $conn->query("UPDATE gm_failure_alerts SET is_active = 0, resolved_at = '" . $now . "'
+            WHERE source_system = '" . _gm_esc($conn, $sys) . "' AND is_active = 1
+            AND alert_type = 'algo_underperform'
+            AND alert_date < DATE_SUB(CURDATE(), INTERVAL 3 DAY)");
     }
+
+    // ── Cross-system health checks ──
+
+    // 1. Sports bankroll drawdown
+    $alerts_created += _gm_check_sports_bankroll($conn);
+
+    // 2. Conviction system accuracy
+    $alerts_created += _gm_check_conviction_health($conn);
+
+    // 3. Paper trading equity
+    $alerts_created += _gm_check_paper_trading($conn);
+
+    // 4. Overall portfolio health (all systems combined)
+    $alerts_created += _gm_check_portfolio_health($conn);
 
     return array('health_snapshots' => $health_snaps, 'alerts_created' => $alerts_created);
 }
 
+// ── Sports Bankroll Drawdown Check ──
+function _gm_check_sports_bankroll($conn) {
+    global $now, $today;
+    $created = 0;
+
+    $sc = @new mysqli('mysql.50webs.com', 'ejaguiar1_sportsbet', 'eltonsportsbets', 'ejaguiar1_sportsbet');
+    if ($sc->connect_error) return 0;
+
+    // Current bankroll vs initial
+    $INITIAL = 1000.00;
+    $r = $sc->query("SELECT COALESCE(SUM(pnl), 0) as total_pnl FROM lm_sports_bets WHERE result IS NOT NULL");
+    if (!$r) { $sc->close(); return 0; }
+    $row = $r->fetch_assoc();
+    $bankroll = $INITIAL + floatval($row['total_pnl']);
+    $drawdown_pct = (($INITIAL - $bankroll) / $INITIAL) * 100;
+
+    // Win rate
+    $sr = $sc->query("SELECT
+        COUNT(*) as total,
+        SUM(CASE WHEN result = 'win' THEN 1 ELSE 0 END) as wins
+        FROM lm_sports_bets WHERE result IS NOT NULL");
+    $sports_wr = 0;
+    $sports_total = 0;
+    if ($sr && ($srow = $sr->fetch_assoc())) {
+        $sports_total = intval($srow['total']);
+        $swins = intval($srow['wins']);
+        $sports_wr = ($sports_total > 0) ? round(($swins / $sports_total) * 100, 1) : 0;
+    }
+
+    // Recent streak (last 10)
+    $streak_r = $sc->query("SELECT result FROM lm_sports_bets WHERE result IS NOT NULL ORDER BY settled_at DESC LIMIT 10");
+    $consec_losses = 0;
+    if ($streak_r) {
+        while ($srow = $streak_r->fetch_assoc()) {
+            if ($srow['result'] === 'loss') $consec_losses++;
+            else break;
+        }
+    }
+
+    $sc->close();
+
+    // Bankroll drawdown alerts
+    if ($drawdown_pct >= 30) {
+        _gm_create_alert($conn, 'sports', 'bankroll_drawdown', 'critical',
+            'Sports: Bankroll down ' . round($drawdown_pct, 1) . '% ($' . round($bankroll, 2) . ')',
+            'Sports betting bankroll has drawn down ' . round($drawdown_pct, 1) . '% from $' . $INITIAL . ' to $' . round($bankroll, 2) . '. Consider pausing paper betting or reducing stake sizes.',
+            '', $drawdown_pct, 30, '/live-monitor/sports-betting.html');
+        $created++;
+    } elseif ($drawdown_pct >= 15) {
+        _gm_create_alert($conn, 'sports', 'bankroll_drawdown', 'warning',
+            'Sports: Bankroll down ' . round($drawdown_pct, 1) . '% ($' . round($bankroll, 2) . ')',
+            'Sports betting bankroll has drawn down ' . round($drawdown_pct, 1) . '% from initial $' . $INITIAL . '.',
+            '', $drawdown_pct, 15, '/live-monitor/sports-betting.html');
+        $created++;
+    }
+
+    // Sports win rate
+    if ($sports_total >= 10 && $sports_wr < 40) {
+        _gm_create_alert($conn, 'sports', 'accuracy_drop', 'warning',
+            'Sports: Overall win rate low (' . $sports_wr . '% across ' . $sports_total . ' bets)',
+            'Sports betting overall win rate is ' . $sports_wr . '%. Below 40% on value bets indicates model issues.',
+            '', $sports_wr, 40, '/live-monitor/sports-betting.html');
+        $created++;
+    }
+
+    // Sports losing streak
+    if ($consec_losses >= 7) {
+        _gm_create_alert($conn, 'sports', 'losing_streak', 'critical',
+            'Sports: ' . $consec_losses . ' consecutive losses',
+            'Sports betting has lost ' . $consec_losses . ' bets in a row.',
+            '', $consec_losses, 7, '/live-monitor/sports-betting.html');
+        $created++;
+    }
+
+    return $created;
+}
+
+// ── Conviction System Accuracy Check ──
+function _gm_check_conviction_health($conn) {
+    global $now, $today;
+    $created = 0;
+
+    // Check md_conviction_performance table exists
+    $r = $conn->query("SHOW TABLES LIKE 'md_conviction_performance'");
+    if (!$r || $r->num_rows === 0) return 0;
+
+    // Overall conviction accuracy (30d)
+    $pr = $conn->query("SELECT
+        COUNT(*) as total,
+        SUM(CASE WHEN outcome_30d = 'correct' THEN 1 ELSE 0 END) as correct,
+        AVG(CASE WHEN return_30d IS NOT NULL THEN return_30d ELSE NULL END) as avg_ret
+        FROM md_conviction_performance
+        WHERE conviction_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+        AND outcome_30d != 'pending'");
+    if (!$pr) return 0;
+    $row = $pr->fetch_assoc();
+    $total = intval($row['total']);
+    $correct = intval($row['correct']);
+    $conv_wr = ($total > 0) ? round(($correct / $total) * 100, 1) : 0;
+    $conv_avg_ret = floatval($row['avg_ret']);
+
+    if ($total >= 5 && $conv_wr < 35) {
+        _gm_create_alert($conn, 'conviction', 'accuracy_drop', 'critical',
+            'Conviction: 30d accuracy only ' . $conv_wr . '% (' . $correct . '/' . $total . ')',
+            'The conviction scoring system has a ' . $conv_wr . '% accuracy over the last 30 days. Average return: ' . round($conv_avg_ret, 2) . '%.',
+            '', $conv_wr, 35, '/live-monitor/conviction-alerts.html');
+        $created++;
+    } elseif ($total >= 5 && $conv_wr < 50) {
+        _gm_create_alert($conn, 'conviction', 'accuracy_drop', 'warning',
+            'Conviction: 30d accuracy ' . $conv_wr . '% (' . $correct . '/' . $total . ')',
+            'Conviction scoring accuracy is below 50%. Review scoring weights.',
+            '', $conv_wr, 50, '/live-monitor/conviction-alerts.html');
+        $created++;
+    }
+
+    // High-conviction picks failing (score >= 70 but bad outcome)
+    $hc = $conn->query("SELECT
+        COUNT(*) as total,
+        SUM(CASE WHEN outcome_30d = 'correct' THEN 1 ELSE 0 END) as correct
+        FROM md_conviction_performance
+        WHERE conviction_score >= 70
+        AND conviction_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+        AND outcome_30d != 'pending'");
+    if ($hc && ($hrow = $hc->fetch_assoc())) {
+        $hc_total = intval($hrow['total']);
+        $hc_correct = intval($hrow['correct']);
+        $hc_wr = ($hc_total > 0) ? round(($hc_correct / $hc_total) * 100, 1) : 0;
+        if ($hc_total >= 3 && $hc_wr < 45) {
+            _gm_create_alert($conn, 'conviction', 'conviction_failing', 'critical',
+                'High-conviction picks failing: only ' . $hc_wr . '% accurate (score >= 70)',
+                'Picks with conviction score >= 70 are only ' . $hc_wr . '% accurate (' . $hc_correct . '/' . $hc_total . '). Scoring model may need recalibration.',
+                '', $hc_wr, 45, '/live-monitor/conviction-alerts.html');
+            $created++;
+        }
+    }
+
+    return $created;
+}
+
+// ── Paper Trading Equity Check ──
+function _gm_check_paper_trading($conn) {
+    global $now, $today;
+    $created = 0;
+
+    $r = $conn->query("SHOW TABLES LIKE 'lm_trades'");
+    if (!$r || $r->num_rows === 0) return 0;
+
+    // 7-day paper trading P&L
+    $pr = $conn->query("SELECT
+        COUNT(*) as total,
+        SUM(CASE WHEN realized_pct > 0 THEN 1 ELSE 0 END) as wins,
+        SUM(realized_pct) as total_pnl,
+        AVG(realized_pct) as avg_pnl
+        FROM lm_trades WHERE status = 'closed'
+        AND closed_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
+    if (!$pr) return 0;
+    $row = $pr->fetch_assoc();
+    $total = intval($row['total']);
+    $total_pnl = floatval($row['total_pnl']);
+    $pt_wins = intval($row['wins']);
+    $pt_wr = ($total > 0) ? round(($pt_wins / $total) * 100, 1) : 0;
+
+    if ($total >= 5 && $total_pnl < -15) {
+        _gm_create_alert($conn, 'paper_trading', 'drawdown', 'critical',
+            'Paper Trading: 7d cumulative loss ' . round($total_pnl, 1) . '%',
+            'Paper trading has lost a cumulative ' . round($total_pnl, 1) . '% across ' . $total . ' trades in 7 days. Win rate: ' . $pt_wr . '%.',
+            '', $total_pnl, -15, '/live-monitor/live-monitor.html');
+        $created++;
+    } elseif ($total >= 5 && $total_pnl < -8) {
+        _gm_create_alert($conn, 'paper_trading', 'drawdown', 'warning',
+            'Paper Trading: 7d loss ' . round($total_pnl, 1) . '%',
+            'Paper trading is down ' . round($total_pnl, 1) . '% this week. Win rate: ' . $pt_wr . '%.',
+            '', $total_pnl, -8, '/live-monitor/live-monitor.html');
+        $created++;
+    }
+
+    return $created;
+}
+
+// ── Overall Portfolio Health ──
+function _gm_check_portfolio_health($conn) {
+    global $now, $today;
+    $created = 0;
+
+    // Check how many systems are failing
+    $r = $conn->query("SELECT COUNT(*) as failing FROM gm_system_health
+        WHERE snap_date = '" . $today . "' AND is_failing = 1");
+    if ($r && ($row = $r->fetch_assoc())) {
+        $failing = intval($row['failing']);
+        if ($failing >= 4) {
+            _gm_create_alert($conn, 'portfolio', 'systemic_failure', 'critical',
+                'Portfolio-wide: ' . $failing . ' systems failing simultaneously',
+                $failing . ' prediction systems are flagged as failing on the same day. This may indicate a broad market regime change or data source outage.',
+                '', $failing, 4, '/live-monitor/goldmine-dashboard.html');
+            $created++;
+        } elseif ($failing >= 2) {
+            _gm_create_alert($conn, 'portfolio', 'systemic_failure', 'warning',
+                'Portfolio: ' . $failing . ' systems underperforming',
+                $failing . ' systems are showing issues. Monitor for correlation.',
+                '', $failing, 2, '/live-monitor/goldmine-dashboard.html');
+            $created++;
+        }
+    }
+
+    // Open positions bleeding
+    $neg = $conn->query("SELECT COUNT(*) as cnt, AVG(current_return_pct) as avg_ret
+        FROM gm_unified_picks WHERE status = 'open' AND current_return_pct < -5");
+    if ($neg && ($nrow = $neg->fetch_assoc())) {
+        $neg_count = intval($nrow['cnt']);
+        $neg_avg = floatval($nrow['avg_ret']);
+        if ($neg_count >= 10) {
+            _gm_create_alert($conn, 'portfolio', 'open_positions_bleeding', 'critical',
+                'Portfolio: ' . $neg_count . ' open positions down >5% (avg: ' . round($neg_avg, 1) . '%)',
+                $neg_count . ' currently open picks are in the red by more than 5%. Average unrealized loss: ' . round($neg_avg, 1) . '%.',
+                '', $neg_count, 10, '/live-monitor/goldmine-dashboard.html');
+            $created++;
+        }
+    }
+
+    return $created;
+}
+
 function _gm_win_rate_period($conn, $sys, $days) {
     $r = $conn->query("SELECT
-        SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as wins,
+        SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as tp_wins,
+        SUM(CASE WHEN status IN ('max_hold','expired') AND final_return_pct > 0 THEN 1 ELSE 0 END) as expired_wins,
         SUM(CASE WHEN status != 'open' THEN 1 ELSE 0 END) as closed
         FROM gm_unified_picks
         WHERE source_system = '" . _gm_esc($conn, $sys) . "'
@@ -1313,7 +1657,8 @@ function _gm_win_rate_period($conn, $sys, $days) {
     $row = $r->fetch_assoc();
     $closed = intval($row['closed']);
     if ($closed === 0) return 0;
-    return round((intval($row['wins']) / $closed) * 100, 1);
+    $wins = intval($row['tp_wins']) + intval($row['expired_wins']);
+    return round(($wins / $closed) * 100, 1);
 }
 
 function _gm_consecutive_losses($conn, $sys) {
@@ -1331,12 +1676,26 @@ function _gm_consecutive_losses($conn, $sys) {
 
 function _gm_create_alert($conn, $sys, $type, $severity, $title, $desc, $tickers, $metric, $threshold, $url) {
     global $now, $today;
-    // Avoid duplicate alerts for same system+type+date
-    $dup = $conn->query("SELECT id FROM gm_failure_alerts
+    // Check for existing alert for same system+type+date
+    $dup = $conn->query("SELECT id, is_active FROM gm_failure_alerts
         WHERE source_system = '" . _gm_esc($conn, $sys) . "'
         AND alert_type = '" . _gm_esc($conn, $type) . "'
         AND alert_date = '" . $today . "'");
-    if ($dup && $dup->num_rows > 0) return;
+    if ($dup && $dup->num_rows > 0) {
+        $existing = $dup->fetch_assoc();
+        // If alert was resolved, reactivate it with updated data
+        if (intval($existing['is_active']) === 0) {
+            $conn->query("UPDATE gm_failure_alerts SET
+                is_active = 1, resolved_at = NULL,
+                severity = '" . _gm_esc($conn, $severity) . "',
+                title = '" . _gm_esc($conn, $title) . "',
+                description = '" . _gm_esc($conn, $desc) . "',
+                metric_value = " . floatval($metric) . ",
+                threshold_value = " . floatval($threshold) . "
+                WHERE id = " . intval($existing['id']));
+        }
+        return;
+    }
 
     $conn->query("INSERT INTO gm_failure_alerts
         (alert_date, source_system, alert_type, severity, title, description,

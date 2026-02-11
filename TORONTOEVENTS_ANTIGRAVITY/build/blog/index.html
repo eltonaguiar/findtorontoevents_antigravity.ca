@@ -97,6 +97,30 @@
         footer{text-align:center;padding:2rem 1.5rem;border-top:1px solid rgba(255,255,255,.05);color:var(--text-3);font-size:.7rem}footer a{color:var(--text-2)}
         .hidden{display:none!important}
         @media(max-width:768px){.articles-grid{grid-template-columns:1fr}.featured-card{grid-template-columns:1fr}.featured-card img{height:200px;min-height:auto}.nav-links{gap:.75rem}.nav-links a{font-size:.7rem}.filters{gap:.3rem}.filter-btn{font-size:.65rem;padding:.3rem .7rem}}
+
+        .date-filter-bar{max-width:1200px;margin:1rem auto 0;padding:0 1.5rem;display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;justify-content:center}
+        .search-box{position:relative;flex:0 1 280px;min-width:180px}
+        .search-box input{width:100%;padding:.5rem 1rem .5rem 2.2rem;border:1px solid rgba(255,255,255,.1);border-radius:999px;background:rgba(255,255,255,.05);color:var(--text-1);font-size:.8rem;font-family:inherit;outline:none;transition:border-color .2s}
+        .search-box input::placeholder{color:var(--text-3)}
+        .search-box input:focus{border-color:var(--pk-400);box-shadow:0 0 0 3px rgba(147,51,234,.15)}
+        .search-box .search-icon{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--text-3);width:14px;height:14px;pointer-events:none}
+        .date-pills{display:flex;flex-wrap:wrap;gap:.35rem}
+        .date-pill{padding:.35rem .8rem;border:1px solid rgba(255,255,255,.08);border-radius:999px;background:transparent;color:var(--text-2);font-size:.7rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;font-family:inherit}
+        .date-pill:hover{border-color:var(--pk-400);color:var(--pk-300)}
+        .date-pill.active{background:var(--pk-500);border-color:var(--pk-500);color:#fff}
+        .date-range-custom{display:flex;gap:.4rem;align-items:center}
+        .date-range-custom input[type="date"]{padding:.3rem .5rem;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:rgba(255,255,255,.05);color:var(--text-1);font-size:.7rem;font-family:inherit;outline:none;transition:border-color .2s;color-scheme:dark;max-width:140px}
+        .date-range-custom input[type="date"]:focus{border-color:var(--pk-400)}
+        .date-range-custom .date-sep{color:var(--text-3);font-size:.7rem;font-weight:600}
+        .sort-toggle{padding:.35rem .8rem;border:1px solid rgba(255,255,255,.08);border-radius:999px;background:transparent;color:var(--text-2);font-size:.7rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;display:inline-flex;align-items:center;gap:.3rem;font-family:inherit}
+        .sort-toggle:hover{border-color:var(--pk-400);color:var(--pk-300)}
+        .results-count{text-align:center;padding:.75rem 1.5rem 0;font-size:.78rem;color:var(--text-3);max-width:1200px;margin:0 auto;font-weight:600;letter-spacing:.02em;transition:opacity .2s}
+        .no-results{grid-column:1/-1;text-align:center;padding:3rem 1.5rem;color:var(--text-3)}
+        .no-results h3{font-size:1.2rem;color:var(--text-2);margin-bottom:.5rem}
+        .no-results p{font-size:.85rem}
+        .clear-filters-btn{display:inline-block;margin-top:1rem;padding:.4rem 1.2rem;border:1px solid var(--pk-400);border-radius:999px;background:transparent;color:var(--pk-400);font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit}
+        .clear-filters-btn:hover{background:var(--pk-500);color:#fff;border-color:var(--pk-500)}
+        @media(max-width:768px){.date-filter-bar{gap:.5rem;padding:0 1rem}.search-box{flex:1 1 100%;max-width:100%}.date-pills{justify-content:center}.date-range-custom input[type="date"]{max-width:120px}}
     </style>
 </head>
 <body>
@@ -137,6 +161,29 @@
             <button class="filter-btn" data-filter="seasonal">Seasonal</button>
 
     </div>
+    <div class="date-filter-bar">
+        <div class="search-box">
+            <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <input type="text" id="search-input" placeholder="Search articles..." autocomplete="off">
+        </div>
+        <div class="date-pills">
+            <button class="date-pill active" data-range="all">All Time</button>
+            <button class="date-pill" data-range="today">Today</button>
+            <button class="date-pill" data-range="week">This Week</button>
+            <button class="date-pill" data-range="month">This Month</button>
+            <button class="date-pill" data-range="custom">Custom Range</button>
+        </div>
+        <div class="date-range-custom" id="custom-date-range" style="display:none">
+            <input type="date" id="date-from" title="From date">
+            <span class="date-sep">to</span>
+            <input type="date" id="date-to" title="To date">
+        </div>
+        <button class="sort-toggle" id="sort-toggle" title="Toggle sort order">
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 4h13M3 8h9M3 12h5m8-8v16m0 0l-4-4m4 4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            Newest First
+        </button>
+    </div>
+    <div class="results-count" id="results-count"></div>
     <main>
         <div class="articles-grid">
             
@@ -890,20 +937,186 @@
         <p>Built with love for Toronto &middot; <a href="/">Toronto Events</a> &middot; <a href="https://tdotevent.ca">TdotEvent.ca</a> &middot; support@findtorontoevents.ca</p>
     </footer>
     <script>
-        document.querySelectorAll('.filter-btn').forEach(function(btn) {
+    (function() {
+        var cards = document.querySelectorAll('.article-card, .featured-card');
+        var filterBtns = document.querySelectorAll('.filter-btn');
+        var datePills = document.querySelectorAll('.date-pill');
+        var searchInput = document.getElementById('search-input');
+        var sortToggle = document.getElementById('sort-toggle');
+        var customRange = document.getElementById('custom-date-range');
+        var dateFrom = document.getElementById('date-from');
+        var dateTo = document.getElementById('date-to');
+        var resultsCount = document.getElementById('results-count');
+        var grid = document.querySelector('.articles-grid');
+        var noResultsEl = null;
+
+        var currentCategory = 'all';
+        var currentDateRange = 'all';
+        var sortNewest = true;
+        var searchDebounce = null;
+
+        function parseArticleDate(card) {
+            var meta = card.querySelector('.meta span');
+            if (!meta) return null;
+            var d = new Date(meta.textContent.trim());
+            return isNaN(d.getTime()) ? null : d;
+        }
+
+        function getToday() {
+            var d = new Date(); d.setHours(0,0,0,0); return d;
+        }
+
+        function isInDateRange(articleDate, range) {
+            if (!articleDate || range === 'all') return true;
+            var today = getToday();
+            var endOfToday = new Date(today); endOfToday.setHours(23,59,59,999);
+
+            if (range === 'today') {
+                return articleDate >= today && articleDate <= endOfToday;
+            }
+            if (range === 'week') {
+                var start = new Date(today); start.setDate(today.getDate() - today.getDay());
+                var end = new Date(start); end.setDate(start.getDate() + 6); end.setHours(23,59,59,999);
+                return articleDate >= start && articleDate <= end;
+            }
+            if (range === 'month') {
+                var ms = new Date(today.getFullYear(), today.getMonth(), 1);
+                var me = new Date(today.getFullYear(), today.getMonth() + 1, 0); me.setHours(23,59,59,999);
+                return articleDate >= ms && articleDate <= me;
+            }
+            if (range === 'custom') {
+                var from = dateFrom.value ? new Date(dateFrom.value + 'T00:00:00') : null;
+                var to = dateTo.value ? new Date(dateTo.value + 'T23:59:59') : null;
+                if (from && articleDate < from) return false;
+                if (to && articleDate > to) return false;
+                return true;
+            }
+            return true;
+        }
+
+        function matchesSearch(card, query) {
+            if (!query) return true;
+            var text = (card.textContent || '').toLowerCase();
+            var words = query.toLowerCase().split(/\s+/);
+            for (var i = 0; i < words.length; i++) {
+                if (words[i] && text.indexOf(words[i]) === -1) return false;
+            }
+            return true;
+        }
+
+        function removeNoResults() {
+            if (noResultsEl && noResultsEl.parentNode) { noResultsEl.parentNode.removeChild(noResultsEl); noResultsEl = null; }
+        }
+
+        function showNoResults() {
+            removeNoResults();
+            noResultsEl = document.createElement('div');
+            noResultsEl.className = 'no-results';
+            noResultsEl.innerHTML = '<h3>No articles found</h3><p>Try adjusting your filters or search terms.</p><button class="clear-filters-btn" id="clear-all-filters">Clear All Filters</button>';
+            grid.appendChild(noResultsEl);
+            document.getElementById('clear-all-filters').addEventListener('click', clearAllFilters);
+        }
+
+        function applyFilters() {
+            var query = searchInput.value.trim();
+            var visibleCount = 0;
+
+            cards.forEach(function(card) {
+                var cat = card.getAttribute('data-category') || '';
+                var articleDate = parseArticleDate(card);
+                var catMatch = currentCategory === 'all' || cat === currentCategory;
+                var dateMatch = isInDateRange(articleDate, currentDateRange);
+                var searchMatch = matchesSearch(card, query);
+
+                if (catMatch && dateMatch && searchMatch) {
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            removeNoResults();
+            if (visibleCount === 0 && (currentCategory !== 'all' || currentDateRange !== 'all' || query)) {
+                showNoResults();
+            }
+
+            var total = cards.length;
+            var hasFilters = currentCategory !== 'all' || currentDateRange !== 'all' || query;
+            resultsCount.textContent = hasFilters ? 'Showing ' + visibleCount + ' of ' + total + ' articles' : '';
+        }
+
+        function sortCards() {
+            var arr = Array.prototype.slice.call(cards);
+            arr.sort(function(a, b) {
+                var da = parseArticleDate(a);
+                var db = parseArticleDate(b);
+                if (!da && !db) return 0;
+                if (!da) return 1;
+                if (!db) return -1;
+                return sortNewest ? (db - da) : (da - db);
+            });
+            var featured = null;
+            for (var i = 0; i < arr.length; i++) {
+                if (arr[i].classList.contains('featured-card')) { featured = arr.splice(i, 1)[0]; break; }
+            }
+            if (featured && sortNewest) arr.unshift(featured);
+            else if (featured) arr.push(featured);
+            arr.forEach(function(card) { grid.appendChild(card); });
+            cards = document.querySelectorAll('.article-card, .featured-card');
+        }
+
+        function clearAllFilters() {
+            currentCategory = 'all';
+            currentDateRange = 'all';
+            searchInput.value = '';
+            filterBtns.forEach(function(b) { b.classList.remove('active'); });
+            filterBtns[0].classList.add('active');
+            datePills.forEach(function(p) { p.classList.remove('active'); });
+            datePills[0].classList.add('active');
+            customRange.style.display = 'none';
+            dateFrom.value = '';
+            dateTo.value = '';
+            applyFilters();
+        }
+
+        filterBtns.forEach(function(btn) {
             btn.addEventListener('click', function() {
-                document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+                filterBtns.forEach(function(b) { b.classList.remove('active'); });
                 btn.classList.add('active');
-                var filter = btn.getAttribute('data-filter');
-                document.querySelectorAll('.article-card, .featured-card').forEach(function(card) {
-                    if (filter === 'all' || card.getAttribute('data-category') === filter) {
-                        card.classList.remove('hidden');
-                    } else {
-                        card.classList.add('hidden');
-                    }
-                });
+                currentCategory = btn.getAttribute('data-filter');
+                applyFilters();
             });
         });
+
+        datePills.forEach(function(pill) {
+            pill.addEventListener('click', function() {
+                datePills.forEach(function(p) { p.classList.remove('active'); });
+                pill.classList.add('active');
+                currentDateRange = pill.getAttribute('data-range');
+                customRange.style.display = currentDateRange === 'custom' ? 'flex' : 'none';
+                applyFilters();
+            });
+        });
+
+        dateFrom.addEventListener('change', function() { if (currentDateRange === 'custom') applyFilters(); });
+        dateTo.addEventListener('change', function() { if (currentDateRange === 'custom') applyFilters(); });
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchDebounce);
+            searchDebounce = setTimeout(applyFilters, 250);
+        });
+
+        sortToggle.addEventListener('click', function() {
+            sortNewest = !sortNewest;
+            sortToggle.innerHTML = '<svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="' +
+                (sortNewest ? 'M3 4h13M3 8h9M3 12h5m8-8v16m0 0l-4-4m4 4l4-4' : 'M3 4h13M3 8h9M3 12h5m8 16V0m0 0L15 4m4-4l4 4') +
+                '" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg> ' +
+                (sortNewest ? 'Newest First' : 'Oldest First');
+            sortCards();
+            applyFilters();
+        });
+    })();
     </script>
 
 <!-- Blog Floating Icons: AI Bot, Sign In, Gear -->

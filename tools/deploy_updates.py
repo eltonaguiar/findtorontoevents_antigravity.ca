@@ -1,46 +1,53 @@
-#!/usr/bin/env python3
-"""Deploy updates/index.html to FTP."""
-import os, ftplib
-from pathlib import Path
+"""Deploy updates/index.html to server via FTP_TLS."""
+import os
+import sys
+from ftplib import FTP_TLS
 
-ROOT = Path(__file__).resolve().parent.parent
-env_file = ROOT / ".env"
-if env_file.exists():
-    for line in env_file.read_text().splitlines():
-        line = line.strip()
-        if line and not line.startswith("#") and "=" in line:
-            k, _, v = line.partition("=")
-            k, v = k.strip(), v.strip()
-            if k and os.environ.get(k) in (None, ""):
-                os.environ.setdefault(k, v)
-    if "FTP_SERVER" not in os.environ and os.environ.get("FTP_HOST"):
-        os.environ["FTP_SERVER"] = os.environ["FTP_HOST"]
+LOCAL_FILE = r"e:\findtorontoevents_antigravity.ca\updates\index.html"
+REMOTE_DIR = "/findtorontoevents.ca/updates"
+REMOTE_FILE = "index.html"
 
-server = os.environ.get("FTP_SERVER", os.environ.get("FTP_HOST", ""))
-user = os.environ.get("FTP_USER", "")
-passwd = os.environ.get("FTP_PASS", "")
-remote_base = os.environ.get("FTP_ROOT", "findtorontoevents.ca")
+def main():
+    local_size = os.path.getsize(LOCAL_FILE)
+    print(f"Local file size: {local_size} bytes")
 
-local_file = ROOT / "updates" / "index.html"
-if not local_file.exists():
-    print("ERROR: updates/index.html not found"); exit(1)
+    server = os.environ["FTP_SERVER"]
+    user = os.environ["FTP_USER"]
+    passwd = os.environ["FTP_PASS"]
 
-ftp = ftplib.FTP()
-ftp.connect(server, 21, timeout=30)
-ftp.login(user, passwd)
-ftp.set_pasv(True)
-print(f"Connected to {server}")
+    print(f"Connecting to {server} ...")
+    ftp = FTP_TLS(server)
+    ftp.login(user, passwd)
+    ftp.prot_p()
+    print("Connected and secured with TLS.")
 
-# Ensure updates/ dir exists
-try:
-    ftp.cwd(f"/{remote_base}/updates")
-except:
-    ftp.cwd(f"/{remote_base}")
-    try: ftp.mkd("updates")
-    except: pass
-    ftp.cwd("updates")
+    # Ensure remote directory exists
+    try:
+        ftp.mkd(REMOTE_DIR)
+        print(f"Created remote directory: {REMOTE_DIR}")
+    except Exception:
+        pass  # already exists
 
-with open(local_file, "rb") as f:
-    ftp.storbinary("STOR index.html", f)
-print("Deployed updates/index.html")
-ftp.quit()
+    ftp.cwd(REMOTE_DIR)
+    print(f"Changed to remote dir: {REMOTE_DIR}")
+
+    # Upload file in binary mode
+    with open(LOCAL_FILE, "rb") as f:
+        ftp.storbinary(f"STOR {REMOTE_FILE}", f)
+    print("Upload complete.")
+
+    # Verify remote size
+    remote_size = ftp.size(REMOTE_FILE)
+    print(f"Remote file size: {remote_size} bytes")
+
+    ftp.quit()
+
+    if remote_size == local_size:
+        print(f"SUCCESS: sizes match ({local_size} bytes)")
+        return 0
+    else:
+        print(f"MISMATCH: local={local_size}, remote={remote_size}")
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main())

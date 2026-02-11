@@ -292,26 +292,39 @@ if ($action === 'calculate_consensus') {
     $scores_calculated = 0;
     $all_scores = array();
 
-    // Detect market regime
+    // Detect market regime with confidence (continuous, not binary)
     $regime = 'neutral';
+    $regime_conf = 0; // 0 = neutral, 1 = strong regime
+    $avg_chg = 0;
     $regime_r = $conn->query("SELECT AVG(change_24h_pct) as avg_chg FROM lm_price_cache WHERE asset_class = 'STOCK'");
     if ($regime_r && $regime_row = $regime_r->fetch_assoc()) {
         $avg_chg = floatval($regime_row['avg_chg']);
-        if ($avg_chg > 1) {
+        if ($avg_chg > 0.3) {
             $regime = 'bull';
-        } elseif ($avg_chg < -1) {
+            $regime_conf = min(abs($avg_chg) / 3.0, 1.0); // full confidence at ±3%
+        } elseif ($avg_chg < -0.3) {
             $regime = 'bear';
+            $regime_conf = min(abs($avg_chg) / 3.0, 1.0);
         }
     }
 
-    // Dynamic weight multipliers per regime
+    // Dynamic weight multipliers — interpolate between neutral and regime weights
+    // Neutral weights (baseline)
+    $nw = array(1.0, 1.0, 1.0, 1.0, 1.0); // tech, sm, ins, an, mom
+    // Target weights for each regime
     if ($regime === 'bull') {
-        $w_tech = 1.2; $w_sm = 1.2; $w_ins = 0.8; $w_an = 0.8; $w_mom = 0.8;
+        $rw = array(1.2, 1.2, 0.8, 0.8, 0.8);
     } elseif ($regime === 'bear') {
-        $w_tech = 0.5; $w_sm = 0.8; $w_ins = 1.5; $w_an = 0.8; $w_mom = 1.5;
+        $rw = array(0.5, 0.8, 1.5, 0.8, 1.5);
     } else {
-        $w_tech = 1.0; $w_sm = 1.0; $w_ins = 1.0; $w_an = 1.0; $w_mom = 1.0;
+        $rw = array(1.0, 1.0, 1.0, 1.0, 1.0);
     }
+    // Blend: neutral + conf * (regime - neutral)
+    $w_tech = $nw[0] + $regime_conf * ($rw[0] - $nw[0]);
+    $w_sm   = $nw[1] + $regime_conf * ($rw[1] - $nw[1]);
+    $w_ins  = $nw[2] + $regime_conf * ($rw[2] - $nw[2]);
+    $w_an   = $nw[3] + $regime_conf * ($rw[3] - $nw[3]);
+    $w_mom  = $nw[4] + $regime_conf * ($rw[4] - $nw[4]);
     // Normalization factor: sum of weights should map to 100
     $w_sum = ($w_tech * 25) + ($w_sm * 20) + ($w_ins * 20) + ($w_an * 20) + ($w_mom * 15);
     $norm_factor = 100.0 / $w_sum;
@@ -363,8 +376,12 @@ if ($action === 'calculate_consensus') {
                 }
             }
             if ($funds_holding > 0) {
-                $base = min(($funds_holding / 10.0) * 10, 10);
+                // Coverage base: how many top funds hold this stock (0-10 pts)
+                // More generous for sparse data: min 5 pts if at least 1 fund holds
+                $base = min(($funds_holding / 5.0) * 10, 10);
+                $base = max($base, 5); // at least 5 pts if any fund holds it
                 $max_f = max($funds_holding, 1);
+                // Net flow direction: more weight on whether funds are buying vs selling
                 $momentum_13f = (($increased + $new_pos - $decreased - $sold_out) / $max_f) * 10;
                 $smart_money = min($base + $momentum_13f, 20);
                 $smart_money = max($smart_money, 0);
@@ -407,13 +424,20 @@ if ($action === 'calculate_consensus') {
         $mr = $conn->query("SELECT mspr FROM lm_insider_sentiment WHERE ticker = '" . _sm_esc($ticker) . "' ORDER BY year DESC, month DESC LIMIT 1");
         if ($mr && $mrow = $mr->fetch_assoc()) {
             $mspr = floatval($mrow['mspr']);
-            if ($mspr > 0) {
-                $mspr_bonus = min($mspr * 10, 5);
-            } else {
-                $mspr_bonus = max($mspr * 5, -5);
-            }
             if (!$insider_has_data) {
+                // MSPR is sole insider signal — use it as primary (not just bonus)
+                // MSPR ranges roughly -1 to 1; map to 0-20 scale
                 $insider_has_data = true;
+                $base_score_ins = (($mspr + 1) / 2.0) * 15; // maps -1..1 to 0..15
+                $mspr_bonus = 0; // already incorporated in base
+                $notes[] = $ticker . ' insider: MSPR-only=' . round($mspr, 3);
+            } else {
+                // Have both Form 4 and MSPR — MSPR is bonus
+                if ($mspr > 0) {
+                    $mspr_bonus = min($mspr * 10, 5);
+                } else {
+                    $mspr_bonus = max($mspr * 5, -5);
+                }
             }
         }
 
@@ -444,9 +468,9 @@ if ($action === 'calculate_consensus') {
                 if ($tr && $trow = $tr->fetch_assoc()) {
                     $target_mean = floatval($trow['target_mean']);
                     // Get current price
-                    $pr = $conn->query("SELECT last_price FROM lm_price_cache WHERE symbol LIKE '%" . _sm_esc($ticker) . "%' AND asset_class = 'STOCK'");
+                    $pr = $conn->query("SELECT price FROM lm_price_cache WHERE symbol LIKE '%" . _sm_esc($ticker) . "%' AND asset_class = 'STOCK'");
                     if ($pr && $prow = $pr->fetch_assoc()) {
-                        $current_price = floatval($prow['last_price']);
+                        $current_price = floatval($prow['price']);
                         if ($current_price > 0 && $target_mean > 0) {
                             $upside_pct = (($target_mean - $current_price) / $current_price) * 100;
                             $upside_pts = min($upside_pct / 5.0, 6);
@@ -468,7 +492,7 @@ if ($action === 'calculate_consensus') {
         $social_pts = 0;
 
         // Price momentum
-        $pr5 = $conn->query("SELECT last_price, change_24h_pct FROM lm_price_cache WHERE symbol LIKE '%" . _sm_esc($ticker) . "%' AND asset_class = 'STOCK'");
+        $pr5 = $conn->query("SELECT price, change_24h_pct FROM lm_price_cache WHERE symbol LIKE '%" . _sm_esc($ticker) . "%' AND asset_class = 'STOCK'");
         if ($pr5 && $prow5 = $pr5->fetch_assoc()) {
             $change_24h = floatval($prow5['change_24h_pct']);
             if ($change_24h > 3) {
@@ -510,12 +534,22 @@ if ($action === 'calculate_consensus') {
         $overall = round($raw_total * $norm_factor);
         $overall = max(0, min(100, $overall));
 
-        // Store un-normalized component scores for display (rounded)
-        $technical    = round($adj_tech * $norm_factor * (25.0 / 100.0));
-        $smart_money  = round($adj_sm   * $norm_factor * (20.0 / 100.0));
-        $insider      = round($adj_ins  * $norm_factor * (20.0 / 100.0));
-        $analyst      = round($adj_an   * $norm_factor * (20.0 / 100.0));
-        $momentum_fin = round($adj_mom  * $norm_factor * (15.0 / 100.0));
+        // Also blend with 9D conviction if available (gives better calibrated scores)
+        $md_r = $conn->query("SELECT conviction_score FROM lm_multi_dimensional WHERE ticker = '" . _sm_esc($ticker) . "' ORDER BY calc_date DESC LIMIT 1");
+        if ($md_r && $md_row = $md_r->fetch_assoc()) {
+            $conv_9d = intval($md_row['conviction_score']);
+            // Blend: 40% consensus + 60% 9D conviction (9D is more robust with 9 dimensions)
+            $overall = round($overall * 0.4 + $conv_9d * 0.6);
+            $overall = max(0, min(100, $overall));
+            $notes[] = $ticker . ' 9D-blend: cons=' . round($raw_total * $norm_factor) . ', 9D=' . $conv_9d . ', final=' . $overall;
+        }
+
+        // Store component scores as 0-100 normalized for display
+        $technical    = round(($technical / 25.0) * 100);
+        $smart_money  = round(($smart_money / 20.0) * 100);
+        $insider      = round(($insider / 20.0) * 100);
+        $analyst      = round(($analyst / 20.0) * 100);
+        $momentum_fin = round(($momentum / 15.0) * 100);
 
         // Direction and confidence
         if ($overall >= 60) {
@@ -574,13 +608,13 @@ if ($action === 'calculate_consensus') {
 if ($action === 'generate_challenger') {
     if (!$admin) { echo json_encode(array('ok' => false, 'error' => 'Unauthorized')); exit; }
 
-    // Detect regime
+    // Detect regime (same confidence-based approach as consensus)
     $regime = 'neutral';
     $regime_r = $conn->query("SELECT AVG(change_24h_pct) as avg_chg FROM lm_price_cache WHERE asset_class = 'STOCK'");
     if ($regime_r && $regime_row = $regime_r->fetch_assoc()) {
         $avg_chg = floatval($regime_row['avg_chg']);
-        if ($avg_chg > 1) $regime = 'bull';
-        elseif ($avg_chg < -1) $regime = 'bear';
+        if ($avg_chg > 0.3) $regime = 'bull';
+        elseif ($avg_chg < -0.3) $regime = 'bear';
     }
 
     $challenger_signals = 0;
@@ -598,14 +632,14 @@ if ($action === 'generate_challenger') {
         $c_score = intval($crow['overall_score']);
         $c_dir = $crow['signal_direction'];
 
-        // BULLISH signals: score >= 70
-        if ($c_score >= 70 && $c_dir === 'BULLISH') {
+        // BULLISH signals: score >= 55 (lowered from 70 — old threshold was unreachable)
+        if ($c_score >= 55 && $c_dir === 'BULLISH') {
             // Get current price
-            $pr = $conn->query("SELECT last_price FROM lm_price_cache WHERE symbol LIKE '%" . _sm_esc($c_ticker) . "%' AND asset_class = 'STOCK'");
+            $pr = $conn->query("SELECT price FROM lm_price_cache WHERE symbol LIKE '%" . _sm_esc($c_ticker) . "%' AND asset_class = 'STOCK'");
             if (!$pr) continue;
             $prow = $pr->fetch_assoc();
             if (!$prow) continue;
-            $entry_price = floatval($prow['last_price']);
+            $entry_price = floatval($prow['price']);
             if ($entry_price <= 0) continue;
 
             // Get analyst target
@@ -621,7 +655,7 @@ if ($action === 'generate_challenger') {
             }
 
             $target_sl_pct = ($regime === 'bull') ? 3.0 : 4.0;
-            $max_hold = ($regime === 'bull') ? 96 : 48;
+            $max_hold = ($regime === 'bull') ? 336 : 168; // 14d bull / 7d neutral (was 96/48)
             $signal_strength = min($c_score, 100);
 
             $rationale = 'Challenger Bot: Consensus score ' . $c_score . '/100 (' . $crow['confidence'] . '). ';
@@ -640,18 +674,18 @@ if ($action === 'generate_challenger') {
             }
         }
 
-        // BEARISH signals: score <= 30
-        if ($c_score <= 30 && $c_dir === 'BEARISH') {
-            $pr2 = $conn->query("SELECT last_price FROM lm_price_cache WHERE symbol LIKE '%" . _sm_esc($c_ticker) . "%' AND asset_class = 'STOCK'");
+        // BEARISH signals: score <= 40 (raised from 30 — old threshold was unreachable)
+        if ($c_score <= 40 && $c_dir === 'BEARISH') {
+            $pr2 = $conn->query("SELECT price FROM lm_price_cache WHERE symbol LIKE '%" . _sm_esc($c_ticker) . "%' AND asset_class = 'STOCK'");
             if (!$pr2) continue;
             $prow2 = $pr2->fetch_assoc();
             if (!$prow2) continue;
-            $entry_price2 = floatval($prow2['last_price']);
+            $entry_price2 = floatval($prow2['price']);
             if ($entry_price2 <= 0) continue;
 
             $target_tp_pct2 = 3.0;
             $target_sl_pct2 = ($regime === 'bear') ? 3.0 : 4.0;
-            $max_hold2 = ($regime === 'bear') ? 96 : 48;
+            $max_hold2 = ($regime === 'bear') ? 336 : 168; // 14d bear / 7d neutral (was 96/48)
             $signal_strength2 = min(100 - $c_score, 100);
 
             $rationale2 = 'Challenger Bot SHORT: Consensus score ' . $c_score . '/100 (BEARISH). ';
@@ -1025,9 +1059,9 @@ if ($action === 'analyst') {
         // Current price + upside
         $current_price = 0;
         $upside_pct = 0;
-        $pr = $conn->query("SELECT last_price FROM lm_price_cache WHERE symbol LIKE '%" . _sm_esc($ticker) . "%' AND asset_class = 'STOCK'");
+        $pr = $conn->query("SELECT price FROM lm_price_cache WHERE symbol LIKE '%" . _sm_esc($ticker) . "%' AND asset_class = 'STOCK'");
         if ($pr && $prow = $pr->fetch_assoc()) {
-            $current_price = floatval($prow['last_price']);
+            $current_price = floatval($prow['price']);
             if ($target && $current_price > 0 && $target['mean'] > 0) {
                 $upside_pct = round((($target['mean'] - $current_price) / $current_price) * 100, 2);
             }
@@ -1081,9 +1115,9 @@ if ($action === 'analyst') {
             $entry['target_mean'] = 0;
         }
 
-        $pr = $conn->query("SELECT last_price FROM lm_price_cache WHERE symbol LIKE '%" . _sm_esc($t) . "%' AND asset_class = 'STOCK'");
+        $pr = $conn->query("SELECT price FROM lm_price_cache WHERE symbol LIKE '%" . _sm_esc($t) . "%' AND asset_class = 'STOCK'");
         if ($pr && $prow = $pr->fetch_assoc()) {
-            $entry['current_price'] = floatval($prow['last_price']);
+            $entry['current_price'] = floatval($prow['price']);
             if ($entry['target_mean'] > 0 && $entry['current_price'] > 0) {
                 $entry['upside_pct'] = round((($entry['target_mean'] - $entry['current_price']) / $entry['current_price']) * 100, 2);
             } else {
@@ -1461,9 +1495,9 @@ if ($action === 'ticker') {
     );
 
     // Current price
-    $pr = $conn->query("SELECT last_price, change_24h_pct FROM lm_price_cache WHERE symbol LIKE '%" . _sm_esc($ticker) . "%' AND asset_class = 'STOCK'");
+    $pr = $conn->query("SELECT price, change_24h_pct FROM lm_price_cache WHERE symbol LIKE '%" . _sm_esc($ticker) . "%' AND asset_class = 'STOCK'");
     if ($pr && $prow = $pr->fetch_assoc()) {
-        $data['current_price'] = floatval($prow['last_price']);
+        $data['current_price'] = floatval($prow['price']);
         $data['change_24h'] = floatval($prow['change_24h_pct']);
     } else {
         $data['current_price'] = 0;

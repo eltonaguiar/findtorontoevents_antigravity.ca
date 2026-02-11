@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { Creator, SocialAccount } from "../types";
 import { buildAvatarCandidates, buildFallbackAvatar } from "../utils/avatar";
 import { fetchSocialSummary } from "../utils/socialSummary";
+import CreatorUpdatesFlyout from "./CreatorUpdatesFlyout";
 
 interface CreatorCardProps {
   creator: Creator;
@@ -110,6 +111,8 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
   const [editingSecondaryNote, setEditingSecondaryNote] = useState(false);
   const [localSecondaryNote, setLocalSecondaryNote] = useState(creator.secondaryNote || "");
   const [refreshingAvatar, setRefreshingAvatar] = useState(false);
+  const [showUpdatesFlyout, setShowUpdatesFlyout] = useState(false);
+  const updatesButtonRef = useRef<HTMLButtonElement>(null);
   const handleRefreshAvatar = async () => {
     setRefreshingAvatar(true);
     await onRefreshAvatar(creator.id);
@@ -292,6 +295,22 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
           }}
         >
           {checking ? "⏳" : "📡"}
+        </button>
+        <button
+          ref={updatesButtonRef}
+          onClick={() => setShowUpdatesFlyout(!showUpdatesFlyout)}
+          title="View recent updates"
+          style={{
+            background: showUpdatesFlyout ? "rgba(99, 102, 241, 0.2)" : "none",
+            border: showUpdatesFlyout ? "1px solid rgba(99, 102, 241, 0.4)" : "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            opacity: 0.6,
+            padding: "2px 4px",
+          }}
+        >
+          📋
         </button>
         <button
           onClick={() => onTogglePin(creator.id)}
@@ -751,6 +770,15 @@ const CreatorCard: React.FC<CreatorCardProps> = ({
           );
         })}
       </div>
+
+      {showUpdatesFlyout && (
+        <CreatorUpdatesFlyout
+          creatorId={creator.id}
+          creatorName={creator.name}
+          anchorRect={updatesButtonRef.current?.getBoundingClientRect() ?? null}
+          onClose={() => setShowUpdatesFlyout(false)}
+        />
+      )}
     </div>
   );
 };

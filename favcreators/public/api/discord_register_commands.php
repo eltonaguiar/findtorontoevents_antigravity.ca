@@ -473,6 +473,49 @@ $commands = array(
             )
         )
     ),
+    // ─── Penny Stock Picks Commands ──────────────────────────
+    array(
+        'name' => 'fc-penny',
+        'description' => 'Daily penny stock picks scored by 7-factor quality algorithm',
+        'type' => 1,
+        'options' => array(
+            array(
+                'name' => 'rating',
+                'description' => 'Filter by rating',
+                'type' => 3,
+                'required' => false,
+                'choices' => array(
+                    array('name' => 'Strong Buy only', 'value' => 'STRONG_BUY'),
+                    array('name' => 'Buy or better', 'value' => 'BUY'),
+                    array('name' => 'All picks', 'value' => 'all')
+                )
+            ),
+            array(
+                'name' => 'country',
+                'description' => 'Filter by market',
+                'type' => 3,
+                'required' => false,
+                'choices' => array(
+                    array('name' => 'US stocks', 'value' => 'US'),
+                    array('name' => 'Canadian stocks', 'value' => 'CA'),
+                    array('name' => 'Both', 'value' => 'ALL')
+                )
+            )
+        )
+    ),
+    array(
+        'name' => 'fc-pennydetail',
+        'description' => 'Get detailed scoring breakdown for a penny stock pick',
+        'type' => 1,
+        'options' => array(
+            array(
+                'name' => 'symbol',
+                'description' => 'Stock ticker symbol (e.g. SNDL, ABEV)',
+                'type' => 3,
+                'required' => true
+            )
+        )
+    ),
     // ─── Daily Picks Commands ───────────────────────────────
     array(
         'name' => 'fc-crypto',

@@ -204,6 +204,16 @@ if ($type === 2) {
             $result = handle_fc_stats_command($discord_id, $action, $options);
             send_response($result);
             break;
+        // Penny Stock Picks commands
+        case 'fc-penny':
+            $penny_rating = get_option_value($options, 'rating');
+            $penny_country = get_option_value($options, 'country');
+            handle_penny_picks_command($penny_rating, $penny_country);
+            break;
+        case 'fc-pennydetail':
+            $penny_symbol = get_option_value($options, 'symbol');
+            handle_penny_detail_command($penny_symbol);
+            break;
         // Daily Picks commands (crypto, forex, realtime wins, momentum, unified picks)
         case 'fc-crypto':
             handle_crypto_picks_command($options);
@@ -765,7 +775,11 @@ function handle_help_command() {
     $content .= "`/fc-timer <action>` - Start/stop activity timers\n";
     $content .= "`/fc-stats <action>` - Set or view personal stats\n\n";
     
-    $content .= "**📊 Daily Picks — Live Signals** (5 commands)\n";
+    $content .= "**\xF0\x9F\x92\x8E Penny Stock Picks** (2 commands)\n";
+    $content .= "`/fc-penny [rating] [country]` - Daily penny picks scored by 7-factor algorithm\n";
+    $content .= "`/fc-pennydetail <symbol>` - Detailed scoring breakdown for a pick\n\n";
+
+    $content .= "**\xF0\x9F\x93\x8A Daily Picks \xe2\x80\x94 Live Signals** (5 commands)\n";
     $content .= "`/fc-crypto [timeline] [budget]` - Daily crypto picks from 19 algorithms\n";
     $content .= "`/fc-forex [timeline] [budget]` - Daily forex picks (8 pairs)\n";
     $content .= "`/fc-realtime [asset]` - Recent winning trades across all markets\n";
@@ -3930,6 +3944,318 @@ function handle_notifymode_command($discord_id, $mode) {
     $content .= "• Previous: `$current_mode`\n";
     $content .= "• New: `$mode`\n\n";
     $content .= "Use `/notifymode` again anytime to change this.";
+
+    send_response($content);
+}
+
+// ============================================================================
+// Penny Stock Picks Commands
+// ============================================================================
+
+function _penny_fetch($action, $extra_params) {
+    $url = "https://findtorontoevents.ca/findstocks/portfolio2/api/penny_stock_picks.php?action=" . urlencode($action);
+    if ($extra_params) $url .= '&' . $extra_params;
+    $context = stream_context_create(array('http' => array('timeout' => 15, 'user_agent' => 'FavCreators-Bot/1.0')));
+    $json = @file_get_contents($url, false, $context);
+    if (!$json) return null;
+    return json_decode($json, true);
+}
+
+function _penny_score_bar($score) {
+    $filled = (int)round($score / 20);
+    $bar = '';
+    for ($i = 0; $i < 5; $i++) { $bar .= ($i < $filled) ? "\xe2\x96\x88" : "\xe2\x96\x91"; }
+    return $bar;
+}
+
+function _penny_rating_icon($rating) {
+    if ($rating === 'STRONG_BUY') return "\xF0\x9F\x9F\xA2";
+    if ($rating === 'BUY') return "\xF0\x9F\x9F\xA1";
+    if ($rating === 'HOLD') return "\xe2\x9a\xaa";
+    if ($rating === 'SELL') return "\xF0\x9F\x94\xB4";
+    return "\xE2\x9B\x94";
+}
+
+function _penny_top_factors($factors) {
+    $labels = array(
+        'health'     => 'Financial Health',
+        'momentum'   => 'Price Momentum',
+        'volume'     => 'Volume Surge',
+        'technical'  => 'Technicals',
+        'earnings'   => 'Earnings Quality',
+        'smart_money'=> 'Smart Money',
+        'quality'    => 'Momentum Quality',
+    );
+    // Sort factors by score descending, pick top 2
+    $sorted = array();
+    foreach ($factors as $k => $v) {
+        $sorted[] = array('key' => $k, 'score' => $v);
+    }
+    // Simple bubble sort (PHP 5.2, small array)
+    for ($i = 0; $i < count($sorted); $i++) {
+        for ($j = $i + 1; $j < count($sorted); $j++) {
+            if ($sorted[$j]['score'] > $sorted[$i]['score']) {
+                $tmp = $sorted[$i]; $sorted[$i] = $sorted[$j]; $sorted[$j] = $tmp;
+            }
+        }
+    }
+    $reasons = array();
+    $max = (count($sorted) > 2) ? 2 : count($sorted);
+    for ($i = 0; $i < $max; $i++) {
+        $k = $sorted[$i]['key'];
+        $s = round($sorted[$i]['score']);
+        $label = isset($labels[$k]) ? $labels[$k] : $k;
+        if ($s >= 70) {
+            $reasons[] = 'Strong ' . $label . ' (' . $s . '/100)';
+        } else if ($s >= 50) {
+            $reasons[] = 'Good ' . $label . ' (' . $s . '/100)';
+        } else {
+            $reasons[] = $label . ' (' . $s . '/100)';
+        }
+    }
+    return implode(', ', $reasons);
+}
+
+/**
+ * /fc-penny [rating] [country] — Daily penny stock picks
+ */
+function handle_penny_picks_command($rating_filter, $country_filter) {
+    $params = '';
+    if ($country_filter && $country_filter !== 'ALL') {
+        $params .= 'country=' . urlencode($country_filter);
+    }
+    $data = _penny_fetch('picks', $params);
+    if (!$data || !$data['ok']) {
+        send_response("Could not fetch penny stock picks. Try again later.\n\xF0\x9F\x92\x8E https://findtorontoevents.ca/findstocks/portfolio2/penny-stocks.html");
+        return;
+    }
+
+    $picks = isset($data['picks']) ? $data['picks'] : array();
+    $pick_date = isset($data['date']) ? $data['date'] : '';
+
+    // Apply rating filter
+    if ($rating_filter && $rating_filter !== 'all') {
+        $filtered = array();
+        foreach ($picks as $p) {
+            $r = isset($p['rating']) ? $p['rating'] : '';
+            if ($rating_filter === 'STRONG_BUY' && $r === 'STRONG_BUY') {
+                $filtered[] = $p;
+            } else if ($rating_filter === 'BUY' && ($r === 'STRONG_BUY' || $r === 'BUY')) {
+                $filtered[] = $p;
+            }
+        }
+        $picks = $filtered;
+    }
+
+    $c = count($picks);
+    $filter_label = '';
+    if ($rating_filter === 'STRONG_BUY') $filter_label = ' (Strong Buy)';
+    else if ($rating_filter === 'BUY') $filter_label = ' (Buy+)';
+    $country_label = '';
+    if ($country_filter === 'US') $country_label = ' \xF0\x9F\x87\xBA\xF0\x9F\x87\xB8';
+    else if ($country_filter === 'CA') $country_label = ' \xF0\x9F\x87\xA8\xF0\x9F\x87\xA6';
+
+    $content = "**\xF0\x9F\x92\x8E Daily Penny Stock Picks$filter_label$country_label**\n";
+    $content .= "$c picks | $pick_date\n\n";
+
+    if ($c === 0) {
+        $content .= "_No penny stock picks match your filters._\n";
+        $content .= "_Try `/fc-penny all` to see all picks._\n";
+    } else {
+        // Score explanation header
+        $content .= "**How our score works:** Each stock is scored 0-100 across 7 factors:\n";
+        $content .= "Health (30%) + Momentum (25%) + Volume (10%) + Technical (10%) + Earnings (10%) + Smart Money (10%) + Quality (5%)\n";
+        $content .= "Only financially healthy stocks pass (Altman Z-Score > 1.5, positive cash flow).\n\n";
+
+        // Show up to 8 picks
+        $show = ($c > 8) ? 8 : $c;
+        for ($i = 0; $i < $show; $i++) {
+            $p = $picks[$i];
+            $sym = isset($p['symbol']) ? $p['symbol'] : '???';
+            $name = isset($p['name']) ? $p['name'] : '';
+            $price = isset($p['price']) ? $p['price'] : 0;
+            $score = isset($p['composite_score']) ? $p['composite_score'] : 0;
+            $rating = isset($p['rating']) ? $p['rating'] : 'HOLD';
+            $sl_pct = isset($p['stop_loss_pct']) ? $p['stop_loss_pct'] : 15;
+            $tp_pct = isset($p['take_profit_pct']) ? $p['take_profit_pct'] : 30;
+            $factors = isset($p['factor_scores']) ? $p['factor_scores'] : array();
+            $exchange = isset($p['exchange']) ? $p['exchange'] : '';
+
+            // Calculate actual target & stop loss prices
+            $target_price = round($price * (1 + $tp_pct / 100), 4);
+            $stop_loss_price = round($price * (1 - $sl_pct / 100), 4);
+
+            // Format prices
+            if ($price >= 1) {
+                $price_str = '$' . number_format($price, 2);
+                $target_str = '$' . number_format($target_price, 2);
+                $sl_str = '$' . number_format($stop_loss_price, 2);
+            } else {
+                $price_str = '$' . number_format($price, 4);
+                $target_str = '$' . number_format($target_price, 4);
+                $sl_str = '$' . number_format($stop_loss_price, 4);
+            }
+
+            $icon = _penny_rating_icon($rating);
+            $bar = _penny_score_bar($score);
+            $why = _penny_top_factors($factors);
+            $rating_label = str_replace('_', ' ', $rating);
+
+            $content .= "$icon **$sym** $price_str \xe2\x80\x94 $rating_label\n";
+            if ($name) $content .= "   $name ($exchange)\n";
+            $content .= "   Score: $bar " . round($score) . "/100\n";
+            $content .= "   \xF0\x9F\x8E\xAF Target: $target_str (+{$tp_pct}%) | \xF0\x9F\x9B\x91 Stop: $sl_str (-{$sl_pct}%)\n";
+            $content .= "   Why: $why\n\n";
+        }
+        if ($c > $show) {
+            $content .= "_...and " . ($c - $show) . " more picks. Use `/fc-pennydetail <symbol>` for details._\n\n";
+        }
+    }
+
+    $content .= "\xF0\x9F\x92\x8E **Full Dashboard:** https://findtorontoevents.ca/findstocks/portfolio2/penny-stocks.html\n";
+    $content .= "_Not financial advice. Penny stocks are volatile. Our algorithm filters for financial health (Altman Z-Score, Piotroski F-Score) and rejects companies at bankruptcy risk, but all investing carries risk. Do your own research._";
+
+    send_response($content);
+}
+
+/**
+ * /fc-pennydetail <symbol> — Detailed scoring breakdown
+ */
+function handle_penny_detail_command($symbol) {
+    if (empty($symbol)) {
+        send_response("Please specify a stock symbol.\n\nUsage: `/fc-pennydetail SNDL`");
+        return;
+    }
+
+    $symbol = strtoupper(trim($symbol));
+    $data = _penny_fetch('picks', 'limit=50');
+    if (!$data || !$data['ok']) {
+        send_response("Could not fetch penny stock data. Try again later.");
+        return;
+    }
+
+    $picks = isset($data['picks']) ? $data['picks'] : array();
+    $found = null;
+    foreach ($picks as $p) {
+        if (isset($p['symbol']) && strtoupper($p['symbol']) === $symbol) {
+            $found = $p;
+            break;
+        }
+    }
+
+    if (!$found) {
+        send_response("**$symbol** is not in today's penny stock picks.\n\nUse `/fc-penny` to see all current picks.\n\xF0\x9F\x92\x8E https://findtorontoevents.ca/findstocks/portfolio2/penny-stocks.html");
+        return;
+    }
+
+    $price = isset($found['price']) ? $found['price'] : 0;
+    $score = isset($found['composite_score']) ? $found['composite_score'] : 0;
+    $rating = isset($found['rating']) ? $found['rating'] : 'HOLD';
+    $name = isset($found['name']) ? $found['name'] : '';
+    $exchange = isset($found['exchange']) ? $found['exchange'] : '';
+    $country = isset($found['country']) ? $found['country'] : '';
+    $mcap = isset($found['market_cap']) ? $found['market_cap'] : 0;
+    $avgvol = isset($found['avg_volume']) ? $found['avg_volume'] : 0;
+    $sl_pct = isset($found['stop_loss_pct']) ? $found['stop_loss_pct'] : 15;
+    $tp_pct = isset($found['take_profit_pct']) ? $found['take_profit_pct'] : 30;
+    $max_hold = isset($found['max_hold_days']) ? $found['max_hold_days'] : 90;
+    $pos_size = isset($found['position_size_pct']) ? $found['position_size_pct'] : 1.5;
+    $factors = isset($found['factor_scores']) ? $found['factor_scores'] : array();
+    $metrics = isset($found['metrics']) ? $found['metrics'] : array();
+    $rrsp = isset($found['rrsp_eligible']) ? $found['rrsp_eligible'] : false;
+    $cur_price = isset($found['current_price']) ? $found['current_price'] : 0;
+    $cur_ret = isset($found['current_return_pct']) ? $found['current_return_pct'] : 0;
+    $status = isset($found['status']) ? $found['status'] : 'active';
+
+    $target_price = round($price * (1 + $tp_pct / 100), 4);
+    $stop_loss_price = round($price * (1 - $sl_pct / 100), 4);
+
+    if ($price >= 1) {
+        $price_str = '$' . number_format($price, 2);
+        $target_str = '$' . number_format($target_price, 2);
+        $sl_str = '$' . number_format($stop_loss_price, 2);
+    } else {
+        $price_str = '$' . number_format($price, 4);
+        $target_str = '$' . number_format($target_price, 4);
+        $sl_str = '$' . number_format($stop_loss_price, 4);
+    }
+
+    $icon = _penny_rating_icon($rating);
+    $bar = _penny_score_bar($score);
+    $rating_label = str_replace('_', ' ', $rating);
+    $mcap_str = ($mcap >= 1000000000) ? '$' . number_format($mcap / 1000000000, 1) . 'B' : '$' . number_format($mcap / 1000000, 0) . 'M';
+    $vol_str = number_format($avgvol);
+    $flag = ($country === 'CA') ? "\xF0\x9F\x87\xA8\xF0\x9F\x87\xA6" : "\xF0\x9F\x87\xBA\xF0\x9F\x87\xB8";
+
+    $content = "$icon **$symbol** \xe2\x80\x94 $rating_label\n";
+    $content .= "$name | $exchange | $flag $country\n\n";
+
+    $content .= "**Price:** $price_str";
+    if ($cur_price > 0 && $status === 'active') {
+        $cur_str = ($cur_price >= 1) ? '$' . number_format($cur_price, 2) : '$' . number_format($cur_price, 4);
+        $ret_str = ($cur_ret >= 0 ? '+' : '') . number_format($cur_ret, 2) . '%';
+        $content .= " \xe2\x86\x92 Now: $cur_str ($ret_str)";
+    }
+    $content .= "\n";
+    $content .= "**Market Cap:** $mcap_str | **Avg Volume:** $vol_str\n";
+    if ($rrsp) $content .= "\xF0\x9F\x8F\xA6 RRSP/TFSA Eligible (TSX listed)\n";
+    $content .= "\n";
+
+    // Trade plan
+    $content .= "**\xF0\x9F\x93\x8B Trade Plan:**\n";
+    $content .= "\xF0\x9F\x8E\xAF Target: $target_str (+{$tp_pct}%)\n";
+    $content .= "\xF0\x9F\x9B\x91 Stop Loss: $sl_str (-{$sl_pct}%)\n";
+    $content .= "\xe2\x8F\xB3 Max Hold: {$max_hold} days\n";
+    $content .= "\xF0\x9F\x93\x8F Position Size: {$pos_size}% of portfolio\n\n";
+
+    // Composite score
+    $content .= "**\xF0\x9F\x93\x8A Composite Score: $bar " . round($score) . "/100**\n\n";
+
+    // Factor breakdown
+    $content .= "**Factor Breakdown** (weight):\n";
+    $factor_meta = array(
+        'health'      => array('label' => 'Financial Health', 'weight' => '30%', 'desc' => 'Z-Score, F-Score, ratios'),
+        'momentum'    => array('label' => 'Price Momentum', 'weight' => '25%', 'desc' => '3M/6M returns, regression'),
+        'volume'      => array('label' => 'Volume', 'weight' => '10%', 'desc' => 'RVOL, OBV trend'),
+        'technical'   => array('label' => 'Technical', 'weight' => '10%', 'desc' => 'RSI, EMA alignment'),
+        'earnings'    => array('label' => 'Earnings', 'weight' => '10%', 'desc' => 'Surprise, PEAD'),
+        'smart_money' => array('label' => 'Smart Money', 'weight' => '10%', 'desc' => 'Institutional, insider'),
+        'quality'     => array('label' => 'Quality', 'weight' => '5%', 'desc' => 'Smooth momentum'),
+    );
+    foreach ($factor_meta as $key => $meta) {
+        $fs = isset($factors[$key]) ? round($factors[$key]) : 0;
+        $fb = _penny_score_bar($fs);
+        $content .= "  $fb {$fs}/100 \xe2\x80\x94 **" . $meta['label'] . "** (" . $meta['weight'] . ")\n";
+    }
+    $content .= "\n";
+
+    // Key metrics
+    $z = isset($metrics['z_score']) ? $metrics['z_score'] : 0;
+    $f = isset($metrics['f_score']) ? $metrics['f_score'] : 0;
+    $rsi = isset($metrics['rsi']) ? $metrics['rsi'] : 50;
+    $rvol = isset($metrics['rvol']) ? $metrics['rvol'] : 1;
+    $m3 = isset($metrics['mom_3m']) ? $metrics['mom_3m'] : 0;
+    $inst = isset($metrics['inst_pct']) ? $metrics['inst_pct'] : 0;
+    $vol = isset($metrics['volatility']) ? $metrics['volatility'] : 0;
+
+    $z_zone = ($z > 2.6) ? 'Safe' : (($z > 1.1) ? 'Grey' : 'Distress');
+    $f_qual = ($f >= 7) ? 'Strong' : (($f >= 5) ? 'OK' : 'Weak');
+
+    $content .= "**Key Metrics:**\n";
+    $content .= "  Altman Z: " . number_format($z, 2) . " ($z_zone) | Piotroski F: $f/9 ($f_qual)\n";
+    $content .= "  RSI: " . round($rsi) . " | RVOL: " . number_format($rvol, 1) . "x | 3M Mom: " . ($m3 >= 0 ? '+' : '') . number_format($m3, 1) . "%\n";
+    $content .= "  Institutional: " . number_format($inst, 1) . "% | Volatility: " . round($vol) . "%\n\n";
+
+    // Why recommended
+    $why = _penny_top_factors($factors);
+    $content .= "**Why picked:** $why\n";
+    if ($z > 2.6 && $f >= 7) $content .= "Financially strong with no bankruptcy risk.\n";
+    else if ($z > 2.6) $content .= "Altman Z-Score indicates low bankruptcy risk.\n";
+    else if ($f >= 7) $content .= "Piotroski F-Score shows strong fundamentals.\n";
+    $content .= "\n";
+
+    $content .= "\xF0\x9F\x92\x8E **Full Details:** https://findtorontoevents.ca/findstocks/portfolio2/penny-stocks.html\n";
+    $content .= "_Not financial advice. Penny stocks are volatile. Do your own research._";
 
     send_response($content);
 }

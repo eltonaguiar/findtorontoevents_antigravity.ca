@@ -938,19 +938,19 @@
         { id: 'global',   name: 'Global News',    channelId: 'UChLtXXpo4Ge1ReTEboVvTDg', cat: 'canada', live: false, desc: 'National & local Canadian news' },
         { id: 'cp24',     name: 'CP24',           url: 'https://www.cp24.com/video/live',  cat: 'canada', live: true,  desc: 'Toronto\'s 24hr breaking news', external: true },
         // ── US ──
-        { id: 'abc',      name: 'ABC News',       channelId: 'UCBi2mrWuNuyYy4gbM6fU18Q', cat: 'us', live: true,  desc: 'US network — 24/7 live' },
+        { id: 'abc',      name: 'ABC News',       url: 'https://abcnews.go.com/live', cat: 'us', live: true, desc: 'US network — 24/7 live', external: true },
         { id: 'nbc',      name: 'NBC News',       channelId: 'UCeY0bbntWzzVIaj2z3QigXg', cat: 'us', live: false, desc: 'NBC News clips & reports' },
         { id: 'cnn',      name: 'CNN',            channelId: 'UCupvZG-5ko_eiXAupbDfxWw', cat: 'us', live: false, desc: 'US cable news clips' },
         // ── WORLD (24/7 LIVE) ──
-        { id: 'sky',      name: 'Sky News',       channelId: 'UCoMdktPbSTixAyNGwb-UYkQ', cat: 'world', live: true, desc: 'UK — 24/7 live since 2014' },
-        { id: 'aje',      name: 'Al Jazeera',     channelId: 'UCNye-wNBqNL5ZzHSJj3l8Bg', cat: 'world', live: true, desc: 'Qatar — 24/7 English live' },
-        { id: 'f24',      name: 'France 24',      channelId: 'UCQfwfsi5VrQ8yKZ-UWmAEFg', cat: 'world', live: true, desc: 'France — 24/7 English live' },
-        { id: 'dw',       name: 'DW News',        channelId: 'UCknLrEdhRCp1aegoMqRaCZg', cat: 'world', live: true, desc: 'Germany — Deutsche Welle 24/7' },
-        { id: 'nhk',      name: 'NHK World',      channelId: 'UCSPEjw8F2nQDtmUKPFNF7_A', cat: 'world', live: true, desc: 'Japan — English service 24/7' },
-        { id: 'euro',     name: 'Euronews',       channelId: 'UCSrZ3UV4jOidv8ppoVuvW9Q', cat: 'world', live: true, desc: 'Pan-European 24/7 live' },
-        { id: 'trt',      name: 'TRT World',      channelId: 'UC7fWeaHhqgM4Ry-RMpM2YYw', cat: 'world', live: true, desc: 'Turkey — English service 24/7' },
-        { id: 'wion',     name: 'WION',           channelId: 'UC_gUM8rL-Lrg6O3adPW9K1g', cat: 'world', live: true, desc: 'India — global perspective 24/7' },
-        { id: 'intoday',  name: 'India Today',    channelId: 'UCYPvAwZP8pZhSMW8qs7cVCw', cat: 'world', live: true, desc: 'India — 24/7 English live' },
+        { id: 'sky',      name: 'Sky News',       channelId: 'UCoMdktPbSTixAyNGwb-UYkQ', cat: 'world', live: true, desc: 'UK — 24/7 live since 2014', ytHandle: '@SkyNews' },
+        { id: 'aje',      name: 'Al Jazeera',     channelId: 'UCNye-wNBqNL5ZzHSJj3l8Bg', cat: 'world', live: true, desc: 'Qatar — 24/7 English live', ytHandle: '@AlJazeeraEnglish' },
+        { id: 'f24',      name: 'France 24',      channelId: 'UCQfwfsi5VrQ8yKZ-UWmAEFg', cat: 'world', live: true, desc: 'France — 24/7 English live', ytHandle: '@FRANCE24English' },
+        { id: 'dw',       name: 'DW News',        channelId: 'UCknLrEdhRCp1aegoMqRaCZg', cat: 'world', live: true, desc: 'Germany — Deutsche Welle 24/7', ytHandle: '@DWNews' },
+        { id: 'nhk',      name: 'NHK World',      channelId: 'UCSPEjw8F2nQDtmUKPFNF7_A', cat: 'world', live: true, desc: 'Japan — English service 24/7', ytHandle: '@NHKWORLDJAPAN' },
+        { id: 'euro',     name: 'Euronews',       channelId: 'UCSrZ3UV4jOidv8ppoVuvW9Q', cat: 'world', live: true, desc: 'Pan-European 24/7 live', ytHandle: '@euronews' },
+        { id: 'trt',      name: 'TRT World',      channelId: 'UC7fWeaHhqgM4Ry-RMpM2YYw', cat: 'world', live: true, desc: 'Turkey — English service 24/7', ytHandle: '@taborttrtworld' },
+        { id: 'wion',     name: 'WION',           channelId: 'UC_gUM8rL-Lrg6O3adPW9K1g', cat: 'world', live: true, desc: 'India — global perspective 24/7', ytHandle: '@WIONews' },
+        { id: 'intoday',  name: 'India Today',    channelId: 'UCYPvAwZP8pZhSMW8qs7cVCw', cat: 'world', live: true, desc: 'India — 24/7 English live', ytHandle: '@IndiaToday' },
         // ── BUSINESS ──
         { id: 'bloom',    name: 'Bloomberg',      channelId: 'UChirEOpgFCupRAk5etXqPaA', cat: 'business', live: false, desc: 'Global business & markets' },
         { id: 'cnbc',     name: 'CNBC',           channelId: 'UCvJJ_dzjViJCoLf5uKUTwoA', cat: 'business', live: false, desc: 'Business news clips' }
@@ -964,8 +964,8 @@
         if (videoInitialized) return;
         videoInitialized = true;
         renderChannels('all');
-        // Load first live channel by default
-        loadChannel(VIDEO_CHANNELS[3]); // ABC News — reliable 24/7
+        // Load first live YouTube channel by default (Al Jazeera — reliable 24/7)
+        loadChannel(VIDEO_CHANNELS[7]); // Al Jazeera English
 
         // Category filter clicks
         var filters = document.getElementById('videoFilters');
@@ -989,12 +989,9 @@
             if (filterCat !== 'all' && ch.cat !== filterCat) continue;
             var isActive = currentChannel && currentChannel.id === ch.id;
             var isLive = ch.live;
-            var catLabels = {canada:'Canada', us:'US', world:'World', business:'Business'};
-            var logoUrl = ch.external ? 'https://www.google.com/s2/favicons?domain=cp24.com&sz=64'
-                : 'https://yt3.googleusercontent.com/ytc/' + ch.id; // placeholder — use favicon
-            // Use YouTube favicon via channel
-            logoUrl = 'https://www.google.com/s2/favicons?domain=youtube.com&sz=64';
+            var logoUrl = 'https://www.google.com/s2/favicons?domain=youtube.com&sz=64';
             if (ch.id === 'cp24') logoUrl = 'https://www.google.com/s2/favicons?domain=cp24.com&sz=64';
+            if (ch.id === 'abc') logoUrl = 'https://www.google.com/s2/favicons?domain=abcnews.go.com&sz=64';
 
             html += '<div class="channel-card' + (isActive ? (isLive ? ' active-channel' : ' active-channel clips-channel') : '') + '" data-chidx="' + i + '">'
                 + '<img class="ch-logo" src="' + logoUrl + '" alt="" onerror="this.src=\'https://www.google.com/s2/favicons?domain=youtube.com&sz=64\'">'
@@ -1006,8 +1003,11 @@
                 + '</div>';
         }
         grid.innerHTML = html;
+    }
 
-        // Click handler
+    // Attach channel grid click handler ONCE (prevents listener accumulation)
+    (function() {
+        var grid = document.getElementById('channelsGrid');
         grid.addEventListener('click', function(e) {
             var card = e.target.closest('.channel-card');
             if (!card) return;
@@ -1016,17 +1016,15 @@
             loadChannel(VIDEO_CHANNELS[idx]);
             renderChannels(videoFilter);
         });
-    }
+    })();
 
     function loadChannel(ch) {
         currentChannel = ch;
-        var player = document.getElementById('videoPlayer');
         var wrap = document.getElementById('videoPlayerWrap');
 
         if (ch.external) {
-            // External site (CP24) — open in new tab, show message
+            // External site (CP24, ABC News) — open in new tab, show message
             window.open(ch.url, '_blank');
-            player.src = '';
             wrap.innerHTML = '<div style="aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--text-dim);padding:2rem;">'
                 + '<div style="font-size:2.5rem;">&#128250;</div>'
                 + '<div style="font-size:1rem;font-weight:600;color:var(--text);">' + escHtml(ch.name) + ' opened in a new tab</div>'
@@ -1034,18 +1032,15 @@
                 + '<a href="' + escAttr(ch.url) + '" target="_blank" style="padding:8px 20px;background:var(--accent);color:white;border-radius:8px;font-weight:600;text-decoration:none;">Open ' + escHtml(ch.name) + '</a>'
                 + '</div>';
         } else {
-            // Restore iframe if it was replaced
-            if (!document.getElementById('videoPlayer')) {
-                wrap.innerHTML = '<iframe id="videoPlayer" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
-                player = document.getElementById('videoPlayer');
-            }
+            // YouTube channel — build iframe
+            var embedUrl;
             if (ch.live) {
-                player.src = 'https://www.youtube.com/embed/live_stream?channel=' + ch.channelId + '&autoplay=1&mute=1';
+                embedUrl = 'https://www.youtube.com/embed/live_stream?channel=' + ch.channelId + '&autoplay=1&mute=1';
             } else {
-                // For clips channels, load their latest uploads playlist (UU prefix)
                 var uploadsPlaylist = 'UU' + ch.channelId.substring(2);
-                player.src = 'https://www.youtube.com/embed/videoseries?list=' + uploadsPlaylist + '&autoplay=1&mute=1';
+                embedUrl = 'https://www.youtube.com/embed/videoseries?list=' + uploadsPlaylist + '&autoplay=1&mute=1';
             }
+            wrap.innerHTML = '<iframe id="videoPlayer" src="' + escAttr(embedUrl) + '" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
         }
 
         // Update now-playing bar
@@ -1057,7 +1052,30 @@
 
         nameEl.textContent = ch.name;
         catEl.textContent = (catLabels[ch.cat] || ch.cat) + ' — ' + ch.desc;
-        if (ch.live) {
+
+        // Remove old fallback link if any
+        var oldFb = document.getElementById('vnpFallback');
+        if (oldFb) oldFb.parentNode.removeChild(oldFb);
+
+        if (ch.live && !ch.external) {
+            dot.className = 'vnp-dot';
+            badge.className = 'vnp-badge live';
+            badge.textContent = 'LIVE 24/7';
+            // Add "Watch on YouTube" fallback link for live streams
+            var ytLink = ch.ytHandle
+                ? 'https://www.youtube.com/' + ch.ytHandle + '/live'
+                : 'https://www.youtube.com/channel/' + ch.channelId + '/live';
+            var fbLink = document.createElement('a');
+            fbLink.id = 'vnpFallback';
+            fbLink.href = ytLink;
+            fbLink.target = '_blank';
+            fbLink.rel = 'noopener';
+            fbLink.style.cssText = 'margin-left:auto;font-size:0.75rem;color:var(--text-dim);text-decoration:none;padding:4px 10px;border:1px solid var(--border);border-radius:6px;white-space:nowrap;';
+            fbLink.textContent = 'Not loading? Watch on YouTube';
+            fbLink.onmouseover = function() { this.style.color = 'var(--accent)'; this.style.borderColor = 'var(--accent)'; };
+            fbLink.onmouseout = function() { this.style.color = 'var(--text-dim)'; this.style.borderColor = 'var(--border)'; };
+            document.getElementById('videoNowPlaying').appendChild(fbLink);
+        } else if (ch.live && ch.external) {
             dot.className = 'vnp-dot';
             badge.className = 'vnp-badge live';
             badge.textContent = 'LIVE 24/7';

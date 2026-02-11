@@ -204,6 +204,32 @@
     adjustFixedElements(false);
   }
 
+  // Guard the nav bar against React hydration removal.
+  // Uses MutationObserver + periodic checks to re-inject if removed.
+  function guardNavBar(theme) {
+    var reinjecting = false;
+    function ensureNav() {
+      if (reinjecting) return;
+      if (!document.getElementById('theme-sections-nav')) {
+        reinjecting = true;
+        injectNavBar(theme);
+        reinjecting = false;
+      }
+    }
+    // MutationObserver: react immediately if nav is removed
+    if (typeof MutationObserver !== 'undefined') {
+      var observer = new MutationObserver(function() { ensureNav(); });
+      observer.observe(document.body, { childList: true });
+      // Stop watching after 15 seconds (hydration long done by then)
+      setTimeout(function() { observer.disconnect(); }, 15000);
+    }
+    // Periodic fallback checks at key hydration moments
+    var delays = [300, 800, 1500, 3000, 5000, 8000];
+    for (var i = 0; i < delays.length; i++) {
+      (function(d) { setTimeout(ensureNav, d); })(delays[i]);
+    }
+  }
+
   function adjustFixedElements(pushed) {
     var topOffset = pushed ? 'calc(1.5rem + ' + NAV_BAR_HEIGHT + 'px)' : '';
     // Sign-in island
@@ -1053,6 +1079,9 @@
     var savedId = getSavedThemeId();
     if (savedId && findTheme(savedId)) {
       applyTheme(savedId);
+      var savedTheme = findTheme(savedId);
+      // Guard nav bar against React hydration removal
+      guardNavBar(savedTheme);
       // React hydration may overwrite CSS vars after our initial apply.
       // Re-apply after a delay to ensure the theme survives hydration.
       setTimeout(function () {
@@ -1067,7 +1096,26 @@
       }, 2500);
     } else {
       // Always show nav bar even without a theme — use default site colors
-      injectNavBar({ accent: '#ec4899', bg: '#0a0a12', text: '#ffffff' });
+      var defaultTheme = { accent: '#ec4899', bg: '#0a0a12', text: '#ffffff' };
+      injectNavBar(defaultTheme);
+      // Guard nav bar against React hydration removal
+      guardNavBar(defaultTheme);
+      // Set default CSS variables so Tailwind classes using var(--pk-*) work
+      var root = document.documentElement;
+      root.style.setProperty('--pk-200', '#e9d5ff');
+      root.style.setProperty('--pk-300', '#c084fc');
+      root.style.setProperty('--pk-400', '#a855f7');
+      root.style.setProperty('--pk-500', '#9333ea');
+      root.style.setProperty('--pk-500-rgb', '147,51,234');
+      root.style.setProperty('--pk-600', '#7e22ce');
+      root.style.setProperty('--pk-900', '#3b0764');
+      root.style.setProperty('--surface-0', '#0a0a0f');
+      root.style.setProperty('--surface-1', '#12121a');
+      root.style.setProperty('--surface-2', '#1a1a25');
+      root.style.setProperty('--text-1', '#f0f0f5');
+      root.style.setProperty('--text-2', '#a0a0b5');
+      root.style.setProperty('--text-3', '#606075');
+      root.style.setProperty('--webpage-scale', '1');
     }
 
     // Gear button interception is handled by document-level event delegation

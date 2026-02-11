@@ -1337,7 +1337,42 @@ function _ls_get_learned_params($conn, $algo_name, $asset_class) {
         WHERE algorithm_name='$safe_algo' AND asset_class='$safe_asset'
         ORDER BY calc_date DESC LIMIT 1");
     if ($res && $res->num_rows > 0) {
-        return $res->fetch_assoc();
+        $lp = $res->fetch_assoc();
+
+        // Clamp learned params to prevent overfitting:
+        // TP/SL must stay within 0.3x - 2.5x of the original defaults
+        // Hold must stay within 0.25x - 3x of original
+        $defaults = _ls_get_original_defaults($algo_name, $asset_class);
+        $orig_tp   = $defaults['tp'];
+        $orig_sl   = $defaults['sl'];
+        $orig_hold = $defaults['hold'];
+
+        $learned_tp   = (float)$lp['best_tp_pct'];
+        $learned_sl   = (float)$lp['best_sl_pct'];
+        $learned_hold = (int)$lp['best_hold_hours'];
+
+        // Clamp TP: 0.3x to 2.5x original
+        if ($learned_tp < $orig_tp * 0.3)  $learned_tp = round($orig_tp * 0.3, 2);
+        if ($learned_tp > $orig_tp * 2.5)  $learned_tp = round($orig_tp * 2.5, 2);
+
+        // Clamp SL: 0.3x to 2.5x original
+        if ($learned_sl < $orig_sl * 0.3)  $learned_sl = round($orig_sl * 0.3, 2);
+        if ($learned_sl > $orig_sl * 2.5)  $learned_sl = round($orig_sl * 2.5, 2);
+
+        // Clamp Hold: 0.25x to 3x original
+        if ($learned_hold < $orig_hold * 0.25) $learned_hold = (int)($orig_hold * 0.25);
+        if ($learned_hold > $orig_hold * 3)    $learned_hold = (int)($orig_hold * 3);
+
+        // Ensure TP > SL (positive expected value) — minimum 1.2:1 R:R
+        if ($learned_tp < $learned_sl * 1.2) {
+            $learned_tp = round($learned_sl * 1.2, 2);
+        }
+
+        $lp['best_tp_pct']    = $learned_tp;
+        $lp['best_sl_pct']    = $learned_sl;
+        $lp['best_hold_hours'] = $learned_hold;
+
+        return $lp;
     }
     return null;
 }
@@ -1710,47 +1745,69 @@ function _ls_algo_macd_crossover($candles, $price, $symbol, $asset) {
 
 // ────────────────────────────────────────────────────────────
 //  ALGORITHM 7: Consensus
-//  2+ different daily algorithms picked this symbol => BUY boosted.
-//  Queries cr_pair_picks (crypto) or fxp_pair_picks (forex).
-//  TP avg from picks or 3%, SL avg or 2%, Hold 12h.
+//  2+ different algorithms signal the SAME DIRECTION for this symbol
+//  within the last 24h => follow the majority direction.
+//  Uses lm_signals (live signals table) for all asset classes.
+//  TP 3%, SL 2%, Hold 24h (or learned params).
 // ────────────────────────────────────────────────────────────
 
 function _ls_algo_consensus($conn, $price, $symbol, $asset) {
-    $safe_sym = $conn->real_escape_string($symbol);
-    $today = date('Y-m-d');
-    $yesterday = date('Y-m-d', strtotime('-1 day'));
+    $safe_sym  = $conn->real_escape_string($symbol);
+    $safe_asset = $conn->real_escape_string($asset);
 
-    if ($asset === 'CRYPTO') {
-        $table = 'cr_pair_picks';
-    } else {
-        $table = 'fxp_pair_picks';
-    }
-
-    // Check if the table exists before querying
-    $chk = $conn->query("SHOW TABLES LIKE '$table'");
-    if (!$chk || $chk->num_rows == 0) return null;
-
-    $sql = "SELECT DISTINCT algorithm_name FROM $table
-            WHERE symbol='$safe_sym' AND pick_date >= '$yesterday'
-            ORDER BY algorithm_name";
+    // Query recent live signals for this symbol (last 24h, exclude Consensus itself)
+    $sql = "SELECT algorithm_name, signal_type
+            FROM lm_signals
+            WHERE symbol = '$safe_sym'
+              AND asset_class = '$safe_asset'
+              AND algorithm_name != 'Consensus'
+              AND signal_time >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+            ORDER BY signal_time DESC";
     $res = $conn->query($sql);
-    if (!$res) return null;
+    if (!$res || $res->num_rows == 0) return null;
 
-    $algos = array();
+    // Count unique algorithms per direction
+    $buy_algos   = array();
+    $short_algos = array();
     while ($row = $res->fetch_assoc()) {
-        $algos[] = $row['algorithm_name'];
+        $algo = $row['algorithm_name'];
+        $dir  = strtoupper($row['signal_type']);
+        if ($dir === 'BUY' || $dir === 'LONG') {
+            $buy_algos[$algo] = 1;
+        } elseif ($dir === 'SHORT' || $dir === 'SELL') {
+            $short_algos[$algo] = 1;
+        }
     }
 
-    if (count($algos) < 2) return null;
+    $buy_count   = count($buy_algos);
+    $short_count = count($short_algos);
+    $total       = $buy_count + $short_count;
 
-    $strength = min(100, count($algos) * 25 + 20);
+    if ($total < 2) return null;
+
+    // Determine majority direction — require supermajority (>= 60%)
+    $direction = null;
+    $majority_count = 0;
+    $majority_algos = array();
+
+    if ($buy_count >= 2 && ($buy_count / $total) >= 0.6) {
+        $direction = 'BUY';
+        $majority_count = $buy_count;
+        $majority_algos = array_keys($buy_algos);
+    } elseif ($short_count >= 2 && ($short_count / $total) >= 0.6) {
+        $direction = 'SHORT';
+        $majority_count = $short_count;
+        $majority_algos = array_keys($short_algos);
+    }
+
+    // No clear consensus — skip
+    if ($direction === null) return null;
+
+    $strength = min(100, $majority_count * 25 + 20);
 
     $tp   = 3.0;
     $sl   = 2.0;
     $hold = 24;
-
-    // Try to get average TP/SL from the picks if columns exist
-    // (Pick tables may not have TP/SL columns; use defaults if so)
 
     $lp = _ls_get_learned_params($conn, 'Consensus', $asset);
     if ($lp !== null) {
@@ -1761,16 +1818,20 @@ function _ls_algo_consensus($conn, $price, $symbol, $asset) {
 
     return array(
         'algorithm_name'  => 'Consensus',
-        'signal_type'     => 'BUY',
+        'signal_type'     => $direction,
         'signal_strength' => $strength,
         'target_tp_pct'   => $tp,
         'target_sl_pct'   => $sl,
         'max_hold_hours'  => $hold,
         'timeframe'       => '1h',
         'rationale'       => json_encode(array(
-            'reason'         => count($algos) . ' algorithms picked ' . $symbol . ' in the last 24h',
-            'algo_count'     => count($algos),
-            'algorithms'     => $algos
+            'reason'         => $majority_count . '/' . $total . ' algorithms agree on ' . $direction . ' for ' . $symbol,
+            'algo_count'     => $majority_count,
+            'total_algos'    => $total,
+            'direction'      => $direction,
+            'buy_count'      => $buy_count,
+            'short_count'    => $short_count,
+            'algorithms'     => $majority_algos
         ))
     );
 }
@@ -3069,6 +3130,55 @@ function _ls_atr_adjust_tp_sl($candles, $price, $sig) {
 
 
 // ────────────────────────────────────────────────────────────
+//  Regime-aware TP/SL scaling
+//  Reduces TP targets in sideways/neutral markets so they are
+//  more achievable, improving win rate in choppy conditions.
+//  Bear regime signals are already suppressed by regime gate,
+//  so this primarily helps sideways/neutral regimes.
+// ────────────────────────────────────────────────────────────
+
+function _ls_regime_scale_tp_sl($conn, $sig, $asset_class) {
+    if ($sig === null) return $sig;
+
+    $regime = _ls_get_regime($conn, $asset_class, array(), '');
+    if ($regime === false || $regime === null) return $sig;
+
+    // In bull market, keep targets as-is (full potential)
+    if ($regime === 'bull' || $regime === 'usd_strong') return $sig;
+
+    $orig_tp = (float)$sig['target_tp_pct'];
+    $orig_sl = (float)$sig['target_sl_pct'];
+
+    // In sideways/neutral market: reduce TP by 35%, tighten SL by 15%
+    // This makes targets more achievable and cuts losses faster
+    if ($regime === 'neutral' || $regime === 'sideways' || $regime === 'usd_weak') {
+        $sig['target_tp_pct'] = round($orig_tp * 0.65, 2);
+        $sig['target_sl_pct'] = round($orig_sl * 0.85, 2);
+    }
+    // In bear market (for SHORT signals that pass the regime gate):
+    // slightly reduce TP by 20% (bear bounces are unpredictable)
+    elseif ($regime === 'bear') {
+        $sig['target_tp_pct'] = round($orig_tp * 0.80, 2);
+        $sig['target_sl_pct'] = round($orig_sl * 0.90, 2);
+    }
+
+    // Ensure minimums
+    if ($sig['target_tp_pct'] < 0.1) $sig['target_tp_pct'] = 0.1;
+    if ($sig['target_sl_pct'] < 0.05) $sig['target_sl_pct'] = 0.05;
+
+    // Tag rationale
+    $rationale = json_decode($sig['rationale'], true);
+    if (!is_array($rationale)) $rationale = array();
+    $rationale['regime_scaled'] = true;
+    $rationale['regime'] = $regime;
+    $rationale['pre_regime_tp'] = $orig_tp;
+    $rationale['pre_regime_sl'] = $orig_sl;
+    $sig['rationale'] = json_encode($rationale);
+
+    return $sig;
+}
+
+// ────────────────────────────────────────────────────────────
 //  Momentum crash protection (Kimi recommendation)
 //  Detects extreme volatility and blocks momentum-based algos
 // ────────────────────────────────────────────────────────────
@@ -3248,6 +3358,8 @@ function _ls_action_scan($conn) {
 
             // Kimi: ATR-adjust TP/SL
             $sig = _ls_atr_adjust_tp_sl($candles, $price, $sig);
+            // Regime-aware TP/SL scaling (reduce targets in sideways markets)
+            $sig = _ls_regime_scale_tp_sl($conn, $sig, 'CRYPTO');
             // Kimi: apply funding rate signal boost/penalty (crypto only)
             $sig = _ls_apply_funding_rate($sig, $funding);
             // Dedup
@@ -3333,6 +3445,8 @@ function _ls_action_scan($conn) {
 
             // Kimi: ATR-adjust TP/SL
             $sig = _ls_atr_adjust_tp_sl($candles, $price, $sig);
+            // Regime-aware TP/SL scaling (reduce targets in sideways markets)
+            $sig = _ls_regime_scale_tp_sl($conn, $sig, 'FOREX');
             if (_ls_signal_exists($conn, $sym, $sig['algorithm_name'])) continue;
             $insert_id = _ls_insert_signal($conn, 'FOREX', $sym, $price, $sig);
             if ($insert_id > 0) {
@@ -3434,6 +3548,8 @@ function _ls_action_scan($conn) {
 
                 // Kimi: ATR-adjust TP/SL
                 $sig = _ls_atr_adjust_tp_sl($candles, $price, $sig);
+                // Regime-aware TP/SL scaling (reduce targets in sideways markets)
+                $sig = _ls_regime_scale_tp_sl($conn, $sig, 'STOCK');
                 if (_ls_signal_exists($conn, $sym, $sig['algorithm_name'])) continue;
 
                 // Sector concentration cap — max 3 active signals per sector
@@ -3577,7 +3693,34 @@ function _ls_discord_alert($strong_signals, $total_generated, $symbols_scanned) 
     $lines = array();
     foreach (array_slice($strong_signals, 0, 10) as $s) {
         $emoji = (intval($s['signal_strength']) >= 90) ? '🔴' : '🟠';
-        $lines[] = $emoji . ' **' . $s['symbol'] . '** — ' . $s['algorithm_name'] . ' | Strength: ' . $s['signal_strength'] . ' | TP: +' . $s['target_tp_pct'] . '% SL: -' . $s['target_sl_pct'] . '%';
+        $entry = floatval($s['entry_price']);
+        $tp_pct = floatval($s['target_tp_pct']);
+        $sl_pct = floatval($s['target_sl_pct']);
+        $direction = (isset($s['signal_type']) && $s['signal_type'] === 'SHORT') ? 'SHORT' : 'BUY';
+
+        // Calculate TP/SL prices based on direction
+        if ($direction === 'SHORT') {
+            $tp_price = $entry * (1 - ($tp_pct / 100));
+            $sl_price = $entry * (1 + ($sl_pct / 100));
+        } else {
+            $tp_price = $entry * (1 + ($tp_pct / 100));
+            $sl_price = $entry * (1 - ($sl_pct / 100));
+        }
+
+        // Format prices — use more decimals for small-value assets (crypto pairs under $1, forex)
+        $decimals = ($entry < 1) ? 6 : (($entry < 100) ? 4 : 2);
+        $entry_fmt = number_format($entry, $decimals);
+        $tp_fmt = number_format($tp_price, $decimals);
+        $sl_fmt = number_format($sl_price, $decimals);
+
+        $dir_label = ($direction === 'SHORT') ? ' 🔻SHORT' : '';
+
+        $lines[] = $emoji . ' **' . $s['symbol'] . '**' . $dir_label . ' — ' . $s['algorithm_name']
+            . ' | Str: ' . $s['signal_strength']
+            . "\n"
+            . '  📍 Entry: $' . $entry_fmt
+            . ' | 🎯 TP: $' . $tp_fmt . ' (+' . $tp_pct . '%)'
+            . ' | 🛡️ SL: $' . $sl_fmt . ' (-' . $sl_pct . '%)';
     }
     if (count($strong_signals) > 10) {
         $lines[] = '... and ' . (count($strong_signals) - 10) . ' more';
@@ -3592,6 +3735,17 @@ function _ls_discord_alert($strong_signals, $total_generated, $symbols_scanned) 
     );
 
     $payload = json_encode(array('embeds' => array($embed)));
+    _ls_send_discord_webhook($webhook_url, $payload);
+
+    // ── Extraordinary alerts: top-rated algorithm signals to #notifications ──
+    _ls_check_extraordinary_alerts($conn, $strong_signals, $env_file);
+}
+
+/**
+ * Send payload to a Discord webhook URL
+ */
+function _ls_send_discord_webhook($webhook_url, $payload) {
+    if (!$webhook_url) return;
     $ch = curl_init($webhook_url);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
@@ -3601,6 +3755,194 @@ function _ls_discord_alert($strong_signals, $total_generated, $symbols_scanned) 
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_exec($ch);
     curl_close($ch);
+}
+
+/**
+ * Read the notifications webhook URL from .env (or fall back to main webhook)
+ */
+function _ls_get_notif_webhook($env_file) {
+    $notif_webhook = '';
+    $main_webhook = '';
+    if (file_exists($env_file)) {
+        $lines = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            if (strpos($line, 'DISCORD_NOTIFICATIONS_WEBHOOK=') === 0) {
+                $notif_webhook = trim(substr($line, 30));
+            }
+            if (strpos($line, 'DISCORD_WEBHOOK_URL=') === 0) {
+                $main_webhook = trim(substr($line, 20));
+            }
+        }
+    }
+    return $notif_webhook ? $notif_webhook : $main_webhook;
+}
+
+/**
+ * Format a signal line for Discord embed (reusable)
+ */
+function _ls_format_signal_line($s) {
+    $entry = floatval($s['entry_price']);
+    $tp_pct = floatval($s['target_tp_pct']);
+    $sl_pct = floatval($s['target_sl_pct']);
+    $direction = (isset($s['signal_type']) && $s['signal_type'] === 'SHORT') ? 'SHORT' : 'BUY';
+
+    if ($direction === 'SHORT') {
+        $tp_price = $entry * (1 - ($tp_pct / 100));
+        $sl_price = $entry * (1 + ($sl_pct / 100));
+    } else {
+        $tp_price = $entry * (1 + ($tp_pct / 100));
+        $sl_price = $entry * (1 - ($sl_pct / 100));
+    }
+
+    $decimals = ($entry < 1) ? 6 : (($entry < 100) ? 4 : 2);
+    $dir_emoji = ($direction === 'SHORT') ? "\xF0\x9F\x94\xBB" : "\xF0\x9F\x94\xBA";
+
+    return $dir_emoji . ' **' . $s['symbol'] . '** (' . $direction . ') | Strength: ' . $s['signal_strength'] . '/100'
+        . ' | ' . $s['algorithm_name']
+        . "\n"
+        . "\xF0\x9F\x93\x8D" . ' Entry: **$' . number_format($entry, $decimals) . '**'
+        . ' | ' . "\xF0\x9F\x8E\xAF" . ' TP: **$' . number_format($tp_price, $decimals) . '** (+' . $tp_pct . '%)'
+        . ' | ' . "\xF0\x9F\x9B\xA1" . "\xEF\xB8\x8F" . ' SL: **$' . number_format($sl_price, $decimals) . '** (-' . $sl_pct . '%)';
+}
+
+/**
+ * Check for extraordinary signals and alert #notifications
+ * Covers: top algorithm picks, meme coin rockets, ultra-high-strength crypto
+ */
+function _ls_check_extraordinary_alerts($conn, $strong_signals, $env_file) {
+    $webhook = _ls_get_notif_webhook($env_file);
+    if (!$webhook) return;
+
+    // ── 1. Top algorithm signals (best Sharpe ratio algo, strength >= 85) ──
+    $best_algo_name = '';
+    $best_algo_sharpe = 0;
+    $best_algo_win_rate = 0;
+    $res = $conn->query("SELECT best_algo_name, best_algo_sharpe, best_algo_win_rate FROM lm_challenger_showdown ORDER BY snapshot_date DESC LIMIT 1");
+    if ($res && $row = $res->fetch_assoc()) {
+        $best_algo_name = $row['best_algo_name'];
+        $best_algo_sharpe = floatval($row['best_algo_sharpe']);
+        $best_algo_win_rate = floatval($row['best_algo_win_rate']);
+    }
+
+    $top_algo_signals = array();
+    if ($best_algo_name) {
+        foreach ($strong_signals as $s) {
+            if ($s['algorithm_name'] === $best_algo_name && intval($s['signal_strength']) >= 85) {
+                $top_algo_signals[] = $s;
+            }
+        }
+    }
+
+    if (count($top_algo_signals) > 0) {
+        $alert_lines = array();
+        foreach ($top_algo_signals as $s) {
+            $alert_lines[] = _ls_format_signal_line($s);
+        }
+
+        $embed = array(
+            'title' => "\xF0\x9F\x8F\x86" . ' Top Algorithm Alert: ' . $best_algo_name,
+            'description' => '**' . count($top_algo_signals) . ' extraordinary signal' . (count($top_algo_signals) > 1 ? 's' : '') . '** from our highest-performing algorithm'
+                . "\n" . "\xF0\x9F\x93\x8A" . ' Sharpe: ' . $best_algo_sharpe . ' | Win Rate: ' . $best_algo_win_rate . '%'
+                . "\n\n" . implode("\n\n", $alert_lines),
+            'color' => 16766720,  // Gold
+            'footer' => array('text' => 'Top Algorithm Alerts | ' . date('H:i:s') . ' UTC'),
+            'url' => 'https://findtorontoevents.ca/live-monitor/live-monitor.html'
+        );
+
+        $payload = json_encode(array(
+            'content' => "\xF0\x9F\x9A\xA8" . ' **EXTRAORDINARY SIGNAL** from top-rated algorithm!',
+            'embeds' => array($embed)
+        ));
+        _ls_send_discord_webhook($webhook, $payload);
+    }
+
+    // ── 2. Meme coin rockets (PEPE, FLOKI, DOGE, SHIB with strength >= 80) ──
+    $meme_tickers = array('PEPEUSD', 'FLOKIUSD', 'DOGEUSD', 'SHIBUSD');
+    $meme_signals = array();
+    foreach ($strong_signals as $s) {
+        if (in_array($s['symbol'], $meme_tickers) && intval($s['signal_strength']) >= 80) {
+            // Don't double-alert if already in top algo signals
+            $already = false;
+            foreach ($top_algo_signals as $ta) {
+                if ($ta['symbol'] === $s['symbol'] && $ta['algorithm_name'] === $s['algorithm_name']) {
+                    $already = true;
+                    break;
+                }
+            }
+            if (!$already) $meme_signals[] = $s;
+        }
+    }
+
+    if (count($meme_signals) > 0) {
+        $alert_lines = array();
+        foreach (array_slice($meme_signals, 0, 3) as $s) {
+            $alert_lines[] = _ls_format_signal_line($s);
+        }
+
+        $embed = array(
+            'title' => "\xF0\x9F\x90\xB8" . ' Meme Coin Alert',
+            'description' => '**' . count($meme_signals) . ' high-strength meme coin signal' . (count($meme_signals) > 1 ? 's' : '') . '** detected'
+                . "\n\n" . implode("\n\n", $alert_lines),
+            'color' => 5763719,  // Green
+            'footer' => array('text' => 'Meme Coin Alerts | ' . date('H:i:s') . ' UTC'),
+            'url' => 'https://findtorontoevents.ca/live-monitor/live-monitor.html'
+        );
+
+        $payload = json_encode(array(
+            'content' => "\xF0\x9F\x90\xB8" . ' **MEME COIN ROCKET** ' . "\xE2\x80\x94" . ' High-strength signal on meme coins!',
+            'embeds' => array($embed)
+        ));
+        _ls_send_discord_webhook($webhook, $payload);
+    }
+
+    // ── 3. Ultra-high crypto signals (any crypto, strength >= 92, any algo) ──
+    $ultra_crypto = array();
+    foreach ($strong_signals as $s) {
+        if (intval($s['signal_strength']) >= 92) {
+            // Don't double-alert
+            $already = false;
+            foreach ($top_algo_signals as $ta) {
+                if ($ta['symbol'] === $s['symbol'] && $ta['algorithm_name'] === $s['algorithm_name']) { $already = true; break; }
+            }
+            foreach ($meme_signals as $ms) {
+                if ($ms['symbol'] === $s['symbol'] && $ms['algorithm_name'] === $s['algorithm_name']) { $already = true; break; }
+            }
+            if (!$already) $ultra_crypto[] = $s;
+        }
+    }
+
+    if (count($ultra_crypto) > 0) {
+        $alert_lines = array();
+        foreach (array_slice($ultra_crypto, 0, 3) as $s) {
+            $alert_lines[] = _ls_format_signal_line($s);
+        }
+
+        $asset_label = 'signal';
+        // Check what asset classes are present
+        $classes = array();
+        foreach ($ultra_crypto as $s) {
+            $cls = isset($s['asset_class']) ? $s['asset_class'] : 'CRYPTO';
+            $classes[$cls] = true;
+        }
+        if (isset($classes['CRYPTO']) && count($classes) === 1) $asset_label = 'crypto signal';
+        elseif (isset($classes['STOCK']) && count($classes) === 1) $asset_label = 'stock signal';
+        elseif (isset($classes['FOREX']) && count($classes) === 1) $asset_label = 'forex signal';
+
+        $embed = array(
+            'title' => "\xF0\x9F\x94\xA5" . ' Ultra-High Conviction ' . ucfirst($asset_label) . (count($ultra_crypto) > 1 ? 's' : ''),
+            'description' => '**' . count($ultra_crypto) . ' ' . $asset_label . (count($ultra_crypto) > 1 ? 's' : '') . '** with strength 92+/100'
+                . "\n\n" . implode("\n\n", $alert_lines),
+            'color' => 15158332,  // Red
+            'footer' => array('text' => 'Ultra-High Conviction | ' . date('H:i:s') . ' UTC'),
+            'url' => 'https://findtorontoevents.ca/live-monitor/live-monitor.html'
+        );
+
+        $payload = json_encode(array(
+            'content' => "\xF0\x9F\x94\xA5" . ' **ULTRA-HIGH CONVICTION** ' . "\xE2\x80\x94" . ' Strength 92+/100!',
+            'embeds' => array($embed)
+        ));
+        _ls_send_discord_webhook($webhook, $payload);
+    }
 }
 
 // ────────────────────────────────────────────────────────────

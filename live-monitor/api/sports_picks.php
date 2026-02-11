@@ -238,9 +238,16 @@ function _sp_action_analyze($conn) {
     $top_q = $conn->query("SELECT * FROM lm_sports_value_bets WHERE status='active' ORDER BY ev_pct DESC LIMIT 10");
     if ($top_q) {
         while ($row = $top_q->fetch_assoc()) {
+            $row['all_odds_json'] = $row['all_odds'];
+            $row['all_odds'] = json_decode($row['all_odds'], true);
+            $row['is_canadian_book'] = in_array($row['best_book_key'], array('bet365', 'fanduel', 'draftkings', 'betmgm', 'pointsbetus', 'williamhill_us', 'betrivers', 'espnbet', 'fanatics')) ? 1 : 0;
+            _sp_apply_rating($row);
             $top[] = $row;
         }
     }
+
+    // Discord alert for exceptional bets (A+ grade, EV >= 7%)
+    _sp_discord_exceptional($top);
 
     echo json_encode(array(
         'ok'                     => true,
@@ -248,6 +255,102 @@ function _sp_action_analyze($conn) {
         'new_bets_inserted'      => $inserted,
         'top_bets'               => $top
     ));
+}
+
+// ════════════════════════════════════════════════════════════
+//  Discord alert for exceptional sports bets (A+ grade only)
+// ════════════════════════════════════════════════════════════
+
+function _sp_discord_exceptional($rated_bets) {
+    global $SPORT_SHORT;
+
+    // Filter: A+ grade (score >= 90) AND EV >= 7%
+    $exceptional = array();
+    foreach ($rated_bets as $b) {
+        $score = isset($b['rating_score']) ? (int)$b['rating_score'] : 0;
+        $ev = isset($b['ev_pct']) ? (float)$b['ev_pct'] : 0;
+        if ($score >= 90 && $ev >= 7.0) {
+            $exceptional[] = $b;
+        }
+    }
+    if (count($exceptional) === 0) return;
+
+    // Read webhook URL from .env
+    $env_file = dirname(__FILE__) . '/../../favcreators/public/api/.env';
+    $webhook_url = '';
+    $notif_webhook = '';
+    if (file_exists($env_file)) {
+        $lines = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            if (strpos($line, 'DISCORD_NOTIFICATIONS_WEBHOOK=') === 0) {
+                $notif_webhook = trim(substr($line, 30));
+            }
+            if (strpos($line, 'DISCORD_WEBHOOK_URL=') === 0) {
+                $webhook_url = trim(substr($line, 20));
+            }
+        }
+    }
+    $target = $notif_webhook ? $notif_webhook : $webhook_url;
+    if (!$target) return;
+
+    $sport_emojis = array(
+        'NHL' => "\xF0\x9F\x8F\x92", 'NBA' => "\xF0\x9F\x8F\x80",
+        'NFL' => "\xF0\x9F\x8F\x88", 'MLB' => "\xE2\x9A\xBE",
+        'CFL' => "\xF0\x9F\x8F\x88", 'MLS' => "\xE2\x9A\xBD",
+        'NCAAF' => "\xF0\x9F\x8F\x88", 'NCAAB' => "\xF0\x9F\x8F\x80"
+    );
+
+    $lines = array();
+    foreach (array_slice($exceptional, 0, 3) as $b) {
+        $sport_key = isset($SPORT_SHORT[$b['sport']]) ? $SPORT_SHORT[$b['sport']] : $b['sport'];
+        $sport_emoji = isset($sport_emojis[$sport_key]) ? $sport_emojis[$sport_key] : "\xF0\x9F\x8F\x86";
+        $ev = number_format((float)$b['ev_pct'], 1);
+        $odds = (float)$b['best_odds'];
+        $american = ($odds >= 2.0) ? '+' . round(($odds - 1) * 100) : round(-100 / ($odds - 1));
+        $kelly = isset($b['kelly_bet']) ? '$' . number_format((float)$b['kelly_bet'], 0) : '';
+        $win_prob = isset($b['true_prob']) ? round((float)$b['true_prob'] * 100, 1) . '%' : '';
+        $grade = isset($b['rating_grade']) ? $b['rating_grade'] : 'A+';
+
+        // Format game time
+        $game_time = '';
+        if (isset($b['commence_time'])) {
+            $ts = strtotime($b['commence_time']);
+            if ($ts) $game_time = date('M j g:ia', $ts - 5*3600) . ' EST';
+        }
+
+        $lines[] = $sport_emoji . ' **' . $b['away_team'] . ' @ ' . $b['home_team'] . '** (' . $sport_key . ')'
+            . "\n" . '   ' . "\xF0\x9F\x8E\xAF" . ' **Pick: ' . $b['outcome_name'] . '** (' . $b['market'] . ')'
+            . "\n" . '   ' . "\xF0\x9F\x92\xB0" . ' EV: **+' . $ev . '%** | Odds: **' . $american . '** (' . number_format($odds, 2) . ')'
+            . "\n" . '   ' . "\xF0\x9F\x93\x8A" . ' Grade: **' . $grade . '** | Win Prob: ' . $win_prob . ($kelly ? ' | Kelly: ' . $kelly : '')
+            . "\n" . '   ' . "\xF0\x9F\x93\x96" . ' Book: ' . $b['best_book'] . ($game_time ? ' | ' . $game_time : '');
+    }
+
+    $embed = array(
+        'title' => "\xF0\x9F\x8F\x86" . ' EXCEPTIONAL VALUE BET' . (count($exceptional) > 1 ? 'S' : '') . ' FOUND',
+        'description' => '**' . count($exceptional) . ' A+ rated bet' . (count($exceptional) > 1 ? 's' : '') . '** with EV 7%+ detected!'
+            . "\n\n" . implode("\n\n", $lines),
+        'color' => 16766720, // Gold
+        'footer' => array('text' => 'Sports Bet Finder | ' . date('H:i:s') . ' UTC'),
+        'url' => 'https://findtorontoevents.ca/live-monitor/sports-bets.html'
+    );
+
+    $payload = json_encode(array(
+        'content' => "\xF0\x9F\x9A\xA8" . ' **EXCEPTIONAL SPORTS BET** ' . "\xE2\x80\x94" . ' A+ grade, EV 7%+ !',
+        'embeds' => array($embed)
+    ));
+
+    // Send via cURL
+    if (function_exists('curl_init')) {
+        $ch = curl_init($target);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_exec($ch);
+        curl_close($ch);
+    }
 }
 
 // ════════════════════════════════════════════════════════════

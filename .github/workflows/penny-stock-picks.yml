@@ -1,0 +1,108 @@
+name: Penny Stock Daily Picks
+
+on:
+  schedule:
+    # Run weekdays at 7:00 AM EST (12:00 UTC) - after market data settles
+    - cron: '0 12 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  penny-picks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install yfinance requests numpy pandas scipy
+
+      - name: Run penny stock picks engine
+        env:
+          PENNY_API_BASE: https://findtorontoevents.ca/findstocks/portfolio2/api
+          PENNY_ADMIN_KEY: livetrader2026
+        run: |
+          cd scripts
+          python penny_stock_picks.py
+
+      - name: Commit local report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -f findstocks/portfolio2/data/penny_picks_latest.json ]; then
+            git add findstocks/portfolio2/data/penny_picks_latest.json
+            git diff --cached --quiet || git commit -m "Update penny stock picks - $(date -u '+%Y-%m-%d %H:%M') UTC"
+            git push || echo "Push failed, continuing..."
+          fi
+
+  # Track existing picks with current prices (runs after picks)
+  track-picks:
+    runs-on: ubuntu-latest
+    needs: penny-picks
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install yfinance requests
+
+      - name: Track active picks
+        env:
+          PENNY_API_BASE: https://findtorontoevents.ca/findstocks/portfolio2/api
+          PENNY_ADMIN_KEY: livetrader2026
+        run: |
+          python -c "
+          import requests, yfinance as yf, json, time
+
+          API_BASE = 'https://findtorontoevents.ca/findstocks/portfolio2/api'
+          HEADERS = {'User-Agent': 'PennyStockIntelligence/1.0'}
+
+          # Get active picks
+          r = requests.get(f'{API_BASE}/penny_stock_picks.php?action=picks&limit=50', headers=HEADERS, timeout=30)
+          data = r.json()
+          if not data.get('ok') or not data.get('picks'):
+              print('No active picks to track')
+              exit(0)
+
+          updates = []
+          for p in data['picks']:
+              if p.get('status') != 'active':
+                  continue
+              sym = p['symbol']
+              try:
+                  tk = yf.Ticker(sym)
+                  info = tk.info or {}
+                  price = info.get('currentPrice', info.get('regularMarketPrice', 0))
+                  if price and price > 0:
+                      updates.append({'symbol': sym, 'current_price': price})
+                      print(f'{sym}: \${price}')
+                  time.sleep(0.5)
+              except Exception as e:
+                  print(f'{sym}: ERROR - {e}')
+
+          if updates:
+              r = requests.post(
+                  f'{API_BASE}/penny_stock_picks.php?action=track&key=livetrader2026',
+                  json={'updates': updates},
+                  headers=HEADERS,
+                  timeout=30
+              )
+              result = r.json()
+              print(f'Tracked {result.get(\"updated\", 0)} picks')
+          else:
+              print('No price updates available')
+          "

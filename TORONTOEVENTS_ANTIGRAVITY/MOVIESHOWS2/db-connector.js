@@ -8,7 +8,7 @@ const MovieShowsDB = {
     // API base URL - update this when deployed
     API_BASE: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         ? '/api'  // Local development
-        : 'https://findtorontoevents.ca/movieshows2/api', // Production (movieshows3)
+        : 'https://findtorontoevents.ca/MOVIESHOWS2/api', // Production
     
     // User ID (stored in localStorage for persistence)
     userId: null,

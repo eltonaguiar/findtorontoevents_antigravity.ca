@@ -675,6 +675,17 @@ function App() {
   const [bellSoundPref, _setBellSoundPref] = useState<string>(getBellSoundPref);
   const [normalSoundPref, _setNormalSoundPref] = useState<string>(getNormalSoundPref);
 
+  // Sync notification sound state when changed externally (e.g., from AI assistant mute button)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'fc_notif_sound_enabled') {
+        _setSoundEnabled(e.newValue !== 'false');
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   // Wrapped setters that also persist to localStorage
   const handleSoundEnabledToggle = useCallback((v: boolean) => { _setSoundEnabled(v); setSoundEnabled(v); }, []);
   const handleVolumeChange = useCallback((v: number) => { _setNotifVolume(v); setVolumeStorage(v); }, []);

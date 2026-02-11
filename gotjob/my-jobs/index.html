@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Jobs - BESTIEJOB</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap"
+        rel="stylesheet"></head>
+
+<body>
+    <main class="container">
+        <header class="page-header text-center">
+            <h1 class="text-gradient">My Jobs Dashboard</h1>
+            <p class="subhead">Track your saved jobs and manage your job search</p>
+        </header>
+
+        <section class="glass-card">
+            <h2>Saved Jobs</h2>
+            <p class="mb-lg">Save jobs from the <a href="/gotjob/">Find Jobs</a> page to track them here.</p>
+
+            <div id="savedJobs" class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <h3>No saved jobs yet</h3>
+                <p>Start by browsing available positions</p>
+                <a href="/findjobs/" class="btn btn-primary mt-md">Find Jobs</a>
+            </div>
+        </section>
+    </main>    <script>
+        initializeLayout('myjobs');
+
+        // Load saved jobs from localStorage
+        const savedJobs = JSON.parse(localStorage.getItem('savedJobs') || '[]');
+        if (savedJobs.length > 0) {
+            const container = document.getElementById('savedJobs');
+            container.className = 'grid-2';
+            container.innerHTML = savedJobs.map(job => `
+        <div class="glass-card">
+          <h3>${job.title}</h3>
+          <p><strong>${job.company}</strong></p>
+          <p>${job.location || 'Toronto, ON'}</p>
+          ${job.salary ? `<p class="text-gradient"><strong>$${job.salary.min?.toLocaleString()} - $${job.salary.max?.toLocaleString()}</strong></p>` : ''}
+          <a href="${job.url}" target="_blank" class="btn btn-primary mt-sm">View Job</a>
+        </div>
+      `).join('');
+        }
+    </script>
+</body>
+
+</html>
