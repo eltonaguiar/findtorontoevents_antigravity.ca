@@ -166,24 +166,24 @@
         <div id="winners-status"></div>
     </div>
 
-    <!-- Step 5: Cron Jobs -->
+    <!-- Step 5: GitHub Actions (Recommended) -->
     <div class="step">
         <div class="step-header">
             <span class="step-number">5</span>
-            <span>Set Up Automation (Cron Jobs)</span>
+            <span>Enable GitHub Actions (Recommended - No Cron Jobs!)</span>
         </div>
         <p style="color: #a0a0b0; margin-bottom: 1rem;">
-            Add these to your crontab for automated tracking:
+            GitHub Actions collects data automatically - no server cron jobs needed!
         </p>
         <div class="cron-list">
-            <code># Collect new picks every 15 minutes</code>
-            <code>*/15 * * * * curl -s "<?php echo 'https://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . '/kimi_goldmine_collector.php?action=collect&source=all&key=goldmine2026'; ?>" > /dev/null</code>
+            <p style="color: #00c853; margin-bottom: 0.5rem;">✅ Data collection runs every 15 minutes (FREE)</p>
+            <p style="color: #a0a0b0; font-size: 0.875rem;">
+                The GitHub Actions workflow is already configured in the repository.<br>
+                It will automatically collect picks and save them as JSON files.<br>
+                The client dashboard fetches directly from GitHub - no server load!
+            </p>
             <br>
-            <code># Daily performance calculation at 6 AM</code>
-            <code>0 6 * * * curl -s "<?php echo 'https://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . '/kimi_goldmine_collector.php?action=calculate_performance&key=goldmine2026'; ?>" > /dev/null</code>
-            <br>
-            <code># Price updates every 30 min during market hours (Mon-Fri 9am-4pm)</code>
-            <code>*/30 9-16 * * 1-5 curl -s "<?php echo 'https://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . '/kimi_goldmine_collector.php?action=update_prices&key=goldmine2026'; ?>" > /dev/null</code>
+            <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions" target="_blank" class="btn" style="background: #22c55e;">View GitHub Actions</a>
         </div>
     </div>
 

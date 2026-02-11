@@ -14,10 +14,21 @@
  *   ?action=pick_detail&uuid=X - Single pick details
  */
 
-require_once dirname(__FILE__) . '/../../../findstocks/portfolio2/api/db_connect.php';
-
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
+
+// Error handler to always return JSON
+set_error_handler(function($errno, $errstr) {
+    echo json_encode(['ok' => false, 'error' => $errstr]);
+    exit;
+});
+
+try {
+    require_once dirname(__FILE__) . '/../../../findstocks/portfolio2/api/db_connect.php';
+} catch (Exception $e) {
+    echo json_encode(['ok' => false, 'error' => 'Database connection failed: ' . $e->getMessage()]);
+    exit;
+}
 
 $action = isset($_GET['action']) ? trim($_GET['action']) : 'dashboard';
 

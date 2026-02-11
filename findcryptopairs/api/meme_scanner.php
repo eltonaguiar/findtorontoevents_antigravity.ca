@@ -52,12 +52,18 @@ $CG_TIER1_IDS = array(
     'NEIRO_USDT' => 'neiro-3'
 );
 
-// Meme keyword fragments for dynamic discovery
+// Meme keyword fragments for dynamic discovery (Kimi: expanded from 27→55+)
 $MEME_KEYWORDS = array(
+    // Original 27
     'DOGE', 'SHIB', 'INU', 'PEPE', 'FLOKI', 'BONK', 'WIF', 'MEME',
     'BABY', 'MOON', 'ELON', 'CAT', 'DOG', 'NEIRO', 'TURBO', 'BRETT',
     'MOG', 'POPCAT', 'MYRO', 'SLERF', 'BOME', 'WOJAK', 'LADYS',
-    'SATS', 'ORDI', 'COQ', 'TOSHI'
+    'SATS', 'ORDI', 'COQ', 'TOSHI',
+    // 2025-2026 meme cycle additions
+    'PNUT', 'GOAT', 'ACT', 'CHILLGUY', 'SPX', 'GIGA', 'PONKE', 'NEIROCTO',
+    'PORK', 'BODEN', 'TREMP', 'TRUMP', 'FWOG', 'MICHI', 'WENMOON',
+    'NEKO', 'HAMSTER', 'CATE', 'DEGEN', 'CHAD', 'BASED', 'RIZZ',
+    'SNAIL', 'TOAD', 'APE', 'PIG', 'BEAR', 'BULL', 'FROG'
 );
 
 _mc_ensure_schema($conn);
@@ -254,6 +260,9 @@ function _mc_action_scan($conn) {
         $tier2_found++;
     }
 
+    // ── PHASE 3.5: Detect BTC regime for adaptive scoring (Kimi P0) ──
+    $btc_regime = _mc_detect_btc_regime();
+
     // ── PHASE 4: Deep analysis with candles ──
     $scored = array();
     foreach ($candidates as $c) {
@@ -284,6 +293,29 @@ function _mc_action_scan($conn) {
         if (count($c5m) < 8) $c5m = $c15m;
 
         $score_details = _mc_score_pair($c, $c15m, $c5m, $has_volume_data);
+
+        // Kimi: Apply BTC regime adjustment to score
+        $raw_score = $score_details['total'];
+        $regime_adj = _mc_regime_score_adjust($raw_score, $score_details['factors'], $btc_regime);
+        $score_details['total'] = $regime_adj['adjusted_score'];
+        $score_details['factors']['btc_regime'] = array(
+            'regime' => $btc_regime['regime'],
+            'btc_trend_pct' => $btc_regime['trend_pct'],
+            'adjustment' => $regime_adj['adjustment'],
+            'raw_score' => $raw_score
+        );
+        // Re-evaluate verdict with adjusted score
+        $adj = $score_details['total'];
+        if ($adj >= 85) {
+            $score_details['verdict'] = 'STRONG_BUY';
+        } elseif ($adj >= 75) {
+            $score_details['verdict'] = 'BUY';
+        } elseif ($adj >= 70) {
+            $score_details['verdict'] = 'LEAN_BUY';
+        } else {
+            $score_details['verdict'] = 'SKIP';
+        }
+
         $c['score']      = $score_details['total'];
         $c['factors']    = $score_details['factors'];
         $c['verdict']    = $score_details['verdict'];
@@ -673,6 +705,81 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
         'target_pct' => $target_pct,
         'risk_pct'   => $risk_pct
     );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  BTC REGIME DETECTION + ADAPTIVE SCORING (Kimi P0)
+// ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * Detect BTC market regime using 1h candles: bull, bear, or chop.
+ * Uses SMA20 vs SMA50 crossover on BTC_USDT.
+ * Returns array('regime' => 'bull|bear|chop', 'trend_pct' => float)
+ */
+function _mc_detect_btc_regime() {
+    $default = array('regime' => 'chop', 'trend_pct' => 0.0);
+
+    // Try Crypto.com 1h candles for BTC
+    $raw = _mc_api('public/get-candlestick?instrument_name=BTC_USDT&timeframe=H1');
+    $candles = isset($raw['result']['data']) ? $raw['result']['data'] : array();
+
+    if (count($candles) < 50) return $default;
+
+    $closes = array();
+    foreach ($candles as $c) {
+        $closes[] = floatval(isset($c['c']) ? $c['c'] : 0);
+    }
+    $n = count($closes);
+
+    // Calculate SMA20 and SMA50
+    $sma20 = 0;
+    $sma50 = 0;
+    for ($i = $n - 20; $i < $n; $i++) $sma20 += $closes[$i];
+    $sma20 /= 20;
+    for ($i = $n - 50; $i < $n; $i++) $sma50 += $closes[$i];
+    $sma50 /= 50;
+
+    $current = $closes[$n - 1];
+    $trend_pct = ($sma50 > 0) ? (($sma20 - $sma50) / $sma50) * 100 : 0;
+
+    if ($current > $sma20 && $sma20 > $sma50 && $trend_pct > 0.5) {
+        return array('regime' => 'bull', 'trend_pct' => round($trend_pct, 2));
+    } elseif ($current < $sma20 && $sma20 < $sma50 && $trend_pct < -0.5) {
+        return array('regime' => 'bear', 'trend_pct' => round($trend_pct, 2));
+    }
+    return array('regime' => 'chop', 'trend_pct' => round($trend_pct, 2));
+}
+
+/**
+ * Adjust score based on BTC regime:
+ * - Bull: +5 bonus to momentum-driven coins, -3 to volume-only
+ * - Bear: +5 bonus to volume/breakout-driven coins, -5 to momentum
+ * - Chop: no adjustment (0)
+ * Returns array('adjusted_score' => int, 'adjustment' => int)
+ */
+function _mc_regime_score_adjust($raw_score, $factors, $btc_regime) {
+    $adjustment = 0;
+    $regime = $btc_regime['regime'];
+
+    $mom = isset($factors['parabolic_momentum']['score']) ? $factors['parabolic_momentum']['score'] : 0;
+    $vol = isset($factors['explosive_volume']['score']) ? $factors['explosive_volume']['score'] : 0;
+    $brk = isset($factors['breakout_4h']['score']) ? $factors['breakout_4h']['score'] : 0;
+
+    if ($regime === 'bull') {
+        // Bull market: boost momentum, slightly penalize low-volume plays
+        if ($mom >= 10) $adjustment += 5;
+        elseif ($mom >= 5) $adjustment += 3;
+        if ($vol < 4 && $mom < 5) $adjustment -= 3;
+    } elseif ($regime === 'bear') {
+        // Bear market: boost volume/breakout (contrarian strength), penalize momentum
+        if ($vol >= 12 || $brk >= 7) $adjustment += 5;
+        if ($mom >= 10) $adjustment -= 5;
+        elseif ($mom >= 5) $adjustment -= 3;
+    }
+    // Chop: no adjustment
+
+    $adjusted = max(0, min(100, $raw_score + $adjustment));
+    return array('adjusted_score' => $adjusted, 'adjustment' => $adjustment);
 }
 
 // ═══════════════════════════════════════════════════════════════════════

@@ -49,8 +49,9 @@ function _mini_backtest($conn, $algo_filter, $tp, $sl, $mhd, $commission, $fm) {
 
         $safe_t = $conn->real_escape_string($ticker);
         $safe_d = $conn->real_escape_string($pick_date);
+        // Kimi fix: use > instead of >= to avoid lookahead bias (don't use pick-day data the algo already saw)
         $pres = $conn->query("SELECT trade_date, high_price, low_price, close_price FROM daily_prices
-                              WHERE ticker='$safe_t' AND trade_date >= '$safe_d' ORDER BY trade_date ASC LIMIT " . ($mhd + 5));
+                              WHERE ticker='$safe_t' AND trade_date > '$safe_d' ORDER BY trade_date ASC LIMIT " . ($mhd + 5));
 
         $day_count = 0; $sold = false; $exit_p = $entry; $exit_d = $pick_date; $exit_r = 'end_of_data';
         $day_close = 0; $max_high = 0; $min_low = 999999;

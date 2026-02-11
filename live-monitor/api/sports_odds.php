@@ -49,6 +49,29 @@ $conn->query("CREATE TABLE IF NOT EXISTS lm_sports_credit_usage (
     KEY idx_time (request_time)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
 
+// Kimi: CLV (Closing Line Value) tracking table — snapshots opening odds for comparison
+$conn->query("CREATE TABLE IF NOT EXISTS lm_sports_clv (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    event_id VARCHAR(100) NOT NULL,
+    sport VARCHAR(50) NOT NULL DEFAULT '',
+    home_team VARCHAR(100) NOT NULL DEFAULT '',
+    away_team VARCHAR(100) NOT NULL DEFAULT '',
+    commence_time DATETIME NOT NULL,
+    bookmaker_key VARCHAR(50) NOT NULL DEFAULT '',
+    market VARCHAR(20) NOT NULL DEFAULT 'h2h',
+    outcome_name VARCHAR(100) NOT NULL DEFAULT '',
+    opening_price DECIMAL(10,4) NOT NULL DEFAULT 0,
+    closing_price DECIMAL(10,4) DEFAULT NULL,
+    opening_implied_prob DECIMAL(8,6) DEFAULT NULL,
+    closing_implied_prob DECIMAL(8,6) DEFAULT NULL,
+    clv_pct DECIMAL(8,4) DEFAULT NULL,
+    first_seen DATETIME NOT NULL,
+    last_updated DATETIME NOT NULL,
+    UNIQUE KEY idx_clv_unique (event_id, bookmaker_key, market, outcome_name),
+    KEY idx_clv_sport (sport),
+    KEY idx_clv_commence (commence_time)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
 // ────────────────────────────────────────────────────────────
 //  Constants
 // ────────────────────────────────────────────────────────────
@@ -204,6 +227,8 @@ if ($action === 'sports') {
     _so_action_get($conn);
 } elseif ($action === 'credit_usage') {
     _so_action_credit_usage($conn);
+} elseif ($action === 'clv') {
+    _so_action_clv($conn);
 } else {
     header('HTTP/1.0 400 Bad Request');
     echo json_encode(array('ok' => false, 'error' => 'Unknown action: ' . $action));
@@ -445,6 +470,30 @@ function _so_action_fetch($conn) {
                             . ")";
                         $conn->query($sql);
                         $odds_count++;
+
+                        // Kimi: CLV tracking — snapshot opening odds, update closing odds
+                        $clv_implied = ($oc_price > 1) ? round(1.0 / $oc_price, 6) : 0;
+                        $clv_sql = "INSERT INTO lm_sports_clv "
+                            . "(event_id, sport, home_team, away_team, commence_time, bookmaker_key, market, outcome_name, "
+                            . "opening_price, opening_implied_prob, closing_price, closing_implied_prob, first_seen, last_updated) "
+                            . "VALUES ("
+                            . "'" . $conn->real_escape_string($event_id) . "', "
+                            . "'" . $conn->real_escape_string($sport_key) . "', "
+                            . "'" . $conn->real_escape_string($home) . "', "
+                            . "'" . $conn->real_escape_string($away) . "', "
+                            . "'" . $conn->real_escape_string($commence) . "', "
+                            . "'" . $conn->real_escape_string($bm_key) . "', "
+                            . "'" . $conn->real_escape_string($mkt_key) . "', "
+                            . "'" . $conn->real_escape_string($oc_name) . "', "
+                            . (float)$oc_price . ", " . $clv_implied . ", "
+                            . (float)$oc_price . ", " . $clv_implied . ", "
+                            . "NOW(), NOW()"
+                            . ") ON DUPLICATE KEY UPDATE "
+                            . "closing_price = " . (float)$oc_price . ", "
+                            . "closing_implied_prob = " . $clv_implied . ", "
+                            . "clv_pct = ROUND((opening_implied_prob - " . $clv_implied . ") / opening_implied_prob * 100, 4), "
+                            . "last_updated = NOW()";
+                        $conn->query($clv_sql);
                     }
                 }
             }
@@ -621,6 +670,89 @@ function _so_monthly_credits($conn) {
         return (int)$row['total'];
     }
     return 0;
+}
+
+// ════════════════════════════════════════════════════════════
+//  ACTION: clv — Closing Line Value report (Kimi)
+// ════════════════════════════════════════════════════════════
+
+function _so_action_clv($conn) {
+    global $TARGET_SPORTS;
+
+    $sport = isset($_GET['sport']) ? $conn->real_escape_string(trim($_GET['sport'])) : '';
+    $hours = isset($_GET['hours']) ? (int)$_GET['hours'] : 72;
+    if ($hours < 1) $hours = 72;
+    if ($hours > 720) $hours = 720;
+
+    $where = "commence_time > DATE_SUB(NOW(), INTERVAL $hours HOUR)";
+    if ($sport !== '') {
+        $where .= " AND sport = '$sport'";
+    }
+
+    // CLV summary: avg CLV by bookmaker
+    $bm_sql = "SELECT bookmaker_key,
+               COUNT(*) as total_lines,
+               ROUND(AVG(clv_pct), 4) as avg_clv,
+               SUM(CASE WHEN clv_pct > 0 THEN 1 ELSE 0 END) as positive_clv,
+               SUM(CASE WHEN clv_pct < 0 THEN 1 ELSE 0 END) as negative_clv
+               FROM lm_sports_clv
+               WHERE $where AND clv_pct IS NOT NULL
+               GROUP BY bookmaker_key
+               ORDER BY avg_clv DESC";
+    $bm_res = $conn->query($bm_sql);
+    $by_bookmaker = array();
+    if ($bm_res) {
+        while ($row = $bm_res->fetch_assoc()) {
+            $row['avg_clv'] = (float)$row['avg_clv'];
+            $row['total_lines'] = (int)$row['total_lines'];
+            $row['positive_clv'] = (int)$row['positive_clv'];
+            $row['negative_clv'] = (int)$row['negative_clv'];
+            $by_bookmaker[] = $row;
+        }
+    }
+
+    // Top CLV movers (biggest line movements)
+    $top_sql = "SELECT event_id, sport, home_team, away_team, bookmaker_key, market, outcome_name,
+               opening_price, closing_price, opening_implied_prob, closing_implied_prob, clv_pct, commence_time
+               FROM lm_sports_clv
+               WHERE $where AND clv_pct IS NOT NULL
+               ORDER BY ABS(clv_pct) DESC
+               LIMIT 20";
+    $top_res = $conn->query($top_sql);
+    $top_movers = array();
+    if ($top_res) {
+        while ($row = $top_res->fetch_assoc()) {
+            $row['opening_price'] = (float)$row['opening_price'];
+            $row['closing_price'] = (float)$row['closing_price'];
+            $row['clv_pct'] = (float)$row['clv_pct'];
+            $top_movers[] = $row;
+        }
+    }
+
+    // Overall stats
+    $stats_sql = "SELECT COUNT(*) as total_tracked,
+                 SUM(CASE WHEN clv_pct IS NOT NULL THEN 1 ELSE 0 END) as with_movement,
+                 ROUND(AVG(clv_pct), 4) as overall_avg_clv,
+                 ROUND(MAX(clv_pct), 4) as max_clv,
+                 ROUND(MIN(clv_pct), 4) as min_clv
+                 FROM lm_sports_clv WHERE $where";
+    $stats_res = $conn->query($stats_sql);
+    $stats = array();
+    if ($stats_res) {
+        $stats = $stats_res->fetch_assoc();
+        $stats['total_tracked'] = (int)$stats['total_tracked'];
+        $stats['with_movement'] = (int)$stats['with_movement'];
+    }
+
+    echo json_encode(array(
+        'ok' => true,
+        'action' => 'clv',
+        'hours' => $hours,
+        'sport_filter' => $sport,
+        'stats' => $stats,
+        'by_bookmaker' => $by_bookmaker,
+        'top_movers' => $top_movers
+    ));
 }
 
 ?>

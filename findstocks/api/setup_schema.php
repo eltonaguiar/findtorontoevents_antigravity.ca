@@ -333,6 +333,18 @@ foreach ($portfolios as $p) {
 }
 $results['actions'][] = 'Seeded ' . $port_count . ' portfolio templates';
 
+// ─── Kimi: Add composite indexes for common query patterns ───
+$composite_indexes = array(
+    "CREATE INDEX idx_algo_date ON stock_picks (algorithm_name, pick_date)",
+    "CREATE INDEX idx_ticker_pickdate ON stock_picks (ticker, pick_date)",
+    "CREATE INDEX idx_ticker_tradedate ON daily_prices (ticker, trade_date)"
+);
+foreach ($composite_indexes as $idx_sql) {
+    // Ignore errors (index may already exist)
+    $conn->query($idx_sql);
+}
+$results['actions'][] = 'Composite indexes ensured';
+
 // Log this setup
 $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'unknown';
 $ip = $conn->real_escape_string($ip);

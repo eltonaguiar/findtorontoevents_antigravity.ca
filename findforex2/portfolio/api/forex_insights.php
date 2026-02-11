@@ -237,6 +237,69 @@ function fx_calc_bollinger($closes, $period, $num_std) {
 }
 
 /**
+ * ATR (Average True Range) for volatility-based position sizing (Kimi P1).
+ * Returns ATR value or null if not enough data.
+ */
+function fx_calc_atr($rows, $period) {
+    $n = count($rows);
+    if ($n < $period + 1) return null;
+
+    $trs = array();
+    for ($i = 1; $i < $n; $i++) {
+        $h = (float)$rows[$i]['high_price'];
+        $l = (float)$rows[$i]['low_price'];
+        $pc = (float)$rows[$i - 1]['close_price'];
+        $tr = max($h - $l, abs($h - $pc), abs($l - $pc));
+        $trs[] = $tr;
+    }
+
+    // Wilder smoothing
+    $atr = 0;
+    for ($i = 0; $i < $period; $i++) {
+        $atr += $trs[$i];
+    }
+    $atr = $atr / $period;
+    for ($i = $period; $i < count($trs); $i++) {
+        $atr = ($atr * ($period - 1) + $trs[$i]) / $period;
+    }
+    return $atr;
+}
+
+/**
+ * ATR-based position sizing (Kimi P1).
+ * Risk 2% of capital per trade, size inversely to volatility.
+ * Returns array('position_pct' => float, 'atr' => float, 'atr_pct' => float)
+ */
+function fx_atr_position_size($rows, $current_price, $capital) {
+    if (!isset($capital)) $capital = 10000;
+    $atr = fx_calc_atr($rows, 14);
+    if ($atr === null || $current_price <= 0) {
+        return array('position_pct' => 10.0, 'atr' => null, 'atr_pct' => null, 'method' => 'default');
+    }
+
+    $atr_pct = ($atr / $current_price) * 100;
+    $risk_per_trade = 0.02; // 2% risk
+
+    // Position size = (risk capital) / (ATR * 1.5 as stop distance)
+    $stop_distance = $atr * 1.5;
+    $risk_amount = $capital * $risk_per_trade;
+    $units = ($stop_distance > 0) ? $risk_amount / $stop_distance : 0;
+    $position_value = $units * $current_price;
+    $position_pct = ($capital > 0) ? ($position_value / $capital) * 100 : 10.0;
+
+    // Clamp between 2% and 25%
+    $position_pct = max(2.0, min(25.0, $position_pct));
+
+    return array(
+        'position_pct' => round($position_pct, 2),
+        'atr' => round($atr, 6),
+        'atr_pct' => round($atr_pct, 4),
+        'stop_distance_pct' => round(($stop_distance / $current_price) * 100, 4),
+        'method' => 'atr_based'
+    );
+}
+
+/**
  * Determine overall signal from indicators.
  * Returns one of: STRONG_BUY, BUY, NEUTRAL, SELL, STRONG_SELL
  */
@@ -585,6 +648,10 @@ if ($action === 'recommendations') {
         $confidence = fx_calc_confidence($sig, $rsi_val, $macd_data, $sma20_val, $sma50_val, $cur);
         $reason = fx_build_reason($sig, $rsi_val, $macd_data, $sma20_val, $sma50_val, $cur);
 
+        // Kimi: ATR-based position sizing
+        $prices_raw = fx_load_prices($conn, $sym);
+        $atr_sizing = fx_atr_position_size($prices_raw, $cur, 10000);
+
         $recommendations[] = array(
             'symbol'        => $sym,
             'base_currency' => $pair['base_currency'],
@@ -596,6 +663,7 @@ if ($action === 'recommendations') {
             'confidence'    => $confidence,
             'reason'        => $reason,
             'rsi'           => ($rsi_val !== null) ? round($rsi_val, 2) : null,
+            'position_sizing' => $atr_sizing,
             'calculated_at' => gmdate('Y-m-d\TH:i:s\Z')
         );
     }

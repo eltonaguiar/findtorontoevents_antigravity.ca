@@ -66,36 +66,47 @@ foreach ($pairs as $pair) {
             continue;
         }
         
-        // Determine strategy: Trend Following if close > open, Mean Reversion if close < open
+        // Kimi fix: generate BOTH Trend Following and Mean Reversion signals with proper directions
+        // Trend Following: follow the day's direction (up = long, down = short)
+        // Mean Reversion: expect reversion (up = short expecting pullback, down = long expecting bounce)
+        $signals_to_seed = array();
         if ($close_price > $open_price) {
-            $strategy_name = 'Trend Following';
+            $signals_to_seed[] = array('strategy' => 'Trend Following', 'direction' => 'long');
+            $signals_to_seed[] = array('strategy' => 'Mean Reversion', 'direction' => 'short');
         } else {
-            $strategy_name = 'Mean Reversion';
+            $signals_to_seed[] = array('strategy' => 'Trend Following', 'direction' => 'short');
+            $signals_to_seed[] = array('strategy' => 'Mean Reversion', 'direction' => 'long');
         }
-        
-        // Generate signal hash
-        $signal_hash = sha1('fx_' . $pair . '_' . $signal_date . '_' . $strategy_name);
-        
-        // Check for duplicate
-        $hash_esc = $conn->real_escape_string($signal_hash);
-        $dup_check = $conn->query("SELECT id FROM fx_signals WHERE signal_hash = '$hash_esc'");
-        if ($dup_check && $dup_check->num_rows > 0) {
-            $skipped++;
-            continue;
-        }
-        
-        // Insert signal
-        $strategy_esc = $conn->real_escape_string($strategy_name);
+
         $date_esc = $conn->real_escape_string($signal_date);
         $datetime = date('Y-m-d H:i:s');
-        
-        $sql = "INSERT INTO fx_signals (pair, strategy_name, signal_date, signal_time, direction, entry_price, signal_hash)
-                VALUES ('$pair_esc', '$strategy_esc', '$date_esc', '$datetime', 'long', $open_price, '$hash_esc')";
-        
-        if ($conn->query($sql)) {
-            $seeded++;
-        } else {
-            $errors[] = "Failed to insert signal for $pair on $signal_date: " . $conn->error;
+
+        foreach ($signals_to_seed as $sig) {
+            $strategy_name = $sig['strategy'];
+            $direction = $sig['direction'];
+
+            // Generate signal hash
+            $signal_hash = sha1('fx_' . $pair . '_' . $signal_date . '_' . $strategy_name . '_' . $direction);
+
+            // Check for duplicate
+            $hash_esc = $conn->real_escape_string($signal_hash);
+            $dup_check = $conn->query("SELECT id FROM fx_signals WHERE signal_hash = '$hash_esc'");
+            if ($dup_check && $dup_check->num_rows > 0) {
+                $skipped++;
+                continue;
+            }
+
+            // Insert signal
+            $strategy_esc = $conn->real_escape_string($strategy_name);
+
+            $sql = "INSERT INTO fx_signals (pair, strategy_name, signal_date, signal_time, direction, entry_price, signal_hash)
+                    VALUES ('$pair_esc', '$strategy_esc', '$date_esc', '$datetime', '$direction', $open_price, '$hash_esc')";
+
+            if ($conn->query($sql)) {
+                $seeded++;
+            } else {
+                $errors[] = "Failed to insert signal for $pair on $signal_date ($direction): " . $conn->error;
+            }
         }
     }
 }

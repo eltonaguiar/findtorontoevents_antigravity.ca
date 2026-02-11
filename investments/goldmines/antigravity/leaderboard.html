@@ -278,10 +278,9 @@
                                 <th>Rank</th>
                                 <th>Algorithm</th>
                                 <th>System</th>
-                                <th>Sharpe Ratio</th>
                                 <th>Win Rate</th>
                                 <th>Avg P&L</th>
-                                <th>Total Trades</th>
+                                <th>Trades (W/L)</th>
                                 <th>Last Trade</th>
                             </tr>
                         </thead>
@@ -308,7 +307,6 @@
                                 <th>Rating</th>
                                 <th>Algorithm</th>
                                 <th>System</th>
-                                <th>Sharpe Ratio</th>
                                 <th>Win Rate</th>
                                 <th>Total P&L</th>
                                 <th>Trades</th>
@@ -335,8 +333,7 @@
                                 <th>Algorithms</th>
                                 <th>Total Trades</th>
                                 <th>Win Rate</th>
-                                <th>Sharpe Ratio</th>
-                                <th>Total P&L</th>
+                                <th>Avg P&L</th>
                                 <th>Last Trade</th>
                             </tr>
                         </thead>
@@ -349,155 +346,134 @@
 
     <script>
         // Tab switching
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+                document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
                 tab.classList.add('active');
                 document.getElementById(tab.dataset.tab).classList.add('active');
             });
         });
 
+        var API_BASE = '/investments/goldmines/antigravity/api/unified_predictions.php';
+
+        function fmtNum(v, dec) { return parseFloat(v || 0).toFixed(dec !== undefined ? dec : 2); }
+        function fmtDate(d) { try { return new Date(d).toLocaleDateString(); } catch(e) { return d || '--'; } }
+
         // Load leaderboard
-        async function loadLeaderboard() {
-            try {
-                const response = await fetch('/investments/goldmines/antigravity/api/unified_predictions.php?action=leaderboard');
-                const data = await response.json();
-
-                if (!data.ok) throw new Error(data.error);
-
-                // Stats
-                const stats = calculateStats(data.leaderboard);
-                document.getElementById('leaderboard-stats').innerHTML = `
-                    <div class="stat-card">
-                        <div class="stat-label">Total Algorithms</div>
-                        <div class="stat-value">${data.count}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Avg Sharpe Ratio</div>
-                        <div class="stat-value">${stats.avgSharpe.toFixed(2)}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Avg Win Rate</div>
-                        <div class="stat-value">${stats.avgWinRate.toFixed(1)}%</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Total Trades</div>
-                        <div class="stat-value">${stats.totalTrades.toLocaleString()}</div>
-                    </div>
-                `;
-
-                // Table
-                const tbody = document.getElementById('leaderboard-body');
-                tbody.innerHTML = data.leaderboard.map((algo, index) => {
-                    const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : '';
-                    return `
-                        <tr>
-                            <td class="rank ${rankClass}">#${index + 1}</td>
-                            <td><strong>${algo.algorithm}</strong></td>
-                            <td><span class="system-tag">${algo.system}</span></td>
-                            <td class="metric positive">${parseFloat(algo.sharpe_ratio).toFixed(2)}</td>
-                            <td class="metric ${parseFloat(algo.win_rate_pct) >= 50 ? 'positive' : 'negative'}">
-                                ${parseFloat(algo.win_rate_pct).toFixed(1)}%
-                            </td>
-                            <td class="metric ${parseFloat(algo.avg_pnl_pct) >= 0 ? 'positive' : 'negative'}">
-                                ${parseFloat(algo.avg_pnl_pct) >= 0 ? '+' : ''}${parseFloat(algo.avg_pnl_pct).toFixed(2)}%
-                            </td>
-                            <td>${algo.total_trades}</td>
-                            <td style="color: var(--text-dim); font-size: 0.85rem;">
-                                ${new Date(algo.last_trade_date).toLocaleDateString()}
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-
-                document.getElementById('leaderboard-loading').style.display = 'none';
-                document.getElementById('leaderboard-content').style.display = 'block';
-            } catch (error) {
-                document.getElementById('leaderboard-loading').innerHTML = `
-                    <p style="color: var(--red);">Error: ${error.message}</p>
-                `;
-            }
+        function loadLeaderboard() {
+            fetch(API_BASE + '?action=leaderboard&min_trades=1')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (!data.ok) throw new Error(data.error || 'API error');
+                    var list = data.leaderboard || [];
+                    if (list.length === 0) {
+                        document.getElementById('leaderboard-loading').innerHTML = '<p style="color:var(--text-dim);">No algorithms with resolved trades yet. Data populates as predictions are resolved.</p>';
+                        return;
+                    }
+                    var totalTrades = 0, totalWR = 0;
+                    for (var i = 0; i < list.length; i++) {
+                        totalTrades += parseInt(list[i].total_trades || 0);
+                        totalWR += parseFloat(list[i].win_rate || list[i].win_rate_pct || 0);
+                    }
+                    var avgWR = list.length > 0 ? (totalWR / list.length) : 0;
+                    document.getElementById('leaderboard-stats').innerHTML =
+                        '<div class="stat-card"><div class="stat-label">Total Algorithms</div><div class="stat-value">' + data.count + '</div></div>' +
+                        '<div class="stat-card"><div class="stat-label">Avg Win Rate</div><div class="stat-value">' + avgWR.toFixed(1) + '%</div></div>' +
+                        '<div class="stat-card"><div class="stat-label">Total Trades</div><div class="stat-value">' + totalTrades.toLocaleString() + '</div></div>';
+                    var html = '';
+                    for (var j = 0; j < list.length; j++) {
+                        var a = list[j];
+                        var wr = parseFloat(a.win_rate || a.win_rate_pct || 0);
+                        var pnl = parseFloat(a.avg_pnl || a.avg_pnl_pct || 0);
+                        var rankCls = j === 0 ? 'rank-1' : j === 1 ? 'rank-2' : j === 2 ? 'rank-3' : '';
+                        html += '<tr>'
+                            + '<td class="rank ' + rankCls + '">#' + (j + 1) + '</td>'
+                            + '<td><strong>' + (a.algorithm || '--') + '</strong></td>'
+                            + '<td><span class="system-tag">' + (a.system || 'stocks') + '</span></td>'
+                            + '<td class="metric ' + (wr >= 50 ? 'positive' : 'negative') + '">' + wr.toFixed(1) + '%</td>'
+                            + '<td class="metric ' + (pnl >= 0 ? 'positive' : 'negative') + '">' + (pnl >= 0 ? '+' : '') + pnl.toFixed(2) + '%</td>'
+                            + '<td>' + (a.total_trades || 0) + ' (' + (a.wins || 0) + 'W/' + (a.losses || 0) + 'L)</td>'
+                            + '<td style="color:var(--text-dim);font-size:0.85rem;">' + fmtDate(a.last_trade_date) + '</td>'
+                            + '</tr>';
+                    }
+                    document.getElementById('leaderboard-body').innerHTML = html;
+                    document.getElementById('leaderboard-loading').style.display = 'none';
+                    document.getElementById('leaderboard-content').style.display = 'block';
+                })
+                .catch(function(err) {
+                    document.getElementById('leaderboard-loading').innerHTML = '<p style="color:var(--red);">Error: ' + err.message + '</p>';
+                });
         }
 
         // Load hidden winners
-        async function loadHiddenWinners() {
-            try {
-                const response = await fetch('/investments/goldmines/antigravity/api/unified_predictions.php?action=hidden_winners');
-                const data = await response.json();
-
-                if (!data.ok) throw new Error(data.error);
-
-                const tbody = document.getElementById('winners-body');
-                tbody.innerHTML = data.hidden_winners.map(algo => {
-                    const badgeClass = algo.rating === 'Elite' ? 'badge-elite' :
-                        algo.rating === 'Excellent' ? 'badge-excellent' : 'badge-good';
-                    return `
-                        <tr>
-                            <td><span class="badge ${badgeClass}">${algo.rating}</span></td>
-                            <td><strong>${algo.algorithm}</strong></td>
-                            <td><span class="system-tag">${algo.system}</span></td>
-                            <td class="metric positive">${parseFloat(algo.sharpe_ratio).toFixed(2)}</td>
-                            <td class="metric positive">${parseFloat(algo.win_rate_pct).toFixed(1)}%</td>
-                            <td class="metric ${parseFloat(algo.total_pnl_pct) >= 0 ? 'positive' : 'negative'}">
-                                ${parseFloat(algo.total_pnl_pct) >= 0 ? '+' : ''}${parseFloat(algo.total_pnl_pct).toFixed(2)}%
-                            </td>
-                            <td>${algo.total_trades}</td>
-                        </tr>
-                    `;
-                }).join('');
-
-                document.getElementById('winners-loading').style.display = 'none';
-                document.getElementById('winners-content').style.display = 'block';
-            } catch (error) {
-                document.getElementById('winners-loading').innerHTML = `
-                    <p style="color: var(--red);">Error: ${error.message}</p>
-                `;
-            }
+        function loadHiddenWinners() {
+            fetch(API_BASE + '?action=hidden_winners')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (!data.ok) throw new Error(data.error || 'API error');
+                    var list = data.hidden_winners || [];
+                    if (list.length === 0) {
+                        document.getElementById('winners-loading').innerHTML = '<p style="color:var(--text-dim);">No hidden winners found yet. Algorithms need 30+ trades with win rate >= 55% to qualify.</p>';
+                        return;
+                    }
+                    var html = '';
+                    for (var i = 0; i < list.length; i++) {
+                        var a = list[i];
+                        var wr = parseFloat(a.win_rate || a.win_rate_pct || 0);
+                        var badge = wr >= 65 ? 'badge-elite' : wr >= 55 ? 'badge-excellent' : 'badge-good';
+                        var label = wr >= 65 ? 'Elite' : wr >= 55 ? 'Excellent' : 'Good';
+                        html += '<tr>'
+                            + '<td><span class="badge ' + badge + '">' + (a.rating || label) + '</span></td>'
+                            + '<td><strong>' + (a.algorithm || '--') + '</strong></td>'
+                            + '<td><span class="system-tag">' + (a.system || 'stocks') + '</span></td>'
+                            + '<td class="metric positive">' + wr.toFixed(1) + '%</td>'
+                            + '<td class="metric ' + (parseFloat(a.total_pnl || a.total_pnl_pct || 0) >= 0 ? 'positive' : 'negative') + '">' + fmtNum(a.total_pnl || a.total_pnl_pct, 2) + '%</td>'
+                            + '<td>' + (a.total_trades || 0) + '</td>'
+                            + '</tr>';
+                    }
+                    document.getElementById('winners-body').innerHTML = html;
+                    document.getElementById('winners-loading').style.display = 'none';
+                    document.getElementById('winners-content').style.display = 'block';
+                })
+                .catch(function(err) {
+                    document.getElementById('winners-loading').innerHTML = '<p style="color:var(--red);">Error: ' + err.message + '</p>';
+                });
         }
 
         // Load systems
-        async function loadSystems() {
-            try {
-                const response = await fetch('/investments/goldmines/antigravity/api/unified_predictions.php?action=system_summary');
-                const data = await response.json();
-
-                if (!data.ok) throw new Error(data.error);
-
-                const tbody = document.getElementById('systems-body');
-                tbody.innerHTML = data.systems.map(sys => `
-                    <tr>
-                        <td><strong>${sys.system}</strong></td>
-                        <td>${sys.algorithms_count}</td>
-                        <td>${sys.total_trades}</td>
-                        <td class="metric ${parseFloat(sys.win_rate_pct) >= 50 ? 'positive' : 'negative'}">
-                            ${parseFloat(sys.win_rate_pct).toFixed(1)}%
-                        </td>
-                        <td class="metric positive">${parseFloat(sys.sharpe_ratio).toFixed(2)}</td>
-                        <td class="metric ${parseFloat(sys.total_pnl_pct) >= 0 ? 'positive' : 'negative'}">
-                            ${parseFloat(sys.total_pnl_pct) >= 0 ? '+' : ''}${parseFloat(sys.total_pnl_pct).toFixed(2)}%
-                        </td>
-                        <td style="color: var(--text-dim); font-size: 0.85rem;">
-                            ${new Date(sys.last_trade_date).toLocaleDateString()}
-                            <span style="opacity: 0.7;">(${sys.days_since_last_trade}d ago)</span>
-                        </td>
-                    </tr>
-                `).join('');
-
-                document.getElementById('systems-loading').style.display = 'none';
-                document.getElementById('systems-content').style.display = 'block';
-            } catch (error) {
-                document.getElementById('systems-loading').innerHTML = `
-                    <p style="color: var(--red);">Error: ${error.message}</p>
-                `;
-            }
-        }
-
-        function calculateStats(leaderboard) {
-            const avgSharpe = leaderboard.reduce((sum, a) => sum + parseFloat(a.sharpe_ratio), 0) / leaderboard.length;
-            const avgWinRate = leaderboard.reduce((sum, a) => sum + parseFloat(a.win_rate_pct), 0) / leaderboard.length;
-            const totalTrades = leaderboard.reduce((sum, a) => sum + parseInt(a.total_trades), 0);
-            return { avgSharpe, avgWinRate, totalTrades };
+        function loadSystems() {
+            fetch(API_BASE + '?action=system_summary')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (!data.ok) throw new Error(data.error || 'API error');
+                    var list = data.systems || [];
+                    if (list.length === 0) {
+                        document.getElementById('systems-loading').innerHTML = '<p style="color:var(--text-dim);">No system data yet. Predictions are resolved as market data comes in.</p>';
+                        return;
+                    }
+                    var html = '';
+                    for (var i = 0; i < list.length; i++) {
+                        var s = list[i];
+                        var wr = parseFloat(s.win_rate || s.win_rate_pct || 0);
+                        var pnl = parseFloat(s.avg_pnl || s.total_pnl_pct || 0);
+                        var daysAgo = s.last_trade_date ? Math.floor((Date.now() - new Date(s.last_trade_date).getTime()) / 86400000) : '--';
+                        html += '<tr>'
+                            + '<td><strong>' + (s.system || '--') + '</strong></td>'
+                            + '<td>' + (s.algorithms_count || '--') + '</td>'
+                            + '<td>' + (s.total_trades || 0) + '</td>'
+                            + '<td class="metric ' + (wr >= 50 ? 'positive' : 'negative') + '">' + wr.toFixed(1) + '%</td>'
+                            + '<td class="metric ' + (pnl >= 0 ? 'positive' : 'negative') + '">' + (pnl >= 0 ? '+' : '') + pnl.toFixed(2) + '%</td>'
+                            + '<td style="color:var(--text-dim);font-size:0.85rem;">' + fmtDate(s.last_trade_date) + ' <span style="opacity:0.7;">(' + daysAgo + 'd ago)</span></td>'
+                            + '</tr>';
+                    }
+                    document.getElementById('systems-body').innerHTML = html;
+                    document.getElementById('systems-loading').style.display = 'none';
+                    document.getElementById('systems-content').style.display = 'block';
+                })
+                .catch(function(err) {
+                    document.getElementById('systems-loading').innerHTML = '<p style="color:var(--red);">Error: ' + err.message + '</p>';
+                });
         }
 
         // Load all data
@@ -506,11 +482,7 @@
         loadSystems();
 
         // Auto-refresh every 5 minutes
-        setInterval(() => {
-            loadLeaderboard();
-            loadHiddenWinners();
-            loadSystems();
-        }, 300000);
+        setInterval(function() { loadLeaderboard(); loadHiddenWinners(); loadSystems(); }, 300000);
     </script>
 </body>
 
