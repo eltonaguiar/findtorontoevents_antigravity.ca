@@ -299,6 +299,14 @@ function _de_store_price($ticker, $quote) {
     if (!$result) {
         return array('ok' => false, 'error' => $conn->error, 'sql' => substr($sql, 0, 200));
     }
+
+    // Also snapshot to daily price history (for ATR calculation)
+    $today = date('Y-m-d');
+    $conn->query("INSERT INTO lm_daily_price_history
+        (ticker, trade_date, open_price, high_price, low_price, close_price, volume, source, created_at)
+        VALUES ('$sym', '$today', $prev, $high, $low, $price, $vol, 'finnhub', '$nowEsc')
+        ON DUPLICATE KEY UPDATE close_price=$price, high_price=GREATEST(high_price,$high), low_price=LEAST(low_price,$low), volume=$vol");
+
     return array('ok' => true);
 }
 

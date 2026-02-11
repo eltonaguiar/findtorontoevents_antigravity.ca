@@ -31,6 +31,6 @@ $THE_ODDS_API_KEY      = 'b91c3bedfe2553cf90a5fa2003417b2a';
 // Get free API keys from:
 // - FMP: https://financialmodelingprep.com/register (250 calls/day)
 // - Massive: https://massive.com/signup (5 calls/min, formerly Polygon.io)
-$FMP_API_KEY           = getenv('FMP_API_KEY') ? getenv('FMP_API_KEY') : 'YOUR_FMP_KEY_HERE';
-$MASSIVE_API_KEY       = getenv('MASSIVE_API_KEY') ? getenv('MASSIVE_API_KEY') : (getenv('POLYGON_API_KEY') ? getenv('POLYGON_API_KEY') : 'YOUR_MASSIVE_KEY_HERE');
+$FMP_API_KEY           = 'iF4K10WedJZINDhUWGXlGAiA57rn4sRD';
+$MASSIVE_API_KEY       = 'fy4jr0InvOwOQuK43jLspga5xqhQr0Lq';
 ?>

@@ -29,6 +29,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS lm_sports_bets (
     home_team VARCHAR(100) NOT NULL,
     away_team VARCHAR(100) NOT NULL,
     commence_time DATETIME NOT NULL,
+    game_date DATE DEFAULT NULL,
     bet_type VARCHAR(30) NOT NULL DEFAULT 'moneyline',
     market VARCHAR(20) NOT NULL DEFAULT 'h2h',
     pick VARCHAR(100) NOT NULL,
@@ -52,8 +53,18 @@ $conn->query("CREATE TABLE IF NOT EXISTS lm_sports_bets (
     KEY idx_sport (sport),
     KEY idx_algorithm (algorithm),
     KEY idx_placed (placed_at),
-    KEY idx_event (event_id)
+    KEY idx_event (event_id),
+    KEY idx_game_date (game_date)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+// Add game_date column if missing (for existing tables)
+$col_check = $conn->query("SHOW COLUMNS FROM lm_sports_bets LIKE 'game_date'");
+if ($col_check && $col_check->num_rows === 0) {
+    $conn->query("ALTER TABLE lm_sports_bets ADD COLUMN game_date DATE DEFAULT NULL AFTER commence_time");
+    $conn->query("ALTER TABLE lm_sports_bets ADD KEY idx_game_date (game_date)");
+    // Backfill from commence_time (UTC -> EST)
+    $conn->query("UPDATE lm_sports_bets SET game_date = DATE(DATE_SUB(commence_time, INTERVAL 5 HOUR)) WHERE game_date IS NULL AND commence_time IS NOT NULL");
+}
 
 $conn->query("CREATE TABLE IF NOT EXISTS lm_sports_bankroll (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -281,7 +292,7 @@ function _sb_action_place($conn) {
     if ($market === 'spreads') $bet_type = 'spread';
     if ($market === 'totals') $bet_type = 'total';
 
-    $sql = "INSERT INTO lm_sports_bets (event_id, sport, home_team, away_team, commence_time, "
+    $sql = "INSERT INTO lm_sports_bets (event_id, sport, home_team, away_team, commence_time, game_date, "
         . "bet_type, market, pick, pick_point, bookmaker, bookmaker_key, odds, implied_prob, "
         . "bet_amount, potential_payout, algorithm, ev_pct, status, placed_at) VALUES ("
         . "'" . $conn->real_escape_string($event_id) . "', "
@@ -289,6 +300,7 @@ function _sb_action_place($conn) {
         . "'" . $conn->real_escape_string($home_team) . "', "
         . "'" . $conn->real_escape_string($away_team) . "', "
         . "'" . $conn->real_escape_string($commence) . "', "
+        . "DATE(DATE_SUB('" . $conn->real_escape_string($commence) . "', INTERVAL 5 HOUR)), "
         . "'" . $conn->real_escape_string($bet_type) . "', "
         . "'" . $conn->real_escape_string($market) . "', "
         . "'" . $conn->real_escape_string($pick) . "', "
@@ -313,6 +325,7 @@ function _sb_action_place($conn) {
         'odds'             => $odds,
         'bet_amount'       => $bet_amount,
         'potential_payout' => $potential_payout,
+        'game_date'        => date('Y-m-d', strtotime($commence . ' -5 hours')),
         'bankroll_after'   => round($bankroll - $bet_amount, 2)
     ));
 }

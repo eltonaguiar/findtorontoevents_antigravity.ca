@@ -264,15 +264,16 @@ a:hover { text-decoration: underline; }
 <div class="update-entry" style="--dot-color: #6366f1;" data-tags="live-monitor,smart-money,multi-dimensional" data-category="stocks,trading">
   <div class="update-date">Feb 11, 2026</div>
   <div class="update-title">
-    Multi-Dimensional Stock Intelligence &mdash; 6D Conviction Scoring
+    Multi-Dimensional Stock Intelligence &mdash; 9D Conviction Scoring
     <span class="badge badge-feature">New</span>
   </div>
   <div class="update-body">
-    <p>Unified dashboard combining 6 independent data dimensions into a single conviction score per stock. Each dimension scored 0&ndash;100, visualized with radar charts and heatmaps.</p>
+    <p>Unified dashboard combining 9 independent data dimensions into a single conviction score per stock. Each dimension scored 0&ndash;100, visualized with radar charts and heatmaps.</p>
     <ul>
-      <li><strong><a href="/live-monitor/multi-dimensional.html">6D Radar Dashboard</a></strong> &mdash; 4 tabs: Market Overview (F&amp;G gauge + regime), Radar Analysis (per-stock 6-axis chart), Top Picks (conviction-ranked table), Dimension Heatmap (color-coded grid) <span class="app-tag">Dashboard</span></li>
+      <li><strong><a href="/live-monitor/multi-dimensional.html">9D Radar Dashboard</a></strong> &mdash; 4 tabs: Market Overview (F&amp;G gauge + regime), Radar Analysis (per-stock 9-axis chart), Top Picks (conviction-ranked table), Dimension Heatmap (color-coded grid) <span class="app-tag">Dashboard</span></li>
       <li><strong>Fear &amp; Greed Index</strong> &mdash; composite score blending VIX (30%), news sentiment (20%), insider buy ratio (20%), 13F bullish (15%), and crypto F&amp;G from Alternative.me (15%). Currently: Crypto=11 (Extreme Fear), VIX=76 (Greed), Composite=49 (Neutral) <span class="app-tag">New API</span></li>
-      <li><strong>6 Dimensions</strong> &mdash; Whale/13F (hedge fund filings), Insider/Form 4 (CEO buying), Analyst (consensus + price targets), Crowd (WSB + news sentiment), Fear/Greed (contrarian), Regime (market conditions + momentum) <span class="app-tag">Scoring</span></li>
+      <li><strong>6 Core Dimensions</strong> &mdash; Whale/13F (hedge fund filings), Insider/Form 4 (CEO buying), Analyst (consensus + price targets), Crowd (WSB + news sentiment), Fear/Greed (contrarian), Regime (market conditions + momentum) <span class="app-tag">Scoring</span></li>
+      <li><strong>3 Supplemental Dimensions</strong> &mdash; Options Flow (put/call ratio + unusual activity), Short Interest (days-to-cover + squeeze potential), Technical (RSI + MACD + MA alignment + S/R proximity) <span class="app-tag">Scoring</span></li>
       <li><strong>Algorithm #23: Contrarian Fear/Greed</strong> &mdash; BUY at extreme fear near support, SHORT at extreme greed near resistance. Runs across all 3 asset classes (crypto, forex, stocks) <span class="app-tag">Algorithm</span></li>
       <li><strong>12 Tickers Scored</strong> &mdash; AAPL, MSFT, GOOGL, AMZN, NVDA, META, JPM, WMT, XOM, NFLX, JNJ, BAC. Top conviction: BAC (55), NVDA (51), AMZN (50) <span class="app-tag">Stocks</span></li>
     </ul>
@@ -294,6 +295,48 @@ a:hover { text-decoration: underline; }
       <li><strong>Live Monitor Signals</strong> &mdash; harvests from lm_signals (23 algorithms) with trade-based resolution from lm_trades and real-time TP/SL checks from lm_price_cache <span class="app-tag">Integration</span></li>
       <li><strong>Frontend Updates</strong> &mdash; added Mutual Funds nav link and ETF filter option to asset class dropdown <span class="app-tag">UI</span></li>
     </ul>
+  </div>
+</div>
+
+<!-- Feb 10, 2026 — Conviction Alerts & Performance Dashboard -->
+<div class="update-entry" style="--dot-color: #ef4444;" data-tags="live-monitor,conviction,alerts,performance" data-category="stocks,trading">
+  <div class="update-date">Feb 10, 2026</div>
+  <div class="update-title">
+    Conviction Alerts &amp; Performance Dashboard
+    <span class="badge badge-feature">New</span>
+    <span class="badge badge-feature">Live</span>
+  </div>
+  <div class="update-body">
+    <p>Full-featured alerts dashboard for the multi-dimensional conviction scoring system. Tracks signal performance over time, surfaces smart alerts when conditions change, and supports Discord/Slack webhook notifications.</p>
+    <ul>
+      <li><strong><a href="/live-monitor/conviction-alerts.html">5-Tab Dashboard</a></strong> &mdash; Alerts feed (severity badges, mark-read), Performance (conviction vs 7d return scatter chart + distribution), Win Rate Stats (by conviction bucket, 7d/30d/90d), Latest Scores (all 9 dimensions per ticker), Settings (alert configs + webhook) <span class="app-tag">Dashboard</span></li>
+      <li><strong>8 Alert Types</strong> &mdash; Conviction Jump (+10 pts), Conviction Drop (-10 pts), Insider Cluster (3+ buys), Insider Massive ($5M+), Price Divergence, Fear Opportunity (&lt;30), Greed Extreme (&gt;85), Whale Accumulation (&gt;85). Each with configurable thresholds and cooldowns <span class="app-tag">Alerts</span></li>
+      <li><strong>DB-Driven Alert Configs</strong> &mdash; Toggle alerts on/off, adjust thresholds and cooldown periods directly from the Settings tab. No code changes needed <span class="app-tag">Settings</span></li>
+      <li><strong>Ticker Filtering</strong> &mdash; Pill-shaped filter buttons (All + 12 tickers) filter across all tabs &mdash; alerts, performance, and scores. Empty tickers are greyed out with strikethrough <span class="app-tag">UI</span></li>
+      <li><strong>Webhook Notifications</strong> &mdash; Discord/Slack webhook integration. Sends rich embeds with alert details when conviction alerts fire. Enable, test, and configure from the dashboard <span class="app-tag">Integration</span></li>
+      <li><strong>Performance Tracking</strong> &mdash; Every conviction score is recorded with entry price, then tracked at 7d/14d/30d for win/loss outcomes. Scatter charts show conviction vs actual returns <span class="app-tag">Analytics</span></li>
+    </ul>
+    <p><a href="/live-monitor/conviction-alerts.html">Open Conviction Alerts &rarr;</a></p>
+  </div>
+</div>
+
+<!-- Feb 10, 2026 — 9D Scoring Upgrade -->
+<div class="update-entry" style="--dot-color: #a855f7;" data-tags="live-monitor,multi-dimensional,supplemental,9D" data-category="stocks,trading">
+  <div class="update-date">Feb 10, 2026</div>
+  <div class="update-title">
+    9D Scoring Upgrade &mdash; 4 New Supplemental Dimensions
+    <span class="badge badge-improvement">Enhancement</span>
+  </div>
+  <div class="update-body">
+    <p>Expanded the multi-dimensional conviction system from 6 to 9 dimensions by adding 4 supplemental data sources, all from free APIs. Each new dimension scored 0&ndash;100 and blended into the composite conviction score.</p>
+    <ul>
+      <li><strong>Options Flow Score</strong> &mdash; Put/call ratio analysis and unusual options activity detection. High put/call = bearish pressure, low ratio with volume spikes = bullish conviction <span class="app-tag">Options</span></li>
+      <li><strong>Short Interest Score</strong> &mdash; Days-to-cover and short float percentage. High short interest near support = squeeze potential, extreme shorting = bearish confirmation <span class="app-tag">Short Data</span></li>
+      <li><strong>Technical Score</strong> &mdash; Multi-timeframe technical analysis combining RSI, MACD, moving average alignment, and support/resistance proximity into a single score <span class="app-tag">Technicals</span></li>
+      <li><strong>Earnings Quality Score</strong> &mdash; Revenue/EPS surprise history, guidance trends, and estimate revision momentum. Consistent beats score higher <span class="app-tag">Fundamentals</span></li>
+      <li><strong>Supplemental API</strong> &mdash; New <code>supplemental_dimensions.php</code> endpoint with per-ticker scoring, composite calculation, and daily caching <span class="app-tag">New API</span></li>
+    </ul>
+    <p><a href="/live-monitor/multi-dimensional.html">Open 9D Analysis &rarr;</a></p>
   </div>
 </div>
 

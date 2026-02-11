@@ -211,8 +211,8 @@ function calc_short_interest_score($conn, $ticker, $api_key) {
         if ($resp) {
             $data = json_decode($resp, true);
             if ($data && is_array($data) && count($data) > 0) {
-                $short_pct_float = floatval($data[0]['shortPercentOfFloat'] ?? 0) * 100;
-                $days_to_cover = floatval($data[0]['daysToCover'] ?? 0);
+                $short_pct_float = floatval(isset($data[0]['shortPercentOfFloat']) ? $data[0]['shortPercentOfFloat'] : 0) * 100;
+                $days_to_cover = floatval(isset($data[0]['daysToCover']) ? $data[0]['daysToCover'] : 0);
             }
         }
     }
@@ -403,7 +403,8 @@ function _calc_ema($prices, $period) {
     if (count($prices) < $period) return $prices[0];
     
     $multiplier = 2 / ($period + 1);
-    $ema = array_slice($prices, -$period)[0]; // Start with SMA
+    $sma_array = array_slice($prices, -$period);
+    $ema = $sma_array[0]; // Start with SMA
     
     for ($i = $period - 1; $i >= 0; $i--) {
         $ema = ($prices[$i] - $ema) * $multiplier + $ema;
@@ -440,7 +441,7 @@ function calc_earnings_quality_score($conn, $ticker, $api_key) {
                 $surprises = array();
                 
                 foreach ($data as $earnings) {
-                    $surprise = floatval($earnings['surprisePercentage'] ?? 0);
+                    $surprise = floatval(isset($earnings['surprisePercentage']) ? $earnings['surprisePercentage'] : 0);
                     $surprises[] = $surprise;
                     if ($surprise > 0) $beats++;
                 }
@@ -610,47 +611,47 @@ if ($action === 'calculate_all' && $admin) {
     $errors = array();
     
     foreach ($tickers as $t) {
-        try {
-            $options = calc_options_score($conn, $t, $POLYGON_API_KEY);
-            $short = calc_short_interest_score($conn, $t, $FMP_API_KEY);
-            $technical = calc_technical_score($conn, $t);
-            $earnings = calc_earnings_quality_score($conn, $t, $FMP_API_KEY);
-            
-            $composite = _sd_clamp(
-                $options['score'] * 0.25 +
-                $short['score'] * 0.25 +
-                $technical['score'] * 0.25 +
-                $earnings['score'] * 0.25
-            );
-            
-            $detail = json_encode(array(
-                'options' => $options,
-                'short' => $short,
-                'technical' => $technical,
-                'earnings' => $earnings
-            ));
-            
-            $t_esc = _sd_esc($conn, $t);
-            $d_esc = _sd_esc($conn, $detail);
-            
-            $conn->query("INSERT INTO lm_supplemental_dimensions 
-                (ticker, calc_date, options_score, short_interest_score, technical_score, earnings_quality_score, 
-                 composite_supplemental, detail_json, created_at)
-                VALUES ('$t_esc', CURDATE(), {$options['score']}, {$short['score']}, {$technical['score']}, {$earnings['score']}, 
-                        $composite, '$d_esc', '$now')
-                ON DUPLICATE KEY UPDATE 
-                options_score = VALUES(options_score),
-                short_interest_score = VALUES(short_interest_score),
-                technical_score = VALUES(technical_score),
-                earnings_quality_score = VALUES(earnings_quality_score),
-                composite_supplemental = VALUES(composite_supplemental),
-                detail_json = VALUES(detail_json),
-                created_at = VALUES(created_at)");
-            
+        // PHP 5.2 compatible - no try-catch
+        $options = calc_options_score($conn, $t, $POLYGON_API_KEY);
+        $short = calc_short_interest_score($conn, $t, $FMP_API_KEY);
+        $technical = calc_technical_score($conn, $t);
+        $earnings = calc_earnings_quality_score($conn, $t, $FMP_API_KEY);
+        
+        $composite = _sd_clamp(
+            $options['score'] * 0.25 +
+            $short['score'] * 0.25 +
+            $technical['score'] * 0.25 +
+            $earnings['score'] * 0.25
+        );
+        
+        $detail = json_encode(array(
+            'options' => $options,
+            'short' => $short,
+            'technical' => $technical,
+            'earnings' => $earnings
+        ));
+        
+        $t_esc = _sd_esc($conn, $t);
+        $d_esc = _sd_esc($conn, $detail);
+        
+        $result = $conn->query("INSERT INTO lm_supplemental_dimensions 
+            (ticker, calc_date, options_score, short_interest_score, technical_score, earnings_quality_score, 
+             composite_supplemental, detail_json, created_at)
+            VALUES ('$t_esc', CURDATE(), {$options['score']}, {$short['score']}, {$technical['score']}, {$earnings['score']}, 
+                    $composite, '$d_esc', '$now')
+            ON DUPLICATE KEY UPDATE 
+            options_score = VALUES(options_score),
+            short_interest_score = VALUES(short_interest_score),
+            technical_score = VALUES(technical_score),
+            earnings_quality_score = VALUES(earnings_quality_score),
+            composite_supplemental = VALUES(composite_supplemental),
+            detail_json = VALUES(detail_json),
+            created_at = VALUES(created_at)");
+        
+        if ($result) {
             $processed++;
-            
-        } catch (Exception $e) {
-            $errors[] = $t . ': ' . $e->getMessage();
+        } else {
+            $errors[] = $t . ': ' . $conn->error;
         }
         
         // Rate limiting - be nice to APIs

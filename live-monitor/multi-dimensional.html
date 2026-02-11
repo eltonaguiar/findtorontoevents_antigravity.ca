@@ -10,7 +10,7 @@
             --bg-dark:#080818; --bg-card:#0e0e24; --border:#1e1e3e;
             --text:#e0e0f0; --text-dim:#7777aa; --text-bright:#fff;
             --gold:#f59e0b; --green:#22c55e; --red:#ef4444; --blue:#6366f1;
-            --purple:#a855f7; --cyan:#06b6d4; --yellow:#eab308;
+            --purple:#a855f7; --cyan:#06b6d4; --yellow:#eab308; --orange:#f97316;
             --green-dim:rgba(34,197,94,0.12); --red-dim:rgba(239,68,68,0.12);
             --blue-dim:rgba(99,102,241,0.12); --gold-dim:rgba(245,158,11,0.12);
             --radius:14px;
@@ -22,9 +22,12 @@
         .brand{display:flex;align-items:center;gap:12px}
         .brand h1{font-size:1.5rem;font-weight:800;background:linear-gradient(135deg,var(--blue),var(--purple),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.02em}
         .brand .sub{font-size:.75rem;color:var(--text-dim);margin-top:-2px}
-        .nav{display:flex;gap:.75rem;font-size:.8rem;flex-wrap:wrap}
+        .nav{display:flex;gap:.75rem;font-size:.8rem;flex-wrap:wrap;align-items:center}
         .nav a{color:var(--text-dim);padding:.3rem .7rem;border-radius:8px;border:1px solid transparent;transition:all .2s}
         .nav a:hover{color:var(--text);border-color:var(--border);background:rgba(255,255,255,.03);text-decoration:none}
+        .alert-bell{position:relative;cursor:pointer;font-size:1.2rem;padding:.3rem .5rem}
+        .alert-bell:hover{opacity:.8}
+        .alert-badge{position:absolute;top:-2px;right:-4px;background:var(--red);color:#fff;font-size:.55rem;font-weight:800;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center;display:none}
         .container{max-width:1400px;margin:0 auto;padding:1.5rem}
         .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.25rem}
         .card h2{font-size:1.05rem;margin-bottom:1rem;color:var(--text-bright);display:flex;align-items:center;gap:8px}
@@ -33,7 +36,7 @@
         .tab-btn:hover{color:var(--text);background:rgba(255,255,255,.03)}
         .tab-btn.active{color:var(--blue);background:rgba(99,102,241,.08);border-bottom:2px solid var(--blue)}
         .tab-panel{display:none}.tab-panel.active{display:block}
-        .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;margin-bottom:1.25rem}
+        .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem;margin-bottom:1.25rem}
         .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center}
         .stat-card .label{font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em}
         .stat-card .value{font-size:1.5rem;font-weight:800;margin-top:.2rem}
@@ -68,20 +71,17 @@
         .spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin-right:8px}
         @keyframes spin{to{transform:rotate(360deg)}}
         .footer{text-align:center;padding:2rem 1rem 1rem;color:var(--text-dim);font-size:.75rem}
-        /* Tooltips — JS-based to avoid overflow clipping */
         .tip{cursor:help;border-bottom:1px dotted var(--text-dim)}
         th .tip{border-bottom:none}
         .dim-name.tip{border-bottom:none}
         .stat-card .label.tip{border-bottom:none}
         #tooltip-box{position:fixed;background:#1a1a3a;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:.5rem .75rem;font-size:.72rem;line-height:1.4;white-space:normal;width:280px;text-align:left;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9999;font-weight:400;text-transform:none;letter-spacing:normal;box-shadow:0 4px 16px rgba(0,0,0,.6);display:none}
-        /* Data Health */
         .health-row{display:flex;align-items:center;gap:.75rem;padding:.6rem 0;border-bottom:1px solid var(--border)}
         .health-row:last-child{border-bottom:none}
         .health-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
         .health-dot.green{background:var(--green)}.health-dot.yellow{background:var(--yellow)}.health-dot.red{background:var(--red)}
         .health-label{font-size:.82rem;flex:1}.health-value{font-size:.82rem;font-weight:700;min-width:60px;text-align:right}
         .health-note{font-size:.72rem;color:var(--text-dim);margin-top:.15rem}
-        /* Glossary */
         .glossary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem}
         .glossary-item{background:rgba(0,0,0,.15);border:1px solid var(--border);border-radius:10px;padding:1rem}
         .glossary-item h3{font-size:.9rem;color:var(--text-bright);margin-bottom:.35rem;display:flex;align-items:center;gap:6px}
@@ -91,7 +91,6 @@
         .glossary-section h3{font-size:.85rem;color:var(--gold);margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.05em}
         .scale-bar{display:flex;height:24px;border-radius:6px;overflow:hidden;margin:.5rem 0;font-size:.65rem;font-weight:700;text-align:center;line-height:24px}
         .scale-bar div{flex:1;color:#fff}
-        /* Enrich Buttons */
         .enrich-btn{padding:.45rem .9rem;background:rgba(99,102,241,.1);color:var(--blue);border:1px solid rgba(99,102,241,.3);border-radius:8px;cursor:pointer;font-size:.78rem;font-weight:600;transition:all .2s}
         .enrich-btn:hover{background:rgba(99,102,241,.2);border-color:var(--blue)}
         .enrich-btn:disabled{opacity:.4;cursor:not-allowed}
@@ -104,6 +103,28 @@
         .source-detail{flex:1;color:var(--text-dim);font-size:.75rem}
         .source-badge{padding:.2rem .5rem;border-radius:6px;font-size:.65rem;font-weight:700;text-transform:uppercase}
         .source-badge.free{background:rgba(34,197,94,.1);color:var(--green)}
+        /* Alert styles */
+        .alert-card{border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem;margin-bottom:.5rem;border-left:4px solid var(--blue);display:flex;gap:.75rem;align-items:flex-start}
+        .alert-card.critical{border-left-color:var(--red);background:rgba(239,68,68,.03)}
+        .alert-card.warning{border-left-color:var(--orange);background:rgba(249,115,22,.03)}
+        .alert-card.info{border-left-color:var(--blue);background:rgba(99,102,241,.03)}
+        .alert-card.read{opacity:.5}
+        .alert-icon{font-size:1.2rem;flex-shrink:0}
+        .alert-body{flex:1;min-width:0}
+        .alert-msg{font-size:.82rem;color:var(--text);font-weight:600}
+        .alert-meta{font-size:.7rem;color:var(--text-dim);margin-top:.2rem;display:flex;gap:.75rem;align-items:center}
+        .alert-mark{font-size:.65rem;color:var(--blue);cursor:pointer;border:none;background:none;padding:0}
+        .alert-mark:hover{text-decoration:underline}
+        /* Sector bar */
+        .sector-bar{display:flex;align-items:center;gap:.5rem;margin:.4rem 0;font-size:.78rem}
+        .sector-bar .bar{height:18px;border-radius:4px;min-width:10px;transition:width .4s}
+        .sector-bar .lbl{min-width:80px;font-weight:700;font-size:.72rem}
+        .sector-bar .val{font-weight:800;min-width:30px;text-align:right}
+        /* Performance scatter */
+        .perf-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;margin-bottom:1.25rem}
+        .perf-card{background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:10px;padding:.75rem;text-align:center}
+        .perf-card .pl{font-size:.6rem;color:var(--text-dim);text-transform:uppercase}
+        .perf-card .pv{font-size:1.3rem;font-weight:800;margin-top:.1rem}
         @media(max-width:900px){.grid-2{grid-template-columns:1fr}.container{padding:1rem}.dim-cards{grid-template-columns:repeat(3,1fr)}.glossary-grid{grid-template-columns:1fr}}
         @media(max-width:600px){.header{padding:1rem}.brand h1{font-size:1.15rem}.dim-cards{grid-template-columns:repeat(2,1fr)}}
     </style>
@@ -123,15 +144,17 @@
             <a href="/live-monitor/live-monitor.html">Live Monitor</a>
             <a href="/live-monitor/algo-performance.html">Algo Perf</a>
             <a href="/goldmine_cursor/">Goldmine</a>
+            <span class="alert-bell" onclick="document.querySelector('[data-tab=alerts]').click()" title="Alerts">&#x1F514;<span class="alert-badge" id="bell-badge">0</span></span>
         </div>
     </div>
 
     <div class="container">
         <div class="stat-grid" id="kpi-row">
-            <div class="stat-card"><div class="label tip" data-tip="Composite index (0-100) blending VIX, market momentum, put/call ratio, junk bond demand, and crypto sentiment. Below 30 = Extreme Fear, above 70 = Extreme Greed.">Market Fear/Greed</div><div class="value" id="kpi-fg">--</div><div class="label" id="kpi-fg-label">&nbsp;</div></div>
-            <div class="stat-card"><div class="label tip" data-tip="Market volatility regime based on VIX level and trend. Calm Bull (VIX<18, uptrend), Moderate Bull/Bear, High Vol (VIX>25), Extreme Vol (VIX>35). Determines base regime score for all tickers.">Current Regime</div><div class="value" id="kpi-regime">--</div><div class="label" id="kpi-vix">&nbsp;</div></div>
-            <div class="stat-card"><div class="label tip" data-tip="The ticker with the highest conviction score today. Conviction is a weighted blend of all 6 dimensions. Scores above 60 = Bullish, above 75 = Strong Bullish.">Top Conviction</div><div class="value" id="kpi-top">--</div><div class="label" id="kpi-top-score">&nbsp;</div></div>
-            <div class="stat-card"><div class="label tip" data-tip="Total number of stocks analyzed. Currently a curated universe of 12 mega-cap stocks. More tickers = better statistical significance.">Tickers Scored</div><div class="value neutral" id="kpi-count">--</div></div>
+            <div class="stat-card"><div class="label tip" data-tip="Composite index (0-100) blending VIX, market momentum, and crypto sentiment. Below 30 = Extreme Fear, above 70 = Extreme Greed.">Market Fear/Greed</div><div class="value" id="kpi-fg">--</div><div class="label" id="kpi-fg-label">&nbsp;</div></div>
+            <div class="stat-card"><div class="label tip" data-tip="Market volatility regime based on VIX level. Calm Bull (VIX<18), High Vol (VIX>25), Extreme Vol (VIX>35).">Current Regime</div><div class="value" id="kpi-regime">--</div><div class="label" id="kpi-vix">&nbsp;</div></div>
+            <div class="stat-card"><div class="label tip" data-tip="The ticker with the highest conviction score today.">Top Conviction</div><div class="value" id="kpi-top">--</div><div class="label" id="kpi-top-score">&nbsp;</div></div>
+            <div class="stat-card"><div class="label tip" data-tip="Total number of stocks analyzed (12 mega-cap universe).">Tickers Scored</div><div class="value neutral" id="kpi-count">--</div></div>
+            <div class="stat-card"><div class="label tip" data-tip="Sector with highest average conviction. Signal triggers when one sector leads by 10+ points.">Sector Rotation</div><div class="value" id="kpi-rotation" style="font-size:1.1rem">--</div><div class="label" id="kpi-rotation-detail">&nbsp;</div></div>
         </div>
 
         <div class="tab-bar">
@@ -139,6 +162,8 @@
             <button class="tab-btn" data-tab="radar">Radar Analysis</button>
             <button class="tab-btn" data-tab="picks">Top Picks</button>
             <button class="tab-btn" data-tab="heatmap">Dimension Heatmap</button>
+            <button class="tab-btn" data-tab="performance">Performance</button>
+            <button class="tab-btn" data-tab="alerts">Alerts <span id="alert-tab-count" style="display:none;background:var(--red);color:#fff;font-size:.55rem;padding:1px 5px;border-radius:8px;margin-left:3px">0</span></button>
             <button class="tab-btn" data-tab="health">Data Health</button>
             <button class="tab-btn" data-tab="glossary">Glossary</button>
         </div>
@@ -162,17 +187,23 @@
                 <div class="card">
                     <h2>Average Dimension Scores</h2>
                     <div id="avg-dims" class="dim-cards">
-                        <div class="dim-card"><div class="dim-icon">&#x1F40B;</div><div class="dim-name tip" data-tip="SEC 13F filings: How many institutional funds hold this stock and whether they increased or decreased positions. Weight: 15%.">Whale</div><div class="dim-score neutral" id="avg-whale">--</div></div>
-                        <div class="dim-card"><div class="dim-icon">&#x1F4BC;</div><div class="dim-name tip" data-tip="SEC Form 4: Net buy/sell ratio of company insiders (officers, directors) over the last 90 days. Cluster buying by 3+ insiders adds bonus points. Weight: 15%.">Insider</div><div class="dim-score neutral" id="avg-insider">--</div></div>
-                        <div class="dim-card"><div class="dim-icon">&#x1F393;</div><div class="dim-name tip" data-tip="Wall Street consensus: Weighted average of Strong Buy/Buy/Hold/Sell/Strong Sell ratings plus price target upside from analysts. Weight: 15%.">Analyst</div><div class="dim-score neutral" id="avg-analyst">--</div></div>
-                        <div class="dim-card"><div class="dim-icon">&#x1F4C8;</div><div class="dim-name tip" data-tip="Retail sentiment: 60% news sentiment (Finnhub) + 40% WallStreetBets mentions and sentiment. High buzz amplifies the signal. Weight: 12%.">Crowd</div><div class="dim-score neutral" id="avg-crowd">--</div></div>
-                        <div class="dim-card"><div class="dim-icon">&#x1F631;</div><div class="dim-name tip" data-tip="Contrarian indicator: INVERTED composite Fear/Greed index. Extreme Fear (raw 10) becomes score 90 (buying opportunity). Same for all tickers. Weight: 12%.">Fear/Greed</div><div class="dim-score neutral" id="avg-fg">--</div></div>
-                        <div class="dim-card"><div class="dim-icon">&#x1F9E0;</div><div class="dim-name tip" data-tip="Market environment: 60% VIX-based regime (calm_bull=80, extreme_vol=15) + 40% ticker-specific 24h momentum. Weight: 8%.">Regime</div><div class="dim-score neutral" id="avg-regime">--</div></div>
-                        <div class="dim-card"><div class="dim-icon">&#x1F4B0;</div><div class="dim-name tip" data-tip="Free data: P/E, P/B, P/S ratios vs industry. Weight: 5%.">Value</div><div class="dim-score neutral" id="avg-value">--</div></div>
-                        <div class="dim-card"><div class="dim-icon">&#x1F4C8;</div><div class="dim-name tip" data-tip="Free data: Revenue growth, earnings growth. Weight: 5%.">Growth</div><div class="dim-score neutral" id="avg-growth">--</div></div>
-                        <div class="dim-card"><div class="dim-icon">&#x1F4C8;</div><div class="dim-name tip" data-tip="Free data: Enhanced technical momentum. Weight: 5%.">Momentum</div><div class="dim-score neutral" id="avg-momentum">--</div></div>
+                        <div class="dim-card"><div class="dim-icon">&#x1F40B;</div><div class="dim-name tip" data-tip="SEC 13F filings: Institutional fund holdings + net change. Weight: 18%.">Whale</div><div class="dim-score neutral" id="avg-whale">--</div></div>
+                        <div class="dim-card"><div class="dim-icon">&#x1F4BC;</div><div class="dim-name tip" data-tip="SEC Form 4: Insider buy/sell ratio + cluster bonuses. Weight: 18%.">Insider</div><div class="dim-score neutral" id="avg-insider">--</div></div>
+                        <div class="dim-card"><div class="dim-icon">&#x1F393;</div><div class="dim-name tip" data-tip="Analyst consensus + price target upside. Weight: 14%.">Analyst</div><div class="dim-score neutral" id="avg-analyst">--</div></div>
+                        <div class="dim-card"><div class="dim-icon">&#x1F4E2;</div><div class="dim-name tip" data-tip="News sentiment + WSB mentions. Weight: 12%.">Crowd</div><div class="dim-score neutral" id="avg-crowd">--</div></div>
+                        <div class="dim-card"><div class="dim-icon">&#x1F631;</div><div class="dim-name tip" data-tip="Contrarian: extreme fear = high score. Weight: 12%.">Fear/Greed</div><div class="dim-score neutral" id="avg-fg">--</div></div>
+                        <div class="dim-card"><div class="dim-icon">&#x1F9E0;</div><div class="dim-name tip" data-tip="VIX regime + ticker momentum. Weight: 10%.">Regime</div><div class="dim-score neutral" id="avg-regime">--</div></div>
+                        <div class="dim-card"><div class="dim-icon">&#x1F4B0;</div><div class="dim-name tip" data-tip="P/E, P/B vs industry. Weight: 9%.">Value</div><div class="dim-score neutral" id="avg-value">--</div></div>
+                        <div class="dim-card"><div class="dim-icon">&#x1F331;</div><div class="dim-name tip" data-tip="Revenue/earnings growth. Weight: 9%.">Growth</div><div class="dim-score neutral" id="avg-growth">--</div></div>
+                        <div class="dim-card"><div class="dim-icon">&#x26A1;</div><div class="dim-name tip" data-tip="Technical momentum. Weight: 8%.">Momentum</div><div class="dim-score neutral" id="avg-momentum">--</div></div>
                     </div>
                 </div>
+            </div>
+            <!-- Sector Rotation -->
+            <div class="card">
+                <h2>Sector Rotation Signal</h2>
+                <div id="sector-signal" style="font-size:.85rem;font-weight:700;margin-bottom:.75rem;color:var(--text-dim)">Loading...</div>
+                <div id="sector-bars"></div>
             </div>
             <div class="card">
                 <h2>Fear &amp; Greed History (30 Days)</h2>
@@ -200,17 +231,19 @@
                             <div style="font-size:.75rem;color:var(--text-dim);text-transform:uppercase">Conviction Score</div>
                             <div id="radar-conviction" style="font-size:2.5rem;font-weight:900">--</div>
                             <div id="radar-label" class="badge badge-blue">--</div>
+                            <div id="radar-trend" style="font-size:.82rem;margin-top:.4rem"></div>
+                            <div id="radar-risk" style="font-size:.78rem;color:var(--text-dim);margin-top:.2rem"></div>
                         </div>
                         <div class="dim-cards" id="radar-dims">
-                            <div class="dim-card"><div class="dim-icon">&#x1F40B;</div><div class="dim-name tip" data-tip="Institutional 13F holdings: fund count + net bullish momentum.">Whale</div><div class="dim-score" id="rd-whale">--</div></div>
-                            <div class="dim-card"><div class="dim-icon">&#x1F4BC;</div><div class="dim-name tip" data-tip="Insider buy/sell ratio (90 days) + cluster and officer bonuses.">Insider</div><div class="dim-score" id="rd-insider">--</div></div>
-                            <div class="dim-card"><div class="dim-icon">&#x1F393;</div><div class="dim-name tip" data-tip="Analyst consensus rating + price target upside.">Analyst</div><div class="dim-score" id="rd-analyst">--</div></div>
-                            <div class="dim-card"><div class="dim-icon">&#x1F4C8;</div><div class="dim-name tip" data-tip="News sentiment + WallStreetBets mentions/sentiment.">Crowd</div><div class="dim-score" id="rd-crowd">--</div></div>
-                            <div class="dim-card"><div class="dim-icon">&#x1F631;</div><div class="dim-name tip" data-tip="Inverted F&G: extreme fear = high score (contrarian).">Fear/Greed</div><div class="dim-score" id="rd-fg">--</div></div>
-                            <div class="dim-card"><div class="dim-icon">&#x1F9E0;</div><div class="dim-name tip" data-tip="VIX-based regime + ticker 24h momentum blend.">Regime</div><div class="dim-score" id="rd-regime">--</div></div>
-                            <div class="dim-card"><div class="dim-icon">&#x1F4B0;</div><div class="dim-name tip" data-tip="Free data: P/E, P/B, P/S ratios vs industry.">Value</div><div class="dim-score" id="rd-value">--</div></div>
-                            <div class="dim-card"><div class="dim-icon">&#x1F4C8;</div><div class="dim-name tip" data-tip="Free data: Revenue growth, earnings growth.">Growth</div><div class="dim-score" id="rd-growth">--</div></div>
-                            <div class="dim-card"><div class="dim-icon">&#x1F4C8;</div><div class="dim-name tip" data-tip="Free data: Enhanced technical momentum.">Momentum</div><div class="dim-score" id="rd-momentum">--</div></div>
+                            <div class="dim-card"><div class="dim-icon">&#x1F40B;</div><div class="dim-name tip" data-tip="Institutional 13F holdings.">Whale</div><div class="dim-score" id="rd-whale">--</div></div>
+                            <div class="dim-card"><div class="dim-icon">&#x1F4BC;</div><div class="dim-name tip" data-tip="Insider buy/sell ratio.">Insider</div><div class="dim-score" id="rd-insider">--</div></div>
+                            <div class="dim-card"><div class="dim-icon">&#x1F393;</div><div class="dim-name tip" data-tip="Analyst consensus + target.">Analyst</div><div class="dim-score" id="rd-analyst">--</div></div>
+                            <div class="dim-card"><div class="dim-icon">&#x1F4E2;</div><div class="dim-name tip" data-tip="News + WSB sentiment.">Crowd</div><div class="dim-score" id="rd-crowd">--</div></div>
+                            <div class="dim-card"><div class="dim-icon">&#x1F631;</div><div class="dim-name tip" data-tip="Inverted F&G (contrarian).">Fear/Greed</div><div class="dim-score" id="rd-fg">--</div></div>
+                            <div class="dim-card"><div class="dim-icon">&#x1F9E0;</div><div class="dim-name tip" data-tip="VIX regime + momentum.">Regime</div><div class="dim-score" id="rd-regime">--</div></div>
+                            <div class="dim-card"><div class="dim-icon">&#x1F4B0;</div><div class="dim-name tip" data-tip="Value ratios.">Value</div><div class="dim-score" id="rd-value">--</div></div>
+                            <div class="dim-card"><div class="dim-icon">&#x1F331;</div><div class="dim-name tip" data-tip="Growth metrics.">Growth</div><div class="dim-score" id="rd-growth">--</div></div>
+                            <div class="dim-card"><div class="dim-icon">&#x26A1;</div><div class="dim-name tip" data-tip="Technical momentum.">Momentum</div><div class="dim-score" id="rd-momentum">--</div></div>
                         </div>
                     </div>
                 </div>
@@ -223,8 +256,20 @@
                 <h2>Top Conviction Stocks</h2>
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>Ticker</th><th><span class="tip" data-tip="Weighted composite of all 9 dimensions. 0-100 scale. Above 55=Bullish, above 70=Strong Bullish, below 40=Bearish.">Conviction</span></th><th><span class="tip" data-tip="Institutional 13F holdings score (20% weight).">Whale</span></th><th><span class="tip" data-tip="Insider buy/sell ratio score (20% weight). 0 = no insider purchases found.">Insider</span></th><th><span class="tip" data-tip="Analyst consensus + price target upside (20% weight).">Analyst</span></th><th><span class="tip" data-tip="News sentiment + WSB crowd wisdom (15% weight).">Crowd</span></th><th><span class="tip" data-tip="Inverted Fear/Greed index, contrarian (15% weight).">F&amp;G</span></th><th><span class="tip" data-tip="VIX regime + ticker momentum (10% weight).">Regime</span></th><th><span class="tip" data-tip="Classification: strong_bullish (70+), bullish (55+), neutral (41-54), bearish (40-), strong_bearish (25-).">Label</span></th></tr></thead>
-                        <tbody id="picks-body"><tr><td colspan="9" class="loading"><span class="spinner"></span> Loading...</td></tr></tbody>
+                        <thead><tr>
+                            <th>Ticker</th>
+                            <th><span class="tip" data-tip="Weighted composite of all 9 dimensions.">Conviction</span></th>
+                            <th><span class="tip" data-tip="7-day trend: up (>+5), down (<-5), stable.">Trend</span></th>
+                            <th><span class="tip" data-tip="Conviction minus ATR volatility penalty (0-10 pts).">Risk-Adj</span></th>
+                            <th><span class="tip" data-tip="13F institutional holdings (18% weight).">Whale</span></th>
+                            <th><span class="tip" data-tip="Insider buy/sell ratio (18% weight).">Insider</span></th>
+                            <th><span class="tip" data-tip="Analyst consensus (14% weight).">Analyst</span></th>
+                            <th><span class="tip" data-tip="News + WSB sentiment (12% weight).">Crowd</span></th>
+                            <th><span class="tip" data-tip="Inverted Fear/Greed (12% weight).">F&amp;G</span></th>
+                            <th><span class="tip" data-tip="VIX regime + momentum (10% weight).">Regime</span></th>
+                            <th><span class="tip" data-tip="Label: strong_bullish (70+), bullish (55+), neutral (41-54), bearish (<40).">Label</span></th>
+                        </tr></thead>
+                        <tbody id="picks-body"><tr><td colspan="11" class="loading"><span class="spinner"></span> Loading...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -234,12 +279,61 @@
         <div class="tab-panel" id="panel-heatmap">
             <div class="card">
                 <h2>Dimension Heatmap</h2>
-                <p style="font-size:.8rem;color:var(--text-dim);margin-bottom:1rem">Color intensity shows score strength: darker green = higher conviction for that dimension.</p>
+                <p style="font-size:.8rem;color:var(--text-dim);margin-bottom:1rem">Color intensity shows score strength. Darker green = higher conviction.</p>
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>Ticker</th><th><span class="tip" data-tip="13F institutional fund activity.">Whale</span></th><th><span class="tip" data-tip="Insider buy/sell ratio. Red (0) = only selling or no data.">Insider</span></th><th><span class="tip" data-tip="Wall Street analyst consensus.">Analyst</span></th><th><span class="tip" data-tip="News + WSB crowd sentiment.">Crowd</span></th><th><span class="tip" data-tip="Inverted Fear/Greed (contrarian).">F&amp;G</span></th><th><span class="tip" data-tip="Market regime + momentum.">Regime</span></th><th><span class="tip" data-tip="Final weighted conviction score.">Conviction</span></th></tr></thead>
-                        <tbody id="heatmap-body"><tr><td colspan="8" class="loading"><span class="spinner"></span> Loading...</td></tr></tbody>
+                        <thead><tr><th>Ticker</th><th>Whale</th><th>Insider</th><th>Analyst</th><th>Crowd</th><th>F&amp;G</th><th>Regime</th><th>Conviction</th><th>Trend</th><th>Risk-Adj</th></tr></thead>
+                        <tbody id="heatmap-body"><tr><td colspan="10" class="loading"><span class="spinner"></span> Loading...</td></tr></tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: PERFORMANCE -->
+        <div class="tab-panel" id="panel-performance">
+            <div class="card">
+                <h2>Conviction Performance Tracking</h2>
+                <p style="font-size:.8rem;color:var(--text-dim);margin-bottom:1rem">Tracks how conviction scores predict actual 7/14/30-day price returns. Data accumulates over time.</p>
+                <div class="perf-summary" id="perf-summary">
+                    <div class="perf-card"><div class="pl">Records</div><div class="pv neutral" id="perf-total">--</div></div>
+                    <div class="perf-card"><div class="pl">7D Filled</div><div class="pv neutral" id="perf-filled7">--</div></div>
+                    <div class="perf-card"><div class="pl">30D Filled</div><div class="pv neutral" id="perf-filled30">--</div></div>
+                    <div class="perf-card"><div class="pl">Win Rate (30D)</div><div class="pv neutral" id="perf-winrate">--</div></div>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Performance by Conviction Bucket</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Bucket</th><th>Signals</th><th>Wins</th><th>Losses</th><th>Pending</th><th>Win Rate</th><th>Avg Return</th><th>Max</th><th>Min</th></tr></thead>
+                        <tbody id="stats-body"><tr><td colspan="9" class="loading"><span class="spinner"></span> Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Conviction vs 7-Day Return</h2>
+                <div class="chart-area"><canvas id="perf-scatter-chart"></canvas></div>
+            </div>
+            <div class="card">
+                <h2>Recent Performance Records</h2>
+                <div class="table-wrap" style="max-height:400px">
+                    <table>
+                        <thead><tr><th>Ticker</th><th>Date</th><th>Score</th><th>Label</th><th>Entry $</th><th>7D Ret%</th><th>14D Ret%</th><th>30D Ret%</th><th>Outcome</th></tr></thead>
+                        <tbody id="perf-body"><tr><td colspan="9" class="loading"><span class="spinner"></span> Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: ALERTS -->
+        <div class="tab-panel" id="panel-alerts">
+            <div class="card">
+                <h2>Intelligence Alerts
+                    <button onclick="markAllRead()" style="margin-left:auto;padding:.35rem .8rem;background:rgba(99,102,241,.1);color:var(--blue);border:1px solid rgba(99,102,241,.3);border-radius:8px;cursor:pointer;font-size:.72rem;font-weight:600">Mark All Read</button>
+                </h2>
+                <p style="font-size:.8rem;color:var(--text-dim);margin-bottom:1rem">Auto-generated alerts from conviction changes, insider activity, fear/greed extremes, and divergences.</p>
+                <div id="alerts-list">
+                    <div class="loading"><span class="spinner"></span> Loading alerts...</div>
                 </div>
             </div>
         </div>
@@ -250,35 +344,29 @@
                 <h2>Data Source Health
                     <button id="btn-refresh-all" onclick="enrichAll()" style="margin-left:auto;padding:.4rem 1rem;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.78rem;font-weight:700">Refresh All Data</button>
                 </h2>
-                <p style="font-size:.8rem;color:var(--text-dim);margin-bottom:.5rem">Live status of each data source. Green = fresh (today/yesterday), Yellow = stale (this week), Red = missing/old.</p>
+                <p style="font-size:.8rem;color:var(--text-dim);margin-bottom:.5rem">Green = fresh, Yellow = stale, Red = missing/old.</p>
                 <div id="enrich-status" style="display:none;margin-bottom:1rem;padding:.75rem 1rem;border-radius:10px;font-size:.82rem;font-weight:600"></div>
-                <div id="health-rows">
-                    <div class="loading"><span class="spinner"></span> Checking data sources...</div>
-                </div>
+                <div id="health-rows"><div class="loading"><span class="spinner"></span> Checking data sources...</div></div>
             </div>
             <div class="card">
                 <h2>Quick Fetch (Individual Sources)</h2>
                 <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">
-                    <button class="enrich-btn" onclick="enrichAction('fetch_prices')">Stock Prices (Finnhub)</button>
-                    <button class="enrich-btn" onclick="enrichAction('fetch_analyst')">Analyst Ratings (Finnhub)</button>
-                    <button class="enrich-btn" onclick="enrichAction('fetch_targets')">Price Targets (Yahoo)</button>
+                    <button class="enrich-btn" onclick="enrichAction('fetch_prices')">Stock Prices</button>
+                    <button class="enrich-btn" onclick="enrichAction('fetch_analyst')">Analyst Ratings</button>
+                    <button class="enrich-btn" onclick="enrichAction('fetch_targets')">Price Targets</button>
                     <button class="enrich-btn" onclick="enrichAction('fetch_wsb')">WSB Sentiment</button>
-                    <button class="enrich-btn" onclick="enrichAction('fetch_market')">Market Regime (VIX)</button>
-                    <button class="enrich-btn" onclick="enrichAction('fetch_wiki')">Wikipedia Attention</button>
+                    <button class="enrich-btn" onclick="enrichAction('fetch_market')">Market Regime</button>
+                    <button class="enrich-btn" onclick="enrichAction('fetch_wiki')">Wikipedia</button>
                 </div>
                 <div id="enrich-detail" style="font-size:.78rem;color:var(--text-dim)"></div>
             </div>
             <div class="card">
                 <h2>Data Sources</h2>
-                <div id="sources-list">
-                    <div class="loading"><span class="spinner"></span> Loading sources...</div>
-                </div>
+                <div id="sources-list"><div class="loading"><span class="spinner"></span> Loading sources...</div></div>
             </div>
             <div class="card">
                 <h2>Dimension Score Analysis</h2>
-                <div id="health-explanation" style="font-size:.82rem;line-height:1.7;color:var(--text-dim)">
-                    <div class="loading"><span class="spinner"></span> Loading analysis...</div>
-                </div>
+                <div id="health-explanation" style="font-size:.82rem;line-height:1.7;color:var(--text-dim)"><div class="loading"><span class="spinner"></span> Loading analysis...</div></div>
             </div>
         </div>
 
@@ -286,7 +374,6 @@
         <div class="tab-panel" id="panel-glossary">
             <div class="card">
                 <h2>Scoring Scale</h2>
-                <p style="font-size:.82rem;color:var(--text-dim);margin-bottom:.75rem">All dimension scores and the conviction score use a 0-100 scale:</p>
                 <div class="scale-bar">
                     <div style="background:#ef4444">0-25<br>Strong Bearish</div>
                     <div style="background:#f97316">26-40<br>Bearish</div>
@@ -295,97 +382,55 @@
                     <div style="background:#22c55e">70-100<br>Strong Bullish</div>
                 </div>
             </div>
-
             <div class="card glossary-section">
-                <h3>The 6 Dimensions</h3>
+                <h3>New Enhancement Features</h3>
                 <div class="glossary-grid">
                     <div class="glossary-item">
-                        <h3>&#x1F40B; Whale Score (Weight: 20%)</h3>
-                        <p>Tracks institutional fund activity from SEC 13F quarterly filings. Measures how many tracked hedge funds/institutions hold the stock and whether they are increasing or decreasing positions.</p>
-                        <div class="gl-formula">Score = FundCount &times; 4 (max 40) + BullishRatio &times; 60</div>
-                        <p style="margin-top:.4rem">A score of 64 means ~1 fund holding with bullish momentum. Low diversity in 13F data limits score range.</p>
+                        <h3>&#x1F4C8; Conviction Trend</h3>
+                        <p>Compares today's conviction score to 7 days ago. Shows direction arrow: up (+5 pts), down (-5 pts), or stable. Helps identify momentum shifts in conviction.</p>
                     </div>
                     <div class="glossary-item">
-                        <h3>&#x1F4BC; Insider Score (Weight: 20%)</h3>
-                        <p>Analyzes SEC Form 4 insider trading reports over the last 90 days. Looks at the dollar value ratio of insider buys vs sells, with bonuses for cluster buying (3+ insiders) and C-suite purchases.</p>
-                        <div class="gl-formula">Score = BuyRatio &times; 70 + ClusterBonus(15) + OfficerBonus(10)</div>
-                        <p style="margin-top:.4rem">A score of 0 means zero insider purchases detected in 90 days (only selling). This is common for mega-caps where executives routinely sell via planned 10b5-1 programs.</p>
+                        <h3>&#x1F6E1; Risk-Adjusted Score</h3>
+                        <p>Conviction score minus ATR(14) volatility penalty. Higher volatility = higher penalty (max 10 pts). Penalizes high-conviction but volatile tickers.</p>
+                        <div class="gl-formula">Risk-Adj = Conviction - min(10, ATR/Price * 100)</div>
                     </div>
                     <div class="glossary-item">
-                        <h3>&#x1F393; Analyst Score (Weight: 20%)</h3>
-                        <p>Wall Street analyst consensus from Finnhub. Weights: Strong Buy (+2), Buy (+1), Hold (0), Sell (-1), Strong Sell (-2). Maps the weighted sum to 0-80 scale, then adds a price target upside bonus (+/-20 pts max).</p>
-                        <div class="gl-formula">Score = WeightedConsensus/MaxPossible &times; 80 + UpsideBonus</div>
-                        <p style="margin-top:.4rem">Most mega-caps have a moderate buy consensus, yielding scores of 55-66.</p>
+                        <h3>&#x1F504; Sector Rotation</h3>
+                        <p>Compares average conviction across sectors: Tech, Finance, Healthcare, Energy, Retail. Signal triggers when one sector leads by 10+ points.</p>
                     </div>
                     <div class="glossary-item">
-                        <h3>&#x1F4C8; Crowd Score (Weight: 15%)</h3>
-                        <p>Retail investor sentiment: 60% from Finnhub news sentiment (-1 to +1 scale) and 40% from WallStreetBets mention frequency and sentiment. High buzz amplifies the signal by 10%.</p>
-                        <div class="gl-formula">Score = NewsSentiment &times; 0.6 + WSBSentiment &times; 0.4</div>
-                        <p style="margin-top:.4rem">Slightly positive news sentiment (0.2-0.3) maps to scores around 55-65.</p>
+                        <h3>&#x1F3AF; Performance Tracking</h3>
+                        <p>Records conviction + price at calculation time. After 7/14/30 days, fills in actual returns. Win = positive 30-day return. Validates if high conviction predicts gains.</p>
                     </div>
                     <div class="glossary-item">
-                        <h3>&#x1F631; Fear/Greed Score (Weight: 15%)</h3>
-                        <p><strong>Contrarian indicator.</strong> The composite Fear &amp; Greed index is INVERTED: extreme fear (raw 10) becomes a conviction score of 90, because historically, extreme fear is a buying opportunity. This is the same score for all tickers since it measures overall market sentiment.</p>
-                        <div class="gl-formula">Score = 100 - RawFearGreedIndex</div>
-                        <p style="margin-top:.4rem">When the raw index is ~49 (neutral), the inverted score is ~51 &mdash; contributing nothing meaningful to conviction in either direction.</p>
-                    </div>
-                    <div class="glossary-item">
-                        <h3>&#x1F9E0; Regime Score (Weight: 10%)</h3>
-                        <p>Market environment assessment: 60% from VIX-based regime classification (calm_bull=80, moderate_bull=65, moderate_bear=35, high_vol=25, extreme_vol=15) and 40% from the ticker's own 24-hour price momentum.</p>
-                        <div class="gl-formula">Score = RegimeBase &times; 0.6 + MomentumComponent &times; 0.4</div>
-                        <p style="margin-top:.4rem">In a calm bull market (VIX 17.8), regime base is 80 &rarr; blended score ~65-70.</p>
+                        <h3>&#x1F514; Alert System</h3>
+                        <p>Auto-generates alerts: conviction jumps/drops (&gt;10pts/7d), insider clusters (3+ buyers), massive insider buys ($5M+), fear/greed extremes, conviction-price divergences, whale accumulation.</p>
                     </div>
                 </div>
             </div>
-
             <div class="card glossary-section">
-                <h3>Conviction Score</h3>
+                <h3>The 9 Dimensions</h3>
                 <div class="glossary-grid">
-                    <div class="glossary-item" style="grid-column:1/-1">
-                        <h3>&#x1F3AF; Conviction Score (Composite)</h3>
-                        <p>The final verdict &mdash; a weighted average of all 9 dimensions:</p>
-                        <div class="gl-formula">Conviction = Whale&times;0.18 + Analyst&times;0.18 + Insider&times;0.14 + Crowd&times;0.13 + F&amp;G&times;0.12 + Regime&times;0.10 + Value&times;0.05 + Growth&times;0.05 + Momentum&times;0.05</div>
-                        <p style="margin-top:.5rem"><strong>Labels:</strong> Strong Bullish (70+), Bullish (55-69), Neutral (41-54), Bearish (26-40), Strong Bearish (0-25).</p>
-                        <p style="margin-top:.3rem"><strong>Signal quality:</strong> Insider scoring now handles routine mega-cap selling (10b5-1 plans) as mildly bearish (30-35) instead of 0. Fear/Greed uses live VIX data with multi-layer fallbacks. Scores below 55 may still be neutral if the market is calm and no strong signals exist.</p>
-                    </div>
+                    <div class="glossary-item"><h3>&#x1F40B; Whale (18%)</h3><p>13F institutional fund holdings + net change momentum.</p></div>
+                    <div class="glossary-item"><h3>&#x1F4BC; Insider (18%)</h3><p>Form 4 buy/sell ratio + cluster + officer bonuses.</p></div>
+                    <div class="glossary-item"><h3>&#x1F393; Analyst (14%)</h3><p>Wall Street consensus + price target upside.</p></div>
+                    <div class="glossary-item"><h3>&#x1F4E2; Crowd (12%)</h3><p>60% news sentiment + 40% WSB.</p></div>
+                    <div class="glossary-item"><h3>&#x1F631; Fear/Greed (12%)</h3><p>Inverted composite index (contrarian).</p></div>
+                    <div class="glossary-item"><h3>&#x1F9E0; Regime (10%)</h3><p>60% VIX regime + 40% ticker momentum. Applied as multiplier.</p></div>
+                    <div class="glossary-item"><h3>&#x1F4B0; Value (9%)</h3><p>P/E, P/B, P/S vs industry or target upside proxy.</p></div>
+                    <div class="glossary-item"><h3>&#x1F331; Growth (9%)</h3><p>Revenue/earnings growth or beat rate proxy.</p></div>
+                    <div class="glossary-item"><h3>&#x26A1; Momentum (8%)</h3><p>Price momentum + volume + WSB buzz.</p></div>
                 </div>
             </div>
-
             <div class="card glossary-section">
                 <h3>Key Terms</h3>
                 <div class="glossary-grid">
-                    <div class="glossary-item">
-                        <h3>13F Filing</h3>
-                        <p>Quarterly SEC report required from institutional investment managers with >$100M in assets. Shows their stock holdings. Filed 45 days after quarter end, so data is always 1-4 months old.</p>
-                    </div>
-                    <div class="glossary-item">
-                        <h3>Form 4 (Insider Trading)</h3>
-                        <p>SEC filing required within 2 business days when a company insider (officer, director, 10%+ shareholder) buys or sells company stock. Type P = Purchase, S = Sale.</p>
-                    </div>
-                    <div class="glossary-item">
-                        <h3>VIX (Volatility Index)</h3>
-                        <p>The CBOE Volatility Index measures expected 30-day S&amp;P 500 volatility. Below 18 = calm market, 18-25 = moderate, above 25 = high volatility, above 35 = extreme fear.</p>
-                    </div>
-                    <div class="glossary-item">
-                        <h3>MSPR (Money-flow Sentiment)</h3>
-                        <p>Monthly Share Purchase Ratio from Finnhub. Measures whether insiders are net buying or selling relative to total activity. Used in the Smart Money system.</p>
-                    </div>
-                    <div class="glossary-item">
-                        <h3>WSB (WallStreetBets)</h3>
-                        <p>Popular Reddit community (~15M members) for retail stock discussion. Mention frequency and sentiment are tracked as a proxy for retail investor interest and herd behavior.</p>
-                    </div>
-                    <div class="glossary-item">
-                        <h3>Regime</h3>
-                        <p>Market state classification based on VIX level and trend. Six states: calm_bull, moderate_bull, calm_bear, moderate_bear, high_vol, extreme_vol. Determines whether it's safe to take aggressive positions.</p>
-                    </div>
-                    <div class="glossary-item">
-                        <h3>Cluster Buying</h3>
-                        <p>When 3 or more distinct insiders buy stock within 90 days. Considered a strong bullish signal because it suggests multiple people with inside knowledge are independently choosing to invest.</p>
-                    </div>
-                    <div class="glossary-item">
-                        <h3>Contrarian Indicator</h3>
-                        <p>A signal that goes against the crowd. The Fear/Greed dimension is inverted because historically, extreme fear (panic selling) often marks market bottoms &mdash; a buying opportunity.</p>
-                    </div>
+                    <div class="glossary-item"><h3>13F Filing</h3><p>Quarterly SEC report from managers with >$100M. 1-4 months delayed.</p></div>
+                    <div class="glossary-item"><h3>Form 4</h3><p>SEC filing within 2 days of insider buy/sell. Type P=Purchase, S=Sale.</p></div>
+                    <div class="glossary-item"><h3>VIX</h3><p>CBOE Volatility Index. Below 18=calm, 18-25=moderate, >25=high, >35=extreme.</p></div>
+                    <div class="glossary-item"><h3>ATR (Average True Range)</h3><p>14-day average of daily price range. Measures volatility. Higher ATR = more volatile = higher risk penalty.</p></div>
+                    <div class="glossary-item"><h3>Cluster Buying</h3><p>3+ distinct insiders buying in 7-90 days. Strong bullish signal.</p></div>
+                    <div class="glossary-item"><h3>Contrarian Indicator</h3><p>Fear/Greed is inverted: extreme fear often marks market bottoms.</p></div>
                 </div>
             </div>
         </div>
@@ -397,7 +442,7 @@
     </div>
 
     <script>
-    // ─── Tooltip system (position:fixed to escape overflow containers) ───
+    // ─── Tooltip system ───
     (function(){
         var box=document.getElementById('tooltip-box');
         var showing=false;
@@ -410,15 +455,10 @@
             var bw=box.offsetWidth,bh=box.offsetHeight;
             var left=r.left+r.width/2-bw/2;
             var top=r.top-bh-8;
-            // If clips top, show below instead
             if(top<4){top=r.bottom+8;}
-            // Keep within viewport horizontally
             if(left<4)left=4;
             if(left+bw>window.innerWidth-4)left=window.innerWidth-bw-4;
-            box.style.left=left+'px';
-            box.style.top=top+'px';
-            box.style.opacity='1';
-            showing=true;
+            box.style.left=left+'px';box.style.top=top+'px';box.style.opacity='1';showing=true;
         });
         document.addEventListener('mouseout',function(e){
             var el=e.target.closest('.tip');
@@ -429,12 +469,11 @@
         });
     })();
 
-    var MD_API = '/live-monitor/api/multi_dimensional.php';
-    var FG_API = '/live-monitor/api/fear_greed.php';
-    var DE_API = '/live-monitor/api/data_enrichment.php';
-    var ADMIN_KEY = 'livetrader2026';
-    var radarChart = null;
-    var fgHistoryChart = null;
+    var MD_API='/live-monitor/api/multi_dimensional.php';
+    var FG_API='/live-monitor/api/fear_greed.php';
+    var DE_API='/live-monitor/api/data_enrichment.php';
+    var ADMIN_KEY='livetrader2026';
+    var radarChart=null,fgHistoryChart=null,perfScatterChart=null;
 
     // Tab switching
     document.querySelectorAll('.tab-btn').forEach(function(btn){
@@ -456,14 +495,23 @@
     function heatCell(v){return '<div class="heatmap-cell" style="background:'+scoreColor(v)+'">'+v+'</div>'}
     function convictionBadge(label){
         var m={'strong_bullish':'badge-green','bullish':'badge-green','neutral':'badge-blue','bearish':'badge-red','strong_bearish':'badge-red'};
-        return '<span class="badge '+(m[label]||'badge-blue')+'">'+label.replace('_',' ')+'</span>';
+        return '<span class="badge '+(m[label]||'badge-blue')+'">'+label.replace(/_/g,' ')+'</span>';
     }
     function scoreBar(v){
         var c=v>=60?'var(--green)':v>=40?'var(--yellow)':'var(--red)';
         return '<div class="score-bar" style="width:60px;display:inline-block;vertical-align:middle;margin-left:6px"><div class="score-bar-fill" style="width:'+v+'%;background:'+c+'"></div></div>';
     }
-
-    // API fetch
+    function trendIcon(dir,delta){
+        if(dir==='up')return '<span style="color:var(--green)" title="+'+delta+' pts vs 7d ago">&#x2197;&#xFE0F; +'+delta+'</span>';
+        if(dir==='down')return '<span style="color:var(--red)" title="'+delta+' pts vs 7d ago">&#x2198;&#xFE0F; '+delta+'</span>';
+        if(dir==='stable')return '<span style="color:var(--text-dim)" title="Stable vs 7d ago">&#x27A1;&#xFE0F;</span>';
+        return '<span style="color:var(--text-dim);font-size:.7rem">new</span>';
+    }
+    function retCell(val,filled){
+        if(!filled)return '<span style="color:var(--text-dim)">--</span>';
+        var c=val>0?'var(--green)':val<0?'var(--red)':'var(--text)';
+        return '<span style="color:'+c+';font-weight:700">'+(val>0?'+':'')+val.toFixed(2)+'%</span>';
+    }
     function api(url,cb){
         fetch(url).then(function(r){return r.json()}).then(cb).catch(function(e){console.error('API error:',e);cb({ok:false})});
     }
@@ -476,32 +524,53 @@
             var el=document.getElementById('kpi-fg');
             el.textContent=fg.score||'--';
             el.className='value '+(fg.score>=60?'positive':fg.score<=40?'negative':'neutral');
-            document.getElementById('kpi-fg-label').textContent=(fg.classification||'').replace('_',' ');
-
+            document.getElementById('kpi-fg-label').textContent=(fg.classification||'').replace(/_/g,' ');
             var reg=d.regime||{};
-            document.getElementById('kpi-regime').textContent=(reg.regime||'--').replace('_',' ');
+            document.getElementById('kpi-regime').textContent=(reg.regime||'--').replace(/_/g,' ');
             document.getElementById('kpi-vix').textContent='VIX: '+(reg.vix||'--');
-
             document.getElementById('kpi-top').textContent=d.top_conviction_ticker||'--';
             var avg=d.averages||{};
             document.getElementById('kpi-top-score').textContent='Score: '+(avg.max_conviction||'--');
             document.getElementById('kpi-count').textContent=avg.ticker_count||'--';
-
-            // Gauge
             var gs=fg.score||50;
             document.getElementById('gauge-score').textContent=gs;
             document.getElementById('gauge-score').className='gauge-score '+(gs>=60?'positive':gs<=40?'negative':'neutral');
-            document.getElementById('gauge-label').textContent=(fg.classification||'neutral').replace('_',' ');
+            document.getElementById('gauge-label').textContent=(fg.classification||'neutral').replace(/_/g,' ');
             document.getElementById('gauge-bar').style.width=gs+'%';
-
-            // Avg dims
             var dims=['whale','insider','analyst','crowd','fg','regime'];
             dims.forEach(function(dim){
-                var key='avg_'+dim;
-                if(dim==='fg')key='avg_fear_greed';
+                var key='avg_'+dim;if(dim==='fg')key='avg_fear_greed';
                 var el2=document.getElementById('avg-'+dim);
                 if(el2&&avg[key]!==undefined){el2.textContent=avg[key];el2.className='dim-score '+clr(avg[key])}
             });
+        });
+        // Sector rotation
+        loadSectors();
+    }
+
+    function loadSectors(){
+        api(MD_API+'?action=sectors',function(d){
+            if(!d.ok)return;
+            var sigEl=document.getElementById('sector-signal');
+            var barsEl=document.getElementById('sector-bars');
+            sigEl.innerHTML=d.rotation_signal||'No signal';
+            if(d.lead_margin>=10){sigEl.style.color='var(--green)';}else{sigEl.style.color='var(--text-dim)';}
+            document.getElementById('kpi-rotation').textContent=d.leading_sector||'--';
+            document.getElementById('kpi-rotation-detail').textContent=d.lead_margin>=10?'+'+d.lead_margin+' pts lead':'No signal';
+            var html='';
+            var sectors=d.sectors||[];
+            for(var i=0;i<sectors.length;i++){
+                var s=sectors[i];
+                var w=Math.max(10,s.avg_conviction);
+                var c=s.avg_conviction>=60?'var(--green)':s.avg_conviction>=45?'var(--yellow)':'var(--red)';
+                html+='<div class="sector-bar">'
+                    +'<div class="lbl">'+s.sector+'</div>'
+                    +'<div class="bar" style="width:'+w+'%;background:'+c+'"></div>'
+                    +'<div class="val '+clr(s.avg_conviction)+'">'+s.avg_conviction+'</div>'
+                    +'<div style="font-size:.65rem;color:var(--text-dim);margin-left:.5rem">('+s.min+'-'+s.max+')</div>'
+                    +'</div>';
+            }
+            barsEl.innerHTML=html;
         });
     }
 
@@ -516,28 +585,18 @@
             });
             var labels=Object.keys(dates).sort();
             var composite=[],crypto=[];
-            labels.forEach(function(dt){
-                composite.push(dates[dt].composite||null);
-                crypto.push(dates[dt].crypto||null);
-            });
-
-            var ctx=document.getElementById('fg-history-chart');
-            if(!ctx)return;
+            labels.forEach(function(dt){composite.push(dates[dt].composite||null);crypto.push(dates[dt].crypto||null);});
+            var ctx=document.getElementById('fg-history-chart');if(!ctx)return;
             if(fgHistoryChart)fgHistoryChart.destroy();
             fgHistoryChart=new Chart(ctx,{
                 type:'line',
-                data:{
-                    labels:labels,
-                    datasets:[
-                        {label:'Composite',data:composite,borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,0.1)',fill:true,tension:0.3,pointRadius:2},
-                        {label:'Crypto',data:crypto,borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.05)',fill:false,tension:0.3,pointRadius:2,borderDash:[5,3]}
-                    ]
-                },
-                options:{
-                    responsive:true,maintainAspectRatio:false,
+                data:{labels:labels,datasets:[
+                    {label:'Composite',data:composite,borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,0.1)',fill:true,tension:0.3,pointRadius:2},
+                    {label:'Crypto',data:crypto,borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.05)',fill:false,tension:0.3,pointRadius:2,borderDash:[5,3]}
+                ]},
+                options:{responsive:true,maintainAspectRatio:false,
                     scales:{y:{min:0,max:100,grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#7777aa',font:{size:10}}},x:{grid:{display:false},ticks:{color:'#7777aa',font:{size:9},maxRotation:45}}},
-                    plugins:{legend:{labels:{color:'#e0e0f0',font:{size:11}}}}
-                }
+                    plugins:{legend:{labels:{color:'#e0e0f0',font:{size:11}}}}}
             });
         });
     }
@@ -547,60 +606,39 @@
         var ticker=document.getElementById('radar-ticker').value;
         api(MD_API+'?action=radar&ticker='+ticker,function(d){
             if(!d.ok)return;
-            var ctx=document.getElementById('radar-chart');
-            if(!ctx)return;
+            var ctx=document.getElementById('radar-chart');if(!ctx)return;
             if(radarChart)radarChart.destroy();
             radarChart=new Chart(ctx,{
                 type:'radar',
-                data:{
-                    labels:d.labels||['Whale','Insider','Analyst','Crowd','Fear/Greed','Regime'],
-                    datasets:[{
-                        label:ticker,
-                        data:d.scores||[50,50,50,50,50,50],
-                        backgroundColor:'rgba(99,102,241,0.2)',
-                        borderColor:'#6366f1',
-                        pointBackgroundColor:'#6366f1',
-                        pointBorderColor:'#fff',
-                        pointRadius:4,
-                        borderWidth:2
-                    }]
-                },
-                options:{
-                    responsive:true,maintainAspectRatio:false,
+                data:{labels:d.labels||['Whale','Insider','Analyst','Crowd','Fear/Greed','Regime'],
+                    datasets:[{label:ticker,data:d.scores||[50,50,50,50,50,50],backgroundColor:'rgba(99,102,241,0.2)',borderColor:'#6366f1',pointBackgroundColor:'#6366f1',pointBorderColor:'#fff',pointRadius:4,borderWidth:2}]},
+                options:{responsive:true,maintainAspectRatio:false,
                     scales:{r:{min:0,max:100,ticks:{stepSize:20,color:'#555',backdropColor:'transparent',font:{size:9}},grid:{color:'rgba(255,255,255,0.08)'},pointLabels:{color:'#e0e0f0',font:{size:11}}}},
-                    plugins:{legend:{display:false}}
-                }
+                    plugins:{legend:{display:false}}}
             });
-
-            // Update detail cards
             var scores=d.scores||[50,50,50,50,50,50];
             var ids=['rd-whale','rd-insider','rd-analyst','rd-crowd','rd-fg','rd-regime'];
-            ids.forEach(function(id,i){
-                var el=document.getElementById(id);
-                if(el){el.textContent=scores[i];el.className='dim-score '+clr(scores[i])}
-            });
-
-            // Conviction
+            ids.forEach(function(id,i){var el=document.getElementById(id);if(el){el.textContent=scores[i];el.className='dim-score '+clr(scores[i])}});
             document.getElementById('radar-conviction').textContent=d.conviction||'--';
             document.getElementById('radar-conviction').className=clr(d.conviction||50);
-            document.getElementById('radar-label').textContent=(d.conviction_label||'neutral').replace('_',' ');
+            document.getElementById('radar-label').textContent=(d.conviction_label||'neutral').replace(/_/g,' ');
             document.getElementById('radar-label').className='badge '+(d.conviction>=55?'badge-green':d.conviction<=40?'badge-red':'badge-blue');
+            // Trend + Risk-adj
+            var tEl=document.getElementById('radar-trend');
+            tEl.innerHTML=trendIcon(d.trend_direction||'new',d.trend_delta||0);
+            var rEl=document.getElementById('radar-risk');
+            if(d.risk_adjusted_score!==undefined){
+                rEl.innerHTML='Risk-Adjusted: <strong class="'+clr(d.risk_adjusted_score)+'">'+d.risk_adjusted_score+'</strong>'
+                    +(d.volatility_penalty>0?' <span style="color:var(--red);font-size:.7rem">(-'+d.volatility_penalty+' ATR penalty)</span>':'');
+            }
         });
     }
 
     // ─── Load Top Picks ───
     function signalNote(p){
-        // Build signal strength breakdown for each stock
         var strong=[],weak=[];
-        var dims=[
-            {name:'Whale',val:p.whale_score},{name:'Insider',val:p.insider_score},
-            {name:'Analyst',val:p.analyst_score},{name:'Crowd',val:p.crowd_score},
-            {name:'F&G',val:p.fear_greed_score},{name:'Regime',val:p.regime_score}
-        ];
-        for(var i=0;i<dims.length;i++){
-            if(dims[i].val>=65) strong.push(dims[i].name+' '+dims[i].val);
-            else if(dims[i].val<=35) weak.push(dims[i].name+' '+dims[i].val);
-        }
+        var dims=[{name:'Whale',val:p.whale_score},{name:'Insider',val:p.insider_score},{name:'Analyst',val:p.analyst_score},{name:'Crowd',val:p.crowd_score},{name:'F&G',val:p.fear_greed_score},{name:'Regime',val:p.regime_score}];
+        for(var i=0;i<dims.length;i++){if(dims[i].val>=65)strong.push(dims[i].name+' '+dims[i].val);else if(dims[i].val<=35)weak.push(dims[i].name+' '+dims[i].val);}
         var parts=[];
         if(strong.length>0)parts.push('<span style="color:var(--green);font-size:.65rem">'+strong.join(', ')+'</span>');
         if(weak.length>0)parts.push('<span style="color:var(--red);font-size:.65rem">'+weak.join(', ')+'</span>');
@@ -609,12 +647,14 @@
     function loadPicks(){
         api(MD_API+'?action=top_picks',function(d){
             var body=document.getElementById('picks-body');
-            if(!d.ok||!d.picks||d.picks.length===0){body.innerHTML='<tr><td colspan="9" class="loading">No data. Run Calculate from admin first.</td></tr>';return}
+            if(!d.ok||!d.picks||d.picks.length===0){body.innerHTML='<tr><td colspan="11" class="loading">No data.</td></tr>';return}
             var html='';
             d.picks.forEach(function(p){
                 html+='<tr>'
                     +'<td style="font-weight:700">'+p.ticker+'</td>'
                     +'<td class="'+clr(p.conviction_score)+'" style="font-weight:800;font-size:1rem">'+p.conviction_score+scoreBar(p.conviction_score)+signalNote(p)+'</td>'
+                    +'<td>'+trendIcon(p.trend_direction,p.trend_delta)+'</td>'
+                    +'<td class="'+clr(p.risk_adjusted_score||p.conviction_score)+'" style="font-weight:700">'+(p.risk_adjusted_score!==undefined?p.risk_adjusted_score:p.conviction_score)+(p.volatility_penalty>0?' <span style="color:var(--red);font-size:.6rem">-'+p.volatility_penalty+'</span>':'')+'</td>'
                     +'<td class="'+clr(p.whale_score)+'">'+p.whale_score+'</td>'
                     +'<td class="'+clr(p.insider_score)+'">'+p.insider_score+'</td>'
                     +'<td class="'+clr(p.analyst_score)+'">'+p.analyst_score+'</td>'
@@ -632,7 +672,7 @@
     function loadHeatmap(){
         api(MD_API+'?action=all',function(d){
             var body=document.getElementById('heatmap-body');
-            if(!d.ok||!d.tickers||d.tickers.length===0){body.innerHTML='<tr><td colspan="8" class="loading">No data yet.</td></tr>';return}
+            if(!d.ok||!d.tickers||d.tickers.length===0){body.innerHTML='<tr><td colspan="10" class="loading">No data.</td></tr>';return}
             var html='';
             d.tickers.forEach(function(t){
                 html+='<tr>'
@@ -644,183 +684,222 @@
                     +'<td>'+heatCell(t.fear_greed_score)+'</td>'
                     +'<td>'+heatCell(t.regime_score)+'</td>'
                     +'<td>'+heatCell(t.conviction_score)+'</td>'
+                    +'<td>'+trendIcon(t.trend_direction,t.trend_delta)+'</td>'
+                    +'<td>'+heatCell(t.risk_adjusted_score!==undefined?t.risk_adjusted_score:t.conviction_score)+'</td>'
                     +'</tr>';
             });
             body.innerHTML=html;
         });
     }
 
-    // ─── Load Data Health (from data_enrichment.php) ───
+    // ─── Load Performance ───
+    function loadPerformance(){
+        api(MD_API+'?action=performance&limit=200',function(d){
+            if(!d.ok)return;
+            var recs=d.records||[];
+            document.getElementById('perf-total').textContent=recs.length;
+            var f7=0,f30=0,wins=0,losses=0;
+            var scatterX=[],scatterY=[];
+            for(var i=0;i<recs.length;i++){
+                if(recs[i].filled_7d)f7++;
+                if(recs[i].filled_30d){
+                    f30++;
+                    if(recs[i].outcome_30d==='win')wins++;
+                    if(recs[i].outcome_30d==='loss')losses++;
+                }
+                if(recs[i].filled_7d){scatterX.push(recs[i].conviction_score);scatterY.push(recs[i].return_7d);}
+            }
+            document.getElementById('perf-filled7').textContent=f7;
+            document.getElementById('perf-filled30').textContent=f30;
+            var wr=(wins+losses>0)?Math.round(wins/(wins+losses)*100):0;
+            document.getElementById('perf-winrate').textContent=wr+'%';
+            document.getElementById('perf-winrate').className='pv '+(wr>=50?'positive':'negative');
+            // Table
+            var body=document.getElementById('perf-body');
+            if(recs.length===0){body.innerHTML='<tr><td colspan="9" class="loading">No performance data yet. Data accumulates daily.</td></tr>';return}
+            var html='';
+            for(var j=0;j<Math.min(recs.length,100);j++){
+                var r=recs[j];
+                html+='<tr>'
+                    +'<td style="font-weight:700">'+r.ticker+'</td>'
+                    +'<td>'+r.conviction_date+'</td>'
+                    +'<td class="'+clr(r.conviction_score)+'" style="font-weight:700">'+r.conviction_score+'</td>'
+                    +'<td>'+convictionBadge(r.conviction_label)+'</td>'
+                    +'<td>$'+r.entry_price.toFixed(2)+'</td>'
+                    +'<td>'+retCell(r.return_7d,r.filled_7d)+'</td>'
+                    +'<td>'+retCell(r.return_14d,r.filled_14d||0)+'</td>'
+                    +'<td>'+retCell(r.return_30d,r.filled_30d)+'</td>'
+                    +'<td>'+(r.filled_30d?(r.outcome_30d==='win'?'<span class="positive">WIN</span>':'<span class="negative">LOSS</span>'):'<span style="color:var(--text-dim)">pending</span>')+'</td>'
+                    +'</tr>';
+            }
+            body.innerHTML=html;
+            // Scatter chart
+            if(scatterX.length>0){
+                var ctx=document.getElementById('perf-scatter-chart');if(!ctx)return;
+                if(perfScatterChart)perfScatterChart.destroy();
+                var pts=[];for(var k=0;k<scatterX.length;k++){pts.push({x:scatterX[k],y:scatterY[k]});}
+                perfScatterChart=new Chart(ctx,{
+                    type:'scatter',
+                    data:{datasets:[{label:'Conviction vs 7D Return',data:pts,backgroundColor:pts.map(function(p){return p.y>=0?'rgba(34,197,94,0.6)':'rgba(239,68,68,0.6)'}),pointRadius:5}]},
+                    options:{responsive:true,maintainAspectRatio:false,
+                        scales:{x:{title:{display:true,text:'Conviction Score',color:'#7777aa'},grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#7777aa'}},
+                                y:{title:{display:true,text:'7-Day Return %',color:'#7777aa'},grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#7777aa'}}},
+                        plugins:{legend:{labels:{color:'#e0e0f0'}}}}
+                });
+            }
+        });
+        // Stats
+        api(MD_API+'?action=stats&period=30d',function(d){
+            var body=document.getElementById('stats-body');
+            if(!d.ok||!d.stats||d.stats.length===0){body.innerHTML='<tr><td colspan="9" class="loading">No stats yet. Data accumulates after 7+ days.</td></tr>';return}
+            var html='';
+            d.stats.forEach(function(s){
+                html+='<tr>'
+                    +'<td style="font-weight:700">'+s.bucket+'</td>'
+                    +'<td>'+s.total+'</td>'
+                    +'<td class="positive">'+s.wins+'</td>'
+                    +'<td class="negative">'+s.losses+'</td>'
+                    +'<td>'+s.pending+'</td>'
+                    +'<td style="font-weight:700" class="'+(s.win_rate>=50?'positive':'negative')+'">'+s.win_rate+'%</td>'
+                    +'<td>'+retCell(s.avg_return,true)+'</td>'
+                    +'<td class="positive">'+(s.max_return>0?'+':'')+s.max_return.toFixed(2)+'%</td>'
+                    +'<td class="negative">'+s.min_return.toFixed(2)+'%</td>'
+                    +'</tr>';
+            });
+            body.innerHTML=html;
+        });
+    }
+
+    // ─── Load Alerts ───
+    function loadAlerts(){
+        api(MD_API+'?action=alerts&limit=30',function(d){
+            if(!d.ok)return;
+            var badge=document.getElementById('bell-badge');
+            var tabCount=document.getElementById('alert-tab-count');
+            if(d.unread_count>0){
+                badge.textContent=d.unread_count;badge.style.display='block';
+                tabCount.textContent=d.unread_count;tabCount.style.display='inline';
+            } else {
+                badge.style.display='none';tabCount.style.display='none';
+            }
+            var list=document.getElementById('alerts-list');
+            var alerts=d.alerts||[];
+            if(alerts.length===0){list.innerHTML='<p style="color:var(--text-dim);text-align:center;padding:2rem">No alerts yet. Alerts are generated during score calculation.</p>';return}
+            var typeIcons={'conviction_jump':'&#x1F680;','conviction_drop':'&#x1F4C9;','insider_cluster':'&#x1F40B;','insider_massive':'&#x1F4B0;','fear_opportunity':'&#x1F631;','greed_extreme':'&#x1F911;','conviction_divergence':'&#x26A0;','whale_accumulation':'&#x1F4C8;'};
+            var html='';
+            alerts.forEach(function(a){
+                var icon=typeIcons[a.alert_type]||'&#x1F514;';
+                var readClass=a.is_read?'read':'';
+                html+='<div class="alert-card '+a.severity+' '+readClass+'">'
+                    +'<div class="alert-icon">'+icon+'</div>'
+                    +'<div class="alert-body">'
+                    +'<div class="alert-msg">'+a.message+'</div>'
+                    +'<div class="alert-meta">'
+                    +'<span>'+a.created_at+'</span>'
+                    +'<span class="badge badge-'+(a.severity==='critical'?'red':a.severity==='warning'?'gold':'blue')+'">'+a.severity+'</span>'
+                    +(a.ticker?'<span style="font-weight:700">'+a.ticker+'</span>':'')
+                    +'<span style="color:var(--text-dim)">'+a.alert_type.replace(/_/g,' ')+'</span>'
+                    +(!a.is_read?'<button class="alert-mark" onclick="markRead('+a.id+')">Mark Read</button>':'')
+                    +'</div></div></div>';
+            });
+            list.innerHTML=html;
+        });
+    }
+    function markRead(id){
+        api(MD_API+'?action=mark_alert_read&id='+id,function(){loadAlerts();});
+    }
+    function markAllRead(){
+        api(MD_API+'?action=mark_alert_read&all=1',function(){loadAlerts();});
+    }
+
+    // ─── Load Data Health ───
     function loadHealth(){
         api(DE_API+'?action=health',function(d){
             var container=document.getElementById('health-rows');
-            if(!d.ok||!d.data){
-                container.innerHTML='<p style="color:var(--text-dim)">Could not load health data.</p>';
-                return;
-            }
+            if(!d.ok||!d.data){container.innerHTML='<p style="color:var(--text-dim)">Could not load health data.</p>';return;}
             var h=d.data;
-            var icons={
-                prices:'&#x1F4B0;', analyst_ratings:'&#x1F393;', price_targets:'&#x1F3AF;',
-                market_regimes:'&#x1F9E0;', wsb_sentiment:'&#x1F4AC;', fear_greed:'&#x1F631;',
-                insider_trades:'&#x1F4BC;', holdings_13f:'&#x1F40B;', news_sentiment:'&#x1F4F0;',
-                multi_dimensional:'&#x1F4CA;'
-            };
-            var names={
-                prices:'Stock Prices', analyst_ratings:'Analyst Ratings', price_targets:'Price Targets',
-                market_regimes:'Market Regime (VIX)', wsb_sentiment:'WSB Sentiment', fear_greed:'Fear & Greed',
-                insider_trades:'Insider Trades (Form 4)', holdings_13f:'13F Holdings', news_sentiment:'News Sentiment',
-                multi_dimensional:'Multi-Dimensional Scores'
-            };
+            var icons={prices:'&#x1F4B0;',analyst_ratings:'&#x1F393;',price_targets:'&#x1F3AF;',market_regimes:'&#x1F9E0;',wsb_sentiment:'&#x1F4AC;',fear_greed:'&#x1F631;',insider_trades:'&#x1F4BC;',holdings_13f:'&#x1F40B;',news_sentiment:'&#x1F4F0;',multi_dimensional:'&#x1F4CA;'};
+            var names={prices:'Stock Prices',analyst_ratings:'Analyst Ratings',price_targets:'Price Targets',market_regimes:'Market Regime',wsb_sentiment:'WSB Sentiment',fear_greed:'Fear & Greed',insider_trades:'Insider Trades',holdings_13f:'13F Holdings',news_sentiment:'News Sentiment',multi_dimensional:'Multi-Dimensional'};
             var html='';
-            var keys=['prices','analyst_ratings','price_targets','market_regimes','wsb_sentiment',
-                      'fear_greed','insider_trades','holdings_13f','news_sentiment','multi_dimensional'];
+            var keys=['prices','analyst_ratings','price_targets','market_regimes','wsb_sentiment','fear_greed','insider_trades','holdings_13f','news_sentiment','multi_dimensional'];
             for(var i=0;i<keys.length;i++){
-                var k=keys[i];
-                if(!h[k])continue;
-                var item=h[k];
-                var dot=item.status||'red';
-                var extra='';
-                if(item.vix)extra=' | VIX: '+item.vix;
-                if(item.total_mentions)extra=' | Mentions: '+item.total_mentions;
-                html+='<div class="health-row">'
-                    +'<div class="health-dot '+dot+'"></div>'
-                    +'<div class="health-label">'+(icons[k]||'')+' <strong>'+(names[k]||k)+'</strong>'
-                    +'<div class="health-note">Source: '+item.source+' | Last: '+(item.latest||'never')+extra+'</div></div>'
-                    +'<div class="health-value" style="color:'+(dot==='red'?'var(--red)':dot==='yellow'?'var(--yellow)':'var(--green)')+'">'
-                    +item.count+' rows</div></div>';
+                var k=keys[i];if(!h[k])continue;var item=h[k];var dot=item.status||'red';
+                var extra='';if(item.vix)extra=' | VIX: '+item.vix;if(item.total_mentions)extra=' | Mentions: '+item.total_mentions;
+                html+='<div class="health-row"><div class="health-dot '+dot+'"></div><div class="health-label">'+(icons[k]||'')+' <strong>'+(names[k]||k)+'</strong><div class="health-note">Source: '+item.source+' | Last: '+(item.latest||'never')+extra+'</div></div><div class="health-value" style="color:'+(dot==='red'?'var(--red)':dot==='yellow'?'var(--yellow)':'var(--green)')+'">'+item.count+' rows</div></div>';
             }
             container.innerHTML=html;
         });
-
-        // Also load sources
         api(DE_API+'?action=sources',function(d){
             var el=document.getElementById('sources-list');
             if(!d.ok||!d.sources){el.innerHTML='<p style="color:var(--text-dim)">Could not load sources.</p>';return;}
-            var sIcons=['&#x1F4CA;','&#x1F4AC;','&#x1F4C8;','&#x1F631;','&#x1F3DB;'];
             var html='';
-            for(var i=0;i<d.sources.length;i++){
-                var s=d.sources[i];
-                html+='<div class="source-row">'
-                    +'<div class="source-icon">'+(sIcons[i]||'&#x1F517;')+'</div>'
-                    +'<div class="source-name">'+s.name+'</div>'
-                    +'<div class="source-detail">'+s.provides+'<br>Rate limit: '+s.rate_limit+' | Auth: '+s.auth+'</div>'
-                    +'<div><span class="source-badge free">'+s.type+'</span></div></div>';
-            }
+            for(var i=0;i<d.sources.length;i++){var s=d.sources[i];html+='<div class="source-row"><div class="source-icon">&#x1F517;</div><div class="source-name">'+s.name+'</div><div class="source-detail">'+s.provides+'<br>Rate: '+s.rate_limit+' | Auth: '+s.auth+'</div><div><span class="source-badge free">'+s.type+'</span></div></div>';}
             el.innerHTML=html;
         });
-
-        // Also load dimension analysis
         loadDimensionAnalysis();
     }
-
     function loadDimensionAnalysis(){
         api(MD_API+'?action=all',function(d){
             var explain=document.getElementById('health-explanation');
-            if(!d.ok||!d.tickers||d.tickers.length===0){
-                explain.innerHTML='<p style="color:var(--text-dim)">No multi-dimensional data yet. Click "Refresh All Data" above to populate all dimensions.</p>';
-                return;
-            }
-            var tickers=d.tickers;
-            var count=tickers.length;
+            if(!d.ok||!d.tickers||d.tickers.length===0){explain.innerHTML='<p style="color:var(--text-dim)">No data yet. Click "Refresh All Data".</p>';return}
+            var tickers=d.tickers,count=tickers.length;
             var dims=['whale_score','insider_score','analyst_score','crowd_score','fear_greed_score','regime_score'];
             var labels=['Whale','Insider','Analyst','Crowd','F/G','Regime'];
-            var totalConv=0,minConv=100,maxConv=0,zeroInsider=0;
-            for(var j=0;j<count;j++){
-                var c=tickers[j].conviction_score;
-                totalConv+=c;if(c<minConv)minConv=c;if(c>maxConv)maxConv=c;
-                if(tickers[j].insider_score===0)zeroInsider++;
-            }
+            var totalConv=0,minConv=100,maxConv=0;
+            for(var j=0;j<count;j++){var c=tickers[j].conviction_score;totalConv+=c;if(c<minConv)minConv=c;if(c>maxConv)maxConv=c;}
             var avgConv=Math.round(totalConv/count);
-            var convLabel=avgConv>=60?'Bullish':avgConv<=40?'Bearish':'Neutral';
-            var ex='<div style="margin-bottom:1rem"><strong style="color:var(--text-bright);font-size:.95rem">'
-                +'Summary: '+count+' tickers scored, avg conviction '+avgConv+' ('+convLabel+'), range '+minConv+'-'+maxConv+'</strong></div>';
-
-            // Per-dimension breakdown
+            var ex='<div style="margin-bottom:1rem"><strong style="color:var(--text-bright)">'+count+' tickers, avg conviction '+avgConv+', range '+minConv+'-'+maxConv+'</strong></div>';
             ex+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:1rem">';
             for(var i=0;i<dims.length;i++){
                 var sum=0,mn=100,mx=0;
                 for(var j2=0;j2<count;j2++){var v2=tickers[j2][dims[i]];sum+=v2;if(v2<mn)mn=v2;if(v2>mx)mx=v2;}
                 var avg2=Math.round(sum/count);
-                var cl=avg2>=60?'positive':avg2<=40?'negative':'neutral';
-                ex+='<div style="background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:8px;padding:.5rem;text-align:center">'
-                   +'<div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase">'+labels[i]+'</div>'
-                   +'<div class="'+cl+'" style="font-size:1.1rem;font-weight:800">'+avg2+'</div>'
-                   +'<div style="font-size:.6rem;color:var(--text-dim)">'+mn+' - '+mx+'</div></div>';
+                ex+='<div style="background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:8px;padding:.5rem;text-align:center"><div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase">'+labels[i]+'</div><div class="'+clr(avg2)+'" style="font-size:1.1rem;font-weight:800">'+avg2+'</div><div style="font-size:.6rem;color:var(--text-dim)">'+mn+' - '+mx+'</div></div>';
             }
             ex+='</div>';
-
-            if(zeroInsider>0){
-                ex+='<div style="margin-bottom:.5rem;padding:.5rem .75rem;background:rgba(239,68,68,.06);border-radius:8px;border:1px solid rgba(239,68,68,.15);font-size:.8rem">'
-                   +'<strong style="color:var(--red)">Insider gap:</strong> '+zeroInsider+'/'+count+' tickers have insider score 0 (no purchases found). This is normal for mega-caps where executives sell via 10b5-1 plans.</div>';
-            }
-            ex+='<div style="margin-top:.75rem;padding:.75rem;background:rgba(34,197,94,.06);border-radius:8px;border:1px solid rgba(34,197,94,.15);font-size:.8rem">'
-               +'<strong style="color:var(--green)">To improve scores:</strong> Click "Refresh All Data" to pull fresh analyst ratings, WSB sentiment, stock prices, and market regime data. This populates the missing dimensions.</div>';
             explain.innerHTML=ex;
         });
     }
 
-    // ─── Data Enrichment Admin Functions ───
+    // ─── Enrichment Admin ───
     function enrichAction(action){
-        var btns=document.querySelectorAll('.enrich-btn');
-        for(var i=0;i<btns.length;i++){btns[i].disabled=true;btns[i].classList.add('running');}
+        var btns=document.querySelectorAll('.enrich-btn');for(var i=0;i<btns.length;i++){btns[i].disabled=true;btns[i].classList.add('running');}
         var detail=document.getElementById('enrich-detail');
-        detail.innerHTML='<span class="spinner"></span> Fetching '+action+'... (may take 10-20 seconds)';
+        detail.innerHTML='<span class="spinner"></span> Fetching '+action+'...';
         var status=document.getElementById('enrich-status');
-        status.style.display='block';
-        status.style.background='rgba(245,158,11,.1)';status.style.color='var(--gold)';status.style.border='1px solid rgba(245,158,11,.3)';
-        status.textContent='Fetching data from '+action.replace('fetch_','')+'...';
-
+        status.style.display='block';status.style.background='rgba(245,158,11,.1)';status.style.color='var(--gold)';status.style.border='1px solid rgba(245,158,11,.3)';
+        status.textContent='Fetching '+action.replace('fetch_','')+'...';
         api(DE_API+'?action='+action+'&key='+ADMIN_KEY,function(d){
             for(var j=0;j<btns.length;j++){btns[j].disabled=false;btns[j].classList.remove('running');}
-            if(d.ok){
-                status.style.background='rgba(34,197,94,.1)';status.style.color='var(--green)';status.style.border='1px solid rgba(34,197,94,.3)';
-                status.textContent='Success! '+action.replace('fetch_','')+' data updated.';
-                detail.innerHTML='<pre style="white-space:pre-wrap;font-size:.72rem;color:var(--text-dim);max-height:200px;overflow:auto">'+JSON.stringify(d.data,null,2)+'</pre>';
-            } else {
-                status.style.background='rgba(239,68,68,.1)';status.style.color='var(--red)';status.style.border='1px solid rgba(239,68,68,.3)';
-                status.textContent='Error: '+(d.error||'unknown');
-                detail.innerHTML='<span style="color:var(--red)">Failed: '+(d.error||'Unknown error')+'</span>';
-            }
+            if(d.ok){status.style.background='rgba(34,197,94,.1)';status.style.color='var(--green)';status.style.border='1px solid rgba(34,197,94,.3)';status.textContent='Success!';detail.innerHTML='<pre style="white-space:pre-wrap;font-size:.72rem;color:var(--text-dim);max-height:200px;overflow:auto">'+JSON.stringify(d.data,null,2)+'</pre>';}
+            else{status.style.background='rgba(239,68,68,.1)';status.style.color='var(--red)';status.style.border='1px solid rgba(239,68,68,.3)';status.textContent='Error: '+(d.error||'unknown');}
             loadHealth();
         });
     }
-
     function enrichAll(){
-        var btn=document.getElementById('btn-refresh-all');
-        btn.disabled=true;btn.textContent='Refreshing...';btn.style.opacity='.5';
-        var btns=document.querySelectorAll('.enrich-btn');
-        for(var i=0;i<btns.length;i++){btns[i].disabled=true;}
-        var status=document.getElementById('enrich-status');
-        status.style.display='block';
+        var btn=document.getElementById('btn-refresh-all');btn.disabled=true;btn.textContent='Refreshing...';btn.style.opacity='.5';
+        var btns=document.querySelectorAll('.enrich-btn');for(var i=0;i<btns.length;i++){btns[i].disabled=true;}
+        var status=document.getElementById('enrich-status');status.style.display='block';
         status.style.background='rgba(245,158,11,.1)';status.style.color='var(--gold)';status.style.border='1px solid rgba(245,158,11,.3)';
-        status.innerHTML='<span class="spinner"></span> Refreshing ALL data sources... This fetches stock prices, analyst ratings, WSB sentiment, VIX, and recalculates all scores. May take 30-60 seconds.';
-
+        status.innerHTML='<span class="spinner"></span> Refreshing ALL data sources... 30-60 seconds.';
         api(DE_API+'?action=fetch_all&key='+ADMIN_KEY,function(d){
             btn.disabled=false;btn.textContent='Refresh All Data';btn.style.opacity='1';
             for(var j=0;j<btns.length;j++){btns[j].disabled=false;}
             if(d.ok){
-                status.style.background='rgba(34,197,94,.1)';status.style.color='var(--green)';status.style.border='1px solid rgba(34,197,94,.3)';
                 var elapsed=d.elapsed_seconds||'?';
-                status.innerHTML='All data refreshed in '+elapsed+'s! Reloading dashboard...';
-                // Reload all panels
-                setTimeout(function(){
-                    loadMarket();loadFGHistory();loadRadar();loadPicks();loadHeatmap();loadHealth();
-                    status.textContent='All data refreshed in '+elapsed+'s. Dashboard reloaded.';
-                },500);
-            } else {
-                status.style.background='rgba(239,68,68,.1)';status.style.color='var(--red)';status.style.border='1px solid rgba(239,68,68,.3)';
-                status.textContent='Error: '+(d.error||'unknown');
-            }
+                status.style.background='rgba(34,197,94,.1)';status.style.color='var(--green)';status.style.border='1px solid rgba(34,197,94,.3)';
+                status.innerHTML='All refreshed in '+elapsed+'s! Reloading...';
+                setTimeout(function(){loadAll();status.textContent='Done in '+elapsed+'s.';},500);
+            } else {status.style.background='rgba(239,68,68,.1)';status.style.color='var(--red)';status.style.border='1px solid rgba(239,68,68,.3)';status.textContent='Error: '+(d.error||'unknown');}
         });
     }
 
+    function loadAll(){loadMarket();loadFGHistory();loadRadar();loadPicks();loadHeatmap();loadHealth();loadPerformance();loadAlerts();}
+
     // Init
-    loadMarket();
-    loadFGHistory();
-    loadRadar();
-    loadPicks();
-    loadHeatmap();
-    loadHealth();
+    loadAll();
+    // Auto-refresh alerts every 60s
+    setInterval(loadAlerts,60000);
     </script>
 <!-- Shared Stock Nav -->
 <script src="/findstocks/portfolio2/stock-nav.js"></script>

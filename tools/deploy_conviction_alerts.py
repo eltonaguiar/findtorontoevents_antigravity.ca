@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deploy multi-dimensional stock intelligence system (Fear/Greed + 6D scoring + dashboard)."""
+"""Deploy conviction alerts system (dashboard + updated API)."""
 import os, sys
 from ftplib import FTP_TLS
 
@@ -26,10 +26,7 @@ LOCAL_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 FILES = [
     'live-monitor/api/multi_dimensional.php',
-    'live-monitor/api/data_enrichment.php',
-    'live-monitor/api/supplemental_dimensions.php',
-    'live-monitor/api/db_config.php',
-    'live-monitor/multi-dimensional.html',
+    'live-monitor/conviction-alerts.html',
 ]
 
 try:

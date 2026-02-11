@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conviction Alerts &amp; Performance | AntiGravity</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-dark:#080818; --bg-card:#0e0e24; --border:#1e1e3e;
+            --text:#e0e0f0; --text-dim:#7777aa; --text-bright:#fff;
+            --gold:#f59e0b; --green:#22c55e; --red:#ef4444; --blue:#6366f1;
+            --purple:#a855f7; --cyan:#06b6d4; --yellow:#eab308;
+            --green-dim:rgba(34,197,94,0.12); --red-dim:rgba(239,68,68,0.12);
+            --blue-dim:rgba(99,102,241,0.12); --gold-dim:rgba(245,158,11,0.12);
+            --purple-dim:rgba(168,85,247,0.12); --cyan-dim:rgba(6,182,212,0.12);
+            --radius:14px;
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg-dark);color:var(--text);min-height:100vh;line-height:1.5}
+        a{color:var(--gold);text-decoration:none}a:hover{text-decoration:underline}
+        .header{background:linear-gradient(135deg,#0e0e24 0%,#1a1035 50%,#0e0e24 100%);border-bottom:1px solid var(--border);padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+        .brand{display:flex;align-items:center;gap:12px}
+        .brand h1{font-size:1.5rem;font-weight:800;background:linear-gradient(135deg,var(--red),var(--gold),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.02em}
+        .brand .sub{font-size:.75rem;color:var(--text-dim);margin-top:-2px}
+        .nav{display:flex;gap:.75rem;font-size:.8rem;flex-wrap:wrap}
+        .nav a{color:var(--text-dim);padding:.3rem .7rem;border-radius:8px;border:1px solid transparent;transition:all .2s}
+        .nav a:hover{color:var(--text);border-color:var(--border);background:rgba(255,255,255,.03);text-decoration:none}
+        .container{max-width:1400px;margin:0 auto;padding:1.5rem}
+        .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.25rem}
+        .card h2{font-size:1.05rem;margin-bottom:1rem;color:var(--text-bright);display:flex;align-items:center;gap:8px}
+        .tab-bar{display:flex;gap:4px;margin-bottom:1.25rem;border-bottom:1px solid var(--border);padding-bottom:4px;flex-wrap:wrap}
+        .tab-btn{padding:.5rem 1rem;border:none;background:transparent;color:var(--text-dim);cursor:pointer;border-radius:8px 8px 0 0;font-size:.82rem;font-weight:600;transition:all .2s}
+        .tab-btn:hover{color:var(--text);background:rgba(255,255,255,.03)}
+        .tab-btn.active{color:var(--blue);background:rgba(99,102,241,.08);border-bottom:2px solid var(--blue)}
+        .tab-panel{display:none}.tab-panel.active{display:block}
+        .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;margin-bottom:1.25rem}
+        .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center}
+        .stat-card .label{font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em}
+        .stat-card .value{font-size:1.5rem;font-weight:800;margin-top:.2rem}
+        table{width:100%;border-collapse:collapse;font-size:.82rem}
+        th,td{padding:.55rem .75rem;text-align:left;border-bottom:1px solid var(--border)}
+        th{color:var(--text-dim);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;font-weight:600;position:sticky;top:0;background:var(--bg-card)}
+        tr:hover{background:rgba(99,102,241,.02)}
+        .table-wrap{overflow-x:auto;max-height:500px;overflow-y:auto}
+        .badge{display:inline-block;padding:.15rem .55rem;border-radius:6px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+        .badge-green{background:var(--green-dim);color:var(--green)}
+        .badge-red{background:var(--red-dim);color:var(--red)}
+        .badge-blue{background:var(--blue-dim);color:var(--blue)}
+        .badge-gold{background:var(--gold-dim);color:var(--gold)}
+        .badge-purple{background:var(--purple-dim);color:var(--purple)}
+        .badge-cyan{background:var(--cyan-dim);color:var(--cyan)}
+        .positive{color:var(--green)}.negative{color:var(--red)}.neutral-text{color:var(--text)}
+        .chart-area{width:100%;height:320px;position:relative}
+        .chart-area canvas{width:100%!important;height:100%!important}
+        .loading{text-align:center;padding:2rem;color:var(--text-dim)}
+        .spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin-right:8px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .footer{text-align:center;padding:2rem 1rem 1rem;color:var(--text-dim);font-size:.75rem}
+        .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+        select,input[type=text]{background:var(--bg-dark);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:.4rem .8rem;font-size:.82rem}
+        .score-bar{height:6px;border-radius:3px;background:var(--border);position:relative;overflow:hidden}
+        .score-bar-fill{height:100%;border-radius:3px;transition:width .5s}
+        /* Filter buttons (pill-shaped, like sports-betting) */
+        .filter-bar{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
+        .filter-bar .filter-label{font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-right:.25rem;font-weight:600}
+        .filter-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text-dim);padding:.3rem .75rem;border-radius:20px;cursor:pointer;font-size:.78rem;font-weight:600;transition:all .2s}
+        .filter-btn:hover{border-color:var(--blue);color:var(--text)}
+        .filter-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+        .filter-btn.empty{opacity:.35;text-decoration:line-through;cursor:default}
+        .filter-btn.empty:hover{border-color:var(--border);color:var(--text-dim)}
+        .filter-group{display:flex;gap:.35rem;flex-wrap:wrap;align-items:center}
+        .filter-sep{width:1px;height:20px;background:var(--border);margin:0 .5rem}
+        /* Alert severity badges */
+        .sev-critical{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+        .sev-warning{background:rgba(245,158,11,.15);color:var(--gold);border:1px solid rgba(245,158,11,.3)}
+        .sev-info{background:rgba(99,102,241,.15);color:var(--blue);border:1px solid rgba(99,102,241,.3)}
+        .alert-row{display:flex;gap:1rem;align-items:flex-start;padding:.85rem 1rem;border-bottom:1px solid var(--border);transition:background .2s}
+        .alert-row:hover{background:rgba(99,102,241,.03)}
+        .alert-row.unread{border-left:3px solid var(--blue)}
+        .alert-icon{font-size:1.3rem;flex-shrink:0;margin-top:2px}
+        .alert-body{flex:1;min-width:0}
+        .alert-msg{font-size:.85rem;color:var(--text-bright);word-break:break-word}
+        .alert-meta{font-size:.72rem;color:var(--text-dim);margin-top:.2rem;display:flex;gap:1rem;flex-wrap:wrap}
+        .alert-actions{flex-shrink:0;display:flex;gap:.5rem;align-items:center}
+        .mark-btn{background:none;border:1px solid var(--border);color:var(--text-dim);border-radius:6px;padding:.2rem .5rem;font-size:.68rem;cursor:pointer;transition:all .2s}
+        .mark-btn:hover{color:var(--text);border-color:var(--text-dim)}
+        .config-row{display:flex;align-items:center;gap:1rem;padding:.7rem 0;border-bottom:1px solid var(--border);font-size:.82rem}
+        .config-row:last-child{border-bottom:none}
+        .config-label{flex:1;font-weight:600}
+        .config-val{min-width:80px;text-align:right}
+        .toggle{width:36px;height:20px;background:var(--border);border-radius:10px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+        .toggle.on{background:var(--green)}
+        .toggle::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;left:2px;transition:transform .2s}
+        .toggle.on::after{transform:translateX(16px)}
+        @media(max-width:768px){.grid-2{grid-template-columns:1fr}.header{padding:1rem}.stat-grid{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:480px){.stat-grid{grid-template-columns:1fr}.tab-btn{font-size:.75rem;padding:.4rem .7rem}}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="brand">
+            <div>
+                <h1>Conviction Alerts</h1>
+                <div class="sub">Performance Tracking &amp; Smart Alerts</div>
+            </div>
+        </div>
+        <div class="nav">
+            <a href="multi-dimensional.html">9D Analysis</a>
+            <a href="live-monitor.html">Live Monitor</a>
+            <a href="smart-money.html">Smart Money</a>
+            <a href="algo-performance.html">Algo Perf</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Stats Overview -->
+        <div class="stat-grid" id="statsCards">
+            <div class="stat-card"><div class="label">Total Alerts (7d)</div><div class="value" id="stat-total">--</div></div>
+            <div class="stat-card"><div class="label">Unread Alerts</div><div class="value" id="stat-unread" style="color:var(--gold)">--</div></div>
+            <div class="stat-card"><div class="label">Strong Bullish (70+)</div><div class="value" id="stat-bullish" style="color:var(--green)">--</div></div>
+            <div class="stat-card"><div class="label">Avg Win Rate</div><div class="value" id="stat-winrate" style="color:var(--cyan)">--</div></div>
+            <div class="stat-card"><div class="label">Best Return</div><div class="value" id="stat-bestret" style="color:var(--green)">--</div></div>
+        </div>
+
+        <!-- Ticker Filter -->
+        <div class="filter-bar" id="tickerFilterBar">
+            <span class="filter-label">Ticker:</span>
+            <div class="filter-group" id="tickerFilters">
+                <button class="filter-btn active" onclick="filterTicker('all')">All</button>
+                <button class="filter-btn" onclick="filterTicker('AAPL')">AAPL</button>
+                <button class="filter-btn" onclick="filterTicker('MSFT')">MSFT</button>
+                <button class="filter-btn" onclick="filterTicker('GOOGL')">GOOGL</button>
+                <button class="filter-btn" onclick="filterTicker('AMZN')">AMZN</button>
+                <button class="filter-btn" onclick="filterTicker('NVDA')">NVDA</button>
+                <button class="filter-btn" onclick="filterTicker('META')">META</button>
+                <button class="filter-btn" onclick="filterTicker('JPM')">JPM</button>
+                <button class="filter-btn" onclick="filterTicker('WMT')">WMT</button>
+                <button class="filter-btn" onclick="filterTicker('XOM')">XOM</button>
+                <button class="filter-btn" onclick="filterTicker('NFLX')">NFLX</button>
+                <button class="filter-btn" onclick="filterTicker('JNJ')">JNJ</button>
+                <button class="filter-btn" onclick="filterTicker('BAC')">BAC</button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchTab('alerts')">Alerts</button>
+            <button class="tab-btn" onclick="switchTab('performance')">Performance</button>
+            <button class="tab-btn" onclick="switchTab('stats')">Win Rate Stats</button>
+            <button class="tab-btn" onclick="switchTab('scores')">Latest Scores</button>
+            <button class="tab-btn" onclick="switchTab('configs')">Settings</button>
+        </div>
+
+        <!-- Tab: Alerts -->
+        <div id="tab-alerts" class="tab-panel active">
+            <div class="card">
+                <h2>Recent Alerts
+                    <button class="mark-btn" onclick="markAllRead()" style="margin-left:auto">Mark All Read</button>
+                </h2>
+                <div id="alertsList"><div class="loading"><span class="spinner"></span>Loading alerts...</div></div>
+            </div>
+        </div>
+
+        <!-- Tab: Performance -->
+        <div id="tab-performance" class="tab-panel">
+            <div class="grid-2">
+                <div class="card">
+                    <h2>Conviction vs Returns (7d)</h2>
+                    <div class="chart-area"><canvas id="perfChart"></canvas></div>
+                </div>
+                <div class="card">
+                    <h2>Return Distribution</h2>
+                    <div class="chart-area"><canvas id="retDistChart"></canvas></div>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Performance Records</h2>
+                <div class="table-wrap" id="perfTable"><div class="loading"><span class="spinner"></span>Loading performance data...</div></div>
+            </div>
+        </div>
+
+        <!-- Tab: Win Rate Stats -->
+        <div id="tab-stats" class="tab-panel">
+            <div class="grid-2">
+                <div class="card">
+                    <h2>Win Rate by Conviction Bucket</h2>
+                    <div class="chart-area"><canvas id="winRateChart"></canvas></div>
+                </div>
+                <div class="card">
+                    <h2>Avg Return by Bucket</h2>
+                    <div class="chart-area"><canvas id="avgRetChart"></canvas></div>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Aggregate Statistics
+                    <select id="statsPeriod" onchange="loadStats()" style="margin-left:auto">
+                        <option value="7d">7 Days</option>
+                        <option value="30d" selected>30 Days</option>
+                        <option value="90d">90 Days</option>
+                    </select>
+                </h2>
+                <div class="table-wrap" id="statsTable"><div class="loading"><span class="spinner"></span>Loading stats...</div></div>
+            </div>
+        </div>
+
+        <!-- Tab: Latest Scores -->
+        <div id="tab-scores" class="tab-panel">
+            <div class="card">
+                <h2>Latest Conviction Scores (All Tickers)</h2>
+                <div class="table-wrap" id="scoresTable"><div class="loading"><span class="spinner"></span>Loading scores...</div></div>
+            </div>
+        </div>
+
+        <!-- Tab: Settings -->
+        <div id="tab-configs" class="tab-panel">
+            <div class="grid-2">
+                <div class="card">
+                    <h2>Alert Configurations</h2>
+                    <div id="configsList"><div class="loading"><span class="spinner"></span>Loading configs...</div></div>
+                </div>
+                <div class="card">
+                    <h2>Webhook Notifications</h2>
+                    <div id="webhookConfig">
+                        <div style="margin-bottom:1rem">
+                            <label style="font-size:.78rem;color:var(--text-dim);display:block;margin-bottom:.35rem">Discord/Slack Webhook URL</label>
+                            <input type="text" id="webhookUrl" placeholder="https://discord.com/api/webhooks/..." style="width:100%">
+                        </div>
+                        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem">
+                            <div class="toggle" id="webhookToggle" onclick="toggleWebhook()"></div>
+                            <span style="font-size:.82rem" id="webhookStatus">Disabled</span>
+                        </div>
+                        <button class="mark-btn" onclick="saveWebhook()" style="padding:.4rem 1rem;font-size:.78rem">Save Webhook</button>
+                        <button class="mark-btn" onclick="testWebhook()" style="padding:.4rem 1rem;font-size:.78rem;margin-left:.5rem">Test</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Conviction Alerts &amp; Performance | Auto-refreshes every 60s | <a href="multi-dimensional.html">Back to 9D Analysis</a>
+    </div>
+
+<script>
+var API = 'api/multi_dimensional.php';
+var alertsData = [];
+var perfData = [];
+var statsData = [];
+var scoresData = [];
+var scoresSource = 'history'; // 'history' or 'all'
+var chartsReady = {};
+var currentTicker = 'all';
+
+// ── Tab Switching ──
+function switchTab(name) {
+    var btns = document.querySelectorAll('.tab-btn');
+    var panels = document.querySelectorAll('.tab-panel');
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+    for (var i = 0; i < panels.length; i++) panels[i].classList.remove('active');
+    document.getElementById('tab-' + name).classList.add('active');
+    // Find and activate the correct button
+    for (var i = 0; i < btns.length; i++) {
+        if (btns[i].textContent.toLowerCase().indexOf(name.substring(0, 4)) !== -1 ||
+            (name === 'configs' && btns[i].textContent === 'Settings')) {
+            btns[i].classList.add('active');
+        }
+    }
+    // Lazy-load tab data, re-render if already loaded (for filter)
+    if (name === 'alerts') {
+        if (alertsData.length > 0) renderAlerts(); else loadAlerts();
+    }
+    if (name === 'performance') {
+        if (perfData.length > 0) renderPerformance(); else loadPerformance();
+    }
+    if (name === 'stats' && statsData.length === 0) loadStats();
+    if (name === 'scores') {
+        if (scoresData.length > 0) renderScores(); else loadScores();
+    }
+    if (name === 'configs') { loadConfigs(); loadWebhookConfig(); }
+}
+
+// ── API Helper ──
+function apiGet(action, params, cb) {
+    var url = API + '?action=' + encodeURIComponent(action);
+    if (params) {
+        for (var k in params) {
+            if (params.hasOwnProperty(k)) url += '&' + k + '=' + encodeURIComponent(params[k]);
+        }
+    }
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.timeout = 30000;
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try { var data = JSON.parse(xhr.responseText); cb(null, data); }
+            catch(e) { cb('Parse error'); }
+        } else { cb('HTTP ' + xhr.status); }
+    };
+    xhr.onerror = function() { cb('Network error'); };
+    xhr.ontimeout = function() { cb('Timeout'); };
+    xhr.send();
+}
+
+// ── Alert Icons ──
+var ALERT_ICONS = {
+    'conviction_jump': '\uD83D\uDE80',
+    'conviction_drop': '\uD83D\uDCC9',
+    'insider_cluster': '\uD83D\uDC33',
+    'insider_massive': '\uD83D\uDCB0',
+    'conviction_divergence': '\u26A0\uFE0F',
+    'fear_opportunity': '\uD83D\uDE31',
+    'greed_extreme': '\uD83E\uDD11',
+    'whale_accumulation': '\uD83D\uDCC8'
+};
+
+var SEVERITY_CLASS = {
+    'critical': 'sev-critical',
+    'warning': 'sev-warning',
+    'info': 'sev-info'
+};
+
+// ── Ticker Filtering ──
+function filterTicker(ticker) {
+    currentTicker = ticker;
+    var btns = document.querySelectorAll('#tickerFilters .filter-btn');
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.remove('active');
+        var label = btns[i].textContent;
+        if ((ticker === 'all' && label === 'All') || label === ticker) {
+            btns[i].classList.add('active');
+        }
+    }
+    // Re-render tabs that have data
+    if (alertsData.length > 0) renderAlerts();
+    if (perfData.length > 0) renderPerformance();
+    if (scoresData.length > 0) renderScores();
+    updateStatCards();
+}
+
+function _filterByTicker(arr, key) {
+    if (currentTicker === 'all') return arr;
+    var out = [];
+    for (var i = 0; i < arr.length; i++) {
+        if (arr[i][key] === currentTicker) out.push(arr[i]);
+    }
+    return out;
+}
+
+function _updateTickerFilters() {
+    var hasTicker = {};
+    for (var i = 0; i < alertsData.length; i++) if (alertsData[i].ticker) hasTicker[alertsData[i].ticker] = true;
+    for (var i = 0; i < perfData.length; i++) if (perfData[i].ticker) hasTicker[perfData[i].ticker] = true;
+    for (var i = 0; i < scoresData.length; i++) if (scoresData[i].ticker) hasTicker[scoresData[i].ticker] = true;
+    var btns = document.querySelectorAll('#tickerFilters .filter-btn');
+    for (var i = 0; i < btns.length; i++) {
+        var t = btns[i].textContent;
+        if (t === 'All') continue;
+        if (hasTicker[t]) { btns[i].classList.remove('empty'); }
+        else { btns[i].classList.add('empty'); }
+    }
+}
+
+function updateStatCards() {
+    var filtered = _filterByTicker(alertsData, 'ticker');
+    var unread = 0;
+    for (var i = 0; i < filtered.length; i++) { if (filtered[i].is_read === 0) unread++; }
+    document.getElementById('stat-total').textContent = filtered.length;
+    document.getElementById('stat-unread').textContent = unread;
+
+    var filteredPerf = _filterByTicker(perfData, 'ticker');
+    var bestRet = 0;
+    for (var i = 0; i < filteredPerf.length; i++) {
+        var r7 = filteredPerf[i].return_7d || 0;
+        if (r7 > bestRet) bestRet = r7;
+    }
+    document.getElementById('stat-bestret').textContent = bestRet > 0 ? '+' + bestRet.toFixed(1) + '%' : '--';
+
+    var filteredScores = _filterByTicker(scoresData, 'ticker');
+    var bullish = 0;
+    var scoreKey = scoresSource === 'all' ? 'conviction_score' : 'conviction_score';
+    for (var i = 0; i < filteredScores.length; i++) {
+        if (filteredScores[i][scoreKey] >= 70) bullish++;
+    }
+    document.getElementById('stat-bullish').textContent = bullish;
+}
+
+// ── Load Alerts ──
+function loadAlerts() {
+    apiGet('alerts', {limit: 50}, function(err, resp) {
+        if (err || !resp || !resp.ok) {
+            document.getElementById('alertsList').innerHTML = '<div class="loading">Failed to load alerts</div>';
+            return;
+        }
+        alertsData = resp.alerts || [];
+        renderAlerts();
+        _updateTickerFilters();
+        updateStatCards();
+    });
+}
+
+function renderAlerts() {
+    var filtered = _filterByTicker(alertsData, 'ticker');
+    if (filtered.length === 0) {
+        var msg = alertsData.length === 0 ? 'No alerts yet. Alerts will appear after the next calculation run.'
+            : 'No alerts for ' + currentTicker + '.';
+        document.getElementById('alertsList').innerHTML = '<div class="loading" style="color:var(--text-dim)">' + msg + '</div>';
+        return;
+    }
+    var html = '';
+    for (var i = 0; i < filtered.length; i++) {
+        var a = filtered[i];
+        var icon = ALERT_ICONS[a.alert_type] || '\uD83D\uDD14';
+        var sevCls = SEVERITY_CLASS[a.severity] || 'sev-info';
+        var unreadCls = a.is_read === 0 ? ' unread' : '';
+        var time = a.created_at ? formatTime(a.created_at) : '';
+        html += '<div class="alert-row' + unreadCls + '" data-id="' + a.id + '">';
+        html += '<div class="alert-icon">' + icon + '</div>';
+        html += '<div class="alert-body">';
+        html += '<div class="alert-msg">' + escHtml(a.message) + '</div>';
+        html += '<div class="alert-meta">';
+        html += '<span class="badge ' + sevCls + '">' + escHtml(a.severity) + '</span>';
+        if (a.ticker) html += '<span><strong>' + escHtml(a.ticker) + '</strong></span>';
+        html += '<span>' + escHtml(a.alert_type.replace(/_/g, ' ')) + '</span>';
+        html += '<span>' + time + '</span>';
+        html += '</div></div>';
+        if (a.is_read === 0) {
+            html += '<div class="alert-actions"><button class="mark-btn" onclick="markRead(' + a.id + ',this)">Mark read</button></div>';
+        }
+        html += '</div>';
+    }
+    document.getElementById('alertsList').innerHTML = html;
+}
+
+function markRead(id, btn) {
+    apiGet('mark_alert_read', {id: id}, function() {
+        if (btn) {
+            var row = btn.closest('.alert-row');
+            if (row) row.classList.remove('unread');
+            btn.parentNode.removeChild(btn);
+        }
+    });
+}
+
+function markAllRead() {
+    apiGet('mark_alert_read', {all: 1}, function() {
+        loadAlerts();
+    });
+}
+
+// ── Load Performance ──
+function loadPerformance() {
+    apiGet('performance', {limit: 200}, function(err, resp) {
+        if (err || !resp || !resp.ok) {
+            document.getElementById('perfTable').innerHTML = '<div class="loading">Failed to load performance data</div>';
+            return;
+        }
+        perfData = resp.records || [];
+        renderPerformance();
+        _updateTickerFilters();
+        updateStatCards();
+    });
+}
+
+function renderPerformance() {
+    var filtered = _filterByTicker(perfData, 'ticker');
+    if (filtered.length === 0) {
+        var msg = perfData.length === 0 ? 'No performance data yet.' : 'No performance data for ' + currentTicker + '.';
+        document.getElementById('perfTable').innerHTML = '<div class="loading" style="color:var(--text-dim)">' + msg + '</div>';
+        buildPerfChart([]);
+        buildRetDistChart([]);
+        return;
+    }
+    var html = '<table><thead><tr><th>Ticker</th><th>Date</th><th>Conv</th><th>Label</th><th>Entry $</th><th>7d Ret</th><th>14d Ret</th><th>30d Ret</th><th>Outcome</th></tr></thead><tbody>';
+    for (var i = 0; i < filtered.length; i++) {
+        var p = filtered[i];
+        var r7cls = retClass(p.return_7d, p.filled_7d);
+        var r14cls = retClass(p.return_14d, p.filled_14d || 0);
+        var r30cls = retClass(p.return_30d, p.filled_30d);
+        var outcomeHtml = outcomeLabel(p.outcome_30d);
+        html += '<tr>';
+        html += '<td><strong>' + escHtml(p.ticker) + '</strong></td>';
+        html += '<td style="color:var(--text-dim)">' + escHtml(p.conviction_date) + '</td>';
+        html += '<td>' + scoreHtml(p.conviction_score) + '</td>';
+        html += '<td>' + labelBadge(p.conviction_label) + '</td>';
+        html += '<td>$' + Number(p.entry_price).toFixed(2) + '</td>';
+        html += '<td class="' + r7cls + '">' + fmtRet(p.return_7d, p.filled_7d) + '</td>';
+        html += '<td class="' + r14cls + '">' + fmtRet(p.return_14d, p.filled_14d || 0) + '</td>';
+        html += '<td class="' + r30cls + '">' + fmtRet(p.return_30d, p.filled_30d) + '</td>';
+        html += '<td>' + outcomeHtml + '</td>';
+        html += '</tr>';
+    }
+    html += '</tbody></table>';
+    document.getElementById('perfTable').innerHTML = html;
+    buildPerfChart(filtered);
+    buildRetDistChart(filtered);
+}
+
+function buildPerfChart(data) {
+    var filled = [];
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].filled_7d) filled.push({x: data[i].conviction_score, y: data[i].return_7d, ticker: data[i].ticker});
+    }
+    if (filled.length === 0) return;
+
+    if (chartsReady.perf) chartsReady.perf.destroy();
+    var ctx = document.getElementById('perfChart').getContext('2d');
+    chartsReady.perf = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Conviction vs 7d Return',
+                data: filled,
+                backgroundColor: function(ctx2) {
+                    var v = ctx2.raw ? ctx2.raw.y : 0;
+                    return v >= 0 ? 'rgba(34,197,94,0.6)' : 'rgba(239,68,68,0.6)';
+                },
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: {display: false},
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx2) {
+                            return ctx2.raw.ticker + ': Conv ' + ctx2.raw.x + ', Ret ' + ctx2.raw.y.toFixed(2) + '%';
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {title: {display: true, text: 'Conviction Score', color: '#7777aa'}, grid: {color: '#1e1e3e'}, ticks: {color: '#7777aa'}},
+                y: {title: {display: true, text: '7d Return (%)', color: '#7777aa'}, grid: {color: '#1e1e3e'}, ticks: {color: '#7777aa'}}
+            }
+        }
+    });
+}
+
+function buildRetDistChart(data) {
+    var buckets = {'< -5%': 0, '-5 to -2%': 0, '-2 to 0%': 0, '0 to 2%': 0, '2 to 5%': 0, '> 5%': 0};
+    for (var i = 0; i < data.length; i++) {
+        if (!data[i].filled_7d) continue;
+        var r = data[i].return_7d;
+        if (r < -5) buckets['< -5%']++;
+        else if (r < -2) buckets['-5 to -2%']++;
+        else if (r < 0) buckets['-2 to 0%']++;
+        else if (r < 2) buckets['0 to 2%']++;
+        else if (r < 5) buckets['2 to 5%']++;
+        else buckets['> 5%']++;
+    }
+    if (chartsReady.retDist) chartsReady.retDist.destroy();
+    var ctx = document.getElementById('retDistChart').getContext('2d');
+    var labels = Object.keys(buckets);
+    var vals = [];
+    for (var i = 0; i < labels.length; i++) vals.push(buckets[labels[i]]);
+    var colors = ['#ef4444','#f97316','#eab308','#22c55e','#06b6d4','#6366f1'];
+    chartsReady.retDist = new Chart(ctx, {
+        type: 'bar',
+        data: {labels: labels, datasets: [{label: 'Count', data: vals, backgroundColor: colors, borderRadius: 4}]},
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {legend: {display: false}},
+            scales: {
+                x: {grid: {display: false}, ticks: {color: '#7777aa'}},
+                y: {grid: {color: '#1e1e3e'}, ticks: {color: '#7777aa'}}
+            }
+        }
+    });
+}
+
+// ── Load Stats ──
+function loadStats() {
+    var period = document.getElementById('statsPeriod').value;
+    apiGet('stats', {period: period}, function(err, resp) {
+        if (err || !resp || !resp.ok) {
+            document.getElementById('statsTable').innerHTML = '<div class="loading">Failed to load stats</div>';
+            return;
+        }
+        statsData = resp.stats || [];
+
+        // Avg win rate across buckets
+        var totalWins = 0, totalDecided = 0;
+        for (var i = 0; i < statsData.length; i++) {
+            totalWins += statsData[i].wins;
+            totalDecided += statsData[i].wins + statsData[i].losses;
+        }
+        var avgWr = totalDecided > 0 ? (totalWins / totalDecided * 100).toFixed(1) + '%' : '--';
+        document.getElementById('stat-winrate').textContent = avgWr;
+
+        // Build table
+        var html = '<table><thead><tr><th>Conviction Bucket</th><th>Total Signals</th><th>Wins</th><th>Losses</th><th>Pending</th><th>Win Rate</th><th>Avg Return</th><th>Best</th><th>Worst</th></tr></thead><tbody>';
+        for (var i = 0; i < statsData.length; i++) {
+            var s = statsData[i];
+            var wrCls = s.win_rate >= 60 ? 'positive' : (s.win_rate >= 50 ? 'neutral-text' : 'negative');
+            var arCls = s.avg_return >= 0 ? 'positive' : 'negative';
+            html += '<tr>';
+            html += '<td><strong>' + escHtml(s.bucket) + '</strong></td>';
+            html += '<td>' + s.total + '</td>';
+            html += '<td class="positive">' + s.wins + '</td>';
+            html += '<td class="negative">' + s.losses + '</td>';
+            html += '<td style="color:var(--text-dim)">' + s.pending + '</td>';
+            html += '<td class="' + wrCls + '">' + Number(s.win_rate).toFixed(1) + '%</td>';
+            html += '<td class="' + arCls + '">' + fmtRetVal(s.avg_return) + '</td>';
+            html += '<td class="positive">' + fmtRetVal(s.max_return) + '</td>';
+            html += '<td class="negative">' + fmtRetVal(s.min_return) + '</td>';
+            html += '</tr>';
+        }
+        html += '</tbody></table>';
+        document.getElementById('statsTable').innerHTML = html;
+
+        buildWinRateChart(statsData);
+        buildAvgRetChart(statsData);
+    });
+}
+
+function buildWinRateChart(data) {
+    if (chartsReady.winRate) chartsReady.winRate.destroy();
+    var labels = [], vals = [], colors = [];
+    for (var i = 0; i < data.length; i++) {
+        labels.push(data[i].bucket);
+        vals.push(data[i].win_rate);
+        colors.push(data[i].win_rate >= 60 ? '#22c55e' : (data[i].win_rate >= 50 ? '#eab308' : '#ef4444'));
+    }
+    var ctx = document.getElementById('winRateChart').getContext('2d');
+    chartsReady.winRate = new Chart(ctx, {
+        type: 'bar',
+        data: {labels: labels, datasets: [{label: 'Win Rate %', data: vals, backgroundColor: colors, borderRadius: 4}]},
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {legend: {display: false}},
+            scales: {
+                x: {grid: {display: false}, ticks: {color: '#7777aa'}},
+                y: {grid: {color: '#1e1e3e'}, ticks: {color: '#7777aa'}, min: 0, max: 100}
+            }
+        }
+    });
+}
+
+function buildAvgRetChart(data) {
+    if (chartsReady.avgRet) chartsReady.avgRet.destroy();
+    var labels = [], vals = [], colors = [];
+    for (var i = 0; i < data.length; i++) {
+        labels.push(data[i].bucket);
+        vals.push(data[i].avg_return);
+        colors.push(data[i].avg_return >= 0 ? '#22c55e' : '#ef4444');
+    }
+    var ctx = document.getElementById('avgRetChart').getContext('2d');
+    chartsReady.avgRet = new Chart(ctx, {
+        type: 'bar',
+        data: {labels: labels, datasets: [{label: 'Avg Return %', data: vals, backgroundColor: colors, borderRadius: 4}]},
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {legend: {display: false}},
+            scales: {
+                x: {grid: {display: false}, ticks: {color: '#7777aa'}},
+                y: {grid: {color: '#1e1e3e'}, ticks: {color: '#7777aa'}}
+            }
+        }
+    });
+}
+
+// ── Load Scores ──
+function loadScores() {
+    apiGet('history', {limit: 30}, function(err, resp) {
+        if (err || !resp || !resp.ok) {
+            // Fallback to 'all' action
+            apiGet('all', {}, function(err2, resp2) {
+                if (err2 || !resp2 || !resp2.ok) {
+                    document.getElementById('scoresTable').innerHTML = '<div class="loading">Failed to load scores</div>';
+                    return;
+                }
+                scoresData = resp2.tickers || [];
+                scoresSource = 'all';
+                renderScores();
+                _updateTickerFilters();
+                updateStatCards();
+            });
+            return;
+        }
+        scoresData = resp.records || [];
+        scoresSource = 'history';
+        renderScores();
+        _updateTickerFilters();
+        updateStatCards();
+    });
+}
+
+function renderScores() {
+    var filtered = _filterByTicker(scoresData, 'ticker');
+    if (filtered.length === 0) {
+        var msg = scoresData.length === 0 ? 'No scores yet.' : 'No scores for ' + currentTicker + '.';
+        document.getElementById('scoresTable').innerHTML = '<div class="loading" style="color:var(--text-dim)">' + msg + '</div>';
+        return;
+    }
+    if (scoresSource === 'history') {
+        _renderScoresHistory(filtered);
+    } else {
+        _renderScoresAll(filtered);
+    }
+}
+
+function _renderScoresHistory(records) {
+    var html = '<table><thead><tr><th>Ticker</th><th>Date</th><th>Conv</th><th>Label</th><th>Whale</th><th>Insider</th><th>Analyst</th><th>Crowd</th><th>F&amp;G</th><th>Value</th><th>Growth</th><th>Momentum</th><th>Regime</th></tr></thead><tbody>';
+    for (var i = 0; i < records.length; i++) {
+        var r = records[i];
+        html += '<tr>';
+        html += '<td><strong>' + escHtml(r.ticker) + '</strong></td>';
+        html += '<td style="color:var(--text-dim)">' + escHtml(r.calc_date) + '</td>';
+        html += '<td>' + scoreHtml(r.conviction_score) + '</td>';
+        html += '<td>' + labelBadge(r.conviction_label) + '</td>';
+        html += '<td>' + dimCell(r.whale_score) + '</td>';
+        html += '<td>' + dimCell(r.insider_score) + '</td>';
+        html += '<td>' + dimCell(r.analyst_score) + '</td>';
+        html += '<td>' + dimCell(r.crowd_score) + '</td>';
+        html += '<td>' + dimCell(r.fear_greed_score) + '</td>';
+        html += '<td>' + dimCell(r.value_score) + '</td>';
+        html += '<td>' + dimCell(r.growth_score) + '</td>';
+        html += '<td>' + dimCell(r.momentum_score) + '</td>';
+        html += '<td>' + dimCell(r.regime_score) + '</td>';
+        html += '</tr>';
+    }
+    html += '</tbody></table>';
+    document.getElementById('scoresTable').innerHTML = html;
+}
+
+function _renderScoresAll(tickers) {
+    var html = '<table><thead><tr><th>Ticker</th><th>Conv</th><th>Label</th><th>Whale</th><th>Insider</th><th>Analyst</th><th>Crowd</th><th>F&amp;G</th><th>Regime</th></tr></thead><tbody>';
+    for (var i = 0; i < tickers.length; i++) {
+        var t = tickers[i];
+        html += '<tr>';
+        html += '<td><strong>' + escHtml(t.ticker) + '</strong></td>';
+        html += '<td>' + scoreHtml(t.conviction_score) + '</td>';
+        html += '<td>' + labelBadge(t.conviction_label) + '</td>';
+        html += '<td>' + dimCell(t.whale_score) + '</td>';
+        html += '<td>' + dimCell(t.insider_score) + '</td>';
+        html += '<td>' + dimCell(t.analyst_score) + '</td>';
+        html += '<td>' + dimCell(t.crowd_score) + '</td>';
+        html += '<td>' + dimCell(t.fear_greed_score) + '</td>';
+        html += '<td>' + dimCell(t.regime_score) + '</td>';
+        html += '</tr>';
+    }
+    html += '</tbody></table>';
+    document.getElementById('scoresTable').innerHTML = html;
+}
+
+// ── Load Configs ──
+function loadConfigs() {
+    apiGet('alert_configs', {}, function(err, resp) {
+        if (err || !resp || !resp.ok) {
+            document.getElementById('configsList').innerHTML = '<div class="loading">Alert configs not available yet. Deploy latest code first.</div>';
+            return;
+        }
+        var configs = resp.configs || [];
+        if (configs.length === 0) {
+            document.getElementById('configsList').innerHTML = '<div class="loading">No alert configs found.</div>';
+            return;
+        }
+        var html = '';
+        for (var i = 0; i < configs.length; i++) {
+            var c = configs[i];
+            var onCls = c.is_active ? ' on' : '';
+            html += '<div class="config-row">';
+            html += '<div class="toggle' + onCls + '" data-type="' + escHtml(c.alert_type) + '" onclick="toggleConfig(this)"></div>';
+            html += '<div class="config-label">' + escHtml(c.alert_name) + '</div>';
+            html += '<div class="config-val" style="color:var(--text-dim)">Threshold: ' + c.threshold_value + '</div>';
+            html += '<div class="config-val" style="color:var(--text-dim)">' + c.cooldown_hours + 'h cooldown</div>';
+            html += '</div>';
+        }
+        document.getElementById('configsList').innerHTML = html;
+    });
+}
+
+function toggleConfig(el) {
+    var type = el.getAttribute('data-type');
+    var isOn = el.classList.contains('on');
+    var newActive = isOn ? 0 : 1;
+    el.classList.toggle('on');
+    apiGet('update_alert_config', {type: type, active: newActive, key: 'livetrader2026'}, function() {});
+}
+
+function toggleWebhook() {
+    var el = document.getElementById('webhookToggle');
+    el.classList.toggle('on');
+    document.getElementById('webhookStatus').textContent = el.classList.contains('on') ? 'Enabled' : 'Disabled';
+}
+
+function saveWebhook() {
+    var url = document.getElementById('webhookUrl').value;
+    var active = document.getElementById('webhookToggle').classList.contains('on') ? 1 : 0;
+    apiGet('set_webhook', {url: encodeURIComponent(url), active: active, key: 'livetrader2026'}, function(err, resp) {
+        if (!err && resp && resp.ok) alert('Webhook saved!');
+        else alert('Failed to save webhook');
+    });
+}
+
+function testWebhook() {
+    apiGet('test_webhook', {key: 'livetrader2026'}, function(err, resp) {
+        if (!err && resp && resp.ok) alert('Test webhook sent!');
+        else alert('Webhook test failed');
+    });
+}
+
+// ── Load Webhook Config ──
+function loadWebhookConfig() {
+    apiGet('get_webhook', {}, function(err, resp) {
+        if (err || !resp || !resp.ok) return;
+        var wh = resp.webhook || {};
+        if (wh.url) document.getElementById('webhookUrl').value = wh.url;
+        var toggle = document.getElementById('webhookToggle');
+        if (wh.active) {
+            toggle.classList.add('on');
+            document.getElementById('webhookStatus').textContent = 'Enabled';
+        } else {
+            toggle.classList.remove('on');
+            document.getElementById('webhookStatus').textContent = 'Disabled';
+        }
+    });
+}
+
+// ── Helpers ──
+function escHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatTime(dt) {
+    if (!dt) return '';
+    var d = new Date(dt.replace(' ', 'T') + 'Z');
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return months[d.getMonth()] + ' ' + d.getDate() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+}
+
+function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+function scoreHtml(score) {
+    var cls = score >= 70 ? 'positive' : (score >= 55 ? 'neutral-text' : (score <= 40 ? 'negative' : 'neutral-text'));
+    return '<span class="' + cls + '" style="font-weight:800">' + score + '</span>';
+}
+
+function dimCell(score) {
+    if (score === undefined || score === null) return '<span style="color:var(--text-dim)">--</span>';
+    var s = Number(score);
+    var color = s >= 70 ? 'var(--green)' : (s >= 55 ? 'var(--cyan)' : (s <= 35 ? 'var(--red)' : 'var(--text-dim)'));
+    return '<span style="color:' + color + ';font-weight:600">' + s + '</span>';
+}
+
+function labelBadge(label) {
+    if (!label) return '';
+    var cls = 'badge-blue';
+    if (label === 'strong_bullish') cls = 'badge-green';
+    else if (label === 'bullish') cls = 'badge-cyan';
+    else if (label === 'bearish') cls = 'badge-gold';
+    else if (label === 'strong_bearish') cls = 'badge-red';
+    var display = label.replace(/_/g, ' ');
+    return '<span class="badge ' + cls + '">' + display + '</span>';
+}
+
+function retClass(ret, filled) {
+    if (!filled) return 'neutral-text';
+    return ret >= 0 ? 'positive' : 'negative';
+}
+
+function fmtRet(ret, filled) {
+    if (!filled) return '<span style="color:var(--text-dim)">--</span>';
+    var v = Number(ret);
+    var prefix = v >= 0 ? '+' : '';
+    return prefix + v.toFixed(2) + '%';
+}
+
+function fmtRetVal(v) {
+    if (v === undefined || v === null) return '--';
+    var n = Number(v);
+    var prefix = n >= 0 ? '+' : '';
+    return prefix + n.toFixed(2) + '%';
+}
+
+function outcomeLabel(outcome) {
+    if (outcome === 'win') return '<span class="badge badge-green">WIN</span>';
+    if (outcome === 'loss') return '<span class="badge badge-red">LOSS</span>';
+    return '<span class="badge badge-blue">PENDING</span>';
+}
+
+// ── Init ──
+loadAlerts();
+// Auto-refresh every 60 seconds
+setInterval(function() { loadAlerts(); }, 60000);
+</script>
+</body>
+</html>

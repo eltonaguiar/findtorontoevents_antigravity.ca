@@ -419,6 +419,28 @@ function fmtTime(dt) {
     var d = new Date(dt + (dt.indexOf('Z') < 0 && dt.indexOf('+') < 0 ? ' UTC' : ''));
     return d.toLocaleDateString('en-US', {month:'short',day:'numeric'}) + ' ' + d.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'});
 }
+function fmtGameDate(gd, ct) {
+    // Prefer game_date (already EST from backend), fall back to commence_time (UTC -> EST)
+    var src = gd;
+    if (!src && ct) {
+        // commence_time is UTC — subtract 5h to get EST date
+        var utc = new Date(ct + (ct.indexOf('Z') < 0 && ct.indexOf('+') < 0 ? ' UTC' : ''));
+        var est = new Date(utc.getTime() - 5 * 60 * 60 * 1000);
+        src = est.getFullYear() + '-' + ('0'+(est.getMonth()+1)).slice(-2) + '-' + ('0'+est.getDate()).slice(-2);
+    }
+    if (!src) return '--';
+    var parts = src.split('-');
+    if (parts.length < 3) return src;
+    var d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+    var today = new Date(); today.setHours(0,0,0,0);
+    var tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+    var yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+    var label = d.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+    if (d.getTime() === today.getTime()) label = 'TODAY';
+    else if (d.getTime() === tomorrow.getTime()) label = 'TOMORROW';
+    else if (d.getTime() === yesterday.getTime()) label = 'YESTERDAY';
+    return label;
+}
 function sportParam() { return currentSport !== 'all' ? '&sport=' + currentSport : ''; }
 
 function fetchJson(url, cb) {
@@ -523,10 +545,13 @@ function fetchPicks() {
                 wpTooltip = '<div class="pick-win-prob" title="Win probability is vig-removed consensus odds. Grade is based on Expected Value (EV) which factors in payout size, not just likelihood. Higher odds = lower win prob but bigger payout per dollar.">' + winProb + ' win prob <span class="grade-info-icon">?<span class="grade-tooltip">Win prob (' + winProb + ') reflects how often this bet wins. But the <strong>grade (' + grade + ')</strong> is based on <strong>Expected Value</strong> &mdash; a bet that wins less often but pays much more can have a higher grade because the risk:reward is better.</span></span></div>';
             }
 
+            var gameDateLabel = fmtGameDate(b.game_date, b.commence_time);
+            var gdClass = gameDateLabel === 'TODAY' ? 'badge-green' : gameDateLabel === 'TOMORROW' ? 'badge-yellow' : 'badge-blue';
+
             html += '<div class="pick-card-enhanced ' + borderGrade + '">'
                 + '<div class="pick-top-row">'
                 +   '<div class="pick-main-col">'
-                +     '<div class="pick-header"><span class="pick-sport">' + (b.sport_short || b.sport) + ' &bull; ' + marketDisplay + '</span><span class="pick-time">' + fmtTime(b.commence_time) + '</span></div>'
+                +     '<div class="pick-header"><span class="pick-sport">' + (b.sport_short || b.sport) + ' &bull; ' + marketDisplay + '</span><span class="pick-time"><span class="badge ' + gdClass + '" style="margin-right:0.4rem">' + gameDateLabel + '</span>' + fmtTime(b.commence_time) + '</span></div>'
                 +     '<div class="pick-teams">' + (b.away_team||'') + ' @ ' + (b.home_team||'') + '</div>'
                 +   '</div>'
                 +   '<div class="pick-rating-col">'
@@ -563,7 +588,8 @@ function fetchPicks() {
         var shopHtml = '';
         for (var s = 0; s < Math.min(shops.length, 10); s++) {
             var ev = shops[s];
-            shopHtml += '<div class="odds-event"><div class="odds-event-header"><h3>' + (ev.sport_short||'') + ': ' + (ev.away_team||'') + ' @ ' + (ev.home_team||'') + '</h3><span class="text-dim">' + fmtTime(ev.commence_time) + '</span></div>';
+            var shopGd = fmtGameDate(ev.game_date, ev.commence_time);
+            shopHtml += '<div class="odds-event"><div class="odds-event-header"><h3>' + (ev.sport_short||'') + ': ' + (ev.away_team||'') + ' @ ' + (ev.home_team||'') + '</h3><span class="text-dim"><strong>' + shopGd + '</strong> &bull; ' + fmtTime(ev.commence_time) + '</span></div>';
             shopHtml += '<div class="odds-table"><table><tr><th>Market</th><th>Outcome</th><th>Best Book</th><th>Best Odds</th><th>Worst Book</th><th>Worst Odds</th><th>Savings</th></tr>';
             var mkts = ev.markets || [];
             for (var m = 0; m < mkts.length; m++) {
@@ -591,7 +617,8 @@ function fetchOdds() {
         var html = '';
         for (var e = 0; e < Math.min(d.events.length, 20); e++) {
             var ev = d.events[e];
-            html += '<div class="odds-event"><div class="odds-event-header"><h3>' + (ev.sport_short||'') + ': ' + (ev.away_team||'') + ' @ ' + (ev.home_team||'') + '</h3><span class="text-dim">' + fmtTime(ev.commence_time) + '</span></div>';
+            var oddsGd = fmtGameDate(ev.game_date, ev.commence_time);
+            html += '<div class="odds-event"><div class="odds-event-header"><h3>' + (ev.sport_short||'') + ': ' + (ev.away_team||'') + ' @ ' + (ev.home_team||'') + '</h3><span class="text-dim"><strong>' + oddsGd + '</strong> &bull; ' + fmtTime(ev.commence_time) + '</span></div>';
             var bookNames = {}, bms = ev.bookmakers || [];
             for (var b = 0; b < bms.length; b++) { if (bms[b].is_canadian) bookNames[bms[b].key] = bms[b].name; }
             var bookKeys = Object.keys(bookNames);
@@ -633,12 +660,15 @@ function loadBets(type) {
     fetchJson(url, function(d) {
         if (!d.ok || !d.bets || d.bets.length === 0) { document.getElementById('bets-content').innerHTML = '<div class="empty-state"><p>No ' + type + ' bets</p></div>'; return; }
         var html = '<table><tr><th>Sport</th><th>Event</th><th>Pick</th><th>Book</th><th>Odds</th><th>Amount</th>';
-        html += type === 'history' ? '<th>Result</th><th>P&amp;L</th>' : '<th>Game Time</th><th>EV%</th>';
+        html += type === 'history' ? '<th>Game Date</th><th>Result</th><th>P&amp;L</th>' : '<th>Game Date</th><th>Game Time</th><th>EV%</th>';
         html += '</tr>';
         for (var i = 0; i < d.bets.length; i++) {
             var b = d.bets[i];
             var ml = {h2h:'Moneyline',spreads:'Spread',totals:'Total'};
+            var gdLabel = fmtGameDate(b.game_date, b.commence_time);
+            var gdCls = gdLabel === 'TODAY' ? 'text-green' : gdLabel === 'TOMORROW' ? 'text-yellow' : '';
             html += '<tr><td>' + (b.sport_short||b.sport) + '</td><td>' + (b.away_team||'') + ' @ ' + (b.home_team||'') + '</td><td><strong>' + (b.pick||'') + '</strong> (' + (ml[b.market]||b.market||'') + ')</td><td>' + (b.bookmaker||'') + '</td><td>' + parseFloat(b.odds||0).toFixed(2) + '</td><td>' + fmtUsd(b.bet_amount||0) + '</td>';
+            html += '<td class="' + gdCls + '"><strong>' + gdLabel + '</strong></td>';
             if (type === 'history') {
                 var rCls = b.result === 'won' ? 'text-green' : b.result === 'lost' ? 'text-red' : 'text-yellow';
                 html += '<td class="' + rCls + '"><strong>' + (b.result||'').toUpperCase() + '</strong></td>';
@@ -738,11 +768,12 @@ function loadDayPicks(date) {
         if (!d.ok || !d.picks || d.picks.length === 0) { document.getElementById('history-content').innerHTML = '<div class="empty-state"><p>No picks for ' + date + '</p></div><button class="btn" onclick="fetchPickHistory()">Back</button>'; return; }
         var html = '<button class="btn" onclick="fetchPickHistory()" style="margin-bottom:1rem">&#8592; Back to History</button>';
         html += '<h3 class="section-title">Picks for ' + date + ' (' + d.count + ' picks)</h3>';
-        html += '<table><tr><th>Sport</th><th>Event</th><th>Market</th><th>Pick</th><th>Book</th><th>Odds</th><th>EV%</th><th>Confidence</th><th>Result</th><th>Generated</th></tr>';
+        html += '<table><tr><th>Sport</th><th>Event</th><th>Game Date</th><th>Market</th><th>Pick</th><th>Book</th><th>Odds</th><th>EV%</th><th>Confidence</th><th>Result</th></tr>';
         for (var i = 0; i < d.picks.length; i++) {
             var p = d.picks[i]; var rCls = p.result === 'won' ? 'text-green' : p.result === 'lost' ? 'text-red' : p.result === 'push' ? 'text-yellow' : 'text-dim';
             var cBadge = p.confidence === 'high' ? 'badge-green' : p.confidence === 'medium' ? 'badge-yellow' : 'badge-blue';
-            html += '<tr><td>' + (p.sport_short||p.sport) + '</td><td>' + (p.away_team||'') + ' @ ' + (p.home_team||'') + '</td><td>' + (p.market||'') + '</td><td><strong>' + (p.outcome_name||'') + '</strong></td><td>' + (p.best_book||'') + '</td><td>' + parseFloat(p.best_odds||0).toFixed(2) + '</td><td class="text-green">+' + fmtPct(p.ev_pct) + '</td><td><span class="badge ' + cBadge + '">' + (p.confidence||'') + '</span></td><td class="' + rCls + '"><strong>' + (p.result ? p.result.toUpperCase() : 'PENDING') + '</strong></td><td class="text-dim">' + (p.generated_at||'').substr(11,5) + ' UTC</td></tr>';
+            var pGd = fmtGameDate(p.game_date, p.commence_time);
+            html += '<tr><td>' + (p.sport_short||p.sport) + '</td><td>' + (p.away_team||'') + ' @ ' + (p.home_team||'') + '</td><td><strong>' + pGd + '</strong></td><td>' + (p.market||'') + '</td><td><strong>' + (p.outcome_name||'') + '</strong></td><td>' + (p.best_book||'') + '</td><td>' + parseFloat(p.best_odds||0).toFixed(2) + '</td><td class="text-green">+' + fmtPct(p.ev_pct) + '</td><td><span class="badge ' + cBadge + '">' + (p.confidence||'') + '</span></td><td class="' + rCls + '"><strong>' + (p.result ? p.result.toUpperCase() : 'PENDING') + '</strong></td></tr>';
         }
         html += '</table>';
         document.getElementById('history-content').innerHTML = html;

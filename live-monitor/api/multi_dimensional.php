@@ -59,6 +59,155 @@ if ($_md_chk && $_md_chk->num_rows == 0) {
     $conn->query("ALTER TABLE lm_multi_dimensional ADD COLUMN momentum_score INT NOT NULL DEFAULT 50 AFTER growth_score");
 }
 
+// ── New tables for enhancements ──
+
+// Conviction history — stores all 9 dimension scores per day per ticker
+$conn->query("CREATE TABLE IF NOT EXISTS lm_conviction_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ticker VARCHAR(10) NOT NULL,
+    calc_date DATE NOT NULL,
+    conviction_score INT NOT NULL DEFAULT 50,
+    conviction_label VARCHAR(20) NOT NULL DEFAULT 'neutral',
+    whale_score INT NOT NULL DEFAULT 50,
+    insider_score INT NOT NULL DEFAULT 50,
+    analyst_score INT NOT NULL DEFAULT 50,
+    crowd_score INT NOT NULL DEFAULT 50,
+    fear_greed_score INT NOT NULL DEFAULT 50,
+    regime_score INT NOT NULL DEFAULT 50,
+    value_score INT NOT NULL DEFAULT 50,
+    growth_score INT NOT NULL DEFAULT 50,
+    momentum_score INT NOT NULL DEFAULT 50,
+    entry_price DECIMAL(12,2) NOT NULL DEFAULT 0,
+    detail_json TEXT,
+    created_at DATETIME NOT NULL,
+    UNIQUE KEY idx_ticker_date (ticker, calc_date),
+    KEY idx_ticker (ticker),
+    KEY idx_date (calc_date),
+    KEY idx_score (conviction_score)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+// Performance tracking — conviction vs actual price returns
+$conn->query("CREATE TABLE IF NOT EXISTS lm_conviction_performance (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ticker VARCHAR(10) NOT NULL,
+    conviction_date DATE NOT NULL,
+    conviction_score INT NOT NULL DEFAULT 50,
+    conviction_label VARCHAR(20) NOT NULL DEFAULT 'neutral',
+    entry_price DECIMAL(12,2) NOT NULL DEFAULT 0,
+    price_7d DECIMAL(12,2) NOT NULL DEFAULT 0,
+    price_14d DECIMAL(12,2) NOT NULL DEFAULT 0,
+    price_30d DECIMAL(12,2) NOT NULL DEFAULT 0,
+    return_7d DECIMAL(8,4) NOT NULL DEFAULT 0,
+    return_14d DECIMAL(8,4) NOT NULL DEFAULT 0,
+    return_30d DECIMAL(8,4) NOT NULL DEFAULT 0,
+    outcome_30d VARCHAR(10) NOT NULL DEFAULT 'pending',
+    filled_7d TINYINT NOT NULL DEFAULT 0,
+    filled_14d TINYINT NOT NULL DEFAULT 0,
+    filled_30d TINYINT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL,
+    UNIQUE KEY idx_ticker_date (ticker, conviction_date),
+    KEY idx_ticker (ticker),
+    KEY idx_date (conviction_date),
+    KEY idx_score (conviction_score),
+    KEY idx_unfilled_7d (filled_7d, conviction_date),
+    KEY idx_unfilled_30d (filled_30d, conviction_date)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+// Aggregate stats by conviction bucket
+$conn->query("CREATE TABLE IF NOT EXISTS lm_conviction_stats (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    stat_period VARCHAR(20) NOT NULL,
+    conviction_bucket VARCHAR(20) NOT NULL,
+    total_signals INT NOT NULL DEFAULT 0,
+    wins INT NOT NULL DEFAULT 0,
+    losses INT NOT NULL DEFAULT 0,
+    pending_count INT NOT NULL DEFAULT 0,
+    win_rate DECIMAL(5,2) NOT NULL DEFAULT 0,
+    avg_return DECIMAL(8,4) NOT NULL DEFAULT 0,
+    max_return DECIMAL(8,4) NOT NULL DEFAULT 0,
+    min_return DECIMAL(8,4) NOT NULL DEFAULT 0,
+    calculated_at DATETIME NOT NULL,
+    UNIQUE KEY idx_period_bucket (stat_period, conviction_bucket)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+// Alert system
+$conn->query("CREATE TABLE IF NOT EXISTS lm_conviction_alerts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    alert_type VARCHAR(30) NOT NULL,
+    ticker VARCHAR(10) NOT NULL DEFAULT '',
+    message VARCHAR(255) NOT NULL,
+    severity VARCHAR(10) NOT NULL DEFAULT 'info',
+    details_json TEXT,
+    is_read TINYINT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL,
+    KEY idx_type (alert_type),
+    KEY idx_ticker (ticker),
+    KEY idx_unread (is_read, created_at),
+    KEY idx_date (created_at)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+// Configurable alert configs (DB-driven thresholds)
+$conn->query("CREATE TABLE IF NOT EXISTS lm_alert_configs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    alert_type VARCHAR(30) NOT NULL,
+    alert_name VARCHAR(100) NOT NULL,
+    threshold_value INT NOT NULL DEFAULT 0,
+    threshold_direction VARCHAR(10) NOT NULL DEFAULT 'above',
+    cooldown_hours INT NOT NULL DEFAULT 24,
+    is_active TINYINT NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL,
+    UNIQUE KEY idx_type (alert_type)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+// Seed default alert configs if table is empty
+$_ac_chk = $conn->query("SELECT COUNT(*) as cnt FROM lm_alert_configs");
+if ($_ac_chk && ($__ac_row = $_ac_chk->fetch_assoc()) && intval($__ac_row['cnt']) == 0) {
+    $now = gmdate('Y-m-d H:i:s');
+    $conn->query("INSERT INTO lm_alert_configs (alert_type, alert_name, threshold_value, threshold_direction, cooldown_hours, is_active, created_at) VALUES
+        ('conviction_jump', 'Conviction Jump (+10 in 7d)', 10, 'above', 72, 1, '$now'),
+        ('conviction_drop', 'Conviction Drop (-10 in 7d)', -10, 'below', 24, 1, '$now'),
+        ('insider_cluster', 'Insider Cluster (3+ buyers 7d)', 3, 'above', 72, 1, '$now'),
+        ('insider_massive', 'Massive Insider Buy (\$5M+)', 5000000, 'above', 168, 1, '$now'),
+        ('conviction_divergence', 'Conviction-Price Divergence', 2, 'above', 24, 1, '$now'),
+        ('fear_opportunity', 'Extreme Fear (F&G < 30)', 30, 'below', 168, 1, '$now'),
+        ('greed_extreme', 'Extreme Greed (F&G > 85)', 85, 'above', 168, 1, '$now'),
+        ('whale_accumulation', 'Whale Accumulation (85+)', 85, 'above', 168, 1, '$now')");
+}
+
+// Webhook notification config
+$conn->query("CREATE TABLE IF NOT EXISTS lm_webhook_config (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    webhook_url VARCHAR(500) NOT NULL DEFAULT '',
+    is_active TINYINT NOT NULL DEFAULT 0,
+    last_sent DATETIME,
+    last_response TEXT,
+    created_at DATETIME NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+// Seed webhook row if empty
+$_wh_chk = $conn->query("SELECT COUNT(*) as cnt FROM lm_webhook_config");
+if ($_wh_chk && ($__wh_row = $_wh_chk->fetch_assoc()) && intval($__wh_row['cnt']) == 0) {
+    $now = gmdate('Y-m-d H:i:s');
+    $conn->query("INSERT INTO lm_webhook_config (webhook_url, is_active, created_at) VALUES ('', 0, '$now')");
+}
+
+// Daily price history for ATR calculation
+$conn->query("CREATE TABLE IF NOT EXISTS lm_daily_price_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ticker VARCHAR(10) NOT NULL,
+    trade_date DATE NOT NULL,
+    open_price DECIMAL(12,2) NOT NULL DEFAULT 0,
+    high_price DECIMAL(12,2) NOT NULL DEFAULT 0,
+    low_price DECIMAL(12,2) NOT NULL DEFAULT 0,
+    close_price DECIMAL(12,2) NOT NULL DEFAULT 0,
+    volume BIGINT NOT NULL DEFAULT 0,
+    source VARCHAR(30) NOT NULL DEFAULT 'finnhub',
+    created_at DATETIME NOT NULL,
+    UNIQUE KEY idx_ticker_date (ticker, trade_date),
+    KEY idx_ticker (ticker),
+    KEY idx_date (trade_date)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
 $action = isset($_GET['action']) ? $_GET['action'] : 'all';
 $admin_key = isset($_GET['key']) ? $_GET['key'] : '';
 
@@ -96,6 +245,482 @@ function _md_cache_set($key, $data) {
     if (!is_dir($dir)) @mkdir($dir, 0777, true);
     @file_put_contents($dir . '/md_' . md5($key) . '.json', json_encode($data));
 }
+
+// ─────────────────────────────────────────
+//  Enhancement: Conviction Trend (7-day comparison)
+// ─────────────────────────────────────────
+function _md_calc_trend($conn, $ticker, $current_score) {
+    $t = _md_esc($conn, $ticker);
+    $r = $conn->query("SELECT conviction_score FROM lm_multi_dimensional
+        WHERE ticker = '$t' AND calc_date <= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        ORDER BY calc_date DESC LIMIT 1");
+    if ($r && ($row = $r->fetch_assoc())) {
+        $prev = intval($row['conviction_score']);
+        $delta = $current_score - $prev;
+        $direction = 'stable';
+        if ($delta > 5) $direction = 'up';
+        elseif ($delta < -5) $direction = 'down';
+        return array('direction' => $direction, 'delta' => $delta, 'prev_score' => $prev);
+    }
+    return array('direction' => 'new', 'delta' => 0, 'prev_score' => 0);
+}
+
+// ─────────────────────────────────────────
+//  Enhancement: ATR (Average True Range) Volatility
+// ─────────────────────────────────────────
+function _md_calc_atr($conn, $ticker) {
+    $t = _md_esc($conn, $ticker);
+    $r = $conn->query("SELECT high_price, low_price, close_price
+        FROM lm_daily_price_history
+        WHERE ticker = '$t' ORDER BY trade_date DESC LIMIT 15");
+    if (!$r) return array('atr' => 0, 'atr_pct' => 0, 'penalty' => 0, 'detail' => 'no_data');
+
+    $bars = array();
+    while ($row = $r->fetch_assoc()) {
+        $bars[] = $row;
+    }
+    $bars = array_reverse($bars);
+    $count = count($bars);
+    if ($count < 2) return array('atr' => 0, 'atr_pct' => 0, 'penalty' => 0, 'detail' => 'insufficient_data n=' . $count);
+
+    $tr_sum = 0;
+    $tr_count = 0;
+    for ($i = 1; $i < $count && $i <= 14; $i++) {
+        $high = floatval($bars[$i]['high_price']);
+        $low = floatval($bars[$i]['low_price']);
+        $prev_close = floatval($bars[$i - 1]['close_price']);
+        if ($high <= 0 || $prev_close <= 0) continue;
+
+        $tr = max($high - $low, abs($high - $prev_close), abs($low - $prev_close));
+        $tr_sum += $tr;
+        $tr_count++;
+    }
+
+    if ($tr_count < 5) return array('atr' => 0, 'atr_pct' => 0, 'penalty' => 0, 'detail' => 'insufficient_bars n=' . $tr_count);
+
+    $atr = round($tr_sum / $tr_count, 2);
+    $last_close = floatval($bars[$count - 1]['close_price']);
+    $atr_pct = ($last_close > 0) ? round($atr / $last_close * 100, 2) : 0;
+    $penalty = min(10, round($atr_pct));
+
+    return array(
+        'atr' => $atr,
+        'atr_pct' => $atr_pct,
+        'penalty' => $penalty,
+        'detail' => 'atr=' . $atr . ' pct=' . $atr_pct . '% pen=' . $penalty . ' bars=' . $tr_count
+    );
+}
+
+// ─────────────────────────────────────────
+//  Enhancement: Record conviction history + performance
+// ─────────────────────────────────────────
+function _md_record_history($conn, $data) {
+    $t = _md_esc($conn, $data['ticker']);
+    $today = date('Y-m-d');
+    $now = gmdate('Y-m-d H:i:s');
+    $label = _md_esc($conn, $data['conviction_label']);
+    $detail = _md_esc($conn, json_encode($data['dimensions']));
+
+    // Get current price
+    $price = 0;
+    $r = $conn->query("SELECT price FROM lm_price_cache WHERE symbol = '$t' LIMIT 1");
+    if ($r && ($row = $r->fetch_assoc())) {
+        $price = floatval($row['price']);
+    }
+
+    $conn->query("DELETE FROM lm_conviction_history WHERE ticker = '$t' AND calc_date = '$today'");
+    $conn->query("INSERT INTO lm_conviction_history
+        (ticker, calc_date, conviction_score, conviction_label,
+         whale_score, insider_score, analyst_score, crowd_score,
+         fear_greed_score, regime_score, value_score, growth_score, momentum_score,
+         entry_price, detail_json, created_at)
+        VALUES ('$t', '$today', " . intval($data['conviction_score']) . ", '$label',
+        " . intval($data['whale_score']) . ", " . intval($data['insider_score']) . ",
+        " . intval($data['analyst_score']) . ", " . intval($data['crowd_score']) . ",
+        " . intval($data['fear_greed_score']) . ", " . intval($data['regime_score']) . ",
+        " . intval($data['value_score']) . ", " . intval($data['growth_score']) . ",
+        " . intval($data['momentum_score']) . ", $price, '$detail', '$now')");
+}
+
+function _md_record_performance($conn, $data) {
+    $t = _md_esc($conn, $data['ticker']);
+    $today = date('Y-m-d');
+    $now = gmdate('Y-m-d H:i:s');
+    $label = _md_esc($conn, $data['conviction_label']);
+
+    $price = 0;
+    $r = $conn->query("SELECT price FROM lm_price_cache WHERE symbol = '$t' LIMIT 1");
+    if ($r && ($row = $r->fetch_assoc())) {
+        $price = floatval($row['price']);
+    }
+    if ($price <= 0) return;
+
+    $conn->query("DELETE FROM lm_conviction_performance WHERE ticker = '$t' AND conviction_date = '$today'");
+    $conn->query("INSERT INTO lm_conviction_performance
+        (ticker, conviction_date, conviction_score, conviction_label, entry_price, created_at)
+        VALUES ('$t', '$today', " . intval($data['conviction_score']) . ", '$label', $price, '$now')");
+}
+
+function _md_backfill_performance($conn) {
+    $filled = 0;
+
+    // Backfill 7-day returns
+    $r = $conn->query("SELECT id, ticker, entry_price, conviction_date
+        FROM lm_conviction_performance
+        WHERE filled_7d = 0 AND conviction_date <= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        ORDER BY conviction_date DESC LIMIT 50");
+    if ($r) {
+        while ($row = $r->fetch_assoc()) {
+            $t = _md_esc($conn, $row['ticker']);
+            $entry = floatval($row['entry_price']);
+            if ($entry <= 0) continue;
+            $target_date = date('Y-m-d', strtotime($row['conviction_date'] . ' +7 days'));
+            $r2 = $conn->query("SELECT entry_price FROM lm_conviction_performance
+                WHERE ticker = '$t' AND conviction_date >= '$target_date'
+                ORDER BY conviction_date ASC LIMIT 1");
+            $p7 = 0;
+            if ($r2 && ($row2 = $r2->fetch_assoc())) {
+                $p7 = floatval($row2['entry_price']);
+            }
+            if ($p7 > 0) {
+                $ret = round(($p7 - $entry) / $entry * 100, 4);
+                $id = intval($row['id']);
+                $conn->query("UPDATE lm_conviction_performance SET price_7d = $p7, return_7d = $ret, filled_7d = 1 WHERE id = $id");
+                $filled++;
+            }
+        }
+    }
+
+    // Backfill 14-day returns
+    $r = $conn->query("SELECT id, ticker, entry_price, conviction_date
+        FROM lm_conviction_performance
+        WHERE filled_14d = 0 AND conviction_date <= DATE_SUB(CURDATE(), INTERVAL 14 DAY)
+        ORDER BY conviction_date DESC LIMIT 50");
+    if ($r) {
+        while ($row = $r->fetch_assoc()) {
+            $t = _md_esc($conn, $row['ticker']);
+            $entry = floatval($row['entry_price']);
+            if ($entry <= 0) continue;
+            $target_date = date('Y-m-d', strtotime($row['conviction_date'] . ' +14 days'));
+            $r2 = $conn->query("SELECT entry_price FROM lm_conviction_performance
+                WHERE ticker = '$t' AND conviction_date >= '$target_date'
+                ORDER BY conviction_date ASC LIMIT 1");
+            $p14 = 0;
+            if ($r2 && ($row2 = $r2->fetch_assoc())) {
+                $p14 = floatval($row2['entry_price']);
+            }
+            if ($p14 > 0) {
+                $ret = round(($p14 - $entry) / $entry * 100, 4);
+                $id = intval($row['id']);
+                $conn->query("UPDATE lm_conviction_performance SET price_14d = $p14, return_14d = $ret, filled_14d = 1 WHERE id = $id");
+                $filled++;
+            }
+        }
+    }
+
+    // Backfill 30-day returns
+    $r = $conn->query("SELECT id, ticker, entry_price, conviction_date
+        FROM lm_conviction_performance
+        WHERE filled_30d = 0 AND conviction_date <= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+        ORDER BY conviction_date DESC LIMIT 50");
+    if ($r) {
+        while ($row = $r->fetch_assoc()) {
+            $t = _md_esc($conn, $row['ticker']);
+            $entry = floatval($row['entry_price']);
+            if ($entry <= 0) continue;
+            $target_date = date('Y-m-d', strtotime($row['conviction_date'] . ' +30 days'));
+            $r2 = $conn->query("SELECT entry_price FROM lm_conviction_performance
+                WHERE ticker = '$t' AND conviction_date >= '$target_date'
+                ORDER BY conviction_date ASC LIMIT 1");
+            $p30 = 0;
+            if ($r2 && ($row2 = $r2->fetch_assoc())) {
+                $p30 = floatval($row2['entry_price']);
+            }
+            if ($p30 > 0) {
+                $ret = round(($p30 - $entry) / $entry * 100, 4);
+                $outcome = ($ret > 0) ? 'win' : 'loss';
+                $id = intval($row['id']);
+                $conn->query("UPDATE lm_conviction_performance SET price_30d = $p30, return_30d = $ret, filled_30d = 1, outcome_30d = '$outcome' WHERE id = $id");
+                $filled++;
+            }
+        }
+    }
+
+    return $filled;
+}
+
+function _md_calc_stats($conn) {
+    $now = gmdate('Y-m-d H:i:s');
+    $periods = array('7d' => 7, '30d' => 30, '90d' => 90);
+
+    foreach ($periods as $period => $days) {
+        $conn->query("DELETE FROM lm_conviction_stats WHERE stat_period = '$period'");
+        $buckets = array(
+            '80-100' => array(80, 100),
+            '70-79' => array(70, 79),
+            '60-69' => array(60, 69),
+            '50-59' => array(50, 59),
+            '0-49' => array(0, 49)
+        );
+        foreach ($buckets as $bname => $range) {
+            $lo = $range[0];
+            $hi = $range[1];
+            $r = $conn->query("SELECT
+                COUNT(*) as total,
+                SUM(CASE WHEN outcome_30d = 'win' THEN 1 ELSE 0 END) as wins,
+                SUM(CASE WHEN outcome_30d = 'loss' THEN 1 ELSE 0 END) as losses,
+                SUM(CASE WHEN outcome_30d = 'pending' THEN 1 ELSE 0 END) as pend,
+                AVG(CASE WHEN filled_7d = 1 THEN return_7d ELSE NULL END) as avg_ret,
+                MAX(CASE WHEN filled_7d = 1 THEN return_7d ELSE NULL END) as max_ret,
+                MIN(CASE WHEN filled_7d = 1 THEN return_7d ELSE NULL END) as min_ret
+                FROM lm_conviction_performance
+                WHERE conviction_score >= $lo AND conviction_score <= $hi
+                AND conviction_date >= DATE_SUB(CURDATE(), INTERVAL $days DAY)");
+            if ($r && ($row = $r->fetch_assoc())) {
+                $total = intval($row['total']);
+                if ($total == 0) continue;
+                $wins = intval($row['wins']);
+                $losses = intval($row['losses']);
+                $wr = ($wins + $losses > 0) ? round($wins / ($wins + $losses) * 100, 2) : 0;
+                $avg_ret = round(floatval($row['avg_ret']), 4);
+                $max_ret = round(floatval($row['max_ret']), 4);
+                $min_ret = round(floatval($row['min_ret']), 4);
+                $pend = intval($row['pend']);
+                $besc = _md_esc($conn, $bname);
+                $conn->query("INSERT INTO lm_conviction_stats
+                    (stat_period, conviction_bucket, total_signals, wins, losses, pending_count, win_rate, avg_return, max_return, min_return, calculated_at)
+                    VALUES ('$period', '$besc', $total, $wins, $losses, $pend, $wr, $avg_ret, $max_ret, $min_ret, '$now')");
+            }
+        }
+    }
+}
+
+// ─────────────────────────────────────────
+//  Enhancement: Alert Generation
+// ─────────────────────────────────────────
+function _md_check_cooldown($conn, $type, $ticker, $hours) {
+    $te = _md_esc($conn, $type);
+    $tk = _md_esc($conn, $ticker);
+    $chk = $conn->query("SELECT id FROM lm_conviction_alerts
+        WHERE alert_type = '$te' AND ticker = '$tk'
+        AND created_at >= DATE_SUB(NOW(), INTERVAL $hours HOUR) LIMIT 1");
+    return ($chk && $chk->num_rows > 0);
+}
+
+function _md_insert_alert($conn, $type, $ticker, $msg, $severity, $details) {
+    $now = gmdate('Y-m-d H:i:s');
+    $te = _md_esc($conn, $type);
+    $tk = _md_esc($conn, $ticker);
+    $me = _md_esc($conn, $msg);
+    $se = _md_esc($conn, $severity);
+    $de = _md_esc($conn, $details);
+    $conn->query("INSERT INTO lm_conviction_alerts (alert_type, ticker, message, severity, details_json, created_at)
+        VALUES ('$te', '$tk', '$me', '$se', '$de', '$now')");
+
+    // Send webhook notification if configured
+    _md_send_webhook($conn, $type, $ticker, $msg, $severity);
+}
+
+function _md_send_webhook($conn, $type, $ticker, $msg, $severity) {
+    $r = $conn->query("SELECT webhook_url, is_active FROM lm_webhook_config WHERE id = 1 LIMIT 1");
+    if (!$r || !($row = $r->fetch_assoc())) return;
+    if (!$row['is_active'] || $row['webhook_url'] === '') return;
+
+    $url = $row['webhook_url'];
+    $sev_emoji = ($severity === 'critical') ? "\xF0\x9F\x9A\xA8" : (($severity === 'warning') ? "\xE2\x9A\xA0\xEF\xB8\x8F" : "\xE2\x84\xB9\xEF\xB8\x8F");
+    $type_clean = str_replace('_', ' ', ucfirst($type));
+
+    // Build Discord-compatible payload
+    $payload = json_encode(array(
+        'content' => $sev_emoji . ' **' . $type_clean . '** | ' . ($ticker ? $ticker . ' | ' : '') . $msg,
+        'embeds' => array(array(
+            'title' => $type_clean . ($ticker ? ' - ' . $ticker : ''),
+            'description' => $msg,
+            'color' => ($severity === 'critical') ? 15158332 : (($severity === 'warning') ? 16776960 : 3447003),
+            'footer' => array('text' => 'Conviction Alerts | ' . gmdate('Y-m-d H:i:s') . ' UTC')
+        ))
+    ));
+
+    if (function_exists('curl_init')) {
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        $resp = curl_exec($ch);
+        curl_close($ch);
+
+        $now = gmdate('Y-m-d H:i:s');
+        $re = $conn->real_escape_string(substr($resp, 0, 500));
+        $conn->query("UPDATE lm_webhook_config SET last_sent = '$now', last_response = '$re' WHERE id = 1");
+    }
+}
+
+function _md_load_alert_configs($conn) {
+    $configs = array();
+    $defaults = array(
+        'conviction_jump' => array('threshold' => 10, 'cooldown' => 72, 'active' => 1),
+        'conviction_drop' => array('threshold' => -10, 'cooldown' => 24, 'active' => 1),
+        'insider_cluster' => array('threshold' => 3, 'cooldown' => 72, 'active' => 1),
+        'insider_massive' => array('threshold' => 5000000, 'cooldown' => 168, 'active' => 1),
+        'conviction_divergence' => array('threshold' => 2, 'cooldown' => 24, 'active' => 1),
+        'fear_opportunity' => array('threshold' => 30, 'cooldown' => 168, 'active' => 1),
+        'greed_extreme' => array('threshold' => 85, 'cooldown' => 168, 'active' => 1),
+        'whale_accumulation' => array('threshold' => 85, 'cooldown' => 168, 'active' => 1)
+    );
+
+    // Try loading from DB
+    $r = $conn->query("SELECT alert_type, threshold_value, cooldown_hours, is_active FROM lm_alert_configs");
+    if ($r && $r->num_rows > 0) {
+        while ($row = $r->fetch_assoc()) {
+            $configs[$row['alert_type']] = array(
+                'threshold' => intval($row['threshold_value']),
+                'cooldown' => intval($row['cooldown_hours']),
+                'active' => intval($row['is_active'])
+            );
+        }
+    }
+
+    // Merge with defaults (DB overrides)
+    foreach ($defaults as $type => $def) {
+        if (!isset($configs[$type])) {
+            $configs[$type] = $def;
+        }
+    }
+    return $configs;
+}
+
+function _md_generate_alerts($conn, $scored_tickers) {
+    $alerts_generated = 0;
+    // Load configs from DB (falls back to hardcoded defaults)
+    $configs = _md_load_alert_configs($conn);
+
+    // Build cooldowns map from configs
+    $cooldowns = array();
+    foreach ($configs as $type => $cfg) {
+        $cooldowns[$type] = $cfg['cooldown'];
+    }
+
+    foreach ($scored_tickers as $data) {
+        $ticker = $data['ticker'];
+        $score = intval($data['conviction_score']);
+
+        // 1. Conviction Jump (>threshold pts in 7 days)
+        $trend = _md_calc_trend($conn, $ticker, $score);
+        if ($configs['conviction_jump']['active'] && $trend['delta'] > $configs['conviction_jump']['threshold'] && !_md_check_cooldown($conn, 'conviction_jump', $ticker, $cooldowns['conviction_jump'])) {
+            $sev = ($trend['delta'] > 15) ? 'critical' : 'warning';
+            $msg = $ticker . ' conviction surged +' . $trend['delta'] . ' pts in 7 days (now ' . $score . ')';
+            _md_insert_alert($conn, 'conviction_jump', $ticker, $msg, $sev,
+                json_encode(array('delta' => $trend['delta'], 'current' => $score, 'prev' => $trend['prev_score'])));
+            $alerts_generated++;
+        }
+
+        // 2. Conviction Drop (<threshold pts in 7 days)
+        if ($configs['conviction_drop']['active'] && $trend['delta'] < $configs['conviction_drop']['threshold'] && !_md_check_cooldown($conn, 'conviction_drop', $ticker, $cooldowns['conviction_drop'])) {
+            $msg = $ticker . ' conviction dropped ' . $trend['delta'] . ' pts in 7 days (now ' . $score . ')';
+            _md_insert_alert($conn, 'conviction_drop', $ticker, $msg, 'warning',
+                json_encode(array('delta' => $trend['delta'], 'current' => $score, 'prev' => $trend['prev_score'])));
+            $alerts_generated++;
+        }
+
+        // 3. Insider Cluster (configurable threshold, distinct buyers in 7 days)
+        if ($configs['insider_cluster']['active'] && _md_table_exists($conn, 'gm_sec_insider_trades')) {
+            $t = _md_esc($conn, $ticker);
+            $r = $conn->query("SELECT COUNT(DISTINCT filer_name) as buyers
+                FROM gm_sec_insider_trades
+                WHERE ticker = '$t' AND transaction_type = 'P'
+                AND transaction_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)");
+            if ($r && ($row = $r->fetch_assoc())) {
+                $buyers = intval($row['buyers']);
+                if ($buyers >= $configs['insider_cluster']['threshold'] && !_md_check_cooldown($conn, 'insider_cluster', $ticker, $cooldowns['insider_cluster'])) {
+                    $msg = $ticker . ': ' . $buyers . ' distinct insiders buying in past 7 days';
+                    _md_insert_alert($conn, 'insider_cluster', $ticker, $msg, 'critical',
+                        json_encode(array('buyers' => $buyers)));
+                    $alerts_generated++;
+                }
+            }
+
+            // 4. Insider Massive (configurable threshold, purchase in 30 days)
+            if ($configs['insider_massive']['active']) {
+                $r2 = $conn->query("SELECT MAX(total_value) as max_val
+                    FROM gm_sec_insider_trades
+                    WHERE ticker = '$t' AND transaction_type = 'P'
+                    AND transaction_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)");
+                if ($r2 && ($row2 = $r2->fetch_assoc())) {
+                    $max_val = floatval($row2['max_val']);
+                    if ($max_val >= $configs['insider_massive']['threshold'] && !_md_check_cooldown($conn, 'insider_massive', $ticker, $cooldowns['insider_massive'])) {
+                        $msg = $ticker . ': Massive insider purchase $' . number_format($max_val, 0);
+                        _md_insert_alert($conn, 'insider_massive', $ticker, $msg, 'critical',
+                            json_encode(array('max_purchase' => $max_val)));
+                        $alerts_generated++;
+                    }
+                }
+            } // end insider_massive active check
+        }
+
+        // 5. Conviction Divergence (high conviction + price dropping, or vice versa)
+        if ($configs['conviction_divergence']['active']) {
+            $t = _md_esc($conn, $ticker);
+            $r3 = $conn->query("SELECT change_24h_pct FROM lm_price_cache WHERE symbol = '$t' LIMIT 1");
+            if ($r3 && ($row3 = $r3->fetch_assoc())) {
+                $change = floatval($row3['change_24h_pct']);
+                $div_thresh = abs($configs['conviction_divergence']['threshold']);
+                if ($score >= 55 && $change < -$div_thresh && !_md_check_cooldown($conn, 'conviction_divergence', $ticker, $cooldowns['conviction_divergence'])) {
+                    $msg = $ticker . ': Bullish conviction (' . $score . ') but price down ' . round($change, 1) . '% - potential dip buy';
+                    _md_insert_alert($conn, 'conviction_divergence', $ticker, $msg, 'warning',
+                        json_encode(array('conviction' => $score, 'price_change' => $change)));
+                    $alerts_generated++;
+                } elseif ($score < 45 && $change > $div_thresh && !_md_check_cooldown($conn, 'conviction_divergence', $ticker, $cooldowns['conviction_divergence'])) {
+                    $msg = $ticker . ': Bearish conviction (' . $score . ') but price up +' . round($change, 1) . '% - potential overextension';
+                    _md_insert_alert($conn, 'conviction_divergence', $ticker, $msg, 'info',
+                        json_encode(array('conviction' => $score, 'price_change' => $change)));
+                    $alerts_generated++;
+                }
+            }
+        }
+
+        // 6. Whale Accumulation (configurable threshold)
+        if ($configs['whale_accumulation']['active'] && intval($data['whale_score']) >= $configs['whale_accumulation']['threshold'] && !_md_check_cooldown($conn, 'whale_accumulation', $ticker, $cooldowns['whale_accumulation'])) {
+            $msg = $ticker . ': Smart money accumulating (whale score ' . $data['whale_score'] . ')';
+            _md_insert_alert($conn, 'whale_accumulation', $ticker, $msg, 'info',
+                json_encode(array('whale_score' => intval($data['whale_score']))));
+            $alerts_generated++;
+        }
+    }
+
+    // 7. Fear Opportunity (market-wide, configurable F&G threshold)
+    if ($configs['fear_opportunity']['active'] && _md_table_exists($conn, 'lm_fear_greed')) {
+        $r4 = $conn->query("SELECT score FROM lm_fear_greed WHERE source = 'composite' ORDER BY fetch_date DESC LIMIT 1");
+        if ($r4 && ($row4 = $r4->fetch_assoc())) {
+            $fg = intval($row4['score']);
+            if ($fg < $configs['fear_opportunity']['threshold'] && !_md_check_cooldown($conn, 'fear_opportunity', '', $cooldowns['fear_opportunity'])) {
+                $msg = 'Extreme Fear detected (F&G: ' . $fg . ') - historically a buying opportunity';
+                _md_insert_alert($conn, 'fear_opportunity', '', $msg, 'critical',
+                    json_encode(array('fg_score' => $fg)));
+                $alerts_generated++;
+            }
+            // 8. Greed Extreme (configurable F&G threshold)
+            if ($configs['greed_extreme']['active'] && $fg > $configs['greed_extreme']['threshold'] && !_md_check_cooldown($conn, 'greed_extreme', '', $cooldowns['greed_extreme'])) {
+                $msg = 'Extreme Greed detected (F&G: ' . $fg . ') - consider caution';
+                _md_insert_alert($conn, 'greed_extreme', '', $msg, 'warning',
+                    json_encode(array('fg_score' => $fg)));
+                $alerts_generated++;
+            }
+        }
+    }
+
+    return $alerts_generated;
+}
+
+// Sector map for rotation signal
+$MD_SECTORS = array(
+    'Tech' => array('MSFT', 'NVDA', 'GOOGL', 'META', 'AAPL', 'AMZN', 'NFLX'),
+    'Finance' => array('JPM', 'BAC'),
+    'Healthcare' => array('JNJ'),
+    'Energy' => array('XOM'),
+    'Retail' => array('WMT')
+);
 
 // ─────────────────────────────────────────
 //  Dimension 1: Whale Score (13F Holdings)
@@ -953,11 +1578,24 @@ if ($action === 'calculate') {
     }
 
     $scored = array();
+    $scored_full = array();
     foreach ($MD_TICKERS as $ticker) {
         $data = _md_calculate_ticker($conn, $ticker);
         _md_store($conn, $data);
+        _md_record_history($conn, $data);
+        _md_record_performance($conn, $data);
         $scored[] = array('ticker' => $ticker, 'conviction_score' => $data['conviction_score'], 'conviction_label' => $data['conviction_label']);
+        $scored_full[] = $data;
     }
+
+    // Backfill historical performance returns
+    $backfill_count = _md_backfill_performance($conn);
+
+    // Recalculate aggregate stats
+    _md_calc_stats($conn);
+
+    // Generate alerts
+    $alerts_count = _md_generate_alerts($conn, $scored_full);
 
     // Sort by conviction descending for top_picks
     usort($scored, create_function('$a,$b', 'return $b["conviction_score"] - $a["conviction_score"];'));
@@ -967,6 +1605,8 @@ if ($action === 'calculate') {
         'action' => 'calculate',
         'tickers_scored' => count($scored),
         'top_picks' => array_slice($scored, 0, 5),
+        'backfilled' => $backfill_count,
+        'alerts_generated' => $alerts_count,
         'timestamp' => gmdate('Y-m-d H:i:s')
     ));
     $conn->close();
@@ -989,6 +1629,10 @@ if ($action === 'ticker') {
     $r = $conn->query("SELECT * FROM lm_multi_dimensional WHERE ticker = '$t' AND calc_date >= DATE_SUB(CURDATE(), INTERVAL 1 DAY) ORDER BY calc_date DESC LIMIT 1");
     if ($r && $row = $r->fetch_assoc()) {
         $detail = json_decode($row['dimension_detail'], true);
+        $conv = intval($row['conviction_score']);
+        $trend = _md_calc_trend($conn, $row['ticker'], $conv);
+        $atr_data = _md_calc_atr($conn, $row['ticker']);
+        $risk_adj = max(0, $conv - $atr_data['penalty']);
         echo json_encode(array(
             'ok' => true,
             'action' => 'ticker',
@@ -1000,8 +1644,16 @@ if ($action === 'ticker') {
                 'crowd_score' => intval($row['crowd_score']),
                 'fear_greed_score' => intval($row['fear_greed_score']),
                 'regime_score' => intval($row['regime_score']),
-                'conviction_score' => intval($row['conviction_score']),
+                'value_score' => intval($row['value_score']),
+                'growth_score' => intval($row['growth_score']),
+                'momentum_score' => intval($row['momentum_score']),
+                'conviction_score' => $conv,
                 'conviction_label' => $row['conviction_label'],
+                'trend_direction' => $trend['direction'],
+                'trend_delta' => $trend['delta'],
+                'risk_adjusted_score' => $risk_adj,
+                'atr_pct' => $atr_data['atr_pct'],
+                'volatility_penalty' => $atr_data['penalty'],
                 'dimensions' => $detail,
                 'calc_date' => $row['calc_date']
             )
@@ -1030,6 +1682,10 @@ if ($action === 'radar') {
     $r = $conn->query("SELECT * FROM lm_multi_dimensional WHERE ticker = '$t' ORDER BY calc_date DESC LIMIT 1");
 
     if ($r && $row = $r->fetch_assoc()) {
+        $conv = intval($row['conviction_score']);
+        $trend = _md_calc_trend($conn, $ticker, $conv);
+        $atr_data = _md_calc_atr($conn, $ticker);
+        $risk_adj = max(0, $conv - $atr_data['penalty']);
         echo json_encode(array(
             'ok' => true,
             'action' => 'radar',
@@ -1043,8 +1699,13 @@ if ($action === 'radar') {
                 intval($row['fear_greed_score']),
                 intval($row['regime_score'])
             ),
-            'conviction' => intval($row['conviction_score']),
+            'conviction' => $conv,
             'conviction_label' => $row['conviction_label'],
+            'trend_direction' => $trend['direction'],
+            'trend_delta' => $trend['delta'],
+            'risk_adjusted_score' => $risk_adj,
+            'atr_pct' => $atr_data['atr_pct'],
+            'volatility_penalty' => $atr_data['penalty'],
             'calc_date' => $row['calc_date']
         ));
     } else {
@@ -1142,6 +1803,10 @@ if ($action === 'top_picks') {
     $picks = array();
     if ($r) {
         while ($row = $r->fetch_assoc()) {
+            $conv = intval($row['conviction_score']);
+            $trend = _md_calc_trend($conn, $row['ticker'], $conv);
+            $atr_data = _md_calc_atr($conn, $row['ticker']);
+            $risk_adj = max(0, $conv - $atr_data['penalty']);
             $picks[] = array(
                 'ticker' => $row['ticker'],
                 'whale_score' => intval($row['whale_score']),
@@ -1150,8 +1815,13 @@ if ($action === 'top_picks') {
                 'crowd_score' => intval($row['crowd_score']),
                 'fear_greed_score' => intval($row['fear_greed_score']),
                 'regime_score' => intval($row['regime_score']),
-                'conviction_score' => intval($row['conviction_score']),
-                'conviction_label' => $row['conviction_label']
+                'conviction_score' => $conv,
+                'conviction_label' => $row['conviction_label'],
+                'trend_direction' => $trend['direction'],
+                'trend_delta' => $trend['delta'],
+                'risk_adjusted_score' => $risk_adj,
+                'atr_pct' => $atr_data['atr_pct'],
+                'volatility_penalty' => $atr_data['penalty']
             );
         }
     }
@@ -1244,6 +1914,10 @@ if ($action === 'all') {
     $all = array();
     if ($r) {
         while ($row = $r->fetch_assoc()) {
+            $conv = intval($row['conviction_score']);
+            $trend = _md_calc_trend($conn, $row['ticker'], $conv);
+            $atr_data = _md_calc_atr($conn, $row['ticker']);
+            $risk_adj = max(0, $conv - $atr_data['penalty']);
             $all[] = array(
                 'ticker' => $row['ticker'],
                 'whale_score' => intval($row['whale_score']),
@@ -1255,14 +1929,364 @@ if ($action === 'all') {
                 'value_score' => intval($row['value_score']),
                 'growth_score' => intval($row['growth_score']),
                 'momentum_score' => intval($row['momentum_score']),
-                'conviction_score' => intval($row['conviction_score']),
+                'conviction_score' => $conv,
                 'conviction_label' => $row['conviction_label'],
+                'trend_direction' => $trend['direction'],
+                'trend_delta' => $trend['delta'],
+                'risk_adjusted_score' => $risk_adj,
+                'atr_pct' => $atr_data['atr_pct'],
+                'volatility_penalty' => $atr_data['penalty'],
                 'calc_date' => $row['calc_date']
             );
         }
     }
 
     echo json_encode(array('ok' => true, 'action' => 'all', 'count' => count($all), 'tickers' => $all));
+    $conn->close();
+    exit;
+}
+
+// ═══════════════════════════════════════════
+//  Action: sectors — sector rotation signal
+// ═══════════════════════════════════════════
+if ($action === 'sectors') {
+    $sector_scores = array();
+    $max_sector = '';
+    $max_avg = 0;
+
+    foreach ($MD_SECTORS as $name => $tickers) {
+        $in_list = "'" . implode("','", $tickers) . "'";
+        $r = $conn->query("SELECT AVG(conviction_score) as avg_conv,
+            MIN(conviction_score) as min_conv, MAX(conviction_score) as max_conv,
+            COUNT(*) as cnt
+            FROM lm_multi_dimensional
+            WHERE calc_date = (SELECT MAX(calc_date) FROM lm_multi_dimensional)
+            AND ticker IN ($in_list)");
+        $avg = 50;
+        if ($r && ($row = $r->fetch_assoc())) {
+            $avg = round(floatval($row['avg_conv']));
+            $entry = array(
+                'sector' => $name,
+                'avg_conviction' => $avg,
+                'min' => round(floatval($row['min_conv'])),
+                'max' => round(floatval($row['max_conv'])),
+                'tickers' => $tickers,
+                'count' => intval($row['cnt'])
+            );
+            $sector_scores[] = $entry;
+            if ($avg > $max_avg) {
+                $max_avg = $avg;
+                $max_sector = $name;
+            }
+        }
+    }
+
+    $signal = 'No rotation signal';
+    $second_best = 0;
+    foreach ($sector_scores as $ss) {
+        if ($ss['sector'] !== $max_sector && $ss['avg_conviction'] > $second_best) {
+            $second_best = $ss['avg_conviction'];
+        }
+    }
+    $lead = $max_avg - $second_best;
+    if ($lead >= 10) {
+        $signal = 'Rotate to ' . $max_sector . ' (+' . $lead . ' pts lead)';
+    }
+
+    echo json_encode(array(
+        'ok' => true,
+        'action' => 'sectors',
+        'sectors' => $sector_scores,
+        'rotation_signal' => $signal,
+        'leading_sector' => $max_sector,
+        'lead_margin' => $lead
+    ));
+    $conn->close();
+    exit;
+}
+
+// ═══════════════════════════════════════════
+//  Action: performance — conviction vs price returns
+// ═══════════════════════════════════════════
+if ($action === 'performance') {
+    $ticker_filter = isset($_GET['ticker']) ? strtoupper(trim($_GET['ticker'])) : '';
+    $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 100;
+    if ($limit < 1 || $limit > 500) $limit = 100;
+
+    $where = 'WHERE 1=1';
+    if ($ticker_filter !== '') {
+        $tf = _md_esc($conn, $ticker_filter);
+        $where .= " AND ticker = '$tf'";
+    }
+
+    $r = $conn->query("SELECT * FROM lm_conviction_performance $where ORDER BY conviction_date DESC LIMIT $limit");
+    $records = array();
+    if ($r) {
+        while ($row = $r->fetch_assoc()) {
+            $records[] = array(
+                'ticker' => $row['ticker'],
+                'conviction_date' => $row['conviction_date'],
+                'conviction_score' => intval($row['conviction_score']),
+                'conviction_label' => $row['conviction_label'],
+                'entry_price' => floatval($row['entry_price']),
+                'price_7d' => floatval($row['price_7d']),
+                'return_7d' => floatval($row['return_7d']),
+                'price_14d' => floatval($row['price_14d']),
+                'return_14d' => floatval($row['return_14d']),
+                'price_30d' => floatval($row['price_30d']),
+                'return_30d' => floatval($row['return_30d']),
+                'outcome_30d' => $row['outcome_30d'],
+                'filled_7d' => intval($row['filled_7d']),
+                'filled_30d' => intval($row['filled_30d'])
+            );
+        }
+    }
+
+    echo json_encode(array('ok' => true, 'action' => 'performance', 'count' => count($records), 'records' => $records));
+    $conn->close();
+    exit;
+}
+
+// ═══════════════════════════════════════════
+//  Action: stats — aggregate performance by bucket
+// ═══════════════════════════════════════════
+if ($action === 'stats') {
+    $period = isset($_GET['period']) ? $_GET['period'] : '30d';
+    $pe = _md_esc($conn, $period);
+    $r = $conn->query("SELECT * FROM lm_conviction_stats WHERE stat_period = '$pe' ORDER BY conviction_bucket DESC");
+    $stats = array();
+    if ($r) {
+        while ($row = $r->fetch_assoc()) {
+            $stats[] = array(
+                'bucket' => $row['conviction_bucket'],
+                'total' => intval($row['total_signals']),
+                'wins' => intval($row['wins']),
+                'losses' => intval($row['losses']),
+                'pending' => intval($row['pending_count']),
+                'win_rate' => floatval($row['win_rate']),
+                'avg_return' => floatval($row['avg_return']),
+                'max_return' => floatval($row['max_return']),
+                'min_return' => floatval($row['min_return'])
+            );
+        }
+    }
+
+    echo json_encode(array('ok' => true, 'action' => 'stats', 'period' => $period, 'stats' => $stats));
+    $conn->close();
+    exit;
+}
+
+// ═══════════════════════════════════════════
+//  Action: alerts — list alerts
+// ═══════════════════════════════════════════
+if ($action === 'alerts') {
+    $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 30;
+    $unread_only = isset($_GET['unread']);
+    if ($limit < 1 || $limit > 200) $limit = 30;
+
+    $where = '';
+    if ($unread_only) $where = 'WHERE is_read = 0';
+
+    $r = $conn->query("SELECT * FROM lm_conviction_alerts $where ORDER BY created_at DESC LIMIT $limit");
+    $alerts = array();
+    if ($r) {
+        while ($row = $r->fetch_assoc()) {
+            $details = json_decode($row['details_json'], true);
+            $alerts[] = array(
+                'id' => intval($row['id']),
+                'alert_type' => $row['alert_type'],
+                'ticker' => $row['ticker'],
+                'message' => $row['message'],
+                'severity' => $row['severity'],
+                'details' => $details,
+                'is_read' => intval($row['is_read']),
+                'created_at' => $row['created_at']
+            );
+        }
+    }
+
+    $r2 = $conn->query("SELECT COUNT(*) as cnt FROM lm_conviction_alerts WHERE is_read = 0");
+    $unread_count = ($r2 && ($row2 = $r2->fetch_assoc())) ? intval($row2['cnt']) : 0;
+
+    echo json_encode(array('ok' => true, 'action' => 'alerts', 'unread_count' => $unread_count, 'alerts' => $alerts));
+    $conn->close();
+    exit;
+}
+
+// ═══════════════════════════════════════════
+//  Action: mark_alert_read
+// ═══════════════════════════════════════════
+if ($action === 'mark_alert_read') {
+    $alert_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+    if ($alert_id > 0) {
+        $conn->query("UPDATE lm_conviction_alerts SET is_read = 1 WHERE id = $alert_id");
+    } elseif (isset($_GET['all'])) {
+        $conn->query("UPDATE lm_conviction_alerts SET is_read = 1 WHERE is_read = 0");
+    }
+    echo json_encode(array('ok' => true, 'action' => 'mark_alert_read'));
+    $conn->close();
+    exit;
+}
+
+// ═══════════════════════════════════════════
+//  Action: history — conviction history records
+// ═══════════════════════════════════════════
+if ($action === 'history') {
+    $ticker_filter = isset($_GET['ticker']) ? strtoupper(trim($_GET['ticker'])) : '';
+    $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 30;
+    if ($limit < 1 || $limit > 500) $limit = 30;
+
+    $where = 'WHERE 1=1';
+    if ($ticker_filter !== '') {
+        $tf = _md_esc($conn, $ticker_filter);
+        $where .= " AND ticker = '$tf'";
+    }
+
+    $r = $conn->query("SELECT * FROM lm_conviction_history $where ORDER BY calc_date DESC, conviction_score DESC LIMIT $limit");
+    $records = array();
+    if ($r) {
+        while ($row = $r->fetch_assoc()) {
+            $records[] = array(
+                'ticker' => $row['ticker'],
+                'calc_date' => $row['calc_date'],
+                'conviction_score' => intval($row['conviction_score']),
+                'conviction_label' => $row['conviction_label'],
+                'whale_score' => intval($row['whale_score']),
+                'insider_score' => intval($row['insider_score']),
+                'analyst_score' => intval($row['analyst_score']),
+                'crowd_score' => intval($row['crowd_score']),
+                'fear_greed_score' => intval($row['fear_greed_score']),
+                'regime_score' => intval($row['regime_score']),
+                'value_score' => intval($row['value_score']),
+                'growth_score' => intval($row['growth_score']),
+                'momentum_score' => intval($row['momentum_score']),
+                'entry_price' => floatval($row['entry_price'])
+            );
+        }
+    }
+
+    echo json_encode(array('ok' => true, 'action' => 'history', 'count' => count($records), 'records' => $records));
+    $conn->close();
+    exit;
+}
+
+// ═══════════════════════════════════════════
+//  Action: alert_configs — list alert configurations
+// ═══════════════════════════════════════════
+if ($action === 'alert_configs') {
+    $r = $conn->query("SELECT * FROM lm_alert_configs ORDER BY alert_type ASC");
+    $configs = array();
+    if ($r) {
+        while ($row = $r->fetch_assoc()) {
+            $configs[] = array(
+                'alert_type' => $row['alert_type'],
+                'alert_name' => $row['alert_name'],
+                'threshold_value' => intval($row['threshold_value']),
+                'threshold_direction' => $row['threshold_direction'],
+                'cooldown_hours' => intval($row['cooldown_hours']),
+                'is_active' => intval($row['is_active'])
+            );
+        }
+    }
+
+    echo json_encode(array('ok' => true, 'action' => 'alert_configs', 'configs' => $configs));
+    $conn->close();
+    exit;
+}
+
+// ═══════════════════════════════════════════
+//  Action: update_alert_config — toggle/modify alert config (admin)
+// ═══════════════════════════════════════════
+if ($action === 'update_alert_config') {
+    if ($admin_key !== 'livetrader2026') {
+        echo json_encode(array('ok' => false, 'error' => 'Invalid key'));
+        $conn->close();
+        exit;
+    }
+
+    $type = isset($_GET['type']) ? $_GET['type'] : '';
+    if ($type === '') {
+        echo json_encode(array('ok' => false, 'error' => 'Missing type parameter'));
+        $conn->close();
+        exit;
+    }
+
+    $te = _md_esc($conn, $type);
+    $updates = array();
+
+    if (isset($_GET['active'])) {
+        $active = intval($_GET['active']) ? 1 : 0;
+        $updates[] = "is_active = $active";
+    }
+    if (isset($_GET['threshold'])) {
+        $threshold = intval($_GET['threshold']);
+        $updates[] = "threshold_value = $threshold";
+    }
+    if (isset($_GET['cooldown'])) {
+        $cooldown = intval($_GET['cooldown']);
+        if ($cooldown > 0) $updates[] = "cooldown_hours = $cooldown";
+    }
+
+    if (count($updates) > 0) {
+        $conn->query("UPDATE lm_alert_configs SET " . implode(', ', $updates) . " WHERE alert_type = '$te'");
+    }
+
+    echo json_encode(array('ok' => true, 'action' => 'update_alert_config', 'type' => $type));
+    $conn->close();
+    exit;
+}
+
+// ═══════════════════════════════════════════
+//  Action: set_webhook — configure webhook URL (admin)
+// ═══════════════════════════════════════════
+if ($action === 'set_webhook') {
+    if ($admin_key !== 'livetrader2026') {
+        echo json_encode(array('ok' => false, 'error' => 'Invalid key'));
+        $conn->close();
+        exit;
+    }
+
+    $url = isset($_GET['url']) ? urldecode($_GET['url']) : '';
+    $active = isset($_GET['active']) ? intval($_GET['active']) : 0;
+    $ue = _md_esc($conn, $url);
+    $conn->query("UPDATE lm_webhook_config SET webhook_url = '$ue', is_active = $active WHERE id = 1");
+
+    echo json_encode(array('ok' => true, 'action' => 'set_webhook'));
+    $conn->close();
+    exit;
+}
+
+// ═══════════════════════════════════════════
+//  Action: get_webhook — get webhook config
+// ═══════════════════════════════════════════
+if ($action === 'get_webhook') {
+    $r = $conn->query("SELECT webhook_url, is_active, last_sent, last_response FROM lm_webhook_config WHERE id = 1 LIMIT 1");
+    $wh = array('url' => '', 'active' => 0, 'last_sent' => null);
+    if ($r && ($row = $r->fetch_assoc())) {
+        $wh = array(
+            'url' => $row['webhook_url'],
+            'active' => intval($row['is_active']),
+            'last_sent' => $row['last_sent'],
+            'last_response' => $row['last_response']
+        );
+    }
+    echo json_encode(array('ok' => true, 'action' => 'get_webhook', 'webhook' => $wh));
+    $conn->close();
+    exit;
+}
+
+// ═══════════════════════════════════════════
+//  Action: test_webhook — send a test webhook (admin)
+// ═══════════════════════════════════════════
+if ($action === 'test_webhook') {
+    if ($admin_key !== 'livetrader2026') {
+        echo json_encode(array('ok' => false, 'error' => 'Invalid key'));
+        $conn->close();
+        exit;
+    }
+
+    _md_send_webhook($conn, 'test', '', 'This is a test alert from Conviction Alerts dashboard', 'info');
+    echo json_encode(array('ok' => true, 'action' => 'test_webhook', 'message' => 'Test webhook sent'));
     $conn->close();
     exit;
 }
