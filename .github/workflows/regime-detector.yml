@@ -1,0 +1,102 @@
+name: Daily Regime Detection + Position Sizing
+
+on:
+  schedule:
+    # Run after market close: 8:30 PM UTC (3:30 PM EST) on weekdays
+    - cron: '30 20 * * 1-5'
+    # Sunday extended run (includes meta-labeler training)
+    - cron: '0 14 * * 0'
+  workflow_dispatch:
+    inputs:
+      run_meta_labeler:
+        description: 'Also run meta-labeler training'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+jobs:
+  regime-detection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --quiet \
+            yfinance>=0.2.30 \
+            hmmlearn>=0.3 \
+            numpy>=1.24 \
+            pandas>=2.0 \
+            requests>=2.31 \
+            scikit-learn>=1.3
+
+      - name: Run Regime Detector
+        env:
+          SM_API_BASE: ${{ secrets.SM_API_BASE || 'https://findtorontoevents.ca/live-monitor/api' }}
+          SM_ADMIN_KEY: ${{ secrets.SM_ADMIN_KEY || 'livetrader2026' }}
+        run: |
+          echo "=========================================="
+          echo "REGIME DETECTION — $(date -u '+%Y-%m-%d %H:%M UTC')"
+          echo "=========================================="
+          cd scripts
+          python regime_detector.py
+
+      - name: Run Position Sizer
+        env:
+          SM_API_BASE: ${{ secrets.SM_API_BASE || 'https://findtorontoevents.ca/live-monitor/api' }}
+          SM_ADMIN_KEY: ${{ secrets.SM_ADMIN_KEY || 'livetrader2026' }}
+        run: |
+          echo "=========================================="
+          echo "POSITION SIZING — $(date -u '+%Y-%m-%d %H:%M UTC')"
+          echo "=========================================="
+          cd scripts
+          python position_sizer.py
+
+  meta-labeler-training:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: regime-detection
+    # Only run on Sundays or manual trigger with meta_labeler=true
+    if: >
+      github.event.schedule == '0 14 * * 0' ||
+      github.event.inputs.run_meta_labeler == 'true'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --quiet \
+            xgboost>=2.0 \
+            scikit-learn>=1.3 \
+            pandas>=2.0 \
+            numpy>=1.24 \
+            requests>=2.31
+
+      - name: Train Meta-Labeler
+        env:
+          SM_API_BASE: ${{ secrets.SM_API_BASE || 'https://findtorontoevents.ca/live-monitor/api' }}
+          SM_ADMIN_KEY: ${{ secrets.SM_ADMIN_KEY || 'livetrader2026' }}
+        run: |
+          echo "=========================================="
+          echo "META-LABELER TRAINING — $(date -u '+%Y-%m-%d %H:%M UTC')"
+          echo "=========================================="
+          cd scripts
+          python meta_labeler.py

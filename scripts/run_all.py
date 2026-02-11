@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Master orchestrator for Smart Money Intelligence scripts.
+Master orchestrator for Smart Money Intelligence + World-Class Algorithm scripts.
 
 Usage:
   python run_all.py --all           Run everything
@@ -9,10 +9,16 @@ Usage:
   python run_all.py --wsb           WSB sentiment only
   python run_all.py --consensus     Consensus engine only (always runs)
   python run_all.py --perf          Performance tracker only
+  python run_all.py --regime        Regime detector (HMM + Hurst + Macro)
+  python run_all.py --sizing        Position sizer (Half-Kelly + EWMA)
+  python run_all.py --meta          Meta-labeler (XGBoost training)
+  python run_all.py --alphas        WorldQuant alphas + cross-asset
+  python run_all.py --bundles       Signal bundle consolidation
+  python run_all.py --validate      Walk-forward validation
   python run_all.py                 Consensus engine only (default)
 
 Multiple flags can be combined:
-  python run_all.py --13f --wsb     Run 13F + WSB + consensus
+  python run_all.py --13f --wsb --regime   Run 13F + WSB + regime + consensus
 
 Exit code: 0 if all steps succeed, 1 if any step fails.
 """
@@ -72,7 +78,9 @@ def main():
 
     # Step 4: Consensus Engine (always runs)
     if '--consensus' in args or run_all or not any(
-        flag in args for flag in ['--13f', '--insider', '--wsb', '--perf']
+        flag in args for flag in ['--13f', '--insider', '--wsb', '--perf',
+                                  '--regime', '--sizing', '--meta', '--alphas',
+                                  '--bundles', '--validate']
     ):
         from consensus_engine import main as consensus_main
         results['consensus'] = run_step('Consensus Engine', consensus_main)
@@ -81,6 +89,38 @@ def main():
     if '--perf' in args or run_all:
         from performance_tracker import main as perf_main
         results['performance'] = run_step('Performance Tracker', perf_main)
+
+    # ─── World-Class Algorithm Steps ─────────────────────────────────
+
+    # Step 6: Regime Detector (HMM + Hurst + Macro)
+    if '--regime' in args or run_all:
+        from regime_detector import run_regime_detection
+        results['regime'] = run_step('Regime Detector', run_regime_detection)
+
+    # Step 7: Position Sizer (Half-Kelly + EWMA)
+    if '--sizing' in args or run_all:
+        from position_sizer import run_position_sizing
+        results['sizing'] = run_step('Position Sizer', run_position_sizing)
+
+    # Step 8: Meta-Labeler (XGBoost training)
+    if '--meta' in args or run_all:
+        from meta_labeler import main as meta_main
+        results['meta_labeler'] = run_step('Meta-Labeler', meta_main)
+
+    # Step 9: WorldQuant Alphas + Cross-Asset
+    if '--alphas' in args or run_all:
+        from worldquant_alphas import run_worldquant_alphas
+        results['worldquant'] = run_step('WorldQuant Alphas', run_worldquant_alphas)
+
+    # Step 10: Signal Bundle Consolidation
+    if '--bundles' in args or run_all:
+        from signal_bundles import run_bundle_analysis
+        results['bundles'] = run_step('Signal Bundles', run_bundle_analysis)
+
+    # Step 11: Walk-Forward Validation
+    if '--validate' in args or run_all:
+        from walk_forward_validator import run_validation
+        results['validation'] = run_step('Walk-Forward Validation', run_validation)
 
     # Summary
     logger.info("")

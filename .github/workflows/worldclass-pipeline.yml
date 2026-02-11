@@ -1,0 +1,175 @@
+name: World-Class Algorithm Pipeline
+
+on:
+  schedule:
+    # DAILY: Regime + Position Sizing + WorldQuant + Bundles (after market close)
+    - cron: '45 20 * * 1-5'   # 8:45 PM UTC = 3:45 PM EST (weekdays)
+
+    # WEEKLY: Full validation + Meta-labeler training (Sunday)
+    - cron: '0 15 * * 0'      # 3:00 PM UTC = 10:00 AM EST (Sunday)
+
+  workflow_dispatch:
+    inputs:
+      steps:
+        description: 'Steps to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - 'regime'
+          - 'alphas'
+          - 'bundles'
+          - 'validate'
+          - 'meta'
+
+jobs:
+  # ─── JOB 1: Regime Detection + Position Sizing ─────────────────────
+  regime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --quiet \
+            yfinance>=0.2.30 \
+            hmmlearn>=0.3 \
+            numpy>=1.24 \
+            pandas>=2.0 \
+            requests>=2.31
+
+      - name: Run Regime Detector
+        env:
+          SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+          SM_ADMIN_KEY: livetrader2026
+        run: |
+          echo "=== REGIME DETECTION — $(date -u) ==="
+          cd scripts && python regime_detector.py
+
+      - name: Run Position Sizer
+        env:
+          SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+          SM_ADMIN_KEY: livetrader2026
+        run: |
+          echo "=== POSITION SIZING — $(date -u) ==="
+          cd scripts && python position_sizer.py
+
+  # ─── JOB 2: WorldQuant Alphas + Cross-Asset ────────────────────────
+  alphas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: regime
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --quiet \
+            yfinance>=0.2.30 \
+            numpy>=1.24 \
+            pandas>=2.0 \
+            scipy>=1.10 \
+            requests>=2.31
+
+      - name: Run WorldQuant Alphas + Cross-Asset
+        env:
+          SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+          SM_ADMIN_KEY: livetrader2026
+        run: |
+          echo "=== WORLDQUANT ALPHAS — $(date -u) ==="
+          cd scripts && python worldquant_alphas.py
+
+  # ─── JOB 3: Signal Bundle Consolidation ────────────────────────────
+  bundles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [regime, alphas]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --quiet \
+            numpy>=1.24 \
+            pandas>=2.0 \
+            scipy>=1.10 \
+            requests>=2.31
+
+      - name: Run Bundle Consolidation
+        env:
+          SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+          SM_ADMIN_KEY: livetrader2026
+        run: |
+          echo "=== SIGNAL BUNDLES — $(date -u) ==="
+          cd scripts && python signal_bundles.py
+
+  # ─── JOB 4: Validation + Meta-Labeler (Sunday only) ───────────────
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: bundles
+    if: >
+      github.event.schedule == '0 15 * * 0' ||
+      github.event.inputs.steps == 'all' ||
+      github.event.inputs.steps == 'validate' ||
+      github.event.inputs.steps == 'meta'
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --quiet \
+            xgboost>=2.0 \
+            scikit-learn>=1.3 \
+            scipy>=1.10 \
+            numpy>=1.24 \
+            pandas>=2.0 \
+            requests>=2.31
+
+      - name: Run Walk-Forward Validation
+        env:
+          SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+          SM_ADMIN_KEY: livetrader2026
+        run: |
+          echo "=== VALIDATION — $(date -u) ==="
+          cd scripts && python walk_forward_validator.py
+
+      - name: Train Meta-Labeler
+        env:
+          SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+          SM_ADMIN_KEY: livetrader2026
+        run: |
+          echo "=== META-LABELER TRAINING — $(date -u) ==="
+          cd scripts && python meta_labeler.py
+
+  # ─── JOB 5: Summary ────────────────────────────────────────────────
+  summary:
+    runs-on: ubuntu-latest
+    needs: [regime, alphas, bundles]
+    if: always()
+    steps:
+      - name: Pipeline Summary
+        run: |
+          echo "========================================"
+          echo "WORLD-CLASS ALGORITHM PIPELINE COMPLETE"
+          echo "========================================"
+          echo "Regime Detection: ${{ needs.regime.result }}"
+          echo "WorldQuant Alphas: ${{ needs.alphas.result }}"
+          echo "Signal Bundles: ${{ needs.bundles.result }}"
+          echo "Date: $(date -u '+%Y-%m-%d %H:%M UTC')"
+          echo "========================================"

@@ -50,9 +50,19 @@ def safe_request(url, headers=None, params=None, retries=3, timeout=30):
 
 
 def post_to_api(action, data):
-    """POST JSON data to the smart_money.php API."""
+    """POST JSON data to the appropriate PHP API endpoint."""
     logger = logging.getLogger('utils')
-    url = f"{API_BASE}/smart_money.php?action={action}&key={ADMIN_KEY}"
+
+    # Route to correct PHP file based on action
+    regime_actions = (
+        'ingest_regime', 'update_position_sizing', 'update_meta_labeler',
+        'update_validation', 'update_bundles', 'ingest_worldquant'
+    )
+    if action in regime_actions:
+        url = f"{API_BASE}/regime.php?action={action}&key={ADMIN_KEY}"
+    else:
+        url = f"{API_BASE}/smart_money.php?action={action}&key={ADMIN_KEY}"
+
     try:
         resp = requests.post(url, json=data, timeout=60)
         result = resp.json()
@@ -67,9 +77,24 @@ def post_to_api(action, data):
 
 
 def call_api(action, params=''):
-    """GET from the smart_money.php API."""
+    """GET from the appropriate PHP API endpoint."""
     logger = logging.getLogger('utils')
-    url = f"{API_BASE}/smart_money.php?action={action}&key={ADMIN_KEY}"
+
+    # Route to correct PHP file based on action
+    regime_actions = (
+        'get_regime', 'regime_history', 'strategy_toggles',
+        'get_position_sizing', 'get_meta_labeler', 'meta_label_training_data',
+        'algo_stats'
+    )
+    if action in regime_actions:
+        url = f"{API_BASE}/regime.php?action={action}&key={ADMIN_KEY}"
+    elif action in ('positions', 'dashboard', 'history'):
+        url = f"{API_BASE}/live_trade.php?action={action}&key={ADMIN_KEY}"
+    elif action in ('list', 'signals'):
+        url = f"{API_BASE}/live_signals.php?action=list&key={ADMIN_KEY}"
+    else:
+        url = f"{API_BASE}/smart_money.php?action={action}&key={ADMIN_KEY}"
+
     if params:
         url += '&' + params
     try:
