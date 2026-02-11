@@ -153,14 +153,17 @@ def fetch_freebies():
         )
         resp.raise_for_status()
         data = resp.json()
-        items = data.get("deals", data.get("freebies", []))
+        # API returns free_today (array of free items for today)
+        items = data.get("free_today", data.get("deals", data.get("freebies", [])))
         if isinstance(items, list):
             return {
                 "count": len(items),
                 "top_5": items[:5],
+                "all_items": items[:15],
+                "today_day": data.get("today_day", ""),
                 "link": f"{FC_API}/deals.php",
             }
-        return {"count": 0, "top_5": [], "link": f"{FC_API}/deals.php"}
+        return {"count": 0, "top_5": [], "all_items": [], "link": f"{FC_API}/deals.php"}
     except Exception as e:
         print(f"  Freebies error: {e}")
         return {"count": 0, "top_5": [], "error": str(e), "link": f"{FC_API}/deals.php"}

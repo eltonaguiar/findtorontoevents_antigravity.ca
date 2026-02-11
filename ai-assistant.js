@@ -2996,49 +2996,85 @@
 
   async function handleDailyFeed(lower) {
     setStatus('Preparing your daily briefing...', '#6366f1');
-    addMessage('ai', '<div id="fte-daily-feed-loading" class="fte-ai-summary"><b>\u{1F305} Preparing your daily briefing...</b><br><span style="color:#94a3b8;">Gathering weather, deals, picks, news & events...</span></div>', false);
+    addMessage('ai', '<div id="fte-daily-feed-loading" class="fte-ai-summary"><b>\u{1F305} Preparing your daily briefing...</b><br><span style="color:#94a3b8;">Loading your feed...</span></div>', false);
 
     var today = new Date();
     var dateStr = formatDate(today);
     var quote = _getDailyQuote();
 
-    // Parallel fetches
     var weatherData = null;
     var dealsData = null;
     var picksData = null;
     var newsData = null;
     var eventsArr = null;
+    var usedCache = false;
 
-    var weatherUrl = CONFIG.weatherApi + '?latitude=' + CONFIG.weatherLat + '&longitude=' + CONFIG.weatherLon +
-      '&current=temperature_2m,apparent_temperature,precipitation,weather_code' +
-      '&daily=temperature_2m_max,temperature_2m_min&timezone=America/Toronto&forecast_days=1';
-
-    var promises = [];
-
-    // Weather
-    promises.push(
-      fetch(weatherUrl).then(function (r) { return r.json(); }).then(function (d) { weatherData = d; }).catch(function () {})
-    );
-    // Deals
-    promises.push(
-      fetch(CONFIG.dealsApi + '?action=free_today').then(function (r) { return r.json(); }).then(function (d) { dealsData = d; }).catch(function () {})
-    );
-    // Daily Picks (momentum)
-    promises.push(
-      fetch('https://findtorontoevents.ca/live-monitor/api/daily_picks.php?action=momentum').then(function (r) { return r.json(); }).then(function (d) { picksData = d; }).catch(function () {})
-    );
-    // News
-    promises.push(
-      fetch(CONFIG.fcApi + '/news_feed.php?action=get&category=toronto&per_page=5').then(function (r) { return r.json(); }).then(function (d) { newsData = d; }).catch(function () {})
-    );
-    // Events
-    promises.push(
-      loadEvents().then(function (ev) { eventsArr = ev; }).catch(function () {})
-    );
-
+    // Try cached summary first (updated every 10 min by GitHub Actions)
     try {
-      await Promise.all(promises);
-    } catch (e) { /* individual catches handle errors */ }
+      var cacheResp = await fetch('/daily-feed/data/summary.json?t=' + Date.now());
+      if (cacheResp.ok) {
+        var cached = await cacheResp.json();
+        var cacheAge = Date.now() - new Date(cached.generated_at).getTime();
+        // Use cache if less than 20 minutes old
+        if (cacheAge < 20 * 60 * 1000) {
+          usedCache = true;
+          // Map cached weather to Open-Meteo format the renderer expects
+          if (cached.weather && !cached.weather.error) {
+            weatherData = {
+              current: {
+                temperature_2m: cached.weather.current_temp,
+                apparent_temperature: cached.weather.feels_like,
+                precipitation: cached.weather.precipitation_mm,
+                weather_code: cached.weather.weather_code
+              },
+              daily: {
+                temperature_2m_max: [cached.weather.high],
+                temperature_2m_min: [cached.weather.low]
+              }
+            };
+          }
+          // Map cached freebies — build a fake deals response
+          if (cached.freebies && cached.freebies.count > 0) {
+            dealsData = { ok: true, free_today: cached.freebies.top_5 || [] };
+          }
+          // Map cached financial picks
+          if (cached.financial && cached.financial.momentum && cached.financial.momentum.top_3 && cached.financial.momentum.top_3.length > 0) {
+            picksData = { ok: true, picks: cached.financial.momentum.top_3 };
+          }
+          // Map cached news
+          if (cached.news && cached.news.stories && cached.news.stories.length > 0) {
+            newsData = { ok: true, articles: cached.news.stories };
+          }
+          // Quote from cache (more stable, same for the day)
+          if (cached.quote) quote = cached.quote;
+        }
+      }
+    } catch (e) { /* cache miss, fall through to live APIs */ }
+
+    // If cache was stale or missing, fetch live data
+    if (!usedCache) {
+      var weatherUrl = CONFIG.weatherApi + '?latitude=' + CONFIG.weatherLat + '&longitude=' + CONFIG.weatherLon +
+        '&current=temperature_2m,apparent_temperature,precipitation,weather_code' +
+        '&daily=temperature_2m_max,temperature_2m_min&timezone=America/Toronto&forecast_days=1';
+
+      var promises = [];
+      promises.push(
+        fetch(weatherUrl).then(function (r) { return r.json(); }).then(function (d) { weatherData = d; }).catch(function () {})
+      );
+      promises.push(
+        fetch(CONFIG.dealsApi + '?action=free_today').then(function (r) { return r.json(); }).then(function (d) { dealsData = d; }).catch(function () {})
+      );
+      promises.push(
+        fetch('https://findtorontoevents.ca/live-monitor/api/daily_picks.php?action=momentum').then(function (r) { return r.json(); }).then(function (d) { picksData = d; }).catch(function () {})
+      );
+      promises.push(
+        fetch(CONFIG.fcApi + '/news_feed.php?action=get&category=toronto&per_page=5').then(function (r) { return r.json(); }).then(function (d) { newsData = d; }).catch(function () {})
+      );
+      try { await Promise.all(promises); } catch (e) {}
+    }
+
+    // Always load events fresh (local data, fast)
+    try { eventsArr = await loadEvents(); } catch (e) {}
 
     // ── BUILD HTML ──
     var html = '<div class="fte-ai-summary">';
@@ -3063,14 +3099,25 @@
 
     // ── FREEBIES ──
     html += '<br><b>\u{1F381} TODAY\'S FREEBIES</b><br>';
-    if (dealsData && dealsData.ok && dealsData.deals && dealsData.deals.length > 0) {
-      var topDeals = dealsData.deals.slice(0, 3);
+    var freeItems = null;
+    if (dealsData && dealsData.ok) {
+      // API returns free_today (from deals.php) or freebies/deals as fallback
+      freeItems = dealsData.free_today || dealsData.freebies || dealsData.deals || null;
+    }
+    if (freeItems && freeItems.length > 0) {
+      // Show top 5 freebies with descriptions
+      var topDeals = freeItems.slice(0, 5);
       for (var di = 0; di < topDeals.length; di++) {
         var deal = topDeals[di];
         var dealName = deal.name || deal.title || 'Free item';
-        html += '\u2022 ' + escapeHtml(dealName);
-        if (deal.url) html += ' <a href="' + escapeHtml(deal.url) + '" target="_blank" style="color:#60a5fa;text-decoration:none;">[link]</a>';
+        var dealDesc = deal.freebie || deal.description || '';
+        html += '\u2022 <b>' + escapeHtml(dealName) + '</b>';
+        if (dealDesc) html += ' \u2014 ' + escapeHtml(dealDesc);
+        if (deal.source_url) html += ' <a href="' + escapeHtml(deal.source_url) + '" target="_blank" style="color:#60a5fa;text-decoration:none;">[info]</a>';
         html += '<br>';
+      }
+      if (freeItems.length > 5) {
+        html += '<span style="color:#94a3b8;font-size:0.85em;">...and ' + (freeItems.length - 5) + ' more free things today</span><br>';
       }
       html += '\u2192 <a href="/fc/deals/" target="_blank" style="color:#10b981;text-decoration:none;font-weight:600;">See all deals & freebies</a><br>';
     } else {
