@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toronto Events Blog | Breaking News, Event Guides & Things to Do in Toronto</title>
+    <meta name="description" content="Toronto's source for event news, breaking stories, neighbourhood guides, and things to do. 73 articles covering sports, food, arts, culture, events, and Toronto neighbourhoods. Updated daily.">
+    <meta name="keywords" content="Toronto events, events in Toronto, things to do in Toronto, Toronto event calendar, upcoming Toronto events, Toronto news, Toronto blog, CP24, Toronto Star, CTV News Toronto, Toronto festivals, Toronto nightlife, Toronto sports">
+    <link rel="canonical" href="https://findtorontoevents.ca/blog/">
+    <link rel="icon" href="/favicon.ico" sizes="256x256" type="image/x-icon">
+    <meta property="og:title" content="Toronto Events Blog — Breaking News, Guides & Hidden Gems">
+    <meta property="og:description" content="73 articles covering Toronto events, breaking news, neighbourhood guides, food, arts, and things to do. Your insider guide to the city.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://findtorontoevents.ca/blog/">
+    <meta property="og:image" content="https://findtorontoevents.ca/blog/images/blog-banner.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="Toronto Events">
+    <meta property="og:locale" content="en_CA">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Toronto Events Blog — Breaking News & Guides">
+    <meta name="twitter:description" content="73 articles covering Toronto events, breaking news, neighbourhood guides, food, arts, and things to do.">
+    <meta name="twitter:image" content="https://findtorontoevents.ca/blog/images/blog-banner.jpg">
+    <meta name="geo.region" content="CA-ON">
+    <meta name="geo.placename" content="Toronto">
+    <meta name="geo.position" content="43.6532;-79.3832">
+    <meta name="ICBM" content="43.6532, -79.3832">
+    <meta name="robots" content="index, follow">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Blog",
+        "name": "Toronto Events Blog",
+        "description": "Toronto's source for event news, breaking stories, and insider guides covering sports, food, arts, culture, and things to do.",
+        "url": "https://findtorontoevents.ca/blog/",
+        "publisher": {
+            "@type": "Organization",
+            "name": "Toronto Events",
+            "url": "https://findtorontoevents.ca",
+            "logo": { "@type": "ImageObject", "url": "https://findtorontoevents.ca/favicon.ico" }
+        }
+    }
+    </script>
+    <style>
+        :root {
+            --pk-300:#c084fc;--pk-400:#a855f7;--pk-500:#9333ea;--pk-600:#7e22ce;--pk-900:#3b0764;
+            --surface-0:#0a0a0f;--surface-1:#12121a;--surface-2:#1a1a25;
+            --text-1:#f0f0f5;--text-2:#a0a0b5;--text-3:#606075;
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--surface-0);color:var(--text-1);line-height:1.7;min-height:100vh}
+        body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 0%,rgba(147,51,234,.15) 0%,transparent 50%),radial-gradient(ellipse at 80% 100%,rgba(59,7,100,.2) 0%,transparent 50%);pointer-events:none;z-index:-1}
+        a{color:var(--pk-400);text-decoration:none;transition:color .2s}a:hover{color:var(--pk-300)}
+        .top-nav{position:sticky;top:0;z-index:100;background:rgba(10,10,15,.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.05);padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+        .nav-brand{font-weight:900;font-size:1.1rem;letter-spacing:-.02em;color:#fff}.nav-brand span{color:var(--pk-400)}
+        .nav-links{display:flex;gap:1.5rem;align-items:center}.nav-links a{font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-2)}.nav-links a:hover{color:#fff}.nav-links a.active{color:var(--pk-400)}
+        .hero{text-align:center;padding:4rem 1.5rem 2rem;background:linear-gradient(180deg,var(--pk-900) 0%,transparent 100%)}
+        .hero h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:900;letter-spacing:-.03em;margin-bottom:.75rem}.hero h1 span{color:var(--pk-400)}
+        .hero p{font-size:1.05rem;color:var(--text-2);max-width:650px;margin:0 auto}
+        .hero .stats{margin-top:1rem;font-size:.8rem;color:var(--text-3)}
+
+        .filters{max-width:1200px;margin:0 auto;padding:1.5rem 1.5rem 0;display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center}
+        .filter-btn{padding:.4rem 1rem;border:1px solid rgba(255,255,255,.1);border-radius:999px;background:transparent;color:var(--text-2);font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;transition:all .2s}
+        .filter-btn:hover{border-color:var(--pk-400);color:var(--pk-300)}
+        .filter-btn.active{background:var(--pk-500);border-color:var(--pk-500);color:#fff}
+
+        .articles-grid{max-width:1200px;margin:0 auto;padding:2rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5rem}
+        .article-card{background:var(--surface-1);border:1px solid rgba(255,255,255,.06);border-radius:1rem;overflow:hidden;transition:transform .3s,border-color .3s,box-shadow .3s}
+        .article-card:hover{transform:translateY(-3px);border-color:rgba(147,51,234,.3);box-shadow:0 15px 30px rgba(0,0,0,.4)}
+        .article-card-body{padding:1.25rem}
+        .tag{display:inline-block;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;padding:.2rem .6rem;border-radius:999px;background:rgba(147,51,234,.15);color:var(--pk-300);margin-bottom:.5rem}
+        .tag.breaking{background:rgba(239,68,68,.15);color:#f87171}
+        .tag.sports{background:rgba(34,197,94,.15);color:#4ade80}
+        .tag.food{background:rgba(251,191,36,.15);color:#fbbf24}
+        .tag.arts{background:rgba(96,165,250,.15);color:#60a5fa}
+        .tag.community{background:rgba(244,114,182,.15);color:#f472b6}
+        .tag.seasonal{background:rgba(45,212,191,.15);color:#2dd4bf}
+        .tag.featured{background:rgba(234,179,8,.15);color:#fbbf24}
+        .tag.event{background:rgba(251,146,60,.15);color:#fb923c}
+        .tag.thingstodo{background:rgba(52,211,153,.15);color:#34d399}
+        .tag.neighbourhood{background:rgba(129,140,248,.15);color:#818cf8}
+        .article-card h2{font-size:1.1rem;font-weight:800;line-height:1.3;margin-bottom:.5rem}
+        .article-card h2 a{color:#fff}.article-card h2 a:hover{color:var(--pk-300)}
+        .article-card .excerpt{font-size:.85rem;color:var(--text-2);line-height:1.5;margin-bottom:.75rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .article-card .meta{font-size:.7rem;color:var(--text-3);font-weight:600}
+        .read-more{display:inline-flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:700;color:var(--pk-400);margin-top:.5rem}.read-more:hover{gap:.5rem}
+        .featured-card{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;background:var(--surface-1);border:1px solid rgba(255,255,255,.08);border-radius:1rem;overflow:hidden;transition:transform .3s,border-color .3s,box-shadow .3s}
+        .featured-card:hover{transform:translateY(-3px);border-color:rgba(147,51,234,.3);box-shadow:0 20px 40px rgba(0,0,0,.4)}
+        .featured-card img{width:100%;height:100%;min-height:280px;object-fit:cover}
+        .featured-card .article-card-body{padding:2rem;display:flex;flex-direction:column;justify-content:center}
+        .featured-card h2{font-size:1.5rem}
+        .cta-section{max-width:800px;margin:0 auto;text-align:center;padding:3rem 1.5rem}
+        .cta-section h2{font-size:1.6rem;font-weight:900;margin-bottom:.75rem}.cta-section p{color:var(--text-2);margin-bottom:1.5rem}
+        .cta-btn{display:inline-block;padding:.8rem 2rem;background:var(--pk-500);color:#fff;font-weight:800;font-size:.85rem;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;transition:background .2s,transform .2s}.cta-btn:hover{background:var(--pk-600);transform:scale(1.05);color:#fff}
+        .news-sources{max-width:1200px;margin:0 auto;padding:0 1.5rem 2rem;text-align:center}
+        .news-sources p{font-size:.75rem;color:var(--text-3)}
+        footer{text-align:center;padding:2rem 1.5rem;border-top:1px solid rgba(255,255,255,.05);color:var(--text-3);font-size:.7rem}footer a{color:var(--text-2)}
+        .hidden{display:none!important}
+        @media(max-width:768px){.articles-grid{grid-template-columns:1fr}.featured-card{grid-template-columns:1fr}.featured-card img{height:200px;min-height:auto}.nav-links{gap:.75rem}.nav-links a{font-size:.7rem}.filters{gap:.3rem}.filter-btn{font-size:.65rem;padding:.3rem .7rem}}
+    </style>
+</head>
+<body>
+    <nav class="top-nav"><a href="/" class="nav-brand"><span>Toronto</span> Events</a><div class="nav-links"><a href="/">Home</a><a href="/blog/" class="active">Blog</a><a href="/MOVIESHOWS/">Movies</a><a href="/findstocks">Stocks</a></div></nav>
+<div id="sections-nav" style="position:sticky;top:0;z-index:999;display:flex;gap:4px;padding:8px 12px;background:rgba(10,10,20,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;">
+<style>#sections-nav a{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;font-size:.75rem;font-weight:600;color:rgba(255,255,255,0.7);text-decoration:none;white-space:nowrap;transition:all .2s;border:1px solid rgba(255,255,255,0.06);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}#sections-nav a:hover{background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.15);}@media(max-width:768px){#sections-nav{padding:6px 8px;gap:3px;}#sections-nav a{padding:5px 10px;font-size:.7rem;}}</style>
+<a href="/">🏠 Home</a>
+<a href="/WINDOWSFIXER/">🛠️ System Issues</a>
+<a href="/MOVIESHOWS/">🎬 Movies &amp; TV</a>
+<a href="/fc/#/guest">⭐ Fav Creators</a>
+<a href="/findstocks/">📈 Stock Ideas</a>
+<a href="/MENTALHEALTHRESOURCES/">🧠 Mental Health</a>
+<a href="/vr/">🥽 VR Experience</a>
+<a href="/vr/game-arena/">🎮 Game Prototypes</a>
+<a href="/fc/#/accountability">🎯 Accountability</a>
+<a href="/updates/">🆕 Latest Updates</a>
+<a href="/">🌟 Other Stuff</a>
+<a href="/blog/">📝 Blog</a>
+</div>
+<script>document.addEventListener("DOMContentLoaded",function(){var n=document.querySelector("nav.top-nav,nav");var s=document.getElementById("sections-nav");if(n&&s){var cs=getComputedStyle(n);if(cs.position==="fixed"){var h=n.offsetHeight;s.style.marginTop=h+"px";s.style.top=h+"px";}}});</script>
+
+<header class="hero">
+        <h1><span>Toronto Events</span> Blog</h1>
+        <p>Breaking news, event guides, and insider tips covering everything happening in Toronto. Sourced from CP24, Toronto Star, CTV News, BlogTO, and more.</p>
+        <p class="stats">73 articles &middot; Updated daily &middot; Covering events, neighbourhoods, food, arts, sports &amp; more</p>
+    </header>
+    <div class="filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="event">Events</button>
+            <button class="filter-btn" data-filter="thingstodo">Things to Do</button>
+            <button class="filter-btn" data-filter="neighbourhood">Neighbourhoods</button>
+            <button class="filter-btn" data-filter="featured">Featured</button>
+            <button class="filter-btn" data-filter="breaking">Breaking</button>
+            <button class="filter-btn" data-filter="sports">Sports</button>
+            <button class="filter-btn" data-filter="food">Food</button>
+            <button class="filter-btn" data-filter="arts">Arts</button>
+            <button class="filter-btn" data-filter="community">Community</button>
+            <button class="filter-btn" data-filter="seasonal">Seasonal</button>
+
+    </div>
+    <main>
+        <div class="articles-grid">
+            
+            <article class="featured-card" data-category="featured">
+                <img src="images/events-in-toronto.jpg" alt="Sankofa Square ILLUMINITE 2026: Toronto's Winter Light Festival Guide" width="600" height="400" loading="eager">
+                <div class="article-card-body">
+                    <span class="tag featured">Featured Event</span>
+                    <h2><a href="sankofa-square-illuminite-2026.html">Sankofa Square ILLUMINITE 2026: Toronto's Winter Light Festival Guide</a></h2>
+                    <p class="excerpt">From February 13 to March 8, five Downtown Yonge locations transform with immersive light installations, silent disco skating, and Lunar New Year celebrations.</p>
+                    <div class="meta"><span>February 10, 2026</span></div>
+                    <a href="sankofa-square-illuminite-2026.html" class="read-more">Read Full Guide &rarr;</a>
+                </div>
+            </article>
+            
+            <article class="article-card" data-category="breaking">
+                <div class="article-card-body">
+                    <span class="tag breaking">Breaking</span>
+                    <h2><a href="toronto-2026-budget-events-culture.html">Toronto's 2026 Budget: What Mayor Olivia Chow's Proposal Means for Events and Culture</a></h2>
+                    <p class="excerpt">Mayor Olivia Chow's 2026 budget proposal goes to City Council. Here's what it means for Toronto's event scene and cultural funding.</p>
+                    <div class="meta"><span>February 10, 2026</span></div>
+                    <a href="toronto-2026-budget-events-culture.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="breaking">
+                <div class="article-card-body">
+                    <span class="tag breaking">Breaking</span>
+                    <h2><a href="things-to-do-toronto-this-weekend-february-2026.html">15 Things to Do in Toronto This Weekend: February 2026 Edition</a></h2>
+                    <p class="excerpt">From outdoor skating to ILLUMINITE light walks to Winterlicious dining, here are 15 can't-miss events happening across the city right now.</p>
+                    <div class="meta"><span>February 10, 2026</span></div>
+                    <a href="things-to-do-toronto-this-weekend-february-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="breaking">
+                <div class="article-card-body">
+                    <span class="tag breaking">Breaking</span>
+                    <h2><a href="eglinton-crosstown-lrt-launch-toronto-events.html">Eglinton Crosstown LRT Finally Launches: What It Means for Getting to Toronto Events</a></h2>
+                    <p class="excerpt">The long-awaited Eglinton Crosstown LRT begins rush-hour service, opening new connections to event venues across midtown.</p>
+                    <div class="meta"><span>February 9, 2026</span></div>
+                    <a href="eglinton-crosstown-lrt-launch-toronto-events.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="breaking">
+                <div class="article-card-body">
+                    <span class="tag breaking">Breaking</span>
+                    <h2><a href="toronto-relaxes-liquor-laws-olympics-2026.html">Toronto Relaxes Liquor Laws for Olympics: 6 AM Serving Now Allowed</a></h2>
+                    <p class="excerpt">Bars and restaurants can now serve alcohol starting at 6 AM during the 2026 Milano Cortina Winter Olympics. Early-morning watch parties are on.</p>
+                    <div class="meta"><span>February 9, 2026</span></div>
+                    <a href="toronto-relaxes-liquor-laws-olympics-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="breaking">
+                <div class="article-card-body">
+                    <span class="tag breaking">Breaking</span>
+                    <h2><a href="cp24-toronto-breaking-news-events-update.html">Toronto Breaking News Roundup: How City News Shapes Your Event Calendar</a></h2>
+                    <p class="excerpt">From transit launches to budget debates, breaking news directly impacts things to do in Toronto. Stay informed with CP24, CTV, and Toronto Star coverage.</p>
+                    <div class="meta"><span>February 8, 2026</span></div>
+                    <a href="cp24-toronto-breaking-news-events-update.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="breaking">
+                <div class="article-card-body">
+                    <span class="tag breaking">Breaking</span>
+                    <h2><a href="free-events-toronto-february-2026.html">Toronto's Best Free Events This Month: February 2026</a></h2>
+                    <p class="excerpt">Enjoy Toronto without spending a dime. Sweet City Fest, ILLUMINITE, KUUMBA, free gallery nights, and more free things to do this month.</p>
+                    <div class="meta"><span>February 8, 2026</span></div>
+                    <a href="free-events-toronto-february-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="breaking">
+                <div class="article-card-body">
+                    <span class="tag breaking">Breaking</span>
+                    <h2><a href="toronto-home-prices-drop-below-million-2026.html">Toronto Home Prices Drop Below $1M for First Time in Five Years</a></h2>
+                    <p class="excerpt">Toronto-area average home prices have dropped below $1 million. What this means for the city's communities and creative scene.</p>
+                    <div class="meta"><span>February 7, 2026</span></div>
+                    <a href="toronto-home-prices-drop-below-million-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="breaking">
+                <div class="article-card-body">
+                    <span class="tag breaking">Breaking</span>
+                    <h2><a href="cyclists-snow-blocked-bike-lanes-toronto-2026.html">Toronto Cyclists Frustrated by Snow-Blocked Bike Lanes After Record Storm</a></h2>
+                    <p class="excerpt">A record snowstorm has left Toronto bike lanes blocked, highlighting how weather impacts getting to events and activities.</p>
+                    <div class="meta"><span>February 6, 2026</span></div>
+                    <a href="cyclists-snow-blocked-bike-lanes-toronto-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="sports">
+                <div class="article-card-body">
+                    <span class="tag sports">Sports</span>
+                    <h2><a href="winter-olympics-watch-parties-toronto-2026.html">Where to Watch the 2026 Winter Olympics in Toronto: Best Bars and Venues</a></h2>
+                    <p class="excerpt">Complete guide to Milano Cortina 2026 watch parties. Team Canada FanFest at Nathan Phillips Square, sports bars, and early-morning viewing events.</p>
+                    <div class="meta"><span>February 9, 2026</span></div>
+                    <a href="winter-olympics-watch-parties-toronto-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="sports">
+                <div class="article-card-body">
+                    <span class="tag sports">Sports</span>
+                    <h2><a href="auston-matthews-team-usa-captain-olympics-2026.html">Auston Matthews Captains Team USA at 2026 Winter Olympics</a></h2>
+                    <p class="excerpt">Maple Leafs star Auston Matthews leads Team USA at Milano Cortina. What Toronto fans need to know during the NHL Olympic break.</p>
+                    <div class="meta"><span>February 8, 2026</span></div>
+                    <a href="auston-matthews-team-usa-captain-olympics-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="sports">
+                <div class="article-card-body">
+                    <span class="tag sports">Sports</span>
+                    <h2><a href="toronto-wnba-expansion-team-2026.html">Toronto Gets WNBA Expansion Team: Everything You Need to Know</a></h2>
+                    <p class="excerpt">Toronto is officially getting a WNBA franchise, becoming the league's first international team. Larry Tanenbaum's Kilmer Sports secures the franchise.</p>
+                    <div class="meta"><span>February 8, 2026</span></div>
+                    <a href="toronto-wnba-expansion-team-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="sports">
+                <div class="article-card-body">
+                    <span class="tag sports">Sports</span>
+                    <h2><a href="scottie-barnes-nba-all-star-raptors-2026.html">Scottie Barnes Named NBA All-Star: Toronto Raptors' Rising Star Shines</a></h2>
+                    <p class="excerpt">Raptors forward Scottie Barnes selected as an NBA All-Star reserve, cementing his status as one of the league's brightest young stars.</p>
+                    <div class="meta"><span>February 7, 2026</span></div>
+                    <a href="scottie-barnes-nba-all-star-raptors-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="sports">
+                <div class="article-card-body">
+                    <span class="tag sports">Sports</span>
+                    <h2><a href="maple-leafs-trade-deadline-2026.html">Maple Leafs Trade Deadline 2026: Morgan Rielly's Future in Question</a></h2>
+                    <p class="excerpt">The 2026 NHL trade deadline approaches with big questions. Morgan Rielly trade rumors, goalie injuries, and Hildeby's emergence.</p>
+                    <div class="meta"><span>February 7, 2026</span></div>
+                    <a href="maple-leafs-trade-deadline-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="sports">
+                <div class="article-card-body">
+                    <span class="tag sports">Sports</span>
+                    <h2><a href="super-bowl-party-toronto-rebel-2026.html">Toronto's First Official NFL Super Bowl Party at Rebel Nightclub</a></h2>
+                    <p class="excerpt">Toronto hosts its first-ever official NFL-sanctioned Super Bowl party. A historic moment for football fans in the city.</p>
+                    <div class="meta"><span>February 6, 2026</span></div>
+                    <a href="super-bowl-party-toronto-rebel-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="food">
+                <div class="article-card-body">
+                    <span class="tag food">Food</span>
+                    <h2><a href="winterlicious-2026-toronto-best-restaurants.html">Winterlicious 2026: 25 Best Restaurant Picks and What to Order</a></h2>
+                    <p class="excerpt">Winterlicious 2026 runs January 30 to February 12 with prix fixe menus across Toronto. Our picks for the best restaurants and dishes.</p>
+                    <div class="meta"><span>February 9, 2026</span></div>
+                    <a href="winterlicious-2026-toronto-best-restaurants.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="food">
+                <div class="article-card-body">
+                    <span class="tag food">Food</span>
+                    <h2><a href="sweet-city-fest-stackt-market-toronto-2026.html">Sweet City Fest at STACKT Market: Toronto's Free Dessert Festival</a></h2>
+                    <p class="excerpt">Sweet City Fest takes over STACKT Market February 13-16 with free desserts, fun stations, and treats for the whole family.</p>
+                    <div class="meta"><span>February 8, 2026</span></div>
+                    <a href="sweet-city-fest-stackt-market-toronto-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="food">
+                <div class="article-card-body">
+                    <span class="tag food">Food</span>
+                    <h2><a href="toronto-new-restaurants-winter-2026.html">Toronto's Hottest New Restaurant Openings for Winter 2026</a></h2>
+                    <p class="excerpt">From Hello Nori's Yorkville expansion to Brasserie Cote in the Annex, here are the must-visit new restaurants opening this winter.</p>
+                    <div class="meta"><span>February 7, 2026</span></div>
+                    <a href="toronto-new-restaurants-winter-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="food">
+                <div class="article-card-body">
+                    <span class="tag food">Food</span>
+                    <h2><a href="new-bars-toronto-january-2026.html">5 New Bars in Toronto Everyone's Talking About Right Now</a></h2>
+                    <p class="excerpt">From Book Bar's wine-meets-bookstore concept to Yorkville's caviar-and-martini lounge, these new bars are generating serious buzz.</p>
+                    <div class="meta"><span>February 7, 2026</span></div>
+                    <a href="new-bars-toronto-january-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="food">
+                <div class="article-card-body">
+                    <span class="tag food">Food</span>
+                    <h2><a href="winter-chocolate-show-toronto-2026.html">Winter Chocolate Show 2026 at Toronto Reference Library</a></h2>
+                    <p class="excerpt">Artisanal chocolates, bean-to-bar makers, tasting sessions, and seminars at the beautiful Appel Salon on Yonge Street.</p>
+                    <div class="meta"><span>February 6, 2026</span></div>
+                    <a href="winter-chocolate-show-toronto-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="food">
+                <div class="article-card-body">
+                    <span class="tag food">Food</span>
+                    <h2><a href="st-lawrence-market-toronto-guide-2026.html">St. Lawrence Market Toronto: Weekend Guide and What's New in 2026</a></h2>
+                    <p class="excerpt">Toronto's top food destination: Saturday Farmers' Market, 120+ vendors, Sunday antiques, and the best peameal bacon sandwiches.</p>
+                    <div class="meta"><span>February 3, 2026</span></div>
+                    <a href="st-lawrence-market-toronto-guide-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="food">
+                <div class="article-card-body">
+                    <span class="tag food">Food</span>
+                    <h2><a href="toronto-rooftop-bars-patios-summer-2026.html">Toronto's Best Rooftop Bars and Patios Opening for Summer 2026</a></h2>
+                    <p class="excerpt">As winter fades, Toronto's rooftop bars and patios prepare to open. Preview the best outdoor drinking and dining spots.</p>
+                    <div class="meta"><span>January 29, 2026</span></div>
+                    <a href="toronto-rooftop-bars-patios-summer-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="arts">
+                <div class="article-card-body">
+                    <span class="tag arts">Arts</span>
+                    <h2><a href="toronto-2026-concert-lineup-shows-cant-miss.html">Toronto's 2026 Concert Lineup Is Already Stacked: Shows You Can't Miss</a></h2>
+                    <p class="excerpt">From arena tours to intimate club shows, the city's music scene is offering something for every taste. Eric Church, Brandi Carlile, and more.</p>
+                    <div class="meta"><span>February 8, 2026</span></div>
+                    <a href="toronto-2026-concert-lineup-shows-cant-miss.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="arts">
+                <div class="article-card-body">
+                    <span class="tag arts">Arts</span>
+                    <h2><a href="toronto-black-film-festival-2026.html">14th Toronto Black Film Festival 2026: Complete Guide to Screenings</a></h2>
+                    <p class="excerpt">The 14th TBFF runs February 11-16 with screenings at Carlton Cinema, Isabel Bader Theatre, and online during Black History Month.</p>
+                    <div class="meta"><span>February 8, 2026</span></div>
+                    <a href="toronto-black-film-festival-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="arts">
+                <div class="article-card-body">
+                    <span class="tag arts">Arts</span>
+                    <h2><a href="some-like-it-hot-musical-toronto-2026.html">Some Like It Hot Musical Debuts in Toronto: What to Expect</a></h2>
+                    <p class="excerpt">The award-winning Broadway musical brings Tony Award-winning performances, high-energy dance numbers, and sharp humour to Canadian audiences.</p>
+                    <div class="meta"><span>February 7, 2026</span></div>
+                    <a href="some-like-it-hot-musical-toronto-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="arts">
+                <div class="article-card-body">
+                    <span class="tag arts">Arts</span>
+                    <h2><a href="winterfolk-blues-roots-festival-toronto-2026.html">Winterfolk XXIV Blues and Roots Festival: 4 Days of Live Music at the Tranzac</a></h2>
+                    <p class="excerpt">Over 100 artists across multiple stages. Shakura S'Aida, Suzie Vinnick, Sultans of String, and four days of roots music discovery.</p>
+                    <div class="meta"><span>February 7, 2026</span></div>
+                    <a href="winterfolk-blues-roots-festival-toronto-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="arts">
+                <div class="article-card-body">
+                    <span class="tag arts">Arts</span>
+                    <h2><a href="zara-larsson-toronto-2026-midnight-sun-tour.html">Zara Larsson Toronto 2026: Midnight Sun Tour Dates and Tickets</a></h2>
+                    <p class="excerpt">Swedish pop sensation Zara Larsson brings her Midnight Sun tour to Toronto this spring. Dynamic setlist and commanding stage presence.</p>
+                    <div class="meta"><span>February 4, 2026</span></div>
+                    <a href="zara-larsson-toronto-2026-midnight-sun-tour.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="arts">
+                <div class="article-card-body">
+                    <span class="tag arts">Arts</span>
+                    <h2><a href="matt-berninger-get-sunk-tour-toronto-2026.html">Matt Berninger Get Sunk Tour Comes to Toronto This Spring</a></h2>
+                    <p class="excerpt">The National frontman brings his intimate solo tour to Toronto. A more personal performance from indie rock's most distinctive voice.</p>
+                    <div class="meta"><span>February 3, 2026</span></div>
+                    <a href="matt-berninger-get-sunk-tour-toronto-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="arts">
+                <div class="article-card-body">
+                    <span class="tag arts">Arts</span>
+                    <h2><a href="hot-docs-festival-toronto-2026.html">Hot Docs 2026: North America's Largest Documentary Festival Returns to Toronto</a></h2>
+                    <p class="excerpt">Hundreds of documentaries from around the world. Industry conferences, filmmaker talks, and public screenings at multiple venues.</p>
+                    <div class="meta"><span>February 2, 2026</span></div>
+                    <a href="hot-docs-festival-toronto-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="arts">
+                <div class="article-card-body">
+                    <span class="tag arts">Arts</span>
+                    <h2><a href="toronto-comic-arts-festival-tcaf-2026.html">Toronto Comic Arts Festival (TCAF) 2026: What to Expect</a></h2>
+                    <p class="excerpt">TCAF returns to the Toronto Reference Library in May. Free exhibitions, panels, and workshops celebrating independent comics.</p>
+                    <div class="meta"><span>January 31, 2026</span></div>
+                    <a href="toronto-comic-arts-festival-tcaf-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="community">
+                <div class="article-card-body">
+                    <span class="tag community">Community</span>
+                    <h2><a href="black-history-month-toronto-2026-events-guide.html">Black History Month Events in Toronto 2026: Complete Guide</a></h2>
+                    <p class="excerpt">Film festivals, art exhibitions, music performances, and community workshops celebrating Black history and culture across the city.</p>
+                    <div class="meta"><span>February 9, 2026</span></div>
+                    <a href="black-history-month-toronto-2026-events-guide.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="community">
+                <div class="article-card-body">
+                    <span class="tag community">Community</span>
+                    <h2><a href="kuumba-harbourfront-centre-black-history-month-2026.html">KUUMBA at Harbourfront Centre: Celebrating Black History Month in Toronto</a></h2>
+                    <p class="excerpt">Month-long celebration of Black history, art, music, and storytelling. Live performances, exhibitions, and community workshops.</p>
+                    <div class="meta"><span>February 8, 2026</span></div>
+                    <a href="kuumba-harbourfront-centre-black-history-month-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="community">
+                <div class="article-card-body">
+                    <span class="tag community">Community</span>
+                    <h2><a href="lunar-new-year-toronto-2026-year-of-horse.html">Lunar New Year 2026 in Toronto: Year of the Horse Celebrations Guide</a></h2>
+                    <p class="excerpt">From Nathan Phillips Square to Chinatown to Little Canada, Toronto celebrates with lion dances, food festivals, and cultural performances.</p>
+                    <div class="meta"><span>February 7, 2026</span></div>
+                    <a href="lunar-new-year-toronto-2026-year-of-horse.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="community">
+                <div class="article-card-body">
+                    <span class="tag community">Community</span>
+                    <h2><a href="family-day-2026-toronto-open-closed.html">Family Day 2026 in Toronto: What's Open and Closed on February 16</a></h2>
+                    <p class="excerpt">Plan your Family Day with our guide to what's open, what's closed, and the best family-friendly events across the city.</p>
+                    <div class="meta"><span>February 6, 2026</span></div>
+                    <a href="family-day-2026-toronto-open-closed.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="community">
+                <div class="article-card-body">
+                    <span class="tag community">Community</span>
+                    <h2><a href="pride-toronto-2026-wont-stop.html">Pride Toronto 2026: 'We Won't Stop' Theme and What to Expect This Summer</a></h2>
+                    <p class="excerpt">One of the world's largest Pride celebrations announces its 2026 theme. Month-long festivities in Church-Wellesley Village and downtown.</p>
+                    <div class="meta"><span>February 5, 2026</span></div>
+                    <a href="pride-toronto-2026-wont-stop.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="community">
+                <div class="article-card-body">
+                    <span class="tag community">Community</span>
+                    <h2><a href="kensington-market-pedestrian-sundays-2026.html">Kensington Market Pedestrian Sundays 2026: Monthly Street Celebration Guide</a></h2>
+                    <p class="excerpt">Car-free streets, live music, food vendors, and Toronto's best neighbourhood vibe. May through October on the last Sunday.</p>
+                    <div class="meta"><span>February 2, 2026</span></div>
+                    <a href="kensington-market-pedestrian-sundays-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="community">
+                <div class="article-card-body">
+                    <span class="tag community">Community</span>
+                    <h2><a href="doors-open-toronto-2026-free-buildings.html">Doors Open Toronto 2026: Explore 150+ Buildings for Free</a></h2>
+                    <p class="excerpt">Architecturally and historically significant buildings open their doors for free. Plan your self-guided walking tour of the city.</p>
+                    <div class="meta"><span>February 1, 2026</span></div>
+                    <a href="doors-open-toronto-2026-free-buildings.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="community">
+                <div class="article-card-body">
+                    <span class="tag community">Community</span>
+                    <h2><a href="toronto-distillery-district-events-2026.html">Distillery District Events 2026: Markets, Art, and Cobblestone Culture</a></h2>
+                    <p class="excerpt">From summer markets to winter festivals, the cobblestone streets host markets, art shows, and seasonal celebrations year-round.</p>
+                    <div class="meta"><span>January 30, 2026</span></div>
+                    <a href="toronto-distillery-district-events-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="seasonal">
+                <div class="article-card-body">
+                    <span class="tag seasonal">Seasonal</span>
+                    <h2><a href="canadian-international-auto-show-2026.html">Canadian International Auto Show 2026: What's New at the Metro Toronto Convention Centre</a></h2>
+                    <p class="excerpt">EVs, concept cars, Camp Jeep off-road course, and retro vehicles from the 80s and 90s. February 13-22.</p>
+                    <div class="meta"><span>February 8, 2026</span></div>
+                    <a href="canadian-international-auto-show-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="seasonal">
+                <div class="article-card-body">
+                    <span class="tag seasonal">Seasonal</span>
+                    <h2><a href="valentines-day-toronto-2026-romantic-events.html">Valentine's Day Events in Toronto 2026: Romantic Things to Do</a></h2>
+                    <p class="excerpt">Romantic dinners, live shows, unique experiences, and outdoor adventures for couples on Saturday, February 14.</p>
+                    <div class="meta"><span>February 7, 2026</span></div>
+                    <a href="valentines-day-toronto-2026-romantic-events.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="seasonal">
+                <div class="article-card-body">
+                    <span class="tag seasonal">Seasonal</span>
+                    <h2><a href="toronto-event-calendar-2026-must-book.html">Toronto Events 2026 Calendar: 10 Major Events You Must Book Tickets for Now</a></h2>
+                    <p class="excerpt">TIFF, Caribana, CNE, Pride, Nuit Blanche, and more. These 10 massive events will sell out. Book now before it's too late.</p>
+                    <div class="meta"><span>February 4, 2026</span></div>
+                    <a href="toronto-event-calendar-2026-must-book.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="seasonal">
+                <div class="article-card-body">
+                    <span class="tag seasonal">Seasonal</span>
+                    <h2><a href="cherry-blossom-high-park-toronto-2026.html">Cherry Blossom Season in Toronto 2026: When to Visit High Park</a></h2>
+                    <p class="excerpt">Plan your visit for late April and early May. Timing tips, best viewing spots, and how to avoid the weekend crowds.</p>
+                    <div class="meta"><span>February 2, 2026</span></div>
+                    <a href="cherry-blossom-high-park-toronto-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="seasonal">
+                <div class="article-card-body">
+                    <span class="tag seasonal">Seasonal</span>
+                    <h2><a href="toronto-summer-festivals-2026-calendar.html">Toronto Summer Festivals 2026: Complete Calendar and Confirmed Dates</a></h2>
+                    <p class="excerpt">Pride, Caribana, CNE, TIFF, and dozens more. Your complete guide to planning a summer full of festivals and outdoor events.</p>
+                    <div class="meta"><span>January 31, 2026</span></div>
+                    <a href="toronto-summer-festivals-2026-calendar.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="seasonal">
+                <div class="article-card-body">
+                    <span class="tag seasonal">Seasonal</span>
+                    <h2><a href="toronto-waterfront-festival-tall-ships-2026.html">Toronto Waterfront Festival 2026: Tall Ships Return to Sugar Beach</a></h2>
+                    <p class="excerpt">Free admission. Tall ship tours, live entertainment, local food, and nautical family fun on June 28-29 at Sugar Beach.</p>
+                    <div class="meta"><span>January 30, 2026</span></div>
+                    <a href="toronto-waterfront-festival-tall-ships-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="seasonal">
+                <div class="article-card-body">
+                    <span class="tag seasonal">Seasonal</span>
+                    <h2><a href="toronto-escape-rooms-immersive-experiences-2026.html">Toronto's Best Escape Rooms and Immersive Experiences for 2026</a></h2>
+                    <p class="excerpt">Theatrical escape rooms, immersive art, and technology-enhanced experiences that put you at the centre of the action.</p>
+                    <div class="meta"><span>January 28, 2026</span></div>
+                    <a href="toronto-escape-rooms-immersive-experiences-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="seasonal">
+                <div class="article-card-body">
+                    <span class="tag seasonal">Seasonal</span>
+                    <h2><a href="toronto-island-ferry-events-summer-2026.html">Toronto Islands 2026: Ferry Guide, Events, and What's New This Summer</a></h2>
+                    <p class="excerpt">Beaches, bike paths, Centreville, and stunning skyline views. Your updated guide to ferries, events, and island activities.</p>
+                    <div class="meta"><span>January 27, 2026</span></div>
+                    <a href="toronto-island-ferry-events-summer-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="">
+                <div class="article-card-body">
+                    <span class="tag ">Hidden Gems</span>
+                    <h2><a href="hidden-gem-events-toronto.html">Hidden Gem Events in Toronto You Probably Didn't Know About</a></h2>
+                    <p class="excerpt">Beyond the headline festivals, Toronto's best moments are quieter, more local, and easier on your wallet. ROM After Dark, AGO nights, Doors Open, and more.</p>
+                    <div class="meta"><span>February 5, 2026</span></div>
+                    <a href="hidden-gem-events-toronto.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="">
+                <div class="article-card-body">
+                    <span class="tag ">Culture</span>
+                    <h2><a href="toronto-events-culture-diversity.html">Toronto Events That Showcase the City's Culture and Diversity</a></h2>
+                    <p class="excerpt">Caribbean festivals, Indigenous gatherings, neighbourhood street celebrations, global music nights, and grassroots community events.</p>
+                    <div class="meta"><span>February 6, 2026</span></div>
+                    <a href="toronto-events-culture-diversity.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="">
+                <div class="article-card-body">
+                    <span class="tag ">Tips</span>
+                    <h2><a href="toronto-events-sell-out-fast.html">Toronto Events That Sell Out Fast and How to Catch Them</a></h2>
+                    <p class="excerpt">Intimate concerts, food pop-ups, and one-night-only experiences vanish in hours. Strategies to secure your spot before tickets are gone.</p>
+                    <div class="meta"><span>February 7, 2026</span></div>
+                    <a href="toronto-events-sell-out-fast.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="seasonal">
+                <div class="article-card-body">
+                    <span class="tag seasonal">Seasonal</span>
+                    <h2><a href="holiday-toronto-event-calendar.html">Holiday Toronto Event Calendar: Markets, Light Shows & Seasonal Events</a></h2>
+                    <p class="excerpt">Winter markets, immersive light installations, cultural celebrations, and family-friendly activities for Toronto's holiday season.</p>
+                    <div class="meta"><span>February 8, 2026</span></div>
+                    <a href="holiday-toronto-event-calendar.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="">
+                <div class="article-card-body">
+                    <span class="tag ">Guide</span>
+                    <h2><a href="toronto-event-calendar-vs-social-media.html">Toronto Event Calendar vs Social Media: Which Finds Better Events?</a></h2>
+                    <p class="excerpt">Algorithms decide what you see on social media. Discover why a dedicated event calendar beats scrolling for finding things to do.</p>
+                    <div class="meta"><span>February 9, 2026</span></div>
+                    <a href="toronto-event-calendar-vs-social-media.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <!-- ═══ EVENTS ═══ -->
+
+            <article class="article-card" data-category="event">
+                <div class="article-card-body">
+                    <span class="tag event">Event</span>
+                    <h2><a href="illuminite-light-festival-toronto-2026.html">ILLUMINITE 2026: Toronto's Free Light Festival at 5 Downtown Locations</a></h2>
+                    <p class="excerpt">ILLUMINITE transforms five Downtown Yonge locations with immersive light installations exploring the theme of Play. Free from February 13 to March 8.</p>
+                    <div class="meta"><span>February 11, 2026</span></div>
+                    <a href="illuminite-light-festival-toronto-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="event">
+                <div class="article-card-body">
+                    <span class="tag event">Event</span>
+                    <h2><a href="lumiere-art-of-light-ontario-place-2026.html">Lumiere at Ontario Place: Free Outdoor Light Art Exhibition Opens February 16</a></h2>
+                    <p class="excerpt">14 stunning light installations by Ontario artists at Trillium Park. Free outdoor exhibition from February 16 to March 27 with bonfires.</p>
+                    <div class="meta"><span>February 11, 2026</span></div>
+                    <a href="lumiere-art-of-light-ontario-place-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="event">
+                <div class="article-card-body">
+                    <span class="tag event">Event</span>
+                    <h2><a href="toronto-spring-festival-lunar-new-year-2026.html">Toronto Spring Festival 2026: Lunar New Year Fireworks at City Hall</a></h2>
+                    <p class="excerpt">Year of the Fire Horse celebrations with fireworks, lion dances, and cultural performances at Nathan Phillips Square, February 14-15.</p>
+                    <div class="meta"><span>February 11, 2026</span></div>
+                    <a href="toronto-spring-festival-lunar-new-year-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="event">
+                <div class="article-card-body">
+                    <span class="tag event">Event</span>
+                    <h2><a href="winter-stations-woodbine-beach-2026.html">Winter Stations 2026: Outdoor Art Installations Open at Woodbine Beach</a></h2>
+                    <p class="excerpt">Large-scale art installations transforming lifeguard stations along the Beaches boardwalk. Free, opens Family Day, through late March.</p>
+                    <div class="meta"><span>February 10, 2026</span></div>
+                    <a href="winter-stations-woodbine-beach-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="event">
+                <div class="article-card-body">
+                    <span class="tag event">Event</span>
+                    <h2><a href="rom-after-dark-valentines-2026.html">ROM After Dark Valentine's 2026: Late-Night Museum Party on February 14</a></h2>
+                    <p class="excerpt">Live performances, DJ sets, and access to Sharks exhibition. The Royal Ontario Museum becomes a late-night party for Valentine's Day.</p>
+                    <div class="meta"><span>February 10, 2026</span></div>
+                    <a href="rom-after-dark-valentines-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="event">
+                <div class="article-card-body">
+                    <span class="tag event">Event</span>
+                    <h2><a href="paul-mccartney-photographs-ago-2026.html">Paul McCartney Photography Exhibition Opens at the AGO This February</a></h2>
+                    <p class="excerpt">Intimate photos taken by McCartney himself during the early days of Beatlemania. Eyes of the Storm at the Art Gallery of Ontario.</p>
+                    <div class="meta"><span>February 10, 2026</span></div>
+                    <a href="paul-mccartney-photographs-ago-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="event">
+                <div class="article-card-body">
+                    <span class="tag event">Event</span>
+                    <h2><a href="toronto-comicon-2026.html">Toronto Comicon 2026: Everything You Need to Know for March 20-22</a></h2>
+                    <p class="excerpt">Comics, cosplay, gaming, celebrity guests, and Artist Alley take over Metro Toronto Convention Centre on the final March Break weekend.</p>
+                    <div class="meta"><span>February 9, 2026</span></div>
+                    <a href="toronto-comicon-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="event">
+                <div class="article-card-body">
+                    <span class="tag event">Event</span>
+                    <h2><a href="march-break-toronto-2026-family-guide.html">March Break 2026 in Toronto: 15 Best Activities for Families</a></h2>
+                    <p class="excerpt">ROM, AGO, LEGOLAND, Toronto Zoo, National Ballet, Comicon, and more. Complete guide to March Break (March 14-22) for families.</p>
+                    <div class="meta"><span>February 9, 2026</span></div>
+                    <a href="march-break-toronto-2026-family-guide.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="event">
+                <div class="article-card-body">
+                    <span class="tag event">Event</span>
+                    <h2><a href="wavelength-music-festival-toronto-2026.html">Wavelength Music Festival 2026: Toronto's Best Indie Music Event Returns March 19-21</a></h2>
+                    <p class="excerpt">30+ live acts across multiple west-end venues. Workshops, panels, and indie music discovery at St. Anne's, AGO, The Baby G, and more.</p>
+                    <div class="meta"><span>February 8, 2026</span></div>
+                    <a href="wavelength-music-festival-toronto-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <!-- ═══ THINGS TO DO ═══ -->
+
+            <article class="article-card" data-category="thingstodo">
+                <div class="article-card-body">
+                    <span class="tag thingstodo">Things to Do</span>
+                    <h2><a href="best-free-skating-rinks-toronto-2026.html">Best Free Outdoor Skating Rinks in Toronto: 2026 Winter Guide</a></h2>
+                    <p class="excerpt">Nathan Phillips Square, The Bentway, Harbourfront Centre, and hidden gem rinks. Guide to free outdoor skating across the city.</p>
+                    <div class="meta"><span>February 11, 2026</span></div>
+                    <a href="best-free-skating-rinks-toronto-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="thingstodo">
+                <div class="article-card-body">
+                    <span class="tag thingstodo">Things to Do</span>
+                    <h2><a href="toronto-best-new-restaurants-winter-2026.html">Toronto's 10 Most Exciting New Restaurants to Try Right Now</a></h2>
+                    <p class="excerpt">From Michelin-calibre omakase to Lebanese fast-casual. MSSM, Chez Nad, Riley's Fish &amp; Steak, Sadelle's, and more.</p>
+                    <div class="meta"><span>February 11, 2026</span></div>
+                    <a href="toronto-best-new-restaurants-winter-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="thingstodo">
+                <div class="article-card-body">
+                    <span class="tag thingstodo">Things to Do</span>
+                    <h2><a href="roundhouse-winter-craft-beer-fest-2026.html">Roundhouse Winter Craft Beer Fest 2026: Ontario's Best Breweries on February 21</a></h2>
+                    <p class="excerpt">Ontario-only craft beers, marshmallow roasting, and winter activities at Roundhouse Park near the CN Tower.</p>
+                    <div class="meta"><span>February 10, 2026</span></div>
+                    <a href="roundhouse-winter-craft-beer-fest-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="thingstodo">
+                <div class="article-card-body">
+                    <span class="tag thingstodo">Things to Do</span>
+                    <h2><a href="toronto-theatre-winter-spring-2026.html">Toronto Theatre Guide: 8 Must-See Shows Playing Winter-Spring 2026</a></h2>
+                    <p class="excerpt">Some Like It Hot, Shucked, Cyrano, Pinocchio, and more. From Broadway transfers to Canadian premieres.</p>
+                    <div class="meta"><span>February 10, 2026</span></div>
+                    <a href="toronto-theatre-winter-spring-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <!-- ═══ NEIGHBOURHOODS ═══ -->
+
+            <article class="article-card" data-category="neighbourhood">
+                <div class="article-card-body">
+                    <span class="tag neighbourhood">Neighbourhood</span>
+                    <h2><a href="whats-new-yonge-dundas-sankofa-square-2026.html">What's New Near Sankofa Square: Downtown Toronto's Hottest New Spots</a></h2>
+                    <p class="excerpt">Marugame Udon, Ema-Datsi Bhutanese cuisine, KaleMart24, Ontario Line construction, and 172 event days confirmed for 2026.</p>
+                    <div class="meta"><span>February 11, 2026</span></div>
+                    <a href="whats-new-yonge-dundas-sankofa-square-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="neighbourhood">
+                <div class="article-card-body">
+                    <span class="tag neighbourhood">Neighbourhood</span>
+                    <h2><a href="yorkville-bloor-restaurants-luxury-guide-2026.html">Yorkville and Bloor: Toronto's Luxury Dining and Shopping Boom in 2026</a></h2>
+                    <p class="excerpt">Michelin-calibre MSSM, Sadelle's brunch, Tono by Akira Back, luxury retail expansion, and the Gardiner Museum's $15.5M renovation.</p>
+                    <div class="meta"><span>February 11, 2026</span></div>
+                    <a href="yorkville-bloor-restaurants-luxury-guide-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="neighbourhood">
+                <div class="article-card-body">
+                    <span class="tag neighbourhood">Neighbourhood</span>
+                    <h2><a href="king-west-portland-square-restaurant-guide-2026.html">King West's Restaurant Revolution: Portland Square and the New Wave</a></h2>
+                    <p class="excerpt">Portland Square's four-in-one mega food hall, Little Baba by Amal, Cafe Renee, Riley's Fish &amp; Steak, and King West's dining evolution.</p>
+                    <div class="meta"><span>February 10, 2026</span></div>
+                    <a href="king-west-portland-square-restaurant-guide-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="neighbourhood">
+                <div class="article-card-body">
+                    <span class="tag neighbourhood">Neighbourhood</span>
+                    <h2><a href="queen-west-ossington-bars-restaurants-2026.html">Queen West and Ossington: Toronto's Coolest New Bars and Restaurants</a></h2>
+                    <p class="excerpt">Chez Nad by Nadege, Liliana, No Vacancy, Small Talk, secret bars, and the Michelin-recognized creative dining strip.</p>
+                    <div class="meta"><span>February 10, 2026</span></div>
+                    <a href="queen-west-ossington-bars-restaurants-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="neighbourhood">
+                <div class="article-card-body">
+                    <span class="tag neighbourhood">Neighbourhood</span>
+                    <h2><a href="little-italy-college-street-revival-2026.html">Little Italy's Restaurant Revival: College Street Is Back</a></h2>
+                    <p class="excerpt">Osteria Alba, Sal's Pasta and Chops, Lonely Diner, and a new generation of Italian restaurants reviving College Street.</p>
+                    <div class="meta"><span>February 10, 2026</span></div>
+                    <a href="little-italy-college-street-revival-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="neighbourhood">
+                <div class="article-card-body">
+                    <span class="tag neighbourhood">Neighbourhood</span>
+                    <h2><a href="leslieville-east-end-toronto-guide-2026.html">Leslieville and the East End: What's New and Coming in 2026</a></h2>
+                    <p class="excerpt">Fangio Trattoria, East Harbour transit hub, Ontario Line stations, and the transformation of Toronto's east end.</p>
+                    <div class="meta"><span>February 9, 2026</span></div>
+                    <a href="leslieville-east-end-toronto-guide-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="neighbourhood">
+                <div class="article-card-body">
+                    <span class="tag neighbourhood">Neighbourhood</span>
+                    <h2><a href="junction-parkdale-west-end-guide-2026.html">The Junction, Parkdale, and Roncesvalles: Toronto's West End Food Guide</a></h2>
+                    <p class="excerpt">Taste of the Junction 2026, BB's Diner (Michelin Bib Gourmand), Proper on Roncesvalles, and multicultural flavours across Parkdale.</p>
+                    <div class="meta"><span>February 9, 2026</span></div>
+                    <a href="junction-parkdale-west-end-guide-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="neighbourhood">
+                <div class="article-card-body">
+                    <span class="tag neighbourhood">Neighbourhood</span>
+                    <h2><a href="danforth-greektown-multicultural-guide-2026.html">Danforth Greektown Goes Global: Toronto's Multicultural Food Evolution</a></h2>
+                    <p class="excerpt">Malaysian, Ethiopian, Turkish, and Persian cuisines join the Greek strip. Plus Taste of the Danforth 2026 on August 11-13.</p>
+                    <div class="meta"><span>February 8, 2026</span></div>
+                    <a href="danforth-greektown-multicultural-guide-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+
+            <article class="article-card" data-category="neighbourhood">
+                <div class="article-card-body">
+                    <span class="tag neighbourhood">Neighbourhood</span>
+                    <h2><a href="kensington-market-chinatown-guide-2026.html">Kensington Market and Chinatown: Toronto's Most Eclectic Food Neighbourhoods</a></h2>
+                    <p class="excerpt">Pedestrian Sundays return May-October, R&amp;D on Spadina, Dai Lo, and the neighbourhoods that resist corporate change.</p>
+                    <div class="meta"><span>February 8, 2026</span></div>
+                    <a href="kensington-market-chinatown-guide-2026.html" class="read-more">Read More &rarr;</a>
+                </div>
+            </article>
+        </div>
+        <div class="news-sources">
+            <p>Sourced from: CP24 &middot; CTV News Toronto &middot; Toronto Star &middot; Global News &middot; BlogTO &middot; NOW Toronto &middot; Toronto Life &middot; CBC Toronto &middot; Foodism &middot; Streets of Toronto &middot; Destination Toronto &middot; City of Toronto &middot; Neighbourhood BIAs</p>
+        </div>
+        <section class="cta-section">
+            <h2>Never Miss a Toronto Event</h2>
+            <p>Browse upcoming events, hidden gems, and community celebrations across the city.</p>
+            <a href="/" class="cta-btn">Explore Toronto Events</a>
+        </section>
+    </main>
+    <footer>
+        <p>Built with love for Toronto &middot; <a href="/">Toronto Events</a> &middot; <a href="https://tdotevent.ca">TdotEvent.ca</a> &middot; support@findtorontoevents.ca</p>
+    </footer>
+    <script>
+        document.querySelectorAll('.filter-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                var filter = btn.getAttribute('data-filter');
+                document.querySelectorAll('.article-card, .featured-card').forEach(function(card) {
+                    if (filter === 'all' || card.getAttribute('data-category') === filter) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+            });
+        });
+    </script>
+
+<!-- Blog Floating Icons: AI Bot, Sign In, Gear -->
+<div id="blog-float-icons" style="position:fixed;bottom:20px;right:20px;z-index:998;display:flex;flex-direction:column;gap:10px;align-items:flex-end;">
+<a href="#" id="blog-ai-btn" onclick="if(window.FTEAssistant){window.FTEAssistant.open();}return false;" title="AI Chat Assistant" style="width:48px;height:48px;border-radius:50%;background:rgba(0,212,255,0.12);backdrop-filter:blur(12px);border:1.5px solid rgba(0,212,255,0.25);color:#00d4ff;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all 0.3s;box-shadow:0 4px 15px rgba(0,212,255,0.15);"><svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7v1a2 2 0 01-2 2h-1v1a2 2 0 01-2 2H8a2 2 0 01-2-2v-1H5a2 2 0 01-2-2v-1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><circle cx="9" cy="13" r="1.25" fill="currentColor" stroke="none"></circle><circle cx="15" cy="13" r="1.25" fill="currentColor" stroke="none"></circle><path d="M10 17h4" stroke-linecap="round" stroke-width="1.5"></path></svg></a>
+<a href="/fc/#/guest" id="blog-signin-btn" title="Sign In" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:22px;background:rgba(15,10,40,0.9);backdrop-filter:blur(12px);border:1.5px solid rgba(59,130,246,0.3);color:#93c5fd;font-size:0.75rem;font-weight:700;letter-spacing:1.2px;text-decoration:none;transition:all 0.3s;font-family:-apple-system,BlinkMacSystemFont,sans-serif;white-space:nowrap;">&#128274; SIGN IN</a>
+<button id="blog-gear-btn" title="Settings &amp; Navigation" onclick="if(typeof openOtherStuffMenu==='function'){openOtherStuffMenu();}else{var m=document.getElementById('mega-menu');if(m){m.classList.toggle('open');}else{window.location.href='/';}}" style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.06);backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);cursor:pointer;transition:all 0.3s;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(0,0,0,0.25);"><svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+</div>
+<style>
+@keyframes blogSignInGlow{0%,100%{box-shadow:0 0 8px rgba(59,130,246,0.4),0 0 16px rgba(59,130,246,0.2);}50%{box-shadow:0 0 16px rgba(59,130,246,0.6),0 0 32px rgba(59,130,246,0.3);}}
+#blog-float-icons #blog-signin-btn{animation:blogSignInGlow 2.5s ease-in-out infinite;}
+#blog-float-icons #blog-ai-btn:hover{background:rgba(0,212,255,0.25);border-color:rgba(0,212,255,0.5);transform:scale(1.1);box-shadow:0 6px 25px rgba(0,212,255,0.35);}
+#blog-float-icons #blog-signin-btn:hover{background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.5);color:#fff;transform:scale(1.05);}
+#blog-float-icons #blog-gear-btn:hover{background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.25);transform:scale(1.1);box-shadow:0 6px 25px rgba(255,255,255,0.12);}
+
+#fte-ai-btn{display:none!important;}
+</style>
+<script src="/ai-assistant.js"></script>
+</body>
+</html>

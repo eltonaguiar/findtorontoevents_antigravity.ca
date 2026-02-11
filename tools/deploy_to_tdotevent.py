@@ -90,6 +90,11 @@ DIRS_TO_DEPLOY = [
     ('affiliates', 'affiliates'),
     ('luxcal', 'luxcal'),
     ('404', '404'),
+    ('TORONTOEVENTS_ANTIGRAVITY/build/blog', 'blog'),
+    ('TORONTOEVENTS_ANTIGRAVITY/_next', '_next'),
+    ('TORONTOEVENTS_ANTIGRAVITY/next/_next', 'next/_next'),
+    ('goldmine_cursor', 'goldmine_cursor'),
+    ('FIGHTGAME', 'FIGHTGAME'),
 ]
 
 # Single root files
@@ -101,7 +106,21 @@ FILES_TO_DEPLOY = [
     ('last_update.json', 'last_update.json'),
     ('favicon.ico', 'favicon.ico'),
     ('ai-assistant.js', 'ai-assistant.js'),
+    ('sitemap.xml', 'sitemap.xml'),
+    ('robots.txt', 'robots.txt'),
+    ('theme-switcher.js', 'theme-switcher.js'),
+    ('theme-registry.js', 'theme-registry.js'),
+    ('theme-animations.js', 'theme-animations.js'),
+    ('blog_styles_common.css', 'blog_styles_common.css'),
+    ('blog_template_base.js', 'blog_template_base.js'),
 ]
+
+# Root-level blog HTML files (blog200-249, blog300-349) → /blog/
+ROOT_BLOG_FILES = []
+import glob as _glob
+for _p in _glob.glob(str(WORKSPACE / 'blog*.html')):
+    _name = os.path.basename(_p)
+    ROOT_BLOG_FILES.append((_name, 'blog/' + _name))
 
 # Directories to skip during walk (anywhere in tree)
 SKIP_DIR_NAMES = {
@@ -217,15 +236,18 @@ def prepare_staging(staging_dir):
         file_count += dir_count
 
     # Process single root files
-    for src_rel, dst_rel in FILES_TO_DEPLOY:
+    for src_rel, dst_rel in FILES_TO_DEPLOY + ROOT_BLOG_FILES:
         src_path = WORKSPACE / src_rel
         if not src_path.is_file():
-            print(f'  Skip file {src_rel} (not found)')
+            if src_rel in dict(FILES_TO_DEPLOY):
+                print(f'  Skip file {src_rel} (not found)')
             continue
         dst_path = staging_dir / dst_rel
         if process_file(src_path, dst_path):
             file_count += 1
-            print(f'  {src_rel} -> {dst_rel}')
+
+    if ROOT_BLOG_FILES:
+        print(f'  Root blog files -> blog/  ({len(ROOT_BLOG_FILES)} files)')
 
     # Inject og:image into index.html
     inject_og_image(staging_dir / 'index.html')

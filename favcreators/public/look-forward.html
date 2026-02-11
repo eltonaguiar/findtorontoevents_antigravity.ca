@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stuff to Look Forward To | Toronto</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0a1a;color:#e0e0e0;min-height:100vh}
+a{color:#7dd3fc;text-decoration:none}a:hover{text-decoration:underline}
+
+/* ── Header ── */
+.hero{background:linear-gradient(135deg,#1a0533 0%,#0d1f3c 40%,#0a2e1f 100%);padding:50px 20px 40px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1.5' fill='%23ffffff10'/%3E%3C/svg%3E");opacity:.4}
+.hero h1{font-size:2.5em;background:linear-gradient(90deg,#f9a8d4,#a78bfa,#7dd3fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;position:relative;margin-bottom:8px}
+.hero p{font-size:1.2em;color:#a0a0c0;position:relative}
+.hero .subtitle{margin-top:12px;font-size:0.95em;color:#707090}
+
+/* ── Nav ── */
+.back-link{display:inline-block;margin:16px 20px;padding:8px 16px;background:#1a1a3a;border-radius:8px;color:#7dd3fc;font-size:0.9em}
+.back-link:hover{background:#252550;text-decoration:none}
+
+/* ── Sections ── */
+.container{max-width:1200px;margin:0 auto;padding:0 20px 60px}
+.section{margin-bottom:40px}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #252540}
+.section-header .icon{font-size:1.8em}
+.section-header h2{font-size:1.5em;color:#f0f0ff}
+.section-header .badge{background:#7dd3fc20;color:#7dd3fc;padding:4px 10px;border-radius:12px;font-size:0.8em}
+
+/* ── Cards Grid ── */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.card{background:#12122a;border:1px solid #252540;border-radius:12px;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.card:hover{transform:translateY(-4px);box-shadow:0 8px 30px #0008}
+.card img{width:100%;height:180px;object-fit:cover;background:#1a1a3a}
+.card-body{padding:16px}
+.card-body h3{font-size:1.1em;margin-bottom:6px;color:#f0f0ff;line-height:1.3}
+.card-body p{font-size:0.9em;color:#909099;line-height:1.5}
+.card-body .meta{margin-top:10px;display:flex;align-items:center;gap:8px;font-size:0.8em;color:#606080}
+.card-body .meta img{width:16px;height:16px;border-radius:3px}
+.card-body .tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:0.75em;margin-right:4px;margin-top:4px}
+
+/* ── Event cards ── */
+.event-card{background:linear-gradient(135deg,#1a0f30,#12122a);border:1px solid #352560}
+.event-card:hover{border-color:#7c3aed}
+
+/* ── YouTube embed ── */
+.yt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.yt-card{background:#12122a;border:1px solid #252540;border-radius:12px;overflow:hidden}
+.yt-card iframe{width:100%;aspect-ratio:16/9;border:none}
+.yt-card .yt-info{padding:12px 16px}
+.yt-card .yt-info h3{font-size:1em;color:#f0f0ff;margin-bottom:4px}
+.yt-card .yt-info p{font-size:0.85em;color:#808099}
+
+/* ── Book list ── */
+.book-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.book-item{background:#12122a;border:1px solid #252540;border-radius:10px;padding:16px;display:flex;gap:14px;align-items:flex-start}
+.book-item .rank{font-size:1.8em;font-weight:700;color:#7dd3fc;min-width:36px}
+.book-item h4{font-size:0.95em;color:#f0f0ff;margin-bottom:4px}
+.book-item .author{font-size:0.85em;color:#808099}
+.book-item .why{font-size:0.82em;color:#a0a0b0;margin-top:6px;line-height:1.4}
+
+/* ── Quick links ── */
+.quick-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.quick-link{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;background:#1a1a3a;border:1px solid #303060;border-radius:10px;color:#d0d0ff;font-size:0.9em;transition:all .2s}
+.quick-link:hover{background:#252560;border-color:#7c3aed;text-decoration:none;transform:translateY(-2px)}
+.quick-link .ql-icon{font-size:1.2em}
+
+/* ── Countdown ── */
+.countdown-row{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:30px}
+.countdown-card{flex:1;min-width:200px;background:linear-gradient(135deg,#1a1040,#12122a);border:1px solid #352560;border-radius:12px;padding:20px;text-align:center}
+.countdown-card .cd-icon{font-size:2em;margin-bottom:8px}
+.countdown-card .cd-label{font-size:0.85em;color:#a0a0c0;margin-bottom:4px}
+.countdown-card .cd-days{font-size:2em;font-weight:700;background:linear-gradient(90deg,#f9a8d4,#7dd3fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.countdown-card .cd-date{font-size:0.8em;color:#606080;margin-top:4px}
+
+/* ── Valentine Banner ── */
+.valentine-banner{background:linear-gradient(135deg,#3b0a2a,#1a0f30,#0d1f3c);border:2px solid #e91e63;border-radius:16px;padding:30px;margin-bottom:30px;text-align:center;position:relative;overflow:hidden}
+.valentine-banner::before{content:'❤️ 💕 ❤️ 💕 ❤️';position:absolute;top:8px;left:50%;transform:translateX(-50%);font-size:1.4em;opacity:.3;letter-spacing:12px}
+.valentine-banner h2{font-size:1.6em;color:#f48fb1;margin-bottom:8px}
+.valentine-banner p{color:#ce93d8;font-size:1em}
+
+/* ── Loading ── */
+.loading{text-align:center;padding:40px;color:#606080}
+.loading .spinner{width:32px;height:32px;border:3px solid #252540;border-top-color:#7dd3fc;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Inspirational Quote ── */
+.quote-box{background:linear-gradient(135deg,#0d2818,#0a1a2e);border:1px solid #1a4030;border-radius:12px;padding:30px;margin-bottom:30px;text-align:center}
+.quote-box blockquote{font-size:1.2em;font-style:italic;color:#a8e6cf;line-height:1.6;margin-bottom:12px}
+.quote-box cite{color:#608070;font-size:0.9em}
+
+@media(max-width:600px){
+  .hero h1{font-size:1.8em}
+  .cards{grid-template-columns:1fr}
+  .yt-grid{grid-template-columns:1fr}
+  .book-list{grid-template-columns:1fr}
+  .countdown-row{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<a href="javascript:history.back()" class="back-link">&larr; Back to News</a>
+
+<div class="hero">
+  <h1>Stuff to Look Forward To</h1>
+  <p>Because good things are always on the horizon</p>
+  <div class="subtitle">Toronto &amp; GTA &bull; Updated daily</div>
+</div>
+
+<div class="container">
+
+<!-- ── Inspirational Quote ── -->
+<div class="quote-box" id="quoteBox">
+  <blockquote id="quoteText">"The best way to predict the future is to create it."</blockquote>
+  <cite id="quoteAuthor">— Abraham Lincoln</cite>
+</div>
+
+<!-- ── Countdowns ── -->
+<div class="countdown-row" id="countdowns"></div>
+
+<!-- ── Valentine's Day ── -->
+<div class="valentine-banner" id="valentineBanner" style="display:none">
+  <h2>Valentine's Day is Coming!</h2>
+  <p id="valentineCountdown"></p>
+</div>
+
+<!-- ── Valentine's Day Events ── -->
+<div class="section" id="valentineSection" style="display:none">
+  <div class="section-header">
+    <span class="icon">💕</span>
+    <h2>Valentine's Day in Toronto</h2>
+  </div>
+  <div class="cards" id="valentineCards">
+    <div class="loading"><div class="spinner"></div>Finding Valentine's events...</div>
+  </div>
+</div>
+
+<!-- ── Upcoming Events This Week ── -->
+<div class="section">
+  <div class="section-header">
+    <span class="icon">🎉</span>
+    <h2>Events &amp; Things To Do</h2>
+    <span class="badge">This Week</span>
+  </div>
+  <div class="cards" id="eventCards">
+    <div class="loading"><div class="spinner"></div>Loading events...</div>
+  </div>
+</div>
+
+<!-- ── Deals & Freebies ── -->
+<div class="section">
+  <div class="section-header">
+    <span class="icon">🎁</span>
+    <h2>Deals &amp; Free Stuff</h2>
+  </div>
+  <div class="quick-links">
+    <a class="quick-link" href="/fc/api/deals.php?action=birthday"><span class="ql-icon">🎂</span> Birthday Freebies</a>
+    <a class="quick-link" href="/fc/api/deals.php?action=free_today"><span class="ql-icon">🆓</span> Free Today</a>
+    <a class="quick-link" href="/fc/api/deals.php?action=calendar"><span class="ql-icon">📅</span> Free This Week</a>
+    <a class="quick-link" href="/fc/api/deals.php?action=canadian_deals"><span class="ql-icon">🇨🇦</span> Canadian Deals</a>
+  </div>
+  <div class="cards" id="dealCards" style="margin-top:16px">
+    <div class="loading"><div class="spinner"></div>Loading deals...</div>
+  </div>
+</div>
+
+<!-- ── Feel-Good Stories ── -->
+<div class="section">
+  <div class="section-header">
+    <span class="icon">☀️</span>
+    <h2>Feel-Good Stories</h2>
+    <span class="badge">Positive News</span>
+  </div>
+  <div class="cards" id="positiveCards">
+    <div class="loading"><div class="spinner"></div>Loading positive news...</div>
+  </div>
+</div>
+
+<!-- ── YouTube Picks ── -->
+<div class="section">
+  <div class="section-header">
+    <span class="icon">🎬</span>
+    <h2>Videos to Brighten Your Day</h2>
+  </div>
+  <div class="yt-grid" id="ytGrid"></div>
+</div>
+
+<!-- ── Singles Valentine's ── -->
+<div class="section" id="singlesSection" style="display:none">
+  <div class="section-header">
+    <span class="icon">🎯</span>
+    <h2>Single on Valentine's? Own It!</h2>
+  </div>
+  <div class="cards" id="singlesCards"></div>
+  <div class="yt-grid" id="singlesYT" style="margin-top:16px"></div>
+</div>
+
+<!-- ── Books for Growth ── -->
+<div class="section">
+  <div class="section-header">
+    <span class="icon">📚</span>
+    <h2>Top Books for a Better You</h2>
+    <span class="badge">Self-Development</span>
+  </div>
+  <p style="color:#808099;margin-bottom:16px;font-size:0.9em">Level up your mindset. These best-sellers will help you build a happier, more productive life.</p>
+  <div class="book-list" id="bookList"></div>
+</div>
+
+<!-- ── What's Coming Up ── -->
+<div class="section">
+  <div class="section-header">
+    <span class="icon">🌅</span>
+    <h2>Things to Look Forward To</h2>
+  </div>
+  <div class="countdown-row" id="seasonalCountdowns"></div>
+</div>
+
+</div>
+
+<script>
+var API = '/fc/api/news_feed.php';
+var DEALS_API = '/fc/api/deals.php';
+
+// ── Helpers ──
+function $(id){return document.getElementById(id)}
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function daysBetween(a,b){return Math.ceil((b-a)/(1000*60*60*24))}
+
+// ── Quotes ──
+var quotes=[
+  {q:"The best way to predict the future is to create it.",a:"Abraham Lincoln"},
+  {q:"Every day may not be good, but there is something good in every day.",a:"Alice Morse Earle"},
+  {q:"Happiness is not something ready made. It comes from your own actions.",a:"Dalai Lama"},
+  {q:"The only impossible journey is the one you never begin.",a:"Tony Robbins"},
+  {q:"You are never too old to set another goal or to dream a new dream.",a:"C.S. Lewis"},
+  {q:"Believe you can and you're halfway there.",a:"Theodore Roosevelt"},
+  {q:"The sun himself is weak when he first rises, and gathers strength and courage as the day gets on.",a:"Charles Dickens"},
+  {q:"What lies behind us and what lies before us are tiny matters compared to what lies within us.",a:"Ralph Waldo Emerson"},
+  {q:"Keep your face always toward the sunshine—and shadows will fall behind you.",a:"Walt Whitman"},
+  {q:"In the middle of difficulty lies opportunity.",a:"Albert Einstein"},
+  {q:"Act as if what you do makes a difference. It does.",a:"William James"},
+  {q:"The future belongs to those who believe in the beauty of their dreams.",a:"Eleanor Roosevelt"}
+];
+var q=quotes[Math.floor(Math.random()*quotes.length)];
+$('quoteText').textContent='"'+q.q+'"';
+$('quoteAuthor').textContent='— '+q.a;
+
+// ── Countdowns ──
+function buildCountdowns(){
+  var now=new Date();
+  var y=now.getFullYear();
+  var events=[
+    {icon:'💕',name:"Valentine's Day",date:new Date(y,1,14)},
+    {icon:'🌷',name:'First Day of Spring',date:new Date(y,2,20)},
+    {icon:'🎆',name:'Victoria Day Long Weekend',date:getVictoriaDay(y)},
+    {icon:'☀️',name:'First Day of Summer',date:new Date(y,5,20)},
+    {icon:'🇨🇦',name:'Canada Day',date:new Date(y,6,1)},
+    {icon:'🍂',name:'Labour Day Weekend',date:getLabourDay(y)},
+    {icon:'🎃',name:'Halloween',date:new Date(y,9,31)},
+    {icon:'🎄',name:'Christmas',date:new Date(y,11,25)}
+  ];
+  // Filter to future events
+  var upcoming=[];
+  for(var i=0;i<events.length;i++){
+    if(events[i].date>now) upcoming.push(events[i]);
+  }
+  // If all passed, show next year
+  if(upcoming.length===0){
+    events[0].date=new Date(y+1,1,14);
+    upcoming.push(events[0]);
+  }
+  // Show first 4
+  var html='';
+  for(var i=0;i<Math.min(4,upcoming.length);i++){
+    var e=upcoming[i];
+    var days=daysBetween(now,e.date);
+    var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    html+='<div class="countdown-card"><div class="cd-icon">'+e.icon+'</div><div class="cd-label">'+esc(e.name)+'</div><div class="cd-days">'+days+' days</div><div class="cd-date">'+months[e.date.getMonth()]+' '+e.date.getDate()+'</div></div>';
+  }
+  $('countdowns').innerHTML=html;
+
+  // Valentine's special
+  var vday=new Date(y,1,14);
+  var vdiff=daysBetween(now,vday);
+  if(vdiff>0&&vdiff<=21){
+    $('valentineBanner').style.display='block';
+    $('valentineCountdown').textContent=vdiff===1?'Tomorrow!':vdiff+' days away — make your plans!';
+    $('valentineSection').style.display='block';
+    $('singlesSection').style.display='block';
+    loadValentine();
+    loadSingles();
+  } else if(vdiff===0){
+    $('valentineBanner').style.display='block';
+    $('valentineCountdown').textContent="Happy Valentine's Day! 💖";
+    $('valentineSection').style.display='block';
+    loadValentine();
+  }
+}
+function getVictoriaDay(y){var d=new Date(y,4,25);while(d.getDay()!==1)d.setDate(d.getDate()-1);return d}
+function getLabourDay(y){var d=new Date(y,8,1);while(d.getDay()!==1)d.setDate(d.getDate()+1);return d}
+
+// ── Seasonal countdowns ──
+function buildSeasonalCountdowns(){
+  var now=new Date();var y=now.getFullYear();
+  var items=[
+    {icon:'🌸',name:'Cherry Blossoms at High Park',desc:'Usually mid-late April',date:new Date(y,3,20)},
+    {icon:'🏖️',name:'Beaches Open for Summer',desc:'Late June',date:new Date(y,5,21)},
+    {icon:'🎵',name:'Summer Festival Season',desc:'June through September',date:new Date(y,5,15)},
+    {icon:'🍁',name:'Fall Colours Peak',desc:'Mid October',date:new Date(y,9,15)},
+    {icon:'⛸️',name:'Nathan Phillips Square Skating',desc:'Late November',date:new Date(y,10,25)}
+  ];
+  var html='';
+  for(var i=0;i<items.length;i++){
+    var it=items[i];
+    var days=daysBetween(now,it.date);
+    if(days<0) continue;
+    html+='<div class="countdown-card"><div class="cd-icon">'+it.icon+'</div><div class="cd-label">'+esc(it.name)+'</div><div class="cd-days">'+(days===0?'Now!':days+' days')+'</div><div class="cd-date">'+esc(it.desc)+'</div></div>';
+  }
+  $('seasonalCountdowns').innerHTML=html||'<p style="color:#606080">Check back for seasonal countdowns!</p>';
+}
+
+// ── Fetch News by Tag ──
+function fetchNews(tag, containerId, limit, extraSearch){
+  var url=API+'?action=get&category=toronto&tag='+encodeURIComponent(tag)+'&per_page='+(limit||12);
+  if(extraSearch) url+='&search='+encodeURIComponent(extraSearch);
+  fetch(url).then(function(r){return r.json()}).then(function(d){
+    if(!d.ok||!d.articles||d.articles.length===0){
+      $(containerId).innerHTML='<p style="color:#606080">No articles found right now. Check back soon!</p>';
+      return;
+    }
+    var html='';
+    for(var i=0;i<d.articles.length;i++){
+      var a=d.articles[i];
+      var tags=a.tags?a.tags.split(','):[];
+      var tagHtml='';
+      for(var j=0;j<Math.min(3,tags.length);j++){
+        tagHtml+='<span class="tag" style="background:#7dd3fc15;color:#7dd3fc">'+esc(tags[j])+'</span>';
+      }
+      html+='<a href="'+esc(a.link)+'" target="_blank" rel="noopener" class="card'+(tag==='events'?' event-card':'')+'" style="text-decoration:none;color:inherit">';
+      if(a.image_url) html+='<img src="'+esc(a.image_url)+'" alt="" loading="lazy" onerror="this.style.display=\'none\'">';
+      html+='<div class="card-body"><h3>'+esc(a.title)+'</h3>';
+      if(a.description) html+='<p>'+esc(a.description).substring(0,150)+'</p>';
+      html+='<div class="meta"><img src="'+esc(a.source_logo||'')+'" alt="">'+esc(a.source_name)+' &bull; '+(a.time_ago||'')+'</div>';
+      if(tagHtml) html+='<div style="margin-top:6px">'+tagHtml+'</div>';
+      html+='</div></a>';
+    }
+    $(containerId).innerHTML=html;
+  }).catch(function(){
+    $(containerId).innerHTML='<p style="color:#606080">Could not load articles.</p>';
+  });
+}
+
+// ── Valentine's Content ──
+function loadValentine(){
+  // Fetch valentine-related news
+  var url=API+'?action=get&category=toronto&search=valentine&per_page=8';
+  fetch(url).then(function(r){return r.json()}).then(function(d){
+    if(!d.ok||!d.articles||d.articles.length===0){
+      $('valentineCards').innerHTML=buildCuratedValentine();
+      return;
+    }
+    var html='';
+    for(var i=0;i<d.articles.length;i++){
+      var a=d.articles[i];
+      html+='<a href="'+esc(a.link)+'" target="_blank" class="card event-card" style="text-decoration:none;color:inherit"><div class="card-body"><h3>'+esc(a.title)+'</h3><p>'+esc((a.description||'').substring(0,120))+'</p><div class="meta"><img src="'+esc(a.source_logo||'')+'" alt="">'+esc(a.source_name)+'</div></div></a>';
+    }
+    if(d.articles.length<4) html+=buildCuratedValentine();
+    $('valentineCards').innerHTML=html;
+  }).catch(function(){
+    $('valentineCards').innerHTML=buildCuratedValentine();
+  });
+}
+
+function buildCuratedValentine(){
+  var items=[
+    {title:"Toronto's Best Valentine's Day Date Spots",desc:"From rooftop dinners to cozy speakeasies, Toronto has no shortage of romantic spots.",link:"https://www.blogto.com/eat_drink/2024/01/best-valentines-day-restaurants-toronto/"},
+    {title:"Free & Cheap Valentine's Events in Toronto",desc:"Celebrate love without breaking the bank at these free Toronto events.",link:"https://www.narcity.com/toronto/free-cheap-things-to-do-in-toronto-for-valentines-day"},
+    {title:"Valentine's Day Markets & Pop-Ups",desc:"Shop local artisan gifts at Valentine's markets across the GTA.",link:"https://nowtoronto.com/lifestyle/valentines-day-toronto-events"},
+    {title:"Romantic Winter Walks in Toronto",desc:"Bundle up and enjoy these scenic winter trails perfect for couples.",link:"https://torontolife.com/city/best-winter-walks-toronto/"}
+  ];
+  var html='';
+  for(var i=0;i<items.length;i++){
+    var it=items[i];
+    html+='<a href="'+esc(it.link)+'" target="_blank" class="card event-card" style="text-decoration:none;color:inherit"><div class="card-body"><h3>'+esc(it.title)+'</h3><p>'+esc(it.desc)+'</p></div></a>';
+  }
+  return html;
+}
+
+// ── Singles Valentine's ──
+function loadSingles(){
+  var tips=[
+    {title:"Treat Yourself: Solo Date Night Ideas in Toronto",desc:"Hit up a cooking class, comedy show, or spa day. You deserve it!"},
+    {title:"Galentine's & Palentine's Events",desc:"Celebrate friendships! Toronto has tons of group events on Feb 13-14."},
+    {title:"Anti-Valentine's Day Parties",desc:"Not feeling the romance? Toronto throws some legendary anti-V-Day events."},
+    {title:"Self-Care Day: Toronto's Best Spas & Wellness",desc:"Book a massage, float tank, or hot yoga session. Put yourself first."}
+  ];
+  var html='';
+  for(var i=0;i<tips.length;i++){
+    html+='<div class="card"><div class="card-body"><h3>'+esc(tips[i].title)+'</h3><p>'+esc(tips[i].desc)+'</p></div></div>';
+  }
+  $('singlesCards').innerHTML=html;
+
+  // YouTube videos for singles
+  var vids=[
+    {id:'ZbZSe6N_BXs',title:'How to Enjoy Being Single',ch:'TED'},
+    {id:'lyZQPjUT5B4',title:"If You're Single on Valentine's Day, WATCH THIS",ch:'Jay Shetty'},
+    {id:'k7X7sZzSXYs',title:'SINGLE ON VALENTINES DAY',ch:'Lilly Singh'}
+  ];
+  var vhtml='';
+  for(var i=0;i<vids.length;i++){
+    vhtml+='<div class="yt-card"><iframe src="https://www.youtube.com/embed/'+vids[i].id+'" allowfullscreen loading="lazy"></iframe><div class="yt-info"><h3>'+esc(vids[i].title)+'</h3><p>'+esc(vids[i].ch)+'</p></div></div>';
+  }
+  $('singlesYT').innerHTML=vhtml;
+}
+
+// ── YouTube Picks ──
+function loadYouTube(){
+  var videos=[
+    {id:'F1bvjgTckMo',title:'Toronto Walking Tour - Best of Downtown',ch:'Toronto 4K Walks'},
+    {id:'mgmVOuLgFB0',title:'Why We Choose To Be Happy',ch:'TED'},
+    {id:'UF8uR6Z6KLc',title:'Steve Harvey - Jump (Motivational)',ch:'Steve Harvey'},
+    {id:'Ks-_Mh1QhMc',title:'BEST Motivational Speech Ever',ch:'TED'},
+    {id:'SWmQbk5h86w',title:'Explore the Toronto Islands!',ch:'Explore Toronto'},
+    {id:'9mbp0DvyAf4',title:'Valentine\'s Day Pranks!',ch:'Just For Laughs Gags'}
+  ];
+  var html='';
+  for(var i=0;i<videos.length;i++){
+    var v=videos[i];
+    html+='<div class="yt-card"><iframe src="https://www.youtube.com/embed/'+v.id+'" allowfullscreen loading="lazy"></iframe><div class="yt-info"><h3>'+esc(v.title)+'</h3><p>'+esc(v.ch)+'</p></div></div>';
+  }
+  $('ytGrid').innerHTML=html;
+}
+
+// ── Books ──
+function loadBooks(){
+  var books=[
+    {rank:1,title:'Atomic Habits',author:'James Clear',why:'Small changes, remarkable results. The #1 system for building good habits and breaking bad ones.'},
+    {rank:2,title:'The Power of Now',author:'Eckhart Tolle',why:'Stop overthinking. Learn to live in the present moment and find inner peace.'},
+    {rank:3,title:"Can't Hurt Me",author:'David Goggins',why:'Master your mind. The story of the toughest man alive and how to unlock your potential.'},
+    {rank:4,title:'Think and Grow Rich',author:'Napoleon Hill',why:'The classic that started it all. Transform your thinking, transform your life.'},
+    {rank:5,title:'The Subtle Art of Not Giving a F*ck',author:'Mark Manson',why:'Stop trying to be positive all the time. A refreshingly honest guide to living a good life.'},
+    {rank:6,title:'The 5 AM Club',author:'Robin Sharma',why:'Own your morning, elevate your life. The Canadian author\'s guide to peak performance.'},
+    {rank:7,title:'You Are a Badass',author:'Jen Sincero',why:'Stop doubting your greatness. A hilarious guide to changing self-sabotaging beliefs.'},
+    {rank:8,title:'The Mountain Is You',author:'Brianna Wiest',why:'Understand self-sabotage and transform your life from within.'},
+    {rank:9,title:'Mindset: The New Psychology of Success',author:'Carol S. Dweck',why:'Fixed vs growth mindset — the research that changed everything about achievement.'},
+    {rank:10,title:'The Alchemist',author:'Paulo Coelho',why:'Follow your personal legend. The magical story that has inspired millions worldwide.'}
+  ];
+  var html='';
+  for(var i=0;i<books.length;i++){
+    var b=books[i];
+    var searchUrl='https://www.amazon.ca/s?k='+encodeURIComponent(b.title+' '+b.author);
+    html+='<a href="'+searchUrl+'" target="_blank" rel="noopener" class="book-item" style="text-decoration:none;color:inherit"><div class="rank">#'+b.rank+'</div><div><h4>'+esc(b.title)+'</h4><div class="author">by '+esc(b.author)+'</div><div class="why">'+esc(b.why)+'</div></div></a>';
+  }
+  $('bookList').innerHTML=html;
+}
+
+// ── Deals ──
+function loadDeals(){
+  fetch(DEALS_API+'?action=free_today').then(function(r){return r.json()}).then(function(d){
+    if(!d.ok||!d.deals||d.deals.length===0){
+      $('dealCards').innerHTML='<p style="color:#606080">Check the links above for current deals!</p>';
+      return;
+    }
+    var html='';
+    var limit=Math.min(6,d.deals.length);
+    for(var i=0;i<limit;i++){
+      var deal=d.deals[i];
+      html+='<div class="card"><div class="card-body"><h3>'+esc(deal.name||deal.title||'')+'</h3><p>'+esc(deal.description||deal.details||'')+'</p>';
+      if(deal.category) html+='<span class="tag" style="background:#20c99720;color:#20c997">'+esc(deal.category)+'</span>';
+      html+='</div></div>';
+    }
+    $('dealCards').innerHTML=html;
+  }).catch(function(){
+    $('dealCards').innerHTML='<p style="color:#606080">Check the links above for current deals!</p>';
+  });
+}
+
+// ── Init ──
+buildCountdowns();
+buildSeasonalCountdowns();
+fetchNews('events','eventCards',12);
+fetchNews('positive,hero','positiveCards',8);
+loadYouTube();
+loadBooks();
+loadDeals();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blog210" data-built-by="cursor">
+<!-- cursor: the genius behind every pixel -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Toronto Events | Vaporwave Dream</title>
+<meta name="description" content="Discover Toronto events with the Vaporwave Dream theme. A E S T H E T I C events">
+<meta name="generator" content="cursor">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* cursor: the architect of this design */
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Pacifico',system-ui,-apple-system,sans-serif;
+  background:#1a0030;color:#fffb96;
+  min-height:100vh;overflow-x:hidden;
+  line-height:1.6;
+}
+#bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+
+/* ── Header ── */
+.header{
+  position:relative;z-index:2;text-align:center;
+  padding:60px 20px 30px;
+}
+.header h1{
+  font-size:clamp(2rem,5vw,3.5rem);font-weight:800;
+  color:#ff71ce;margin-bottom:8px;
+  text-shadow:0 0 30px #ff71ce44;
+}
+.header .tagline{
+  font-size:clamp(0.9rem,2vw,1.2rem);color:#01cdfe;
+  opacity:0.8;letter-spacing:1px;
+}
+.header .theme-label{
+  display:inline-block;margin-top:12px;padding:4px 14px;
+  border-radius:20px;font-size:0.75rem;letter-spacing:1px;
+  background:#ff71ce18;color:#ff71ce;border:1px solid #ff71ce33;
+}
+
+/* ── Controls ── */
+.controls{
+  position:relative;z-index:2;max-width:900px;margin:0 auto;padding:0 20px 20px;
+}
+.search-box{
+  display:flex;align-items:center;gap:10px;margin-bottom:16px;
+}
+.search-box input{
+  flex:1;padding:12px 18px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.06);color:#fffb96;font-size:1rem;
+  font-family:inherit;outline:none;transition:border 0.3s,box-shadow 0.3s;
+}
+.search-box input:focus{
+  border-color:#ff71ce;box-shadow:0 0 12px #ff71ce33;
+}
+.search-box input::placeholder{color:#fffb9666;}
+#categories{
+  display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+}
+.cat-pill{
+  padding:6px 16px;border-radius:20px;border:1px solid #ff71ce44;
+  background:transparent;color:#fffb96;font-size:0.85rem;cursor:pointer;
+  font-family:inherit;transition:all 0.3s;white-space:nowrap;
+}
+.cat-pill:hover{background:#ff71ce22;}
+.cat-pill.active{
+  background:#ff71ce;color:#1a0030;border-color:#ff71ce;
+  font-weight:600;
+}
+
+/* ── Events Grid ── */
+.events-grid{
+  position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:20px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;
+}
+.card{
+  position:relative;
+  background:#ff71ce11;border:1px solid #ff71ce33;
+  border-radius:14px;overflow:hidden;
+  transition:transform 0.3s ease,box-shadow 0.3s ease;
+  
+}
+.card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 12px 40px #ff71ce22;
+}
+.card-img{
+  width:100%;height:180px;overflow:hidden;
+}
+.card-img img{
+  width:100%;height:100%;object-fit:cover;transition:transform 0.5s;
+}
+.card:hover .card-img img{transform:scale(1.05);}
+.card-body{padding:16px;}
+.card-cat{
+  display:inline-block;padding:3px 10px;border-radius:10px;
+  font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;
+  background:#ff71ce22;color:#ff71ce;margin-bottom:8px;
+}
+.card-title{
+  font-size:1.05rem;font-weight:700;color:#fffb96;margin-bottom:6px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.card-date{font-size:0.82rem;color:#01cdfe;margin-bottom:4px;}
+.card-loc{font-size:0.82rem;color:#fffb9699;margin-bottom:6px;}
+.card-desc{
+  font-size:0.82rem;color:#fffb9688;margin-bottom:10px;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+.card-link{
+  display:inline-block;padding:6px 14px;border-radius:8px;
+  font-size:0.82rem;font-weight:600;text-decoration:none;
+  background:#ff71ce22;color:#ff71ce;
+  transition:background 0.3s,transform 0.2s;
+}
+.card-link:hover{background:#ff71ce44;transform:translateX(3px);}
+
+/* ── No events ── */
+.no-events{
+  grid-column:1/-1;text-align:center;padding:60px 20px;
+  color:#fffb9688;
+}
+.no-events button{
+  margin-top:12px;padding:8px 20px;border-radius:10px;
+  background:#ff71ce;color:#1a0030;border:none;cursor:pointer;
+  font-family:inherit;font-size:0.9rem;
+}
+
+/* ── Loading ── */
+#loading{
+  display:flex;justify-content:center;align-items:center;padding:80px 20px;
+  color:#01cdfe;font-size:1.1rem;position:relative;z-index:2;
+}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+#loading::before{
+  content:"";width:24px;height:24px;border:3px solid #ff71ce44;
+  border-top-color:#ff71ce;border-radius:50%;margin-right:12px;
+  animation:spin 0.8s linear infinite;
+}
+
+/* ── Navigation Arrows ── */
+.nav-arrow{
+  position:fixed;top:50%;z-index:100;width:48px;height:48px;
+  display:flex;align-items:center;justify-content:center;
+  background:#ff71ce22;color:#ff71ce;
+  border:1px solid #ff71ce44;border-radius:50%;
+  font-size:1.3rem;text-decoration:none;
+  transition:all 0.3s;backdrop-filter:blur(8px);
+}
+.nav-arrow:hover{
+  background:#ff71ce44;transform:translateY(-50%) scale(1.1);
+  box-shadow:0 0 20px #ff71ce44;
+}
+.nav-prev{left:12px;transform:translateY(-50%);}
+.nav-next{right:12px;transform:translateY(-50%);}
+.page-counter{
+  position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:100;
+  padding:6px 16px;border-radius:20px;font-size:0.75rem;
+  background:#ff71ce18;color:#ff71ce;border:1px solid #ff71ce33;
+  backdrop-filter:blur(8px);letter-spacing:1px;
+}
+
+/* ── Menu Button ── */
+.menu-trigger{
+  position:fixed;top:52px;right:16px;z-index:100;
+  padding:10px 20px;border-radius:12px;border:1px solid #ff71ce44;
+  background:#ff71ce18;color:#ff71ce;
+  font-family:inherit;font-size:0.9rem;cursor:pointer;
+  backdrop-filter:blur(8px);transition:all 0.3s;
+}
+.menu-trigger:hover{background:#ff71ce33;box-shadow:0 0 15px #ff71ce33;}
+.home-link{
+  position:fixed;top:52px;left:60px;z-index:100;
+  padding:10px 16px;border-radius:12px;border:1px solid #ff71ce44;
+  background:#ff71ce18;color:#ff71ce;
+  font-family:inherit;font-size:0.9rem;cursor:pointer;
+  backdrop-filter:blur(8px);transition:all 0.3s;text-decoration:none;
+}
+.home-link:hover{background:#ff71ce33;}
+
+/* ── Other Stuff Popup ── */
+.otherstuff-overlay{
+  display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.6);z-index:9000;backdrop-filter:blur(4px);
+}
+.otherstuff-overlay.open{display:block;}
+.otherstuff-popup{
+  display:none;position:fixed;top:0;right:0;width:min(420px,90vw);height:100%;
+  background:rgba(15,15,25,0.97);z-index:9001;overflow-y:auto;
+  box-shadow:-4px 0 30px rgba(0,0,0,0.3);
+  transform:translateX(100%);transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);
+}
+.otherstuff-popup.open{display:block;transform:translateX(0);}
+.otherstuff-popup-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:20px;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;
+  background:rgba(15,15,25,0.97);z-index:1;
+}
+.otherstuff-popup-header h3{font-size:1.2rem;color:#e0e0e0;}
+.otherstuff-header-left{display:flex;align-items:center;gap:12px;}
+.otherstuff-back-btn{
+  padding:4px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);
+  background:transparent;color:#e0e0e0;font-size:0.8rem;cursor:pointer;
+}
+.otherstuff-popup-close{
+  width:32px;height:32px;border-radius:50%;border:none;
+  background:rgba(255,255,255,0.08);color:#e0e0e0;font-size:1.3rem;cursor:pointer;
+}
+.otherstuff-list{padding:12px;}
+.otherstuff-item{
+  display:flex;align-items:center;gap:12px;padding:12px;
+  border-radius:10px;text-decoration:none;color:#e0e0e0;
+  transition:background 0.2s;
+}
+.otherstuff-item:hover{background:rgba(255,255,255,0.06);}
+.os-icon{
+  width:40px;height:40px;border-radius:10px;display:flex;
+  align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;
+}
+.os-text{flex:1;min-width:0;}
+.os-title{font-size:0.9rem;font-weight:600;color:#e0e0e0;}
+.os-desc{font-size:0.75rem;color:#e0e0e088;margin-top:2px;}
+.os-arrow{color:#e0e0e044;font-size:1.2rem;}
+.otherstuff-divider{height:1px;background:rgba(255,255,255,0.08);margin:8px 12px;}
+.os-section-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 12px;cursor:pointer;color:#e0e0e0;font-weight:600;font-size:0.85rem;
+}
+.os-section-header:hover{background:rgba(255,255,255,0.06);border-radius:8px;}
+.os-section-chevron{transition:transform 0.3s;}
+.os-section-header.collapsed .os-section-chevron{transform:rotate(90deg);}
+.os-section-body{display:block;}
+.os-section-body[style*="display:none"],.os-section-body.collapsed{display:none;}
+.otherstuff-popup-footer{
+  position:sticky;bottom:0;padding:12px 20px;
+  background:rgba(15,15,25,0.97);border-top:1px solid rgba(255,255,255,0.08);
+}
+.otherstuff-footer-back{
+  width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);
+  background:transparent;color:#e0e0e0;font-size:0.9rem;cursor:pointer;
+}
+.weather-highlight .os-title{color:#00d4ff;font-weight:700;}
+
+/* ── Footer ── */
+.site-footer{
+  position:relative;z-index:2;text-align:center;padding:40px 20px;
+  color:#fffb9644;font-size:0.75rem;
+}
+.site-footer a{color:#ff71ce;text-decoration:none;}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .events-grid{grid-template-columns:1fr;padding:12px;}
+  .header{padding:40px 16px 20px;}
+  .nav-arrow{width:36px;height:36px;font-size:1rem;}
+  .nav-prev{left:6px;}
+  .nav-next{right:6px;}
+  .home-link{top:auto;bottom:16px;left:16px;}
+}
+@keyframes fadeInUp{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+body{background:linear-gradient(135deg,#1a0030,#0d0040,#2a004a);}
+
+
+/* ── Submenu (Investment Hub nesting) ── */
+.os-submenu-toggle{display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;cursor:pointer;transition:background 0.2s;}
+.os-submenu-toggle:hover{background:rgba(255,255,255,0.06);}
+.os-submenu-toggle .os-chevron{color:rgba(255,255,255,0.4);font-size:1.2rem;transition:transform 0.3s;margin-left:auto;}
+.os-submenu-toggle.open .os-chevron{transform:rotate(90deg);}
+.os-submenu-panel{display:none;padding:4px 0 4px 12px;border-left:2px solid rgba(255,255,255,0.08);margin-left:20px;}
+.os-submenu-panel.open{display:block;}
+.os-category-toggle{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border-radius:8px;font-size:0.82rem;font-weight:600;color:rgba(255,255,255,0.7);transition:background 0.2s;}
+.os-category-toggle:hover{background:rgba(255,255,255,0.05);}
+.os-cat-icon{font-size:1rem;}
+.os-cat-title{flex:1;}
+.os-cat-chevron{transition:transform 0.3s;color:rgba(255,255,255,0.3);font-size:0.9rem;}
+.os-category-toggle.open .os-cat-chevron{transform:rotate(90deg);}
+.os-category-panel{display:none;padding:2px 0 6px 8px;}
+.os-category-panel.open{display:block;}
+.os-sub-link{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:8px;text-decoration:none;color:rgba(255,255,255,0.7);font-size:0.8rem;transition:background 0.2s,color 0.2s;}
+.os-sub-link:hover{background:rgba(255,255,255,0.06);color:#fff;}
+.os-sub-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.os-sub-text{flex:1;}
+.os-sub-arrow{color:rgba(255,255,255,0.25);font-size:0.85rem;}
+/* ── Theme Preference Badge ── */
+.coming-soon-badge{display:inline-block;padding:2px 8px;border-radius:8px;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;background:rgba(251,191,36,0.2);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);margin-left:6px;vertical-align:middle;}
+
+</style>
+</head>
+<body>
+<div id="sections-nav" style="position:sticky;top:0;z-index:10000;display:flex;gap:4px;padding:8px 12px;background:rgba(10,10,20,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;">
+<style>#sections-nav a{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:20px;font-size:.75rem;font-weight:600;color:rgba(255,255,255,0.7);text-decoration:none;white-space:nowrap;transition:all .2s;border:1px solid rgba(255,255,255,0.06);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}#sections-nav a:hover{background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.15);}@media(max-width:768px){#sections-nav{padding:6px 8px;gap:3px;}#sections-nav a{padding:5px 10px;font-size:.7rem;}}</style>
+<a href="/">&#127968; Home</a>
+<a href="/WINDOWSFIXER/">&#128295; System Issues</a>
+<a href="/MOVIESHOWS/">&#127909; Movies &amp; TV</a>
+<a href="/fc/#/guest">&#11088; Fav Creators</a>
+<a href="/findstocks/">&#128200; Stock Ideas</a>
+<a href="/MENTALHEALTHRESOURCES/">&#129504; Mental Health</a>
+<a href="/vr/">&#129405; VR Experience</a>
+<a href="/vr/game-arena/">&#127918; Game Arena</a>
+<a href="/fc/#/accountability">&#127919; Accountability</a>
+<a href="/updates/">&#128203; Updates</a>
+<a href="/">&#127775; Other Stuff</a>
+<a href="/blog/">&#128240; Blog</a>
+</div>
+
+<!-- cursor-watermark: crafted with precision -->
+<canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+<!-- Navigation Arrows -->
+<a href="blog209.html" class="nav-arrow nav-prev" title="Previous theme: blog209">&#8592;</a>
+<a href="blog211.html" class="nav-arrow nav-next" title="Next theme: blog211">&#8594;</a>
+<div class="page-counter">11 / 50 &mdash; Vaporwave Dream</div>
+
+<!-- Home + Menu -->
+<a href="/index.html" class="home-link" title="Back to main site">&#127968; Home</a>
+<button class="menu-trigger" onclick="openOtherStuffMenu()">&#9776; Explore</button>
+
+<!-- Header -->
+<header class="header">
+<h1>Find Toronto Events</h1>
+<p class="tagline">A E S T H E T I C events</p>
+<span class="theme-label">Theme #210 &mdash; Vaporwave Dream <span class="coming-soon-badge">Save Preference &#8212; Coming Soon</span></span>
+</header>
+
+<!-- Controls -->
+<div class="controls">
+<div class="search-box">
+<input type="text" id="search-input" placeholder="Search events, locations, categories..." autocomplete="off">
+</div>
+<div id="categories"></div>
+</div>
+
+<!-- Loading -->
+<div id="loading">Loading Toronto events...</div>
+
+<!-- Events Grid -->
+<div class="events-grid" id="events-grid"></div>
+
+<!-- Footer -->
+<footer class="site-footer">
+<p>&copy; 2026 <a href="/">Find Toronto Events</a> &mdash; Theme: Vaporwave Dream</p>
+<p><!-- cursor --> <a href="blog209.html">&larr; Prev</a> | <a href="blog211.html">Next &rarr;</a></p>
+</footer>
+
+<!-- Other Stuff Menu -->
+<div id="otherstuff-overlay" class="otherstuff-overlay"></div>
+<div id="otherstuff-popup" class="otherstuff-popup">
+<div class="otherstuff-popup-header">
+<div class="otherstuff-header-left">
+<h3>&#9748;&#65039; Explore</h3>
+<button class="otherstuff-back-btn" data-action="back-to-events">&#8592; Events</button>
+</div>
+<button class="otherstuff-popup-close" data-action="close-otherstuff">&times;</button>
+</div>
+<div class="otherstuff-list">
+<a href="/weather/" class="otherstuff-item weather-highlight">
+<div class="os-icon" style="background:linear-gradient(135deg,rgba(0,212,255,0.25),rgba(99,102,241,0.2));">&#9748;&#65039;</div>
+<div class="os-text"><div class="os-title">Toronto Weather</div>
+<div class="os-desc">Real-time conditions, wind chill, humidex &amp; what to wear</div></div>
+<span class="os-arrow">&#8250;</span></a>
+<a href="/affiliates/" class="otherstuff-item" target="_blank">
+<div class="os-icon" style="background:rgba(251,191,36,0.15);">&#128279;</div>
+<div class="os-text"><div class="os-title" style="color:#fbbf24;">Recommended Gear &amp; Links</div>
+<div class="os-desc">Products we personally use, trust &amp; stand behind</div></div>
+<span class="os-arrow">&#8250;</span></a>
+<a href="/updates/" class="otherstuff-item" target="_blank">
+<div class="os-icon" style="background:rgba(16,185,129,0.15);">&#128203;</div>
+<div class="os-text"><div class="os-title" style="color:#34d399;">Latest Updates</div>
+<div class="os-desc">New features, improvements &amp; bug fixes</div></div>
+<span class="os-arrow">&#8250;</span></a>
+<a href="/news/" class="otherstuff-item" target="_blank">
+<div class="os-icon" style="background:rgba(239,68,68,0.15);">&#128240;</div>
+<div class="os-text"><div class="os-title" style="color:#f87171;">News Aggregator</div>
+<div class="os-desc">Toronto, Canada &amp; world news from 20+ sources</div></div>
+<span class="os-arrow">&#8250;</span></a>
+<a href="/deals/" class="otherstuff-item" target="_blank">
+<div class="os-icon" style="background:rgba(251,191,36,0.15);">&#128184;</div>
+<div class="os-text"><div class="os-title" style="color:#fbbf24;">Deals &amp; Freebies</div>
+<div class="os-desc">78 birthday freebies, free stuff today, Canadian deals &amp; coupons</div></div>
+<span class="os-arrow">&#8250;</span></a>
+<div class="otherstuff-divider"></div>
+<div class="os-section-header" data-section="apps-tools"><span class="os-section-title">Apps &amp; Tools</span><span class="os-section-chevron">&#8250;</span></div>
+<div class="os-section-body" data-sectionbody="apps-tools">
+<div class="os-submenu-toggle" data-submenu="investment-hub">
+<div class="os-icon" style="background:rgba(34,197,94,0.15);">&#128200;</div>
+<div class="os-text"><div class="os-title">Investment Hub</div>
+<div class="os-desc">All portfolios, analytics &amp; tools in one place</div></div>
+<span class="os-chevron">&#8250;</span></div>
+<div class="os-submenu-panel" data-panel="investment-hub">
+<a href="/investments/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#6366f1;"></span><span class="os-sub-text">Investment Tools &mdash; Overview</span><span class="os-sub-arrow">&#8250;</span></a>
+<div class="os-category-toggle" data-category="stocks"><span class="os-cat-icon">&#128200;</span><span class="os-cat-title">Stocks</span><span class="os-cat-chevron">&#8250;</span></div>
+<div class="os-category-panel" data-catpanel="stocks">
+<a href="/findstocks/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#f59e0b;"></span><span class="os-sub-text">Stock Ideas &mdash; AI picks, updated daily</span><span class="os-sub-arrow">&#8250;</span></a>
+<a href="/findstocks/portfolio2/dashboard.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#6366f1;"></span><span class="os-sub-text">Portfolio Dashboard</span><span class="os-sub-arrow">&#8250;</span></a>
+<a href="/findstocks/portfolio2/picks.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#6366f1;"></span><span class="os-sub-text">Quick Picks</span><span class="os-sub-arrow">&#8250;</span></a>
+<a href="/findstocks/portfolio2/horizon-picks.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#6366f1;"></span><span class="os-sub-text">Horizon Picks</span><span class="os-sub-arrow">&#8250;</span></a>
+<a href="/findstocks/portfolio2/dividends.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#22c55e;"></span><span class="os-sub-text">Dividends &amp; Earnings</span><span class="os-sub-arrow">&#8250;</span></a>
+<a href="/findstocks/portfolio2/stats/index.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#6366f1;"></span><span class="os-sub-text">Portfolio Stats</span><span class="os-sub-arrow">&#8250;</span></a>
+<a href="/findstocks/portfolio2/smart-learning.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#a78bfa;"></span><span class="os-sub-text">Smart Learning</span><span class="os-sub-arrow">&#8250;</span></a>
+<a href="/findstocks/portfolio2/stock-intel.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#a78bfa;"></span><span class="os-sub-text">Stock Intel</span><span class="os-sub-arrow">&#8250;</span></a>
+<a href="/findstocks/portfolio2/daytrader-sim.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#f43f5e;"></span><span class="os-sub-text">Day Trader Sim</span><span class="os-sub-arrow">&#8250;</span></a>
+<a href="/findstocks/portfolio2/penny-stocks.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#84cc16;"></span><span class="os-sub-text">Penny Stock Finder</span><span class="os-sub-arrow">&#8250;</span></a>
+<a href="/findstocks_global/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#22c55e;"></span><span class="os-sub-text">Global Stocks Hub</span><span class="os-sub-arrow">&#8250;</span></a>
+</div>
+<div class="os-category-toggle" data-category="mutualfunds"><span class="os-cat-icon">&#128202;</span><span class="os-cat-title">Mutual Funds</span><span class="os-cat-chevron">&#8250;</span></div>
+<div class="os-category-panel" data-catpanel="mutualfunds">
+<a href="/findmutualfunds/portfolio1/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#6366f1;"></span><span class="os-sub-text">Fund Portfolio</span><span class="os-sub-arrow">&#8250;</span></a>
+<a href="/findmutualfunds/portfolio1/stats.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#6366f1;"></span><span class="os-sub-text">Fund Stats</span><span class="os-sub-arrow">&#8250;</span></a>
+<a href="/findmutualfunds2/portfolio2/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#22c55e;"></span><span class="os-sub-text">Portfolio v2</span><span class="os-sub-arrow">&#8250;</span></a>
+</div>
+<div class="os-category-toggle" data-category="crypto"><span class="os-cat-icon">&#129689;</span><span class="os-cat-title">Crypto</span><span class="os-cat-chevron">&#8250;</span></div>
+<div class="os-category-panel" data-catpanel="crypto">
+<a href="/findcryptopairs/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#f59e0b;"></span><span class="os-sub-text">Crypto Pairs Scanner</span><span class="os-sub-arrow">&#8250;</span></a>
+<a href="/findcryptopairs/portfolio/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#f59e0b;"></span><span class="os-sub-text">Crypto Portfolio</span><span class="os-sub-arrow">&#8250;</span></a>
+<a href="/findcryptopairs/meme.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#d946ef;"></span><span class="os-sub-text">Meme Coin Scanner</span><span class="os-sub-arrow">&#8250;</span></a>
+</div>
+<div class="os-category-toggle" data-category="forex"><span class="os-cat-icon">&#128177;</span><span class="os-cat-title">Forex</span><span class="os-cat-chevron">&#8250;</span></div>
+<div class="os-category-panel" data-catpanel="forex">
+<a href="/findforex2/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#06b6d4;"></span><span class="os-sub-text">Forex Scanner</span><span class="os-sub-arrow">&#8250;</span></a>
+<a href="/findforex2/portfolio/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#06b6d4;"></span><span class="os-sub-text">Forex Portfolio</span><span class="os-sub-arrow">&#8250;</span></a>
+</div>
+<div class="os-category-toggle" data-category="goldmines"><span class="os-cat-icon">&#9935;&#65039;</span><span class="os-cat-title">Goldmines</span><span class="os-cat-chevron">&#8250;</span></div>
+<div class="os-category-panel" data-catpanel="goldmines">
+<a href="/investments/goldmines/antigravity/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#22c55e;"></span><span class="os-sub-text">Antigravity Goldmine</span><span class="os-sub-arrow">&#8250;</span></a>
+<a href="/goldmine_cursor/" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#f59e0b;"></span><span class="os-sub-text">Cursor Goldmine</span><span class="os-sub-arrow">&#8250;</span></a>
+<a href="/live-monitor/goldmine-dashboard.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#6366f1;"></span><span class="os-sub-text">Claude Goldmine</span><span class="os-sub-arrow">&#8250;</span></a>
+<a href="/live-monitor/multi-dimensional.html" class="os-sub-link" target="_blank"><span class="os-sub-dot" style="background:#818cf8;"></span><span class="os-sub-text">Multi-Dimensional (6D)</span><span class="os-sub-arrow">&#8250;</span></a>
+</div>
+</div>
+<a href="/live-monitor/sports-betting.html" class="otherstuff-item" target="_blank">
+<div class="os-icon" style="background:rgba(34,197,94,0.15);">&#9917;</div>
+<div class="os-text"><div class="os-title" style="color:#4ade80;">Sports Bet Finder</div>
+<div class="os-desc">NHL, NBA, NFL &amp; more &mdash; value bets, odds comparison &amp; paper trading</div></div>
+<span class="os-arrow">&#8250;</span></a>
+<a href="/MENTALHEALTHRESOURCES/" class="otherstuff-item" target="_blank">
+<div class="os-icon" style="background:rgba(16,185,129,0.15);">&#129504;</div>
+<div class="os-text"><div class="os-title">Mental Health</div>
+<div class="os-desc">Wellness games, crisis support &amp; tools</div></div>
+<span class="os-arrow">&#8250;</span></a>
+<a href="/fc/#/guest" class="otherstuff-item" target="_blank">
+<div class="os-icon" style="background:rgba(236,72,153,0.15);">&#128142;</div>
+<div class="os-text"><div class="os-title">Fav Creators</div>
+<div class="os-desc">Track streamers across Twitch, YouTube, Kick &amp; TikTok</div></div>
+<span class="os-arrow">&#8250;</span></a>
+<a href="/WINDOWSFIXER/" class="otherstuff-item" target="_blank">
+<div class="os-icon" style="background:rgba(102,126,234,0.15);">&#128736;&#65039;</div>
+<div class="os-text"><div class="os-title">Windows Boot Fixer</div>
+<div class="os-desc">Fix BSOD, bootloader &amp; recovery issues</div></div>
+<span class="os-arrow">&#8250;</span></a>
+</div>
+<div class="otherstuff-divider"></div>
+<div class="os-section-header" data-section="movies-tv"><span class="os-section-title">Movies &amp; TV &amp; Trailers</span><span class="os-section-chevron">&#8250;</span></div>
+<div class="os-section-body" data-sectionbody="movies-tv">
+<a href="/MOVIESHOWS/" class="otherstuff-item" target="_blank">
+<div class="os-icon" style="background:rgba(245,158,11,0.15);">&#127916;</div>
+<div class="os-text"><div class="os-title">Now Showing</div>
+<div class="os-desc">Toronto Cineplex &amp; Imagine showtimes</div></div>
+<span class="os-arrow">&#8250;</span></a>
+<a href="/movieshows2/" class="otherstuff-item" target="_blank">
+<div class="os-icon" style="background:rgba(251,146,60,0.15);">&#127902;&#65039;</div>
+<div class="os-text"><div class="os-title" style="color:#fbbf24;">The Film Vault</div>
+<div class="os-desc">4,000+ titles — genre filters &amp; playlists</div></div>
+<span class="os-arrow">&#8250;</span></a>
+<a href="/MOVIESHOWS3/" class="otherstuff-item" target="_blank">
+<div class="os-icon" style="background:rgba(249,115,22,0.15);">&#127871;</div>
+<div class="os-text"><div class="os-title" style="color:#fb923c;">Binge Mode</div>
+<div class="os-desc">Accounts, likes, watchlist &amp; auto-scroll</div></div>
+<span class="os-arrow">&#8250;</span></a>
+</div>
+<div class="otherstuff-divider"></div>
+<div class="os-section-header" data-section="immersive"><span class="os-section-title">Immersive</span><span class="os-section-chevron">&#8250;</span></div>
+<div class="os-section-body" data-sectionbody="immersive">
+<a href="/vr/" class="otherstuff-item" target="_blank">
+<div class="os-icon" style="background:rgba(168,85,247,0.15);">&#129405;</div>
+<div class="os-text"><div class="os-title">VR Hub</div>
+<div class="os-desc">Desktop &amp; Quest 3 virtual experience</div></div>
+<span class="os-arrow">&#8250;</span></a>
+<a href="/vr/game-arena/" class="otherstuff-item" target="_blank">
+<div class="os-icon" style="background:rgba(168,85,247,0.15);">&#127918;</div>
+<div class="os-text"><div class="os-title">Game Arena</div>
+<div class="os-desc">Tic-Tac-Toe, Soccer, FPS, Fighting &amp; more</div></div>
+<span class="os-arrow">&#8250;</span></a>
+<a href="/FIGHTGAME/" class="otherstuff-item" target="_blank">
+<div class="os-icon" style="background:rgba(231,76,60,0.15);">&#9876;&#65039;</div>
+<div class="os-text"><div class="os-title">Shadow Arena</div>
+<div class="os-desc">6 fighters, weapons, AI &amp; PvP</div></div>
+<span class="os-arrow">&#8250;</span></a>
+</div>
+<div class="otherstuff-divider"></div>
+<div class="os-section-header expanded" data-section="drafts"><span class="os-section-title">Drafts</span><span class="os-section-chevron">&#8250;</span></div>
+<div class="os-section-body" data-sectionbody="drafts" style="display:block;">
+<a href="/fc/taste-profile/" class="otherstuff-item" target="_blank">
+<div class="os-icon" style="background:rgba(139,92,246,0.15);">&#127925;</div>
+<div class="os-text"><div class="os-title" style="color:#a78bfa;">Taste Profile</div>
+<div class="os-desc">Discover favourites across YouTube, Spotify &amp; Instagram</div></div>
+<span class="os-arrow">&#8250;</span></a>
+<a href="/fc/#/accountability" class="otherstuff-item" target="_blank">
+<div class="os-icon" style="background:rgba(245,158,11,0.12);">&#127919;</div>
+<div class="os-text"><div class="os-title" style="color:#94a3b8;">Accountability</div>
+<div class="os-desc">Track goals &amp; stay on course</div></div>
+<span class="os-arrow">&#8250;</span></a>
+<a href="/gotjob/" class="otherstuff-item" target="_blank">
+<div class="os-icon" style="background:rgba(6,182,212,0.12);">&#128188;</div>
+<div class="os-text"><div class="os-title" style="color:#94a3b8;">GotJob</div>
+<div class="os-desc">Toronto tech jobs hub</div></div>
+<span class="os-arrow">&#8250;</span></a>
+</div>
+</div>
+<div class="otherstuff-popup-footer">
+<button class="otherstuff-footer-back" data-action="back-to-events">&#8592; Back to Events</button>
+</div>
+</div>
+
+<script>
+
+/* ── Event Fetching ── */
+var EVENT_SOURCES=["/next/events.json","/events.json","/data/events.json",
+"https://raw.githubusercontent.com/eltonaguiar/findtorontoevents.ca/main/next/events.json"];
+var allEvents=[];var activeCategory='all';var searchTerm='';
+
+function fetchEvents(){
+  var loading=document.getElementById('loading');
+  if(loading)loading.style.display='flex';
+  trySource(0);
+}
+
+function trySource(idx){
+  if(idx>=EVENT_SOURCES.length){
+    document.getElementById('loading').innerHTML='<p>Could not load events. <button onclick="fetchEvents()">Retry</button></p>';
+    return;
+  }
+  fetch(EVENT_SOURCES[idx]).then(function(r){
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return r.json();
+  }).then(function(data){
+    allEvents=data.events||data||[];
+    console.log('[BlogTheme] Loaded '+allEvents.length+' events from '+EVENT_SOURCES[idx]);
+    buildCategories();
+    renderEvents();
+    var loading=document.getElementById('loading');
+    if(loading)loading.style.display='none';
+  }).catch(function(e){
+    console.warn('[BlogTheme] Source failed: '+EVENT_SOURCES[idx]+' ('+e.message+')');
+    trySource(idx+1);
+  });
+}
+
+/* ── Categories ── */
+function buildCategories(){
+  var cats={};
+  allEvents.forEach(function(ev){
+    var c=ev.category||ev.type||'Other';
+    cats[c]=(cats[c]||0)+1;
+  });
+  var container=document.getElementById('categories');
+  if(!container)return;
+  var html='<button class="cat-pill active" data-cat="all">All ('+allEvents.length+')</button>';
+  var sorted=Object.keys(cats).sort(function(a,b){return cats[b]-cats[a];});
+  sorted.slice(0,12).forEach(function(cat){
+    html+='<button class="cat-pill" data-cat="'+cat+'">'+cat+' ('+cats[cat]+')</button>';
+  });
+  container.innerHTML=html;
+  container.querySelectorAll('.cat-pill').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      container.querySelectorAll('.cat-pill').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      activeCategory=btn.getAttribute('data-cat');
+      renderEvents();
+    });
+  });
+}
+
+/* ── Search ── */
+function initSearch(){
+  var input=document.getElementById('search-input');
+  if(!input)return;
+  var timer;
+  input.addEventListener('input',function(){
+    clearTimeout(timer);
+    timer=setTimeout(function(){
+      searchTerm=input.value.toLowerCase().trim();
+      renderEvents();
+    },250);
+  });
+}
+
+/* ── Render ── */
+function renderEvents(){
+  var grid=document.getElementById('events-grid');
+  if(!grid)return;
+  var filtered=allEvents.filter(function(ev){
+    if(activeCategory!=='all'){
+      var c=ev.category||ev.type||'Other';
+      if(c!==activeCategory)return false;
+    }
+    if(searchTerm){
+      var hay=((ev.title||'')+(ev.description||'')+(ev.location||'')).toLowerCase();
+      if(hay.indexOf(searchTerm)===-1)return false;
+    }
+    return true;
+  });
+  if(filtered.length===0){
+    grid.innerHTML='<div class="no-events"><p>No events found.</p><button onclick="activeCategory=\'all\';searchTerm=\'\';document.getElementById(\'search-input\').value=\'\';renderEvents();buildCategories();">Show All</button></div>';
+    return;
+  }
+  var html='';
+  filtered.slice(0,60).forEach(function(ev,i){
+    var title=ev.title||'Untitled Event';
+    var date=ev.date||ev.start_date||'';
+    var loc=ev.location||ev.venue||'Toronto';
+    var desc=(ev.description||ev.summary||'').substring(0,120);
+    var cat=ev.category||ev.type||'Event';
+    var url=ev.url||ev.link||'#';
+    var img=ev.image||ev.thumbnail||'';
+    html+='<div class="card" style="animation-delay:'+(i*0.05)+'s">';
+    if(img)html+='<div class="card-img"><img src="'+img+'" alt="'+title.replace(/"/g,'&quot;')+'" loading="lazy" onerror="this.parentElement.style.display=\'none\'"></div>';
+    html+='<div class="card-body">';
+    html+='<span class="card-cat">'+cat+'</span>';
+    html+='<h3 class="card-title">'+title+'</h3>';
+    if(date)html+='<p class="card-date">'+formatDate(date)+'</p>';
+    if(loc)html+='<p class="card-loc">&#128205; '+loc+'</p>';
+    if(desc)html+='<p class="card-desc">'+desc+'</p>';
+    html+='<a href="'+url+'" target="_blank" rel="noopener" class="card-link">View Event &#8594;</a>';
+    html+='</div></div>';
+  });
+  grid.innerHTML=html;
+  /* Animate cards in */
+  grid.querySelectorAll('.card').forEach(function(card,i){
+    card.style.opacity='0';card.style.transform='translateY(20px)';
+    setTimeout(function(){card.style.transition='opacity 0.4s ease,transform 0.4s ease';card.style.opacity='1';card.style.transform='translateY(0)';},i*50);
+  });
+}
+
+function formatDate(d){
+  try{var dt=new Date(d);if(isNaN(dt))return d;
+  return dt.toLocaleDateString('en-CA',{weekday:'short',month:'short',day:'numeric',year:'numeric'});}
+  catch(e){return d;}
+}
+
+/* ── Other Stuff Menu ── */
+function openOtherStuffMenu(){
+  document.getElementById('otherstuff-overlay').classList.add('open');
+  document.getElementById('otherstuff-popup').classList.add('open');
+}
+function closeOtherStuffMenu(){
+  document.getElementById('otherstuff-overlay').classList.remove('open');
+  document.getElementById('otherstuff-popup').classList.remove('open');
+}
+document.addEventListener('click',function(e){
+  var t=e.target;
+  if(t.closest&&t.closest('[data-action="close-otherstuff"]')){closeOtherStuffMenu();return;}
+  if(t.closest&&t.closest('[data-action="back-to-events"]')){closeOtherStuffMenu();window.scrollTo({top:0,behavior:'smooth'});return;}
+  if(t.id==='otherstuff-overlay'){closeOtherStuffMenu();return;}
+  var sec=t.closest&&t.closest('.os-section-header');
+  if(sec){e.preventDefault();e.stopPropagation();
+    var k=sec.getAttribute('data-section');
+    var body=document.querySelector('[data-sectionbody="'+k+'"]');
+    if(body){var hidden=body.style.display==='none';body.style.display=hidden?'block':'none';
+    sec.classList.toggle('collapsed',!hidden);}return;}
+});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeOtherStuffMenu();});
+
+/* ── Init ── */
+document.addEventListener('DOMContentLoaded',function(){
+  fetchEvents();
+  initSearch();
+});
+
+</script>
+<script>
+/* Canvas Animation: Vaporwave Dream */
+(function(){var c=document.getElementById('bg-canvas');if(!c)return;var ctx=c.getContext('2d');function resize(){c.width=window.innerWidth;c.height=window.innerHeight;}resize();window.addEventListener('resize',resize);
+var t=0;function draw(){ctx.clearRect(0,0,c.width,c.height);
+var cx=c.width/2,horizon=c.height*0.45,gridSize=40;
+ctx.strokeStyle='#ff71ce';ctx.lineWidth=1;
+for(var z=1;z<30;z++){var depth=z*gridSize-((t*60)%gridSize);var scale=200/(depth+100);
+var y=horizon+depth*scale;if(y>c.height)continue;
+ctx.globalAlpha=Math.max(0,0.4*(1-z/30));ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.width,y);ctx.stroke();}
+for(var x=-15;x<=15;x++){ctx.beginPath();
+ctx.moveTo(cx+x*gridSize*3,horizon);
+ctx.lineTo(cx+x*200,c.height);ctx.globalAlpha=0.2;ctx.strokeStyle='#01cdfe';ctx.stroke();}
+var sunR=50+Math.sin(t*0.5)*5;var grd=ctx.createRadialGradient(cx,horizon,0,cx,horizon,sunR*2);
+grd.addColorStop(0,'#01cdfe');grd.addColorStop(1,'transparent');ctx.globalAlpha=0.6;ctx.fillStyle=grd;
+ctx.fillRect(cx-sunR*2,horizon-sunR*2,sunR*4,sunR*4);
+ctx.globalAlpha=1;t+=0.016;requestAnimationFrame(draw);}draw();
+}());
+</script>
+
+<!-- Blog Floating Icons: AI Bot, Sign In, Gear -->
+<div id="blog-float-icons" style="position:fixed;bottom:20px;right:20px;z-index:998;display:flex;flex-direction:column;gap:10px;align-items:flex-end;">
+<a href="/" id="blog-ai-btn" title="AI Chat Assistant" style="width:48px;height:48px;border-radius:50%;background:rgba(0,212,255,0.12);backdrop-filter:blur(12px);border:1.5px solid rgba(0,212,255,0.25);color:#00d4ff;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all 0.3s;box-shadow:0 4px 15px rgba(0,212,255,0.15);"><svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7v1a2 2 0 01-2 2h-1v1a2 2 0 01-2 2H8a2 2 0 01-2-2v-1H5a2 2 0 01-2-2v-1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><circle cx="9" cy="13" r="1.25" fill="currentColor" stroke="none"></circle><circle cx="15" cy="13" r="1.25" fill="currentColor" stroke="none"></circle><path d="M10 17h4" stroke-linecap="round" stroke-width="1.5"></path></svg></a>
+<a href="/fc/#/guest" id="blog-signin-btn" title="Sign In" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:22px;background:rgba(15,10,40,0.9);backdrop-filter:blur(12px);border:1.5px solid rgba(59,130,246,0.3);color:#93c5fd;font-size:0.75rem;font-weight:700;letter-spacing:1.2px;text-decoration:none;transition:all 0.3s;font-family:-apple-system,BlinkMacSystemFont,sans-serif;white-space:nowrap;">&#128274; SIGN IN</a>
+<button id="blog-gear-btn" title="Settings &amp; Navigation" onclick="if(typeof openOtherStuffMenu==='function'){openOtherStuffMenu();}else{var m=document.getElementById('mega-menu');if(m){m.classList.toggle('open');}else{window.location.href='/';}}" style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.06);backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);cursor:pointer;transition:all 0.3s;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(0,0,0,0.25);"><svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+</div>
+<style>
+@keyframes blogSignInGlow{0%,100%{box-shadow:0 0 8px rgba(59,130,246,0.4),0 0 16px rgba(59,130,246,0.2);}50%{box-shadow:0 0 16px rgba(59,130,246,0.6),0 0 32px rgba(59,130,246,0.3);}}
+#blog-float-icons #blog-signin-btn{animation:blogSignInGlow 2.5s ease-in-out infinite;}
+#blog-float-icons #blog-ai-btn:hover{background:rgba(0,212,255,0.25);border-color:rgba(0,212,255,0.5);transform:scale(1.1);box-shadow:0 6px 25px rgba(0,212,255,0.35);}
+#blog-float-icons #blog-signin-btn:hover{background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.5);color:#fff;transform:scale(1.05);}
+#blog-float-icons #blog-gear-btn:hover{background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.25);transform:scale(1.1);box-shadow:0 6px 25px rgba(255,255,255,0.12);}
+</style>
+</body>
+</html>
