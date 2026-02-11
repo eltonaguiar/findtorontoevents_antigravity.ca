@@ -227,6 +227,107 @@ elseif ($action === 'update_outcome') {
     } else {
         echo json_encode(['ok' => false, 'error' => $conn->error]);
     }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PHASE 4: ADVANCED ANALYTICS ENDPOINTS
+// ═══════════════════════════════════════════════════════════════
+
+// ACTION: risk_dashboard - Comprehensive risk metrics
+elseif ($action === 'risk_dashboard') {
+    $result = $conn->query("SELECT * FROM v_risk_dashboard ORDER BY sharpe_ratio DESC LIMIT 50");
+
+    $dashboard = [];
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $dashboard[] = $row;
+        }
+    }
+
+    echo json_encode([
+        'ok' => true,
+        'risk_dashboard' => $dashboard,
+        'count' => count($dashboard)
+    ]);
+}
+
+// ACTION: drawdown - Drawdown analysis
+elseif ($action === 'drawdown') {
+    $by = isset($_GET['by']) ? $_GET['by'] : 'system';
+
+    if ($by === 'algorithm') {
+        $result = $conn->query("SELECT * FROM v_max_drawdown_by_algorithm ORDER BY max_drawdown_pct ASC LIMIT 50");
+    } else {
+        $result = $conn->query("SELECT * FROM v_max_drawdown_by_system ORDER BY max_drawdown_pct ASC");
+    }
+
+    $drawdowns = [];
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $drawdowns[] = $row;
+        }
+    }
+
+    echo json_encode([
+        'ok' => true,
+        'drawdowns' => $drawdowns,
+        'by' => $by,
+        'count' => count($drawdowns)
+    ]);
+}
+
+// ACTION: correlation - Cross-system correlation matrix
+elseif ($action === 'correlation') {
+    $result = $conn->query("SELECT * FROM v_system_correlation ORDER BY correlation DESC");
+
+    $correlations = [];
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $correlations[] = $row;
+        }
+    }
+
+    echo json_encode([
+        'ok' => true,
+        'correlations' => $correlations,
+        'count' => count($correlations)
+    ]);
+}
+
+// ACTION: backtest_vs_live - Performance comparison
+elseif ($action === 'backtest_vs_live') {
+    $result = $conn->query("SELECT * FROM v_backtest_vs_live ORDER BY performance_degradation_pct DESC LIMIT 50");
+
+    $comparisons = [];
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $comparisons[] = $row;
+        }
+    }
+
+    echo json_encode([
+        'ok' => true,
+        'comparisons' => $comparisons,
+        'count' => count($comparisons)
+    ]);
+}
+
+// ACTION: streaks - Win/loss streak analysis
+elseif ($action === 'streaks') {
+    $result = $conn->query("SELECT * FROM v_win_loss_streaks ORDER BY max_win_streak DESC LIMIT 50");
+
+    $streaks = [];
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $streaks[] = $row;
+        }
+    }
+
+    echo json_encode([
+        'ok' => true,
+        'streaks' => $streaks,
+        'count' => count($streaks)
+    ]);
 } else {
     echo json_encode(['ok' => false, 'error' => 'Unknown action']);
 }

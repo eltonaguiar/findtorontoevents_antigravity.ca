@@ -20,9 +20,27 @@ if ($key !== 'goldmine2026') {
 }
 
 $source_filter = isset($_GET['source']) ? trim($_GET['source']) : 'all';
+$debug = isset($_GET['debug']) ? true : false;
 $results = array();
 $total_new = 0;
 $total_resolved = 0;
+$debug_info = array();
+
+// Debug: check what tables exist
+if ($debug) {
+    $r = $conn->query("SHOW TABLES");
+    $tables = array();
+    if ($r) { while ($row = $r->fetch_row()) { $tables[] = $row[0]; } }
+    $debug_info['all_tables'] = $tables;
+
+    $r2 = $conn->query("SELECT COUNT(*) as cnt, MAX(pick_date) as latest, MIN(pick_date) as earliest FROM stock_picks");
+    if ($r2 && $row = $r2->fetch_assoc()) { $debug_info['stock_picks_stats'] = $row; }
+    else { $debug_info['stock_picks_stats'] = 'query failed: ' . $conn->error; }
+
+    $r3 = $conn->query("SELECT COUNT(*) as cnt, MAX(pick_date) as latest FROM stock_picks WHERE pick_date >= DATE_SUB(CURDATE(), INTERVAL 90 DAY) AND entry_price > 0");
+    if ($r3 && $row = $r3->fetch_assoc()) { $debug_info['stock_picks_90d'] = $row; }
+    else { $debug_info['stock_picks_90d_error'] = $conn->error; }
+}
 
 // ─────────────────────────────────────────
 //  Helper: Generate unique prediction ID
@@ -67,11 +85,11 @@ if ($source_filter === 'all' || $source_filter === 'stocks') {
     $resolve_count = 0;
 
     // Pull from stock_picks table
-    $r = $conn->query("SELECT sp.*, s.sector, s.industry
-        FROM stock_picks sp
-        LEFT JOIN stocks s ON sp.ticker = s.ticker
-        WHERE sp.pick_date >= DATE_SUB(NOW(), INTERVAL 90 DAY)
-        ORDER BY sp.pick_date DESC
+    $r = $conn->query("SELECT *
+        FROM stock_picks
+        WHERE pick_date >= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
+        AND entry_price > 0
+        ORDER BY pick_date DESC
         LIMIT 500");
 
     if ($r) {
@@ -322,7 +340,7 @@ if ($source_filter === 'all' || $source_filter === 'forex') {
 
 $conn->close();
 
-echo json_encode(array(
+$out = array(
     'ok' => true,
     'action' => 'harvest',
     'source_filter' => $source_filter,
@@ -330,5 +348,9 @@ echo json_encode(array(
     'total_resolved' => $total_resolved,
     'by_source' => $results,
     'timestamp' => gmdate('Y-m-d H:i:s')
-));
+);
+if ($debug && count($debug_info) > 0) {
+    $out['debug'] = $debug_info;
+}
+echo json_encode($out);
 ?>

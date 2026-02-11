@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Analytics | Antigravity</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #eab308;
+            --blue: #3b82f6;
+            --gold: #f59e0b;
+            --radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #ef4444, #f59e0b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .header .nav {
+            margin-top: 1rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .header .nav a {
+            padding: 0.5rem 1rem;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .header .nav a:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: var(--accent);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+        }
+
+        .card h2 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--gold);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 0.75rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        tr:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .metric {
+            font-weight: 600;
+        }
+
+        .metric.positive {
+            color: var(--green);
+        }
+
+        .metric.negative {
+            color: var(--red);
+        }
+
+        .grade {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .grade-a-plus {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--green);
+        }
+
+        .grade-a {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--blue);
+        }
+
+        .grade-b {
+            background: rgba(234, 179, 8, 0.2);
+            color: var(--yellow);
+        }
+
+        .grade-c {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--gold);
+        }
+
+        .grade-d {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--red);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-dim);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .heatmap {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .heatmap-cell {
+            padding: 1rem;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>📊 Risk Analytics Dashboard</h1>
+        <p>Advanced performance metrics and risk analysis</p>
+        <div class="nav">
+            <a href="index.html">← Master Dashboard</a>
+            <a href="leaderboard.html">Leaderboard</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Risk Dashboard -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <h2>🎯 Comprehensive Risk Dashboard</h2>
+            <div id="risk-loading" class="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 0.5rem;">Loading risk metrics...</p>
+            </div>
+            <div id="risk-content" style="display: none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Algorithm</th>
+                            <th>System</th>
+                            <th>Grade</th>
+                            <th>Sharpe</th>
+                            <th>Sortino</th>
+                            <th>Calmar</th>
+                            <th>Max DD</th>
+                            <th>VaR 95%</th>
+                            <th>Win Streak</th>
+                        </tr>
+                    </thead>
+                    <tbody id="risk-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <!-- Drawdown Analysis -->
+            <div class="card">
+                <h2>📉 Maximum Drawdown by System</h2>
+                <div id="drawdown-loading" class="loading">
+                    <div class="spinner"></div>
+                </div>
+                <div id="drawdown-content" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>System</th>
+                                <th>Max DD %</th>
+                                <th>Worst Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="drawdown-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Correlation Matrix -->
+            <div class="card">
+                <h2>🔗 System Correlation Matrix</h2>
+                <div id="correlation-loading" class="loading">
+                    <div class="spinner"></div>
+                </div>
+                <div id="correlation-content" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>System A</th>
+                                <th>System B</th>
+                                <th>Correlation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="correlation-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <!-- Backtest vs Live -->
+            <div class="card">
+                <h2>🔬 Backtest vs Live Performance</h2>
+                <div id="backtest-loading" class="loading">
+                    <div class="spinner"></div>
+                </div>
+                <div id="backtest-content" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Algorithm</th>
+                                <th>Backtest Sharpe</th>
+                                <th>Live Sharpe</th>
+                                <th>Degradation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="backtest-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Win/Loss Streaks -->
+            <div class="card">
+                <h2>🔥 Win/Loss Streaks</h2>
+                <div id="streaks-loading" class="loading">
+                    <div class="spinner"></div>
+                </div>
+                <div id="streaks-content" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Algorithm</th>
+                                <th>Max Win Streak</th>
+                                <th>Max Loss Streak</th>
+                            </tr>
+                        </thead>
+                        <tbody id="streaks-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/investments/goldmines/antigravity/api/unified_predictions.php';
+
+        // Load risk dashboard
+        async function loadRiskDashboard() {
+            try {
+                const response = await fetch(`${API_BASE}?action=risk_dashboard`);
+                const data = await response.json();
+
+                if (!data.ok) throw new Error(data.error);
+
+                const tbody = document.getElementById('risk-body');
+                tbody.innerHTML = data.risk_dashboard.map(algo => {
+                    const gradeClass = `grade-${algo.risk_grade.toLowerCase().replace('+', '-plus')}`;
+                    return `
+                        <tr>
+                            <td><strong>${algo.algorithm}</strong></td>
+                            <td style="font-size: 0.85rem; color: var(--text-dim);">${algo.system}</td>
+                            <td><span class="grade ${gradeClass}">${algo.risk_grade}</span></td>
+                            <td class="metric positive">${parseFloat(algo.sharpe_ratio || 0).toFixed(2)}</td>
+                            <td class="metric positive">${parseFloat(algo.sortino_ratio || 0).toFixed(2)}</td>
+                            <td class="metric positive">${parseFloat(algo.calmar_ratio || 0).toFixed(2)}</td>
+                            <td class="metric negative">${parseFloat(algo.max_drawdown_pct || 0).toFixed(2)}%</td>
+                            <td class="metric negative">${parseFloat(algo.var_95_pct || 0).toFixed(2)}%</td>
+                            <td class="metric positive">${algo.max_win_streak || 0}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                document.getElementById('risk-loading').style.display = 'none';
+                document.getElementById('risk-content').style.display = 'block';
+            } catch (error) {
+                document.getElementById('risk-loading').innerHTML = `<p style="color: var(--red);">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Load drawdown
+        async function loadDrawdown() {
+            try {
+                const response = await fetch(`${API_BASE}?action=drawdown&by=system`);
+                const data = await response.json();
+
+                if (!data.ok) throw new Error(data.error);
+
+                const tbody = document.getElementById('drawdown-body');
+                tbody.innerHTML = data.drawdowns.map(dd => `
+                    <tr>
+                        <td><strong>${dd.system}</strong></td>
+                        <td class="metric negative">${parseFloat(dd.max_drawdown_pct).toFixed(2)}%</td>
+                        <td style="font-size: 0.85rem; color: var(--text-dim);">
+                            ${dd.worst_drawdown_date ? new Date(dd.worst_drawdown_date).toLocaleDateString() : 'N/A'}
+                        </td>
+                    </tr>
+                `).join('');
+
+                document.getElementById('drawdown-loading').style.display = 'none';
+                document.getElementById('drawdown-content').style.display = 'block';
+            } catch (error) {
+                document.getElementById('drawdown-loading').innerHTML = `<p style="color: var(--red);">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Load correlation
+        async function loadCorrelation() {
+            try {
+                const response = await fetch(`${API_BASE}?action=correlation`);
+                const data = await response.json();
+
+                if (!data.ok) throw new Error(data.error);
+
+                const tbody = document.getElementById('correlation-body');
+                tbody.innerHTML = data.correlations.map(corr => {
+                    const corrValue = parseFloat(corr.correlation);
+                    const corrClass = corrValue >= 0 ? 'positive' : 'negative';
+                    return `
+                        <tr>
+                            <td>${corr.system_a}</td>
+                            <td>${corr.system_b}</td>
+                            <td class="metric ${corrClass}">${corrValue.toFixed(3)}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                document.getElementById('correlation-loading').style.display = 'none';
+                document.getElementById('correlation-content').style.display = 'block';
+            } catch (error) {
+                document.getElementById('correlation-loading').innerHTML = `<p style="color: var(--red);">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Load backtest vs live
+        async function loadBacktestVsLive() {
+            try {
+                const response = await fetch(`${API_BASE}?action=backtest_vs_live`);
+                const data = await response.json();
+
+                if (!data.ok) throw new Error(data.error);
+
+                const tbody = document.getElementById('backtest-body');
+                tbody.innerHTML = data.comparisons.map(comp => {
+                    const degradation = parseFloat(comp.performance_degradation_pct);
+                    const degradationClass = degradation <= 0 ? 'positive' : 'negative';
+                    return `
+                        <tr>
+                            <td><strong>${comp.algorithm}</strong></td>
+                            <td class="metric">${parseFloat(comp.backtest_sharpe).toFixed(2)}</td>
+                            <td class="metric">${parseFloat(comp.live_sharpe).toFixed(2)}</td>
+                            <td class="metric ${degradationClass}">${degradation.toFixed(1)}%</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                document.getElementById('backtest-loading').style.display = 'none';
+                document.getElementById('backtest-content').style.display = 'block';
+            } catch (error) {
+                document.getElementById('backtest-loading').innerHTML = `<p style="color: var(--red);">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Load streaks
+        async function loadStreaks() {
+            try {
+                const response = await fetch(`${API_BASE}?action=streaks`);
+                const data = await response.json();
+
+                if (!data.ok) throw new Error(data.error);
+
+                const tbody = document.getElementById('streaks-body');
+                tbody.innerHTML = data.streaks.map(streak => `
+                    <tr>
+                        <td><strong>${streak.algorithm}</strong></td>
+                        <td class="metric positive">${streak.max_win_streak}</td>
+                        <td class="metric negative">${streak.max_loss_streak}</td>
+                    </tr>
+                `).join('');
+
+                document.getElementById('streaks-loading').style.display = 'none';
+                document.getElementById('streaks-content').style.display = 'block';
+            } catch (error) {
+                document.getElementById('streaks-loading').innerHTML = `<p style="color: var(--red);">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Load all data
+        loadRiskDashboard();
+        loadDrawdown();
+        loadCorrelation();
+        loadBacktestVsLive();
+        loadStreaks();
+    </script>
+</body>
+
+</html>
