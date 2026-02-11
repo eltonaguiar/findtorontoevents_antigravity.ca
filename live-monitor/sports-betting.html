@@ -217,6 +217,14 @@
         .btn-green { background: var(--green); }
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         th { background: var(--bg-card); color: var(--text-dim); font-weight: 600; text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); font-size: 0.75rem; text-transform: uppercase; }
+        th.sortable { cursor: pointer; user-select: none; white-space: nowrap; transition: color 0.2s; }
+        th.sortable:hover { color: var(--accent); }
+        th.sortable .sort-arrow { margin-left: 0.3rem; font-size: 0.65rem; opacity: 0.3; }
+        th.sortable.sort-asc .sort-arrow, th.sortable.sort-desc .sort-arrow { opacity: 1; color: var(--accent); }
+        th .th-tip { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; background: var(--border); color: var(--text-dim); font-size: 0.55rem; font-weight: 700; cursor: help; margin-left: 0.3rem; vertical-align: middle; position: relative; }
+        th .th-tip:hover { background: var(--accent); color: #fff; }
+        th .th-tip-text { display: none; position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%); width: 200px; padding: 0.5rem 0.6rem; background: #1e1e3f; border: 1px solid var(--accent); border-radius: 6px; font-size: 0.7rem; color: var(--text); line-height: 1.4; z-index: 100; text-transform: none; font-weight: 400; box-shadow: 0 4px 16px rgba(0,0,0,0.5); white-space: normal; }
+        th .th-tip:hover .th-tip-text { display: block; }
         td { padding: 0.5rem 0.8rem; border-bottom: 1px solid rgba(42, 42, 74, 0.5); }
         tr:hover td { background: var(--bg-card-hover); }
         .text-green { color: var(--green); }
@@ -650,7 +658,63 @@ function fetchOdds() {
     });
 }
 
+// ── Sorting infrastructure ──
+var _betsData = []; var _betsType = 'active';
+var _dayPicksData = []; var _dayPicksDate = '';
+var _sortStates = {}; // keyed by table id
+
+function _getSortVal(row, key) {
+    if (key === 'game_date') return row.game_date || (row.commence_time || '').substr(0, 10) || '';
+    if (key === 'odds') return parseFloat(row.odds || row.best_odds || 0);
+    if (key === 'ev_pct') return parseFloat(row.ev_pct || 0);
+    if (key === 'bet_amount') return parseFloat(row.bet_amount || 0);
+    if (key === 'pnl') return parseFloat(row.pnl || 0);
+    if (key === 'sport') return (row.sport_short || row.sport || '').toLowerCase();
+    if (key === 'event') return ((row.away_team||'') + ' @ ' + (row.home_team||'')).toLowerCase();
+    if (key === 'pick') return (row.pick || row.outcome_name || '').toLowerCase();
+    if (key === 'book') return (row.bookmaker || row.best_book || '').toLowerCase();
+    if (key === 'result') return row.result || 'zzz';
+    if (key === 'market') return row.market || '';
+    if (key === 'confidence') return row.confidence === 'high' ? 1 : row.confidence === 'medium' ? 2 : 3;
+    if (key === 'commence_time') return row.commence_time || '';
+    return '';
+}
+
+function _sortAndRender(tableId, key, renderFn) {
+    var st = _sortStates[tableId] || {};
+    if (st.key === key) { st.dir = st.dir === 'asc' ? 'desc' : 'asc'; }
+    else { st.key = key; st.dir = 'asc'; }
+    _sortStates[tableId] = st;
+    renderFn();
+}
+
+function _thSortable(tableId, key, label, tip, renderFn) {
+    var st = _sortStates[tableId] || {};
+    var cls = 'sortable' + (st.key === key ? ' sort-' + st.dir : '');
+    var arrow = st.key === key ? (st.dir === 'asc' ? '&#9650;' : '&#9660;') : '&#9650;';
+    var tipHtml = tip ? '<span class="th-tip">?<span class="th-tip-text">' + tip + '</span></span>' : '';
+    return '<th class="' + cls + '" onclick="_sortAndRender(\'' + tableId + '\',\'' + key + '\',' + renderFn + ')">' + label + '<span class="sort-arrow">' + arrow + '</span>' + tipHtml + '</th>';
+}
+
+// Column tooltip definitions
+var COL_TIPS = {
+    sport: 'The league or sport (NBA, NHL, NFL, etc.)',
+    event: 'The matchup — Away Team @ Home Team',
+    pick: 'Which side/outcome the algorithm recommends betting on',
+    book: 'The sportsbook offering the best odds for this pick',
+    odds: 'Decimal odds — multiply by your bet to get total payout. E.g. 2.10 means $100 bet returns $210',
+    amount: 'Paper bet amount sized by quarter-Kelly criterion based on edge',
+    game_date: 'Calendar date of the game in EST timezone',
+    game_time: 'Scheduled start time of the game',
+    ev_pct: 'Expected Value % — positive means the bet is profitable long-term. Higher = better edge',
+    result: 'Outcome: WON (profit), LOST (loss), PUSH (tie, money back), VOID (cancelled)',
+    pnl: 'Profit & Loss — actual dollar gain or loss from this bet',
+    market: 'Bet type: Moneyline (h2h = who wins), Spread (point handicap), Total (over/under points)',
+    confidence: 'Algorithm confidence: HIGH (strong signal), MEDIUM (moderate), LOW (speculative)'
+};
+
 function loadBets(type) {
+    _betsType = type;
     document.getElementById('bets-tab-active').style.background = type === 'active' ? 'var(--accent)' : 'var(--bg-card)';
     document.getElementById('bets-tab-active').style.color = type === 'active' ? '#fff' : 'var(--text-dim)';
     document.getElementById('bets-tab-history').style.background = type === 'history' ? 'var(--accent)' : 'var(--bg-card)';
@@ -659,28 +723,56 @@ function loadBets(type) {
     document.getElementById('bets-content').innerHTML = '<div class="loading">Loading...</div>';
     fetchJson(url, function(d) {
         if (!d.ok || !d.bets || d.bets.length === 0) { document.getElementById('bets-content').innerHTML = '<div class="empty-state"><p>No ' + type + ' bets</p></div>'; return; }
-        var html = '<table><tr><th>Sport</th><th>Event</th><th>Pick</th><th>Book</th><th>Odds</th><th>Amount</th>';
-        html += type === 'history' ? '<th>Game Date</th><th>Result</th><th>P&amp;L</th>' : '<th>Game Date</th><th>Game Time</th><th>EV%</th>';
-        html += '</tr>';
-        for (var i = 0; i < d.bets.length; i++) {
-            var b = d.bets[i];
-            var ml = {h2h:'Moneyline',spreads:'Spread',totals:'Total'};
-            var gdLabel = fmtGameDate(b.game_date, b.commence_time);
-            var gdCls = gdLabel === 'TODAY' ? 'text-green' : gdLabel === 'TOMORROW' ? 'text-yellow' : '';
-            html += '<tr><td>' + (b.sport_short||b.sport) + '</td><td>' + (b.away_team||'') + ' @ ' + (b.home_team||'') + '</td><td><strong>' + (b.pick||'') + '</strong> (' + (ml[b.market]||b.market||'') + ')</td><td>' + (b.bookmaker||'') + '</td><td>' + parseFloat(b.odds||0).toFixed(2) + '</td><td>' + fmtUsd(b.bet_amount||0) + '</td>';
-            html += '<td class="' + gdCls + '"><strong>' + gdLabel + '</strong></td>';
-            if (type === 'history') {
-                var rCls = b.result === 'won' ? 'text-green' : b.result === 'lost' ? 'text-red' : 'text-yellow';
-                html += '<td class="' + rCls + '"><strong>' + (b.result||'').toUpperCase() + '</strong></td>';
-                html += '<td class="' + (parseFloat(b.pnl||0) >= 0 ? 'text-green' : 'text-red') + '">' + (parseFloat(b.pnl||0) >= 0 ? '+' : '') + fmtUsd(b.pnl||0) + '</td>';
-            } else {
-                html += '<td>' + fmtTime(b.commence_time) + '</td><td class="text-green">+' + fmtPct(b.ev_pct||0) + '</td>';
-            }
-            html += '</tr>';
-        }
-        html += '</table>';
-        document.getElementById('bets-content').innerHTML = html;
+        _betsData = d.bets;
+        _renderBetsTable();
     });
+}
+
+function _renderBetsTable() {
+    var type = _betsType;
+    var data = _betsData.slice();
+    var st = _sortStates['bets'];
+    if (st && st.key) {
+        data.sort(function(a, b) {
+            var va = _getSortVal(a, st.key), vb = _getSortVal(b, st.key);
+            var cmp = typeof va === 'number' ? va - vb : (va < vb ? -1 : va > vb ? 1 : 0);
+            return st.dir === 'desc' ? -cmp : cmp;
+        });
+    }
+    var html = '<table><tr>';
+    html += _thSortable('bets', 'sport', 'Sport', COL_TIPS.sport, '_renderBetsTable');
+    html += _thSortable('bets', 'event', 'Event', COL_TIPS.event, '_renderBetsTable');
+    html += _thSortable('bets', 'pick', 'Pick', COL_TIPS.pick, '_renderBetsTable');
+    html += _thSortable('bets', 'book', 'Book', COL_TIPS.book, '_renderBetsTable');
+    html += _thSortable('bets', 'odds', 'Odds', COL_TIPS.odds, '_renderBetsTable');
+    html += _thSortable('bets', 'bet_amount', 'Amount', COL_TIPS.amount, '_renderBetsTable');
+    html += _thSortable('bets', 'game_date', 'Game Date', COL_TIPS.game_date, '_renderBetsTable');
+    if (type === 'history') {
+        html += _thSortable('bets', 'result', 'Result', COL_TIPS.result, '_renderBetsTable');
+        html += _thSortable('bets', 'pnl', 'P&amp;L', COL_TIPS.pnl, '_renderBetsTable');
+    } else {
+        html += _thSortable('bets', 'commence_time', 'Game Time', COL_TIPS.game_time, '_renderBetsTable');
+        html += _thSortable('bets', 'ev_pct', 'EV%', COL_TIPS.ev_pct, '_renderBetsTable');
+    }
+    html += '</tr>';
+    for (var i = 0; i < data.length; i++) {
+        var b = data[i];
+        var ml = {h2h:'Moneyline',spreads:'Spread',totals:'Total'};
+        var gdLabel = fmtGameDate(b.game_date, b.commence_time);
+        var gdCls = gdLabel === 'TODAY' ? 'text-green' : gdLabel === 'TOMORROW' ? 'text-yellow' : '';
+        html += '<tr><td>' + (b.sport_short||b.sport) + '</td><td>' + (b.away_team||'') + ' @ ' + (b.home_team||'') + '</td><td><strong>' + (b.pick||'') + '</strong> (' + (ml[b.market]||b.market||'') + ')</td><td>' + (b.bookmaker||'') + '</td><td>' + parseFloat(b.odds||0).toFixed(2) + '</td><td>' + fmtUsd(b.bet_amount||0) + '</td>';
+        html += '<td class="' + gdCls + '"><strong>' + gdLabel + '</strong></td>';
+        if (type === 'history') {
+            var rCls = b.result === 'won' ? 'text-green' : b.result === 'lost' ? 'text-red' : 'text-yellow';
+            html += '<td class="' + rCls + '"><strong>' + (b.result||'').toUpperCase() + '</strong></td>';
+            html += '<td class="' + (parseFloat(b.pnl||0) >= 0 ? 'text-green' : 'text-red') + '">' + (parseFloat(b.pnl||0) >= 0 ? '+' : '') + fmtUsd(b.pnl||0) + '</td>';
+        } else {
+            html += '<td>' + fmtTime(b.commence_time) + '</td><td class="text-green">+' + fmtPct(b.ev_pct||0) + '</td>';
+        }
+        html += '</tr>';
+    }
+    html += '</table>';
+    document.getElementById('bets-content').innerHTML = html;
 }
 
 function fetchPerformance() {
@@ -738,8 +830,8 @@ function fetchPerformance() {
 
 function fetchPickHistory() {
     document.getElementById('history-content').innerHTML = '<div class="loading">Loading pick history...</div>';
-    fetchJson(API_BASE + 'sports_picks.php?action=pick_history&days=30', function(d) {
-        if (!d.ok || !d.days || d.days.length === 0) { document.getElementById('history-content').innerHTML = '<div class="empty-state"><p>No pick history yet</p><p class="text-dim" style="font-size:0.85rem">Daily picks are generated when the odds refresh workflow runs</p></div>'; return; }
+    fetchJson(API_BASE + 'sports_picks.php?action=pick_history&days=30' + sportParam(), function(d) {
+        if (!d.ok || !d.days || d.days.length === 0) { document.getElementById('history-content').innerHTML = '<div class="empty-state"><p>No pick history yet' + (currentSport !== 'all' ? ' for this sport' : '') + '</p><p class="text-dim" style="font-size:0.85rem">Daily picks are generated when the odds refresh workflow runs</p></div>'; return; }
         var html = '';
         if (d.overall) {
             var o = d.overall;
@@ -763,21 +855,49 @@ function fetchPickHistory() {
 }
 
 function loadDayPicks(date) {
+    _dayPicksDate = date;
     document.getElementById('history-content').innerHTML = '<div class="loading">Loading picks for ' + date + '...</div>';
-    fetchJson(API_BASE + 'sports_picks.php?action=pick_history&date=' + date, function(d) {
+    fetchJson(API_BASE + 'sports_picks.php?action=pick_history&date=' + date + sportParam(), function(d) {
         if (!d.ok || !d.picks || d.picks.length === 0) { document.getElementById('history-content').innerHTML = '<div class="empty-state"><p>No picks for ' + date + '</p></div><button class="btn" onclick="fetchPickHistory()">Back</button>'; return; }
-        var html = '<button class="btn" onclick="fetchPickHistory()" style="margin-bottom:1rem">&#8592; Back to History</button>';
-        html += '<h3 class="section-title">Picks for ' + date + ' (' + d.count + ' picks)</h3>';
-        html += '<table><tr><th>Sport</th><th>Event</th><th>Game Date</th><th>Market</th><th>Pick</th><th>Book</th><th>Odds</th><th>EV%</th><th>Confidence</th><th>Result</th></tr>';
-        for (var i = 0; i < d.picks.length; i++) {
-            var p = d.picks[i]; var rCls = p.result === 'won' ? 'text-green' : p.result === 'lost' ? 'text-red' : p.result === 'push' ? 'text-yellow' : 'text-dim';
-            var cBadge = p.confidence === 'high' ? 'badge-green' : p.confidence === 'medium' ? 'badge-yellow' : 'badge-blue';
-            var pGd = fmtGameDate(p.game_date, p.commence_time);
-            html += '<tr><td>' + (p.sport_short||p.sport) + '</td><td>' + (p.away_team||'') + ' @ ' + (p.home_team||'') + '</td><td><strong>' + pGd + '</strong></td><td>' + (p.market||'') + '</td><td><strong>' + (p.outcome_name||'') + '</strong></td><td>' + (p.best_book||'') + '</td><td>' + parseFloat(p.best_odds||0).toFixed(2) + '</td><td class="text-green">+' + fmtPct(p.ev_pct) + '</td><td><span class="badge ' + cBadge + '">' + (p.confidence||'') + '</span></td><td class="' + rCls + '"><strong>' + (p.result ? p.result.toUpperCase() : 'PENDING') + '</strong></td></tr>';
-        }
-        html += '</table>';
-        document.getElementById('history-content').innerHTML = html;
+        _dayPicksData = d.picks;
+        _renderDayPicksTable();
     });
+}
+
+function _renderDayPicksTable() {
+    var date = _dayPicksDate;
+    var data = _dayPicksData.slice();
+    var st = _sortStates['daypicks'];
+    if (st && st.key) {
+        data.sort(function(a, b) {
+            var va = _getSortVal(a, st.key), vb = _getSortVal(b, st.key);
+            var cmp = typeof va === 'number' ? va - vb : (va < vb ? -1 : va > vb ? 1 : 0);
+            return st.dir === 'desc' ? -cmp : cmp;
+        });
+    }
+    var html = '<button class="btn" onclick="fetchPickHistory()" style="margin-bottom:1rem">&#8592; Back to History</button>';
+    html += '<h3 class="section-title">Picks for ' + date + ' (' + data.length + ' picks)</h3>';
+    html += '<table><tr>';
+    html += _thSortable('daypicks', 'sport', 'Sport', COL_TIPS.sport, '_renderDayPicksTable');
+    html += _thSortable('daypicks', 'event', 'Event', COL_TIPS.event, '_renderDayPicksTable');
+    html += _thSortable('daypicks', 'game_date', 'Game Date', COL_TIPS.game_date, '_renderDayPicksTable');
+    html += _thSortable('daypicks', 'market', 'Market', COL_TIPS.market, '_renderDayPicksTable');
+    html += _thSortable('daypicks', 'pick', 'Pick', COL_TIPS.pick, '_renderDayPicksTable');
+    html += _thSortable('daypicks', 'book', 'Book', COL_TIPS.book, '_renderDayPicksTable');
+    html += _thSortable('daypicks', 'odds', 'Odds', COL_TIPS.odds, '_renderDayPicksTable');
+    html += _thSortable('daypicks', 'ev_pct', 'EV%', COL_TIPS.ev_pct, '_renderDayPicksTable');
+    html += _thSortable('daypicks', 'confidence', 'Confidence', COL_TIPS.confidence, '_renderDayPicksTable');
+    html += _thSortable('daypicks', 'result', 'Result', COL_TIPS.result, '_renderDayPicksTable');
+    html += '</tr>';
+    for (var i = 0; i < data.length; i++) {
+        var p = data[i]; var rCls = p.result === 'won' ? 'text-green' : p.result === 'lost' ? 'text-red' : p.result === 'push' ? 'text-yellow' : 'text-dim';
+        var cBadge = p.confidence === 'high' ? 'badge-green' : p.confidence === 'medium' ? 'badge-yellow' : 'badge-blue';
+        var pGd = fmtGameDate(p.game_date, p.commence_time);
+        var mktDisplay = mktLabel[p.market] || p.market || '';
+        html += '<tr><td>' + (p.sport_short||p.sport) + '</td><td>' + (p.away_team||'') + ' @ ' + (p.home_team||'') + '</td><td><strong>' + pGd + '</strong></td><td>' + mktDisplay + '</td><td><strong>' + (p.outcome_name||'') + '</strong></td><td>' + (p.best_book||'') + '</td><td>' + parseFloat(p.best_odds||0).toFixed(2) + '</td><td class="text-green">+' + fmtPct(p.ev_pct) + '</td><td><span class="badge ' + cBadge + '">' + (p.confidence||'') + '</span></td><td class="' + rCls + '"><strong>' + (p.result ? p.result.toUpperCase() : 'PENDING') + '</strong></td></tr>';
+    }
+    html += '</table>';
+    document.getElementById('history-content').innerHTML = html;
 }
 
 // Update sport filter buttons — grey out sports with no picks

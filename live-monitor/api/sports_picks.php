@@ -1034,6 +1034,8 @@ function _sp_action_pick_history($conn) {
     }
 
     // Otherwise return day-by-day summary for last N days
+    $sum_where = "pick_date >= DATE_SUB(CURDATE(), INTERVAL " . $days . " DAY)";
+    if ($sport) $sum_where .= " AND sport='" . $sport . "'";
     $summary_q = $conn->query("SELECT pick_date, COUNT(*) as total_picks, "
         . "MIN(generated_at) as first_generated, MAX(generated_at) as last_generated, "
         . "ROUND(AVG(ev_pct), 2) as avg_ev, "
@@ -1043,7 +1045,7 @@ function _sp_action_pick_history($conn) {
         . "SUM(CASE WHEN result='push' THEN 1 ELSE 0 END) as pushes, "
         . "SUM(CASE WHEN result IS NULL THEN 1 ELSE 0 END) as pending, "
         . "COALESCE(SUM(pnl), 0) as total_pnl "
-        . "FROM lm_sports_daily_picks WHERE pick_date >= DATE_SUB(CURDATE(), INTERVAL " . $days . " DAY) "
+        . "FROM lm_sports_daily_picks WHERE " . $sum_where . " "
         . "GROUP BY pick_date ORDER BY pick_date DESC");
 
     $days_arr = array();
