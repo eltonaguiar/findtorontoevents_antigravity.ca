@@ -13,7 +13,7 @@ The primary value of this script (vs the PHP sec_edgar.php fetch_form4) is:
   - Cluster DETECTION (multiple insiders buying same stock same week)
   - Aggregation into a single scored payload for the consensus engine
 
-Rate limited to 10 requests/minute to SEC EDGAR.
+Rate limited to 120 requests/minute (~2/sec) to SEC EDGAR (allows 10/sec).
 """
 import sys
 import os
@@ -31,8 +31,8 @@ from utils import safe_request, post_to_api, call_api, RateLimiter
 
 logger = logging.getLogger('insider_tracker')
 
-# Rate limit: 10 requests/minute to SEC EDGAR
-sec_limiter = RateLimiter(10)
+# Rate limit: SEC EDGAR allows 10 req/sec; we use 120/min (~2/sec) for safety
+sec_limiter = RateLimiter(120)
 
 # Ticker to CIK mapping — fetched dynamically from SEC
 _ticker_cik_cache = {}
@@ -311,7 +311,7 @@ def detect_clusters(all_trades):
     return result
 
 
-def fetch_insider_trades_for_ticker(ticker, cik, lookback_days=30, max_filings=10):
+def fetch_insider_trades_for_ticker(ticker, cik, lookback_days=30, max_filings=5):
     """
     Fetch recent Form 4 filings for a specific ticker.
     Returns list of parsed trade dicts.

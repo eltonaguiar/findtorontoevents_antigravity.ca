@@ -26,8 +26,8 @@ from utils import safe_request, post_to_api, call_api, RateLimiter
 
 logger = logging.getLogger('sec_13f')
 
-# Rate limit: 10 requests/minute to SEC EDGAR
-sec_limiter = RateLimiter(10)
+# Rate limit: SEC EDGAR allows 10 req/sec; we use 120/min (~2/sec) for safety
+sec_limiter = RateLimiter(120)
 
 # 13F XML namespace
 NS_13F = 'http://www.sec.gov/edgar/document/thirteenf/informationtable'
