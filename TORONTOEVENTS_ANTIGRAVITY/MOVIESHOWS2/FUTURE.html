@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieShows - Future Features Sandbox</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #fff;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2, #e94560);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #888;
+            font-size: 1.1rem;
+        }
+        
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+        
+        .back-btn:hover {
+            background: #c73e54;
+            transform: scale(1.05);
+        }
+        
+        .category {
+            margin-bottom: 40px;
+        }
+        
+        .category-title {
+            font-size: 1.5rem;
+            color: #e94560;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .feature-card {
+            background: rgba(37, 37, 69, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #333;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: #e94560;
+            box-shadow: 0 10px 30px rgba(233, 69, 96, 0.2);
+        }
+        
+        .feature-card.implemented {
+            border-color: #4CAF50;
+        }
+        
+        .feature-card.implemented::after {
+            content: '✓ Live';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #4CAF50;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .feature-card.partial::after {
+            content: '⚡ Partial';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff9800;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .feature-card.planned::after {
+            content: '🔮 Planned';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #9c27b0;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .feature-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        
+        .feature-desc {
+            color: #888;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .feature-id {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            color: #555;
+            font-size: 0.75rem;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .stat {
+            text-align: center;
+            padding: 20px;
+            background: rgba(37, 37, 69, 0.5);
+            border-radius: 12px;
+            min-width: 150px;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #e94560;
+        }
+        
+        .stat-label {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .search-box {
+            max-width: 500px;
+            margin: 0 auto 40px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 15px 20px;
+            border-radius: 25px;
+            border: 2px solid #333;
+            background: rgba(37, 37, 69, 0.8);
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .search-box input:focus {
+            border-color: #e94560;
+        }
+        
+        .search-box input::placeholder {
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            .stats {
+                gap: 15px;
+            }
+            .stat {
+                min-width: 100px;
+                padding: 15px;
+            }
+            .stat-number {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">← Back to MovieShows</a>
+    
+    <div class="header">
+        <h1>🚀 Future Features Sandbox</h1>
+        <p>Preview upcoming features and enhancements for MovieShows</p>
+    </div>
+    
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-number" id="total-features">260</div>
+            <div class="stat-label">Total Features</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number" id="implemented-count">45</div>
+            <div class="stat-label">Fully Implemented</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number" id="partial-count">120</div>
+            <div class="stat-label">UI Ready</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number" id="planned-count">95</div>
+            <div class="stat-label">Planned</div>
+        </div>
+    </div>
+    
+    <div class="search-box">
+        <input type="text" id="feature-search" placeholder="🔍 Search features...">
+    </div>
+    
+    <div id="features-container">
+        <!-- Core Player Features -->
+        <div class="category">
+            <h2 class="category-title">🎬 Core Player Features</h2>
+            <div class="features-grid">
+                <div class="feature-card implemented">
+                    <div class="feature-icon">▶️</div>
+                    <div class="feature-name">Video Playback</div>
+                    <div class="feature-desc">YouTube trailer playback with autoplay and mute controls</div>
+                    <div class="feature-id">#1</div>
+                </div>
+                <div class="feature-card implemented">
+                    <div class="feature-icon">🔇</div>
+                    <div class="feature-name">Mute/Unmute Toggle</div>
+                    <div class="feature-desc">Persistent sound control with visual feedback</div>
+                    <div class="feature-id">#2</div>
+                </div>
+                <div class="feature-card implemented">
+                    <div class="feature-icon">📺</div>
+                    <div class="feature-name">Player Size Control</div>
+                    <div class="feature-desc">Small, Medium, Large, and Full-screen player sizes</div>
+                    <div class="feature-id">#3</div>
+                </div>
+                <div class="feature-card implemented">
+                    <div class="feature-icon">🔄</div>
+                    <div class="feature-name">Autoplay Next</div>
+                    <div class="feature-desc">Automatically play next video in queue</div>
+                    <div class="feature-id">#4</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation Features -->
+        <div class="category">
+            <h2 class="category-title">🧭 Navigation & Discovery</h2>
+            <div class="features-grid">
+                <div class="feature-card implemented">
+                    <div class="feature-icon">📜</div>
+                    <div class="feature-name">TikTok-style Scroll</div>
+                    <div class="feature-desc">Smooth vertical scrolling between videos</div>
+                    <div class="feature-id">#5</div>
+                </div>
+                <div class="feature-card implemented">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-name">Category Filters</div>
+                    <div class="feature-desc">Filter by Movies, TV, Now Playing</div>
+                    <div class="feature-id">#6</div>
+                </div>
+                <div class="feature-card implemented">
+                    <div class="feature-icon">🔍</div>
+                    <div class="feature-name">Search</div>
+                    <div class="feature-desc">Search movies and TV shows by title</div>
+                    <div class="feature-id">#7</div>
+                </div>
+                <div class="feature-card partial">
+                    <div class="feature-icon">🎲</div>
+                    <div class="feature-name">Shuffle Mode</div>
+                    <div class="feature-desc">Randomly shuffle the content queue</div>
+                    <div class="feature-id">#20</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Queue & Watchlist -->
+        <div class="category">
+            <h2 class="category-title">📋 Queue & Watchlist</h2>
+            <div class="features-grid">
+                <div class="feature-card implemented">
+                    <div class="feature-icon">📋</div>
+                    <div class="feature-name">My Queue</div>
+                    <div class="feature-desc">Save videos to watch later</div>
+                    <div class="feature-id">#8</div>
+                </div>
+                <div class="feature-card implemented">
+                    <div class="feature-icon">🖼️</div>
+                    <div class="feature-name">Queue Thumbnail Mode</div>
+                    <div class="feature-desc">View queue with thumbnail previews</div>
+                    <div class="feature-id">#9</div>
+                </div>
+                <div class="feature-card partial">
+                    <div class="feature-icon">📁</div>
+                    <div class="feature-name">Watchlist Folders</div>
+                    <div class="feature-desc">Organize watchlist into custom folders</div>
+                    <div class="feature-id">#170</div>
+                </div>
+                <div class="feature-card planned">
+                    <div class="feature-icon">☁️</div>
+                    <div class="feature-name">Cloud Sync</div>
+                    <div class="feature-desc">Sync watchlist across devices</div>
+                    <div class="feature-id">#300</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Social Features -->
+        <div class="category">
+            <h2 class="category-title">👥 Social & Sharing</h2>
+            <div class="features-grid">
+                <div class="feature-card partial">
+                    <div class="feature-icon">📤</div>
+                    <div class="feature-name">Share Content</div>
+                    <div class="feature-desc">Share to Twitter, Facebook, WhatsApp</div>
+                    <div class="feature-id">#30</div>
+                </div>
+                <div class="feature-card partial">
+                    <div class="feature-icon">🎉</div>
+                    <div class="feature-name">Watch Party</div>
+                    <div class="feature-desc">Watch together with friends in sync</div>
+                    <div class="feature-id">#254</div>
+                </div>
+                <div class="feature-card partial">
+                    <div class="feature-icon">💬</div>
+                    <div class="feature-name">Discussion Board</div>
+                    <div class="feature-desc">Comment and discuss with others</div>
+                    <div class="feature-id">#255</div>
+                </div>
+                <div class="feature-card planned">
+                    <div class="feature-icon">👤</div>
+                    <div class="feature-name">User Profiles</div>
+                    <div class="feature-desc">Create and customize your profile</div>
+                    <div class="feature-id">#301</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Information -->
+        <div class="category">
+            <h2 class="category-title">ℹ️ Content Information</h2>
+            <div class="features-grid">
+                <div class="feature-card partial">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-name">Ratings Breakdown</div>
+                    <div class="feature-desc">View IMDb, Rotten Tomatoes, Metacritic scores</div>
+                    <div class="feature-id">#221</div>
+                </div>
+                <div class="feature-card partial">
+                    <div class="feature-icon">🎭</div>
+                    <div class="feature-name">Cast & Crew</div>
+                    <div class="feature-desc">Browse full cast and crew information</div>
+                    <div class="feature-id">#226</div>
+                </div>
+                <div class="feature-card partial">
+                    <div class="feature-icon">💰</div>
+                    <div class="feature-name">Box Office Stats</div>
+                    <div class="feature-desc">View box office performance data</div>
+                    <div class="feature-id">#245</div>
+                </div>
+                <div class="feature-card partial">
+                    <div class="feature-icon">🏆</div>
+                    <div class="feature-name">Awards Display</div>
+                    <div class="feature-desc">See award nominations and wins</div>
+                    <div class="feature-id">#189</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Personalization -->
+        <div class="category">
+            <h2 class="category-title">⚙️ Personalization</h2>
+            <div class="features-grid">
+                <div class="feature-card partial">
+                    <div class="feature-icon">🎨</div>
+                    <div class="feature-name">Themes</div>
+                    <div class="feature-desc">Dark, Light, and custom color themes</div>
+                    <div class="feature-id">#186</div>
+                </div>
+                <div class="feature-card partial">
+                    <div class="feature-icon">♿</div>
+                    <div class="feature-name">Accessibility Options</div>
+                    <div class="feature-desc">High contrast, large text, reduce motion</div>
+                    <div class="feature-id">#222</div>
+                </div>
+                <div class="feature-card partial">
+                    <div class="feature-icon">🌐</div>
+                    <div class="feature-name">Language Selection</div>
+                    <div class="feature-desc">Filter content by language</div>
+                    <div class="feature-id">#240</div>
+                </div>
+                <div class="feature-card partial">
+                    <div class="feature-icon">👨‍👩‍👧</div>
+                    <div class="feature-name">Parental Controls</div>
+                    <div class="feature-desc">Set content rating limits with PIN</div>
+                    <div class="feature-id">#223</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Analytics & Stats -->
+        <div class="category">
+            <h2 class="category-title">📈 Analytics & Stats</h2>
+            <div class="features-grid">
+                <div class="feature-card partial">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-name">Viewing Stats</div>
+                    <div class="feature-desc">Track your watching habits and history</div>
+                    <div class="feature-id">#137</div>
+                </div>
+                <div class="feature-card partial">
+                    <div class="feature-icon">🔥</div>
+                    <div class="feature-name">Viewing Streaks</div>
+                    <div class="feature-desc">Track daily watching streaks</div>
+                    <div class="feature-id">#209</div>
+                </div>
+                <div class="feature-card partial">
+                    <div class="feature-icon">🏅</div>
+                    <div class="feature-name">Badges & Achievements</div>
+                    <div class="feature-desc">Earn badges for watching milestones</div>
+                    <div class="feature-id">#100</div>
+                </div>
+                <div class="feature-card partial">
+                    <div class="feature-icon">📤</div>
+                    <div class="feature-name">Export History</div>
+                    <div class="feature-desc">Download your watch history as JSON</div>
+                    <div class="feature-id">#233</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Advanced Features -->
+        <div class="category">
+            <h2 class="category-title">🚀 Advanced Features</h2>
+            <div class="features-grid">
+                <div class="feature-card partial">
+                    <div class="feature-icon">🖼️</div>
+                    <div class="feature-name">Picture-in-Picture</div>
+                    <div class="feature-desc">Watch in a floating mini player</div>
+                    <div class="feature-id">#138</div>
+                </div>
+                <div class="feature-card partial">
+                    <div class="feature-icon">🎬</div>
+                    <div class="feature-name">Theater Mode</div>
+                    <div class="feature-desc">Immersive full-screen experience</div>
+                    <div class="feature-id">#212</div>
+                </div>
+                <div class="feature-card partial">
+                    <div class="feature-icon">📺</div>
+                    <div class="feature-name">TV Mode</div>
+                    <div class="feature-desc">Optimized for TV displays</div>
+                    <div class="feature-id">#60</div>
+                </div>
+                <div class="feature-card partial">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-name">Smart Recommendations</div>
+                    <div class="feature-desc">AI-powered content suggestions</div>
+                    <div class="feature-id">#191</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Coming Soon -->
+        <div class="category">
+            <h2 class="category-title">🔮 Coming Soon (Planned)</h2>
+            <div class="features-grid">
+                <div class="feature-card planned">
+                    <div class="feature-icon">🤖</div>
+                    <div class="feature-name">AI Movie Chat</div>
+                    <div class="feature-desc">Chat with AI about movies and get recommendations</div>
+                    <div class="feature-id">#302</div>
+                </div>
+                <div class="feature-card planned">
+                    <div class="feature-icon">🎙️</div>
+                    <div class="feature-name">Voice Control</div>
+                    <div class="feature-desc">Control the app with voice commands</div>
+                    <div class="feature-id">#303</div>
+                </div>
+                <div class="feature-card planned">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-name">Mobile App</div>
+                    <div class="feature-desc">Native iOS and Android apps</div>
+                    <div class="feature-id">#304</div>
+                </div>
+                <div class="feature-card planned">
+                    <div class="feature-icon">🎮</div>
+                    <div class="feature-name">Gaming Integration</div>
+                    <div class="feature-desc">Connect with gaming platforms</div>
+                    <div class="feature-id">#305</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Search functionality
+        document.getElementById('feature-search').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.feature-card');
+            
+            cards.forEach(card => {
+                const name = card.querySelector('.feature-name').textContent.toLowerCase();
+                const desc = card.querySelector('.feature-desc').textContent.toLowerCase();
+                
+                if (name.includes(searchTerm) || desc.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
