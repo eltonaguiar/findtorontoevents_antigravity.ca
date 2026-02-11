@@ -759,20 +759,37 @@
                     return;
                 }
 
-                var tickers = data.tickers || [];
+                // API returns data.data (list) with overall_score + components object
+                var raw = data.data || data.tickers || [];
+                var tickers = [];
+                for (var k = 0; k < raw.length; k++) {
+                    var r = raw[k];
+                    var comp = r.components || {};
+                    tickers.push({
+                        ticker: r.ticker,
+                        score: parseFloat(r.overall_score) || 0,
+                        direction: r.direction || r.signal_direction || 'NEUTRAL',
+                        confidence: r.confidence || 'LOW',
+                        technical: parseFloat(comp.technical) || 0,
+                        smart_money: parseFloat(comp.smart_money) || 0,
+                        insider: parseFloat(comp.insider) || 0,
+                        analyst: parseFloat(comp.analyst) || 0,
+                        momentum: (parseFloat(comp.momentum) || 0) + (parseFloat(comp.social) || 0)
+                    });
+                }
                 if (tickers.length === 0) {
                     showEmpty('consensus-tbody', 'Awaiting first data fetch...');
                     return;
                 }
 
                 // Sort by score descending
-                tickers.sort(function(a, b) { return (b.score || 0) - (a.score || 0); });
+                tickers.sort(function(a, b) { return b.score - a.score; });
 
                 // KPIs
                 var topBull = tickers[0];
                 var topBear = tickers[tickers.length - 1];
                 var avgScore = 0;
-                for (var i = 0; i < tickers.length; i++) avgScore += (tickers[i].score || 0);
+                for (var i = 0; i < tickers.length; i++) avgScore += tickers[i].score;
                 avgScore = tickers.length > 0 ? avgScore / tickers.length : 0;
 
                 document.getElementById('kpi-top-bullish').textContent = topBull.ticker || '--';
@@ -795,7 +812,7 @@
                 for (var j = 0; j < tickers.length; j++) {
                     var t = tickers[j];
                     var rank = j + 1;
-                    var sc = t.score || 0;
+                    var sc = t.score;
                     var barW = Math.max(2, Math.min(100, sc));
                     html += '<tr>' +
                         '<td>' + rank + '</td>' +
@@ -803,7 +820,7 @@
                         '<td>' + formatNum(sc, 1) + '</td>' +
                         '<td><div class="score-bar"><div class="score-fill" style="width:' + barW + '%;background:' + scoreColor(sc) + '"></div></div></td>' +
                         '<td>' + directionBadge(t.direction) + '</td>' +
-                        '<td>' + formatNum(t.confidence, 0) + '</td>' +
+                        '<td>' + escHtml(t.confidence) + '</td>' +
                         '<td>' + formatNum(t.technical, 0) + '</td>' +
                         '<td>' + formatNum(t.smart_money, 0) + '</td>' +
                         '<td>' + formatNum(t.insider, 0) + '</td>' +
@@ -827,7 +844,8 @@
                     return;
                 }
 
-                var ratings = data.ratings || [];
+                // API returns data.data (list) with strong_buy/buy/hold/sell/strong_sell + target_mean
+                var ratings = data.data || data.ratings || [];
                 if (ratings.length === 0) {
                     container.innerHTML = '<div class="empty-state">Awaiting first data fetch...</div>';
                     return;
@@ -836,39 +854,50 @@
                 var html = '';
                 for (var i = 0; i < ratings.length; i++) {
                     var r = ratings[i];
-                    var total = (r.strong_buy || 0) + (r.buy || 0) + (r.hold || 0) + (r.sell || 0) + (r.strong_sell || 0);
+                    var sb = parseInt(r.strong_buy) || 0;
+                    var b = parseInt(r.buy) || 0;
+                    var h = parseInt(r.hold) || 0;
+                    var s = parseInt(r.sell) || 0;
+                    var ss = parseInt(r.strong_sell) || 0;
+                    var total = sb + b + h + s + ss;
                     total = total || 1;
 
-                    var sbPct = ((r.strong_buy || 0) / total * 100).toFixed(1);
-                    var bPct = ((r.buy || 0) / total * 100).toFixed(1);
-                    var hPct = ((r.hold || 0) / total * 100).toFixed(1);
-                    var sPct = ((r.sell || 0) / total * 100).toFixed(1);
-                    var ssPct = ((r.strong_sell || 0) / total * 100).toFixed(1);
+                    var sbPct = (sb / total * 100).toFixed(1);
+                    var bPct = (b / total * 100).toFixed(1);
+                    var hPct = (h / total * 100).toFixed(1);
+                    var sPct = (s / total * 100).toFixed(1);
+                    var ssPct = (ss / total * 100).toFixed(1);
 
-                    var consensusLabel = r.consensus || 'N/A';
+                    // Derive consensus label from counts
+                    var buyTotal = sb + b;
+                    var sellTotal = s + ss;
+                    var consensusLabel = buyTotal > sellTotal + h ? (sb > b ? 'Strong Buy' : 'Buy') : (sellTotal > buyTotal + h ? (ss > s ? 'Strong Sell' : 'Sell') : 'Hold');
                     var consensusBadge = 'badge-neutral';
                     if (consensusLabel.toLowerCase().indexOf('buy') >= 0) consensusBadge = 'badge-bullish';
                     else if (consensusLabel.toLowerCase().indexOf('sell') >= 0) consensusBadge = 'badge-bearish';
 
-                    var upside = r.target_price && r.current_price ? ((r.target_price - r.current_price) / r.current_price * 100) : null;
+                    var targetPrice = parseFloat(r.target_mean) || parseFloat(r.target_price) || 0;
+                    var curPrice = parseFloat(r.current_price) || 0;
+                    var upside = targetPrice > 0 && curPrice > 0 ? ((targetPrice - curPrice) / curPrice * 100) : null;
                     var upsideStr = upside !== null ? formatPct(upside) + (upside >= 0 ? ' upside' : ' downside') : '--';
                     var upsideClass = upside !== null ? (upside >= 0 ? 'pos' : 'neg') : '';
+                    var priceStr = curPrice > 0 ? ('$' + formatNum(curPrice, 2) + ' &rarr; $' + formatNum(targetPrice, 2) + ' (' + upsideStr + ')') : (targetPrice > 0 ? 'Target: $' + formatNum(targetPrice, 2) : 'No target data');
 
                     html += '<div class="info-card">' +
                         '<h4>' + escHtml(r.ticker) + ' <span class="badge ' + consensusBadge + '">' + escHtml(consensusLabel) + '</span></h4>' +
                         '<div class="stacked-bar">' +
-                            '<div class="segment seg-strong-buy" style="width:' + sbPct + '%" title="Strong Buy: ' + (r.strong_buy || 0) + '">' + (sbPct > 8 ? (r.strong_buy || 0) : '') + '</div>' +
-                            '<div class="segment seg-buy" style="width:' + bPct + '%" title="Buy: ' + (r.buy || 0) + '">' + (bPct > 8 ? (r.buy || 0) : '') + '</div>' +
-                            '<div class="segment seg-hold" style="width:' + hPct + '%" title="Hold: ' + (r.hold || 0) + '">' + (hPct > 8 ? (r.hold || 0) : '') + '</div>' +
-                            '<div class="segment seg-sell" style="width:' + sPct + '%" title="Sell: ' + (r.sell || 0) + '">' + (sPct > 8 ? (r.sell || 0) : '') + '</div>' +
-                            '<div class="segment seg-strong-sell" style="width:' + ssPct + '%" title="Strong Sell: ' + (r.strong_sell || 0) + '">' + (ssPct > 8 ? (r.strong_sell || 0) : '') + '</div>' +
+                            '<div class="segment seg-strong-buy" style="width:' + sbPct + '%" title="Strong Buy: ' + sb + '">' + (sbPct > 8 ? sb : '') + '</div>' +
+                            '<div class="segment seg-buy" style="width:' + bPct + '%" title="Buy: ' + b + '">' + (bPct > 8 ? b : '') + '</div>' +
+                            '<div class="segment seg-hold" style="width:' + hPct + '%" title="Hold: ' + h + '">' + (hPct > 8 ? h : '') + '</div>' +
+                            '<div class="segment seg-sell" style="width:' + sPct + '%" title="Sell: ' + s + '">' + (sPct > 8 ? s : '') + '</div>' +
+                            '<div class="segment seg-strong-sell" style="width:' + ssPct + '%" title="Strong Sell: ' + ss + '">' + (ssPct > 8 ? ss : '') + '</div>' +
                         '</div>' +
                         '<div class="detail-row"><span class="detail-label">Strong Buy / Buy / Hold / Sell / Strong Sell</span></div>' +
                         '<div class="detail-row" style="font-size:12px;color:var(--text-dim);border:none;padding-top:0">' +
-                            (r.strong_buy || 0) + ' / ' + (r.buy || 0) + ' / ' + (r.hold || 0) + ' / ' + (r.sell || 0) + ' / ' + (r.strong_sell || 0) +
+                            sb + ' / ' + b + ' / ' + h + ' / ' + s + ' / ' + ss +
                         '</div>' +
-                        '<div class="detail-row"><span class="detail-label">Price Target</span><span class="detail-value ' + upsideClass + '">$' + formatNum(r.current_price, 2) + ' &rarr; $' + formatNum(r.target_price, 2) + ' (' + upsideStr + ')</span></div>' +
-                        '<div class="detail-row"><span class="detail-label">Analysts Covering</span><span class="detail-value">' + (total || '--') + '</span></div>' +
+                        '<div class="detail-row"><span class="detail-label">Price Target</span><span class="detail-value ' + upsideClass + '">' + priceStr + '</span></div>' +
+                        '<div class="detail-row"><span class="detail-label">Analysts Covering</span><span class="detail-value">' + total + '</span></div>' +
                         '</div>';
                 }
                 container.innerHTML = html;
@@ -891,50 +920,55 @@
                     return;
                 }
 
-                // Summary
-                var summary = data.summary || {};
-                var buyCount = summary.buy_count || 0;
-                var sellCount = summary.sell_count || 0;
-                var buyValue = summary.buy_value || 0;
-                var sellValue = summary.sell_value || 0;
+                // API returns data.data — list of per-ticker insider summaries
+                var items = data.data || [];
+                var totalBuyVal = 0, totalSellVal = 0, totalBuyers = 0, totalSellers = 0;
+                for (var s = 0; s < items.length; s++) {
+                    totalBuyVal += parseFloat(items[s].buy_value) || 0;
+                    totalSellVal += parseFloat(items[s].sell_value) || 0;
+                    totalBuyers += parseInt(items[s].distinct_buyers) || 0;
+                    totalSellers += parseInt(items[s].distinct_sellers) || 0;
+                }
                 document.getElementById('insider-summary').innerHTML =
-                    '<span class="pos">' + buyCount + ' insider buy' + (buyCount !== 1 ? 's' : '') + ' (' + formatMoney(buyValue) + ')</span>' +
+                    '<span class="pos">' + totalBuyers + ' insider buy' + (totalBuyers !== 1 ? 's' : '') + ' (' + formatMoney(totalBuyVal) + ')</span>' +
                     ' vs ' +
-                    '<span class="neg">' + sellCount + ' insider sell' + (sellCount !== 1 ? 's' : '') + ' (' + formatMoney(sellValue) + ')</span>' +
+                    '<span class="neg">' + totalSellers + ' insider sell' + (totalSellers !== 1 ? 's' : '') + ' (' + formatMoney(totalSellVal) + ')</span>' +
                     ' in last 90 days';
 
-                // Cluster alerts
-                var clusters = data.clusters || [];
+                // Cluster alerts — find tickers with 3+ distinct buyers
                 var clustHtml = '';
-                for (var c = 0; c < clusters.length; c++) {
-                    var cl = clusters[c];
-                    clustHtml += '<div class="cluster-alert">' +
-                        '<h4>&#128680; Insider Cluster Alert: ' + escHtml(cl.ticker) + '</h4>' +
-                        '<p>' + (cl.count || 0) + ' insiders bought within 30 days. Total value: ' + formatMoney(cl.total_value) + '</p>' +
-                        '</div>';
+                for (var c = 0; c < items.length; c++) {
+                    var ci = items[c];
+                    if ((parseInt(ci.distinct_buyers) || 0) >= 3) {
+                        clustHtml += '<div class="cluster-alert">' +
+                            '<h4>&#128680; Insider Cluster Alert: ' + escHtml(ci.ticker) + '</h4>' +
+                            '<p>' + ci.distinct_buyers + ' insiders bought. Total value: ' + formatMoney(parseFloat(ci.buy_value) || 0) + '</p>' +
+                            '</div>';
+                    }
                 }
                 document.getElementById('insider-clusters').innerHTML = clustHtml;
 
-                // Trades table
-                var trades = data.trades || [];
-                if (trades.length === 0) {
+                // Table — show per-ticker rows
+                if (items.length === 0) {
                     document.getElementById('insider-tbody').innerHTML = '<tr><td colspan="8" class="empty-state">No recent insider trades found.</td></tr>';
                 } else {
                     var html = '';
-                    for (var i = 0; i < trades.length; i++) {
-                        var tr = trades[i];
-                        var isBuy = (tr.type || '').toLowerCase() === 'buy' || (tr.type || '').toLowerCase() === 'purchase';
+                    for (var i = 0; i < items.length; i++) {
+                        var tr = items[i];
+                        var netVal = parseFloat(tr.net_value) || 0;
+                        var isBuy = netVal > 0;
                         var rowStyle = isBuy ? 'background:rgba(34,197,94,0.04)' : 'background:rgba(239,68,68,0.04)';
-                        var typeBadge = isBuy ? '<span class="badge badge-buy">BUY</span>' : '<span class="badge badge-sell">SELL</span>';
+                        var typeBadge = isBuy ? '<span class="badge badge-buy">NET BUY</span>' : '<span class="badge badge-sell">NET SELL</span>';
+                        var mspr = (tr.mspr_trend && tr.mspr_trend.length > 0) ? tr.mspr_trend[0].mspr : '--';
                         html += '<tr style="' + rowStyle + '">' +
-                            '<td>' + formatDate(tr.date) + '</td>' +
+                            '<td>' + escHtml(tr.date_range || '--') + '</td>' +
                             '<td><strong>' + escHtml(tr.ticker) + '</strong></td>' +
-                            '<td>' + escHtml(tr.name) + '</td>' +
-                            '<td>' + escHtml(tr.title || '--') + '</td>' +
+                            '<td>' + (tr.distinct_buyers || 0) + ' buyer(s)</td>' +
+                            '<td>' + (tr.distinct_sellers || 0) + ' seller(s)</td>' +
                             '<td>' + typeBadge + '</td>' +
-                            '<td>' + formatNum(tr.shares, 0) + '</td>' +
-                            '<td>' + formatMoney(tr.value) + '</td>' +
-                            '<td>' + formatNum(tr.mspr, 2) + '</td>' +
+                            '<td>' + formatNum(parseInt(tr.buy_shares) || 0, 0) + ' / ' + formatNum(parseInt(tr.sell_shares) || 0, 0) + '</td>' +
+                            '<td>' + formatMoney(Math.abs(netVal)) + '</td>' +
+                            '<td>' + (mspr !== '--' ? formatNum(parseFloat(mspr), 4) : '--') + '</td>' +
                             '</tr>';
                     }
                     document.getElementById('insider-tbody').innerHTML = html;
@@ -963,39 +997,57 @@
                     return;
                 }
 
-                // Matrix
-                var tickers = data.tickers || ['AAPL','MSFT','GOOGL','AMZN','NVDA','META','JPM','WMT','XOM','NFLX','JNJ','BAC'];
-                var funds = data.funds || [];
+                // API returns data.data = { quarter, holdings: [...], conviction_picks: [...] }
+                var smData = data.data || {};
+                var holdings = smData.holdings || [];
+                var tickerNames = ['AAPL','MSFT','GOOGL','AMZN','NVDA','META','JPM','WMT','XOM','NFLX','JNJ','BAC'];
+
+                // Build fund-to-ticker matrix from flat holdings list
+                // Each holding has: ticker, quarter, funds (list), total_value_k, fund_count
+                var fundMap = {};  // fund_name -> { ticker -> change_type }
+                var newPositions = [];
+                for (var hi = 0; hi < holdings.length; hi++) {
+                    var hld = holdings[hi];
+                    var hFunds = hld.funds || [];
+                    for (var fi = 0; fi < hFunds.length; fi++) {
+                        var fn = hFunds[fi].fund_name;
+                        var ct = hFunds[fi].change_type || 'maintained';
+                        if (!fundMap[fn]) fundMap[fn] = {};
+                        fundMap[fn][hld.ticker || ''] = ct;
+                        if (ct === 'new' && hld.ticker) {
+                            newPositions.push({ ticker: hld.ticker, fund: fn, shares: hFunds[fi].shares, value: hFunds[fi].value_thousands });
+                        }
+                    }
+                }
 
                 var thHtml = '<tr><th>Fund</th>';
-                for (var t = 0; t < tickers.length; t++) {
-                    thHtml += '<th>' + escHtml(tickers[t]) + '</th>';
+                for (var t = 0; t < tickerNames.length; t++) {
+                    thHtml += '<th>' + escHtml(tickerNames[t]) + '</th>';
                 }
                 thHtml += '</tr>';
                 document.getElementById('matrix-thead').innerHTML = thHtml;
 
-                if (funds.length === 0) {
-                    document.getElementById('matrix-tbody').innerHTML = '<tr><td colspan="' + (tickers.length + 1) + '" class="empty-state">Awaiting first 13F data fetch...</td></tr>';
+                var fundNames = Object.keys(fundMap);
+                if (fundNames.length === 0) {
+                    document.getElementById('matrix-tbody').innerHTML = '<tr><td colspan="' + (tickerNames.length + 1) + '" class="empty-state">Awaiting first 13F data fetch...</td></tr>';
                 } else {
                     var mHtml = '';
-                    for (var f = 0; f < funds.length; f++) {
-                        var fund = funds[f];
-                        mHtml += '<tr><td>' + escHtml(fund.name) + '</td>';
-                        var holdings = fund.holdings || {};
-                        for (var h = 0; h < tickers.length; h++) {
-                            var tk = tickers[h];
-                            var holding = holdings[tk];
-                            if (!holding) {
+                    for (var f = 0; f < fundNames.length; f++) {
+                        var fname = fundNames[f];
+                        mHtml += '<tr><td>' + escHtml(fname) + '</td>';
+                        for (var h = 0; h < tickerNames.length; h++) {
+                            var tk = tickerNames[h];
+                            var status = fundMap[fname][tk];
+                            if (!status) {
                                 mHtml += '<td class="cell-empty">&mdash;</td>';
                             } else {
-                                var status = (holding.status || 'maintained').toLowerCase();
                                 var cellClass = 'cell-maintained';
                                 var cellText = '&#9679;';
                                 if (status === 'new') { cellClass = 'cell-new'; cellText = 'NEW'; }
                                 else if (status === 'increased') { cellClass = 'cell-increased'; cellText = '&#9650;'; }
                                 else if (status === 'decreased') { cellClass = 'cell-decreased'; cellText = '&#9660;'; }
                                 else if (status === 'sold') { cellClass = 'cell-sold'; cellText = 'SOLD'; }
-                                mHtml += '<td class="' + cellClass + '" title="' + escHtml(fund.name + ': ' + tk + ' - ' + status) + '">' + cellText + '</td>';
+                                mHtml += '<td class="' + cellClass + '" title="' + escHtml(fname + ': ' + tk + ' - ' + status) + '">' + cellText + '</td>';
                             }
                         }
                         mHtml += '</tr>';
@@ -1004,7 +1056,7 @@
                 }
 
                 // Conviction Picks
-                var convictions = data.conviction_picks || [];
+                var convictions = smData.conviction_picks || [];
                 var cpContainer = document.getElementById('conviction-picks');
                 if (convictions.length === 0) {
                     cpContainer.innerHTML = '<div class="empty-state">No stocks held by 3+ tracked funds yet.</div>';
@@ -1015,7 +1067,7 @@
                         cpHtml += '<div class="conviction-row">' +
                             '<span class="conviction-ticker">' + escHtml(pick.ticker) + '</span>' +
                             '<span class="conviction-detail">Held by <span class="conviction-funds">' + (pick.fund_count || 0) + ' funds</span>' +
-                            (pick.detail ? ' &mdash; ' + escHtml(pick.detail) : '') + '</span>' +
+                            (pick.total_value_k ? ' &mdash; $' + formatNum(pick.total_value_k / 1000, 0) + 'M' : '') + '</span>' +
                             '<span class="badge badge-green">' + (pick.fund_count || 0) + ' funds</span>' +
                             '</div>';
                     }
@@ -1023,19 +1075,18 @@
                 }
 
                 // New Positions
-                var newPos = data.new_positions || [];
                 var npContainer = document.getElementById('new-positions');
-                if (newPos.length === 0) {
+                if (newPositions.length === 0) {
                     npContainer.innerHTML = '<div class="empty-state">No new positions detected in latest filings.</div>';
                 } else {
                     var npHtml = '';
-                    for (var np = 0; np < newPos.length; np++) {
-                        var pos = newPos[np];
+                    for (var np = 0; np < newPositions.length; np++) {
+                        var pos = newPositions[np];
                         npHtml += '<div class="conviction-row">' +
-                            '<span class="conviction-ticker">' + escHtml(pos.ticker) + '</span>' +
+                            '<span class="conviction-ticker">' + escHtml(pos.ticker || '--') + '</span>' +
                             '<span class="conviction-detail">' + escHtml(pos.fund) + ' opened new position' +
                             (pos.shares ? ' &mdash; ' + formatNum(pos.shares, 0) + ' shares' : '') +
-                            (pos.value ? ' (' + formatMoney(pos.value) + ')' : '') + '</span>' +
+                            (pos.value ? ' ($' + formatNum(pos.value / 1000, 0) + 'M)' : '') + '</span>' +
                             '<span class="badge badge-blue">NEW</span>' +
                             '</div>';
                     }
@@ -1062,8 +1113,9 @@
                     return;
                 }
 
-                // Signal sources
-                var sources = data.sources || [];
+                // API returns data.data = { type, entries: [...] }
+                var lbData = data.data || {};
+                var sources = lbData.entries || data.sources || [];
                 if (sources.length === 0) {
                     document.getElementById('leaderboard-tbody').innerHTML = '<tr><td colspan="7" class="empty-state">Collecting data &mdash; performance tracking will populate after 7+ days of signals.</td></tr>';
                 } else {
@@ -1123,9 +1175,10 @@
                     return;
                 }
 
-                // Head-to-head
-                var challenger = data.challenger || {};
-                var bestAlgo = data.best_algo || {};
+                // API returns data.data (list), first item has challenger + best_algo objects
+                var sdData = (data.data && data.data.length > 0) ? data.data[0] : {};
+                var challenger = sdData.challenger || data.challenger || {};
+                var bestAlgo = sdData.best_algo || data.best_algo || {};
 
                 document.getElementById('ch-winrate').textContent = formatPct(challenger.win_rate);
                 document.getElementById('ch-winrate').className = 'metric-value ' + ((challenger.win_rate || 0) >= 50 ? 'pos' : 'neg');
