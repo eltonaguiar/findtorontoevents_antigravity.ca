@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sports Bet Winner Finder | Find Toronto Events</title>
+    <meta name="description" content="AI-powered sports betting analysis with Kelly criterion sizing. Track NBA, NHL, NFL, MLB odds and find value bets with paper trading simulation.">
+    <link rel="canonical" href="https://findtorontoevents.ca/live-monitor/sports-betting.html">
+    <meta name="keywords" content="sports betting, AI picks, Kelly criterion, NBA odds, NHL betting, value bets, sports predictions, paper betting">
+    <meta property="og:title" content="Sports Bet Winner Finder | Find Toronto Events">
+    <meta property="og:description" content="AI-powered sports betting analysis with Kelly criterion sizing. Track NBA, NHL, NFL, MLB odds and find value bets.">
+    <meta property="og:url" content="https://findtorontoevents.ca/live-monitor/sports-betting.html">
+    <meta property="og:site_name" content="Find Toronto Events">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Sports Bet Winner Finder | Find Toronto Events">
+    <meta name="twitter:description" content="AI-powered sports betting analysis. Track NBA, NHL, NFL, MLB odds and find value bets.">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         :root {
@@ -208,6 +219,33 @@
         .pick-reasons ul { list-style: none; padding: 0; margin: 0; }
         .pick-reasons li { font-size: 0.75rem; color: var(--text-dim); padding: 0.1rem 0; }
         .pick-reasons li::before { content: '\2022'; color: var(--accent); margin-right: 0.4rem; }
+
+        /* Team rankings */
+        .pick-rankings { display: flex; gap: 0.8rem; align-items: center; margin-bottom: 0.5rem; font-size: 0.78rem; flex-wrap: wrap; }
+        .team-rank { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--text-dim); }
+        .team-rank .rank-num { font-weight: 700; color: var(--text); }
+        .team-rank .rank-num.top5 { color: var(--green); }
+        .team-rank .rank-num.top10 { color: var(--blue); }
+        .team-rank .rank-num.bottom10 { color: var(--red); }
+        .team-rank .rank-record { color: var(--text-dim); font-size: 0.72rem; }
+
+        /* Bet amount — prominent display */
+        .pick-bet-amount {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.08));
+            border: 1px solid rgba(99,102,241,0.3); border-radius: 8px;
+            padding: 0.3rem 0.7rem; font-size: 0.9rem; font-weight: 700; color: var(--accent);
+        }
+        .pick-bet-amount .bet-label { font-size: 0.7rem; font-weight: 500; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Here's why section */
+        .pick-heres-why {
+            margin-top: 0.6rem; padding: 0.6rem 0.8rem;
+            background: linear-gradient(135deg, rgba(34,197,94,0.06), rgba(59,130,246,0.06));
+            border: 1px solid rgba(34,197,94,0.15); border-radius: 8px;
+            font-size: 0.78rem; color: var(--text); line-height: 1.5;
+        }
+        .pick-heres-why .why-label { font-weight: 700; color: var(--green); margin-bottom: 0.2rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; }
         .btn {
             background: var(--accent); color: #fff; border: none;
             padding: 0.4rem 0.8rem; border-radius: 6px;
@@ -556,11 +594,27 @@ function fetchPicks() {
             var gameDateLabel = fmtGameDate(b.game_date, b.commence_time);
             var gdClass = gameDateLabel === 'TODAY' ? 'badge-green' : gameDateLabel === 'TOMORROW' ? 'badge-yellow' : 'badge-blue';
 
+            // Build team ranking HTML
+            var rankHtml = '';
+            if (b.away_rank || b.home_rank) {
+                rankHtml = '<div class="pick-rankings">';
+                if (b.away_rank) {
+                    var arCls = b.away_rank <= 5 ? 'top5' : b.away_rank <= 10 ? 'top10' : b.away_rank > 22 ? 'bottom10' : '';
+                    rankHtml += '<span class="team-rank">' + (b.away_team||'').split(' ').pop() + ': <span class="rank-num ' + arCls + '">#' + b.away_rank + '</span> <span class="rank-record">(' + (b.away_record||'') + ')</span></span>';
+                }
+                if (b.home_rank) {
+                    var hrCls = b.home_rank <= 5 ? 'top5' : b.home_rank <= 10 ? 'top10' : b.home_rank > 22 ? 'bottom10' : '';
+                    rankHtml += '<span class="team-rank">' + (b.home_team||'').split(' ').pop() + ': <span class="rank-num ' + hrCls + '">#' + b.home_rank + '</span> <span class="rank-record">(' + (b.home_record||'') + ')</span></span>';
+                }
+                rankHtml += '</div>';
+            }
+
             html += '<div class="pick-card-enhanced ' + borderGrade + '">'
                 + '<div class="pick-top-row">'
                 +   '<div class="pick-main-col">'
                 +     '<div class="pick-header"><span class="pick-sport">' + (b.sport_short || b.sport) + ' &bull; ' + marketDisplay + '</span><span class="pick-time"><span class="badge ' + gdClass + '" style="margin-right:0.4rem">' + gameDateLabel + '</span>' + fmtTime(b.commence_time) + '</span></div>'
                 +     '<div class="pick-teams">' + (b.away_team||'') + ' @ ' + (b.home_team||'') + '</div>'
+                +     rankHtml
                 +   '</div>'
                 +   '<div class="pick-rating-col">'
                 +     '<div class="rating-badge rating-' + gradeClass + '" title="Score: ' + scoreVal + '/100 — based on EV%, book consensus, market type, and timing">' + grade + '</div>'
@@ -570,12 +624,12 @@ function fetchPicks() {
                 + '</div>'
                 + '<div class="pick-detail">Pick: <strong>' + (b.outcome_name||b.bet_type||'') + '</strong> at <strong>' + (b.best_book||'') + '</strong>' + isCa + '</div>'
                 + '<div class="pick-detail">Odds: <strong>' + parseFloat(b.best_odds||0).toFixed(2) + '</strong> (' + amOdds + ') &bull; EV: <span class="text-green"><strong>+' + fmtPct(b.ev_pct) + '</strong></span></div>'
-                + '<div class="pick-detail">Kelly bet: <strong>' + fmtUsd(b.kelly_bet||0) + '</strong></div>'
-                + '<div style="margin-top:0.6rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">'
+                + '<div style="margin-top:0.5rem;display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap">'
+                + '<span class="pick-bet-amount"><span class="bet-label">Bet&nbsp;</span>' + fmtUsd(b.kelly_bet||0) + '</span>'
                 + '<span class="rec-badge ' + recClass + '">' + rec + '</span>'
                 + '<span class="badge badge-green">+EV ' + fmtPct(b.ev_pct) + '</span>'
-                + (recDetail ? '<span style="font-size:0.75rem;color:var(--text-dim)">' + recDetail + '</span>' : '')
-                + '</div>';
+                + '</div>'
+                + (recDetail ? '<div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">' + recDetail + '</div>' : '');
 
             // Rating reasons
             var reasons = b.rating_reasons || [];
@@ -585,6 +639,11 @@ function fetchPicks() {
                     html += '<li>' + reasons[r] + '</li>';
                 }
                 html += '</ul></div>';
+            }
+
+            // "Here's Why" for B+ or higher
+            if (b.heres_why) {
+                html += '<div class="pick-heres-why"><div class="why-label">Here\'s Why</div>' + b.heres_why + '</div>';
             }
             html += '</div>';
         }

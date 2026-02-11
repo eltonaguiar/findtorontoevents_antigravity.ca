@@ -1,17 +1,19 @@
 <?php
 /**
  * News Feed Aggregator API
- * Fetches, caches, and serves RSS news from 20+ sources across 4 categories.
+ * Fetches, caches, and serves RSS news from 100+ sources across 4 categories.
  *
  * Actions:
- *   ?action=get       — Read articles (cache + DB), filtered by category/source/search
+ *   ?action=get       — Read articles (cache + DB), filtered by category/source/search/tag
  *   ?action=fetch     — Force re-fetch feeds, store to DB
  *   ?action=sources   — List all configured sources with status
+ *   ?action=tags      — List all available tags with article counts
  *
  * Params:
  *   &category=toronto|canada|us|world|all  (default: all)
  *   &source=cbc_toronto|blogto|...         (filter by source key)
  *   &search=keyword                        (search titles/descriptions)
+ *   &tag=crime|events|positive|...         (filter by tag)
  *   &page=1                                (pagination)
  *   &per_page=20                           (items per page, max 50)
  *
@@ -33,36 +35,159 @@ require_once(dirname(__FILE__) . '/news_feed_schema.php');
 
 function _nf_get_sources() {
     return array(
-        // ── Toronto ──
-        array('name' => 'BlogTO',               'key' => 'blogto',            'url' => 'https://feeds.feedburner.com/blogto',                                          'category' => 'toronto', 'domain' => 'blogto.com'),
-        array('name' => 'Narcity Toronto',       'key' => 'narcity_toronto',   'url' => 'https://www.narcity.com/feeds/toronto.rss',                                    'category' => 'toronto', 'domain' => 'narcity.com'),
-        array('name' => 'CBC Toronto',           'key' => 'cbc_toronto',       'url' => 'https://www.cbc.ca/webfeed/rss/rss-canada-toronto',                            'category' => 'toronto', 'domain' => 'cbc.ca'),
-        array('name' => 'Global News Toronto',   'key' => 'global_toronto',    'url' => 'https://globalnews.ca/toronto/feed/',                                          'category' => 'toronto', 'domain' => 'globalnews.ca'),
-        array('name' => 'NOW Toronto',           'key' => 'now_toronto',       'url' => 'https://nowtoronto.com/feed/',                                                 'category' => 'toronto', 'domain' => 'nowtoronto.com'),
-        array('name' => 'Toronto Sun',           'key' => 'toronto_sun',       'url' => 'https://torontosun.com/category/news/feed',                                    'category' => 'toronto', 'domain' => 'torontosun.com'),
-        array('name' => 'Daily Hive Toronto',    'key' => 'dailyhive_toronto', 'url' => 'https://dailyhive.com/feed/toronto',                                           'category' => 'toronto', 'domain' => 'dailyhive.com'),
-        array('name' => 'Streets of Toronto',    'key' => 'streets_toronto',   'url' => 'https://streetsoftoronto.com/feed/',                                           'category' => 'toronto', 'domain' => 'streetsoftoronto.com'),
+        // ════════════════════════════════════════════════════════
+        //  TORONTO — Major News (10)
+        // ════════════════════════════════════════════════════════
+        array('name' => 'BlogTO',               'key' => 'blogto',            'url' => 'https://feeds.feedburner.com/blogto',                                          'category' => 'toronto', 'domain' => 'blogto.com',          'tags' => 'events,food,lifestyle,downtown'),
+        array('name' => 'Narcity Toronto',       'key' => 'narcity_toronto',   'url' => 'https://www.narcity.com/feeds/toronto.rss',                                    'category' => 'toronto', 'domain' => 'narcity.com',         'tags' => 'events,lifestyle,deals,positive'),
+        array('name' => 'CBC Toronto',           'key' => 'cbc_toronto',       'url' => 'https://www.cbc.ca/webfeed/rss/rss-canada-toronto',                            'category' => 'toronto', 'domain' => 'cbc.ca',              'tags' => 'crime,politics,transit'),
+        array('name' => 'Global News Toronto',   'key' => 'global_toronto',    'url' => 'https://globalnews.ca/toronto/feed/',                                          'category' => 'toronto', 'domain' => 'globalnews.ca',       'tags' => 'crime,politics'),
+        array('name' => 'NOW Toronto',           'key' => 'now_toronto',       'url' => 'https://nowtoronto.com/feed/',                                                 'category' => 'toronto', 'domain' => 'nowtoronto.com',      'tags' => 'events,arts,food,lifestyle,positive'),
+        array('name' => 'Toronto Sun',           'key' => 'toronto_sun',       'url' => 'https://torontosun.com/category/news/feed',                                    'category' => 'toronto', 'domain' => 'torontosun.com',      'tags' => 'crime,politics,sports'),
+        array('name' => 'Daily Hive Toronto',    'key' => 'dailyhive_toronto', 'url' => 'https://dailyhive.com/feed/toronto',                                           'category' => 'toronto', 'domain' => 'dailyhive.com',       'tags' => 'events,food,lifestyle,deals'),
+        array('name' => 'CityNews Toronto',      'key' => 'citynews_toronto',  'url' => 'https://toronto.citynews.ca/feed/',                                            'category' => 'toronto', 'domain' => 'toronto.citynews.ca', 'tags' => 'crime,politics,transit'),
+        array('name' => 'Toronto Star - GTA',    'key' => 'star_gta',          'url' => 'https://www.thestar.com/search/?f=rss&t=article&c=news/gta*&l=50&s=start_time&sd=desc', 'category' => 'toronto', 'domain' => 'thestar.com', 'tags' => 'crime,politics,gta'),
+        array('name' => 'City of Toronto',       'key' => 'city_toronto',      'url' => 'https://www.toronto.ca/news/feed/',                                            'category' => 'toronto', 'domain' => 'toronto.ca',          'tags' => 'politics,events,transit,positive'),
 
-        // ── Canadian ──
-        array('name' => 'CBC Canada',            'key' => 'cbc_canada',        'url' => 'https://www.cbc.ca/webfeed/rss/rss-canada',                                    'category' => 'canada',  'domain' => 'cbc.ca'),
-        array('name' => 'CBC Politics',          'key' => 'cbc_politics',      'url' => 'https://www.cbc.ca/webfeed/rss/rss-politics',                                  'category' => 'canada',  'domain' => 'cbc.ca'),
-        array('name' => 'Global News Canada',    'key' => 'global_canada',     'url' => 'https://globalnews.ca/feed/',                                                  'category' => 'canada',  'domain' => 'globalnews.ca'),
-        array('name' => 'National Post',         'key' => 'national_post',     'url' => 'https://nationalpost.com/feed/',                                               'category' => 'canada',  'domain' => 'nationalpost.com'),
-        array('name' => 'CBC Business',          'key' => 'cbc_business',      'url' => 'https://www.cbc.ca/webfeed/rss/rss-business',                                  'category' => 'canada',  'domain' => 'cbc.ca'),
-        array('name' => 'CBC Top Stories',       'key' => 'cbc_top',           'url' => 'https://www.cbc.ca/webfeed/rss/rss-topstories',                                'category' => 'canada',  'domain' => 'cbc.ca'),
+        // ════════════════════════════════════════════════════════
+        //  TORONTO — Lifestyle, Culture & Events (14)
+        // ════════════════════════════════════════════════════════
+        array('name' => 'Toronto Life',          'key' => 'toronto_life',      'url' => 'https://torontolife.com/feed/',                                                'category' => 'toronto', 'domain' => 'torontolife.com',     'tags' => 'food,lifestyle,real_estate,arts,positive'),
+        array('name' => 'Toronto Guardian',      'key' => 'toronto_guardian',  'url' => 'https://torontoguardian.com/feed/',                                            'category' => 'toronto', 'domain' => 'torontoguardian.com', 'tags' => 'positive,arts,food,hero,events'),
+        array('name' => 'View the Vibe',         'key' => 'viewthevibe',       'url' => 'https://viewthevibe.com/feed/',                                                'category' => 'toronto', 'domain' => 'viewthevibe.com',     'tags' => 'events,food,lifestyle,positive'),
+        array('name' => 'Over Here Toronto',     'key' => 'overhere_toronto',  'url' => 'https://overheretoronto.com/feed/',                                            'category' => 'toronto', 'domain' => 'overheretoronto.com', 'tags' => 'events,food,lifestyle,positive'),
+        array('name' => 'Curiocity',             'key' => 'curiocity',         'url' => 'https://curiocity.com/feed/',                                                  'category' => 'toronto', 'domain' => 'curiocity.com',       'tags' => 'events,deals,food,lifestyle,positive'),
+        array('name' => 'Streets of Toronto',    'key' => 'streets_toronto',   'url' => 'https://streetsoftoronto.com/feed/',                                           'category' => 'toronto', 'domain' => 'streetsoftoronto.com','tags' => 'lifestyle,arts,positive,downtown'),
+        array('name' => 'INsauga',               'key' => 'insauga',           'url' => 'https://www.insauga.com/feed/',                                                'category' => 'toronto', 'domain' => 'insauga.com',         'tags' => 'crime,mississauga,brampton,gta'),
+        array('name' => 'Toronto Star - Life',   'key' => 'star_life',         'url' => 'https://www.thestar.com/search/?f=rss&t=article&c=life*&l=50&s=start_time&sd=desc', 'category' => 'toronto', 'domain' => 'thestar.com', 'tags' => 'lifestyle,food,positive,health'),
+        array('name' => 'Toronto Star - Arts',   'key' => 'star_entertainment','url' => 'https://www.thestar.com/search/?f=rss&t=article&c=entertainment*&l=50&s=start_time&sd=desc', 'category' => 'toronto', 'domain' => 'thestar.com', 'tags' => 'arts,events,positive'),
+        array('name' => 'Intermission Magazine', 'key' => 'intermission',      'url' => 'https://www.intermissionmagazine.ca/feed/',                                    'category' => 'toronto', 'domain' => 'intermissionmagazine.ca', 'tags' => 'arts,events,positive'),
+        array('name' => 'TorontoToday',          'key' => 'torontotoday',      'url' => 'https://www.torontotoday.ca/rss',                                              'category' => 'toronto', 'domain' => 'torontotoday.ca',     'tags' => 'crime,politics'),
+        array('name' => 'Toronto Food Blog',     'key' => 'to_food_blog',      'url' => 'https://torontofoodblog.com/feed/',                                            'category' => 'toronto', 'domain' => 'torontofoodblog.com', 'tags' => 'food,positive,downtown'),
+        array('name' => 'Diary of a TO Girl',    'key' => 'diary_to_girl',     'url' => 'https://diaryofatorontogirl.com/feed/',                                        'category' => 'toronto', 'domain' => 'diaryofatorontogirl.com', 'tags' => 'lifestyle,deals,food,events,positive'),
+        array('name' => 'Storeys',               'key' => 'storeys',           'url' => 'https://storeys.com/feeds/feed.rss',                                           'category' => 'toronto', 'domain' => 'storeys.com',         'tags' => 'real_estate,downtown'),
 
-        // ── US ──
-        array('name' => 'CNN',                   'key' => 'cnn',              'url' => 'http://rss.cnn.com/rss/cnn_topstories.rss',                                     'category' => 'us',      'domain' => 'cnn.com'),
-        array('name' => 'NPR',                   'key' => 'npr',              'url' => 'https://feeds.npr.org/1001/rss.xml',                                            'category' => 'us',      'domain' => 'npr.org'),
-        array('name' => 'NBC News',              'key' => 'nbc_news',         'url' => 'https://feeds.nbcnews.com/nbcnews/public/news',                                 'category' => 'us',      'domain' => 'nbcnews.com'),
+        // ════════════════════════════════════════════════════════
+        //  TORONTO — Blogs & Independent Media (5)
+        // ════════════════════════════════════════════════════════
+        array('name' => 'The Local (Toronto)',   'key' => 'the_local_to',      'url' => 'https://thelocal.to/feed/',                                                    'category' => 'toronto', 'domain' => 'thelocal.to',         'tags' => 'politics,transit,health'),
+        array('name' => 'Spacing Toronto',       'key' => 'spacing_toronto',   'url' => 'https://spacing.ca/toronto/feed/',                                             'category' => 'toronto', 'domain' => 'spacing.ca',          'tags' => 'transit,politics,downtown'),
+        array('name' => 'Toronto Mike',          'key' => 'toronto_mike',      'url' => 'https://torontomike.com/feed/',                                                'category' => 'toronto', 'domain' => 'torontomike.com',     'tags' => 'lifestyle,sports,positive'),
+        array('name' => 'The Varsity (U of T)',  'key' => 'the_varsity',       'url' => 'https://thevarsity.ca/feed/',                                                  'category' => 'toronto', 'domain' => 'thevarsity.ca',       'tags' => 'politics,arts,downtown'),
 
-        // ── US ── (cont.)
-        array('name' => 'Dexerto',               'key' => 'dexerto',          'url' => 'https://www.dexerto.com/feed/',                                                  'category' => 'us',      'domain' => 'dexerto.com'),
+        // ════════════════════════════════════════════════════════
+        //  TORONTO — YouTube Channels (10)
+        // ════════════════════════════════════════════════════════
+        array('name' => '6ixBuzzTV',             'key' => '6ixbuzztv',         'url' => 'https://www.youtube.com/feeds/videos.xml?channel_id=UCAlBsloUr2UdJiappAG1EVw', 'category' => 'toronto', 'domain' => '6ix.buzz',            'tags' => 'crime,lifestyle,events'),
+        array('name' => 'BlogTO (YouTube)',      'key' => 'blogto_yt',         'url' => 'https://www.youtube.com/feeds/videos.xml?channel_id=UCfIXdjgUFGqVwR3GjmiNneQ', 'category' => 'toronto', 'domain' => 'blogto.com',          'tags' => 'events,food,lifestyle,positive'),
+        array('name' => 'CP24 (YouTube)',        'key' => 'cp24_yt',           'url' => 'https://www.youtube.com/feeds/videos.xml?channel_id=UCnW7gOT-W0MjNrCmB47u3yA', 'category' => 'toronto', 'domain' => 'cp24.com',            'tags' => 'crime,politics,transit'),
+        array('name' => 'CityNews Toronto YT',   'key' => 'citynews_yt',       'url' => 'https://www.youtube.com/feeds/videos.xml?channel_id=UCsWM5Rti6cNixla4P4KOr2g', 'category' => 'toronto', 'domain' => 'toronto.citynews.ca', 'tags' => 'crime,politics'),
+        array('name' => 'Toronto Star (YT)',     'key' => 'star_yt',           'url' => 'https://www.youtube.com/feeds/videos.xml?channel_id=UCNcfIRE3HGJbSd5-L83GVcw', 'category' => 'toronto', 'domain' => 'thestar.com',         'tags' => 'crime,politics,lifestyle'),
+        array('name' => 'Narcity (YouTube)',     'key' => 'narcity_yt',        'url' => 'https://www.youtube.com/feeds/videos.xml?channel_id=UCMPF7ABQ9q5V8bj3SIuSGOQ', 'category' => 'toronto', 'domain' => 'narcity.com',         'tags' => 'events,lifestyle,positive'),
+        array('name' => 'Explore TO (YT)',       'key' => 'explore_to_yt',     'url' => 'https://www.youtube.com/feeds/videos.xml?channel_id=UCB-0Xi2g_pQeaB8FPUqaImQ', 'category' => 'toronto', 'domain' => 'youtube.com',         'tags' => 'events,lifestyle,positive,downtown'),
+        array('name' => 'Toronto 4K Walks',      'key' => 'to_walks_yt',       'url' => 'https://www.youtube.com/feeds/videos.xml?channel_id=UCFVr-RaFgxluqPrVuYGb2lQ', 'category' => 'toronto', 'domain' => 'youtube.com',         'tags' => 'lifestyle,positive,downtown'),
+        array('name' => 'Peter Santenello TO',   'key' => 'santenello_yt',     'url' => 'https://www.youtube.com/feeds/videos.xml?channel_id=UC3Vuq4Q1bKFtAkEjRsNz5FA', 'category' => 'toronto', 'domain' => 'youtube.com',         'tags' => 'lifestyle,positive'),
+        array('name' => 'Daily Hive (YT)',       'key' => 'dailyhive_yt',      'url' => 'https://www.youtube.com/feeds/videos.xml?channel_id=UCuJiUAFtpwuAJJI5f_EB2Pw', 'category' => 'toronto', 'domain' => 'dailyhive.com',       'tags' => 'events,food,lifestyle'),
 
-        // ── World ──
-        array('name' => 'BBC World',             'key' => 'bbc_world',        'url' => 'https://feeds.bbci.co.uk/news/world/rss.xml',                                   'category' => 'world',   'domain' => 'bbc.co.uk'),
-        array('name' => 'Al Jazeera',            'key' => 'aljazeera',        'url' => 'https://www.aljazeera.com/xml/rss/all.xml',                                     'category' => 'world',   'domain' => 'aljazeera.com'),
-        array('name' => 'The Guardian World',    'key' => 'guardian_world',   'url' => 'https://www.theguardian.com/world/rss',                                          'category' => 'world',   'domain' => 'theguardian.com')
+        // ════════════════════════════════════════════════════════
+        //  TORONTO — Reddit (10)
+        // ════════════════════════════════════════════════════════
+        array('name' => 'r/toronto',             'key' => 'reddit_toronto',    'url' => 'https://www.reddit.com/r/toronto/.rss',                                        'category' => 'toronto', 'domain' => 'reddit.com',          'tags' => 'crime,events,transit,downtown'),
+        array('name' => 'r/askTO',               'key' => 'reddit_askto',      'url' => 'https://www.reddit.com/r/askTO/.rss',                                          'category' => 'toronto', 'domain' => 'reddit.com',          'tags' => 'lifestyle,events'),
+        array('name' => 'r/TorontoEvents',       'key' => 'reddit_to_events',  'url' => 'https://www.reddit.com/r/Torontoevents/.rss',                                  'category' => 'toronto', 'domain' => 'reddit.com',          'tags' => 'events'),
+        array('name' => 'r/FoodToronto',         'key' => 'reddit_food_to',    'url' => 'https://www.reddit.com/r/FoodToronto/.rss',                                    'category' => 'toronto', 'domain' => 'reddit.com',          'tags' => 'food'),
+        array('name' => 'r/TorontoRealEstate',   'key' => 'reddit_to_re',      'url' => 'https://www.reddit.com/r/TorontoRealEstate/.rss',                              'category' => 'toronto', 'domain' => 'reddit.com',          'tags' => 'real_estate'),
+        array('name' => 'r/torontobiking',       'key' => 'reddit_to_bike',    'url' => 'https://www.reddit.com/r/torontobiking/.rss',                                  'category' => 'toronto', 'domain' => 'reddit.com',          'tags' => 'transit,lifestyle,positive'),
+        array('name' => 'r/Raptors',             'key' => 'reddit_raptors',    'url' => 'https://www.reddit.com/r/torontoraptors/.rss',                                 'category' => 'toronto', 'domain' => 'reddit.com',          'tags' => 'sports'),
+        array('name' => 'r/Leafs',               'key' => 'reddit_leafs',      'url' => 'https://www.reddit.com/r/leafs/.rss',                                          'category' => 'toronto', 'domain' => 'reddit.com',          'tags' => 'sports'),
+        array('name' => 'r/TFC',                 'key' => 'reddit_tfc',        'url' => 'https://www.reddit.com/r/tfc/.rss',                                            'category' => 'toronto', 'domain' => 'reddit.com',          'tags' => 'sports'),
+        array('name' => 'r/BlueJays',            'key' => 'reddit_bluejays',   'url' => 'https://www.reddit.com/r/Torontobluejays/.rss',                                'category' => 'toronto', 'domain' => 'reddit.com',          'tags' => 'sports'),
+
+        // ════════════════════════════════════════════════════════
+        //  GTA — Regional News (10)
+        // ════════════════════════════════════════════════════════
+        array('name' => 'r/Mississauga',         'key' => 'reddit_mississauga','url' => 'https://www.reddit.com/r/mississauga/.rss',                                    'category' => 'toronto', 'domain' => 'reddit.com',          'tags' => 'mississauga,gta'),
+        array('name' => 'r/Brampton',            'key' => 'reddit_brampton',   'url' => 'https://www.reddit.com/r/Brampton/.rss',                                       'category' => 'toronto', 'domain' => 'reddit.com',          'tags' => 'brampton,gta'),
+        array('name' => 'r/Ontario',             'key' => 'reddit_ontario',    'url' => 'https://www.reddit.com/r/ontario/.rss',                                        'category' => 'canada',  'domain' => 'reddit.com',          'tags' => 'politics,gta'),
+        array('name' => 'York Region',           'key' => 'york_region',       'url' => 'https://www.yorkregion.com/search/?f=rss&t=article&c=news*&l=50&s=start_time&sd=desc', 'category' => 'toronto', 'domain' => 'yorkregion.com', 'tags' => 'york_region,gta,crime'),
+        array('name' => 'Mississauga.com',       'key' => 'mississauga_com',   'url' => 'https://www.mississauga.com/search/?f=rss&t=article&l=50&s=start_time&sd=desc','category' => 'toronto', 'domain' => 'mississauga.com',     'tags' => 'mississauga,gta'),
+        array('name' => 'Durham Region',         'key' => 'durham_region',     'url' => 'https://www.durhamregion.com/search/?f=rss&t=article&l=50&s=start_time&sd=desc','category' => 'toronto', 'domain' => 'durhamregion.com',   'tags' => 'durham,gta'),
+        array('name' => 'Inside Halton',         'key' => 'inside_halton',     'url' => 'https://www.insidehalton.com/search/?f=rss&t=article&c=news*&l=50&s=start_time&sd=desc', 'category' => 'toronto', 'domain' => 'insidehalton.com', 'tags' => 'halton,gta'),
+        array('name' => 'Hamilton Spectator',    'key' => 'hamilton_spec',     'url' => 'https://www.thespec.com/search/?f=rss&t=article&c=news*&l=50&s=start_time&sd=desc', 'category' => 'toronto', 'domain' => 'thespec.com', 'tags' => 'gta,crime'),
+        array('name' => 'Barrie Today',          'key' => 'barrie_today',      'url' => 'https://www.barrietoday.com/rss',                                              'category' => 'toronto', 'domain' => 'barrietoday.com',     'tags' => 'gta'),
+        array('name' => 'r/Hamilton',            'key' => 'reddit_hamilton',   'url' => 'https://www.reddit.com/r/Hamilton/.rss',                                        'category' => 'toronto', 'domain' => 'reddit.com',          'tags' => 'gta'),
+
+        // ════════════════════════════════════════════════════════
+        //  TORONTO — Sports (6)
+        // ════════════════════════════════════════════════════════
+        array('name' => 'Raptors HQ',            'key' => 'raptors_hq',        'url' => 'https://www.raptorshq.com/rss/current.xml',                                    'category' => 'toronto', 'domain' => 'raptorshq.com',       'tags' => 'sports,positive'),
+        array('name' => 'Pension Plan Puppets',   'key' => 'ppp_leafs',         'url' => 'https://www.pensionplanpuppets.com/rss/current.xml',                           'category' => 'toronto', 'domain' => 'pensionplanpuppets.com','tags' => 'sports'),
+        array('name' => 'Bluebird Banter',       'key' => 'bluebird_banter',   'url' => 'https://www.bluebirdbanter.com/rss/current.xml',                               'category' => 'toronto', 'domain' => 'bluebirdbanter.com',  'tags' => 'sports'),
+        array('name' => 'Waking the Red',        'key' => 'waking_red',        'url' => 'https://www.wakingthered.com/rss/current.xml',                                 'category' => 'toronto', 'domain' => 'wakingthered.com',    'tags' => 'sports'),
+        array('name' => 'Toronto Sun Sports',    'key' => 'sun_sports',        'url' => 'https://torontosun.com/category/sports/feed',                                  'category' => 'toronto', 'domain' => 'torontosun.com',      'tags' => 'sports'),
+        array('name' => 'Sportsnet',             'key' => 'sportsnet',         'url' => 'https://www.sportsnet.ca/feed/',                                               'category' => 'canada',  'domain' => 'sportsnet.ca',        'tags' => 'sports'),
+
+        // ════════════════════════════════════════════════════════
+        //  TORONTO — Deals, Free Stuff, Real Estate (5)
+        // ════════════════════════════════════════════════════════
+        array('name' => 'RedFlagDeals',          'key' => 'redflagdeals',      'url' => 'https://forums.redflagdeals.com/feed/forum/9',                                 'category' => 'canada',  'domain' => 'redflagdeals.com',    'tags' => 'deals,free_stuff'),
+        array('name' => 'SmartCanucks',          'key' => 'smartcanucks',      'url' => 'https://smartcanucks.ca/feed/',                                                'category' => 'canada',  'domain' => 'smartcanucks.ca',     'tags' => 'deals,free_stuff'),
+        array('name' => 'r/PersonalFinanceCA',   'key' => 'reddit_pfc',        'url' => 'https://www.reddit.com/r/PersonalFinanceCanada/.rss',                          'category' => 'canada',  'domain' => 'reddit.com',          'tags' => 'deals'),
+        array('name' => 'r/TODeals',             'key' => 'reddit_to_deals',   'url' => 'https://www.reddit.com/r/TODeals/.rss',                                        'category' => 'toronto', 'domain' => 'reddit.com',          'tags' => 'deals,free_stuff'),
+        array('name' => 'Buzz Connected',        'key' => 'buzzconnected',     'url' => 'https://buzzconnected.com/feed/',                                              'category' => 'canada',  'domain' => 'buzzconnected.com',   'tags' => 'deals,tech'),
+
+        // ════════════════════════════════════════════════════════
+        //  TORONTO — Tech & Startups (4)
+        // ════════════════════════════════════════════════════════
+        array('name' => 'BetaKit',               'key' => 'betakit',           'url' => 'https://betakit.com/feed/',                                                    'category' => 'canada',  'domain' => 'betakit.com',         'tags' => 'tech,positive'),
+        array('name' => 'IT World Canada',       'key' => 'itworldcanada',     'url' => 'https://www.itworldcanada.com/feed',                                           'category' => 'canada',  'domain' => 'itworldcanada.com',   'tags' => 'tech'),
+        array('name' => 'MobileSyrup',           'key' => 'mobilesyrup',       'url' => 'https://mobilesyrup.com/feed/',                                                'category' => 'canada',  'domain' => 'mobilesyrup.com',     'tags' => 'tech,deals'),
+        array('name' => 'r/TorontoJobs',         'key' => 'reddit_to_jobs',    'url' => 'https://www.reddit.com/r/TorontoJobs/.rss',                                    'category' => 'toronto', 'domain' => 'reddit.com',          'tags' => 'tech'),
+
+        // ════════════════════════════════════════════════════════
+        //  POSITIVE NEWS & WELLNESS (6)
+        // ════════════════════════════════════════════════════════
+        array('name' => 'Good News Network',     'key' => 'goodnewsnetwork',   'url' => 'https://www.goodnewsnetwork.org/feed/',                                        'category' => 'world',   'domain' => 'goodnewsnetwork.org', 'tags' => 'positive,hero'),
+        array('name' => 'Positive News',         'key' => 'positivenews',      'url' => 'https://www.positive.news/feed/',                                              'category' => 'world',   'domain' => 'positive.news',       'tags' => 'positive,hero'),
+        array('name' => 'r/UpliftingNews',       'key' => 'reddit_uplifting',  'url' => 'https://www.reddit.com/r/UpliftingNews/.rss',                                  'category' => 'world',   'domain' => 'reddit.com',          'tags' => 'positive,hero'),
+        array('name' => 'r/HumansBeingBros',     'key' => 'reddit_bros',       'url' => 'https://www.reddit.com/r/HumansBeingBros/.rss',                                'category' => 'world',   'domain' => 'reddit.com',          'tags' => 'positive,hero'),
+        array('name' => 'r/MadeMeSmile',         'key' => 'reddit_smile',      'url' => 'https://www.reddit.com/r/MadeMeSmile/.rss',                                   'category' => 'world',   'domain' => 'reddit.com',          'tags' => 'positive,hero'),
+        array('name' => 'Reasons to be Cheerful','key' => 'reasons_cheerful',  'url' => 'https://reasonstobecheerful.world/feed/',                                      'category' => 'world',   'domain' => 'reasonstobecheerful.world', 'tags' => 'positive,hero'),
+        array('name' => 'Sunny Skyz',           'key' => 'sunnyskyz',         'url' => 'https://www.sunnyskyz.com/rss.xml',                                                'category' => 'world',   'domain' => 'sunnyskyz.com',       'tags' => 'positive,hero'),
+        array('name' => 'r/GetMotivated',       'key' => 'reddit_motivated',  'url' => 'https://www.reddit.com/r/GetMotivated/.rss',                                       'category' => 'world',   'domain' => 'reddit.com',          'tags' => 'positive'),
+        array('name' => 'r/CanadaHousing',      'key' => 'reddit_ca_housing', 'url' => 'https://www.reddit.com/r/canadahousing/.rss',                                      'category' => 'canada',  'domain' => 'reddit.com',          'tags' => 'real_estate'),
+        array('name' => 'r/TorontoAnarchy',     'key' => 'reddit_to_anarchy', 'url' => 'https://www.reddit.com/r/TorontoAnarchy/.rss',                                     'category' => 'toronto', 'domain' => 'reddit.com',          'tags' => 'politics,lifestyle'),
+        array('name' => 'r/Scarborough',        'key' => 'reddit_scarborough','url' => 'https://www.reddit.com/r/Scarborough/.rss',                                        'category' => 'toronto', 'domain' => 'reddit.com',          'tags' => 'gta'),
+        array('name' => 'r/Etobicoke',          'key' => 'reddit_etobicoke',  'url' => 'https://www.reddit.com/r/Etobicoke/.rss',                                          'category' => 'toronto', 'domain' => 'reddit.com',          'tags' => 'gta'),
+
+        // ════════════════════════════════════════════════════════
+        //  CANADIAN (8)
+        // ════════════════════════════════════════════════════════
+        array('name' => 'CBC Canada',            'key' => 'cbc_canada',        'url' => 'https://www.cbc.ca/webfeed/rss/rss-canada',                                    'category' => 'canada',  'domain' => 'cbc.ca',              'tags' => 'politics,crime'),
+        array('name' => 'CBC Politics',          'key' => 'cbc_politics',      'url' => 'https://www.cbc.ca/webfeed/rss/rss-politics',                                  'category' => 'canada',  'domain' => 'cbc.ca',              'tags' => 'politics'),
+        array('name' => 'Global News Canada',    'key' => 'global_canada',     'url' => 'https://globalnews.ca/feed/',                                                  'category' => 'canada',  'domain' => 'globalnews.ca',       'tags' => 'politics,crime'),
+        array('name' => 'National Post',         'key' => 'national_post',     'url' => 'https://nationalpost.com/feed/',                                               'category' => 'canada',  'domain' => 'nationalpost.com',    'tags' => 'politics'),
+        array('name' => 'CBC Business',          'key' => 'cbc_business',      'url' => 'https://www.cbc.ca/webfeed/rss/rss-business',                                  'category' => 'canada',  'domain' => 'cbc.ca',              'tags' => 'tech'),
+        array('name' => 'CBC Top Stories',       'key' => 'cbc_top',           'url' => 'https://www.cbc.ca/webfeed/rss/rss-topstories',                                'category' => 'canada',  'domain' => 'cbc.ca',              'tags' => 'politics,crime'),
+        array('name' => 'CBC Arts',              'key' => 'cbc_arts',          'url' => 'https://www.cbc.ca/webfeed/rss/rss-arts',                                      'category' => 'canada',  'domain' => 'cbc.ca',              'tags' => 'arts,positive'),
+        array('name' => 'Macleans',              'key' => 'macleans',          'url' => 'https://macleans.ca/feed/',                                                    'category' => 'canada',  'domain' => 'macleans.ca',         'tags' => 'politics,lifestyle'),
+
+        // ════════════════════════════════════════════════════════
+        //  US (4)
+        // ════════════════════════════════════════════════════════
+        array('name' => 'CNN',                   'key' => 'cnn',              'url' => 'http://rss.cnn.com/rss/cnn_topstories.rss',                                     'category' => 'us',      'domain' => 'cnn.com',             'tags' => 'politics,crime'),
+        array('name' => 'NPR',                   'key' => 'npr',              'url' => 'https://feeds.npr.org/1001/rss.xml',                                            'category' => 'us',      'domain' => 'npr.org',             'tags' => 'politics'),
+        array('name' => 'NBC News',              'key' => 'nbc_news',         'url' => 'https://feeds.nbcnews.com/nbcnews/public/news',                                 'category' => 'us',      'domain' => 'nbcnews.com',         'tags' => 'politics,crime'),
+        array('name' => 'Dexerto',               'key' => 'dexerto',          'url' => 'https://www.dexerto.com/feed/',                                                  'category' => 'us',      'domain' => 'dexerto.com',         'tags' => 'tech,lifestyle'),
+
+        // ════════════════════════════════════════════════════════
+        //  WORLD (5)
+        // ════════════════════════════════════════════════════════
+        array('name' => 'BBC World',             'key' => 'bbc_world',        'url' => 'https://feeds.bbci.co.uk/news/world/rss.xml',                                   'category' => 'world',   'domain' => 'bbc.co.uk',           'tags' => 'politics,crime'),
+        array('name' => 'Al Jazeera',            'key' => 'aljazeera',        'url' => 'https://www.aljazeera.com/xml/rss/all.xml',                                     'category' => 'world',   'domain' => 'aljazeera.com',       'tags' => 'politics'),
+        array('name' => 'The Guardian World',    'key' => 'guardian_world',   'url' => 'https://www.theguardian.com/world/rss',                                          'category' => 'world',   'domain' => 'theguardian.com',     'tags' => 'politics'),
+        array('name' => 'Reuters Top News',      'key' => 'reuters',          'url' => 'https://www.reutersagency.com/feed/',                                           'category' => 'world',   'domain' => 'reuters.com',         'tags' => 'politics'),
+        array('name' => 'r/WorldNews',           'key' => 'reddit_worldnews', 'url' => 'https://www.reddit.com/r/worldnews/.rss',                                       'category' => 'world',   'domain' => 'reddit.com',          'tags' => 'politics,crime')
     );
 }
 
@@ -258,6 +383,9 @@ function _nf_parse_rss($xml_string, $source) {
         // Image
         $image = _nf_extract_image($item_xml);
 
+        $source_tags = isset($source['tags']) ? $source['tags'] : '';
+        $tags = _nf_auto_tag($title, $desc, $source_tags);
+
         $articles[] = array(
             'title'       => $title,
             'link'        => $link,
@@ -268,7 +396,8 @@ function _nf_parse_rss($xml_string, $source) {
             'pub_date'    => date('Y-m-d H:i:s', $ts),
             'pub_ts'      => $ts,
             'description' => $desc,
-            'image_url'   => $image
+            'image_url'   => $image,
+            'tags'        => $tags
         );
     }
 
@@ -348,16 +477,16 @@ function _nf_parse_rss_simplexml($xml_string, $source) {
         $desc = preg_replace('/\s+/', ' ', $desc);
         if (strlen($desc) > 300) $desc = substr($desc, 0, 297) . '...';
 
-        // Image via media namespace
+        // Image via media namespace (@ suppresses PHP 5.2 SimpleXML node warnings)
         $image = '';
-        $media = $item->children($media_ns);
-        if (isset($media->thumbnail)) {
-            $attrs = $media->thumbnail->attributes();
-            if (isset($attrs['url'])) $image = (string)$attrs['url'];
+        $media = @$item->children($media_ns);
+        if ($media && @isset($media->thumbnail)) {
+            $attrs = @$media->thumbnail->attributes();
+            if ($attrs && isset($attrs['url'])) $image = (string)$attrs['url'];
         }
-        if (empty($image) && isset($media->content)) {
-            $attrs = $media->content->attributes();
-            if (isset($attrs['url'])) $image = (string)$attrs['url'];
+        if (empty($image) && $media && @isset($media->content)) {
+            $attrs = @$media->content->attributes();
+            if ($attrs && isset($attrs['url'])) $image = (string)$attrs['url'];
         }
         if (empty($image) && isset($item->enclosure)) {
             $enc_attrs = $item->enclosure->attributes();
@@ -374,6 +503,9 @@ function _nf_parse_rss_simplexml($xml_string, $source) {
             }
         }
 
+        $source_tags = isset($source['tags']) ? $source['tags'] : '';
+        $tags = _nf_auto_tag($title, $desc, $source_tags);
+
         $articles[] = array(
             'title'       => $title,
             'link'        => $link,
@@ -384,7 +516,8 @@ function _nf_parse_rss_simplexml($xml_string, $source) {
             'pub_date'    => date('Y-m-d H:i:s', $ts),
             'pub_ts'      => $ts,
             'description' => $desc,
-            'image_url'   => $image
+            'image_url'   => $image,
+            'tags'        => $tags
         );
     }
 
@@ -406,6 +539,67 @@ function _nf_time_ago($datetime_str) {
     if ($diff < 172800) return 'yesterday';
     if ($diff < 604800) return floor($diff / 86400) . 'd ago';
     return date('M j', $ts);
+}
+
+// ────────────────────────────────────────────────────────────
+//  Auto-Tagging Engine
+// ────────────────────────────────────────────────────────────
+
+function _nf_get_tag_rules() {
+    return array(
+        'crime'      => array('crime','murder','shooting','stabbing','arrest','charged','police','homicide','robbery','assault','stolen','theft','fraud','suspect','weapon','gun','knife','fatal','killed','dead body','drug bust','carjack','break-in','arson'),
+        'events'     => array('event','festival','concert','parade','exhibition','fair','show','gala','marathon','fireworks','carnival','market','open house','meetup','workshop','things to do','this week','this weekend','coming up','whats on','upcoming','tickets','admission'),
+        'positive'   => array('hero','inspiring','heartwarming','good news','uplifting','amazing','celebrates','award','achievement','milestone','record-breaking','breakthrough','community spirit','volunteer','donation','rescued','saved','kindness','generous','hope','beautiful','wonderful','incredible','free','giveaway'),
+        'hero'       => array('hero','rescued','saved a life','bravery','courage','firefighter saves','officer saves','good samaritan','selfless','risked','helped'),
+        'food'       => array('restaurant','food','chef','recipe','brunch','dinner','lunch','cafe','bakery','pizza','sushi','patio','cocktail','beer','wine','foodie','tasting','michelin','menu','kitchen','dining'),
+        'deals'      => array('deal','discount','sale','coupon','promo','free','giveaway','freebie','clearance','bargain','save money','cheap','affordable','price drop','offer'),
+        'free_stuff' => array('free','giveaway','freebie','no cost','complimentary','gratis','free admission','free entry','free sample'),
+        'sports'     => array('raptors','leafs','blue jays','bluejays','tfc','toronto fc','argonauts','nhl','nba','mlb','mls','playoff','championship','goal','score','game','match','season','traded','draft','coach'),
+        'transit'    => array('ttc','subway','streetcar','bus route','transit','go train','go transit','presto','commute','bike lane','cycling','road closure','traffic','highway','dvp','gardiner','401','transit fare'),
+        'real_estate'=> array('condo','housing','real estate','rent','mortgage','property','development','tower','building permit','zoning','affordable housing','home price','listing'),
+        'arts'       => array('theatre','theater','art','gallery','museum','film','movie','music','dance','opera','comedy','exhibit','performance','artist','culture','literary','book','author'),
+        'tech'       => array('startup','tech','ai','artificial intelligence','app','software','innovation','digital','coding','cybersecurity','data','crypto','blockchain','fintech'),
+        'politics'   => array('mayor','council','election','premier','trudeau','ford','government','legislation','bill','policy','vote','liberal','conservative','ndp','parliament','senate','bylaw','budget'),
+        'health'     => array('health','hospital','doctor','covid','vaccine','mental health','wellness','fitness','medical','cancer','heart','emergency room','er wait','healthcare'),
+        'weather'    => array('weather','storm','snow','rain','tornado','heat wave','cold warning','flood','ice','forecast','temperature','wind','freezing'),
+        'downtown'   => array('downtown','king street','queen street','yonge','bloor','kensington','distillery','harbourfront','cn tower','eaton','dundas','st lawrence','union station','financial district','liberty village','entertainment district','waterfront'),
+        'mississauga'=> array('mississauga','square one','port credit','streetsville','erin mills','hurontario','peel region','meadowvale','clarkson','cooksville','lakeshore mississauga'),
+        'brampton'   => array('brampton','bramalea','brampton transit','gore road','bovaird','flower city','peel region brampton','mount pleasant brampton'),
+        'gta'        => array('gta','greater toronto','york region','durham region','halton','peel region','markham','richmond hill','vaughan','newmarket','oakville','burlington','ajax','pickering','oshawa','whitby','milton','aurora','scarborough','etobicoke','north york'),
+        'york_region'=> array('markham','richmond hill','vaughan','newmarket','aurora','stouffville','king city','york region','georgina'),
+        'durham'     => array('oshawa','whitby','ajax','pickering','clarington','bowmanville','durham region','port perry','uxbridge'),
+        'halton'     => array('oakville','burlington','milton','halton hills','georgetown','halton region')
+    );
+}
+
+function _nf_auto_tag($title, $description, $source_tags) {
+    $text = strtolower($title . ' ' . $description);
+    $rules = _nf_get_tag_rules();
+    $tags = array();
+
+    // Source-level tags
+    if (!empty($source_tags)) {
+        $src_tags = explode(',', $source_tags);
+        foreach ($src_tags as $st) {
+            $st = trim($st);
+            if (!empty($st)) $tags[$st] = true;
+        }
+    }
+
+    // Content-based keyword matching
+    foreach ($rules as $tag => $keywords) {
+        if (isset($tags[$tag])) continue; // already tagged by source
+        foreach ($keywords as $kw) {
+            if (strpos($text, $kw) !== false) {
+                $tags[$tag] = true;
+                break;
+            }
+        }
+    }
+
+    $result = array_keys($tags);
+    sort($result);
+    return implode(',', $result);
 }
 
 // ────────────────────────────────────────────────────────────
@@ -489,10 +683,11 @@ function _nf_store_articles($conn, $articles) {
         $pdate = $conn->real_escape_string($art['pub_date']);
         $desc  = $conn->real_escape_string(isset($art['description']) ? $art['description'] : '');
         $img   = $conn->real_escape_string(isset($art['image_url']) ? $art['image_url'] : '');
+        $tags  = $conn->real_escape_string(isset($art['tags']) ? $art['tags'] : '');
 
-        $sql = "INSERT INTO news_articles (title, link, source_name, source_key, source_logo, category, pub_date, description, image_url, fetched_at)
-                VALUES ('$title', '$link', '$sname', '$skey', '$slogo', '$cat', '$pdate', '$desc', '$img', '$now')
-                ON DUPLICATE KEY UPDATE title='$title', description='$desc', image_url='$img', fetched_at='$now'";
+        $sql = "INSERT INTO news_articles (title, link, source_name, source_key, source_logo, category, pub_date, description, image_url, tags, fetched_at)
+                VALUES ('$title', '$link', '$sname', '$skey', '$slogo', '$cat', '$pdate', '$desc', '$img', '$tags', '$now')
+                ON DUPLICATE KEY UPDATE title='$title', description='$desc', image_url='$img', tags='$tags', fetched_at='$now'";
         if ($conn->query($sql)) $inserted++;
     }
 
@@ -511,7 +706,7 @@ function _nf_update_source_status($conn, $source_key, $count, $error) {
     $conn->query($sql);
 }
 
-function _nf_get_from_db($conn, $category, $source_filter, $search, $page, $per_page) {
+function _nf_get_from_db($conn, $category, $source_filter, $search, $tag_filter, $page, $per_page) {
     if (!$conn) return false;
 
     $where = array();
@@ -524,6 +719,21 @@ function _nf_get_from_db($conn, $category, $source_filter, $search, $page, $per_
     if (!empty($search)) {
         $esc = $conn->real_escape_string($search);
         $where[] = "(title LIKE '%$esc%' OR description LIKE '%$esc%')";
+    }
+    if (!empty($tag_filter)) {
+        // Support comma-separated tags (OR logic)
+        $tag_parts = explode(',', $tag_filter);
+        $tag_clauses = array();
+        foreach ($tag_parts as $tp) {
+            $tp = trim($tp);
+            if (!empty($tp)) {
+                $esc_tag = $conn->real_escape_string($tp);
+                $tag_clauses[] = "FIND_IN_SET('$esc_tag', tags)";
+            }
+        }
+        if (count($tag_clauses) > 0) {
+            $where[] = '(' . implode(' OR ', $tag_clauses) . ')';
+        }
     }
 
     $where_sql = count($where) > 0 ? ' WHERE ' . implode(' AND ', $where) : '';
@@ -546,6 +756,7 @@ function _nf_get_from_db($conn, $category, $source_filter, $search, $page, $per_
         while ($row = $result->fetch_assoc()) {
             $row['time_ago'] = _nf_time_ago($row['pub_date']);
             $row['pub_ts']   = strtotime($row['pub_date']);
+            if (!isset($row['tags'])) $row['tags'] = '';
             $articles[] = $row;
         }
     }
@@ -578,6 +789,7 @@ $action   = isset($_GET['action'])   ? strtolower(trim($_GET['action']))   : 'ge
 $category = isset($_GET['category']) ? strtolower(trim($_GET['category'])) : 'all';
 $source_f = isset($_GET['source'])   ? trim($_GET['source'])               : '';
 $search   = isset($_GET['search'])   ? trim($_GET['search'])               : '';
+$tag_f    = isset($_GET['tag'])      ? strtolower(trim($_GET['tag']))      : '';
 $page     = isset($_GET['page'])     ? max(1, (int)$_GET['page'])          : 1;
 $per_page = isset($_GET['per_page']) ? min(50, max(1, (int)$_GET['per_page'])) : 20;
 
@@ -588,6 +800,37 @@ if (!in_array($category, $valid_cats)) $category = 'all';
 $nf_conn = _nf_db_connect();
 if ($nf_conn) {
     _nf_ensure_tables($nf_conn);
+}
+
+// ── ACTION: tags ──
+if ($action === 'tags') {
+    $all_tags = array(
+        'crime'       => array('label' => 'Crime & Safety',    'icon' => '🚨', 'color' => '#dc3545'),
+        'events'      => array('label' => 'Events',            'icon' => '🎉', 'color' => '#6f42c1'),
+        'positive'    => array('label' => 'Positive News',     'icon' => '☀️', 'color' => '#28a745'),
+        'hero'        => array('label' => 'Heroes',            'icon' => '🦸', 'color' => '#fd7e14'),
+        'food'        => array('label' => 'Food & Dining',     'icon' => '🍽️', 'color' => '#e83e8c'),
+        'deals'       => array('label' => 'Deals',             'icon' => '💰', 'color' => '#20c997'),
+        'free_stuff'  => array('label' => 'Free Stuff',        'icon' => '🎁', 'color' => '#17a2b8'),
+        'sports'      => array('label' => 'Sports',            'icon' => '⚽', 'color' => '#007bff'),
+        'transit'     => array('label' => 'Transit & Traffic',  'icon' => '🚇', 'color' => '#6610f2'),
+        'real_estate' => array('label' => 'Real Estate',       'icon' => '🏠', 'color' => '#795548'),
+        'arts'        => array('label' => 'Arts & Culture',    'icon' => '🎭', 'color' => '#9c27b0'),
+        'tech'        => array('label' => 'Tech',              'icon' => '💻', 'color' => '#2196f3'),
+        'politics'    => array('label' => 'Politics',          'icon' => '🏛️', 'color' => '#607d8b'),
+        'health'      => array('label' => 'Health',            'icon' => '❤️', 'color' => '#f44336'),
+        'weather'     => array('label' => 'Weather',           'icon' => '🌤️', 'color' => '#03a9f4'),
+        'lifestyle'   => array('label' => 'Lifestyle',         'icon' => '✨', 'color' => '#ff9800'),
+        'downtown'    => array('label' => 'Downtown TO',       'icon' => '🏙️', 'color' => '#3f51b5'),
+        'mississauga' => array('label' => 'Mississauga',       'icon' => '📍', 'color' => '#009688'),
+        'brampton'    => array('label' => 'Brampton',          'icon' => '📍', 'color' => '#4caf50'),
+        'gta'         => array('label' => 'GTA',               'icon' => '🗺️', 'color' => '#ff5722'),
+        'york_region' => array('label' => 'York Region',       'icon' => '📍', 'color' => '#8bc34a'),
+        'durham'      => array('label' => 'Durham',            'icon' => '📍', 'color' => '#cddc39'),
+        'halton'      => array('label' => 'Halton',            'icon' => '📍', 'color' => '#ffc107')
+    );
+    echo json_encode(array('ok' => true, 'tags' => $all_tags));
+    exit;
 }
 
 // ── ACTION: sources ──
@@ -602,6 +845,7 @@ if ($action === 'sources') {
             'name'          => $src['name'],
             'key'           => $src['key'],
             'category'      => $src['category'],
+            'tags'          => isset($src['tags']) ? $src['tags'] : '',
             'feed_url'      => $src['url'],
             'logo'          => 'https://www.google.com/s2/favicons?domain=' . $src['domain'] . '&sz=32',
             'last_fetched'  => $last_fetched,
@@ -668,7 +912,7 @@ if ($action === 'fetch') {
 // Strategy: try DB first (has search/pagination), fallback to file cache aggregation
 $db_result = false;
 if ($nf_conn) {
-    $db_result = _nf_get_from_db($nf_conn, $category, $source_f, $search, $page, $per_page);
+    $db_result = _nf_get_from_db($nf_conn, $category, $source_f, $search, $tag_f, $page, $per_page);
 }
 
 if ($db_result !== false && $db_result['total'] > 0) {
@@ -710,6 +954,23 @@ if ($db_result !== false && $db_result['total'] > 0) {
             if (strpos(strtolower($art['title']), $search_lower) !== false ||
                 strpos(strtolower($art['description']), $search_lower) !== false) {
                 $filtered[] = $art;
+            }
+        }
+        $all_articles = $filtered;
+    }
+
+    // Apply tag filter
+    if (!empty($tag_f)) {
+        $tag_parts = explode(',', $tag_f);
+        $filtered = array();
+        foreach ($all_articles as $art) {
+            $art_tags = isset($art['tags']) ? $art['tags'] : '';
+            foreach ($tag_parts as $tp) {
+                $tp = trim($tp);
+                if (!empty($tp) && strpos(',' . $art_tags . ',', ',' . $tp . ',') !== false) {
+                    $filtered[] = $art;
+                    break;
+                }
             }
         }
         $all_articles = $filtered;

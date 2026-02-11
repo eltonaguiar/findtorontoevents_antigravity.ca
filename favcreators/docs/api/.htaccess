@@ -6,9 +6,8 @@
 # php_value GOOGLE_CLIENT_ID your_client_id_here
 # php_value GOOGLE_CLIENT_SECRET your_client_secret_here
 
-# CORS Headers
-<IfModule mod_headers.c>
-    Header set Access-Control-Allow-Origin "*"
-    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
-    Header set Access-Control-Allow-Headers "Content-Type"
-</IfModule>
+# CORS Headers — handled per-file in each PHP script.
+# DO NOT set blanket CORS here: it duplicates with PHP header() calls,
+# producing "*, *" which browsers reject. Also conflicts with
+# get_me.php which uses credentials:'include' (wildcard * not allowed).
+# See: track.php, guest_usage.php, etc. — each sets its own CORS.

@@ -26,6 +26,7 @@ FILES = [
     ('live-monitor/api/sports_odds.php', 'live-monitor/api/sports_odds.php'),
     ('live-monitor/api/sports_picks.php', 'live-monitor/api/sports_picks.php'),
     ('live-monitor/api/sports_bets.php', 'live-monitor/api/sports_bets.php'),
+    ('live-monitor/api/sports_scores.php', 'live-monitor/api/sports_scores.php'),
     # Frontend dashboard
     ('live-monitor/sports-betting.html', 'live-monitor/sports-betting.html'),
     # Updated nav pages

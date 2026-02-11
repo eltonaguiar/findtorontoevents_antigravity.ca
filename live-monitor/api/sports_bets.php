@@ -7,16 +7,18 @@
  * Uses The Odds API scores endpoint (free, 0 credits) for auto-settlement.
  *
  * Actions:
- *   ?action=place&key=...    — Place a paper bet (admin)
- *   ?action=active           — List pending bets (public)
- *   ?action=settle&key=...   — Auto-settle completed bets using scores (admin)
- *   ?action=history          — Past bets with filters (public)
- *   ?action=dashboard        — Bankroll + stats (public)
- *   ?action=leaderboard      — Algorithm performance ranked by ROI (public)
- *   ?action=reset&key=...    — Truncate tables, start fresh (admin)
+ *   ?action=place&key=...      — Place a paper bet (admin)
+ *   ?action=active             — List pending bets (public)
+ *   ?action=settle&key=...     — Auto-settle completed bets using scores (admin)
+ *   ?action=auto_place&key=... — Auto-place paper bets from top value bets (admin)
+ *   ?action=history            — Past bets with filters (public)
+ *   ?action=dashboard          — Bankroll + stats (public)
+ *   ?action=leaderboard        — Algorithm performance ranked by ROI (public)
+ *   ?action=reset&key=...      — Truncate tables, start fresh (admin)
  */
 
 require_once dirname(__FILE__) . '/sports_db_connect.php';
+require_once dirname(__FILE__) . '/sports_scores.php';
 
 // ────────────────────────────────────────────────────────────
 //  Auto-create tables
@@ -200,6 +202,10 @@ if ($action === 'place') {
     _sb_action_leaderboard($conn);
 } elseif ($action === 'reset') {
     _sb_action_reset($conn);
+} elseif ($action === 'auto_place') {
+    _sb_action_auto_place($conn);
+} elseif ($action === 'backfill') {
+    _sb_action_backfill($conn);
 } else {
     header('HTTP/1.0 400 Bad Request');
     echo json_encode(array('ok' => false, 'error' => 'Unknown action: ' . $action));
@@ -387,44 +393,70 @@ function _sb_action_settle($conn) {
     $details = array();
 
     foreach ($sports as $sport) {
-        // Fetch scores from The Odds API (free, 0 credits)
+        // Fetch scores — try The Odds API first, then failover sources
+        $score_map = array();
+
+        // Source 1: The Odds API scores (free, 0 credits)
         $scores_url = $API_BASE . '/sports/' . $sport . '/scores/?apiKey=' . $THE_ODDS_API_KEY . '&daysFrom=3&dateFormat=iso';
         $body = _sb_http_get($scores_url);
-        if ($body === null) continue;
 
-        $scores = json_decode($body, true);
-        if (!is_array($scores)) continue;
+        if ($body !== null) {
+            $scores = json_decode($body, true);
+            if (is_array($scores)) {
+                foreach ($scores as $game) {
+                    $gid = isset($game['id']) ? $game['id'] : '';
+                    $completed = isset($game['completed']) && $game['completed'];
+                    if (!$gid || !$completed) continue;
 
-        // Build score map: event_id → {completed, home_score, away_score}
-        $score_map = array();
-        foreach ($scores as $game) {
-            $gid = isset($game['id']) ? $game['id'] : '';
-            $completed = isset($game['completed']) && $game['completed'];
-            if (!$gid || !$completed) continue;
+                    $home_score = null;
+                    $away_score = null;
+                    $home_team = isset($game['home_team']) ? $game['home_team'] : '';
+                    $away_team = isset($game['away_team']) ? $game['away_team'] : '';
 
-            $home_score = null;
-            $away_score = null;
-            $home_team = isset($game['home_team']) ? $game['home_team'] : '';
-            $away_team = isset($game['away_team']) ? $game['away_team'] : '';
+                    if (isset($game['scores']) && is_array($game['scores'])) {
+                        foreach ($game['scores'] as $sc) {
+                            $name = isset($sc['name']) ? $sc['name'] : '';
+                            $score_val = isset($sc['score']) ? (int)$sc['score'] : 0;
+                            if ($name === $home_team) $home_score = $score_val;
+                            if ($name === $away_team) $away_score = $score_val;
+                        }
+                    }
 
-            if (isset($game['scores']) && is_array($game['scores'])) {
-                foreach ($game['scores'] as $sc) {
-                    $name = isset($sc['name']) ? $sc['name'] : '';
-                    $score = isset($sc['score']) ? (int)$sc['score'] : 0;
-                    if ($name === $home_team) $home_score = $score;
-                    if ($name === $away_team) $away_score = $score;
+                    if ($home_score !== null && $away_score !== null) {
+                        $score_map[$gid] = array(
+                            'home_score' => $home_score,
+                            'away_score' => $away_score,
+                            'home_team' => $home_team,
+                            'away_team' => $away_team
+                        );
+                    }
                 }
             }
+        }
 
-            if ($home_score !== null && $away_score !== null) {
-                $score_map[$gid] = array(
-                    'home_score' => $home_score,
-                    'away_score' => $away_score,
-                    'home_team'  => $home_team,
-                    'away_team'  => $away_team
-                );
+        // Source 2+3: Failover — ESPN API + web scraping
+        if (count($score_map) === 0 && function_exists('_scores_fetch_all')) {
+            $failover = _scores_fetch_all($sport, 3);
+            if (is_array($failover) && isset($failover['scores']) && is_array($failover['scores'])) {
+                // For ESPN scores, match by team names against pending bets
+                $pending_for_sport = $conn->query("SELECT * FROM lm_sports_bets WHERE status='pending' AND sport='" . $conn->real_escape_string($sport) . "'");
+                if ($pending_for_sport) {
+                    while ($pbet = $pending_for_sport->fetch_assoc()) {
+                        foreach ($failover['scores'] as $fkey => $fsc) {
+                            // Match by team names
+                            $h_match = (stripos($fsc['home_team'], $pbet['home_team']) !== false || stripos($pbet['home_team'], $fsc['home_team']) !== false);
+                            $a_match = (stripos($fsc['away_team'], $pbet['away_team']) !== false || stripos($pbet['away_team'], $fsc['away_team']) !== false);
+                            if ($h_match && $a_match) {
+                                $score_map[$pbet['event_id']] = $fsc;
+                                break;
+                            }
+                        }
+                    }
+                }
             }
         }
+
+        if (count($score_map) === 0) continue;
 
         // Settle pending bets for this sport
         $bets_q = $conn->query("SELECT * FROM lm_sports_bets WHERE status='pending' AND sport='"
@@ -793,6 +825,286 @@ function _sb_action_reset($conn) {
     $conn->query("TRUNCATE TABLE lm_sports_bankroll");
 
     echo json_encode(array('ok' => true, 'message' => 'Paper betting data reset. Bankroll back to $1000.'));
+}
+
+// ════════════════════════════════════════════════════════════
+//  ACTION: auto_place — Auto-place paper bets from top value bets
+// ════════════════════════════════════════════════════════════
+
+function _sb_action_auto_place($conn) {
+    global $ADMIN_KEY, $MAX_ACTIVE_BETS, $MIN_BET, $MAX_BET_PCT;
+
+    $key = isset($_GET['key']) ? trim($_GET['key']) : '';
+    if ($key !== $ADMIN_KEY) {
+        header('HTTP/1.0 403 Forbidden');
+        echo json_encode(array('ok' => false, 'error' => 'Invalid admin key'));
+        return;
+    }
+
+    // Check current active bet count
+    $active_q = $conn->query("SELECT COUNT(*) as cnt FROM lm_sports_bets WHERE status='pending'");
+    $active_count = 0;
+    if ($active_q && $row = $active_q->fetch_assoc()) {
+        $active_count = (int)$row['cnt'];
+    }
+
+    $slots_available = $MAX_ACTIVE_BETS - $active_count;
+    if ($slots_available <= 0) {
+        echo json_encode(array('ok' => true, 'bets_placed' => 0, 'message' => 'Max active bets reached (' . $MAX_ACTIVE_BETS . ')'));
+        return;
+    }
+
+    $bankroll = _sb_get_bankroll($conn);
+    $min_ev = isset($_GET['min_ev']) ? (float)$_GET['min_ev'] : 3.0;
+    $max_bets = isset($_GET['max_bets']) ? (int)$_GET['max_bets'] : 5;
+    if ($max_bets > $slots_available) $max_bets = $slots_available;
+
+    // Get top value bets from lm_sports_value_bets
+    $vb_q = $conn->query("SELECT * FROM lm_sports_value_bets WHERE status='active' AND commence_time > NOW() AND ev_pct >= " . (float)$min_ev . " ORDER BY ev_pct DESC LIMIT 20");
+
+    if (!$vb_q || $vb_q->num_rows === 0) {
+        echo json_encode(array('ok' => true, 'bets_placed' => 0, 'message' => 'No qualifying value bets found (min EV: ' . $min_ev . '%)'));
+        return;
+    }
+
+    $placed = 0;
+    $skipped = 0;
+    $details = array();
+
+    while ($vb = $vb_q->fetch_assoc()) {
+        if ($placed >= $max_bets) break;
+
+        // Skip if already have a bet on this event + outcome + market
+        $dup_q = $conn->query("SELECT id FROM lm_sports_bets WHERE event_id='"
+            . $conn->real_escape_string($vb['event_id']) . "' AND pick='"
+            . $conn->real_escape_string($vb['outcome_name']) . "' AND market='"
+            . $conn->real_escape_string($vb['market']) . "' AND status='pending'");
+        if ($dup_q && $dup_q->num_rows > 0) {
+            $skipped++;
+            continue;
+        }
+
+        // Calculate bet amount (quarter-Kelly)
+        $ev_pct = (float)$vb['ev_pct'];
+        $odds = (float)$vb['best_odds'];
+        $bet_amount = round($bankroll * 0.02, 2); // Default 2%
+
+        if ($ev_pct > 0 && $odds > 1.0) {
+            $ev_decimal = $ev_pct / 100.0;
+            $kelly = $ev_decimal / ($odds - 1.0);
+            $quarter_kelly = $kelly / 4.0;
+            $bet_amount = round($bankroll * min($quarter_kelly, $MAX_BET_PCT), 2);
+        }
+        $bet_amount = max($MIN_BET, min($bet_amount, $bankroll * $MAX_BET_PCT));
+
+        if ($bet_amount > $bankroll) {
+            $skipped++;
+            continue;
+        }
+
+        $implied_prob = ($odds > 0) ? round(1.0 / $odds, 4) : 0;
+        $potential_payout = round($bet_amount * $odds, 2);
+
+        $bet_type = 'moneyline';
+        if ($vb['market'] === 'spreads') $bet_type = 'spread';
+        if ($vb['market'] === 'totals') $bet_type = 'total';
+
+        $pick_point_val = "NULL";
+        // Try to extract point from bet_type field (e.g., "Team +3.5")
+        if ($vb['market'] === 'spreads' || $vb['market'] === 'totals') {
+            if (preg_match('/([\+\-]?\d+\.?\d*)$/', $vb['bet_type'], $m)) {
+                $pick_point_val = (float)$m[1];
+            }
+        }
+
+        $sql = "INSERT INTO lm_sports_bets (event_id, sport, home_team, away_team, commence_time, game_date, "
+            . "bet_type, market, pick, pick_point, bookmaker, bookmaker_key, odds, implied_prob, "
+            . "bet_amount, potential_payout, algorithm, ev_pct, status, placed_at) VALUES ("
+            . "'" . $conn->real_escape_string($vb['event_id']) . "', "
+            . "'" . $conn->real_escape_string($vb['sport']) . "', "
+            . "'" . $conn->real_escape_string($vb['home_team']) . "', "
+            . "'" . $conn->real_escape_string($vb['away_team']) . "', "
+            . "'" . $conn->real_escape_string($vb['commence_time']) . "', "
+            . "DATE(DATE_SUB('" . $conn->real_escape_string($vb['commence_time']) . "', INTERVAL 5 HOUR)), "
+            . "'" . $conn->real_escape_string($bet_type) . "', "
+            . "'" . $conn->real_escape_string($vb['market']) . "', "
+            . "'" . $conn->real_escape_string($vb['outcome_name']) . "', "
+            . ($pick_point_val === "NULL" ? "NULL" : (float)$pick_point_val) . ", "
+            . "'" . $conn->real_escape_string($vb['best_book']) . "', "
+            . "'" . $conn->real_escape_string($vb['best_book_key']) . "', "
+            . (float)$odds . ", " . (float)$implied_prob . ", "
+            . (float)$bet_amount . ", " . (float)$potential_payout . ", "
+            . "'value_bet', "
+            . (float)$ev_pct . ", 'pending', NOW())";
+
+        if ($conn->query($sql)) {
+            $placed++;
+            $bankroll -= $bet_amount; // Reduce available bankroll
+            $details[] = array(
+                'bet_id' => $conn->insert_id,
+                'event' => $vb['away_team'] . ' @ ' . $vb['home_team'],
+                'pick' => $vb['outcome_name'],
+                'market' => $vb['market'],
+                'odds' => $odds,
+                'ev_pct' => $ev_pct,
+                'bet_amount' => $bet_amount,
+                'bookmaker' => $vb['best_book']
+            );
+        }
+    }
+
+    // Take bankroll snapshot after placing
+    if ($placed > 0) {
+        _sb_snapshot($conn);
+    }
+
+    echo json_encode(array(
+        'ok' => true,
+        'bets_placed' => $placed,
+        'bets_skipped' => $skipped,
+        'bankroll' => round(_sb_get_bankroll($conn), 2),
+        'details' => $details
+    ));
+}
+
+// ════════════════════════════════════════════════════════════
+//  ACTION: backfill — Create paper bets from settled daily picks
+//  One-time retroactive stats fix
+// ════════════════════════════════════════════════════════════
+
+function _sb_action_backfill($conn) {
+    global $ADMIN_KEY, $INITIAL_BANKROLL;
+
+    $key = isset($_GET['key']) ? trim($_GET['key']) : '';
+    if ($key !== $ADMIN_KEY) {
+        header('HTTP/1.0 403 Forbidden');
+        echo json_encode(array('ok' => false, 'error' => 'Invalid admin key'));
+        return;
+    }
+
+    // Get all settled daily picks that don't have corresponding paper bets
+    $picks_q = $conn->query("SELECT dp.* FROM lm_sports_daily_picks dp "
+        . "WHERE dp.result IS NOT NULL AND dp.result != 'void' "
+        . "ORDER BY dp.commence_time ASC");
+
+    if (!$picks_q || $picks_q->num_rows === 0) {
+        echo json_encode(array('ok' => true, 'backfilled' => 0, 'message' => 'No settled daily picks to backfill'));
+        return;
+    }
+
+    $created = 0;
+    $skipped = 0;
+    $details = array();
+
+    while ($pick = $picks_q->fetch_assoc()) {
+        // Check if paper bet already exists for this event+pick+market
+        $dup_q = $conn->query("SELECT id FROM lm_sports_bets WHERE event_id='"
+            . $conn->real_escape_string($pick['event_id']) . "' AND pick='"
+            . $conn->real_escape_string($pick['outcome_name']) . "' AND market='"
+            . $conn->real_escape_string($pick['market']) . "'");
+        if ($dup_q && $dup_q->num_rows > 0) {
+            $skipped++;
+            continue;
+        }
+
+        $odds = (float)$pick['best_odds'];
+        $bet_amount = (float)$pick['kelly_bet'];
+        if ($bet_amount <= 0) $bet_amount = 5.00;
+        $implied_prob = ($odds > 0) ? round(1.0 / $odds, 4) : 0;
+        $potential_payout = round($bet_amount * $odds, 2);
+
+        $bet_type = 'moneyline';
+        if ($pick['market'] === 'spreads') $bet_type = 'spread';
+        if ($pick['market'] === 'totals') $bet_type = 'total';
+
+        // Extract point from pick_type
+        $pick_point_val = "NULL";
+        if ($pick['market'] === 'spreads' || $pick['market'] === 'totals') {
+            if (preg_match('/([\+\-]?\d+\.?\d*)$/', $pick['pick_type'], $m)) {
+                $pick_point_val = (float)$m[1];
+            }
+        }
+
+        // Calculate PnL
+        $result = $pick['result'];
+        $pnl = 0;
+        if ($result === 'won') {
+            $pnl = round($potential_payout - $bet_amount, 2);
+        } elseif ($result === 'lost') {
+            $pnl = -1 * $bet_amount;
+        }
+
+        // Try to get scores from existing settled data
+        $home_score = "NULL";
+        $away_score = "NULL";
+
+        // Try scores from sports_scores
+        if (function_exists('_scores_fetch_all')) {
+            $score_data = _scores_fetch_all($pick['sport'], 7);
+            if (is_array($score_data) && isset($score_data['scores'])) {
+                foreach ($score_data['scores'] as $fkey => $fsc) {
+                    $h_match = (stripos($fsc['home_team'], $pick['home_team']) !== false || stripos($pick['home_team'], $fsc['home_team']) !== false);
+                    $a_match = (stripos($fsc['away_team'], $pick['away_team']) !== false || stripos($pick['away_team'], $fsc['away_team']) !== false);
+                    if ($h_match && $a_match && isset($fsc['completed']) && $fsc['completed']) {
+                        $home_score = (int)$fsc['home_score'];
+                        $away_score = (int)$fsc['away_score'];
+                        break;
+                    }
+                }
+            }
+        }
+
+        $sql = "INSERT INTO lm_sports_bets (event_id, sport, home_team, away_team, commence_time, game_date, "
+            . "bet_type, market, pick, pick_point, bookmaker, bookmaker_key, odds, implied_prob, "
+            . "bet_amount, potential_payout, algorithm, ev_pct, status, result, pnl, "
+            . "actual_home_score, actual_away_score, placed_at, settled_at) VALUES ("
+            . "'" . $conn->real_escape_string($pick['event_id']) . "', "
+            . "'" . $conn->real_escape_string($pick['sport']) . "', "
+            . "'" . $conn->real_escape_string($pick['home_team']) . "', "
+            . "'" . $conn->real_escape_string($pick['away_team']) . "', "
+            . "'" . $conn->real_escape_string($pick['commence_time']) . "', "
+            . "DATE(DATE_SUB('" . $conn->real_escape_string($pick['commence_time']) . "', INTERVAL 5 HOUR)), "
+            . "'" . $conn->real_escape_string($bet_type) . "', "
+            . "'" . $conn->real_escape_string($pick['market']) . "', "
+            . "'" . $conn->real_escape_string($pick['outcome_name']) . "', "
+            . ($pick_point_val === "NULL" ? "NULL" : (float)$pick_point_val) . ", "
+            . "'" . $conn->real_escape_string($pick['best_book']) . "', "
+            . "'" . $conn->real_escape_string($pick['best_book_key']) . "', "
+            . (float)$odds . ", " . (float)$implied_prob . ", "
+            . (float)$bet_amount . ", " . (float)$potential_payout . ", "
+            . "'value_bet', "
+            . (float)$pick['ev_pct'] . ", 'settled', "
+            . "'" . $conn->real_escape_string($result) . "', "
+            . (float)$pnl . ", "
+            . ($home_score === "NULL" ? "NULL" : (int)$home_score) . ", "
+            . ($away_score === "NULL" ? "NULL" : (int)$away_score) . ", "
+            . "'" . $conn->real_escape_string($pick['generated_at']) . "', "
+            . "NOW())";
+
+        if ($conn->query($sql)) {
+            $created++;
+            $details[] = array(
+                'pick_id' => (int)$pick['id'],
+                'bet_id' => $conn->insert_id,
+                'event' => $pick['away_team'] . ' @ ' . $pick['home_team'],
+                'pick' => $pick['outcome_name'],
+                'result' => $result,
+                'pnl' => $pnl,
+                'bet_amount' => $bet_amount
+            );
+        }
+    }
+
+    // Take snapshot
+    _sb_snapshot($conn);
+
+    echo json_encode(array(
+        'ok' => true,
+        'backfilled' => $created,
+        'skipped' => $skipped,
+        'bankroll' => round(_sb_get_bankroll($conn), 2),
+        'details' => $details
+    ));
 }
 
 ?>

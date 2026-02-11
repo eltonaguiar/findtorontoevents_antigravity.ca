@@ -335,6 +335,57 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
                         self.wfile.write(local_path.read_bytes())
                         return
 
+        # Blog pages: /blog/blogXXX.html → serve from root (200-349) or build dir (3-149)
+        if raw_path == "/blog" or raw_path == "/blog/":
+            blog_index = _WORKSPACE_ROOT / "TORONTOEVENTS_ANTIGRAVITY" / "build" / "blog" / "index.html"
+            if blog_index.is_file():
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(blog_index.read_bytes())
+                return
+        if raw_path.startswith("/blog/") and raw_path.endswith(".html"):
+            blog_file = raw_path.split("/")[-1]  # e.g. "blog340.html"
+            # Try root level first (blog200-349)
+            root_blog = _WORKSPACE_ROOT / blog_file
+            if root_blog.is_file():
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(root_blog.read_bytes())
+                return
+            # Try build directory (blog3-149)
+            build_blog = _WORKSPACE_ROOT / "TORONTOEVENTS_ANTIGRAVITY" / "build" / "blog" / blog_file
+            if build_blog.is_file():
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(build_blog.read_bytes())
+                return
+        # Blog assets (CSS, JS at blog/ path level): serve from root
+        if raw_path.startswith("/blog/") and not raw_path.endswith(".html"):
+            asset_name = raw_path.split("/")[-1]
+            # Try root-level blog assets (blog_styles_common.css, blog_template_base.js)
+            root_asset = _WORKSPACE_ROOT / asset_name
+            if root_asset.is_file():
+                suffix = root_asset.suffix.lower()
+                ct = {".css": "text/css; charset=utf-8", ".js": "application/javascript; charset=utf-8"}.get(suffix, "application/octet-stream")
+                self.send_response(200)
+                self.send_header("Content-Type", ct)
+                self.end_headers()
+                self.wfile.write(root_asset.read_bytes())
+                return
+            # Try build/blog directory assets
+            build_asset = _WORKSPACE_ROOT / "TORONTOEVENTS_ANTIGRAVITY" / "build" / "blog" / asset_name
+            if build_asset.is_file():
+                suffix = build_asset.suffix.lower()
+                ct = {".css": "text/css; charset=utf-8", ".js": "application/javascript; charset=utf-8"}.get(suffix, "application/octet-stream")
+                self.send_response(200)
+                self.send_header("Content-Type", ct)
+                self.end_headers()
+                self.wfile.write(build_asset.read_bytes())
+                return
+
         # /next/_next/ static assets: set correct MIME (avoid wrong guess e.g. font/woff2 for .js)
         if raw_path.startswith("/next/_next/"):
             local_path = Path(os.getcwd()) / raw_path.lstrip("/").replace("/", os.sep)
@@ -387,7 +438,13 @@ def main():
     print()
 
     try:
-        server = HTTPServer(('127.0.0.1', PORT), CORSRequestHandler)
+        import socket
+        class ReusableHTTPServer(HTTPServer):
+            allow_reuse_address = True
+            def server_bind(self):
+                self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                super().server_bind()
+        server = ReusableHTTPServer(('127.0.0.1', PORT), CORSRequestHandler)
     except OSError as e:
         if e.errno == 98 or "Address already in use" in str(e) or "WinError 10048" in str(e):
             print(f"ERROR: Port {PORT} is already in use. Another server is running on {PORT}.")

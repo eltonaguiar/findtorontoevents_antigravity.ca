@@ -8,14 +8,16 @@
  *   2. Line Shopping — find best odds across Canadian sportsbooks for each game
  *
  * Actions:
- *   ?action=analyze&key=livetrader2026  — Run algorithms, store value bets (admin)
- *   ?action=value_bets[&sport=X]        — Return active value bets (public)
- *   ?action=line_shop[&sport=X]         — Best/worst odds per game (public)
- *   ?action=today[&sport=X]             — Combined picks for next 24h (public)
- *   ?action=all[&sport=X]               — Full response (public)
+ *   ?action=analyze&key=livetrader2026     — Run algorithms, store value bets (admin)
+ *   ?action=value_bets[&sport=X]           — Return active value bets (public)
+ *   ?action=line_shop[&sport=X]            — Best/worst odds per game (public)
+ *   ?action=today[&sport=X]                — Combined picks for next 24h (public)
+ *   ?action=all[&sport=X]                  — Full response (public)
+ *   ?action=settle_picks&key=livetrader2026 — Settle daily picks using scores (admin)
  */
 
 require_once dirname(__FILE__) . '/sports_db_connect.php';
+require_once dirname(__FILE__) . '/sports_scores.php';
 
 // ────────────────────────────────────────────────────────────
 //  Auto-create table
@@ -148,6 +150,8 @@ if ($action === 'analyze') {
     _sp_action_pick_history($conn);
 } elseif ($action === 'performance') {
     _sp_action_performance($conn);
+} elseif ($action === 'settle_picks') {
+    _sp_action_settle_picks($conn);
 } else {
     header('HTTP/1.0 400 Bad Request');
     echo json_encode(array('ok' => false, 'error' => 'Unknown action: ' . $action));
@@ -341,6 +345,39 @@ function _sp_action_today($conn) {
 
     // Line shopping
     $line_shops = _sp_compute_line_shop($conn, $sport, 24);
+
+    // ── Fetch standings for each sport that has picks ──
+    $sport_standings = array(); // keyed by sport key
+    $unique_sports = array();
+    foreach ($value_bets as $vb) {
+        $sk = $vb['sport'];
+        if (!isset($unique_sports[$sk])) $unique_sports[$sk] = true;
+    }
+    foreach ($unique_sports as $sk => $dummy) {
+        $st = _scores_fetch_standings($sk);
+        if (!empty($st)) $sport_standings[$sk] = $st;
+    }
+
+    // ── Enrich each pick with team rankings + reasoning ──
+    for ($vi = 0; $vi < count($value_bets); $vi++) {
+        $vb = $value_bets[$vi];
+        $sk = $vb['sport'];
+        $standings = isset($sport_standings[$sk]) ? $sport_standings[$sk] : array();
+
+        $home_st = _scores_find_team_standing($vb['home_team'], $standings);
+        $away_st = _scores_find_team_standing($vb['away_team'], $standings);
+
+        $value_bets[$vi]['home_rank']   = $home_st ? $home_st['rank'] : null;
+        $value_bets[$vi]['home_record'] = $home_st ? $home_st['record'] : null;
+        $value_bets[$vi]['away_rank']   = $away_st ? $away_st['rank'] : null;
+        $value_bets[$vi]['away_record'] = $away_st ? $away_st['record'] : null;
+
+        // Generate "here's why" for B+ or higher
+        $grade = isset($vb['rating_grade']) ? $vb['rating_grade'] : 'C';
+        if ($grade === 'A+' || $grade === 'A' || $grade === 'B+') {
+            $value_bets[$vi]['heres_why'] = _sp_generate_reasoning($vb, $home_st, $away_st);
+        }
+    }
 
     // Summary stats
     $canadian_picks = 0;
@@ -723,6 +760,91 @@ function _sp_rate_pick($vb) {
         'action_detail' => $action_detail,
         'reasons'       => $reasons
     );
+}
+
+// ════════════════════════════════════════════════════════════
+//  Generate "Here's Why" reasoning for top picks (B+ or higher)
+// ════════════════════════════════════════════════════════════
+
+function _sp_generate_reasoning($vb, $home_st, $away_st) {
+    $parts = array();
+    $ev  = (float)$vb['ev_pct'];
+    $pick = isset($vb['outcome_name']) ? $vb['outcome_name'] : '';
+    $home = isset($vb['home_team']) ? $vb['home_team'] : '';
+    $away = isset($vb['away_team']) ? $vb['away_team'] : '';
+    $market = isset($vb['market']) ? $vb['market'] : '';
+
+    // Determine which team is picked
+    $is_home_pick = false;
+    if ($home_st && stripos($pick, $home) !== false) {
+        $is_home_pick = true;
+    } elseif ($home_st && $home_st['abbr'] && stripos($pick, $home_st['abbr']) !== false) {
+        $is_home_pick = true;
+    } elseif (!$away_st || (stripos($pick, $away) === false)) {
+        // Default to home if we can't determine
+        $is_home_pick = (stripos($pick, $home) !== false);
+    }
+
+    $picked_st  = $is_home_pick ? $home_st : $away_st;
+    $opp_st     = $is_home_pick ? $away_st : $home_st;
+    $picked_name = $is_home_pick ? $home : $away;
+    $opp_name    = $is_home_pick ? $away : $home;
+
+    // Team ranking context
+    if ($picked_st && $opp_st) {
+        $pr = $picked_st['rank'];
+        $or = $opp_st['rank'];
+
+        if ($pr > $or + 5) {
+            // Picking an underdog
+            $parts[] = $picked_name . ' (#' . $pr . ', ' . $picked_st['record']
+                . ') is the underdog against #' . $or . ' ' . $opp_name
+                . ' (' . $opp_st['record'] . '), but the odds are mispriced'
+                . ' — the payout more than compensates for the lower win probability';
+        } elseif ($or > $pr + 5) {
+            // Picking the clear favorite
+            $parts[] = $picked_name . ' (#' . $pr . ', ' . $picked_st['record']
+                . ') is the stronger team vs #' . $or . ' ' . $opp_name
+                . ' (' . $opp_st['record'] . ') and the sportsbooks are still offering value odds';
+        } else {
+            // Close matchup
+            $parts[] = 'Tight matchup — ' . $picked_name . ' (#' . $pr . ', '
+                . $picked_st['record'] . ') vs ' . $opp_name . ' (#' . $or . ', '
+                . $opp_st['record'] . '). The algorithm found an edge in this coin-flip game';
+        }
+    } elseif ($picked_st) {
+        $parts[] = $picked_name . ' (#' . $picked_st['rank'] . ', ' . $picked_st['record'] . ')';
+    }
+
+    // EV context
+    if ($ev >= 10) {
+        $parts[] = 'Exceptional +' . round($ev, 1) . '% expected value — one of the best edges today';
+    } elseif ($ev >= 7) {
+        $parts[] = '+' . round($ev, 1) . '% expected value, well above the profit threshold';
+    } elseif ($ev >= 5) {
+        $parts[] = 'The line is off by +' . round($ev, 1) . '% EV — significant mispricing';
+    } else {
+        $parts[] = '+' . round($ev, 1) . '% expected value offers a solid edge';
+    }
+
+    // Book consensus
+    $all_odds = isset($vb['all_odds']) ? $vb['all_odds'] : '';
+    if (is_string($all_odds)) $all_odds = json_decode($all_odds, true);
+    $num_books = is_array($all_odds) ? count($all_odds) : 0;
+    if ($num_books >= 6) {
+        $parts[] = $num_books . ' sportsbooks confirm the consensus — high confidence';
+    } elseif ($num_books >= 4) {
+        $parts[] = 'Backed by ' . $num_books . ' sportsbooks consensus';
+    }
+
+    // Market context
+    if ($market === 'h2h') {
+        $parts[] = 'Moneyline bet — the most straightforward and reliable market';
+    } elseif ($market === 'spreads') {
+        $parts[] = 'Spread bet — point handicap evens the matchup';
+    }
+
+    return implode('. ', $parts) . '.';
 }
 
 // Apply rating to a value bet row (from DB or from _sp_find_value_bets)
@@ -1234,6 +1356,183 @@ function _sp_action_performance($conn) {
             'longest_loss' => $longest_loss
         ),
         'generated_at' => gmdate('Y-m-d H:i:s') . ' UTC'
+    ));
+}
+
+// ════════════════════════════════════════════════════════════
+//  ACTION: settle_picks — Settle daily picks using multi-source scores
+// ════════════════════════════════════════════════════════════
+
+function _sp_action_settle_picks($conn) {
+    global $ADMIN_KEY;
+
+    $key = isset($_GET['key']) ? trim($_GET['key']) : '';
+    if ($key !== $ADMIN_KEY) {
+        header('HTTP/1.0 403 Forbidden');
+        echo json_encode(array('ok' => false, 'error' => 'Invalid admin key'));
+        return;
+    }
+
+    // Get pending daily picks grouped by sport
+    $pending_q = $conn->query("SELECT DISTINCT sport FROM lm_sports_daily_picks WHERE result IS NULL AND commence_time < NOW()");
+    if (!$pending_q || $pending_q->num_rows === 0) {
+        echo json_encode(array('ok' => true, 'settled' => 0, 'message' => 'No pending daily picks to settle'));
+        return;
+    }
+
+    $sports = array();
+    while ($row = $pending_q->fetch_assoc()) {
+        $sports[] = $row['sport'];
+    }
+
+    $settled = 0;
+    $won = 0;
+    $lost = 0;
+    $push = 0;
+    $details = array();
+
+    foreach ($sports as $sport) {
+        // Try multi-source score fetching
+        $score_data = array();
+        if (function_exists('_scores_fetch_all')) {
+            $score_data = _scores_fetch_all($sport, 3);
+        }
+
+        $failover_scores = array();
+        if (is_array($score_data) && isset($score_data['scores'])) {
+            $failover_scores = $score_data['scores'];
+        }
+
+        // Get pending picks for this sport where game should be over
+        $picks_q = $conn->query("SELECT * FROM lm_sports_daily_picks WHERE result IS NULL AND sport='"
+            . $conn->real_escape_string($sport) . "' AND commence_time < DATE_SUB(NOW(), INTERVAL 3 HOUR)");
+        if (!$picks_q) continue;
+
+        while ($pick = $picks_q->fetch_assoc()) {
+            $home_score = null;
+            $away_score = null;
+            $home_team_matched = '';
+            $away_team_matched = '';
+
+            // Try to find score by matching team names against our score sources
+            foreach ($failover_scores as $fkey => $fsc) {
+                $h_match = (stripos($fsc['home_team'], $pick['home_team']) !== false || stripos($pick['home_team'], $fsc['home_team']) !== false);
+                $a_match = (stripos($fsc['away_team'], $pick['away_team']) !== false || stripos($pick['away_team'], $fsc['away_team']) !== false);
+                if ($h_match && $a_match && isset($fsc['completed']) && $fsc['completed']) {
+                    $home_score = (int)$fsc['home_score'];
+                    $away_score = (int)$fsc['away_score'];
+                    $home_team_matched = $fsc['home_team'];
+                    $away_team_matched = $fsc['away_team'];
+                    break;
+                }
+            }
+
+            // Also check lm_sports_bets for matching settled bets (use their scores)
+            if ($home_score === null) {
+                $settled_bet_q = $conn->query("SELECT actual_home_score, actual_away_score FROM lm_sports_bets WHERE event_id='"
+                    . $conn->real_escape_string($pick['event_id']) . "' AND status='settled' AND actual_home_score IS NOT NULL LIMIT 1");
+                if ($settled_bet_q && $srow = $settled_bet_q->fetch_assoc()) {
+                    $home_score = (int)$srow['actual_home_score'];
+                    $away_score = (int)$srow['actual_away_score'];
+                    $home_team_matched = $pick['home_team'];
+                    $away_team_matched = $pick['away_team'];
+                }
+            }
+
+            if ($home_score === null) continue;
+
+            // Determine result based on market type
+            $result = null;
+            $market = $pick['market'];
+            $outcome = $pick['outcome_name'];
+
+            if ($market === 'h2h') {
+                if ($home_score === $away_score) {
+                    $result = ($outcome === 'Draw' || $outcome === 'draw') ? 'won' : 'push';
+                } else {
+                    $winner = ($home_score > $away_score) ? $pick['home_team'] : $pick['away_team'];
+                    $result = ($outcome === $winner) ? 'won' : 'lost';
+                }
+            } elseif ($market === 'spreads') {
+                // Extract point from pick_type (e.g. "Team +3.5")
+                $point = null;
+                if (preg_match('/([\+\-]?\d+\.?\d*)$/', $pick['pick_type'], $m)) {
+                    $point = (float)$m[1];
+                }
+                if ($point !== null) {
+                    $pick_score = ($outcome === $pick['home_team']) ? $home_score : $away_score;
+                    $opp_score = ($outcome === $pick['home_team']) ? $away_score : $home_score;
+                    $adjusted = $pick_score + $point;
+                    if ($adjusted > $opp_score) $result = 'won';
+                    elseif ($adjusted < $opp_score) $result = 'lost';
+                    else $result = 'push';
+                }
+            } elseif ($market === 'totals') {
+                $point = null;
+                if (preg_match('/(\d+\.?\d*)$/', $pick['pick_type'], $m)) {
+                    $point = (float)$m[1];
+                }
+                if ($point !== null) {
+                    $total = $home_score + $away_score;
+                    $oc_lower = strtolower($outcome);
+                    if ($oc_lower === 'over') {
+                        $result = ($total > $point) ? 'won' : (($total < $point) ? 'lost' : 'push');
+                    } elseif ($oc_lower === 'under') {
+                        $result = ($total < $point) ? 'won' : (($total > $point) ? 'lost' : 'push');
+                    }
+                }
+            }
+
+            if ($result === null) continue;
+
+            // Calculate PnL based on kelly_bet and odds
+            $pnl = 0;
+            $bet_amt = (float)$pick['kelly_bet'];
+            $odds = (float)$pick['best_odds'];
+            if ($result === 'won') {
+                $pnl = round($bet_amt * ($odds - 1.0), 2);
+                $won++;
+            } elseif ($result === 'lost') {
+                $pnl = -1 * $bet_amt;
+                $lost++;
+            } else {
+                $pnl = 0;
+                $push++;
+            }
+
+            $conn->query("UPDATE lm_sports_daily_picks SET "
+                . "result='" . $conn->real_escape_string($result) . "', "
+                . "pnl=" . (float)$pnl . " "
+                . "WHERE id=" . (int)$pick['id']);
+
+            $settled++;
+            $details[] = array(
+                'pick_id' => (int)$pick['id'],
+                'event' => $pick['away_team'] . ' @ ' . $pick['home_team'],
+                'pick' => $pick['outcome_name'],
+                'market' => $market,
+                'result' => $result,
+                'pnl' => $pnl,
+                'score' => $away_score . '-' . $home_score
+            );
+        }
+    }
+
+    // Void picks older than 7 days that never got settled
+    $voided = 0;
+    $void_q = $conn->query("UPDATE lm_sports_daily_picks SET result='void', pnl=0 WHERE result IS NULL AND commence_time < DATE_SUB(NOW(), INTERVAL 7 DAY)");
+    if ($void_q) {
+        $voided = $conn->affected_rows;
+    }
+
+    echo json_encode(array(
+        'ok' => true,
+        'settled' => $settled,
+        'won' => $won,
+        'lost' => $lost,
+        'push' => $push,
+        'voided' => $voided,
+        'details' => $details
     ));
 }
 

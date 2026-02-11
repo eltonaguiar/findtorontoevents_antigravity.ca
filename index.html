@@ -77,6 +77,38 @@
       };
     })();
   </script>
+  <style>
+    @keyframes goldShimmer {
+      0%, 100% { background-position: 0% 50%; box-shadow: 0 0 20px rgba(251,191,36,0.3); }
+      50% { background-position: 100% 50%; box-shadow: 0 0 40px rgba(251,191,36,0.6); }
+    }
+    .gold-glow-nav {
+      background: linear-gradient(90deg, #fbbf24, #f59e0b, #eab308, #f59e0b, #fbbf24) !important;
+      background-size: 300% auto !important;
+      animation: goldShimmer 3s ease-in-out infinite !important;
+      box-shadow: 0 0 20px rgba(251,191,36,0.4), 0 0 40px rgba(251,191,36,0.2);
+    }
+    @keyframes navGlow {
+      0%, 100% { box-shadow: 0 0 8px rgba(99,102,241,0.3), 0 0 16px rgba(99,102,241,0.15); }
+      50% { box-shadow: 0 0 16px rgba(99,102,241,0.5), 0 0 32px rgba(99,102,241,0.25); }
+    }
+    @keyframes signInGlow {
+      0%, 100% { box-shadow: 0 0 8px rgba(59,130,246,0.4), 0 0 16px rgba(59,130,246,0.2); }
+      50% { box-shadow: 0 0 16px rgba(59,130,246,0.6), 0 0 32px rgba(59,130,246,0.3); }
+    }
+    @keyframes favCreatorsGlow {
+      0%, 100% { box-shadow: 0 0 8px rgba(236,72,153,0.4), 0 0 16px rgba(236,72,153,0.2); }
+      50% { box-shadow: 0 0 16px rgba(236,72,153,0.6), 0 0 32px rgba(236,72,153,0.3); }
+    }
+    @keyframes otherStuffGlow {
+      0%, 100% { box-shadow: 0 0 12px rgba(0,212,255,0.3), 0 0 24px rgba(99,102,241,0.2); }
+      50% { box-shadow: 0 0 24px rgba(0,212,255,0.5), 0 0 48px rgba(99,102,241,0.3); }
+    }
+    .nav-glow-signin { animation: signInGlow 2.5s ease-in-out infinite; border-color: rgba(59,130,246,0.3) !important; }
+    .nav-glow-invhub > summary { animation: navGlow 2.5s ease-in-out infinite; border-radius: 0.75rem; }
+    .nav-glow-favcreators { animation: favCreatorsGlow 2.5s ease-in-out infinite; border-color: rgba(236,72,153,0.3) !important; }
+    .otherstuff-glow { animation: otherStuffGlow 3s ease-in-out infinite; border-radius: 1rem; }
+  </style>
   <link as="font" crossorigin="" href="/next/_next/static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2" rel="preload"
     type="font/woff2" />
   <link rel="preload" href="/next/_next/static/chunks/cd9d6741b3ff3a25.css" as="style" />
@@ -117,6 +149,27 @@
     content="Your ultimate guide to Toronto events, dating meetups, and activities. Discover the best things to do in Toronto this weekend."
     name="twitter:description" />
   <link href="/favicon.ico" rel="icon" sizes="256x256" type="image/x-icon" />
+  <link rel="canonical" href="https://findtorontoevents.ca/" />
+  <meta property="og:url" content="https://findtorontoevents.ca/" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Find Toronto Events",
+    "alternateName": ["FindTorontoEvents", "TdotEvent"],
+    "url": "https://findtorontoevents.ca/",
+    "description": "Your ultimate guide to Toronto events, dating meetups, activities, stock analysis, live trading, VR experiences, and more.",
+    "inLanguage": "en-CA",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://findtorontoevents.ca/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    },
+    "sameAs": [
+      "https://tdotevent.ca/"
+    ]
+  }
+  </script>
   <script>
     window.addEventListener('load', function () {
       try {
@@ -667,86 +720,157 @@
               Platform</p><button
               class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all bg-[var(--pk-500)] text-white font-bold"><span
                 class="text-lg">🌐</span> Global Feed</button>
+          
+            <button class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:bg-white/5 text-[var(--text-2)] hover:text-white"><span class="text-lg">♥</span><span class="flex-1 truncate">My Collection</span><span class="bg-black/30 px-2 py-0.5 rounded text-[10px] font-mono">0</span></button>
           </div>
+                              <!-- OTHER STUFF Section (Gold Glow) -->
           <div class="space-y-1 pt-4 border-t border-white/5">
-            <details class="group/nav-section">
-              <summary
-                class="px-4 py-2 text-[10px] font-black uppercase text-[var(--pk-300)] tracking-widest opacity-60 cursor-pointer list-none flex items-center justify-between hover:opacity-100 transition-opacity">
-                NETWORK <span class="group-open/nav-section:rotate-180 transition-transform">▼</span>
-              </summary>
-              <div class="space-y-1 mt-1">
-                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-red-500/20 text-red-200 hover:text-white transition-all border border-transparent hover:border-red-500/30 overflow-hidden"
-                  href="/news/"><span class="text-lg">📰</span> News Aggregator</a>
-                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-amber-500/20 text-amber-200 hover:text-white transition-all border border-transparent hover:border-amber-500/30 overflow-hidden"
-                  href="/deals/"><span class="text-lg">💸</span> Deals &amp; Freebies</a>
-                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-green-500/20 text-green-200 hover:text-white transition-all border border-transparent hover:border-green-500/30 overflow-hidden"
-                  href="/MENTALHEALTHRESOURCES/"><span class="text-lg">🧠</span> Mental Health Resources</a>
-                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-yellow-500/20 text-yellow-200 hover:text-white transition-all border border-transparent hover:border-yellow-500/30 overflow-hidden"
-                  href="/investments/"><span class="text-lg">💰</span> Investment Tools</a>
-                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-indigo-500/20 text-indigo-200 hover:text-white transition-all border border-transparent hover:border-indigo-500/30 overflow-hidden"
-                  href="/findstocks"><span class="text-lg">📈</span> Find Stocks</a>
-                <details class="group/movies-section">
-                  <summary class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-amber-500/20 text-amber-200 hover:text-white transition-all border border-transparent hover:border-amber-500/30 cursor-pointer list-none">
-                    <span class="text-lg">&#127916;</span> Movies &amp; TV &amp; Trailers <span class="ml-auto group-open/movies-section:rotate-180 transition-transform text-xs opacity-60">&#9660;</span>
-                  </summary>
-                  <div class="space-y-1 mt-1 ml-6">
-                    <a class="w-full text-left px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-amber-500/20 text-amber-200 hover:text-white transition-all text-sm border border-transparent hover:border-amber-500/30"
-                      href="/MOVIESHOWS/"
-                      title="TikTok-style trailer scroll with Toronto Cineplex &amp; Imagine Cinemas showtimes, IMDb &amp; Rotten Tomatoes ratings"><span class="text-base">&#127916;</span> V1 &#8212; Now Showing</a>
-                    <a class="w-full text-left px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-orange-500/20 text-orange-200 hover:text-white transition-all text-sm border border-transparent hover:border-orange-500/30"
-                      href="/movieshows2/"
-                      title="4,000+ curated titles with genre filters, playlist export &amp; import, and deep TMDB integration"><span class="text-base">&#127916;</span> V2 &#8212; The Film Vault</a>
-                    <a class="w-full text-left px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-rose-500/20 text-rose-200 hover:text-white transition-all text-sm border border-transparent hover:border-rose-500/30"
-                      href="/MOVIESHOWS3/"
-                      title="Create an account, like &amp; save trailers, build your watchlist queue — TikTok-style auto-scroll player"><span class="text-base">&#127871;</span> V3 &#8212; Binge Mode</a>
+            <div class="px-3 py-2.5 mx-1 mb-1 rounded-xl text-center gold-glow-nav">
+              <p class="text-[11px] font-black uppercase tracking-[0.2em] text-black/90">✨ OTHER STUFF ✨</p>
+            </div>
+            <a class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-cyan-500/20 text-cyan-200 hover:text-white transition-all border border-transparent hover:border-cyan-500/30 overflow-hidden text-sm" href="/weather/"><span class="text-base">🌤️</span> Toronto Weather</a>
+            <a class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-amber-500/20 text-amber-200 hover:text-white transition-all border border-transparent hover:border-amber-500/30 overflow-hidden text-sm" href="/affiliates/"><span class="text-base">🔗</span> Gear & Links</a>
+            <a class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-emerald-500/20 text-emerald-200 hover:text-white transition-all border border-transparent hover:border-emerald-500/30 overflow-hidden text-sm" href="/updates/"><span class="text-base">🆕</span> Latest Updates</a>
+            <a class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-red-500/20 text-red-200 hover:text-white transition-all border border-transparent hover:border-red-500/30 overflow-hidden text-sm" href="/news/"><span class="text-base">📰</span> News Aggregator</a>
+            <a class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-amber-500/20 text-yellow-200 hover:text-white transition-all border border-transparent hover:border-amber-500/30 overflow-hidden text-sm" href="/deals/"><span class="text-base">🎁</span> Deals & Freebies</a>
+            <details class="group/apps-tools" open>
+              <summary class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-white/5 text-[var(--text-2)] hover:text-white transition-all cursor-pointer list-none text-sm">📱 Apps & Tools <span class="ml-auto group-open/apps-tools:rotate-180 transition-transform text-xs opacity-60">▼</span></summary>
+              <div class="space-y-0.5 mt-1 ml-4">
+                <details class="group/inv-hub nav-glow-invhub" open>
+                  <summary class="w-full text-left px-4 py-2 rounded-xl flex items-center gap-3 hover:bg-white/5 text-[var(--text-2)] hover:text-white transition-all cursor-pointer list-none text-sm">📊 Investment Hub <span class="ml-auto group-open/inv-hub:rotate-180 transition-transform text-xs opacity-60">▼</span></summary>
+                  <div class="space-y-0.5 mt-1 ml-3">
+                    <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/investments/"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#6366f1"></span> Investment Tools — Overview</a>
+                    <details class="group/stocks">
+                      <summary class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/5 text-gray-400 hover:text-white transition-all cursor-pointer list-none text-xs font-semibold">📈 Stocks <span class="ml-auto group-open/stocks:rotate-180 transition-transform text-[10px] opacity-60">▼</span></summary>
+                      <div class="space-y-0.5 mt-0.5 ml-3">
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findstocks/"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#f59e0b"></span> Stock Ideas — AI picks, updated daily</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findstocks/portfolio2/dashboard.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#6366f1"></span> Portfolio Dashboard</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findstocks/portfolio2/picks.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#6366f1"></span> Quick Picks</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findstocks/portfolio2/horizon-picks.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#6366f1"></span> Horizon Picks</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findstocks/portfolio2/dividends.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#22c55e"></span> Dividends & Earnings</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findstocks/portfolio2/stats/index.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#6366f1"></span> Portfolio Stats</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findstocks/portfolio2/smart-learning.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#a78bfa"></span> Smart Learning</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findstocks/portfolio2/stock-intel.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#a78bfa"></span> Stock Intel</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findstocks/portfolio2/daytrader-sim.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#f43f5e"></span> Day Trader Sim</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findstocks/portfolio2/penny-stocks.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#84cc16"></span> Penny Stock Finder</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findstocks_global/"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#22c55e"></span> Global Stocks Hub</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/updates/?category=stocks"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#64748b"></span> Stock Updates & Changelog</a>
+                      </div>
+                    </details>
+                    <details class="group/funds">
+                      <summary class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/5 text-gray-400 hover:text-white transition-all cursor-pointer list-none text-xs font-semibold">📊 Mutual Funds <span class="ml-auto group-open/funds:rotate-180 transition-transform text-[10px] opacity-60">▼</span></summary>
+                      <div class="space-y-0.5 mt-0.5 ml-3">
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findmutualfunds/portfolio1/"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#6366f1"></span> Fund Portfolio</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findmutualfunds/portfolio1/stats.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#6366f1"></span> Fund Stats</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findmutualfunds/portfolio1/report.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#6366f1"></span> Fund Report</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findmutualfunds2/portfolio2/"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#22c55e"></span> Portfolio v2</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findmutualfunds2/portfolio2/stats/index.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#22c55e"></span> Portfolio v2 Stats</a>
+                      </div>
+                    </details>
+                    <details class="group/crypto">
+                      <summary class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/5 text-gray-400 hover:text-white transition-all cursor-pointer list-none text-xs font-semibold">🪙 Crypto <span class="ml-auto group-open/crypto:rotate-180 transition-transform text-[10px] opacity-60">▼</span></summary>
+                      <div class="space-y-0.5 mt-0.5 ml-3">
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findcryptopairs/"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#f59e0b"></span> Crypto Pairs Scanner</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findcryptopairs/portfolio/"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#f59e0b"></span> Crypto Portfolio</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findcryptopairs/portfolio/stats/index.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#f59e0b"></span> Crypto Stats</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findcryptopairs/meme.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#d946ef"></span> Meme Coin Scanner</a>
+                      </div>
+                    </details>
+                    <details class="group/forex">
+                      <summary class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/5 text-gray-400 hover:text-white transition-all cursor-pointer list-none text-xs font-semibold">💱 Forex <span class="ml-auto group-open/forex:rotate-180 transition-transform text-[10px] opacity-60">▼</span></summary>
+                      <div class="space-y-0.5 mt-0.5 ml-3">
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findforex2/"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#06b6d4"></span> Forex Scanner</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findforex2/portfolio/"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#06b6d4"></span> Forex Portfolio</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/findforex2/portfolio/stats/index.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#06b6d4"></span> Forex Stats</a>
+                      </div>
+                    </details>
+                    <details class="group/goldmines">
+                      <summary class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/5 text-gray-400 hover:text-white transition-all cursor-pointer list-none text-xs font-semibold">⛏️ Goldmines <span class="ml-auto group-open/goldmines:rotate-180 transition-transform text-[10px] opacity-60">▼</span></summary>
+                      <div class="space-y-0.5 mt-0.5 ml-3">
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/investments/goldmines/antigravity/"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#22c55e"></span> Antigravity Goldmine</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/goldmine_cursor/"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#f59e0b"></span> Cursor Goldmine</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/live-monitor/goldmine-dashboard.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#6366f1"></span> Claude Goldmine</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/live-monitor/multi-dimensional.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#818cf8"></span> Multi-Dimensional (6D)</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/investments/goldmines/kimi/kimi-goldmine-client.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#ffd700"></span> Kimi Goldmine</a>
+                      </div>
+                    </details>
                   </div>
                 </details>
-                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-rose-500/20 text-rose-200 hover:text-white transition-all border border-transparent hover:border-rose-500/30 overflow-hidden"
-                  href="/fc/#/guest"><span class="text-lg">💎</span> FAVCREATORS</a>
-                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-red-500/20 text-red-200 hover:text-white transition-all border border-transparent hover:border-red-500/30 overflow-hidden"
-                  href="/vr/game-arena/fps-v5/"><span class="text-lg">🎮</span> Game Prototypes</a>
-                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-red-500/20 text-red-200 hover:text-white transition-all border border-transparent hover:border-red-500/30 overflow-hidden"
-                  href="/FIGHTGAME/"><span class="text-lg">⚔️</span> Shadow Arena (Fight Game)</a>
-                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-blue-500/20 text-blue-200 hover:text-white transition-all border border-transparent hover:border-blue-500/30 overflow-hidden"
-                  href="/WINDOWSFIXER/"
-                  title="Fixes boot issues such as EFI corrupt, winload.efi missing, or INACCESSIBLE_BOOT_DEVICE."><span
-                    class="text-lg">🛠️</span> Windows Boot Fixer</a>
-                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-cyan-500/20 text-cyan-200 hover:text-white transition-all border border-transparent hover:border-cyan-500/30 overflow-hidden"
-                  href="/gotjob/"><span class="text-lg">💼</span> GotJob — Your Job Finding Hub</a>
-                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-amber-500/20 text-amber-200 hover:text-white transition-all border border-transparent hover:border-amber-500/30 overflow-hidden"
-                  href="/affiliates/"><span class="text-lg">🔗</span> Recommended Gear &amp; Links</a>
-                <a class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-emerald-500/20 text-emerald-200 hover:text-white transition-all border border-transparent hover:border-emerald-500/30 overflow-hidden"
-                  href="/updates/"><span class="text-lg">📋</span> Latest Updates</a>
+                <a class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-green-500/20 text-green-200 hover:text-white transition-all border border-transparent hover:border-green-500/30 overflow-hidden text-sm" href="/live-monitor/sports-betting.html"><span class="text-base">⚽</span> Sports Bet Finder</a>
+                <a class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-green-500/20 text-green-200 hover:text-white transition-all border border-transparent hover:border-green-500/30 overflow-hidden text-sm" href="/MENTALHEALTHRESOURCES/"><span class="text-base">🧠</span> Mental Health</a>
+                <a class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-pink-500/20 text-pink-200 hover:text-white transition-all border border-transparent hover:border-pink-500/30 overflow-hidden text-sm nav-glow-favcreators" href="/fc/#/guest"><span class="text-base">💎</span> Fav Creators</a>
+                <a class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-blue-500/20 text-blue-200 hover:text-white transition-all border border-transparent hover:border-blue-500/30 overflow-hidden text-sm" href="/WINDOWSFIXER/"><span class="text-base">🛠️</span> Windows Boot Fixer</a>
               </div>
             </details>
-            <button
-              class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-white/5 text-[var(--text-2)] hover:text-white transition-all overflow-hidden">
+            <details class="group/movies-tv" open>
+              <summary class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-white/5 text-[var(--text-2)] hover:text-white transition-all cursor-pointer list-none text-sm">🎬 Movies & TV <span class="ml-auto group-open/movies-tv:rotate-180 transition-transform text-xs opacity-60">▼</span></summary>
+              <div class="space-y-0.5 mt-1 ml-4">
+                <a class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-amber-500/20 text-amber-200 hover:text-white transition-all border border-transparent hover:border-amber-500/30 overflow-hidden text-sm" href="/MOVIESHOWS/"><span class="text-base">🎬</span> Now Showing</a>
+                <a class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-orange-500/20 text-orange-200 hover:text-white transition-all border border-transparent hover:border-orange-500/30 overflow-hidden text-sm" href="/movieshows2/"><span class="text-base">🎞️</span> The Film Vault</a>
+                <a class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-rose-500/20 text-rose-200 hover:text-white transition-all border border-transparent hover:border-rose-500/30 overflow-hidden text-sm" href="/MOVIESHOWS3/"><span class="text-base">🎥</span> Binge Mode</a>
+              </div>
+            </details>
+            <details class="group/immersive" open>
+              <summary class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-white/5 text-[var(--text-2)] hover:text-white transition-all cursor-pointer list-none text-sm">🎮 Immersive <span class="ml-auto group-open/immersive:rotate-180 transition-transform text-xs opacity-60">▼</span></summary>
+              <div class="space-y-0.5 mt-1 ml-4">
+                <details class="group/games-vr" open>
+                  <summary class="w-full text-left px-4 py-2 rounded-xl flex items-center gap-3 hover:bg-white/5 text-[var(--text-2)] hover:text-white transition-all cursor-pointer list-none text-sm">🎮 Games & VR <span class="ml-auto group-open/games-vr:rotate-180 transition-transform text-xs opacity-60">▼</span></summary>
+                  <div class="space-y-0.5 mt-1 ml-3">
+                    <details class="group/vr-exp">
+                      <summary class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/5 text-gray-400 hover:text-white transition-all cursor-pointer list-none text-xs font-semibold">🥽 VR Experience <span class="ml-auto group-open/vr-exp:rotate-180 transition-transform text-[10px] opacity-60">▼</span></summary>
+                      <div class="space-y-0.5 mt-0.5 ml-3">
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/vr/"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#a855f7"></span> VR Hub — Desktop & Quest 3</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/vr/mobile-index.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#d946ef"></span> VR Mobile</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/vr/weather-zone.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#00d4ff"></span> VR Weather Observatory</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/vr/events/"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#a855f7"></span> VR Events Explorer</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/vr/movies-tiktok.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#f59e0b"></span> VR Movie Theater</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/vr/creators.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#ec4899"></span> VR Creators Lounge</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/vr/stocks-zone.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#6366f1"></span> VR Stocks Floor</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/vr/wellness/"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#22c55e"></span> VR Wellness Zone</a>
+                      </div>
+                    </details>
+                    <details class="group/game-arena">
+                      <summary class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/5 text-gray-400 hover:text-white transition-all cursor-pointer list-none text-xs font-semibold">🎮 Game Arena <span class="ml-auto group-open/game-arena:rotate-180 transition-transform text-[10px] opacity-60">▼</span></summary>
+                      <div class="space-y-0.5 mt-0.5 ml-3">
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/vr/game-arena/"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#a855f7"></span> Game Arena Hub</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/vr/game-arena/tic-tac-toe.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#6366f1"></span> Tic-Tac-Toe</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/vr/game-arena/soccer-shootout.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#22c55e"></span> Soccer Shootout</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/vr/ant-rush/"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#f59e0b"></span> Ant Rush</a>
+                      </div>
+                    </details>
+                    <details class="group/fps">
+                      <summary class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/5 text-gray-400 hover:text-white transition-all cursor-pointer list-none text-xs font-semibold">🎯 FPS & Shooters <span class="ml-auto group-open/fps:rotate-180 transition-transform text-[10px] opacity-60">▼</span></summary>
+                      <div class="space-y-0.5 mt-0.5 ml-3">
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/vr/game-arena/fps-arena.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#ef4444"></span> FPS Arena</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/vr/game-arena/fps-v5/"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#a855f7"></span> Game Prototypes Hub</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/vr/game-arena/fps-v5/prototype-tactical.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#f43f5e"></span> FPS: Tactical</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/vr/game-arena/fps-v5/prototype-realistic.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#f43f5e"></span> FPS: Realistic</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/vr/game-arena/fps-v5/prototype-krunker.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#f43f5e"></span> FPS: Krunker-style</a>
+                      </div>
+                    </details>
+                    <details class="group/fighting">
+                      <summary class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/5 text-gray-400 hover:text-white transition-all cursor-pointer list-none text-xs font-semibold">⚔️ Fighting Games <span class="ml-auto group-open/fighting:rotate-180 transition-transform text-[10px] opacity-60">▼</span></summary>
+                      <div class="space-y-0.5 mt-0.5 ml-3">
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/FIGHTGAME/"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#e74c3c"></span> Shadow Arena</a>
+                        <a class="w-full text-left px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-xs border border-transparent hover:border-white/10" href="/vr/game-arena/fighting-arena.html"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#e74c3c"></span> VR Fighting Arena</a>
+                      </div>
+                    </details>
+                  </div>
+                </details>
+              </div>
+            </details>
+            <details class="group/drafts" open>
+              <summary class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-white/5 text-[var(--text-2)] hover:text-white transition-all cursor-pointer list-none text-sm">📝 Drafts <span class="ml-auto group-open/drafts:rotate-180 transition-transform text-xs opacity-60">▼</span></summary>
+              <div class="space-y-0.5 mt-1 ml-4">
+                <a class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-purple-500/20 text-purple-200 hover:text-white transition-all border border-transparent hover:border-purple-500/30 overflow-hidden text-sm" href="/fc/taste-profile/"><span class="text-base">🎵</span> Taste Profile</a>
+                <a class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-amber-500/20 text-amber-200 hover:text-white transition-all border border-transparent hover:border-amber-500/30 overflow-hidden text-sm" href="/fc/#/accountability"><span class="text-base">🎯</span> Accountability</a>
+                <a class="w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 hover:bg-cyan-500/20 text-cyan-200 hover:text-white transition-all border border-transparent hover:border-cyan-500/30 overflow-hidden text-sm" href="/gotjob/"><span class="text-base">💼</span> GotJob</a>
+              </div>
+            </details>
+            <button class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-white/5 text-[var(--text-2)] hover:text-white transition-all overflow-hidden">
               <span class="text-lg">⚙️</span> Event System Settings</button>
           </div>
-          <div class="space-y-1 pt-4 border-t border-white/5">
-            <p class="px-4 py-2 text-[10px] font-black uppercase text-[var(--pk-300)] tracking-widest opacity-60">
-              PERSONAL</p><button
-              class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:bg-white/5 text-[var(--text-2)] hover:text-white"><span
-                class="text-lg">♥</span><span class="flex-1 truncate">My Collection</span><span
-                class="bg-black/30 px-2 py-0.5 rounded text-[10px] font-mono">0</span></button>
-          </div>
-          <div class="space-y-1 pt-4 border-t border-white/5">
-            <p class="px-4 py-2 text-[10px] font-black uppercase text-[var(--pk-300)] tracking-widest opacity-60">Data
-              Management</p>
-            <div class="px-4 py-2 grid grid-cols-2 gap-2"><button
-                class="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 flex flex-col items-center gap-1 transition-all group overflow-hidden"
-                title="Export as JSON"><span class="text-xl group-hover:scale-110 transition-transform">📦</span><span
-                  class="text-[9px] font-black uppercase tracking-wider">JSON</span></button><button
-                class="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 flex flex-col items-center gap-1 transition-all group overflow-hidden"
-                title="Export as CSV"><span class="text-xl group-hover:scale-110 transition-transform">📊</span><span
-                  class="text-[9px] font-black uppercase tracking-wider">CSV</span></button><button
-                class="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 flex flex-col items-center gap-1 transition-all group col-span-2 overflow-hidden"
-                title="Export Calendar File (.ics)"><span
-                  class="text-xl group-hover:scale-110 transition-transform">📅</span><span
-                  class="text-[9px] font-black uppercase tracking-wider">Calendar (ICS)</span></button></div><button
-              class="w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-white/5 text-[var(--text-2)] hover:text-white transition-all overflow-hidden"><span
-                class="text-lg">📥</span> Import Collection</button><input accept=".json" class="hidden" type="file" />
-          </div>
+
           <div class="space-y-1 pt-4 border-t border-white/5">
             <button
               class="w-full text-center px-4 py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-[var(--pk-400)]/60 hover:text-[var(--pk-400)] transition-all border border-dashed border-white/5 hover:border-[var(--pk-500)]/30 mt-4 group">
@@ -1083,7 +1207,7 @@
         </div>
         <!-- Other Stuff - Popup menu with links to all sections -->
         <div class="otherstuff-promo w-full">
-          <div class="promo-banner bg-white/5 rounded-2xl p-5 h-full" style="cursor:pointer;" onclick="if(typeof openOtherStuffMenu==='function')openOtherStuffMenu();">
+          <div class="promo-banner bg-white/5 rounded-2xl p-5 h-full otherstuff-glow" style="cursor:pointer;" onclick="if(typeof openOtherStuffMenu==='function')openOtherStuffMenu();">
             <div class="flex items-center gap-4 transition-all duration-500 group">
               <div class="w-16 h-16 rounded-full bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(0,212,255,0.2);">
                 <span class="text-3xl">🌤️</span>
@@ -3183,7 +3307,7 @@
 <script>
 (function(){
   var fcApi = 'https://findtorontoevents.ca/fc/api';
-  var baseIslandStyle = 'position:fixed;top:1.5rem;right:calc(1.5rem + 80px);z-index:9999;display:flex !important;align-items:center;pointer-events:none;visibility:visible !important;opacity:1 !important;';
+  var baseIslandStyle = 'position:fixed;top:1.5rem;right:calc(1.5rem + 120px);z-index:9999;display:flex !important;align-items:center;pointer-events:none;visibility:visible !important;opacity:1 !important;';
   var btnStyle = 'pointer-events:auto;display:inline-flex;align-items:center;gap:0.5rem;padding:0.75rem 1rem;background:rgba(0,0,0,0.4);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.1);border-radius:1rem;color:#fff;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);cursor:pointer;font-family:inherit;text-decoration:none;';
   function getIslandHtml() {
     if (window.__fc_logged_in_user__) {
@@ -3274,7 +3398,7 @@
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.id = 'injected-nav-signin';
-    btn.className = 'w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:bg-blue-500/20 text-blue-200 hover:text-white border border-transparent hover:border-blue-500/30 overflow-hidden';
+    btn.className = 'w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all hover:bg-blue-500/20 text-blue-200 hover:text-white border border-transparent hover:border-blue-500/30 overflow-hidden nav-glow-signin';
     btn.title = 'Sign in';
     btn.innerHTML = '<span class="text-lg">\uD83D\uDD12</span><span class="flex-1">Sign in</span>';
     btn.onclick = function() { window.openSignInModal && window.openSignInModal(); };
@@ -3997,6 +4121,11 @@
 
 <!-- AI Assistant: context-aware chat + voice assistant (free, no API keys) -->
 <script src="/ai-assistant.js"></script>
+
+<!-- Theme Switcher: 151 visual themes from blog pages -->
+<script src="/theme-registry.js"></script>
+<script src="/theme-animations.js"></script>
+<script src="/theme-switcher.js"></script>
 </body>
 
 </html>

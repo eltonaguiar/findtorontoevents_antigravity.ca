@@ -91,6 +91,27 @@ jobs:
         except: print('Parse error')
         " || echo "Daily picks: $RESULT"
 
+    - name: Auto-place top value bets
+      continue-on-error: true
+      run: |
+        echo "=== Auto-placing top value bets ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/sports_bets.php?action=auto_place&key=livetrader2026&min_ev=3.0&max_bets=5") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Bets placed: {d.get(\"bets_placed\",0)}')
+                print(f'Bets skipped: {d.get(\"bets_skipped\",0)}')
+                print(f'Bankroll: \${d.get(\"bankroll\",1000):.2f}')
+                for det in d.get('details', []):
+                    print(f'  {det.get(\"event\",\"?\")} — {det.get(\"pick\",\"?\")} ({det.get(\"market\",\"?\")})')
+                    print(f'    Odds: {det.get(\"odds\",0)}, EV: {det.get(\"ev_pct\",0)}%, Bet: \${det.get(\"bet_amount\",0):.2f}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Auto-place: $RESULT"
+
     - name: Auto-settle completed bets
       continue-on-error: true
       run: |
@@ -110,6 +131,26 @@ jobs:
                 print(f'Error: {d.get(\"error\",\"unknown\")}')
         except: print('Parse error')
         " || echo "Settle: $RESULT"
+
+    - name: Settle daily picks
+      continue-on-error: true
+      run: |
+        echo "=== Settling daily picks ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=settle_picks&key=livetrader2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Settled: {d.get(\"settled\",0)} picks')
+                print(f'Won: {d.get(\"won\",0)}, Lost: {d.get(\"lost\",0)}, Push: {d.get(\"push\",0)}')
+                print(f'Voided: {d.get(\"voided\",0)}')
+                for det in d.get('details', [])[:5]:
+                    print(f'  {det.get(\"event\",\"?\")} — {det.get(\"pick\",\"?\")} = {det.get(\"result\",\"?\")} (PnL: \${det.get(\"pnl\",0):.2f})')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Settle picks: $RESULT"
 
     - name: Dashboard summary
       continue-on-error: true

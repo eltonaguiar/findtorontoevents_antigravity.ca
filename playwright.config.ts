@@ -72,6 +72,8 @@ export default defineConfig({
     /(?:^|\/)tests\/full_site_js_errors\.spec\.ts$/,
     /(?:^|\/)tests\/miracle-daytrades\.spec\.ts$/,
     /(?:^|\/)tests\/dividends-earnings\.spec\.ts$/,
+    /(?:^|\/)tests\/quicknav_changes\.spec\.ts$/,
+    /(?:^|\/)tests\/theme-switcher\.spec\.ts$/,
   ],
   timeout: isRemoteVerify ? 90000 : 30000,
   retries: isRemoteVerify ? 1 : 0,

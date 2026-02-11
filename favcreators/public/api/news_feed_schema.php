@@ -34,6 +34,7 @@ function _nf_ensure_tables($conn) {
             pub_date DATETIME NOT NULL,
             description TEXT,
             image_url VARCHAR(1024) DEFAULT '',
+            tags VARCHAR(512) DEFAULT '',
             fetched_at DATETIME NOT NULL,
             UNIQUE KEY uq_link (link(255)),
             INDEX idx_category (category),
@@ -60,5 +61,12 @@ function _nf_ensure_tables($conn) {
     foreach ($sqls as $sql) {
         $conn->query($sql);
     }
+
+    // Migration: add tags column if missing
+    $chk = $conn->query("SHOW COLUMNS FROM news_articles LIKE 'tags'");
+    if ($chk && $chk->num_rows === 0) {
+        $conn->query("ALTER TABLE news_articles ADD COLUMN tags VARCHAR(512) DEFAULT '' AFTER image_url");
+    }
+
     return true;
 }
