@@ -841,10 +841,10 @@ function _sp_rate_pick($vb) {
     // ── Take / Wait recommendation ──
     if ($score >= 80) {
         $action = 'STRONG TAKE';
-        $action_detail = 'High confidence — place this bet now';
+        $action_detail = 'High confidence edge detected by our model';
     } elseif ($score >= 65) {
         $action = 'TAKE';
-        $action_detail = 'Good value — worth placing';
+        $action_detail = 'Good value detected — solid risk/reward';
     } elseif ($score >= 50) {
         $action = 'LEAN';
         $action_detail = 'Slight edge — consider with smaller size';

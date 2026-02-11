@@ -203,10 +203,45 @@
             transform: translateX(-50%); width: 260px; padding: 0.7rem;
             background: #1e1e3f; border: 1px solid var(--accent);
             border-radius: 8px; font-size: 0.72rem; color: var(--text);
-            line-height: 1.5; z-index: 100; text-align: left;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            line-height: 1.5; z-index: 1000; text-align: left;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5); pointer-events: none;
         }
         .grade-info-icon:hover .grade-tooltip { display: block; }
+        /* Glossary tab */
+        .glossary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+        .glossary-item {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1rem; transition: border-color 0.2s;
+        }
+        .glossary-item:hover { border-color: var(--accent); }
+        .glossary-term {
+            font-weight: 700; font-size: 0.95rem; color: var(--accent);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem;
+        }
+        .glossary-term .gt-badge { font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 600; }
+        .glossary-def { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; }
+        .glossary-def strong { color: var(--text); }
+        .glossary-section-title { font-size: 1rem; font-weight: 700; color: var(--text); margin: 1.5rem 0 0.8rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border); }
+        .glossary-section-title:first-child { margin-top: 0; }
+        /* Inline term tooltip */
+        .term-tip {
+            position: relative; cursor: help;
+            border-bottom: 1px dotted var(--accent); color: var(--text);
+        }
+        .term-tip .term-tip-text {
+            display: none; position: absolute; bottom: 130%; left: 50%;
+            transform: translateX(-50%); width: 240px; padding: 0.6rem 0.7rem;
+            background: #1e1e3f; border: 1px solid var(--accent);
+            border-radius: 8px; font-size: 0.72rem; color: var(--text);
+            line-height: 1.5; z-index: 1000; text-align: left;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5); pointer-events: none;
+            font-weight: 400;
+        }
+        .term-tip:hover .term-tip-text { display: block; }
+        /* Pick history result detail */
+        .result-detail { font-size: 0.72rem; color: var(--text-dim); margin-top: 0.15rem; white-space: nowrap; }
+        .result-detail .rd-risk { color: var(--text-dim); }
+        .result-detail .rd-payout { font-weight: 600; }
         .grade-explainer {
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: var(--radius); padding: 0.7rem 1rem;
@@ -357,6 +392,7 @@
             <button class="tab-btn" onclick="switchTab('bets')">My Bets</button>
             <button class="tab-btn" onclick="switchTab('performance')">Performance</button>
             <button class="tab-btn" onclick="switchTab('history')">Pick History</button>
+            <button class="tab-btn" onclick="switchTab('glossary')">Glossary</button>
         </div>
 
         <div class="tab-panel active" id="tab-picks">
@@ -373,12 +409,12 @@
                     </div>
                 </div>
                 <div class="grade-explainer" id="grade-explainer">
-                    <div class="ge-title">How Grades Work</div>
-                    Grades are based on <strong>Expected Value (EV)</strong>, not just win probability.
+                    <div class="ge-title">How Grades Work <span style="font-weight:400;font-size:0.75rem;color:var(--text-dim);">&mdash; see <a href="#" onclick="switchTab('glossary');return false;" style="font-size:0.75rem">Glossary</a> for all terms</span></div>
+                    Grades are based on <span class="term-tip"><strong>Expected Value (EV)</strong><span class="term-tip-text">The average profit per dollar bet over many repetitions. +EV means profitable long-term.</span></span>, not just win probability.
                     A pick with <strong>17% win probability at +500 odds</strong> (grade B) can outrank one with
                     <strong>26% win probability at +290 odds</strong> (grade C+) because the potential payout per dollar
                     risked is higher &mdash; the <strong>risk:reward ratio</strong> matters more than raw likelihood.
-                    <br>Factors: EV% (50pts), book consensus (20pts), market type (15pts), CA-legal book (10pts), timing (5pts).
+                    <br>Factors: EV% (50pts), <span class="term-tip">book consensus<span class="term-tip-text">How closely different sportsbooks agree on the odds. Strong consensus = efficient market.</span></span> (20pts), market type (15pts), <span class="term-tip">CA-legal book<span class="term-tip-text">Sportsbooks licensed in Ontario/Canada: bet365, FanDuel, DraftKings, BetMGM, PointsBet, Caesars.</span></span> (10pts), timing (5pts).
                 </div>
                 <div id="picks-summary" style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:0.8rem 1rem;margin-bottom:1rem;display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;font-size:0.85rem;">
                     <span>Strong Takes: <strong class="text-green" id="sum-strong">0</strong></span>
@@ -416,6 +452,128 @@
         <div class="tab-panel" id="tab-history">
             <div id="history-content"><div class="loading">Loading pick history...</div></div>
         </div>
+
+        <div class="tab-panel" id="tab-glossary">
+            <h3 class="glossary-section-title">Grades &amp; Recommendations</h3>
+            <div class="glossary-grid">
+                <div class="glossary-item">
+                    <div class="glossary-term"><span class="rec-badge rec-strong-take gt-badge" style="animation:none">STRONG TAKE</span></div>
+                    <div class="glossary-def">The highest-confidence recommendation. The algorithm found a <strong>large positive EV edge</strong> with strong book consensus. Historically the most profitable grade of picks. <em style="color:var(--yellow);font-size:0.78rem">&#9888; This is paper simulation analysis &mdash; never bet money you can&rsquo;t afford to lose.</em></div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term"><span class="rec-badge rec-take gt-badge">TAKE</span></div>
+                    <div class="glossary-def">A solid bet with <strong>meaningful positive EV</strong>. Good risk/reward ratio but not as extreme as a Strong Take. Our model suggests placing at the recommended Kelly-sized amount. <em style="color:var(--yellow);font-size:0.78rem">&#9888; Paper simulation only &mdash; not financial advice.</em></div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term"><span class="rec-badge rec-lean gt-badge">LEAN</span></div>
+                    <div class="glossary-def">Slight edge detected but <strong>not a slam dunk</strong>. The EV is positive but marginal. Consider placing at half the suggested amount, or skip if your bankroll is tight.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term"><span class="rec-badge rec-wait gt-badge">WAIT</span></div>
+                    <div class="glossary-def">Edge is borderline or the line may move. <strong>Don&rsquo;t bet yet</strong> &mdash; check back closer to game time. Odds often shift and the value may improve (or disappear).</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term"><span class="rec-badge rec-skip gt-badge">SKIP</span></div>
+                    <div class="glossary-def"><strong>No edge found</strong> or negative EV. The odds don&rsquo;t justify a bet. Discipline means sitting out bad spots &mdash; skipping losing bets is how you stay profitable.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term">Grade (A+, A, B+, B, C+, C, D)</div>
+                    <div class="glossary-def">A composite score (0-100) converted to a letter grade. Based on: <strong>EV%</strong> (50 pts), book consensus (20 pts), market type (15 pts), Canadian-legal book (10 pts), timing (5 pts). A higher grade does <strong>not</strong> always mean higher win probability &mdash; it means better risk-adjusted value.</div>
+                </div>
+            </div>
+
+            <h3 class="glossary-section-title">Key Betting Concepts</h3>
+            <div class="glossary-grid">
+                <div class="glossary-item">
+                    <div class="glossary-term">EV (Expected Value)</div>
+                    <div class="glossary-def">The average profit you'd make per dollar bet <strong>over many repetitions</strong>. An EV of +5% means for every $100 bet, you'd expect to profit $5 on average long-term. Positive EV (+EV) bets are profitable over time, even if individual bets lose.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term">Vig-Removed Probability</div>
+                    <div class="glossary-def">Sportsbooks build a <strong>profit margin (the &ldquo;vig&rdquo; or &ldquo;juice&rdquo;)</strong> into their odds. For example, a fair coin flip should be 50/50 but books price both sides at ~52.4% (totaling 104.8%). &ldquo;Vig-removed&rdquo; strips out that margin to show the <strong>true consensus probability</strong> the market implies. This is what the &ldquo;win prob&rdquo; percentage represents on each pick card.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term">Kelly Criterion</div>
+                    <div class="glossary-def">A mathematical formula for <strong>optimal bet sizing</strong> based on your edge and the odds offered. Betting more when your edge is larger, less when it&rsquo;s smaller. We use <strong>quarter-Kelly</strong> (25% of the full Kelly amount) for safer bankroll management &mdash; this reduces variance at the cost of slightly slower growth.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term">Line Shopping</div>
+                    <div class="glossary-def">Comparing odds across <strong>multiple sportsbooks</strong> to find the best price for the same bet. If bet365 offers +150 and FanDuel offers +160 on the same outcome, FanDuel is the better line. Over time, always getting the best price compounds into significantly higher returns.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term">Bankroll</div>
+                    <div class="glossary-def">The <strong>total amount of money</strong> set aside for betting. All bet sizes are calculated as a percentage of your bankroll. Starting bankroll on this tracker is $1,000 (paper/simulated money).</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term">ROI (Return on Investment)</div>
+                    <div class="glossary-def"><strong>Total profit divided by total amount wagered</strong>, expressed as a percentage. An ROI of +5% means you profit $5 for every $100 risked. Professional sports bettors typically target 2-10% long-term ROI.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term">P&amp;L (Profit &amp; Loss)</div>
+                    <div class="glossary-def">The <strong>net dollar amount</strong> gained or lost. A positive P&amp;L means you're up overall; negative means you're down. Shown in green (profit) or red (loss) throughout the tracker.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term">Paper Betting</div>
+                    <div class="glossary-def">Tracking bets with <strong>simulated (fake) money</strong> to test a strategy without risking real cash. All bets on this tracker are paper bets &mdash; no real money is at stake. Great for building confidence in a system before going live.</div>
+                </div>
+            </div>
+
+            <h3 class="glossary-section-title">Market Types</h3>
+            <div class="glossary-grid">
+                <div class="glossary-item">
+                    <div class="glossary-term">Moneyline (h2h)</div>
+                    <div class="glossary-def">The simplest bet: <strong>pick which team wins</strong>. No point spread involved. The favorite has lower odds (smaller payout), the underdog has higher odds (bigger payout). &ldquo;h2h&rdquo; stands for head-to-head.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term">Spread</div>
+                    <div class="glossary-def">A <strong>point handicap</strong> applied to the favorite. If Team A is -6.5, they must win by 7+ points for the bet to win. The underdog at +6.5 can lose by up to 6 points and still &ldquo;cover.&rdquo; Spreads equalize mismatched teams.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term">Total (Over/Under)</div>
+                    <div class="glossary-def">Bet on whether the <strong>combined score</strong> of both teams will be over or under a set number. E.g., Total 215.5 &mdash; bet Over if you think both teams will score 216+ combined, Under if 215 or fewer.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term">Decimal Odds</div>
+                    <div class="glossary-def">The format used in this tracker. <strong>Multiply your bet by the odds to get total payout.</strong> E.g., $100 at 2.10 odds returns $210 total ($110 profit + $100 stake). Higher = bigger payout. Odds of 2.00 = even money.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term">American Odds (+/&minus;)</div>
+                    <div class="glossary-def"><strong>+150</strong> means bet $100 to win $150 profit (underdog). <strong>&minus;150</strong> means bet $150 to win $100 profit (favorite). The number tells you how much you win on $100 (positive) or how much you must bet to win $100 (negative).</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term">Push</div>
+                    <div class="glossary-def">A <strong>tie result</strong> where neither side wins. Your bet amount is returned in full. Happens when the final score lands exactly on the spread or total number (e.g., spread of -7 and team wins by exactly 7).</div>
+                </div>
+            </div>
+
+            <h3 class="glossary-section-title">Other Terms</h3>
+            <div class="glossary-grid">
+                <div class="glossary-item">
+                    <div class="glossary-term">Book Consensus</div>
+                    <div class="glossary-def">How closely <strong>different sportsbooks agree</strong> on the odds. Strong consensus (many books with similar lines) suggests the market is efficient. When one book&rsquo;s odds diverge significantly, that&rsquo;s where value bets appear.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term">CA Legal</div>
+                    <div class="glossary-def">Sportsbooks that are <strong>licensed and legal in Canada</strong> (specifically Ontario via iGaming Ontario). Includes bet365, FanDuel, DraftKings, BetMGM, PointsBet, and Caesars. Picks from CA-legal books get a small scoring bonus.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term">Key Number</div>
+                    <div class="glossary-def">Specific point spread values where many games land (e.g., 3 and 7 in NFL). Getting a spread of <strong>+3 vs +2.5</strong> matters a lot because so many games are decided by exactly 3 points. The &ldquo;KEY#&rdquo; badge flags these significant line differences.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term">Win Probability</div>
+                    <div class="glossary-def">The <strong>vig-removed consensus likelihood</strong> that a bet wins, derived from market odds. A 40% win prob doesn&rsquo;t mean it&rsquo;s a bad bet &mdash; if the odds pay enough to compensate, it can still be +EV. Grade reflects value, not just probability.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term">Confidence (High / Medium / Low)</div>
+                    <div class="glossary-def">The algorithm's <strong>certainty level</strong> for a pick. <strong>High</strong>: strong signal, multiple factors align. <strong>Medium</strong>: moderate signal, some uncertainty. <strong>Low</strong>: speculative, edge is less reliable. Higher confidence picks are sized larger via Kelly.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term">Savings %</div>
+                    <div class="glossary-def">In line shopping, the <strong>percentage difference</strong> between the best and worst odds for the same bet. Higher savings = bigger edge from choosing the right book. Even 2-3% savings compounds massively over hundreds of bets.</div>
+                </div>
+            </div>
+        </div>
     </div>
 
 <script>
@@ -429,7 +587,7 @@ function switchTab(tab) {
     document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
     document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
     document.getElementById('tab-' + tab).classList.add('active');
-    var tabs = {'picks':'Today','odds':'Odds','bets':'My Bets','performance':'Performance','history':'Pick History'};
+    var tabs = {'picks':'Today','odds':'Odds','bets':'My Bets','performance':'Performance','history':'Pick History','glossary':'Glossary'};
     var btns = document.querySelectorAll('.tab-btn');
     for (var i = 0; i < btns.length; i++) {
         if (btns[i].textContent === tabs[tab]) btns[i].classList.add('active');
@@ -588,7 +746,7 @@ function fetchPicks() {
             // Win prob tooltip explaining grade vs probability
             var wpTooltip = '';
             if (winProb) {
-                wpTooltip = '<div class="pick-win-prob" title="Win probability is vig-removed consensus odds. Grade is based on Expected Value (EV) which factors in payout size, not just likelihood. Higher odds = lower win prob but bigger payout per dollar.">' + winProb + ' win prob <span class="grade-info-icon">?<span class="grade-tooltip">Win prob (' + winProb + ') reflects how often this bet wins. But the <strong>grade (' + grade + ')</strong> is based on <strong>Expected Value</strong> &mdash; a bet that wins less often but pays much more can have a higher grade because the risk:reward is better.</span></span></div>';
+                wpTooltip = '<div class="pick-win-prob">' + winProb + ' win prob <span class="grade-info-icon">?<span class="grade-tooltip">Win prob (' + winProb + ') reflects how often this bet wins. But the <strong>grade (' + grade + ')</strong> is based on <strong>Expected Value</strong> &mdash; a bet that wins less often but pays much more can have a higher grade because the risk:reward is better.</span></span></div>';
             }
 
             var gameDateLabel = fmtGameDate(b.game_date, b.commence_time);
@@ -629,7 +787,7 @@ function fetchPicks() {
                 + '<span class="rec-badge ' + recClass + '">' + rec + '</span>'
                 + '<span class="badge badge-green">+EV ' + fmtPct(b.ev_pct) + '</span>'
                 + '</div>'
-                + (recDetail ? '<div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">' + recDetail + '</div>' : '');
+                + (recDetail ? '<div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">' + recDetail + ((rec === 'STRONG TAKE' || rec === 'TAKE') ? '<span style="color:var(--yellow);font-size:0.68rem;margin-left:0.4rem">&#9888; Paper simulation only. Never bet money you can\'t afford to lose.</span>' : '') + '</div>' : '');
 
             // Rating reasons
             var reasons = b.rating_reasons || [];
@@ -643,7 +801,7 @@ function fetchPicks() {
 
             // "Here's Why" for B+ or higher
             if (b.heres_why) {
-                html += '<div class="pick-heres-why"><div class="why-label">Here\'s Why</div>' + b.heres_why + '</div>';
+                html += '<div class="pick-heres-why"><div class="why-label">Here\'s Why</div>' + b.heres_why + '<div style="font-size:0.68rem;color:var(--text-dim);margin-top:0.4rem;font-style:italic">&#9888; This is algorithmic analysis for educational purposes. Not financial advice. Never wager money you cannot afford to lose.</div></div>';
             }
             html += '</div>';
         }
@@ -945,15 +1103,32 @@ function _renderDayPicksTable() {
     html += _thSortable('daypicks', 'book', 'Book', COL_TIPS.book, '_renderDayPicksTable');
     html += _thSortable('daypicks', 'odds', 'Odds', COL_TIPS.odds, '_renderDayPicksTable');
     html += _thSortable('daypicks', 'ev_pct', 'EV%', COL_TIPS.ev_pct, '_renderDayPicksTable');
+    html += _thSortable('daypicks', 'bet_amount', 'Risked', COL_TIPS.amount, '_renderDayPicksTable');
     html += _thSortable('daypicks', 'confidence', 'Confidence', COL_TIPS.confidence, '_renderDayPicksTable');
-    html += _thSortable('daypicks', 'result', 'Result', COL_TIPS.result, '_renderDayPicksTable');
+    html += _thSortable('daypicks', 'result', 'Result', 'Outcome with P&amp;L breakdown: how much was risked, what was won or lost', '_renderDayPicksTable');
     html += '</tr>';
     for (var i = 0; i < data.length; i++) {
         var p = data[i]; var rCls = p.result === 'won' ? 'text-green' : p.result === 'lost' ? 'text-red' : p.result === 'push' ? 'text-yellow' : 'text-dim';
         var cBadge = p.confidence === 'high' ? 'badge-green' : p.confidence === 'medium' ? 'badge-yellow' : 'badge-blue';
         var pGd = fmtGameDate(p.game_date, p.commence_time);
         var mktDisplay = mktLabel[p.market] || p.market || '';
-        html += '<tr><td>' + (p.sport_short||p.sport) + '</td><td>' + (p.away_team||'') + ' @ ' + (p.home_team||'') + '</td><td><strong>' + pGd + '</strong></td><td>' + mktDisplay + '</td><td><strong>' + (p.outcome_name||'') + '</strong></td><td>' + (p.best_book||'') + '</td><td>' + parseFloat(p.best_odds||0).toFixed(2) + '</td><td class="text-green">+' + fmtPct(p.ev_pct) + '</td><td><span class="badge ' + cBadge + '">' + (p.confidence||'') + '</span></td><td class="' + rCls + '"><strong>' + (p.result ? p.result.toUpperCase() : 'PENDING') + '</strong></td></tr>';
+        var betAmt = parseFloat(p.bet_amount || p.kelly_bet || 0);
+        var pOdds = parseFloat(p.best_odds || 0);
+        var pPnl = parseFloat(p.pnl || 0);
+        // Calculate payout and P/L if result is settled
+        var resultHtml = '';
+        if (p.result === 'won') {
+            var winAmt = betAmt > 0 ? (betAmt * pOdds) - betAmt : pPnl;
+            resultHtml = '<strong>WON</strong><div class="result-detail"><span class="rd-risk">Risked ' + fmtUsd(betAmt) + '</span> &rarr; <span class="rd-payout text-green">+' + fmtUsd(winAmt > 0 ? winAmt : pPnl) + ' profit</span></div>';
+        } else if (p.result === 'lost') {
+            resultHtml = '<strong>LOST</strong><div class="result-detail"><span class="rd-risk">Risked ' + fmtUsd(betAmt) + '</span> &rarr; <span class="rd-payout text-red">-' + fmtUsd(betAmt) + ' lost</span></div>';
+        } else if (p.result === 'push') {
+            resultHtml = '<strong>PUSH</strong><div class="result-detail"><span class="rd-risk">Risked ' + fmtUsd(betAmt) + '</span> &rarr; <span class="rd-payout text-yellow">$0.00 (returned)</span></div>';
+        } else {
+            resultHtml = '<strong>PENDING</strong>';
+            if (betAmt > 0) resultHtml += '<div class="result-detail"><span class="rd-risk">Risking ' + fmtUsd(betAmt) + '</span></div>';
+        }
+        html += '<tr><td>' + (p.sport_short||p.sport) + '</td><td>' + (p.away_team||'') + ' @ ' + (p.home_team||'') + '</td><td><strong>' + pGd + '</strong></td><td>' + mktDisplay + '</td><td><strong>' + (p.outcome_name||'') + '</strong></td><td>' + (p.best_book||'') + '</td><td>' + pOdds.toFixed(2) + '</td><td class="text-green">+' + fmtPct(p.ev_pct) + '</td><td>' + (betAmt > 0 ? fmtUsd(betAmt) : '--') + '</td><td><span class="badge ' + cBadge + '">' + (p.confidence||'') + '</span></td><td class="' + rCls + '">' + resultHtml + '</td></tr>';
     }
     html += '</table>';
     document.getElementById('history-content').innerHTML = html;
