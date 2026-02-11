@@ -20,6 +20,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from config import API_BASE, ADMIN_KEY
 
+# Custom headers to bypass ModSecurity WAF (blocks python-requests User-Agent)
+API_HEADERS = {"User-Agent": "SmartMoneyIntelligence/1.0"}
+
 
 class RateLimiter:
     """Simple rate limiter."""
@@ -37,9 +40,12 @@ class RateLimiter:
 def safe_request(url, headers=None, params=None, retries=3, timeout=30):
     """HTTP GET with retries and exponential backoff."""
     logger = logging.getLogger('utils')
+    merged_headers = dict(API_HEADERS)
+    if headers:
+        merged_headers.update(headers)
     for i in range(retries):
         try:
-            resp = requests.get(url, headers=headers, params=params, timeout=timeout)
+            resp = requests.get(url, headers=merged_headers, params=params, timeout=timeout)
             resp.raise_for_status()
             return resp
         except Exception as e:
@@ -64,7 +70,7 @@ def post_to_api(action, data):
         url = f"{API_BASE}/smart_money.php?action={action}&key={ADMIN_KEY}"
 
     try:
-        resp = requests.post(url, json=data, timeout=60)
+        resp = requests.post(url, json=data, headers=API_HEADERS, timeout=60)
         result = resp.json()
         if result.get('ok'):
             logger.info(f"POST {action}: OK — {result}")
@@ -98,7 +104,7 @@ def call_api(action, params=''):
     if params:
         url += '&' + params
     try:
-        resp = requests.get(url, timeout=60)
+        resp = requests.get(url, headers=API_HEADERS, timeout=60)
         return resp.json()
     except Exception as e:
         logger.error(f"GET {action} failed: {e}")
