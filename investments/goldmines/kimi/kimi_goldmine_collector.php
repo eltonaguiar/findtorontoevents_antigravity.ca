@@ -35,7 +35,7 @@ ob_end_clean();
 
 // Return error if DB failed
 if ($dbError) {
-    echo json_encode(['ok' => false, 'error' => 'DB Error: ' . $dbError]);
+    echo json_encode(array('ok' => false, 'error' => 'DB Error: ' . $dbError));
     exit;
 }
 
@@ -139,31 +139,51 @@ function collect_data($conn, $source_filter) {
     
     while ($source = $res->fetch_assoc()) {
         $new_picks = 0;
+        $source_error = null;
         
-        try {
-            switch ($source['source_type']) {
-                case 'stock':
-                case 'penny_stock':
-                    $new_picks = collect_stock_picks($conn, $source);
-                    break;
-                case 'meme_coin':
-                    $new_picks = collect_meme_picks($conn, $source);
-                    break;
-                case 'crypto':
-                    $new_picks = collect_crypto_picks($conn, $source);
-                    break;
-                case 'sports':
-                    $new_picks = collect_sports_picks($conn, $source);
-                    break;
-                case 'forex':
-                    $new_picks = collect_forex_picks($conn, $source);
-                    break;
-                case 'mutual_fund':
-                    $new_picks = collect_fund_picks($conn, $source);
-                    break;
-            }
-        } catch (Exception $e) {
-            $errors[] = $source['display_name'] . ': ' . $e->getMessage();
+        // PHP 5.2 compatible - no try/catch for exceptions
+        switch ($source['source_type']) {
+            case 'stock':
+            case 'penny_stock':
+                $result = collect_stock_picks($conn, $source);
+                if (is_array($result) && isset($result['error'])) {
+                    $source_error = $result['error'];
+                    $new_picks = 0;
+                } else {
+                    $new_picks = $result;
+                }
+                break;
+            case 'meme_coin':
+                $result = collect_meme_picks($conn, $source);
+                if (is_array($result) && isset($result['error'])) {
+                    $source_error = $result['error'];
+                    $new_picks = 0;
+                } else {
+                    $new_picks = $result;
+                }
+                break;
+            case 'crypto':
+                $new_picks = collect_crypto_picks($conn, $source);
+                break;
+            case 'sports':
+                $result = collect_sports_picks($conn, $source);
+                if (is_array($result) && isset($result['error'])) {
+                    $source_error = $result['error'];
+                    $new_picks = 0;
+                } else {
+                    $new_picks = $result;
+                }
+                break;
+            case 'forex':
+                $new_picks = collect_forex_picks($conn, $source);
+                break;
+            case 'mutual_fund':
+                $new_picks = collect_fund_picks($conn, $source);
+                break;
+        }
+        
+        if ($source_error) {
+            $errors[] = $source['display_name'] . ': ' . $source_error;
         }
         
         $collected[] = array(
@@ -188,7 +208,7 @@ function collect_stock_picks($conn, $source) {
     // Check if stock_picks table exists
     $check = $conn->query("SHOW TABLES LIKE 'stock_picks'");
     if ($check->num_rows === 0) {
-        throw new Exception('stock_picks table does not exist in this database');
+        return array('error' => 'stock_picks table does not exist in this database');
     }
     
     // Get picks from stock_picks table not yet in goldmine
@@ -204,7 +224,7 @@ function collect_stock_picks($conn, $source) {
     
     $res = $conn->query($sql);
     if (!$res) {
-        throw new Exception('Query failed: ' . $conn->error);
+        return array('error' => 'Query failed: ' . $conn->error);
     }
     
     $count = 0;
@@ -244,7 +264,7 @@ function collect_meme_picks($conn, $source) {
     // Check if mc_winners table exists
     $check = $conn->query("SHOW TABLES LIKE 'mc_winners'");
     if ($check->num_rows === 0) {
-        throw new Exception('mc_winners table does not exist in this database');
+        return array('error' => 'mc_winners table does not exist in this database');
     }
     
     $sql = "SELECT mw.* 
@@ -296,7 +316,7 @@ function collect_sports_picks($conn, $source) {
     // Check if lm_sports_value_bets table exists
     $check = $conn->query("SHOW TABLES LIKE 'lm_sports_value_bets'");
     if ($check->num_rows === 0) {
-        throw new Exception('lm_sports_value_bets table does not exist in this database');
+        return array('error' => 'lm_sports_value_bets table does not exist in this database');
     }
     
     $sql = "SELECT * FROM lm_sports_value_bets 
