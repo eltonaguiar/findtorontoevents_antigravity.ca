@@ -271,6 +271,48 @@ a:hover { text-decoration: underline; }
 
 <div class="section-year">February 2026</div>
 
+<!-- Feb 11, 2026 — MOVIESHOWS2 Player Restored + Bug Fixes -->
+<div class="update-entry" style="--dot-color: #ef4444;" data-tags="movieshows,player,bugfix,deployment,tiktok,trailers" data-category="movies,ui">
+  <div class="update-date">Feb 11, 2026</div>
+  <div class="update-title">
+    MOVIESHOWS2 Player Restored + Text Layout Bug Fix
+    <span class="badge badge-fix">Fix</span>
+    <span class="badge badge-deploy">Deployed</span>
+  </div>
+  <div class="update-body">
+    <p>The MOVIESHOWS2 TikTok-style movie trailer player stopped working after a deployment sync deleted critical files from the server. Fully diagnosed, restored from archived backup, and patched with the correct working build.</p>
+    <ul>
+      <li><strong>Root Cause</strong> &mdash; 32 files (9 Next.js chunks + 23 JS/CSS/JSON files) existed only on the server and were never in the git repo. A deployment sync wiped them, breaking the player entirely <span class="app-tag">DevOps</span></li>
+      <li><strong>Player Restored</strong> &mdash; Replaced app.html with the correct working build featuring YouTube iframe opacity fix, proper CSS, and controls=1 + enablejsapi=1 for full player controls <span class="app-tag">Player</span></li>
+      <li><strong>Case Sensitivity Fix</strong> &mdash; Server had separate /movieshows2/ and /MOVIESHOWS2/ directories. play.html only existed in uppercase, causing 404 for lowercase visitors. Deployed to both paths with .htaccess redirect <span class="app-tag">Routing</span></li>
+      <li><strong>Text Layout Toggle Fixed</strong> &mdash; The Txt: Def/High/Mid toggle was stuck on &ldquo;Mid&rdquo; after selection because text-layout-center was missing from the classList.remove() in setTextLayout(). Now all three modes cycle correctly <span class="app-tag">Bug Fix</span></li>
+      <li><strong>Console Spam Reduced</strong> &mdash; Filtered out noisy YouTube infoDelivery messages that logged every ~250ms. Only meaningful state changes are logged now <span class="app-tag">DX</span></li>
+      <li><strong>All Assets in Git</strong> &mdash; All 45 previously server-only files are now committed to the repo to prevent future deployment wipes <span class="app-tag">DevOps</span></li>
+    </ul>
+    <p><a href="/movieshows2/play.html">Open MOVIESHOWS2 &rarr;</a></p>
+  </div>
+</div>
+
+<!-- Feb 11, 2026 — AI Bot: Daily Briefing Fix + Financial Snapshot Fallback -->
+<div class="update-entry" style="--dot-color: #3b82f6;" data-tags="chatbot,ai,daily-feed,briefing,financial,momentum,picks,patterns,welcome" data-category="events,stocks,trading">
+  <div class="update-date">Feb 11, 2026</div>
+  <div class="update-title">
+    AI Bot &mdash; Daily Briefing Fix + Financial Snapshot Fallback
+    <span class="badge badge-fix">Fix</span>
+    <span class="badge badge-improve">Improved</span>
+  </div>
+  <div class="update-body">
+    <p>Fixed the &ldquo;What I need to know today&rdquo; command not triggering, resolved the Financial Snapshot showing &ldquo;Momentum data unavailable&rdquo;, and added the daily briefing to all welcome messages so users discover it right away.</p>
+    <ul>
+      <li><strong>Pattern Fix</strong> &mdash; &ldquo;What I need to know today&rdquo; now correctly triggers the daily feed. Previously the bot required the word &ldquo;do&rdquo; (&ldquo;What <em>do</em> I need to know&rdquo;). Now both phrasings work <span class="app-tag">Chatbot</span></li>
+      <li><strong>12 New Trigger Phrases</strong> &mdash; Added: &ldquo;brief me&rdquo;, &ldquo;my daily&rdquo;, &ldquo;start my day&rdquo;, &ldquo;fill me in&rdquo;, &ldquo;today&rsquo;s rundown&rdquo;, &ldquo;morning update&rdquo;, &ldquo;morning report&rdquo;, &ldquo;what&rsquo;s going on today&rdquo;, &ldquo;today&rsquo;s briefing&rdquo;, &ldquo;give me the lowdown&rdquo;, and more <span class="app-tag">Chatbot</span></li>
+      <li><strong>Financial Snapshot Fallback</strong> &mdash; When high-conviction momentum picks (strength &ge; 70) aren&rsquo;t available, the daily briefing now falls back to the full picks list across crypto, forex, and stocks &mdash; sorted by signal strength. Shows BUY/SELL direction with color coding <span class="app-tag">Trading</span></li>
+      <li><strong>Welcome Message Updates</strong> &mdash; &ldquo;What I need to know today&rdquo; is now the first suggestion in the bot&rsquo;s welcome message, the default prompt chips, the fallback &ldquo;I&rsquo;m not sure&rdquo; response, and the help command guide <span class="app-tag">UI</span></li>
+    </ul>
+    <p>Try it: open the AI assistant and say <strong>&ldquo;What I need to know today&rdquo;</strong></p>
+  </div>
+</div>
+
 <!-- Feb 11, 2026 — Creator Updates Flyout + Mute Notification Sounds -->
 <div class="update-entry" style="--dot-color: #8b5cf6;" data-tags="creators,updates,flyout,mute,notifications,chatbot,ui" data-category="creators,ui">
   <div class="update-date">Feb 11, 2026</div>

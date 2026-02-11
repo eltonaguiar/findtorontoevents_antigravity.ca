@@ -1998,6 +1998,7 @@
       // ── DEFAULT (enriched) ──
       addMessage('ai', 'I\'m not sure how to help with that, but I can assist with a lot! Here are some ideas:' +
         '<div style="margin-top:8px;font-size:12px;">' +
+        '\u2022 <b>Daily Briefing</b>: <b>"What I need to know today"</b> / "Brief me" / "Catch me up"<br>' +
         '\u2022 <b>Events</b>: "What\'s happening this weekend?" / "Good date ideas tonight"<br>' +
         '\u2022 <b>Near you</b>: "Events near me today" / "Events at M5G 2H5"<br>' +
         '\u2022 <b>Restaurants</b>: "Vegan near me" / "Halal near Yonge and Dundas" / "Late night food"<br>' +
@@ -2953,12 +2954,13 @@
   function _isDailyFeedQuery(lower) {
     if (/daily\s*feed/i.test(lower)) return true;
     if (/today('?s)?\s*feed/i.test(lower)) return true;
-    if (/what\s*(do\s*i\s*need\s*to\s*know\s*today|you\s*need\s*to\s*know)/i.test(lower)) return true;
+    if (/what\s*(do\s*)?i\s*need\s*to\s*know(\s*today)?/i.test(lower)) return true;
+    if (/what\s*you\s*need\s*to\s*know/i.test(lower)) return true;
     if (/morning\s*briefing/i.test(lower)) return true;
     if (/daily\s*briefing/i.test(lower)) return true;
     if (/daily\s*summary/i.test(lower)) return true;
     if (/today('?s)?\s*summary/i.test(lower)) return true;
-    if (/give\s*me\s*the\s*(rundown|feed)/i.test(lower)) return true;
+    if (/give\s*me\s*the\s*(rundown|feed|lowdown)/i.test(lower)) return true;
     if (/catch\s*me\s*up/i.test(lower)) return true;
     if (/bring\s*me\s*up\s*to\s*speed/i.test(lower)) return true;
     if (/what('?s)?\s*new\s*today/i.test(lower)) return true;
@@ -2966,6 +2968,14 @@
     if (/today('?s)?\s*update/i.test(lower)) return true;
     if (/what\s*should\s*i\s*know\s*today/i.test(lower)) return true;
     if (/what('?s)?\s*important\s*today/i.test(lower)) return true;
+    if (/brief\s*me/i.test(lower)) return true;
+    if (/my\s*daily/i.test(lower) && !/pick|stock/i.test(lower)) return true;
+    if (/today('?s)?\s*briefing/i.test(lower)) return true;
+    if (/morning\s*(update|report|rundown)/i.test(lower)) return true;
+    if (/start\s*my\s*day/i.test(lower)) return true;
+    if (/what('?s)?\s*going\s*on\s*today/i.test(lower)) return true;
+    if (/fill\s*me\s*in/i.test(lower)) return true;
+    if (/today('?s)?\s*rundown/i.test(lower)) return true;
     return false;
   }
 
@@ -3065,7 +3075,9 @@
         fetch(CONFIG.dealsApi + '?action=free_today').then(function (r) { return r.json(); }).then(function (d) { dealsData = d; }).catch(function () {})
       );
       promises.push(
-        fetch('https://findtorontoevents.ca/live-monitor/api/daily_picks.php?action=momentum').then(function (r) { return r.json(); }).then(function (d) { picksData = d; }).catch(function () {})
+        fetch('https://findtorontoevents.ca/live-monitor/api/daily_picks.php?action=momentum').then(function (r) { return r.json(); }).then(function (d) {
+          picksData = d;
+        }).catch(function () {})
       );
       promises.push(
         fetch(CONFIG.fcApi + '/news_feed.php?action=get&category=toronto&per_page=5').then(function (r) { return r.json(); }).then(function (d) { newsData = d; }).catch(function () {})
@@ -3127,19 +3139,40 @@
 
     // ── FINANCIAL SNAPSHOT ──
     html += '<br><b>\u{1F4CA} FINANCIAL SNAPSHOT</b> <span style="color:#94a3b8;font-size:0.8em;">(Not financial advice)</span><br>';
+    // If momentum picks empty, try fetching all picks as fallback
+    if (!picksData || !picksData.ok || !picksData.picks || picksData.picks.length === 0) {
+      try {
+        var fallbackResp = await fetch('https://findtorontoevents.ca/live-monitor/api/daily_picks.php?action=all');
+        var fallbackData = await fallbackResp.json();
+        if (fallbackData && fallbackData.ok) {
+          // Merge all asset picks into one list
+          var allPicks = [];
+          if (fallbackData.crypto && fallbackData.crypto.length > 0) allPicks = allPicks.concat(fallbackData.crypto);
+          if (fallbackData.forex && fallbackData.forex.length > 0) allPicks = allPicks.concat(fallbackData.forex);
+          if (fallbackData.stocks && fallbackData.stocks.length > 0) allPicks = allPicks.concat(fallbackData.stocks);
+          if (allPicks.length > 0) {
+            // Sort by signal strength descending
+            allPicks.sort(function(a, b) { return (b.signal_strength || b.strength || 0) - (a.signal_strength || a.strength || 0); });
+            picksData = { ok: true, picks: allPicks };
+          }
+        }
+      } catch (e) { /* fallback also failed */ }
+    }
     if (picksData && picksData.ok && picksData.picks && picksData.picks.length > 0) {
       var topPicks = picksData.picks.slice(0, 3);
-      html += 'Top Momentum Picks:<br>';
+      html += 'Top Picks:<br>';
       for (var pi = 0; pi < topPicks.length; pi++) {
         var pick = topPicks[pi];
         var ticker = pick.ticker || pick.symbol || '???';
-        var strength = pick.strength || pick.score || pick.momentum_score || '';
+        var strength = pick.signal_strength || pick.strength || pick.score || pick.momentum_score || '';
+        var direction = pick.direction || pick.signal || '';
         html += '\u2022 <b>' + escapeHtml(ticker) + '</b>';
+        if (direction) html += ' <span style="color:' + (direction === 'BUY' || direction === 'LONG' ? '#22c55e' : '#ef4444') + ';">' + escapeHtml(direction) + '</span>';
         if (strength) html += ' \u2014 strength: ' + escapeHtml(String(strength));
         html += '<br>';
       }
     } else {
-      html += '<span style="color:#94a3b8;">Momentum data unavailable right now.</span><br>';
+      html += '<span style="color:#94a3b8;">No active picks right now. Check the Live Monitor for real-time signals.</span><br>';
     }
     html += '\u2192 <a href="/live-monitor/" target="_blank" style="color:#6366f1;text-decoration:none;font-weight:600;">See all picks</a>';
     html += ' | <a href="/findstocks/portfolio2/smart-money.html" target="_blank" style="color:#6366f1;text-decoration:none;font-weight:600;">Smart Money</a>';
@@ -9245,10 +9278,10 @@
     html += '<b>AI Assistant \u2014 Complete Command Guide</b><br><br>';
 
     html += '<b>Daily Feed / Briefing:</b><br>';
+    html += '\u2022 <b>"What I need to know today"</b> / "Brief me" / "Catch me up"<br>';
     html += '\u2022 "Daily feed" / "Today\'s feed" / "Morning briefing"<br>';
-    html += '\u2022 "Catch me up" / "Bring me up to speed"<br>';
-    html += '\u2022 "What do I need to know today?" / "Daily summary"<br>';
-    html += '\u2022 "Give me the rundown" / "What\'s new today?"<br>';
+    html += '\u2022 "Start my day" / "Fill me in" / "Today\'s rundown"<br>';
+    html += '\u2022 "Give me the rundown" / "What\'s new today?" / "What\'s going on today?"<br>';
 
     html += '<br><b>Events & Activities:</b><br>';
     html += '\u2022 "What\'s happening this weekend?" / "Events tonight"<br>';
@@ -9399,7 +9432,7 @@
         contextHint = 'Ask <b>"What should I watch?"</b> or search for any movie trailer.';
         break;
       default:
-        contextHint = 'Ask me about <b>events</b>, <b>weather</b>, <b>creators</b>, <b>stocks</b>, <b>movies</b>, and more.';
+        contextHint = 'Try <b>"What I need to know today"</b> for a full briefing, or ask about <b>events</b>, <b>weather</b>, <b>creators</b>, <b>stocks</b>, <b>movies</b>, and more.';
     }
 
     addMessage('ai',
@@ -9440,6 +9473,7 @@
       store(CONFIG.firstTimeKey, true);
       addMessage('ai', '<b>Welcome to the AI Assistant!</b><br><br>' +
         'I\'m your free, voice-enabled assistant for everything on findtorontoevents.ca. Here\'s a taste of what I can do:<br><br>' +
+        '\u2022 <b>"What I need to know today"</b> \u2014 full daily briefing: weather, deals, picks, news & events<br>' +
         '\u2022 <b>"What\'s happening this weekend?"</b> \u2014 events by type, date, or location<br>' +
         '\u2022 <b>"Good date ideas tonight"</b> \u2014 creative event suggestions<br>' +
         '\u2022 <b>"Will it rain today?"</b> \u2014 weather + jacket recommendations<br>' +
@@ -9601,7 +9635,7 @@
         break;
       default:
         prompts = [
-          'What\'s happening this weekend?', 'Events near me tonight',
+          'What I need to know today', 'What\'s happening this weekend?', 'Events near me tonight',
           'Do I need a jacket? \u2614', 'Deals near me', 'Top stock picks', 'Who is live?',
           'Refresh my creators', 'What should I watch?', 'Summarize current page'
         ];
