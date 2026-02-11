@@ -43,13 +43,13 @@ Session 2 handles remaining algorithmic + data improvements.
 
 | File | FTP Path | Status |
 |------|----------|--------|
-| `findstocks/api/analyze.php` | `/findstocks/api/analyze.php` | Pending |
-| `findstocks/api/setup_schema.php` | `/findstocks/api/setup_schema.php` | Pending |
-| `live-monitor/api/live_signals.php` | `/live-monitor/api/live_signals.php` | Pending |
-| `findcryptopairs/api/meme_scanner.php` | `/findcryptopairs/api/meme_scanner.php` | Pending |
-| `findforex2/api/seed_signals.php` | `/findforex2/api/seed_signals.php` | Pending |
-| `live-monitor/api/sports_odds.php` | `/live-monitor/api/sports_odds.php` | Pending |
-| `findforex2/portfolio/api/forex_insights.php` | `/findforex2/portfolio/api/forex_insights.php` | Pending |
+| `findstocks/api/analyze.php` | `/findstocks/api/analyze.php` | Deployed + Verified |
+| `findstocks/api/setup_schema.php` | `/findstocks/api/setup_schema.php` | Deployed + Verified |
+| `live-monitor/api/live_signals.php` | `/live-monitor/api/live_signals.php` | Deployed + Verified |
+| `findcryptopairs/api/meme_scanner.php` | `/findcryptopairs/api/meme_scanner.php` | Deployed + Verified |
+| `findforex2/api/seed_signals.php` | `/findforex2/api/seed_signals.php` | Deployed + Verified |
+| `live-monitor/api/sports_odds.php` | `/live-monitor/api/sports_odds.php` | Deployed + Verified |
+| `findforex2/portfolio/api/forex_insights.php` | `/findforex2/portfolio/api/forex_insights.php` | Deployed + Verified |
 
 ---
 

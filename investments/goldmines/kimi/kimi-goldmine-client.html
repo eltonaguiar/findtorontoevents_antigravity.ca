@@ -276,12 +276,16 @@
             } catch (error) {
                 container.innerHTML = `
                     <div class="error">
-                        <h3>⚠️ Data Not Available Yet</h3>
-                        <p>${error.message}</p>
-                        <p style="margin-top:1rem;font-size:0.875rem;">
-                            The GitHub Actions workflow needs to run first.<br>
-                            It collects data every 15 minutes during market hours.
+                        <h3>⏳ Waiting for First Data Collection</h3>
+                        <p style="margin-top:1rem;">
+                            The GitHub Actions workflow collects data every 15 minutes.<br>
+                            First collection happens automatically after pushing to GitHub.
                         </p>
+                        <p style="margin-top:1rem;font-size:0.875rem;color:#ffd700;">
+                            💡 Tip: You can also use the <strong>Server-Side version</strong> (kimi-goldmine.html)<br>
+                            if you need immediate data from your local database.
+                        </p>
+                        <button onclick="loadData()" class="refresh-btn" style="margin-top:1rem;">Try Again</button>
                     </div>
                 `;
             }
