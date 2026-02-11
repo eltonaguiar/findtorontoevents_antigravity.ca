@@ -67,6 +67,25 @@
             border-radius: var(--radius); padding: 0.8rem 1.2rem;
             font-size: 0.82rem; color: var(--text-dim); margin-bottom: 1rem; text-align: center;
         }
+        .universe-info {
+            background: linear-gradient(135deg, rgba(99,102,241,0.06), rgba(168,85,247,0.06));
+            border: 1px solid rgba(99,102,241,0.2); border-radius: var(--radius);
+            padding: 0.8rem 1.2rem; margin-bottom: 1rem; font-size: 0.82rem; color: var(--text-dim);
+        }
+        .universe-info summary {
+            cursor: pointer; color: var(--accent); font-weight: 600; font-size: 0.85rem;
+            list-style: none; display: flex; align-items: center; gap: 6px;
+        }
+        .universe-info summary::-webkit-details-marker { display: none; }
+        .universe-info summary::before { content: '\25B6'; font-size: 0.6rem; transition: transform 0.2s; }
+        .universe-info[open] summary::before { transform: rotate(90deg); }
+        .universe-info .tickers { margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 6px; }
+        .universe-info .tick {
+            background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);
+            padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; color: var(--accent);
+        }
+        .universe-info .sectors { margin-top: 0.5rem; font-size: 0.78rem; line-height: 1.6; }
+        .universe-info .sectors span { color: var(--text); font-weight: 600; }
 
         /* ===== KPI CARDS ===== */
         .kpi-row {
@@ -347,6 +366,29 @@
     <div class="container">
         <div class="disclaimer">&#9888;&#65039; Educational tool only. Not financial advice. Data from free public APIs (SEC EDGAR, Finnhub). Signals are informational &mdash; always do your own research.</div>
 
+        <details class="universe-info">
+            <summary>Tracking 12 mega-cap stocks across 5 sectors &mdash; why these?</summary>
+            <div style="margin-top:0.6rem; line-height:1.7">
+                Smart Money Intelligence analyzes a <strong style="color:var(--text)">curated universe of 12 high-liquidity, mega-cap stocks</strong> chosen for maximum data availability from free sources (SEC 13F filings, Finnhub analyst ratings, Form 4 insider trades). These are among the most widely held and heavily analyzed stocks by institutional investors, making their smart money signals the most meaningful.
+            </div>
+            <div class="tickers">
+                <span class="tick">AAPL</span><span class="tick">MSFT</span><span class="tick">GOOGL</span>
+                <span class="tick">AMZN</span><span class="tick">NVDA</span><span class="tick">META</span>
+                <span class="tick">JPM</span><span class="tick">BAC</span><span class="tick">WMT</span>
+                <span class="tick">XOM</span><span class="tick">NFLX</span><span class="tick">JNJ</span>
+            </div>
+            <div class="sectors">
+                <span>Tech:</span> AAPL, MSFT, GOOGL, NVDA, META &bull;
+                <span>Consumer:</span> AMZN, NFLX, WMT &bull;
+                <span>Financial:</span> JPM, BAC &bull;
+                <span>Energy:</span> XOM &bull;
+                <span>Healthcare:</span> JNJ
+            </div>
+            <div style="margin-top:0.5rem; font-size:0.75rem">
+                Data sources: <strong style="color:var(--text)">SEC EDGAR</strong> (13F + Form 4), <strong style="color:var(--text)">Finnhub</strong> (analyst ratings, insider MSPR), <strong style="color:var(--text)">14 hedge funds</strong> tracked (Berkshire, Bridgewater, Citadel, Renaissance, Two Sigma, DE Shaw, Soros, Appaloosa, Baupost, Viking, Millennium, ARK, Third Point, Tiger Global). Updated daily via GitHub Actions.
+            </div>
+        </details>
+
         <!-- Tab Navigation -->
         <div class="tab-nav">
             <button class="tab-btn active" onclick="switchTab('consensus')">Consensus</button>
@@ -375,7 +417,7 @@
                 <div class="kpi-card">
                     <h3>Avg Score</h3>
                     <div class="value" id="kpi-avg-score">--</div>
-                    <div class="sub" id="kpi-avg-score-sub">Across all 12 tickers</div>
+                    <div class="sub" id="kpi-avg-score-sub">12 mega-cap stocks, 5 sectors</div>
                 </div>
                 <div class="kpi-card">
                     <h3>Challenger Bot</h3>
