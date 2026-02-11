@@ -1,0 +1,86 @@
+name: "Daily Feed Summary"
+
+on:
+  schedule:
+    # Every day at 6:00 AM EST (11:00 UTC)
+    - cron: '0 11 * * *'
+  workflow_dispatch:
+
+jobs:
+  generate-summary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            scripts
+            daily-feed
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Generate daily feed summary
+        run: |
+          echo "Generating daily feed summary..."
+          python scripts/daily_feed_summary.py
+
+      - name: Show summary preview
+        run: |
+          echo "=== DAILY FEED SUMMARY ==="
+          python3 -c "
+          import json
+          with open('daily-feed/data/summary.json') as f:
+              d = json.load(f)
+          print(f'Date: {d[\"date_display\"]}')
+          w = d.get('weather', {})
+          print(f'Weather: {w.get(\"weather_desc\", \"?\")} {w.get(\"current_temp\", \"?\")}C (feels {w.get(\"feels_like\", \"?\")}C)')
+          print(f'Jacket: {w.get(\"jacket_message\", \"?\")}')
+          print(f'Quote: \"{d[\"quote\"][\"text\"][:80]}...\" — {d[\"quote\"][\"author\"]}')
+          fin = d.get('financial', {})
+          print(f'Stocks: {fin[\"stocks\"][\"count\"]} | Crypto: {fin[\"crypto\"][\"count\"]} | Forex: {fin[\"forex\"][\"count\"]}')
+          print(f'News: {d[\"news\"][\"count\"]} stories')
+          print(f'Freebies: {d[\"freebies\"][\"count\"]}')
+          "
+          echo "==========================="
+
+      - name: Commit summary
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add daily-feed/data/summary.json
+          git diff --cached --quiet || git commit -m "Update daily feed summary - $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
+
+      - name: Deploy to production via FTP
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python -c "
+          from ftplib import FTP_TLS
+          import os
+          ftp = FTP_TLS(os.environ['FTP_SERVER'])
+          ftp.login(os.environ['FTP_USER'], os.environ['FTP_PASS'])
+          ftp.prot_p()
+          # Ensure directories exist
+          try:
+              ftp.mkd('/findtorontoevents.ca/daily-feed')
+          except:
+              pass
+          try:
+              ftp.mkd('/findtorontoevents.ca/daily-feed/data')
+          except:
+              pass
+          with open('daily-feed/data/summary.json', 'rb') as f:
+              ftp.storbinary('STOR /findtorontoevents.ca/daily-feed/data/summary.json', f)
+          ftp.quit()
+          print('FTP deploy complete: daily-feed/data/summary.json')
+          "

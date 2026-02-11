@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Feed | What You Need to Know Today | FindTorontoEvents</title>
+    <meta name="description" content="Your daily briefing: weather, news, stock picks, crypto, events, freebies, and more for Toronto. Updated every day.">
+    <link rel="canonical" href="https://findtorontoevents.ca/daily-feed/">
+    <meta property="og:title" content="Daily Feed | What You Need to Know Today">
+    <meta property="og:description" content="Your daily briefing: weather, news, stock picks, crypto, events, freebies, and more for Toronto.">
+    <meta property="og:url" content="https://findtorontoevents.ca/daily-feed/">
+    <meta property="og:site_name" content="Find Toronto Events">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Daily Feed | What You Need to Know Today">
+    <meta name="twitter:description" content="Your daily briefing: weather, news, stock picks, crypto, events, freebies, and more.">
+    <style>
+        :root {
+            --bg-dark: #0a0e1a;
+            --bg-card: #111827;
+            --bg-card-hover: #1a2236;
+            --border: #1f2937;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --blue-dim: rgba(59, 130, 246, 0.15);
+            --orange: #f97316;
+            --orange-dim: rgba(249, 115, 22, 0.15);
+            --purple: #a855f7;
+            --purple-dim: rgba(168, 85, 247, 0.15);
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark); color: var(--text);
+            min-height: 100vh; line-height: 1.6;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, #0f1629 0%, #1a1f3a 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem 1rem; text-align: center;
+        }
+        .header h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, var(--purple), var(--accent), var(--blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; margin-bottom: 0.2rem; font-weight: 800;
+        }
+        .header .subtitle { color: var(--text-dim); font-size: 1rem; margin-bottom: 0.15rem; }
+        .header .date-line { color: var(--accent); font-size: 0.9rem; font-weight: 600; margin-bottom: 0.8rem; }
+        .header-actions { display: flex; gap: 0.75rem; justify-content: center; align-items: center; margin-bottom: 0.6rem; }
+        .audio-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            color: #fff; border: none; padding: 8px 18px; border-radius: 20px;
+            font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+        }
+        .audio-btn:hover { opacity: 0.85; }
+        .header-links {
+            display: flex; gap: 1.2rem; justify-content: center;
+            font-size: 0.85rem; flex-wrap: wrap;
+        }
+        .header-links a { color: var(--text-dim); }
+        .header-links a:hover { color: var(--text); text-decoration: none; }
+
+        /* ===== CONTAINER ===== */
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+        /* ===== SECTION ===== */
+        .section {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.25rem;
+        }
+        .section-title {
+            font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-title .emoji { font-size: 1.2rem; }
+        .section-title .badge {
+            font-size: 0.65rem; padding: 2px 8px; border-radius: 6px;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+        }
+
+        /* ===== QUOTE CARD ===== */
+        .quote-card {
+            background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.08));
+            border: 1px solid rgba(99,102,241,0.25); border-radius: var(--radius);
+            padding: 1.5rem; margin-bottom: 1.25rem; text-align: center;
+        }
+        .quote-card blockquote {
+            font-size: 1.15rem; font-style: italic; color: var(--text);
+            margin-bottom: 0.5rem; line-height: 1.7;
+        }
+        .quote-card .quote-author { font-size: 0.85rem; color: var(--accent); font-weight: 600; }
+        .quote-card .quote-link { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.75rem; display: block; }
+
+        /* ===== WEATHER ===== */
+        .weather-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .weather-main { display: flex; align-items: center; gap: 1rem; }
+        .weather-icon { font-size: 3rem; }
+        .weather-temp { font-size: 2.5rem; font-weight: 800; }
+        .weather-desc { font-size: 0.85rem; color: var(--text-dim); }
+        .weather-details { display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.85rem; }
+        .weather-details span { display: flex; justify-content: space-between; gap: 1rem; }
+        .weather-details .label { color: var(--text-dim); }
+        .jacket-rec {
+            margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 8px;
+            font-weight: 600; font-size: 0.95rem; text-align: center;
+        }
+
+        /* ===== FREEBIES ===== */
+        .freebie-item {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.6rem 0; border-bottom: 1px solid var(--border);
+        }
+        .freebie-item:last-child { border-bottom: none; }
+        .freebie-dot {
+            width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+        }
+        .freebie-name { font-weight: 600; font-size: 0.9rem; }
+        .freebie-desc { font-size: 0.8rem; color: var(--text-dim); }
+
+        /* ===== FINANCIAL TABS ===== */
+        .disclaimer {
+            background: var(--red-dim); border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.78rem;
+            color: #fca5a5; text-align: center; margin-bottom: 1rem; font-weight: 600;
+        }
+        .fin-tabs { display: flex; gap: 0; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; flex-wrap: wrap; }
+        .fin-tab {
+            flex: 1; min-width: 90px; background: var(--bg-dark); color: var(--text-dim); border: none;
+            padding: 8px 10px; font-size: 0.75rem; cursor: pointer; text-align: center;
+            transition: all 0.15s; font-weight: 600;
+        }
+        .fin-tab:not(:last-child) { border-right: 1px solid var(--border); }
+        .fin-tab.active { background: var(--accent); color: #fff; }
+        .fin-tab:hover:not(.active) { background: var(--bg-card-hover); color: var(--text); }
+        .fin-panel { display: none; }
+        .fin-panel.active { display: block; }
+        .pick-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.88rem;
+        }
+        .pick-item:last-child { border-bottom: none; }
+        .pick-ticker { font-weight: 700; font-size: 0.95rem; }
+        .pick-signal { font-size: 0.78rem; font-weight: 600; }
+        .pick-meta { font-size: 0.75rem; color: var(--text-dim); }
+        .signal-buy { color: var(--green); }
+        .signal-sell { color: var(--red); }
+        .signal-hold { color: var(--yellow); }
+        .status-dot {
+            display: inline-block; width: 8px; height: 8px;
+            border-radius: 50%; margin-right: 6px;
+        }
+        .status-green { background: var(--green); }
+        .status-yellow { background: var(--yellow); }
+        .status-red { background: var(--red); }
+        .ml-badge {
+            display: inline-block; font-size: 0.65rem; padding: 1px 6px;
+            border-radius: 4px; font-weight: 700; margin-left: 6px;
+            background: var(--purple-dim); color: var(--purple);
+        }
+        .strategy-card {
+            background: linear-gradient(135deg, rgba(99,102,241,0.06), rgba(168,85,247,0.06));
+            border: 1px solid rgba(99,102,241,0.2); border-radius: 8px;
+            padding: 1rem; margin-top: 1rem; font-size: 0.85rem;
+        }
+        .strategy-card p { color: var(--text-dim); margin-bottom: 0.5rem; }
+        .strategy-links { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.82rem; }
+
+        /* ===== NEWS ===== */
+        .news-item {
+            padding: 0.65rem 0; border-bottom: 1px solid var(--border);
+        }
+        .news-item:last-child { border-bottom: none; }
+        .news-item a { font-weight: 600; font-size: 0.9rem; color: var(--text); }
+        .news-item a:hover { color: var(--accent); }
+        .news-meta { font-size: 0.75rem; color: var(--text-dim); margin-top: 2px; }
+
+        /* ===== EVENTS ===== */
+        .event-item {
+            padding: 0.65rem 0; border-bottom: 1px solid var(--border);
+        }
+        .event-item:last-child { border-bottom: none; }
+        .event-name { font-weight: 600; font-size: 0.9rem; }
+        .event-details { font-size: 0.8rem; color: var(--text-dim); }
+
+        /* ===== MOVIES ===== */
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
+        .movie-card { text-align: center; }
+        .movie-card img { width: 100%; border-radius: 8px; margin-bottom: 0.5rem; }
+        .movie-card .movie-title { font-size: 0.82rem; font-weight: 600; }
+        .movie-card .movie-rating { font-size: 0.75rem; color: var(--yellow); }
+
+        /* ===== CTA CARD ===== */
+        .cta-card {
+            background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.1));
+            border: 1px solid rgba(99,102,241,0.25); border-radius: var(--radius);
+            padding: 1.25rem; text-align: center;
+        }
+        .cta-card h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+        .cta-card p { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.75rem; }
+        .cta-btn {
+            display: inline-block; background: var(--accent); color: #fff;
+            padding: 8px 20px; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+            text-decoration: none; transition: opacity 0.2s;
+        }
+        .cta-btn:hover { opacity: 0.85; text-decoration: none; }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            text-align: center; padding: 2rem 1rem; color: var(--text-dim);
+            font-size: 0.8rem; border-top: 1px solid var(--border); margin-top: 1rem;
+        }
+        .footer-links { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 0.75rem; font-size: 0.82rem; }
+
+        /* ===== LOADING / ERROR ===== */
+        .loading { text-align: center; padding: 1.5rem; color: var(--text-dim); font-size: 0.85rem; }
+        .spinner {
+            display: inline-block; width: 18px; height: 18px;
+            border: 2px solid var(--border); border-top-color: var(--accent);
+            border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 6px;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error-msg {
+            background: var(--red-dim); border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px; padding: 0.75rem; color: #fca5a5; text-align: center;
+            font-size: 0.82rem;
+        }
+        .section-link { display: block; margin-top: 0.75rem; font-size: 0.82rem; font-weight: 600; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 640px) {
+            .header h1 { font-size: 1.6rem; }
+            .container { padding: 12px; }
+            .section { padding: 1rem; }
+            .weather-grid { grid-template-columns: 1fr; }
+            .movie-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+            .fin-tab { min-width: 70px; font-size: 0.68rem; padding: 6px 4px; }
+            .header-links { gap: 0.6rem; font-size: 0.78rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+    <h1>DAILY FEED</h1>
+    <div class="subtitle">What You Need to Know Today</div>
+    <div class="date-line" id="today-date"></div>
+    <div class="header-actions">
+        <button class="audio-btn" id="audio-btn" title="Have the AI read today's feed aloud">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+            Read Aloud
+        </button>
+    </div>
+    <div class="header-links">
+        <a href="/">Home</a>
+        <a href="/fc/">AI Assistant</a>
+        <a href="/news/">News</a>
+        <a href="/findstocks/">Stocks</a>
+        <a href="/live-monitor/">Live Trading</a>
+        <a href="/MOVIESHOWS3/">Movies</a>
+        <a href="/TORONTOEVENTS_ANTIGRAVITY/">Events</a>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- ===== 1. MOTIVATIONAL QUOTE ===== -->
+    <div class="quote-card" id="quote-section">
+        <blockquote id="quote-text"></blockquote>
+        <div class="quote-author" id="quote-author"></div>
+        <a class="quote-link" href="https://findtorontoevents.ca/MOVIESHOWS3/">Need more motivation? Watch clips here &rarr;</a>
+    </div>
+
+    <!-- ===== 2. WEATHER ===== -->
+    <div class="section" id="weather-section">
+        <div class="section-title">
+            <span class="emoji">&#127782;</span> Do I Need a Jacket?
+        </div>
+        <div class="loading" id="weather-loading"><span class="spinner"></span> Checking the weather...</div>
+        <div id="weather-content" style="display:none;"></div>
+    </div>
+
+    <!-- ===== 3. FREEBIES ===== -->
+    <div class="section" id="freebies-section">
+        <div class="section-title">
+            <span class="emoji">&#127873;</span> Today's Free Stuff
+        </div>
+        <div class="loading" id="freebies-loading"><span class="spinner"></span> Finding freebies...</div>
+        <div id="freebies-content" style="display:none;"></div>
+    </div>
+
+    <!-- ===== 4. FINANCIAL METRICS ===== -->
+    <div class="section" id="finance-section">
+        <div class="section-title">
+            <span class="emoji">&#128200;</span> Financial Metrics
+            <span class="badge" style="background:var(--green-dim);color:var(--green);">LIVE</span>
+        </div>
+        <div class="disclaimer">NOT FINANCIAL ADVICE &mdash; For informational and educational purposes only. Do your own research before making any investment decisions.</div>
+
+        <div class="fin-tabs" id="fin-tabs">
+            <button class="fin-tab active" data-tab="stocks">Stocks</button>
+            <button class="fin-tab" data-tab="crypto">Crypto</button>
+            <button class="fin-tab" data-tab="forex">Forex</button>
+            <button class="fin-tab" data-tab="momentum">Momentum</button>
+            <button class="fin-tab" data-tab="wins">Wins</button>
+            <button class="fin-tab" data-tab="penny">Penny</button>
+            <button class="fin-tab" data-tab="sports">Sports</button>
+            <button class="fin-tab" data-tab="strategy">Strategy</button>
+        </div>
+
+        <!-- Stock Picks -->
+        <div class="fin-panel active" id="panel-stocks">
+            <div class="loading" id="stocks-loading"><span class="spinner"></span> Loading stock picks...</div>
+            <div id="stocks-content" style="display:none;"></div>
+            <a class="section-link" href="https://findtorontoevents.ca/findstocks/">Explore all stock tools &rarr;</a>
+        </div>
+
+        <!-- Crypto Picks -->
+        <div class="fin-panel" id="panel-crypto">
+            <div class="loading" id="crypto-loading"><span class="spinner"></span> Loading crypto picks...</div>
+            <div id="crypto-content" style="display:none;"></div>
+        </div>
+
+        <!-- Forex Picks -->
+        <div class="fin-panel" id="panel-forex">
+            <div class="loading" id="forex-loading"><span class="spinner"></span> Loading forex picks...</div>
+            <div id="forex-content" style="display:none;"></div>
+        </div>
+
+        <!-- Momentum -->
+        <div class="fin-panel" id="panel-momentum">
+            <div class="loading" id="momentum-loading"><span class="spinner"></span> Loading momentum picks...</div>
+            <div id="momentum-content" style="display:none;"></div>
+        </div>
+
+        <!-- Wins -->
+        <div class="fin-panel" id="panel-wins">
+            <div class="loading" id="wins-loading"><span class="spinner"></span> Loading recent wins...</div>
+            <div id="wins-content" style="display:none;"></div>
+        </div>
+
+        <!-- Penny Stocks -->
+        <div class="fin-panel" id="panel-penny">
+            <div style="text-align:center;padding:1.5rem;">
+                <div style="font-size:1.5rem;margin-bottom:0.5rem;">&#128176;</div>
+                <p style="font-size:0.9rem;margin-bottom:0.75rem;">Penny Stock Screener</p>
+                <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:1rem;">Find sub-$5 stocks with real exchange listings. OTC/Pink Sheets filtered out.</p>
+                <a class="cta-btn" href="https://findtorontoevents.ca/findstocks/portfolio2/penny-stocks.html">Open Penny Stock Finder &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Sports Bets -->
+        <div class="fin-panel" id="panel-sports">
+            <div class="loading" id="sports-loading"><span class="spinner"></span> Loading sports picks...</div>
+            <div id="sports-content" style="display:none;"></div>
+        </div>
+
+        <!-- Strategy -->
+        <div class="fin-panel" id="panel-strategy">
+            <div class="strategy-card">
+                <p>Our <strong style="color:var(--text);">20 algorithms</strong> are actively trading across crypto, forex, and stocks. Machine learning is continuously optimizing parameters for each strategy.</p>
+                <div class="strategy-links">
+                    <a href="https://findtorontoevents.ca/live-monitor/algo-performance.html">Algorithm Performance &rarr;</a>
+                    <a href="https://findtorontoevents.ca/live-monitor/smart-money.html">Smart Money Intelligence &rarr;</a>
+                    <a href="https://findtorontoevents.ca/live-monitor/">Live Trading Monitor &rarr;</a>
+                    <a href="https://findtorontoevents.ca/live-monitor/conviction-alerts.html">Conviction Alerts &rarr;</a>
+                </div>
+            </div>
+            <div style="margin-top:1rem;">
+                <div class="pick-item">
+                    <span><span class="status-dot status-green"></span> Crypto (14 assets) <span class="ml-badge">ML ACTIVE</span></span>
+                    <span class="pick-signal signal-buy">Active</span>
+                </div>
+                <div class="pick-item">
+                    <span><span class="status-dot status-green"></span> Forex (10 pairs) <span class="ml-badge">ML ACTIVE</span></span>
+                    <span class="pick-signal signal-buy">Active</span>
+                </div>
+                <div class="pick-item">
+                    <span><span class="status-dot status-green"></span> Stocks (12 tickers) <span class="ml-badge">ML ACTIVE</span></span>
+                    <span class="pick-signal signal-buy">Active</span>
+                </div>
+                <div class="pick-item">
+                    <span><span class="status-dot status-yellow"></span> Sports Betting</span>
+                    <span class="pick-signal signal-hold">Paper Trading</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 5. NEWS ===== -->
+    <div class="section" id="news-section">
+        <div class="section-title">
+            <span class="emoji">&#128240;</span> Toronto's Top Stories
+        </div>
+        <div class="loading" id="news-loading"><span class="spinner"></span> Fetching headlines...</div>
+        <div id="news-content" style="display:none;"></div>
+        <a class="section-link" href="https://findtorontoevents.ca/news/">Read more news &rarr;</a>
+    </div>
+
+    <!-- ===== 6. EVENTS ===== -->
+    <div class="section" id="events-section">
+        <div class="section-title">
+            <span class="emoji">&#127879;</span> Today's Events in Toronto
+        </div>
+
+        <h4 style="font-size:0.85rem;color:var(--accent);margin-bottom:0.5rem;">Singles & Social Events</h4>
+        <div class="loading" id="singles-loading"><span class="spinner"></span> Looking for singles events...</div>
+        <div id="singles-content" style="display:none;"></div>
+
+        <h4 style="font-size:0.85rem;color:var(--accent);margin:1rem 0 0.5rem;">All Events Today</h4>
+        <div class="loading" id="events-loading"><span class="spinner"></span> Loading events...</div>
+        <div id="events-content" style="display:none;"></div>
+        <a class="section-link" href="https://findtorontoevents.ca/TORONTOEVENTS_ANTIGRAVITY/">See all events &rarr;</a>
+    </div>
+
+    <!-- ===== 7. WHAT TO WATCH ===== -->
+    <div class="section" id="movies-section">
+        <div class="section-title">
+            <span class="emoji">&#127916;</span> What to Watch
+        </div>
+        <div class="loading" id="movies-loading"><span class="spinner"></span> Loading now playing...</div>
+        <div id="movies-content" style="display:none;"></div>
+        <div class="cta-card" style="margin-top:1rem;">
+            <h3>Browse Trailers TikTok-Style</h3>
+            <p>Swipe through movie trailers, discover new shows, and find your next watch.</p>
+            <a class="cta-btn" href="https://findtorontoevents.ca/MOVIESHOWS3/">Open MOVIESHOWS &rarr;</a>
+        </div>
+    </div>
+
+    <!-- ===== 8. CREATOR STATUS ===== -->
+    <div class="section">
+        <div class="section-title">
+            <span class="emoji">&#128250;</span> Creator Status
+        </div>
+        <div class="cta-card">
+            <h3>Are Your Favourite Creators Live?</h3>
+            <p>Check their status across Instagram, Twitch, TikTok, Kick, YouTube, and more. Track uploads, streams, and activity in real time.</p>
+            <a class="cta-btn" href="https://findtorontoevents.ca/fc/">Track Your Creators &rarr;</a>
+        </div>
+    </div>
+
+</div><!-- /container -->
+
+<!-- ===== FOOTER ===== -->
+<div class="footer">
+    <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/fc/">AI Assistant</a>
+        <a href="/news/">News</a>
+        <a href="/findstocks/">Stocks</a>
+        <a href="/live-monitor/">Live Monitor</a>
+        <a href="/live-monitor/smart-money.html">Smart Money</a>
+        <a href="/MOVIESHOWS3/">Movies</a>
+        <a href="/TORONTOEVENTS_ANTIGRAVITY/">Events</a>
+        <a href="/fc/api/deals.php">Deals</a>
+    </div>
+    Powered by <a href="https://findtorontoevents.ca">findtorontoevents.ca</a>
+</div>
+
+<script>
+(function() {
+'use strict';
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+function $(id) { return document.getElementById(id); }
+
+function timeAgo(dateStr) {
+    var d = new Date(dateStr);
+    var now = new Date();
+    var diff = Math.floor((now - d) / 1000);
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    return Math.floor(diff / 86400) + 'd ago';
+}
+
+function showError(el, msg) {
+    el.innerHTML = '<div class="error-msg">' + msg + '</div>';
+    el.style.display = 'block';
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+}
+
+/* ============================================================
+   DATE DISPLAY
+   ============================================================ */
+(function() {
+    var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var now = new Date();
+    var dateStr = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+    $('today-date').textContent = dateStr;
+})();
+
+/* ============================================================
+   MOTIVATIONAL QUOTE (date-seeded)
+   ============================================================ */
+(function() {
+    var quotes = [
+        { text: 'The only way to do great work is to love what you do.', author: 'Steve Jobs' },
+        { text: 'Success is not final, failure is not fatal: it is the courage to continue that counts.', author: 'Winston Churchill' },
+        { text: 'Believe you can and you\'re halfway there.', author: 'Theodore Roosevelt' },
+        { text: 'The future belongs to those who believe in the beauty of their dreams.', author: 'Eleanor Roosevelt' },
+        { text: 'It does not matter how slowly you go as long as you do not stop.', author: 'Confucius' },
+        { text: 'The best time to plant a tree was 20 years ago. The second best time is now.', author: 'Chinese Proverb' },
+        { text: 'Your limitation\u2014it\'s only your imagination.', author: 'Unknown' },
+        { text: 'Push yourself, because no one else is going to do it for you.', author: 'Unknown' },
+        { text: 'Great things never come from comfort zones.', author: 'Unknown' },
+        { text: 'Dream it. Wish it. Do it.', author: 'Unknown' },
+        { text: 'Success doesn\'t just find you. You have to go out and get it.', author: 'Unknown' },
+        { text: 'The harder you work for something, the greater you\'ll feel when you achieve it.', author: 'Unknown' },
+        { text: 'Don\'t stop when you\'re tired. Stop when you\'re done.', author: 'Unknown' },
+        { text: 'Wake up with determination. Go to bed with satisfaction.', author: 'Unknown' },
+        { text: 'Do something today that your future self will thank you for.', author: 'Unknown' },
+        { text: 'Little things make big days.', author: 'Unknown' },
+        { text: 'It\'s going to be hard, but hard does not mean impossible.', author: 'Unknown' },
+        { text: 'Don\'t wait for opportunity. Create it.', author: 'Unknown' },
+        { text: 'Sometimes we\'re tested not to show our weaknesses, but to discover our strengths.', author: 'Unknown' },
+        { text: 'The key to success is to focus on goals, not obstacles.', author: 'Unknown' }
+    ];
+    var now = new Date();
+    var seed = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+    var idx = seed % quotes.length;
+    var q = quotes[idx];
+    $('quote-text').textContent = '\u201C' + q.text + '\u201D';
+    $('quote-author').textContent = '\u2014 ' + q.author;
+})();
+
+/* ============================================================
+   WEATHER (Open-Meteo)
+   ============================================================ */
+(function() {
+    var url = 'https://api.open-meteo.com/v1/forecast?latitude=43.6532&longitude=-79.3832&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,rain,snowfall,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&timezone=America/Toronto&forecast_days=1';
+    fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+        var c = data.current;
+        var d = data.daily;
+        var temp = Math.round(c.temperature_2m);
+        var feels = Math.round(c.apparent_temperature);
+        var hi = Math.round(d.temperature_2m_max[0]);
+        var lo = Math.round(d.temperature_2m_min[0]);
+        var precip = d.precipitation_sum[0];
+        var humidity = c.relative_humidity_2m;
+        var wind = Math.round(c.wind_speed_10m);
+        var wcode = c.weather_code;
+
+        // Weather icon by WMO code
+        var icon = '&#9728;&#65039;'; // sunny default
+        if (wcode >= 71) icon = '&#10052;&#65039;'; // snow
+        else if (wcode >= 61) icon = '&#127783;&#65039;'; // rain
+        else if (wcode >= 51) icon = '&#127782;&#65039;'; // drizzle
+        else if (wcode >= 45) icon = '&#127787;&#65039;'; // fog
+        else if (wcode >= 3) icon = '&#9729;&#65039;'; // cloudy
+        else if (wcode >= 1) icon = '&#9925;'; // partly cloudy
+
+        // Jacket recommendation
+        var jacket, jacketBg, jacketColor;
+        if (feels <= -10) { jacket = 'Yes, bundle up! Heavy winter gear needed.'; jacketBg = 'var(--blue-dim)'; jacketColor = 'var(--blue)'; }
+        else if (feels <= 5) { jacket = 'Yes, wear a warm jacket.'; jacketBg = 'var(--blue-dim)'; jacketColor = 'var(--blue)'; }
+        else if (feels <= 14) { jacket = 'Light jacket recommended.'; jacketBg = 'var(--yellow-dim)'; jacketColor = 'var(--yellow)'; }
+        else { jacket = 'No jacket needed! Enjoy the warmth.'; jacketBg = 'var(--green-dim)'; jacketColor = 'var(--green)'; }
+
+        var html = '<div class="weather-grid">' +
+            '<div>' +
+                '<div class="weather-main">' +
+                    '<div class="weather-icon">' + icon + '</div>' +
+                    '<div><div class="weather-temp">' + temp + '&deg;C</div>' +
+                    '<div class="weather-desc">Feels like ' + feels + '&deg;C</div></div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="weather-details">' +
+                '<span><span class="label">High / Low</span> <strong>' + hi + '&deg; / ' + lo + '&deg;C</strong></span>' +
+                '<span><span class="label">Precipitation</span> <strong>' + precip + ' mm</strong></span>' +
+                '<span><span class="label">Humidity</span> <strong>' + humidity + '%</strong></span>' +
+                '<span><span class="label">Wind</span> <strong>' + wind + ' km/h</strong></span>' +
+            '</div>' +
+        '</div>' +
+        '<div class="jacket-rec" style="background:' + jacketBg + ';color:' + jacketColor + ';">' + jacket + '</div>';
+
+        $('weather-loading').style.display = 'none';
+        $('weather-content').innerHTML = html;
+        $('weather-content').style.display = 'block';
+    }).catch(function() {
+        $('weather-loading').style.display = 'none';
+        showError($('weather-content'), 'Could not load weather \u2014 try refreshing');
+    });
+})();
+
+/* ============================================================
+   FREEBIES
+   ============================================================ */
+(function() {
+    fetch('https://findtorontoevents.ca/fc/api/deals.php?action=free_today')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        $('freebies-loading').style.display = 'none';
+        var items = data.deals || data.freebies || data.data || data;
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            $('freebies-content').innerHTML = '<p style="color:var(--text-dim);font-size:0.85rem;">No freebies found for today. Check back tomorrow!</p>';
+            $('freebies-content').style.display = 'block';
+            return;
+        }
+        var html = '';
+        var colors = ['var(--green)', 'var(--blue)', 'var(--purple)', 'var(--orange)', 'var(--yellow)'];
+        var limit = Math.min(items.length, 5);
+        for (var i = 0; i < limit; i++) {
+            var item = items[i];
+            var name = escapeHtml(item.name || item.title || 'Freebie');
+            var desc = escapeHtml(item.description || item.what_free || item.details || '');
+            var cat = escapeHtml(item.category || '');
+            html += '<div class="freebie-item">' +
+                '<div class="freebie-dot" style="background:' + colors[i % colors.length] + ';"></div>' +
+                '<div><div class="freebie-name">' + name + (cat ? ' <span style="font-size:0.7rem;color:var(--text-dim);">(' + cat + ')</span>' : '') + '</div>' +
+                (desc ? '<div class="freebie-desc">' + desc + '</div>' : '') +
+                '</div></div>';
+        }
+        html += '<a class="section-link" href="https://findtorontoevents.ca/fc/api/deals.php">See all deals &amp; freebies &rarr;</a>';
+        $('freebies-content').innerHTML = html;
+        $('freebies-content').style.display = 'block';
+    })
+    .catch(function() {
+        $('freebies-loading').style.display = 'none';
+        showError($('freebies-content'), 'Could not load freebies \u2014 try refreshing');
+    });
+})();
+
+/* ============================================================
+   FINANCIAL PICKS — shared render
+   ============================================================ */
+function renderPicks(items, container, label) {
+    if (!items || !Array.isArray(items) || items.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-dim);font-size:0.85rem;">No ' + label + ' picks available right now.</p>';
+        container.style.display = 'block';
+        return;
+    }
+    var html = '';
+    var limit = Math.min(items.length, 8);
+    for (var i = 0; i < limit; i++) {
+        var p = items[i];
+        var ticker = escapeHtml(p.ticker || p.symbol || p.asset || p.pair || '???');
+        var signal = p.signal || p.direction || p.action || '';
+        var signalClass = 'signal-hold';
+        var signalUpper = signal.toUpperCase();
+        if (signalUpper.indexOf('BUY') >= 0 || signalUpper.indexOf('LONG') >= 0) signalClass = 'signal-buy';
+        else if (signalUpper.indexOf('SELL') >= 0 || signalUpper.indexOf('SHORT') >= 0) signalClass = 'signal-sell';
+
+        var strength = p.strength || p.confidence || p.score || '';
+        var algos = p.algo_count || p.algorithms || '';
+        var meta = [];
+        if (strength) meta.push('Strength: ' + strength);
+        if (algos) meta.push(algos + ' algos');
+        if (p.price) meta.push('$' + parseFloat(p.price).toFixed(2));
+
+        html += '<div class="pick-item">' +
+            '<div><span class="pick-ticker">' + ticker + '</span>' +
+            (meta.length ? '<div class="pick-meta">' + meta.join(' &middot; ') + '</div>' : '') +
+            '</div>' +
+            '<span class="pick-signal ' + signalClass + '">' + escapeHtml(signal) + '</span>' +
+        '</div>';
+    }
+    container.innerHTML = html;
+    container.style.display = 'block';
+}
+
+function loadFinPanel(action, loadingId, contentId, label) {
+    var url = 'https://findtorontoevents.ca/live-monitor/api/daily_picks.php?action=' + action;
+    fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+        $(loadingId).style.display = 'none';
+        var items = data.picks || data.data || data.results || data;
+        if (Array.isArray(items)) {
+            renderPicks(items, $(contentId), label);
+        } else if (data.picks) {
+            renderPicks(data.picks, $(contentId), label);
+        } else {
+            $(contentId).innerHTML = '<p style="color:var(--text-dim);font-size:0.85rem;">No ' + label + ' data available right now.</p>';
+            $(contentId).style.display = 'block';
+        }
+    }).catch(function() {
+        $(loadingId).style.display = 'none';
+        showError($(contentId), 'Could not load ' + label + ' \u2014 try refreshing');
+    });
+}
+
+// Load all financial panels in parallel
+loadFinPanel('stocks', 'stocks-loading', 'stocks-content', 'stock');
+loadFinPanel('crypto', 'crypto-loading', 'crypto-content', 'crypto');
+loadFinPanel('forex', 'forex-loading', 'forex-content', 'forex');
+loadFinPanel('momentum', 'momentum-loading', 'momentum-content', 'momentum');
+loadFinPanel('wins', 'wins-loading', 'wins-content', 'winning trade');
+
+// Sports picks
+(function() {
+    fetch('https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=today')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        $('sports-loading').style.display = 'none';
+        var items = data.picks || data.data || data;
+        if (items && Array.isArray(items) && items.length > 0) {
+            var html = '';
+            var limit = Math.min(items.length, 5);
+            for (var i = 0; i < limit; i++) {
+                var p = items[i];
+                var name = escapeHtml(p.event || p.game || p.matchup || '');
+                var pick = escapeHtml(p.pick || p.bet || p.recommendation || '');
+                var odds = p.odds || '';
+                html += '<div class="pick-item">' +
+                    '<div><span class="pick-ticker">' + name + '</span>' +
+                    (odds ? '<div class="pick-meta">Odds: ' + odds + '</div>' : '') +
+                    '</div>' +
+                    '<span class="pick-signal signal-buy">' + pick + '</span>' +
+                '</div>';
+            }
+            $('sports-content').innerHTML = html;
+        } else {
+            $('sports-content').innerHTML = '<p style="color:var(--text-dim);font-size:0.85rem;">Sports betting predictions \u2014 coming soon!</p>';
+        }
+        $('sports-content').style.display = 'block';
+    })
+    .catch(function() {
+        $('sports-loading').style.display = 'none';
+        $('sports-content').innerHTML = '<p style="color:var(--text-dim);font-size:0.85rem;">Sports betting predictions \u2014 coming soon!</p>';
+        $('sports-content').style.display = 'block';
+    });
+})();
+
+/* Financial tab switching */
+(function() {
+    var tabs = document.querySelectorAll('.fin-tab');
+    for (var i = 0; i < tabs.length; i++) {
+        tabs[i].addEventListener('click', function() {
+            for (var j = 0; j < tabs.length; j++) { tabs[j].classList.remove('active'); }
+            this.classList.add('active');
+            var panels = document.querySelectorAll('.fin-panel');
+            for (var k = 0; k < panels.length; k++) { panels[k].classList.remove('active'); }
+            var target = this.getAttribute('data-tab');
+            var panel = document.getElementById('panel-' + target);
+            if (panel) panel.classList.add('active');
+        });
+    }
+})();
+
+/* ============================================================
+   NEWS
+   ============================================================ */
+(function() {
+    fetch('https://findtorontoevents.ca/fc/api/news_feed.php?action=get&category=toronto&per_page=8')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        $('news-loading').style.display = 'none';
+        var articles = data.articles || data.data || data.items || data;
+        if (!articles || !Array.isArray(articles) || articles.length === 0) {
+            $('news-content').innerHTML = '<p style="color:var(--text-dim);font-size:0.85rem;">No news available right now.</p>';
+            $('news-content').style.display = 'block';
+            return;
+        }
+        var html = '';
+        for (var i = 0; i < articles.length; i++) {
+            var a = articles[i];
+            var title = escapeHtml(a.title || '');
+            var source = escapeHtml(a.source || a.feed_name || '');
+            var link = a.link || a.url || '#';
+            var time = a.published || a.pub_date || a.created_at || '';
+            html += '<div class="news-item">' +
+                '<a href="' + escapeHtml(link) + '" target="_blank" rel="noopener">' + title + '</a>' +
+                '<div class="news-meta">' + source + (time ? ' &middot; ' + timeAgo(time) : '') + '</div>' +
+            '</div>';
+        }
+        $('news-content').innerHTML = html;
+        $('news-content').style.display = 'block';
+    })
+    .catch(function() {
+        $('news-loading').style.display = 'none';
+        showError($('news-content'), 'Could not load news \u2014 try refreshing');
+    });
+})();
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+(function() {
+    var eventsUrl = '/next/events.json';
+    var fallbackUrl = '/events.json';
+
+    function processEvents(events) {
+        if (!events || !Array.isArray(events)) { events = []; }
+        var today = new Date();
+        var todayStr = today.getFullYear() + '-' +
+            String(today.getMonth() + 1).padStart(2, '0') + '-' +
+            String(today.getDate()).padStart(2, '0');
+
+        // Filter today's events
+        var todayEvents = events.filter(function(e) {
+            var eDate = e.date || e.start_date || '';
+            return eDate.indexOf(todayStr) === 0 || eDate === todayStr;
+        });
+
+        // Singles events
+        var singlesKeywords = ['dating', 'singles', 'mixer', 'speed dating', 'singles night', 'matchmaking'];
+        var singlesEvents = todayEvents.filter(function(e) {
+            var name = ((e.name || e.title || '') + ' ' + (e.description || '') + ' ' + (e.category || '')).toLowerCase();
+            return singlesKeywords.some(function(kw) { return name.indexOf(kw) >= 0; });
+        });
+
+        $('singles-loading').style.display = 'none';
+        if (singlesEvents.length === 0) {
+            $('singles-content').innerHTML = '<p style="color:var(--text-dim);font-size:0.85rem;">No singles events today \u2014 check back soon!</p>';
+        } else {
+            var html = '';
+            for (var i = 0; i < singlesEvents.length; i++) {
+                var e = singlesEvents[i];
+                html += '<div class="event-item">' +
+                    '<div class="event-name">' + escapeHtml(e.name || e.title) + '</div>' +
+                    '<div class="event-details">' +
+                    (e.time ? escapeHtml(e.time) + ' &middot; ' : '') +
+                    escapeHtml(e.location || e.venue || '') +
+                    (e.url || e.link ? ' &middot; <a href="' + escapeHtml(e.url || e.link) + '" target="_blank">Details</a>' : '') +
+                    '</div></div>';
+            }
+            $('singles-content').innerHTML = html;
+        }
+        $('singles-content').style.display = 'block';
+
+        // All events today
+        $('events-loading').style.display = 'none';
+        if (todayEvents.length === 0) {
+            $('events-content').innerHTML = '<p style="color:var(--text-dim);font-size:0.85rem;">No events listed for today. Check the full events page for upcoming events.</p>';
+        } else {
+            var html2 = '';
+            var limit = Math.min(todayEvents.length, 15);
+            for (var j = 0; j < limit; j++) {
+                var ev = todayEvents[j];
+                html2 += '<div class="event-item">' +
+                    '<div class="event-name">' + escapeHtml(ev.name || ev.title) + '</div>' +
+                    '<div class="event-details">' +
+                    (ev.time ? escapeHtml(ev.time) + ' &middot; ' : '') +
+                    escapeHtml(ev.location || ev.venue || '') +
+                    (ev.url || ev.link ? ' &middot; <a href="' + escapeHtml(ev.url || ev.link) + '" target="_blank">Details</a>' : '') +
+                    '</div></div>';
+            }
+            if (todayEvents.length > 15) {
+                html2 += '<p style="color:var(--text-dim);font-size:0.82rem;margin-top:0.5rem;">+ ' + (todayEvents.length - 15) + ' more events</p>';
+            }
+            $('events-content').innerHTML = html2;
+        }
+        $('events-content').style.display = 'block';
+    }
+
+    fetch(eventsUrl).then(function(r) {
+        if (!r.ok) throw new Error('not found');
+        return r.json();
+    }).then(processEvents).catch(function() {
+        fetch(fallbackUrl).then(function(r) {
+            if (!r.ok) throw new Error('not found');
+            return r.json();
+        }).then(processEvents).catch(function() {
+            $('singles-loading').style.display = 'none';
+            $('events-loading').style.display = 'none';
+            $('singles-content').innerHTML = '<p style="color:var(--text-dim);font-size:0.85rem;">No singles events today \u2014 check back soon!</p>';
+            $('singles-content').style.display = 'block';
+            $('events-content').innerHTML = '<p style="color:var(--text-dim);font-size:0.85rem;">Could not load events. <a href="/TORONTOEVENTS_ANTIGRAVITY/">View events page &rarr;</a></p>';
+            $('events-content').style.display = 'block';
+        });
+    });
+})();
+
+/* ============================================================
+   MOVIES (Now Playing)
+   ============================================================ */
+(function() {
+    fetch('https://findtorontoevents.ca/fc/api/now_playing.php')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        $('movies-loading').style.display = 'none';
+        var movies = data.results || data.movies || data.data || data;
+        if (!movies || !Array.isArray(movies) || movies.length === 0) {
+            $('movies-content').innerHTML = '<p style="color:var(--text-dim);font-size:0.85rem;">No movies found right now.</p>';
+            $('movies-content').style.display = 'block';
+            return;
+        }
+        var html = '<div class="movie-grid">';
+        var limit = Math.min(movies.length, 5);
+        for (var i = 0; i < limit; i++) {
+            var m = movies[i];
+            var title = escapeHtml(m.title || m.name || '');
+            var rating = m.vote_average ? parseFloat(m.vote_average).toFixed(1) : '';
+            var poster = m.poster_path ? 'https://image.tmdb.org/t/p/w200' + m.poster_path : '';
+            html += '<div class="movie-card">';
+            if (poster) {
+                html += '<img src="' + poster + '" alt="' + title + '" loading="lazy">';
+            }
+            html += '<div class="movie-title">' + title + '</div>';
+            if (rating) {
+                html += '<div class="movie-rating">&#11088; ' + rating + '/10</div>';
+            }
+            html += '</div>';
+        }
+        html += '</div>';
+        $('movies-content').innerHTML = html;
+        $('movies-content').style.display = 'block';
+    })
+    .catch(function() {
+        $('movies-loading').style.display = 'none';
+        showError($('movies-content'), 'Could not load movies \u2014 try refreshing');
+    });
+})();
+
+/* ============================================================
+   AUDIO BUTTON — triggers AI assistant
+   ============================================================ */
+$('audio-btn').addEventListener('click', function() {
+    // Try to trigger the AI assistant with a read-aloud command
+    if (window.openAiAssistant) {
+        window.openAiAssistant('read today\'s daily feed aloud');
+    } else {
+        // Fall back to looking for the assistant input
+        var input = document.querySelector('#ai-assistant-input, [data-ai-input], .ai-input');
+        if (input) {
+            input.value = 'read today\'s daily feed aloud';
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            var form = input.closest('form');
+            if (form) form.dispatchEvent(new Event('submit', { bubbles: true }));
+        } else {
+            alert('AI Assistant is loading. Please wait a moment and try again.');
+        }
+    }
+});
+
+})();
+</script>
+
+<!-- Site-wide theme switcher & AI assistant -->
+<script src="/theme-switcher.js"></script>
+<script src="/ai-assistant.js"></script>
+
+</body>
+</html>

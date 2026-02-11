@@ -83,6 +83,27 @@
   ];
 
   // ═══════════════════════════════════════════════════════════
+  // DAILY QUOTES BANK (date-seeded — same quote all day)
+  // ═══════════════════════════════════════════════════════════
+  var DAILY_QUOTES = [
+    { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+    { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
+    { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+    { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
+    { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
+    { text: "The best time to plant a tree was 20 years ago. The second best time is now.", author: "Chinese Proverb" },
+    { text: "Push yourself, because no one else is going to do it for you.", author: "Unknown" },
+    { text: "Great things never come from comfort zones.", author: "Unknown" },
+    { text: "Dream it. Wish it. Do it.", author: "Unknown" },
+    { text: "Do something today that your future self will thank you for.", author: "Unknown" },
+    { text: "Wake up with determination. Go to bed with satisfaction.", author: "Unknown" },
+    { text: "Don't wait for opportunity. Create it.", author: "Unknown" },
+    { text: "The key to success is to focus on goals, not obstacles.", author: "Unknown" },
+    { text: "It's going to be hard, but hard does not mean impossible.", author: "Unknown" },
+    { text: "Your limitation\u2014it's only your imagination.", author: "Unknown" }
+  ];
+
+  // ═══════════════════════════════════════════════════════════
   // STATE
   // ═══════════════════════════════════════════════════════════
   var state = {
@@ -121,6 +142,7 @@
   function detectSection() {
     var path = window.location.pathname.toLowerCase();
     var hash = window.location.hash.toLowerCase();
+    if (path.indexOf('/daily-feed') !== -1) return 'daily_feed';
     if (path.indexOf('/findstocks') !== -1) return 'stocks';
     // MovieShows — detect V1/V2/V3
     if (path.indexOf('/movieshows3') !== -1) return 'movies_v3';
@@ -646,6 +668,13 @@
       '.fte-ai-icon-btn.send:hover { background:rgba(99,102,241,0.35) !important; }',
       '@media(max-width:480px) { #fte-ai-panel { width:calc(100vw - 16px) !important; right:8px !important; bottom:160px !important; max-height:calc(100vh - 180px) !important; } #fte-ai-btn { bottom:100px !important; right:12px !important; } }',
       '#fte-ai-btn.hidden-mode { display:none !important; }',
+      '#fte-mute-btn { position:fixed !important; bottom:156px !important; right:30px !important; width:36px !important; height:36px !important; border-radius:50% !important; background:rgba(30,41,59,0.9) !important; border:1px solid rgba(99,102,241,0.3) !important; color:#94a3b8 !important; font-size:16px !important; cursor:pointer !important; z-index:99999 !important; display:flex !important; align-items:center !important; justify-content:center !important; transition:all .3s ease !important; box-shadow:0 2px 12px rgba(0,0,0,0.3) !important; }',
+      '#fte-mute-btn:hover { background:rgba(99,102,241,0.2) !important; border-color:rgba(99,102,241,0.5) !important; color:#c7d2fe !important; transform:scale(1.1) !important; }',
+      '#fte-mute-btn.muted { background:rgba(239,68,68,0.15) !important; border-color:rgba(239,68,68,0.3) !important; color:#f87171 !important; }',
+      '#fte-mute-btn .fte-mute-tooltip { position:absolute !important; bottom:calc(100% + 8px) !important; right:0 !important; background:rgba(15,23,42,0.95) !important; color:#e2e8f0 !important; padding:6px 12px !important; border-radius:8px !important; font-size:11px !important; white-space:nowrap !important; opacity:0 !important; pointer-events:none !important; transition:opacity .2s !important; border:1px solid rgba(255,255,255,0.1) !important; }',
+      '#fte-mute-btn:hover .fte-mute-tooltip { opacity:1 !important; }',
+      (isMovies ? '#fte-mute-btn { bottom:116px !important; right:22px !important; }' : ''),
+      '@media(max-width:480px) { #fte-mute-btn { bottom:156px !important; right:18px !important; } }',
       '.fte-ai-summary { font-size:12px; line-height:1.6; }',
       '.fte-ai-summary b { color:#a5b4fc; }',
       '.fte-ai-summary .event-item { padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.03); }',
@@ -672,6 +701,19 @@
     btn.addEventListener('click', togglePanel);
     if (isMovies && state.hiddenOnMovies) btn.classList.add('hidden-mode');
     document.body.appendChild(btn);
+
+    // Mute notification sounds button (above AI button)
+    var muteBtn = document.createElement('button');
+    muteBtn.id = 'fte-mute-btn';
+    var _isMuted = false;
+    try { _isMuted = localStorage.getItem('fc_notif_sound_enabled') === 'false'; } catch(e) {}
+    muteBtn.innerHTML = '<span style="pointer-events:none;font-size:16px">' + (_isMuted ? '\u{1F515}' : '\u{1F514}') + '</span>' +
+      '<span class="fte-mute-tooltip">' + (_isMuted ? 'Notifications muted (click to unmute)' : 'Mute notification sounds') + '</span>';
+    muteBtn.title = _isMuted ? 'Notifications muted' : 'Mute notification sounds';
+    muteBtn.setAttribute('aria-label', 'Toggle notification sounds');
+    if (_isMuted) muteBtn.classList.add('muted');
+    muteBtn.addEventListener('click', _toggleMuteNotifications);
+    document.body.appendChild(muteBtn);
 
     var panel = document.createElement('div');
     panel.id = 'fte-ai-panel';
@@ -910,6 +952,41 @@
     }
   }
 
+  // ── Notification mute helpers ──
+  function _toggleMuteNotifications() {
+    var current = true;
+    try { current = localStorage.getItem('fc_notif_sound_enabled') !== 'false'; } catch(e) {}
+    var newValue = !current;
+    try { localStorage.setItem('fc_notif_sound_enabled', String(newValue)); } catch(e) {}
+    try { window.dispatchEvent(new StorageEvent('storage', { key: 'fc_notif_sound_enabled', newValue: String(newValue) })); } catch(e) {}
+    _updateMuteIcon();
+    _showMuteToast(newValue ? 'Notification sounds enabled' : 'Notification sounds muted');
+  }
+
+  function _updateMuteIcon() {
+    var btn = document.getElementById('fte-mute-btn');
+    if (!btn) return;
+    var isMuted = false;
+    try { isMuted = localStorage.getItem('fc_notif_sound_enabled') === 'false'; } catch(e) {}
+    var span = btn.querySelector('span:first-child');
+    if (span) span.textContent = isMuted ? '\u{1F515}' : '\u{1F514}';
+    var tooltip = btn.querySelector('.fte-mute-tooltip');
+    if (tooltip) tooltip.textContent = isMuted ? 'Notifications muted (click to unmute)' : 'Mute notification sounds';
+    btn.title = isMuted ? 'Notifications muted' : 'Mute notification sounds';
+    if (isMuted) { btn.classList.add('muted'); } else { btn.classList.remove('muted'); }
+  }
+
+  function _showMuteToast(message) {
+    var existing = document.getElementById('fte-mute-toast');
+    if (existing) existing.remove();
+    var toast = document.createElement('div');
+    toast.id = 'fte-mute-toast';
+    toast.textContent = message;
+    toast.style.cssText = 'position:fixed;bottom:200px;right:24px;background:rgba(15,23,42,0.95);color:#e2e8f0;padding:8px 16px;border-radius:10px;font-size:12px;z-index:100002;border:1px solid rgba(99,102,241,0.3);animation:fteAiFadeIn .2s ease;font-family:Inter,system-ui,sans-serif;';
+    document.body.appendChild(toast);
+    setTimeout(function() { if (toast.parentNode) toast.remove(); }, 2000);
+  }
+
   function sendFromInput() {
     var input = document.getElementById('fte-ai-input');
     if (!input || !input.value.trim()) return;
@@ -1038,6 +1115,28 @@
       store(CONFIG.muteTTSKey, false);
       savePrefToDB('ai_mute_tts', false);
       addMessage('ai', 'Voice responses enabled! I\'ll speak my replies again.');
+      setStatus('Ready', '#64748b');
+      return;
+    }
+
+    // ── MUTE / UNMUTE NOTIFICATION DINGS (creator live alerts) ──
+    if (/mute (notifications?|dings?|live\s*alerts?|bells?|notification\s*sounds?)|turn off (notifications?|dings?|live\s*alerts?|bells?)|silent mode|no more dings/i.test(lower)) {
+      try { localStorage.setItem('fc_notif_sound_enabled', 'false'); } catch(e) {}
+      try { window.dispatchEvent(new StorageEvent('storage', { key: 'fc_notif_sound_enabled', newValue: 'false' })); } catch(e) {}
+      _updateMuteIcon();
+      addMessage('ai',
+        '<b>Notification sounds muted.</b> You won\'t hear ding/bell sounds when creators go live.<br><br>' +
+        'Say <b>"unmute notifications"</b> or click the <b>bell icon</b> above my button to re-enable.', false);
+      setStatus('Ready', '#64748b');
+      return;
+    }
+    if (/unmute (notifications?|dings?|live\s*alerts?|bells?|notification\s*sounds?)|turn on (notifications?|dings?|live\s*alerts?|bells?)|enable (notifications?|dings?|live\s*alerts?)|end silent mode/i.test(lower)) {
+      try { localStorage.setItem('fc_notif_sound_enabled', 'true'); } catch(e) {}
+      try { window.dispatchEvent(new StorageEvent('storage', { key: 'fc_notif_sound_enabled', newValue: 'true' })); } catch(e) {}
+      _updateMuteIcon();
+      addMessage('ai',
+        '<b>Notification sounds enabled!</b> You\'ll hear ding/bell alerts when creators go live.<br><br>' +
+        'Say <b>"mute notifications"</b> or click the <b>bell icon</b> to silence.', false);
       setStatus('Ready', '#64748b');
       return;
     }
@@ -1214,6 +1313,18 @@
     var section = detectSection();
     var html = '<div class="fte-ai-summary">';
     switch (section) {
+      case 'daily_feed':
+        html += '<b>\u{1F4CD} How to use the Daily Feed</b><br><br>';
+        html += 'Your personalized morning briefing — all in one place.<br><br>';
+        html += '\u2022 <b>Weather</b> \u2014 Current conditions & jacket recommendation<br>';
+        html += '\u2022 <b>Deals & Freebies</b> \u2014 Today\'s free stuff and top deals<br>';
+        html += '\u2022 <b>Financial Snapshot</b> \u2014 Top momentum picks (not financial advice)<br>';
+        html += '\u2022 <b>Toronto News</b> \u2014 Latest headlines from local sources<br>';
+        html += '\u2022 <b>Today\'s Events</b> \u2014 What\'s happening in the city<br>';
+        html += '\u2022 <b>What to Watch</b> \u2014 Movie trailers & now playing<br>';
+        html += '\u2022 <b>Quote of the Day</b> \u2014 Daily motivation<br><br>';
+        html += 'Say <b>"daily feed"</b> or <b>"catch me up"</b> anytime for a full AI-powered briefing.';
+        break;
       case 'events':
         html += '<b>\u{1F4CD} How to use the Events page</b><br><br>';
         html += '<b>Browse events:</b> Scroll through the feed to see Toronto events updated daily. Each card shows the event title, date, location, and a link to details/tickets.<br><br>';
@@ -1402,6 +1513,12 @@
       // ── HELP ──
       if (lower === 'help' || lower === 'what can you do' || lower === 'commands' || lower.indexOf('what can you') !== -1) {
         showHelp();
+        return;
+      }
+
+      // ── DAILY FEED / TODAY'S BRIEFING ──
+      if (_isDailyFeedQuery(lower)) {
+        await handleDailyFeed(lower);
         return;
       }
 
@@ -1887,6 +2004,7 @@
         '\u2022 <b>Weather</b>: "Will it rain today?" / "Do I need a jacket?" / "7-day forecast"<br>' +
         '\u2022 <b>Creators</b>: "Refresh my creators" / "Who is live?" / "New content this week"<br>' +
         '\u2022 <b>Stocks</b>: "Top stock picks" / "How are picks chosen?"<br>' +
+        '\u2022 <b>Deals</b>: "Today\'s deals" / "This week\'s deals" / "Birthday freebies"<br>' +
         '\u2022 <b>Movies</b>: "Queue Avatar trailers" / "Trending movies"<br>' +
         '\u2022 <b>Tasks</b>: "Show my accountability tasks"<br>' +
         '\u2022 <b>Navigate</b>: "Go to VR" / "Open FavCreators"<br>' +
@@ -2829,6 +2947,250 @@
   };
 
   // ═══════════════════════════════════════════════════════════════
+  // DAILY FEED / TODAY'S BRIEFING — aggregate morning summary
+  // ═══════════════════════════════════════════════════════════════
+
+  function _isDailyFeedQuery(lower) {
+    if (/daily\s*feed/i.test(lower)) return true;
+    if (/today('?s)?\s*feed/i.test(lower)) return true;
+    if (/what\s*(do\s*i\s*need\s*to\s*know\s*today|you\s*need\s*to\s*know)/i.test(lower)) return true;
+    if (/morning\s*briefing/i.test(lower)) return true;
+    if (/daily\s*briefing/i.test(lower)) return true;
+    if (/daily\s*summary/i.test(lower)) return true;
+    if (/today('?s)?\s*summary/i.test(lower)) return true;
+    if (/give\s*me\s*the\s*(rundown|feed)/i.test(lower)) return true;
+    if (/catch\s*me\s*up/i.test(lower)) return true;
+    if (/bring\s*me\s*up\s*to\s*speed/i.test(lower)) return true;
+    if (/what('?s)?\s*new\s*today/i.test(lower)) return true;
+    if (/daily\s*update/i.test(lower)) return true;
+    if (/today('?s)?\s*update/i.test(lower)) return true;
+    if (/what\s*should\s*i\s*know\s*today/i.test(lower)) return true;
+    if (/what('?s)?\s*important\s*today/i.test(lower)) return true;
+    return false;
+  }
+
+  function _getDailyQuote() {
+    var now = new Date();
+    var seed = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+    return DAILY_QUOTES[seed % DAILY_QUOTES.length];
+  }
+
+  function _getWeatherIcon(code) {
+    if (code === 0) return '\u2600\uFE0F';
+    if (code <= 3) return '\u26C5';
+    if (code <= 48) return '\u{1F32B}\uFE0F';
+    if (code <= 67) return '\u{1F327}\uFE0F';
+    if (code <= 77) return '\u2744\uFE0F';
+    if (code <= 86) return '\u{1F328}\uFE0F';
+    return '\u26C8\uFE0F';
+  }
+
+  function _getJacketRec(temp) {
+    if (temp <= -10) return '\u{1F9E3} Bundle up! Heavy winter coat, gloves, hat, and scarf.';
+    if (temp <= 0) return '\u{1F9E5} Winter coat weather. Layer up and stay warm.';
+    if (temp <= 10) return '\u{1F9E5} Grab a warm jacket \u2014 it\'s chilly out there.';
+    if (temp <= 15) return '\u{1F455} A light jacket or hoodie should do.';
+    if (temp <= 20) return '\u{1F455} Comfortable \u2014 maybe a light layer for evening.';
+    return '\u2600\uFE0F Perfect weather! T-shirt and enjoy the day.';
+  }
+
+  async function handleDailyFeed(lower) {
+    setStatus('Preparing your daily briefing...', '#6366f1');
+    addMessage('ai', '<div id="fte-daily-feed-loading" class="fte-ai-summary"><b>\u{1F305} Preparing your daily briefing...</b><br><span style="color:#94a3b8;">Gathering weather, deals, picks, news & events...</span></div>', false);
+
+    var today = new Date();
+    var dateStr = formatDate(today);
+    var quote = _getDailyQuote();
+
+    // Parallel fetches
+    var weatherData = null;
+    var dealsData = null;
+    var picksData = null;
+    var newsData = null;
+    var eventsArr = null;
+
+    var weatherUrl = CONFIG.weatherApi + '?latitude=' + CONFIG.weatherLat + '&longitude=' + CONFIG.weatherLon +
+      '&current=temperature_2m,apparent_temperature,precipitation,weather_code' +
+      '&daily=temperature_2m_max,temperature_2m_min&timezone=America/Toronto&forecast_days=1';
+
+    var promises = [];
+
+    // Weather
+    promises.push(
+      fetch(weatherUrl).then(function (r) { return r.json(); }).then(function (d) { weatherData = d; }).catch(function () {})
+    );
+    // Deals
+    promises.push(
+      fetch(CONFIG.dealsApi + '?action=free_today').then(function (r) { return r.json(); }).then(function (d) { dealsData = d; }).catch(function () {})
+    );
+    // Daily Picks (momentum)
+    promises.push(
+      fetch('https://findtorontoevents.ca/live-monitor/api/daily_picks.php?action=momentum').then(function (r) { return r.json(); }).then(function (d) { picksData = d; }).catch(function () {})
+    );
+    // News
+    promises.push(
+      fetch(CONFIG.fcApi + '/news_feed.php?action=get&category=toronto&per_page=5').then(function (r) { return r.json(); }).then(function (d) { newsData = d; }).catch(function () {})
+    );
+    // Events
+    promises.push(
+      loadEvents().then(function (ev) { eventsArr = ev; }).catch(function () {})
+    );
+
+    try {
+      await Promise.all(promises);
+    } catch (e) { /* individual catches handle errors */ }
+
+    // ── BUILD HTML ──
+    var html = '<div class="fte-ai-summary">';
+    html += '<b style="font-size:1.1em;">\u{1F305} DAILY FEED \u2014 ' + escapeHtml(dateStr) + '</b><br><br>';
+
+    // ── WEATHER ──
+    html += '<b>\u{1F324}\uFE0F WEATHER</b><br>';
+    if (weatherData && weatherData.current) {
+      var wc = weatherData.current;
+      var wd = weatherData.daily || {};
+      var temp = Math.round(wc.temperature_2m);
+      var feels = Math.round(wc.apparent_temperature);
+      var high = wd.temperature_2m_max ? Math.round(wd.temperature_2m_max[0]) : '?';
+      var low = wd.temperature_2m_min ? Math.round(wd.temperature_2m_min[0]) : '?';
+      var wIcon = _getWeatherIcon(wc.weather_code);
+      html += wIcon + ' Current: <b>' + temp + '\u00B0C</b> (feels like ' + feels + '\u00B0C)<br>';
+      html += 'High: <b>' + high + '\u00B0C</b> | Low: <b>' + low + '\u00B0C</b><br>';
+      html += _getJacketRec(temp) + '<br>';
+    } else {
+      html += '<span style="color:#94a3b8;">Weather data unavailable right now.</span><br>';
+    }
+
+    // ── FREEBIES ──
+    html += '<br><b>\u{1F381} TODAY\'S FREEBIES</b><br>';
+    if (dealsData && dealsData.ok && dealsData.deals && dealsData.deals.length > 0) {
+      var topDeals = dealsData.deals.slice(0, 3);
+      for (var di = 0; di < topDeals.length; di++) {
+        var deal = topDeals[di];
+        var dealName = deal.name || deal.title || 'Free item';
+        html += '\u2022 ' + escapeHtml(dealName);
+        if (deal.url) html += ' <a href="' + escapeHtml(deal.url) + '" target="_blank" style="color:#60a5fa;text-decoration:none;">[link]</a>';
+        html += '<br>';
+      }
+      html += '\u2192 <a href="/fc/deals/" target="_blank" style="color:#10b981;text-decoration:none;font-weight:600;">See all deals & freebies</a><br>';
+    } else {
+      html += '<span style="color:#94a3b8;">No freebies found for today.</span><br>';
+      html += '\u2192 <a href="/fc/deals/" target="_blank" style="color:#10b981;text-decoration:none;font-weight:600;">Browse all deals</a><br>';
+    }
+
+    // ── FINANCIAL SNAPSHOT ──
+    html += '<br><b>\u{1F4CA} FINANCIAL SNAPSHOT</b> <span style="color:#94a3b8;font-size:0.8em;">(Not financial advice)</span><br>';
+    if (picksData && picksData.ok && picksData.picks && picksData.picks.length > 0) {
+      var topPicks = picksData.picks.slice(0, 3);
+      html += 'Top Momentum Picks:<br>';
+      for (var pi = 0; pi < topPicks.length; pi++) {
+        var pick = topPicks[pi];
+        var ticker = pick.ticker || pick.symbol || '???';
+        var strength = pick.strength || pick.score || pick.momentum_score || '';
+        html += '\u2022 <b>' + escapeHtml(ticker) + '</b>';
+        if (strength) html += ' \u2014 strength: ' + escapeHtml(String(strength));
+        html += '<br>';
+      }
+    } else {
+      html += '<span style="color:#94a3b8;">Momentum data unavailable right now.</span><br>';
+    }
+    html += '\u2192 <a href="/live-monitor/" target="_blank" style="color:#6366f1;text-decoration:none;font-weight:600;">See all picks</a>';
+    html += ' | <a href="/findstocks/portfolio2/smart-money.html" target="_blank" style="color:#6366f1;text-decoration:none;font-weight:600;">Smart Money</a>';
+    html += ' | <a href="/live-monitor/" target="_blank" style="color:#6366f1;text-decoration:none;font-weight:600;">Live Monitor</a><br>';
+
+    // ── NEWS ──
+    html += '<br><b>\u{1F4F0} TORONTO NEWS</b><br>';
+    if (newsData && newsData.ok && newsData.articles && newsData.articles.length > 0) {
+      var topNews = newsData.articles.slice(0, 3);
+      for (var ni = 0; ni < topNews.length; ni++) {
+        var article = topNews[ni];
+        var headline = article.title || 'Untitled';
+        var source = article.source || '';
+        html += '\u2022 ';
+        if (article.url) {
+          html += '<a href="' + escapeHtml(article.url) + '" target="_blank" style="color:#60a5fa;text-decoration:none;">' + escapeHtml(headline) + '</a>';
+        } else {
+          html += escapeHtml(headline);
+        }
+        if (source) html += ' <span style="color:#94a3b8;font-size:0.8em;">(' + escapeHtml(source) + ')</span>';
+        html += '<br>';
+      }
+      html += '\u2192 <a href="/news/" target="_blank" style="color:#f59e0b;text-decoration:none;font-weight:600;">Read more news</a><br>';
+    } else {
+      html += '<span style="color:#94a3b8;">News data unavailable right now.</span><br>';
+      html += '\u2192 <a href="/news/" target="_blank" style="color:#f59e0b;text-decoration:none;font-weight:600;">Browse news</a><br>';
+    }
+
+    // ── TODAY'S EVENTS ──
+    html += '<br><b>\u{1F4C5} TODAY\'S EVENTS</b><br>';
+    if (eventsArr && eventsArr.length > 0) {
+      var todayEvents = filterEventsByTime(eventsArr, 'today');
+      if (todayEvents.length > 0) {
+        var topEvents = todayEvents.slice(0, 5);
+        for (var ei = 0; ei < topEvents.length; ei++) {
+          var ev = topEvents[ei];
+          var evTitle = ev.title || ev.name || 'Untitled event';
+          var evTime = ev.date ? formatTime(new Date(ev.date)) : '';
+          html += '\u2022 <b>' + escapeHtml(evTitle) + '</b>';
+          if (evTime) html += ' <span style="color:#a78bfa;font-size:0.85em;">(' + escapeHtml(evTime) + ')</span>';
+          html += '<br>';
+        }
+        if (todayEvents.length > 5) {
+          html += '<span style="color:#94a3b8;font-size:0.85em;">...and ' + (todayEvents.length - 5) + ' more</span><br>';
+        }
+      } else {
+        html += '<span style="color:#94a3b8;">No events found for today.</span><br>';
+      }
+    } else {
+      html += '<span style="color:#94a3b8;">Events data unavailable right now.</span><br>';
+    }
+    html += '\u2192 <a href="/" target="_blank" style="color:#22c55e;text-decoration:none;font-weight:600;">See all events</a><br>';
+
+    // ── WHAT TO WATCH ──
+    html += '<br><b>\u{1F3AC} WHAT TO WATCH</b><br>';
+    html += '\u2192 <a href="/MOVIESHOWS3/" target="_blank" style="color:#f59e0b;text-decoration:none;font-weight:600;">Browse trailers: MOVIESHOWS3</a><br>';
+    html += '\u2192 <a href="/MOVIESHOWS3/#now-playing" target="_blank" style="color:#f59e0b;text-decoration:none;font-weight:600;">Now playing at your theater</a><br>';
+
+    // ── QUOTE OF THE DAY ──
+    html += '<br><b>\u{1F4A1} QUOTE OF THE DAY</b><br>';
+    html += '<em>"' + escapeHtml(quote.text) + '"</em><br>';
+    html += '<span style="color:#94a3b8;">\u2014 ' + escapeHtml(quote.author) + '</span><br>';
+
+    // ── FOOTER ──
+    html += '<br><span style="color:#64748b;font-size:0.82em;">\u{1F50A} Want me to read this aloud? Just say "read that back"</span>';
+    html += '</div>';
+
+    // Replace loading message
+    var loadEl = document.getElementById('fte-daily-feed-loading');
+    if (loadEl) {
+      loadEl.outerHTML = html;
+    } else {
+      addMessage('ai', html, false);
+    }
+
+    // TTS — brief verbal summary
+    var ttsText = 'Here\'s your daily briefing for ' + dateStr + '. ';
+    if (weatherData && weatherData.current) {
+      ttsText += 'It\'s currently ' + Math.round(weatherData.current.temperature_2m) + ' degrees. ';
+      var wHigh = weatherData.daily && weatherData.daily.temperature_2m_max ? Math.round(weatherData.daily.temperature_2m_max[0]) : null;
+      if (wHigh !== null) ttsText += 'High of ' + wHigh + '. ';
+    }
+    if (picksData && picksData.ok && picksData.picks && picksData.picks.length > 0) {
+      var topTicker = picksData.picks[0].ticker || picksData.picks[0].symbol || '';
+      if (topTicker) ttsText += 'Top momentum pick is ' + topTicker + '. ';
+    }
+    ttsText += quote.text + ' \u2014 ' + quote.author + '.';
+    speakText(ttsText);
+
+    // Set prompt chips
+    setPrompts(['Read that back', 'More details on stocks', 'Today\'s events', 'Weather forecast', 'Deals near me']);
+
+    setStatus('Ready', '#64748b');
+    state.processing = false;
+    showStopBtn(false);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
   // DAILY PICKS — Crypto, Forex, Live Signals, Momentum
   // ═══════════════════════════════════════════════════════════════
 
@@ -2865,9 +3227,21 @@
     if (/(small|medium|large).*budget.*(pick|trade)/i.test(lower)) return true;
 
     // Daily picks
-    if (/daily.*pick/i.test(lower) && !/stock/i.test(lower)) return true;
+    if (/daily.*pick/i.test(lower)) return true;
     if (/live.*signal/i.test(lower)) return true;
     if (/all.*market.*(pick|signal)/i.test(lower)) return true;
+
+    // "today's stock picks" / "todays stock picks" / "today's picks"
+    if (/today('?s)?\s*(stock\s*)?(pick|signal|trade)/i.test(lower)) return true;
+    if (/top\s*(stock\s*)?(pick|signal)/i.test(lower)) return true;
+
+    // Algo consensus picks (only if also mentions pick/signal/trade, not standalone consensus)
+    if (/algo.*(consensus|pick)/i.test(lower)) return true;
+    if (/consensus.*(pick|signal|trade)/i.test(lower)) return true;
+    if (/top.*consensus/i.test(lower)) return true;
+
+    // "what should I buy/trade today"
+    if (/what\s*(should|to)\s*(i\s*)?(buy|trade|invest)\s*(today|now|right now)?/i.test(lower)) return true;
 
     return false;
   }
@@ -2879,6 +3253,9 @@
     var action = 'all';
     if (/crypto|btc|eth|sol|bnb|xrp|ada|doge|shib/i.test(lower)) action = 'crypto';
     else if (/forex|eur|gbp|usd.*jpy|currency/i.test(lower)) action = 'forex';
+    else if (/stock.*pick|today('?s)?\s*stock|top\s*stock/i.test(lower)) action = 'stocks';
+    else if (/algo.*consensus|consensus.*pick|top.*consensus/i.test(lower)) action = 'stocks';
+    else if (/today('?s)?\s*(pick|signal)/i.test(lower)) action = 'all';
     else if (/momentum|trending|going up|continue.*up|high.*conviction/i.test(lower)) action = 'momentum';
     else if (/recent.*win|realtime.*win|winning.*trade/i.test(lower)) action = 'wins';
 
@@ -2915,6 +3292,10 @@
         html += '<b>\u20BF Daily Crypto Picks</b>';
       } else if (action === 'forex') {
         html += '<b>\uD83D\uDCB1 Daily Forex Picks</b>';
+      } else if (action === 'stocks') {
+        html += '<b>\uD83D\uDCC8 Today\'s Stock Picks</b>';
+      } else if (action === 'consensus') {
+        html += '<b>\uD83E\uDD1D Algo Consensus Picks</b>';
       } else if (action === 'momentum') {
         html += '<b>\uD83D\uDE80 Momentum Picks \u2014 Most Likely to Continue Up</b>';
       } else if (action === 'wins') {
@@ -5899,10 +6280,31 @@
     if (/\b(sephora|starbucks|denny|dennys|ihop|baskin|dairy queen|tim hortons|shoppers)\s*birthday/i.test(lower)) return true;
     if (/birthday\s*(at|from)\s*.{2,30}/i.test(lower)) return true;
 
-    // Deals/freebies near me / with location
-    if (/deal(s)?\s*(near|nearby|around|close)/i.test(lower)) return true;
+    // Deals/freebies near me / with location / postal code / area
+    if (/deal(s)?\s*(near|nearby|around|close|in\s+|at\s+)/i.test(lower)) return true;
     if (/freebie(s)?\s*(near|nearby|around|close|in\s+|at\s+|for\s+|around\s+)/i.test(lower)) return true;
     if (/free\s*(stuff|things)\s*(near|nearby|around|close)/i.test(lower)) return true;
+    // "today's deals near ..." / "todays deals near ..."
+    if (/today('s|s)?\s*(deal|freebie|coupon|discount)s?\s*(near|around|close|in\b)/i.test(lower)) return true;
+    // "deals near M5G2H5" or "deals near M5G 2H5"
+    if (/deal(s)?\s*near\s*[a-z]\d[a-z]\s?\d[a-z]\d/i.test(lower)) return true;
+
+    // Today's deals / deals today / daily deals (standalone or with modifiers)
+    if (/today('s|s)?\s*(deal|freebie|coupon|discount|special|offer|promo)s?/i.test(lower)) return true;
+    if (/\b(deal|freebie|coupon|discount|special|offer|promo)s?\s*today\b/i.test(lower)) return true;
+    if (/\bdaily\s*(deal|freebie|special|offer|promo)s?\b/i.test(lower)) return true;
+    if (/what('s|s| is| are)?\s*(on|happening)?\s*(deal|special|offer)s?\s*today/i.test(lower)) return true;
+
+    // This week's deals / weekly deals / deals this week
+    if (/this\s*week('s|s)?\s*(deal|freebie|coupon|discount|special|offer|promo|free)s?/i.test(lower)) return true;
+    if (/\b(deal|freebie|coupon|discount|special|offer|promo|free\s*stuff)s?\s*this\s*week\b/i.test(lower)) return true;
+    if (/\bweekly\s*(deal|freebie|special|offer|promo|calendar|schedule)s?\b/i.test(lower)) return true;
+    if (/what('s|s| is| are)?\s*(on|happening)?\s*(deal|special|free)s?\s*this\s*week/i.test(lower)) return true;
+
+    // Weekend deals
+    if (/this\s*weekend('s|s)?\s*(deal|freebie|special|offer|promo|free)s?/i.test(lower)) return true;
+    if (/\b(deal|freebie|special|offer|promo|free\s*stuff)s?\s*this\s*weekend\b/i.test(lower)) return true;
+    if (/\bweekend\s*(deal|freebie|special|offer|promo|free)s?\b/i.test(lower)) return true;
 
     // Free stuff/things standalone (not followed by "to do")
     if (/^free\s+(stuff|things)\s*$/i.test(lower.trim())) return true;
@@ -5950,10 +6352,21 @@
   function _parseDealsType(lower) {
     if (/birthday/i.test(lower)) return 'birthday';
     if (/free\s*today|what('s|s| is)\s*free\s*today|anything\s*free\s*today/i.test(lower)) return 'free_today';
+    if (/today('s|s)?\s*(deal|freebie|coupon|discount)s?\s*(near|around|close|in\b)/i.test(lower)) return 'near_me';
+    // Today's deals / deals today / daily deals (standalone — no location qualifier)
+    if (/today('s|s)?\s*(deal|freebie|coupon|discount|special|offer|promo)s?/i.test(lower)) return 'todays_deals';
+    if (/\b(deal|freebie|coupon|discount|special|offer|promo)s?\s*today\b/i.test(lower)) return 'todays_deals';
+    if (/\bdaily\s*(deal|freebie|special|offer|promo)s?\b/i.test(lower)) return 'todays_deals';
+    // Weekend deals
+    if (/this\s*weekend|weekend\s*(deal|freebie|special|offer|promo|free)/i.test(lower)) return 'weekend_deals';
+    // This week's deals / weekly deals
+    if (/this\s*week|weekly\s*(deal|freebie|special|offer|promo|calendar|schedule|free)/i.test(lower)) return 'weekly_deals';
     if (/canadian|canada|ontario/i.test(lower)) return 'canadian_deals';
     if (/free\s*sample/i.test(lower)) return 'samples';
     if (/free\s*(museum|gallery|admission|entry|entrance)|museum.{0,10}free/i.test(lower)) return 'free_admission';
-    if (/near\s*me|nearby|around\s*me|close\s*to\s*me/i.test(lower)) return 'near_me';
+    if (/near\s*(me|my|here|[a-z]\d[a-z])|nearby|around\s*(me|here|my)|close\s*to\s*(me|my|here)/i.test(lower)) return 'near_me';
+    // "deals near <area>" / "deals near <postal>" / "deals in <area>"
+    if (/\b(deal|freebie|coupon|free stuff|free things)s?\s*(near|around|close to|in|at)\s+/i.test(lower)) return 'near_me';
     return 'search';
   }
 
@@ -5976,32 +6389,72 @@
     }
   }
 
+  /** Parse location from a deals query (postal code, area name, or "near me") */
+  function _parseDealsLocation(lower) {
+    // Check for postal code: "deals near M5G2H5" or "deals near M5G 2H5"
+    var postal = parsePostalCode(lower);
+    if (postal) return { type: 'postal', value: postal };
+
+    // Check for known Toronto area names
+    var area = parseAreaName(lower);
+    if (area) return { type: 'area', value: area };
+
+    // Check for "near <intersection/street>" pattern
+    var nearMatch = lower.match(/(?:near|around|close to|at|in)\s+(.{3,40})$/i);
+    if (nearMatch) {
+      var locText = nearMatch[1].replace(/\b(me|my location|my area|here|my)\b/gi, '').trim();
+      if (locText.length > 2 && !/^(me|my|here)$/i.test(locText)) {
+        return { type: 'text', value: locText };
+      }
+    }
+
+    return { type: 'gps', value: null };
+  }
+
   /** Main handler for deals & freebies queries */
   async function handleDeals(lower) {
     var dealType = _parseDealsType(lower);
-    var isNearMe = /near\s*me|nearby|around\s*me|close\s*to\s*me/i.test(lower);
+    var isNearMe = dealType === 'near_me';
 
     // Show loading message
     var loadingLabel = 'deals';
     if (dealType === 'birthday') loadingLabel = 'birthday freebies';
     else if (dealType === 'free_today') loadingLabel = 'free stuff today';
+    else if (dealType === 'todays_deals') loadingLabel = "today's deals & freebies";
+    else if (dealType === 'weekly_deals') loadingLabel = "this week's deals & freebies";
+    else if (dealType === 'weekend_deals') loadingLabel = 'weekend deals & freebies';
     else if (dealType === 'samples') loadingLabel = 'free samples';
     else if (dealType === 'free_admission') loadingLabel = 'free admission venues';
     else if (dealType === 'canadian_deals') loadingLabel = 'Canadian deals';
 
+    // Parse location context for near-me
+    var locationInfo = isNearMe ? _parseDealsLocation(lower) : null;
+    var locationLabel = '';
+    if (locationInfo) {
+      if (locationInfo.type === 'postal') locationLabel = locationInfo.value;
+      else if (locationInfo.type === 'area') locationLabel = locationInfo.value.label;
+      else if (locationInfo.type === 'text') locationLabel = locationInfo.value;
+      else locationLabel = 'your location';
+    }
+
     setStatus('Searching for ' + loadingLabel + '...', '#10b981');
     addMessage('ai', '<div id="fte-ai-deals-loading" class="fte-ai-summary">' +
       '<b>\uD83C\uDF81 Searching for ' + escapeHtml(loadingLabel) + '...</b>' +
-      (isNearMe ? '<br><span style="color:#a78bfa;">Getting your location...</span>' : '') +
+      (isNearMe ? '<br><span style="color:#a78bfa;">Getting location' + (locationLabel ? ' (' + escapeHtml(locationLabel) + ')' : '') + '...</span>' : '') +
       '</div>');
 
     // Build API URL
-    var action = 'search';
+    var action = 'all';
     if (dealType === 'birthday') action = 'birthday';
     else if (dealType === 'free_today') action = 'free_today';
+    else if (dealType === 'todays_deals') action = 'all';
+    else if (dealType === 'weekly_deals') action = 'calendar';
+    else if (dealType === 'weekend_deals') action = 'calendar';
     else if (dealType === 'canadian_deals') action = 'canadian';
     else if (dealType === 'samples') action = 'samples';
     else if (dealType === 'free_admission') action = 'free_admission';
+    else if (dealType === 'near_me') action = 'all';
+    else action = 'search';
 
     var params = 'action=' + encodeURIComponent(action);
 
@@ -6013,15 +6466,38 @@
       }
     }
 
-    // Get location for near-me queries
-    if (isNearMe) {
-      var userLoc = await _getNearMeLocation();
-      if (userLoc && userLoc.lat && userLoc.lng) {
-        params += '&lat=' + userLoc.lat + '&lng=' + userLoc.lng;
+    // Resolve location for near-me queries
+    if (isNearMe && locationInfo) {
+      var lat = 0, lng = 0;
+
+      if (locationInfo.type === 'postal') {
+        var geo = await geocodePostalCode(locationInfo.value);
+        if (geo) { lat = geo.lat; lng = geo.lon; }
+      } else if (locationInfo.type === 'area') {
+        lat = locationInfo.value.lat; lng = locationInfo.value.lon;
+      } else if (locationInfo.type === 'text') {
+        // Try geocoding via Nominatim with the text
+        try {
+          var geoResp = await fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(locationInfo.value + ', Toronto, Canada') + '&format=json&limit=1', {
+            headers: { 'User-Agent': 'FindTorontoEvents/1.0' }
+          });
+          var geoData = await geoResp.json();
+          if (geoData && geoData.length > 0) {
+            lat = parseFloat(geoData[0].lat);
+            lng = parseFloat(geoData[0].lon);
+          }
+        } catch (e) { /* fallback below */ }
       } else {
-        // Fallback: downtown Toronto
-        params += '&lat=43.6532&lng=-79.3832';
+        // GPS / "near me"
+        var userLoc = await _getNearMeLocation();
+        if (userLoc && userLoc.lat && userLoc.lng) {
+          lat = userLoc.lat; lng = userLoc.lng;
+        }
       }
+
+      // Fallback to downtown Toronto if no location resolved
+      if (!lat && !lng) { lat = 43.6532; lng = -79.3832; locationLabel = 'Downtown Toronto (default)'; }
+      params += '&near=' + lat + ',' + lng;
     }
 
     var url = CONFIG.dealsApi + '?' + params;
@@ -6039,7 +6515,7 @@
         return;
       }
 
-      _renderDealsResults(data, dealType, isNearMe);
+      _renderDealsResults(data, dealType, isNearMe, locationLabel);
       state.processing = false;
       showStopBtn(false);
 
@@ -6053,21 +6529,278 @@
     }
   }
 
+  /** Render a single deal card */
+  function _renderDealCard(deal, isNearMe) {
+    var html = '<div style="margin-bottom:10px;padding:8px 10px;background:rgba(16,185,129,0.06);border-radius:8px;border-left:3px solid #10b981;">';
+
+    // Deal name + value badge
+    html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">';
+    html += '<b style="font-size:0.95em;">' + escapeHtml(deal.name || deal.title || 'Deal') + '</b>';
+    var dealValue = deal.value || (deal.value_est ? '$' + deal.value_est : '') || (deal.savings ? 'Save $' + deal.savings : '');
+    if (dealValue) {
+      html += ' <span style="display:inline-block;background:#10b981;color:#fff;font-size:0.7rem;padding:1px 6px;border-radius:3px;font-weight:600;">' + escapeHtml(String(dealValue)) + '</span>';
+    }
+    if (deal.category) {
+      html += ' <span style="display:inline-block;background:rgba(99,102,241,0.15);color:#a5b4fc;font-size:0.65rem;padding:1px 5px;border-radius:3px;">' + escapeHtml(deal.category) + '</span>';
+    }
+    html += '</div>';
+
+    // Description or freebie text
+    var desc = deal.description || deal.freebie || '';
+    if (desc) {
+      if (desc.length > 200) desc = desc.substring(0, 200) + '...';
+      html += '<div style="color:#cbd5e1;font-size:0.88em;margin-top:4px;line-height:1.4;">' + escapeHtml(desc) + '</div>';
+    }
+
+    // Conditions / requirements
+    if (deal.conditions || deal.requirements) {
+      html += '<div style="color:#fbbf24;font-size:0.8em;margin-top:3px;">';
+      html += '\u26A0\uFE0F ' + escapeHtml(deal.conditions || deal.requirements);
+      html += '</div>';
+    }
+
+    // Expiry
+    if (deal.expires || deal.expiry) {
+      html += '<div style="color:#f87171;font-size:0.78em;margin-top:2px;">';
+      html += '\u23F0 Expires: ' + escapeHtml(deal.expires || deal.expiry);
+      html += '</div>';
+    }
+
+    // Hours (for free calendar / admission items)
+    if (deal.hours) {
+      html += '<div style="color:#86efac;font-size:0.8em;margin-top:2px;">';
+      html += '\u{1F552} ' + escapeHtml(deal.hours);
+      html += '</div>';
+    }
+
+    // Distance (for near-me mode)
+    if (isNearMe && deal.distance_m) {
+      html += '<div style="color:#60a5fa;font-size:0.8em;margin-top:2px;">';
+      html += '\uD83D\uDCCD ' + _formatDistance(deal.distance_m) + ' away';
+      if (deal.address) html += ' \u2014 ' + escapeHtml(deal.address);
+      html += '</div>';
+    } else if (deal.address) {
+      html += '<div style="color:#94a3b8;font-size:0.78em;margin-top:2px;">';
+      html += '\uD83D\uDCCD ' + escapeHtml(deal.address);
+      html += '</div>';
+    }
+
+    // Source link
+    if (deal.url || deal.source_url || deal.link) {
+      var dealUrl = deal.url || deal.source_url || deal.link;
+      html += '<div style="margin-top:4px;">';
+      html += '<a href="' + escapeHtml(dealUrl) + '" target="_blank" style="color:#60a5fa;font-size:0.82em;text-decoration:none;">';
+      html += '\u2197\uFE0F ' + escapeHtml(deal.source || 'View Deal') + '</a>';
+      html += '</div>';
+    }
+
+    html += '</div>';
+    return html;
+  }
+
+  /** Get today's day name (lowercase) */
+  function _getTodayName() {
+    var days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    return days[new Date().getDay()];
+  }
+
+  /** Render the weekly calendar as a day-by-day view */
+  function _renderCalendarView(calendar, filterDays) {
+    var html = '';
+    var dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    var dayLabels = { monday: 'Monday', tuesday: 'Tuesday', wednesday: 'Wednesday', thursday: 'Thursday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday' };
+    var dayEmojis = { monday: '\uD83D\uDFE2', tuesday: '\uD83D\uDD35', wednesday: '\uD83D\uDFE3', thursday: '\uD83D\uDFE0', friday: '\uD83D\uDD34', saturday: '\u2B50', sunday: '\u2728' };
+    var today = _getTodayName();
+    var weekly = (calendar && calendar.weekly) ? calendar.weekly : {};
+    var totalItems = 0;
+
+    // Show each day
+    for (var d = 0; d < dayOrder.length; d++) {
+      var day = dayOrder[d];
+      if (filterDays && filterDays.indexOf(day) === -1) continue;
+
+      var dayDeals = weekly[day] || [];
+      // Also include monthly specials for that day
+      var monthlyKey = day + '_monthly';
+      if (weekly[monthlyKey]) dayDeals = dayDeals.concat(weekly[monthlyKey]);
+
+      if (dayDeals.length === 0) continue;
+      totalItems += dayDeals.length;
+
+      var isToday = day === today;
+      var borderColor = isToday ? '#10b981' : '#334155';
+      var bgColor = isToday ? 'rgba(16,185,129,0.08)' : 'rgba(30,41,59,0.5)';
+
+      html += '<div style="margin-bottom:12px;padding:10px 12px;background:' + bgColor + ';border-radius:8px;border-left:3px solid ' + borderColor + ';">';
+      html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">';
+      html += '<span style="font-size:1em;">' + dayEmojis[day] + '</span>';
+      html += '<b style="font-size:0.95em;">' + dayLabels[day] + '</b>';
+      if (isToday) html += ' <span style="display:inline-block;background:#10b981;color:#fff;font-size:0.65rem;padding:1px 6px;border-radius:3px;font-weight:600;">TODAY</span>';
+      html += ' <span style="color:#64748b;font-size:0.8em;">(' + dayDeals.length + ' deal' + (dayDeals.length !== 1 ? 's' : '') + ')</span>';
+      html += '</div>';
+
+      for (var j = 0; j < dayDeals.length; j++) {
+        var item = dayDeals[j];
+        html += '<div style="margin-bottom:6px;padding:5px 8px;background:rgba(16,185,129,0.04);border-radius:6px;">';
+        html += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">';
+        html += '<b style="font-size:0.9em;">' + escapeHtml(item.name || item.title || '') + '</b>';
+        var sv = item.savings ? 'Save $' + item.savings : '';
+        if (sv) html += ' <span style="display:inline-block;background:#10b981;color:#fff;font-size:0.65rem;padding:1px 5px;border-radius:3px;font-weight:600;">' + escapeHtml(sv) + '</span>';
+        if (item.category) html += ' <span style="display:inline-block;background:rgba(99,102,241,0.15);color:#a5b4fc;font-size:0.6rem;padding:1px 4px;border-radius:3px;">' + escapeHtml(item.category) + '</span>';
+        html += '</div>';
+        if (item.description) {
+          var d2 = item.description.length > 120 ? item.description.substring(0, 120) + '...' : item.description;
+          html += '<div style="color:#cbd5e1;font-size:0.82em;margin-top:2px;">' + escapeHtml(d2) + '</div>';
+        }
+        if (item.hours) html += '<div style="color:#86efac;font-size:0.78em;margin-top:2px;">\u{1F552} ' + escapeHtml(item.hours) + '</div>';
+        if (item.address) html += '<div style="color:#94a3b8;font-size:0.75em;margin-top:1px;">\uD83D\uDCCD ' + escapeHtml(item.address) + '</div>';
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+
+    return { html: html, totalItems: totalItems };
+  }
+
   /** Render deals/freebies results as chat cards */
-  function _renderDealsResults(data, dealType, isNearMe) {
+  function _renderDealsResults(data, dealType, isNearMe, locationLabel) {
+
+    // ── Weekly / Weekend calendar view ──
+    if (dealType === 'weekly_deals' || dealType === 'weekend_deals') {
+      var calendar = data.free_calendar || data.calendar || null;
+      var html = '<div class="fte-ai-summary">';
+
+      if (dealType === 'weekend_deals') {
+        html += '<b>\uD83C\uDF1F Weekend Deals & Free Events</b><br>';
+        html += '<span style="color:#a78bfa;font-size:0.85em;">Saturday & Sunday freebies in Toronto</span><br><br>';
+      } else {
+        html += '<b>\uD83D\uDCC5 This Week\'s Deals & Free Events</b><br>';
+        html += '<span style="color:#a78bfa;font-size:0.85em;">Day-by-day guide to Toronto freebies</span><br><br>';
+      }
+
+      if (!calendar || !calendar.weekly) {
+        html += '<span style="color:#94a3b8;">Calendar data not available right now. Try:</span><br>';
+        html += '\u2022 "today\'s deals" for what\'s available now<br>';
+        html += '\u2022 "birthday freebies" for birthday rewards<br>';
+        html += '</div>';
+        _replaceDealsLoading(html);
+        speakText('Weekly calendar data is not available right now.');
+        setStatus('Ready', '#64748b');
+        return;
+      }
+
+      // Always-free venues (show compact summary)
+      var alwaysFree = calendar.always_free || [];
+      if (alwaysFree.length > 0) {
+        html += '<div style="margin-bottom:12px;padding:8px 10px;background:rgba(99,102,241,0.06);border-radius:8px;border-left:3px solid #6366f1;">';
+        html += '<b style="font-size:0.9em;">\uD83C\uDF1F Always Free</b>';
+        html += ' <span style="color:#64748b;font-size:0.8em;">(' + alwaysFree.length + ' venues)</span><br>';
+        html += '<div style="color:#cbd5e1;font-size:0.82em;margin-top:4px;line-height:1.5;">';
+        var showAlways = Math.min(alwaysFree.length, 6);
+        for (var a = 0; a < showAlways; a++) {
+          html += '\u2022 <b>' + escapeHtml(alwaysFree[a].name) + '</b>';
+          if (alwaysFree[a].hours) html += ' <span style="color:#86efac;">(' + escapeHtml(alwaysFree[a].hours) + ')</span>';
+          html += '<br>';
+        }
+        if (alwaysFree.length > showAlways) {
+          html += '<span style="color:#94a3b8;">+ ' + (alwaysFree.length - showAlways) + ' more always-free venues</span><br>';
+        }
+        html += '</div></div>';
+      }
+
+      // Day-by-day calendar
+      var filterDays = dealType === 'weekend_deals' ? ['saturday', 'sunday'] : null;
+      var calView = _renderCalendarView(calendar, filterDays);
+      html += calView.html;
+
+      var totalCount = calView.totalItems + alwaysFree.length;
+
+      // "See all" link
+      html += '<div style="margin-top:8px;padding:6px 10px;background:rgba(16,185,129,0.1);border-radius:6px;text-align:center;">';
+      html += '<a href="/deals/" target="_blank" style="color:#10b981;font-weight:600;text-decoration:none;font-size:0.9em;">';
+      html += 'See full deals calendar \u2192</a>';
+      html += '</div>';
+
+      // Tip
+      html += '<div style="margin-top:8px;padding:6px 10px;background:rgba(250,204,21,0.08);border-radius:6px;font-size:0.82rem;">';
+      html += '\uD83D\uDCA1 <b>Tip:</b> Ask "today\'s deals" for what\'s free right now, or "birthday freebies" for 78 birthday rewards.';
+      html += '</div>';
+
+      html += '</div>';
+      _replaceDealsLoading(html);
+
+      var spokenLabel = dealType === 'weekend_deals' ? 'weekend' : 'this week';
+      speakText('Here are ' + totalCount + ' deals and free events for ' + spokenLabel + ' in Toronto.');
+      setStatus('Ready', '#64748b');
+      return;
+    }
+
+    // ── Today's deals — merge free_today + canadian active deals + today's calendar items ──
     var deals = data.deals || data.results || [];
+    if (dealType === 'todays_deals') {
+      var todayMerge = [];
+      if (data.free_today) todayMerge = todayMerge.concat(data.free_today);
+      // Add today's calendar items
+      if (data.free_calendar) {
+        var todayDay = _getTodayName();
+        var cal = data.free_calendar;
+        if (cal.weekly && cal.weekly[todayDay]) todayMerge = todayMerge.concat(cal.weekly[todayDay]);
+        if (cal.weekly && cal.weekly[todayDay + '_monthly']) todayMerge = todayMerge.concat(cal.weekly[todayDay + '_monthly']);
+        // Include a few always-free highlights
+        if (cal.always_free) {
+          var af = cal.always_free.slice(0, 3);
+          for (var k = 0; k < af.length; k++) af[k]._always_free = true;
+          todayMerge = todayMerge.concat(af);
+        }
+      }
+      // Add active canadian deals
+      if (data.canadian_deals) {
+        var cd = data.canadian_deals;
+        if (cd.active_today) todayMerge = todayMerge.concat(cd.active_today);
+        else if (Array.isArray(cd)) todayMerge = todayMerge.concat(cd);
+      }
+      deals = todayMerge;
+    }
+
+    if (deals.length === 0 && data.birthday_freebies) deals = data.birthday_freebies;
+    if (deals.length === 0 && data.free_today) deals = data.free_today;
+    if (deals.length === 0 && data.canadian_deals) {
+      var cdArr = Array.isArray(data.canadian_deals) ? data.canadian_deals : (data.canadian_deals.active_today || []);
+      deals = cdArr;
+    }
+    // For "all" action, merge all available deal arrays
+    if (dealType === 'near_me' && deals.length === 0) {
+      var allDeals = [];
+      if (data.birthday_freebies) allDeals = allDeals.concat(data.birthday_freebies);
+      if (data.free_today) allDeals = allDeals.concat(data.free_today);
+      if (data.free_calendar) allDeals = allDeals.concat(data.free_calendar);
+      if (data.canadian_deals) allDeals = allDeals.concat(data.canadian_deals);
+      // Sort by distance if available
+      allDeals.sort(function(a, b) { return (a.distance_m || 999999) - (b.distance_m || 999999); });
+      deals = allDeals;
+    }
     var total = data.total || deals.length;
 
     var html = '<div class="fte-ai-summary">';
 
     // Header based on type
-    if (dealType === 'birthday') {
+    if (dealType === 'near_me') {
+      html += '<b>\uD83D\uDCCD Deals & Freebies Near ' + escapeHtml(locationLabel || 'You') + '</b>';
+      html += ' <span style="color:#64748b;font-size:0.8em;">(' + total + ' found)</span><br>';
+      html += '<span style="color:#a78bfa;font-size:0.85em;">Sorted by distance from ' + escapeHtml(locationLabel || 'your location') + '</span><br><br>';
+    } else if (dealType === 'birthday') {
       html += '<b>\uD83C\uDF82 Birthday Freebies & Deals</b>';
       html += ' <span style="color:#64748b;font-size:0.8em;">(' + total + ' found)</span><br>';
       html += '<span style="color:#a78bfa;font-size:0.85em;">Sign up for rewards programs in advance to claim these!</span><br><br>';
     } else if (dealType === 'free_today') {
       html += '<b>\uD83C\uDD93 Free Stuff Today</b>';
       html += ' <span style="color:#64748b;font-size:0.8em;">(' + total + ' available)</span><br><br>';
+    } else if (dealType === 'todays_deals') {
+      var dayLabel = _getTodayName();
+      dayLabel = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
+      html += '<b>\uD83D\uDD25 Today\'s Deals & Freebies</b>';
+      html += ' <span style="color:#64748b;font-size:0.8em;">(' + dayLabel + ' \u2014 ' + total + ' found)</span><br>';
+      html += '<span style="color:#a78bfa;font-size:0.85em;">Everything available in Toronto today</span><br><br>';
     } else if (dealType === 'samples') {
       html += '<b>\uD83E\uDDEA Free Samples</b>';
       html += ' <span style="color:#64748b;font-size:0.8em;">(' + total + ' found)</span><br><br>';
@@ -6084,13 +6817,13 @@
 
     if (deals.length === 0) {
       html += '<span style="color:#94a3b8;">No deals found matching your search. Try:</span><br>';
-      html += '\u2022 "birthday freebies"<br>';
-      html += '\u2022 "free stuff today"<br>';
-      html += '\u2022 "Canadian deals"<br>';
-      html += '\u2022 "free museum admission"<br>';
+      html += '\u2022 "today\'s deals" \u2014 what\'s available now<br>';
+      html += '\u2022 "this week\'s deals" \u2014 day-by-day calendar<br>';
+      html += '\u2022 "birthday freebies" \u2014 78 birthday rewards<br>';
+      html += '\u2022 "weekend deals" \u2014 Saturday & Sunday freebies<br>';
       html += '</div>';
       _replaceDealsLoading(html);
-      speakText('No deals found. Try asking about birthday freebies, free stuff today, or Canadian deals.');
+      speakText('No deals found. Try asking about today\'s deals, this week\'s deals, or birthday freebies.');
       setStatus('Ready', '#64748b');
       return;
     }
@@ -6099,63 +6832,7 @@
     var showCount = dealType === 'birthday' ? Math.min(deals.length, 10) : Math.min(deals.length, 8);
 
     for (var i = 0; i < showCount; i++) {
-      var deal = deals[i];
-      html += '<div style="margin-bottom:10px;padding:8px 10px;background:rgba(16,185,129,0.06);border-radius:8px;border-left:3px solid #10b981;">';
-
-      // Deal name + value badge
-      html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">';
-      html += '<b style="font-size:0.95em;">' + escapeHtml(deal.name || deal.title || 'Deal') + '</b>';
-      if (deal.value) {
-        html += ' <span style="display:inline-block;background:#10b981;color:#fff;font-size:0.7rem;padding:1px 6px;border-radius:3px;font-weight:600;">' + escapeHtml(deal.value) + '</span>';
-      }
-      if (deal.category) {
-        html += ' <span style="display:inline-block;background:rgba(99,102,241,0.15);color:#a5b4fc;font-size:0.65rem;padding:1px 5px;border-radius:3px;">' + escapeHtml(deal.category) + '</span>';
-      }
-      html += '</div>';
-
-      // Description
-      if (deal.description) {
-        var desc = deal.description;
-        if (desc.length > 200) desc = desc.substring(0, 200) + '...';
-        html += '<div style="color:#cbd5e1;font-size:0.88em;margin-top:4px;line-height:1.4;">' + escapeHtml(desc) + '</div>';
-      }
-
-      // Conditions / requirements
-      if (deal.conditions || deal.requirements) {
-        html += '<div style="color:#fbbf24;font-size:0.8em;margin-top:3px;">';
-        html += '\u26A0\uFE0F ' + escapeHtml(deal.conditions || deal.requirements);
-        html += '</div>';
-      }
-
-      // Expiry
-      if (deal.expires || deal.expiry) {
-        html += '<div style="color:#f87171;font-size:0.78em;margin-top:2px;">';
-        html += '\u23F0 Expires: ' + escapeHtml(deal.expires || deal.expiry);
-        html += '</div>';
-      }
-
-      // Distance (for near-me mode)
-      if (isNearMe && deal.distance_m) {
-        html += '<div style="color:#60a5fa;font-size:0.8em;margin-top:2px;">';
-        html += '\uD83D\uDCCD ' + _formatDistance(deal.distance_m) + ' away';
-        if (deal.address) html += ' \u2014 ' + escapeHtml(deal.address);
-        html += '</div>';
-      } else if (deal.address) {
-        html += '<div style="color:#94a3b8;font-size:0.78em;margin-top:2px;">';
-        html += '\uD83D\uDCCD ' + escapeHtml(deal.address);
-        html += '</div>';
-      }
-
-      // Source link
-      if (deal.url || deal.source_url || deal.link) {
-        var dealUrl = deal.url || deal.source_url || deal.link;
-        html += '<div style="margin-top:4px;">';
-        html += '<a href="' + escapeHtml(dealUrl) + '" target="_blank" style="color:#60a5fa;font-size:0.82em;text-decoration:none;">';
-        html += '\u2197\uFE0F ' + escapeHtml(deal.source || 'View Deal') + '</a>';
-        html += '</div>';
-      }
-
-      html += '</div>';
+      html += _renderDealCard(deals[i], isNearMe);
     }
 
     // "See all" link if there are more
@@ -6175,13 +6852,18 @@
       html += '<div style="margin-top:8px;padding:6px 10px;background:rgba(250,204,21,0.08);border-radius:6px;font-size:0.82rem;">';
       html += '\uD83D\uDCA1 <b>Tip:</b> Many Toronto museums offer free admission on specific evenings or first-Sunday-of-the-month. Check hours before visiting.';
       html += '</div>';
+    } else if (dealType === 'todays_deals') {
+      html += '<div style="margin-top:8px;padding:6px 10px;background:rgba(250,204,21,0.08);border-radius:6px;font-size:0.82rem;">';
+      html += '\uD83D\uDCA1 <b>Tip:</b> Ask "this week\'s deals" for the full weekly calendar, or "deals near me" to find the closest freebies.';
+      html += '</div>';
     }
 
     html += '</div>';
     _replaceDealsLoading(html);
 
     // Speak summary
-    var spoken = 'Found ' + total + ' ' + (dealType === 'birthday' ? 'birthday freebies' : 'deals') + '. ';
+    var spokenType = dealType === 'birthday' ? 'birthday freebies' : (dealType === 'todays_deals' ? 'deals available today' : 'deals');
+    var spoken = 'Found ' + total + ' ' + spokenType + '. ';
     if (deals.length > 0) {
       spoken += 'Top pick: ' + (deals[0].name || deals[0].title || 'a great deal');
       if (deals[0].value) spoken += ', valued at ' + deals[0].value;
@@ -8385,6 +9067,9 @@
     var html = '<div class="fte-ai-summary">';
     html += '<b>\u{1F4CD} You are on ' + name + '</b>';
     switch (section) {
+      case 'daily_feed':
+        html += ' \u2014 your personalized daily briefing with weather, deals, stock picks, news, and events.';
+        break;
       case 'events':
         html += ' \u2014 Toronto\'s daily feed of things to do, dating events, concerts, festivals, and more.';
         break;
@@ -8512,7 +9197,13 @@
     var html = '<div class="fte-ai-summary">';
     html += '<b>AI Assistant \u2014 Complete Command Guide</b><br><br>';
 
-    html += '<b>Events & Activities:</b><br>';
+    html += '<b>Daily Feed / Briefing:</b><br>';
+    html += '\u2022 "Daily feed" / "Today\'s feed" / "Morning briefing"<br>';
+    html += '\u2022 "Catch me up" / "Bring me up to speed"<br>';
+    html += '\u2022 "What do I need to know today?" / "Daily summary"<br>';
+    html += '\u2022 "Give me the rundown" / "What\'s new today?"<br>';
+
+    html += '<br><b>Events & Activities:</b><br>';
     html += '\u2022 "What\'s happening this weekend?" / "Events tonight"<br>';
     html += '\u2022 "Good date ideas this weekend" / "Date night ideas"<br>';
     html += '\u2022 "Free events this week" / "Cheap things to do"<br>';
@@ -8555,6 +9246,14 @@
     html += '\u2022 Quick: <b>/food</b> \u2022 <b>/open</b> \u2022 <b>/find</b> \u2022 <b>/nearby</b><br>';
     html += '\u2022 Filters: <b>/restrict:halal</b> \u2022 <b>/cuisine:italian</b> \u2022 <b>/open:late</b><br>';
     html += '\u2022 <b>/places</b> \u2014 full searchable guide with 100+ examples<br>';
+
+    html += '<br><b>Deals & Freebies:</b><br>';
+    html += '\u2022 "Today\'s deals" / "Deals today" / "Daily deals"<br>';
+    html += '\u2022 "This week\'s deals" / "Weekly deals" / "Weekly calendar"<br>';
+    html += '\u2022 "Weekend deals" / "Deals this weekend"<br>';
+    html += '\u2022 "Birthday freebies" / "Free stuff today"<br>';
+    html += '\u2022 "Canadian deals" / "Free museum admission"<br>';
+    html += '\u2022 "Deals near me" / "Free stuff near M5G 2H5"<br>';
 
     html += '<br><b>Movies & TV:</b><br>';
     html += '\u2022 "Queue Avatar trailers" / "Search a movie"<br>';
@@ -8617,12 +9316,78 @@
   // ═══════════════════════════════════════════════════════════
   // TUTORIAL / FIRST-TIME MODE
   // ═══════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════
+  // AUTO-OPEN WELCOME — shown once per session, NO audio
+  // ═══════════════════════════════════════════════════════════
+  function _showAutoOpenWelcome() {
+    var hour = new Date().getHours();
+    var greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    var section = state.currentSection;
+
+    // "What's New" highlights — update these as new features ship
+    var whatsNew = [
+      '\u{1F4B0} <b>Smart Money Intelligence</b> \u2014 analyst ratings, insider trades & 13F filings',
+      '\u{1F3B0} <b>Sports Bet Finder</b> \u2014 AI-powered picks across NHL, NBA, NFL & more',
+      '\u{1F4F0} <b>News Feed</b> \u2014 aggregated from 17 Canadian sources',
+      '\u{1F3AC} <b>Movie Showtimes</b> \u2014 live Cineplex times for downtown Toronto',
+      '\u{1F4C8} <b>Live Trading Monitor</b> \u2014 20 algorithms trading crypto, forex & stocks in real-time',
+      '\u{1F381} <b>Deals & Freebies</b> \u2014 today\'s deals, weekly calendar, birthday freebies & more'
+    ];
+
+    var contextHint = '';
+    switch (section) {
+      case 'daily_feed':
+        contextHint = 'Welcome to your <b>Daily Feed</b>! Say <b>"read today\'s feed"</b> for a full briefing, or ask about any section.';
+        break;
+      case 'events':
+        contextHint = 'Ask me about <b>events near you</b>, <b>date ideas</b>, or <b>what\'s on this weekend</b>.';
+        break;
+      case 'stocks':
+        contextHint = 'Ask me for <b>today\'s stock picks</b>, <b>algorithm explanations</b>, or <b>momentum plays</b>.';
+        break;
+      case 'streamers':
+        contextHint = 'Say <b>"Refresh my creators"</b> to check who\'s live, or ask about <b>new content</b>.';
+        break;
+      case 'movies': case 'movies_v2': case 'movies_v3':
+        contextHint = 'Ask <b>"What should I watch?"</b> or search for any movie trailer.';
+        break;
+      default:
+        contextHint = 'Ask me about <b>events</b>, <b>weather</b>, <b>creators</b>, <b>stocks</b>, <b>movies</b>, and more.';
+    }
+
+    addMessage('ai',
+      '<div class="fte-ai-summary">' +
+      greeting + '! \u{1F44B} Welcome to <b>findtorontoevents.ca</b><br><br>' +
+      '<b>What\'s New:</b><br>' +
+      whatsNew.map(function (item) { return '\u2022 ' + item; }).join('<br>') +
+      '<br><br>' +
+      contextHint + '<br><br>' +
+      '<span style="color:#64748b;font-size:0.8rem;">Type below or click a suggestion chip to get started. Click the mic \u{1F3A4} to use voice.</span>' +
+      '</div>',
+      false  // ← NO audio on auto-open
+    );
+    setStatus('Ready', '#64748b');
+    // Mark first visit so checkFirstVisit won't double-greet
+    store(CONFIG.firstTimeKey, true);
+  }
+
   function checkFirstVisit() {
     var section = detectSection();
     state.currentSection = section;
     var visited = load(CONFIG.visitedSectionsKey, {});
     var tutorialMode = load(CONFIG.tutorialModeKey, false);
     var isFirstEver = !load(CONFIG.firstTimeKey, false);
+
+    // ── DAILY FEED PAGE — special auto-open behavior ──
+    if (section === 'daily_feed') {
+      addMessage('ai', 'Welcome to your Daily Feed! I can read today\'s briefing for you, or you can scroll through the sections below. Want me to read it aloud?', false);
+      setPrompts(['Read today\'s feed', 'Just the weather', 'Today\'s picks', 'What\'s happening today']);
+      setStatus('Ready', '#64748b');
+      store(CONFIG.firstTimeKey, true);
+      visited[section] = true;
+      store(CONFIG.visitedSectionsKey, visited);
+      return;
+    }
 
     if (isFirstEver) {
       store(CONFIG.firstTimeKey, true);
@@ -8651,6 +9416,7 @@
     }
 
     updatePrompts(section);
+    // Don't double-greet if auto-open welcome already showing
     if (state.chatHistory.length === 0) {
       addMessage('ai', 'Hey! \u{1F44B} How can I help you today?', false);
     }
@@ -8693,21 +9459,27 @@
   function updatePrompts(section) {
     var prompts = [];
     switch (section) {
+      case 'daily_feed':
+        prompts = [
+          'Read today\'s feed', 'Just the weather', 'Today\'s picks',
+          'What\'s happening today', 'Deals near me', 'Today\'s news',
+          'Weather forecast', 'Catch me up'
+        ];
+        break;
       case 'events':
         prompts = [
           'What\'s happening tonight?', 'Events this weekend', 'Events near me',
           'Good date ideas this weekend', 'Free events this week', 'Live music tonight',
           'Comedy shows this week', 'Outdoor activities this weekend',
-          'Will it rain today?', 'Refresh my creators', 'Summarize current page'
+          'Do I need a jacket? \u2614', 'Deals near me', 'Refresh my creators', 'Summarize current page'
         ];
         break;
       case 'stocks':
         prompts = [
-          'Give me today\'s stock picks', 'Explain what the algorithms each mean',
+          'Today\'s stock picks', 'Algo consensus picks', 'Explain what the algorithms each mean',
           'What is CAN SLIM?', 'What is Technical Momentum?',
-          'What is Alpha Predator?', 'Best growth stocks',
-          'Are these picks up to date?', 'Explain the risk levels',
-          'Momentum picks today'
+          'What is Alpha Predator?', 'Momentum picks today',
+          'Are these picks up to date?', 'Explain the risk levels'
         ];
         break;
       case 'movies':
@@ -8735,7 +9507,7 @@
         prompts = [
           'Refresh my creators', 'Who is live?', 'Who is live based on latest check?',
           'New content this week', 'New posts past 48 hours', 'Latest videos from creators',
-          'Show my creator list', 'Events this weekend', 'Weather today'
+          'Show my creator list', 'Do I need a jacket? \u2614', 'Events this weekend'
         ];
         break;
       case 'accountability':
@@ -8783,7 +9555,7 @@
       default:
         prompts = [
           'What\'s happening this weekend?', 'Events near me tonight',
-          'Will it rain today?', 'Top stock picks', 'Who is live?',
+          'Do I need a jacket? \u2614', 'Deals near me', 'Top stock picks', 'Who is live?',
           'Refresh my creators', 'What should I watch?', 'Summarize current page'
         ];
     }
@@ -8812,6 +9584,19 @@
       if (state.listening) btn.classList.add('listening');
       if (state.speaking) btn.classList.add('speaking');
       document.body.appendChild(btn);
+    }
+    if (!document.getElementById('fte-mute-btn')) {
+      var muteBtn2 = document.createElement('button');
+      muteBtn2.id = 'fte-mute-btn';
+      var _m = false;
+      try { _m = localStorage.getItem('fc_notif_sound_enabled') === 'false'; } catch(e) {}
+      muteBtn2.innerHTML = '<span style="pointer-events:none;font-size:16px">' + (_m ? '\u{1F515}' : '\u{1F514}') + '</span>' +
+        '<span class="fte-mute-tooltip">' + (_m ? 'Notifications muted (click to unmute)' : 'Mute notification sounds') + '</span>';
+      muteBtn2.title = _m ? 'Notifications muted' : 'Mute notification sounds';
+      muteBtn2.setAttribute('aria-label', 'Toggle notification sounds');
+      if (_m) muteBtn2.classList.add('muted');
+      muteBtn2.addEventListener('click', _toggleMuteNotifications);
+      document.body.appendChild(muteBtn2);
     }
     if (!document.getElementById('fte-ai-panel')) {
       var panel = document.createElement('div');
@@ -8905,6 +9690,27 @@
     setTimeout(ensureUI, 8000);
 
     setTimeout(function () { loadEvents(); }, 2000);
+
+    // ── AUTO-OPEN chatbox on load with welcome message ──
+    // Don't auto-open if user previously closed it this session
+    var _autoOpenKey = 'fte_ai_auto_opened_session';
+    var _alreadyAutoOpened = false;
+    try { _alreadyAutoOpened = sessionStorage.getItem(_autoOpenKey) === '1'; } catch (e) {}
+    if (!_alreadyAutoOpened) {
+      setTimeout(function () {
+        if (!state.open) {
+          var panel = document.getElementById('fte-ai-panel');
+          if (panel) {
+            state.open = true;
+            panel.classList.add('open');
+            try { sessionStorage.setItem(_autoOpenKey, '1'); } catch (e) {}
+            // Show welcome + what's new (NO audio — speak=false)
+            _showAutoOpenWelcome();
+            updatePrompts(state.currentSection);
+          }
+        }
+      }, 1500);
+    }
 
     // Sync DB preferences for logged-in users (after a short delay to let FC auth populate)
     setTimeout(syncPrefsFromDB, 3000);
