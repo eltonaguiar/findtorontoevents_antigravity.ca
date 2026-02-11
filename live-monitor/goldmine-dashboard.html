@@ -850,7 +850,7 @@ function loadOverview() {
 
             html += '<div class="health-card">'
                 + '<div class="hc-header">'
-                + '<span class="hc-name">' + (sys.name || sys.system || 'Unknown') + '</span>'
+                + '<span class="hc-name">' + (sys.name || sys.source_system || sys.system || 'Unknown') + '</span>'
                 + '<span class="badge ' + statusCls + '">' + statusLabel + '</span>'
                 + '</div>'
                 + '<div class="hc-row"><span class="hc-label">Total Picks</span><span class="hc-val">' + (sys.total_picks || 0) + '</span></div>'
@@ -867,7 +867,7 @@ function loadOverview() {
         renderSystemsChart(systems);
 
         // Winners / Losers lists
-        renderWinnersLosers(data.recent_winners || [], data.recent_losers || []);
+        renderWinnersLosers(data.top_winners || data.recent_winners || [], data.top_losers || data.recent_losers || []);
 
         // Populate system dropdowns
         populateSystemDropdowns();

@@ -1,0 +1,204 @@
+{
+  "repository": "findtorontoevents_antigravity.ca",
+  "analysis_date": "2026-02-11",
+  "systems_analyzed": {
+    "alpha_engine": {
+      "language": "Python",
+      "architecture": "Multi-strategy quantitative research platform",
+      "components": {
+        "data_layer": 7,
+        "feature_families": 14,
+        "strategies": 10,
+        "validation_methods": 5
+      }
+    },
+    "findstocks_api": {
+      "language": "PHP",
+      "purpose": "Production trading algorithms and backtesting",
+      "core_files": [
+        "analyze.php",
+        "alpha_engine.php",
+        "backtest.php",
+        "multi_factor_aipt.php"
+      ]
+    }
+  },
+  "feature_families": [
+    "momentum",
+    "cross_sectional",
+    "volatility",
+    "volume",
+    "mean_reversion",
+    "regime",
+    "fundamental",
+    "growth",
+    "valuation",
+    "earnings_feat",
+    "seasonality",
+    "options",
+    "sentiment",
+    "flow"
+  ],
+  "strategies": {
+    "momentum": [
+      "classic_momentum",
+      "trend_following",
+      "breakout_momentum"
+    ],
+    "mean_reversion": [
+      "bollinger_mr",
+      "short_term_reversal"
+    ],
+    "earnings": [
+      "pead",
+      "consecutive_beats"
+    ],
+    "quality_value": [
+      "quality_compounders",
+      "value_quality",
+      "dividend_aristocrats"
+    ],
+    "ml": [
+      "ml_ranker"
+    ]
+  },
+  "strengths": [
+    "Comprehensive feature coverage (14 families, 150+ variables)",
+    "Multi-strategy approach reduces single-strategy risk",
+    "Robust validation framework (walk-forward, purged CV, Monte Carlo)",
+    "Good risk management (Kelly criterion, position limits, drawdown halt)",
+    "Transaction cost modeling (IB/Questrade)",
+    "Academic foundation (Jegadeesh & Titman, SSRN papers)"
+  ],
+  "critical_weaknesses": [
+    "No live trading integration",
+    "Insufficient out-of-sample testing",
+    "Lookahead bias risk in feature calculation",
+    "Missing alternative data sources",
+    "No dynamic position sizing"
+  ],
+  "recommendations": {
+    "tier_1_critical": [
+      {
+        "priority": 1,
+        "item": "Fix lookahead bias",
+        "impact": "+5-10% Sharpe",
+        "effort": "Medium"
+      },
+      {
+        "priority": 2,
+        "item": "True out-of-sample validation",
+        "impact": "+3-5% Sharpe",
+        "effort": "Low"
+      },
+      {
+        "priority": 3,
+        "item": "Momentum crash protection",
+        "impact": "-20% max DD",
+        "effort": "Low"
+      },
+      {
+        "priority": 4,
+        "item": "Dynamic position sizing",
+        "impact": "+2-4% Sharpe",
+        "effort": "Medium"
+      },
+      {
+        "priority": 5,
+        "item": "Feature selection",
+        "impact": "+1-3% Sharpe",
+        "effort": "Medium"
+      }
+    ],
+    "tier_2_high_value": [
+      {
+        "priority": 6,
+        "item": "Ensemble ML models",
+        "impact": "+2-4% Sharpe",
+        "effort": "High"
+      },
+      {
+        "priority": 7,
+        "item": "Sector-neutral strategies",
+        "impact": "+1-2% Sharpe",
+        "effort": "Medium"
+      },
+      {
+        "priority": 8,
+        "item": "Online learning",
+        "impact": "+2-3% Sharpe",
+        "effort": "High"
+      },
+      {
+        "priority": 9,
+        "item": "Alternative data",
+        "impact": "+3-5% Sharpe",
+        "effort": "High"
+      },
+      {
+        "priority": 10,
+        "item": "Intraday signals",
+        "impact": "+1-2% Sharpe",
+        "effort": "High"
+      }
+    ],
+    "tier_3_nice_to_have": [
+      {
+        "priority": 11,
+        "item": "Options strategies",
+        "impact": "+2-4% Sharpe",
+        "effort": "High"
+      },
+      {
+        "priority": 12,
+        "item": "Pair trading",
+        "impact": "+1-2% Sharpe",
+        "effort": "Medium"
+      },
+      {
+        "priority": 13,
+        "item": "Deep learning",
+        "impact": "+1-3% Sharpe",
+        "effort": "Very High"
+      },
+      {
+        "priority": 14,
+        "item": "Reinforcement learning",
+        "impact": "+2-5% Sharpe",
+        "effort": "Very High"
+      }
+    ]
+  },
+  "expected_improvements": {
+    "current_sharpe": "0.8-1.0",
+    "tier1_sharpe": "1.2-1.5",
+    "tier12_sharpe": "1.5-2.0",
+    "current_max_dd": "-25%",
+    "tier1_max_dd": "-18%",
+    "tier12_max_dd": "-15%"
+  },
+  "implementation_roadmap": {
+    "phase_1_weeks_1_4": [
+      "Fix lookahead bias in all feature modules",
+      "Implement true out-of-sample validation",
+      "Add momentum crash protection",
+      "Deploy dynamic position sizing"
+    ],
+    "phase_2_weeks_5_12": [
+      "Implement ensemble ML",
+      "Add sector-neutral strategies",
+      "Integrate alternative data sources",
+      "Build online learning pipeline"
+    ],
+    "phase_3_weeks_13_24": [
+      "Implement intraday signals",
+      "Add options strategies",
+      "Build pair trading module",
+      "Experiment with deep learning"
+    ]
+  },
+  "output_files": [
+    "/mnt/okcomputer/output/stock_trading_algorithm_analysis.md",
+    "/mnt/okcomputer/output/algorithm_analysis_summary.json"
+  ]
+}

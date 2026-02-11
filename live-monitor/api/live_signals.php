@@ -2826,6 +2826,101 @@ function _ls_get_original_defaults($algo_name, $asset_class) {
 }
 
 // ────────────────────────────────────────────────────────────
+//  ATR-based dynamic TP/SL (Kimi recommendation)
+//  Adjusts fixed TP/SL to be ATR-proportional while preserving R:R
+// ────────────────────────────────────────────────────────────
+
+function _ls_atr_adjust_tp_sl($candles, $price, $sig) {
+    if ($sig === null || $price <= 0) return $sig;
+
+    // Extract highs, lows, closes from candles
+    $highs = array(); $lows = array(); $closes = array();
+    foreach ($candles as $c) {
+        $highs[]  = (float)$c['high'];
+        $lows[]   = (float)$c['low'];
+        $closes[] = (float)$c['close'];
+    }
+
+    $atr_data = _ls_calc_atr($highs, $lows, $closes, 14);
+    if ($atr_data === null || $atr_data['atr'] <= 0) return $sig; // Fallback to fixed
+
+    $atr = $atr_data['atr'];
+    $atr_pct = ($atr / $price) * 100; // ATR as percentage of price
+
+    // Preserve the original risk:reward ratio
+    $orig_tp = (float)$sig['target_tp_pct'];
+    $orig_sl = (float)$sig['target_sl_pct'];
+    if ($orig_sl <= 0) return $sig;
+    $rr_ratio = $orig_tp / $orig_sl;
+
+    // ATR-based SL: 1.5x ATR, but bounded by 0.5x to 2x original SL
+    $atr_sl = $atr_pct * 1.5;
+    $min_sl = $orig_sl * 0.5;
+    $max_sl = $orig_sl * 2.0;
+    $new_sl = max($min_sl, min($max_sl, $atr_sl));
+
+    // TP preserves the R:R ratio
+    $new_tp = round($new_sl * $rr_ratio, 2);
+    $new_sl = round($new_sl, 2);
+
+    $sig['target_tp_pct'] = $new_tp;
+    $sig['target_sl_pct'] = $new_sl;
+
+    // Add ATR info to rationale
+    $rationale = json_decode($sig['rationale'], true);
+    if (!is_array($rationale)) $rationale = array();
+    $rationale['atr_adjusted'] = true;
+    $rationale['atr_pct']      = round($atr_pct, 3);
+    $rationale['orig_tp']      = $orig_tp;
+    $rationale['orig_sl']      = $orig_sl;
+    $sig['rationale'] = json_encode($rationale);
+
+    return $sig;
+}
+
+
+// ────────────────────────────────────────────────────────────
+//  Momentum crash protection (Kimi recommendation)
+//  Detects extreme volatility and blocks momentum-based algos
+// ────────────────────────────────────────────────────────────
+
+function _ls_is_volatility_extreme($candles) {
+    if (count($candles) < 20) return false;
+
+    $highs = array(); $lows = array(); $closes = array();
+    foreach ($candles as $c) {
+        $highs[]  = (float)$c['high'];
+        $lows[]   = (float)$c['low'];
+        $closes[] = (float)$c['close'];
+    }
+
+    $atr_data = _ls_calc_atr($highs, $lows, $closes, 14);
+    if ($atr_data === null) return false;
+
+    // Compare current ATR to historical average
+    $hist = $atr_data['history'];
+    if (count($hist) < 5) return false;
+
+    $cur_atr = $atr_data['atr'];
+    $sum = 0;
+    for ($i = 0; $i < count($hist) - 1; $i++) $sum += $hist[$i];
+    $avg_atr = $sum / max(1, count($hist) - 1);
+
+    // If current ATR > 2.5x the average, volatility is extreme
+    return ($avg_atr > 0 && $cur_atr > $avg_atr * 2.5);
+}
+
+// Algorithms that should be skipped during extreme volatility
+function _ls_is_momentum_algo($algo_name) {
+    $momentum_algos = array(
+        'Momentum Burst', 'Trend Sniper', 'Breakout 24h',
+        'Volume Spike', 'ADX Trend Strength', 'Alpha Predator'
+    );
+    return in_array($algo_name, $momentum_algos);
+}
+
+
+// ────────────────────────────────────────────────────────────
 //  Fetch current price from lm_price_cache
 // ────────────────────────────────────────────────────────────
 
@@ -2938,8 +3033,15 @@ function _ls_action_scan($conn) {
             _ls_algo_alpha_predator($candles, $price, $sym, 'CRYPTO')
         );
 
+        // Kimi: check for extreme volatility (momentum crash protection)
+        $vol_extreme = _ls_is_volatility_extreme($candles);
+
         foreach ($algo_results as $sig) {
             if ($sig === null) continue;
+            // Kimi: skip momentum algos during extreme volatility
+            if ($vol_extreme && _ls_is_momentum_algo($sig['algorithm_name'])) continue;
+            // Kimi: ATR-adjust TP/SL
+            $sig = _ls_atr_adjust_tp_sl($candles, $price, $sig);
             // Dedup
             if (_ls_signal_exists($conn, $sym, $sig['algorithm_name'])) continue;
             $insert_id = _ls_insert_signal($conn, 'CRYPTO', $sym, $price, $sig);
@@ -2999,8 +3101,15 @@ function _ls_action_scan($conn) {
             _ls_algo_alpha_predator($candles, $price, $sym, 'FOREX')
         );
 
+        // Kimi: check for extreme volatility (momentum crash protection)
+        $vol_extreme = _ls_is_volatility_extreme($candles);
+
         foreach ($algo_results as $sig) {
             if ($sig === null) continue;
+            // Kimi: skip momentum algos during extreme volatility
+            if ($vol_extreme && _ls_is_momentum_algo($sig['algorithm_name'])) continue;
+            // Kimi: ATR-adjust TP/SL
+            $sig = _ls_atr_adjust_tp_sl($candles, $price, $sig);
             if (_ls_signal_exists($conn, $sym, $sig['algorithm_name'])) continue;
             $insert_id = _ls_insert_signal($conn, 'FOREX', $sym, $price, $sig);
             if ($insert_id > 0) {
@@ -3078,8 +3187,15 @@ function _ls_action_scan($conn) {
                 'XOM'  => 'Energy', 'JNJ' => 'Healthcare'
             );
 
+            // Kimi: check for extreme volatility (momentum crash protection)
+            $vol_extreme = _ls_is_volatility_extreme($candles);
+
             foreach ($algo_results as $sig) {
                 if ($sig === null) continue;
+                // Kimi: skip momentum algos during extreme volatility
+                if ($vol_extreme && _ls_is_momentum_algo($sig['algorithm_name'])) continue;
+                // Kimi: ATR-adjust TP/SL
+                $sig = _ls_atr_adjust_tp_sl($candles, $price, $sig);
                 if (_ls_signal_exists($conn, $sym, $sig['algorithm_name'])) continue;
 
                 // Sector concentration cap — max 3 active signals per sector

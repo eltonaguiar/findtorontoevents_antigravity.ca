@@ -8,7 +8,30 @@
  */
 require_once dirname(__FILE__) . '/db_connect.php';
 
-$results = array('ok' => true, 'imported' => 0, 'skipped' => 0, 'errors' => array());
+$results = array('ok' => true, 'imported' => 0, 'skipped' => 0, 'errors' => array(), 'fetch_log' => array());
+
+// ─── cURL fetch with retry (Kimi P0 fix: replaces @file_get_contents) ───
+function _ip_fetch_with_retry($url, $max_attempts, $timeout) {
+    for ($attempt = 1; $attempt <= $max_attempts; $attempt++) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'FindStocks/1.0');
+        $body = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $err  = curl_error($ch);
+        curl_close($ch);
+        if ($body !== false && $code >= 200 && $code < 400) {
+            return array('ok' => true, 'body' => $body, 'attempt' => $attempt);
+        }
+        if ($attempt < $max_attempts) usleep(500000); // 500ms wait between retries
+    }
+    return array('ok' => false, 'error' => ($err ? $err : 'HTTP ' . $code), 'attempt' => $max_attempts);
+}
 
 // ─── Fetch picks from live JSON endpoints ───
 $urls = array(
@@ -19,10 +42,17 @@ $urls = array(
 $all_picks = array();
 
 foreach ($urls as $url) {
-    $json = @file_get_contents($url);
-    if ($json === false) continue;
-    $data = json_decode($json, true);
-    if (!$data || !isset($data['stocks'])) continue;
+    $fetch = _ip_fetch_with_retry($url, 3, 20);
+    if (!$fetch['ok']) {
+        $results['fetch_log'][] = 'FAIL ' . $url . ': ' . $fetch['error'] . ' (tried ' . $fetch['attempt'] . 'x)';
+        continue;
+    }
+    $results['fetch_log'][] = 'OK ' . $url . ' (attempt ' . $fetch['attempt'] . ')';
+    $data = json_decode($fetch['body'], true);
+    if ($data === null || !isset($data['stocks'])) {
+        $results['fetch_log'][] = 'JSON decode failed for ' . $url;
+        continue;
+    }
 
     foreach ($data['stocks'] as $stock) {
         $sym = isset($stock['symbol']) ? $stock['symbol'] : '';
@@ -40,10 +70,17 @@ $perf_urls = array(
     'https://findtorontoevents.ca/STOCKSUNIFY/data/pick-performance.json'
 );
 foreach ($perf_urls as $perf_url) {
-    $perf_json = @file_get_contents($perf_url);
-    if ($perf_json === false) continue;
-    $perf_data = json_decode($perf_json, true);
-    if (!$perf_data || !isset($perf_data['allPicks'])) continue;
+    $fetch = _ip_fetch_with_retry($perf_url, 3, 20);
+    if (!$fetch['ok']) {
+        $results['fetch_log'][] = 'FAIL ' . $perf_url . ': ' . $fetch['error'];
+        continue;
+    }
+    $results['fetch_log'][] = 'OK ' . $perf_url . ' (attempt ' . $fetch['attempt'] . ')';
+    $perf_data = json_decode($fetch['body'], true);
+    if ($perf_data === null || !isset($perf_data['allPicks'])) {
+        $results['fetch_log'][] = 'JSON decode failed for ' . $perf_url;
+        continue;
+    }
     foreach ($perf_data['allPicks'] as $stock) {
         $sym = isset($stock['symbol']) ? $stock['symbol'] : '';
         if ($sym === '') continue;

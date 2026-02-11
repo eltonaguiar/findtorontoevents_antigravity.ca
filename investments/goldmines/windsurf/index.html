@@ -586,8 +586,9 @@ function loadMeme() {
 function loadMiracle() {
     fetchJson(BASE + '/findstocks2_global/api/dashboard2.php?action=summary', function(d) {
         if (!d || !d.ok) return;
-        setText('s-miracle2-wr', (d.win_rate || 0) + '%');
-        systemData.miracle2 = { win_rate: parseFloat(d.win_rate || 0), total: d.total || 0, resolved: (d.winners||0) + (d.losers||0) + (d.expired||0), avg_pnl: parseFloat(d.total_pnl || 0) / Math.max(1, (d.winners||0)+(d.losers||0)), profit_factor: parseFloat(d.profit_factor || 0), name: 'Miracle Claude' };
+        var s = d.summary || d;
+        setText('s-miracle2-wr', (s.win_rate || 0) + '%');
+        systemData.miracle2 = { win_rate: parseFloat(s.win_rate || 0), total: s.total_picks || s.total || 0, resolved: (s.winners||0) + (s.losers||0) + (s.expired||0), avg_pnl: parseFloat(s.total_pnl_pct || s.total_pnl || 0) / Math.max(1, (s.winners||0)+(s.losers||0)), profit_factor: parseFloat(s.profit_factor || 0), name: 'Miracle Claude' };
         updateOverview();
     });
 

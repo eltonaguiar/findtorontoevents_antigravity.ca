@@ -18,7 +18,11 @@ require_once dirname(__FILE__) . '/db_connect.php';
 $ADMIN_KEY            = 'livetrader2026';
 $INITIAL_CAPITAL      = 10000;
 $MAX_POSITIONS        = 10;
-$DEFAULT_POSITION_PCT = 5; // 5% of portfolio per trade
+$DEFAULT_POSITION_PCT = 5;   // 5% base — adjusted by volatility (Kimi: dynamic sizing)
+$MIN_POSITION_PCT     = 3;   // Floor: never smaller than 3%
+$MAX_POSITION_PCT     = 7;   // Ceiling: never larger than 7%
+$TRAILING_ACTIVATE    = 0.50; // Activate trailing stop at 50% of TP reached
+$TRAILING_FACTOR      = 0.60; // Trail at 60% of SL below highest_price (tighter than original SL)
 
 // ─── Auto-create tables ─────────────────────────────────────────────
 $conn->query("
@@ -97,6 +101,96 @@ function _lt_calc_fees($asset_class, $entry_price, $exit_price, $units) {
         return round($entry_fee + $exit_fee, 2);
     }
     return 0; // forex spread already priced in
+}
+
+
+// ─── Helper: volatility-adjusted position size (Kimi recommendation) ─
+// Uses recent price volatility from lm_price_cache to adjust position %
+// High vol → smaller position (down to MIN), low vol → larger (up to MAX)
+function _lt_vol_adjusted_position_pct($conn, $symbol, $asset_class) {
+    global $DEFAULT_POSITION_PCT, $MIN_POSITION_PCT, $MAX_POSITION_PCT;
+    $safe = $conn->real_escape_string($symbol);
+
+    // Get last 20 price updates to calculate volatility
+    $r = $conn->query("SELECT price FROM lm_price_cache
+        WHERE symbol = '$safe'
+        ORDER BY updated_at DESC LIMIT 20");
+    if (!$r || $r->num_rows < 5) return $DEFAULT_POSITION_PCT;
+
+    $prices = array();
+    while ($row = $r->fetch_assoc()) {
+        $prices[] = (float)$row['price'];
+    }
+    $r->free();
+
+    // Calculate returns volatility
+    $returns = array();
+    for ($i = 0; $i < count($prices) - 1; $i++) {
+        if ($prices[$i + 1] > 0) {
+            $returns[] = abs(($prices[$i] - $prices[$i + 1]) / $prices[$i + 1]);
+        }
+    }
+    if (count($returns) < 3) return $DEFAULT_POSITION_PCT;
+
+    $avg_vol = array_sum($returns) / count($returns);
+
+    // Volatility thresholds by asset class
+    if ($asset_class === 'CRYPTO') {
+        // Crypto is naturally more volatile
+        if ($avg_vol > 0.04)  return $MIN_POSITION_PCT;  // >4% avg move = reduce
+        if ($avg_vol < 0.015) return $MAX_POSITION_PCT;  // <1.5% = increase
+    } elseif ($asset_class === 'STOCK') {
+        if ($avg_vol > 0.025) return $MIN_POSITION_PCT;  // >2.5% avg move
+        if ($avg_vol < 0.008) return $MAX_POSITION_PCT;  // <0.8%
+    } else {
+        // Forex
+        if ($avg_vol > 0.012) return $MIN_POSITION_PCT;  // >1.2%
+        if ($avg_vol < 0.004) return $MAX_POSITION_PCT;  // <0.4%
+    }
+    return $DEFAULT_POSITION_PCT;
+}
+
+
+// ─── Helper: trailing stop calculation (Kimi recommendation) ─────────
+// Returns adjusted SL pct when trailing is active, or 0 if not triggered
+function _lt_trailing_stop_pct($pos, $current_price) {
+    global $TRAILING_ACTIVATE, $TRAILING_FACTOR;
+
+    $tp       = (float)$pos['target_tp_pct'];
+    $sl       = (float)$pos['target_sl_pct'];
+    $entry    = (float)$pos['entry_price'];
+    $highest  = (float)$pos['highest_price'];
+    $direction = $pos['direction'];
+
+    if ($tp <= 0 || $entry <= 0 || $highest <= 0) return 0;
+
+    // Calculate how far we've moved toward TP
+    if ($direction === 'LONG') {
+        $max_gain_pct = (($highest - $entry) / $entry) * 100;
+    } else {
+        $max_gain_pct = (($entry - (float)$pos['lowest_price']) / $entry) * 100;
+    }
+
+    // Only activate trailing after reaching 50% of TP
+    if ($max_gain_pct < $tp * $TRAILING_ACTIVATE) return 0;
+
+    // Trailing stop: from highest price, trail back by a fraction of the SL
+    $trail_dist_pct = $sl * $TRAILING_FACTOR;
+
+    if ($direction === 'LONG') {
+        // Trailing: highest_price * (1 - trail%) is the floor
+        $trail_floor = $highest * (1 - $trail_dist_pct / 100);
+        if ($current_price <= $trail_floor) return -1; // Signal exit
+    } else {
+        // SHORT: lowest price * (1 + trail%) is the ceiling
+        $lowest = (float)$pos['lowest_price'];
+        if ($lowest > 0) {
+            $trail_ceiling = $lowest * (1 + $trail_dist_pct / 100);
+            if ($current_price >= $trail_ceiling) return -1;
+        }
+    }
+
+    return 0; // Trailing active but not yet hit
 }
 
 
@@ -434,9 +528,10 @@ case 'enter':
     }
     $entry_price = (float) $price_row['price'];
 
-    // Calculate position size: DEFAULT_POSITION_PCT % of portfolio
+    // Calculate position size: volatility-adjusted % of portfolio (Kimi enhancement)
     $portfolio_value = _lt_get_portfolio_value($conn);
-    $position_value  = round($portfolio_value * ($DEFAULT_POSITION_PCT / 100), 2);
+    $vol_pct         = _lt_vol_adjusted_position_pct($conn, $symbol, $asset_class);
+    $position_value  = round($portfolio_value * ($vol_pct / 100), 2);
     $units           = $position_value / $entry_price;
 
     // Calculate entry fees
@@ -567,11 +662,13 @@ case 'track':
 
         $exit_reason = '';
 
-        // Exit conditions (checked in order)
+        // Exit conditions (checked in order, with trailing stop — Kimi enhancement)
         if ($pnl_pct <= -$sl) {
             $exit_reason = 'stop_loss';
         } elseif ($pnl_pct >= $tp) {
             $exit_reason = 'take_profit';
+        } elseif (_lt_trailing_stop_pct($pos, $current_price) == -1) {
+            $exit_reason = 'trailing_stop';
         } elseif ($hold_hours >= $mhh) {
             $exit_reason = 'max_hold';
         }

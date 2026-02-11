@@ -450,9 +450,11 @@
         ctx.strokeStyle = '#f59e0b';
         ctx.lineWidth = 2;
         ctx.beginPath();
+        var divisor = Math.max(1, data.length - 1);
+        var range = (mx - mn) || 1;
         data.forEach(function(d, idx) {
-            var x = pad.l + (idx / (data.length - 1)) * cw;
-            var y = pad.t + ((mx - d.cumulative_pnl) / (mx - mn)) * ch;
+            var x = pad.l + (idx / divisor) * cw;
+            var y = pad.t + ((mx - d.cumulative_pnl) / range) * ch;
             if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         });
         ctx.stroke();

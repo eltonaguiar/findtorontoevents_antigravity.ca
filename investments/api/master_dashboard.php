@@ -14,23 +14,17 @@ header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
 // Database connections for each system
-$connections = [];
+$connections = array();
 
 // Crypto Scanner
-try {
-    $connections['crypto'] = new mysqli('mysql.50webs.com', 'ejaguiar1_crypto', 'testing123', 'ejaguiar1_crypto');
-    if ($connections['crypto']->connect_error)
-        $connections['crypto'] = null;
-} catch (Exception $e) {
+$connections['crypto'] = @new mysqli('mysql.50webs.com', 'ejaguiar1_crypto', 'testing123', 'ejaguiar1_crypto');
+if ($connections['crypto']->connect_error) {
     $connections['crypto'] = null;
 }
 
 // Meme Scanner
-try {
-    $connections['meme'] = new mysqli('mysql.50webs.com', 'ejaguiar1_memecoin', 'testing123', 'ejaguiar1_memecoin');
-    if ($connections['meme']->connect_error)
-        $connections['meme'] = null;
-} catch (Exception $e) {
+$connections['meme'] = @new mysqli('mysql.50webs.com', 'ejaguiar1_memecoin', 'testing123', 'ejaguiar1_memecoin');
+if ($connections['meme']->connect_error) {
     $connections['meme'] = null;
 }
 
@@ -47,7 +41,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'overview';
 // OVERVIEW - High-level stats
 // ═══════════════════════════════════════════════════════════════
 if ($action === 'overview') {
-    $systems = [];
+    $systems = array();
 
     // Crypto Scanner
     if ($connections['crypto']) {
@@ -62,24 +56,24 @@ if ($action === 'overview') {
     }
 
     // Sports (placeholder - needs actual connection)
-    $systems[] = [
+    $systems[] = array(
         'name' => 'Sports Betting',
         'asset_class' => 'sports',
         'status' => 'needs_connection',
         'signals_30d' => 0,
         'win_rate' => 0,
         'avg_pnl' => 0
-    ];
+    );
 
     // Stocks (placeholder)
-    $systems[] = [
+    $systems[] = array(
         'name' => 'Stock Intelligence',
         'asset_class' => 'stocks',
         'status' => 'needs_connection',
         'signals_30d' => 0,
         'win_rate' => 0,
         'avg_pnl' => 0
-    ];
+    );
 
     // Calculate overall stats
     $total_signals = 0;
@@ -90,10 +84,10 @@ if ($action === 'overview') {
 
     foreach ($systems as $sys) {
         if ($sys['status'] === 'active') {
-            $total_signals += $sys['signals_30d'];
+            $total_signals = $total_signals + $sys['signals_30d'];
             if (isset($sys['wins_30d'])) {
-                $total_wins += $sys['wins_30d'];
-                $total_trades += $sys['trades_30d'];
+                $total_wins = $total_wins + $sys['wins_30d'];
+                $total_trades = $total_trades + $sys['trades_30d'];
             }
             if ($sys['win_rate'] > $best_win_rate) {
                 $best_win_rate = $sys['win_rate'];
@@ -104,20 +98,27 @@ if ($action === 'overview') {
 
     $overall_win_rate = ($total_trades > 0) ? round(($total_wins / $total_trades) * 100, 1) : 0;
 
-    echo json_encode([
+    // Count active systems
+    $active_count = 0;
+    foreach ($systems as $s) {
+        if ($s['status'] === 'active') {
+            $active_count = $active_count + 1;
+        }
+    }
+
+    echo json_encode(array(
         'ok' => true,
         'generated_at' => date('Y-m-d H:i:s'),
-        'overall' => [
+        'overall' => array(
             'total_signals_30d' => $total_signals,
             'overall_win_rate' => $overall_win_rate,
             'best_system' => $best_system,
             'best_win_rate' => $best_win_rate,
-            'active_systems' => count(array_filter($systems, function ($s) {
-                return $s['status'] === 'active'; })),
+            'active_systems' => $active_count,
             'total_systems' => count($systems)
-        ],
+        ),
         'systems' => $systems
-    ]);
+    ));
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -126,15 +127,20 @@ if ($action === 'overview') {
 
 function get_crypto_stats($conn)
 {
-    $stats = [
+    $stats = array(
         'name' => 'Crypto Winner Scanner',
         'asset_class' => 'crypto',
         'status' => 'active'
-    ];
+    );
 
     // Total signals in last 30 days
     $result = $conn->query("SELECT COUNT(*) as cnt FROM cw_winners WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
-    $stats['signals_30d'] = ($result) ? $result->fetch_assoc()['cnt'] : 0;
+    if ($result) {
+        $row = $result->fetch_assoc();
+        $stats['signals_30d'] = $row['cnt'];
+    } else {
+        $stats['signals_30d'] = 0;
+    }
 
     // Win rate (resolved trades only)
     $result = $conn->query("SELECT 
@@ -145,7 +151,8 @@ function get_crypto_stats($conn)
         WHERE outcome IS NOT NULL 
         AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
 
-    if ($result && $row = $result->fetch_assoc()) {
+    if ($result) {
+        $row = $result->fetch_assoc();
         $stats['trades_30d'] = (int) $row['total'];
         $stats['wins_30d'] = (int) $row['wins'];
         $stats['win_rate'] = ($row['total'] > 0) ? round(($row['wins'] / $row['total']) * 100, 1) : 0;
@@ -159,7 +166,8 @@ function get_crypto_stats($conn)
 
     // Last update
     $result = $conn->query("SELECT MAX(created_at) as last_update FROM cw_winners");
-    if ($result && $row = $result->fetch_assoc()) {
+    if ($result) {
+        $row = $result->fetch_assoc();
         $stats['last_update'] = $row['last_update'];
         $hours_ago = (time() - strtotime($row['last_update'])) / 3600;
         $stats['hours_since_update'] = round($hours_ago, 1);
@@ -171,15 +179,20 @@ function get_crypto_stats($conn)
 
 function get_meme_stats($conn)
 {
-    $stats = [
+    $stats = array(
         'name' => 'Meme Coin Scanner',
         'asset_class' => 'meme',
         'status' => 'active'
-    ];
+    );
 
     // Total signals in last 30 days
     $result = $conn->query("SELECT COUNT(*) as cnt FROM mc_winners WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
-    $stats['signals_30d'] = ($result) ? $result->fetch_assoc()['cnt'] : 0;
+    if ($result) {
+        $row = $result->fetch_assoc();
+        $stats['signals_30d'] = $row['cnt'];
+    } else {
+        $stats['signals_30d'] = 0;
+    }
 
     // Win rate
     $result = $conn->query("SELECT 
@@ -190,7 +203,8 @@ function get_meme_stats($conn)
         WHERE outcome IS NOT NULL 
         AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
 
-    if ($result && $row = $result->fetch_assoc()) {
+    if ($result) {
+        $row = $result->fetch_assoc();
         $stats['trades_30d'] = (int) $row['total'];
         $stats['wins_30d'] = (int) $row['wins'];
         $stats['win_rate'] = ($row['total'] > 0) ? round(($row['wins'] / $row['total']) * 100, 1) : 0;
@@ -204,7 +218,8 @@ function get_meme_stats($conn)
 
     // Last update
     $result = $conn->query("SELECT MAX(created_at) as last_update FROM mc_winners");
-    if ($result && $row = $result->fetch_assoc()) {
+    if ($result) {
+        $row = $result->fetch_assoc();
         $stats['last_update'] = $row['last_update'];
         $hours_ago = (time() - strtotime($row['last_update'])) / 3600;
         $stats['hours_since_update'] = round($hours_ago, 1);
@@ -216,6 +231,8 @@ function get_meme_stats($conn)
 
 // Close all connections
 foreach ($connections as $conn) {
-    if ($conn)
+    if ($conn) {
         $conn->close();
+    }
 }
+?>

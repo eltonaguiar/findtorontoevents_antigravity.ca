@@ -21,8 +21,9 @@ require_once dirname(__FILE__) . '/db_config.php';
 // Extend execution time — this script makes 100+ HTTP sub-requests
 // (backtests, analysis, etc.) and the default 30s limit is not enough.
 // Typically takes 3-8 minutes on the shared 50webs host.
-@set_time_limit(600);
-@ini_set('max_execution_time', '600');
+// Kimi audit: increased from 600→900s, removed @ error suppression.
+set_time_limit(900);
+ini_set('max_execution_time', '900');
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
@@ -35,13 +36,24 @@ $conn->set_charset('utf8');
 $log = array();
 $start = microtime(true);
 
-// Helper: fetch URL with a per-call timeout via stream context
-function dr_fetch($url, $timeout) {
-    $ctx = stream_context_create(array(
-        'http' => array('timeout' => $timeout)
-    ));
-    $result = @file_get_contents($url, false, $ctx);
-    return ($result !== false) ? $result : false;
+// Helper: fetch URL with cURL + retry (Kimi P0 fix: replaces @file_get_contents)
+function dr_fetch($url, $timeout, $max_retries) {
+    if (!isset($max_retries)) $max_retries = 2;
+    for ($attempt = 1; $attempt <= $max_retries; $attempt++) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        $body = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        if ($body !== false && $code >= 200 && $code < 400) return $body;
+        if ($attempt < $max_retries) usleep(300000); // 300ms wait
+    }
+    return false;
 }
 
 // ─── 1. Import latest picks ───
