@@ -1,0 +1,178 @@
+Great question — let me lay out exactly what we'd do, the code, and the load impact before you hand over any credentials.
+
+The Plan
+Reddit data feeds into the Crowd dimension of our multi-dimensional scoring. We already have a lm_wsb_sentiment table and gm_news_sentiment — but the WSB data may be stale or empty. A Reddit API key would give us live ticker mention counts, upvote-weighted sentiment, and buzz detection from r/wallstreetbets, r/stocks, and r/investing.
+
+Where it fits
+
+Reddit API (scheduled fetch)
+    ↓
+lm_wsb_sentiment table (MySQL)
+    ↓
+├── smart_money.php    → WSB tab, consensus scoring
+├── multi_dimensional.php → Crowd dimension (40% weight)
+├── live_signals.php   → Algo #22 Sentiment Divergence
+└── fear_greed.php     → Composite blend (future: add Reddit component)
+How Reddit OAuth2 works
+Reddit uses application-only auth (no user login needed for read-only public data):
+
+
+1. POST https://www.reddit.com/api/v1/access_token
+   Auth: Basic(client_id:client_secret)
+   Body: grant_type=client_credentials
+   → Returns: { "access_token": "...", "expires_in": 86400 }
+
+2. GET https://oauth.reddit.com/r/wallstreetbets/search?q=NVDA&sort=new&t=day&limit=25
+   Header: Authorization: Bearer <token>
+   → Returns: posts with title, score, num_comments, upvote_ratio, created_utc
+Sample Python script (GitHub Actions)
+This is what would run as a scheduled GitHub Action (like our existing smart-money-tracker.yml):
+
+
+#!/usr/bin/env python3
+"""fetch_reddit_sentiment.py — Reddit ticker sentiment for WSB/stocks/investing."""
+import requests, json, time, os, MySQLdb
+
+# ── Auth ──
+CLIENT_ID = os.environ['REDDIT_CLIENT_ID']
+CLIENT_SECRET = os.environ['REDDIT_CLIENT_SECRET']
+
+def get_token():
+    """Application-only OAuth2 — no user login, read-only public data."""
+    resp = requests.post(
+        'https://www.reddit.com/api/v1/access_token',
+        auth=(CLIENT_ID, CLIENT_SECRET),
+        data={'grant_type': 'client_credentials'},
+        headers={'User-Agent': 'FTEInvest/1.0'}
+    )
+    return resp.json()['access_token']
+
+HEADERS = {
+    'Authorization': f'Bearer {get_token()}',
+    'User-Agent': 'FTEInvest/1.0'  # Reddit requires descriptive User-Agent
+}
+
+# ── Config ──
+TICKERS = ['AAPL','MSFT','GOOGL','AMZN','NVDA','META','JPM','WMT','XOM','NFLX','JNJ','BAC']
+SUBREDDITS = ['wallstreetbets', 'stocks', 'investing']
+BULLISH = ['buy','bull','calls','moon','long','undervalued','breakout','squeeze']
+BEARISH = ['sell','bear','puts','short','overvalued','crash','dump','bubble']
+
+def score_post(title, selftext=''):
+    """Simple keyword sentiment: +1 bullish, -1 bearish per keyword."""
+    text = (title + ' ' + selftext).lower()
+    bull = sum(1 for w in BULLISH if w in text)
+    bear = sum(1 for w in BEARISH if w in text)
+    if bull + bear == 0:
+        return 0.0  # neutral
+    return (bull - bear) / (bull + bear)  # range: -1.0 to +1.0
+
+def fetch_ticker(ticker):
+    """Search 3 subreddits for ticker mentions in the last 24h."""
+    mentions = 0
+    total_score = 0
+    total_upvotes = 0
+    total_comments = 0
+    posts = []
+
+    for sub in SUBREDDITS:
+        url = f'https://oauth.reddit.com/r/{sub}/search'
+        params = {
+            'q': ticker,
+            'sort': 'new',
+            't': 'day',       # last 24 hours only
+            'limit': 25,      # max 25 per subreddit
+            'restrict_sr': 'true'
+        }
+        resp = requests.get(url, headers=HEADERS, params=params)
+        if resp.status_code != 200:
+            continue
+
+        for post in resp.json()['data']['children']:
+            d = post['data']
+            # Skip if ticker isn't actually in title (avoid false matches)
+            if ticker not in d['title'].upper().split():
+                continue
+
+            sentiment = score_post(d['title'], d.get('selftext', ''))
+            weight = d['score'] + d['num_comments']  # upvote-weighted
+            mentions += 1
+            total_score += sentiment * weight
+            total_upvotes += d['score']
+            total_comments += d['num_comments']
+            posts.append({
+                'sub': sub,
+                'title': d['title'][:120],
+                'score': d['score'],
+                'comments': d['num_comments'],
+                'sentiment': round(sentiment, 2)
+            })
+
+        time.sleep(1)  # 1 req/sec rate limit compliance
+
+    # Weighted sentiment: -100 to +100 scale
+    if mentions == 0:
+        weighted_sentiment = 0
+    else:
+        raw = total_score / max(total_upvotes + total_comments, 1)
+        weighted_sentiment = int(raw * 100)
+        weighted_sentiment = max(-100, min(100, weighted_sentiment))
+
+    # Buzz score: 0-100 based on mention volume
+    buzz = min(100, mentions * 5)  # 20 mentions = 100 buzz
+
+    return {
+        'ticker': ticker,
+        'mentions': mentions,
+        'sentiment': weighted_sentiment,
+        'buzz': buzz,
+        'upvotes': total_upvotes,
+        'comments': total_comments,
+        'top_posts': posts[:5]
+    }
+
+# ── Main: fetch all tickers, store in DB ──
+db = MySQLdb.connect(host='mysql.50webs.com', user='ejaguiar1_stocks',
+                     passwd='stocks', db='ejaguiar1_stocks')
+cur = db.cursor()
+
+for ticker in TICKERS:
+    data = fetch_ticker(ticker)
+    print(f"{ticker}: {data['mentions']} mentions, sentiment={data['sentiment']}, buzz={data['buzz']}")
+
+    cur.execute("""
+        INSERT INTO lm_wsb_sentiment
+        (ticker, mentions_24h, weighted_sentiment, buzz_score, total_upvotes,
+         total_comments, source, detail_json, fetch_date)
+        VALUES (%s, %s, %s, %s, %s, %s, 'reddit_api', %s, NOW())
+        ON DUPLICATE KEY UPDATE
+        mentions_24h=VALUES(mentions_24h), weighted_sentiment=VALUES(weighted_sentiment),
+        buzz_score=VALUES(buzz_score), total_upvotes=VALUES(total_upvotes),
+        total_comments=VALUES(total_comments), detail_json=VALUES(detail_json),
+        fetch_date=NOW()
+    """, (ticker, data['mentions'], data['sentiment'], data['buzz'],
+          data['upvotes'], data['comments'], json.dumps(data['top_posts'])))
+
+    time.sleep(1)  # pace ourselves
+
+db.commit()
+cur.close()
+db.close()
+print(f"Done: {len(TICKERS)} tickers updated")
+API Call Budget
+What	Count	Frequency
+OAuth token	1 call	Per run
+Search per ticker per subreddit	3 × 12 = 36 calls	Per run
+Total per run	37 calls	
+Schedule	2× daily (9AM + 5PM EST)	GitHub Actions
+Daily total	~74 API calls	
+Reddit free tier allows 100 requests/minute, 1000/day. We'd use ~74/day — well under limits.
+
+Server Load: Near Zero
+Component	Load Impact
+Reddit API calls	Run on GitHub Actions, not your server. Zero server CPU.
+DB writes	12 INSERT/UPDATE per run × 2 runs/day = 24 tiny writes/day
+DB reads	Only when someone opens multi-dimensional.html or smart-money.html — reads a 12-row table
+No new PHP API	Existing smart_money.php and multi_dimensional.php already read lm_wsb_sentiment — no new endpoints needed
+Cache	Data is 12 hours stale by design — no real-time polling
+Bottom line: The only thing touching your server is 24 small MySQL writes per day. Everything else runs on GitHub's servers for free.
