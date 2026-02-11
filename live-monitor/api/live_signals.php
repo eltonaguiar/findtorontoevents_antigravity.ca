@@ -158,6 +158,76 @@ function _ls_http_get($url) {
 }
 
 // ────────────────────────────────────────────────────────────
+//  Funding Rate fetcher — Bybit public API (Kimi: free, no auth)
+// ────────────────────────────────────────────────────────────
+
+/**
+ * Fetch latest funding rate for a crypto symbol from Bybit.
+ * Returns array('rate' => float, 'annualized' => float) or null on failure.
+ * Positive rate = longs pay shorts (overleveraged longs).
+ * Negative rate = shorts pay longs (potential short squeeze).
+ */
+function _ls_fetch_funding_rate($symbol) {
+    // Map internal symbols to Bybit format: BTCUSD -> BTCUSDT
+    $bybit_sym = str_replace('USD', 'USDT', strtoupper($symbol));
+    // Handle double-T: BTCUSDTT -> BTCUSDT
+    $bybit_sym = str_replace('USDTT', 'USDT', $bybit_sym);
+
+    $url = 'https://api.bybit.com/v5/market/funding/history?category=linear&symbol=' . $bybit_sym . '&limit=1';
+    $body = _ls_http_get($url);
+    if ($body === null) return null;
+
+    $data = json_decode($body, true);
+    if (!isset($data['result']['list'][0])) return null;
+
+    $entry = $data['result']['list'][0];
+    $rate = isset($entry['fundingRate']) ? (float)$entry['fundingRate'] : 0;
+
+    return array(
+        'rate' => $rate,
+        'annualized' => round($rate * 3 * 365 * 100, 2), // 3 funding periods/day * 365 days
+        'symbol' => $bybit_sym
+    );
+}
+
+/**
+ * Apply funding rate signal boost/penalty to a crypto signal.
+ * - Very negative funding (< -0.01%): boost BUY strength +10 (short squeeze setup)
+ * - Moderately negative (< -0.005%): boost BUY +5
+ * - Very positive funding (> 0.03%): boost SHORT/penalize BUY +10/-5
+ * Returns modified signal with funding_rate info in rationale.
+ */
+function _ls_apply_funding_rate($sig, $funding) {
+    if ($funding === null || $sig === null) return $sig;
+
+    $rate = $funding['rate'];
+    $rationale = json_decode($sig['rationale'], true);
+    if (!is_array($rationale)) $rationale = array();
+    $rationale['funding_rate'] = $rate;
+    $rationale['funding_annualized'] = $funding['annualized'];
+
+    $boost = 0;
+    if ($rate < -0.0001 && ($sig['signal_type'] === 'BUY' || $sig['signal_type'] === 'STRONG_BUY')) {
+        // Negative funding + BUY signal = short squeeze potential
+        $boost = ($rate < -0.001) ? 10 : 5;
+        $rationale['funding_boost'] = $boost;
+    } elseif ($rate > 0.0003 && ($sig['signal_type'] === 'BUY' || $sig['signal_type'] === 'STRONG_BUY')) {
+        // High positive funding + BUY = overleveraged longs, penalize
+        $boost = -5;
+        $rationale['funding_penalty'] = 5;
+    } elseif ($rate > 0.0003 && ($sig['signal_type'] === 'SHORT' || $sig['signal_type'] === 'STRONG_SHORT')) {
+        // High positive funding + SHORT = good confirmation
+        $boost = 5;
+        $rationale['funding_boost'] = $boost;
+    }
+
+    $sig['signal_strength'] = max(0, min(100, $sig['signal_strength'] + $boost));
+    $sig['rationale'] = json_encode($rationale);
+
+    return $sig;
+}
+
+// ────────────────────────────────────────────────────────────
 //  Candle fetching — Crypto (CoinGecko OHLC primary, Binance fallback)
 // ────────────────────────────────────────────────────────────
 
@@ -3035,6 +3105,8 @@ function _ls_action_scan($conn) {
 
         // Kimi: check for extreme volatility (momentum crash protection)
         $vol_extreme = _ls_is_volatility_extreme($candles);
+        // Kimi: fetch funding rate for this crypto symbol (Bybit, free)
+        $funding = _ls_fetch_funding_rate($sym);
 
         foreach ($algo_results as $sig) {
             if ($sig === null) continue;
@@ -3042,6 +3114,8 @@ function _ls_action_scan($conn) {
             if ($vol_extreme && _ls_is_momentum_algo($sig['algorithm_name'])) continue;
             // Kimi: ATR-adjust TP/SL
             $sig = _ls_atr_adjust_tp_sl($candles, $price, $sig);
+            // Kimi: apply funding rate signal boost/penalty (crypto only)
+            $sig = _ls_apply_funding_rate($sig, $funding);
             // Dedup
             if (_ls_signal_exists($conn, $sym, $sig['algorithm_name'])) continue;
             $insert_id = _ls_insert_signal($conn, 'CRYPTO', $sym, $price, $sig);

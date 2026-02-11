@@ -26,79 +26,30 @@ Session 2 handles remaining algorithmic + data improvements.
 
 ---
 
-## Session 2 Action Items
+## Completed in Session 2
 
-### 1. Fix Lookahead Bias in analyze.php (P0)
-- **File**: `findstocks/api/analyze.php`
-- **Issue**: `_mini_backtest()` queries `trade_date >= '$safe_d'` — includes pick day itself, using same-day high/low the algorithm already saw
-- **Fix**: Change to `trade_date > '$safe_d'` (start from DAY AFTER pick)
-- **Impact**: +5-10% Sharpe (backtests will be more realistic, not overstated)
-- [ ] Implemented
-- [ ] Deployed
-- [ ] Verified
+- [x] **analyze.php** — Lookahead bias fix (`trade_date >` instead of `>=`)
+- [x] **setup_schema.php** — Composite indexes (algo+date, ticker+date)
+- [x] **live_signals.php** — Bybit funding rate integration (short squeeze detection)
+- [x] **meme_scanner.php** — BTC regime adaptive scoring (bull/bear/chop adjustments)
+- [x] **meme_scanner.php** — Expanded meme keywords (27→56)
+- [x] **seed_signals.php** — SHORT signals for forex (Trend Following + Mean Reversion)
+- [x] **sports_odds.php** — CLV tracking table + opening/closing odds comparison
+- [x] **forex_insights.php** — ATR-based position sizing (2% risk, inversely to volatility)
 
-### 2. Add Composite Indexes to setup_schema.php
-- **File**: `findstocks/api/setup_schema.php`
-- **Issue**: Individual indexes exist but no composite indexes for common query patterns
-- **Fix**: Add `(algorithm_name, pick_date)` and `(ticker, pick_date)` composite indexes
-- **Impact**: Faster backtest/analysis queries
-- [ ] Implemented
-- [ ] Deployed
-- [ ] Verified
+---
 
-### 3. Add Funding Rate Integration for Crypto
-- **File**: `live-monitor/api/live_signals.php`
-- **Issue**: No perpetual futures funding rate data (misses short squeeze opportunities)
-- **Fix**: Fetch from Bybit public API (free, no auth), use as additional signal factor
-- **Impact**: +10-15% crypto win rate
-- [ ] Implemented
-- [ ] Deployed
-- [ ] Verified
+## Deployment Status
 
-### 4. BTC Regime Adaptive Scoring for Meme/Crypto
-- **File**: `findcryptopairs/api/meme_scanner.php`
-- **Issue**: Static scoring weights regardless of market regime
-- **Fix**: Detect BTC trend (SMA20 vs SMA50), adjust scoring: bull=boost momentum, bear=boost volume/breakout
-- **Impact**: +15-20% improvement in meme coin win rate
-- [ ] Implemented
-- [ ] Deployed
-- [ ] Verified
-
-### 5. Expand Meme Keyword List (27→50+)
-- **File**: `findcryptopairs/api/meme_scanner.php`
-- **Issue**: Only 27 keywords, missing new trending meme coins
-- **Fix**: Add 25+ new keywords from 2025-2026 meme cycles
-- **Impact**: +5-10% discovery of emerging meme coins
-- [ ] Implemented
-- [ ] Deployed
-- [ ] Verified
-
-### 6. Add SHORT Signals for Forex
-- **File**: `findforex2/api/seed_signals.php`
-- **Issue**: Only LONG signals generated (missing 50% of profit potential)
-- **Fix**: Generate both Trend Following + Mean Reversion signals with proper directions
-- **Impact**: +25% return potential
-- [ ] Implemented
-- [ ] Deployed
-- [ ] Verified
-
-### 7. Add CLV Tracking for Sports Betting
-- **File**: `live-monitor/api/sports_odds.php`
-- **Issue**: No closing line value tracking — can't validate if edge is real
-- **Fix**: Store opening odds snapshot, compute CLV when odds refresh before game
-- **Impact**: +5-10% edge validation
-- [ ] Implemented
-- [ ] Deployed
-- [ ] Verified
-
-### 8. Add ATR-Based Position Sizing for Forex
-- **File**: `findforex2/portfolio/api/forex_insights.php`
-- **Issue**: Fixed 10% position sizing, no volatility adjustment
-- **Fix**: Calculate ATR(14) and size positions inversely to volatility
-- **Impact**: -30% drawdown improvement
-- [ ] Implemented
-- [ ] Deployed
-- [ ] Verified
+| File | FTP Path | Status |
+|------|----------|--------|
+| `findstocks/api/analyze.php` | `/findstocks/api/analyze.php` | Pending |
+| `findstocks/api/setup_schema.php` | `/findstocks/api/setup_schema.php` | Pending |
+| `live-monitor/api/live_signals.php` | `/live-monitor/api/live_signals.php` | Pending |
+| `findcryptopairs/api/meme_scanner.php` | `/findcryptopairs/api/meme_scanner.php` | Pending |
+| `findforex2/api/seed_signals.php` | `/findforex2/api/seed_signals.php` | Pending |
+| `live-monitor/api/sports_odds.php` | `/live-monitor/api/sports_odds.php` | Pending |
+| `findforex2/portfolio/api/forex_insights.php` | `/findforex2/portfolio/api/forex_insights.php` | Pending |
 
 ---
 
@@ -114,13 +65,26 @@ Session 2 handles remaining algorithmic + data improvements.
 
 ---
 
-## Files Modified in This Session
-| File | Change |
-|------|--------|
-| `findstocks/api/analyze.php` | Lookahead bias fix |
-| `findstocks/api/setup_schema.php` | Composite indexes |
-| `live-monitor/api/live_signals.php` | Funding rate integration |
-| `findcryptopairs/api/meme_scanner.php` | BTC regime scoring + expanded keywords |
-| `findforex2/api/seed_signals.php` | SHORT signal generation |
-| `live-monitor/api/sports_odds.php` | CLV tracking |
-| `findforex2/portfolio/api/forex_insights.php` | ATR position sizing |
+## Summary of All Changes (Sessions 1+2)
+
+### Total: 11 files modified, 16 improvements implemented
+
+**Infrastructure (Session 1):**
+1. cURL retry in import_picks.php
+2. JSON validation in import_picks.php
+3. Timeout 900s in daily_refresh.php
+4. cURL retry in daily_refresh.php
+5. Trailing stops in live_trade.php
+6. Volatility position sizing in live_trade.php
+7. ATR-based TP/SL in live_signals.php
+8. Momentum crash protection in live_signals.php
+
+**Algorithmic (Session 2):**
+9. Lookahead bias fix in analyze.php
+10. Composite indexes in setup_schema.php
+11. Funding rate integration (Bybit) in live_signals.php
+12. BTC regime adaptive scoring in meme_scanner.php
+13. 56 meme keywords (was 27) in meme_scanner.php
+14. SHORT signals for forex in seed_signals.php
+15. CLV tracking in sports_odds.php
+16. ATR position sizing in forex_insights.php

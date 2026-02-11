@@ -2,19 +2,37 @@
 /**
  * KIMI Goldmine Data Collector
  * Imports picks from all prediction sources across the platform
- * 
- * Usage:
- *   ?action=collect&source=all&key=goldmine2026 - Collect from all sources
- *   ?action=collect&source=stock&key=goldmine2026 - Collect from stocks only
- *   ?action=collect&source=meme&key=goldmine2026 - Collect meme coins
- *   ?action=update_prices&key=goldmine2026 - Update current prices
- *   ?action=resolve&key=goldmine2026 - Check exits, resolve completed picks
  */
 
-require_once dirname(__FILE__) . '/../../../findstocks/portfolio2/api/db_connect.php';
+// Suppress all errors - we'll handle them manually
+error_reporting(0);
+ini_set('display_errors', '0');
+
+// Ensure JSON output even on fatal errors
+register_shutdown_function(function() {
+    $error = error_get_last();
+    if ($error && ($error['type'] === E_ERROR || $error['type'] === E_PARSE)) {
+        ob_clean();
+        echo json_encode(['ok' => false, 'error' => 'Fatal error: ' . $error['message']]);
+    }
+});
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
+
+// Capture any output
+ob_start();
+
+try {
+    require_once dirname(__FILE__) . '/../../../findstocks/portfolio2/api/db_connect.php';
+} catch (Exception $e) {
+    ob_clean();
+    echo json_encode(['ok' => false, 'error' => 'Database connection failed: ' . $e->getMessage()]);
+    exit;
+}
+
+// Clean any output from db_connect.php
+ob_clean();
 
 $ADMIN_KEY = 'goldmine2026';
 $action = isset($_GET['action']) ? trim($_GET['action']) : 'status';
@@ -95,6 +113,7 @@ function get_status($conn) {
 function collect_data($conn, $source_filter) {
     $collected = array();
     $total_new = 0;
+    $errors = array();
     
     // Get active sources
     $where = "is_active = 1 AND auto_import = 1";
@@ -105,29 +124,41 @@ function collect_data($conn, $source_filter) {
     
     $res = $conn->query("SELECT * FROM KIMI_GOLDMINE_SOURCES WHERE $where");
     
+    if (!$res) {
+        echo json_encode(array(
+            'ok' => false, 
+            'error' => 'Failed to query sources: ' . $conn->error
+        ));
+        return;
+    }
+    
     while ($source = $res->fetch_assoc()) {
         $new_picks = 0;
         
-        switch ($source['source_type']) {
-            case 'stock':
-            case 'penny_stock':
-                $new_picks = collect_stock_picks($conn, $source);
-                break;
-            case 'meme_coin':
-                $new_picks = collect_meme_picks($conn, $source);
-                break;
-            case 'crypto':
-                $new_picks = collect_crypto_picks($conn, $source);
-                break;
-            case 'sports':
-                $new_picks = collect_sports_picks($conn, $source);
-                break;
-            case 'forex':
-                $new_picks = collect_forex_picks($conn, $source);
-                break;
-            case 'mutual_fund':
-                $new_picks = collect_fund_picks($conn, $source);
-                break;
+        try {
+            switch ($source['source_type']) {
+                case 'stock':
+                case 'penny_stock':
+                    $new_picks = collect_stock_picks($conn, $source);
+                    break;
+                case 'meme_coin':
+                    $new_picks = collect_meme_picks($conn, $source);
+                    break;
+                case 'crypto':
+                    $new_picks = collect_crypto_picks($conn, $source);
+                    break;
+                case 'sports':
+                    $new_picks = collect_sports_picks($conn, $source);
+                    break;
+                case 'forex':
+                    $new_picks = collect_forex_picks($conn, $source);
+                    break;
+                case 'mutual_fund':
+                    $new_picks = collect_fund_picks($conn, $source);
+                    break;
+            }
+        } catch (Exception $e) {
+            $errors[] = $source['display_name'] . ': ' . $e->getMessage();
         }
         
         $collected[] = array(
@@ -140,7 +171,8 @@ function collect_data($conn, $source_filter) {
     echo json_encode(array(
         'ok' => true,
         'total_new' => $total_new,
-        'by_source' => $collected
+        'by_source' => $collected,
+        'errors' => $errors
     ));
 }
 
@@ -148,6 +180,12 @@ function collect_data($conn, $source_filter) {
 // Collect stock picks
 // ─────────────────────────────────────────────────────────────────────────────
 function collect_stock_picks($conn, $source) {
+    // Check if stock_picks table exists
+    $check = $conn->query("SHOW TABLES LIKE 'stock_picks'");
+    if ($check->num_rows === 0) {
+        throw new Exception('stock_picks table does not exist in this database');
+    }
+    
     // Get picks from stock_picks table not yet in goldmine
     $sql = "SELECT sp.*, s.company_name 
             FROM stock_picks sp
@@ -160,7 +198,9 @@ function collect_stock_picks($conn, $source) {
             LIMIT 100";
     
     $res = $conn->query($sql);
-    if (!$res) return 0;
+    if (!$res) {
+        throw new Exception('Query failed: ' . $conn->error);
+    }
     
     $count = 0;
     $stmt = $conn->prepare("INSERT INTO KIMI_GOLDMINE_PICKS 
@@ -196,6 +236,12 @@ function collect_stock_picks($conn, $source) {
 // Collect meme coin picks
 // ─────────────────────────────────────────────────────────────────────────────
 function collect_meme_picks($conn, $source) {
+    // Check if mc_winners table exists
+    $check = $conn->query("SHOW TABLES LIKE 'mc_winners'");
+    if ($check->num_rows === 0) {
+        throw new Exception('mc_winners table does not exist in this database');
+    }
+    
     $sql = "SELECT mw.* 
             FROM mc_winners mw
             LEFT JOIN KIMI_GOLDMINE_PICKS kgp ON 
@@ -242,6 +288,12 @@ function collect_meme_picks($conn, $source) {
 // Collect sports picks
 // ─────────────────────────────────────────────────────────────────────────────
 function collect_sports_picks($conn, $source) {
+    // Check if lm_sports_value_bets table exists
+    $check = $conn->query("SHOW TABLES LIKE 'lm_sports_value_bets'");
+    if ($check->num_rows === 0) {
+        throw new Exception('lm_sports_value_bets table does not exist in this database');
+    }
+    
     $sql = "SELECT * FROM lm_sports_value_bets 
             WHERE status = 'active' 
             AND detected_at > DATE_SUB(NOW(), INTERVAL 1 DAY)
