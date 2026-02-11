@@ -32,18 +32,21 @@
   // ═══════════════════════════════════════════════════════════
   // CONFIG
   // ═══════════════════════════════════════════════════════════
+  var _ORIGIN = (typeof window !== 'undefined' && window.location && window.location.origin)
+    ? window.location.origin : 'https://findtorontoevents.ca';
+
   var CONFIG = {
     eventsJsonPaths: ['/next/events.json', '/events.json', '/data/events.json'],
     weatherApi: 'https://api.open-meteo.com/v1/forecast',
     weatherLat: 43.6532,
     weatherLon: -79.3832,
-    fcApi: 'https://findtorontoevents.ca/fc/api',
-    aiPrefsApi: 'https://findtorontoevents.ca/fc/api/ai_preferences.php',
+    fcApi: _ORIGIN + '/fc/api',
+    aiPrefsApi: _ORIGIN + '/fc/api/ai_preferences.php',
     stocksPage: '/findstocks/',
     moviesApi: '/MOVIESHOWS3/api/get-movies.php',
-    nearMeApi: 'https://findtorontoevents.ca/fc/api/nearme.php',
-    nowPlayingApi: 'https://findtorontoevents.ca/fc/api/now_playing.php',
-    cineplexShowtimesApi: 'https://findtorontoevents.ca/fc/api/cineplex_showtimes.php',
+    nearMeApi: _ORIGIN + '/fc/api/nearme.php',
+    nowPlayingApi: _ORIGIN + '/fc/api/now_playing.php',
+    cineplexShowtimesApi: _ORIGIN + '/fc/api/cineplex_showtimes.php',
     responseDelay: 300,
     firstTimeKey: 'fte_ai_first_visit',
     visitedSectionsKey: 'fte_ai_visited_sections',
@@ -52,10 +55,10 @@
     muteTTSKey: 'fte_ai_mute_tts',
     aiEnabledKey: 'fte_ai_enabled',
     defaultTheaterKey: 'fte_default_theater',
-    guestUsageApi: 'https://findtorontoevents.ca/fc/api/guest_usage.php',
+    guestUsageApi: _ORIGIN + '/fc/api/guest_usage.php',
     guestAiUsedKey: 'fte_ai_guest_used',
-    verifyBusinessApi: 'https://findtorontoevents.ca/fc/api/verify_business.php',
-    dealsApi: 'https://findtorontoevents.ca/fc/api/deals.php'
+    verifyBusinessApi: _ORIGIN + '/fc/api/verify_business.php',
+    dealsApi: _ORIGIN + '/fc/api/deals.php'
   };
 
   // ═══════════════════════════════════════════════════════════
@@ -1657,6 +1660,12 @@
         return;
       }
 
+      // ── SMART MONEY INTELLIGENCE — BEFORE stocks ──
+      if (_isSmartMoneyQuery(lower)) {
+        await handleSmartMoney(lower);
+        return;
+      }
+
       // ── STOCKS (expanded) ──
       if (/stock/i.test(lower) || /pick/i.test(lower) || /trading/i.test(lower) || /investment/i.test(lower) ||
         /market/i.test(lower) || /portfolio/i.test(lower) || /ticker/i.test(lower) ||
@@ -3102,6 +3111,397 @@
     html += ' in ' + hold + 'h \u2014 ' + escapeHtml(algo);
     html += '</div>';
     return html;
+  }
+
+  // ── Smart Money Intelligence ──
+
+  function _isSmartMoneyQuery(lower) {
+    // Smart money / hedge fund
+    if (/smart money/i.test(lower)) return true;
+    if (/hedge fund/i.test(lower)) return true;
+    if (/wall street.*(think|say|buy|sell|rate|recommend)/i.test(lower)) return true;
+    if (/institutional/i.test(lower) && /hold|buy|own|track/i.test(lower)) return true;
+    if (/13f|thirteen.?f/i.test(lower)) return true;
+
+    // Analyst ratings
+    if (/analyst.*(rating|recommend|target|consensus|upgrade|downgrade)/i.test(lower)) return true;
+    if (/(buy|sell|hold) rating/i.test(lower)) return true;
+    if (/price target/i.test(lower)) return true;
+    if (/what do analyst/i.test(lower)) return true;
+
+    // Insider trading
+    if (/insider.*(trad|buy|sell|activ|sentiment)/i.test(lower)) return true;
+    if (/insider.*(cluster|purchas)/i.test(lower)) return true;
+    if (/who.*(buying|selling).*inside/i.test(lower)) return true;
+    if (/mspr|share purchase ratio/i.test(lower)) return true;
+
+    // Consensus
+    if (/consensus score/i.test(lower)) return true;
+    if (/smart consensus/i.test(lower)) return true;
+    if (/what.*consensus/i.test(lower) && /stock|market|ticker/i.test(lower)) return true;
+
+    // Fund-specific
+    if (/berkshire|buffett|citadel|renaissance|bridgewater|soros|two sigma/i.test(lower)) return true;
+    if (/what.*fund.*(hold|buy|own)/i.test(lower)) return true;
+    if (/which fund/i.test(lower)) return true;
+    if (/conviction pick/i.test(lower)) return true;
+
+    // Challenger bot
+    if (/challenger bot/i.test(lower)) return true;
+    if (/challenger.*showdown/i.test(lower)) return true;
+    if (/challenger vs/i.test(lower)) return true;
+    if (/which algo.*(winning|best)/i.test(lower)) return true;
+    if (/beat.*algo/i.test(lower)) return true;
+    if (/multi.?factor/i.test(lower) && /algo|signal|score/i.test(lower)) return true;
+    if (/ensemble.*algo/i.test(lower)) return true;
+
+    // WSB / Reddit
+    if (/wsb|wallstreetbets|reddit.*sentiment/i.test(lower)) return true;
+
+    // Leaderboard
+    if (/guru.*leader/i.test(lower) || /fund.*rank/i.test(lower)) return true;
+
+    return false;
+  }
+
+  async function handleSmartMoney(lower) {
+    setStatus('Fetching smart money intelligence...', '#6366f1');
+
+    // Detect specific ticker
+    var tickerMatch = lower.match(/\b(AAPL|MSFT|GOOGL|AMZN|NVDA|META|JPM|WMT|XOM|NFLX|JNJ|BAC)\b/i);
+    var ticker = tickerMatch ? tickerMatch[1].toUpperCase() : '';
+
+    // Detect sub-type
+    var action = 'overview';
+    if (ticker) action = 'ticker';
+    else if (/analyst|rating|recommend|target|upgrade|downgrade|price target/i.test(lower)) action = 'analyst';
+    else if (/insider|mspr|who.*buying.*inside/i.test(lower)) action = 'insider';
+    else if (/13f|fund|berkshire|citadel|bridgewater|renaissance|soros|conviction/i.test(lower)) action = 'smart_money';
+    else if (/consensus|score/i.test(lower) && !/daily|pick/i.test(lower)) action = 'consensus';
+    else if (/leaderboard|rank|best fund|guru/i.test(lower)) action = 'leaderboard';
+    else if (/challenger|showdown|beat.*algo|which algo/i.test(lower)) action = 'showdown';
+    else if (/wsb|wallstreetbets|reddit/i.test(lower)) action = 'wsb';
+
+    var url = '/live-monitor/api/smart_money.php?action=' + action;
+    if (ticker) url += '&ticker=' + ticker;
+
+    try {
+      var resp = await fetch(url);
+      var data = await resp.json();
+
+      if (!data.ok) {
+        addMessage('ai', '<div class="fte-ai-summary">Could not fetch smart money data. Try again shortly.</div>');
+        setStatus('Ready', '#64748b');
+        return;
+      }
+
+      var html = '<div class="fte-ai-summary">';
+
+      if (action === 'ticker' && ticker) {
+        html += _smFormatTicker(data, ticker);
+      } else if (action === 'analyst') {
+        html += _smFormatAnalyst(data);
+      } else if (action === 'insider') {
+        html += _smFormatInsider(data);
+      } else if (action === 'smart_money') {
+        html += _smFormatSmartMoney(data);
+      } else if (action === 'consensus') {
+        html += _smFormatConsensus(data);
+      } else if (action === 'showdown') {
+        html += _smFormatShowdown(data);
+      } else if (action === 'wsb') {
+        html += _smFormatWSB(data);
+      } else {
+        html += _smFormatOverview(data);
+      }
+
+      html += '<br><a href="/live-monitor/smart-money.html" style="color:#6366f1;font-size:11px;">Open Smart Money Dashboard \u2192</a>';
+      html += '<br><span style="color:#64748b;font-size:10px;">Data from SEC EDGAR + Finnhub. Not financial advice.</span>';
+      html += '</div>';
+
+      addMessage('ai', html, false);
+      speakText('Smart money intelligence loaded. ' + (data.summary || ''));
+      setPrompts(['AAPL analyst ratings', 'Insider buying activity', 'Consensus scores', 'Which funds own NVDA?', 'Challenger bot standings', 'WSB sentiment']);
+      setStatus('Ready', '#64748b');
+
+    } catch (err) {
+      addMessage('ai', '<div class="fte-ai-summary">Could not connect to the smart money server. Please try again later.</div>');
+      setStatus('Ready', '#64748b');
+    }
+  }
+
+  function _smScoreColor(score) {
+    if (score >= 70) return '#22c55e';
+    if (score >= 50) return '#eab308';
+    return '#ef4444';
+  }
+
+  function _smScoreBar(score, maxPts) {
+    var pct = Math.min(100, (score / maxPts) * 100);
+    return '<div style="display:inline-block;width:60px;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;vertical-align:middle;margin:0 4px;">' +
+      '<div style="width:' + pct + '%;height:100%;background:' + _smScoreColor(score * (100/maxPts)) + ';border-radius:3px;"></div></div>';
+  }
+
+  function _smBadge(direction) {
+    var colors = {BULLISH: '#22c55e', BEARISH: '#ef4444', NEUTRAL: '#eab308'};
+    var c = colors[direction] || '#64748b';
+    return '<span style="background:' + c + '22;color:' + c + ';padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">' + escapeHtml(direction) + '</span>';
+  }
+
+  function _smFormatOverview(data) {
+    var html = '<b>\uD83E\uDDE0 Smart Money Intelligence</b><br><br>';
+
+    // Top consensus scores
+    var top = data.top_consensus || [];
+    if (top.length > 0) {
+      html += '<b>Top Consensus Scores:</b><br>';
+      for (var i = 0; i < Math.min(top.length, 5); i++) {
+        var t = top[i];
+        var score = t.overall_score || 0;
+        html += '<span style="color:' + _smScoreColor(score) + ';font-weight:bold;">' + score + '</span>/100 ';
+        html += '<b>' + escapeHtml(t.ticker || '') + '</b> ' + _smBadge(t.signal_direction || 'NEUTRAL');
+        html += ' <span style="color:#64748b;font-size:10px;">(' + escapeHtml(t.confidence || '') + ')</span><br>';
+      }
+    } else {
+      html += '<span style="color:#64748b;">No consensus data yet. Data will populate after the first Smart Money workflow run.</span><br>';
+    }
+
+    // Insider clusters
+    var clusters = data.insider_clusters || [];
+    if (clusters.length > 0) {
+      html += '<br><b>\uD83D\uDCA1 Insider Clusters (3+ insiders buying):</b><br>';
+      for (var c = 0; c < clusters.length; c++) {
+        html += '\u2022 <b>' + escapeHtml(clusters[c].ticker || '') + '</b> \u2014 ' + (clusters[c].distinct_buyers || 0) + ' insiders, $' + _smFmtVal(clusters[c].total_value || 0) + '<br>';
+      }
+    }
+
+    // Challenger status
+    var challenger = data.challenger || {};
+    if (challenger.rank) {
+      html += '<br><b>\uD83E\uDD16 Challenger Bot:</b> Rank #' + challenger.rank + '/' + (challenger.total_algos || '?');
+      html += ' | Win Rate: ' + (challenger.win_rate || '?') + '%<br>';
+    }
+
+    return html;
+  }
+
+  function _smFormatTicker(data, ticker) {
+    var html = '<b>\uD83E\uDDE0 ' + escapeHtml(ticker) + ' \u2014 Smart Money Intelligence</b><br><br>';
+
+    // Consensus score
+    var cons = data.consensus || {};
+    if (cons.overall_score !== undefined) {
+      var score = cons.overall_score;
+      html += '<div style="padding:10px;background:rgba(99,102,241,0.08);border-radius:8px;margin:4px 0;">';
+      html += '<b>Consensus Score: <span style="color:' + _smScoreColor(score) + ';font-size:18px;">' + score + '/100</span></b> ';
+      html += _smBadge(cons.signal_direction || 'NEUTRAL');
+      html += '<br><span style="font-size:11px;color:#94a3b8;">Technical: ' + (cons.technical_score || 0) + '/25 | Smart Money: ' + (cons.smart_money_score || 0) + '/20 | Insider: ' + (cons.insider_score || 0) + '/20 | Analyst: ' + (cons.analyst_score || 0) + '/20 | Momentum: ' + (cons.momentum_score || 0) + '/15</span>';
+      html += '</div>';
+    }
+
+    // Analyst ratings
+    var analyst = data.analyst || {};
+    if (analyst.strong_buy !== undefined) {
+      var total = (analyst.strong_buy || 0) + (analyst.buy || 0) + (analyst.hold || 0) + (analyst.sell || 0) + (analyst.strong_sell || 0);
+      html += '<br><b>Analyst Ratings</b> (' + total + ' analysts):<br>';
+      html += '\uD83D\uDFE2 Strong Buy: ' + (analyst.strong_buy || 0) + ' | Buy: ' + (analyst.buy || 0);
+      html += ' | Hold: ' + (analyst.hold || 0);
+      html += ' | \uD83D\uDD34 Sell: ' + (analyst.sell || 0) + ' | Strong Sell: ' + (analyst.strong_sell || 0) + '<br>';
+    }
+
+    // Price target
+    var target = data.price_target || {};
+    if (target.target_mean) {
+      var current = data.current_price || 0;
+      var upside = current > 0 ? ((target.target_mean - current) / current * 100).toFixed(1) : '?';
+      var uColor = parseFloat(upside) >= 0 ? '#22c55e' : '#ef4444';
+      html += '<b>Price Target:</b> $' + parseFloat(target.target_mean).toFixed(2);
+      html += ' (Low: $' + parseFloat(target.target_low || 0).toFixed(2) + ' / High: $' + parseFloat(target.target_high || 0).toFixed(2) + ')';
+      html += ' <span style="color:' + uColor + ';">' + (parseFloat(upside) >= 0 ? '+' : '') + upside + '% upside</span><br>';
+    }
+
+    // Insider activity
+    var insider = data.insider || {};
+    if (insider.buy_value || insider.sell_value) {
+      html += '<br><b>Insider Activity (90d):</b> ';
+      html += '<span style="color:#22c55e;">Buys: $' + _smFmtVal(insider.buy_value || 0) + '</span>';
+      html += ' | <span style="color:#ef4444;">Sells: $' + _smFmtVal(insider.sell_value || 0) + '</span>';
+      if (insider.distinct_buyers) html += ' | ' + insider.distinct_buyers + ' distinct buyers';
+      html += '<br>';
+    }
+
+    // MSPR
+    var mspr = data.mspr || {};
+    if (mspr.mspr !== undefined) {
+      var mColor = mspr.mspr >= 0 ? '#22c55e' : '#ef4444';
+      html += '<b>MSPR:</b> <span style="color:' + mColor + ';">' + parseFloat(mspr.mspr).toFixed(4) + '</span>';
+      html += ' <span style="color:#64748b;font-size:10px;">(>0 = net buying)</span><br>';
+    }
+
+    // Fund holdings
+    var funds = data.funds || [];
+    if (funds.length > 0) {
+      html += '<br><b>Held by ' + funds.length + ' tracked fund(s):</b><br>';
+      for (var f = 0; f < Math.min(funds.length, 5); f++) {
+        html += '\u2022 ' + escapeHtml(funds[f].fund_name || '') + ' \u2014 ' + escapeHtml(funds[f].change_type || 'held') + '<br>';
+      }
+    }
+
+    return html;
+  }
+
+  function _smFormatAnalyst(data) {
+    var html = '<b>\uD83C\uDF93 Analyst Ratings \u2014 Wall Street Consensus</b><br><br>';
+    var tickers = data.tickers || [];
+    if (tickers.length === 0) {
+      html += '<span style="color:#64748b;">No analyst data yet. Run the Smart Money workflow to fetch data.</span><br>';
+      return html;
+    }
+    for (var i = 0; i < tickers.length; i++) {
+      var t = tickers[i];
+      var total = (t.strong_buy||0) + (t.buy||0) + (t.hold||0) + (t.sell||0) + (t.strong_sell||0);
+      var label = total > 0 ? ((t.strong_buy*2 + t.buy*1 - t.sell*1 - t.strong_sell*2) > 0 ? 'BUY' : ((t.strong_buy*2 + t.buy*1 - t.sell*1 - t.strong_sell*2) < 0 ? 'SELL' : 'HOLD')) : '?';
+      html += '<b>' + escapeHtml(t.ticker || '') + '</b> ';
+      html += _smBadge(label);
+      html += ' (' + total + ' analysts) ';
+      if (t.target_mean) {
+        var upside = t.current_price > 0 ? ((t.target_mean - t.current_price) / t.current_price * 100).toFixed(1) : '?';
+        html += 'Target: $' + parseFloat(t.target_mean).toFixed(0) + ' ';
+        html += '<span style="color:' + (parseFloat(upside) >= 0 ? '#22c55e' : '#ef4444') + ';">(' + (parseFloat(upside) >= 0 ? '+' : '') + upside + '%)</span>';
+      }
+      html += '<br>';
+    }
+    return html;
+  }
+
+  function _smFormatInsider(data) {
+    var html = '<b>\uD83D\uDC54 Insider Trading Activity</b><br><br>';
+    var trades = data.trades || [];
+    if (trades.length === 0) {
+      html += '<span style="color:#64748b;">No insider trade data yet.</span><br>';
+      return html;
+    }
+    var buys = 0; var sells = 0; var buyVal = 0; var sellVal = 0;
+    for (var i = 0; i < trades.length; i++) {
+      if (trades[i].transaction_type === 'P') { buys++; buyVal += parseFloat(trades[i].total_value || 0); }
+      else { sells++; sellVal += parseFloat(trades[i].total_value || 0); }
+    }
+    html += '<span style="color:#22c55e;">' + buys + ' buys ($' + _smFmtVal(buyVal) + ')</span>';
+    html += ' vs <span style="color:#ef4444;">' + sells + ' sells ($' + _smFmtVal(sellVal) + ')</span> in last 90 days<br><br>';
+
+    for (var j = 0; j < Math.min(trades.length, 8); j++) {
+      var tr = trades[j];
+      var isBuy = tr.transaction_type === 'P';
+      var borderColor = isBuy ? '#22c55e' : '#ef4444';
+      html += '<div style="padding:3px 8px;margin:2px 0;border-left:3px solid ' + borderColor + ';background:rgba(255,255,255,0.02);border-radius:4px;font-size:11px;">';
+      html += '<b>' + escapeHtml(tr.ticker || '') + '</b> ';
+      html += (isBuy ? '\uD83D\uDFE2 BUY' : '\uD83D\uDD34 SELL') + ' ';
+      html += escapeHtml(tr.filer_name || '') + ' (' + escapeHtml(tr.filer_title || '') + ') ';
+      html += '$' + _smFmtVal(parseFloat(tr.total_value || 0));
+      html += ' <span style="color:#64748b;">' + escapeHtml(tr.transaction_date || '') + '</span>';
+      html += '</div>';
+    }
+    if (trades.length > 8) html += '<span style="color:#64748b;font-size:10px;">+' + (trades.length - 8) + ' more trades</span><br>';
+    return html;
+  }
+
+  function _smFormatSmartMoney(data) {
+    var html = '<b>\uD83D\uDC33 Smart Money \u2014 Hedge Fund Holdings (13F)</b><br><br>';
+    var conviction = data.conviction_picks || [];
+    if (conviction.length > 0) {
+      html += '<b>Conviction Picks (3+ funds):</b><br>';
+      for (var i = 0; i < conviction.length; i++) {
+        html += '\u2B50 <b>' + escapeHtml(conviction[i].ticker || '') + '</b> \u2014 held by ' + (conviction[i].fund_count || 0) + ' tracked funds<br>';
+      }
+      html += '<br>';
+    }
+    var newPos = data.new_positions || [];
+    if (newPos.length > 0) {
+      html += '<b>New Positions:</b><br>';
+      for (var n = 0; n < Math.min(newPos.length, 6); n++) {
+        html += '\uD83C\uDD95 <b>' + escapeHtml(newPos[n].ticker || '') + '</b> by ' + escapeHtml(newPos[n].fund_name || '') + '<br>';
+      }
+    }
+    if (conviction.length === 0 && newPos.length === 0) {
+      html += '<span style="color:#64748b;">No 13F data yet. Quarterly filings are processed weekly on Sundays.</span><br>';
+    }
+    return html;
+  }
+
+  function _smFormatConsensus(data) {
+    var html = '<b>\uD83C\uDFAF Smart Consensus Scores</b> <span style="color:#64748b;font-size:10px;">(0-100, combining all signal sources)</span><br><br>';
+    var scores = data.scores || [];
+    if (scores.length === 0) {
+      html += '<span style="color:#64748b;">No consensus scores yet. Run the Smart Money workflow to generate scores.</span><br>';
+      return html;
+    }
+    html += '<div style="font-size:11px;">';
+    for (var i = 0; i < scores.length; i++) {
+      var s = scores[i];
+      var score = s.overall_score || 0;
+      html += '<div style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);">';
+      html += '<span style="color:' + _smScoreColor(score) + ';font-weight:bold;font-size:14px;">' + score + '</span> ';
+      html += '<b>' + escapeHtml(s.ticker || '') + '</b> ';
+      html += _smBadge(s.signal_direction || 'NEUTRAL') + ' ';
+      html += _smScoreBar(s.technical_score || 0, 25) + 'T:' + (s.technical_score||0) + ' ';
+      html += _smScoreBar(s.insider_score || 0, 20) + 'I:' + (s.insider_score||0) + ' ';
+      html += _smScoreBar(s.analyst_score || 0, 20) + 'A:' + (s.analyst_score||0);
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function _smFormatShowdown(data) {
+    var html = '<b>\uD83E\uDD16 Challenger Bot Showdown</b><br><br>';
+    var showdown = data.showdown || {};
+    if (!showdown.challenger_trades && !showdown.snapshot_date) {
+      html += '<span style="color:#64748b;">The Challenger Bot is collecting data. Showdown results will appear after the bot has made enough trades to compare against the 19 existing algorithms.</span><br>';
+      return html;
+    }
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">';
+    // Challenger
+    html += '<div style="padding:10px;background:rgba(99,102,241,0.08);border:1px solid #6366f1;border-radius:8px;">';
+    html += '<b style="color:#6366f1;">\uD83E\uDD16 Challenger Bot</b><br>';
+    html += 'Trades: ' + (showdown.challenger_trades || 0) + '<br>';
+    html += 'Win Rate: <b>' + (showdown.challenger_win_rate || 0) + '%</b><br>';
+    html += 'PnL: $' + parseFloat(showdown.challenger_pnl || 0).toFixed(2) + '<br>';
+    html += 'Rank: #' + (showdown.challenger_rank || '?') + '/' + (showdown.total_algos || '?');
+    html += '</div>';
+    // Best algo
+    html += '<div style="padding:10px;background:rgba(59,130,246,0.08);border:1px solid #3b82f6;border-radius:8px;">';
+    html += '<b style="color:#3b82f6;">\uD83C\uDFC6 ' + escapeHtml(showdown.best_algo_name || 'Best Algo') + '</b><br>';
+    html += 'Trades: ' + (showdown.best_algo_trades || 0) + '<br>';
+    html += 'Win Rate: <b>' + (showdown.best_algo_win_rate || 0) + '%</b><br>';
+    html += 'PnL: $' + parseFloat(showdown.best_algo_pnl || 0).toFixed(2);
+    html += '</div></div>';
+    return html;
+  }
+
+  function _smFormatWSB(data) {
+    var html = '<b>\uD83E\uDD8D WallStreetBets Sentiment</b><br><br>';
+    var tickers = data.wsb_tickers || [];
+    if (tickers.length === 0) {
+      html += '<span style="color:#64748b;">No WSB data yet. Set REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET in GitHub Secrets to enable WSB tracking.</span><br>';
+      return html;
+    }
+    html += '<div style="font-size:11px;">';
+    for (var i = 0; i < Math.min(tickers.length, 10); i++) {
+      var t = tickers[i];
+      var sentColor = (t.sentiment || 0) > 0 ? '#22c55e' : ((t.sentiment || 0) < 0 ? '#ef4444' : '#eab308');
+      html += '<b>' + escapeHtml(t.ticker || '') + '</b> ';
+      html += '<span style="color:' + sentColor + ';">' + ((t.sentiment || 0) > 0 ? '\u2191' : ((t.sentiment || 0) < 0 ? '\u2193' : '\u2194')) + ' ' + parseFloat(t.sentiment || 0).toFixed(2) + '</span> ';
+      html += t.mentions_24h + ' mentions | ' + (t.total_upvotes || 0) + ' upvotes';
+      html += '<br>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function _smFmtVal(val) {
+    if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
+    if (val >= 1000) return (val / 1000).toFixed(0) + 'K';
+    return val.toFixed(0);
   }
 
   function handleStocks(lower) {
@@ -4629,7 +5029,7 @@
     setStatus('Fetching world events...', '#60a5fa');
 
     try {
-      var apiUrl = 'https://findtorontoevents.ca/fc/api/world_events.php?range=' + encodeURIComponent(range) + '&limit=20';
+      var apiUrl = _ORIGIN + '/fc/api/world_events.php?range=' + encodeURIComponent(range) + '&limit=20';
       var resp = await fetch(apiUrl);
       var data = await resp.json();
 

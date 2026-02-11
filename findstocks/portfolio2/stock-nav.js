@@ -53,7 +53,9 @@
       label: 'Goldmines \u00b7 Claude',
       links: [
         { text: 'Goldmine Checker', href: '/live-monitor/goldmine-dashboard.html' },
-        { text: 'Health Alerts', href: '/live-monitor/goldmine-alerts.html' }
+        { text: 'Health Alerts', href: '/live-monitor/goldmine-alerts.html' },
+        { text: 'Smart Money', href: '/live-monitor/smart-money.html' },
+        { text: 'Multi-Dim', href: '/live-monitor/multi-dimensional.html' }
       ]
     }
   ];

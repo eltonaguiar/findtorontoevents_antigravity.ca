@@ -1,0 +1,233 @@
+name: "\U0001F9E0 Smart Money Intelligence"
+
+on:
+  schedule:
+    # Weekdays 6 AM EST (11:00 UTC) — before market open
+    - cron: '0 11 * * 1-5'
+    # Sunday 9 AM EST (14:00 UTC) — weekly 13F check
+    - cron: '0 14 * * 0'
+  workflow_dispatch:
+
+jobs:
+  # ── Job 1: Fetch Finnhub analyst ratings + insider sentiment (PHP-side) ──
+  finnhub-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event.schedule != '0 14 * * 0'
+    steps:
+      - name: Ensure schema
+        run: |
+          curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/smart_money.php?action=schema" | python3 -c "
+          import sys, json
+          try:
+              d = json.load(sys.stdin)
+              print('Schema:', 'OK' if d.get('ok') else d.get('error','unknown'))
+          except: print('Schema: response parse error')
+          " || echo "Schema: request failed (may already exist)"
+
+      - name: Fetch analyst ratings + price targets
+        run: |
+          echo "Fetching Finnhub analyst ratings for 12 stocks..."
+          RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/live-monitor/api/smart_money.php?action=fetch_analyst&key=livetrader2026")
+          echo "$RESULT" | python3 -c "
+          import sys, json
+          try:
+              d = json.load(sys.stdin)
+              if d.get('ok'):
+                  print(f'  Ratings fetched: {d.get(\"ratings_fetched\", 0)}')
+                  print(f'  Targets fetched: {d.get(\"targets_fetched\", 0)}')
+              else:
+                  print(f'  Error: {d.get(\"error\",\"unknown\")}')
+          except: print('  Parse error')
+          " || echo "  Analyst fetch: $RESULT"
+
+      - name: Fetch insider sentiment (MSPR)
+        run: |
+          echo "Fetching Finnhub insider sentiment for 12 stocks..."
+          RESULT=$(curl -s --max-time 90 "https://findtorontoevents.ca/live-monitor/api/smart_money.php?action=fetch_sentiment&key=livetrader2026")
+          echo "$RESULT" | python3 -c "
+          import sys, json
+          try:
+              d = json.load(sys.stdin)
+              if d.get('ok'):
+                  print(f'  Tickers processed: {d.get(\"tickers_processed\", 0)}')
+                  print(f'  Sentiment rows: {d.get(\"sentiment_rows\", 0)}')
+              else:
+                  print(f'  Error: {d.get(\"error\",\"unknown\")}')
+          except: print('  Parse error')
+          " || echo "  Sentiment fetch: $RESULT"
+
+      - name: Verify data populated
+        run: |
+          echo "Verifying analyst data..."
+          curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/smart_money.php?action=analyst&ticker=AAPL" | python3 -c "
+          import sys, json
+          try:
+              d = json.load(sys.stdin)
+              if d.get('ok'):
+                  ratings = d.get('ratings', [])
+                  target = d.get('price_target', {})
+                  print(f'  AAPL: {len(ratings)} rating periods, target_mean=\${target.get(\"target_mean\", \"N/A\")}')
+              else:
+                  print(f'  Verify error: {d.get(\"error\",\"unknown\")}')
+          except: print('  Verify: parse error')
+          "
+
+  # ── Job 2: SEC 13F filings (weekly, Sunday only) ──
+  sec-13f:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event.schedule == '0 14 * * 0' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 lxml
+
+      - name: Run SEC 13F tracker
+        working-directory: scripts
+        run: |
+          echo "Fetching SEC 13F filings for tracked hedge funds..."
+          python sec_13f_tracker.py || echo "SEC 13F tracker completed with warnings"
+
+      - name: Run Insider tracker
+        working-directory: scripts
+        continue-on-error: true
+        run: |
+          echo "Checking insider trading activity..."
+          python insider_tracker.py || echo "Insider tracker completed with warnings"
+
+  # ── Job 3: Social sentiment (daily, if Reddit credentials exist) ──
+  social-sentiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event.schedule != '0 14 * * 0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests praw
+
+      - name: Run WSB sentiment tracker
+        working-directory: scripts
+        continue-on-error: true
+        env:
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+        run: |
+          if [ -n "$REDDIT_CLIENT_ID" ]; then
+            echo "Reddit credentials found — tracking WSB sentiment..."
+            python wsb_sentiment.py
+          else
+            echo "Reddit credentials not set — skipping WSB sentiment (set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET in GitHub Secrets)"
+          fi
+
+  # ── Job 4: Calculate consensus + generate challenger signals ──
+  consensus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [finnhub-data]
+    if: always() && (needs.finnhub-data.result == 'success' || needs.finnhub-data.result == 'skipped')
+    steps:
+      - name: Calculate consensus scores
+        run: |
+          echo "Calculating Smart Consensus scores for all 12 tickers..."
+          RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/live-monitor/api/smart_money.php?action=calculate_consensus&key=livetrader2026")
+          echo "$RESULT" | python3 -c "
+          import sys, json
+          try:
+              d = json.load(sys.stdin)
+              if d.get('ok'):
+                  print(f'  Scores calculated: {d.get(\"scores_calculated\", 0)}')
+                  print(f'  Regime: {d.get(\"regime\", \"unknown\")}')
+                  top = d.get('top_scores', [])
+                  for t in top[:5]:
+                      print(f'    {t.get(\"ticker\",\"?\"): <6} {t.get(\"overall_score\",0):3d}/100  {t.get(\"signal_direction\",\"\")}  ({t.get(\"confidence\",\"\")})')
+              else:
+                  print(f'  Error: {d.get(\"error\",\"unknown\")}')
+          except: print('  Parse error')
+          " || echo "  Consensus: $RESULT"
+
+      - name: Generate Challenger Bot signals
+        run: |
+          echo "Generating Challenger Bot trading signals..."
+          RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/smart_money.php?action=generate_challenger&key=livetrader2026")
+          echo "$RESULT" | python3 -c "
+          import sys, json
+          try:
+              d = json.load(sys.stdin)
+              if d.get('ok'):
+                  print(f'  Challenger signals: {d.get(\"challenger_signals\", 0)}')
+                  signals = d.get('signals', [])
+                  for s in signals:
+                      print(f'    {s.get(\"ticker\",\"?\")} {s.get(\"signal_type\",\"\")} strength={s.get(\"strength\",0)}')
+              else:
+                  print(f'  Error: {d.get(\"error\",\"unknown\")}')
+          except: print('  Parse error')
+          " || echo "  Challenger: $RESULT"
+
+      - name: Update showdown standings
+        continue-on-error: true
+        run: |
+          echo "Updating Challenger Bot showdown..."
+          RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/smart_money.php?action=update_showdown&key=livetrader2026")
+          echo "$RESULT" | python3 -c "
+          import sys, json
+          try:
+              d = json.load(sys.stdin)
+              if d.get('ok'):
+                  print(f'  Challenger rank: {d.get(\"challenger_rank\", \"N/A\")}/{d.get(\"total_algos\", \"?\")}')
+                  print(f'  Challenger win rate: {d.get(\"challenger_win_rate\", \"N/A\")}%')
+                  print(f'  Best algo: {d.get(\"best_algo_name\", \"N/A\")} ({d.get(\"best_algo_win_rate\", \"N/A\")}%)')
+              else:
+                  print(f'  Error: {d.get(\"error\",\"unknown\")}')
+          except: print('  Parse error')
+          " || echo "  Showdown: $RESULT"
+
+      - name: Generate snapshot
+        continue-on-error: true
+        run: |
+          curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/smart_money.php?action=snapshot&key=livetrader2026" > /dev/null
+          echo "Snapshot cached."
+
+      - name: Print overview
+        run: |
+          echo ""
+          echo "=== SMART MONEY INTELLIGENCE SUMMARY ==="
+          curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/smart_money.php?action=overview" | python3 -c "
+          import sys, json
+          try:
+              d = json.load(sys.stdin)
+              if d.get('ok'):
+                  top = d.get('top_consensus', [])
+                  if top:
+                      print('Top consensus picks:')
+                      for t in top[:5]:
+                          print(f'  {t.get(\"ticker\",\"?\"): <6} Score: {t.get(\"overall_score\",0):3d}  {t.get(\"signal_direction\",\"\")}')
+                  clusters = d.get('insider_clusters', [])
+                  if clusters:
+                      print(f'Insider clusters: {len(clusters)} stocks with 3+ insider buys')
+                  challenger = d.get('challenger', {})
+                  if challenger:
+                      print(f'Challenger Bot: rank #{challenger.get(\"rank\",\"?\")} win_rate={challenger.get(\"win_rate\",\"?\")}%')
+              else:
+                  print(f'Overview error: {d.get(\"error\",\"unknown\")}')
+          except: print('Overview: parse error')
+          " || echo "Overview: request failed"
+          echo "========================================="
+          echo ""
+          echo "Dashboard: https://findtorontoevents.ca/live-monitor/smart-money.html"
