@@ -26,7 +26,7 @@ except ImportError as e:
     print(f"Missing: {e}")
     sys.exit(1)
 
-from config import INTEL_API, ADMIN_KEY, STOCK_SYMBOLS, CRYPTO_SYMBOLS
+from config import INTEL_API, ADMIN_KEY, API_HEADERS, STOCK_SYMBOLS, CRYPTO_SYMBOLS
 
 
 def store_metric(metric_name, asset_class, symbol, value, label, metadata=None):
@@ -43,7 +43,7 @@ def store_metric(metric_name, asset_class, symbol, value, label, metadata=None):
         }
         if metadata:
             data["metadata"] = json.dumps(metadata)
-        requests.post(INTEL_API, data=data, timeout=10)
+        requests.post(INTEL_API, data=data, headers=API_HEADERS, timeout=10)
     except Exception:
         pass
 

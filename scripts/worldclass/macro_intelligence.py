@@ -25,7 +25,7 @@ except ImportError:
     print("pip install yfinance")
     sys.exit(1)
 
-from config import INTEL_API, ADMIN_KEY
+from config import INTEL_API, ADMIN_KEY, API_HEADERS
 
 
 def store_metric(metric_name, asset_class, value, label, metadata=None):
@@ -41,7 +41,7 @@ def store_metric(metric_name, asset_class, value, label, metadata=None):
         }
         if metadata:
             data["metadata"] = json.dumps(metadata)
-        resp = requests.post(INTEL_API, data=data, timeout=15)
+        resp = requests.post(INTEL_API, data=data, headers=API_HEADERS, timeout=15)
         return resp.json().get("ok", False)
     except Exception as e:
         print(f"  Store error: {e}")
@@ -56,7 +56,7 @@ def store_batch(metrics):
             "key": ADMIN_KEY,
             "metrics": json.dumps(metrics)
         }
-        resp = requests.post(INTEL_API, data=data, timeout=15)
+        resp = requests.post(INTEL_API, data=data, headers=API_HEADERS, timeout=15)
         return resp.json().get("ok", False)
     except Exception as e:
         print(f"  Batch store error: {e}")
@@ -66,6 +66,26 @@ def store_batch(metrics):
 # ════════════════════════════════════════════════════════════════
 #  FRED Macro Overlay
 # ════════════════════════════════════════════════════════════════
+
+def _yf_scalar(df, col="Close", idx=-1):
+    """Safely extract a scalar float from yfinance DataFrame (handles MultiIndex columns)."""
+    series = df[col]
+    if hasattr(series, 'values'):
+        vals = series.values.flatten()
+        if len(vals) == 0:
+            return None
+        return float(vals[idx])
+    return float(series.iloc[idx])
+
+
+def _yf_mean(df, col="Close", n=20):
+    """Safely compute mean of last N values from yfinance DataFrame."""
+    series = df[col]
+    if hasattr(series, 'values'):
+        vals = series.values.flatten()
+        return float(np.mean(vals[-n:])) if len(vals) >= n else float(np.mean(vals))
+    return float(series.tail(n).mean())
+
 
 def fetch_fred_via_yahoo():
     """
@@ -79,8 +99,8 @@ def fetch_fred_via_yahoo():
         tnx = yf.download("^TNX", period="3mo", interval="1d", progress=False)  # 10Y yield
         twy = yf.download("^IRX", period="3mo", interval="1d", progress=False)  # 13-week T-bill
         if not tnx.empty and not twy.empty:
-            y10 = float(tnx["Close"].iloc[-1])
-            y3m = float(twy["Close"].iloc[-1])
+            y10 = _yf_scalar(tnx, "Close", -1)
+            y3m = _yf_scalar(twy, "Close", -1)
             spread = y10 - y3m
             indicators["yield_spread"] = spread
             print(f"  Yield Spread (10Y-3M): {spread:.3f}%")
@@ -93,8 +113,8 @@ def fetch_fred_via_yahoo():
     try:
         vix = yf.download("^VIX", period="3mo", interval="1d", progress=False)
         if not vix.empty:
-            vix_current = float(vix["Close"].iloc[-1])
-            vix_avg = float(vix["Close"].tail(20).mean())
+            vix_current = _yf_scalar(vix, "Close", -1)
+            vix_avg = _yf_mean(vix, "Close", 20)
             indicators["vix_current"] = vix_current
             indicators["vix_avg_20d"] = vix_avg
             indicators["vix_ratio"] = vix_current / vix_avg if vix_avg > 0 else 1.0
@@ -102,12 +122,13 @@ def fetch_fred_via_yahoo():
     except Exception as e:
         print(f"  VIX error: {e}")
 
-    # Consumer sentiment proxy: AAII survey isn't on Yahoo, use VIX as sentiment
     # Gold as inflation/fear proxy
     try:
         gold = yf.download("GLD", period="3mo", interval="1d", progress=False)
         if not gold.empty and len(gold) > 20:
-            gold_return = float((gold["Close"].iloc[-1] / gold["Close"].iloc[-20] - 1) * 100)
+            gold_now = _yf_scalar(gold, "Close", -1)
+            gold_20d_ago = _yf_scalar(gold, "Close", -20)
+            gold_return = (gold_now / gold_20d_ago - 1) * 100
             indicators["gold_20d_return"] = gold_return
             print(f"  Gold 20d return: {gold_return:.2f}%")
     except Exception as e:
@@ -117,10 +138,10 @@ def fetch_fred_via_yahoo():
     try:
         dxy = yf.download("DX-Y.NYB", period="3mo", interval="1d", progress=False)
         if not dxy.empty:
-            dxy_current = float(dxy["Close"].iloc[-1])
-            dxy_avg = float(dxy["Close"].tail(20).mean())
+            dxy_current = _yf_scalar(dxy, "Close", -1)
+            dxy_avg = _yf_mean(dxy, "Close", 20)
             indicators["dxy_current"] = dxy_current
-            indicators["dxy_20d_change"] = float((dxy_current / dxy_avg - 1) * 100)
+            indicators["dxy_20d_change"] = (dxy_current / dxy_avg - 1) * 100
             print(f"  DXY: {dxy_current:.2f} (20d change: {indicators['dxy_20d_change']:.2f}%)")
     except Exception as e:
         print(f"  DXY error: {e}")
@@ -227,8 +248,8 @@ def fetch_vix_term_structure():
             print("  VIX term structure data unavailable")
             return None
 
-        spot = float(vix_spot["Close"].iloc[-1])
-        m3 = float(vix_3m["Close"].iloc[-1])
+        spot = _yf_scalar(vix_spot, "Close", -1)
+        m3 = _yf_scalar(vix_3m, "Close", -1)
 
         if m3 == 0:
             return None
@@ -285,6 +306,9 @@ def compute_cross_asset_signals():
             return None
 
         closes = data["Close"]
+        # Handle MultiIndex columns from newer yfinance
+        if hasattr(closes, 'columns') and hasattr(closes.columns, 'nlevels') and closes.columns.nlevels > 1:
+            closes = closes.droplevel(0, axis=1) if closes.columns.nlevels > 1 else closes
         if closes.ndim == 1:
             print("  Cross-asset: insufficient tickers")
             return None

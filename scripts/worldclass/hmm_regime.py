@@ -23,7 +23,7 @@ except ImportError as e:
     print("pip install yfinance hmmlearn")
     sys.exit(1)
 
-from config import INTEL_API, ADMIN_KEY, BENCHMARKS
+from config import INTEL_API, ADMIN_KEY, BENCHMARKS, API_HEADERS
 
 
 def fetch_returns(ticker, period="1y", interval="1d"):
@@ -186,7 +186,7 @@ def store_metric(metric_name, asset_class, value, label, metadata=None):
         if metadata:
             data["metadata"] = json.dumps(metadata)
 
-        resp = requests.post(INTEL_API, data=data, timeout=15)
+        resp = requests.post(INTEL_API, data=data, headers=API_HEADERS, timeout=15)
         result = resp.json()
         if result.get("ok"):
             return True

@@ -36,7 +36,7 @@ except ImportError as e:
     print("pip install scikit-learn xgboost joblib")
     sys.exit(1)
 
-from config import INTEL_API, ADMIN_KEY, ALL_ALGOS, MOMENTUM_ALGOS, MEAN_REVERSION_ALGOS
+from config import INTEL_API, ADMIN_KEY, API_HEADERS, ALL_ALGOS, MOMENTUM_ALGOS, MEAN_REVERSION_ALGOS
 
 
 API_BASE = "https://findtorontoevents.ca/live-monitor/api"
@@ -47,7 +47,7 @@ def fetch_trade_history():
     try:
         resp = requests.get(f"{API_BASE}/live_trade.php",
                           params={"action": "history", "limit": "5000"},
-                          timeout=30)
+                          headers=API_HEADERS, timeout=30)
         data = resp.json()
         if data.get("ok"):
             return data.get("trades", [])
@@ -64,7 +64,7 @@ def fetch_signal_history():
     try:
         resp = requests.get(f"{API_BASE}/live_signals.php",
                           params={"action": "history", "limit": "5000"},
-                          timeout=30)
+                          headers=API_HEADERS, timeout=30)
         data = resp.json()
         if data.get("ok"):
             return data.get("signals", [])
@@ -78,7 +78,7 @@ def fetch_intelligence():
     try:
         resp = requests.get(f"{API_BASE}/world_class_intelligence.php",
                           params={"action": "regime"},
-                          timeout=15)
+                          headers=API_HEADERS, timeout=15)
         return resp.json().get("regimes", {})
     except Exception:
         return {}
@@ -415,18 +415,18 @@ def main():
         print("  No trade history available. Running Kelly computation via PHP API instead.")
         # Trigger server-side Kelly computation
         try:
-            resp = requests.get(f"{INTEL_API}",
+            resp = requests.get(INTEL_API,
                               params={"action": "compute_kelly", "key": ADMIN_KEY},
-                              timeout=30)
+                              headers=API_HEADERS, timeout=30)
             print(f"  Kelly computation: {resp.json()}")
         except Exception as e:
             print(f"  Kelly computation error: {e}")
 
         # Trigger server-side algo health computation
         try:
-            resp = requests.get(f"{INTEL_API}",
+            resp = requests.get(INTEL_API,
                               params={"action": "compute_algo_health", "key": ADMIN_KEY},
-                              timeout=30)
+                              headers=API_HEADERS, timeout=30)
             print(f"  Algo health computation: {resp.json()}")
         except Exception as e:
             print(f"  Algo health error: {e}")
@@ -450,7 +450,6 @@ def main():
         print(f"  Model saved to {model_path}")
 
         # Store model metrics
-        from config import INTEL_API
         y_pred = model.predict(np.array([[f.get(fn, 0) for fn in feature_names] for f in features]))
         overall_precision = precision_score(labels, y_pred, zero_division=0)
         overall_accuracy = accuracy_score(labels, y_pred)
@@ -469,7 +468,7 @@ def main():
                 "features": feature_names,
                 "trained_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
             })
-        }, timeout=15)
+        }, headers=API_HEADERS, timeout=15)
 
     # ──── Compute Kelly Fractions ────
     print("\n--- Computing Kelly Fractions ---")
@@ -480,7 +479,7 @@ def main():
                 "action": "store_kelly",
                 "key": ADMIN_KEY,
                 "kelly_data": json.dumps(kelly_data)
-            }, timeout=15)
+            }, headers=API_HEADERS, timeout=15)
             result = resp.json()
             print(f"  Stored {result.get('stored', 0)} Kelly fractions")
         except Exception as e:
@@ -495,7 +494,7 @@ def main():
                 "action": "store_algo_health",
                 "key": ADMIN_KEY,
                 "health_data": json.dumps(health_data)
-            }, timeout=15)
+            }, headers=API_HEADERS, timeout=15)
             result = resp.json()
             print(f"  Stored {result.get('stored', 0)} algo health records")
         except Exception as e:

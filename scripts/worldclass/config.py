@@ -8,6 +8,9 @@ API_BASE = "https://findtorontoevents.ca/live-monitor/api"
 INTEL_API = f"{API_BASE}/world_class_intelligence.php"
 ADMIN_KEY = "livetrader2026"
 
+# Custom headers to bypass ModSecurity WAF (blocks python-requests User-Agent)
+API_HEADERS = {"User-Agent": "WorldClassIntelligence/1.0"}
+
 # FRED API (free key — get from https://fred.stlouisfed.org/docs/api/api_key.html)
 FRED_API_KEY = os.environ.get("FRED_API_KEY", "")
 
