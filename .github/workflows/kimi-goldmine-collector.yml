@@ -1,0 +1,172 @@
+name: KIMI Goldmine Data Collection
+
+on:
+  schedule:
+    # Every 15 minutes during market hours (9:30 AM - 4:00 PM EST, Mon-Fri)
+    - cron: '*/15 13-20 * * 1-5'
+    # Every hour outside market hours
+    - cron: '0 * * * *'
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  collect-and-update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        
+    - name: Create data directory
+      run: mkdir -p data/goldmine
+      
+    - name: Collect Stock Picks
+      run: |
+        curl -s "https://findtorontoevents.ca/findstocks/portfolio2/api/consolidated_picks.php?limit=100" \
+          -o data/goldmine/stock_picks.json || echo "Stock collection failed"
+          
+    - name: Collect Meme Coins
+      run: |
+        curl -s "https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php?action=winners" \
+          -o data/goldmine/meme_winners.json || echo "Meme collection failed"
+          
+    - name: Collect Sports Value Bets
+      run: |
+        curl -s "https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=today" \
+          -o data/goldmine/sports_picks.json || echo "Sports collection failed"
+          
+    - name: Process and Merge Data
+      run: |
+        php << 'EOF'
+        <?php
+        // Load all collected data
+        $stockData = json_decode(file_get_contents('data/goldmine/stock_picks.json') ?: '{}', true);
+        $memeData = json_decode(file_get_contents('data/goldmine/meme_winners.json') ?: '{}', true);
+        $sportsData = json_decode(file_get_contents('data/goldmine/sports_picks.json') ?: '{}', true);
+        
+        $allPicks = [];
+        $timestamp = date('Y-m-d H:i:s');
+        
+        // Process stock picks
+        if (!empty($stockData['picks'])) {
+            foreach ($stockData['picks'] as $pick) {
+                $allPicks[] = [
+                    'uuid' => 'stock_' . ($pick['id'] ?? uniqid()),
+                    'symbol' => $pick['ticker'] ?? $pick['symbol'] ?? 'UNKNOWN',
+                    'name' => $pick['company_name'] ?? null,
+                    'type' => 'stock',
+                    'source' => 'findstocks_portfolio2',
+                    'algorithm' => $pick['algorithm_name'] ?? 'unknown',
+                    'direction' => 'long',
+                    'entry_price' => $pick['entry_price'] ?? null,
+                    'score' => $pick['score'] ?? null,
+                    'confidence' => $pick['score'] ?? 50,
+                    'pick_date' => $pick['pick_date'] ?? $timestamp,
+                    'status' => 'active',
+                    'collected_at' => $timestamp
+                ];
+            }
+        }
+        
+        // Process meme coins
+        if (!empty($memeData['winners'])) {
+            foreach ($memeData['winners'] as $pick) {
+                $symbol = str_replace('_USDT', '', $pick['pair'] ?? 'UNKNOWN');
+                $allPicks[] = [
+                    'uuid' => 'meme_' . ($pick['id'] ?? uniqid()),
+                    'symbol' => $symbol,
+                    'name' => $symbol,
+                    'type' => 'meme_coin',
+                    'source' => 'meme_scanner',
+                    'algorithm' => 'meme_scanner',
+                    'direction' => 'long',
+                    'entry_price' => $pick['price_at_signal'] ?? null,
+                    'score' => $pick['score'] ?? null,
+                    'confidence' => $pick['score'] ?? 70,
+                    'target_pct' => $pick['target_pct'] ?? null,
+                    'risk_pct' => $pick['risk_pct'] ?? null,
+                    'pick_date' => $pick['created_at'] ?? $timestamp,
+                    'status' => 'active',
+                    'collected_at' => $timestamp,
+                    'factors' => $pick['factors_json'] ?? null
+                ];
+            }
+        }
+        
+        // Process sports picks
+        if (!empty($sportsData['value_bets'])) {
+            foreach ($sportsData['value_bets'] as $pick) {
+                $allPicks[] = [
+                    'uuid' => 'sports_' . ($pick['event_id'] ?? uniqid()) . '_' . md5($pick['outcome_name'] ?? ''),
+                    'symbol' => $pick['home_team'] . ' vs ' . $pick['away_team'],
+                    'name' => $pick['bet_type'] ?? $pick['outcome_name'] ?? 'Unknown',
+                    'type' => 'sports',
+                    'source' => 'sports_value_bet',
+                    'algorithm' => 'value_bet',
+                    'direction' => 'over',
+                    'entry_price' => 1.0,
+                    'odds' => $pick['best_odds'] ?? null,
+                    'ev_pct' => $pick['ev_pct'] ?? null,
+                    'confidence' => min(100, ($pick['ev_pct'] ?? 0) * 10),
+                    'pick_date' => $pick['detected_at'] ?? $timestamp,
+                    'status' => 'active',
+                    'collected_at' => $timestamp
+                ];
+            }
+        }
+        
+        // Save unified picks
+        file_put_contents('data/goldmine/unified_picks.json', json_encode([
+            'timestamp' => $timestamp,
+            'total_picks' => count($allPicks),
+            'picks' => $allPicks
+        ], JSON_PRETTY_PRINT));
+        
+        // Generate stats
+        $stats = [
+            'timestamp' => $timestamp,
+            'by_type' => [],
+            'by_source' => [],
+            'by_algorithm' => [],
+            'high_confidence' => 0
+        ];
+        
+        foreach ($allPicks as $pick) {
+            $type = $pick['type'];
+            $source = $pick['source'];
+            $algo = $pick['algorithm'];
+            
+            $stats['by_type'][$type] = ($stats['by_type'][$type] ?? 0) + 1;
+            $stats['by_source'][$source] = ($stats['by_source'][$source] ?? 0) + 1;
+            $stats['by_algorithm'][$algo] = ($stats['by_algorithm'][$algo] ?? 0) + 1;
+            
+            if (($pick['confidence'] ?? 0) >= 80) {
+                $stats['high_confidence']++;
+            }
+        }
+        
+        file_put_contents('data/goldmine/stats.json', json_encode($stats, JSON_PRETTY_PRINT));
+        
+        echo "Processed " . count($allPicks) . " picks\n";
+        echo "By type: " . json_encode($stats['by_type']) . "\n";
+        EOF
+        
+    - name: Commit and Push Changes
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        
+        git add data/goldmine/
+        
+        if git diff --cached --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Update goldmine data - $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
+        fi

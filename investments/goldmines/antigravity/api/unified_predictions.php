@@ -36,8 +36,8 @@ if ($action === 'leaderboard') {
     $result = @$conn->query("SELECT * FROM v_algorithm_leaderboard WHERE total_trades >= " . $min_trades . " ORDER BY sharpe_ratio DESC LIMIT 50");
 
     if (!$result) {
-        // Fallback: build leaderboard from stock_picks
-        $where = "1=1";
+        // Fallback: build leaderboard from goldmine_cursor_predictions
+        $where = "status IN ('won','lost')";
         if ($system_filter) {
             $where .= " AND algorithm = '" . $conn->real_escape_string($system_filter) . "'";
         }
@@ -45,14 +45,14 @@ if ($action === 'leaderboard') {
         $result = $conn->query("SELECT
             algorithm,
             COUNT(*) as total_trades,
-            SUM(CASE WHEN outcome = 'win' THEN 1 ELSE 0 END) as wins,
-            SUM(CASE WHEN outcome = 'loss' THEN 1 ELSE 0 END) as losses,
-            ROUND(SUM(CASE WHEN outcome = 'win' THEN 1 ELSE 0 END) / NULLIF(SUM(CASE WHEN outcome IN ('win','loss') THEN 1 ELSE 0 END), 0) * 100, 1) as win_rate,
-            ROUND(AVG(CASE WHEN outcome IN ('win','loss') THEN pnl_pct ELSE NULL END), 2) as avg_pnl,
-            ROUND(SUM(CASE WHEN outcome IN ('win','loss') THEN pnl_pct ELSE 0 END), 2) as total_pnl,
-            MAX(pick_date) as last_trade_date
-            FROM stock_picks
-            WHERE outcome IS NOT NULL AND outcome != 'pending' AND " . $where . "
+            SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) as wins,
+            SUM(CASE WHEN status = 'lost' THEN 1 ELSE 0 END) as losses,
+            ROUND(SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0) * 100, 1) as win_rate,
+            ROUND(AVG(pnl_pct), 2) as avg_pnl,
+            ROUND(SUM(pnl_pct), 2) as total_pnl,
+            MAX(logged_at) as last_trade_date
+            FROM goldmine_cursor_predictions
+            WHERE " . $where . "
             GROUP BY algorithm
             HAVING COUNT(*) >= " . $min_trades . "
             ORDER BY win_rate DESC
@@ -85,14 +85,14 @@ elseif ($action === 'hidden_winners') {
         $result = $conn->query("SELECT
             algorithm,
             COUNT(*) as total_trades,
-            SUM(CASE WHEN outcome = 'win' THEN 1 ELSE 0 END) as wins,
-            ROUND(SUM(CASE WHEN outcome = 'win' THEN 1 ELSE 0 END) / NULLIF(SUM(CASE WHEN outcome IN ('win','loss') THEN 1 ELSE 0 END), 0) * 100, 1) as win_rate,
-            ROUND(AVG(CASE WHEN outcome IN ('win','loss') THEN pnl_pct ELSE NULL END), 2) as avg_pnl,
-            ROUND(SUM(CASE WHEN outcome IN ('win','loss') THEN pnl_pct ELSE 0 END), 2) as total_pnl
-            FROM stock_picks
-            WHERE outcome IS NOT NULL AND outcome != 'pending'
+            SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) as wins,
+            ROUND(SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0) * 100, 1) as win_rate,
+            ROUND(AVG(pnl_pct), 2) as avg_pnl,
+            ROUND(SUM(pnl_pct), 2) as total_pnl
+            FROM goldmine_cursor_predictions
+            WHERE status IN ('won','lost')
             GROUP BY algorithm
-            HAVING COUNT(*) >= 30 AND win_rate >= 55
+            HAVING COUNT(*) >= 30 AND ROUND(SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0) * 100, 1) >= 55
             ORDER BY win_rate DESC");
     }
 
@@ -118,18 +118,18 @@ elseif ($action === 'system_summary') {
     $result = @$conn->query("SELECT * FROM v_system_performance ORDER BY sharpe_ratio DESC");
 
     if (!$result) {
-        // Fallback: summarize from stock_picks by algorithm family
+        // Fallback: summarize from goldmine_cursor_predictions by asset_class
         $result = $conn->query("SELECT
-            algorithm as system,
+            asset_class as `system`,
             COUNT(*) as total_trades,
-            SUM(CASE WHEN outcome = 'win' THEN 1 ELSE 0 END) as wins,
-            SUM(CASE WHEN outcome = 'loss' THEN 1 ELSE 0 END) as losses,
-            ROUND(SUM(CASE WHEN outcome = 'win' THEN 1 ELSE 0 END) / NULLIF(SUM(CASE WHEN outcome IN ('win','loss') THEN 1 ELSE 0 END), 0) * 100, 1) as win_rate,
-            ROUND(AVG(CASE WHEN outcome IN ('win','loss') THEN pnl_pct ELSE NULL END), 2) as avg_pnl,
-            MAX(pick_date) as last_trade_date
-            FROM stock_picks
-            WHERE outcome IS NOT NULL AND outcome != 'pending'
-            GROUP BY algorithm
+            SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) as wins,
+            SUM(CASE WHEN status = 'lost' THEN 1 ELSE 0 END) as losses,
+            ROUND(SUM(CASE WHEN status = 'won' THEN 1 ELSE 0 END) / NULLIF(SUM(CASE WHEN status IN ('won','lost') THEN 1 ELSE 0 END), 0) * 100, 1) as win_rate,
+            ROUND(AVG(CASE WHEN status IN ('won','lost') THEN pnl_pct ELSE NULL END), 2) as avg_pnl,
+            MAX(logged_at) as last_trade_date
+            FROM goldmine_cursor_predictions
+            WHERE status IN ('won','lost')
+            GROUP BY asset_class
             ORDER BY win_rate DESC");
     }
 
@@ -163,11 +163,11 @@ elseif ($action === 'recent') {
 
     if (!$result) {
         $result = $conn->query("SELECT
-            id, algorithm, ticker as asset, pick_date as entry_timestamp, 
-            entry_price, outcome, pnl_pct, latest_price as exit_price
-            FROM stock_picks
-            WHERE pick_date >= DATE_SUB(CURDATE(), INTERVAL " . intval(ceil($hours / 24)) . " DAY)
-            ORDER BY pick_date DESC
+            id, algorithm, ticker as asset, logged_at as entry_timestamp,
+            entry_price, status as outcome, pnl_pct, exit_price
+            FROM goldmine_cursor_predictions
+            WHERE logged_at >= DATE_SUB(NOW(), INTERVAL " . $hours . " HOUR)
+            ORDER BY logged_at DESC
             LIMIT 100");
     }
 

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIMI Goldmine | Client Edition</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --accent-gold: #ffd700;
+            --accent-green: #00c853;
+            --accent-red: #ff1744;
+            --accent-blue: #00b0ff;
+            --accent-purple: #e040fb;
+            --border-color: #2a2a3a;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-gold), #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .data-source {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .main-content { padding: 2rem; max-width: 1400px; margin: 0 auto; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            border-color: var(--accent-gold);
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-secondary);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+        
+        .data-table th {
+            background: var(--bg-tertiary);
+            text-align: left;
+            padding: 0.875rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .data-table td {
+            padding: 0.875rem;
+            font-size: 0.875rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .data-table tr:hover { background: var(--bg-tertiary); }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-gold { background: rgba(255,215,0,0.2); color: var(--accent-gold); }
+        .badge-green { background: rgba(0,200,83,0.2); color: var(--accent-green); }
+        .badge-blue { background: rgba(0,176,255,0.2); color: var(--accent-blue); }
+        .badge-purple { background: rgba(224,64,251,0.2); color: var(--accent-purple); }
+        
+        .type-icon { display: inline-flex; align-items: center; gap: 0.5rem; }
+        .type-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .type-stock { background: var(--accent-blue); }
+        .type-meme_coin { background: #ff6d00; }
+        .type-crypto { background: var(--accent-purple); }
+        .type-sports { background: #ff5722; }
+        
+        .loading, .error {
+            text-align: center;
+            padding: 4rem;
+            color: var(--text-secondary);
+        }
+        
+        .error { color: var(--accent-red); }
+        
+        .last-updated {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .confidence-bar {
+            width: 60px;
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+        
+        .refresh-btn {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div>
+            <div class="logo">🏆 KIMI GOLDMINE</div>
+            <div class="data-source">
+                <span class="live-dot"></span>
+                Live from GitHub Actions
+            </div>
+        </div>
+        <div style="display:flex;gap:1rem;align-items:center;">
+            <span class="last-updated" id="lastUpdated">Loading...</span>
+            <button class="refresh-btn" onclick="loadData()">🔄 Refresh</button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-value">-</div>
+                <div class="stat-label">Loading...</div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterType('all')">All</button>
+            <button class="filter-btn" onclick="filterType('stock')">📈 Stocks</button>
+            <button class="filter-btn" onclick="filterType('meme_coin')">🪙 Meme Coins</button>
+            <button class="filter-btn" onclick="filterType('crypto')">₿ Crypto</button>
+            <button class="filter-btn" onclick="filterType('sports')">⚽ Sports</button>
+            <button class="filter-btn" onclick="filterHighConfidence()">⭐ High Confidence (80+)</button>
+        </div>
+
+        <div id="tableContainer">
+            <div class="loading">Loading goldmine data from GitHub...</div>
+        </div>
+    </main>
+
+    <script>
+        // GitHub raw JSON URLs
+        const GITHUB_BASE = 'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigravity.ca/main';
+        
+        let allPicks = [];
+        let currentFilter = 'all';
+        
+        async function loadData() {
+            const container = document.getElementById('tableContainer');
+            container.innerHTML = '<div class="loading">Loading goldmine data...</div>';
+            
+            try {
+                // Fetch from GitHub Actions-generated JSON
+                const response = await fetch(`${GITHUB_BASE}/data/goldmine/unified_picks.json?t=${Date.now()}`);
+                
+                if (!response.ok) {
+                    throw new Error('Data not yet available');
+                }
+                
+                const data = await response.json();
+                allPicks = data.picks || [];
+                
+                // Also fetch stats
+                const statsRes = await fetch(`${GITHUB_BASE}/data/goldmine/stats.json?t=${Date.now()}`);
+                const stats = statsRes.ok ? await statsRes.json() : null;
+                
+                updateStats(data, stats);
+                renderTable();
+                
+                document.getElementById('lastUpdated').textContent = 
+                    'Updated: ' + new Date(data.timestamp).toLocaleString();
+                    
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="error">
+                        <h3>⚠️ Data Not Available Yet</h3>
+                        <p>${error.message}</p>
+                        <p style="margin-top:1rem;font-size:0.875rem;">
+                            The GitHub Actions workflow needs to run first.<br>
+                            It collects data every 15 minutes during market hours.
+                        </p>
+                    </div>
+                `;
+            }
+        }
+        
+        function updateStats(data, stats) {
+            const grid = document.getElementById('statsGrid');
+            const byType = stats?.by_type || {};
+            
+            grid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${data.total_picks || 0}</div>
+                    <div class="stat-label">Total Picks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${byType['stock'] || 0}</div>
+                    <div class="stat-label">Stock Picks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${byType['meme_coin'] || 0}</div>
+                    <div class="stat-label">Meme Coins</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${byType['sports'] || 0}</div>
+                    <div class="stat-label">Sports Bets</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats?.high_confidence || 0}</div>
+                    <div class="stat-label">High Confidence</div>
+                </div>
+            `;
+        }
+        
+        function renderTable() {
+            const container = document.getElementById('tableContainer');
+            
+            let filtered = allPicks;
+            if (currentFilter !== 'all') {
+                filtered = allPicks.filter(p => p.type === currentFilter);
+            }
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="loading">No picks match this filter</div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Symbol</th>
+                            <th>Algorithm</th>
+                            <th>Entry</th>
+                            <th>Target</th>
+                            <th>Confidence</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filtered.slice(0, 100).map(p => `
+                            <tr>
+                                <td>
+                                    <span class="type-icon">
+                                        <span class="type-dot type-${p.type}"></span>
+                                        ${p.type.replace('_', ' ')}
+                                    </span>
+                                </td>
+                                <td><strong>${p.symbol}</strong></td>
+                                <td>${p.algorithm}</td>
+                                <td>${p.entry_price ? '$' + p.entry_price.toFixed(2) : '-'}</td>
+                                <td>${p.target_pct ? '+' + p.target_pct + '%' : '-'}</td>
+                                <td>
+                                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                                        <div class="confidence-bar">
+                                            <div class="confidence-fill" style="width:${p.confidence}%;background:${p.confidence >= 80 ? '#00c853' : p.confidence >= 60 ? '#ffd700' : '#ff1744'}"></div>
+                                        </div>
+                                        <span style="font-size:0.75rem;">${p.confidence}</span>
+                                    </div>
+                                </td>
+                                <td><span class="badge badge-${p.status === 'active' ? 'green' : 'blue'}">${p.status}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        function filterType(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderTable();
+        }
+        
+        function filterHighConfidence() {
+            const filtered = allPicks.filter(p => (p.confidence || 0) >= 80);
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const container = document.getElementById('tableContainer');
+            container.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Symbol</th>
+                            <th>Algorithm</th>
+                            <th>Entry</th>
+                            <th>Confidence</th>
+                            <th>Collected</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filtered.map(p => `
+                            <tr>
+                                <td><span class="type-icon"><span class="type-dot type-${p.type}"></span>${p.type.replace('_', ' ')}</span></td>
+                                <td><strong>${p.symbol}</strong></td>
+                                <td>${p.algorithm}</td>
+                                <td>${p.entry_price ? '$' + p.entry_price.toFixed(2) : '-'}</td>
+                                <td><span class="badge badge-gold">${p.confidence}/100</span></td>
+                                <td>${new Date(p.collected_at).toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        // Load on page load
+        loadData();
+        
+        // Auto-refresh every 5 minutes
+        setInterval(loadData, 5 * 60 * 1000);
+    </script>
+</body>
+</html>

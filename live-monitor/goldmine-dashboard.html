@@ -883,7 +883,7 @@ function loadAlertBanner() {
         var alerts = data.alerts || [];
         var active = [];
         for (var i = 0; i < alerts.length; i++) {
-            if (alerts[i].status && alerts[i].status.toLowerCase() === 'active') {
+            if (alerts[i].is_active == 1 || (alerts[i].status && alerts[i].status.toLowerCase() === 'active')) {
                 active.push(alerts[i]);
             }
         }
@@ -976,7 +976,7 @@ function renderWinnersLosers(winners, losers) {
         var w = winners[i];
         wHtml += '<div class="list-item">'
             + '<div><span class="li-ticker">' + (w.ticker || '--') + '</span> <span class="li-source">' + (w.source_system || '') + '</span></div>'
-            + '<div class="li-return pos">+' + fmtNum(w.return_pct) + '%</div>'
+            + '<div class="li-return pos">+' + fmtNum(w.final_return_pct || w.return_pct) + '%</div>'
             + '</div>';
     }
     document.getElementById('winners-list').innerHTML = wHtml;
@@ -989,7 +989,7 @@ function renderWinnersLosers(winners, losers) {
         var l = losers[j];
         lHtml += '<div class="list-item">'
             + '<div><span class="li-ticker">' + (l.ticker || '--') + '</span> <span class="li-source">' + (l.source_system || '') + '</span></div>'
-            + '<div class="li-return neg">' + fmtNum(l.return_pct) + '%</div>'
+            + '<div class="li-return neg">' + fmtNum(l.final_return_pct || l.return_pct) + '%</div>'
             + '</div>';
     }
     document.getElementById('losers-list').innerHTML = lHtml;
@@ -1044,7 +1044,7 @@ function loadPicks() {
                 + '<td>' + fmtNum(p.stop_loss) + '</td>'
                 + '<td>' + fmtNum(p.confidence, 0) + '</td>'
                 + '<td>' + fmtNum(p.current_price) + '</td>'
-                + '<td>' + fmtPct(p.return_pct) + '</td>'
+                + '<td>' + fmtPct(p.final_return_pct || p.return_pct) + '</td>'
                 + '<td>' + statusBadge(p.status) + '</td>'
                 + '<td>' + fmtHoldTime(p.hold_hours) + '</td>'
                 + '</tr>';
@@ -1207,9 +1207,9 @@ function loadSystemDetail() {
             for (var j = 0; j < algos.length; j++) {
                 var a = algos[j];
                 aHtml += '<tr>'
-                    + '<td class="fw-bold">' + (a.algorithm || '--') + '</td>'
-                    + '<td>' + (a.trades || 0) + '</td>'
-                    + '<td class="' + wrColor(a.win_rate) + '">' + fmtNum(a.win_rate, 1) + '%</td>'
+                    + '<td class="fw-bold">' + (a.algorithm_name || a.algorithm || '--') + '</td>'
+                    + '<td>' + (a.picks || a.trades || 0) + '</td>'
+                    + '<td class="' + wrColor(a.win_rate || (a.wins && a.picks ? (a.wins/a.picks*100) : 0)) + '">' + fmtNum(a.win_rate || (a.wins && a.picks ? (a.wins/a.picks*100) : 0), 1) + '%</td>'
                     + '<td>' + fmtPct(a.avg_return) + '</td>'
                     + '<td>' + fmtPct(a.total_return) + '</td>'
                     + '</tr>';
@@ -1232,9 +1232,9 @@ function loadSystemDetail() {
                     + '<td>' + (rp.direction || '--') + '</td>'
                     + '<td>' + fmtNum(rp.entry_price) + '</td>'
                     + '<td>' + fmtNum(rp.exit_price) + '</td>'
-                    + '<td>' + fmtPct(rp.return_pct) + '</td>'
+                    + '<td>' + fmtPct(rp.final_return_pct || rp.return_pct) + '</td>'
                     + '<td>' + statusBadge(rp.status) + '</td>'
-                    + '<td>' + (rp.algorithm || '--') + '</td>'
+                    + '<td>' + (rp.algorithm_name || rp.algorithm || '--') + '</td>'
                     + '</tr>';
             }
             document.getElementById('deepdive-recent-tbody').innerHTML = rHtml;
@@ -1249,8 +1249,12 @@ function renderDeepdiveChart(trend) {
     var labels = [];
     var values = [];
     for (var i = 0; i < trend.length; i++) {
-        labels.push(trend[i].date || trend[i].day || '');
-        values.push(parseFloat(trend[i].win_rate || 0));
+        labels.push(trend[i].pick_date || trend[i].date || trend[i].day || '');
+        var wr = trend[i].win_rate;
+        if ((wr === undefined || wr === null) && trend[i].wins !== undefined && trend[i].picks) {
+            wr = (trend[i].wins / trend[i].picks) * 100;
+        }
+        values.push(parseFloat(wr || 0));
     }
 
     var ctx = document.getElementById('chart-deepdive-wr');
@@ -1323,19 +1327,19 @@ function loadFailures() {
         var html = '';
         for (var i = 0; i < alerts.length; i++) {
             var a = alerts[i];
-            var isActive = a.status && a.status.toLowerCase() === 'active';
+            var isActive = (a.is_active == 1) || (a.status && a.status.toLowerCase() === 'active');
             var rowCls = isActive ? 'alert-row-active' : '';
 
             var metricStr = '--';
-            if (a.metric_value !== undefined && a.threshold !== undefined) {
-                metricStr = fmtNum(a.metric_value) + ' / ' + fmtNum(a.threshold);
+            if (a.metric_value !== undefined && (a.threshold_value !== undefined || a.threshold !== undefined)) {
+                metricStr = fmtNum(a.metric_value) + ' / ' + fmtNum(a.threshold_value || a.threshold);
             } else if (a.metric) {
                 metricStr = a.metric;
             }
 
             var linkStr = '';
-            if (a.page_link) {
-                linkStr = '<a href="' + a.page_link + '" target="_blank">View</a>';
+            if (a.page_url || a.page_link) {
+                linkStr = '<a href="' + (a.page_url || a.page_link) + '" target="_blank">View</a>';
             } else {
                 linkStr = '<a href="/live-monitor/goldmine-alerts.html" target="_blank">Details</a>';
             }
@@ -1345,13 +1349,13 @@ function loadFailures() {
 
             html += '<tr class="' + rowCls + '">'
                 + '<td>' + fmtDate(a.created_at || a.date) + '</td>'
-                + '<td>' + (a.system || a.source_system || '--') + '</td>'
-                + '<td>' + (a.type || '--') + '</td>'
+                + '<td>' + (a.source_system || a.system || '--') + '</td>'
+                + '<td>' + (a.alert_type || a.type || '--') + '</td>'
                 + '<td>' + severityBadge(a.severity) + '</td>'
                 + '<td>' + (a.title || a.message || '--') + '</td>'
                 + '<td>' + tickers + '</td>'
                 + '<td>' + metricStr + '</td>'
-                + '<td>' + alertStatusBadge(a.status) + '</td>'
+                + '<td>' + alertStatusBadge(isActive ? 'active' : 'resolved') + '</td>'
                 + '<td>' + linkStr + '</td>'
                 + '</tr>';
         }
