@@ -4,35 +4,40 @@
  * Imports picks from all prediction sources across the platform
  */
 
-// Suppress all errors - we'll handle them manually
-error_reporting(0);
+// MUST be first - prevent any HTML error output
 ini_set('display_errors', '0');
+error_reporting(E_ALL);
 
-// Ensure JSON output even on fatal errors
-register_shutdown_function(function() {
-    $error = error_get_last();
-    if ($error && ($error['type'] === E_ERROR || $error['type'] === E_PARSE)) {
-        ob_clean();
-        echo json_encode(['ok' => false, 'error' => 'Fatal error: ' . $error['message']]);
-    }
-});
-
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 
-// Capture any output
+// Start output buffering
 ob_start();
 
+// Include with error capture
+$dbError = null;
 try {
-    require_once dirname(__FILE__) . '/../../../findstocks/portfolio2/api/db_connect.php';
+    $dbFile = dirname(__FILE__) . '/../../../findstocks/portfolio2/api/db_connect.php';
+    if (!file_exists($dbFile)) {
+        $dbError = 'Database config file not found at: ' . $dbFile;
+    } else {
+        require_once $dbFile;
+        if (!isset($conn)) {
+            $dbError = 'Database connection variable not set';
+        }
+    }
 } catch (Exception $e) {
-    ob_clean();
-    echo json_encode(['ok' => false, 'error' => 'Database connection failed: ' . $e->getMessage()]);
-    exit;
+    $dbError = $e->getMessage();
 }
 
-// Clean any output from db_connect.php
-ob_clean();
+// Clear any output from db_connect
+ob_end_clean();
+
+// Return error if DB failed
+if ($dbError) {
+    echo json_encode(['ok' => false, 'error' => 'DB Error: ' . $dbError]);
+    exit;
+}
 
 $ADMIN_KEY = 'goldmine2026';
 $action = isset($_GET['action']) ? trim($_GET['action']) : 'status';
