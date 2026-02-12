@@ -39,7 +39,7 @@ if ($col_check && $col_check->num_rows === 0) {
 //  Constants
 // ────────────────────────────────────────────────────────────
 
-$ADMIN_KEY = 'livetrader2026';
+$ADMIN_KEY = isset($SPORTS_ADMIN_KEY) ? $SPORTS_ADMIN_KEY : 'livetrader2026';
 $INITIAL_BANKROLL = 1000.00;
 $MAX_ACTIVE_BETS = 20;
 $MIN_BET = 5.00;
@@ -801,6 +801,40 @@ function _sb_action_auto_place($conn) {
         return;
     }
 
+    // ── Circuit breaker: daily loss limit ──
+    // If we've lost more than $100 (10% of initial bankroll) today, halt auto-placing
+    $daily_loss_limit = 100.00;
+    $daily_pnl_q = $conn->query("SELECT COALESCE(SUM(pnl), 0) as today_pnl FROM lm_sports_bets WHERE result IS NOT NULL AND settled_at >= CURDATE()");
+    $today_pnl = 0;
+    if ($daily_pnl_q && $row = $daily_pnl_q->fetch_assoc()) {
+        $today_pnl = (float)$row['today_pnl'];
+    }
+    if ($today_pnl <= -$daily_loss_limit) {
+        echo json_encode(array(
+            'ok' => true,
+            'bets_placed' => 0,
+            'message' => 'Circuit breaker: daily loss limit reached ($' . round(abs($today_pnl), 2) . ' lost today, limit $' . $daily_loss_limit . ')',
+            'today_pnl' => round($today_pnl, 2),
+            'daily_loss_limit' => $daily_loss_limit
+        ));
+        return;
+    }
+
+    // ── Circuit breaker: bankroll floor ──
+    // Never auto-place if bankroll drops below $800 (20% drawdown)
+    $bankroll_floor = 800.00;
+    $bankroll = _sb_get_bankroll($conn);
+    if ($bankroll < $bankroll_floor) {
+        echo json_encode(array(
+            'ok' => true,
+            'bets_placed' => 0,
+            'message' => 'Circuit breaker: bankroll below floor ($' . round($bankroll, 2) . ' < $' . $bankroll_floor . ')',
+            'bankroll' => round($bankroll, 2),
+            'bankroll_floor' => $bankroll_floor
+        ));
+        return;
+    }
+
     // Check current active bet count
     $active_q = $conn->query("SELECT COUNT(*) as cnt FROM lm_sports_bets WHERE status='pending'");
     $active_count = 0;
@@ -813,8 +847,6 @@ function _sb_action_auto_place($conn) {
         echo json_encode(array('ok' => true, 'bets_placed' => 0, 'message' => 'Max active bets reached (' . $MAX_ACTIVE_BETS . ')'));
         return;
     }
-
-    $bankroll = _sb_get_bankroll($conn);
     $min_ev = isset($_GET['min_ev']) ? (float)$_GET['min_ev'] : 3.0;
     $max_bets = isset($_GET['max_bets']) ? (int)$_GET['max_bets'] : 5;
     if ($max_bets > $slots_available) $max_bets = $slots_available;

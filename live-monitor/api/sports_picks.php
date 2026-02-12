@@ -29,7 +29,7 @@ _sb_ensure_schema($conn);
 //  Constants
 // ────────────────────────────────────────────────────────────
 
-$ADMIN_KEY = 'livetrader2026';
+$ADMIN_KEY = isset($SPORTS_ADMIN_KEY) ? $SPORTS_ADMIN_KEY : 'livetrader2026';
 
 $CANADIAN_BOOKS = array('bet365', 'fanduel', 'draftkings', 'betmgm', 'pointsbetus', 'williamhill_us', 'betrivers', 'espnbet', 'fanatics');
 
@@ -668,6 +668,277 @@ function _sp_sort_ev_desc($a, $b) {
 }
 
 // ════════════════════════════════════════════════════════════
+//  SITUATION SCORE — Research-backed team context (0-30 points)
+//  Dean Oliver (2004), Entine & Small (2008), Biro et al. (2017),
+//  Hockey Graphs (2014), Macdonald (2012), MDPI Applied Sciences (2021)
+// ════════════════════════════════════════════════════════════
+
+function _sp_situation_score($vb) {
+    $pts = 0;
+    $reasons = array();
+    $sport = isset($vb['sport']) ? $vb['sport'] : '';
+    $home = isset($vb['home_team']) ? $vb['home_team'] : '';
+    $away = isset($vb['away_team']) ? $vb['away_team'] : '';
+    $pick = isset($vb['outcome_name']) ? $vb['outcome_name'] : '';
+
+    // Determine which team we picked
+    $is_home_pick = (stripos($pick, $home) !== false);
+
+    // ── Fetch schedule intel (cached, no extra API call if fresh) ──
+    $sched = _sp_get_schedule_intel($sport, $home, $away);
+    $home_sched = isset($sched['home']) ? $sched['home'] : null;
+    $away_sched = isset($sched['away']) ? $sched['away'] : null;
+
+    // ── Fetch injury intel (cached) ──
+    $injuries = _sp_get_injury_intel($sport, $home, $away);
+    $home_inj = isset($injuries['home']) ? $injuries['home'] : null;
+    $away_inj = isset($injuries['away']) ? $injuries['away'] : null;
+
+    // ── Fetch sport-specific team stats (cached) ──
+    $stats = _sp_get_sport_stats($sport, $home, $away);
+    $home_stats = isset($stats['home']) ? $stats['home'] : null;
+    $away_stats = isset($stats['away']) ? $stats['away'] : null;
+
+    // ══ SCHEDULE-BASED FACTORS (all sports) ══
+
+    if ($home_sched && $away_sched) {
+        $picked_sched = $is_home_pick ? $home_sched : $away_sched;
+        $opp_sched    = $is_home_pick ? $away_sched : $home_sched;
+
+        // Back-to-back: opponent on B2B while our pick is rested
+        if (isset($opp_sched['is_back_to_back']) && $opp_sched['is_back_to_back'] && (!isset($picked_sched['is_back_to_back']) || !$picked_sched['is_back_to_back'])) {
+            if ($sport === 'basketball_nba' || $sport === 'basketball_ncaab') {
+                $pts += 10;
+                $reasons[] = 'Opponent on back-to-back (~2.5 pts worse, Dean Oliver 2004)';
+            } elseif ($sport === 'icehockey_nhl') {
+                $pts += 10;
+                $reasons[] = 'Opponent on back-to-back (goalie Sv% drops .008, Hockey Graphs 2014)';
+            } else {
+                $pts += 6;
+                $reasons[] = 'Opponent on back-to-back (fatigue disadvantage)';
+            }
+        }
+
+        // Rest advantage >= 2 days
+        $picked_rest = isset($picked_sched['rest_days']) ? (int)$picked_sched['rest_days'] : 99;
+        $opp_rest    = isset($opp_sched['rest_days']) ? (int)$opp_sched['rest_days'] : 99;
+        $rest_adv = $picked_rest - $opp_rest;
+        if ($rest_adv >= 2 && $picked_rest < 99 && $opp_rest < 99) {
+            $pts += 5;
+            $reasons[] = 'Our pick has ' . $rest_adv . '-day rest advantage (Entine & Small 2008)';
+        }
+
+        // Road trip fatigue on opponent
+        if (isset($opp_sched['is_road_trip']) && $opp_sched['is_road_trip']) {
+            $pts += 3;
+            $reasons[] = 'Opponent on extended road trip (PMC8636381)';
+        }
+    }
+
+    // ══ INJURY-BASED FACTORS (all sports) ══
+
+    if ($home_inj && $away_inj) {
+        $picked_inj = $is_home_pick ? $home_inj : $away_inj;
+        $opp_inj    = $is_home_pick ? $away_inj : $home_inj;
+
+        $opp_out = isset($opp_inj['out']) ? (int)$opp_inj['out'] : 0;
+        $pick_out = isset($picked_inj['out']) ? (int)$picked_inj['out'] : 0;
+
+        if ($opp_out >= 3 && $opp_out > $pick_out + 1) {
+            $pts += 5;
+            $reasons[] = 'Opponent has ' . $opp_out . ' players OUT (injury advantage)';
+        } elseif ($opp_out >= 2 && $opp_out > $pick_out) {
+            $pts += 3;
+            $reasons[] = 'Opponent missing ' . $opp_out . ' players';
+        }
+    }
+
+    // ══ SPORT-SPECIFIC STAT FACTORS ══
+
+    if ($home_stats && $away_stats) {
+        $picked_stats = $is_home_pick ? $home_stats : $away_stats;
+        $opp_stats    = $is_home_pick ? $away_stats : $home_stats;
+
+        if ($sport === 'basketball_nba' || $sport === 'basketball_ncaab') {
+            // NBA: win% differential
+            $pw = isset($picked_stats['win_pct']) ? (float)$picked_stats['win_pct'] : 0;
+            $ow = isset($opp_stats['win_pct']) ? (float)$opp_stats['win_pct'] : 0;
+            if ($pw > $ow + 0.1) {
+                $pts += 5;
+                $reasons[] = 'Stronger team by win% (' . round($pw * 100, 1) . '% vs ' . round($ow * 100, 1) . '%)';
+            } elseif ($pw > $ow + 0.05) {
+                $pts += 2;
+            }
+
+        } elseif ($sport === 'icehockey_nhl') {
+            // NHL: points% differential
+            $pp = isset($picked_stats['pts_pct']) ? (float)$picked_stats['pts_pct'] : 0;
+            $op = isset($opp_stats['pts_pct']) ? (float)$opp_stats['pts_pct'] : 0;
+            if ($pp > $op + 0.05) {
+                $pts += 5;
+                $reasons[] = 'Better pts% (' . round($pp * 100, 1) . '% vs ' . round($op * 100, 1) . '%)';
+            }
+            // Goals for/against ratio
+            $pgf = isset($picked_stats['goals_for']) ? (float)$picked_stats['goals_for'] : 0;
+            $pga = isset($picked_stats['goals_against']) ? (float)$picked_stats['goals_against'] : 1;
+            $ogf = isset($opp_stats['goals_for']) ? (float)$opp_stats['goals_for'] : 0;
+            $oga = isset($opp_stats['goals_against']) ? (float)$opp_stats['goals_against'] : 1;
+            if ($pga > 0 && $oga > 0) {
+                $p_ratio = $pgf / $pga;
+                $o_ratio = $ogf / $oga;
+                if ($p_ratio > $o_ratio + 0.1) {
+                    $pts += 4;
+                    $reasons[] = 'Better GF/GA ratio (Macdonald 2012 xG research)';
+                }
+            }
+
+        } elseif ($sport === 'americanfootball_nfl' || $sport === 'americanfootball_cfl' || $sport === 'americanfootball_ncaaf') {
+            // NFL: turnover differential (70% win rate when positive, Biro 2017)
+            $ptd = isset($picked_stats['turnover_diff']) ? (int)$picked_stats['turnover_diff'] : 0;
+            $otd = isset($opp_stats['turnover_diff']) ? (int)$opp_stats['turnover_diff'] : 0;
+            if ($ptd > $otd + 3) {
+                $pts += 10;
+                $reasons[] = 'Superior turnover margin (+' . $ptd . ' vs ' . ($otd >= 0 ? '+' : '') . $otd . ', 70% win rate, Biro 2017)';
+            } elseif ($ptd > $otd) {
+                $pts += 5;
+                $reasons[] = 'Better turnover differential (' . ($ptd >= 0 ? '+' : '') . $ptd . ' vs ' . ($otd >= 0 ? '+' : '') . $otd . ')';
+            }
+            // Point differential
+            $pd = isset($picked_stats['diff']) ? (float)$picked_stats['diff'] : 0;
+            $od = isset($opp_stats['diff']) ? (float)$opp_stats['diff'] : 0;
+            if ($pd > $od + 30) {
+                $pts += 5;
+                $reasons[] = 'Dominant point differential';
+            }
+            // Home team bonus (worth ~2.5-3 pts in NFL)
+            if ($is_home_pick) {
+                $pts += 4;
+                $reasons[] = 'Home field advantage (~2.5-3 pts in NFL)';
+            }
+
+        } elseif ($sport === 'baseball_mlb') {
+            // MLB: ERA comparison (MDPI 2021)
+            $pe = isset($picked_stats['era']) ? (float)$picked_stats['era'] : 99;
+            $oe = isset($opp_stats['era']) ? (float)$opp_stats['era'] : 99;
+            if ($pe < $oe - 0.5 && $pe < 99) {
+                $pts += 10;
+                $reasons[] = 'Better team ERA (' . number_format($pe, 2) . ' vs ' . number_format($oe, 2) . ', MDPI 2021)';
+            } elseif ($pe < $oe && $pe < 99) {
+                $pts += 4;
+            }
+            // Run differential
+            $prd = isset($picked_stats['run_diff']) ? (float)$picked_stats['run_diff'] : 0;
+            $ord = isset($opp_stats['run_diff']) ? (float)$opp_stats['run_diff'] : 0;
+            if ($prd > $ord + 20) {
+                $pts += 8;
+                $reasons[] = 'Superior run differential (' . ($prd >= 0 ? '+' : '') . round($prd) . ' vs ' . ($ord >= 0 ? '+' : '') . round($ord) . ')';
+            }
+            // Recent form (L10)
+            $pl10 = isset($picked_stats['last10']) ? $picked_stats['last10'] : '';
+            $ol10 = isset($opp_stats['last10']) ? $opp_stats['last10'] : '';
+            if ($pl10 && $ol10) {
+                $pw10 = 0; $ow10 = 0;
+                if (preg_match('/(\d+)/', $pl10, $m)) $pw10 = (int)$m[1];
+                if (preg_match('/(\d+)/', $ol10, $m)) $ow10 = (int)$m[1];
+                if ($pw10 > $ow10 + 2) {
+                    $pts += 5;
+                    $reasons[] = 'Better recent form (L10: ' . $pl10 . ' vs ' . $ol10 . ')';
+                }
+            }
+        }
+    }
+
+    // Cap at 30
+    if ($pts > 30) $pts = 30;
+
+    return array('points' => $pts, 'reasons' => $reasons);
+}
+
+// ── Helper: fetch schedule intel from cache (avoid HTTP in rating loop) ──
+function _sp_get_schedule_intel($sport, $home, $away) {
+    // Try to read from the schedule_intel cache table directly
+    global $conn;
+    $cache_key = 'sched_' . $sport;
+    $cq = $conn->query("SELECT cache_data FROM lm_schedule_intel_cache WHERE cache_key='" . $conn->real_escape_string($cache_key) . "'");
+    if (!$cq || !($row = $cq->fetch_assoc())) return array('home' => null, 'away' => null);
+
+    $teams = json_decode($row['cache_data'], true);
+    if (!is_array($teams)) return array('home' => null, 'away' => null);
+
+    return array(
+        'home' => _sp_fuzzy_find($teams, $home),
+        'away' => _sp_fuzzy_find($teams, $away)
+    );
+}
+
+// ── Helper: fetch injury intel from cache ──
+function _sp_get_injury_intel($sport, $home, $away) {
+    global $conn;
+    $cache_key = 'inj_' . $sport;
+    $cq = $conn->query("SELECT cache_data FROM lm_injury_intel_cache WHERE cache_key='" . $conn->real_escape_string($cache_key) . "'");
+    if (!$cq || !($row = $cq->fetch_assoc())) return array('home' => null, 'away' => null);
+
+    $teams = json_decode($row['cache_data'], true);
+    if (!is_array($teams)) return array('home' => null, 'away' => null);
+
+    return array(
+        'home' => _sp_fuzzy_find($teams, $home),
+        'away' => _sp_fuzzy_find($teams, $away)
+    );
+}
+
+// ── Helper: fetch sport-specific stats from the appropriate cache table ──
+function _sp_get_sport_stats($sport, $home, $away) {
+    global $conn;
+    $table_map = array(
+        'basketball_nba'         => 'lm_nba_stats_cache',
+        'icehockey_nhl'          => 'lm_nhl_stats_cache',
+        'americanfootball_nfl'   => 'lm_nfl_stats_cache',
+        'baseball_mlb'           => 'lm_mlb_stats_cache'
+    );
+
+    $cache_key_map = array(
+        'basketball_nba'         => 'nba_teams',
+        'icehockey_nhl'          => 'nhl_teams',
+        'americanfootball_nfl'   => 'nfl_teams',
+        'baseball_mlb'           => 'mlb_teams'
+    );
+
+    $table = isset($table_map[$sport]) ? $table_map[$sport] : '';
+    $ckey  = isset($cache_key_map[$sport]) ? $cache_key_map[$sport] : '';
+    if (!$table || !$ckey) return array('home' => null, 'away' => null);
+
+    $cq = $conn->query("SELECT cache_data FROM " . $table . " WHERE cache_key='" . $conn->real_escape_string($ckey) . "'");
+    if (!$cq || !($row = $cq->fetch_assoc())) return array('home' => null, 'away' => null);
+
+    $teams = json_decode($row['cache_data'], true);
+    if (!is_array($teams)) return array('home' => null, 'away' => null);
+
+    return array(
+        'home' => _sp_fuzzy_find($teams, $home),
+        'away' => _sp_fuzzy_find($teams, $away)
+    );
+}
+
+// ── Fuzzy team finder (shared) ──
+function _sp_fuzzy_find($teams, $name) {
+    if (!is_array($teams) || !$name) return null;
+    $name = strtolower(trim($name));
+    foreach ($teams as $k => $t) {
+        $tn = isset($t['name']) ? strtolower($t['name']) : '';
+        $ta = isset($t['abbreviation']) ? strtolower($t['abbreviation']) : '';
+        $ts = isset($t['short_name']) ? strtolower($t['short_name']) : '';
+        if ($tn === $name || $ta === $name || $ts === $name) return $t;
+        if ($tn && (strpos($tn, $name) !== false || strpos($name, $tn) !== false)) return $t;
+        if ($ta && (strpos($ta, $name) !== false || strpos($name, $ta) !== false)) return $t;
+        $parts = explode(' ', $name);
+        $last = $parts[count($parts) - 1];
+        if (strlen($last) >= 4 && $tn && strpos($tn, $last) !== false) return $t;
+    }
+    return null;
+}
+
+// ════════════════════════════════════════════════════════════
 //  RATING SYSTEM — Grade each pick A+ through D with take/wait recommendation
 // ════════════════════════════════════════════════════════════
 
@@ -766,7 +1037,13 @@ function _sp_rate_pick($vb) {
         $score += 3;
     }
 
-    // ── Clamp score 0-100 ──
+    // ── Situation Score (0-30 bonus) — research-backed team context ──
+    $sit = _sp_situation_score($vb);
+    $score += $sit['points'];
+    $reasons = array_merge($reasons, $sit['reasons']);
+
+    // ── Renormalize: max raw score is ~130 (100 market + 30 situation), map to 0-100 ──
+    $score = (int)round($score * 100.0 / 130.0);
     if ($score > 100) $score = 100;
     if ($score < 0) $score = 0;
 
@@ -798,11 +1075,12 @@ function _sp_rate_pick($vb) {
     }
 
     return array(
-        'score'         => $score,
-        'grade'         => $grade,
-        'action'        => $action,
-        'action_detail' => $action_detail,
-        'reasons'       => $reasons
+        'score'           => $score,
+        'grade'           => $grade,
+        'action'          => $action,
+        'action_detail'   => $action_detail,
+        'reasons'         => $reasons,
+        'situation_score' => $sit['points']
     );
 }
 
@@ -888,6 +1166,15 @@ function _sp_generate_reasoning($vb, $home_st, $away_st) {
         $parts[] = 'Spread bet — point handicap evens the matchup';
     }
 
+    // ── Situation intelligence reasoning ──
+    $sport = isset($vb['sport']) ? $vb['sport'] : '';
+    $sit = _sp_situation_score($vb);
+    if ($sit['points'] > 0 && count($sit['reasons']) > 0) {
+        // Add the top 2 situation reasons to the narrative
+        $sit_parts = array_slice($sit['reasons'], 0, 2);
+        $parts[] = implode('. ', $sit_parts);
+    }
+
     return implode('. ', $parts) . '.';
 }
 
@@ -899,6 +1186,7 @@ function _sp_apply_rating(&$row) {
     $row['recommendation']  = $rating['action'];
     $row['rec_detail']      = $rating['action_detail'];
     $row['rating_reasons']  = $rating['reasons'];
+    $row['situation_score'] = isset($rating['situation_score']) ? $rating['situation_score'] : 0;
 
     // American odds for display
     $decimal = (float)$row['best_odds'];

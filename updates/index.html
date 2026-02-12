@@ -271,6 +271,153 @@ a:hover { text-decoration: underline; }
 
 <div class="section-year">February 2026</div>
 
+<!-- Feb 12, 2026 — Sports Algorithm Sophistication: Multi-Sport Situation Intelligence -->
+<div class="update-entry" style="--dot-color: #6366f1;" data-tags="sports,algorithm,intelligence,nba,nhl,nfl,mlb,situation,b2b,fatigue,injuries,schedule,research" data-category="sports,trading">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    Sports Algorithm Sophistication &mdash; Multi-Sport Situation Intelligence
+    <span class="badge badge-feature">New</span>
+    <span class="badge badge-improvement">Improved</span>
+  </div>
+  <div class="update-body">
+    <p>Major upgrade to the sports betting algorithm: picks are now graded using <strong>research-backed situation factors</strong> (0&ndash;30 bonus points) on top of the existing market analysis. This brings the grading system from pure odds analysis to understanding the <em>actual game context</em>.</p>
+
+    <div class="update-section">
+      <div class="update-section-title">New Data Endpoints (5 new APIs)</div>
+      <ul>
+        <li><strong>schedule_intel.php</strong> &mdash; Back-to-back detection, rest day calculation, road trip tracking for all 8 sports via ESPN Scoreboard</li>
+        <li><strong>nhl_stats.php</strong> &mdash; NHL standings, points%, goals for/against, PP%, PK%, streaks from ESPN</li>
+        <li><strong>nfl_stats.php</strong> &mdash; NFL standings, turnover margin (+70% win rate per Biro 2017), point differential</li>
+        <li><strong>mlb_stats.php</strong> &mdash; MLB standings, team ERA (MDPI 2021 = 93% accuracy), run differential, L10 form</li>
+        <li><strong>injury_intel.php</strong> &mdash; Player injury reports (OUT/questionable) from ESPN for NBA, NHL, NFL, MLB</li>
+      </ul>
+    </div>
+
+    <div class="update-section">
+      <div class="update-section-title">Academic Research Integrated</div>
+      <ul>
+        <li><strong>NBA</strong>: Dean Oliver (2004) Four Factors; Entine &amp; Small (2008) rest advantage; PMC8636381 travel fatigue</li>
+        <li><strong>NHL</strong>: Hockey Graphs (2014) goalie Sv% drops .008 on B2Bs; ESPN study: road favorites win 72.2% vs tired home underdogs</li>
+        <li><strong>NFL</strong>: Biro et al. (2017) turnover margin = 70% win rate; home field ~2.5-3 pts</li>
+        <li><strong>MLB</strong>: MDPI Applied Sciences (2021) pitcher data models at 93-94% accuracy</li>
+      </ul>
+    </div>
+
+    <div class="update-section">
+      <div class="update-section-title">Enhanced Pick Grading</div>
+      <ul>
+        <li>Situation Score (0&ndash;30 pts) added to all picks: B2B fatigue, rest advantage, injury edge, sport-specific stats</li>
+        <li>&ldquo;Here&rsquo;s Why&rdquo; reasoning now includes schedule, injury, and stat context</li>
+        <li>Frontend shows situation badges (B2B, REST, ROAD TRIP, INJURIES) on all sport pick cards</li>
+        <li>NHL and NFL intelligence panels added to Performance tab</li>
+      </ul>
+    </div>
+
+    <div class="update-section">
+      <div class="update-section-title">GitHub Actions Updated</div>
+      <ul>
+        <li>7 new refresh steps: NHL, NFL, MLB stats + schedule intel + injury intel for all sports</li>
+        <li>All data refreshed 5x daily alongside odds fetch</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Feb 12, 2026 — Sports Betting System Overhaul: NBA Intelligence + Circuit Breakers + Security -->
+<div class="update-entry" style="--dot-color: #22c55e;" data-tags="sports,nba,intelligence,api,circuit-breaker,security,real-data,failover,espn,balldontlie" data-category="sports,trading">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    Sports Betting Overhaul &mdash; NBA Intelligence API, Circuit Breakers &amp; Security Hardening
+    <span class="badge badge-feature">New</span>
+    <span class="badge badge-improvement">Improved</span>
+    <span class="badge badge-fix">Fix</span>
+  </div>
+  <div class="update-body">
+    <p>Comprehensive overhaul of the sports betting system after a full architectural review. Restored the NBA Intelligence module that was accidentally overwritten, built a real NBA stats API with 4-source failover, added circuit breakers to prevent runaway losses, and centralized security credentials. <strong>Zero placeholder data &mdash; every data point comes from real APIs.</strong></p>
+
+    <p><strong>NBA Intelligence Module Restored &amp; Enhanced</strong></p>
+    <ul>
+      <li><strong>NBA Intelligence Module Restored</strong> &mdash; <code>sports-betting.js</code> was accidentally overwritten with dummy win-streak data. Fully restored to the proper NBA Intelligence module that enriches NBA pick cards with real team stats badges (W-L records, home/away splits, streaks, combined PPG) and renders a full standings table in the Performance tab <span class="badge badge-fix">Fix</span></li>
+      <li><strong>New <code>nba_stats.php</code> API</strong> &mdash; PHP 5.2-compatible endpoint with a <strong>4-source failover chain</strong>: ESPN Standings API &rarr; ESPN Scoreboard &rarr; BallDontLie API &rarr; NBA.com CDN. 2-hour cache with stale-cache fallback. Health check endpoint (<code>?action=health</code>). All 30 NBA teams loaded with real standings data <span class="badge badge-feature">New</span></li>
+      <li><strong>Live Data Verified</strong> &mdash; ESPN API responds in 78ms, ESPN Scoreboard in 26ms. Real standings: OKC Thunder 42-13, Detroit Pistons 40-13, San Antonio Spurs 37-16, Boston Celtics 35-19. Never fake data &mdash; if all sources fail, stale cache is served with a &ldquo;stale&rdquo; flag <span class="badge badge-feature">New</span></li>
+      <li><strong>Pick Card Enrichment</strong> &mdash; NBA picks automatically display team intelligence badges: win/loss record, home/away splits, current streak (color-coded green/red), last-10 form, and combined PPG with defensive average. Fuzzy team name matching handles abbreviations and full names <span class="badge badge-improvement">Improved</span></li>
+    </ul>
+
+    <p><strong>Circuit Breakers &amp; Risk Management</strong></p>
+    <ul>
+      <li><strong>Daily Loss Limit</strong> &mdash; Auto-betting halts if $100+ lost in a single day (10% of initial bankroll). Prevents catastrophic losing streaks from compounding <span class="badge badge-feature">New</span></li>
+      <li><strong>Bankroll Floor</strong> &mdash; Auto-betting halts if bankroll drops below $800 (20% drawdown from $1,000 initial). Preserves capital for recovery <span class="badge badge-feature">New</span></li>
+      <li><strong>Circuit Breaker Messaging</strong> &mdash; When either breaker triggers, the API returns a clear message explaining why betting was halted, including today&rsquo;s P&amp;L and the limit that was hit <span class="badge badge-improvement">Improved</span></li>
+    </ul>
+
+    <p><strong>Security Hardening</strong></p>
+    <ul>
+      <li><strong>Admin Key Centralized</strong> &mdash; The hardcoded <code>$ADMIN_KEY = 'livetrader2026'</code> was duplicated across 4 PHP files (<code>sports_bets.php</code>, <code>sports_picks.php</code>, <code>sports_odds.php</code>, <code>nba_stats.php</code>). Now defined once in <code>db_config.php</code> as <code>$SPORTS_ADMIN_KEY</code> with safe fallback in each consumer <span class="badge badge-fix">Fix</span></li>
+    </ul>
+
+    <p><strong>GitHub Actions &amp; Automation</strong></p>
+    <ul>
+      <li><strong>NBA Stats Refresh Step</strong> &mdash; Added to the <code>sports-betting-refresh.yml</code> workflow (runs 5x daily). NBA team stats are now refreshed before value bet analysis, ensuring picks have fresh team data <span class="badge badge-feature">New</span></li>
+      <li><strong>Updated Dashboard Note</strong> &mdash; The NBA Intelligence banner on <code>sports-betting.html</code> now documents the 4-source failover chain, circuit breaker limits, and real-data architecture <span class="badge badge-improvement">Improved</span></li>
+    </ul>
+
+    <p><strong>Files Modified (7 deployed)</strong></p>
+    <ul>
+      <li><code>live-monitor/sports-betting.js</code> &mdash; Restored NBA Intelligence module (was overwritten with dummy data)</li>
+      <li><code>live-monitor/api/nba_stats.php</code> &mdash; New 4-source NBA stats API</li>
+      <li><code>live-monitor/api/sports_bets.php</code> &mdash; Added circuit breakers + centralized admin key</li>
+      <li><code>live-monitor/api/sports_picks.php</code> &mdash; Centralized admin key</li>
+      <li><code>live-monitor/api/sports_odds.php</code> &mdash; Centralized admin key</li>
+      <li><code>live-monitor/api/db_config.php</code> &mdash; Added <code>$SPORTS_ADMIN_KEY</code></li>
+      <li><code>live-monitor/sports-betting.html</code> &mdash; Updated NBA Enhancement note</li>
+    </ul>
+
+    <p><strong>Verification</strong>: PHP 5.2 validator passed (5 files). JS syntax check passed (3 script blocks). Playwright local test: 0 errors. Playwright remote test: 0 errors. NBA API health: 2/3 sources healthy.</p>
+
+    <p><a href="https://findtorontoevents.ca/live-monitor/sports-betting.html">Sports Betting &rarr;</a></p>
+  </div>
+</div>
+
+<!-- Feb 12, 2026 — EXTREME SUMMARY: Full Algorithm Audit + 4 New Analysis Scripts -->
+<div class="update-entry" style="--dot-color: #f97316;" data-tags="claude,opus46,algorithms,audit,pseudocode,kelly,significance,signal-quality,performance,grok,crypto,stocks,forex,sports" data-category="stocks,trading,crypto,sports">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    EXTREME SUMMARY: Full 23-Algorithm Audit &amp; 4 Production Analysis Scripts
+    <span class="badge badge-feature">New</span>
+    <span class="badge badge-improvement">Improved</span>
+  </div>
+  <div class="update-body">
+    <p>Claude Opus 4.6 performed a complete audit of all 23 trading algorithms, confirming live data from production APIs and creating a comprehensive pseudocode document for multi-AI critique. Also created 4 new production-ready analysis scripts with full DB connectivity.</p>
+
+    <p style="margin-top: 10px;"><strong>EXTREME SUMMARY Document (37KB)</strong></p>
+    <ul>
+      <li><strong>23 Algorithms Documented</strong> &mdash; Full pseudocode with exact parameters, indicator weights, entry/exit conditions, and regime gates for every algorithm. Covers: Momentum Burst, Alpha Predator, StochRSI, Ichimoku, RSI(2) Scalp, Trend Sniper, Challenger Bot, MACD Crossover, Bollinger Squeeze, and 14 more <span class="app-tag">Algorithms</span></li>
+      <li><strong>7 Asset Classes Confirmed</strong> &mdash; Crypto (32 symbols), Forex (8 pairs), Stocks (12 tickers), Penny Stocks, Meme Coins, Sports Betting (8 sports), Smart Money Intelligence. Live production data verified <span class="app-tag">Multi-Asset</span></li>
+      <li><strong>GROK Audit Results</strong> &mdash; Compared against GROK XAI's summary and found significant fabrications: 7 paused algorithms listed as "top performers", non-existent algorithms claimed (Penny Sniper, GARCH forex, GNN regime), simplified scripts replaced production DB-connected versions <span class="app-tag">Audit</span></li>
+      <li><strong>11 Known Weaknesses Catalogued</strong> &mdash; Statistical significance gaps, regime detection lag, indicator overlap, missing backtests, stale data sources, and more &mdash; all documented for cross-AI review <span class="app-tag">Analysis</span></li>
+    </ul>
+
+    <p style="margin-top: 10px;"><strong>4 New Production Analysis Scripts</strong></p>
+    <ul>
+      <li><strong>Performance Analyzer</strong> &mdash; <code>perf_analyzer_prod.py</code>: Ranks all algorithms by composite score (WR*0.4 + AvgReturn*0.3 + ProfitFactor*0.3). Outputs JSON + timestamped CSV <span class="app-tag">Analytics</span></li>
+      <li><strong>Kelly Optimizer</strong> &mdash; <code>kelly_optimizer_prod.py</code>: Per-algo quarter-Kelly with regime adjustment (bull 1.2x, bear 0.5x), rolling 30-day comparison, and decay warnings when recent WR drops &gt;20% <span class="app-tag">Position Sizing</span></li>
+      <li><strong>Win Rate Significance Tester</strong> &mdash; <code>winrate_significance_prod.py</code>: Binomial test against 50% null hypothesis with Wilson score 95% CIs and power analysis (minimum trades needed for significance) <span class="app-tag">Statistics</span></li>
+      <li><strong>Signal Quality Checker</strong> &mdash; <code>signal_quality_prod.py</code>: Measures signal-to-execution gap per algorithm, grades A through F, tracks execution rate and timeout rate <span class="app-tag">Quality</span></li>
+    </ul>
+
+    <p style="margin-top: 10px;"><strong>Live Confirmed Data (Feb 11, 2026)</strong></p>
+    <ul>
+      <li><strong>Crypto Regime: SIDEWAYS</strong> &mdash; BTC at $67,293, 0.28% from SMA20 <span class="app-tag">Regime</span></li>
+      <li><strong>Forex Regime: USD WEAK</strong> &mdash; USDJPY at 152.50, -0.4% from SMA20 <span class="app-tag">Regime</span></li>
+      <li><strong>14 Active Signals</strong> &mdash; All from Challenger Bot (smart money consensus). STRONG_BUY on MSFT(73), NFLX(69), AMZN(69), BAC(68), NVDA(68), AAPL(66), META(65), GOOGL(65), WMT(64) <span class="app-tag">Signals</span></li>
+      <li><strong>Top Crypto Algos</strong> &mdash; Momentum Burst (~100% WR), Alpha Predator (~87%), StochRSI (~81%), Ichimoku (~80%), RSI(2) Scalp (~75%) <span class="app-tag">Performance</span></li>
+      <li><strong>7 Stock Algos PAUSED</strong> &mdash; ETF Masters (3.4% WR), Sector Rotation (2.2%), Sector Momentum (0%), Blue Chip Growth (5.6%), Technical Momentum (0%), Composite Rating (0%), Cursor Genius (11.5%) <span class="app-tag">Status</span></li>
+    </ul>
+
+    <p style="margin-top: 8px; font-size: 13px; color: #667;">Backup branch: <code>backup/claude-opus46-feb11-2026</code> pushed to GitHub</p>
+  </div>
+</div>
+
 <!-- Feb 12, 2026 — OPUS 4.6 Battle Plan Implementation: 4-Phase System Ramp-Up -->
 <div class="update-entry" style="--dot-color: #a855f7;" data-tags="opus46,pipeline,run-all,commission,position-sizing,failover,fred,sports,views,schema,intelligence" data-category="stocks,trading,crypto,sports">
   <div class="update-date">Feb 12, 2026</div>

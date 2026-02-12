@@ -27,6 +27,9 @@ $sports_dbname     = 'ejaguiar1_sportsbet';
 // Sign up at https://the-odds-api.com to get your key
 $THE_ODDS_API_KEY      = 'b91c3bedfe2553cf90a5fa2003417b2a';
 
+// Sports Betting — Admin key (used by all sports API endpoints)
+$SPORTS_ADMIN_KEY = 'livetrader2026';
+
 // Multi-Dimensional Supplemental Data API Keys
 // Get free API keys from:
 // - FMP: https://financialmodelingprep.com/register (250 calls/day)

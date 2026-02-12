@@ -25,7 +25,7 @@ _sb_ensure_schema($conn);
 //  Constants
 // ────────────────────────────────────────────────────────────
 
-$ADMIN_KEY = 'livetrader2026';
+$ADMIN_KEY = isset($SPORTS_ADMIN_KEY) ? $SPORTS_ADMIN_KEY : 'livetrader2026';
 $API_BASE  = 'https://api.the-odds-api.com/v4';
 
 $TARGET_SPORTS = array(
