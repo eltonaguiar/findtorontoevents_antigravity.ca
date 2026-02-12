@@ -145,8 +145,10 @@
             };
 
             for (var bundle in toggles) {
-                var weight = toggles[bundle];
+                var weight = parseFloat(toggles[bundle]);
+                if (isNaN(weight) || typeof toggles[bundle] === 'object') continue;
                 var pct = Math.round(weight * 100);
+                if (pct > 100 || pct < 0) continue;
                 var color = weight > 0.7 ? '#22c55e' : (weight > 0.4 ? '#eab308' : '#ef4444');
                 var icon = bundleIcons[bundle] || '📈';
                 html += '<div style="background:#222;border:1px solid #444;border-radius:6px;padding:4px 10px;font-size:12px;">';
@@ -212,11 +214,31 @@
 
     // ─── Meta-Labeler Status ────────────────────────────────────────
 
+    function getNextTrainingDate() {
+        var now = new Date();
+        // Convert to EST (UTC-5)
+        var utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+        var estNow = new Date(utcMs - 5 * 3600000);
+        // Find next Sunday
+        var daysUntilSun = (7 - estNow.getDay()) % 7;
+        if (daysUntilSun === 0) {
+            // If it's already Sunday, check if past 10:30 AM EST
+            if (estNow.getHours() > 10 || (estNow.getHours() === 10 && estNow.getMinutes() >= 30)) {
+                daysUntilSun = 7; // Next Sunday
+            }
+        }
+        var nextSun = new Date(estNow);
+        nextSun.setDate(nextSun.getDate() + daysUntilSun);
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return months[nextSun.getMonth()] + ' ' + nextSun.getDate() + ', ' + nextSun.getFullYear() + ' at 10:30 AM EST';
+    }
+
     function renderMetaPanel(meta) {
         if (!meta) {
+            var nextDate = getNextTrainingDate();
             return '<div style="background:#1a1a2e;border:1px solid #333;border-radius:8px;padding:16px;margin-bottom:16px;">' +
                 '<h3 style="color:#e0e0e0;margin:0 0 8px 0;font-size:14px;">🤖 Meta-Labeler</h3>' +
-                '<div style="color:#999;font-size:12px;">Not trained yet. Will train on Sunday with 50+ closed trades.</div></div>';
+                '<div style="color:#999;font-size:12px;">Not trained yet. Next scheduled training: <span style="color:#eab308;font-weight:bold;">' + nextDate + '</span> (requires 50+ closed trades).</div></div>';
         }
 
         var precColor = meta.avg_precision > 0.60 ? '#22c55e' : (meta.avg_precision > 0.45 ? '#eab308' : '#ef4444');

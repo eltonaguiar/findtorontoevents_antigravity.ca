@@ -1395,7 +1395,20 @@ if ($action === 'consensus') {
 
     _sm_cache_set($cache_key, $consensus_data);
 
-    echo json_encode(array('ok' => true, 'action' => 'consensus', 'ticker' => $ticker, 'calc_date' => $latest_date, 'data' => $consensus_data));
+    // Fetch Challenger Bot win rate from showdown table
+    $challenger_wr = null;
+    $ch_r = $conn->query("SELECT challenger_win_rate FROM lm_challenger_showdown ORDER BY showdown_date DESC LIMIT 1");
+    if ($ch_r && $ch_r->num_rows > 0) {
+        $ch_row = $ch_r->fetch_assoc();
+        $challenger_wr = floatval($ch_row['challenger_win_rate']);
+    }
+
+    $response = array('ok' => true, 'action' => 'consensus', 'ticker' => $ticker, 'calc_date' => $latest_date, 'data' => $consensus_data, 'updated_at' => $latest_date);
+    if ($challenger_wr !== null) {
+        $response['challenger_win_rate'] = $challenger_wr;
+    }
+
+    echo json_encode($response);
     exit;
 }
 

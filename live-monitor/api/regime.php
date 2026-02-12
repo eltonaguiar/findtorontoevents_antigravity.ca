@@ -154,7 +154,9 @@ case 'ingest_regime':
 
 // ─── GET REGIME (public) ────────────────────────────────────────────
 case 'get_regime':
-    $r = $conn->query("SELECT * FROM lm_market_regime ORDER BY date DESC LIMIT 1");
+    $r = $conn->query("SELECT * FROM lm_market_regime
+        WHERE hmm_regime NOT IN ('bundle_update','worldquant_update','validation_update')
+        ORDER BY date DESC LIMIT 1");
     if ($r && $r->num_rows > 0) {
         $row = $r->fetch_assoc();
         $toggles = json_decode($row['strategy_toggles'], true);
