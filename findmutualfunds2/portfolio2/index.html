@@ -640,15 +640,16 @@
             <h3 class="section-title" style="color:#6366f1;margin-top:1.5rem;">ML System Status</h3>
             <div style="background:var(--bg-card);border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
                 <div style="font-size:0.85rem;color:#889;">
-                    <p style="margin-bottom:0.8rem;"><strong style="color:#e0e0f0;">Current State: No ML Pipeline Exists</strong></p>
+                    <p style="margin-bottom:0.8rem;"><strong style="color:#22c55e;">Current State: ML Pipeline DEPLOYED (Feb 12, 2026)</strong></p>
                     <ul style="margin-left:1.5rem;margin-bottom:0.8rem;">
-                        <li><strong>No closed trades tracked</strong> -- 45 picks generated but 0 tracked with real outcomes</li>
-                        <li>No grid search possible without forward-facing trade data</li>
-                        <li>No Learned vs Original comparison (nothing to learn from)</li>
-                        <li>All analysis is static/rule-based using historical NAV data from Yahoo Finance</li>
-                        <li>No parameter optimization has been performed on live mutual fund data</li>
+                        <li><span style="color:#22c55e;">&check;</span> <strong>mutualfund_ml_optimizer.py</strong> (1,438 lines) &mdash; walk-forward grid search, Sharpe objective</li>
+                        <li><span style="color:#22c55e;">&check;</span> <strong>Expense ratio drag</strong> included in all calculations</li>
+                        <li><span style="color:#22c55e;">&check;</span> <strong>Cross-algo correlation analysis</strong> &mdash; redundancy detection</li>
+                        <li><span style="color:#22c55e;">&check;</span> <strong>Walk-forward validation</strong> &mdash; 60/20/20 train/val/test split</li>
+                        <li><span style="color:#22c55e;">&check;</span> <strong>GitHub Actions</strong> &mdash; Sunday 4 PM EST weekly run</li>
+                        <li><span style="color:#f59e0b;">&bull;</span> 45 picks with NAV history; optimizer uses backtest data</li>
                     </ul>
-                    <p style="color:#f59e0b;"><strong>Path to ML activation:</strong> Build forward-facing outcome tracker &rarr; record entry/exit prices for each pick &rarr; accumulate 20+ closed positions &rarr; run grid search on fund-specific parameters &rarr; enable Learned vs Original comparison.</p>
+                    <p style="color:#22c55e;"><strong>Status:</strong> ML deployed with walk-forward validation + expense ratio integration. Running weekly Sundays.</p>
                 </div>
             </div>
 
@@ -714,9 +715,9 @@
                     <div class="glossary-term"><span class="badge badge-blue">PHASE 3: LIVE TRACKING</span></div>
                     <div class="glossary-def"><strong>Forward-Facing Outcome Tracking</strong> -- Connect fund picks to actual NAV tracking with entry prices, exit conditions, and daily P&amp;L recording. Same model as Consolidated Stock Picks. Daily refresh via GitHub Actions.</div>
                 </div>
-                <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
-                    <div class="glossary-term"><span class="badge badge-blue">PHASE 4: ML PIPELINE</span></div>
-                    <div class="glossary-def"><strong>Learn from Forward Data</strong> -- Once enough closed positions exist (20+ minimum), run grid search on fund-specific parameters. Learn which fund characteristics (expense ratio, AUM, manager tenure, category) predict outperformance. Enable Learned vs Original comparison.</div>
+                <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                    <div class="glossary-term"><span class="badge badge-green">DONE: ML PIPELINE (Feb 12)</span></div>
+                    <div class="glossary-def"><strong>Walk-Forward ML Deployed</strong> -- mutualfund_ml_optimizer.py (1,438 lines) with walk-forward validation, Sharpe optimization, expense ratio drag, cross-algo correlation. Runs weekly via GitHub Actions. Also: concept drift detection, multi-timeframe regime, online incremental learning.</div>
                 </div>
                 <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
                     <div class="glossary-term"><span class="badge badge-blue">PHASE 5: TAX EFFICIENCY</span></div>
@@ -735,7 +736,7 @@
                 <ul style="font-size:0.85rem;color:#889;margin-left:1.5rem;margin-bottom:0.8rem;">
                     <li>The analysis tools work well for backtesting scenarios and comparing strategies</li>
                     <li>45 fund picks exist but <strong>none are tracked with real outcomes</strong></li>
-                    <li>No ML pipeline -- all analysis is static/rule-based</li>
+                    <li><span style="color:#22c55e;">&check;</span> ML pipeline deployed (walk-forward grid search + drift detection)</li>
                     <li>No expense ratio optimization (the single most impactful feature for fund investors)</li>
                     <li>Data source: Yahoo Finance only -- no Morningstar, no Lipper, no Bloomberg</li>
                 </ul>

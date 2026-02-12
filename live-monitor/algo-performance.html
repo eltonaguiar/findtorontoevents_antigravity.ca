@@ -277,7 +277,12 @@
                         &bull; Transparent parameter comparison table<br>
                         &bull; Real-time trade logging with entry/exit prices<br>
                         &bull; Automated grid search optimization pipeline<br>
-                        &bull; Regime detection gates protect against adverse market conditions
+                        &bull; Regime detection gates protect against adverse market conditions<br>
+                        &bull; <strong>Walk-forward validation:</strong> <span style="color:#22c55e;">DEPLOYED</span><br>
+                        &bull; <strong>Concept drift detection:</strong> <span style="color:#22c55e;">DEPLOYED</span><br>
+                        &bull; <strong>Multi-timeframe regime:</strong> <span style="color:#22c55e;">DEPLOYED</span><br>
+                        &bull; <strong>Online incremental learning:</strong> <span style="color:#22c55e;">DEPLOYED</span><br>
+                        &bull; <strong>Cross-asset intelligence:</strong> <span style="color:#22c55e;">DEPLOYED</span>
                     </div>
                 </div>
                 <div style="background:var(--bg-card);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);padding:1.2rem;">
@@ -285,7 +290,7 @@
                     <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
                         &bull; <strong>Only 12 closed trades</strong> &mdash; statistically insignificant (need 100+)<br>
                         &bull; <strong>Forex is broken:</strong> 0% WR with wrong algorithms deployed<br>
-                        &bull; <strong>No walk-forward validation</strong> on learned parameters &mdash; could be overfitting<br>
+                        &bull; <strong>Walk-forward validation:</strong> <span style="color:#22c55e;">DEPLOYED</span> (<code>walk_forward_validator.py</code>)<br>
                         &bull; <strong>Grid search only optimizes TP/SL/Hold</strong> &mdash; doesn't optimize entry signals<br>
                         &bull; <strong>No ensemble weighting</strong> &mdash; all algorithms treated equally<br>
                         &bull; <strong>No EGARCH volatility-adjusted sizing</strong> &mdash; uses fixed 5% per position<br>
@@ -360,7 +365,13 @@
                     &bull; Selects parameters that maximize Sharpe ratio on historical trades<br><br>
                     <strong style="color:var(--text);">Regime Detection:</strong><br>
                     &bull; HMM (3 states: bull, bear, sideways) gates 19/20 algorithms<br>
-                    &bull; Prevents entries during adverse market conditions
+                    &bull; Prevents entries during adverse market conditions<br>
+                    &bull; <code style="font-size:11px;">multi_timeframe_regime.py</code> &mdash; 4h/daily/weekly regime analysis <span style="color:#22c55e;">DEPLOYED</span><br><br>
+                    <strong style="color:var(--text);">ML Infrastructure (Feb 2026):</strong><br>
+                    &bull; <code style="font-size:11px;">walk_forward_validator.py</code> &mdash; rolling window validation, overfitting protection <span style="color:#22c55e;">DEPLOYED</span><br>
+                    &bull; <code style="font-size:11px;">concept_drift_detector.py</code> &mdash; daily drift monitoring, distribution shift alerts <span style="color:#22c55e;">DEPLOYED</span><br>
+                    &bull; <code style="font-size:11px;">online_meta_learner.py</code> &mdash; incremental XGBoost updates without full retraining <span style="color:#22c55e;">DEPLOYED</span><br>
+                    &bull; <code style="font-size:11px;">cross_asset_ml_intelligence.py</code> &mdash; cross-asset correlation and signal intelligence <span style="color:#22c55e;">DEPLOYED</span>
                 </div>
             </div>
 
@@ -376,7 +387,7 @@
                 <div style="background:var(--bg-card);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);padding:1.2rem;">
                     <h4 style="font-size:0.85rem;color:var(--red);margin-bottom:0.5rem;">Real Money: NO</h4>
                     <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
-                        Only 12 trades &mdash; need 100+ for statistical significance. No walk-forward validation. Forex broken. Challenger Bot needs regime gating.
+                        Only 12 trades &mdash; need 100+ for statistical significance. Walk-forward validation <span style="color:#22c55e;">DEPLOYED</span>. Forex broken. Challenger Bot needs regime gating.
                     </div>
                 </div>
             </div>
@@ -477,7 +488,7 @@
                 <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
                     <h4 style="font-size:0.85rem;color:#a855f7;margin-bottom:0.5rem;">Walk-Forward Validation</h4>
                     <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
-                        <strong>Pardo (2008)</strong> &mdash; The Evaluation and Optimization of Trading Strategies. Gold standard for avoiding overfitting. Not yet implemented &mdash; this is our highest priority gap.
+                        <strong>Pardo (2008)</strong> &mdash; The Evaluation and Optimization of Trading Strategies. Gold standard for avoiding overfitting. <span style="color:#22c55e;">DEPLOYED</span> via <code>walk_forward_validator.py</code> &mdash; rolling window validation with walk-forward efficiency ratio tracking.
                     </div>
                 </div>
                 <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
@@ -520,9 +531,9 @@
                         <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Win Rate</td><td style="padding:6px 8px;text-align:center;">55-65%</td><td style="padding:6px 8px;text-align:center;color:var(--yellow);">58.33% (12 trades)</td><td style="padding:6px 8px;color:var(--yellow);">On target but sample size too small</td></tr>
                         <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Profit Factor</td><td style="padding:6px 8px;text-align:center;">1.5-3.0</td><td style="padding:6px 8px;text-align:center;color:var(--green);">2.61</td><td style="padding:6px 8px;color:var(--green);">On target (if sustained)</td></tr>
                         <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Sharpe Ratio</td><td style="padding:6px 8px;text-align:center;">2.0-6.0 (Renaissance)</td><td style="padding:6px 8px;text-align:center;color:var(--text-dim);">TBD</td><td style="padding:6px 8px;color:var(--red);">Cannot compute yet (need 50+ trades)</td></tr>
-                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">ML Pipeline</td><td style="padding:6px 8px;text-align:center;">Full (meta-label + regime + sizing)</td><td style="padding:6px 8px;text-align:center;color:var(--yellow);">Grid search + regime gate</td><td style="padding:6px 8px;color:var(--yellow);">Missing meta-label, EGARCH</td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">ML Pipeline</td><td style="padding:6px 8px;text-align:center;">Full (meta-label + regime + sizing)</td><td style="padding:6px 8px;text-align:center;color:var(--green);">Grid search + regime + walk-forward + drift + online learning</td><td style="padding:6px 8px;color:var(--yellow);">Missing meta-label, EGARCH</td></tr>
                         <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Algorithms</td><td style="padding:6px 8px;text-align:center;">50-200 (top firms)</td><td style="padding:6px 8px;text-align:center;color:var(--yellow);">20</td><td style="padding:6px 8px;color:var(--yellow);">Adequate but could grow</td></tr>
-                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Walk-Forward</td><td style="padding:6px 8px;text-align:center;">Required</td><td style="padding:6px 8px;text-align:center;color:var(--red);">Not yet</td><td style="padding:6px 8px;color:var(--red);">High priority gap</td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Walk-Forward</td><td style="padding:6px 8px;text-align:center;">Required</td><td style="padding:6px 8px;text-align:center;color:var(--green);"><span style="color:#22c55e;">DEPLOYED</span></td><td style="padding:6px 8px;color:var(--green);">walk_forward_validator.py live</td></tr>
                         <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Position Sizing</td><td style="padding:6px 8px;text-align:center;">EGARCH/vol-targeted</td><td style="padding:6px 8px;text-align:center;color:var(--red);">Fixed 5%</td><td style="padding:6px 8px;color:var(--red);">Major gap</td></tr>
                         <tr><td style="padding:6px 8px;">Data Sources</td><td style="padding:6px 8px;text-align:center;">10-50</td><td style="padding:6px 8px;text-align:center;color:var(--yellow);">3</td><td style="padding:6px 8px;color:var(--yellow);">Limited (FreeCrypto, TwelveData, Finnhub)</td></tr>
                     </tbody>
@@ -538,8 +549,8 @@
                         <span><strong style="color:var(--text);">Deploy backtested A/A+ algos via bridge</strong> &mdash; fix zero forward/backtest overlap</span>
                     </div>
                     <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
-                        <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);min-width:28px;text-align:center;">P2</span>
-                        <span><strong style="color:var(--text);">Add walk-forward validation</strong> &mdash; prevent overfitting learned params (Pardo 2008)</span>
+                        <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);min-width:28px;text-align:center;">P2</span>
+                        <span><strong style="color:var(--text);">Walk-forward validation</strong> &mdash; <span style="color:#22c55e;">DEPLOYED</span> (<code>walk_forward_validator.py</code>) &mdash; prevents overfitting learned params (Pardo 2008)</span>
                     </div>
                     <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
                         <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(234,179,8,0.15);color:#eab308;border:1px solid rgba(234,179,8,0.3);min-width:28px;text-align:center;">P3</span>
@@ -572,7 +583,7 @@
             <div style="background:linear-gradient(135deg,rgba(168,85,247,0.06),rgba(239,68,68,0.06));border:1px solid rgba(168,85,247,0.3);border-radius:var(--radius);padding:1.2rem;margin-bottom:1.5rem;">
                 <h4 style="font-size:0.9rem;color:#a855f7;margin-bottom:0.5rem;">The Hard Truth</h4>
                 <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
-                    Our 58.33% WR and 2.61 PF are promising but based on <strong style="color:var(--red);">only 12 trades</strong> &mdash; this is noise, not signal. Renaissance Technologies runs millions of trades; we need 100+ minimum before ANY statistical conclusion. The grid search learning is genuinely improving parameters (Ichimoku TP +70%), but without walk-forward validation, we might be overfitting to a tiny sample. <strong style="color:var(--text);">The system architecture is institutional-grade; the data volume is not.</strong>
+                    Our 58.33% WR and 2.61 PF are promising but based on <strong style="color:var(--red);">only 12 trades</strong> &mdash; this is noise, not signal. Renaissance Technologies runs millions of trades; we need 100+ minimum before ANY statistical conclusion. The grid search learning is genuinely improving parameters (Ichimoku TP +70%). Walk-forward validation is now <span style="color:#22c55e;">DEPLOYED</span> to guard against overfitting, along with concept drift detection and online incremental learning. <strong style="color:var(--text);">The system architecture is institutional-grade; the data volume is not.</strong>
                 </div>
             </div>
 

@@ -319,6 +319,68 @@ a:hover { text-decoration: underline; }
 
 <div class="section-year">February 2026</div>
 
+<!-- Feb 12, 2026 — Complete ML Infrastructure Expansion: FOREX, Mutual Funds, Cross-Asset Intelligence -->
+<div class="update-entry" style="--dot-color: #22c55e;" data-tags="ml,machine-learning,forex,mutual-funds,cross-asset,drift-detection,regime,walk-forward,xgboost,grid-search" data-category="trading" data-types="feature,improvement">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    ML Infrastructure Expansion &mdash; FOREX, Mutual Funds, Cross-Asset Intelligence
+    <span class="badge badge-feature">Major</span>
+  </div>
+  <div class="update-body">
+    <p>Deployed <strong>6 new Python scripts</strong> (7,216 lines) and <strong>6 GitHub Actions workflows</strong> bringing ML capabilities to previously uncovered asset classes and adding 3 quick-win enhancements across the entire platform.</p>
+
+    <p><strong>New ML Pipelines:</strong></p>
+    <ul>
+      <li><strong>FOREX ML Optimizer</strong> (1,051 lines) &mdash; Grid search + walk-forward validation for 19 FOREX algorithms. TP 0.2&ndash;3%, SL 0.1&ndash;2%, Hold 4&ndash;168h. Regime-aware, Sharpe objective. <a href="/live-monitor/">View</a></li>
+      <li><strong>Mutual Funds ML Optimizer</strong> (1,438 lines) &mdash; Walk-forward grid search for 10 MF algorithms. Expense ratio drag in all calculations. Cross-algorithm correlation analysis. <a href="/findmutualfunds2/portfolio2/">View</a></li>
+      <li><strong>Cross-Asset ML Intelligence</strong> (1,541 lines) &mdash; Signal correlation, ensemble weight optimization, prediction calibration, feature importance, alpha decay detection across ALL asset classes. <a href="/live-monitor/algo-performance.html">View</a></li>
+    </ul>
+
+    <p><strong>Quick-Win ML Enhancements:</strong></p>
+    <ul>
+      <li><strong>Concept Drift Detector</strong> (897 lines) &mdash; Daily PSI feature drift, win rate degradation, signal volume shift monitoring. Auto-flags algorithms for retraining.</li>
+      <li><strong>Multi-Timeframe Regime</strong> (944 lines) &mdash; 4h/daily/weekly HMM for SPY, BTC, EUR, TLT. Composite multi-TF score, per-asset regime JSON, strategy toggles.</li>
+      <li><strong>Online Incremental Learner</strong> (1,267 lines) &mdash; Incremental XGBoost updates on new closed trades instead of weekly full retrain. Safety guards, model backup, threshold recalibration.</li>
+    </ul>
+
+    <p><strong>Realistic System Status by Asset Class:</strong></p>
+    <ul>
+      <li><strong>STOCK:</strong> Full ML pipeline (grid search + meta-label + regime + Kelly + EGARCH). 12 closed trades, 58.33% WR, 2.61 PF. <span style="color:#22c55e;">PRODUCTION</span></li>
+      <li><strong>CRYPTO:</strong> Ichimoku 80% WR, momentum scanning, weekly learning. Drift detection + multi-TF regime now deployed. <span style="color:#22c55e;">LIVE</span></li>
+      <li><strong>FOREX:</strong> 19 algos with ML optimizer deployed. Only 3 closed trades &mdash; needs 10+ to activate optimization. <span style="color:#f59e0b;">COLLECTING DATA</span></li>
+      <li><strong>MUTUAL FUNDS:</strong> 10 algos, walk-forward ML + expense ratio integration. 45 picks, using NAV backtests. <span style="color:#22c55e;">ML ACTIVE</span></li>
+      <li><strong>PENNY/MEME:</strong> ML being built by separate agents. <span style="color:#f59e0b;">IN PROGRESS</span></li>
+      <li><strong>SPORTS:</strong> XGBoost ensemble built, dedicated DB. Need 50+ settled bets for ML activation. <span style="color:#f59e0b;">DEV</span></li>
+    </ul>
+
+    <p><strong>Remaining Gaps (honest assessment):</strong></p>
+    <ul>
+      <li>FOREX: Only 3 closed trades &mdash; ML won't help until we accumulate data</li>
+      <li>Forward/backtest overlap: backtested A-grade algos still separate from live trading</li>
+      <li>No options flow data, no central bank calendar for forex</li>
+      <li>Mutual funds: no live outcome tracking (picks exist but aren't tracked forward)</li>
+      <li>Sports: need 50+ settled bets before ML has statistical significance</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Feb 12, 2026 — Challenger Bot Fix: Regime Gating + TP/SL Ratio -->
+<div class="update-entry" style="--dot-color: #f59e0b;" data-tags="challenger-bot,smart-money,regime,fix,tp-sl" data-category="trading" data-types="fix,improvement">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    Challenger Bot Fix &mdash; Regime Gating + TP/SL Ratio Improvement
+    <span class="badge badge-fix">Fix</span>
+  </div>
+  <div class="update-body">
+    <p>Fixed the <strong>Challenger Bot</strong> (algorithm #20) which had a 0% win rate (2 trades, 2 losses).</p>
+    <ul>
+      <li><strong>Root cause:</strong> No regime gating &mdash; generated BUY signals in bear markets. Threshold too loose (55/100). TP/SL ratio 1:1 (no edge).</li>
+      <li><strong>Fix:</strong> Added regime gate (block BUY in bear, SHORT in bull). Raised thresholds to 65/35. Improved TP/SL to ~2:1 ratio (TP 5%+, SL 2.5&ndash;3%). Dynamic TP from analyst price targets.</li>
+      <li><strong>Expected impact:</strong> Higher conviction signals only, regime-aligned, with asymmetric reward/risk. <a href="/live-monitor/smart-money.html">View Smart Money Dashboard</a></li>
+    </ul>
+  </div>
+</div>
+
 <!-- Feb 12, 2026 — Sports Scraper Integration + ML Feature Enrichment -->
 <div class="update-entry" style="--dot-color: #14b8a6;" data-tags="scrapers,sports,ml,machine-learning,nba,nhl,nfl,mlb,espn,data-quality,feature-engineering,pipeline" data-category="sports" data-types="feature,improvement">
   <div class="update-date">Feb 12, 2026</div>

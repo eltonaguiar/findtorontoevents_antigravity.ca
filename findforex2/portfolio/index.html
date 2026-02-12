@@ -740,14 +740,16 @@
         <h3 class="section-title" style="color:#6366f1;margin-top:1.5rem;">ML System Status</h3>
         <div style="background:var(--bg-card);border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
             <div style="font-size:0.85rem;color:#889;">
-                <p style="margin-bottom:0.8rem;"><strong style="color:#e0e0f0;">Current State: Cannot Train</strong></p>
+                <p style="margin-bottom:0.8rem;"><strong style="color:#22c55e;">Current State: ML Pipeline DEPLOYED (Feb 12, 2026)</strong></p>
                 <ul style="margin-left:1.5rem;margin-bottom:0.8rem;">
-                    <li>Only <strong>3 closed forex trades</strong> exist -- grid search / ML requires minimum 20</li>
-                    <li>Even if we had data, it would not help until the <strong>correct algorithms are deployed</strong></li>
-                    <li>The backtested strategies (Trend Following, Mean Reversion) have excellent historical metrics but no forward validation</li>
-                    <li>No parameter optimization has been performed on live forex data</li>
+                    <li><span style="color:#22c55e;">&check;</span> <strong>forex_ml_optimizer.py</strong> (1,051 lines) &mdash; grid search, walk-forward 70/30 split, Sharpe objective</li>
+                    <li><span style="color:#22c55e;">&check;</span> <strong>Regime-aware optimization</strong> &mdash; separate params for bull/neutral/bear</li>
+                    <li><span style="color:#22c55e;">&check;</span> <strong>concept_drift_detector.py</strong> &mdash; daily PSI + win rate degradation monitoring</li>
+                    <li><span style="color:#22c55e;">&check;</span> <strong>multi_timeframe_regime.py</strong> &mdash; 4h/daily/weekly HMM for forex context</li>
+                    <li><span style="color:#22c55e;">&check;</span> <strong>GitHub Actions</strong> &mdash; forex-ml-optimizer.yml (Sun + Wed 3 PM EST)</li>
+                    <li><span style="color:#f59e0b;">&bull;</span> <strong>Waiting on data:</strong> only 3 closed trades &mdash; min 10 needed for first optimization</li>
                 </ul>
-                <p style="color:#f59e0b;"><strong>Path to ML activation:</strong> Deploy correct algorithms (bridge script) &rarr; accumulate 20+ closed trades &rarr; run grid search on forex-specific parameters &rarr; enable Learned vs Original comparison.</p>
+                <p style="color:#22c55e;"><strong>Status:</strong> ML infra fully deployed. Optimizer auto-activates at 10+ closed FOREX trades.</p>
             </div>
         </div>
 
