@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Real-Time Monitoring Dashboard</title>
+    <style>
+        body { font-family: Arial; background: #f0f0f0; }
+        .metric { padding: 10px; margin: 10px; background: white; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>Real-Time System Metrics</h1>
+    <div id="sharpe" class="metric">Sharpe Ratio: Loading...</div>
+    <div id="winrate" class="metric">Win Rate: Loading...</div>
+    <div id="drawdown" class="metric">Max Drawdown: Loading...</div>
+    
+    <script>
+    function updateMetrics() {
+        fetch('/live-monitor/api/metrics.php')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('sharpe').innerText = `Sharpe Ratio: ${data.sharpe.toFixed(2)}`;
+                document.getElementById('winrate').innerText = `Win Rate: ${data.win_rate.toFixed(1)}%`;
+                document.getElementById('drawdown').innerText = `Max Drawdown: ${data.max_dd.toFixed(1)}%`;
+            });
+    }
+    updateMetrics();
+    setInterval(updateMetrics, 60000);  // Every minute
+    </script>
+</body>
+</html>
