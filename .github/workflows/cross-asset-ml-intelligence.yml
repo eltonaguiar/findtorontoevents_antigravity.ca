@@ -1,0 +1,78 @@
+name: Cross-Asset ML Intelligence — Weekly Analysis
+
+on:
+  schedule:
+    # Weekly Sunday at 5 PM EST (22:00 UTC) — after all per-asset optimizers
+    - cron: '0 22 * * 0'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (show analysis without updating DB)'
+        required: false
+        default: 'false'
+
+jobs:
+  cross-asset-ml:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install --quiet mysql-connector-python requests numpy pandas
+
+    - name: Run Cross-Asset ML Intelligence
+      env:
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASS: ${{ secrets.DB_PASS }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+      run: |
+        echo "=== Cross-Asset ML Intelligence ==="
+        echo "Time: $(date -u)"
+        echo ""
+        echo "This script analyzes signals across ALL asset classes:"
+        echo "  - Signal correlation (redundancy detection)"
+        echo "  - Ensemble weight optimization"
+        echo "  - Prediction calibration check"
+        echo "  - Feature importance analysis"
+        echo "  - ML readiness assessment"
+        echo "  - Alpha decay detection"
+        echo ""
+
+        DRY_RUN_FLAG=""
+        if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+          DRY_RUN_FLAG="--dry-run"
+          echo "Running in DRY RUN mode"
+        fi
+
+        python scripts/cross_asset_ml_intelligence.py $DRY_RUN_FLAG
+
+    - name: Verify ML tables populated
+      continue-on-error: true
+      run: |
+        echo "=== Verifying ML Intelligence Tables ==="
+        RESULT=$(curl -sS --max-time 15 \
+          "https://findtorontoevents.ca/live-monitor/api/ml_intelligence.php?action=status&key=livetrader2026" \
+          -H "User-Agent: WorldClassIntelligence/1.0" 2>&1) || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            algos = d.get('algorithms', [])
+            by_asset = {}
+            for a in algos:
+                ac = a.get('asset_class', 'UNKNOWN')
+                by_asset.setdefault(ac, []).append(a)
+            for ac, items in sorted(by_asset.items()):
+                ml_ready = sum(1 for a in items if a.get('ml_ready'))
+                print(f'{ac}: {len(items)} algos tracked, {ml_ready} ML-ready')
+        " 2>/dev/null || echo "Could not parse ML status"
