@@ -15,7 +15,7 @@
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Sports Bet Winner Finder | Find Toronto Events">
     <meta name="twitter:description" content="AI-powered sports betting analysis. Track NBA, NHL, NFL, MLB odds and find value bets.">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         :root {
             --bg-dark: #0a0a1a;
@@ -606,6 +606,8 @@ function switchTab(tab) {
     if (tab === 'bets') loadBets('active');
     if (tab === 'performance') fetchPerformance();
     if (tab === 'history') fetchPickHistory();
+    // Persist tab state for back-navigation
+    try { sessionStorage.setItem('sports_tab', tab); } catch(e) {}
 }
 
 function filterSport(sport) {
@@ -616,6 +618,8 @@ function filterSport(sport) {
         var oc = btns[i].getAttribute('onclick') || '';
         if (oc.indexOf("'" + sport + "'") >= 0) btns[i].classList.add('active');
     }
+    // Persist sport filter for back-navigation
+    try { sessionStorage.setItem('sports_filter', sport); } catch(e) {}
     var activeTab = document.querySelector('.tab-panel.active');
     if (activeTab) switchTab(activeTab.id.replace('tab-', ''));
 }
@@ -1168,6 +1172,21 @@ function _updateSportFilters() {
         }
     }
 }
+
+// Restore saved filter state on back-navigation
+(function restoreState() {
+    try {
+        var savedSport = sessionStorage.getItem('sports_filter');
+        var savedTab = sessionStorage.getItem('sports_tab');
+        if (savedSport && savedSport !== 'all') {
+            filterSport(savedSport);
+        }
+        if (savedTab && savedTab !== 'picks') {
+            switchTab(savedTab);
+            return; // switchTab already fetches data for the active tab
+        }
+    } catch(e) {}
+})();
 
 // Init
 fetchDashboard();
