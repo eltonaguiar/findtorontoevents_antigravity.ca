@@ -2141,6 +2141,198 @@
   else{window.addEventListener('load',function(){setTimeout(inject,800);});}
 })();
 </script>
+
+<!-- Master Performance Summary: replaces stale picks with live forward-looking data -->
+<script>
+(function(){
+  function injectMaster(){
+    // 1. Find and collapse the stale picks grid
+    var pickCards = document.querySelectorAll('.glass-panel');
+    var picksContainer = null;
+    // The picks are inside the main grid section
+    var grids = document.querySelectorAll('.grid');
+    for(var g=0;g<grids.length;g++){
+      var cards = grids[g].querySelectorAll('[class*="glass-panel"]');
+      if(cards.length >= 10){
+        picksContainer = grids[g];
+        break;
+      }
+    }
+
+    // Find the header area to insert before the picks
+    var headerEl = document.querySelector('header') || document.querySelector('.max-w-7xl');
+    if(!headerEl) return;
+
+    // Wrap stale picks in a collapsible section
+    if(picksContainer){
+      var wrapper = document.createElement('div');
+      wrapper.style.cssText = 'max-width:80rem;margin:0 auto;padding:0 1rem;';
+      var toggleBtn = document.createElement('button');
+      toggleBtn.style.cssText = 'width:100%;padding:12px 20px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:12px;color:#f87171;font-size:13px;cursor:pointer;text-align:left;margin:8px 0;font-family:inherit;';
+      toggleBtn.innerHTML = '<span style="font-weight:700;">Legacy Picks (Jan 29, 2026)</span> &mdash; 30 static picks with frozen prices. These are NOT live-tracked. <span style="float:right;font-size:11px;opacity:0.7;">Click to expand</span>';
+      toggleBtn.onclick = function(){
+        var p = picksContainer;
+        if(p.style.display==='none'){p.style.display='';this.querySelector('span:last-child').textContent='Click to collapse';}
+        else{p.style.display='none';this.querySelector('span:last-child').textContent='Click to expand';}
+      };
+      picksContainer.parentNode.insertBefore(wrapper, picksContainer);
+      wrapper.appendChild(toggleBtn);
+      wrapper.appendChild(picksContainer);
+      picksContainer.style.display='none';
+    }
+
+    // Also collapse the methodology section
+    var methodSections = document.querySelectorAll('.max-w-4xl');
+    for(var ms=0;ms<methodSections.length;ms++){
+      var t = methodSections[ms].textContent||'';
+      if(t.indexOf('Score Explanation')!==-1 || t.indexOf('How scores work')!==-1){
+        methodSections[ms].style.display='none';
+      }
+    }
+
+    // 2. Build the Master Performance Summary
+    var master = document.createElement('div');
+    master.id = 'master-performance-summary';
+    master.style.cssText = 'max-width:80rem;margin:2rem auto;padding:0 1rem;';
+    master.innerHTML = ''
+      +'<div style="background:linear-gradient(135deg,rgba(34,211,238,0.06) 0%,rgba(99,102,241,0.06) 50%,rgba(16,185,129,0.06) 100%);border:1px solid rgba(34,211,238,0.2);border-radius:1.5rem;padding:2rem;margin-bottom:1.5rem;">'
+      +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem;flex-wrap:wrap;">'
+      +'<h2 style="font-size:1.5rem;font-weight:800;color:#fff;margin:0;">Live Performance Dashboard</h2>'
+      +'<span style="font-size:9px;font-weight:800;letter-spacing:1px;background:#22d3ee;color:#0a0e1a;padding:2px 8px;border-radius:4px;text-transform:uppercase;">Forward-Looking Data</span>'
+      +'<span style="font-size:9px;font-weight:800;letter-spacing:1px;background:#10b981;color:#0a0e1a;padding:2px 8px;border-radius:4px;text-transform:uppercase;">Not Backtested</span>'
+      +'</div>'
+      +'<p style="color:#8892a8;font-size:0.85rem;margin-bottom:1.5rem;max-width:48rem;">Real positions tracked with actual entry prices and live market returns. No hindsight bias. These systems entered trades at recorded prices and track performance forward in real-time.</p>'
+      +'<div id="master-kpi-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;">'
+      +'<div class="master-kpi" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:1rem;padding:1rem 1.2rem;text-align:center;"><div style="font-size:0.65rem;color:#667;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Live Positions</div><div id="mk-positions" style="font-size:1.8rem;font-weight:800;color:#22d3ee;">--</div></div>'
+      +'<div class="master-kpi" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:1rem;padding:1rem 1.2rem;text-align:center;"><div style="font-size:0.65rem;color:#667;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Avg Return</div><div id="mk-avg-return" style="font-size:1.8rem;font-weight:800;color:#10b981;">--</div></div>'
+      +'<div class="master-kpi" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:1rem;padding:1rem 1.2rem;text-align:center;"><div style="font-size:0.65rem;color:#667;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Tracking Algos</div><div id="mk-algos" style="font-size:1.8rem;font-weight:800;color:#a78bfa;">20</div></div>'
+      +'<div class="master-kpi" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:1rem;padding:1rem 1.2rem;text-align:center;"><div style="font-size:0.65rem;color:#667;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Systems Live</div><div id="mk-systems" style="font-size:1.8rem;font-weight:800;color:#f59e0b;">--</div></div>'
+      +'</div>'
+
+      // Top Performing Systems cards
+      +'<h3 style="font-size:1rem;font-weight:700;color:#e2e8f0;margin-bottom:1rem;">Top Systems &mdash; Verified Real Performance</h3>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">'
+
+      // Consolidated Picks
+      +'<a href="/findstocks/portfolio2/consolidated.html" style="text-decoration:none;display:block;">'
+      +'<div style="background:rgba(34,211,238,0.05);border:1px solid rgba(34,211,238,0.25);border-radius:1rem;padding:1.2rem;transition:all 0.2s;cursor:pointer;" onmouseover="this.style.borderColor=\'rgba(34,211,238,0.5)\';this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.borderColor=\'rgba(34,211,238,0.25)\';this.style.transform=\'none\'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
+      +'<span style="font-weight:700;color:#22d3ee;font-size:0.95rem;">Consolidated Picks</span>'
+      +'<span style="font-size:8px;font-weight:800;background:#22d3ee;color:#0a0e1a;padding:2px 6px;border-radius:3px;">CROWN JEWEL</span>'
+      +'</div>'
+      +'<p style="font-size:0.75rem;color:#8892a8;margin:0 0 10px;">Multi-algorithm consensus tracker. When 2+ of 20 algorithms agree on the same ticker &amp; direction, a position is created and tracked with real entry prices.</p>'
+      +'<div id="mc-stats" style="font-size:0.7rem;color:#667;">Loading live stats...</div>'
+      +'</div></a>'
+
+      // Goldmine Checker
+      +'<a href="/live-monitor/goldmine-dashboard.html" style="text-decoration:none;display:block;">'
+      +'<div style="background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.25);border-radius:1rem;padding:1.2rem;transition:all 0.2s;cursor:pointer;" onmouseover="this.style.borderColor=\'rgba(245,158,11,0.5)\';this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.borderColor=\'rgba(245,158,11,0.25)\';this.style.transform=\'none\'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
+      +'<span style="font-weight:700;color:#f59e0b;font-size:0.95rem;">Goldmine Checker</span>'
+      +'<span style="font-size:8px;font-weight:800;background:#f59e0b;color:#0a0e1a;padding:2px 6px;border-radius:3px;">PROOF LAYER</span>'
+      +'</div>'
+      +'<p style="font-size:0.75rem;color:#8892a8;margin:0 0 10px;">Verifies AI predictions against real market outcomes. Every prediction timestamped, every result tracked. The audit trail that proves whether our algorithms actually work.</p>'
+      +'<div id="mg-stats" style="font-size:0.7rem;color:#667;">Loading live stats...</div>'
+      +'</div></a>'
+
+      // Smart Money
+      +'<a href="/live-monitor/smart-money.html" style="text-decoration:none;display:block;">'
+      +'<div style="background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.25);border-radius:1rem;padding:1.2rem;transition:all 0.2s;cursor:pointer;" onmouseover="this.style.borderColor=\'rgba(139,92,246,0.5)\';this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.borderColor=\'rgba(139,92,246,0.25)\';this.style.transform=\'none\'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
+      +'<span style="font-weight:700;color:#a78bfa;font-size:0.95rem;">Smart Money Intelligence</span>'
+      +'<span style="font-size:8px;font-weight:800;background:#a78bfa;color:#0a0e1a;padding:2px 6px;border-radius:3px;">SEC DATA</span>'
+      +'</div>'
+      +'<p style="font-size:0.75rem;color:#8892a8;margin:0 0 10px;">Real institutional data from SEC EDGAR 13F filings, Form 4 insider trades, and Wall Street analyst ratings. See what hedge funds and insiders are actually buying.</p>'
+      +'<div style="font-size:0.7rem;color:#a78bfa;">9 tables &bull; Analyst + Insider + 13F + Consensus</div>'
+      +'</div></a>'
+
+      // L vs O
+      +'<a href="/live-monitor/algo-performance.html" style="text-decoration:none;display:block;">'
+      +'<div style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.25);border-radius:1rem;padding:1.2rem;transition:all 0.2s;cursor:pointer;" onmouseover="this.style.borderColor=\'rgba(16,185,129,0.5)\';this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.borderColor=\'rgba(16,185,129,0.25)\';this.style.transform=\'none\'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
+      +'<span style="font-weight:700;color:#10b981;font-size:0.95rem;">Learned vs Original (L vs O)</span>'
+      +'<span style="font-size:8px;font-weight:800;background:#10b981;color:#0a0e1a;padding:2px 6px;border-radius:3px;">EVOLUTION</span>'
+      +'</div>'
+      +'<p style="font-size:0.75rem;color:#8892a8;margin:0 0 10px;">Tracks self-learning algorithm parameters vs original defaults. Real trade results show which algorithms actually improved their performance through adaptation.</p>'
+      +'<div style="font-size:0.7rem;color:#10b981;">19 algorithms &bull; 36 assets &bull; Learned params tracked</div>'
+      +'</div></a>'
+
+      +'</div>' // close grid
+      +'</div>'; // close main container
+
+    // Insert at top of content area, after header
+    var newsSection = document.getElementById('news-section');
+    if(newsSection){
+      newsSection.parentNode.insertBefore(master, newsSection);
+    } else {
+      // Fallback: insert after the first header-like element
+      var h = document.querySelector('header');
+      if(h) h.parentNode.insertBefore(master, h.nextSibling);
+    }
+
+    // 3. Fetch live data from consolidated tracker API
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/findstocks/portfolio2/api/consensus_performance.php?action=dashboard');
+    xhr.timeout = 8000;
+    xhr.onload = function(){
+      if(xhr.status === 200){
+        try{
+          var d = JSON.parse(xhr.responseText);
+          if(d.ok){
+            var open = d.open || [];
+            var closed = d.closed || [];
+            document.getElementById('mk-positions').textContent = open.length;
+            // Calculate avg return
+            var totalRet = 0;
+            for(var i=0;i<open.length;i++) totalRet += parseFloat(open[i].current_return_pct)||0;
+            var avgRet = open.length > 0 ? (totalRet/open.length).toFixed(2) : '0.00';
+            var avgEl = document.getElementById('mk-avg-return');
+            avgEl.textContent = (avgRet >= 0 ? '+' : '') + avgRet + '%';
+            avgEl.style.color = avgRet >= 0 ? '#10b981' : '#ef4444';
+            // Winners/losers
+            var winners = 0, losers = 0;
+            for(var j=0;j<open.length;j++){
+              if(parseFloat(open[j].current_return_pct) > 0) winners++;
+              else if(parseFloat(open[j].current_return_pct) < 0) losers++;
+            }
+            document.getElementById('mc-stats').innerHTML = '<span style="color:#22d3ee;font-weight:700;">' + open.length + ' open</span> &bull; <span style="color:#10b981;">' + winners + ' winning</span> &bull; <span style="color:#ef4444;">' + losers + ' losing</span> &bull; ' + closed.length + ' closed';
+          }
+        }catch(e){}
+      }
+    };
+    xhr.onerror = function(){};
+    xhr.send();
+
+    // 4. Fetch goldmine data
+    var xhr2 = new XMLHttpRequest();
+    xhr2.open('GET', '/live-monitor/api/goldmine_tracker.php?action=dashboard');
+    xhr2.timeout = 8000;
+    xhr2.onload = function(){
+      if(xhr2.status === 200){
+        try{
+          var d = JSON.parse(xhr2.responseText);
+          if(d.ok){
+            var sys = d.systems || [];
+            document.getElementById('mk-systems').textContent = sys.length;
+            var totalWR = 0, wrCount = 0;
+            for(var s=0;s<sys.length;s++){
+              var wr = parseFloat(sys[s].win_rate||0);
+              if(wr > 0){totalWR += wr; wrCount++;}
+            }
+            var avgWR = wrCount > 0 ? (totalWR/wrCount).toFixed(1) : '--';
+            document.getElementById('mg-stats').innerHTML = '<span style="color:#f59e0b;font-weight:700;">' + sys.length + ' systems tracked</span> &bull; Avg win rate: ' + avgWR + '%';
+          }
+        }catch(e){}
+      }
+    };
+    xhr2.onerror = function(){};
+    xhr2.send();
+  }
+
+  if(document.readyState==='complete'){setTimeout(injectMaster,1200);}
+  else{window.addEventListener('load',function(){setTimeout(injectMaster,1200);});}
+})();
+</script>
 <!-- AI Assistant: context-aware chat + voice assistant (free, no API keys) -->
 <script src="/ai-assistant.js"></script>
 <script src="/findstocks/portfolio2/stock-nav.js"></script>

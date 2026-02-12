@@ -9,7 +9,7 @@
       links: [
         { text: 'Hub', href: '/findstocks/portfolio2/hub.html' },
         { text: 'Picks', href: '/findstocks/portfolio2/picks.html' },
-        { text: 'Consolidated', href: '/findstocks/portfolio2/consolidated.html' },
+        { text: 'Consolidated', href: '/findstocks/portfolio2/consolidated.html', glow: true },
         { text: 'Leaderboard', href: '/findstocks/portfolio2/leaderboard.html' },
         { text: 'Dashboard', href: '/findstocks/portfolio2/dashboard.html' },
         { text: 'Horizon Picks', href: '/findstocks/portfolio2/horizon-picks.html' },
@@ -37,7 +37,7 @@
         { text: 'Patterns', href: '/live-monitor/winning-patterns.html' },
         { text: 'Hour Learn', href: '/live-monitor/hour-learning.html' },
         { text: 'DayTrader Sim', href: '/findstocks/portfolio2/daytrader-sim.html' },
-        { text: 'L vs O', href: '/live-monitor/algo-performance.html' }
+        { text: 'L vs O', href: '/live-monitor/algo-performance.html', glow: true }
       ]
     },
     {
@@ -52,9 +52,9 @@
     {
       label: 'Goldmines \u00b7 Claude',
       links: [
-        { text: 'Goldmine Checker', href: '/live-monitor/goldmine-dashboard.html' },
+        { text: 'Goldmine Checker', href: '/live-monitor/goldmine-dashboard.html', glow: true },
         { text: 'Health Alerts', href: '/live-monitor/goldmine-alerts.html' },
-        { text: 'Smart Money', href: '/live-monitor/smart-money.html' },
+        { text: 'Smart Money', href: '/live-monitor/smart-money.html', glow: true },
         { text: 'Capital Efficiency', href: '/live-monitor/capital-efficiency.html' },
         { text: 'Multi-Dim', href: '/live-monitor/multi-dimensional.html' }
       ]
@@ -84,6 +84,10 @@
     '.sn-link{color:#8888aa;padding:6px 7px;border-radius:6px;text-decoration:none;white-space:nowrap;transition:color 0.15s,background 0.15s}',
     '.sn-link:hover{color:#e0e0f0;background:rgba(99,102,241,0.12);text-decoration:none}',
     '.sn-link.active{color:#6366f1;background:rgba(99,102,241,0.15);font-weight:600}',
+    '.sn-link.sn-glow{color:#22d3ee;text-shadow:0 0 6px rgba(34,211,238,0.4);font-weight:600;animation:sn-glow-pulse 3s ease-in-out infinite}',
+    '.sn-link.sn-glow:hover{color:#fff;background:rgba(34,211,238,0.15);text-shadow:0 0 10px rgba(34,211,238,0.6)}',
+    '.sn-link.sn-glow::after{content:"LIVE";font-size:7px;font-weight:800;letter-spacing:0.5px;background:#22d3ee;color:#0a0e1a;padding:1px 3px;border-radius:3px;margin-left:3px;vertical-align:super;line-height:1}',
+    '@keyframes sn-glow-pulse{0%,100%{text-shadow:0 0 6px rgba(34,211,238,0.4)}50%{text-shadow:0 0 12px rgba(34,211,238,0.7),0 0 20px rgba(34,211,238,0.3)}}',
     '#stock-nav-toggle{display:none;background:none;border:1px solid #2a2a4a;color:#8888aa;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:16px;margin-left:auto;line-height:1}',
     '#stock-nav-toggle:hover{color:#e0e0f0;border-color:#4a4a6a}',
     '#stock-nav-links{display:flex;align-items:center;flex-wrap:wrap;flex:1}',
@@ -138,9 +142,10 @@
     var links = NAV_GROUPS[g].links;
     for (var i = 0; i < links.length; i++) {
       var a = document.createElement('a');
-      a.className = 'sn-link' + (isActive(links[i].href) ? ' active' : '');
+      a.className = 'sn-link' + (isActive(links[i].href) ? ' active' : '') + (links[i].glow ? ' sn-glow' : '');
       a.href = links[i].href;
       a.textContent = links[i].text;
+      if (links[i].glow) a.title = 'Real forward-looking performance data (not backtested)';
       group.appendChild(a);
     }
     linksContainer.appendChild(group);
