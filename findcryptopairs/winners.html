@@ -119,6 +119,11 @@ a{color:#88aaff;text-decoration:none}a:hover{text-decoration:underline}
   <a href="/">&larr; Home</a>
 </div>
 <div class="container">
+  <!-- Honest performance status banner -->
+  <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;">
+    <span style="background:rgba(239,68,68,0.15);color:#ef4444;padding:3px 10px;border-radius:6px;font-weight:800;font-size:11px;border:1px solid rgba(239,68,68,0.3);letter-spacing:0.5px;">CRYPTO SCANNER</span>
+    <span style="color:#fca5a5;">Forward-facing results: <strong style="color:#ef4444;">8.3% WR</strong> (1 win / 11 losses, 12 resolved). Our <a href="/live-monitor/algo-performance.html" style="color:#22d3ee;">learned algorithms</a> perform better on crypto (87.5% WR, +12.6% P&amp;L).</span>
+  </div>
   <div class="stats-row" id="stats-row">
     <div class="stat-card"><div class="label">Win Rate</div><div class="value" id="s-wr">--</div><div class="sub">Resolved signals</div></div>
     <div class="stat-card"><div class="label">Avg P&L</div><div class="value" id="s-pnl">--</div><div class="sub">Per signal</div></div>
@@ -341,6 +346,45 @@ a{color:#88aaff;text-decoration:none}a:hover{text-decoration:underline}
       <strong style="color:#ef4444">The honest truth:</strong> No scanner in the world can predict crypto prices with certainty. Crypto can drop 10-50% in hours. This tool finds patterns that have historically worked more often than not — but "more often than not" still means you WILL lose sometimes. <strong>Never put in money you can't afford to lose.</strong> This is a research tool, not a money printer.
     </div>
   </div>
+  <!-- Data Sources & Transparency -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:16px;">
+    <h3 style="font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+      Data Sources & Transparency
+      <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);">LOSING</span>
+    </h3>
+    <div style="font-size:12px;color:var(--dim);line-height:1.8;">
+      <strong style="color:var(--text);">Where the numbers come from:</strong><br>
+      &bull; <strong>Scanner stats:</strong> <a href="api/crypto_winners.php?action=stats" target="_blank" style="color:#88aaff">crypto_winners.php?action=stats</a> &mdash; 8.3% WR (1/11), all-time record<br>
+      &bull; <strong>Live signals:</strong> <a href="api/crypto_winners.php?action=scan" target="_blank" style="color:#88aaff">crypto_winners.php?action=scan</a> &mdash; top coins scored by 7 technical indicators<br>
+      &bull; <strong>Signal history:</strong> <a href="api/crypto_winners.php?action=history" target="_blank" style="color:#88aaff">crypto_winners.php?action=history</a> &mdash; every signal with resolved outcome<br>
+      &bull; <strong>Price data:</strong> Crypto.com Exchange public API (real-time, 600+ pairs)<br>
+      &bull; <strong>Scanner frequency:</strong> Every 15 minutes via GitHub Actions<br>
+      &bull; <strong>Compare to:</strong> <a href="/live-monitor/algo-performance.html" style="color:#88aaff">L vs O Algo Performance</a> &mdash; crypto trades at 87.5% WR (our best crypto system)
+    </div>
+  </div>
+
+  <!-- Future Roadmap -->
+  <div style="background:var(--card);border:1px solid rgba(99,102,241,0.3);border-radius:var(--radius);padding:16px;margin-top:12px;">
+    <h3 style="font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+      Future Roadmap
+      <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);">PLANNED</span>
+    </h3>
+    <div style="font-size:12px;color:var(--dim);line-height:1.8;">
+      <strong style="color:var(--green);">Near-term:</strong><br>
+      &bull; Extend resolve window to 8h and 24h (4h may be too short for larger-cap crypto)<br>
+      &bull; Add volume-weighted confidence scoring<br>
+      &bull; Integrate on-chain data (whale movements, exchange inflows/outflows)<br><br>
+      <strong style="color:var(--gold);">Q2 2026:</strong><br>
+      &bull; Backtesting framework to optimize scoring weights against historical data<br>
+      &bull; Cross-exchange price comparison (CEX vs DEX spread detection)<br>
+      &bull; Correlation analysis with BTC/ETH (beta-adjusted returns)<br><br>
+      <strong style="color:var(--dim);">Long-term:</strong><br>
+      &bull; Neural network trained on resolved signal outcomes<br>
+      &bull; Real-time sentiment integration (Fear & Greed Index, social mentions)<br>
+      &bull; Portfolio allocation optimizer across crypto scanner picks
+    </div>
+  </div>
+
   <div class="disclaimer" style="margin-top:12px">
     <strong>Data source:</strong> Crypto.com Exchange public API (real-time, no delay). Scanner runs every 15 minutes via GitHub Actions. All signals are tracked and outcomes publicly verifiable.<br>
     <strong>Platforms available in Ontario, Canada:</strong> Kraken (lowest fees, most pairs), Coinbase Advanced Trade (registered restricted dealer), Crypto.com Exchange (600+ pairs, 0.25% maker fee), Bitbuy (100% Canadian).<br>

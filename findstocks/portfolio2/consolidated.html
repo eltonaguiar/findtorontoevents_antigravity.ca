@@ -476,6 +476,13 @@
     </div>
 
     <div class="container">
+        <!-- Best Stocks designation banner -->
+        <div style="background:linear-gradient(135deg,rgba(34,211,238,0.06),rgba(99,102,241,0.06));border:1px solid rgba(34,211,238,0.3);border-radius:var(--radius);padding:0.8rem 1.2rem;margin-bottom:1rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span style="background:rgba(34,211,238,0.15);color:#22d3ee;padding:3px 10px;border-radius:6px;font-weight:800;font-size:11px;border:1px solid rgba(34,211,238,0.3);letter-spacing:0.5px;">BEST STOCKS</span>
+            <span style="color:var(--text);font-size:0.85rem;font-weight:600;">Crown Jewel &mdash; Most Sophisticated Pick System</span>
+            <span style="color:var(--text-dim);font-size:0.75rem;margin-left:auto;">Status: <strong style="color:#eab308;">Tracking</strong> &mdash; 65 open positions, results pending ~Feb 24</span>
+        </div>
+
         <!-- Tab Navigation -->
         <div class="tab-nav">
             <button class="tab-btn active" onclick="switchTab('consensus')">Consensus Picks</button>
@@ -700,6 +707,46 @@
             <!-- Lessons list -->
             <div id="lessonsList">
                 <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </div>
+
+        <!-- Data Sources & Transparency -->
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem;">
+            <h3 style="font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;">
+                Data Sources & Transparency
+                <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3);">VERIFIED</span>
+            </h3>
+            <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
+                <strong style="color:var(--text);">Where the numbers come from:</strong><br>
+                &bull; <strong>Performance data:</strong> <a href="api/consensus_performance.php?action=dashboard" target="_blank">consensus_performance.php?action=dashboard</a> &mdash; live API, updated daily via GitHub Actions<br>
+                &bull; <strong>Price data:</strong> <a href="api/fetch_prices.php" target="_blank">fetch_prices.php</a> &mdash; Yahoo Finance v8 chart API, refreshed daily<br>
+                &bull; <strong>Algorithm signals:</strong> <a href="/live-monitor/api/daily_picks.php?type=all" target="_blank">daily_picks.php</a> &mdash; 20 algorithms score each ticker<br>
+                &bull; <strong>Entry tracking:</strong> <a href="api/consensus_performance.php?action=track" target="_blank">consensus_performance.php?action=track</a> &mdash; records positions at market open<br>
+                &bull; <strong>Exit rules:</strong> TP +8% (swing) / +5% (day), SL -4% / -3%, max hold 14 days, consensus drop &lt;2 algos<br>
+                &bull; <strong>Pattern learning:</strong> <code>consensus_lessons</code> table &mdash; activates after 5+ closed trades<br>
+                &bull; <strong>GitHub Actions:</strong> <code>refresh-stocks-portfolio.yml</code> runs weekdays at 23:30 UTC
+            </div>
+        </div>
+
+        <!-- Future Roadmap -->
+        <div style="background:var(--bg-card);border:1px solid rgba(99,102,241,0.3);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem;">
+            <h3 style="font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;">
+                Future Roadmap
+                <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);">PLANNED</span>
+            </h3>
+            <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
+                <strong style="color:var(--green);">Q1 2026:</strong><br>
+                &bull; First batch of max-hold closures (~Feb 24) will produce real W/L data<br>
+                &bull; Pattern detection engine activates after 5 closed trades<br>
+                &bull; Win rate, Sharpe ratio, and drawdown metrics go live<br><br>
+                <strong style="color:var(--yellow);">Q2 2026:</strong><br>
+                &bull; ML-Enhanced challenge mode using learned lessons<br>
+                &bull; Sector rotation insights from closed trade analysis<br>
+                &bull; Equity curve chart with vs-SPY benchmark comparison<br><br>
+                <strong style="color:var(--text-dim);">Long-term:</strong><br>
+                &bull; Dynamic position sizing based on consensus strength<br>
+                &bull; Multi-timeframe consensus (day + swing + position)<br>
+                &bull; Automated alerts when consensus score changes dramatically
             </div>
         </div>
 

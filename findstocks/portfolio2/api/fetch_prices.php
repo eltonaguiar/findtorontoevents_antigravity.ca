@@ -29,8 +29,8 @@ if ($single_ticker !== '') {
     $skip_mode = isset($_GET['force']) ? false : true;
     $sql = "SELECT DISTINCT s.ticker FROM stocks s";
     if ($skip_mode) {
-        $sql .= " LEFT JOIN (SELECT ticker, COUNT(*) as cnt FROM daily_prices GROUP BY ticker) dp ON s.ticker = dp.ticker";
-        $sql .= " WHERE dp.cnt IS NULL OR dp.cnt < 50";
+        $sql .= " LEFT JOIN (SELECT ticker, MAX(trade_date) as last_date FROM daily_prices GROUP BY ticker) dp ON s.ticker = dp.ticker";
+        $sql .= " WHERE dp.last_date IS NULL OR dp.last_date < CURDATE()";
     }
     $sql .= " ORDER BY s.ticker";
     $res = $conn->query($sql);

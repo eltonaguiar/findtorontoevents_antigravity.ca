@@ -44,7 +44,7 @@ jobs:
       continue-on-error: true
       run: |
         echo "=== Fetching price data from Yahoo Finance (batch 1) ==="
-        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/fetch_prices.php?range=1y") || true
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/fetch_prices.php?range=1mo") || true
         echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Fetched: {d.get(\"fetched\",0)} tickers. Note: {d.get(\"note\",\"\")}. Errors: {d.get(\"errors\",[])}')" || echo "Fetch response: $RESULT"
 
     - name: Fetch price data (batch 2)
@@ -52,7 +52,7 @@ jobs:
       run: |
         echo "=== Fetching remaining tickers ==="
         sleep 5
-        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/fetch_prices.php?range=1y") || true
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findstocks/portfolio2/api/fetch_prices.php?range=1mo") || true
         echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Fetched: {d.get(\"fetched\",0)} tickers. Message: {d.get(\"message\",d.get(\"note\",\"\"))}')" || echo "Fetch response: $RESULT"
 
     # ─── Fetch Dividend & Earnings Data ───

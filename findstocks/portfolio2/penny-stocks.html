@@ -535,6 +535,12 @@
     </div>
 
     <div class="container">
+        <!-- Best Penny Stocks designation banner -->
+        <div style="background:linear-gradient(135deg,rgba(234,179,8,0.06),rgba(99,102,241,0.06));border:1px solid rgba(234,179,8,0.3);border-radius:var(--radius);padding:0.7rem 1rem;margin-bottom:0.8rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;">
+            <span style="background:rgba(234,179,8,0.15);color:#eab308;padding:3px 10px;border-radius:6px;font-weight:800;font-size:11px;border:1px solid rgba(234,179,8,0.3);letter-spacing:0.5px;">BEST PENNY</span>
+            <span style="color:var(--text-dim);">Status: <strong style="color:#eab308;">Tracking</strong> &mdash; 40 active picks, 0 closed. Forward-facing results pending.</span>
+        </div>
+
         <div class="disclaimer">
             Not financial advice. Penny stocks are highly volatile and risky. Always do your own research before investing. Scores are algorithmic, not recommendations.
         </div>
@@ -829,6 +835,45 @@
                     </table>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Data Sources & Transparency -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;max-width:1300px;margin:0 auto 1.5rem;">
+        <h3 style="font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;">
+            Data Sources & Transparency
+            <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(234,179,8,0.15);color:#eab308;border:1px solid rgba(234,179,8,0.3);">TRACKING</span>
+        </h3>
+        <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
+            <strong style="color:var(--text);">Where the numbers come from:</strong><br>
+            &bull; <strong>Stock screening:</strong> <a href="api/penny_stocks.php?action=scan&region=us" target="_blank">penny_stocks.php?action=scan</a> &mdash; Yahoo Finance screener proxy<br>
+            &bull; <strong>Pick performance:</strong> <a href="api/penny_stock_picks.php?action=performance" target="_blank">penny_stock_picks.php?action=performance</a> &mdash; 40 active picks, 0 closed<br>
+            &bull; <strong>7-factor scoring:</strong> Health (30%) + Momentum (25%) + Volume (10%) + Technical (10%) + Earnings (10%) + Smart Money (10%) + Quality (5%)<br>
+            &bull; <strong>Smart Money data:</strong> <a href="/live-monitor/api/smart_money.php?action=consensus&ticker=AAPL" target="_blank">smart_money.php</a> &mdash; analyst ratings, insider trades, 13F filings<br>
+            &bull; <strong>Exchange filter:</strong> TSX, TSX-V, CSE, NYSE, NASDAQ, NYSE American only. OTC/Pink Sheets excluded.<br>
+            &bull; <strong>GitHub Actions:</strong> <code>refresh-stocks-portfolio.yml</code> &mdash; daily automated scans
+        </div>
+    </div>
+
+    <!-- Future Roadmap -->
+    <div style="background:var(--bg-card);border:1px solid rgba(234,179,8,0.3);border-radius:var(--radius);padding:1.25rem;max-width:1300px;margin:0 auto 1.5rem;">
+        <h3 style="font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;">
+            Future Roadmap
+            <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);">PLANNED</span>
+        </h3>
+        <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
+            <strong style="color:var(--green);">Near-term:</strong><br>
+            &bull; First batch of pick closures will produce real W/L data (exit rules: SL -15% / TP +30% / 90-day max hold)<br>
+            &bull; Win rate and cumulative P&L tracking goes live after first closures<br>
+            &bull; Add historical price charts for each tracked pick<br><br>
+            <strong style="color:var(--yellow);">Q2 2026:</strong><br>
+            &bull; Sector breakdown analysis (which penny stock sectors perform best)<br>
+            &bull; Volume-to-market-cap ratio alerts for unusual activity<br>
+            &bull; Compare penny stock 7-factor scoring accuracy vs random selection<br><br>
+            <strong style="color:var(--text-dim);">Long-term:</strong><br>
+            &bull; Machine learning model trained on closed trade outcomes<br>
+            &bull; Insider buying correlation with penny stock breakouts<br>
+            &bull; Risk-adjusted portfolio builder with position sizing recommendations
         </div>
     </div>
 

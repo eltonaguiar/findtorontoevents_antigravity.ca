@@ -44,10 +44,16 @@ FILES = [
     ('findstocks/tools.html', '/findstocks/tools.html'),
     ('findstocks/research/index.html', '/findstocks/research/index.html'),
     ('findstocks2_global/miracle.html', '/findstocks2_global/miracle.html'),
+    # Best-by-class banners added
+    ('findstocks/portfolio2/penny-stocks.html', '/findstocks/portfolio2/penny-stocks.html'),
+    ('findforex2/portfolio/index.html', '/findforex2/portfolio/index.html'),
+    ('findmutualfunds2/portfolio2/index.html', '/findmutualfunds2/portfolio2/index.html'),
     # Stock nav (glow badges on top pages)
     ('findstocks/portfolio2/stock-nav.js', '/findstocks/portfolio2/stock-nav.js'),
     # Root index
     ('index.html', '/index.html'),
+    # fetch_prices.php bug fix (stale data check)
+    ('findstocks/portfolio2/api/fetch_prices.php', '/findstocks/portfolio2/api/fetch_prices.php'),
 ]
 
 def ensure_dir(ftp, path):
