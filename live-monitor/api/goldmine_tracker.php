@@ -948,10 +948,15 @@ function _gm_archive_top_picks($conn) {
         $score = isset($p['score']) ? intval($p['score']) : 0;
         $algo  = isset($p['algorithm']) ? $p['algorithm'] : (isset($p['strategy_name']) ? $p['strategy_name'] : 'Top Pick');
 
+        $tp_pct = 8;
+        $sl_pct = 4;
+        $tp_price = ($entry > 0) ? $entry * (1 + $tp_pct / 100) : 0;
+        $sl_price = ($entry > 0) ? $entry * (1 - $sl_pct / 100) : 0;
+
         $conn->query("INSERT INTO gm_unified_picks
             (source_system, source_page, source_id, source_table, pick_date, pick_time,
              asset_type, ticker, direction, algorithm_name, algo_count,
-             entry_price, target_pct, stop_loss_pct,
+             entry_price, target_price, stop_loss_price, target_pct, stop_loss_pct,
              confidence_score, hold_period_hours,
              status, created_at, updated_at)
             VALUES (
@@ -960,7 +965,7 @@ function _gm_archive_top_picks($conn) {
              '" . date('Y-m-d') . "', '" . $now . "',
              'stock', '" . _gm_esc($conn, $ticker) . "', 'LONG',
              '" . _gm_esc($conn, $algo) . "', 1,
-             " . $entry . ", 8, 4,
+             " . $entry . ", " . $tp_price . ", " . $sl_price . ", " . $tp_pct . ", " . $sl_pct . ",
              " . $score . ", 336,
              'open', '" . $now . "', '" . $now . "')");
         if ($conn->affected_rows > 0) $inserted++;
@@ -996,10 +1001,15 @@ function _gm_archive_penny($conn) {
         $vol   = isset($s['regularMarketVolume']) ? intval($s['regularMarketVolume']) : 0;
         $chg   = isset($s['regularMarketChangePercent']) ? floatval($s['regularMarketChangePercent']) : 0;
 
+        $p_tp_pct = 15;
+        $p_sl_pct = 10;
+        $p_tp_price = ($price > 0) ? $price * (1 + $p_tp_pct / 100) : 0;
+        $p_sl_price = ($price > 0) ? $price * (1 - $p_sl_pct / 100) : 0;
+
         $conn->query("INSERT INTO gm_unified_picks
             (source_system, source_page, source_id, source_table, pick_date, pick_time,
              asset_type, ticker, asset_name, direction, algorithm_name,
-             entry_price, target_pct, stop_loss_pct,
+             entry_price, target_price, stop_loss_price, target_pct, stop_loss_pct,
              confidence_score, hold_period_hours, metadata_json,
              status, created_at, updated_at)
             VALUES (
@@ -1009,7 +1019,7 @@ function _gm_archive_penny($conn) {
              'stock', '" . _gm_esc($conn, $ticker) . "',
              '" . _gm_esc($conn, isset($s['shortName']) ? $s['shortName'] : '') . "',
              'LONG', 'Penny Screener',
-             " . $price . ", 15, 10,
+             " . $price . ", " . $p_tp_price . ", " . $p_sl_price . ", " . $p_tp_pct . ", " . $p_sl_pct . ",
              " . min(100, max(0, intval($chg * 2))) . ", 336,
              '{\"volume\":" . $vol . ",\"change_pct\":" . round($chg, 2) . "}',
              'open', '" . $now . "', '" . $now . "')");

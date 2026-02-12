@@ -261,9 +261,9 @@ function _lp_action_fetch($conn, $admin_key, $crypto_symbols, $forex_symbols, $s
 function _lp_action_get($conn) {
     $asset_class = isset($_GET['asset_class']) ? strtoupper(trim($_GET['asset_class'])) : '';
 
-    $sql = "SELECT * FROM lm_price_cache";
+    $sql = "SELECT * FROM lm_price_cache WHERE asset_class != '' AND asset_class IS NOT NULL";
     if ($asset_class !== '') {
-        $sql .= " WHERE asset_class = '" . $conn->real_escape_string($asset_class) . "'";
+        $sql .= " AND asset_class = '" . $conn->real_escape_string($asset_class) . "'";
     }
     $sql .= " ORDER BY asset_class ASC, symbol ASC";
 

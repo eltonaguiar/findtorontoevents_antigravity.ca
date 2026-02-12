@@ -1856,10 +1856,15 @@ function _ls_algo_macd_crossover($candles, $price, $symbol, $asset) {
 
 // ────────────────────────────────────────────────────────────
 //  ALGORITHM 7: Consensus
-//  2+ different algorithms signal the SAME DIRECTION for this symbol
-//  within the last 24h => follow the majority direction.
+//  4+ different algorithms signal the SAME DIRECTION for this symbol
+//  within the last 2h => follow the near-unanimous direction.
 //  Uses lm_signals (live signals table) for all asset classes.
-//  TP 3%, SL 2%, Hold 24h (or learned params).
+//  TP/SL ratio 3:1. Only fires on very high conviction.
+//
+//  TUNING LOG (Feb 12 2026): 17.2% win rate over 29 trades.
+//  Root cause: 6h window + 60 strength + 3 algo minimum = too noisy.
+//  Fix: 2h window, strength >= 75, min 4 algos, 85% supermajority,
+//       average strength >= 75, tighter SL (1.5%), wider TP (4.5%).
 // ────────────────────────────────────────────────────────────
 
 function _ls_algo_consensus($conn, $price, $symbol, $asset) {
@@ -1870,29 +1875,35 @@ function _ls_algo_consensus($conn, $price, $symbol, $asset) {
     $candles_for_regime = array();  // Consensus uses DB signals, not candles
     $regime = _ls_get_regime($conn, $asset, $candles_for_regime, $symbol);
 
-    // Query recent live signals for this symbol (last 6h for freshness, exclude Consensus itself)
-    // Only count signals with strength >= 60 (filter out weak/noisy signals)
+    // Query recent live signals for this symbol (last 2h — fresh signals only)
+    // Only count signals with strength >= 75 (high-conviction only)
     $sql = "SELECT algorithm_name, signal_type, signal_strength
             FROM lm_signals
             WHERE symbol = '$safe_sym'
               AND asset_class = '$safe_asset'
               AND algorithm_name != 'Consensus'
-              AND signal_strength >= 60
-              AND signal_time >= DATE_SUB(NOW(), INTERVAL 6 HOUR)
+              AND signal_strength >= 75
+              AND signal_time >= DATE_SUB(NOW(), INTERVAL 2 HOUR)
             ORDER BY signal_time DESC";
     $res = $conn->query($sql);
     if (!$res || $res->num_rows == 0) return null;
 
     // Count unique algorithms per direction (only strong signals)
-    $buy_algos   = array();
-    $short_algos = array();
+    // Also track individual strengths for average check
+    $buy_algos    = array();
+    $short_algos  = array();
+    $buy_strengths  = array();
+    $short_strengths = array();
     while ($row = $res->fetch_assoc()) {
         $algo = $row['algorithm_name'];
         $dir  = strtoupper($row['signal_type']);
+        $str  = (int)$row['signal_strength'];
         if ($dir === 'BUY' || $dir === 'LONG') {
             $buy_algos[$algo] = 1;
+            $buy_strengths[] = $str;
         } elseif ($dir === 'SHORT' || $dir === 'SELL') {
             $short_algos[$algo] = 1;
+            $short_strengths[] = $str;
         }
     }
 
@@ -1900,43 +1911,78 @@ function _ls_algo_consensus($conn, $price, $symbol, $asset) {
     $short_count = count($short_algos);
     $total       = $buy_count + $short_count;
 
-    // Require minimum 3 algorithms to agree (was 2 — too noisy)
-    if ($total < 3) return null;
+    // Require minimum 4 algorithms total (was 3 — too noisy)
+    if ($total < 4) return null;
 
-    // Determine majority direction — require 70% supermajority (was 60%)
+    // Determine majority direction — require 85% supermajority (was 70%)
     $direction = null;
     $majority_count = 0;
     $majority_algos = array();
+    $majority_strengths = array();
 
-    if ($buy_count >= 3 && ($buy_count / $total) >= 0.7) {
+    if ($buy_count >= 4 && ($buy_count / $total) >= 0.85) {
         $direction = 'BUY';
         $majority_count = $buy_count;
         $majority_algos = array_keys($buy_algos);
-    } elseif ($short_count >= 3 && ($short_count / $total) >= 0.7) {
+        $majority_strengths = $buy_strengths;
+    } elseif ($short_count >= 4 && ($short_count / $total) >= 0.85) {
         $direction = 'SHORT';
         $majority_count = $short_count;
         $majority_algos = array_keys($short_algos);
+        $majority_strengths = $short_strengths;
     }
 
     // No clear consensus — skip
     if ($direction === null) return null;
 
+    // Require average signal strength >= 75 across agreeing algos
+    $avg_strength = 0;
+    if (count($majority_strengths) > 0) {
+        $sum = 0;
+        for ($ms = 0; $ms < count($majority_strengths); $ms++) {
+            $sum += $majority_strengths[$ms];
+        }
+        $avg_strength = $sum / count($majority_strengths);
+    }
+    if ($avg_strength < 75) return null;
+
     // ── Regime gate: block counter-regime signals ──
     if ($regime === 'bear' && $direction === 'BUY') return null;
     if ($regime === 'bull' && $direction === 'SHORT') return null;
 
-    $strength = min(100, $majority_count * 20 + 30);
+    // ── Recent performance gate: skip if Consensus has been losing ──
+    $recent_trades = $conn->query("SELECT COUNT(*) as total,
+        SUM(CASE WHEN realized_pnl_usd > 0 THEN 1 ELSE 0 END) as wins
+        FROM lm_trades WHERE algorithm_name = 'Consensus'
+        AND status = 'closed' AND closed_at >= DATE_SUB(NOW(), INTERVAL 14 DAY)");
+    if ($recent_trades && $rt = $recent_trades->fetch_assoc()) {
+        $rt_total = (int)$rt['total'];
+        $rt_wins  = (int)$rt['wins'];
+        // If 5+ recent trades and win rate < 25%, pause this algo
+        if ($rt_total >= 5 && $rt_total > 0 && ($rt_wins / $rt_total) < 0.25) {
+            return null;
+        }
+    }
 
-    // Improved TP/SL: 2:1 minimum ratio (was 1.5:1)
-    $tp   = 4.0;
-    $sl   = 2.0;
-    $hold = 36;
+    $strength = min(100, $majority_count * 15 + 40);
 
+    // 3:1 TP/SL ratio — tighter SL for faster exit on losers
+    $tp   = 4.5;
+    $sl   = 1.5;
+    $hold = 24;
+
+    // Only use learned params if they maintain >= 2.5:1 TP/SL ratio
     $lp = _ls_get_learned_params($conn, 'Consensus', $asset);
     if ($lp !== null) {
-        $tp   = (float)$lp['best_tp_pct'];
-        $sl   = (float)$lp['best_sl_pct'];
-        $hold = (int)$lp['best_hold_hours'];
+        $lp_tp   = (float)$lp['best_tp_pct'];
+        $lp_sl   = (float)$lp['best_sl_pct'];
+        $lp_hold = (int)$lp['best_hold_hours'];
+        // Only adopt learned params if they maintain a good risk/reward ratio
+        if ($lp_sl > 0 && ($lp_tp / $lp_sl) >= 2.5) {
+            $tp   = $lp_tp;
+            $sl   = $lp_sl;
+            $hold = $lp_hold;
+        }
     }
 
     return array(
@@ -1948,12 +1994,13 @@ function _ls_algo_consensus($conn, $price, $symbol, $asset) {
         'max_hold_hours'  => $hold,
         'timeframe'       => '1h',
         'rationale'       => json_encode(array(
-            'reason'         => $majority_count . '/' . $total . ' algorithms agree on ' . $direction . ' for ' . $symbol,
+            'reason'         => $majority_count . '/' . $total . ' algorithms agree on ' . $direction . ' for ' . $symbol . ' (avg strength ' . round($avg_strength) . ')',
             'algo_count'     => $majority_count,
             'total_algos'    => $total,
             'direction'      => $direction,
             'buy_count'      => $buy_count,
             'short_count'    => $short_count,
+            'avg_strength'   => round($avg_strength),
             'algorithms'     => $majority_algos
         ))
     );
@@ -3177,7 +3224,7 @@ function _ls_get_original_defaults($algo_name, $asset_class) {
         'DCA Dip'               => array('CRYPTO' => array(5.0, 3.0, 48),  'FOREX' => array(5.0, 3.0, 48),  'STOCK' => array(5.0, 3.0, 48)),
         'Bollinger Squeeze'     => array('CRYPTO' => array(2.5, 1.5, 8),   'FOREX' => array(2.5, 1.5, 8),   'STOCK' => array(3.0, 1.5, 16)),
         'MACD Crossover'        => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(2.0, 1.0, 12),  'STOCK' => array(2.5, 1.2, 16)),
-        'Consensus'             => array('CRYPTO' => array(4.0, 2.0, 36),  'FOREX' => array(4.0, 2.0, 36),  'STOCK' => array(5.0, 2.5, 48)),
+        'Consensus'             => array('CRYPTO' => array(4.5, 1.5, 24),  'FOREX' => array(4.5, 1.5, 24),  'STOCK' => array(5.0, 1.5, 24)),
         'Volatility Breakout'   => array('CRYPTO' => array(3.0, 2.0, 16),  'FOREX' => array(3.0, 2.0, 16),  'STOCK' => array(3.5, 2.0, 24)),
         'Trend Sniper'          => array('CRYPTO' => array(1.5, 0.75, 8),  'FOREX' => array(0.4, 0.2, 8),   'STOCK' => array(1.5, 0.75, 12)),
         'Dip Recovery'          => array('CRYPTO' => array(2.5, 1.5, 16),  'FOREX' => array(0.6, 0.4, 16),  'STOCK' => array(2.0, 1.0, 24)),

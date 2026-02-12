@@ -290,7 +290,7 @@
 
     <div class="container">
         <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;font-size:0.72rem;color:#8888aa;margin-bottom:1rem;padding:0.5rem 0.75rem;background:rgba(234,179,8,0.04);border:1px solid rgba(234,179,8,0.15);border-radius:8px;">
-            <span class="data-type-tag tag-forward">Forward-Looking</span> <span>Algorithm-generated picks based on backtested strategies. Scores reflect historical performance, not guaranteed future results.</span>
+            <span class="data-type-tag tag-forward">Forward-Looking</span> <span>Algorithm-generated picks based on backtested strategies. <strong style="color:#eab308;">Win rates measure pick direction accuracy</strong> (&ldquo;did the stock go up?&rdquo;), not trading profitability with TP/SL execution. 7 stock algorithms are currently paused. Only <strong style="color:#22c55e;">Challenger Bot</strong> actively generates stock signals.</span>
         </div>
         <div id="loading" class="loading">
             <div class="spinner"></div>
@@ -357,7 +357,7 @@
               <div class="glossary-card"><div class="g-term">Momentum</div><div class="g-desc">How strongly the stock has been trending recently. Positive momentum means the price has been consistently rising. It measures the speed and direction of price changes.</div></div>
               <div class="glossary-card"><div class="g-term">Risk Level</div><div class="g-desc">How volatile the stock is. <strong>Low</strong> = stable blue-chip (like JNJ, WMT). <strong>Medium</strong> = normal volatility. <strong>High</strong> = can swing 3-5%+ daily (like NVDA, NFLX). Higher risk = higher potential reward but also larger losses.</div></div>
               <div class="glossary-card"><div class="g-term">SL / TP / Max Hold</div><div class="g-desc"><strong>SL (Stop Loss)</strong> = sell if down X%. <strong>TP (Take Profit)</strong> = sell if up X%. <strong>Max Hold</strong> = sell after N days regardless. These define the exit strategy for each pick.</div></div>
-              <div class="glossary-card"><div class="g-term">Win Rate</div><div class="g-desc">Historical percentage of picks from this algorithm that hit their take profit before hitting their stop loss. A 70% win rate means 7 of 10 past picks were profitable.</div></div>
+              <div class="glossary-card"><div class="g-term">Win Rate</div><div class="g-desc"><strong style="color:#eab308;">Pick Direction Accuracy</strong> &mdash; percentage of picks where the stock moved in the predicted direction during the holding period. This is NOT the same as trading profitability (TP/SL execution win rate is much lower). A 70% direction WR can still lose money if stops are too tight.</div></div>
             </div>
           </div>
         </div>
@@ -407,6 +407,11 @@ function fmt(n, d) {
     return parseFloat(n).toFixed(d || 2);
 }
 
+// PAUSED STOCK ALGORITHMS (Feb 11, 2026)
+var PAUSED_ALGOS = ['ETF Masters','Sector Rotation','Sector Momentum','Blue Chip Growth','Technical Momentum','Composite Rating','Cursor Genius'];
+function isPaused(n) { for (var i = 0; i < PAUSED_ALGOS.length; i++) { if (PAUSED_ALGOS[i] === n) return true; } return false; }
+function pausedTag(n) { return isPaused(n) ? ' <span style="font-size:0.5rem;padding:1px 4px;border-radius:3px;background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);font-weight:700;vertical-align:middle;">PAUSED</span>' : ''; }
+
 function renderStockCard(pick) {
     var retClass = pick.current_return_pct >= 0 ? 'positive' : 'negative';
     var retSign = pick.current_return_pct >= 0 ? '+' : '';
@@ -429,7 +434,7 @@ function renderStockCard(pick) {
         + '<div class="pick-score"><span>Score:</span>'
         + '<div class="score-bar"><div class="score-fill ' + scoreClass(pick.score) + '" style="width:' + (pick.score || 0) + '%;"></div></div>'
         + '<span>' + (pick.score || 0) + '</span></div>'
-        + '<span class="pick-algo">' + pick.algorithm + '</span>'
+        + '<span class="pick-algo">' + pick.algorithm + pausedTag(pick.algorithm) + '</span>'
         + '</div>'
         + (pick.pick_date ? '<div style="font-size:0.65rem;color:#8888aa;margin-top:0.3rem;">Picked: ' + pick.pick_date + '</div>' : '')
         + '</div>';
@@ -451,7 +456,7 @@ function renderDayCard(pick) {
         + '<div class="pick-score"><span>Score:</span>'
         + '<div class="score-bar"><div class="score-fill ' + scoreClass(pick.score) + '" style="width:' + (pick.score || 0) + '%;"></div></div>'
         + '<span>' + (pick.score || 0) + '</span></div>'
-        + '<span class="pick-algo">' + pick.algorithm + '</span>'
+        + '<span class="pick-algo">' + pick.algorithm + pausedTag(pick.algorithm) + '</span>'
         + '</div>'
         + (pick.pick_date ? '<div style="font-size:0.65rem;color:#8888aa;margin-top:0.3rem;">Picked: ' + pick.pick_date + '</div>' : '')
         + '</div>';

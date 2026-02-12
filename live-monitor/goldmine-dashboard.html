@@ -168,8 +168,12 @@
             border-radius: var(--radius);
             padding: 1.2rem;
             transition: border-color 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            color: inherit;
         }
-        .health-card:hover { border-color: var(--accent); }
+        .health-card:hover { border-color: var(--accent); text-decoration: none; }
         .health-card .hc-header {
             display: flex;
             justify-content: space-between;
@@ -179,6 +183,18 @@
         .health-card .hc-name {
             font-size: 0.95rem;
             font-weight: 600;
+        }
+        .health-card .hc-desc {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            margin-top: 0.3rem;
+            line-height: 1.4;
+        }
+        .health-card .hc-link {
+            font-size: 0.72rem;
+            color: var(--accent);
+            margin-top: 0.5rem;
+            display: block;
         }
         .health-card .hc-row {
             display: flex;
@@ -369,6 +385,71 @@
         .pagination button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
         .pagination .page-info { font-size: 0.8rem; color: var(--text-dim); }
 
+        /* ===== GLOSSARY ===== */
+        .glossary-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.8rem 1.2rem;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.3s;
+        }
+        .glossary-toggle:hover { border-color: var(--accent); }
+        .glossary-toggle h3 {
+            font-size: 0.9rem;
+            color: var(--text);
+            font-weight: 600;
+        }
+        .glossary-toggle .arrow {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+        .glossary-toggle.open .arrow { transform: rotate(180deg); }
+        .glossary-body {
+            display: none;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 var(--radius) var(--radius);
+            margin-top: -1.5rem;
+            margin-bottom: 1.5rem;
+            padding: 1.2rem;
+        }
+        .glossary-body.open { display: block; }
+        .glossary-item {
+            display: flex;
+            gap: 1rem;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+            align-items: flex-start;
+        }
+        .glossary-item:last-child { border-bottom: none; }
+        .glossary-item .gi-name {
+            min-width: 120px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--accent);
+        }
+        .glossary-item .gi-desc {
+            font-size: 0.82rem;
+            color: var(--text-dim);
+            line-height: 1.5;
+            flex: 1;
+        }
+        .glossary-item .gi-desc a { color: var(--accent); }
+        .glossary-item .gi-params {
+            font-size: 0.75rem;
+            color: #667;
+            margin-top: 0.3rem;
+        }
+        .sys-link-inline { color: var(--accent); cursor: pointer; }
+        .sys-link-inline:hover { text-decoration: underline; }
+
         /* ===== SYSTEM DEEP DIVE ===== */
         .system-selector {
             display: flex;
@@ -537,8 +618,73 @@
         <!-- TAB 1: OVERVIEW -->
         <!-- ============================================================ -->
         <div id="tab-overview">
+            <div id="goldmine-last-updated" style="text-align:right;font-size:0.75rem;color:var(--text-dim);margin-bottom:0.5rem;"></div>
             <div id="overview-health" class="health-grid">
                 <div class="loading">Loading system health...</div>
+            </div>
+
+            <!-- SYSTEM GLOSSARY (collapsible) -->
+            <div class="glossary-toggle" id="glossary-toggle" onclick="toggleGlossary()">
+                <h3>System Glossary &mdash; What does each system track?</h3>
+                <span class="arrow">&#9660;</span>
+            </div>
+            <div class="glossary-body" id="glossary-body">
+                <div class="glossary-item">
+                    <span class="gi-name"><a href="/findstocks/portfolio2/consolidated.html">Consolidated</a></span>
+                    <div class="gi-desc">
+                        Multi-algorithm consensus stock picks. When 2+ of our 20 trading algorithms agree on the same ticker and direction, a consensus position is created and tracked.
+                        <div class="gi-params">TP: +8% | SL: -4% | Max Hold: 14 days | Assets: Stocks</div>
+                    </div>
+                </div>
+                <div class="glossary-item">
+                    <span class="gi-name"><a href="/live-monitor/live-monitor.html">Live Signal</a></span>
+                    <div class="gi-desc">
+                        20 independent algorithms scanning crypto, forex, and stocks every 30 min. Signals executed as paper trades with auto TP/SL. Includes 19 original algos + 1 Challenger Bot (smart money consensus).
+                        <div class="gi-params">Capital: $10K | Sizing: 5% | Max Positions: 10 | Regime-gated | Assets: Crypto, Forex, Stocks</div>
+                    </div>
+                </div>
+                <div class="glossary-item">
+                    <span class="gi-name"><a href="/live-monitor/edge-dashboard.html">Edge</a></span>
+                    <div class="gi-desc">
+                        Multi-timeframe technical analysis opportunities. Scans for scalp, day trade, and swing setups across all asset classes using converging technical indicators.
+                        <div class="gi-params">Scalp: 4h | Day Trade: 24h | Swing: 7d | Assets: Crypto, Forex, Stocks</div>
+                    </div>
+                </div>
+                <div class="glossary-item">
+                    <span class="gi-name"><a href="/findcryptopairs/meme.html">Meme</a></span>
+                    <div class="gi-desc">
+                        Meme coin scanner signals (DOGE, SHIB, PEPE, FLOKI, etc.) with meme-specific technical indicators and win/loss outcome tracking.
+                        <div class="gi-params">Outcome tracking: win/loss/open with PnL % | Assets: Meme Coins</div>
+                    </div>
+                </div>
+                <div class="glossary-item">
+                    <span class="gi-name"><a href="/live-monitor/sports-betting.html">Sports</a></span>
+                    <div class="gi-desc">
+                        Value bets and line shopping across 6 Canadian sportsbooks (NHL, NBA, NFL, MLB, CFL, MLS). Uses expected value (EV) calculations and quarter-Kelly sizing.
+                        <div class="gi-params">Bankroll: $1,000 | Sizing: Quarter-Kelly | Assets: Sports Bets</div>
+                    </div>
+                </div>
+                <div class="glossary-item">
+                    <span class="gi-name"><a href="/findstocks/portfolio2/horizon-picks.html">Horizon</a></span>
+                    <div class="gi-desc">
+                        Stock picks across 3 investment time horizons with backtested parameters. Quick (2 weeks), Swing (2 months), and Long-term (1 year).
+                        <div class="gi-params">Quick: TP +10% SL -5% 14d | Swing: TP +20% SL -8% 60d | Long: TP +40% SL -15% 252d | Assets: Stocks</div>
+                    </div>
+                </div>
+                <div class="glossary-item">
+                    <span class="gi-name"><a href="/findstocks/portfolio2/picks.html">Top Picks</a></span>
+                    <div class="gi-desc">
+                        Top daily stock recommendations from our best-performing strategies. Refreshed every weekday at 5PM EST via automated GitHub Actions pipeline.
+                        <div class="gi-params">TP: +8% | SL: -4% | Max Hold: 14 days | Assets: Stocks</div>
+                    </div>
+                </div>
+                <div class="glossary-item">
+                    <span class="gi-name"><a href="/findstocks/portfolio2/penny-stocks.html">Penny</a></span>
+                    <div class="gi-desc">
+                        Top 20 penny stocks (under $5) screened by volume and percent change. Filters out OTC/Pink Sheets for safety. Higher TP/SL targets given penny stock volatility.
+                        <div class="gi-params">TP: +15% | SL: -10% | Max Hold: 14 days | Min Volume: 500K | Assets: Penny Stocks</div>
+                    </div>
+                </div>
             </div>
 
             <div class="chart-box">
@@ -601,13 +747,14 @@
                             <th>SL</th>
                             <th>Conf</th>
                             <th>Current</th>
+                            <th>Unrealized %</th>
                             <th>Return%</th>
                             <th>Status</th>
                             <th>Hold Time</th>
                         </tr>
                     </thead>
                     <tbody id="picks-tbody">
-                        <tr><td colspan="12" class="loading">Loading picks...</td></tr>
+                        <tr><td colspan="13" class="loading">Loading picks...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -810,6 +957,14 @@ var picksPage = 1;
 var tickerTimer = null;
 var systemsList = [];
 
+// ── Glossary Toggle ──
+function toggleGlossary() {
+    var toggle = document.getElementById('glossary-toggle');
+    var body = document.getElementById('glossary-body');
+    toggle.classList.toggle('open');
+    body.classList.toggle('open');
+}
+
 // ── Tab Switching ──
 function switchTab(tab) {
     var tabs = ['overview', 'picks', 'deepdive', 'fundamentals', 'failures'];
@@ -912,6 +1067,84 @@ function fmtHoldTime(hours) {
 
 
 /* ===================================================================
+   SYSTEM GLOSSARY — maps system keys to descriptions & page URLs
+   =================================================================== */
+var SYSTEM_INFO = {
+    'consolidated': {
+        label: 'Consolidated Picks',
+        desc: 'Multi-algorithm consensus stock picks. When 2+ of our 20 trading algorithms agree on the same ticker and direction, a consensus position is created.',
+        params: 'TP: +8% | SL: -4% | Max Hold: 14 days | Min Consensus: 2 algos',
+        url: '/findstocks/portfolio2/consolidated.html',
+        assets: 'Stocks'
+    },
+    'live_signal': {
+        label: 'Live Trading Signals',
+        desc: '20 independent algorithms scanning crypto, forex, and stocks every 30 minutes. Signals are executed as paper trades with automated TP/SL. Includes 19 original algos + 1 Challenger Bot (smart money consensus).',
+        params: 'Capital: $10K | Sizing: 5% | Max Positions: 10 | Regime-gated',
+        url: '/live-monitor/live-monitor.html',
+        assets: 'Crypto, Forex, Stocks'
+    },
+    'edge': {
+        label: 'Edge Dashboard',
+        desc: 'Multi-timeframe technical analysis opportunities. Scans for scalp (4h), day trade (24h), and swing (7d) setups across all asset classes using converging technical indicators.',
+        params: 'Scalp: 4h hold | Day: 24h hold | Swing: 168h hold',
+        url: '/live-monitor/edge-dashboard.html',
+        assets: 'Crypto, Forex, Stocks'
+    },
+    'meme': {
+        label: 'Meme Coin Scanner',
+        desc: 'Low-cap meme coin trading signals (DOGE, SHIB, PEPE, FLOKI, etc.) with meme-specific technical indicators and outcome tracking.',
+        params: 'Tracked: win/loss/open outcomes with PnL %',
+        url: '/findcryptopairs/meme.html',
+        assets: 'Meme Coins'
+    },
+    'sports': {
+        label: 'Sports Betting',
+        desc: 'Value bets and line shopping across 6 Canadian sportsbooks (NHL, NBA, NFL, MLB, CFL, MLS). Uses expected value (EV) calculations and quarter-Kelly sizing for paper betting.',
+        params: 'Bankroll: $1,000 | Sizing: Quarter-Kelly | Min EV: positive',
+        url: '/live-monitor/sports-betting.html',
+        assets: 'Sports Bets'
+    },
+    'horizon': {
+        label: 'Horizon Picks',
+        desc: 'Stock picks across 3 investment time horizons with backtested parameters. Quick = 2 weeks, Swing = 2 months, Long-term = 1 year.',
+        params: 'Quick: TP +10% SL -5% 14d | Swing: TP +20% SL -8% 60d | Long: TP +40% SL -15% 252d',
+        url: '/findstocks/portfolio2/horizon-picks.html',
+        assets: 'Stocks'
+    },
+    'top_picks': {
+        label: 'Daily Top Picks',
+        desc: 'Top recommended stocks from our best-performing trading strategies, pulled from the daily report cache. Picks refreshed every weekday at 5PM EST via GitHub Actions.',
+        params: 'TP: +8% | SL: -4% | Max Hold: 14 days',
+        url: '/findstocks/portfolio2/picks.html',
+        assets: 'Stocks'
+    },
+    'penny': {
+        label: 'Penny Stock Finder',
+        desc: 'Top 20 penny stocks (under $5) screened by volume and percent change. Filters out OTC/Pink Sheets. Higher volatility targets given penny stock nature.',
+        params: 'TP: +15% | SL: -10% | Max Hold: 14 days | Min Volume: 500K',
+        url: '/findstocks/portfolio2/penny-stocks.html',
+        assets: 'Penny Stocks'
+    }
+};
+
+function getSystemInfo(name) {
+    if (!name) return null;
+    var key = name.toLowerCase().replace(/[\s\-]/g, '_');
+    return SYSTEM_INFO[key] || null;
+}
+
+function getSystemUrl(name) {
+    var info = getSystemInfo(name);
+    return info ? info.url : null;
+}
+
+function getSystemLabel(name) {
+    var info = getSystemInfo(name);
+    return info ? info.label : (name || 'Unknown');
+}
+
+/* ===================================================================
    TAB 1: OVERVIEW
    =================================================================== */
 function loadOverview() {
@@ -924,10 +1157,12 @@ function loadOverview() {
         var systems = data.systems || [];
         systemsList = systems;
 
-        // Health cards
+        // Health cards — each card links to the system's page
         var html = '';
         for (var i = 0; i < systems.length; i++) {
             var sys = systems[i];
+            var sysKey = sys.name || sys.source_system || sys.system || 'Unknown';
+            var info = getSystemInfo(sysKey);
             var wr = parseFloat(sys.win_rate || 0);
             var wrCls = wrColor(wr);
             var statusCls = 'status-online';
@@ -935,20 +1170,32 @@ function loadOverview() {
             if (sys.status === 'offline') { statusCls = 'status-offline'; statusLabel = 'Offline'; }
             if (sys.status === 'degraded') { statusCls = 'status-degraded'; statusLabel = 'Degraded'; }
 
-            html += '<div class="health-card">'
+            var tag = info ? 'a' : 'div';
+            var hrefAttr = info ? ' href="' + info.url + '" target="_blank"' : '';
+            var displayName = info ? info.label : sysKey;
+            var descHtml = info ? '<div class="hc-desc">' + info.desc.substring(0, 80) + '...</div>' : '';
+            var linkHtml = info ? '<span class="hc-link">Open Dashboard &rarr;</span>' : '';
+
+            html += '<' + tag + ' class="health-card"' + hrefAttr + '>'
                 + '<div class="hc-header">'
-                + '<span class="hc-name">' + (sys.name || sys.source_system || sys.system || 'Unknown') + '</span>'
+                + '<span class="hc-name">' + displayName + '</span>'
                 + '<span class="badge ' + statusCls + '">' + statusLabel + '</span>'
                 + '</div>'
+                + descHtml
                 + '<div class="hc-row"><span class="hc-label">Total Picks</span><span class="hc-val">' + (sys.total_picks || 0) + '</span></div>'
                 + '<div class="hc-row"><span class="hc-label">Win Rate</span><span class="hc-val ' + wrCls + '">' + fmtNum(wr, 1) + '%</span></div>'
                 + '<div class="hc-row"><span class="hc-label">Avg Return</span><span class="hc-val">' + fmtPct(sys.avg_return) + '</span></div>'
-                + '</div>';
+                + linkHtml
+                + '</' + tag + '>';
         }
         if (systems.length === 0) {
             html = '<div class="loading">No systems found. Run the goldmine tracker to start collecting data.</div>';
         }
         document.getElementById('overview-health').innerHTML = html;
+
+        // Last updated timestamp
+        var now = new Date();
+        document.getElementById('goldmine-last-updated').textContent = 'Last updated: ' + now.toLocaleString();
 
         // Chart: systems ranked by win rate
         renderSystemsChart(systems);
@@ -1098,11 +1345,11 @@ function loadPicks() {
     if (status) url += '&status=' + encodeURIComponent(status);
     if (ticker) url += '&ticker=' + encodeURIComponent(ticker);
 
-    document.getElementById('picks-tbody').innerHTML = '<tr><td colspan="12" class="loading">Loading picks...</td></tr>';
+    document.getElementById('picks-tbody').innerHTML = '<tr><td colspan="13" class="loading">Loading picks...</td></tr>';
 
     fetchJSON(url, function(err, data) {
         if (err || !data || !data.ok) {
-            document.getElementById('picks-tbody').innerHTML = '<tr><td colspan="12" class="error-box">Failed to load picks</td></tr>';
+            document.getElementById('picks-tbody').innerHTML = '<tr><td colspan="13" class="error-box">Failed to load picks</td></tr>';
             return;
         }
 
@@ -1112,7 +1359,7 @@ function loadPicks() {
         var totalPages = Math.ceil(total / perPage) || 1;
 
         if (picks.length === 0) {
-            document.getElementById('picks-tbody').innerHTML = '<tr><td colspan="12" class="text-dim" style="text-align:center;padding:2rem;">No picks match the current filters.</td></tr>';
+            document.getElementById('picks-tbody').innerHTML = '<tr><td colspan="13" class="text-dim" style="text-align:center;padding:2rem;">No picks match the current filters.</td></tr>';
             document.getElementById('picks-pagination').innerHTML = '';
             return;
         }
@@ -1121,17 +1368,56 @@ function loadPicks() {
         for (var i = 0; i < picks.length; i++) {
             var p = picks[i];
             var cls = rowClass(p.status);
+
+            // SL: show stop_loss_price if set, otherwise derive from entry & stop_loss_pct
+            var slDisplay = '--';
+            if (p.stop_loss_price && parseFloat(p.stop_loss_price) > 0) {
+                slDisplay = fmtNum(p.stop_loss_price);
+            } else if (p.stop_loss_pct && parseFloat(p.stop_loss_pct) > 0) {
+                slDisplay = '-' + fmtNum(p.stop_loss_pct, 1) + '%';
+            }
+
+            // Target: show target_price if set, otherwise derive from target_pct
+            var tgtDisplay = '--';
+            if (p.target_price && parseFloat(p.target_price) > 0) {
+                tgtDisplay = fmtNum(p.target_price);
+            } else if (p.target_pct && parseFloat(p.target_pct) > 0) {
+                tgtDisplay = '+' + fmtNum(p.target_pct, 1) + '%';
+            }
+
+            // Unrealized %: show current_return_pct for open positions
+            var unrealizedDisplay = '--';
+            if (p.status === 'open' && p.current_price && parseFloat(p.current_price) > 0) {
+                unrealizedDisplay = fmtPct(p.current_return_pct);
+            }
+
+            // Return %: show final_return_pct for closed, current_return_pct for open
+            var returnDisplay;
+            if (p.status && p.status !== 'open') {
+                returnDisplay = fmtPct(p.final_return_pct);
+            } else {
+                returnDisplay = '--';
+            }
+
+            var sysLabel = p.source_system || '--';
+            var sysUrl = getSystemUrl(p.source_system);
+            var sysInfo = getSystemInfo(p.source_system);
+            if (sysUrl) {
+                sysLabel = '<a href="' + sysUrl + '" target="_blank" class="sys-link-inline" title="' + (sysInfo ? sysInfo.desc : '') + '">' + getSystemLabel(p.source_system) + '</a>';
+            }
+
             html += '<tr class="' + cls + '">'
                 + '<td>' + fmtDate(p.created_at || p.date) + '</td>'
-                + '<td>' + (p.source_system || '--') + '</td>'
+                + '<td>' + sysLabel + '</td>'
                 + '<td class="fw-bold">' + (p.ticker || '--') + '</td>'
                 + '<td>' + (p.direction || '--') + '</td>'
                 + '<td>' + fmtNum(p.entry_price) + '</td>'
-                + '<td>' + fmtNum(p.target_price) + '</td>'
-                + '<td>' + fmtNum(p.stop_loss) + '</td>'
-                + '<td>' + fmtNum(p.confidence, 0) + '</td>'
+                + '<td>' + tgtDisplay + '</td>'
+                + '<td>' + slDisplay + '</td>'
+                + '<td>' + fmtNum(p.confidence_score, 0) + '</td>'
                 + '<td>' + fmtNum(p.current_price) + '</td>'
-                + '<td>' + fmtPct(p.final_return_pct || p.return_pct) + '</td>'
+                + '<td>' + unrealizedDisplay + '</td>'
+                + '<td>' + returnDisplay + '</td>'
                 + '<td>' + statusBadge(p.status) + '</td>'
                 + '<td>' + fmtHoldTime(p.hold_hours) + '</td>'
                 + '</tr>';
@@ -1319,7 +1605,7 @@ function loadSystemDetail() {
                     + '<td>' + (rp.direction || '--') + '</td>'
                     + '<td>' + fmtNum(rp.entry_price) + '</td>'
                     + '<td>' + fmtNum(rp.exit_price) + '</td>'
-                    + '<td>' + fmtPct(rp.final_return_pct || rp.return_pct) + '</td>'
+                    + '<td>' + fmtPct(rp.status !== 'open' ? rp.final_return_pct : rp.current_return_pct) + '</td>'
                     + '<td>' + statusBadge(rp.status) + '</td>'
                     + '<td>' + (rp.algorithm_name || rp.algorithm || '--') + '</td>'
                     + '</tr>';
@@ -1434,9 +1720,15 @@ function loadFailures() {
             var tickers = a.affected_tickers || a.tickers || '--';
             if (Array.isArray(tickers)) tickers = tickers.join(', ');
 
+            var alertSysName = a.source_system || a.system || '--';
+            var alertSysUrl = getSystemUrl(alertSysName);
+            var alertSysLabel = alertSysUrl
+                ? '<a href="' + alertSysUrl + '" target="_blank" class="sys-link-inline">' + getSystemLabel(alertSysName) + '</a>'
+                : alertSysName;
+
             html += '<tr class="' + rowCls + '">'
                 + '<td>' + fmtDate(a.created_at || a.date) + '</td>'
-                + '<td>' + (a.source_system || a.system || '--') + '</td>'
+                + '<td>' + alertSysLabel + '</td>'
                 + '<td>' + (a.alert_type || a.type || '--') + '</td>'
                 + '<td>' + severityBadge(a.severity) + '</td>'
                 + '<td>' + (a.title || a.message || '--') + '</td>'

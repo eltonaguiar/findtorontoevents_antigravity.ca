@@ -1123,7 +1123,7 @@
         </div>
         <div class="glossary-card">
           <div class="g-term">Signal</div>
-          <div class="g-desc">An alert generated when one of the 19 algorithms detects a trading opportunity. A signal says "this asset might go up (or down) based on these technical patterns." Not all signals become trades.</div>
+          <div class="g-desc">An alert generated when one of the 13 active algorithms detects a trading opportunity. A signal says "this asset might go up (or down) based on these technical patterns." Not all signals become trades. (7 stock-only algorithms are currently paused.)</div>
           <div class="g-why">Signals are suggestions, not guarantees. The system filters for the strongest ones.</div>
         </div>
         <div class="glossary-card">
@@ -1170,11 +1170,11 @@
 
   <div class="edu-section">
     <div class="edu-header" onclick="toggleEdu(this)">
-      <h3>Understanding the 19 Algorithms <i class="info-tip">i<span class="tip-text">Each algorithm looks for different patterns. Multiple algorithms agreeing = stronger signal.</span></i></h3>
+      <h3>Understanding the 20 Algorithms (12 Active, 7 Stock Algos Paused + Challenger Bot) <i class="info-tip">i<span class="tip-text">Each algorithm looks for different patterns. Multiple algorithms agreeing = stronger signal. 7 stock-only algorithms are currently paused.</span></i></h3>
       <span class="edu-arrow">&#9660;</span>
     </div>
     <div class="edu-body">
-      <p style="font-size:13px;color:#bbb;margin-bottom:10px">The system runs 19 independent algorithms simultaneously. Each one looks for a different type of pattern. They fall into three categories:</p>
+      <p style="font-size:13px;color:#bbb;margin-bottom:10px">The system has 20 algorithms total. <strong style="color:#22c55e;">13 are active</strong> (12 original + Challenger Bot). <strong style="color:#ef4444;">7 stock-only algorithms are paused</strong> (ETF Masters, Sector Rotation, Sector Momentum, Blue Chip Growth, Technical Momentum, Composite Rating, Cursor Genius) due to poor TP/SL execution despite strong directional accuracy. They fall into these categories:</p>
       <div class="glossary-grid">
         <div class="glossary-card">
           <div class="g-term" style="color:var(--accent)">Core Algorithms (8)</div>
@@ -1318,7 +1318,7 @@ function toggleEdu(el){var b=el.nextElementSibling,a=el.querySelector('.edu-arro
             panels[j].classList.remove('active');
         }
         // Map tab names
-        var map = { prices: 0, signals: 1, positions: 2, performance: 3 };
+        var map = { prices: 0, signals: 1, positions: 2, discovery: 3, performance: 4 };
         var idx = map[tabName];
         if (idx !== undefined) {
             btns[idx].classList.add('active');
@@ -1523,6 +1523,10 @@ function toggleEdu(el){var b=el.nextElementSibling,a=el.querySelector('.edu-arro
             });
     };
 
+    // Known stock symbols for fallback classification
+    var KNOWN_STOCKS = {'AAPL':1,'MSFT':1,'GOOGL':1,'AMZN':1,'NVDA':1,'META':1,
+        'JPM':1,'BAC':1,'JNJ':1,'WMT':1,'XOM':1,'NFLX':1,'TSLA':1,'V':1,'DIS':1};
+
     function renderPrices(prices) {
         var cryptoHtml = '';
         var forexHtml = '';
@@ -1531,10 +1535,36 @@ function toggleEdu(el){var b=el.nextElementSibling,a=el.querySelector('.edu-arro
         var forexCount = 0;
         var stockCount = 0;
 
+        // Deduplicate by symbol — keep entry with non-empty asset_class
+        var seen = {};
+        var deduped = [];
+        for (var d = 0; d < prices.length; d++) {
+            var sym_d = (prices[d].symbol || '').toUpperCase();
+            var ac_d = (prices[d].asset_class || '').toUpperCase();
+            if (seen[sym_d]) {
+                // Replace if this one has a proper asset_class and previous didn't
+                if (ac_d !== '' && (seen[sym_d].asset_class || '') === '') {
+                    for (var r = 0; r < deduped.length; r++) {
+                        if ((deduped[r].symbol || '').toUpperCase() === sym_d) {
+                            deduped[r] = prices[d];
+                            break;
+                        }
+                    }
+                    seen[sym_d] = prices[d];
+                }
+            } else {
+                seen[sym_d] = prices[d];
+                deduped.push(prices[d]);
+            }
+        }
+        prices = deduped;
+
         for (var i = 0; i < prices.length; i++) {
             var p = prices[i];
             var sym = (p.symbol || '').toUpperCase();
             var ac = (p.asset_class || '').toUpperCase();
+            // Fallback: classify known stock symbols even if asset_class is empty
+            if (ac === '' && KNOWN_STOCKS[sym]) ac = 'STOCK';
             var displaySym = sym;
             if (ac !== 'STOCK') {
                 // Crypto/Forex pairs: add slashes
@@ -2488,7 +2518,7 @@ function toggleEdu(el){var b=el.nextElementSibling,a=el.querySelector('.edu-arro
                 var ageMins = Math.round(priceAge / 60);
                 lines.push('Price cache: ' + priceCount + ' symbols, last updated ' + ageMins + ' min ago.');
             }
-            lines.push('Signals generated per scan: ~26 across 19 algorithms. Signals expire after 30 min.');
+            lines.push('Signals generated per scan: ~26 across 13 active algorithms (7 stock algos paused). Signals expire after 30 min.');
             if (totalTrades > 0) {
                 lines.push('Trade history: ' + totalTrades + ' trades (' + wins + 'W/' + losses + 'L). Portfolio: $' + portfolio.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' (' + (totalPnl >= 0 ? '+' : '') + '$' + totalPnl.toFixed(2) + ').');
             } else {

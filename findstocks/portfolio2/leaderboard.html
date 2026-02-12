@@ -348,8 +348,11 @@
         </div>
 
         <div id="content" style="display:none;">
-            <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;font-size:0.72rem;color:#8888aa;margin-bottom:1rem;padding:0.5rem 0.75rem;background:rgba(234,179,8,0.04);border:1px solid rgba(234,179,8,0.15);border-radius:8px;">
-                <span class="data-type-tag tag-backtest">Backtest</span> <span>All rankings on this page are based on simulated historical trades. Past performance does not predict future results.</span>
+            <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;font-size:0.72rem;color:#8888aa;margin-bottom:0.5rem;padding:0.5rem 0.75rem;background:rgba(234,179,8,0.04);border:1px solid rgba(234,179,8,0.15);border-radius:8px;">
+                <span class="data-type-tag tag-backtest">Backtest</span> <span>All rankings are based on <strong style="color:#eab308;">pick direction accuracy</strong> (&ldquo;did the stock go up?&rdquo;), NOT trading profitability with TP/SL execution. Past performance does not predict future results.</span>
+            </div>
+            <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;font-size:0.72rem;color:#8888aa;margin-bottom:1rem;padding:0.5rem 0.75rem;background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.15);border-radius:8px;">
+                <span style="font-size:0.55rem;padding:0.1rem 0.35rem;border-radius:3px;background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);font-weight:700;">PAUSED</span> <span>7 stock algorithms are paused due to poor TP/SL execution (3&ndash;11% WR in simulated trading). Signal quality remains high (72&ndash;86% directional accuracy). Only <strong style="color:#22c55e;">Challenger Bot</strong> is actively generating stock signals.</span>
             </div>
             <div id="timestamp" class="timestamp"></div>
 
@@ -415,6 +418,11 @@ var API = (function() {
 var currentData = [];
 var currentSort = 'composite_score';
 var currentDir = -1; // descending
+
+// PAUSED STOCK ALGORITHMS (Feb 11, 2026) — these show pick direction accuracy but are not generating live signals
+var PAUSED_ALGOS = ['ETF Masters','Sector Rotation','Sector Momentum','Blue Chip Growth','Technical Momentum','Composite Rating','Cursor Genius'];
+function isPaused(name) { for (var i = 0; i < PAUSED_ALGOS.length; i++) { if (PAUSED_ALGOS[i] === name) return true; } return false; }
+function pausedBadge(name) { return isPaused(name) ? ' <span style="font-size:0.55rem;padding:0.1rem 0.35rem;border-radius:3px;background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);font-weight:700;letter-spacing:0.03em;vertical-align:middle;">PAUSED</span>' : ''; }
 
 function apiGet(endpoint, cb) {
     var xhr = new XMLHttpRequest();
@@ -626,7 +634,7 @@ function renderCrossAsset() {
             var wr = parseFloat(d.win_rate) || 0;
             t += '<tr class="' + (r <= 3 ? 'rank-' + r : '') + '">'
                 + '<td><span class="rank-badge ' + rankClass(r) + '">' + r + '</span></td>'
-                + '<td><span class="algo-name">' + (d.algorithm_name || d.algorithm || '-') + '</span></td>'
+                + '<td><span class="algo-name">' + (d.algorithm_name || d.algorithm || '-') + pausedBadge(d.algorithm_name || d.algorithm || '') + '</span></td>'
                 + '<td>' + (d.total_trades || d.trades || 0) + '</td>'
                 + '<td><span class="' + (wr >= 50 ? 'val-green' : 'val-red') + '">' + fmt(wr, 1) + '%</span></td>'
                 + '<td>' + pctBadge(d.avg_return_pct) + '</td>'
@@ -643,7 +651,7 @@ function renderCrossAsset() {
             var wr = parseFloat(d.win_rate) || 0;
             t += '<div class="mobile-card' + (r <= 3 ? ' rank-' + r : '') + '">'
                 + '<div class="mc-header">'
-                + '<span><span class="rank-badge ' + rankClass(r) + '" style="width:24px;height:24px;font-size:0.65rem;">' + r + '</span> <span class="algo-name" style="margin-left:0.5rem;">' + (d.algorithm_name || d.algorithm || '-') + '</span></span>'
+                + '<span><span class="rank-badge ' + rankClass(r) + '" style="width:24px;height:24px;font-size:0.65rem;">' + r + '</span> <span class="algo-name" style="margin-left:0.5rem;">' + (d.algorithm_name || d.algorithm || '-') + pausedBadge(d.algorithm_name || d.algorithm || '') + '</span></span>'
                 + '<span class="' + (wr >= 50 ? 'val-green' : 'val-red') + '" style="font-weight:700;">' + fmt(wr, 1) + '%</span>'
                 + '</div>'
                 + '<div class="mc-stats">'

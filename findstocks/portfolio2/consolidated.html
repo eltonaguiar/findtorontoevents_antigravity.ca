@@ -236,8 +236,48 @@
             padding: 0.15rem 0.5rem; border-radius: 4px;
             background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3);
             color: var(--accent); margin: 0.15rem 0.1rem;
+            cursor: pointer; position: relative;
+            transition: background 0.15s, border-color 0.15s;
         }
+        .source-tag:hover { background: rgba(99,102,241,0.25); border-color: var(--accent); }
         .source-link { font-size: 0.65rem; color: var(--text-dim); margin-top: 0.4rem; display: block; }
+
+        /* Algorithm links popup */
+        .algo-popup-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.2s;
+        }
+        .algo-popup-overlay.visible { opacity: 1; pointer-events: auto; }
+        .algo-popup {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.5rem; max-width: 480px; width: 90%;
+            max-height: 80vh; overflow-y: auto; position: relative;
+        }
+        .algo-popup .popup-close {
+            position: absolute; top: 0.75rem; right: 0.75rem;
+            background: none; border: none; color: var(--text-dim);
+            font-size: 1.2rem; cursor: pointer; padding: 0.25rem;
+        }
+        .algo-popup .popup-close:hover { color: var(--text); }
+        .algo-popup h3 {
+            font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, var(--accent), var(--cyan));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .algo-popup .popup-subtitle { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 1rem; }
+        .algo-popup .popup-section { font-size: 0.7rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin: 0.75rem 0 0.4rem; }
+        .algo-popup .page-link {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem 0.6rem; margin-bottom: 0.3rem;
+            border-radius: 6px; border: 1px solid var(--border);
+            font-size: 0.78rem; color: var(--text); text-decoration: none;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .algo-popup .page-link:hover { border-color: var(--accent); background: rgba(99,102,241,0.06); text-decoration: none; }
+        .algo-popup .page-link .link-icon { font-size: 0.9rem; }
+        .algo-popup .page-link .link-desc { font-size: 0.65rem; color: var(--text-dim); }
 
         .pick-direction {
             display: inline-flex; align-items: center; gap: 0.3rem;
@@ -660,6 +700,16 @@
         </div>
     </div>
 
+<!-- Algorithm Links Popup -->
+<div class="algo-popup-overlay" id="algoPopupOverlay" onclick="closeAlgoPopup(event)">
+    <div class="algo-popup" id="algoPopup">
+        <button class="popup-close" onclick="closeAlgoPopup()">&times;</button>
+        <h3 id="algoPopupName">Algorithm Name</h3>
+        <div class="popup-subtitle" id="algoPopupDesc"></div>
+        <div id="algoPopupLinks"></div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
 var API_BASE = (function() {
@@ -835,7 +885,7 @@ function loadConsensus() {
             html += '<div class="pick-sources">';
             var srcs = p.sources || [];
             for (var j = 0; j < srcs.length; j++) {
-                html += '<span class="source-tag">' + esc(srcs[j].algorithm) + ' <span style="opacity:0.5;">' + esc(srcs[j].pick_date || '') + '</span></span>';
+                html += '<span class="source-tag" onclick="showAlgoPopup(\'' + esc(srcs[j].algorithm).replace(/'/g, "\\'") + '\')" title="Click to see where ' + esc(srcs[j].algorithm) + ' is used">' + esc(srcs[j].algorithm) + ' <span style="opacity:0.5;">' + esc(srcs[j].pick_date || '') + '</span></span>';
             }
             html += '</div>';
 
@@ -943,8 +993,11 @@ function loadPerformance() {
                 if (p.sector) h += '<br><span style="font-size:0.6rem;color:var(--accent);">' + esc(p.sector) + '</span>';
                 h += '</td>';
                 h += '<td>$' + fmtPrice(p.entry_price) + '<br><span style="font-size:0.65rem;color:var(--text-dim);">' + esc(p.entry_date || '') + dateTag(p.entry_date) + '</span></td>';
-                h += '<td>$' + fmtPrice(p.current_price) + '</td>';
-                h += '<td class="' + rc + '" style="font-weight:700;">' + (ret >= 0 ? '+' : '') + ret + '%</td>';
+                h += '<td>$' + fmtPrice(p.current_price);
+                if (p.price_age_days >= 2) h += ' <span class="stale-note">(' + p.price_age_days + 'd)</span>';
+                h += '</td>';
+                var retCell = (ret === 0 && p.price_age_days >= 1) ? '<span class="stale-note">awaiting update</span>' : (ret >= 0 ? '+' : '') + ret + '%';
+                h += '<td class="' + rc + '" style="font-weight:700;">' + retCell + '</td>';
                 h += '<td>' + (p.hold_days || 0) + '</td>';
                 h += '<td>' + (p.consensus_count || 0) + ' algos</td>';
                 h += '<td style="max-width:280px;font-size:0.7rem;">';
@@ -1046,7 +1099,7 @@ function loadPerformance() {
                 var rc = a.avg_return >= 0 ? 'positive' : 'negative';
                 ah += '<tr>';
                 ah += '<td><span class="algo-grade grade-' + a.grade + '">' + a.grade + '</span></td>';
-                ah += '<td style="font-size:0.8rem;">' + esc(a.algorithm) + '</td>';
+                ah += '<td style="font-size:0.8rem;"><a href="javascript:void(0)" onclick="showAlgoPopup(\'' + esc(a.algorithm).replace(/'/g, "\\'") + '\')" style="color:var(--cyan);cursor:pointer;" title="See where ' + esc(a.algorithm) + ' is used">' + esc(a.algorithm) + '</a></td>';
                 ah += '<td>' + a.picks + '</td>';
                 ah += '<td class="' + rc + '" style="font-weight:700;">' + (a.avg_return >= 0 ? '+' : '') + a.avg_return + '%</td>';
                 ah += '<td>' + a.winners + '/' + a.losers + '</td>';
@@ -1346,6 +1399,100 @@ function loadLearning() {
     });
 }
 
+
+// ═══════════════════════════════════════════
+// ALGORITHM PAGES MAP — where each algo is used (non-admin)
+// ═══════════════════════════════════════════
+var ALGO_PAGES = {
+    '_default': [
+        { section: 'Stock Picks & Analysis', links: [
+            { url: '/findstocks/portfolio2/picks.html', name: 'Daily Stock Picks', desc: 'See this algorithm\'s latest picks', icon: '\u{1F4CA}' },
+            { url: '/findstocks/portfolio2/consolidated.html', name: 'Consolidated Picks', desc: 'Multi-algorithm consensus view', icon: '\u{1F91D}' },
+            { url: '/findstocks/portfolio2/leaderboard.html', name: 'Algorithm Leaderboard', desc: 'Ranking by win rate, Sharpe, returns', icon: '\u{1F3C6}' },
+            { url: '/findstocks/portfolio2/algo-study.html', name: 'Algo Study', desc: 'Deep-dive analysis of algorithm logic', icon: '\u{1F52C}' }
+        ]},
+        { section: 'Live Trading & Performance', links: [
+            { url: '/live-monitor/live-monitor.html', name: 'Live Trading Monitor', desc: 'Real-time signals and paper trades', icon: '\u{1F4F1}' },
+            { url: '/live-monitor/algo-performance.html', name: 'Algo Performance', desc: 'Learned vs Original parameter comparison', icon: '\u{2699}' },
+            { url: '/live-monitor/edge-dashboard.html', name: 'Edge Dashboard', desc: 'Edge analysis and alpha decay', icon: '\u{1F4C8}' },
+            { url: '/live-monitor/winning-patterns.html', name: 'Winning Patterns', desc: 'Pattern detection across algorithms', icon: '\u{2728}' }
+        ]},
+        { section: 'System Health', links: [
+            { url: '/live-monitor/goldmine-dashboard.html', name: 'Goldmine Dashboard', desc: 'Multi-dimensional system health', icon: '\u{1F48E}' },
+            { url: '/findstocks/portfolio2/learning-dashboard.html', name: 'Self-Learning Algorithms', desc: 'Watch optimization in real-time', icon: '\u{1F9E0}' }
+        ]}
+    ],
+    'Cursor Genius': {
+        desc: 'Data-driven meta-strategy: selective, weighted dip-buying. Sharpe +6.29 (backtest leader). Tier 1: CAT, GOOG, JNJ, WMT, XOM. Tier 2: AAPL, PEP, HON, JPM, KO.',
+        extra: [
+            { section: 'Cursor Genius Highlights', links: [
+                { url: '/findstocks/portfolio2/algo-study.html?algo=Cursor+Genius', name: 'Algo Study: Cursor Genius', desc: 'Deep-dive into the meta-strategy logic', icon: '\u{1F31F}' },
+                { url: '/live-monitor/edge-dashboard.html', name: 'Edge Dashboard', desc: 'Cursor Genius edge: Sharpe +6.29, 67% WR in backtests', icon: '\u{1F4CA}' },
+                { url: '/findstocks/research/index.html', name: 'Research Hub', desc: 'Benchmarked vs Renaissance, Two Sigma — hidden star', icon: '\u{1F4D6}' }
+            ]}
+        ]
+    },
+    'Challenger Bot': {
+        desc: '20th algorithm using smart money consensus score. BUY when score >=70, SHORT when <=30. Fed by SEC 13F, Form 4, analyst ratings.',
+        extra: [
+            { section: 'Smart Money', links: [
+                { url: '/live-monitor/smart-money.html', name: 'Smart Money Intelligence', desc: '6-tab dashboard: consensus, analyst, insider, leaderboard', icon: '\u{1F4B0}' },
+                { url: '/findstocks/portfolio2/stock-intel.html', name: 'Stock Intelligence', desc: 'Per-ticker analyst ratings, insider MSPR, 13F data', icon: '\u{1F50D}' }
+            ]}
+        ]
+    }
+};
+
+function getAlgoInfo(algoName) {
+    var info = ALGO_PAGES[algoName] || {};
+    return {
+        desc: info.desc || 'Stock picking algorithm contributing to the consensus system.',
+        extra: info.extra || []
+    };
+}
+
+function showAlgoPopup(algoName) {
+    var info = getAlgoInfo(algoName);
+    document.getElementById('algoPopupName').textContent = algoName;
+    document.getElementById('algoPopupDesc').textContent = info.desc;
+
+    var html = '';
+
+    // Extra algo-specific sections first
+    var extra = info.extra;
+    for (var s = 0; s < extra.length; s++) {
+        html += '<div class="popup-section">' + esc(extra[s].section) + '</div>';
+        var links = extra[s].links;
+        for (var l = 0; l < links.length; l++) {
+            html += '<a class="page-link" href="' + links[l].url + '">';
+            html += '<span class="link-icon">' + links[l].icon + '</span>';
+            html += '<div><div>' + esc(links[l].name) + '</div><div class="link-desc">' + esc(links[l].desc) + '</div></div>';
+            html += '</a>';
+        }
+    }
+
+    // Default sections
+    var sections = ALGO_PAGES['_default'];
+    for (var s = 0; s < sections.length; s++) {
+        html += '<div class="popup-section">' + esc(sections[s].section) + '</div>';
+        var links = sections[s].links;
+        for (var l = 0; l < links.length; l++) {
+            html += '<a class="page-link" href="' + links[l].url + '">';
+            html += '<span class="link-icon">' + links[l].icon + '</span>';
+            html += '<div><div>' + esc(links[l].name) + '</div><div class="link-desc">' + esc(links[l].desc) + '</div></div>';
+            html += '</a>';
+        }
+    }
+
+    document.getElementById('algoPopupLinks').innerHTML = html;
+    document.getElementById('algoPopupOverlay').classList.add('visible');
+}
+
+function closeAlgoPopup(e) {
+    if (e && e.target && e.target !== document.getElementById('algoPopupOverlay')) return;
+    document.getElementById('algoPopupOverlay').classList.remove('visible');
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeAlgoPopup(); });
 
 // ─── Helpers ───
 function esc(s) {

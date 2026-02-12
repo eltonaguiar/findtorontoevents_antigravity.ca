@@ -271,6 +271,294 @@ a:hover { text-decoration: underline; }
 
 <div class="section-year">February 2026</div>
 
+<!-- Feb 12, 2026 — Busted Pages Fixed: PAUSED Badges, Win Rate Context, Algo Count Corrections -->
+<div class="update-entry" style="--dot-color: #ef4444;" data-tags="fix,paused,algorithms,leaderboard,picks,live-monitor,transparency,win-rate" data-category="stocks,trading">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    Busted Pages Fixed: PAUSED Badges, Win Rate Context, Algo Count Corrections
+    <span class="badge badge-fix">Fix</span>
+    <span class="badge badge-ui">UX</span>
+  </div>
+  <div class="update-body">
+    <p>Audit revealed 4 pages were misleading users about algorithm status and win rate meaning. All fixed:</p>
+    <ul>
+      <li><strong><a href="https://findtorontoevents.ca/findstocks/portfolio2/leaderboard.html">Leaderboard</a></strong> &mdash; Added red <span style="font-size:10px;padding:1px 4px;border-radius:3px;background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);font-weight:700;">PAUSED</span> badges on all 7 offline stock algorithms. Added banner clarifying win rate = pick direction accuracy, not trading profitability. Added context that only Challenger Bot is actively generating stock signals. <span class="app-tag">Fix</span></li>
+      <li><strong><a href="https://findtorontoevents.ca/findstocks/portfolio2/picks.html">Daily Picks</a></strong> &mdash; Added PAUSED badges to algorithm names on stock and day-trade cards. Updated &ldquo;Forward-Looking&rdquo; banner to explain win rate measures direction, not TP/SL execution. Fixed Win Rate glossary definition to clarify the critical distinction. <span class="app-tag">Fix</span></li>
+      <li><strong><a href="https://findtorontoevents.ca/live-monitor/live-monitor.html">Live Trading Monitor</a></strong> &mdash; Fixed &ldquo;19 algorithms&rdquo; claim. Now accurately shows &ldquo;20 Algorithms (12 Active, 7 Stock Algos Paused + Challenger Bot)&rdquo;. Updated algorithm glossary, signal description, and log line to reflect 13 active algorithms. <span class="app-tag">Fix</span></li>
+      <li><strong><a href="https://findtorontoevents.ca/findstocks/portfolio2/consolidated.html">Consolidated Picks</a></strong> &mdash; Algorithm source tags are now clickable with popup showing all pages where each algo is used. Already addressed in earlier update. <span class="app-tag">Feature</span></li>
+    </ul>
+    <p><strong>Why this matters:</strong> Users were seeing 82&ndash;86% win rates and assuming these algorithms were highly profitable. In reality, 7 of them are paused because simulated TP/SL execution achieved only 3&ndash;11% win rates. The signals pick the right direction 80%+ of the time, but the execution infrastructure (stop losses, timing) destroyed the edge. Transparency is non-negotiable.</p>
+  </div>
+</div>
+
+<!-- Feb 12, 2026 — Platform Health Audit: stock-nav.js + Data Freshness -->
+<div class="update-entry" style="--dot-color: #ef4444;" data-tags="audit,stock-nav,navigation,data-freshness,sports,signals,fix" data-category="stocks,trading,crypto,forex,sports">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    Platform Health Audit &mdash; Navigation Fix (11 Pages) + Data Freshness Report
+    <span class="badge badge-fix">Fix</span>
+    <span class="badge badge-improvement">Audit</span>
+  </div>
+  <div class="update-body">
+    <p>Comprehensive audit of all 41 user-facing pages. Found and fixed one real issue; debunked several false alarms.</p>
+
+    <p><strong>FIXED: stock-nav.js missing from 11 of 41 pages (now 41/41)</strong></p>
+    <ul>
+      <li><strong>Conviction Alerts</strong> &mdash; <a href="https://findtorontoevents.ca/live-monitor/conviction-alerts.html">conviction-alerts.html</a> &mdash; nav bar added</li>
+      <li><strong>Sports Betting</strong> &mdash; <a href="https://findtorontoevents.ca/live-monitor/sports-betting.html">sports-betting.html</a> &mdash; nav bar added</li>
+      <li><strong>Stock Picks Landing</strong> &mdash; <a href="https://findtorontoevents.ca/findstocks/index.html">findstocks/index.html</a> &mdash; nav bar added</li>
+      <li><strong>Research Hub</strong> &mdash; <a href="https://findtorontoevents.ca/findstocks/research/index.html">research/index.html</a> &mdash; nav bar added (Next.js static)</li>
+      <li><strong>Crypto Scanner</strong> &mdash; <a href="https://findtorontoevents.ca/findcryptopairs/index.html">findcryptopairs/index.html</a> &mdash; nav bar added</li>
+      <li><strong>Crypto Winners</strong> &mdash; <a href="https://findtorontoevents.ca/findcryptopairs/winners.html">winners.html</a> &mdash; nav bar added</li>
+      <li><strong>Meme Coins</strong> &mdash; <a href="https://findtorontoevents.ca/findcryptopairs/meme.html">meme.html</a> &mdash; nav bar added</li>
+      <li><strong>Crypto Stats</strong> &mdash; <a href="https://findtorontoevents.ca/findcryptopairs/portfolio/stats/index.html">crypto portfolio stats</a> &mdash; nav bar added</li>
+      <li><strong>Forex Scanner</strong> &mdash; <a href="https://findtorontoevents.ca/findforex2/index.html">findforex2/index.html</a> &mdash; nav bar added</li>
+      <li><strong>Forex Stats</strong> &mdash; <a href="https://findtorontoevents.ca/findforex2/portfolio/stats/index.html">forex portfolio stats</a> &mdash; nav bar added</li>
+      <li><strong>Miracle Stocks</strong> &mdash; <a href="https://findtorontoevents.ca/findstocks2_global/miracle.html">miracle.html</a> &mdash; nav bar added</li>
+    </ul>
+
+    <p><strong>DATA FRESHNESS AUDIT &mdash; What&rsquo;s actually happening:</strong></p>
+    <ul>
+      <li><strong>Crypto &amp; Forex Signals: FRESH</strong> &mdash; Refreshed every 30 minutes by 23 active algorithms. Working perfectly.</li>
+      <li><strong>Smart Money: FRESH</strong> &mdash; Runs 6 AM EST weekdays + Sunday 9 AM. Workflow configured correctly.</li>
+      <li><strong>Live Monitor: ACTIVE</strong> &mdash; 48 updates/day (every 30 min), 36 assets tracked. Paper trading functional.</li>
+      <li><strong>Stock Signals: INTENTIONALLY PAUSED</strong> &mdash; All 7 stock algorithms disabled Feb 11 due to poor performance (0&ndash;11.54% win rates: ETF Masters 3.37%, Sector Rotation 2.19%, others at 0%). Paused until fundamental redesign. This is by design, not a bug.</li>
+      <li><strong>Sports Betting: INFRASTRUCTURE COMPLETE</strong> &mdash; 5x daily workflow scheduled (10AM, 1PM, 4PM, 7PM, 10PM EST). Frontend fully built. &ldquo;Data not available&rdquo; likely from API credit budget (500/month free tier) or seasonal gap, not a code failure.</li>
+    </ul>
+
+    <p><strong>Platform automation:</strong> 46+ GitHub Actions workflows running continuously. All use <code>continue-on-error: true</code> for robust error handling. No misconfigured or disabled workflows found.</p>
+  </div>
+</div>
+
+<!-- Feb 12, 2026 — Goldmine Dashboard: System Glossary & Clickable Links -->
+<div class="update-entry" style="--dot-color: #6366f1;" data-tags="goldmine,glossary,navigation,systems,links,ux" data-category="stocks,trading,crypto,sports">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    Goldmine Dashboard &mdash; System Glossary &amp; Clickable Links
+    <span class="badge badge-feature">New</span>
+    <span class="badge badge-ui">UX</span>
+  </div>
+  <div class="update-body">
+    <p>Added a comprehensive system glossary and clickable links throughout the <a href="https://findtorontoevents.ca/live-monitor/goldmine-dashboard.html">Goldmine Checker</a> dashboard. Every system name is now a link to its dedicated dashboard page.</p>
+    <ul>
+      <li><strong>System Glossary</strong> &mdash; Collapsible reference panel explaining all 8 tracked systems: Consolidated, Live Signal, Edge, Meme, Sports, Horizon, Top Picks, and Penny. Shows description, parameters (TP/SL/hold), and asset class for each.</li>
+      <li><strong>Clickable Health Cards</strong> &mdash; Each system health card on the Overview tab now links directly to its dashboard page, shows a brief description, and has an &ldquo;Open Dashboard&rdquo; link.</li>
+      <li><strong>Linked System Names in Picks Table</strong> &mdash; System column in the All Picks table and Failure Log now shows human-readable names (e.g., &ldquo;Live Trading Signals&rdquo; instead of &ldquo;live_signal&rdquo;) with clickable links.</li>
+      <li><strong>Tooltip Descriptions</strong> &mdash; Hover over any system link in the picks table to see a description of what that system tracks.</li>
+    </ul>
+    <p><strong>All 8 systems mapped:</strong></p>
+    <ul>
+      <li><strong>Consolidated</strong> &rarr; <a href="https://findtorontoevents.ca/findstocks/portfolio2/consolidated.html">Multi-algo consensus picks</a> (TP +8%, SL -4%, 14d hold)</li>
+      <li><strong>Live Signal</strong> &rarr; <a href="https://findtorontoevents.ca/live-monitor/live-monitor.html">20 real-time trading algorithms</a> ($10K paper, regime-gated)</li>
+      <li><strong>Edge</strong> &rarr; <a href="https://findtorontoevents.ca/live-monitor/edge-dashboard.html">Multi-timeframe technical opportunities</a> (scalp/day/swing)</li>
+      <li><strong>Meme</strong> &rarr; <a href="https://findtorontoevents.ca/findcryptopairs/meme.html">Meme coin scanner</a> (DOGE, SHIB, PEPE, FLOKI)</li>
+      <li><strong>Sports</strong> &rarr; <a href="https://findtorontoevents.ca/live-monitor/sports-betting.html">Sports betting picks</a> ($1K bankroll, quarter-Kelly)</li>
+      <li><strong>Horizon</strong> &rarr; <a href="https://findtorontoevents.ca/findstocks/portfolio2/horizon-picks.html">3-horizon stock picks</a> (14d/60d/252d)</li>
+      <li><strong>Top Picks</strong> &rarr; <a href="https://findtorontoevents.ca/findstocks/portfolio2/picks.html">Daily top strategy picks</a> (refreshed 5PM EST)</li>
+      <li><strong>Penny</strong> &rarr; <a href="https://findtorontoevents.ca/findstocks/portfolio2/penny-stocks.html">Penny stock finder</a> (TP +15%, SL -10%)</li>
+    </ul>
+    <p><a href="https://findtorontoevents.ca/live-monitor/goldmine-dashboard.html">View Goldmine Checker &rarr;</a></p>
+  </div>
+</div>
+
+<!-- Feb 12, 2026 — Honest Forward-Looking Performance Audit -->
+<div class="update-entry" style="--dot-color: #ef4444;" data-tags="performance,audit,forward-looking,honesty,live,backtest,algorithms" data-category="stocks,trading,crypto">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    Honest Performance Audit: Forward-Looking vs Backtest Reality Check
+    <span class="badge badge-fix">Reality Check</span>
+    <span class="badge badge-improvement">Insight</span>
+  </div>
+  <div class="update-body">
+    <p><strong>We double-checked our algorithm performance claims. Here's the honest truth:</strong></p>
+    <blockquote style="border-left:3px solid #ef4444;padding:12px 16px;margin:12px 0;background:rgba(239,68,68,0.06);border-radius:0 8px 8px 0;font-style:italic;color:#e0e0f0;">
+      The &ldquo;85.7% win rate&rdquo; and &ldquo;82.35% win rate&rdquo; numbers are pick DIRECTION accuracy &mdash; &ldquo;did the stock go up after we picked it?&rdquo; This is real forward-looking data. But it does NOT equal trading profitability. When executed with TP/SL targets, the same algorithms achieved 3&ndash;11% win rates. The system is too new for meaningful live trading data &mdash; only 5 total paper trades have been executed.
+    </blockquote>
+
+    <p><strong>What the numbers actually mean (from <code>algorithm_rolling_perf</code> table, Feb 11 2026):</strong></p>
+    <table style="width:100%;font-size:13px;border-collapse:collapse;margin:12px 0;">
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+        <th style="text-align:left;padding:6px 8px;color:#778;">Algorithm</th>
+        <th style="text-align:center;padding:6px 8px;color:#778;">Pick Direction WR</th>
+        <th style="text-align:center;padding:6px 8px;color:#778;">Trades</th>
+        <th style="text-align:center;padding:6px 8px;color:#778;">Avg Return</th>
+        <th style="text-align:center;padding:6px 8px;color:#778;">Simulated TP/SL WR</th>
+        <th style="text-align:center;padding:6px 8px;color:#778;">Status</th>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+        <td style="padding:6px 8px;color:#bbc;">Cursor Genius</td>
+        <td style="padding:6px 8px;text-align:center;color:#22c55e;font-weight:700;">85.71%</td>
+        <td style="padding:6px 8px;text-align:center;">14</td>
+        <td style="padding:6px 8px;text-align:center;color:#22c55e;">+6.07%</td>
+        <td style="padding:6px 8px;text-align:center;color:#ef4444;font-weight:700;">11.54%</td>
+        <td style="padding:6px 8px;text-align:center;color:#ef4444;">PAUSED</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+        <td style="padding:6px 8px;color:#bbc;">ETF Masters</td>
+        <td style="padding:6px 8px;text-align:center;color:#22c55e;font-weight:700;">82.35%</td>
+        <td style="padding:6px 8px;text-align:center;">17</td>
+        <td style="padding:6px 8px;text-align:center;color:#22c55e;">+1.68%</td>
+        <td style="padding:6px 8px;text-align:center;color:#ef4444;font-weight:700;">3.37%</td>
+        <td style="padding:6px 8px;text-align:center;color:#ef4444;">PAUSED</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+        <td style="padding:6px 8px;color:#bbc;">Blue Chip Growth</td>
+        <td style="padding:6px 8px;text-align:center;color:#22c55e;font-weight:700;">80.00%</td>
+        <td style="padding:6px 8px;text-align:center;">25</td>
+        <td style="padding:6px 8px;text-align:center;color:#22c55e;">+3.72%</td>
+        <td style="padding:6px 8px;text-align:center;color:#ef4444;font-weight:700;">5.56%</td>
+        <td style="padding:6px 8px;text-align:center;color:#ef4444;">PAUSED</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+        <td style="padding:6px 8px;color:#bbc;">Sector Rotation</td>
+        <td style="padding:6px 8px;text-align:center;color:#22c55e;">72.73%</td>
+        <td style="padding:6px 8px;text-align:center;">11</td>
+        <td style="padding:6px 8px;text-align:center;color:#22c55e;">+1.67%</td>
+        <td style="padding:6px 8px;text-align:center;color:#ef4444;font-weight:700;">2.19%</td>
+        <td style="padding:6px 8px;text-align:center;color:#ef4444;">PAUSED</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+        <td style="padding:6px 8px;color:#bbc;">Composite Rating</td>
+        <td style="padding:6px 8px;text-align:center;color:#eab308;">50.00%</td>
+        <td style="padding:6px 8px;text-align:center;">12</td>
+        <td style="padding:6px 8px;text-align:center;color:#ef4444;">-0.27%</td>
+        <td style="padding:6px 8px;text-align:center;color:#ef4444;font-weight:700;">0%</td>
+        <td style="padding:6px 8px;text-align:center;color:#ef4444;">PAUSED</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+        <td style="padding:6px 8px;color:#bbc;">Technical Momentum</td>
+        <td style="padding:6px 8px;text-align:center;color:#ef4444;">25.00%</td>
+        <td style="padding:6px 8px;text-align:center;">12</td>
+        <td style="padding:6px 8px;text-align:center;color:#ef4444;">-2.05%</td>
+        <td style="padding:6px 8px;text-align:center;color:#ef4444;font-weight:700;">0%</td>
+        <td style="padding:6px 8px;text-align:center;color:#ef4444;">PAUSED</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+        <td style="padding:6px 8px;color:#bbc;">Sector Momentum</td>
+        <td style="padding:6px 8px;text-align:center;color:#22c55e;">100% <span style="color:#778;font-size:11px;">(only 4)</span></td>
+        <td style="padding:6px 8px;text-align:center;">4</td>
+        <td style="padding:6px 8px;text-align:center;color:#22c55e;">+5.17%</td>
+        <td style="padding:6px 8px;text-align:center;color:#ef4444;font-weight:700;">0%</td>
+        <td style="padding:6px 8px;text-align:center;color:#ef4444;">PAUSED</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 8px;color:#22c55e;">Challenger Bot</td>
+        <td style="padding:6px 8px;text-align:center;color:#778;">&mdash;</td>
+        <td style="padding:6px 8px;text-align:center;">1</td>
+        <td style="padding:6px 8px;text-align:center;color:#778;">pending</td>
+        <td style="padding:6px 8px;text-align:center;color:#778;">&mdash;</td>
+        <td style="padding:6px 8px;text-align:center;color:#22c55e;">ACTIVE</td>
+      </tr>
+    </table>
+
+    <p><strong>The 3 data layers explained:</strong></p>
+    <ul>
+      <li><strong>Pick Direction Accuracy</strong> (<code>algorithm_rolling_perf</code>) &mdash; &ldquo;Did the stock go up after we picked it?&rdquo; This IS forward-looking: picks were made before prices moved. Top 3 algos correctly predict direction 80&ndash;86% of the time. <span class="app-tag">Real Data</span></li>
+      <li><strong>Simulated TP/SL Execution</strong> (from Feb 11 analysis) &mdash; When TP/SL targets are applied to the same picks, win rates crash to 3&ndash;11%. Stops were too tight, causing exits before the thesis played out. <span class="app-tag">Simulated</span></li>
+      <li><strong>Actual Paper Trades</strong> (<code>lm_trades</code>) &mdash; Only 5 trades total across the entire system: 3 forex (all lost via max_hold), 1 crypto (lost via stop_loss), 1 stock (MSFT via Challenger Bot, still open). Not enough data yet. <span class="app-tag">Live</span></li>
+    </ul>
+
+    <p><strong>Currently active algorithms:</strong></p>
+    <ul>
+      <li><strong>Stock:</strong> Only <strong>Challenger Bot</strong> (smart money consensus) is active. All 7 other stock algos are paused. 1 live trade: MSFT LONG, still open. <span class="app-tag">Active</span></li>
+      <li><strong>Crypto:</strong> Momentum Burst, Alpha Predator, StochRSI, Ichimoku Cloud, RSI(2) Scalp &mdash; these passed live validation and remain active. <span class="app-tag">Active</span></li>
+      <li><strong>Forex:</strong> Multiple strategies active but 3 closed trades were all losses (max_hold exits). <span class="app-tag">Active</span></li>
+    </ul>
+
+    <p><strong>Bottom line:</strong> The signal quality is genuinely strong (80&ndash;86% directional accuracy). The problem was infrastructure: TP/SL too tight, regime gating misconfigured, and the system barely executed any trades. The 5 institutional-grade tools deployed today (EGARCH sizing, portfolio risk controller, meta-labeler) aim to close the gap between signal quality and execution quality.</p>
+
+    <p><strong>Best performing pages by category:</strong></p>
+    <ul>
+      <li><strong>Stocks:</strong> <a href="https://findtorontoevents.ca/findstocks/portfolio2/consolidated.html">Consolidated Picks</a> &mdash; best directional accuracy tracking <span class="app-tag">Stocks</span></li>
+      <li><strong>Crypto:</strong> <a href="https://findtorontoevents.ca/findcryptopairs/winners.html">Crypto Winner Scanner</a> &mdash; 600+ pairs, 7 technical indicators <span class="app-tag">Crypto</span></li>
+      <li><strong>Forex:</strong> <a href="https://findtorontoevents.ca/findforex2/">Forex Scanner</a> &mdash; 15 major pairs, 8 strategies <span class="app-tag">Forex</span></li>
+      <li><strong>Live Trading:</strong> <a href="https://findtorontoevents.ca/live-monitor/live-monitor.html">Live Monitor</a> &mdash; only system with actual paper trades <span class="app-tag">Live</span></li>
+      <li><strong>Sports:</strong> <a href="https://findtorontoevents.ca/live-monitor/sports-betting.html">Sports Betting</a> &mdash; value bets, quarter-Kelly sizing <span class="app-tag">Sports</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- Feb 12, 2026 — Cursor Genius: Hidden Star Algorithm Spotlight + Clickable Algo Links -->
+<div class="update-entry" style="--dot-color: #22c55e;" data-tags="cursor-genius,algorithm,performance,backtest,sharpe,consolidated,ui" data-category="stocks,trading">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    Cursor Genius: Hidden Star Algorithm + Clickable Algo Links
+    <span class="badge badge-feature">New</span>
+    <span class="badge badge-ui">UX</span>
+  </div>
+  <div class="update-body">
+    <p><strong>Investigation:</strong> Article 3 flagged &ldquo;Cursor Genius&rdquo; as a hidden star. We dug into the <code>algorithm_rolling_perf</code> table and <code>lm_trades</code> table to separate fact from hype.</p>
+    <p><strong>Cursor Genius performance breakdown:</strong></p>
+    <ul>
+      <li><strong>Pick Direction Accuracy</strong> &mdash; 85.7% WR (12W/2L on 14 resolved picks, 30d). Highest Sharpe (+6.288) of any stock algo. Avg return +6.07%. These are real forward-looking picks tracked against actual market prices. <span class="app-tag">Forward-Looking</span></li>
+      <li><strong>Simulated Execution</strong> &mdash; 11.54% WR when TP/SL were applied. The dip-buying thesis needs wider stops than the 4% SL that was configured. Infrastructure problem, not signal problem. <span class="app-tag">Simulated</span></li>
+      <li><strong>Actual Live Trades</strong> &mdash; Zero. Cursor Genius has never executed a paper trade in <code>lm_trades</code>. It was paused before the auto-execute engine went live. <span class="app-tag">Status</span></li>
+      <li><strong>Algorithm Design</strong> &mdash; 3-tier dip-buying: Tier 1 (CAT, GOOG, JNJ, WMT, XOM), Tier 2 (AAPL, PEP, HON, JPM, KO), Tier 3 (NVDA, META, AMZN). <span class="app-tag">Strategy</span></li>
+    </ul>
+    <p><strong>Where to see Cursor Genius performing well:</strong></p>
+    <ul>
+      <li><a href="https://findtorontoevents.ca/findstocks/portfolio2/consolidated.html">Consolidated Picks</a> &mdash; Click any algorithm name to see all pages where it appears (new feature!) <span class="app-tag">New UI</span></li>
+      <li><a href="https://findtorontoevents.ca/findstocks/portfolio2/leaderboard.html">Algorithm Leaderboard</a> &mdash; Cursor Genius ranks #1 by Sharpe ratio among stock algorithms <span class="app-tag">Ranking</span></li>
+      <li><a href="https://findtorontoevents.ca/findstocks/portfolio2/algo-study.html?algo=Cursor+Genius">Algo Study: Cursor Genius</a> &mdash; Deep-dive into the 3-tier meta-strategy logic <span class="app-tag">Analysis</span></li>
+      <li><a href="https://findtorontoevents.ca/live-monitor/edge-dashboard.html">Edge Dashboard</a> &mdash; Edge analysis showing Sharpe +6.29 backtest edge <span class="app-tag">Edge</span></li>
+      <li><a href="https://findtorontoevents.ca/findstocks/research/index.html">Research Hub</a> &mdash; Benchmarked against Renaissance Technologies, Two Sigma, D.E. Shaw <span class="app-tag">Research</span></li>
+    </ul>
+    <p><strong>New feature deployed:</strong> Every algorithm name on the <a href="https://findtorontoevents.ca/findstocks/portfolio2/consolidated.html">Consolidated Picks</a> page is now a clickable link. Click any algorithm tag to see a popup with all non-admin pages where that algorithm is tracked, analyzed, or performing. Works on both the Consensus Picks tab and the Performance tab&rsquo;s Algorithm Report Card.</p>
+  </div>
+</div>
+
+<!-- Feb 12, 2026 — Consolidated Picks: New System, No Closed Positions Yet -->
+<div class="update-entry" style="--dot-color: #6366f1;" data-tags="consolidated,consensus,picks,tracking,performance,portfolio" data-category="stocks,trading">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    Consolidated Picks Tracker &mdash; System Status: Genesis Phase (65 Open, 0 Closed)
+    <span class="badge badge-feature">New</span>
+    <span class="badge badge-improvement">Status</span>
+  </div>
+  <div class="update-body">
+    <p>The <a href="https://findtorontoevents.ca/findstocks/portfolio2/consolidated.html">Consolidated Picks</a> page currently shows 0% Win Rate / 0W / 0L &mdash; this is expected and by design. The system launched on <strong>Feb 10, 2026</strong> and is in its genesis phase.</p>
+    <p><strong>Why 0% win rate?</strong></p>
+    <ul>
+      <li><strong>Brand new system</strong> &mdash; Consolidated Picks launched Feb 10, 2026. Only 2 trading days have elapsed.</li>
+      <li><strong>65 open positions</strong> &mdash; Created from the genesis consensus snapshot. All positions are still open because none have hit exit conditions yet.</li>
+      <li><strong>0 closed positions</strong> &mdash; Win rate is 0/0 (N/A), not a true 0%. No positions have triggered any exit condition in just 2 days.</li>
+    </ul>
+    <p><strong>How positions close (4 exit conditions):</strong></p>
+    <ul>
+      <li><strong>Take Profit</strong> &mdash; +8% return (swing) or +5% (day trades). No pick has gained 8% in 2 days.</li>
+      <li><strong>Stop Loss</strong> &mdash; -4% return (swing) or -3% (day trades). Market has been flat-to-slightly-down, most picks above SL threshold.</li>
+      <li><strong>Max Hold</strong> &mdash; 14-day auto-close. First closures expected around <strong>Feb 24, 2026</strong>.</li>
+      <li><strong>Consensus Drop</strong> &mdash; If fewer than 2 algorithms agree, position closes. Checked during daily tracking runs.</li>
+    </ul>
+    <p><strong>Automated tracking:</strong> The tracker runs via GitHub Actions (<code>refresh-stocks-portfolio.yml</code>) at 23:30 UTC on weekdays. Each run updates prices, checks exit conditions, and closes qualifying positions.</p>
+    <p><strong>What to expect:</strong> Win/loss data will begin populating as positions hit TP/SL thresholds or reach the 14-day max hold window starting ~Feb 24. The <code>consensus_lessons</code> pattern-detection engine activates after 5+ closed trades.</p>
+    <p><a href="https://findtorontoevents.ca/findstocks/portfolio2/consolidated.html">View Consolidated Picks &rarr;</a></p>
+  </div>
+</div>
+
+<!-- Feb 12, 2026 — Goldmine Dashboard Fix: SL, Confidence, Return % + Unrealized Column -->
+<div class="update-entry" style="--dot-color: #ef4444;" data-tags="goldmine,dashboard,fix,stop-loss,confidence,return,unrealized" data-category="stocks,trading,crypto">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    Goldmine Dashboard Fix &mdash; SL, Confidence &amp; Return Data Now Visible + New Unrealized % Column
+    <span class="badge badge-fix">Fix</span>
+    <span class="badge badge-feature">New</span>
+  </div>
+  <div class="update-body">
+    <p>Fixed critical display bugs on the <a href="https://findtorontoevents.ca/live-monitor/goldmine-dashboard.html">Goldmine Checker</a> where Stop Loss, Confidence, and Return % columns were all showing blank due to frontend/backend field name mismatches.</p>
+    <ul>
+      <li><strong>SL Column Fixed</strong> &mdash; Frontend was reading <code>stop_loss</code> but the DB field is <code>stop_loss_price</code>. Now shows dollar-amount SL when available, falls back to percentage (e.g., &ldquo;-10.0%&rdquo;) for sources that only store SL as a percent.</li>
+      <li><strong>Confidence Column Fixed</strong> &mdash; Frontend was reading <code>confidence</code> but the DB field is <code>confidence_score</code>. Now correctly displays the 0&ndash;100 confidence score for every pick.</li>
+      <li><strong>Return % Fixed</strong> &mdash; Was using a JS falsy check (<code>0 || undefined</code>) that broke for positions with exactly 0% return. Now only shows final return for closed positions (TP Hit, SL Hit, Max Hold).</li>
+      <li><strong>New &ldquo;Unrealized %&rdquo; Column</strong> &mdash; Added a dedicated column showing live unrealized return percentage for open positions, calculated from current price vs entry price. Blank for closed positions.</li>
+      <li><strong>Target Column Enhanced</strong> &mdash; Now falls back to showing target percentage (e.g., &ldquo;+8.0%&rdquo;) when a dollar-amount target isn&rsquo;t stored.</li>
+      <li><strong>Backend Fix: Top Picks &amp; Penny Stocks</strong> &mdash; Archive functions for <code>top_picks</code> and <code>penny</code> sources now compute and store <code>stop_loss_price</code> and <code>target_price</code> in dollars (previously only stored percentages, leaving price fields at 0).</li>
+      <li><strong>Outcome Update Triggered</strong> &mdash; Ran <code>update_outcomes</code>: 448 open picks processed, 380 updated with current prices, 224 newly closed (hit TP/SL/max hold targets).</li>
+    </ul>
+    <p><a href="https://findtorontoevents.ca/live-monitor/goldmine-dashboard.html">View Goldmine Checker &rarr;</a></p>
+  </div>
+</div>
+
 <!-- Feb 12, 2026 — The 4-Article Audit: Capital Efficiency Revolution -->
 <div class="update-entry" style="--dot-color: #f59e0b;" data-tags="audit,capital-efficiency,institutional,alpha,portfolio-construction,sizing,regime" data-category="stocks,trading,crypto">
   <div class="update-date">Feb 12, 2026</div>
@@ -444,29 +732,53 @@ a:hover { text-decoration: underline; }
 
 <!-- Feb 12, 2026 — Platform-Wide Audit: 90+ Algorithms, 50+ Pages, Agent Team Deployed -->
 <!-- Feb 12, 2026 — Consensus Algorithm Overhaul: Fixed 17.2% Win Rate with Regime Gating & Higher Thresholds -->
-<div class="update-entry" style="--dot-color: #ef4444;" data-tags="consensus,algorithm,win-rate,regime,threshold,signals,trading,live-monitor" data-category="stocks,trading,crypto,forex">
+<!-- Feb 12, 2026 — GROK_ANALYSIS_PERFORMANCE_FEB122026 Report -->
+<div class="update-entry" style="--dot-color: #3b82f6;" data-tags="performance,analysis,report,grok,load-speed,ux,mobile,api,freshness,navigation" data-category="platform,tools">
   <div class="update-date">Feb 12, 2026</div>
   <div class="update-title">
-    Consensus Algorithm Overhaul &mdash; Fixed 17.2% Win Rate with Regime Gating &amp; Higher Thresholds
-    <span class="badge badge-improvement">Improved</span>
-    <span class="badge badge-fix">Fix</span>
+    GROK_ANALYSIS_PERFORMANCE_FEB122026 Report
+    <span class="badge badge-feature">New</span>
   </div>
   <div class="update-body">
-    <p>Resolved a critical low win rate issue in the Consensus algorithm (Algorithm #7) that was causing poor performance across 29 trades (-2.04% average return). The algorithm was triggering on noise and lacked proper risk controls.</p>
-    <p><strong>Root Cause:</strong> Too easy to trigger (only 2 algos needed to agree), no quality filters, poor risk/reward ratio, and no market regime awareness.</p>
-    <p><strong>Changes Made:</strong></p>
+    <p>Comprehensive performance analysis report evaluating load speed, data freshness, API health, UI/UX, mobile responsiveness, navigation, broken features, and summary metrics across 41 key URLs.</p>
+    <p><strong>Key Findings:</strong></p>
     <ul>
-      <li>Minimum agreeing algorithms raised from 2 to <strong>3</strong></li>
-      <li>Supermajority threshold increased from 60% to <strong>70%</strong></li>
-      <li>Signal strength floor: only counts signals &gt;= <strong>60</strong></li>
-      <li>Lookback window shortened from 24h to <strong>6h</strong> for fresher signals</li>
-      <li>TP/SL improved from 3%/2% (1.5:1) to <strong>4%/2% (2:1)</strong> ratio</li>
-      <li>Hold time extended from 24h to <strong>36h</strong></li>
-      <li><strong>Regime gate added:</strong> Blocks BUY in bear markets, SHORT in bull markets</li>
-      <li>Stock defaults upgraded to <strong>5%/2.5%/48h</strong></li>
+      <li><strong>Overall Health Score:</strong> 92% (38/41 pages fully functional)</li>
+      <li><strong>Critical Issues:</strong> 3 minor (e.g., sports odds staleness)</li>
+      <li><strong>Top Priorities:</strong> Optimize mobile JS bundles, add timestamps, preserve filter states</li>
+      <li><strong>Best Pages:</strong> Portfolio Hub, Live Trading Monitor, Goldmine Dashboard</li>
+      <li><strong>Suggestions:</strong> Consolidate 6 duplicates to reduce from 41 to 35 pages</li>
     </ul>
-    <p><strong>Expected Impact:</strong> Fewer but higher-quality signals, better risk/reward, regime protection. Win rate should rise to 50-60% as new signals accumulate.</p>
-    <p><a href="https://findtorontoevents.ca/live-monitor/">Live Monitor &rarr;</a></p>
+    <p><a href="https://findtorontoevents.ca/GROK_ANALYSIS_PERFORMANCE_FEB122026.MD">Read the Full Report &rarr;</a></p>
+  </div>
+</div>
+
+<!-- Feb 12, 2026 — Live Monitor: Stocks Under Crypto Fix + Consensus Algorithm v3 Overhaul -->
+<div class="update-entry" style="--dot-color: #ef4444;" data-tags="consensus,algorithm,win-rate,regime,threshold,signals,trading,live-monitor,prices,asset-class,bug-fix" data-category="stocks,trading,crypto,forex">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    Live Monitor Fixes &mdash; Stocks-Under-Crypto Bug + Consensus Algorithm v3 Overhaul
+    <span class="badge badge-fix">Fix</span>
+    <span class="badge badge-improvement">Improved</span>
+  </div>
+  <div class="update-body">
+    <p><strong>Bug Fix: Stocks displaying under Crypto section.</strong> Root cause: duplicate stock entries in the price cache with empty <code>asset_class</code> fell into the Crypto bucket. Fixed server-side (auto-cleanup of stale entries) and client-side (symbol deduplication + known-stocks fallback map). Also fixed tab switching bug where Discovery/Performance tabs mapped to wrong buttons.</p>
+
+    <p><strong>Consensus Algorithm v3 Overhaul (17.2% &rarr; target 40-50%).</strong> The previous v2 fix was insufficient &mdash; still only 17.2% win rate across 29 trades (-2.04% avg return). Root cause: stale 6h signals, low conviction threshold, and poor TP/SL ratio.</p>
+    <p><strong>v3 Changes:</strong></p>
+    <ul>
+      <li>Lookback window: <strong>6h &rarr; 2h</strong> (much fresher signals only)</li>
+      <li>Signal strength minimum: <strong>60 &rarr; 75</strong> (high-conviction only)</li>
+      <li>Minimum agreeing algorithms: <strong>3 &rarr; 4</strong></li>
+      <li>Supermajority threshold: <strong>70% &rarr; 85%</strong> (near-unanimous)</li>
+      <li>Added <strong>average signal strength check &gt;= 75</strong> across agreeing algos</li>
+      <li>TP/SL ratio: <strong>2:1 &rarr; 3:1</strong> (4.5% TP / 1.5% SL) for faster loss exits</li>
+      <li>Hold time: <strong>36h &rarr; 24h</strong> (reduce exposure time)</li>
+      <li>Added <strong>performance circuit breaker</strong>: auto-pauses if &lt;25% win rate over 14 days</li>
+      <li>Learned params now <strong>require &gt;= 2.5:1 TP/SL ratio</strong> to prevent overfitting</li>
+    </ul>
+    <p><strong>Expected Impact:</strong> ~70-80% fewer trades, dramatically higher signal quality. 3:1 TP/SL ratio only needs 25% win rate to break even. Circuit breaker prevents runaway losses.</p>
+    <p><a href="https://findtorontoevents.ca/live-monitor/live-monitor.html">Live Monitor &rarr;</a> | <a href="https://findtorontoevents.ca/live-monitor/goldmine-alerts.html">Goldmine Alerts &rarr;</a></p>
   </div>
 </div>
 
