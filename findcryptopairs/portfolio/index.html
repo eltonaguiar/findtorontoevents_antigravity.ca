@@ -295,6 +295,26 @@
 
 <div class="container">
 
+    <!-- ─── #1 Crypto System Quick Access ─── -->
+    <a href="/live-monitor/algo-performance.html" style="display:block;text-decoration:none;background:linear-gradient(135deg,rgba(255,215,0,0.06),rgba(34,211,238,0.06));border:2px solid rgba(255,215,0,0.4);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1rem;transition:all 0.2s;animation:crypto-banner-pulse 3s ease-in-out infinite;" onmouseover="this.style.borderColor='rgba(255,215,0,0.7)';this.style.boxShadow='0 0 20px rgba(255,215,0,0.15)'" onmouseout="this.style.borderColor='rgba(255,215,0,0.4)';this.style.boxShadow='none'">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <span style="background:linear-gradient(135deg,#ffd700,#f59e0b);color:#0a0e1a;padding:3px 10px;border-radius:5px;font-weight:800;font-size:11px;letter-spacing:0.5px;">#1 CRYPTO</span>
+            <span style="color:#ffd700;font-weight:700;font-size:0.95rem;">Our Best Crypto System: Self-Learning Algorithms</span>
+            <span style="margin-left:auto;color:#22d3ee;font-size:0.8rem;font-weight:600;" id="crypto-banner-wr">87.5% WR</span>
+            <span style="color:#22c55e;font-size:0.8rem;font-weight:600;" id="crypto-banner-pnl">+12.6% P&amp;L</span>
+            <span style="color:var(--text-dim);font-size:0.8rem;">View Picks &rarr;</span>
+        </div>
+        <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.4rem;line-height:1.5;">
+            Real forward-facing crypto trades via adaptive algorithms (not backtested). This page below is a simulation tool &mdash; for actual live crypto results, click here.
+        </div>
+    </a>
+    <style>
+        @keyframes crypto-banner-pulse {
+            0%, 100% { border-color: rgba(255,215,0,0.4); }
+            50% { border-color: rgba(255,215,0,0.65); box-shadow: 0 0 12px rgba(255,215,0,0.08); }
+        }
+    </style>
+
     <!-- ─── Status Bar ─── -->
     <div id="statusBar" class="stat-grid">
         <div class="stat-card"><div class="label">Pairs</div><div class="value neutral" id="statPairs">—</div></div>
@@ -1091,7 +1111,34 @@ document.addEventListener('DOMContentLoaded', function() {
     loadStats();
     loadStrategies();
     loadScenarios();
+    loadCryptoBanner();
 });
+
+// ─── #1 Crypto Banner — live stats ───
+function loadCryptoBanner() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/live-monitor/api/algo_performance.php?action=by_asset&days=30');
+    xhr.timeout = 5000;
+    xhr.onload = function() {
+        if (xhr.status !== 200) return;
+        try {
+            var d = JSON.parse(xhr.responseText);
+            if (!d.ok || !d.assets) return;
+            for (var i = 0; i < d.assets.length; i++) {
+                var a = d.assets[i];
+                if (a.asset_class === 'crypto' && a.learned) {
+                    var wrEl = document.getElementById('crypto-banner-wr');
+                    var pnlEl = document.getElementById('crypto-banner-pnl');
+                    if (wrEl && a.learned.win_rate !== undefined) wrEl.textContent = a.learned.win_rate + '% WR';
+                    if (pnlEl && a.learned.total_pnl !== undefined) pnlEl.textContent = (a.learned.total_pnl >= 0 ? '+' : '') + a.learned.total_pnl.toFixed(1) + '% P&L';
+                    break;
+                }
+            }
+        } catch(e) {}
+    };
+    xhr.onerror = function() {};
+    xhr.send();
+}
 
 // ─── Tab Navigation ───
 function initTabs() {

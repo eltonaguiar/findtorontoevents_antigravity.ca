@@ -632,8 +632,9 @@ if ($action === 'generate_challenger') {
         $c_score = intval($crow['overall_score']);
         $c_dir = $crow['signal_direction'];
 
-        // BULLISH signals: score >= 55 (lowered from 70 — old threshold was unreachable)
-        if ($c_score >= 55 && $c_dir === 'BULLISH') {
+        // Regime gate: block BUY signals in bear markets (counter-trend = high loss rate)
+        // BULLISH signals: score >= 65 (raised from 55 — higher conviction bar for reliability)
+        if ($c_score >= 65 && $c_dir === 'BULLISH' && $regime !== 'bear') {
             // Get current price
             $pr = $conn->query("SELECT price FROM lm_price_cache WHERE symbol LIKE '%" . _sm_esc($c_ticker) . "%' AND asset_class = 'STOCK'");
             if (!$pr) continue;
@@ -643,19 +644,19 @@ if ($action === 'generate_challenger') {
             if ($entry_price <= 0) continue;
 
             // Get analyst target
-            $target_tp_pct = 4.0; // default
+            $target_tp_pct = 5.0; // default (raised from 4% for better TP/SL ratio)
             $tr = $conn->query("SELECT target_mean FROM lm_price_targets WHERE ticker = '" . _sm_esc($c_ticker) . "'");
             if ($tr && $trow = $tr->fetch_assoc()) {
                 $target_mean = floatval($trow['target_mean']);
                 if ($target_mean > $entry_price) {
                     $upside_to_target = (($target_mean - $entry_price) / $entry_price) * 100;
                     $target_tp_pct = $upside_to_target * 0.6; // 60% of upside
-                    $target_tp_pct = max(2.0, min(8.0, $target_tp_pct));
+                    $target_tp_pct = max(4.0, min(10.0, $target_tp_pct)); // floor 4%, cap 10%
                 }
             }
 
-            $target_sl_pct = ($regime === 'bull') ? 3.0 : 4.0;
-            $max_hold = ($regime === 'bull') ? 336 : 168; // 14d bull / 7d neutral (was 96/48)
+            $target_sl_pct = ($regime === 'bull') ? 2.5 : 3.0; // tighter stops (was 3/4)
+            $max_hold = ($regime === 'bull') ? 336 : 168; // 14d bull / 7d neutral
             $signal_strength = min($c_score, 100);
 
             $rationale = 'Challenger Bot: Consensus score ' . $c_score . '/100 (' . $crow['confidence'] . '). ';
@@ -674,8 +675,9 @@ if ($action === 'generate_challenger') {
             }
         }
 
-        // BEARISH signals: score <= 40 (raised from 30 — old threshold was unreachable)
-        if ($c_score <= 40 && $c_dir === 'BEARISH') {
+        // Regime gate: block SHORT signals in bull markets (counter-trend = high loss rate)
+        // BEARISH signals: score <= 35 (lowered from 40 — higher conviction bar for shorts)
+        if ($c_score <= 35 && $c_dir === 'BEARISH' && $regime !== 'bull') {
             $pr2 = $conn->query("SELECT price FROM lm_price_cache WHERE symbol LIKE '%" . _sm_esc($c_ticker) . "%' AND asset_class = 'STOCK'");
             if (!$pr2) continue;
             $prow2 = $pr2->fetch_assoc();
@@ -683,9 +685,9 @@ if ($action === 'generate_challenger') {
             $entry_price2 = floatval($prow2['price']);
             if ($entry_price2 <= 0) continue;
 
-            $target_tp_pct2 = 3.0;
-            $target_sl_pct2 = ($regime === 'bear') ? 3.0 : 4.0;
-            $max_hold2 = ($regime === 'bear') ? 336 : 168; // 14d bear / 7d neutral (was 96/48)
+            $target_tp_pct2 = 5.0; // raised from 3% for better TP/SL ratio
+            $target_sl_pct2 = ($regime === 'bear') ? 2.5 : 3.0; // tighter stops (was 3/4)
+            $max_hold2 = ($regime === 'bear') ? 336 : 168; // 14d bear / 7d neutral
             $signal_strength2 = min(100 - $c_score, 100);
 
             $rationale2 = 'Challenger Bot SHORT: Consensus score ' . $c_score . '/100 (BEARISH). ';
