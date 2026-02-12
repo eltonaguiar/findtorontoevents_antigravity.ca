@@ -245,8 +245,8 @@
     <div class="container">
         <!-- Best Mutual Funds designation banner -->
         <div style="background:rgba(136,136,170,0.08);border:1px solid rgba(136,136,170,0.3);border-radius:12px;padding:10px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;">
-            <span style="background:rgba(136,136,170,0.15);color:#8888aa;padding:3px 10px;border-radius:6px;font-weight:800;font-size:11px;border:1px solid rgba(136,136,170,0.3);letter-spacing:0.5px;">BEST MF</span>
-            <span style="color:#8888aa;">No forward-facing outcome tracking. 45 picks generated, 0 tracked with real results. Backtests only. Forward tracking needs to be built.</span>
+            <span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:3px 10px;border-radius:6px;font-weight:800;font-size:11px;border:1px solid rgba(34,197,94,0.3);letter-spacing:0.5px;">BEST MF</span>
+            <span style="color:#8888aa;">Forward performance tracking available. Use the Tracking tab to initialize positions, refresh NAVs, and track real outcomes with exit rules (TP/SL/max-hold).</span>
         </div>
 
         <!-- System Analysis -->
@@ -341,6 +341,7 @@
             <div class="tab" data-tab="portfolios">Portfolio Templates</div>
             <div class="tab" data-tab="picks">Fund Picks</div>
             <div class="tab" data-tab="history">Backtest History</div>
+            <div class="tab" data-tab="tracking" style="color:#22c55e;">Tracking</div>
             <div class="tab" data-tab="analysis" style="color:#f59e0b;">System Analysis</div>
             <div class="tab" data-tab="research" style="color:#a855f7;">Research &amp; Future</div>
         </div>
@@ -576,8 +577,8 @@
                     <table id="picks-table">
                         <thead><tr>
                             <th>Symbol</th><th>Fund Name</th><th>Family</th><th>Category</th>
-                            <th>Algorithm</th><th>NAV</th><th>Score</th><th>Rating</th>
-                            <th>Morningstar</th><th>Expense Ratio</th>
+                            <th>Algorithm</th><th>Entry NAV</th><th>Pick Date</th><th>Score</th><th>Rating</th>
+                            <th>Morningstar</th><th>Expense Ratio</th><th>Status</th>
                         </tr></thead>
                         <tbody></tbody>
                     </table>
@@ -589,12 +590,77 @@
         <div class="tab-content" id="tab-history">
             <div class="card">
                 <h2>Saved Backtest Results</h2>
+                <div class="btn-group" style="margin-bottom:1rem;">
+                    <button class="btn btn-primary" onclick="seedBacktests()">Seed All Scenarios</button>
+                    <button class="btn btn-secondary" onclick="seedBacktests(true)">Re-Run All (Force)</button>
+                </div>
+                <div id="seed-log" style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1rem;"></div>
                 <div class="table-wrap">
                     <table id="history-table">
                         <thead><tr>
                             <th>Run Name</th><th>Strategy</th><th>Algos</th><th>Trades</th>
                             <th>Win Rate</th><th>Return %</th><th>Final $</th><th>Max DD</th>
                             <th>Sharpe</th><th>Created</th>
+                        </tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Forward Tracking -->
+        <div class="tab-content" id="tab-tracking">
+            <div class="card">
+                <h2>Forward Performance Tracking</h2>
+                <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:1rem;">Track real outcomes of mutual fund picks with daily NAV updates, exit rules (TP/SL/max-hold), and win/loss recording.</p>
+                <div class="btn-group" style="margin-bottom:1rem;">
+                    <button class="btn btn-primary" onclick="initTracking()">Initialize Tracking</button>
+                    <button class="btn btn-success" onclick="refreshTracking()">Refresh NAVs</button>
+                </div>
+                <div id="tracking-log" style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1rem;"></div>
+
+                <!-- Tracking Stats -->
+                <div class="stat-grid" id="tracking-stats">
+                    <div class="stat-card"><div class="label">Open Positions</div><div class="value" id="t-open">-</div></div>
+                    <div class="stat-card"><div class="label">Closed</div><div class="value" id="t-closed">-</div></div>
+                    <div class="stat-card"><div class="label">Win Rate</div><div class="value" id="t-winrate">-</div></div>
+                    <div class="stat-card"><div class="label">Avg Return</div><div class="value" id="t-avgret">-</div></div>
+                    <div class="stat-card"><div class="label">Avg Hold Days</div><div class="value" id="t-avghold">-</div></div>
+                </div>
+
+                <!-- Open Positions Table -->
+                <h3 style="margin:1rem 0 0.5rem;">Open Positions</h3>
+                <div class="table-wrap">
+                    <table id="tracking-open-table">
+                        <thead><tr>
+                            <th>Symbol</th><th>Fund Name</th><th>Algorithm</th><th>Pick Date</th>
+                            <th>Entry NAV</th><th>Current NAV</th><th>Return %</th><th>Hold Days</th>
+                            <th>Peak</th><th>Trough</th>
+                        </tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <!-- Closed Positions Table -->
+                <h3 style="margin:1.5rem 0 0.5rem;">Closed Positions</h3>
+                <div class="table-wrap">
+                    <table id="tracking-closed-table">
+                        <thead><tr>
+                            <th>Symbol</th><th>Fund Name</th><th>Algorithm</th><th>Pick Date</th>
+                            <th>Entry NAV</th><th>Exit NAV</th><th>Return %</th><th>Exit Reason</th>
+                            <th>Hold Days</th><th>Exit Date</th>
+                        </tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <!-- Per-Algorithm Performance -->
+                <h3 style="margin:1.5rem 0 0.5rem;">Algorithm Performance</h3>
+                <div class="table-wrap">
+                    <table id="tracking-algo-table">
+                        <thead><tr>
+                            <th>Algorithm</th><th>Total Picks</th><th>Open</th><th>Wins</th><th>Losses</th>
+                            <th>Avg Current Return</th>
                         </tr></thead>
                         <tbody></tbody>
                     </table>
@@ -1043,6 +1109,11 @@ function initTabs() {
             if (this.getAttribute('data-tab') === 'picks' && !this._loaded) {
                 this._loaded = true;
                 loadPicks();
+            }
+            // Lazy-load tracking on first visit
+            if (this.getAttribute('data-tab') === 'tracking' && !this._loaded) {
+                this._loaded = true;
+                loadTracking();
             }
         });
     }
@@ -1565,16 +1636,27 @@ function loadPicks() {
             var starHtml = renderStars(p.morningstar_rating || p.morningstar || 0);
             var expRatio = p.expense_ratio ? fmt(p.expense_ratio, 2) + '%' : '-';
             var tr = document.createElement('tr');
+            var pickDate = p.pick_date || '';
+            var pickTime = p.pick_time || '';
+            var pickDisplay = pickDate;
+            if (pickTime && pickTime.length > 10) {
+                var timePart = pickTime.substring(11, 16);
+                if (timePart && timePart !== '00:00') pickDisplay += ' ' + timePart;
+            }
+            var navVal = parseFloat(p.entry_nav || 0);
+            var navClass = navVal > 0 ? '' : ' style="color:var(--red)"';
             tr.innerHTML = '<td><strong>' + (p.ticker || p.symbol) + '</strong></td>'
                 + '<td>' + (p.company_name || p.fund_name || '') + '</td>'
                 + '<td>' + (p.fund_family || '-') + '</td>'
                 + '<td>' + (p.category || '-') + '</td>'
                 + '<td>' + (p.algorithm_name || p.algorithm || '') + '</td>'
-                + '<td>$' + fmt(p.entry_price || p.nav || 0) + '</td>'
+                + '<td' + navClass + '>$' + fmt(navVal) + '</td>'
+                + '<td style="font-size:0.8rem;color:var(--text-dim)">' + pickDisplay + '</td>'
                 + '<td>' + (p.score || '-') + '</td>'
                 + '<td><span class="badge ' + ratingBadge(p.rating) + '">' + (p.rating || '-') + '</span></td>'
                 + '<td>' + starHtml + '</td>'
-                + '<td>' + expRatio + '</td>';
+                + '<td>' + expRatio + '</td>'
+                + '<td><span class="badge badge-blue">Active</span></td>';
             tbody.appendChild(tr);
         }
     });
@@ -1625,6 +1707,149 @@ function loadHistory() {
                 + '<td class="pct-negative">' + fmt(b.max_drawdown_pct) + '%</td>'
                 + '<td>' + fmt(b.sharpe_ratio, 3) + '</td>'
                 + '<td>' + (b.created_at || '') + '</td>';
+            tbody.appendChild(tr);
+        }
+    });
+}
+
+// ─── Seed Backtests ───
+function seedBacktests(force) {
+    var log = document.getElementById('seed-log');
+    log.innerHTML = '<div class="spinner"></div> Running all 10 scenarios and saving results...';
+    var url = 'seed_backtests.php';
+    if (force) url += '?force=1';
+    apiGet(url, function(d) {
+        if (d.ok) {
+            var msg = d.message || ('Seeded ' + (d.seeded || 0) + ' backtests');
+            if (d.results && d.results.length > 0) {
+                msg += '<br>';
+                for (var i = 0; i < d.results.length; i++) {
+                    var r = d.results[i];
+                    if (r.return_pct !== undefined) {
+                        var cls = parseFloat(r.return_pct) >= 0 ? 'pct-positive' : 'pct-negative';
+                        msg += '<span style="margin-right:8px">' + r.scenario + ': <span class="' + cls + '">' + r.return_pct + '%</span> (' + r.trades + ' trades)</span><br>';
+                    }
+                }
+            }
+            log.innerHTML = msg;
+            loadHistory();
+            loadStats();
+        } else {
+            log.innerHTML = 'Error: ' + (d.error || d.message || JSON.stringify(d));
+        }
+    });
+}
+
+// ─── Forward Tracking ───
+function initTracking() {
+    var log = document.getElementById('tracking-log');
+    log.innerHTML = '<div class="spinner"></div> Initializing tracking positions from fund picks...';
+    apiGet('mf2_tracking.php?action=init_tracking', function(d) {
+        if (d.ok) {
+            log.innerHTML = d.message || ('Imported ' + (d.imported || 0) + ' positions');
+            loadTracking();
+        } else {
+            log.innerHTML = 'Error: ' + (d.error || JSON.stringify(d));
+        }
+    });
+}
+
+function refreshTracking() {
+    var log = document.getElementById('tracking-log');
+    log.innerHTML = '<div class="spinner"></div> Refreshing NAVs and checking exit rules...';
+    apiGet('mf2_tracking.php?action=refresh', function(d) {
+        if (d.ok) {
+            log.innerHTML = 'Updated ' + (d.updated || 0) + ' positions, closed ' + (d.closed || 0) + '. Open: ' + (d.open_positions || 0);
+            loadTracking();
+        } else {
+            log.innerHTML = 'Error: ' + (d.error || d.message || JSON.stringify(d));
+        }
+    });
+}
+
+function loadTracking() {
+    apiGet('mf2_tracking.php?action=dashboard', function(d) {
+        if (!d.ok) return;
+
+        // Stats
+        var s = d.stats || {};
+        document.getElementById('t-open').textContent = s.open_positions || 0;
+        document.getElementById('t-closed').textContent = s.total_closed || 0;
+        var wr = s.win_rate || 0;
+        var wrEl = document.getElementById('t-winrate');
+        wrEl.textContent = fmt(wr, 1) + '%';
+        wrEl.className = 'value ' + (wr >= 50 ? 'positive' : (s.total_closed > 0 ? 'negative' : ''));
+        var avgRet = s.avg_return_pct || 0;
+        var arEl = document.getElementById('t-avgret');
+        arEl.textContent = fmt(avgRet) + '%';
+        arEl.className = 'value ' + (avgRet >= 0 ? 'positive' : 'negative');
+        document.getElementById('t-avghold').textContent = s.avg_hold_days || '-';
+
+        // Open positions
+        var tbody = document.querySelector('#tracking-open-table tbody');
+        tbody.innerHTML = '';
+        var open = d.open_positions || [];
+        for (var i = 0; i < open.length; i++) {
+            var p = open[i];
+            var ret = parseFloat(p.current_return_pct || 0);
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td><strong>' + p.symbol + '</strong></td>'
+                + '<td>' + (p.fund_name || '') + '</td>'
+                + '<td>' + (p.algorithm_name || '') + '</td>'
+                + '<td>' + (p.pick_date || '') + '</td>'
+                + '<td>$' + fmt(p.entry_nav) + '</td>'
+                + '<td>$' + fmt(p.current_nav) + '</td>'
+                + '<td class="' + (ret >= 0 ? 'pct-positive' : 'pct-negative') + '"><strong>' + fmt(ret) + '%</strong></td>'
+                + '<td>' + (p.hold_days || 0) + 'd</td>'
+                + '<td>$' + fmt(p.peak_nav) + '</td>'
+                + '<td>$' + fmt(p.trough_nav) + '</td>';
+            tbody.appendChild(tr);
+        }
+        if (open.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--text-dim)">No tracked positions. Click "Initialize Tracking" to start.</td></tr>';
+        }
+
+        // Closed positions
+        tbody = document.querySelector('#tracking-closed-table tbody');
+        tbody.innerHTML = '';
+        var closed = d.closed_positions || [];
+        for (var i = 0; i < closed.length; i++) {
+            var c = closed[i];
+            var cret = parseFloat(c.final_return_pct || 0);
+            var reasonBadge = c.exit_reason === 'take_profit' ? 'badge-green' :
+                              c.exit_reason === 'stop_loss' ? 'badge-red' :
+                              c.exit_reason === 'max_hold' ? 'badge-yellow' : 'badge-blue';
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td><strong>' + c.symbol + '</strong></td>'
+                + '<td>' + (c.fund_name || '') + '</td>'
+                + '<td>' + (c.algorithm_name || '') + '</td>'
+                + '<td>' + (c.pick_date || '') + '</td>'
+                + '<td>$' + fmt(c.entry_nav) + '</td>'
+                + '<td>$' + fmt(c.exit_nav) + '</td>'
+                + '<td class="' + (cret >= 0 ? 'pct-positive' : 'pct-negative') + '"><strong>' + fmt(cret) + '%</strong></td>'
+                + '<td><span class="badge ' + reasonBadge + '">' + (c.exit_reason || '-') + '</span></td>'
+                + '<td>' + (c.hold_days || 0) + 'd</td>'
+                + '<td>' + (c.exit_date || '') + '</td>';
+            tbody.appendChild(tr);
+        }
+        if (closed.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--text-dim)">No closed positions yet.</td></tr>';
+        }
+
+        // Algorithm performance
+        tbody = document.querySelector('#tracking-algo-table tbody');
+        tbody.innerHTML = '';
+        var algos = d.algorithm_performance || [];
+        for (var i = 0; i < algos.length; i++) {
+            var a = algos[i];
+            var aRet = parseFloat(a.avg_current_ret || 0);
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td><strong>' + a.algorithm_name + '</strong></td>'
+                + '<td>' + (a.total || 0) + '</td>'
+                + '<td>' + (a.open_cnt || 0) + '</td>'
+                + '<td class="pct-positive">' + (a.wins || 0) + '</td>'
+                + '<td class="pct-negative">' + (a.losses || 0) + '</td>'
+                + '<td class="' + (aRet >= 0 ? 'pct-positive' : 'pct-negative') + '">' + fmt(aRet) + '%</td>';
             tbody.appendChild(tr);
         }
     });
