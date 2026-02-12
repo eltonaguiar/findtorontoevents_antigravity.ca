@@ -147,7 +147,7 @@ function run_mf2_backtest($conn, $algo_filter, $tr, $sl, $mhd, $cap, $rfee, $pos
         $var = 0;
         foreach ($returns as $r) { $var += ($r - $mean) * ($r - $mean); }
         $std = sqrt($var / count($returns));
-        if ($std > 0) $sharpe = round($mean / $std, 4);
+        if ($std > 0) $sharpe = round(($mean / $std) * sqrt(252), 4);
     }
 
     $total_ret = ($cap > 0) ? round(($capital - $cap) / $cap * 100, 4) : 0;

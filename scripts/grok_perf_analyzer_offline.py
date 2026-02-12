@@ -41,10 +41,11 @@ MIN_TRADES_DEFAULT = 10
 
 # Composite score weights (applied to z-scores, so units are commensurable)
 COMPOSITE_WEIGHTS = {
-    'expectancy': 0.30,     # Most actionable — dollars/trade edge
-    'sortino': 0.25,        # Risk-adjusted return (downside-only vol)
-    'profit_factor': 0.20,  # Gross win/loss ratio
-    'win_rate': 0.15,       # Win frequency
+    'expectancy': 0.25,     # Most actionable — dollars/trade edge
+    'sharpe': 0.20,         # Industry-standard risk-adjusted return (annualized)
+    'sortino': 0.20,        # Risk-adjusted return (downside-only vol)
+    'profit_factor': 0.15,  # Gross win/loss ratio
+    'win_rate': 0.10,       # Win frequency
     'max_dd': 0.10,         # Drawdown penalty (lower is worse)
 }
 
@@ -57,7 +58,7 @@ def fetch_from_db():
         cursor = conn.cursor(dictionary=True)
         cursor.execute("""
             SELECT algorithm_name, asset_class, symbol, realized_pnl_usd, realized_pct,
-                   position_value_usd, entry_date, exit_date
+                   position_value_usd, entry_time AS entry_date, exit_time AS exit_date
             FROM lm_trades
             WHERE status = 'closed' AND algorithm_name != ''
         """)
@@ -83,11 +84,37 @@ def fetch_from_csv(csv_path):
     return rows
 
 
-def calc_sortino(returns, target=0.0):
+def calc_sharpe(returns, annualize=True):
+    """
+    Sharpe Ratio — mean return / standard deviation of returns.
+    Annualized by default: * sqrt(252) for daily, or * sqrt(n) for per-trade.
+    Industry standard metric per HFR, AQR, etc.
+
+    For per-trade returns (not daily), we use sqrt(trades_per_year_estimate).
+    Since we don't know trade frequency, we report the raw (non-annualized)
+    Sharpe and let the caller decide on annualization context.
+    """
+    if not returns or len(returns) < 2:
+        return 0.0
+    mean_ret = sum(returns) / len(returns)
+    variance = sum((r - mean_ret) ** 2 for r in returns) / len(returns)
+    std_ret = math.sqrt(variance)
+    if std_ret == 0:
+        return float('inf') if mean_ret > 0 else 0.0
+    sharpe = mean_ret / std_ret
+    if annualize:
+        # For per-trade returns, approximate annualization assuming ~252 trades/year
+        # This is an approximation — true annualization requires knowing trade frequency
+        sharpe *= math.sqrt(252)
+    return sharpe
+
+
+def calc_sortino(returns, target=0.0, annualize=True):
     """
     Sortino Ratio — mean excess return / downside deviation.
     Only penalizes negative returns (unlike Sharpe which penalizes all volatility).
     Standard in institutional quant evaluation.
+    Annualized by default with sqrt(252).
     """
     if not returns:
         return 0.0
@@ -97,7 +124,10 @@ def calc_sortino(returns, target=0.0):
     dd_std = math.sqrt(dd_variance)
     if dd_std == 0:
         return float('inf') if mean_ret > 0 else 0.0
-    return mean_ret / dd_std
+    sortino = mean_ret / dd_std
+    if annualize:
+        sortino *= math.sqrt(252)
+    return sortino
 
 
 def calc_max_drawdown(pnl_series):
@@ -212,8 +242,12 @@ def analyze(trades, min_trades=MIN_TRADES_DEFAULT):
         # Cap PF at 10 for z-scoring (inf breaks normalization)
         pf_capped = min(profit_factor, 10.0)
 
-        # Sortino ratio (on % returns)
-        sortino = calc_sortino(pcts)
+        # Sharpe ratio — annualized (on % returns)
+        sharpe = calc_sharpe(pcts, annualize=True)
+        sharpe_capped = min(max(sharpe, -10.0), 10.0)  # Cap both ends for normalization
+
+        # Sortino ratio — annualized (on % returns)
+        sortino = calc_sortino(pcts, annualize=True)
         sortino_capped = min(sortino, 10.0)  # Cap for normalization
 
         # Max drawdown (on cumulative PnL in $)
@@ -235,6 +269,7 @@ def analyze(trades, min_trades=MIN_TRADES_DEFAULT):
             'total_pnl_usd': round(sum(pnls), 2),
             'expectancy_pct': round(expectancy_pct, 3),
             'profit_factor': round(profit_factor, 3),
+            'sharpe_ratio': round(sharpe, 3),
             'sortino_ratio': round(sortino, 3),
             'max_drawdown_usd': round(max_dd, 2),
             'max_win_pct': round(max_win_pct, 2),
@@ -243,6 +278,7 @@ def analyze(trades, min_trades=MIN_TRADES_DEFAULT):
             '_wr': win_rate * 100,
             '_exp': expectancy_pct,
             '_pf': pf_capped,
+            '_sharpe': sharpe_capped,
             '_sortino': sortino_capped,
             '_dd': max_dd,  # Negative; higher (less negative) is better
         })
@@ -259,6 +295,7 @@ def analyze(trades, min_trades=MIN_TRADES_DEFAULT):
     wr_z = z_score_normalize([r['_wr'] for r in raw_results])
     exp_z = z_score_normalize([r['_exp'] for r in raw_results])
     pf_z = z_score_normalize([r['_pf'] for r in raw_results])
+    sharpe_z = z_score_normalize([r['_sharpe'] for r in raw_results])
     sort_z = z_score_normalize([r['_sortino'] for r in raw_results])
     dd_z = z_score_normalize([r['_dd'] for r in raw_results])  # Higher = less drawdown = better
 
@@ -267,6 +304,7 @@ def analyze(trades, min_trades=MIN_TRADES_DEFAULT):
             COMPOSITE_WEIGHTS['win_rate'] * wr_z[i] +
             COMPOSITE_WEIGHTS['expectancy'] * exp_z[i] +
             COMPOSITE_WEIGHTS['profit_factor'] * pf_z[i] +
+            COMPOSITE_WEIGHTS['sharpe'] * sharpe_z[i] +
             COMPOSITE_WEIGHTS['sortino'] * sort_z[i] +
             COMPOSITE_WEIGHTS['max_dd'] * dd_z[i]
         )
@@ -275,11 +313,12 @@ def analyze(trades, min_trades=MIN_TRADES_DEFAULT):
             'win_rate': round(wr_z[i], 3),
             'expectancy': round(exp_z[i], 3),
             'profit_factor': round(pf_z[i], 3),
+            'sharpe': round(sharpe_z[i], 3),
             'sortino': round(sort_z[i], 3),
             'max_dd': round(dd_z[i], 3),
         }
         # Remove internal fields
-        for k in ('_wr', '_exp', '_pf', '_sortino', '_dd'):
+        for k in ('_wr', '_exp', '_pf', '_sharpe', '_sortino', '_dd'):
             del r[k]
 
     # --- Phase 4: Rank ---
@@ -334,6 +373,190 @@ def save_results(results, min_trades):
     return json_path, csv_path
 
 
+def compute_asset_class_metrics(trades, min_trades=5):
+    """
+    Compute aggregate Sharpe ratios and performance metrics per asset class
+    (stocks, crypto, forex, sports) and for the entire portfolio.
+
+    Returns dict: { 'stocks': {...}, 'crypto': {...}, ..., 'portfolio': {...} }
+    """
+    # Group trades by asset class
+    asset_groups = {}
+    all_pcts = []
+
+    for t in trades:
+        ac = t.get('asset_class', 'unknown').lower()
+        if ac not in asset_groups:
+            asset_groups[ac] = {'pcts': [], 'pnls': []}
+        pct = float(t.get('realized_pct', 0))
+        pnl = float(t.get('realized_pnl_usd', 0))
+        asset_groups[ac]['pcts'].append(pct)
+        asset_groups[ac]['pnls'].append(pnl)
+        all_pcts.append(pct)
+
+    # Industry benchmarks (2026) for comparison
+    benchmarks = {
+        'stocks':  {'sp500_sharpe': 0.9, 'good': 1.0, 'very_good': 2.0, 'elite': 3.0},
+        'crypto':  {'btc_sharpe': 1.1, 'good': 1.0, 'very_good': 2.0, 'elite': 3.0},
+        'forex':   {'eur_usd_sharpe': 0.3, 'good': 0.8, 'very_good': 1.5, 'elite': 2.5},
+        'sports':  {'good': 0.5, 'very_good': 1.0, 'elite': 2.0},
+    }
+    # Reference: Renaissance Medallion ~2.5-6.0, Two Sigma ~1.5-2.5, AQR ~1.0-1.5
+
+    results = {}
+
+    def _metrics_for(pcts, pnls, label):
+        n = len(pcts)
+        if n < min_trades:
+            return None
+        wins = [p for p in pcts if p > 0]
+        losses = [p for p in pcts if p <= 0]
+        wr = len(wins) / n
+        mean_ret = sum(pcts) / n
+        total_pnl = sum(pnls)
+
+        # Variance (population) and std
+        var = sum((r - mean_ret) ** 2 for r in pcts) / n
+        std = math.sqrt(var) if var > 0 else 0
+
+        # Downside deviation
+        dvar = sum(min(0, r) ** 2 for r in pcts) / n
+        dstd = math.sqrt(dvar) if dvar > 0 else 0
+
+        # Sharpe (annualized per-trade with sqrt(252) approximation)
+        sharpe = (mean_ret / std * math.sqrt(252)) if std > 0 else 0
+        sortino = (mean_ret / dstd * math.sqrt(252)) if dstd > 0 else 0
+
+        # Profit factor
+        gw = sum(p for p in pnls if p > 0)
+        gl = abs(sum(p for p in pnls if p <= 0))
+        pf = gw / gl if gl > 0 else (999 if gw > 0 else 0)
+
+        # Max drawdown (from cumulative PnL)
+        cum = 0
+        peak = 0
+        mdd = 0
+        for p in pnls:
+            cum += p
+            if cum > peak:
+                peak = cum
+            dd = cum - peak
+            if dd < mdd:
+                mdd = dd
+
+        # Calmar ratio (annualized return / max drawdown)
+        ann_return = mean_ret * 252
+        calmar = ann_return / abs(mdd) if mdd < 0 else 0
+
+        # VaR 95% (historical)
+        var95 = 0
+        if n >= 20:
+            sorted_p = sorted(pcts)
+            idx5 = int(n * 0.05)
+            var95 = sorted_p[idx5]
+
+        # Expectancy
+        avg_win = sum(wins) / len(wins) if wins else 0
+        avg_loss = abs(sum(losses) / len(losses)) if losses else 0
+        exp = (wr * avg_win) - ((1 - wr) * avg_loss)
+
+        return {
+            'label': label,
+            'total_trades': n,
+            'win_rate_pct': round(wr * 100, 2),
+            'mean_return_pct': round(mean_ret, 4),
+            'total_pnl_usd': round(total_pnl, 2),
+            'sharpe_ratio': round(sharpe, 4),
+            'sortino_ratio': round(sortino, 4),
+            'calmar_ratio': round(calmar, 4),
+            'profit_factor': round(min(pf, 999), 3),
+            'max_drawdown_usd': round(mdd, 2),
+            'volatility_pct': round(std, 4),
+            'downside_deviation': round(dstd, 4),
+            'var_95_pct': round(var95, 2),
+            'expectancy_pct': round(exp, 4),
+            'avg_win_pct': round(avg_win, 2),
+            'avg_loss_pct': round(avg_loss, 2),
+        }
+
+    # Per asset class
+    for ac, data in asset_groups.items():
+        m = _metrics_for(data['pcts'], data['pnls'], ac.title())
+        if m:
+            bm = benchmarks.get(ac, {})
+            grade = 'D'
+            s = m['sharpe_ratio']
+            if s >= bm.get('elite', 3.0):
+                grade = 'A+'
+            elif s >= bm.get('very_good', 2.0):
+                grade = 'A'
+            elif s >= bm.get('good', 1.0):
+                grade = 'B'
+            elif s >= 0.5:
+                grade = 'C'
+            m['grade'] = grade
+            m['benchmark'] = bm
+            results[ac] = m
+
+    # Portfolio-level (all trades)
+    all_pnls = []
+    for ac, data in asset_groups.items():
+        all_pnls.extend(data['pnls'])
+    port = _metrics_for(all_pcts, all_pnls, 'Portfolio (All Assets)')
+    if port:
+        port['grade'] = 'A+' if port['sharpe_ratio'] >= 3.0 else ('A' if port['sharpe_ratio'] >= 2.0 else ('B' if port['sharpe_ratio'] >= 1.0 else ('C' if port['sharpe_ratio'] >= 0.5 else 'D')))
+        port['benchmark'] = {'renaissance': 2.5, 'two_sigma': 1.5, 'aqr': 1.2, 'sp500': 0.9}
+        results['portfolio'] = port
+
+    return results
+
+
+def print_asset_class_report(ac_metrics):
+    """Print a comprehensive asset-class-level Sharpe ratio report."""
+    print("\n" + "=" * 100)
+    print("  ASSET CLASS PERFORMANCE REPORT — vs. Industry Benchmarks")
+    print("=" * 100)
+
+    for key in ['stocks', 'crypto', 'forex', 'sports', 'portfolio']:
+        m = ac_metrics.get(key)
+        if not m:
+            continue
+
+        is_port = key == 'portfolio'
+        header = f"  {m['label']}"
+        if is_port:
+            print("\n" + "-" * 100)
+        print(f"\n{header}")
+        print(f"  {'─' * 60}")
+        print(f"    Trades:     {m['total_trades']:>8,}")
+        print(f"    Win Rate:   {m['win_rate_pct']:>7.1f}%")
+        print(f"    Mean Ret:   {m['mean_return_pct']:>+7.3f}%")
+        print(f"    Total PnL:  ${m['total_pnl_usd']:>10,.2f}")
+        print(f"    Volatility: {m['volatility_pct']:>7.3f}%")
+        print(f"    VaR (95%):  {m['var_95_pct']:>+7.2f}%")
+        print(f"    Max DD:     ${m['max_drawdown_usd']:>10,.2f}")
+        print()
+        print(f"    SHARPE:     {m['sharpe_ratio']:>+7.3f}  [Grade: {m['grade']}]")
+        print(f"    Sortino:    {m['sortino_ratio']:>+7.3f}")
+        print(f"    Calmar:     {m['calmar_ratio']:>+7.3f}")
+        print(f"    Profit F:   {m['profit_factor']:>7.2f}")
+        print(f"    Expectancy: {m['expectancy_pct']:>+7.3f}%")
+
+        bm = m.get('benchmark', {})
+        if bm:
+            print(f"\n    Benchmarks:")
+            for bk, bv in bm.items():
+                delta = m['sharpe_ratio'] - bv
+                indicator = '+' if delta >= 0 else ''
+                print(f"      vs {bk:20s}: {bv:>5.1f}  (ours {indicator}{delta:.2f})")
+
+    print("\n" + "=" * 100)
+    print("  Industry Reference: Renaissance ~2.5-6.0 | Two Sigma ~1.5-2.5 | "
+          "AQR ~1.0-1.5 | S&P500 ~0.9")
+    print("  Grading: A+=3.0+ | A=2.0+ | B=1.0+ | C=0.5+ | D=<0.5")
+    print("=" * 100)
+
+
 def main():
     parser = argparse.ArgumentParser(description='Offline Performance Analyzer')
     parser.add_argument('--csv', help='Path to CSV trade export (skip DB)')
@@ -367,29 +590,54 @@ def main():
 
     # --- Main table ---
     print(f"\n{'Rk':>3} | {'Algorithm':28s} | {'Asset':7s} | {'N':>5} | {'WR%':>6} | {'Exp%':>7} | "
-          f"{'PF':>6} | {'Sorti':>6} | {'MaxDD$':>8} | {'Score':>7}")
-    print("-" * 115)
+          f"{'PF':>6} | {'Sharpe':>7} | {'Sorti':>7} | {'MaxDD$':>8} | {'Score':>7}")
+    print("-" * 130)
     for r in results:
         pf_str = f"{r['profit_factor']:.2f}" if r['profit_factor'] < 100 else "INF"
+        sharpe_str = f"{r['sharpe_ratio']:>+7.2f}" if abs(r['sharpe_ratio']) < 100 else "INF"
         sort_str = f"{r['sortino_ratio']:.2f}" if r['sortino_ratio'] < 100 else "INF"
         print(f"{r['rank']:>3} | {r['algorithm']:28s} | {r['asset_class']:7s} | {r['total_trades']:>5} | "
               f"{r['win_rate_pct']:>5.1f}% | {r['expectancy_pct']:>6.2f}% | "
-              f"{pf_str:>6} | {sort_str:>6} | ${r['max_drawdown_usd']:>7.0f} | "
+              f"{pf_str:>6} | {sharpe_str:>7} | {sort_str:>7} | ${r['max_drawdown_usd']:>7.0f} | "
               f"{r['composite_score']:>+7.3f}")
 
     # --- Z-score breakdown for top 5 ---
     top_n = min(5, len(results))
     print(f"\n  Z-Score Breakdown (top {top_n}):")
-    print(f"  {'Algorithm':28s} | {'z_WR':>6} | {'z_Exp':>6} | {'z_PF':>6} | {'z_Sort':>6} | {'z_DD':>6}")
-    print(f"  {'-'*75}")
+    print(f"  {'Algorithm':28s} | {'z_WR':>6} | {'z_Exp':>6} | {'z_PF':>6} | {'z_Shp':>6} | {'z_Srt':>6} | {'z_DD':>6}")
+    print(f"  {'-'*85}")
     for r in results[:top_n]:
         z = r['z_scores']
         print(f"  {r['algorithm']:28s} | {z['win_rate']:>+6.2f} | {z['expectancy']:>+6.2f} | "
-              f"{z['profit_factor']:>+6.2f} | {z['sortino']:>+6.2f} | {z['max_dd']:>+6.2f}")
+              f"{z['profit_factor']:>+6.2f} | {z['sharpe']:>+6.2f} | {z['sortino']:>+6.2f} | {z['max_dd']:>+6.2f}")
 
+    # --- Asset Class Sharpe Report (NEW) ---
+    ac_metrics = compute_asset_class_metrics(trades, min_trades=5)
+    print_asset_class_report(ac_metrics)
+
+    # --- Save results (including asset class metrics) ---
     json_path, csv_path = save_results(results, min_trades)
+
+    # Save asset-class report to JSON
+    ac_json_path = os.path.join(OUTPUT_DIR, 'asset_class_sharpe_report.json')
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    with open(ac_json_path, 'w') as f:
+        json.dump({
+            'generated': datetime.utcnow().strftime('%Y%m%d_%H%M%S'),
+            'description': 'Asset-class and portfolio-level Sharpe ratios with industry benchmarks',
+            'benchmarks_reference': {
+                'renaissance_medallion': '2.5-6.0 Sharpe (best hedge fund ever)',
+                'two_sigma': '1.5-2.5 Sharpe (ML-driven quant)',
+                'aqr': '1.0-1.5 Sharpe (systematic factor)',
+                'sp500_buy_hold': '0.7-1.1 Sharpe (passive benchmark)',
+                'grading': 'A+=3.0+ | A=2.0+ | B=1.0+ | C=0.5+ | D=<0.5',
+            },
+            'asset_classes': ac_metrics
+        }, f, indent=2)
+
     print(f"\nSaved: {json_path}")
     print(f"Saved: {csv_path}")
+    print(f"Saved: {ac_json_path}")
 
 
 if __name__ == '__main__':

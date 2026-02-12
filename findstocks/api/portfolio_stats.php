@@ -216,11 +216,11 @@ foreach ($daily_returns as $r) {
 }
 $downside_dev = ($total_trades > 1) ? sqrt($downside_var / ($total_trades - 1)) : 0;
 
-// Sharpe Ratio
-$sharpe = ($std_dev > 0) ? round($mean_ret / $std_dev, 4) : 0;
+// Sharpe Ratio — annualized: mean/std * sqrt(252)
+$sharpe = ($std_dev > 0) ? round(($mean_ret / $std_dev) * sqrt(252), 4) : 0;
 
-// Sortino Ratio (excess return / downside deviation)
-$sortino = ($downside_dev > 0) ? round($mean_ret / $downside_dev, 4) : 0;
+// Sortino Ratio — annualized: mean/downside_dev * sqrt(252)
+$sortino = ($downside_dev > 0) ? round(($mean_ret / $downside_dev) * sqrt(252), 4) : 0;
 
 // Calmar Ratio (total return / max drawdown)
 $calmar = ($max_dd > 0) ? round($total_return_pct / $max_dd, 4) : 0;

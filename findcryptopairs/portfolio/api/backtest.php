@@ -295,10 +295,10 @@ if (count($daily_returns) > 1) {
         if ($r < 0) { $dvar += $r * $r; $dcnt++; }
     }
     $stddev = sqrt($variance / count($daily_returns));
-    if ($stddev > 0) $sharpe = round($mean / $stddev, 4);
+    if ($stddev > 0) $sharpe = round(($mean / $stddev) * sqrt(252), 4);
     if ($dcnt > 0) {
         $dstd = sqrt($dvar / $dcnt);
-        if ($dstd > 0) $sortino = round($mean / $dstd, 4);
+        if ($dstd > 0) $sortino = round(($mean / $dstd) * sqrt(252), 4);
     }
 }
 

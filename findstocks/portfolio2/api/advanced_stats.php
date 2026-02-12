@@ -619,10 +619,10 @@ if ($action === 'ticker_profile') {
             if ($r < 0) { $dv += $r * $r; $dc2++; }
         }
         $std = sqrt($v / count($returns_a));
-        if ($std > 0) $sharpe = round($mean / $std, 4);
+        if ($std > 0) $sharpe = round(($mean / $std) * sqrt(252), 4);
         if ($dc2 > 0) {
             $ds = sqrt($dv / $dc2);
-            if ($ds > 0) $sortino = round($mean / $ds, 4);
+            if ($ds > 0) $sortino = round(($mean / $ds) * sqrt(252), 4);
         }
     }
     $calmar = ($max_dd_c > 0 && $ann != 0) ? round($ann / $max_dd_c, 4) : 0;

@@ -326,10 +326,10 @@ if (count($daily_returns) > 1) {
         }
     }
     $stddev = sqrt($variance / count($daily_returns));
-    if ($stddev > 0) $sharpe = round($mean / $stddev, 4);
+    if ($stddev > 0) $sharpe = round(($mean / $stddev) * sqrt(252), 4);
     if ($count_down > 0) {
         $downside_std = sqrt($downside_variance / $count_down);
-        if ($downside_std > 0) $sortino = round($mean / $downside_std, 4);
+        if ($downside_std > 0) $sortino = round(($mean / $downside_std) * sqrt(252), 4);
     }
 }
 

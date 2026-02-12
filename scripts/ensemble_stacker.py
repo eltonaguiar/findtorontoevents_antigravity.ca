@@ -1,17 +1,36 @@
 """
 Ensemble Model Stacking System
-Combines multiple ML models using stacking for improved performance
-"""
+Combines multiple ML models using stacking for improved performance.
 
+CRITICAL FIX: Wired to real lm_signals + lm_trades data from DB instead of
+synthetic random data. Uses purged TimeSeriesSplit for proper time-series
+cross-validation (no look-ahead bias).
+
+Data source: lm_signals joined with lm_trades and lm_market_regime
+Target: forward return (return_pct from lm_trades)
+"""
+import os
+import sys
+import logging
 import pandas as pd
 import numpy as np
+import mysql.connector
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.linear_model import LinearRegression, Ridge
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.model_selection import TimeSeriesSplit
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
 import warnings
 warnings.filterwarnings('ignore')
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
+logger = logging.getLogger('ensemble_stacker')
+
+# DB config from env vars
+DB_HOST = os.getenv('DB_HOST', 'mysql.50webs.com')
+DB_USER = os.getenv('DB_USER', 'ejaguiar1_stocks')
+DB_PASS = os.getenv('DB_PASS', 'stocks')
+DB_NAME = os.getenv('DB_NAME', 'ejaguiar1_stocks')
 
 class EnsembleStacker:
     def __init__(self, base_models=None, meta_model=None, test_size=0.2, random_state=42):
@@ -50,12 +69,28 @@ class EnsembleStacker:
         self.feature_names = None
     
     def prepare_data(self, X, y):
-        """Prepare data for stacking"""
-        # Split into training and validation sets
-        X_train, X_val, y_train, y_val = train_test_split(
-            X, y, test_size=self.test_size, random_state=self.random_state
-        )
-        
+        """
+        Prepare data for stacking using purged time-series split.
+
+        Uses the last fold of TimeSeriesSplit (train = earlier data, val = latest data).
+        A purge gap removes samples at the boundary to prevent label leakage
+        from overlapping trade windows (de Prado 2018).
+        """
+        tscv = TimeSeriesSplit(n_splits=5)
+        # Use last fold (maximum training data, most recent validation)
+        train_idx, val_idx = None, None
+        for t_idx, v_idx in tscv.split(X):
+            train_idx, val_idx = t_idx, v_idx
+
+        # Purge: remove ~5% of training samples at boundary
+        purge_gap = max(1, int(len(train_idx) * 0.05))
+        train_idx = train_idx[:-purge_gap]
+
+        X_train = X.iloc[train_idx] if hasattr(X, 'iloc') else X[train_idx]
+        X_val = X.iloc[val_idx] if hasattr(X, 'iloc') else X[val_idx]
+        y_train = y.iloc[train_idx] if hasattr(y, 'iloc') else y[train_idx]
+        y_val = y.iloc[val_idx] if hasattr(y, 'iloc') else y[val_idx]
+
         return X_train, X_val, y_train, y_val
     
     def train_base_models(self, X_train, y_train):
@@ -279,54 +314,115 @@ class PerformanceWeightedBlender:
         
         return blended_predictions
 
+def connect_db():
+    """Connect to MySQL database."""
+    return mysql.connector.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME
+    )
+
+
+def fetch_real_signals():
+    """
+    Fetch real signal data from lm_signals + lm_trades + lm_market_regime.
+    Returns a DataFrame sorted by signal_date (ascending) for time-series CV.
+    """
+    logger.info("Fetching real signals from DB...")
+    try:
+        conn = connect_db()
+        query = """
+        SELECT s.id, s.symbol, s.algorithm_name, s.asset_class,
+               s.signal_strength, s.signal_type, s.signal_date,
+               t.return_pct, t.realized_pnl_usd,
+               m.regime, m.spy_ret, m.vix_value
+        FROM lm_signals s
+        JOIN lm_trades t ON s.id = t.signal_id
+        LEFT JOIN lm_market_regime m ON DATE(s.signal_date) = m.regime_date
+        WHERE t.status = 'closed' AND t.return_pct IS NOT NULL
+        ORDER BY s.signal_date ASC
+        """
+        df = pd.read_sql(query, conn)
+        conn.close()
+        logger.info("Loaded %d closed signals with outcomes", len(df))
+        return df
+    except mysql.connector.Error as err:
+        logger.error("DB error: %s", err)
+        return pd.DataFrame()
+
+
+def prepare_signal_features(df):
+    """
+    Engineer features from real signal data for the ensemble stacker.
+    Target: return_pct (continuous — regression target for return prediction).
+    """
+    df = df.copy()
+
+    # Features from signals
+    df['is_buy'] = (df['signal_type'] == 'buy').astype(int)
+    df['regime_bull'] = (df['regime'] == 'bull').astype(int)
+    df['regime_bear'] = (df['regime'] == 'bear').astype(int)
+
+    # Rolling win rate per algorithm (causal — only uses past data)
+    df['win'] = (df['return_pct'] > 0).astype(int)
+    df['win_rate_rolling'] = df.groupby('algorithm_name')['win'].transform(
+        lambda x: x.rolling(20, min_periods=3).mean()
+    )
+
+    # One-hot encode algorithm and asset class
+    df = pd.get_dummies(df, columns=['algorithm_name', 'asset_class'],
+                        prefix=['algo', 'asset'])
+
+    feature_cols = ['signal_strength', 'is_buy', 'regime_bull', 'regime_bear',
+                    'spy_ret', 'vix_value', 'win_rate_rolling']
+    # Add one-hot columns
+    feature_cols += [c for c in df.columns if c.startswith('algo_') or c.startswith('asset_')]
+
+    X = df[feature_cols].fillna(0)
+    y = df['return_pct']
+
+    return X, y, feature_cols
+
+
 def main():
-    """Main entry point for orchestrator integration."""
-    # Create sample data
-    np.random.seed(42)
-    n_samples = 1000
-    n_features = 10
+    """Main entry point — train ensemble on real DB signals."""
+    logger.info("=== Ensemble Stacker (Real Data Mode) ===")
 
-    X = pd.DataFrame(np.random.randn(n_samples, n_features),
-                     columns=[f'feature_{i}' for i in range(n_features)])
+    # --- Fetch real data ---
+    df = fetch_real_signals()
 
-    # Create target with some signal
-    y = (X['feature_0'] * 0.3 +
-         X['feature_1'] * 0.2 +
-         X['feature_2'] * 0.1 +
-         np.random.randn(n_samples) * 0.1)
+    if len(df) < 50:
+        logger.warning("Insufficient data (%d rows). Need at least 50 closed signals with outcomes.", len(df))
+        logger.info("Ensure lm_signals is populated and lm_trades has closed entries with return_pct.")
+        return
 
-    # Test ensemble stacking
-    print("=== Ensemble Stacking Test ===")
+    X, y, feature_cols = prepare_signal_features(df)
+    logger.info("Features: %d columns, %d samples", len(feature_cols), len(X))
+    logger.info("Target (return_pct): mean=%.3f%%, std=%.3f%%", y.mean(), y.std())
 
+    # --- Train ensemble with purged TSCV ---
     ensemble = EnsembleStacker()
     ensemble.fit(X, y)
 
-    # Make predictions
-    predictions = ensemble.predict(X.head(10))
-    print(f"Sample predictions: {predictions[:5]}")
-
-    # Get model weights
+    # --- Model weights ---
     weights = ensemble.get_model_weights()
-    print("\n=== Model Weights ===")
-    print(weights.head())
+    logger.info("\nModel Weights (meta-model coefficients):")
+    for _, row in weights.iterrows():
+        logger.info("  %s: %.4f", row['feature'], row['weight'])
 
-    # Test performance-weighted blending
-    print("\n=== Performance-Weighted Blending Test ===")
-
+    # --- Performance-weighted blending across base models ---
+    logger.info("\n=== Performance-Weighted Blending ===")
     blender = PerformanceWeightedBlender()
 
-    # Create sample predictions
-    preds_dict = {
-        'model1': y + np.random.normal(0, 0.05, len(y)),
-        'model2': y + np.random.normal(0, 0.1, len(y)),
-        'model3': y + np.random.normal(0, 0.02, len(y))
-    }
+    # Get base model predictions on full dataset
+    base_preds = ensemble.get_base_predictions(ensemble.trained_base_models, X)
+    blend_weights = blender.calculate_performance_weights(base_preds, y.values)
+    logger.info("Blending weights: %s",
+                {k: f"{v:.4f}" for k, v in blend_weights.items()})
 
-    weights = blender.calculate_performance_weights(preds_dict, y)
-    print(f"Model weights: {weights}")
+    blended = blender.blend_predictions(base_preds)
+    blended_mse = mean_squared_error(y.values[:len(blended)], blended)
+    logger.info("Blended MSE: %.4f", blended_mse)
 
-    blended_preds = blender.blend_predictions(preds_dict)
-    print(f"Blended predictions MSE: {mean_squared_error(y[:len(blended_preds)], blended_preds):.4f}")
+    logger.info("\n=== Ensemble Stacker Complete ===")
 
 
 if __name__ == "__main__":

@@ -14,22 +14,43 @@ Implements:
 This framework validates the ENTIRE pipeline:
   Regime → Signal Bundles → Meta-Filter → Position Sizing → Execution
 
-Requires: pip install numpy pandas scipy scikit-learn requests
+CRITICAL FIX: Now fetches strategy returns directly from lm_trades DB table
+instead of relying solely on PHP API. This allows offline validation and
+ensures the Deflated Sharpe computation runs on real trade data.
+
+Requires: pip install numpy pandas scipy scikit-learn requests mysql-connector-python
 """
 import sys
 import os
 import json
 import logging
+import argparse
 import numpy as np
 import pandas as pd
+import mysql.connector
 from datetime import datetime, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from utils import post_to_api, call_api
-from config import TRACKED_TICKERS
+try:
+    from utils import post_to_api, call_api
+    from config import TRACKED_TICKERS
+except ImportError:
+    # Allow running standalone without config
+    def post_to_api(*a, **kw): return {'ok': False, 'error': 'config not loaded'}
+    def call_api(*a, **kw): return {'ok': False, 'error': 'config not loaded'}
+    TRACKED_TICKERS = []
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger('walk_forward_validator')
+
+# DB config from env vars
+DB_HOST = os.getenv('DB_HOST', 'mysql.50webs.com')
+DB_USER = os.getenv('DB_USER', 'ejaguiar1_stocks')
+DB_PASS = os.getenv('DB_PASS', 'stocks')
+DB_NAME = os.getenv('DB_NAME', 'ejaguiar1_stocks')
+
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
 
 
 # ---------------------------------------------------------------------------
@@ -301,33 +322,143 @@ def analyze_alpha_decay(trades_df, windows=None):
 
 
 # ---------------------------------------------------------------------------
+# Database Fetch (primary data source for real strategy returns)
+# ---------------------------------------------------------------------------
+
+def connect_db():
+    """Connect to MySQL database."""
+    return mysql.connector.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME
+    )
+
+
+def fetch_trades_from_db():
+    """
+    Fetch closed trades directly from lm_trades in the database.
+    This is the primary data source — bypasses the PHP API for offline use.
+
+    Returns DataFrame sorted by entry_date (ascending) with columns:
+      algorithm_name, symbol, asset_class, realized_pct, realized_pnl_usd,
+      entry_date, exit_date, hold_hours, position_value_usd
+    """
+    logger.info("Fetching closed trades from DB (lm_trades)...")
+    try:
+        conn = connect_db()
+        query = """
+        SELECT algorithm_name, symbol, asset_class,
+               realized_pct, realized_pnl_usd,
+               entry_date, exit_date,
+               TIMESTAMPDIFF(HOUR, entry_date, exit_date) AS hold_hours,
+               position_value_usd
+        FROM lm_trades
+        WHERE status = 'closed'
+          AND algorithm_name != ''
+          AND realized_pct IS NOT NULL
+        ORDER BY entry_date ASC
+        """
+        df = pd.read_sql(query, conn)
+        conn.close()
+        logger.info("Loaded %d closed trades from DB", len(df))
+        return df
+    except mysql.connector.Error as err:
+        logger.warning("DB fetch failed: %s — falling back to API", err)
+        return None
+
+
+def fetch_trades_from_api():
+    """Fallback: fetch trades via PHP API."""
+    logger.info("Fetching trades via API...")
+    result = call_api('history', 'limit=10000')
+    trades = result.get('trades', result.get('history', [])) if result.get('ok') else []
+    if trades:
+        return pd.DataFrame(trades)
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Walk-Forward Cross-Validation
+# ---------------------------------------------------------------------------
+
+def walk_forward_cv(trades_df, n_splits=5):
+    """
+    Run purged walk-forward cross-validation on real trade data.
+
+    For each fold:
+      1. Train on historical trades (earlier time period)
+      2. Test on forward trades (later time period)
+      3. Purge gap at boundary to prevent label leakage
+      4. Compute Sharpe on each test fold
+
+    Returns list of per-fold metrics.
+    """
+    all_returns = trades_df['realized_pct'].values / 100.0
+    n = len(all_returns)
+
+    ptscv = PurgedTimeSeriesSplit(n_splits=n_splits, purge_pct=0.02, embargo_pct=0.01)
+    fold_results = []
+
+    for fold_idx, (train_idx, test_idx) in enumerate(ptscv.split(all_returns)):
+        train_returns = all_returns[train_idx]
+        test_returns = all_returns[test_idx]
+
+        train_sharpe = calculate_sharpe(train_returns)
+        test_sharpe = calculate_sharpe(test_returns)
+        test_sortino = calculate_sortino(test_returns)
+        test_wr = float(np.mean(test_returns > 0) * 100)
+
+        overfit_ratio = 0.0
+        if train_sharpe != 0:
+            overfit_ratio = 1.0 - (test_sharpe / train_sharpe) if train_sharpe > 0 else 0.0
+
+        fold_results.append({
+            'fold': fold_idx + 1,
+            'train_size': len(train_idx),
+            'test_size': len(test_idx),
+            'train_sharpe': round(train_sharpe, 3),
+            'test_sharpe': round(test_sharpe, 3),
+            'test_sortino': round(test_sortino, 3),
+            'test_win_rate': round(test_wr, 1),
+            'overfit_ratio': round(overfit_ratio, 3),
+        })
+
+        logger.info("  Fold %d: train_sr=%.3f test_sr=%.3f test_wr=%.1f%% overfit=%.1f%% (train=%d, test=%d)",
+                     fold_idx + 1, train_sharpe, test_sharpe, test_wr, overfit_ratio * 100,
+                     len(train_idx), len(test_idx))
+
+    return fold_results
+
+
+# ---------------------------------------------------------------------------
 # Full Validation Pipeline
 # ---------------------------------------------------------------------------
 
-def run_validation():
+def run_validation(source='auto'):
     """
     Full validation pipeline:
-    1. Fetch all closed trades
+    1. Fetch all closed trades (DB primary, API fallback)
     2. Run purged walk-forward CV
     3. Monte Carlo simulation
     4. Deflated Sharpe test
     5. Alpha decay analysis
-    6. Post results to API
+    6. Save results to data/ and post to API
     """
     logger.info("=" * 60)
     logger.info("PURGED WALK-FORWARD VALIDATION — Starting")
     logger.info("=" * 60)
 
-    # Fetch trade history
-    result = call_api('history', 'limit=10000')
-    trades = result.get('trades', result.get('history', [])) if result.get('ok') else []
+    # --- Fetch trade history (DB primary, API fallback) ---
+    trades_df = None
+    if source in ('auto', 'db'):
+        trades_df = fetch_trades_from_db()
+    if trades_df is None and source in ('auto', 'api'):
+        trades_df = fetch_trades_from_api()
 
-    if len(trades) < 30:
-        logger.warning("Insufficient trade history (%d trades, need 30+)", len(trades))
-        print(json.dumps({'ok': False, 'error': 'Insufficient data', 'trade_count': len(trades)}))
+    if trades_df is None or len(trades_df) < 30:
+        count = len(trades_df) if trades_df is not None else 0
+        logger.warning("Insufficient trade history (%d trades, need 30+)", count)
+        print(json.dumps({'ok': False, 'error': 'Insufficient data', 'trade_count': count}))
         return None
 
-    trades_df = pd.DataFrame(trades)
     logger.info("Loaded %d closed trades", len(trades_df))
 
     # Ensure numeric columns
@@ -358,21 +489,35 @@ def run_validation():
             continue
 
         n_algos += 1
+        max_dd = 0
+        if len(algo_returns) > 1:
+            cum = np.cumprod(1 + algo_returns)
+            peak = np.maximum.accumulate(cum)
+            max_dd = round(float(np.min(cum - peak)) * 100, 2)
+
         algo_metrics[algo] = {
             'trades': len(algo_returns),
             'sharpe': round(calculate_sharpe(algo_returns), 3),
             'sortino': round(calculate_sortino(algo_returns), 3),
             'win_rate': round(float(np.mean(algo_returns > 0) * 100), 1),
             'avg_pnl': round(float(np.mean(algo_returns) * 100), 2),
-            'max_dd': round(float(np.min(np.cumprod(1 + algo_returns) -
-                                          np.maximum.accumulate(np.cumprod(1 + algo_returns)))) * 100, 2)
-            if len(algo_returns) > 1 else 0
+            'max_dd': max_dd,
         }
 
     logger.info("Analyzed %d algorithms", n_algos)
 
-    # Step 3: Monte Carlo
-    logger.info("Running Monte Carlo simulation (1000 paths)...")
+    # Step 3: Purged Walk-Forward Cross-Validation
+    logger.info("\n--- Purged Walk-Forward CV (5 folds) ---")
+    wf_results = walk_forward_cv(trades_df, n_splits=5)
+
+    if wf_results:
+        avg_test_sharpe = np.mean([f['test_sharpe'] for f in wf_results])
+        avg_overfit = np.mean([f['overfit_ratio'] for f in wf_results])
+        logger.info("  Avg test Sharpe: %.3f", avg_test_sharpe)
+        logger.info("  Avg overfit ratio: %.1f%% (lower = less overfit)", avg_overfit * 100)
+
+    # Step 4: Monte Carlo
+    logger.info("\n--- Monte Carlo simulation (1000 paths) ---")
     mc_results = monte_carlo_backtest(all_returns, n_simulations=1000)
 
     if mc_results:
@@ -385,16 +530,20 @@ def run_validation():
                      mc_results['max_drawdown']['mean'],
                      mc_results['max_drawdown']['worst'])
 
-    # Step 4: Deflated Sharpe
+    # Step 5: Deflated Sharpe
     dsr = deflated_sharpe_ratio(
         sharpe_observed=overall_sharpe,
-        n_trials=n_algos,
+        n_trials=max(n_algos, 1),
         n_observations=len(all_returns)
     )
-    logger.info("Deflated Sharpe Ratio: %.1f%% (probability that alpha is genuine)", dsr * 100)
+    logger.info("\nDeflated Sharpe Ratio: %.1f%% (probability that alpha is genuine)", dsr * 100)
 
-    # Step 5: Alpha decay
-    logger.info("Analyzing alpha decay...")
+    # Step 6: Alpha decay
+    logger.info("\n--- Alpha Decay Analysis ---")
+    # Ensure entry_time column exists (alias from entry_date)
+    if 'entry_time' not in trades_df.columns and 'entry_date' in trades_df.columns:
+        trades_df['entry_time'] = trades_df['entry_date']
+
     decay_results = analyze_alpha_decay(trades_df)
 
     decaying_algos = [a for a, d in decay_results.items() if d.get('is_decaying', False)]
@@ -408,6 +557,12 @@ def run_validation():
         logger.warning("  DECAYING: %s", ', '.join(decaying_algos))
 
     # Compile results
+    max_dd_pct = 0
+    if len(all_returns) > 1:
+        cum = np.cumprod(1 + all_returns)
+        peak = np.maximum.accumulate(cum)
+        max_dd_pct = round(float(np.min(cum - peak)) * 100, 2)
+
     validation = {
         'overall': {
             'sharpe': round(overall_sharpe, 3),
@@ -416,9 +571,13 @@ def run_validation():
             'win_rate': round(win_rate, 1),
             'total_trades': len(all_returns),
             'avg_pnl_pct': round(float(np.mean(all_returns) * 100), 2),
-            'max_drawdown_pct': round(float(np.min(
-                np.cumprod(1 + all_returns) - np.maximum.accumulate(np.cumprod(1 + all_returns))
-            )) * 100, 2) if len(all_returns) > 1 else 0
+            'max_drawdown_pct': max_dd_pct,
+        },
+        'walk_forward_cv': {
+            'n_folds': len(wf_results),
+            'folds': wf_results,
+            'avg_test_sharpe': round(float(np.mean([f['test_sharpe'] for f in wf_results])), 3) if wf_results else 0,
+            'avg_overfit_ratio': round(float(np.mean([f['overfit_ratio'] for f in wf_results])), 3) if wf_results else 0,
         },
         'deflated_sharpe': {
             'dsr': round(dsr, 4),
@@ -431,26 +590,32 @@ def run_validation():
         'alpha_decay': decay_results,
         'decaying_algos': decaying_algos,
         'healthy_algos': healthy_algos,
-        'validated_at': datetime.utcnow().isoformat()
+        'validated_at': datetime.utcnow().isoformat(),
+        'data_source': 'db' if source != 'api' else 'api',
     }
 
     # Print summary
-    logger.info("=" * 60)
+    logger.info("\n" + "=" * 60)
     logger.info("VALIDATION SUMMARY")
-    logger.info("  Overall Sharpe:    %.3f", overall_sharpe)
+    logger.info("  Overall Sharpe:    %.3f (annualized)", overall_sharpe)
+    logger.info("  WF-CV Test Sharpe: %.3f (out-of-sample avg)",
+                validation['walk_forward_cv']['avg_test_sharpe'])
     logger.info("  Deflated Sharpe:   %.1f%% genuine", dsr * 100)
-    logger.info("  MC Robust:         %s", "YES" if mc_results and mc_results['sharpe']['pct_positive'] > 70 else "NO")
+    logger.info("  MC Robust:         %s",
+                "YES" if mc_results and mc_results['sharpe']['pct_positive'] > 70 else "NO")
     logger.info("  Alpha Status:      %d healthy, %d decaying", len(healthy_algos), len(decaying_algos))
 
     # World-class checklist
     checklist = {
-        'regime_detection': True,   # HMM + Hurst implemented
-        'signal_orthogonality': True,  # 5 bundles implemented
-        'meta_labeling': True,      # XGBoost implemented
-        'position_sizing': True,    # Half-Kelly + EWMA implemented
+        'regime_detection': True,       # HMM + Hurst implemented
+        'signal_orthogonality': True,   # 5 bundles implemented
+        'meta_labeling': True,          # XGBoost with purged TSCV
+        'position_sizing': True,        # Half-Kelly + EWMA implemented
+        'walk_forward_cv': len(wf_results) > 0,   # Now connected to real data
+        'deflated_sharpe': dsr > 0,     # Now computed on real returns
         'alpha_decay_monitor': len(decay_results) > 0,
-        'execution_realism': True,  # Slippage model in position_sizer
-        'online_learning': True     # Daily weight updates via decay_weight
+        'execution_realism': True,      # Slippage model in position_sizer
+        'online_learning': True,        # Daily weight updates via decay_weight
     }
     score = sum(checklist.values())
     logger.info("  World-Class Score: %d / %d", score, len(checklist))
@@ -461,12 +626,19 @@ def run_validation():
     validation['worldclass_checklist'] = checklist
     validation['worldclass_score'] = f"{score}/{len(checklist)}"
 
-    # Post to API
+    # Save to file
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    output_path = os.path.join(OUTPUT_DIR, 'walk_forward_validation.json')
+    with open(output_path, 'w') as f:
+        json.dump(validation, f, indent=2, default=str)
+    logger.info("Results saved: %s", output_path)
+
+    # Post to API (optional, may fail if API not available)
     post_result = post_to_api('update_validation', validation)
     if post_result.get('ok'):
-        logger.info("Validation results saved")
+        logger.info("Validation results posted to API")
     else:
-        logger.warning("API post: %s", post_result.get('error', 'unknown'))
+        logger.debug("API post skipped: %s", post_result.get('error', 'unknown'))
 
     # Print JSON
     print("\n--- VALIDATION JSON OUTPUT ---")
@@ -476,4 +648,8 @@ def run_validation():
 
 
 if __name__ == '__main__':
-    run_validation()
+    parser = argparse.ArgumentParser(description='Purged Walk-Forward Validation')
+    parser.add_argument('--source', choices=['auto', 'db', 'api'], default='auto',
+                        help='Data source: auto (DB first, API fallback), db, or api')
+    args = parser.parse_args()
+    run_validation(source=args.source)

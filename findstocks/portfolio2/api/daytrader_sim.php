@@ -259,7 +259,7 @@ if ($action === 'dashboard') {
             $var = 0;
             foreach ($returns as $rv) $var += ($rv - $mean) * ($rv - $mean);
             $std = sqrt($var / count($returns));
-            if ($std > 0) $sharpe = round($mean / $std, 4);
+            if ($std > 0) $sharpe = round(($mean / $std) * sqrt(252), 4);
         }
 
         $stats[$ver] = array(

@@ -393,7 +393,8 @@ $win_rate       = ($total_trades > 0) ? round($winning_trades / $total_trades * 
 $avg_win_pct    = ($winning_trades > 0) ? round($total_wins_pct / $winning_trades, 4) : 0;
 $avg_loss_pct   = ($losing_trades > 0) ? round($total_losses_pct / $losing_trades, 4) : 0;
 
-// Sharpe ratio (simplified: mean / stddev of returns)
+// Sharpe ratio — annualized: mean/stddev * sqrt(252)
+// Industry standard per HFR, AQR, etc. Daily returns must be annualized.
 $sharpe = 0;
 $sortino = 0;
 $profit_factor = 0;
@@ -413,12 +414,12 @@ if (count($daily_returns) > 1) {
     }
     $stddev = sqrt($variance / count($daily_returns));
     if ($stddev > 0) {
-        $sharpe = round($mean / $stddev, 4);
+        $sharpe = round(($mean / $stddev) * sqrt(252), 4);
     }
     if ($count_down > 0) {
         $downside_std = sqrt($downside_variance / $count_down);
         if ($downside_std > 0) {
-            $sortino = round($mean / $downside_std, 4);
+            $sortino = round(($mean / $downside_std) * sqrt(252), 4);
         }
     }
 }

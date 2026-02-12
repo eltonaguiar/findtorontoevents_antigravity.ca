@@ -205,7 +205,7 @@ if (count($daily_returns) > 1) {
     $var = 0;
     foreach ($daily_returns as $r) $var += ($r - $mean) * ($r - $mean);
     $std = sqrt($var / count($daily_returns));
-    if ($std > 0) $sharpe = round($mean / $std, 4);
+    if ($std > 0) $sharpe = round(($mean / $std) * sqrt(252), 4);
 }
 
 $gross_wins = 0; $gross_losses = 0;

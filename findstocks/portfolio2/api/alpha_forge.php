@@ -985,7 +985,7 @@ if ($action === 'regime') {
         if (count($s_returns) > 1) {
             $s_mean = array_sum($s_returns) / count($s_returns);
             $s_std = af_std_dev($s_returns);
-            if ($s_std > 0) $s_sharpe = round($s_mean / $s_std, 4);
+            if ($s_std > 0) $s_sharpe = round(($s_mean / $s_std) * sqrt(252), 4);
         }
 
         $sleeve_results[$skey] = array(

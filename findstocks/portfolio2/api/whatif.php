@@ -300,10 +300,10 @@ function run_backtest_v2($conn, $algo_filter, $tp, $sl, $mhd, $cap, $comm, $slip
             if ($r < 0) { $dvar += $r * $r; $dcnt++; }
         }
         $std = sqrt($var / count($returns));
-        if ($std > 0) $sharpe = round($mean / $std, 4);
+        if ($std > 0) $sharpe = round(($mean / $std) * sqrt(252), 4);
         if ($dcnt > 0) {
             $dstd = sqrt($dvar / $dcnt);
-            if ($dstd > 0) $sortino_v = round($mean / $dstd, 4);
+            if ($dstd > 0) $sortino_v = round(($mean / $dstd) * sqrt(252), 4);
         }
     }
 

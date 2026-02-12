@@ -331,7 +331,7 @@ function _mem_backtest($picks, $prices, $tp, $sl, $hold, $comm, $direction, $alg
         $var = 0;
         foreach ($returns_arr as $r) $var += ($r - $mean) * ($r - $mean);
         $std = sqrt($var / count($returns_arr));
-        if ($std > 0) $sharpe = round($mean / $std, 4);
+        if ($std > 0) $sharpe = round(($mean / $std) * sqrt(252), 4);
     }
 
     $gw = 0; $gl = 0;

@@ -289,7 +289,7 @@ if (count($daily_returns) > 1) {
     $variance = 0;
     foreach ($daily_returns as $r) $variance += ($r - $mean) * ($r - $mean);
     $stddev = sqrt($variance / count($daily_returns));
-    if ($stddev > 0) $sharpe = round($mean / $stddev, 4);
+    if ($stddev > 0) $sharpe = round(($mean / $stddev) * sqrt(252), 4);
 }
 
 $gross_wins = 0; $gross_losses = 0;

@@ -220,7 +220,7 @@ $win_rate = ($total_trades > 0) ? round($winning_trades / $total_trades * 100, 2
 $avg_win_pct = ($winning_trades > 0) ? round($total_wins_pct / $winning_trades, 4) : 0;
 $avg_loss_pct = ($losing_trades > 0) ? round($total_losses_pct / $losing_trades, 4) : 0;
 
-// Sharpe ratio
+// Sharpe ratio — annualized: mean/stddev * sqrt(252)
 $sharpe = 0;
 if (count($daily_returns) > 1) {
     $mean = array_sum($daily_returns) / count($daily_returns);
@@ -230,7 +230,7 @@ if (count($daily_returns) > 1) {
     }
     $stddev = sqrt($variance / count($daily_returns));
     if ($stddev > 0) {
-        $sharpe = round($mean / $stddev, 4);
+        $sharpe = round(($mean / $stddev) * sqrt(252), 4);
     }
 }
 
