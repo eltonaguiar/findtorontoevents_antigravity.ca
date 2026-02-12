@@ -349,6 +349,30 @@ if ($action === 'alerts') {
     exit;
 }
 
+// ── RESOLVE ALERT: Manually resolve an alert (admin) ──
+if ($action === 'resolve_alert') {
+    if (!$admin) {
+        header('HTTP/1.0 403 Forbidden');
+        echo json_encode(array('ok' => false, 'error' => 'Forbidden'));
+        exit;
+    }
+    $alert_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+    $resolve_type = isset($_GET['type']) ? $_GET['type'] : '';
+    $now = date('Y-m-d H:i:s');
+
+    if ($alert_id > 0) {
+        $conn->query("UPDATE gm_failure_alerts SET is_active = 0, resolved_at = '" . $now . "' WHERE id = " . $alert_id);
+        echo json_encode(array('ok' => true, 'resolved' => $alert_id));
+    } elseif ($resolve_type !== '') {
+        $safe_type = $conn->real_escape_string($resolve_type);
+        $conn->query("UPDATE gm_failure_alerts SET is_active = 0, resolved_at = '" . $now . "' WHERE is_active = 1 AND alert_type = '" . $safe_type . "'");
+        echo json_encode(array('ok' => true, 'resolved_type' => $resolve_type, 'affected' => $conn->affected_rows));
+    } else {
+        echo json_encode(array('ok' => false, 'error' => 'Provide id or type param'));
+    }
+    exit;
+}
+
 // ── LEADERBOARD: Systems + algorithms ranked by accuracy ──
 if ($action === 'leaderboard') {
     $cached = _gm_cache_get('leaderboard', 600);
