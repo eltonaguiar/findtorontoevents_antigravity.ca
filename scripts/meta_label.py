@@ -35,7 +35,7 @@ def fetch_trade_data():
 
 def engineer_features(df):
     # Binary label: good (positive return) vs bad
-    df['label'] = (df['return_pct'] > 0).astype(int)
+    df['label'] = (df['return_pct'] > df['return_pct'].median()).astype(int)
     
     # Features
     df['win_rate_rolling'] = df.groupby('algo_name')['label'].transform(lambda x: x.rolling(20).mean())

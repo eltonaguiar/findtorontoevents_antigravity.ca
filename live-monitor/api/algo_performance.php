@@ -10,6 +10,7 @@
  *   ?action=virtual_compare — Compute virtual outcomes for both param sets on closed trades
  *   ?action=snapshot        — Generate daily performance snapshot (admin, key required)
  *   ?action=backfill        — Tag historical signals with param_source (admin, one-time)
+ *   ?action=sharpe          — Sharpe ratio from daily_prices (symbol, days params)
  */
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -512,6 +513,73 @@ if ($action === 'learned_params') {
         'action' => 'learned_params',
         'count'  => count($params),
         'params' => $params
+    ));
+    exit;
+}
+
+
+// ═══════════════════════════════════════════════
+// ACTION: sharpe — Sharpe ratio from daily_prices (simple, PHP 5.2 compatible)
+// Uses daily returns: (close_t - close_t-1) / close_t-1
+// Annualized Sharpe = mean(returns) / std(returns) * sqrt(252)
+// ═══════════════════════════════════════════════
+if ($action === 'sharpe') {
+    $symbol = isset($_GET['symbol']) ? trim($_GET['symbol']) : 'SPY';
+    $days   = isset($_GET['days']) ? max(2, min(1000, intval($_GET['days']))) : 252;
+    $safe   = $conn->real_escape_string($symbol);
+
+    $chk = $conn->query("SHOW TABLES LIKE 'daily_prices'");
+    if (!$chk || $chk->num_rows == 0) {
+        echo json_encode(array('ok' => false, 'error' => 'daily_prices table not found'));
+        exit;
+    }
+
+    $res = $conn->query("SELECT trade_date, close_price FROM daily_prices WHERE ticker='$safe' ORDER BY trade_date ASC LIMIT " . ($days + 1));
+    if (!$res || $res->num_rows < 2) {
+        echo json_encode(array('ok' => false, 'error' => 'Not enough data for ' . $symbol));
+        exit;
+    }
+
+    $prices = array();
+    while ($row = $res->fetch_assoc()) {
+        $prices[] = (float)$row['close_price'];
+    }
+
+    $returns = array();
+    for ($i = 1; $i < count($prices); $i++) {
+        if ($prices[$i - 1] > 0) {
+            $returns[] = ($prices[$i] - $prices[$i - 1]) / $prices[$i - 1];
+        }
+    }
+
+    $n = count($returns);
+    if ($n < 2) {
+        echo json_encode(array('ok' => false, 'error' => 'Not enough valid returns'));
+        exit;
+    }
+
+    $mean = array_sum($returns) / $n;
+    $variance = 0;
+    foreach ($returns as $r) {
+        $variance += ($r - $mean) * ($r - $mean);
+    }
+    $stddev = sqrt($variance / $n);
+
+    $sharpe = 0;
+    if ($stddev > 0) {
+        $sharpe = round(($mean / $stddev) * sqrt(252), 4);
+    }
+
+    echo json_encode(array(
+        'ok'             => true,
+        'action'         => 'sharpe',
+        'symbol'         => $symbol,
+        'days'           => $days,
+        'return_count'   => $n,
+        'mean_daily_ret' => round($mean * 100, 4),
+        'std_daily_ret'  => round($stddev * 100, 4),
+        'sharpe_ratio'   => $sharpe,
+        'period'         => 'annualized (252 trading days)'
     ));
     exit;
 }

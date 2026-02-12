@@ -555,6 +555,66 @@ function _ls_fetch_finnhub_klines($symbol, $limit) {
 }
 
 // ────────────────────────────────────────────────────────────
+//  Price/Price Scraper Failover — BeautifulSoup via Python
+//  When API/cache fail, use scripts/price_scraper_failover.py (Yahoo)
+// ────────────────────────────────────────────────────────────
+
+function _ls_fetch_price_scraper_failover($symbol) {
+    $script = dirname(__FILE__) . '/../../scripts/price_scraper_failover.py';
+    if (!file_exists($script)) return 0;
+    $cmd = 'python "' . $script . '" ' . escapeshellarg($symbol) . ' 2>/dev/null';
+    $out = @shell_exec($cmd);
+    if ($out === null || $out === '') return 0;
+    $json = json_decode(trim($out), true);
+    if (!is_array($json) || !isset($json['ok']) || !$json['ok']) return 0;
+    return isset($json['price']) ? (float)$json['price'] : 0;
+}
+
+// ────────────────────────────────────────────────────────────
+//  Price Failover — daily_prices table (DB) when cache empty
+// ────────────────────────────────────────────────────────────
+
+function _ls_fetch_price_from_daily_prices($conn, $symbol) {
+    $safe = $conn->real_escape_string($symbol);
+    $res = $conn->query("SELECT close_price FROM daily_prices WHERE ticker='$safe' ORDER BY trade_date DESC LIMIT 1");
+    if ($res && $res->num_rows > 0) {
+        $row = $res->fetch_assoc();
+        return (float)$row['close_price'];
+    }
+    return 0;
+}
+
+// ────────────────────────────────────────────────────────────
+//  Candles Failover — daily_prices table when Finnhub fails
+//  Returns daily OHLC as candles (same format as Finnhub)
+// ────────────────────────────────────────────────────────────
+
+function _ls_fetch_daily_prices_candles($conn, $symbol, $limit) {
+    $limit = (int)$limit;
+    if ($limit < 1) $limit = 48;
+    $safe = $conn->real_escape_string($symbol);
+    $res = $conn->query("SELECT trade_date, open_price, high_price, low_price, close_price, volume
+        FROM daily_prices WHERE ticker='$safe' ORDER BY trade_date DESC LIMIT " . $limit);
+    if (!$res || $res->num_rows == 0) return array();
+    $rows = array();
+    while ($r = $res->fetch_assoc()) $rows[] = $r;
+    $rows = array_reverse($rows);
+    $candles = array();
+    foreach ($rows as $r) {
+        $ts = strtotime($r['trade_date'] . ' 16:00:00');
+        $candles[] = array(
+            'time'   => (float)$ts,
+            'open'   => (float)$r['open_price'],
+            'high'   => (float)$r['high_price'],
+            'low'    => (float)$r['low_price'],
+            'close'  => (float)$r['close_price'],
+            'volume' => (float)$r['volume']
+        );
+    }
+    return $candles;
+}
+
+// ────────────────────────────────────────────────────────────
 //  Market Hours Detection (NYSE/NASDAQ: Mon-Fri 9:30-16:00 ET)
 // ────────────────────────────────────────────────────────────
 
@@ -3563,11 +3623,22 @@ function _ls_action_scan($conn) {
 
             // Fetch candles via Finnhub (48 for MACD/Trend Sniper)
             $candles = _ls_fetch_finnhub_klines($sym, 48);
+            // Failover: daily_prices when Finnhub fails
+            if (count($candles) < 2) {
+                $candles = _ls_fetch_daily_prices_candles($conn, $sym, 48);
+            }
             if (count($candles) < 2) continue;
 
             if ($price <= 0 && count($candles) > 0) {
                 $last = $candles[count($candles) - 1];
                 $price = (float)$last['close'];
+            }
+            // Failover: daily_prices DB, then BeautifulSoup scraper
+            if ($price <= 0) {
+                $price = _ls_fetch_price_from_daily_prices($conn, $sym);
+            }
+            if ($price <= 0) {
+                $price = _ls_fetch_price_scraper_failover($sym);
             }
             if ($price <= 0) continue;
 
@@ -3774,17 +3845,28 @@ function _ls_action_expire($conn) {
 //  Discord alert for strong signals
 // ────────────────────────────────────────────────────────────
 function _ls_discord_alert($strong_signals, $total_generated, $symbols_scanned) {
-    // Read webhook URL from .env
-    $env_file = dirname(__FILE__) . '/../../favcreators/public/api/.env';
+    global $conn;
+    // Read webhook URL: .env (favcreators or live-monitor), then db_config
     $webhook_url = '';
-    if (file_exists($env_file)) {
-        $lines = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        foreach ($lines as $line) {
-            if (strpos($line, 'DISCORD_WEBHOOK_URL=') === 0) {
-                $webhook_url = trim(substr($line, 20));
-                break;
+    $env_file = '';
+    foreach (array(
+        dirname(__FILE__) . '/../../favcreators/public/api/.env',
+        dirname(__FILE__) . '/.env',
+        dirname(__FILE__) . '/../.env'
+    ) as $ef) {
+        if (file_exists($ef)) {
+            $env_file = $ef;
+            $lines = file($ef, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            foreach ($lines as $line) {
+                if (strpos($line, 'DISCORD_WEBHOOK_URL=') === 0) {
+                    $webhook_url = trim(substr($line, 20));
+                    break 2;
+                }
             }
         }
+    }
+    if (!$webhook_url && isset($GLOBALS['DISCORD_WEBHOOK_URL']) && $GLOBALS['DISCORD_WEBHOOK_URL'] !== '') {
+        $webhook_url = $GLOBALS['DISCORD_WEBHOOK_URL'];
     }
     if (!$webhook_url) return;
 

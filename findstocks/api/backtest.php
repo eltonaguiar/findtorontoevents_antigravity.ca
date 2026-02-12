@@ -58,6 +58,7 @@ $stop_loss       = (float)_bt_param('stop_loss',       isset($params['stop_loss'
 $max_hold_days   = (int)_bt_param('max_hold_days',     isset($params['max_hold_days']) ? $params['max_hold_days'] : 7);
 $initial_capital = (float)_bt_param('initial_capital', isset($params['initial_capital']) ? $params['initial_capital'] : 10000);
 $commission      = (float)_bt_param('commission',      isset($params['commission']) ? $params['commission'] : 10);
+// Slippage: 0.1% per side for stocks (entry: worse fill, exit: worse fill). Default 0.1.
 $slippage_pct    = (float)_bt_param('slippage',        isset($params['slippage']) ? $params['slippage'] : 0.1);
 $position_pct    = (float)_bt_param('position_size',   isset($params['position_size']) ? $params['position_size'] : 10);
 $fee_model       = _bt_param('fee_model', 'questrade');

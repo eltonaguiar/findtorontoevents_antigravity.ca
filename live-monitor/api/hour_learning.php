@@ -806,7 +806,7 @@ function _hl_action_walk_forward($conn, $admin_key, $tp_grid, $sl_grid, $hold_gr
         if ($total < 21) continue; // Need enough for train + test
 
         // Split: first 14/21 for train, last 7/21 for test
-        $train_size = (int)($total * 0.67);
+        $train_size = (int)($total * 0.67) - 2; // add embargo of 2 as per roadmap
         $test_size = $total - $train_size;
         if ($test_size < 5) continue;
 

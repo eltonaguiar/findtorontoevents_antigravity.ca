@@ -90,7 +90,7 @@ def main():
     os.makedirs('data', exist_ok=True)
     with open('data/pruned_picks.json', 'w') as f:
         json.dump(pruned, f)
-    print(f'Pruned {len(top_picks)} to {len(pruned)} picks')
+    print(f'Pruned {len(top_picks)} to {len(pruned)} picks')\n\n    # PCA Alpha Decorrelation as per roadmap\n    from sklearn.decomposition import PCA\n    if len(pruned) > 0:\n        pruned_indices = [tickers.index(t) for t in pruned]\n        pruned_prices = prices[:, pruned_indices]\n        pca = PCA(n_components=5)\n        ortho = pca.fit_transform(pruned_prices)\n        with open('data/ortho.json', 'w') as f:\n            json.dump(ortho.tolist(), f)\n        print('PCA orthogonalized signals saved to data/ortho.json')
 
 
 if __name__ == '__main__':
