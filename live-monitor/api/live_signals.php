@@ -1866,18 +1866,24 @@ function _ls_algo_consensus($conn, $price, $symbol, $asset) {
     $safe_sym  = $conn->real_escape_string($symbol);
     $safe_asset = $conn->real_escape_string($asset);
 
-    // Query recent live signals for this symbol (last 24h, exclude Consensus itself)
-    $sql = "SELECT algorithm_name, signal_type
+    // ── Regime gate: suppress BUY in bear, SHORT in bull ──
+    $candles_for_regime = array();  // Consensus uses DB signals, not candles
+    $regime = _ls_get_regime($conn, $asset, $candles_for_regime, $symbol);
+
+    // Query recent live signals for this symbol (last 6h for freshness, exclude Consensus itself)
+    // Only count signals with strength >= 60 (filter out weak/noisy signals)
+    $sql = "SELECT algorithm_name, signal_type, signal_strength
             FROM lm_signals
             WHERE symbol = '$safe_sym'
               AND asset_class = '$safe_asset'
               AND algorithm_name != 'Consensus'
-              AND signal_time >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+              AND signal_strength >= 60
+              AND signal_time >= DATE_SUB(NOW(), INTERVAL 6 HOUR)
             ORDER BY signal_time DESC";
     $res = $conn->query($sql);
     if (!$res || $res->num_rows == 0) return null;
 
-    // Count unique algorithms per direction
+    // Count unique algorithms per direction (only strong signals)
     $buy_algos   = array();
     $short_algos = array();
     while ($row = $res->fetch_assoc()) {
@@ -1894,18 +1900,19 @@ function _ls_algo_consensus($conn, $price, $symbol, $asset) {
     $short_count = count($short_algos);
     $total       = $buy_count + $short_count;
 
-    if ($total < 2) return null;
+    // Require minimum 3 algorithms to agree (was 2 — too noisy)
+    if ($total < 3) return null;
 
-    // Determine majority direction — require supermajority (>= 60%)
+    // Determine majority direction — require 70% supermajority (was 60%)
     $direction = null;
     $majority_count = 0;
     $majority_algos = array();
 
-    if ($buy_count >= 2 && ($buy_count / $total) >= 0.6) {
+    if ($buy_count >= 3 && ($buy_count / $total) >= 0.7) {
         $direction = 'BUY';
         $majority_count = $buy_count;
         $majority_algos = array_keys($buy_algos);
-    } elseif ($short_count >= 2 && ($short_count / $total) >= 0.6) {
+    } elseif ($short_count >= 3 && ($short_count / $total) >= 0.7) {
         $direction = 'SHORT';
         $majority_count = $short_count;
         $majority_algos = array_keys($short_algos);
@@ -1914,11 +1921,16 @@ function _ls_algo_consensus($conn, $price, $symbol, $asset) {
     // No clear consensus — skip
     if ($direction === null) return null;
 
-    $strength = min(100, $majority_count * 25 + 20);
+    // ── Regime gate: block counter-regime signals ──
+    if ($regime === 'bear' && $direction === 'BUY') return null;
+    if ($regime === 'bull' && $direction === 'SHORT') return null;
 
-    $tp   = 3.0;
+    $strength = min(100, $majority_count * 20 + 30);
+
+    // Improved TP/SL: 2:1 minimum ratio (was 1.5:1)
+    $tp   = 4.0;
     $sl   = 2.0;
-    $hold = 24;
+    $hold = 36;
 
     $lp = _ls_get_learned_params($conn, 'Consensus', $asset);
     if ($lp !== null) {
@@ -3165,7 +3177,7 @@ function _ls_get_original_defaults($algo_name, $asset_class) {
         'DCA Dip'               => array('CRYPTO' => array(5.0, 3.0, 48),  'FOREX' => array(5.0, 3.0, 48),  'STOCK' => array(5.0, 3.0, 48)),
         'Bollinger Squeeze'     => array('CRYPTO' => array(2.5, 1.5, 8),   'FOREX' => array(2.5, 1.5, 8),   'STOCK' => array(3.0, 1.5, 16)),
         'MACD Crossover'        => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(2.0, 1.0, 12),  'STOCK' => array(2.5, 1.2, 16)),
-        'Consensus'             => array('CRYPTO' => array(3.0, 2.0, 24),  'FOREX' => array(3.0, 2.0, 24),  'STOCK' => array(3.5, 2.0, 36)),
+        'Consensus'             => array('CRYPTO' => array(4.0, 2.0, 36),  'FOREX' => array(4.0, 2.0, 36),  'STOCK' => array(5.0, 2.5, 48)),
         'Volatility Breakout'   => array('CRYPTO' => array(3.0, 2.0, 16),  'FOREX' => array(3.0, 2.0, 16),  'STOCK' => array(3.5, 2.0, 24)),
         'Trend Sniper'          => array('CRYPTO' => array(1.5, 0.75, 8),  'FOREX' => array(0.4, 0.2, 8),   'STOCK' => array(1.5, 0.75, 12)),
         'Dip Recovery'          => array('CRYPTO' => array(2.5, 1.5, 16),  'FOREX' => array(0.6, 0.4, 16),  'STOCK' => array(2.0, 1.0, 24)),
