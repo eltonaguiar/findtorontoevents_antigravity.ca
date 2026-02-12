@@ -51,6 +51,25 @@ $CRYPTO_PREFERRED_ALGOS = array(
 // Minimum 3% TP for crypto to allow natural price movement.
 $CRYPTO_MIN_TP_PCT = 3.0;
 
+// ─── Per-asset R:R minimum (Feb 12, 2026) ─────────────────────────
+// Stocks/Forex have tighter natural moves than crypto.
+// At 80% WR you only need R:R > 0.25, at 60% WR you need > 0.67.
+// Our top algos run 75-85% WR, so lower R:R is safe for proven algos.
+$MIN_RR_RATIO = array(
+    'CRYPTO' => 1.5,  // Crypto: wider swings, keep strict
+    'STOCK'  => 1.2,  // Stocks: tighter moves, was blocking at 1.36
+    'FOREX'  => 1.0   // Forex: tight spreads, low R:R is normal
+);
+
+// ─── Max hold cap (Feb 12, 2026) ──────────────────────────────────
+// Prevents any algorithm from holding >72h. Challenger Bot was using
+// 168h (7 days), blocking 4 of 10 position slots for a full week.
+$MAX_HOLD_CAP = array(
+    'CRYPTO' => 24,   // Crypto: 24/7 market, fast moves
+    'STOCK'  => 72,   // Stocks: max 3 trading days
+    'FOREX'  => 48    // Forex: max 2 days
+);
+
 // ─── Sector/Group mapping for correlation guard ─────────────────────
 // Prevents over-concentration: max 2 positions per sector group
 $SECTOR_GROUPS = array(
@@ -863,6 +882,12 @@ case 'enter':
         $sl_pct = $sl_floor;
     }
 
+    // Max hold cap: prevent week-long positions blocking slots (Feb 12, 2026)
+    $hold_cap = isset($MAX_HOLD_CAP[$asset_class]) ? $MAX_HOLD_CAP[$asset_class] : 72;
+    if ($max_hold > $hold_cap) {
+        $max_hold = $hold_cap;
+    }
+
     // Calculate position size: Python-computed (preferred) or PHP Half-Kelly fallback
     $portfolio_value = _lt_get_portfolio_value($conn);
 
@@ -1020,6 +1045,15 @@ case 'track':
         $sl  = (float) $pos['target_sl_pct'];
         $mhh = (int) $pos['max_hold_hours'];
 
+        // Retroactive max_hold cap: enforce per-asset cap on legacy positions (Feb 12, 2026)
+        $pos_ac = $pos['asset_class'];
+        $hold_cap = isset($MAX_HOLD_CAP[$pos_ac]) ? $MAX_HOLD_CAP[$pos_ac] : 72;
+        if ($mhh > $hold_cap) {
+            $mhh = $hold_cap;
+            // Update DB so dashboard shows correct cap
+            $conn->query("UPDATE lm_trades SET max_hold_hours = " . $hold_cap . " WHERE id = " . $pid);
+        }
+
         $exit_reason = '';
 
         // Exit conditions (checked in order, with trailing stop — Kimi enhancement)
@@ -1038,13 +1072,14 @@ case 'track':
             $closed = _lt_close_position($conn, $pos, $current_price, $exit_reason);
             $closed_list[] = $closed;
         } else {
-            // Update unrealized P&L for still-open position
+            // Update unrealized P&L and hold_hours for still-open position
             $conn->query("UPDATE lm_trades SET
                 current_price       = " . (float) $current_price . ",
                 unrealized_pnl_usd  = " . (float) $pnl_usd . ",
                 unrealized_pct      = " . (float) $pnl_pct . ",
                 highest_price       = " . (float) $highest . ",
-                lowest_price        = " . (float) $lowest . "
+                lowest_price        = " . (float) $lowest . ",
+                hold_hours          = " . round($hold_hours, 2) . "
             WHERE id = " . $pid);
             $still_open++;
         }
@@ -1481,6 +1516,13 @@ case 'auto_execute':
             $max_hold = $hold_floor;
         }
 
+        // Max hold cap: prevent algorithms from holding too long (Feb 12, 2026)
+        // Challenger Bot was using 168h (7 days), blocking position slots for a week.
+        $hold_cap = isset($MAX_HOLD_CAP[$sig_ac]) ? $MAX_HOLD_CAP[$sig_ac] : 72;
+        if ($max_hold > $hold_cap) {
+            $max_hold = $hold_cap;
+        }
+
         // Per-asset SL floor: with 30-min tracking, tight SLs are unrealistic
         // Crypto 2%, Stock 1.5%, Forex 1% (same as enter action)
         $SL_FLOORS = array('CRYPTO' => 2.0, 'STOCK' => 1.5, 'FOREX' => 1.0);
@@ -1489,11 +1531,12 @@ case 'auto_execute':
             $sl_pct = $sl_floor;
         }
 
-        // R:R ratio enforcement: skip signals where reward < 1.5x risk
-        // Science: positive expectancy requires TP/SL > 1 / (win_rate / (1 - win_rate))
-        // At 50% WR you need R:R > 1.0, at 40% WR you need > 1.5. We enforce 1.5:1 minimum.
+        // R:R ratio enforcement: per-asset-class minimums (Feb 12, 2026)
+        // Crypto keeps strict 1.5, stocks lowered to 1.2, forex to 1.0
+        // Science: at 80% WR, R:R > 0.25 is profitable. Our top algos run 75-85%.
         $rr_ratio = ($sl_pct > 0) ? ($tp_pct / $sl_pct) : 0;
-        if ($rr_ratio < 1.5) {
+        $rr_min = isset($MIN_RR_RATIO[$sig_ac]) ? $MIN_RR_RATIO[$sig_ac] : 1.5;
+        if ($rr_ratio < $rr_min) {
             $skipped[] = array('symbol' => $sig_sym, 'reason' => 'rr_ratio_too_low_' . round($rr_ratio, 2));
             continue;
         }
