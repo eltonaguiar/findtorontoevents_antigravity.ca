@@ -1745,14 +1745,19 @@ function toggleEdu(el){var b=el.nextElementSibling,a=el.querySelector('.edu-arro
     function formatTime(dateStr) {
         if (!dateStr) return '--';
         var d = new Date(dateStr);
-        var now = new Date();
-        var diff = Math.floor((now - d) / 1000);
-        if (diff < 0) diff = 0;
-        if (diff < 5) return 'just now';
-        if (diff < 60) return diff + 's ago';
-        if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-        if (diff < 86400) return Math.floor(diff / 3600) + 'h ' + Math.floor((diff % 3600) / 60) + 'm ago';
-        return Math.floor(diff / 86400) + 'd ago';
+        if (isNaN(d.getTime())) return '--';
+        // Show absolute date/time in EST
+        var est = new Date(d.toLocaleString('en-US', {timeZone: 'America/New_York'}));
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var mon = months[est.getMonth()];
+        var day = est.getDate();
+        var hr = est.getHours();
+        var min = est.getMinutes();
+        var ampm = hr >= 12 ? 'PM' : 'AM';
+        hr = hr % 12;
+        if (hr === 0) hr = 12;
+        var minStr = min < 10 ? '0' + min : '' + min;
+        return mon + ' ' + day + ', ' + hr + ':' + minStr + ' ' + ampm + ' EST';
     }
 
     function formatHoldTime(hours) {
