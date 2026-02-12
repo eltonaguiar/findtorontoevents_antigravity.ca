@@ -31,16 +31,24 @@ $CDR_TICKERS = array(
     'BA','CVX','XOM','HON','UPS','KO','VZ','UBER'
 );
 
-// ─── ALGORITHMS WITH PROVEN EDGE (from Kelly sizing forward-test) ───
+// ─── ALGORITHMS WITH PROVEN EDGE ───
+// Updated Feb 11, 2026 — win rates from Goldmine tracker (forward-tested)
+// and backtest data. Stock-only algos with < 12% backtest WR removed.
+// Crypto algorithms with proven goldmine WR added.
 $EDGE_ALGORITHMS = array(
-    'Cursor Genius'    => array('win_rate' => 85.71, 'min_score' => 70),
-    'ETF Masters'      => array('win_rate' => 82.35, 'min_score' => 70),
-    'Blue Chip Growth' => array('win_rate' => 80.00, 'min_score' => 70),
-    'Sector Rotation'  => array('win_rate' => 72.73, 'min_score' => 60),
-    'Alpha Factor Growth'     => array('win_rate' => 70.00, 'min_score' => 80),
-    'Alpha Factor Composite'  => array('win_rate' => 68.00, 'min_score' => 60),
-    'Alpha Factor Earnings'   => array('win_rate' => 65.00, 'min_score' => 70),
-    'Alpha Factor Quality'    => array('win_rate' => 65.00, 'min_score' => 70)
+    // Crypto algorithms with proven goldmine edge (70-100% WR)
+    'Momentum Burst'       => array('win_rate' => 100.0, 'min_score' => 50, 'asset' => 'CRYPTO'),
+    'Alpha Predator'       => array('win_rate' => 87.0,  'min_score' => 50, 'asset' => 'MULTI'),
+    'StochRSI Crossover'   => array('win_rate' => 81.0,  'min_score' => 50, 'asset' => 'CRYPTO'),
+    'Ichimoku Cloud'       => array('win_rate' => 80.0,  'min_score' => 50, 'asset' => 'MULTI'),
+    'RSI(2) Scalp'         => array('win_rate' => 75.0,  'min_score' => 50, 'asset' => 'CRYPTO'),
+    // Stock alpha algorithms (moderate edge, kept with realistic WR)
+    'Alpha Factor Growth'     => array('win_rate' => 70.0, 'min_score' => 60, 'asset' => 'STOCK'),
+    'Alpha Factor Composite'  => array('win_rate' => 68.0, 'min_score' => 60, 'asset' => 'STOCK'),
+    'Alpha Factor Earnings'   => array('win_rate' => 65.0, 'min_score' => 60, 'asset' => 'STOCK'),
+    'Alpha Factor Quality'    => array('win_rate' => 65.0, 'min_score' => 60, 'asset' => 'STOCK'),
+    // Challenger Bot (smart money consensus, exempt from regime gating)
+    'Challenger Bot'       => array('win_rate' => 70.5,  'min_score' => 60, 'asset' => 'STOCK')
 );
 
 // ─── MIRACLE STRATEGIES WITH EDGE ───
@@ -144,6 +152,45 @@ function _ef_scan($conn) {
         }
     }
 
+    // Step 1b: Also scan lm_signals for crypto/forex signals from edge algorithms
+    $r1b = $conn->query("SELECT symbol, algorithm_name, entry_price, signal_strength, signal_time, asset_class
+        FROM lm_signals
+        WHERE algorithm_name IN ($algo_in)
+        AND status = 'active'
+        AND signal_time >= '$three_days_ago'
+        ORDER BY signal_time DESC, signal_strength DESC");
+    if ($r1b) {
+        while ($row = $r1b->fetch_assoc()) {
+            $tk = $row['symbol'];
+            if (!isset($edge_picks[$tk])) {
+                $edge_picks[$tk] = array(
+                    'ticker' => $tk,
+                    'sources' => array(),
+                    'algorithms' => array(),
+                    'entry_prices' => array(),
+                    'scores' => array(),
+                    'latest_pick_date' => substr($row['signal_time'], 0, 10),
+                    'direction' => 'LONG',
+                    'asset_class' => $row['asset_class']
+                );
+            }
+            $algo = $row['algorithm_name'];
+            if (!in_array($algo, $edge_picks[$tk]['algorithms'])) {
+                $edge_picks[$tk]['algorithms'][] = $algo;
+                $edge_picks[$tk]['sources'][] = array(
+                    'system' => 'Live Signal',
+                    'algorithm' => $algo,
+                    'score' => (int)$row['signal_strength'],
+                    'entry' => floatval($row['entry_price']),
+                    'date' => substr($row['signal_time'], 0, 10),
+                    'proven_wr' => isset($EDGE_ALGORITHMS[$algo]) ? $EDGE_ALGORITHMS[$algo]['win_rate'] : 0
+                );
+                $edge_picks[$tk]['entry_prices'][] = floatval($row['entry_price']);
+                $edge_picks[$tk]['scores'][] = (int)$row['signal_strength'];
+            }
+        }
+    }
+
     // Step 2: Cross-reference with Miracle v2 picks
     $r2 = $conn->query("SELECT ticker, strategy_name, entry_price, score, pick_date
         FROM miracle_picks2
@@ -218,9 +265,9 @@ function _ef_scan($conn) {
         }
     }
 
-    // Step 4: Get latest prices
+    // Step 4: Get latest prices (stocks + crypto + forex)
     $latest_prices = array();
-    $rp = $conn->query("SELECT symbol, price, change_24h_pct, updated_at FROM lm_price_cache WHERE asset_class = 'STOCK'");
+    $rp = $conn->query("SELECT symbol, price, change_24h_pct, updated_at FROM lm_price_cache WHERE asset_class IN ('STOCK','CRYPTO','FOREX')");
     if ($rp) {
         while ($row = $rp->fetch_assoc()) {
             $latest_prices[$row['symbol']] = $row;
@@ -250,13 +297,15 @@ function _ef_scan($conn) {
         }
         $system_count = count($systems);
 
-        // Skip single-algo picks UNLESS the algo has 80%+ proven win rate
+        // Skip single-algo picks UNLESS the algo has 65%+ proven win rate
+        // (Lowered from 80% on Feb 11, 2026 — crypto algos with 65-100% WR
+        //  now qualify, reviving this dormant system)
         if ($algo_count < 2) {
             $top_wr = 0;
             foreach ($pick['sources'] as $src) {
                 if ($src['proven_wr'] > $top_wr) $top_wr = $src['proven_wr'];
             }
-            if ($top_wr < 80) continue;
+            if ($top_wr < 65) continue;
         }
 
         $avg_entry = count($pick['entry_prices']) > 0 ? array_sum($pick['entry_prices']) / count($pick['entry_prices']) : 0;
@@ -331,8 +380,8 @@ function _ef_scan($conn) {
             'distance_to_sl' => $dist_sl,
             'distance_to_tp' => $dist_tp,
             'risk_reward' => $sl_pct > 0 ? round($tp_pct / $sl_pct, 1) : 0,
-            'cdr' => true,
-            'commission' => '$0 (CDR)',
+            'cdr' => in_array($tk, $CDR_TICKERS),
+            'commission' => in_array($tk, $CDR_TICKERS) ? '$0 (CDR)' : 'Standard',
             'latest_pick_date' => $pick['latest_pick_date'],
             'sources' => $pick['sources']
         );
@@ -361,7 +410,7 @@ function _ef_scan($conn) {
         'very_high_conviction' => count($very_high),
         'high_conviction' => count($high),
         'medium_conviction' => count($medium),
-        'note' => 'All picks are CDR stocks ($0 Questrade commission). Algorithms shown have 72-86% win rate in forward testing.',
+        'note' => 'CDR stocks have $0 Questrade commission. Crypto/forex signals from algorithms with 65-100% proven win rate (Goldmine tracker). Updated Feb 11, 2026.',
         'setups' => $setups
     ));
 }

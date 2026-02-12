@@ -49,10 +49,6 @@ try {
 
             $where = '1=1';
             if (isset($_GET['type']) && in_array($_GET['type'], array('movie', 'tv'))) {
-                $where .= " AND m.type = '" . $pdo->quote($_GET['type']) . "'";
-                $where = str_replace("''", "'", $where);
-                // Simpler approach
-                $where = '1=1';
                 if ($_GET['type'] === 'movie') {
                     $where .= " AND m.type = 'movie'";
                 } else {
@@ -66,11 +62,13 @@ try {
             $sql = "SELECT
                 m.id, m.title, m.type, m.genre, m.description,
                 m.release_year, m.imdb_rating, m.imdb_id, m.tmdb_id, m.runtime,
-                (SELECT youtube_id FROM trailers WHERE movie_id = m.id AND is_active = TRUE ORDER BY priority DESC LIMIT 1) as trailer_id,
+                t.youtube_id as trailer_id,
                 (SELECT url FROM thumbnails WHERE movie_id = m.id ORDER BY is_primary DESC LIMIT 1) as thumbnail
             FROM movies m
-            WHERE $where
-            ORDER BY m.created_at DESC
+            INNER JOIN trailers t ON t.movie_id = m.id AND t.is_active = TRUE
+            WHERE $where AND t.youtube_id IS NOT NULL AND t.youtube_id != ''
+            GROUP BY m.id
+            ORDER BY m.imdb_rating DESC, m.created_at DESC
             LIMIT $limit OFFSET $offset";
 
             $stmt = $pdo->query($sql);

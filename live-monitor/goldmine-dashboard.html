@@ -1000,7 +1000,7 @@ function renderSystemsChart(systems) {
     var values = [];
     var colors = [];
     for (var i = 0; i < sorted.length; i++) {
-        labels.push(sorted[i].name || sorted[i].system || 'Unknown');
+        labels.push(sorted[i].name || sorted[i].source_system || sorted[i].system || 'Unknown');
         var wr = parseFloat(sorted[i].win_rate || 0);
         values.push(wr);
         if (wr > 60) colors.push('#10b981');
@@ -1203,7 +1203,7 @@ function populateSystemDropdowns() {
     // Only populate if empty (beyond the default option)
     if (filterSel.options.length <= 1 && systemsList.length > 0) {
         for (var i = 0; i < systemsList.length; i++) {
-            var sysName = systemsList[i].name || systemsList[i].system || '';
+            var sysName = systemsList[i].name || systemsList[i].source_system || systemsList[i].system || '';
             if (!sysName) continue;
 
             var opt1 = document.createElement('option');
@@ -1298,7 +1298,7 @@ function loadSystemDetail() {
                     + '<td>' + (a.picks || a.trades || 0) + '</td>'
                     + '<td class="' + wrColor(a.win_rate || (a.wins && a.picks ? (a.wins/a.picks*100) : 0)) + '">' + fmtNum(a.win_rate || (a.wins && a.picks ? (a.wins/a.picks*100) : 0), 1) + '%</td>'
                     + '<td>' + fmtPct(a.avg_return) + '</td>'
-                    + '<td>' + fmtPct(a.total_return) + '</td>'
+                    + '<td>' + fmtPct(a.total_return || (a.avg_return && a.picks ? (parseFloat(a.avg_return) * parseInt(a.picks)).toFixed(2) : 0)) + '</td>'
                     + '</tr>';
             }
             document.getElementById('deepdive-algos-tbody').innerHTML = aHtml;

@@ -53,7 +53,11 @@ function _gm_ensure_schema($conn) {
         KEY idx_date (pick_date),
         KEY idx_asset_type (asset_type),
         KEY idx_algorithm (algorithm_name),
-        KEY idx_confidence (confidence_score)
+        KEY idx_confidence (confidence_score),
+        KEY idx_status_exit (status, exit_date),
+        KEY idx_status_pickdate (status, pick_date),
+        KEY idx_system_status (source_system, status),
+        KEY idx_system_algo (source_system, algorithm_name)
     ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
 
     // ── 2. System Health — daily performance snapshot per system ──
@@ -173,5 +177,18 @@ function _gm_ensure_schema($conn) {
         KEY idx_date (fetch_date),
         KEY idx_sentiment (sentiment_score)
     ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+    // ── Add composite indexes to existing tables (safe to run multiple times) ──
+    // Feb 11, 2026: Fixes alerts timeout by speeding up common query patterns
+    $idx_adds = array(
+        "ALTER TABLE gm_unified_picks ADD KEY idx_status_exit (status, exit_date)",
+        "ALTER TABLE gm_unified_picks ADD KEY idx_status_pickdate (status, pick_date)",
+        "ALTER TABLE gm_unified_picks ADD KEY idx_system_status (source_system, status)",
+        "ALTER TABLE gm_unified_picks ADD KEY idx_system_algo (source_system, algorithm_name)"
+    );
+    foreach ($idx_adds as $sql) {
+        $conn->query($sql);
+        // Ignore errors (index may already exist)
+    }
 }
 ?>

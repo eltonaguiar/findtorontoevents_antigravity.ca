@@ -16,9 +16,9 @@ if (!$pdo) {
 }
 
 try {
-    // Get all movies with their trailers and thumbnails
+    // Get movies that have active trailers, ordered by newest first
     $stmt = $pdo->query("
-        SELECT 
+        SELECT
             m.id,
             m.title,
             m.type,
@@ -29,11 +29,14 @@ try {
             m.imdb_id,
             m.tmdb_id,
             m.runtime,
-            (SELECT youtube_id FROM trailers WHERE movie_id = m.id AND is_active = TRUE ORDER BY priority DESC LIMIT 1) as trailer_id,
+            t.youtube_id as trailer_id,
             (SELECT url FROM thumbnails WHERE movie_id = m.id ORDER BY is_primary DESC LIMIT 1) as thumbnail
         FROM movies m
-        ORDER BY m.created_at DESC
-        LIMIT 100
+        INNER JOIN trailers t ON t.movie_id = m.id AND t.is_active = TRUE
+        WHERE t.youtube_id IS NOT NULL AND t.youtube_id != ''
+        GROUP BY m.id
+        ORDER BY m.imdb_rating DESC, m.created_at DESC
+        LIMIT 500
     ");
 
     $movies = $stmt->fetchAll();

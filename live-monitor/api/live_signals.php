@@ -93,6 +93,34 @@ $stock_symbols = array(
 );
 
 // ────────────────────────────────────────────────────────────
+//  PAUSED STOCK ALGORITHMS (Feb 11, 2026)
+//  All 7 backtested stock algorithms are deeply unprofitable:
+//  ETF Masters (3.37% WR), Sector Rotation (2.19%), Sector Momentum (0%),
+//  Blue Chip Growth (5.56%), Technical Momentum (0%), Composite Rating (0%),
+//  Cursor Genius (11.54%). Paused until fundamentally redesigned.
+//  See ANALYSIS_FINANCES_FEB11_2026_CLAUDE.md for backtest data.
+// ────────────────────────────────────────────────────────────
+$PAUSED_STOCK_ALGOS = array(
+    'ETF Masters',
+    'Sector Rotation',
+    'Sector Momentum',
+    'Blue Chip Growth',
+    'Technical Momentum',
+    'Composite Rating',
+    'Cursor Genius'
+);
+
+// ────────────────────────────────────────────────────────────
+//  TEMPORARY SYMBOL EXCLUSIONS (Feb 11, 2026)
+//  ETH/USD alpha composite is -4.390 (most bearish asset).
+//  Recent stop-loss hits on ETH trades. Excluded from signal
+//  generation until alpha score turns positive.
+// ────────────────────────────────────────────────────────────
+$EXCLUDED_SYMBOLS = array(
+    'ETHUSD'
+);
+
+// ────────────────────────────────────────────────────────────
 //  Symbol mapping helpers
 // ────────────────────────────────────────────────────────────
 
@@ -1293,9 +1321,13 @@ function _ls_get_regime($conn, $asset, $candles, $symbol) {
         return $GLOBALS['_ls_btc_regime'];
     }
 
-    // Forex regime: USD strength via USDJPY trend
+    // Forex regime: USD strength via USDJPY trend, mapped to pair-specific bull/bear
+    // (Feb 2026 fix) Previous code returned 'usd_strong'/'usd_weak' which never
+    // matched the 'bear'/'bull' checks in algo regime gates, so forex signals
+    // were NEVER regime-gated. This caused counter-trend entries (e.g. LONG
+    // EUR/USD when USD was strengthening). Now maps to pair-specific direction.
     if ($asset === 'FOREX') {
-        if (!isset($GLOBALS['_ls_fx_regime'])) {
+        if (!isset($GLOBALS['_ls_fx_regime_raw'])) {
             $jpy_candles = _ls_fetch_twelvedata_series('USDJPY', 48);
             $jpy_closes = _ls_extract_closes($jpy_candles);
             $jc = count($jpy_closes);
@@ -1303,12 +1335,31 @@ function _ls_get_regime($conn, $asset, $candles, $symbol) {
                 $sum = 0;
                 for ($i = 0; $i < $jc; $i++) $sum += $jpy_closes[$i];
                 $sma = $sum / $jc;
-                $GLOBALS['_ls_fx_regime'] = ($jpy_closes[$jc - 1] > $sma) ? 'usd_strong' : 'usd_weak';
+                $GLOBALS['_ls_fx_regime_raw'] = ($jpy_closes[$jc - 1] > $sma) ? 'usd_strong' : 'usd_weak';
             } else {
-                $GLOBALS['_ls_fx_regime'] = 'neutral';
+                $GLOBALS['_ls_fx_regime_raw'] = 'neutral';
             }
         }
-        return $GLOBALS['_ls_fx_regime'];
+        $usd_regime = $GLOBALS['_ls_fx_regime_raw'];
+        if ($usd_regime === 'neutral') return 'neutral';
+
+        // Map USD strength to pair-specific direction:
+        // Pairs where USD is QUOTE (EURUSD, GBPUSD, AUDUSD, NZDUSD):
+        //   usd_strong → pair falls → 'bear' | usd_weak → pair rises → 'bull'
+        // Pairs where USD is BASE (USDJPY, USDCAD, USDCHF):
+        //   usd_strong → pair rises → 'bull' | usd_weak → pair falls → 'bear'
+        // Non-USD pairs (EURGBP): neutral — USD regime doesn't apply
+        $sym_upper = strtoupper($symbol);
+        $usd_is_base  = (strpos($sym_upper, 'USD') === 0); // USD is first 3 chars
+        $usd_is_quote = (!$usd_is_base && strpos($sym_upper, 'USD') !== false);
+
+        if (!$usd_is_base && !$usd_is_quote) return 'neutral'; // e.g. EURGBP
+
+        if ($usd_regime === 'usd_strong') {
+            return $usd_is_base ? 'bull' : 'bear';
+        } else {
+            return $usd_is_base ? 'bear' : 'bull';
+        }
     }
 
     // Stock regime: own price above 20-candle SMA
@@ -3043,36 +3094,62 @@ function _ls_insert_signal($conn, $asset_class, $symbol, $price, $sig) {
 
 // ── Hardcoded default params for each algorithm (pre-learning) ──
 function _ls_get_original_defaults($algo_name, $asset_class) {
+    // (Feb 2026 overhaul) Stock TP/hold targets increased — previous values
+    // were too small to overcome slippage + fees, causing 67% max-hold exits
+    // and avg loss 16.7x larger than avg win. Min stock TP now 1.5% (CDR $0
+    // commission). Fundamental algos get longer holds. Crypto/Forex unchanged.
     $d = array(
-        'Momentum Burst'        => array('CRYPTO' => array(3.0, 1.5, 8),   'FOREX' => array(1.5, 0.75, 8),  'STOCK' => array(1.0, 0.5, 8)),
-        'RSI Reversal'          => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(2.0, 1.0, 12),  'STOCK' => array(2.0, 1.0, 12)),
-        'Breakout 24h'          => array('CRYPTO' => array(8.0, 2.0, 16),  'FOREX' => array(8.0, 2.0, 16),  'STOCK' => array(8.0, 2.0, 16)),
+        'Momentum Burst'        => array('CRYPTO' => array(3.0, 1.5, 8),   'FOREX' => array(1.5, 0.75, 8),  'STOCK' => array(2.0, 1.0, 16)),
+        'RSI Reversal'          => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(2.0, 1.0, 12),  'STOCK' => array(2.5, 1.2, 16)),
+        'Breakout 24h'          => array('CRYPTO' => array(8.0, 2.0, 16),  'FOREX' => array(8.0, 2.0, 16),  'STOCK' => array(8.0, 2.5, 24)),
         'DCA Dip'               => array('CRYPTO' => array(5.0, 3.0, 48),  'FOREX' => array(5.0, 3.0, 48),  'STOCK' => array(5.0, 3.0, 48)),
-        'Bollinger Squeeze'     => array('CRYPTO' => array(2.5, 1.5, 8),   'FOREX' => array(2.5, 1.5, 8),   'STOCK' => array(2.5, 1.5, 8)),
-        'MACD Crossover'        => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(2.0, 1.0, 12),  'STOCK' => array(2.0, 1.0, 12)),
-        'Consensus'             => array('CRYPTO' => array(3.0, 2.0, 24),  'FOREX' => array(3.0, 2.0, 24),  'STOCK' => array(3.0, 2.0, 24)),
-        'Volatility Breakout'   => array('CRYPTO' => array(3.0, 2.0, 16),  'FOREX' => array(3.0, 2.0, 16),  'STOCK' => array(3.0, 2.0, 16)),
-        'Trend Sniper'          => array('CRYPTO' => array(1.5, 0.75, 8),  'FOREX' => array(0.4, 0.2, 8),   'STOCK' => array(1.0, 0.5, 8)),
-        'Dip Recovery'          => array('CRYPTO' => array(2.5, 1.5, 16),  'FOREX' => array(0.6, 0.4, 16),  'STOCK' => array(1.5, 1.0, 16)),
-        'Volume Spike'          => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.3, 12),  'STOCK' => array(1.5, 0.8, 12)),
-        'VAM'                   => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.2, 0.6, 12)),
-        'Mean Reversion Sniper' => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.3, 12),  'STOCK' => array(1.5, 0.8, 12)),
-        'ADX Trend Strength'    => array('CRYPTO' => array(1.5, 0.75, 12), 'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.0, 0.5, 12)),
-        'StochRSI Crossover'    => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.25, 12), 'STOCK' => array(1.2, 0.6, 12)),
-        'Awesome Oscillator'    => array('CRYPTO' => array(1.8, 0.9, 12),  'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.0, 0.5, 12)),
-        'RSI(2) Scalp'          => array('CRYPTO' => array(1.2, 0.6, 6),   'FOREX' => array(0.3, 0.15, 6),  'STOCK' => array(0.8, 0.4, 6)),
-        'Ichimoku Cloud'        => array('CRYPTO' => array(2.0, 1.0, 16),  'FOREX' => array(0.5, 0.25, 16), 'STOCK' => array(1.2, 0.6, 16)),
-        'Alpha Predator'        => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.25, 12), 'STOCK' => array(1.2, 0.6, 12)),
-        'Insider Cluster Buy'   => array('STOCK' => array(8.0, 4.0, 336)),
-        '13F New Position'      => array('STOCK' => array(10.0, 5.0, 672)),
-        'Sentiment Divergence'  => array('STOCK' => array(3.0, 2.0, 168)),
-        'Contrarian Fear/Greed' => array('CRYPTO' => array(5.0, 3.0, 168), 'FOREX' => array(2.0, 1.5, 168), 'STOCK' => array(4.0, 2.5, 336))
+        'Bollinger Squeeze'     => array('CRYPTO' => array(2.5, 1.5, 8),   'FOREX' => array(2.5, 1.5, 8),   'STOCK' => array(3.0, 1.5, 16)),
+        'MACD Crossover'        => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(2.0, 1.0, 12),  'STOCK' => array(2.5, 1.2, 16)),
+        'Consensus'             => array('CRYPTO' => array(3.0, 2.0, 24),  'FOREX' => array(3.0, 2.0, 24),  'STOCK' => array(3.5, 2.0, 36)),
+        'Volatility Breakout'   => array('CRYPTO' => array(3.0, 2.0, 16),  'FOREX' => array(3.0, 2.0, 16),  'STOCK' => array(3.5, 2.0, 24)),
+        'Trend Sniper'          => array('CRYPTO' => array(1.5, 0.75, 8),  'FOREX' => array(0.4, 0.2, 8),   'STOCK' => array(1.5, 0.75, 12)),
+        'Dip Recovery'          => array('CRYPTO' => array(2.5, 1.5, 16),  'FOREX' => array(0.6, 0.4, 16),  'STOCK' => array(2.0, 1.0, 24)),
+        'Volume Spike'          => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.3, 12),  'STOCK' => array(2.0, 1.0, 16)),
+        'VAM'                   => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.8, 0.9, 16)),
+        'Mean Reversion Sniper' => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.3, 12),  'STOCK' => array(2.0, 1.0, 16)),
+        'ADX Trend Strength'    => array('CRYPTO' => array(1.5, 0.75, 12), 'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.5, 0.75, 16)),
+        'StochRSI Crossover'    => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.25, 12), 'STOCK' => array(1.5, 0.75, 16)),
+        'Awesome Oscillator'    => array('CRYPTO' => array(1.8, 0.9, 12),  'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.5, 0.75, 16)),
+        'RSI(2) Scalp'          => array('CRYPTO' => array(1.2, 0.6, 6),   'FOREX' => array(0.3, 0.15, 6),  'STOCK' => array(1.5, 0.75, 8)),
+        'Ichimoku Cloud'        => array('CRYPTO' => array(2.0, 1.0, 16),  'FOREX' => array(0.5, 0.25, 16), 'STOCK' => array(1.8, 0.9, 24)),
+        'Alpha Predator'        => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.25, 12), 'STOCK' => array(1.8, 0.9, 16)),
+        'Insider Cluster Buy'   => array('STOCK' => array(10.0, 5.0, 504)),
+        '13F New Position'      => array('STOCK' => array(12.0, 6.0, 720)),
+        'Sentiment Divergence'  => array('STOCK' => array(4.0, 2.5, 240)),
+        'Contrarian Fear/Greed' => array('CRYPTO' => array(5.0, 3.0, 168), 'FOREX' => array(2.0, 1.5, 168), 'STOCK' => array(5.0, 3.0, 504))
     );
     if (isset($d[$algo_name]) && isset($d[$algo_name][$asset_class])) {
         $v = $d[$algo_name][$asset_class];
         return array('tp' => $v[0], 'sl' => $v[1], 'hold' => $v[2]);
     }
     return array('tp' => 3.0, 'sl' => 2.0, 'hold' => 12);
+}
+
+// ────────────────────────────────────────────────────────────
+//  CDR (Canadian Depositary Receipt) availability check
+//  CDR stocks trade commission-free ($0) on Cboe Canada NEO Exchange.
+//  Used to boost signal strength for zero-cost-to-trade stocks.
+// ────────────────────────────────────────────────────────────
+function _ls_is_cdr_ticker($ticker) {
+    static $cdr_list = null;
+    if ($cdr_list === null) {
+        $cdr_list = array(
+            'AAPL','AMD','AMZN','CSCO','CRM','GOOG','GOOGL','IBM','INTC','META','MSFT','NFLX','NVDA',
+            'COST','DIS','HD','MCD','NKE','SBUX','TSLA','WMT',
+            'ABBV','CVS','JNJ','PFE','UNH',
+            'BAC','BRK.B','JPM','MA','PYPL','V',
+            'BA','CVX','XOM','HON','UPS',
+            'KO','VZ','UBER'
+        );
+    }
+    $upper = strtoupper(trim($ticker));
+    $base  = preg_replace('/\\.(TO|V|CN)$/', '', $upper);
+    return in_array($upper, $cdr_list) || in_array($base, $cdr_list);
 }
 
 // ────────────────────────────────────────────────────────────
@@ -3144,22 +3221,25 @@ function _ls_regime_scale_tp_sl($conn, $sig, $asset_class) {
     if ($regime === false || $regime === null) return $sig;
 
     // In bull market, keep targets as-is (full potential)
-    if ($regime === 'bull' || $regime === 'usd_strong') return $sig;
+    if ($regime === 'bull') return $sig;
 
     $orig_tp = (float)$sig['target_tp_pct'];
     $orig_sl = (float)$sig['target_sl_pct'];
 
-    // In sideways/neutral market: reduce TP by 35%, tighten SL by 15%
-    // This makes targets more achievable and cuts losses faster
-    if ($regime === 'neutral' || $regime === 'sideways' || $regime === 'usd_weak') {
-        $sig['target_tp_pct'] = round($orig_tp * 0.65, 2);
-        $sig['target_sl_pct'] = round($orig_sl * 0.85, 2);
+    // In sideways/neutral market: reduce TP by 15%, tighten SL by 10%
+    // (Feb 2026 fix) Previous 35% TP cut was too aggressive — made targets
+    // unachievable, causing 67% of trades to hit max hold instead of TP.
+    // Moderate 15% reduction still accounts for lower volatility without
+    // destroying the reward side of the R:R ratio.
+    if ($regime === 'neutral' || $regime === 'sideways') {
+        $sig['target_tp_pct'] = round($orig_tp * 0.85, 2);
+        $sig['target_sl_pct'] = round($orig_sl * 0.90, 2);
     }
     // In bear market (for SHORT signals that pass the regime gate):
-    // slightly reduce TP by 20% (bear bounces are unpredictable)
+    // reduce TP by 10% (bear bounces are unpredictable)
     elseif ($regime === 'bear') {
-        $sig['target_tp_pct'] = round($orig_tp * 0.80, 2);
-        $sig['target_sl_pct'] = round($orig_sl * 0.90, 2);
+        $sig['target_tp_pct'] = round($orig_tp * 0.90, 2);
+        $sig['target_sl_pct'] = round($orig_sl * 0.95, 2);
     }
 
     // Ensure minimums
@@ -3293,6 +3373,9 @@ function _ls_action_scan($conn) {
 
     // ── Scan crypto symbols ──
     foreach ($crypto_symbols as $sym) {
+        // Cursor: skip excluded symbols (ETH bearish alpha -4.390, see ANALYSIS_FINANCES)
+        if (in_array($sym, $EXCLUDED_SYMBOLS)) continue;
+
         $symbols_scanned++;
 
         // Get price from cache
@@ -3530,6 +3613,10 @@ function _ls_action_scan($conn) {
 
             foreach ($algo_results as $sig) {
                 if ($sig === null) continue;
+
+                // Cursor: skip paused stock algorithms (backtest WR < 12%, see ANALYSIS_FINANCES)
+                if (in_array($sig['algorithm_name'], $PAUSED_STOCK_ALGOS)) continue;
+
                 // Kimi: skip momentum algos during extreme volatility
                 if ($vol_extreme && _ls_is_momentum_algo($sig['algorithm_name'])) continue;
 
@@ -3551,6 +3638,17 @@ function _ls_action_scan($conn) {
                 // Regime-aware TP/SL scaling (reduce targets in sideways markets)
                 $sig = _ls_regime_scale_tp_sl($conn, $sig, 'STOCK');
                 if (_ls_signal_exists($conn, $sym, $sig['algorithm_name'])) continue;
+
+                // CDR preference: boost signal strength for commission-free CDR stocks
+                // CDR stocks trade at $0 commission on NEO Exchange — significant edge
+                if (_ls_is_cdr_ticker($sym)) {
+                    $sig['signal_strength'] = min(100, (int)$sig['signal_strength'] + 8);
+                    $rationale = json_decode($sig['rationale'], true);
+                    if (!is_array($rationale)) $rationale = array();
+                    $rationale['cdr_boost'] = true;
+                    $rationale['cdr_note'] = 'CDR: $0 commission on NEO Exchange';
+                    $sig['rationale'] = json_encode($rationale);
+                }
 
                 // Sector concentration cap — max 3 active signals per sector
                 $sym_sector = isset($sector_map[$sym]) ? $sector_map[$sym] : 'Other';

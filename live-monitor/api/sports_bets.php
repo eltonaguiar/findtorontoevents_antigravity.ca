@@ -391,6 +391,7 @@ function _sb_action_settle($conn) {
     $push = 0;
     $net_pnl = 0;
     $details = array();
+    $score_failures = array();
 
     foreach ($sports as $sport) {
         // Fetch scores — try The Odds API first, then failover sources
@@ -456,7 +457,10 @@ function _sb_action_settle($conn) {
             }
         }
 
-        if (count($score_map) === 0) continue;
+        if (count($score_map) === 0) {
+            $score_failures[] = array('sport' => $sport, 'reason' => 'No scores from any source');
+            continue;
+        }
 
         // Settle pending bets for this sport
         $bets_q = $conn->query("SELECT * FROM lm_sports_bets WHERE status='pending' AND sport='"
@@ -517,7 +521,7 @@ function _sb_action_settle($conn) {
     // Take snapshot
     _sb_snapshot($conn);
 
-    echo json_encode(array(
+    $result = array(
         'ok'       => true,
         'settled'  => $settled,
         'won'      => $won,
@@ -527,7 +531,11 @@ function _sb_action_settle($conn) {
         'net_pnl'  => round($net_pnl, 2),
         'bankroll' => _sb_get_bankroll($conn),
         'details'  => $details
-    ));
+    );
+    if (count($score_failures) > 0) {
+        $result['score_failures'] = $score_failures;
+    }
+    echo json_encode($result);
 }
 
 // ────────────────────────────────────────────────────────────

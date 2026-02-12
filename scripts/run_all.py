@@ -15,10 +15,19 @@ Usage:
   python run_all.py --alphas        WorldQuant alphas + cross-asset
   python run_all.py --bundles       Signal bundle consolidation
   python run_all.py --validate      Walk-forward validation
+  python run_all.py --finbert       FinBERT sentiment analysis
+  python run_all.py --cusum         CUSUM change-point decay detection
+  python run_all.py --optimize      Bayesian hyperparameter optimization
+  python run_all.py --congress      Congressional trading tracker
+  python run_all.py --options       Options flow / Gamma Exposure (GEX)
+  python run_all.py --onchain       On-chain crypto analytics
+  python run_all.py --portfolio     Black-Litterman + Risk Parity optimizer
+  python run_all.py --entropy       Transfer entropy causal analysis
   python run_all.py                 Consensus engine only (default)
 
 Multiple flags can be combined:
   python run_all.py --13f --wsb --regime   Run 13F + WSB + regime + consensus
+  python run_all.py --finbert --cusum --congress  Run Sprint 1 quick wins
 
 Exit code: 0 if all steps succeed, 1 if any step fails.
 """
@@ -121,6 +130,50 @@ def main():
     if '--validate' in args or run_all:
         from walk_forward_validator import run_validation
         results['validation'] = run_step('Walk-Forward Validation', run_validation)
+
+    # ─── Bridge Plan: Sprint 1 — Quick Wins ──────────────────────────
+
+    # Step 12: FinBERT Sentiment (Sprint 1.1)
+    if '--finbert' in args or run_all:
+        from finbert_sentiment import main as finbert_main
+        results['finbert'] = run_step('FinBERT Sentiment', finbert_main)
+
+    # Step 13: CUSUM Change-Point Detection (Sprint 1.2)
+    if '--cusum' in args or run_all:
+        from cusum_detector import main as cusum_main
+        results['cusum'] = run_step('CUSUM Decay Detector', cusum_main)
+
+    # Step 14: Bayesian Hyperparameter Optimization (Sprint 1.3)
+    if '--optimize' in args or run_all:
+        from hyperparam_optimizer import main as optimize_main
+        results['optimizer'] = run_step('Bayesian Hyperparam Optimizer', optimize_main)
+
+    # Step 15: Congressional Trading Tracker (Sprint 1.5)
+    if '--congress' in args or run_all:
+        from congress_tracker import main as congress_main
+        results['congress'] = run_step('Congressional Tracker', congress_main)
+
+    # ─── Bridge Plan: Sprint 2 — Alt Data + Portfolio ────────────────
+
+    # Step 16: Options Flow / GEX (Sprint 2.1)
+    if '--options' in args or run_all:
+        from options_flow import main as options_main
+        results['options'] = run_step('Options Flow / GEX', options_main)
+
+    # Step 17: On-Chain Analytics (Sprint 2.2)
+    if '--onchain' in args or run_all:
+        from onchain_analytics import main as onchain_main
+        results['onchain'] = run_step('On-Chain Analytics', onchain_main)
+
+    # Step 18: Portfolio Optimizer — Black-Litterman + Risk Parity (Sprint 2.3+2.4)
+    if '--portfolio' in args or run_all:
+        from portfolio_optimizer import main as portfolio_main
+        results['portfolio'] = run_step('Portfolio Optimizer', portfolio_main)
+
+    # Step 19: Transfer Entropy — Causal Signal Detection (Sprint 2.5)
+    if '--entropy' in args or run_all:
+        from transfer_entropy_analyzer import main as entropy_main
+        results['entropy'] = run_step('Transfer Entropy Analyzer', entropy_main)
 
     # Summary
     logger.info("")

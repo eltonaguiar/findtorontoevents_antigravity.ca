@@ -414,6 +414,29 @@
         return isMuted ? 1 : 0;
     }
 
+    // Force YouTube iframe to unmute via postMessage API
+    // Browsers block autoplay with sound, so we send explicit unMute + setVolume
+    // commands after load to try to restore audio
+    function forceYouTubeUnmute(iframe) {
+        if (!iframe) return;
+        var attempts = [500, 1500, 3000]; // Retry at multiple intervals
+        attempts.forEach(function(delay) {
+            setTimeout(function() {
+                if (isMuted) return; // User muted since, skip
+                try {
+                    var src = iframe.getAttribute('src') || '';
+                    if (!src.includes('youtube')) return;
+                    iframe.contentWindow.postMessage(JSON.stringify({
+                        event: 'command', func: 'unMute', args: ''
+                    }), '*');
+                    iframe.contentWindow.postMessage(JSON.stringify({
+                        event: 'command', func: 'setVolume', args: [volumeLevel]
+                    }), '*');
+                } catch (e) { /* cross-origin, ignore */ }
+            }, delay);
+        });
+    }
+
     // ========== NAVIGATION PANELS ==========
     
     function createPanelBase(id, title) {
@@ -1993,7 +2016,7 @@
       </div>
       <div id="volume-control-section" style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
           <div style="display: flex; align-items: center; justify-content: space-between;">
-              <span style="color: #888; font-size: 11px;">🔊 Volume:</span>
+              <span style="color: #888; font-size: 11px;">🔊 Volume (toggle off/on to fix sound):</span>
               <span id="volume-value" style="color: #22c55e; font-size: 12px; font-weight: bold;">${volumeLevel}%</span>
           </div>
           <div style="display: flex; align-items: center; gap: 8px;">
@@ -3960,6 +3983,108 @@
         };
     }
 
+    // Staged loading state
+    var _stagedLoadingActive = false;
+    var _stagedPageSize = 500;
+    var _loadingIndicator = null;
+    var _existingTitles = new Set();
+
+    function showLoadingIndicator(loaded, total) {
+        if (!_loadingIndicator) {
+            _loadingIndicator = document.createElement('div');
+            _loadingIndicator.id = 'staged-loading-indicator';
+            _loadingIndicator.style.cssText = 'position:fixed;bottom:12px;left:12px;z-index:9999;' +
+                'background:rgba(0,0,0,0.85);color:#fff;padding:8px 14px;border-radius:20px;' +
+                'font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;' +
+                'border:1px solid rgba(34,197,94,0.4);backdrop-filter:blur(8px);' +
+                'transition:opacity 0.5s;font-family:-apple-system,BlinkMacSystemFont,sans-serif;';
+            document.body.appendChild(_loadingIndicator);
+        }
+        var pct = total > 0 ? Math.round((loaded / total) * 100) : 0;
+        _loadingIndicator.innerHTML = '<span style="font-size:16px">&#9203;</span> Loading library... ' +
+            '<span style="color:#22c55e">' + loaded + '</span>' +
+            (total > 0 ? '<span style="color:#888">/ ' + total + '</span>' : '') +
+            ' <span style="color:#888">(' + pct + '%)</span>';
+        _loadingIndicator.style.opacity = '1';
+    }
+
+    function hideLoadingIndicator() {
+        if (_loadingIndicator) {
+            _loadingIndicator.innerHTML = '<span style="font-size:16px;color:#22c55e">&#10003;</span> ' +
+                '<span style="color:#22c55e">' + allMoviesData.length + ' titles loaded</span>';
+            setTimeout(function() {
+                _loadingIndicator.style.opacity = '0';
+                setTimeout(function() {
+                    if (_loadingIndicator && _loadingIndicator.parentNode) {
+                        _loadingIndicator.parentNode.removeChild(_loadingIndicator);
+                        _loadingIndicator = null;
+                    }
+                }, 600);
+            }, 2500);
+        }
+    }
+
+    async function loadMoreMovies(offset, totalTarget) {
+        try {
+            var url = 'api/movies.php?action=list&limit=' + _stagedPageSize + '&offset=' + offset;
+            var res = await fetch(url);
+            if (!res.ok) return [];
+            var data = await res.json();
+            if (!data.success || !data.movies) return [];
+            return data.movies;
+        } catch (e) {
+            console.warn('[MovieShows] Staged load failed at offset ' + offset + ': ' + e.message);
+            return [];
+        }
+    }
+
+    async function stagedLoadBackground(totalAvailable) {
+        if (_stagedLoadingActive) return;
+        _stagedLoadingActive = true;
+
+        var offset = allMoviesData.length;
+        console.log('[MovieShows] Starting staged background loading from offset ' + offset + '...');
+        showLoadingIndicator(offset, totalAvailable);
+
+        while (offset < totalAvailable) {
+            // Small delay to avoid hammering the server
+            await new Promise(function(r) { setTimeout(r, 800); });
+
+            var batch = await loadMoreMovies(offset, totalAvailable);
+            if (!batch || batch.length === 0) {
+                console.log('[MovieShows] Staged loading complete - no more data at offset ' + offset);
+                break;
+            }
+
+            var newItems = [];
+            for (var i = 0; i < batch.length; i++) {
+                var item = transformDbMovie(batch[i]);
+                if (item.title && item.trailerUrl && item.trailerUrl.length > 10 && !_existingTitles.has(item.title)) {
+                    _existingTitles.add(item.title);
+                    newItems.push(item);
+                }
+            }
+
+            if (newItems.length > 0) {
+                allMoviesData = allMoviesData.concat(newItems);
+                window.allMoviesData = allMoviesData;
+                updateCategoryButtons();
+            }
+
+            offset += batch.length;
+            showLoadingIndicator(allMoviesData.length, totalAvailable);
+            console.log('[MovieShows] Staged load: ' + allMoviesData.length + ' total (' + newItems.length + ' new from this batch)');
+
+            // If we got fewer than page size, we're done
+            if (batch.length < _stagedPageSize) break;
+        }
+
+        hideLoadingIndicator();
+        updateCategoryButtons();
+        console.log('[MovieShows] Staged loading finished! Total: ' + allMoviesData.length + ' titles with trailers');
+        _stagedLoadingActive = false;
+    }
+
     async function loadMoviesData() {
         if (allMoviesData.length > 0) return;
 
@@ -3968,6 +4093,8 @@
             { url: 'api/get-movies.php', name: 'Database API', needsTransform: true },
             { url: 'movies-database.json?v=' + new Date().getTime(), name: 'Static JSON', needsTransform: false }
         ];
+
+        var usedDatabase = false;
 
         for (var i = 0; i < sources.length; i++) {
             var src = sources[i];
@@ -3982,15 +4109,41 @@
                     if (Array.isArray(items) && items.length > 0) {
                         if (src.needsTransform) {
                             items = items.map(transformDbMovie);
+                            usedDatabase = true;
                         }
                         allMoviesData = items;
                         window.allMoviesData = items;
-                        console.log('[MovieShows] SUCCESS: Loaded ' + items.length + ' items from ' + src.name + '. Data exposed to window.allMoviesData');
+
+                        // Build dedup set
+                        for (var j = 0; j < items.length; j++) {
+                            if (items[j].title) _existingTitles.add(items[j].title);
+                        }
+
+                        console.log('[MovieShows] SUCCESS: Loaded ' + items.length + ' items from ' + src.name);
 
                         setTimeout(function(){ updateCategoryButtons(); }, 100);
                         ensureMinimumCount(20);
                         updateUpNextCount();
                         checkInfiniteScroll();
+
+                        // If loaded from database, start staged background loading
+                        if (usedDatabase) {
+                            // Get total count to know when to stop
+                            try {
+                                var statsRes = await fetch('api/movies.php?action=stats');
+                                var statsData = await statsRes.json();
+                                var totalTrailers = (statsData.stats && statsData.stats.trailers) || 3600;
+                                if (totalTrailers > items.length) {
+                                    console.log('[MovieShows] Database has ~' + totalTrailers + ' trailers. Starting background loading...');
+                                    setTimeout(function() { stagedLoadBackground(totalTrailers); }, 2000);
+                                } else {
+                                    console.log('[MovieShows] All available content loaded in initial batch');
+                                }
+                            } catch (e) {
+                                // Stats failed, try loading more anyway with estimated total
+                                setTimeout(function() { stagedLoadBackground(3600); }, 2000);
+                            }
+                        }
                         return;
                     } else {
                         console.warn('[MovieShows] ' + src.name + ' returned empty or invalid data, trying next source...');
@@ -4720,6 +4873,11 @@
             const subscribeAfterLoad = () => subscribeToYouTubeEvents(iframe);
             iframe.onload = subscribeAfterLoad;
             setTimeout(subscribeAfterLoad, 1000); // Backup
+
+            // Force unmute via YouTube API if user expects sound on
+            if (!isMuted) {
+                forceYouTubeUnmute(iframe);
+            }
             
             // Verify sync if expected title provided
             if (expectedTitle && expectedTitle !== movieTitle) {

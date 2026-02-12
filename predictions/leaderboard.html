@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>🏆 Performance Leaderboard | Unified Predictions</title>
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+  <h1>🏆 Unified Performance Leaderboard</h1>
+  <p>Loading high-performing systems rankings...</p>
+  <div id="leaderboard-container">
+    <div class="loading-placeholder">Fetching from Cursor Genius, Sector Rotation, Sports Betting...</div>
+  </div>
+  <script>
+    // Mock leaderboard data
+    const leaderboardData = [
+      { rank: 1, name: 'Cursor Genius', winRate: '65.3%', totalReturn: '+1,324%', picks: 308 },
+      { rank: 2, name: 'Sector Rotation', winRate: '64.0%', totalReturn: '+354%', picks: 275 },
+      { rank: 3, name: 'Blue Chip Growth', winRate: '60.57%', totalReturn: '+1,648%', picks: 350 },
+      { rank: 4, name: 'Sports Betting', winRate: '33.3%', totalReturn: '+25.3%', picks: 3 }
+    ];
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      const container = document.getElementById('leaderboard-container');
+      container.innerHTML = `
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Strategy</th>
+              <th>Win Rate</th>
+              <th>Total Return</th>
+              <th>Picks</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${leaderboardData.map(row => `
+              <tr>
+                <td>${row.rank}</td>
+                <td><strong>${row.name}</strong></td>
+                <td>${row.winRate}</td>
+                <td><span style="color: #22c55e;">${row.totalReturn}</span></td>
+                <td>${row.picks}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    });
+  </script>
+  <style>
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    th { background: var(--surface-1); font-weight: bold; }
+    tr:hover { background: rgba(147,51,234,0.1); }
+  </style>
+</body>
+</html>

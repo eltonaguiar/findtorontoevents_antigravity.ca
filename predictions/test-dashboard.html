@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Test Dashboard - Predictions</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #f0f0f5;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #12121a;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #1a1a25;
+            border-radius: 8px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .success { background: rgba(34,197,94,0.2); color: #22c55e; }
+        .error { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .warning { background: rgba(251,191,36,0.2); color: #fbbf24; }
+        .info { background: rgba(59,130,246,0.2); color: #3b82f6; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Predictions Dashboard Test</h1>
+        <div class="test-section">
+            <h3>📊 Dashboard Components Test</h3>
+            <div id="components-test"></div>
+        </div>
+        <div class="test-section">
+            <h3>🔌 API Connectivity Test</h3>
+            <div id="api-test"></div>
+        </div>
+        <div class="test-section">
+            <h3>📱 Mobile Responsiveness Test</h3>
+            <div id="mobile-test"></div>
+        </div>
+        <div class="test-section">
+            <h3>🤖 GROK_XAI Integration Test</h3>
+            <div id="grok-test"></div>
+        </div>
+    </div>
+
+    <script>
+        // Test dashboard components
+        function testComponents() {
+            const results = [];
+            
+            // Test CSS loading
+            const cssLoaded = document.styleSheets.length > 0;
+            results.push({
+                test: 'CSS Stylesheets',
+                status: cssLoaded ? 'success' : 'error',
+                message: cssLoaded ? 'CSS loaded successfully' : 'CSS failed to load'
+            });
+            
+            // Test JavaScript functionality
+            const jsLoaded = typeof updateHighPerformers === 'function';
+            results.push({
+                test: 'JavaScript Functions',
+                status: jsLoaded ? 'success' : 'warning',
+                message: jsLoaded ? 'JS functions available' : 'JS functions not loaded (expected for test)'
+            });
+            
+            // Test responsive design
+            const isMobile = window.innerWidth <= 768;
+            results.push({
+                test: 'Responsive Design',
+                status: 'info',
+                message: `Current viewport: ${window.innerWidth}px (${isMobile ? 'Mobile' : 'Desktop'})`
+            });
+            
+            return results;
+        }
+        
+        // Test API connectivity
+        async function testAPI() {
+            const results = [];
+            
+            try {
+                // Test dashboard-data.php
+                const response = await fetch('api/dashboard-data.php');
+                const data = await response.json();
+                
+                results.push({
+                    test: 'Dashboard API Endpoint',
+                    status: data.success ? 'success' : 'warning',
+                    message: data.success ? 'API responded successfully' : 'API returned error'
+                });
+                
+                // Test data structure
+                if (data.high_performers && Array.isArray(data.high_performers)) {
+                    results.push({
+                        test: 'Data Structure',
+                        status: 'success',
+                        message: `Received ${data.high_performers.length} high performers`
+                    });
+                }
+                
+            } catch (error) {
+                results.push({
+                    test: 'API Connectivity',
+                    status: 'error',
+                    message: `API call failed: ${error.message}`
+                });
+            }
+            
+            return results;
+        }
+        
+        // Test GROK_XAI integration
+        function testGROKIntegration() {
+            const results = [];
+            
+            // Check for GROK_XAI elements
+            const hasGROK = document.querySelector('[class*="grok"], [class*="xai"], [class*="ai"]');
+            results.push({
+                test: 'GROK_XAI Elements',
+                status: hasGROK ? 'success' : 'warning',
+                message: hasGROK ? 'GROK_XAI elements found' : 'No GROK_XAI elements detected'
+            });
+            
+            // Check for AI-related functionality
+            const hasAI = document.querySelector('[class*="predict"], [class*="signal"], [class*="algo"]');
+            results.push({
+                test: 'AI Prediction Features',
+                status: hasAI ? 'success' : 'info',
+                message: hasAI ? 'AI prediction features present' : 'Limited AI features detected'
+            });
+            
+            return results;
+        }
+        
+        // Display test results
+        function displayResults(containerId, results) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            results.forEach(result => {
+                const div = document.createElement('div');
+                div.className = `test-result ${result.status}`;
+                div.innerHTML = `<strong>${result.test}:</strong> ${result.message}`;
+                container.appendChild(div);
+            });
+        }
+        
+        // Run all tests
+        async function runAllTests() {
+            // Test components
+            const componentResults = testComponents();
+            displayResults('components-test', componentResults);
+            
+            // Test API
+            const apiResults = await testAPI();
+            displayResults('api-test', apiResults);
+            
+            // Test GROK integration
+            const grokResults = testGROKIntegration();
+            displayResults('grok-test', grokResults);
+            
+            // Test mobile responsiveness
+            const mobileResults = [{
+                test: 'Viewport Size',
+                status: 'info',
+                message: `Width: ${window.innerWidth}px, Height: ${window.innerHeight}px`
+            }];
+            displayResults('mobile-test', mobileResults);
+        }
+        
+        // Run tests when page loads
+        document.addEventListener('DOMContentLoaded', runAllTests);
+    </script>
+</body>
+</html>

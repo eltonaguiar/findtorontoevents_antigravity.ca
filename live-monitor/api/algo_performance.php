@@ -28,27 +28,31 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'summary';
 // ═══════════════════════════════════════════════
 function _ap_get_default_params($algo_name, $asset_class) {
     // Returns array('tp' => x, 'sl' => y, 'hold' => z)
-    // Values match the hardcoded defaults in live_signals.php (post Feb 10 improvements)
+    // Values match live_signals.php (Feb 11 2026 overhaul: stock TP/hold increased)
     $defaults = array(
-        'Momentum Burst'       => array('CRYPTO' => array(3.0, 1.5, 8),   'FOREX' => array(1.5, 0.75, 8),  'STOCK' => array(1.0, 0.5, 8)),
-        'RSI Reversal'         => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(2.0, 1.0, 12),  'STOCK' => array(2.0, 1.0, 12)),
-        'Breakout 24h'         => array('CRYPTO' => array(8.0, 2.0, 16),  'FOREX' => array(8.0, 2.0, 16),  'STOCK' => array(8.0, 2.0, 16)),
+        'Momentum Burst'       => array('CRYPTO' => array(3.0, 1.5, 8),   'FOREX' => array(1.5, 0.75, 8),  'STOCK' => array(2.0, 1.0, 16)),
+        'RSI Reversal'         => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(2.0, 1.0, 12),  'STOCK' => array(2.5, 1.2, 16)),
+        'Breakout 24h'         => array('CRYPTO' => array(8.0, 2.0, 16),  'FOREX' => array(8.0, 2.0, 16),  'STOCK' => array(8.0, 2.5, 24)),
         'DCA Dip'              => array('CRYPTO' => array(5.0, 3.0, 48),  'FOREX' => array(5.0, 3.0, 48),  'STOCK' => array(5.0, 3.0, 48)),
-        'Bollinger Squeeze'    => array('CRYPTO' => array(2.5, 1.5, 8),   'FOREX' => array(2.5, 1.5, 8),   'STOCK' => array(2.5, 1.5, 8)),
-        'MACD Crossover'       => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(2.0, 1.0, 12),  'STOCK' => array(2.0, 1.0, 12)),
-        'Consensus'            => array('CRYPTO' => array(3.0, 2.0, 24),  'FOREX' => array(3.0, 2.0, 24),  'STOCK' => array(3.0, 2.0, 24)),
-        'Volatility Breakout'  => array('CRYPTO' => array(3.0, 2.0, 16),  'FOREX' => array(3.0, 2.0, 16),  'STOCK' => array(3.0, 2.0, 16)),
-        'Trend Sniper'         => array('CRYPTO' => array(1.5, 0.75, 8),  'FOREX' => array(0.4, 0.2, 8),   'STOCK' => array(1.0, 0.5, 8)),
-        'Dip Recovery'         => array('CRYPTO' => array(2.5, 1.5, 16),  'FOREX' => array(0.6, 0.4, 16),  'STOCK' => array(1.5, 1.0, 16)),
-        'Volume Spike'         => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.3, 12),  'STOCK' => array(1.5, 0.8, 12)),
-        'VAM'                  => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.2, 0.6, 12)),
-        'Mean Reversion Sniper'=> array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.3, 12),  'STOCK' => array(1.5, 0.8, 12)),
-        'ADX Trend Strength'   => array('CRYPTO' => array(1.5, 0.75, 12), 'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.0, 0.5, 12)),
-        'StochRSI Crossover'   => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.25, 12), 'STOCK' => array(1.2, 0.6, 12)),
-        'Awesome Oscillator'   => array('CRYPTO' => array(1.8, 0.9, 12),  'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.0, 0.5, 12)),
-        'RSI(2) Scalp'         => array('CRYPTO' => array(1.2, 0.6, 6),   'FOREX' => array(0.3, 0.15, 6),  'STOCK' => array(0.8, 0.4, 6)),
-        'Ichimoku Cloud'       => array('CRYPTO' => array(2.0, 1.0, 16),  'FOREX' => array(0.5, 0.25, 16), 'STOCK' => array(1.2, 0.6, 16)),
-        'Alpha Predator'       => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.25, 12), 'STOCK' => array(1.2, 0.6, 12))
+        'Bollinger Squeeze'    => array('CRYPTO' => array(2.5, 1.5, 8),   'FOREX' => array(2.5, 1.5, 8),   'STOCK' => array(3.0, 1.5, 16)),
+        'MACD Crossover'       => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(2.0, 1.0, 12),  'STOCK' => array(2.5, 1.2, 16)),
+        'Consensus'            => array('CRYPTO' => array(3.0, 2.0, 24),  'FOREX' => array(3.0, 2.0, 24),  'STOCK' => array(3.5, 2.0, 36)),
+        'Volatility Breakout'  => array('CRYPTO' => array(3.0, 2.0, 16),  'FOREX' => array(3.0, 2.0, 16),  'STOCK' => array(3.5, 2.0, 24)),
+        'Trend Sniper'         => array('CRYPTO' => array(1.5, 0.75, 8),  'FOREX' => array(0.4, 0.2, 8),   'STOCK' => array(1.5, 0.75, 12)),
+        'Dip Recovery'         => array('CRYPTO' => array(2.5, 1.5, 16),  'FOREX' => array(0.6, 0.4, 16),  'STOCK' => array(2.0, 1.0, 24)),
+        'Volume Spike'         => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.3, 12),  'STOCK' => array(2.0, 1.0, 16)),
+        'VAM'                  => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.8, 0.9, 16)),
+        'Mean Reversion Sniper'=> array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.3, 12),  'STOCK' => array(2.0, 1.0, 16)),
+        'ADX Trend Strength'   => array('CRYPTO' => array(1.5, 0.75, 12), 'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.5, 0.75, 16)),
+        'StochRSI Crossover'   => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.25, 12), 'STOCK' => array(1.5, 0.75, 16)),
+        'Awesome Oscillator'   => array('CRYPTO' => array(1.8, 0.9, 12),  'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.5, 0.75, 16)),
+        'RSI(2) Scalp'         => array('CRYPTO' => array(1.2, 0.6, 6),   'FOREX' => array(0.3, 0.15, 6),  'STOCK' => array(1.5, 0.75, 8)),
+        'Ichimoku Cloud'       => array('CRYPTO' => array(2.0, 1.0, 16),  'FOREX' => array(0.5, 0.25, 16), 'STOCK' => array(1.8, 0.9, 24)),
+        'Alpha Predator'       => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.25, 12), 'STOCK' => array(1.8, 0.9, 16)),
+        'Insider Cluster Buy'  => array('STOCK' => array(10.0, 5.0, 504)),
+        '13F New Position'     => array('STOCK' => array(12.0, 6.0, 720)),
+        'Sentiment Divergence' => array('STOCK' => array(4.0, 2.5, 240)),
+        'Contrarian Fear/Greed'=> array('CRYPTO' => array(5.0, 3.0, 168), 'FOREX' => array(2.0, 1.5, 168), 'STOCK' => array(5.0, 3.0, 504))
     );
 
     if (isset($defaults[$algo_name]) && isset($defaults[$algo_name][$asset_class])) {

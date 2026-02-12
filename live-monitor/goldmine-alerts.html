@@ -810,8 +810,9 @@
 
             // View button
             var viewBtn = '';
-            if (alert.page_url && alert.page_url.trim() !== '') {
-                viewBtn = '<a href="' + escHtml(alert.page_url) + '" class="btn-view ' + btnClass + '">View &rarr;</a>';
+            var alertUrl = alert.page_url || alert.page_link || '';
+            if (alertUrl && alertUrl.trim() !== '') {
+                viewBtn = '<a href="' + escHtml(alertUrl) + '" class="btn-view ' + btnClass + '">View &rarr;</a>';
             }
 
             // Date

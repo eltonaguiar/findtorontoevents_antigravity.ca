@@ -213,6 +213,85 @@ def check_factor_exposure(position_returns, weights, max_eigen_share=0.30):
 
 
 # ---------------------------------------------------------------------------
+# CVaR (Expected Shortfall) — Sprint 1.4 Bridge Plan
+# ---------------------------------------------------------------------------
+
+def compute_cvar(returns, confidence=0.95):
+    """
+    Conditional Value at Risk (Expected Shortfall).
+
+    CVaR answers: "In the worst (1-confidence)% of scenarios, what is the
+    AVERAGE loss?" This is more informative than VaR which only gives the
+    threshold.
+
+    Used by every bank's risk desk, AQR, Bridgewater.
+
+    Args:
+        returns: array of returns (daily PnL percentages)
+        confidence: confidence level (0.95 = worst 5%)
+
+    Returns: (var, cvar) as decimals (negative = loss)
+    """
+    returns = np.array(returns, dtype=float)
+    returns = returns[~np.isnan(returns)]
+
+    if len(returns) < 10:
+        return 0.0, 0.0
+
+    var = float(np.percentile(returns, (1 - confidence) * 100))
+    tail = returns[returns <= var]
+    cvar = float(np.mean(tail)) if len(tail) > 0 else var
+
+    return var, cvar
+
+
+def cvar_position_limit(portfolio_returns, max_cvar_pct=0.10):
+    """
+    Scale position sizes based on portfolio CVaR.
+
+    If CVaR exceeds threshold, reduce all positions proportionally.
+    This prevents catastrophic tail losses.
+
+    Args:
+        portfolio_returns: array of portfolio daily returns
+        max_cvar_pct: maximum acceptable CVaR (0.10 = 10% daily)
+
+    Returns: scaling factor (0.25 to 1.0)
+    """
+    _, cvar = compute_cvar(portfolio_returns)
+
+    if abs(cvar) > max_cvar_pct:
+        scale = max_cvar_pct / abs(cvar)
+        return max(0.25, min(1.0, scale))  # Never below 25% of normal
+
+    return 1.0
+
+
+def drawdown_position_scale(current_drawdown_pct):
+    """
+    Continuous drawdown-based position scaling.
+
+    Smoother than binary circuit breakers:
+      0% DD → 100% size
+      5% DD → 85% size
+      10% DD → 60% size
+      15% DD → 40% size
+      20%+ DD → 25% size (minimum)
+
+    Args:
+        current_drawdown_pct: current drawdown as percentage (e.g., 10 for 10%)
+
+    Returns: scaling factor (0.25 to 1.0)
+    """
+    if current_drawdown_pct <= 0:
+        return 1.0
+
+    # Exponential decay: scale = e^(-0.08 * dd)
+    scale = np.exp(-0.08 * current_drawdown_pct)
+    return max(0.25, min(1.0, float(scale)))
+
+
+# ---------------------------------------------------------------------------
 # Alpha Decay Detection
 # ---------------------------------------------------------------------------
 

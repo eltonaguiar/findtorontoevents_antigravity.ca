@@ -275,7 +275,8 @@ if ($action === 'system_detail') {
         SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as tp_wins,
         SUM(CASE WHEN status IN ('max_hold','expired') AND final_return_pct > 0 THEN 1 ELSE 0 END) as expired_wins,
         SUM(CASE WHEN status = 'sl_hit' THEN 1 ELSE 0 END) as losses,
-        AVG(CASE WHEN status != 'open' THEN final_return_pct ELSE NULL END) as avg_return
+        AVG(CASE WHEN status != 'open' THEN final_return_pct ELSE NULL END) as avg_return,
+        SUM(CASE WHEN status != 'open' THEN final_return_pct ELSE 0 END) as total_return
         FROM gm_unified_picks WHERE source_system = '" . $system . "' AND algorithm_name != ''
         GROUP BY algorithm_name ORDER BY tp_wins DESC LIMIT 20");
     if ($r) { while ($row = $r->fetch_assoc()) { $row['wins'] = intval($row['tp_wins']) + intval($row['expired_wins']); $algos[] = $row; } }
@@ -466,6 +467,30 @@ if ($action === 'enriched') {
         'earnings' => $earnings,
         'fundamentals' => $fund
     ));
+    exit;
+}
+
+// New GROK_XAI endpoints
+if ($action === 'regime') {
+    $r = $conn->query("SELECT id, date, hmm_regime, hmm_confidence, hmm_persistence, hurst, hurst_regime, ewma_vol, vol_annualized, composite_score, strategy_toggles, vix_level, vix_regime, yield_curve, macro_score, created_at FROM lm_market_regime ORDER BY id DESC LIMIT 1");
+    $regime = array();
+    if ($r && ($row = $r->fetch_assoc())) $regime = $row;
+    echo json_encode(array('ok' => true, 'regime' => $regime));
+    exit;
+}
+
+if ($action === 'kelly') {
+    $rows = array();
+    $r = $conn->query("SELECT algorithm_name, asset_class, win_rate, avg_win_pct, avg_loss_pct, full_kelly, half_kelly, sample_size, updated_at FROM lm_kelly_fractions ORDER BY updated_at DESC, half_kelly DESC LIMIT 20");
+    if ($r) { while ($row = $r->fetch_assoc()) $rows[] = $row; }
+    echo json_encode(array('ok' => true, 'kelly' => $rows));
+    exit;
+}
+
+if ($action === 'pruned') {
+    $json = @file_get_contents(dirname(__FILE__) . '/../../data/pruned_picks.json');
+    $pruned = $json ? json_decode($json, true) : array();
+    echo json_encode(array('ok' => true, 'pruned' => $pruned));
     exit;
 }
 
@@ -1339,7 +1364,8 @@ function _gm_check_health($conn) {
         // Per-algorithm underperformance within this system
         $algo_r = $conn->query("SELECT algorithm_name,
             COUNT(*) as total,
-            SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as wins,
+            SUM(CASE WHEN status = 'tp_hit' THEN 1 ELSE 0 END) as tp_wins,
+            SUM(CASE WHEN status IN ('max_hold','expired') AND final_return_pct > 0 THEN 1 ELSE 0 END) as expired_wins,
             SUM(CASE WHEN status != 'open' THEN 1 ELSE 0 END) as closed,
             AVG(CASE WHEN status != 'open' THEN final_return_pct ELSE NULL END) as avg_ret
             FROM gm_unified_picks
@@ -1351,19 +1377,56 @@ function _gm_check_health($conn) {
         if ($algo_r) {
             while ($algo = $algo_r->fetch_assoc()) {
                 $algo_closed = intval($algo['closed']);
-                $algo_wins = intval($algo['wins']);
+                $algo_wins = intval($algo['tp_wins']) + intval($algo['expired_wins']);
                 $algo_wr = ($algo_closed > 0) ? round(($algo_wins / $algo_closed) * 100, 1) : 0;
                 $algo_avg = floatval($algo['avg_ret']);
+                $algo_name = $algo['algorithm_name'];
+
+                // Check if algorithm was recently recalibrated (direction changed).
+                // Compare direction of old losses vs recent live signals direction.
+                // If direction flipped, the algo was fixed — suppress alert.
+                $recalibrated = false;
+                if ($algo_wr < 35 && $algo_closed >= 5) {
+                    $old_dir_r = $conn->query("SELECT direction, COUNT(*) as cnt
+                        FROM gm_unified_picks
+                        WHERE source_system = '" . _gm_esc($conn, $sys) . "'
+                        AND algorithm_name = '" . _gm_esc($conn, $algo_name) . "'
+                        AND status IN ('sl_hit','max_hold','expired') AND final_return_pct < 0
+                        AND pick_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                        GROUP BY direction ORDER BY cnt DESC LIMIT 1");
+                    if ($old_dir_r && $old_dir_r->num_rows > 0) {
+                        $old_dir = $old_dir_r->fetch_assoc();
+                        $new_dir_r = $conn->query("SELECT signal_type, COUNT(*) as cnt
+                            FROM lm_signals
+                            WHERE algorithm_name = '" . _gm_esc($conn, $algo_name) . "'
+                            AND signal_time >= DATE_SUB(NOW(), INTERVAL 48 HOUR)
+                            AND status = 'active'
+                            GROUP BY signal_type ORDER BY cnt DESC LIMIT 1");
+                        if ($new_dir_r && $new_dir_r->num_rows > 0) {
+                            $new_dir = $new_dir_r->fetch_assoc();
+                            $old = strtoupper($old_dir['direction']);
+                            $new_d = strtoupper($new_dir['signal_type']);
+                            if (($old === 'LONG' || $old === 'BUY') && ($new_d === 'SHORT' || $new_d === 'SELL')) {
+                                $recalibrated = true;
+                            } elseif (($old === 'SHORT' || $old === 'SELL') && ($new_d === 'LONG' || $new_d === 'BUY')) {
+                                $recalibrated = true;
+                            }
+                        }
+                    }
+                }
+
+                if ($recalibrated) continue;
+
                 if ($algo_wr < 20 && $algo_closed >= 5) {
                     _gm_create_alert($conn, $sys, 'algo_underperform', 'critical',
-                        $sys . ': Algorithm "' . $algo['algorithm_name'] . '" failing (' . $algo_wr . '% win rate)',
-                        'Algorithm "' . $algo['algorithm_name'] . '" has only a ' . $algo_wr . '% win rate across ' . $algo_closed . ' trades in the last 30 days. Average return: ' . round($algo_avg, 2) . '%. Consider disabling or re-tuning.',
+                        $sys . ': Algorithm "' . $algo_name . '" failing (' . $algo_wr . '% win rate)',
+                        'Algorithm "' . $algo_name . '" has only a ' . $algo_wr . '% win rate across ' . $algo_closed . ' trades in the last 30 days. Average return: ' . round($algo_avg, 2) . '%. Consider disabling or re-tuning.',
                         '', $algo_wr, 20, isset($page_urls[$sys]) ? $page_urls[$sys] : '');
                     $alerts_created++;
                 } elseif ($algo_wr < 35 && $algo_closed >= 5) {
                     _gm_create_alert($conn, $sys, 'algo_underperform', 'warning',
-                        $sys . ': Algorithm "' . $algo['algorithm_name'] . '" underperforming (' . $algo_wr . '% win rate)',
-                        'Algorithm "' . $algo['algorithm_name'] . '" has a ' . $algo_wr . '% win rate across ' . $algo_closed . ' trades. Average return: ' . round($algo_avg, 2) . '%.',
+                        $sys . ': Algorithm "' . $algo_name . '" underperforming (' . $algo_wr . '% win rate)',
+                        'Algorithm "' . $algo_name . '" has a ' . $algo_wr . '% win rate across ' . $algo_closed . ' trades. Average return: ' . round($algo_avg, 2) . '%.',
                         '', $algo_wr, 35, isset($page_urls[$sys]) ? $page_urls[$sys] : '');
                     $alerts_created++;
                 }
@@ -1398,11 +1461,50 @@ function _gm_check_health($conn) {
                 WHERE source_system = '" . _gm_esc($conn, $sys) . "' AND is_active = 1
                 AND alert_type IN ('accuracy_drop', 'losing_streak', 'rapid_decline', 'negative_roi')");
         }
-        // Auto-resolve algo_underperform only after 3 days (give algos time to recover)
+        // Auto-resolve algo_underperform after 3 days OR if algorithm was recalibrated
         $conn->query("UPDATE gm_failure_alerts SET is_active = 0, resolved_at = '" . $now . "'
             WHERE source_system = '" . _gm_esc($conn, $sys) . "' AND is_active = 1
             AND alert_type = 'algo_underperform'
             AND alert_date < DATE_SUB(CURDATE(), INTERVAL 3 DAY)");
+        // Also resolve algo_underperform for any recalibrated algorithms (direction changed)
+        $active_algo_alerts = $conn->query("SELECT id, title FROM gm_failure_alerts
+            WHERE source_system = '" . _gm_esc($conn, $sys) . "' AND is_active = 1
+            AND alert_type = 'algo_underperform'");
+        if ($active_algo_alerts) {
+            while ($aa = $active_algo_alerts->fetch_assoc()) {
+                // Extract algorithm name from title: '...Algorithm "NAME" failing...'
+                if (preg_match('/Algorithm "([^"]+)"/', $aa['title'], $m)) {
+                    $aname = $m[1];
+                    // Check if this algo's recent signals have different direction from its losses
+                    $loss_dir = $conn->query("SELECT direction, COUNT(*) as cnt FROM gm_unified_picks
+                        WHERE source_system = '" . _gm_esc($conn, $sys) . "'
+                        AND algorithm_name = '" . _gm_esc($conn, $aname) . "'
+                        AND status IN ('sl_hit','max_hold','expired') AND final_return_pct < 0
+                        AND pick_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                        GROUP BY direction ORDER BY cnt DESC LIMIT 1");
+                    if ($loss_dir && $loss_dir->num_rows > 0) {
+                        $ld = $loss_dir->fetch_assoc();
+                        $sig_dir = $conn->query("SELECT signal_type, COUNT(*) as cnt FROM lm_signals
+                            WHERE algorithm_name = '" . _gm_esc($conn, $aname) . "'
+                            AND signal_time >= DATE_SUB(NOW(), INTERVAL 48 HOUR) AND status = 'active'
+                            GROUP BY signal_type ORDER BY cnt DESC LIMIT 1");
+                        if ($sig_dir && $sig_dir->num_rows > 0) {
+                            $sd = $sig_dir->fetch_assoc();
+                            $old_d = strtoupper($ld['direction']);
+                            $new_d = strtoupper($sd['signal_type']);
+                            $was_long = ($old_d === 'LONG' || $old_d === 'BUY');
+                            $now_short = ($new_d === 'SHORT' || $new_d === 'SELL');
+                            $was_short = ($old_d === 'SHORT' || $old_d === 'SELL');
+                            $now_long = ($new_d === 'LONG' || $new_d === 'BUY');
+                            if (($was_long && $now_short) || ($was_short && $now_long)) {
+                                $conn->query("UPDATE gm_failure_alerts SET is_active = 0, resolved_at = '" . $now . "'
+                                    WHERE id = " . intval($aa['id']));
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // ── Cross-system health checks ──

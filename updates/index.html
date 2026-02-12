@@ -271,6 +271,35 @@ a:hover { text-decoration: underline; }
 
 <div class="section-year">February 2026</div>
 
+<!-- Feb 11, 2026 — GROK_XAI Integration + Multi-Agent Cross-Review + DB Schema Sync -->
+<div class="update-entry" style="--dot-color: #8b5cf6;" data-tags="grok,hmm,regime,kelly,correlation,forex,stock,algorithms,signals,dashboard,multi-agent" data-category="stocks,trading,crypto">
+  <div class="update-date">Feb 11, 2026</div>
+  <div class="update-title">
+    GROK_XAI Integration + Trading System Cross-Review + Schema Sync
+    <span class="badge badge-feature">New</span>
+    <span class="badge badge-fix">Fix</span>
+    <span class="badge badge-improvement">Improved</span>
+  </div>
+  <div class="update-body">
+    <p>Integrated the Grok xAI MOTHERLOAD recommendations, ran a 13-source cross-review from Kimi, DeepSeek, Windsurf, ChatGPT, Claude, GitHub Copilot, Antigravity, and Grok. Fixed 12 schema conflicts between agents and validated all changes against the live database.</p>
+    <ul>
+      <li><strong>Forex Regime Mapping Fix</strong> &mdash; Previously, forex regime detection returned 'usd_strong'/'usd_weak' which NEVER matched the 'bull'/'bear' checks in algorithm regime gates. Forex signals were never regime-gated, causing counter-trend entries (e.g. LONG EUR/USD during USD strength). Now maps USD strength to pair-specific direction: EURUSD usd_strong = 'bear', USDJPY usd_strong = 'bull' <span class="app-tag">Critical Fix</span></li>
+      <li><strong>7 Failing Stock Algorithms Paused</strong> &mdash; ETF Masters (3.4% WR), Sector Rotation (2.2%), Sector Momentum (0%), Blue Chip Growth (5.6%), Technical Momentum (0%), Composite Rating (0%), Cursor Genius (11.5%) &mdash; all paused after backtest analysis showed deep unprofitability. Prevents wasting paper capital on proven losers <span class="app-tag">Risk</span></li>
+      <li><strong>Stock TP/SL Defaults Overhauled</strong> &mdash; Previous stock targets were too tight to overcome slippage + fees, causing 67% max-hold exits and avg loss 16.7x larger than avg win. All 19 algorithm stock defaults raised: min TP 1.5%, holds extended 12-36h. CDR stocks ($0 commission) get longer to recover <span class="app-tag">Improved</span></li>
+      <li><strong>Less Aggressive Regime Scaling</strong> &mdash; Sideways TP cut reduced from 35% to 15%, bear TP cut from 20% to 10%. Previous cuts made targets unachievable, destroying R:R ratio and forcing max-hold exits <span class="app-tag">Improved</span></li>
+      <li><strong>CDR Signal Boost</strong> &mdash; Canadian Depositary Receipt stocks (AAPL, MSFT, GOOGL, NVDA, etc.) get +8 signal strength bonus because they trade commission-free ($0) on Cboe Canada NEO Exchange. Zero transaction cost = pure edge <span class="app-tag">New</span></li>
+      <li><strong>ETHUSD Excluded</strong> &mdash; ETH alpha composite score at -4.390 (most bearish asset). Multiple recent stop-loss hits. Excluded from signal generation until alpha turns positive <span class="app-tag">Risk</span></li>
+      <li><strong>HMM Regime Detection Script</strong> &mdash; New Python script (<code>hmm_regime.py</code>) fits a 3-state Gaussian HMM on SPY returns + VIX, detects bull/bear/sideways with confidence score. Integrates with existing lm_market_regime table <span class="app-tag">New</span></li>
+      <li><strong>Kelly Sizer + Correlation Pruner</strong> &mdash; New Python scripts (<code>kelly_sizer.py</code>, <code>corr_pruner.py</code>) for bulk Kelly recalculation and portfolio correlation pruning. Fixed to use actual DB schema (algorithm_name, signal_strength, not the wrong column names) <span class="app-tag">New</span></li>
+      <li><strong>CVaR + Drawdown Functions</strong> &mdash; Added Conditional Value at Risk (Expected Shortfall) and continuous drawdown scaling to position_sizer.py. CVaR measures average loss in worst 5% scenarios. Used by every bank risk desk, AQR, Bridgewater <span class="app-tag">New</span></li>
+      <li><strong>Goldmine Dashboard: Grok xAI Tab</strong> &mdash; New endpoints for regime, Kelly fractions, and pruned picks. Dashboard enhanced with recalibration detection for algorithm alerts (suppresses false alarms when algo direction flips) <span class="app-tag">Dashboard</span></li>
+      <li><strong>12 Schema Conflicts Resolved</strong> &mdash; Another agent created files with wrong column names (ticker vs symbol, confidence vs signal_strength, regime_date vs date). All fixed against the actual DB dump. Validated: lm_trades, lm_signals, lm_kelly_fractions, lm_market_regime schemas match code <span class="app-tag">Fix</span></li>
+      <li><strong>8 New Python Scripts Added</strong> &mdash; FinBERT sentiment, CUSUM decay detector, Bayesian hyperparameter optimizer, congressional trading tracker, options flow/GEX, on-chain analytics, portfolio optimizer, transfer entropy analyzer. All integrated into run_all.py <span class="app-tag">New</span></li>
+    </ul>
+    <p><a href="/live-monitor/">Live Monitor &rarr;</a> &nbsp;|&nbsp; <a href="/live-monitor/goldmine-dashboard.html">Goldmine Dashboard &rarr;</a></p>
+  </div>
+</div>
+
 <!-- Feb 11, 2026 — Auto-Execution + Risk Management Upgrades -->
 <div class="update-entry" style="--dot-color: #22c55e;" data-tags="auto-execute,drawdown,cooldown,correlation,risk,trading,live-monitor,paper-trading" data-category="stocks,trading,crypto">
   <div class="update-date">Feb 11, 2026</div>
