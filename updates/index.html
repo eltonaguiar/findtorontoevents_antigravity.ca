@@ -218,6 +218,47 @@ a:hover { text-decoration: underline; }
   display: none;
 }
 
+/* Collapse / Expand */
+.update-title {
+  cursor: pointer;
+  user-select: none;
+}
+.update-title::before {
+  content: '▾';
+  display: inline-block;
+  width: 18px;
+  font-size: 14px;
+  color: #556;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+.update-entry.collapsed .update-title::before {
+  transform: rotate(-90deg);
+}
+.update-entry.collapsed .update-body {
+  display: none;
+}
+.collapse-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.collapse-controls button {
+  font-size: 12px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: transparent;
+  color: #778;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.collapse-controls button:hover {
+  border-color: rgba(255,255,255,0.2);
+  color: #aab;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .header h1 { font-size: 26px; letter-spacing: 4px; }
@@ -262,6 +303,13 @@ a:hover { text-decoration: underline; }
     <button class="filter-pill" data-filter="category" data-value="gaming">Gaming</button>
     <button class="filter-pill" data-filter="category" data-value="media">Media</button>
     <button class="filter-pill" data-filter="category" data-value="tools">Tools</button>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">View</span>
+    <div class="collapse-controls">
+      <button id="expandAll">Expand All</button>
+      <button id="collapseAll">Collapse All</button>
+    </div>
   </div>
 </div>
 
@@ -3032,6 +3080,25 @@ a:hover { text-decoration: underline; }
     document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
     document.getElementById('updatesContainer').style.display = visibleCount === 0 ? 'none' : '';
   }
+
+  // ─── Collapse / Expand ───
+  // Click title to toggle individual entry
+  document.getElementById('updatesContainer').addEventListener('click', function(e) {
+    var title = e.target.closest('.update-title');
+    if (!title) return;
+    // Don't toggle if clicking a link inside the title
+    if (e.target.tagName === 'A') return;
+    var entry = title.closest('.update-entry');
+    if (entry) entry.classList.toggle('collapsed');
+  });
+
+  // Expand All / Collapse All buttons
+  document.getElementById('expandAll').addEventListener('click', function() {
+    for (var i = 0; i < entries.length; i++) entries[i].classList.remove('collapsed');
+  });
+  document.getElementById('collapseAll').addEventListener('click', function() {
+    for (var i = 0; i < entries.length; i++) entries[i].classList.add('collapsed');
+  });
 })();
 </script>
 </body>

@@ -1237,7 +1237,11 @@ function loadAlertBanner() {
 }
 
 function renderSystemsChart(systems) {
-    if (!systems || systems.length === 0) return;
+    if (!systems || systems.length === 0) {
+        var chartParent = document.getElementById('chart-systems-wr').parentElement;
+        chartParent.innerHTML = '<div style="text-align:center;padding:2.5rem 1rem;color:var(--text-dim);font-size:0.88rem;font-style:italic;">Prediction verification data will appear after the goldmine tracker has enough verified outcomes to analyze.</div>';
+        return;
+    }
 
     var sorted = systems.slice().sort(function(a, b) {
         return parseFloat(b.win_rate || 0) - parseFloat(a.win_rate || 0);
@@ -1304,7 +1308,7 @@ function renderSystemsChart(systems) {
 function renderWinnersLosers(winners, losers) {
     var wHtml = '';
     if (winners.length === 0) {
-        wHtml = '<div class="text-dim" style="padding:1rem;text-align:center;font-size:0.82rem;">No recent winners yet</div>';
+        wHtml = '<div class="text-dim" style="padding:1rem;text-align:center;font-size:0.82rem;">No recent winners yet. Prediction verification data will appear after the goldmine tracker has enough verified outcomes to analyze.</div>';
     }
     for (var i = 0; i < Math.min(winners.length, 10); i++) {
         var w = winners[i];

@@ -39,6 +39,7 @@ FILES = [
     ('findforex2/index.html', '/findforex2/index.html'),
     ('findforex2/portfolio/stats/index.html', '/findforex2/portfolio/stats/index.html'),
     ('findstocks/index.html', '/findstocks/index.html'),
+    ('findstocks/tools.html', '/findstocks/tools.html'),
     ('findstocks/research/index.html', '/findstocks/research/index.html'),
     ('findstocks2_global/miracle.html', '/findstocks2_global/miracle.html'),
     # Stock nav (glow badges on top pages)

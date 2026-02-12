@@ -15,6 +15,7 @@
 
 require_once dirname(__FILE__) . '/sports_db_connect.php';
 require_once dirname(__FILE__) . '/sports_schema.php';
+require_once dirname(__FILE__) . '/odds_scraper.php';
 
 // ────────────────────────────────────────────────────────────
 //  Auto-create tables (centralized in sports_schema.php)
@@ -432,8 +433,15 @@ function _so_action_fetch($conn) {
         }
 
         if ($odds_body === null) {
-            $sport_details[] = array('sport' => $sport_key, 'error' => 'fetch failed');
-            continue;
+            // Fall to scraper
+            $scraper_data = scrape_odds_failover($sport_key);
+            if (is_array($scraper_data) &amp;&amp; count($scraper_data) > 0) {
+                $odds_body = json_encode($scraper_data);
+                $sport_details[] = array('sport' => $sport_key, 'source' => 'scraper');
+            } else {
+                $sport_details[] = array('sport' => $sport_key, 'error' => 'fetch failed (API and scraper)');
+                continue;
+            }
         }
 
         $events = json_decode($odds_body, true);

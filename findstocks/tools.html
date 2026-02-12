@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTE Tools Directory | Find Toronto Events</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #0a0e1a;
+            color: #e0e0f0;
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        a { color: #6366f1; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #12122a 0%, #1a1040 50%, #0a0e1a 100%);
+            border-bottom: 1px solid #1e1e3a;
+            padding: 3rem 2rem 2rem;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1, #a78bfa, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+        .hero .subtitle {
+            color: #8888aa;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Search */
+        .search-wrap {
+            max-width: 600px;
+            margin: 0 auto 1.5rem;
+            position: relative;
+        }
+        .search-wrap svg {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: #8888aa;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .search-input {
+            width: 100%;
+            padding: 14px 16px 14px 48px;
+            background: #12122a;
+            border: 1px solid #1e1e3a;
+            border-radius: 12px;
+            color: #e0e0f0;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+        .search-input::placeholder { color: #555577; }
+
+        /* Filters */
+        .filters-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem 1.5rem;
+        }
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .filter-label {
+            color: #8888aa;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            align-self: center;
+            margin-right: 4px;
+            font-weight: 600;
+        }
+        .filter-btn {
+            padding: 7px 16px;
+            background: #12122a;
+            border: 1px solid #1e1e3a;
+            border-radius: 8px;
+            color: #8888aa;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .filter-btn:hover {
+            border-color: #6366f1;
+            color: #e0e0f0;
+        }
+        .filter-btn.active {
+            background: #6366f1;
+            border-color: #6366f1;
+            color: #fff;
+        }
+
+        /* Count */
+        .count-bar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem 1rem;
+            color: #8888aa;
+            font-size: 0.9rem;
+        }
+        .count-bar span { color: #22d3ee; font-weight: 700; }
+
+        /* Grid */
+        .tools-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem 3rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        @media (max-width: 960px) {
+            .tools-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 600px) {
+            .tools-grid { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 1.7rem; }
+            .hero { padding: 2rem 1rem 1.5rem; }
+            .filters-container { padding: 0 1rem 1rem; }
+            .count-bar { padding: 0 1rem 0.75rem; }
+            .tools-grid { padding: 0 1rem 2rem; }
+        }
+
+        /* Card */
+        .tool-card {
+            background: #12122a;
+            border: 1px solid #1e1e3a;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s, opacity 0.3s;
+            cursor: default;
+        }
+        .tool-card:hover {
+            border-color: #6366f1;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.1);
+        }
+        .tool-card.hidden {
+            display: none;
+        }
+        .card-top {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .tool-name {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #e0e0f0;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 9px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-live {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.3);
+        }
+        .badge-backtest {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+        }
+        .badge-paused {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+        .badge-new {
+            background: rgba(168, 85, 247, 0.15);
+            color: #a855f7;
+        }
+        .badge-stalled {
+            background: rgba(136, 136, 170, 0.15);
+            color: #8888aa;
+        }
+        .badge-forward {
+            background: rgba(34, 211, 238, 0.12);
+            color: #22d3ee;
+            font-size: 0.65rem;
+            padding: 2px 7px;
+        }
+        .card-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .tag-category {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: rgba(99, 102, 241, 0.12);
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+        .card-desc {
+            color: #8888aa;
+            font-size: 0.88rem;
+            line-height: 1.45;
+            flex: 1;
+        }
+        .card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #fff;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: opacity 0.2s, transform 0.1s;
+            align-self: flex-start;
+        }
+        .card-link:hover {
+            opacity: 0.9;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+        .card-link svg {
+            width: 14px;
+            height: 14px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Disclaimer */
+        .disclaimer {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem 3rem;
+            text-align: center;
+            color: #555577;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            border-top: 1px solid #1e1e3a;
+            padding-top: 1.5rem;
+        }
+
+        /* No results */
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #8888aa;
+        }
+        .no-results .nr-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .no-results p { font-size: 1rem; }
+    </style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+    <h1>FTE Tools Directory</h1>
+    <p class="subtitle">Search and filter all 50+ investment tools</p>
+    <div class="search-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search tools by name or description..." />
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="filters-container">
+    <div class="filter-row" id="categoryFilters">
+        <span class="filter-label">Category:</span>
+        <button class="filter-btn active" data-category="all">All</button>
+        <button class="filter-btn" data-category="Stocks">Stocks</button>
+        <button class="filter-btn" data-category="Crypto">Crypto</button>
+        <button class="filter-btn" data-category="Forex">Forex</button>
+        <button class="filter-btn" data-category="Mutual Funds">Mutual Funds</button>
+        <button class="filter-btn" data-category="Sports">Sports</button>
+        <button class="filter-btn" data-category="Live Trading">Live Trading</button>
+        <button class="filter-btn" data-category="System">System</button>
+    </div>
+    <div class="filter-row" id="statusFilters">
+        <span class="filter-label">Status:</span>
+        <button class="filter-btn active" data-status="all">All</button>
+        <button class="filter-btn" data-status="LIVE">LIVE</button>
+        <button class="filter-btn" data-status="BACKTEST">BACKTEST</button>
+        <button class="filter-btn" data-status="PAUSED">PAUSED</button>
+        <button class="filter-btn" data-status="STALLED">STALLED</button>
+    </div>
+</div>
+
+<!-- Count -->
+<div class="count-bar" id="countBar">Showing <span id="visibleCount">41</span> of <span id="totalCount">41</span> tools</div>
+
+<!-- Grid -->
+<div class="tools-grid" id="toolsGrid"></div>
+
+<!-- Disclaimer -->
+<div class="disclaimer">
+    Tools marked LIVE show real forward-looking data. BACKTEST tools use historical simulations for educational purposes. PAUSED tools have known issues being addressed. STALLED tools have data source interruptions.
+</div>
+
+<script>
+(function() {
+    var TOOLS = [
+        // STOCKS
+        { name: "Consolidated Picks", status: "LIVE", category: "Stocks", url: "/findstocks/portfolio2/consolidated.html", desc: "Multi-algorithm consensus position tracker with real performance data", forward: true },
+        { name: "Smart Money Intelligence", status: "LIVE", category: "Stocks", url: "/live-monitor/smart-money.html", desc: "SEC 13F, Form 4 insider, analyst ratings, WSB sentiment consensus", forward: true },
+        { name: "Daily Picks", status: "LIVE", category: "Stocks", url: "/findstocks/portfolio2/picks.html", desc: "Top algorithm-generated stock/crypto/forex picks updated nightly", forward: true },
+        { name: "Algorithm Leaderboard", status: "LIVE", category: "Stocks", url: "/findstocks/portfolio2/leaderboard.html", desc: "Rank all 20 algorithms by real performance metrics", forward: false },
+        { name: "Stock Intel", status: "LIVE", category: "Stocks", url: "/findstocks/portfolio2/stock-intel.html", desc: "Deep-dive single stock research with live data lookup", forward: false },
+        { name: "Stock Profile", status: "LIVE", category: "Stocks", url: "/findstocks/portfolio2/stock-profile.html", desc: "Comprehensive stock fundamentals, technicals, and analyst ratings", forward: false },
+        { name: "Dividends & Earnings", status: "LIVE", category: "Stocks", url: "/findstocks/portfolio2/dividends.html", desc: "Real dividend schedules and earnings data from Yahoo Finance", forward: true },
+        { name: "Penny Stock Finder", status: "LIVE", category: "Stocks", url: "/findstocks/portfolio2/penny-stocks.html", desc: "Yahoo screener proxy for penny stocks $0.01-$5, blocks OTC/Pink Sheets", forward: false },
+        { name: "Horizon Picks", status: "BACKTEST", category: "Stocks", url: "/findstocks/portfolio2/horizon-picks.html", desc: "3-horizon investment strategies with backtested performance baseline", forward: false },
+        { name: "Portfolio Dashboard", status: "LIVE", category: "Stocks", url: "/findstocks/portfolio2/dashboard.html", desc: "Track portfolio equity curves, positions, and metrics vs SPY", forward: false },
+        { name: "Alpha Factor Suite", status: "LIVE", category: "Stocks", url: "/findstocks/alpha/", desc: "Multi-strategy quantitative dashboard with regime indicators", forward: false },
+        { name: "DayTrades Miracle", status: "LIVE", category: "Stocks", url: "/findstocks2_global/miracle.html", desc: "8-strategy day trading scanner with Questrade fee calculator and self-learning AI", forward: false },
+        { name: "Quick Picks", status: "LIVE", category: "Stocks", url: "/findstocks/portfolio/quick-picks.html", desc: "Ready-made stock picks filtered by urgency (Today/This Week/Soon)", forward: false },
+        { name: "Daily Report", status: "LIVE", category: "Stocks", url: "/findstocks/portfolio/report.html", desc: "Daily algorithm performance summaries and pick recommendations", forward: false },
+
+        // CRYPTO
+        { name: "Crypto Winner Scanner", status: "LIVE", category: "Crypto", url: "/findcryptopairs/winners.html", desc: "600+ USDT pair momentum scanner, 7 indicators, 15-min updates", forward: true },
+        { name: "Meme Coin Scanner", status: "LIVE", category: "Crypto", url: "/findcryptopairs/meme.html", desc: "Specialized meme coin scanner (DOGE, SHIB, PEPE) with tier system", forward: true },
+        { name: "Crypto Portfolio", status: "LIVE", category: "Crypto", url: "/findcryptopairs/portfolio/", desc: "Track cryptocurrency portfolio performance and allocations", forward: false },
+
+        // FOREX
+        { name: "Forex Portfolio", status: "LIVE", category: "Forex", url: "/findforex2/portfolio/", desc: "Forex portfolio tracking with 8 strategies and regime detection", forward: false },
+
+        // MUTUAL FUNDS
+        { name: "Mutual Fund Portfolio v2", status: "LIVE", category: "Mutual Funds", url: "/findmutualfunds2/portfolio2/", desc: "Enhanced mutual fund portfolio analysis and tracking", forward: false },
+        { name: "Mutual Fund Portfolio v1", status: "LIVE", category: "Mutual Funds", url: "/findmutualfunds/portfolio1/", desc: "Original mutual fund portfolio tracker (legacy)", forward: false },
+
+        // SPORTS
+        { name: "Sports Bet Winner Finder", status: "STALLED", category: "Sports", url: "/live-monitor/sports-betting.html", desc: "AI sports betting analysis with Kelly criterion sizing (paper trading, API data stalled)", forward: false },
+
+        // LIVE TRADING
+        { name: "Live Trading Monitor", status: "LIVE", category: "Live Trading", url: "/live-monitor/live-monitor.html", desc: "Real-time 20-algorithm multi-asset paper trading platform", forward: true },
+        { name: "Goldmine Checker", status: "LIVE", category: "Live Trading", url: "/live-monitor/goldmine-dashboard.html", desc: "Prediction audit trail proving algorithm accuracy across all systems", forward: true },
+        { name: "L vs O Performance", status: "LIVE", category: "Live Trading", url: "/live-monitor/algo-performance.html", desc: "Compare learned vs original algorithm parameters and outcomes", forward: true },
+        { name: "Opportunity Scanner", status: "LIVE", category: "Live Trading", url: "/live-monitor/opportunity-scanner.html", desc: "Scan for trading opportunities across all asset classes", forward: false },
+        { name: "Edge Dashboard", status: "LIVE", category: "Live Trading", url: "/live-monitor/edge-dashboard.html", desc: "Statistical edge detection and measurement", forward: false },
+        { name: "Winning Patterns", status: "LIVE", category: "Live Trading", url: "/live-monitor/winning-patterns.html", desc: "Pattern recognition from closed positions (activates after 5+ trades)", forward: false },
+        { name: "Hour Learning", status: "LIVE", category: "Live Trading", url: "/live-monitor/hour-learning.html", desc: "Intra-hour pattern detection and self-learning analysis", forward: false },
+        { name: "Conviction Alerts", status: "LIVE", category: "Live Trading", url: "/live-monitor/conviction-alerts.html", desc: "High-conviction trading signal alerts", forward: false },
+        { name: "Health Alerts", status: "LIVE", category: "Live Trading", url: "/live-monitor/goldmine-alerts.html", desc: "System health monitoring and underperformance alerts", forward: false },
+        { name: "Capital Efficiency", status: "LIVE", category: "Live Trading", url: "/live-monitor/capital-efficiency.html", desc: "Capital allocation optimization and ROI analysis", forward: false },
+        { name: "Multi-Dimensional", status: "LIVE", category: "Live Trading", url: "/live-monitor/multi-dimensional.html", desc: "9-dimensional scoring system for position quality", forward: false },
+
+        // SYSTEM
+        { name: "Learning Lab", status: "LIVE", category: "System", url: "/findstocks/portfolio2/learning-lab.html", desc: "Monitor algorithm learning evolution and parameter improvements", forward: false },
+        { name: "Learning Dashboard", status: "LIVE", category: "System", url: "/findstocks/portfolio2/learning-dashboard.html", desc: "Self-learning pattern detection dashboard (needs 5+ closed trades)", forward: false },
+        { name: "Smart Learning", status: "BACKTEST", category: "System", url: "/findstocks/portfolio2/smart-learning.html", desc: "Walk-forward, rolling performance, and Kelly sizing backtests", forward: false },
+        { name: "Day Trader Sim", status: "BACKTEST", category: "System", url: "/findstocks/portfolio2/daytrader-sim.html", desc: "Day trading simulation with $500 daily budget (educational)", forward: false },
+        { name: "Algo Study", status: "BACKTEST", category: "System", url: "/findstocks/portfolio2/algo-study.html", desc: "Algorithm academic research comparison (documentation)", forward: false },
+        { name: "System Stats", status: "LIVE", category: "System", url: "/findstocks/portfolio2/stats/", desc: "System health monitoring and operation logs", forward: false },
+        { name: "API Viewer", status: "LIVE", category: "System", url: "/findstocks/portfolio2/api-viewer.html", desc: "Developer tool to inspect raw API JSON responses", forward: false },
+        { name: "Investment Hub", status: "LIVE", category: "System", url: "/findstocks/portfolio2/hub.html", desc: "Central navigation hub for all portfolio tools", forward: false },
+        { name: "Global Dashboard", status: "LIVE", category: "System", url: "/findstocks2_global/", desc: "Multi-asset platform hub with 115+ AI algorithms overview", forward: false }
+    ];
+
+    var activeCategory = "all";
+    var activeStatus = "all";
+    var searchQuery = "";
+    var grid = document.getElementById("toolsGrid");
+    var visibleCountEl = document.getElementById("visibleCount");
+    var totalCountEl = document.getElementById("totalCount");
+
+    totalCountEl.textContent = TOOLS.length;
+
+    function getStatusBadgeClass(status) {
+        var map = {
+            "LIVE": "badge-live",
+            "BACKTEST": "badge-backtest",
+            "PAUSED": "badge-paused",
+            "NEW": "badge-new",
+            "STALLED": "badge-stalled"
+        };
+        return map[status] || "badge-live";
+    }
+
+    function buildCards() {
+        var html = "";
+        for (var i = 0; i < TOOLS.length; i++) {
+            var t = TOOLS[i];
+            html += '<div class="tool-card" data-category="' + t.category + '" data-status="' + t.status + '" data-search="' + (t.name + " " + t.desc).toLowerCase() + '">';
+            html += '<div class="card-top">';
+            html += '<span class="tool-name">' + t.name + '</span>';
+            html += '<span class="badge ' + getStatusBadgeClass(t.status) + '">' + t.status + '</span>';
+            if (t.forward) {
+                html += '<span class="badge badge-forward">FORWARD-FACING</span>';
+            }
+            html += '</div>';
+            html += '<div class="card-tags">';
+            html += '<span class="tag-category">' + t.category + '</span>';
+            html += '</div>';
+            html += '<div class="card-desc">' + t.desc + '</div>';
+            html += '<a href="' + t.url + '" class="card-link">Open Tool <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>';
+            html += '</div>';
+        }
+        grid.innerHTML = html;
+    }
+
+    function filterCards() {
+        var cards = grid.querySelectorAll(".tool-card");
+        var visible = 0;
+        for (var i = 0; i < cards.length; i++) {
+            var card = cards[i];
+            var cat = card.getAttribute("data-category");
+            var stat = card.getAttribute("data-status");
+            var search = card.getAttribute("data-search");
+
+            var matchCat = (activeCategory === "all" || cat === activeCategory);
+            var matchStat = (activeStatus === "all" || stat === activeStatus);
+            var matchSearch = (searchQuery === "" || search.indexOf(searchQuery) !== -1);
+
+            if (matchCat && matchStat && matchSearch) {
+                card.classList.remove("hidden");
+                visible++;
+            } else {
+                card.classList.add("hidden");
+            }
+        }
+        visibleCountEl.textContent = visible;
+
+        // Show no-results message
+        var existing = grid.querySelector(".no-results");
+        if (visible === 0) {
+            if (!existing) {
+                var nr = document.createElement("div");
+                nr.className = "no-results";
+                nr.innerHTML = '<div class="nr-icon">&#128269;</div><p>No tools match your current filters. Try adjusting your search or filters.</p>';
+                grid.appendChild(nr);
+            }
+        } else {
+            if (existing) {
+                existing.parentNode.removeChild(existing);
+            }
+        }
+    }
+
+    // Category filters
+    var catBtns = document.querySelectorAll("#categoryFilters .filter-btn");
+    for (var i = 0; i < catBtns.length; i++) {
+        catBtns[i].addEventListener("click", function() {
+            for (var j = 0; j < catBtns.length; j++) {
+                catBtns[j].classList.remove("active");
+            }
+            this.classList.add("active");
+            activeCategory = this.getAttribute("data-category");
+            filterCards();
+        });
+    }
+
+    // Status filters
+    var statBtns = document.querySelectorAll("#statusFilters .filter-btn");
+    for (var i = 0; i < statBtns.length; i++) {
+        statBtns[i].addEventListener("click", function() {
+            for (var j = 0; j < statBtns.length; j++) {
+                statBtns[j].classList.remove("active");
+            }
+            this.classList.add("active");
+            activeStatus = this.getAttribute("data-status");
+            filterCards();
+        });
+    }
+
+    // Search
+    var searchInput = document.getElementById("searchInput");
+    searchInput.addEventListener("input", function() {
+        searchQuery = this.value.toLowerCase().trim();
+        filterCards();
+    });
+
+    // Init
+    buildCards();
+    filterCards();
+})();
+</script>
+
+<script src="/findstocks/portfolio2/stock-nav.js"></script>
+</body>
+</html>

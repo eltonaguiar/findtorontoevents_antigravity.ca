@@ -140,6 +140,9 @@
             <div class="stat-card"><div class="label">Avg Win Rate</div><div class="value" id="stat-winrate" style="color:var(--cyan)">--</div></div>
             <div class="stat-card"><div class="label">Best Return</div><div class="value" id="stat-bestret" style="color:var(--green)">--</div></div>
         </div>
+        <div id="stats-empty-note" style="display:none;background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.2);border-radius:12px;padding:0.75rem 1.2rem;margin-bottom:1.25rem;font-size:0.8rem;color:var(--text-dim);line-height:1.5;">
+            No conviction alerts fired in the selected period. Alerts are generated when the 9-dimensional scoring system detects high-confidence setups.
+        </div>
 
         <!-- Ticker Filter -->
         <div class="filter-bar" id="tickerFilterBar">
@@ -446,6 +449,13 @@ function updateStatCards() {
         if (filteredScores[i][scoreKey] >= 70) bullish++;
     }
     document.getElementById('stat-bullish').textContent = bullish;
+
+    // Show/hide empty state note when all stats are zero or missing
+    var emptyNote = document.getElementById('stats-empty-note');
+    if (emptyNote) {
+        var allEmpty = (filtered.length === 0 && bullish === 0 && filteredPerf.length === 0);
+        emptyNote.style.display = allEmpty ? 'block' : 'none';
+    }
 }
 
 // ── Load Alerts ──

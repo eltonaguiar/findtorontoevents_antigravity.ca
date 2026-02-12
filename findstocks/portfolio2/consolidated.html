@@ -547,6 +547,18 @@
                 TP: +8%, SL: -4%, Max hold: 14 days. Positions also close when consensus drops.
             </p>
 
+            <!-- Early-stage banner (shown when 0 closed trades) -->
+            <div id="perfEarlyBanner" style="display:none;background:rgba(234,179,8,0.08);border:1px solid rgba(234,179,8,0.25);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:0.8rem;line-height:1.7;">
+                <div style="font-size:0.9rem;font-weight:700;color:var(--yellow);margin-bottom:0.3rem;">Why is Win Rate 0% with 0W / 0L?</div>
+                <div style="color:var(--text);">Win rate is calculated only from <b>closed</b> trades. Currently <b>all positions are still open</b> &mdash; none have hit a take-profit (+8%), stop-loss (&minus;4%), the 14-day max hold limit, or dropped below 2 algorithm consensus.</div>
+                <ul style="margin:0.4rem 0 0 1.2rem;color:var(--text-dim);font-size:0.75rem;">
+                    <li>A "win" = closed trade with positive return. A "loss" = closed trade with negative return.</li>
+                    <li>The system launched on <b style="color:var(--cyan);">Feb 10, 2026</b>. First max-hold closures expected around <b style="color:var(--cyan);" id="perfEtaDate">Feb 24, 2026</b>.</li>
+                    <li>Stop-loss or take-profit exits can happen any day if prices move enough.</li>
+                    <li>This is expected behavior &mdash; positions are being tracked daily.</li>
+                </ul>
+            </div>
+
             <!-- Hero stats -->
             <div class="perf-hero" id="perfHero">
                 <div class="perf-hero-card">
@@ -916,6 +928,12 @@ function loadPerformance() {
         if (lte && data.generated_at) lte.textContent = data.generated_at + ' UTC';
         var s = data.stats || {};
         var wr = s.win_rate || 0;
+        var totalClosed = s.total_closed || 0;
+        // Show early-stage banner when no trades have closed yet
+        var earlyBanner = document.getElementById('perfEarlyBanner');
+        if (earlyBanner) {
+            earlyBanner.style.display = totalClosed === 0 ? 'block' : 'none';
+        }
         var wrColor = wr >= 55 ? 'positive' : (wr < 45 ? 'negative' : '');
         document.getElementById('perfWinRate').className = 'hero-num ' + wrColor;
         document.getElementById('perfWinRate').textContent = wr + '%';

@@ -1,64 +1,56 @@
 /**
  * stock-nav.js — Shared injectable navigation for all stock/trading pages.
  * Add <script src="/findstocks/portfolio2/stock-nav.js"></script> before </body>.
+ *
+ * Groups: Top Tools | Stocks | Multi-Asset | More (collapsed on desktop)
  */
 (function() {
   var NAV_GROUPS = [
     {
-      label: 'Portfolio',
+      label: 'Top Tools',
       links: [
-        { text: 'Hub', href: '/findstocks/portfolio2/hub.html' },
-        { text: 'Picks', href: '/findstocks/portfolio2/picks.html' },
         { text: 'Consolidated', href: '/findstocks/portfolio2/consolidated.html', glow: true },
-        { text: 'Leaderboard', href: '/findstocks/portfolio2/leaderboard.html' },
-        { text: 'Dashboard', href: '/findstocks/portfolio2/dashboard.html' },
-        { text: 'Horizon Picks', href: '/findstocks/portfolio2/horizon-picks.html' },
-        { text: 'Dividends', href: '/findstocks/portfolio2/dividends.html' },
-        { text: 'Penny Stocks', href: '/findstocks/portfolio2/penny-stocks.html' }
-      ]
-    },
-    {
-      label: 'Analysis',
-      links: [
-        { text: 'Algo Study', href: '/findstocks/portfolio2/algo-study.html' },
-        { text: 'Stock Intel', href: '/findstocks/portfolio2/stock-intel.html' },
-        { text: 'Learning Lab', href: '/findstocks/portfolio2/learning-lab.html' },
-        { text: 'Learning Dash', href: '/findstocks/portfolio2/learning-dashboard.html' },
-        { text: 'Smart Learning', href: '/findstocks/portfolio2/smart-learning.html' },
-        { text: 'Stats', href: '/findstocks/portfolio2/stats/' }
-      ]
-    },
-    {
-      label: 'Live Trading',
-      links: [
-        { text: 'Live Monitor', href: '/live-monitor/live-monitor.html' },
-        { text: 'Scanner', href: '/live-monitor/opportunity-scanner.html' },
-        { text: 'Edge Dash', href: '/live-monitor/edge-dashboard.html' },
-        { text: 'Patterns', href: '/live-monitor/winning-patterns.html' },
-        { text: 'Hour Learn', href: '/live-monitor/hour-learning.html' },
-        { text: 'DayTrader Sim', href: '/findstocks/portfolio2/daytrader-sim.html' },
-        { text: 'L vs O', href: '/live-monitor/algo-performance.html', glow: true }
-      ]
-    },
-    {
-      label: 'Cross-Asset',
-      links: [
-        { text: 'Crypto', href: '/findcryptopairs/portfolio/' },
-        { text: 'Forex', href: '/findforex2/portfolio/' },
-        { text: 'Global Dash', href: '/findstocks2_global/' },
-        { text: 'Stock Profile', href: '/findstocks/portfolio2/stock-profile.html' }
-      ]
-    },
-    {
-      label: 'Goldmines \u00b7 Claude',
-      links: [
-        { text: 'Goldmine Checker', href: '/live-monitor/goldmine-dashboard.html', glow: true },
-        { text: 'Health Alerts', href: '/live-monitor/goldmine-alerts.html' },
         { text: 'Smart Money', href: '/live-monitor/smart-money.html', glow: true },
-        { text: 'Capital Efficiency', href: '/live-monitor/capital-efficiency.html' },
-        { text: 'Multi-Dim', href: '/live-monitor/multi-dimensional.html' }
+        { text: 'Goldmine', href: '/live-monitor/goldmine-dashboard.html', glow: true },
+        { text: 'L vs O', href: '/live-monitor/algo-performance.html', glow: true },
+        { text: 'Live Monitor', href: '/live-monitor/live-monitor.html' }
+      ]
+    },
+    {
+      label: 'Stocks',
+      links: [
+        { text: 'Picks', href: '/findstocks/portfolio2/picks.html' },
+        { text: 'Leaderboard', href: '/findstocks/portfolio2/leaderboard.html' },
+        { text: 'Stock Intel', href: '/findstocks/portfolio2/stock-intel.html' },
+        { text: 'Dividends', href: '/findstocks/portfolio2/dividends.html' }
+      ]
+    },
+    {
+      label: 'Multi-Asset',
+      links: [
+        { text: 'Crypto', href: '/findcryptopairs/winners.html' },
+        { text: 'Forex', href: '/findforex2/portfolio/' },
+        { text: 'Mutual Funds', href: '/findmutualfunds2/portfolio2/' },
+        { text: 'Sports', href: '/live-monitor/sports-betting.html' }
       ]
     }
+  ];
+
+  var MORE_LINKS = [
+    { text: 'Hub', href: '/findstocks/portfolio2/hub.html' },
+    { text: 'Dashboard', href: '/findstocks/portfolio2/dashboard.html' },
+    { text: 'Horizon Picks', href: '/findstocks/portfolio2/horizon-picks.html' },
+    { text: 'Penny Stocks', href: '/findstocks/portfolio2/penny-stocks.html' },
+    { text: 'Stock Profile', href: '/findstocks/portfolio2/stock-profile.html' },
+    { text: 'DayTrader Sim', href: '/findstocks/portfolio2/daytrader-sim.html' },
+    { text: 'Learning Lab', href: '/findstocks/portfolio2/learning-lab.html' },
+    { text: 'Scanner', href: '/live-monitor/opportunity-scanner.html' },
+    { text: 'Edge Dash', href: '/live-monitor/edge-dashboard.html' },
+    { text: 'Patterns', href: '/live-monitor/winning-patterns.html' },
+    { text: 'Health Alerts', href: '/live-monitor/goldmine-alerts.html' },
+    { text: 'Multi-Dim', href: '/live-monitor/multi-dimensional.html' },
+    { text: 'Capital Eff', href: '/live-monitor/capital-efficiency.html' },
+    { text: 'All Tools', href: '/findstocks/tools.html' }
   ];
 
   // Detect active page
@@ -69,6 +61,12 @@
     if (href.charAt(href.length - 1) === '/' && (path === href + 'index.html' || path === href.slice(0, -1))) return true;
     if (path.charAt(path.length - 1) === '/' && path + 'index.html' === href) return true;
     return false;
+  }
+
+  // Check if any More link is active (to auto-expand on that page)
+  var moreHasActive = false;
+  for (var m = 0; m < MORE_LINKS.length; m++) {
+    if (isActive(MORE_LINKS[m].href)) { moreHasActive = true; break; }
   }
 
   // Build CSS
@@ -91,6 +89,13 @@
     '#stock-nav-toggle{display:none;background:none;border:1px solid #2a2a4a;color:#8888aa;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:16px;margin-left:auto;line-height:1}',
     '#stock-nav-toggle:hover{color:#e0e0f0;border-color:#4a4a6a}',
     '#stock-nav-links{display:flex;align-items:center;flex-wrap:wrap;flex:1}',
+    /* More toggle button */
+    '.sn-more-toggle{color:#8888aa;padding:6px 7px;border-radius:6px;white-space:nowrap;cursor:pointer;transition:color 0.15s,background 0.15s;background:none;border:none;font-family:inherit;font-size:11px;text-transform:uppercase;letter-spacing:0.5px}',
+    '.sn-more-toggle:hover{color:#e0e0f0;background:rgba(99,102,241,0.12)}',
+    '.sn-more-toggle.sn-more-open{color:#6366f1}',
+    /* More links container — collapsed by default on desktop */
+    '.sn-more-links{display:none;width:100%;padding:4px 0 2px;flex-wrap:wrap;align-items:center;border-top:1px solid #1a1a3a;margin-top:4px}',
+    '.sn-more-links.sn-more-visible{display:flex}',
     '@media(max-width:900px){',
     '  #stock-nav-toggle{display:block}',
     '  #stock-nav-links{display:none;width:100%;flex-direction:column;align-items:flex-start;padding:8px 0}',
@@ -99,6 +104,8 @@
     '  .sn-group-label{width:100%;padding:6px 7px 2px;font-size:10px}',
     '  .sn-sep{display:none}',
     '  .sn-link{padding:5px 10px;font-size:13px}',
+    '  .sn-more-toggle{display:none}',
+    '  .sn-more-links{display:flex;border-top:none;margin-top:0}',
     '}'
   ].join('\n');
   document.head.appendChild(style);
@@ -112,7 +119,7 @@
 
   var brand = document.createElement('a');
   brand.id = 'stock-nav-brand';
-  brand.href = '/findstocks/portfolio2/hub.html';
+  brand.href = '/findstocks/';
   brand.textContent = 'FTE Invest';
   inner.appendChild(brand);
 
@@ -125,6 +132,7 @@
   var linksContainer = document.createElement('div');
   linksContainer.id = 'stock-nav-links';
 
+  // Render the 3 main groups
   for (var g = 0; g < NAV_GROUPS.length; g++) {
     if (g > 0) {
       var sep = document.createElement('span');
@@ -151,15 +159,56 @@
     linksContainer.appendChild(group);
   }
 
+  // More toggle button (separator + button, inline with main groups)
+  var moreSep = document.createElement('span');
+  moreSep.className = 'sn-sep';
+  linksContainer.appendChild(moreSep);
+
+  var moreBtn = document.createElement('button');
+  moreBtn.className = 'sn-more-toggle';
+  moreBtn.textContent = moreHasActive ? 'More \u25C2' : 'More \u25B8';
+  if (moreHasActive) moreBtn.classList.add('sn-more-open');
+  linksContainer.appendChild(moreBtn);
+
+  // More links container (full-width row beneath main groups)
+  var moreContainer = document.createElement('div');
+  moreContainer.className = 'sn-more-links' + (moreHasActive ? ' sn-more-visible' : '');
+
+  var moreGroup = document.createElement('span');
+  moreGroup.className = 'sn-group';
+  moreGroup.style.cssText = 'flex-wrap:wrap';
+
+  var moreLabel = document.createElement('span');
+  moreLabel.className = 'sn-group-label';
+  moreLabel.textContent = 'More';
+  moreGroup.appendChild(moreLabel);
+
+  for (var j = 0; j < MORE_LINKS.length; j++) {
+    var ma = document.createElement('a');
+    ma.className = 'sn-link' + (isActive(MORE_LINKS[j].href) ? ' active' : '');
+    ma.href = MORE_LINKS[j].href;
+    ma.textContent = MORE_LINKS[j].text;
+    moreGroup.appendChild(ma);
+  }
+  moreContainer.appendChild(moreGroup);
+  linksContainer.appendChild(moreContainer);
+
   inner.appendChild(linksContainer);
   nav.appendChild(inner);
 
   // Insert at very top of body
   document.body.insertBefore(nav, document.body.firstChild);
 
-  // Toggle handler
+  // Toggle handler — mobile hamburger
   toggle.addEventListener('click', function() {
     linksContainer.classList.toggle('open');
+  });
+
+  // Toggle handler — More section (desktop only)
+  moreBtn.addEventListener('click', function() {
+    var isOpen = moreContainer.classList.toggle('sn-more-visible');
+    moreBtn.classList.toggle('sn-more-open', isOpen);
+    moreBtn.textContent = isOpen ? 'More \u25C2' : 'More \u25B8';
   });
 
   // Close mobile menu on link click

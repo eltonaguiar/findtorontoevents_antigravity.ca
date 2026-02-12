@@ -1819,8 +1819,8 @@ function _gm_create_alert($conn, $sys, $type, $severity, $title, $desc, $tickers
         AND alert_date = '" . $today . "'");
     if ($dup && $dup->num_rows > 0) {
         $existing = $dup->fetch_assoc();
-        // If alert was resolved, reactivate it with updated data
         if (intval($existing['is_active']) === 0) {
+            // If alert was resolved, reactivate it with updated data
             $conn->query("UPDATE gm_failure_alerts SET
                 is_active = 1, resolved_at = NULL,
                 severity = '" . _gm_esc($conn, $severity) . "',
@@ -1829,6 +1829,17 @@ function _gm_create_alert($conn, $sys, $type, $severity, $title, $desc, $tickers
                 metric_value = " . floatval($metric) . ",
                 threshold_value = " . floatval($threshold) . "
                 WHERE id = " . intval($existing['id']));
+        } else {
+            // Alert still active — update metric if it worsened
+            if (floatval($metric) > floatval($existing['metric_value'])) {
+                $conn->query("UPDATE gm_failure_alerts SET
+                    severity = '" . _gm_esc($conn, $severity) . "',
+                    title = '" . _gm_esc($conn, $title) . "',
+                    description = '" . _gm_esc($conn, $desc) . "',
+                    metric_value = " . floatval($metric) . ",
+                    threshold_value = " . floatval($threshold) . "
+                    WHERE id = " . intval($existing['id']));
+            }
         }
         return;
     }
