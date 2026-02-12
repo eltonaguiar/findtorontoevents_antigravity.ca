@@ -914,6 +914,30 @@
                 </div>
             </div>
 
+            <h3 class="section-title" style="color:#14b8a6;margin-top:1.5rem;">Data Quality &amp; Accuracy Improvements (Feb 12)</h3>
+            <div style="background:var(--bg-card);border:1px solid rgba(20,184,166,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+                <p style="font-size:0.85rem;color:#e0e0f0;margin-bottom:0.8rem;"><strong>New scraper pipeline deployed to dramatically improve data quality for ML predictions:</strong></p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:1rem;">
+                    <div style="background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#14b8a6;margin-bottom:0.3rem;">Scraper-to-ML Integration</div>
+                        <div style="font-size:0.78rem;color:#889;">5 new scraper-derived features added to both PHP heuristic and Python ensemble: <strong>home_win_pct</strong>, <strong>away_win_pct</strong>, <strong>team_wp_diff</strong>, <strong>home_streak_val</strong>, <strong>home_injury_count</strong>. The ML now knows if you are betting on a 75% team vs 21% team instead of treating all matchups equally.</div>
+                    </div>
+                    <div style="background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#14b8a6;margin-bottom:0.3rem;">PHP Heuristic Factor 8</div>
+                        <div style="font-size:0.78rem;color:#889;">New scoring factor uses team standings and streaks: +6% for strong favorites, -6% for weak teams, +4% for hot streaks (5+ wins), -4% for cold streaks (5+ losses), +2-3% for goal/point differential in NHL/NFL. Injury differential also adjusts score.</div>
+                    </div>
+                    <div style="background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#14b8a6;margin-bottom:0.3rem;">Fuzzy Team Matching</div>
+                        <div style="font-size:0.78rem;color:#889;">ML lookup now handles team name variations: tries exact match, then LIKE on last word (e.g. "Lakers" matches "Los Angeles Lakers"), then abbreviation. This bridges the gap between Odds API team names and ESPN scraper names.</div>
+                    </div>
+                    <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#f59e0b;margin-bottom:0.3rem;">Known Data Gaps</div>
+                        <div style="font-size:0.78rem;color:#889;"><strong>Injury team field bug:</strong> ESPN HTML stores position (F/G/C) instead of team name. <strong>Odds parsing:</strong> Only away team captured. <strong>No failover:</strong> ESPN is the only source. <strong>NFL/MLB:</strong> Both offseason, tables empty until Sep/Mar. These are on the fix roadmap.</div>
+                    </div>
+                </div>
+                <p style="font-size:0.85rem;color:#889;"><strong>Impact on algorithm accuracy:</strong> Before scrapers, the ML scoring treated all teams equally &mdash; a bet on the #1 seed got the same base score as a bet on the #30 seed. With scraper intelligence, the system now understands matchup quality, team form, and injury context. This should significantly reduce false positive "value" bets on weak teams with inflated EV.</p>
+            </div>
+
             <h3 class="section-title" style="color:#f59e0b;margin-top:1.5rem;">World-Class Benchmark Comparison</h3>
             <div style="background:var(--bg-card);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
                 <p style="font-size:0.85rem;color:#889;margin-bottom:0.8rem;">How top sports betting models/services compare, and where we need to be:</p>
@@ -949,14 +973,20 @@
                             <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
                                 <td style="padding:0.5rem;">ML Features</td>
                                 <td style="text-align:center;padding:0.5rem;">50-200</td>
-                                <td style="text-align:center;padding:0.5rem;">30+</td>
+                                <td style="text-align:center;padding:0.5rem;">35+ (incl. scraper)</td>
                                 <td style="text-align:center;padding:0.5rem;color:#22c55e;">Good, add weather/refs</td>
                             </tr>
                             <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
                                 <td style="padding:0.5rem;">Data Sources</td>
                                 <td style="text-align:center;padding:0.5rem;">10-15 sources</td>
-                                <td style="text-align:center;padding:0.5rem;">3 (Odds API, ESPN, balldontlie)</td>
-                                <td style="text-align:center;padding:0.5rem;color:#f59e0b;">Add weather, refs, public %</td>
+                                <td style="text-align:center;padding:0.5rem;">4 (Odds API, ESPN API, ESPN HTML, balldontlie)</td>
+                                <td style="text-align:center;padding:0.5rem;color:#f59e0b;">Add failover + weather</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                                <td style="padding:0.5rem;">Scraper Tables</td>
+                                <td style="text-align:center;padding:0.5rem;">N/A</td>
+                                <td style="text-align:center;padding:0.5rem;">16 tables (4 sports x 4 types)</td>
+                                <td style="text-align:center;padding:0.5rem;color:#22c55e;">Deployed</td>
                             </tr>
                             <tr>
                                 <td style="padding:0.5rem;">Odds Refresh</td>
@@ -1709,6 +1739,40 @@ function fetchMLStatus() {
             }
             el.innerHTML = h;
         });
+    });
+}
+
+function fetchScraperStatus() {
+    var el = document.getElementById('scraper-status-content');
+    if (!el) return;
+    el.innerHTML = '<div class="loading">Loading scraper data...</div>';
+    fetchJson(API_BASE + 'scrapers/scraper_controller.php?action=status', function(d) {
+        if (!d || !d.ok) {
+            el.innerHTML = '<p style="color:#ef4444;font-size:0.78rem;">Could not load scraper status.</p>';
+            return;
+        }
+        var s = d.status || {};
+        var sports = ['nba', 'nhl', 'nfl', 'mlb'];
+        var colors = {'nba':'#ef8b47','nhl':'#3b82f6','nfl':'#22c55e','mlb':'#ef4444'};
+        var h = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.6rem;">';
+        for (var i = 0; i < sports.length; i++) {
+            var sp = sports[i];
+            var data = s[sp] || {};
+            var total = (data.stats ? data.stats.count : 0) + (data.injuries ? data.injuries.count : 0) + (data.schedule ? data.schedule.count : 0) + (data.odds ? data.odds.count : 0);
+            var clr = colors[sp];
+            h += '<div style="text-align:center;padding:0.5rem;background:rgba(' + (sp==='nba'?'239,139,71':sp==='nhl'?'59,130,246':sp==='nfl'?'34,197,94':'239,68,68') + ',0.08);border-radius:8px;">';
+            h += '<div style="font-size:1rem;font-weight:700;color:' + clr + ';">' + sp.toUpperCase() + '</div>';
+            h += '<div style="font-size:0.7rem;color:#889;">Teams: ' + (data.stats ? data.stats.count : 0) + '</div>';
+            h += '<div style="font-size:0.7rem;color:#889;">Games: ' + (data.schedule ? data.schedule.count : 0) + '</div>';
+            h += '<div style="font-size:0.7rem;color:#889;">Injuries: ' + (data.injuries ? data.injuries.count : 0) + '</div>';
+            h += '<div style="font-size:0.65rem;color:#667;margin-top:0.2rem;">' + (total > 0 ? 'Active' : 'No data') + '</div>';
+            h += '</div>';
+        }
+        h += '</div>';
+        if (d.timestamp) {
+            h += '<div style="font-size:0.65rem;color:#667;margin-top:0.4rem;text-align:right;">Last check: ' + d.timestamp + ' UTC</div>';
+        }
+        el.innerHTML = h;
     });
 }
 

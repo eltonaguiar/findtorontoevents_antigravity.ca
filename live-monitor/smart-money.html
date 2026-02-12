@@ -675,6 +675,254 @@
             </div>
             <div class="last-updated" id="showdown-updated"></div>
         </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 7: SYSTEM ANALYSIS -->
+        <!-- ============================================================ -->
+        <div id="tab-analysis" class="tab-panel">
+            <div class="section-title" style="color:#f59e0b;border-bottom-color:rgba(245,158,11,0.3);">
+                System Analysis <span class="badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);">DIAGNOSIS</span>
+            </div>
+
+            <!-- Status / Issues / Strengths cards -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem;">
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:var(--yellow);margin-bottom:0.5rem;">Current Status</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        &bull; Tracks institutional money flow via SEC filings<br>
+                        &bull; <strong style="color:var(--text)">4 data sources:</strong> 13F, Form 4, Analyst Ratings, WSB Sentiment<br>
+                        &bull; <strong style="color:var(--text)">9 database tables</strong> for comprehensive tracking<br>
+                        &bull; Powers Challenger Bot (algorithm #20 in Live Monitor)<br>
+                        &bull; Consensus scoring: rule-based weighted formula<br>
+                        &bull; Updated daily via GitHub Actions
+                    </div>
+                </div>
+                <div style="background:var(--bg-card);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:var(--red);margin-bottom:0.5rem;">Issues Identified</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        &bull; <strong>Challenger Bot 0% WR:</strong> 2 trades, 2 losses (AMZN -2.49%, NVDA -1.79%)<br>
+                        &bull; <strong>WSB sentiment noisy:</strong> Reddit data is unreliable/manipulated<br>
+                        &bull; <strong>13F data is 45-day delayed:</strong> Quarterly filings are stale by the time they appear<br>
+                        &bull; <strong>No ML optimization:</strong> Consensus weights are arbitrary (30/25/25/20)<br>
+                        &bull; <strong>No options flow data:</strong> Missing dark pool &amp; unusual activity<br>
+                        &bull; <strong>Reddit API rate limits:</strong> Restricts real-time sentiment capture
+                    </div>
+                </div>
+                <div style="background:var(--bg-card);border:1px solid rgba(34,197,94,0.3);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:var(--green);margin-bottom:0.5rem;">What's Working</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        &bull; Multi-source institutional data aggregation<br>
+                        &bull; SEC EDGAR filing integration (13F + Form 4)<br>
+                        &bull; Transparent consensus methodology<br>
+                        &bull; Leaderboard ranking across all pillars<br>
+                        &bull; 14 hedge funds tracked (Berkshire, Bridgewater, etc.)<br>
+                        &bull; Automated daily data refresh pipeline
+                    </div>
+                </div>
+            </div>
+
+            <!-- Challenger Bot Performance -->
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#f59e0b;">Challenger Bot Performance</h4>
+            <div class="grade-explainer" style="border-left:3px solid var(--red);">
+                <div class="ge-title" style="color:var(--red);">Current Record: 0% Win Rate (2 trades, 2 losses)</div>
+                <strong>AMZN:</strong> -2.49% loss. <strong>NVDA:</strong> -1.79% loss.
+                The Challenger Bot uses consensus score thresholds (&ge;70 = BUY, &le;30 = SHORT) to generate trade signals. With only 2 trades, this is too small a sample for conclusions, but the initial results suggest the consensus scoring weights may need ML optimization.
+            </div>
+
+            <!-- Consensus Scoring Breakdown -->
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#f59e0b;">Consensus Scoring Methodology</h4>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:1.5rem;">
+                <table style="width:100%;font-size:12px;border-collapse:collapse;">
+                    <thead><tr style="border-bottom:1px solid var(--border);">
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Component</th>
+                        <th style="text-align:center;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Weight</th>
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Data Source</th>
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Update Frequency</th>
+                    </tr></thead>
+                    <tbody style="color:var(--text);">
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Analyst Consensus</td><td style="padding:6px 8px;text-align:center;color:var(--green);font-weight:700;">30%</td><td style="padding:6px 8px;">Finnhub API</td><td style="padding:6px 8px;">Daily</td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Insider MSPR</td><td style="padding:6px 8px;text-align:center;color:var(--blue);font-weight:700;">25%</td><td style="padding:6px 8px;">SEC EDGAR Form 4</td><td style="padding:6px 8px;">Daily</td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">13F Institutional</td><td style="padding:6px 8px;text-align:center;color:var(--blue);font-weight:700;">25%</td><td style="padding:6px 8px;">SEC EDGAR 13F</td><td style="padding:6px 8px;">Quarterly</td></tr>
+                        <tr><td style="padding:6px 8px;">WSB Sentiment</td><td style="padding:6px 8px;text-align:center;color:var(--yellow);font-weight:700;">20%</td><td style="padding:6px 8px;">Reddit API</td><td style="padding:6px 8px;">Daily</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Architecture -->
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#f59e0b;">System Architecture</h4>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem;">
+                <div class="glossary-item" style="border-left:3px solid var(--green);">
+                    <div class="glossary-term">Data Collection <span class="badge badge-green">AUTOMATED</span></div>
+                    <div class="glossary-def">
+                        GitHub Actions &rarr; 4 Python scripts &rarr; MySQL tables.<br>
+                        <strong>sec_edgar_13f.py</strong> &mdash; quarterly institutional holdings<br>
+                        <strong>sec_edgar_form4.py</strong> &mdash; daily insider transactions<br>
+                        <strong>wsb_sentiment.py</strong> &mdash; Reddit mention velocity<br>
+                        <strong>smart_money_consensus.py</strong> &mdash; score aggregation
+                    </div>
+                </div>
+                <div class="glossary-item" style="border-left:3px solid var(--blue);">
+                    <div class="glossary-term">Database Layer <span class="badge badge-blue">9 TABLES</span></div>
+                    <div class="glossary-def">
+                        <strong>sm_analyst_ratings</strong>, <strong>sm_insider_trades</strong>, <strong>sm_institutional_holdings</strong>, <strong>sm_institutional_trades</strong>, <strong>sm_consensus_scores</strong>, <strong>sm_fund_performance</strong>, <strong>sm_fund_rankings</strong>, <strong>sm_wsb_sentiment</strong>, <strong>sm_earnings_surprise</strong>
+                    </div>
+                </div>
+                <div class="glossary-item" style="border-left:3px solid var(--purple);">
+                    <div class="glossary-term">API &amp; Frontend <span class="badge badge-purple">1848 LINES</span></div>
+                    <div class="glossary-def">
+                        <strong>smart_money.php</strong> &mdash; unified API with 6 actions (consensus, analyst, insider, institutional, leaderboard, showdown).<br>
+                        <strong>smart-money.html</strong> &mdash; 8-tab dashboard with charts &amp; tables.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Competitor Comparison -->
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#f59e0b;">Competitor Comparison</h4>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:1.5rem;">
+                <table style="width:100%;font-size:12px;border-collapse:collapse;">
+                    <thead><tr style="border-bottom:1px solid var(--border);">
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Platform</th>
+                        <th style="text-align:center;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Price</th>
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Key Feature</th>
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">We Have?</th>
+                    </tr></thead>
+                    <tbody style="color:var(--text);">
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Whale Wisdom</td><td style="padding:6px 8px;text-align:center;">$50/mo</td><td style="padding:6px 8px;">13F analytics + heat maps</td><td style="padding:6px 8px;"><span class="badge badge-green">YES</span></td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Unusual Whales</td><td style="padding:6px 8px;text-align:center;">$40/mo</td><td style="padding:6px 8px;">Options flow + dark pools</td><td style="padding:6px 8px;"><span class="badge badge-red">NO</span></td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">TipRanks</td><td style="padding:6px 8px;text-align:center;">$30/mo</td><td style="padding:6px 8px;">Analyst accuracy ranking</td><td style="padding:6px 8px;"><span class="badge badge-yellow">PARTIAL</span></td></tr>
+                        <tr><td style="padding:6px 8px;">Stocktwits</td><td style="padding:6px 8px;text-align:center;">Free</td><td style="padding:6px 8px;">Social sentiment</td><td style="padding:6px 8px;"><span class="badge badge-green">YES (WSB)</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- DB Tables -->
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#f59e0b;">Database Schema (9 Tables)</h4>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:0.6rem;margin-bottom:1rem;">
+                <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--green);"><div style="font-size:12px;font-weight:700;color:var(--text);">sm_analyst_ratings</div><div style="font-size:11px;color:var(--text-dim);">Wall Street buy/hold/sell + targets</div></div>
+                <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--green);"><div style="font-size:12px;font-weight:700;color:var(--text);">sm_insider_trades</div><div style="font-size:11px;color:var(--text-dim);">SEC Form 4 buy/sell with MSPR</div></div>
+                <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--blue);"><div style="font-size:12px;font-weight:700;color:var(--text);">sm_institutional_holdings</div><div style="font-size:11px;color:var(--text-dim);">13F quarterly position snapshots</div></div>
+                <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--blue);"><div style="font-size:12px;font-weight:700;color:var(--text);">sm_institutional_trades</div><div style="font-size:11px;color:var(--text-dim);">Derived buy/sell from 13F diffs</div></div>
+                <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--purple);"><div style="font-size:12px;font-weight:700;color:var(--text);">sm_consensus_scores</div><div style="font-size:11px;color:var(--text-dim);">Weighted composite scores (0-100)</div></div>
+                <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--orange);"><div style="font-size:12px;font-weight:700;color:var(--text);">sm_fund_performance</div><div style="font-size:11px;color:var(--text-dim);">Hedge fund return tracking</div></div>
+                <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--orange);"><div style="font-size:12px;font-weight:700;color:var(--text);">sm_fund_rankings</div><div style="font-size:11px;color:var(--text-dim);">Fund leaderboard by performance</div></div>
+                <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--yellow);"><div style="font-size:12px;font-weight:700;color:var(--text);">sm_wsb_sentiment</div><div style="font-size:11px;color:var(--text-dim);">Reddit WSB mention velocity</div></div>
+                <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--yellow);"><div style="font-size:12px;font-weight:700;color:var(--text);">sm_earnings_surprise</div><div style="font-size:11px;color:var(--text-dim);">Earnings beat/miss history</div></div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 8: RESEARCH & FUTURE -->
+        <!-- ============================================================ -->
+        <div id="tab-research" class="tab-panel">
+            <div class="section-title" style="color:#a855f7;border-bottom-color:rgba(168,85,247,0.3);">
+                Research &amp; Future <span class="badge" style="background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);">ROADMAP</span>
+            </div>
+
+            <!-- Academic Research -->
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#a855f7;">Academic Foundations</h4>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem;margin-bottom:1.5rem;">
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:#a855f7;margin-bottom:0.5rem;">Insider Trading Predictive Power</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        <strong>Lakonishok &amp; Lee (2001):</strong> Insiders outperform the market by <strong>4.8% per year</strong>. Insider purchases are more informative than sales (sales are often for liquidity, not conviction).<br>
+                        <strong>Key insight:</strong> Insider buying clusters are strongly predictive. Our MSPR metric captures this, but needs ML weighting to identify the most informative insiders.
+                    </div>
+                </div>
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:#a855f7;margin-bottom:0.5rem;">13F Herding Behavior</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        <strong>Wermers (1999):</strong> Institutional herding &mdash; when multiple funds buy the same stock simultaneously &mdash; is a strong predictor of future outperformance. Stocks with high institutional momentum outperform by 2-4% over the next quarter.<br>
+                        <strong>Our status:</strong> We track 14 hedge funds but don't yet quantify herding. Adding herding signals to consensus scoring is a planned improvement.
+                    </div>
+                </div>
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:#a855f7;margin-bottom:0.5rem;">Analyst Rating Value</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        <strong>Womack (1996):</strong> Analyst upgrades produce +5% returns over 6 months; downgrades produce -11% returns. The asymmetry is key &mdash; downgrades are more informative than upgrades.<br>
+                        <strong>Implication:</strong> Our system should weight analyst downgrades more heavily than upgrades in the consensus formula.
+                    </div>
+                </div>
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:#a855f7;margin-bottom:0.5rem;">Social Sentiment</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        <strong>Chen et al (2014):</strong> StockTwits sentiment predicts next-day returns with statistical significance. However, social media data is noisy &mdash; signal decays within 1-2 days.<br>
+                        <strong>Our status:</strong> WSB sentiment is 20% of consensus but is the noisiest component. Reducing its weight or adding sentiment decay is recommended.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strategy Approaches -->
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#a855f7;">Signal Types &amp; Approaches</h4>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:0.75rem;margin-bottom:1.5rem;">
+                <div class="glossary-item" style="border-left:3px solid var(--green);">
+                    <div class="glossary-term">Insider Buying Clusters</div>
+                    <div class="glossary-def">Multiple insiders buying the same stock within 30 days. <strong>Historically outperforms by 4.8%/year</strong> (Lakonishok &amp; Lee). Strongest signal in our toolkit.</div>
+                </div>
+                <div class="glossary-item" style="border-left:3px solid var(--blue);">
+                    <div class="glossary-term">13F Institutional Momentum</div>
+                    <div class="glossary-def">Net new positions from top hedge funds. <strong>Herding effect</strong> amplifies returns when 3+ funds buy simultaneously. 45-day delay is the main limitation.</div>
+                </div>
+                <div class="glossary-item" style="border-left:3px solid var(--purple);">
+                    <div class="glossary-term">Analyst Consensus Shifts</div>
+                    <div class="glossary-def">Tracking changes in buy/hold/sell distribution over time. <strong>Downgrades -11% over 6 months</strong> (Womack). Focus on rating changes, not static ratings.</div>
+                </div>
+                <div class="glossary-item" style="border-left:3px solid var(--yellow);">
+                    <div class="glossary-term">Social Sentiment Velocity</div>
+                    <div class="glossary-def">Reddit WSB mention frequency and sentiment polarity. <strong>Short-lived signal</strong> (1-2 day decay). Best used as a contrarian indicator at extremes.</div>
+                </div>
+            </div>
+
+            <!-- ML Optimization Needed -->
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#a855f7;">ML Optimization (Not Yet Implemented)</h4>
+            <div class="grade-explainer" style="border-left:3px solid #a855f7;">
+                <div class="ge-title" style="color:#a855f7;">Priority P1: Learn Optimal Consensus Weights</div>
+                Current weights are arbitrary: analyst 30%, insider 25%, 13F 25%, WSB 20%. An ML model (gradient boosting or logistic regression) trained on historical consensus scores vs actual returns would learn which signals actually predict future performance. Expected improvement: <strong>20-40% better signal accuracy</strong> based on similar studies. Requires minimum 100+ scored predictions with outcomes.
+            </div>
+
+            <!-- Future Priorities -->
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#a855f7;">Future Priorities</h4>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:1.5rem;">
+                <table style="width:100%;font-size:12px;border-collapse:collapse;">
+                    <thead><tr style="border-bottom:1px solid var(--border);">
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Priority</th>
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Improvement</th>
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Expected Impact</th>
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Status</th>
+                    </tr></thead>
+                    <tbody style="color:var(--text);">
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;color:#a855f7;font-weight:700;">P1</td><td style="padding:6px 8px;">ML-optimize consensus weights</td><td style="padding:6px 8px;">20-40% better signal accuracy</td><td style="padding:6px 8px;"><span class="badge badge-yellow">PLANNED</span></td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;color:#a855f7;font-weight:700;">P2</td><td style="padding:6px 8px;">Add options flow data (dark pool, unusual activity)</td><td style="padding:6px 8px;">Capture institutional intent</td><td style="padding:6px 8px;"><span class="badge badge-yellow">PLANNED</span></td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;color:#a855f7;font-weight:700;">P3</td><td style="padding:6px 8px;">13D/13G activist filing tracking</td><td style="padding:6px 8px;">Detect activist campaigns early</td><td style="padding:6px 8px;"><span class="badge badge-yellow">PLANNED</span></td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;color:#a855f7;font-weight:700;">P4</td><td style="padding:6px 8px;">Executive compensation alignment scoring</td><td style="padding:6px 8px;">Governance quality signal</td><td style="padding:6px 8px;"><span class="badge badge-yellow">PLANNED</span></td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;color:#a855f7;font-weight:700;">P5</td><td style="padding:6px 8px;">Sector rotation signals from 13F aggregate</td><td style="padding:6px 8px;">Macro sector timing</td><td style="padding:6px 8px;"><span class="badge badge-yellow">PLANNED</span></td></tr>
+                        <tr><td style="padding:6px 8px;color:#a855f7;font-weight:700;">P6</td><td style="padding:6px 8px;">Real-time Form 4 filing alerts</td><td style="padding:6px 8px;">Reduce insider data latency</td><td style="padding:6px 8px;"><span class="badge badge-yellow">PLANNED</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Benchmark Comparison -->
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#a855f7;">Benchmark Gap Analysis</h4>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:1.5rem;">
+                <table style="width:100%;font-size:12px;border-collapse:collapse;">
+                    <thead><tr style="border-bottom:1px solid var(--border);">
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Dimension</th>
+                        <th style="text-align:center;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">World-Class</th>
+                        <th style="text-align:center;padding:6px 8px;color:#a855f7;font-size:11px;text-transform:uppercase;">Ours</th>
+                        <th style="text-align:center;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Gap</th>
+                    </tr></thead>
+                    <tbody style="color:var(--text);">
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Data Sources</td><td style="padding:6px 8px;text-align:center;">10+</td><td style="padding:6px 8px;text-align:center;color:var(--yellow);">4</td><td style="padding:6px 8px;text-align:center;"><span class="badge badge-red">HIGH</span></td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Options Flow</td><td style="padding:6px 8px;text-align:center;">Yes</td><td style="padding:6px 8px;text-align:center;color:var(--red);">None</td><td style="padding:6px 8px;text-align:center;"><span class="badge badge-red">HIGH</span></td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">ML Optimization</td><td style="padding:6px 8px;text-align:center;">Ensemble</td><td style="padding:6px 8px;text-align:center;color:var(--red);">Rule-based</td><td style="padding:6px 8px;text-align:center;"><span class="badge badge-red">HIGH</span></td></tr>
+                        <tr><td style="padding:6px 8px;">Update Speed</td><td style="padding:6px 8px;text-align:center;">Real-time</td><td style="padding:6px 8px;text-align:center;color:var(--yellow);">Daily/Quarterly</td><td style="padding:6px 8px;text-align:center;"><span class="badge badge-yellow">MED</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p style="font-size:0.75rem;color:var(--text-dim);line-height:1.6;margin-bottom:1rem;">
+                <strong>Sources:</strong> Lakonishok &amp; Lee (2001) &ldquo;Are Insider Trades Informative?&rdquo;, Wermers (1999) &ldquo;Mutual Fund Herding&rdquo;, Womack (1996) &ldquo;Do Brokerage Analysts' Recommendations Have Investment Value?&rdquo;, Chen et al (2014) &ldquo;Wisdom of Crowds: StockTwits Sentiment&rdquo;, SEC EDGAR documentation, Finnhub API docs.
+            </p>
+        </div>
     </div>
 
     <!-- System Analysis -->

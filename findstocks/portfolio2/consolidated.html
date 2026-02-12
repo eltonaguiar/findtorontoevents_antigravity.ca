@@ -342,6 +342,35 @@
         .perf-hero-card .hero-sub {
             font-size: 0.8rem; color: var(--text-dim); margin-top: 0.25rem;
         }
+        /* Win rate tooltip */
+        .wr-tooltip-wrap { position: relative; display: inline-block; }
+        .wr-info-icon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: rgba(234,179,8,0.15); color: #eab308; font-size: 11px;
+            font-weight: 700; cursor: help; margin-left: 6px; vertical-align: middle;
+            border: 1px solid rgba(234,179,8,0.3); transition: all 0.15s;
+        }
+        .wr-info-icon:hover { background: rgba(234,179,8,0.3); }
+        .wr-tooltip {
+            visibility: hidden; opacity: 0; position: absolute; z-index: 100;
+            bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%);
+            width: 320px; background: #1a1a3a; border: 1px solid rgba(234,179,8,0.4);
+            border-radius: 10px; padding: 12px 14px; font-size: 12px; color: #c8c8d8;
+            line-height: 1.6; text-align: left; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            transition: opacity 0.2s, visibility 0.2s; pointer-events: none;
+        }
+        .wr-tooltip::after {
+            content: ''; position: absolute; top: 100%; left: 50%;
+            transform: translateX(-50%); border: 6px solid transparent;
+            border-top-color: rgba(234,179,8,0.4);
+        }
+        .wr-info-icon:hover + .wr-tooltip,
+        .wr-tooltip-wrap:hover .wr-tooltip { visibility: visible; opacity: 1; pointer-events: auto; }
+        @media(max-width:600px) {
+            .wr-tooltip { width: 260px; left: auto; right: -20px; transform: none; }
+            .wr-tooltip::after { left: auto; right: 28px; }
+        }
 
         /* Position cards */
         .pos-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
@@ -599,7 +628,7 @@
             <div class="perf-hero" id="perfHero">
                 <div class="perf-hero-card">
                     <div class="hero-num" id="perfWinRate">-</div>
-                    <div class="hero-label">Win Rate</div>
+                    <div class="hero-label">Win Rate <span class="wr-tooltip-wrap" id="wrTooltipWrap" style="display:none;"><span class="wr-info-icon">?</span><span class="wr-tooltip" id="wrTooltipContent"></span></span></div>
                     <div class="hero-sub" id="perfWinSub">-</div>
                 </div>
                 <div class="perf-hero-card">
@@ -1176,6 +1205,37 @@ function loadPerformance() {
         document.getElementById('perfWinRate').textContent = wr + '%';
         document.getElementById('perfWinSub').textContent = s.total_wins + 'W / ' + s.total_losses + 'L of ' + s.total_closed + ' closed';
         document.getElementById('perfBadge').textContent = wr + '%';
+
+        // Win rate tooltip — show contextual explanation
+        var wrWrap = document.getElementById('wrTooltipWrap');
+        var wrTip = document.getElementById('wrTooltipContent');
+        if (wrWrap && wrTip) {
+            wrWrap.style.display = 'inline-block';
+            if (totalClosed === 0) {
+                // Genesis: Feb 10, 2026. Max hold: 14 days. First closures ~Feb 24.
+                var genesis = new Date(2026, 1, 10); // Feb 10, 2026
+                var maxHoldDays = 14;
+                var firstClosureDate = new Date(genesis.getTime() + maxHoldDays * 86400000);
+                var today = new Date();
+                var daysUntil = Math.max(0, Math.ceil((firstClosureDate - today) / 86400000));
+                var etaStr = firstClosureDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                wrTip.innerHTML = '<strong style="color:#eab308;">0% = No closed trades yet</strong><br>'
+                    + 'All ' + (s.open_positions || 65) + ' positions are still open. Win rate is only calculated from closed trades.<br><br>'
+                    + '<strong style="color:var(--cyan);">First closures expected:</strong> ~' + etaStr
+                    + (daysUntil > 0 ? ' (' + daysUntil + ' days)' : ' (any day now)') + '<br><br>'
+                    + '<strong>Exit triggers:</strong><br>'
+                    + '&bull; Take-profit: +8% (swing) / +5% (day)<br>'
+                    + '&bull; Stop-loss: &minus;4% (swing) / &minus;3% (day)<br>'
+                    + '&bull; Max hold: 14 days from entry<br>'
+                    + '&bull; Consensus drop: &lt;2 algorithms agree<br><br>'
+                    + '<span style="color:var(--text-dim);font-size:11px;">SL/TP exits can happen any day if prices move enough. Max-hold closures are the guaranteed date.</span>';
+            } else {
+                wrTip.innerHTML = '<strong style="color:' + (wr >= 50 ? '#22c55e' : '#ef4444') + ';">' + wr + '% win rate</strong> from ' + totalClosed + ' closed trade' + (totalClosed !== 1 ? 's' : '') + '<br><br>'
+                    + '<strong>Wins:</strong> ' + (s.total_wins || 0) + ' | <strong>Losses:</strong> ' + (s.total_losses || 0) + '<br>'
+                    + '<strong>Avg win:</strong> ' + (s.avg_win || '—') + '% | <strong>Avg loss:</strong> ' + (s.avg_loss || '—') + '%<br><br>'
+                    + '<span style="color:var(--text-dim);font-size:11px;">Based on real forward-facing results, not backtests. Exits via SL/TP/max-hold/consensus-drop rules.</span>';
+            }
+        }
 
         var pv = s.total_tracked || 0;
         var pvNum = document.getElementById('perfPortfolio');
