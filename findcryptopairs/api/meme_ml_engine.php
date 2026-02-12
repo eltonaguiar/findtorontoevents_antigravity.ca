@@ -622,6 +622,84 @@ class MemeMLEngine {
         return ($prob_a > $prob_b) ? -1 : 1;
     }
     
+    public function store_prediction($signal_id, $prediction) {
+        $model_id = isset($prediction['model_id']) ? $prediction['model_id'] : 'unknown';
+        $probability = isset($prediction['win_probability']) ? (float)$prediction['win_probability'] : 0.5;
+        $predicted_outcome = $probability >= 0.5 ? 1 : 0;
+        $features_json = json_encode(isset($prediction['features']) ? $prediction['features'] : array());
+        
+        $esc_signal_id = $this->conn->real_escape_string($signal_id);
+        $esc_model_id = $this->conn->real_escape_string($model_id);
+        $esc_features = $this->conn->real_escape_string($features_json);
+        $esc_prob = $probability;
+        
+        $query = "INSERT INTO meme_ml_predictions 
+            (signal_id, model_id, predicted_probability, predicted_outcome, feature_values_json, created_at)
+            VALUES ('$esc_signal_id', '$esc_model_id', $esc_prob, $predicted_outcome, '$esc_features', NOW())
+            ON DUPLICATE KEY UPDATE
+            model_id = VALUES(model_id),
+            predicted_probability = VALUES(predicted_probability),
+            predicted_outcome = VALUES(predicted_outcome),
+            feature_values_json = VALUES(feature_values_json),
+            created_at = VALUES(created_at)";
+        
+        $this->conn->query($query);
+        
+        return array(
+            'ok' => true,
+            'signal_id' => $signal_id,
+            'stored' => true
+        );
+    }
+    
+    public function update_prediction_outcome($signal_id, $actual_outcome) {
+        $esc_signal_id = $this->conn->real_escape_string($signal_id);
+        $outcome_val = $actual_outcome ? 1 : 0;
+        
+        $query = "UPDATE meme_ml_predictions 
+            SET actual_outcome = $outcome_val 
+            WHERE signal_id = '$esc_signal_id' AND actual_outcome IS NULL";
+        
+        $this->conn->query($query);
+        $affected = $this->conn->affected_rows;
+        
+        return array(
+            'ok' => true,
+            'signal_id' => $signal_id,
+            'updated' => $affected > 0,
+            'affected_rows' => $affected
+        );
+    }
+    
+    public function get_ml_stats() {
+        // Total predictions
+        $res = $this->conn->query("SELECT COUNT(*) as total FROM meme_ml_predictions");
+        $total = ($res && $row = $res->fetch_assoc()) ? (int)$row['total'] : 0;
+        
+        // Predictions with outcomes
+        $res = $this->conn->query("SELECT COUNT(*) as resolved FROM meme_ml_predictions WHERE actual_outcome IS NOT NULL");
+        $resolved = ($res && $row = $res->fetch_assoc()) ? (int)$row['total'] : 0;
+        
+        // Correct predictions
+        $res = $this->conn->query("SELECT COUNT(*) as correct FROM meme_ml_predictions 
+            WHERE actual_outcome IS NOT NULL AND predicted_outcome = actual_outcome");
+        $correct = ($res && $row = $res->fetch_assoc()) ? (int)$row['total'] : 0;
+        
+        // Latest model
+        $res = $this->conn->query("SELECT model_id, created_at FROM meme_ml_models ORDER BY created_at DESC LIMIT 1");
+        $latest_model = ($res && $row = $res->fetch_assoc()) ? $row : null;
+        
+        return array(
+            'ok' => true,
+            'total_predictions' => $total,
+            'resolved_predictions' => $resolved,
+            'correct_predictions' => $correct,
+            'accuracy' => $resolved > 0 ? round($correct / $resolved, 4) : 0,
+            'latest_model' => $latest_model,
+            'ready_for_training' => $resolved >= 30
+        );
+    }
+    
     private function _ensure_tables() {
         $this->conn->query("CREATE TABLE IF NOT EXISTS meme_ml_models (
             id INT AUTO_INCREMENT PRIMARY KEY,

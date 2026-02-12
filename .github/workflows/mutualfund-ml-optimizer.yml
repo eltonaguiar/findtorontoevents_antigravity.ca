@@ -1,0 +1,83 @@
+name: Mutual Fund ML Optimizer — Parameter Learning
+
+on:
+  schedule:
+    # Weekly Sunday at 4 PM EST (21:00 UTC) — after forex ML optimizer
+    - cron: '0 21 * * 0'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (show results without updating DB)'
+        required: false
+        default: 'false'
+
+jobs:
+  mutualfund-ml:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install --quiet mysql-connector-python requests numpy pandas
+
+    - name: Run Mutual Fund ML Optimizer
+      env:
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASS: ${{ secrets.DB_PASS }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+      run: |
+        echo "=== Mutual Fund ML Parameter Optimizer ==="
+        echo "Time: $(date -u)"
+
+        DRY_RUN_FLAG=""
+        if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+          DRY_RUN_FLAG="--dry-run"
+          echo "Running in DRY RUN mode"
+        fi
+
+        python scripts/mutualfund_ml_optimizer.py $DRY_RUN_FLAG
+
+    - name: Trigger PHP learning engine (comparison)
+      continue-on-error: true
+      run: |
+        echo "=== Running PHP Learning Engine for comparison ==="
+        RESULT=$(curl -sS --max-time 60 \
+          "https://findtorontoevents.ca/findmutualfunds2/portfolio2/api/learning.php?action=analyze_and_adjust" \
+          -H "User-Agent: WorldClassIntelligence/1.0" 2>&1) || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            recs = d.get('recommendations', [])
+            print(f'PHP engine analyzed {len(recs)} algorithms:')
+            for r in recs:
+                print(f'  {r[\"algorithm\"]}: WR={r[\"current_performance\"][\"win_rate\"]}%, Best return={r[\"best_return_pct\"]}%, Verdict={r[\"verdict\"]}')
+        " 2>/dev/null || echo "Could not parse PHP learning results"
+
+    - name: Verify ML status
+      continue-on-error: true
+      run: |
+        echo "=== Checking ML Status for MUTUALFUND ==="
+        RESULT=$(curl -sS --max-time 15 \
+          "https://findtorontoevents.ca/live-monitor/api/ml_intelligence.php?action=status&key=livetrader2026" \
+          -H "User-Agent: WorldClassIntelligence/1.0" 2>&1) || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            algos = d.get('algorithms', [])
+            mf = [a for a in algos if a.get('asset_class') == 'MUTUALFUND']
+            print(f'MUTUALFUND algorithms tracked: {len(mf)}')
+            for a in mf[:10]:
+                print(f'  {a[\"algorithm_name\"]}: {a.get(\"closed_trades\",0)} trades, ML-ready: {a.get(\"ml_ready\",0)}')
+        " 2>/dev/null || echo "Could not parse ML status"

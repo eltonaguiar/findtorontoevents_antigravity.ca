@@ -1,0 +1,68 @@
+name: FOREX ML Optimizer — Parameter Learning
+
+on:
+  schedule:
+    # Weekly Sunday at 3 PM EST (20:00 UTC) — after regime detection runs
+    - cron: '0 20 * * 0'
+    # Wednesday midweek refresh at 3 PM EST
+    - cron: '0 20 * * 3'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (show results without updating DB)'
+        required: false
+        default: 'false'
+
+jobs:
+  forex-ml:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install --quiet mysql-connector-python requests numpy pandas
+
+    - name: Run FOREX ML Optimizer
+      env:
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASS: ${{ secrets.DB_PASS }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+      run: |
+        echo "=== FOREX ML Parameter Optimizer ==="
+        echo "Time: $(date -u)"
+
+        DRY_RUN_FLAG=""
+        if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+          DRY_RUN_FLAG="--dry-run"
+          echo "Running in DRY RUN mode"
+        fi
+
+        python scripts/forex_ml_optimizer.py $DRY_RUN_FLAG
+
+    - name: Verify FOREX ML status
+      continue-on-error: true
+      run: |
+        echo "=== Checking ML Status for FOREX ==="
+        RESULT=$(curl -sS --max-time 15 \
+          "https://findtorontoevents.ca/live-monitor/api/ml_intelligence.php?action=status&key=livetrader2026" \
+          -H "User-Agent: WorldClassIntelligence/1.0" 2>&1) || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            algos = d.get('algorithms', [])
+            forex = [a for a in algos if a.get('asset_class') == 'FOREX']
+            print(f'FOREX algorithms tracked: {len(forex)}')
+            for a in forex[:10]:
+                print(f'  {a[\"algorithm_name\"]}: {a.get(\"closed_trades\",0)} trades, ML-ready: {a.get(\"ml_ready\",0)}')
+        " 2>/dev/null || echo "Could not parse ML status"

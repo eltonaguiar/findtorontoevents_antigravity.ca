@@ -1,0 +1,39 @@
+name: Collect Meme Signals
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Every hour
+  workflow_dispatch:
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Collect Current Signals
+        run: |
+          # Fetch current scanner signals
+          curl -s "https://ejaguiar1.50webs.com/findcryptopairs/api/meme_scanner.php?action=scan&limit=50" > current_signals.json
+          
+          # Send to ML engine for storage
+          curl -s -X POST "https://ejaguiar1.50webs.com/findcryptopairs/api/meme_ml_engine.php?action=batch" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "signals=$(cat current_signals.json | jq -r '.signals // .' | head -c 10000)"
+      
+      - name: Update Outcomes
+        run: |
+          # Resolve pending signals (check if old signals hit targets)
+          curl -s "https://ejaguiar1.50webs.com/findcryptopairs/api/meme_ml_engine.php?action=retrain" > retrain_check.json
+          
+          # Show stats
+          curl -s "https://ejaguiar1.50webs.com/findcryptopairs/api/meme_ml_engine.php?action=stats" | jq .
+      
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: signal-data
+          path: |
+            current_signals.json
+            retrain_check.json
