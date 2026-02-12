@@ -16,13 +16,15 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { exit; }
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit;
+}
 
 // ── DB connection ──
 $servername = 'mysql.50webs.com';
-$username   = 'ejaguiar1_stocks';
-$password   = 'stocks';
-$dbname     = 'ejaguiar1_stocks';
+$username = 'ejaguiar1_stocks';
+$password = 'stocks';
+$dbname = 'ejaguiar1_stocks';
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
@@ -101,7 +103,8 @@ $conn->query("CREATE TABLE IF NOT EXISTS penny_picks_daily (
 // ── Admin key check ──
 $admin_key = 'livetrader2026';
 
-function _pp_require_admin() {
+function _pp_require_admin()
+{
     global $admin_key;
     $key = isset($_GET['key']) ? $_GET['key'] : '';
     if ($key !== $admin_key) {
@@ -150,59 +153,59 @@ if ($action === 'picks') {
     if ($r) {
         while ($row = $r->fetch_assoc()) {
             $picks[] = array(
-                'id'               => intval($row['id']),
-                'pick_date'        => $row['pick_date'],
-                'symbol'           => $row['symbol'],
-                'name'             => $row['name'],
-                'price'            => floatval($row['price']),
-                'composite_score'  => floatval($row['composite_score']),
-                'rating'           => $row['rating'],
-                'market_cap'       => intval($row['market_cap']),
-                'exchange'         => $row['exchange_name'],
-                'country'          => $row['country'],
-                'rrsp_eligible'    => intval($row['rrsp_eligible']) === 1,
-                'avg_volume'       => intval($row['avg_volume']),
-                'stop_loss_pct'    => floatval($row['stop_loss_pct']),
-                'take_profit_pct'  => floatval($row['take_profit_pct']),
-                'max_hold_days'    => intval($row['max_hold_days']),
-                'position_size_pct'=> floatval($row['position_size_pct']),
+                'id' => intval($row['id']),
+                'pick_date' => $row['pick_date'],
+                'symbol' => $row['symbol'],
+                'name' => $row['name'],
+                'price' => floatval($row['price']),
+                'composite_score' => floatval($row['composite_score']),
+                'rating' => $row['rating'],
+                'market_cap' => intval($row['market_cap']),
+                'exchange' => $row['exchange_name'],
+                'country' => $row['country'],
+                'rrsp_eligible' => intval($row['rrsp_eligible']) === 1,
+                'avg_volume' => intval($row['avg_volume']),
+                'stop_loss_pct' => floatval($row['stop_loss_pct']),
+                'take_profit_pct' => floatval($row['take_profit_pct']),
+                'max_hold_days' => intval($row['max_hold_days']),
+                'position_size_pct' => floatval($row['position_size_pct']),
                 'factor_scores' => array(
-                    'health'     => floatval($row['health_score']),
-                    'momentum'   => floatval($row['momentum_score']),
-                    'volume'     => floatval($row['volume_score']),
-                    'technical'  => floatval($row['technical_score']),
-                    'earnings'   => floatval($row['earnings_score']),
-                    'smart_money'=> floatval($row['smart_money_score']),
-                    'quality'    => floatval($row['quality_score']),
+                    'health' => floatval($row['health_score']),
+                    'momentum' => floatval($row['momentum_score']),
+                    'volume' => floatval($row['volume_score']),
+                    'technical' => floatval($row['technical_score']),
+                    'earnings' => floatval($row['earnings_score']),
+                    'smart_money' => floatval($row['smart_money_score']),
+                    'quality' => floatval($row['quality_score']),
                 ),
                 'metrics' => array(
-                    'z_score'        => floatval($row['z_score']),
-                    'f_score'        => intval($row['f_score']),
-                    'current_ratio'  => floatval($row['current_ratio']),
-                    'rsi'            => floatval($row['rsi']),
-                    'ema_alignment'  => intval($row['ema_alignment']),
-                    'rvol'           => floatval($row['rvol']),
-                    'mom_3m'         => floatval($row['mom_3m']),
-                    'mom_6m'         => floatval($row['mom_6m']),
-                    'inst_pct'       => floatval($row['inst_pct']),
-                    'short_pct'      => floatval($row['short_pct']),
-                    'volatility'     => floatval($row['ann_volatility']),
+                    'z_score' => floatval($row['z_score']),
+                    'f_score' => intval($row['f_score']),
+                    'current_ratio' => floatval($row['current_ratio']),
+                    'rsi' => floatval($row['rsi']),
+                    'ema_alignment' => intval($row['ema_alignment']),
+                    'rvol' => floatval($row['rvol']),
+                    'mom_3m' => floatval($row['mom_3m']),
+                    'mom_6m' => floatval($row['mom_6m']),
+                    'inst_pct' => floatval($row['inst_pct']),
+                    'short_pct' => floatval($row['short_pct']),
+                    'volatility' => floatval($row['ann_volatility']),
                 ),
-                'status'             => $row['status'],
-                'current_price'      => floatval($row['current_price']),
+                'status' => $row['status'],
+                'current_price' => floatval($row['current_price']),
                 'current_return_pct' => floatval($row['current_return_pct']),
-                'exit_price'         => floatval($row['exit_price']),
-                'exit_date'          => $row['exit_date'],
-                'exit_reason'        => $row['exit_reason'],
+                'exit_price' => floatval($row['exit_price']),
+                'exit_date' => $row['exit_date'],
+                'exit_reason' => $row['exit_reason'],
             );
         }
     }
 
     echo json_encode(array(
-        'ok'        => true,
-        'date'      => $date,
-        'count'     => count($picks),
-        'picks'     => $picks,
+        'ok' => true,
+        'date' => $date,
+        'count' => count($picks),
+        'picks' => $picks,
         'timestamp' => date('Y-m-d H:i:s')
     ));
     exit;
@@ -230,28 +233,28 @@ if ($action === 'history') {
     if ($r) {
         while ($row = $r->fetch_assoc()) {
             $history[] = array(
-                'symbol'         => $row['symbol'],
-                'name'           => $row['name'],
-                'pick_date'      => $row['pick_date'],
-                'entry_price'    => floatval($row['price']),
-                'score'          => floatval($row['composite_score']),
-                'rating'         => $row['rating'],
-                'status'         => $row['status'],
-                'current_price'  => floatval($row['current_price']),
-                'return_pct'     => floatval($row['current_return_pct']),
-                'exit_price'     => floatval($row['exit_price']),
-                'exit_date'      => $row['exit_date'],
-                'exit_reason'    => $row['exit_reason'],
-                'exchange'       => $row['exchange_name'],
-                'country'        => $row['country'],
+                'symbol' => $row['symbol'],
+                'name' => $row['name'],
+                'pick_date' => $row['pick_date'],
+                'entry_price' => floatval($row['price']),
+                'score' => floatval($row['composite_score']),
+                'rating' => $row['rating'],
+                'status' => $row['status'],
+                'current_price' => floatval($row['current_price']),
+                'return_pct' => floatval($row['current_return_pct']),
+                'exit_price' => floatval($row['exit_price']),
+                'exit_date' => $row['exit_date'],
+                'exit_reason' => $row['exit_reason'],
+                'exchange' => $row['exchange_name'],
+                'country' => $row['country'],
             );
         }
     }
 
     echo json_encode(array(
-        'ok'      => true,
-        'days'    => $days,
-        'count'   => count($history),
+        'ok' => true,
+        'days' => $days,
+        'count' => count($history),
         'history' => $history,
     ));
     exit;
@@ -299,8 +302,8 @@ if ($action === 'performance') {
         while ($row = $r2->fetch_assoc()) {
             $cnt = intval($row['cnt']);
             $by_rating[] = array(
-                'rating'   => $row['rating'],
-                'count'    => $cnt,
+                'rating' => $row['rating'],
+                'count' => $cnt,
                 'avg_return' => round(floatval($row['avg_ret']), 2),
                 'win_rate' => $cnt > 0 ? round(intval($row['w']) / $cnt * 100, 1) : 0,
             );
@@ -316,34 +319,34 @@ if ($action === 'performance') {
     if ($r3) {
         while ($row = $r3->fetch_assoc()) {
             $daily[] = array(
-                'date'        => $row['snap_date'],
-                'total'       => intval($row['total_scored']),
-                'picks'       => intval($row['top_picks_count']),
-                'avg_score'   => floatval($row['avg_score']),
-                'win_rate'    => floatval($row['win_rate']),
-                'avg_return'  => floatval($row['avg_return_pct']),
+                'date' => $row['snap_date'],
+                'total' => intval($row['total_scored']),
+                'picks' => intval($row['top_picks_count']),
+                'avg_score' => floatval($row['avg_score']),
+                'win_rate' => floatval($row['win_rate']),
+                'avg_return' => floatval($row['avg_return_pct']),
             );
         }
     }
 
     echo json_encode(array(
-        'ok'         => true,
-        'days'       => $days,
+        'ok' => true,
+        'days' => $days,
         'stats' => array(
-            'total_picks'  => intval($stats['total_picks']),
-            'active'       => intval($stats['active']),
-            'closed'       => $closed,
-            'wins'         => $wins,
-            'losses'       => intval($stats['losses']),
-            'win_rate'     => $win_rate,
-            'avg_return'   => round(floatval($stats['avg_return']), 2),
-            'total_return'  => round(floatval($stats['total_return']), 2),
-            'best_return'  => round(floatval($stats['best_return']), 2),
+            'total_picks' => intval($stats['total_picks']),
+            'active' => intval($stats['active']),
+            'closed' => $closed,
+            'wins' => $wins,
+            'losses' => intval($stats['losses']),
+            'win_rate' => $win_rate,
+            'avg_return' => round(floatval($stats['avg_return']), 2),
+            'total_return' => round(floatval($stats['total_return']), 2),
+            'best_return' => round(floatval($stats['best_return']), 2),
             'worst_return' => round(floatval($stats['worst_return']), 2),
-            'avg_score'    => round(floatval($stats['avg_score']), 1),
+            'avg_score' => round(floatval($stats['avg_score']), 1),
         ),
-        'by_rating'  => $by_rating,
-        'daily'      => $daily,
+        'by_rating' => $by_rating,
+        'daily' => $daily,
     ));
     exit;
 }
@@ -366,37 +369,37 @@ if ($action === 'detail') {
     if ($r) {
         while ($row = $r->fetch_assoc()) {
             $entries[] = array(
-                'pick_date'       => $row['pick_date'],
-                'price'           => floatval($row['price']),
+                'pick_date' => $row['pick_date'],
+                'price' => floatval($row['price']),
                 'composite_score' => floatval($row['composite_score']),
-                'rating'          => $row['rating'],
-                'status'          => $row['status'],
-                'current_return'  => floatval($row['current_return_pct']),
+                'rating' => $row['rating'],
+                'status' => $row['status'],
+                'current_return' => floatval($row['current_return_pct']),
                 'factor_scores' => array(
-                    'health'     => floatval($row['health_score']),
-                    'momentum'   => floatval($row['momentum_score']),
-                    'volume'     => floatval($row['volume_score']),
-                    'technical'  => floatval($row['technical_score']),
-                    'earnings'   => floatval($row['earnings_score']),
-                    'smart_money'=> floatval($row['smart_money_score']),
-                    'quality'    => floatval($row['quality_score']),
+                    'health' => floatval($row['health_score']),
+                    'momentum' => floatval($row['momentum_score']),
+                    'volume' => floatval($row['volume_score']),
+                    'technical' => floatval($row['technical_score']),
+                    'earnings' => floatval($row['earnings_score']),
+                    'smart_money' => floatval($row['smart_money_score']),
+                    'quality' => floatval($row['quality_score']),
                 ),
                 'metrics' => array(
-                    'z_score'       => floatval($row['z_score']),
-                    'f_score'       => intval($row['f_score']),
+                    'z_score' => floatval($row['z_score']),
+                    'f_score' => intval($row['f_score']),
                     'current_ratio' => floatval($row['current_ratio']),
-                    'rsi'           => floatval($row['rsi']),
-                    'mom_3m'        => floatval($row['mom_3m']),
-                    'mom_6m'        => floatval($row['mom_6m']),
-                    'volatility'    => floatval($row['ann_volatility']),
+                    'rsi' => floatval($row['rsi']),
+                    'mom_3m' => floatval($row['mom_3m']),
+                    'mom_6m' => floatval($row['mom_6m']),
+                    'volatility' => floatval($row['ann_volatility']),
                 ),
             );
         }
     }
 
     echo json_encode(array(
-        'ok'      => true,
-        'symbol'  => $symbol,
+        'ok' => true,
+        'symbol' => $symbol,
         'entries' => $entries,
     ));
     exit;
@@ -423,7 +426,15 @@ if ($action === 'store_picks') {
 
     foreach ($input['picks'] as $p) {
         $symbol = $conn->real_escape_string($p['symbol']);
-        $name   = $conn->real_escape_string(substr($p['name'], 0, 200));
+        $name = $conn->real_escape_string(substr($p['name'], 0, 200));
+
+        // ── VOLUME CONFIRMATION FILTER (Priority 1 - Feb 2026) ──
+        // Require 2x average volume spike before flagging a pick
+        $rvol = floatval($p['rvol']);
+        if ($rvol < 2.0) {
+            // Skip picks without volume confirmation
+            continue;
+        }
 
         // Check if already exists for this date + symbol
         $check = $conn->query("SELECT id FROM penny_picks WHERE pick_date = '$date' AND symbol = '$symbol'");
@@ -520,8 +531,10 @@ if ($action === 'store_picks') {
     $score_sum = 0;
     foreach ($input['picks'] as $p) {
         $score_sum += floatval($p['composite_score']);
-        if ($p['rating'] === 'BUY') $buy_count++;
-        if ($p['rating'] === 'STRONG_BUY') $strong_buy_count++;
+        if ($p['rating'] === 'BUY')
+            $buy_count++;
+        if ($p['rating'] === 'STRONG_BUY')
+            $strong_buy_count++;
     }
     $pick_count = count($input['picks']);
     $avg_score = $pick_count > 0 ? round($score_sum / $pick_count, 2) : 0;
@@ -539,7 +552,10 @@ if ($action === 'store_picks') {
                          WHERE pick_date >= DATE_SUB('$date', INTERVAL 30 DAY)
                          AND status='closed' AND current_return_pct > 0");
     $wins = 0;
-    if ($wr) { $wrow = $wr->fetch_assoc(); $wins = intval($wrow['w']); }
+    if ($wr) {
+        $wrow = $wr->fetch_assoc();
+        $wins = intval($wrow['w']);
+    }
     $win_rate = $closed > 0 ? round($wins / $closed * 100, 1) : 0;
 
     // Upsert daily snapshot
@@ -557,10 +573,10 @@ if ($action === 'store_picks') {
     )");
 
     echo json_encode(array(
-        'ok'      => true,
-        'stored'  => $stored,
-        'errors'  => $errors,
-        'date'    => $date,
+        'ok' => true,
+        'stored' => $stored,
+        'errors' => $errors,
+        'date' => $date,
         'message' => "Stored $stored picks ($errors errors)"
     ));
     exit;
@@ -589,7 +605,8 @@ if ($action === 'track') {
         // Get all active picks for this symbol
         $r = $conn->query("SELECT id, price, stop_loss_pct, take_profit_pct, max_hold_days, pick_date
                            FROM penny_picks WHERE symbol = '$symbol' AND status = 'active'");
-        if (!$r) continue;
+        if (!$r)
+            continue;
 
         while ($row = $r->fetch_assoc()) {
             $id = intval($row['id']);
@@ -631,12 +648,13 @@ if ($action === 'track') {
             }
             $sql .= " WHERE id = $id";
 
-            if ($conn->query($sql)) $updated++;
+            if ($conn->query($sql))
+                $updated++;
         }
     }
 
     echo json_encode(array(
-        'ok'      => true,
+        'ok' => true,
         'updated' => $updated,
     ));
     exit;
