@@ -103,7 +103,8 @@ $stock_symbols = array(
 //  quality threshold (require 4+ algorithms with 75%+ supermajority).
 // ────────────────────────────────────────────────────────────
 $PAUSED_ALGORITHMS = array(
-    'Consensus'
+    // Consensus re-enabled Feb 12, 2026 — regime-gated fix in commit 05e1ed8
+    // (85% supermajority, min 4 algos, avg strength >= 75, regime gate, 3:1 TP/SL)
 );
 
 // ────────────────────────────────────────────────────────────
