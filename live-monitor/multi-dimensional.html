@@ -520,9 +520,20 @@
     }
 
     // ─── Load Market Overview ───
+    function checkEmptyState(){
+        var kpiFg=document.getElementById('kpi-fg').textContent;
+        var kpiRegime=document.getElementById('kpi-regime').textContent;
+        var kpiTop=document.getElementById('kpi-top').textContent;
+        var kpiCount=document.getElementById('kpi-count').textContent;
+        var note=document.getElementById('md-empty-note');
+        if(note){
+            var allDash=(kpiFg==='--'&&kpiRegime==='--'&&kpiTop==='--'&&kpiCount==='--');
+            note.style.display=allDash?'block':'none';
+        }
+    }
     function loadMarket(){
         api(MD_API+'?action=market',function(d){
-            if(!d.ok)return;
+            if(!d.ok){checkEmptyState();return;}
             var fg=d.fear_greed||{};
             var el=document.getElementById('kpi-fg');
             el.textContent=fg.score||'--';
@@ -546,6 +557,7 @@
                 var el2=document.getElementById('avg-'+dim);
                 if(el2&&avg[key]!==undefined){el2.textContent=avg[key];el2.className='dim-score '+clr(avg[key])}
             });
+            checkEmptyState();
         });
         // Sector rotation
         loadSectors();

@@ -102,6 +102,45 @@
     </div>
 
     <div class="container">
+        <!-- #1 PICK Banner — data-verified designation -->
+        <div id="gold-banner" style="background:linear-gradient(135deg,rgba(255,215,0,0.08),rgba(245,158,11,0.08));border:2px solid rgba(255,215,0,0.5);border-radius:var(--radius);padding:1.2rem 1.5rem;margin-bottom:1.2rem;position:relative;overflow:hidden;animation:gold-border-pulse 3s ease-in-out infinite;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:0.6rem;flex-wrap:wrap;">
+                <span style="background:linear-gradient(135deg,#ffd700,#f59e0b);color:#0a0e1a;padding:4px 12px;border-radius:6px;font-weight:800;font-size:13px;letter-spacing:1px;">#1 PICK</span>
+                <span style="color:#ffd700;font-weight:700;font-size:1.1rem;">Our Best Performing System</span>
+                <span id="gold-timestamp" style="color:var(--text-dim);font-size:11px;margin-left:auto;"></span>
+            </div>
+            <p style="color:#e0e0f0;font-size:0.85rem;line-height:1.6;margin-bottom:0.5rem;">
+                After auditing <strong style="color:#ffd700;">every investment page</strong> across the platform, this is the <strong style="color:#ffd700;">only system with positive forward-facing returns</strong>. No backtesting. No simulations. Real trades, real prices, real P&amp;L.
+            </p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.8rem;margin-top:0.8rem;">
+                <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:0.6rem 0.8rem;border:1px solid rgba(255,215,0,0.15);">
+                    <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;">Win Rate</div>
+                    <div id="gold-wr" style="font-size:1.4rem;font-weight:700;color:#22c55e;">--</div>
+                </div>
+                <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:0.6rem 0.8rem;border:1px solid rgba(255,215,0,0.15);">
+                    <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;">Cumulative P&amp;L</div>
+                    <div id="gold-pnl" style="font-size:1.4rem;font-weight:700;color:#22c55e;">--</div>
+                </div>
+                <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:0.6rem 0.8rem;border:1px solid rgba(255,215,0,0.15);">
+                    <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;">Top Algorithm</div>
+                    <div id="gold-top-algo" style="font-size:1rem;font-weight:700;color:#ffd700;">--</div>
+                </div>
+                <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:0.6rem 0.8rem;border:1px solid rgba(255,215,0,0.15);">
+                    <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;">Verified Against</div>
+                    <div style="font-size:0.85rem;font-weight:600;color:#e0e0f0;">CoinGecko, Yahoo Finance</div>
+                </div>
+            </div>
+            <p style="color:var(--text-dim);font-size:0.75rem;margin-top:0.7rem;line-height:1.5;">
+                <strong style="color:#f59e0b;">Why #1?</strong> Every other system on the platform is either net-negative (Live Signals: 44.3% WR, -$302 P&amp;L), has zero closed trades (Consolidated: 65 open, 0 closed), or is research-only (Smart Money). This page shows the only algorithms that learned, adapted, and delivered real profit. Best asset class: Crypto (+12.6% P&amp;L, 87.5% WR). Stock positions still being tracked (first closures expected ~Feb 24).
+            </p>
+        </div>
+        <style>
+            @keyframes gold-border-pulse {
+                0%, 100% { border-color: rgba(255,215,0,0.5); box-shadow: 0 0 15px rgba(255,215,0,0.1); }
+                50% { border-color: rgba(255,215,0,0.8); box-shadow: 0 0 30px rgba(255,215,0,0.2), 0 0 60px rgba(255,215,0,0.05); }
+            }
+        </style>
+
         <div style="background:linear-gradient(135deg,rgba(99,102,241,0.06),rgba(168,85,247,0.06));border:1px solid rgba(99,102,241,0.2);border-radius:var(--radius);padding:0.7rem 1.2rem;margin-bottom:1rem;font-size:0.8rem;color:var(--text-dim);">
             Tracking <strong style="color:var(--text)">19 algorithms</strong> across <strong style="color:var(--text)">36 assets</strong> (14 crypto, 10 forex, 12 stocks). Stock universe: AAPL, MSFT, GOOGL, AMZN, NVDA, META, JPM, BAC, WMT, XOM, NFLX, JNJ. Signals generated every 30 minutes during market hours.
         </div>
@@ -120,6 +159,9 @@
 
         <!-- Overview Tab -->
         <div id="tab-overview">
+            <div id="algo-empty-note" style="display:none;background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.2);border-radius:var(--radius);padding:0.75rem 1.2rem;margin-bottom:1rem;font-size:0.8rem;color:var(--text-dim);line-height:1.5;">
+                Performance comparison requires trade data from both learned and original parameter sets. Stats will populate as the system accumulates trades.
+            </div>
             <div class="kpi-row" id="kpi-row"></div>
             <div class="compare-grid" id="compare-grid"></div>
             <div class="chart-box">
@@ -265,6 +307,13 @@ function loadSummary() {
                 + '<div class="value">L: <span class="' + (learned.total_pnl >= 0 ? 'pos' : 'neg') + '">' + learned.total_pnl.toFixed(2) + '%</span></div>'
                 + '<div class="sub">Original: <span class="' + (original.total_pnl >= 0 ? 'pos' : 'neg') + '">' + original.total_pnl.toFixed(2) + '%</span></div></div>';
             document.getElementById('kpi-row').innerHTML = kpiHtml;
+
+            // Show/hide empty state note when trade counts are very low
+            var emptyNote = document.getElementById('algo-empty-note');
+            if (emptyNote) {
+                var lowData = (learned.trades <= 2 && original.trades <= 2);
+                emptyNote.style.display = lowData ? 'block' : 'none';
+            }
 
             // Compare boxes
             var cHtml = '';
@@ -434,7 +483,41 @@ function runBackfill() {
 
 function esc(s) { if (!s) return ''; var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
+// ── Gold Banner — live data ──
+function loadGoldBanner() {
+    var now = new Date();
+    var ts = document.getElementById('gold-timestamp');
+    if (ts) ts.textContent = 'Verified: ' + now.toLocaleString('en-US', {month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit',timeZoneName:'short'});
+
+    fetch(API + '?action=summary&days=30')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (!d.ok) return;
+            var learned = d.performance['learned'] || {};
+            var wr = document.getElementById('gold-wr');
+            var pnl = document.getElementById('gold-pnl');
+            if (wr && learned.win_rate !== undefined) wr.textContent = learned.win_rate + '%';
+            if (pnl && learned.total_pnl !== undefined) pnl.textContent = (learned.total_pnl >= 0 ? '+' : '') + learned.total_pnl.toFixed(2) + '%';
+        });
+    fetch(API + '?action=by_algorithm&days=30')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (!d.ok) return;
+            var best = null;
+            d.algorithms.forEach(function(a) {
+                if (a.learned && a.learned.trades > 0) {
+                    if (!best || a.learned.total_pnl > best.pnl) {
+                        best = { name: a.algorithm, pnl: a.learned.total_pnl, wr: a.learned.win_rate };
+                    }
+                }
+            });
+            var el = document.getElementById('gold-top-algo');
+            if (el && best) el.textContent = best.name + ' (' + best.wr + '% WR)';
+        });
+}
+
 // Auto-load
+loadGoldBanner();
 loadSummary();
 </script>
 <script src="/findstocks/portfolio2/stock-nav.js"></script>

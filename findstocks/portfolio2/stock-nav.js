@@ -12,7 +12,7 @@
         { text: 'Consolidated', href: '/findstocks/portfolio2/consolidated.html', glow: true },
         { text: 'Smart Money', href: '/live-monitor/smart-money.html', glow: true },
         { text: 'Goldmine', href: '/live-monitor/goldmine-dashboard.html', glow: true },
-        { text: 'L vs O', href: '/live-monitor/algo-performance.html', glow: true },
+        { text: 'L vs O', href: '/live-monitor/algo-performance.html', gold: true },
         { text: 'Live Monitor', href: '/live-monitor/live-monitor.html' }
       ]
     },
@@ -86,6 +86,10 @@
     '.sn-link.sn-glow:hover{color:#fff;background:rgba(34,211,238,0.15);text-shadow:0 0 10px rgba(34,211,238,0.6)}',
     '.sn-link.sn-glow::after{content:"LIVE";font-size:7px;font-weight:800;letter-spacing:0.5px;background:#22d3ee;color:#0a0e1a;padding:1px 3px;border-radius:3px;margin-left:3px;vertical-align:super;line-height:1}',
     '@keyframes sn-glow-pulse{0%,100%{text-shadow:0 0 6px rgba(34,211,238,0.4)}50%{text-shadow:0 0 12px rgba(34,211,238,0.7),0 0 20px rgba(34,211,238,0.3)}}',
+    '.sn-link.sn-gold{color:#ffd700;text-shadow:0 0 8px rgba(255,215,0,0.5);font-weight:700;border:1px solid rgba(255,215,0,0.4);background:rgba(255,215,0,0.08);animation:sn-gold-pulse 2.5s ease-in-out infinite}',
+    '.sn-link.sn-gold:hover{color:#fff;background:rgba(255,215,0,0.18);text-shadow:0 0 14px rgba(255,215,0,0.7);border-color:rgba(255,215,0,0.6)}',
+    '.sn-link.sn-gold::after{content:"#1";font-size:7px;font-weight:800;letter-spacing:0.5px;background:linear-gradient(135deg,#ffd700,#f59e0b);color:#0a0e1a;padding:1px 4px;border-radius:3px;margin-left:3px;vertical-align:super;line-height:1}',
+    '@keyframes sn-gold-pulse{0%,100%{text-shadow:0 0 8px rgba(255,215,0,0.5);border-color:rgba(255,215,0,0.4)}50%{text-shadow:0 0 16px rgba(255,215,0,0.8),0 0 24px rgba(255,215,0,0.3);border-color:rgba(255,215,0,0.7)}}',
     '#stock-nav-toggle{display:none;background:none;border:1px solid #2a2a4a;color:#8888aa;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:16px;margin-left:auto;line-height:1}',
     '#stock-nav-toggle:hover{color:#e0e0f0;border-color:#4a4a6a}',
     '#stock-nav-links{display:flex;align-items:center;flex-wrap:wrap;flex:1}',
@@ -150,10 +154,11 @@
     var links = NAV_GROUPS[g].links;
     for (var i = 0; i < links.length; i++) {
       var a = document.createElement('a');
-      a.className = 'sn-link' + (isActive(links[i].href) ? ' active' : '') + (links[i].glow ? ' sn-glow' : '');
+      a.className = 'sn-link' + (isActive(links[i].href) ? ' active' : '') + (links[i].gold ? ' sn-gold' : (links[i].glow ? ' sn-glow' : ''));
       a.href = links[i].href;
       a.textContent = links[i].text;
-      if (links[i].glow) a.title = 'Real forward-looking performance data (not backtested)';
+      if (links[i].gold) a.title = '#1 Pick — Only system with positive forward-facing returns (63.6% WR, +11.92% P\u0026L)';
+      else if (links[i].glow) a.title = 'Real forward-looking performance data (not backtested)';
       group.appendChild(a);
     }
     linksContainer.appendChild(group);

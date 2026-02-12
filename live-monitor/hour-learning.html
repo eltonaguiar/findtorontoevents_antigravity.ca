@@ -593,7 +593,7 @@
             <canvas id="paramChart"></canvas>
         </div>
         <div class="chart-empty" id="chartEmpty" style="display:none;">
-            Select an algorithm above to view parameter history. More data points will appear as daily analyses run.
+            Select an algorithm above to view parameter history. Hourly learning analysis requires accumulated trading data across multiple sessions. Charts will populate as the system records more hourly performance data.
         </div>
     </div>
 
@@ -658,10 +658,24 @@ function fetchData() {
                     applyFilters();
                     renderSummary(resp.summary, resp.recommendations);
                     renderTable();
-                    populateChartSelect(resp.recommendations);
+                    populateChartSelect(resp.recommendations || []);
                     setStatus('ok', 'Connected');
                     updateLastUpdated();
                     state.countdown = REFRESH_INTERVAL;
+
+                    // Show empty state banner if no recommendations
+                    var emptyBanner = document.getElementById('hourLearningEmpty');
+                    if (!resp.recommendations || resp.recommendations.length === 0) {
+                        if (!emptyBanner) {
+                            var banner = document.createElement('div');
+                            banner.id = 'hourLearningEmpty';
+                            banner.style.cssText = 'text-align:center;padding:1.5rem;color:var(--text-dim);font-size:0.88rem;font-style:italic;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:1.5rem;';
+                            banner.textContent = 'Hourly learning analysis requires accumulated trading data across multiple sessions. Charts will populate as the system records more hourly performance data.';
+                            document.getElementById('summaryGrid').insertAdjacentElement('afterend', banner);
+                        }
+                    } else if (emptyBanner) {
+                        emptyBanner.remove();
+                    }
                 } else {
                     setStatus('err', 'API error: ' + (resp.error || 'Unknown'));
                     showToast('error', 'API Error: ' + (resp.error || 'Unknown'));
@@ -770,7 +784,9 @@ function renderTable() {
 
     if (!rows || rows.length === 0) {
         tbody.innerHTML = '<tr><td colspan="11" class="text-center" style="padding:2rem;color:var(--text-dim);">'
-            + (state.data ? 'No algorithms match current filters.' : 'No learning data available. Run an analysis to get started.')
+            + (state.data && state.data.recommendations && state.data.recommendations.length > 0
+                ? 'No algorithms match current filters.'
+                : 'Hourly learning analysis requires accumulated trading data across multiple sessions. Charts will populate as the system records more hourly performance data.')
             + '</td></tr>';
         return;
     }

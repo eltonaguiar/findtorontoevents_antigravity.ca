@@ -2,30 +2,123 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-Time Monitoring Dashboard</title>
     <style>
-        body { font-family: Arial; background: #f0f0f0; }
-        .metric { padding: 10px; margin: 10px; background: white; border: 1px solid #ddd; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif; background: #0a0a1a; color: #e0e0f0; min-height: 100vh; line-height: 1.6; }
+        a { color: #f59e0b; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .header { background: linear-gradient(135deg, #0e0e24 0%, #1a1035 50%, #0e0e24 100%); border-bottom: 1px solid #1e1e3e; padding: 1.25rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+        .brand h1 { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, #6366f1, #a855f7, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.02em; }
+        .brand .sub { font-size: 0.75rem; color: #7777aa; margin-top: -2px; }
+        .nav { display: flex; gap: 0.75rem; font-size: 0.8rem; flex-wrap: wrap; }
+        .nav a { color: #7777aa; padding: 0.3rem 0.7rem; border-radius: 8px; border: 1px solid transparent; transition: all 0.2s; }
+        .nav a:hover { color: #e0e0f0; border-color: #1e1e3e; background: rgba(255,255,255,0.03); text-decoration: none; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 2rem 1.5rem; }
+        .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .metric { background: #0e0e24; border: 1px solid #1e1e3e; border-radius: 14px; padding: 1.5rem; text-align: center; }
+        .metric .label { font-size: 0.7rem; color: #7777aa; text-transform: uppercase; letter-spacing: 0.05em; }
+        .metric .value { font-size: 2rem; font-weight: 800; margin-top: 0.3rem; color: #e0e0f0; }
+        .metric .value.pos { color: #22c55e; }
+        .metric .value.neg { color: #ef4444; }
+        .status-msg { text-align: center; padding: 1rem; color: #7777aa; font-size: 0.85rem; }
+        .status-msg .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #1e1e3e; border-top-color: #6366f1; border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 8px; vertical-align: middle; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error-note { background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.2); border-radius: 12px; padding: 0.85rem 1.2rem; font-size: 0.82rem; color: #7777aa; line-height: 1.5; text-align: center; }
+        .footer { text-align: center; padding: 2rem 1rem 1rem; color: #7777aa; font-size: 0.75rem; }
     </style>
 </head>
 <body>
-    <h1>Real-Time System Metrics</h1>
-    <div id="sharpe" class="metric">Sharpe Ratio: Fetching latest data...</div>
-    <div id="winrate" class="metric">Win Rate: Fetching latest data...</div>
-    <div id="drawdown" class="metric">Max Drawdown: Fetching latest data...</div>
-    
+    <div class="header">
+        <div class="brand">
+            <h1>Real-Time System Metrics</h1>
+            <div class="sub">Live Trading Monitor Dashboard</div>
+        </div>
+        <div class="nav">
+            <a href="live-monitor.html">Live Monitor</a>
+            <a href="multi-dimensional.html">9D Analysis</a>
+            <a href="smart-money.html">Smart Money</a>
+            <a href="algo-performance.html">Algo Perf</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="metric-grid">
+            <div class="metric">
+                <div class="label">Sharpe Ratio</div>
+                <div class="value" id="sharpe">--</div>
+            </div>
+            <div class="metric">
+                <div class="label">Win Rate</div>
+                <div class="value" id="winrate">--</div>
+            </div>
+            <div class="metric">
+                <div class="label">Max Drawdown</div>
+                <div class="value" id="drawdown">--</div>
+            </div>
+        </div>
+        <div id="status-area" class="status-msg">
+            <span class="spinner"></span> Fetching latest data...
+        </div>
+    </div>
+
+    <div class="footer">
+        Real-Time Monitoring Dashboard | <a href="live-monitor.html">Back to Live Monitor</a>
+    </div>
+
     <script>
+    var fetchTimeout = null;
+    var dataLoaded = false;
+
     function updateMetrics() {
-        fetch('/live-monitor/api/metrics.php')
-            .then(r => r.json())
-            .then(data => {
-                document.getElementById('sharpe').innerText = `Sharpe Ratio: ${data.sharpe.toFixed(2)}`;
-                document.getElementById('winrate').innerText = `Win Rate: ${data.win_rate.toFixed(1)}%`;
-                document.getElementById('drawdown').innerText = `Max Drawdown: ${data.max_dd.toFixed(1)}%`;
+        var controller = new AbortController();
+        var signal = controller.signal;
+
+        // Set a 10-second timeout
+        fetchTimeout = setTimeout(function() {
+            if (!dataLoaded) {
+                controller.abort();
+                document.getElementById('status-area').innerHTML =
+                    '<div class="error-note">Real-time dashboard data not available. The metrics API may not be configured.</div>';
+            }
+        }, 10000);
+
+        fetch('/live-monitor/api/metrics.php', { signal: signal })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                dataLoaded = true;
+                clearTimeout(fetchTimeout);
+                var sharpeVal = data.sharpe.toFixed(2);
+                var sharpeEl = document.getElementById('sharpe');
+                sharpeEl.textContent = sharpeVal;
+                sharpeEl.className = 'value ' + (data.sharpe >= 0 ? 'pos' : 'neg');
+
+                var wrEl = document.getElementById('winrate');
+                wrEl.textContent = data.win_rate.toFixed(1) + '%';
+                wrEl.className = 'value ' + (data.win_rate >= 50 ? 'pos' : 'neg');
+
+                var ddEl = document.getElementById('drawdown');
+                ddEl.textContent = data.max_dd.toFixed(1) + '%';
+                ddEl.className = 'value neg';
+
+                document.getElementById('status-area').style.display = 'none';
+            })
+            .catch(function(err) {
+                clearTimeout(fetchTimeout);
+                if (!dataLoaded) {
+                    document.getElementById('status-area').innerHTML =
+                        '<div class="error-note">Real-time dashboard data not available. The metrics API may not be configured.</div>';
+                }
             });
     }
+
     updateMetrics();
-    setInterval(updateMetrics, 60000);  // Every minute
+    setInterval(function() {
+        dataLoaded = false;
+        updateMetrics();
+    }, 60000);
     </script>
+    <script src="/findstocks/portfolio2/stock-nav.js"></script>
 </body>
 </html>

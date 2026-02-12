@@ -511,7 +511,7 @@ function loadAll() {
 
 function loadOverview() {
     apiGet('winning_patterns.php?action=overview&' + getParams(), function(d) {
-        if (!d.ok) { document.getElementById('summaryCards').innerHTML = '<div class="no-data">No data available</div>'; return; }
+        if (!d.ok || d.total_trades === 0) { document.getElementById('summaryCards').innerHTML = '<div class="no-data">Pattern analysis requires sufficient trade history. Patterns will be detected after enough trades are closed and analyzed.</div>'; if (!d.ok) return; }
         var wr_cls = d.win_rate >= 55 ? 'green' : d.win_rate >= 45 ? 'yellow' : 'red';
         var pnl_cls = d.total_pnl > 0 ? 'green' : 'red';
         var pf_cls = d.profit_factor >= 1.5 ? 'green' : d.profit_factor >= 1 ? 'yellow' : 'red';
@@ -541,6 +541,21 @@ function loadOverview() {
 function loadTimeAnalysis() {
     apiGet('winning_patterns.php?action=time_analysis&' + getParams(), function(d) {
         if (!d.ok) return;
+
+        if ((!d.hourly || d.hourly.length === 0) && (!d.daily || d.daily.length === 0)) {
+            var chartBoxes = document.querySelectorAll('.chart-row .chart-box');
+            for (var cb = 0; cb < chartBoxes.length; cb++) {
+                var canvas = chartBoxes[cb].querySelector('canvas');
+                if (canvas) canvas.style.display = 'none';
+                if (!chartBoxes[cb].querySelector('.no-data')) {
+                    var msg = document.createElement('div');
+                    msg.className = 'no-data';
+                    msg.textContent = 'Pattern analysis requires sufficient trade history. Patterns will be detected after enough trades are closed and analyzed.';
+                    chartBoxes[cb].appendChild(msg);
+                }
+            }
+            return;
+        }
 
         // Hourly chart
         var hourLabels = [], hourWR = [], hourPnl = [], hourColors = [];
@@ -613,7 +628,7 @@ function loadTimeAnalysis() {
 
 function loadSessions() {
     apiGet('winning_patterns.php?action=session_analysis&' + getParams(), function(d) {
-        if (!d.ok || !d.sessions) { document.getElementById('sessionBars').innerHTML = '<div class="no-data">No session data</div>'; return; }
+        if (!d.ok || !d.sessions) { document.getElementById('sessionBars').innerHTML = '<div class="no-data">Pattern analysis requires sufficient trade history. Patterns will be detected after enough trades are closed and analyzed.</div>'; return; }
         var html = '';
         var sessionColors = {
             'asia_pre': '#a855f7',
@@ -634,14 +649,15 @@ function loadSessions() {
                 '<span class="bar-stats">' + s.trades + ' trades / $' + s.pnl.toFixed(0) + '</span>' +
                 '</div>';
         }
-        document.getElementById('sessionBars').innerHTML = html || '<div class="no-data">No closed trades yet</div>';
+        document.getElementById('sessionBars').innerHTML = html || '<div class="no-data">Pattern analysis requires sufficient trade history. Patterns will be detected after enough trades are closed and analyzed.</div>';
     });
 }
 
 function loadAlgorithms() {
     apiGet('winning_patterns.php?action=algorithm_matrix&' + getParams(), function(d) {
         if (!d.ok || !d.rankings || d.rankings.length === 0) {
-            document.getElementById('algoBody').innerHTML = '<tr><td colspan="6" class="no-data">No algorithm data</td></tr>';
+            document.getElementById('algoBody').innerHTML = '<tr><td colspan="6" class="no-data">Pattern analysis requires sufficient trade history. Patterns will be detected after enough trades are closed and analyzed.</td></tr>';
+            document.getElementById('matrixBody').innerHTML = '<tr><td colspan="8" class="no-data">Pattern analysis requires sufficient trade history. Patterns will be detected after enough trades are closed and analyzed.</td></tr>';
             return;
         }
         var html = '';
@@ -699,7 +715,7 @@ function loadSetups() {
             }
             document.getElementById('setupsBody').innerHTML = html;
         } else {
-            document.getElementById('setupsBody').innerHTML = '<tr><td colspan="6" class="no-data">No setups with 2+ trades yet</td></tr>';
+            document.getElementById('setupsBody').innerHTML = '<tr><td colspan="6" class="no-data">Pattern analysis requires sufficient trade history. Patterns will be detected after enough trades are closed and analyzed.</td></tr>';
         }
 
         // Top symbols
@@ -717,13 +733,15 @@ function loadSetups() {
                     '</tr>';
             }
             document.getElementById('symbolsBody').innerHTML = shtml;
+        } else {
+            document.getElementById('symbolsBody').innerHTML = '<tr><td colspan="6" class="no-data">Pattern analysis requires sufficient trade history. Patterns will be detected after enough trades are closed and analyzed.</td></tr>';
         }
     });
 }
 
 function loadStreaks() {
     apiGet('winning_patterns.php?action=streak_analysis&' + getParams(), function(d) {
-        if (!d.ok) { document.getElementById('streakCards').innerHTML = '<div class="no-data">No streak data</div>'; return; }
+        if (!d.ok) { document.getElementById('streakCards').innerHTML = '<div class="no-data">Pattern analysis requires sufficient trade history. Patterns will be detected after enough trades are closed and analyzed.</div>'; return; }
 
         var rec = d.after_loss_recovery || {};
         var rec_cls = (rec.recovery_rate || 0) >= 50 ? 'green' : 'red';

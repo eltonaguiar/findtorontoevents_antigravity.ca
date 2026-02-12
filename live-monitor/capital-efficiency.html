@@ -681,7 +681,25 @@
 
     // ─── Render KPI Cards ────────────────────────────────────────────
     function renderKPIs(algorithms) {
-        if (!algorithms || algorithms.length === 0) return;
+        if (!algorithms || algorithms.length === 0) {
+            var grid = document.getElementById('kpiGrid');
+            grid.insertAdjacentHTML('afterend', '<div id="kpiEmptyState" style="text-align:center;padding:1.5rem;color:var(--text-dim);font-size:0.88rem;font-style:italic;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:1.5rem;">Capital efficiency metrics are calculated from closed trades. As positions close, utilization, turnover, and efficiency scores will appear.</div>');
+            return;
+        }
+        var existingEmpty = document.getElementById('kpiEmptyState');
+        if (existingEmpty) existingEmpty.remove();
+
+        // Check if all algorithms have zero trades
+        var anyTrades = false;
+        for (var c = 0; c < algorithms.length; c++) {
+            if (parseInt(algorithms[c].total_trades) > 0) { anyTrades = true; break; }
+        }
+        if (!anyTrades) {
+            var grid = document.getElementById('kpiGrid');
+            if (!document.getElementById('kpiEmptyState')) {
+                grid.insertAdjacentHTML('afterend', '<div id="kpiEmptyState" style="text-align:center;padding:1.5rem;color:var(--text-dim);font-size:0.88rem;font-style:italic;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:1.5rem;">Capital efficiency metrics are calculated from closed trades. As positions close, utilization, turnover, and efficiency scores will appear.</div>');
+            }
+        }
 
         // Aggregate stats
         var totalTrades = 0;
@@ -746,7 +764,7 @@
     function renderAlgoTable(algorithms) {
         var tbody = document.getElementById('algoTbody');
         if (!algorithms || algorithms.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" class="loading" style="font-style:italic;">No algorithm data available. Check API connection.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text-dim);font-style:italic;">Capital efficiency metrics are calculated from closed trades. As positions close, utilization, turnover, and efficiency scores will appear.</td></tr>';
             return;
         }
 
@@ -876,7 +894,11 @@
         if (!canvas) return;
         var ctx = canvas.getContext('2d');
 
-        if (!algorithms || algorithms.length === 0) return;
+        if (!algorithms || algorithms.length === 0) {
+            canvas.style.display = 'none';
+            canvas.parentElement.insertAdjacentHTML('beforeend', '<div style="text-align:center;padding:2rem;color:var(--text-dim);font-size:0.85rem;font-style:italic;">Capital efficiency metrics are calculated from closed trades. As positions close, utilization, turnover, and efficiency scores will appear.</div>');
+            return;
+        }
 
         // Sort by orthogonality descending
         var items = [];
@@ -948,7 +970,10 @@
 
     // ─── Render Regime Compliance ────────────────────────────────────
     function renderCompliance(algorithms, regimeData) {
-        if (!algorithms || algorithms.length === 0) return;
+        if (!algorithms || algorithms.length === 0) {
+            document.getElementById('complianceGrid').insertAdjacentHTML('afterend', '<div style="text-align:center;padding:1rem;color:var(--text-dim);font-size:0.85rem;font-style:italic;margin-top:0.5rem;">Capital efficiency metrics are calculated from closed trades. As positions close, utilization, turnover, and efficiency scores will appear.</div>');
+            return;
+        }
 
         var totalTrades = 0;
         var totalWins = 0;

@@ -1321,7 +1321,7 @@ function renderWinnersLosers(winners, losers) {
 
     var lHtml = '';
     if (losers.length === 0) {
-        lHtml = '<div class="text-dim" style="padding:1rem;text-align:center;font-size:0.82rem;">No recent losers yet</div>';
+        lHtml = '<div class="text-dim" style="padding:1rem;text-align:center;font-size:0.82rem;">No recent losers yet. Verified outcomes will appear here as predictions are checked against market data.</div>';
     }
     for (var j = 0; j < Math.min(losers.length, 10); j++) {
         var l = losers[j];
@@ -1575,6 +1575,15 @@ function loadSystemDetail() {
             document.getElementById('deepdive-chart-box').style.display = 'block';
         } else {
             document.getElementById('deepdive-chart-box').style.display = 'none';
+        }
+
+        // Show empty state if no closed trades at all
+        var hasClosed = parseInt(stats.closed) > 0;
+        if (!hasClosed && trend.length === 0) {
+            var emptyMsg = document.createElement('div');
+            emptyMsg.style.cssText = 'text-align:center;padding:1.5rem;color:var(--text-dim);font-size:0.88rem;font-style:italic;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:1.5rem;';
+            emptyMsg.textContent = 'Prediction verification data will appear after the goldmine tracker has enough verified outcomes to analyze.';
+            document.getElementById('deepdive-content').appendChild(emptyMsg);
         }
 
         // Top algorithms table
