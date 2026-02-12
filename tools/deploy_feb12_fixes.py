@@ -26,6 +26,8 @@ FILES = [
     ('live-monitor/live-monitor.html', '/live-monitor/live-monitor.html'),
     ('live-monitor/api/live_signals.php', '/live-monitor/api/live_signals.php'),
     ('live-monitor/api/live_prices.php', '/live-monitor/api/live_prices.php'),
+    # Algo performance (#1 PICK)
+    ('live-monitor/algo-performance.html', '/live-monitor/algo-performance.html'),
     # Goldmine
     ('live-monitor/goldmine-dashboard.html', '/live-monitor/goldmine-dashboard.html'),
     ('live-monitor/api/goldmine_tracker.php', '/live-monitor/api/goldmine_tracker.php'),
