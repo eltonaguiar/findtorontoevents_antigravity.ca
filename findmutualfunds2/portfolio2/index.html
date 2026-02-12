@@ -234,7 +234,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>Mutual Funds Portfolio v2</h1>
+        <h1>Mutual Funds Portfolio v2 <span style="font-size:0.6em;background:rgba(234,179,8,0.2);color:#eab308;padding:2px 8px;border-radius:6px;border:1px solid rgba(234,179,8,0.4);vertical-align:middle;letter-spacing:0.5px;">BETA</span></h1>
         <div class="header-links">
             <a href="/findstocks/portfolio2/">Stocks</a>
             <a href="/findmutualfunds2/">Funds Home</a>
@@ -258,13 +258,13 @@
             <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
                 <strong style="color:var(--text);">How fund screening works:</strong><br>
                 Mutual funds are screened from Yahoo Finance using criteria including: trailing returns (1yr, 3yr, 5yr), expense ratio (MER), fund category, and Morningstar rating where available. Picks are generated based on trailing performance combined with risk metrics (standard deviation, Sharpe ratio approximation). Currently supports Canadian and US-listed mutual funds and ETFs.<br><br>
-                <strong style="color:var(--text);">Current status &mdash; critical gap:</strong><br>
-                &bull; 45 picks have been generated but <strong style="color:#ef4444;">zero have forward-facing outcome tracking</strong><br>
-                &bull; No entry prices recorded, no daily NAV refresh, no win/loss determination<br>
-                &bull; Without forward tracking, this system provides screening only &mdash; not performance data<br>
-                &bull; Backtests exist but are inherently biased (survivorship bias, look-ahead bias)<br><br>
+                <strong style="color:var(--text);">Current status &mdash; BETA:</strong><br>
+                &bull; 15 Canadian mutual fund picks seeded across 10 algorithms<br>
+                &bull; <strong style="color:#eab308;">Forward tracking available</strong> via the Tracking tab (init, refresh, exit rules)<br>
+                &bull; NAV data uses Yahoo Finance with sample-data fallback when Yahoo is unavailable<br>
+                &bull; Backtests use sample NAV data &mdash; results are illustrative, not predictive<br><br>
                 <strong style="color:var(--text);">Platform comparison:</strong><br>
-                &bull; <strong style="color:#8888aa;">This system: No forward tracking</strong> &mdash; cannot verify if picks outperform index funds<br>
+                &bull; <strong style="color:#eab308;">This system: BETA</strong> &mdash; tracking infrastructure built, needs real NAV data pipeline<br>
                 &bull; <a href="/findstocks/portfolio2/consolidated.html">Consolidated Stocks</a> &mdash; full forward tracking (65 positions, daily price refresh)<br>
                 &bull; <a href="/live-monitor/algo-performance.html">L vs O</a> &mdash; real closed trades with verified P&amp;L<br>
                 &bull; Building forward-facing tracking for mutual funds is a top-priority roadmap item
@@ -275,14 +275,14 @@
         <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem;">
             <h3 style="font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;">
                 Data Sources & Transparency
-                <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(136,136,170,0.15);color:#8888aa;border:1px solid rgba(136,136,170,0.3);">NO TRACKING</span>
+                <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(234,179,8,0.15);color:#eab308;border:1px solid rgba(234,179,8,0.3);">BETA TRACKING</span>
             </h3>
             <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
                 <strong style="color:var(--text);">Where the numbers come from:</strong><br>
                 &bull; <strong>Fund data:</strong> <a href="api/mutual_fund_portfolio.php?action=stats" target="_blank">mutual_fund_portfolio.php?action=stats</a> &mdash; 45 picks, 0 tracked outcomes<br>
                 &bull; <strong>NAV prices:</strong> <a href="api/mutual_fund_portfolio.php?action=funds" target="_blank">mutual_fund_portfolio.php?action=funds</a> &mdash; Yahoo Finance daily NAV data<br>
                 &bull; <strong>Backtests:</strong> <a href="api/mutual_fund_portfolio.php?action=backtests" target="_blank">mutual_fund_portfolio.php?action=backtests</a> &mdash; historical simulation only<br>
-                &bull; <strong>No forward tracking:</strong> Unlike stocks and crypto, mutual fund picks have no live outcome tracking yet<br>
+                &bull; <strong>Forward tracking:</strong> BETA &mdash; use the Tracking tab to initialize positions and refresh NAVs<br>
                 &bull; <strong>Compare to:</strong> <a href="/findstocks/portfolio2/consolidated.html">Consolidated Stock Picks</a> &mdash; full forward-facing tracking with exit rules
             </div>
         </div>

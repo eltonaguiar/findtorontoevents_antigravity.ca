@@ -121,13 +121,19 @@ function generate_sample_navs($symbol) {
     $volatility = $base * 0.003;
     $navs = array();
     $nav = $base * 0.92;
-    $date = strtotime('-1 year');
+    $start = strtotime('-2 years');
+    $today = time();
+    $date = $start;
     $prev = 0;
-    for ($i = 0; $i < 252; $i++) {
+    // Seed RNG per-symbol for reproducible data
+    mt_srand(crc32($symbol));
+    while ($date <= $today) {
         $date = strtotime('+1 day', $date);
         $dow = date('w', $date);
         if ($dow == 0 || $dow == 6) continue;
         $change = (mt_rand(-100, 100) / 100) * $volatility;
+        // Slight upward drift for realism
+        $change += $base * 0.0002;
         $nav = $nav + $change;
         if ($nav < $base * 0.7) $nav = $base * 0.7 + abs($change);
         $nav_val = round($nav, 4);
@@ -141,6 +147,7 @@ function generate_sample_navs($symbol) {
         );
         $prev = $nav_val;
     }
+    mt_srand();
     return $navs;
 }
 
