@@ -1,0 +1,48 @@
+name: EGARCH Position Sizer
+
+on:
+  schedule:
+    # Run after portfolio risk controller: 9:15 PM UTC (4:15 PM EST) on weekdays
+    - cron: '15 21 * * 1-5'
+    # Sunday extended run
+    - cron: '45 14 * * 0'
+  workflow_dispatch:
+
+jobs:
+  egarch-sizing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --quiet \
+            yfinance>=0.2.30 \
+            arch>=6.0 \
+            numpy>=1.24 \
+            pandas>=2.0 \
+            scipy>=1.10 \
+            requests>=2.31 \
+            mysql-connector-python>=8.0
+
+      - name: Run EGARCH Position Sizer
+        env:
+          SM_API_BASE: ${{ secrets.SM_API_BASE || 'https://findtorontoevents.ca/live-monitor/api' }}
+          SM_ADMIN_KEY: ${{ secrets.SM_ADMIN_KEY || 'livetrader2026' }}
+          DB_HOST: ${{ secrets.DB_HOST || 'mysql.50webs.com' }}
+          DB_USER: ${{ secrets.DB_USER || 'ejaguiar1_stocks' }}
+          DB_PASS: ${{ secrets.DB_PASS || 'stocks' }}
+          DB_NAME: ${{ secrets.DB_NAME || 'ejaguiar1_stocks' }}
+        run: |
+          echo "=========================================="
+          echo "EGARCH POSITION SIZER — $(date -u '+%Y-%m-%d %H:%M UTC')"
+          echo "=========================================="
+          python scripts/egarch_position_sizer.py

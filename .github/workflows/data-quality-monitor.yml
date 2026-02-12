@@ -1,0 +1,52 @@
+name: Data Quality Monitor
+
+on:
+  schedule:
+    # Every 3 hours — check freshness, completeness, API health, signal quality
+    - cron: '0 */3 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --quiet \
+            mysql-connector-python>=8.0 \
+            requests>=2.31 \
+            pandas>=2.0 \
+            numpy>=1.24
+
+      - name: Run Data Quality Monitor
+        env:
+          SM_API_BASE: ${{ secrets.SM_API_BASE || 'https://findtorontoevents.ca/live-monitor/api' }}
+          SM_ADMIN_KEY: ${{ secrets.SM_ADMIN_KEY || 'livetrader2026' }}
+          DB_HOST: ${{ secrets.DB_HOST || 'mysql.50webs.com' }}
+          DB_USER: ${{ secrets.DB_USER || 'ejaguiar1_stocks' }}
+          DB_PASS: ${{ secrets.DB_PASS || 'stocks' }}
+          DB_NAME: ${{ secrets.DB_NAME || 'ejaguiar1_stocks' }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          echo "=========================================="
+          echo "DATA QUALITY MONITOR — $(date -u '+%Y-%m-%d %H:%M UTC')"
+          echo "=========================================="
+          python scripts/data_quality_monitor.py
+
+      - name: Upload report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-quality-report
+          path: data/data_quality_report.json
+          retention-days: 14

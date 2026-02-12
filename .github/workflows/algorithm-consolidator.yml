@@ -1,0 +1,51 @@
+name: Algorithm Consolidator Analysis
+
+on:
+  schedule:
+    # Weekly Sunday analysis at 3 PM UTC (10 AM EST)
+    - cron: '0 15 * * 0'
+  workflow_dispatch:
+
+jobs:
+  consolidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --quiet \
+            numpy>=1.24 \
+            pandas>=2.0 \
+            requests>=2.31 \
+            mysql-connector-python>=8.0
+
+      - name: Run Algorithm Consolidator
+        env:
+          SM_API_BASE: ${{ secrets.SM_API_BASE || 'https://findtorontoevents.ca/live-monitor/api' }}
+          SM_ADMIN_KEY: ${{ secrets.SM_ADMIN_KEY || 'livetrader2026' }}
+          DB_HOST: ${{ secrets.DB_HOST || 'mysql.50webs.com' }}
+          DB_USER: ${{ secrets.DB_USER || 'ejaguiar1_stocks' }}
+          DB_PASS: ${{ secrets.DB_PASS || 'stocks' }}
+          DB_NAME: ${{ secrets.DB_NAME || 'ejaguiar1_stocks' }}
+        run: |
+          echo "=========================================="
+          echo "ALGORITHM CONSOLIDATOR — $(date -u '+%Y-%m-%d %H:%M UTC')"
+          echo "=========================================="
+          python scripts/algorithm_consolidator.py
+
+      - name: Upload consolidation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: algorithm-consolidation-report
+          path: data/algorithm_consolidation_report.json
+          retention-days: 30
