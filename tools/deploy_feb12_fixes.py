@@ -37,6 +37,7 @@ FILES = [
     # Stock nav pages that got stock-nav.js added
     ('findcryptopairs/index.html', '/findcryptopairs/index.html'),
     ('findcryptopairs/meme.html', '/findcryptopairs/meme.html'),
+    ('findcryptopairs/portfolio/index.html', '/findcryptopairs/portfolio/index.html'),
     ('findcryptopairs/portfolio/stats/index.html', '/findcryptopairs/portfolio/stats/index.html'),
     ('findcryptopairs/winners.html', '/findcryptopairs/winners.html'),
     ('findforex2/index.html', '/findforex2/index.html'),

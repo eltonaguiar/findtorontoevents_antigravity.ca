@@ -1,0 +1,95 @@
+name: Trading System Intelligence
+
+on:
+  schedule:
+    # Run daily at 6 AM UTC (1 AM EST / 10 PM PST)
+    - cron: '0 6 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  crypto-whale-tracking:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          pip install requests mysql-connector-python
+      
+      - name: Run Crypto Whale Tracker
+        env:
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+        run: |
+          python scripts/crypto_whale_tracker.py --setup --netflow
+      
+      - name: Check for errors
+        run: |
+          if [ $? -ne 0 ]; then
+            echo "Crypto whale tracker failed"
+            exit 1
+          fi
+
+  social-sentiment-tracking:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          pip install requests mysql-connector-python
+      
+      - name: Run Social Sentiment Tracker
+        env:
+          X_BEARER: ${{ secrets.X_BEARER }}
+        run: |
+          python scripts/social_sentiment.py --setup --track BTC ETH SOL DOGE --influencers
+      
+      - name: Check for errors
+        run: |
+          if [ $? -ne 0 ]; then
+            echo "Social sentiment tracker failed"
+            exit 1
+          fi
+
+  sports-ml-training:
+    runs-on: ubuntu-latest
+    needs: [crypto-whale-tracking, social-sentiment-tracking]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install ML dependencies
+        run: |
+          pip install scikit-learn xgboost lightgbm pandas numpy mysql-connector-python joblib requests
+      
+      - name: Train Sports ML Model
+        run: |
+          python scripts/sports_ml.py train
+      
+      - name: Generate ML Predictions
+        run: |
+          python scripts/sports_ml.py predict
+      
+      - name: Check for errors
+        run: |
+          if [ $? -ne 0 ]; then
+            echo "Sports ML training/prediction failed"
+            exit 1
+          fi

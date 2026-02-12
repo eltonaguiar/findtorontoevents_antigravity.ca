@@ -685,6 +685,30 @@ if ($action === 'train') {
 } elseif ($action === 'retrain') {
     $result = $ml->auto_retrain();
     echo json_encode($result);
+} elseif ($action === 'store_prediction') {
+    $signal_id = isset($_POST['signal_id']) ? $_POST['signal_id'] : '';
+    $prediction_json = isset($_POST['prediction']) ? $_POST['prediction'] : '';
+    $prediction = json_decode($prediction_json, true);
+    
+    if ($signal_id && $prediction) {
+        $result = $ml->store_prediction($signal_id, $prediction);
+        echo json_encode($result);
+    } else {
+        echo json_encode(array('ok' => false, 'error' => 'Missing signal_id or prediction'));
+    }
+} elseif ($action === 'update_outcome') {
+    $signal_id = isset($_POST['signal_id']) ? $_POST['signal_id'] : '';
+    $outcome = isset($_POST['outcome']) ? (int)$_POST['outcome'] : null;
+    
+    if ($signal_id && $outcome !== null) {
+        $result = $ml->update_prediction_outcome($signal_id, $outcome);
+        echo json_encode($result);
+    } else {
+        echo json_encode(array('ok' => false, 'error' => 'Missing signal_id or outcome'));
+    }
+} elseif ($action === 'stats') {
+    $result = $ml->get_ml_stats();
+    echo json_encode($result);
 } else {
     echo json_encode(array('ok' => false, 'error' => 'Unknown action'));
 }

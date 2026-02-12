@@ -1,0 +1,210 @@
+name: Meme Coin Signal Collection
+
+on:
+  schedule:
+    # Run every 10 minutes during market hours (UTC)
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  collect-signals:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+        extensions: mysqli, curl
+        
+    - name: Collect Current Signals
+      run: |
+        echo "Collecting meme coin signals..."
+        
+        # Call the scanner API to get current signals
+        curl -s "https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php?action=scan" > current_signals.json
+        
+        echo "Signals collected:"
+        cat current_signals.json | jq '.signals | length' || echo "0"
+        
+    - name: Store Signals in Database
+      run: |
+        cat > store_signals.php << 'EOF'
+        <?php
+        $signals = json_decode(file_get_contents('current_signals.json'), true);
+        
+        if (!$signals['ok'] || empty($signals['signals'])) {
+            echo "No signals to store\n";
+            exit(0);
+        }
+        
+        $stored = 0;
+        $skipped = 0;
+        
+        foreach ($signals['signals'] as $signal) {
+            // Only store if not already in DB
+            $check_url = 'https://findtorontoevents.ca/findcryptopairs/api/ml_database_init.php?action=status';
+            
+            // Prepare data for storage
+            $post_data = array(
+                'action' => 'store_signal',
+                'signal' => json_encode($signal)
+            );
+            
+            $ch = curl_init('https://findtorontoevents.ca/findcryptopairs/api/meme_ml_engine.php');
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_data));
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            
+            $result = json_decode($response, true);
+            if ($result['ok'] && $result['stored']) {
+                $stored++;
+            } else {
+                $skipped++;
+            }
+        }
+        
+        echo "Stored: $stored, Skipped: $skipped\n";
+        
+        // Set outputs
+        file_put_contents('store_stats.txt', "STORED=$stored\nSKIPPED=$skipped\n");
+        EOF
+        
+        php store_signals.php
+        
+    - name: Resolve Expired Signals
+      run: |
+        echo "Resolving signals that have passed their 2-hour window..."
+        
+        curl -s "https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php?action=resolve_expired" > resolve_result.json
+        
+        echo "Resolution results:"
+        cat resolve_result.json | jq . || cat resolve_result.json
+        
+    - name: Update ML Predictions
+      run: |
+        echo "Generating ML predictions for new signals..."
+        
+        cat > update_predictions.php << 'EOF'
+        <?php
+        // Get signals that need predictions
+        $ch = curl_init('https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php?action=pending_signals');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        
+        $data = json_decode($response, true);
+        
+        if (!$data['ok'] || empty($data['signals'])) {
+            echo "No pending signals need predictions\n";
+            exit(0);
+        }
+        
+        $predictions_made = 0;
+        
+        foreach ($data['signals'] as $signal) {
+            // Get ML prediction
+            $post_data = array(
+                'action' => 'predict',
+                'signal' => json_encode($signal)
+            );
+            
+            $ch = curl_init('https://findtorontoevents.ca/findcryptopairs/api/meme_ml_engine.php');
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_data));
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+            $pred_response = curl_exec($ch);
+            curl_close($ch);
+            
+            $pred = json_decode($pred_response, true);
+            
+            if ($pred['ok']) {
+                // Store prediction
+                $store_data = array(
+                    'action' => 'store_prediction',
+                    'signal_id' => $signal['signal_id'],
+                    'prediction' => json_encode($pred)
+                );
+                
+                $ch = curl_init('https://findtorontoevents.ca/findcryptopairs/api/meme_ml_engine.php');
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($store_data));
+                curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+                curl_exec($ch);
+                curl_close($ch);
+                
+                $predictions_made++;
+            }
+        }
+        
+        echo "Predictions made: $predictions_made\n";
+        file_put_contents('prediction_stats.txt', "PREDICTIONS=$predictions_made\n");
+        EOF
+        
+        php update_predictions.php
+        
+    - name: Generate Daily Report
+      run: |
+        cat > generate_report.php << 'EOF'
+        <?php
+        $date = date('Y-m-d');
+        
+        // Get stats
+        $ch = curl_init('https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php?action=stats');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $stats = json_decode(curl_exec($ch), true);
+        curl_close($ch);
+        
+        // Get ML performance
+        $ch = curl_init('https://findtorontoevents.ca/findcryptopairs/api/meme_ml_engine.php?action=performance');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $ml = json_decode(curl_exec($ch), true);
+        curl_close($ch);
+        
+        $report = "# Meme Coin Scanner Report - $date\n\n";
+        $report .= "## Scanner Stats\n";
+        $report .= "- Total Signals: " . ($stats['ok'] ? $stats['total_signals'] : 'N/A') . "\n";
+        $report .= "- Win Rate: " . ($stats['ok'] ? $stats['win_rate'] . '%' : 'N/A') . "\n";
+        $report .= "- Pending: " . ($stats['ok'] ? $stats['pending'] : 'N/A') . "\n\n";
+        
+        if ($ml['ok']) {
+            $report .= "## ML Model Status\n";
+            $report .= "- Model: " . $ml['model']['model_id'] . "\n";
+            $report .= "- Accuracy: " . ($ml['model']['accuracy'] * 100) . "%\n";
+            $report .= "- F1 Score: " . ($ml['model']['f1_score'] * 100) . "%\n";
+            $report .= "- Samples: " . $ml['model']['sample_count'] . "\n";
+        }
+        
+        file_put_contents("daily_report_$date.md", $report);
+        echo $report;
+        EOF
+        
+        php generate_report.php
+        
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: meme-signals-${{ github.run_id }}
+        path: |
+          current_signals.json
+          resolve_result.json
+          daily_report_*.md
+        retention-days: 7
+        
+    - name: Commit Daily Report
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        
+        git add daily_report_*.md || true
+        git commit -m "📊 Daily Meme Scanner Report - $(date +%Y-%m-%d)" || echo "No changes"
+        git push || echo "Nothing to push"

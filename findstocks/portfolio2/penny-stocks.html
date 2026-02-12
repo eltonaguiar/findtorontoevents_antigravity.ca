@@ -1915,6 +1915,9 @@
                 banner.style.display = 'none';
             }
 
+            // ── ML TRANSPARENCY: Show training progress ──
+            renderMLProgress(s.closed);
+
             // Stats cards
             document.getElementById('perf-stats').innerHTML =
                 statCard('Total Picks', s.total_picks, '')
@@ -2106,6 +2109,94 @@
         function formatMLDate(dateStr) {
             var d = new Date(dateStr);
             return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        // ============================================================================
+        // ML TRANSPARENCY: Show users when ML benefits will activate
+        // ============================================================================
+        function renderMLProgress(closedCount) {
+            // Check if ML transparency banner exists in Performance tab
+            var banner = document.getElementById('ml-transparency-banner');
+            if (!banner) {
+                // Create banner if it doesn't exist
+                var perfContent = document.getElementById('perf-content');
+                if (!perfContent) return;
+
+                banner = document.createElement('div');
+                banner.id = 'ml-transparency-banner';
+                banner.className = 'info-banner';
+                banner.style.cssText = 'background:linear-gradient(135deg,rgba(168,85,247,0.1),rgba(99,102,241,0.1));border-color:rgba(168,85,247,0.3);margin-bottom:1.5rem;';
+
+                // Insert after early-stage banner
+                var earlyBanner = document.getElementById('perf-early-banner');
+                if (earlyBanner && earlyBanner.nextSibling) {
+                    perfContent.insertBefore(banner, earlyBanner.nextSibling);
+                } else {
+                    perfContent.insertBefore(banner, perfContent.firstChild);
+                }
+            }
+
+            var closed = closedCount || 0;
+            var needed = 30;
+            var remaining = Math.max(0, needed - closed);
+            var progress = Math.min(100, (closed / needed) * 100);
+
+            var html = '<h4 style="color:var(--purple);display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;">';
+            html += '🤖 Machine Learning Training Progress';
+            html += '</h4>';
+
+            if (closed >= needed) {
+                // ML is active
+                html += '<div style="font-size:12px;color:var(--text-dim);line-height:1.7;">';
+                html += '<strong style="color:var(--green);">✓ ML System Active</strong><br>';
+                html += 'The Random Forest model has been trained with <strong style="color:var(--green);">' + closed + ' closed positions</strong>. ';
+                html += 'Machine learning benefits are now <strong style="color:var(--green);">LIVE</strong>:<br><br>';
+                html += '<ul style="margin:0.5rem 0;padding-left:1.5rem;">';
+                html += '<li><strong>Feature Importance:</strong> View in <a href="#" onclick="switchTab(\'analysis\');return false;" style="color:var(--accent);">System Analysis</a> tab to see which factors predict success</li>';
+                html += '<li><strong>Win Probability:</strong> Each new pick gets ML-enhanced prediction scores</li>';
+                html += '<li><strong>Confidence Ratings:</strong> Model provides confidence levels for all recommendations</li>';
+                html += '<li><strong>Continuous Learning:</strong> Model improves as more positions close</li>';
+                html += '</ul>';
+                html += '</div>';
+            } else {
+                // ML not yet active - show progress
+                html += '<div style="font-size:12px;color:var(--text-dim);line-height:1.7;">';
+                html += '<strong style="color:var(--yellow);">⏳ Training in Progress</strong><br>';
+                html += 'The ML system requires <strong style="color:var(--text);">30 closed positions</strong> to train the Random Forest model. ';
+                html += 'Currently: <strong style="color:' + (closed > 0 ? 'var(--green)' : 'var(--red)') + ';">' + closed + ' / 30 closed</strong> ';
+                html += '(<strong style="color:var(--yellow);">' + remaining + ' more needed</strong>).<br><br>';
+
+                // Progress bar
+                html += '<div style="margin:0.75rem 0;">';
+                html += '<div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:11px;">';
+                html += '<span style="color:var(--text);">Training Progress</span>';
+                html += '<span style="color:var(--accent);font-weight:700;">' + progress.toFixed(0) + '%</span>';
+                html += '</div>';
+                html += '<div style="width:100%;height:12px;background:var(--bg-dark);border-radius:6px;overflow:hidden;">';
+                html += '<div style="width:' + progress + '%;height:100%;background:linear-gradient(90deg,var(--purple),var(--accent));border-radius:6px;transition:width 0.3s;"></div>';
+                html += '</div></div>';
+
+                html += '<strong style="color:var(--text);">What happens next:</strong><br>';
+                html += '<ul style="margin:0.5rem 0;padding-left:1.5rem;">';
+                html += '<li>Positions close when they hit <strong>+30%</strong> (take-profit), <strong>-15%</strong> (stop-loss), or <strong>90-day</strong> max hold</li>';
+                html += '<li>Once 30+ positions close, the Random Forest model <strong>auto-trains</strong></li>';
+                html += '<li>Model learns which factor combinations predict winners vs losers</li>';
+                html += '<li>Future picks get <strong>ML-enhanced predictions</strong> with confidence scores</li>';
+                html += '<li>View feature importance in <a href="#" onclick="switchTab(\'analysis\');return false;" style="color:var(--accent);">System Analysis</a> tab after training</li>';
+                html += '</ul>';
+
+                html += '<div style="margin-top:0.75rem;padding:0.75rem;background:rgba(168,85,247,0.1);border-radius:6px;border:1px solid rgba(168,85,247,0.2);">';
+                html += '<strong style="color:var(--purple);">📊 Where to see ML benefits:</strong><br>';
+                html += '<span style="font-size:11px;color:var(--text-dim);">';
+                html += '• <strong>System Analysis tab:</strong> Feature importance rankings & model metrics<br>';
+                html += '• <strong>Daily Picks tab:</strong> ML win probability & confidence scores (after training)<br>';
+                html += '• <strong>Performance tab:</strong> This progress tracker updates automatically';
+                html += '</span></div>';
+                html += '</div>';
+            }
+
+            banner.innerHTML = html;
+            banner.style.display = 'block';
         }
 
         // ============================================================================

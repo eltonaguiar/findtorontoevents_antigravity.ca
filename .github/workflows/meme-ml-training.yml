@@ -1,0 +1,269 @@
+name: Meme Coin ML Training
+
+on:
+  schedule:
+    # Run daily at 6 AM UTC (check if retraining needed)
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      force_train:
+        description: 'Force model retraining'
+        required: false
+        default: 'false'
+      min_samples:
+        description: 'Minimum samples for training'
+        required: false
+        default: '50'
+
+jobs:
+  check-and-train:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+        extensions: mysqli, curl
+        
+    - name: Check ML Status
+      id: check_status
+      run: |
+        echo "Checking ML model status..."
+        
+        # Create status check script
+        cat > check_ml_status.php << 'EOF'
+        <?php
+        // Fetch current model status from production
+        $ch = curl_init('https://findtorontoevents.ca/findcryptopairs/api/meme_ml_engine.php?action=performance');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        $response = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        if ($http_code === 200) {
+            $data = json_decode($response, true);
+            if ($data['ok']) {
+                echo "MODEL_EXISTS=true\n";
+                echo "MODEL_ID=" . $data['model']['model_id'] . "\n";
+                echo "ACCURACY=" . $data['model']['accuracy'] . "\n";
+                echo "SAMPLES=" . $data['model']['sample_count'] . "\n";
+                exit(0);
+            }
+        }
+        
+        echo "MODEL_EXISTS=false\n";
+        exit(0);
+        EOF
+        
+        php check_ml_status.php >> $GITHUB_ENV
+        
+    - name: Check Database Initialization
+      run: |
+        cat > check_db.php << 'EOF'
+        <?php
+        $ch = curl_init('https://findtorontoevents.ca/findcryptopairs/api/ml_database_init.php?action=status');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        
+        $data = json_decode($response, true);
+        if (!$data['ok'] || $data['table_counts']['meme_signals'] == 0) {
+            echo "DB_NEEDS_INIT=true\n" >> $GITHUB_ENV;
+        } else {
+            echo "DB_NEEDS_INIT=false\n" >> $GITHUB_ENV;
+            echo "SIGNAL_COUNT=" . $data['table_counts']['meme_signals'] . "\n" >> $GITHUB_ENV;
+        }
+        EOF
+        
+        php check_db.php
+        
+    - name: Initialize Database (if needed)
+      if: env.DB_NEEDS_INIT == 'true'
+      run: |
+        echo "Initializing ML database..."
+        curl -s "https://findtorontoevents.ca/findcryptopairs/api/ml_database_init.php?action=init" > init_response.json
+        cat init_response.json
+        
+    - name: Auto-Retrain Check
+      id: retrain_check
+      run: |
+        cat > should_retrain.php << 'EOF'
+        <?php
+        $force = '${{ github.event.inputs.force_train }}' === 'true';
+        
+        if ($force) {
+            echo "SHOULD_TRAIN=true\n" >> $GITHUB_ENV;
+            echo "TRAIN_REASON=Manual trigger with force_train=true\n" >> $GITHUB_ENV;
+            exit(0);
+        }
+        
+        $ch = curl_init('https://findtorontoevents.ca/findcryptopairs/api/meme_ml_engine.php?action=retrain');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        
+        $data = json_decode($response, true);
+        
+        if ($data['retrain_triggered']) {
+            echo "SHOULD_TRAIN=true\n" >> $GITHUB_ENV;
+            echo "TRAIN_REASON=" . $data['retrain_reason'] . "\n" >> $GITHUB_ENV;
+        } else {
+            echo "SHOULD_TRAIN=false\n" >> $GITHUB_ENV;
+            echo "Skip training: " . $data['message'] . "\n";
+        }
+        EOF
+        
+        php should_retrain.php
+        
+    - name: Train ML Model
+      if: env.SHOULD_TRAIN == 'true'
+      timeout-minutes: 10
+      run: |
+        echo "Training ML model..."
+        echo "Reason: ${{ env.TRAIN_REASON }}"
+        
+        MIN_SAMPLES="${{ github.event.inputs.min_samples || '50' }}"
+        
+        curl -s "https://findtorontoevents.ca/findcryptopairs/api/meme_ml_engine.php?action=train&min_samples=$MIN_SAMPLES" > train_response.json
+        
+        echo "Training response:"
+        cat train_response.json | jq . || cat train_response.json
+        
+        # Extract results
+        cat > parse_results.php << 'EOF'
+        <?php
+        $json = file_get_contents('train_response.json');
+        $data = json_decode($json, true);
+        
+        if ($data['ok']) {
+            echo "TRAIN_SUCCESS=true\n" >> $GITHUB_ENV;
+            echo "MODEL_ID=" . $data['model_id'] . "\n" >> $GITHUB_ENV;
+            echo "SAMPLES_USED=" . $data['samples_used'] . "\n" >> $GITHUB_ENV;
+            echo "WIN_RATE=" . $data['base_win_rate'] . "\n" >> $GITHUB_ENV;
+            echo "ACCURACY=" . $data['metrics']['accuracy'] . "\n" >> $GITHUB_ENV;
+            echo "F1_SCORE=" . $data['metrics']['f1_score'] . "\n" >> $GITHUB_ENV;
+        } else {
+            echo "TRAIN_SUCCESS=false\n" >> $GITHUB_ENV;
+            echo "TRAIN_ERROR=" . $data['error'] . "\n" >> $GITHUB_ENV;
+        }
+        EOF
+        
+        php parse_results.php
+        
+    - name: Update Model Documentation
+      if: env.TRAIN_SUCCESS == 'true'
+      run: |
+        cat > update_model_doc.php << 'EOF'
+        <?php
+        $model_id = '${{ env.MODEL_ID }}';
+        $samples = '${{ env.SAMPLES_USED }}';
+        $win_rate = '${{ env.WIN_RATE }}';
+        $accuracy = '${{ env.ACCURACY }}';
+        $f1 = '${{ env.F1_SCORE }}';
+        $date = date('Y-m-d H:i:s');
+        
+        $doc = <<<MD
+        # Meme Coin ML Model
+        
+        ## Current Model: $model_id
+        
+        **Last Updated:** $date
+        
+        ### Performance Metrics
+        - **Training Samples:** $samples
+        - **Base Win Rate:** $win_rate%
+        - **Model Accuracy:** $accuracy
+        - **F1 Score:** $f1
+        
+        ### Model Info
+        - Algorithm: Weighted Logistic Regression
+        - Features: 7 meme coin indicators
+        - Auto-retrain: Every 7 days or 50 new signals
+        
+        MD;
+        
+        file_put_contents('findcryptopairs/MODEL_STATUS.md', $doc);
+        echo "Updated MODEL_STATUS.md";
+        EOF
+        
+        php update_model_doc.php
+        
+    - name: Commit Model Status
+      if: env.TRAIN_SUCCESS == 'true'
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        
+        git add findcryptopairs/MODEL_STATUS.md
+        git add train_response.json || true
+        
+        git commit -m "🤖 ML Model Trained: ${{ env.MODEL_ID }}
+        
+        - Samples: ${{ env.SAMPLES_USED }}
+        - Win Rate: ${{ env.WIN_RATE }}%
+        - Accuracy: ${{ env.ACCURACY }}
+        - F1 Score: ${{ env.F1_SCORE }}"
+        
+        git push
+        
+    - name: Create Training Report
+      run: |
+        cat > training_report.md << EOF
+        # ML Training Report - $(date)
+        
+        ## Status
+        ${{ env.TRAIN_SUCCESS == 'true' && '✅ Training Successful' || '❌ Training Failed' }}
+        
+        ${{ env.TRAIN_SUCCESS == 'true' && '
+        ## Model Details
+        - **Model ID:** ${{ env.MODEL_ID }}
+        - **Training Samples:** ${{ env.SAMPLES_USED }}
+        - **Win Rate:** ${{ env.WIN_RATE }}%
+        - **Accuracy:** ${{ env.ACCURACY }}
+        - **F1 Score:** ${{ env.F1_SCORE }}
+        
+        ## Reason
+        ${{ env.TRAIN_REASON }}
+        ' || '
+        ## Error
+        ${{ env.TRAIN_ERROR }}
+        ' }}
+        
+        ## Next Steps
+        ${{ env.TRAIN_SUCCESS == 'true' && '- Model is now active and serving predictions' || '- Check training data availability' }}
+        EOF
+        
+        cat training_report.md
+        
+    - name: Upload Training Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ml-training-${{ github.run_id }}
+        path: |
+          train_response.json
+          training_report.md
+          init_response.json
+        retention-days: 30
+        
+    - name: Notify on Failure
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '🚨 Meme ML Training Failed',
+            body: `ML training workflow failed on ${new Date().toISOString()}
+            
+            Run: ${context.runId}
+            
+            Check the Actions logs for details.`
+          });

@@ -300,8 +300,8 @@
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
             <span style="background:linear-gradient(135deg,#ffd700,#f59e0b);color:#0a0e1a;padding:3px 10px;border-radius:5px;font-weight:800;font-size:11px;letter-spacing:0.5px;">#1 CRYPTO</span>
             <span style="color:#ffd700;font-weight:700;font-size:0.95rem;">Our Best Crypto System: Self-Learning Algorithms</span>
-            <span style="margin-left:auto;color:#22d3ee;font-size:0.8rem;font-weight:600;" id="crypto-banner-wr">87.5% WR</span>
-            <span style="color:#22c55e;font-size:0.8rem;font-weight:600;" id="crypto-banner-pnl">+12.6% P&amp;L</span>
+            <span style="margin-left:auto;color:#22d3ee;font-size:0.8rem;font-weight:600;" id="crypto-banner-wr">-- WR</span>
+            <span style="color:#22c55e;font-size:0.8rem;font-weight:600;" id="crypto-banner-pnl">-- P&amp;L</span>
             <span style="color:var(--text-dim);font-size:0.8rem;">View Picks &rarr;</span>
         </div>
         <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.4rem;line-height:1.5;">
@@ -1114,26 +1114,21 @@ document.addEventListener('DOMContentLoaded', function() {
     loadCryptoBanner();
 });
 
-// ─── #1 Crypto Banner — live stats ───
+// ─── #1 Crypto Banner — live stats (uses summary, same as algo-performance gold banner) ───
 function loadCryptoBanner() {
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', '/live-monitor/api/algo_performance.php?action=by_asset&days=30');
+    xhr.open('GET', '/live-monitor/api/algo_performance.php?action=summary&days=30');
     xhr.timeout = 5000;
     xhr.onload = function() {
         if (xhr.status !== 200) return;
         try {
             var d = JSON.parse(xhr.responseText);
-            if (!d.ok || !d.assets) return;
-            for (var i = 0; i < d.assets.length; i++) {
-                var a = d.assets[i];
-                if (a.asset_class === 'crypto' && a.learned) {
-                    var wrEl = document.getElementById('crypto-banner-wr');
-                    var pnlEl = document.getElementById('crypto-banner-pnl');
-                    if (wrEl && a.learned.win_rate !== undefined) wrEl.textContent = a.learned.win_rate + '% WR';
-                    if (pnlEl && a.learned.total_pnl !== undefined) pnlEl.textContent = (a.learned.total_pnl >= 0 ? '+' : '') + a.learned.total_pnl.toFixed(1) + '% P&L';
-                    break;
-                }
-            }
+            if (!d.ok || !d.performance) return;
+            var learned = d.performance['learned'] || {};
+            var wrEl = document.getElementById('crypto-banner-wr');
+            var pnlEl = document.getElementById('crypto-banner-pnl');
+            if (wrEl && learned.win_rate !== undefined) wrEl.textContent = learned.win_rate + '% WR';
+            if (pnlEl && learned.total_pnl !== undefined) pnlEl.textContent = (learned.total_pnl >= 0 ? '+' : '') + learned.total_pnl.toFixed(1) + '% P&L';
         } catch(e) {}
     };
     xhr.onerror = function() {};

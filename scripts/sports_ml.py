@@ -225,6 +225,11 @@ FEATURE_COLUMNS = [
     'team_wp_diff',            # home_win_pct - away_win_pct
     'home_streak_val',         # Win streak numeric (W5=+5, L3=-3)
     'home_injury_count',       # Number of injuries on picked team
+    
+    # NEW: Enhanced injury impact features (Phase 1 enhancements)
+    'home_injury_impact',      # 0-100 weighted injury impact for home team
+    'away_injury_impact',      # 0-100 weighted injury impact for away team
+    'injury_advantage',        # away_injury_impact - home_injury_impact (positive = home advantage)
 ]
 
 SPORT_MAP = {
@@ -345,6 +350,54 @@ def _enrich_scraper_features(features, df, conn=None):
         if h_data and a_data and h_data['win_pct'] is not None and a_data['win_pct'] is not None:
             features.loc[idx, 'team_wp_diff'] = h_data['win_pct'] - a_data['win_pct']
 
+    return features
+
+
+def _fetch_injury_impact(sport, home_team, away_team):
+    """Fetch injury impact scores from injury_intel.php API (Phase 1 enhancement)"""
+    try:
+        import urllib.parse
+        base_url = 'https://findtorontoevents.ca/live-monitor/api/injury_intel.php'
+        params = {
+            'action': 'impact',
+            'sport': sport,
+            'home': home_team,
+            'away': away_team
+        }
+        url = f"{base_url}?{urllib.parse.urlencode(params)}"
+        
+        resp = requests.get(url, timeout=10)
+        if resp.status_code == 200:
+            data = resp.json()
+            if data.get('ok'):
+                return {
+                    'home_injury_impact': data.get('home_injury_impact', 0),
+                    'away_injury_impact': data.get('away_injury_impact', 0),
+                    'injury_advantage': data.get('injury_advantage', 0)
+                }
+    except Exception as e:
+        log.warning(f"Failed to fetch injury impact for {sport} {home_team} vs {away_team}: {e}")
+    
+    return {'home_injury_impact': 0, 'away_injury_impact': 0, 'injury_advantage': 0}
+
+
+def _enrich_injury_impact_features(features, df):
+    """Add injury impact features to a features DataFrame (Phase 1 enhancement)"""
+    features['home_injury_impact'] = 0
+    features['away_injury_impact'] = 0
+    features['injury_advantage'] = 0
+    
+    for idx in df.index:
+        sport = str(df.loc[idx, 'sport']) if 'sport' in df.columns else ''
+        home = str(df.loc[idx, 'home_team']) if 'home_team' in df.columns else ''
+        away = str(df.loc[idx, 'away_team']) if 'away_team' in df.columns else ''
+        
+        if sport and home and away:
+            impact_data = _fetch_injury_impact(sport, home, away)
+            features.loc[idx, 'home_injury_impact'] = impact_data['home_injury_impact']
+            features.loc[idx, 'away_injury_impact'] = impact_data['away_injury_impact']
+            features.loc[idx, 'injury_advantage'] = impact_data['injury_advantage']
+    
     return features
 
 
