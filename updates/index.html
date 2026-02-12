@@ -319,6 +319,33 @@ a:hover { text-decoration: underline; }
 
 <div class="section-year">February 2026</div>
 
+<!-- Feb 12, 2026 — Transparency: Data Sources, Roadmaps, and Critical Bug Fix -->
+<div class="update-entry" style="--dot-color: #22c55e;" data-tags="transparency,roadmap,source-links,bug-fix,fetch-prices,data-integrity" data-category="trading,platform">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    Transparency Upgrade &mdash; Data Sources, Roadmaps, and Critical Price Bug Fix
+    <span class="badge badge-feature">New</span>
+  </div>
+  <div class="update-body">
+    <p>Added <strong>Data Sources &amp; Transparency</strong> and <strong>Future Roadmap</strong> sections to all 7 asset class pages. Every performance number now links directly to the API endpoint that produces it &mdash; no more mystery about where stats come from.</p>
+
+    <p><strong>Critical Bug Fix:</strong> <code>fetch_prices.php</code> had a condition that skipped any ticker with 50+ price records, meaning the <code>daily_prices</code> table <strong>stopped refreshing after ~50 days</strong>. This caused all 65 Consolidated Picks positions to show 0.00% return (stale entry prices = current prices). Fixed by checking if <code>MAX(trade_date) &lt; CURDATE()</code> instead of <code>COUNT(*) &lt; 50</code>.</p>
+
+    <p><strong>Pages updated with source links + roadmap:</strong></p>
+    <ul>
+      <li><a href="/findstocks/portfolio2/consolidated.html">Consolidated Picks (Best Stocks)</a> &mdash; links to consensus_performance.php, fetch_prices.php, daily_picks.php</li>
+      <li><a href="/live-monitor/algo-performance.html">L vs O (#1 Pick / Best Crypto)</a> &mdash; links to algo_performance.php (summary, by_algorithm, by_asset, trades)</li>
+      <li><a href="/findstocks/portfolio2/penny-stocks.html">Penny Stock Finder (Best Penny)</a> &mdash; links to penny_stocks.php, penny_stock_picks.php</li>
+      <li><a href="/findcryptopairs/meme.html">Meme Coin Scanner (Best Meme)</a> &mdash; links to meme_scanner.php (stats, scan, history)</li>
+      <li><a href="/findcryptopairs/winners.html">Crypto Winner Scanner</a> &mdash; links to crypto_winners.php (stats, scan, history)</li>
+      <li><a href="/findforex2/portfolio/">Forex Portfolio (Best Forex)</a> &mdash; links to algo_performance.php by_asset, forex_portfolio.php</li>
+      <li><a href="/findmutualfunds2/portfolio2/">Mutual Funds Portfolio (Best MF)</a> &mdash; links to mutual_fund_portfolio.php (stats, funds, backtests)</li>
+    </ul>
+
+    <p><strong>Workflow fix:</strong> Changed GitHub Actions daily stock refresh from <code>range=1y</code> to <code>range=1mo</code> (daily refresh doesn't need a full year of historical data).</p>
+  </div>
+</div>
+
 <!-- Feb 12, 2026 — Sports Betting: Honest System Analysis + ML Roadmap -->
 <div class="update-entry" style="--dot-color: #f59e0b;" data-tags="sports,betting,analysis,ml,machine-learning,transparency,roadmap,honest,flaws,strengths" data-category="sports,trading">
   <div class="update-date">Feb 12, 2026</div>
