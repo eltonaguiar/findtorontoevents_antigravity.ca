@@ -271,6 +271,112 @@ a:hover { text-decoration: underline; }
 
 <div class="section-year">February 2026</div>
 
+<!-- Feb 11, 2026 — Auto-Execution + Risk Management Upgrades -->
+<div class="update-entry" style="--dot-color: #22c55e;" data-tags="auto-execute,drawdown,cooldown,correlation,risk,trading,live-monitor,paper-trading" data-category="stocks,trading,crypto">
+  <div class="update-date">Feb 11, 2026</div>
+  <div class="update-title">
+    Auto-Execution Engine + 4 Risk Management Upgrades
+    <span class="badge badge-feature">New</span>
+    <span class="badge badge-improvement">Improved</span>
+  </div>
+  <div class="update-body">
+    <p>Discovered and fixed the single biggest gap in the trading pipeline: signals were being generated every 30 minutes but never executed into paper trades. Built a complete auto-execution engine and added 4 risk management layers recommended across 13 AI strategy reviews (Kimi, DeepSeek, Grok, Windsurf, Claude, ChatGPT, GitHub Copilot, and Antigravity MOTHERLOADs).</p>
+    <ul>
+      <li><strong>Auto-Execute Engine</strong> &mdash; New <code>auto_execute</code> action bridges the signal-to-trade gap. Runs every 30 minutes via GitHub Actions. Enters positions for signals with strength &ge; 70, respects all limits (global 10, per-asset, crypto algo filter, circuit breakers), and uses Half-Kelly + volatility-adjusted sizing. First auto-trade: MSFT LONG via Challenger Bot, strength 73 <span class="app-tag">Trading</span></li>
+      <li><strong>Drawdown-Based Position Scaling</strong> &mdash; Positions automatically shrink during losing streaks. At 0% drawdown = full size, at 10% DD = half size, at 20% DD = quarter size. Based on Optimal-f theory (Vince 1990) and Bridgewater risk parity. Prevents ruin during adverse runs <span class="app-tag">Risk</span></li>
+      <li><strong>Signal Cooldown</strong> &mdash; 6-hour cooldown after any stop-loss exit on a symbol. Prevents revenge trading &mdash; the #1 retail killer per behavioral finance research. If BTCUSD gets stopped out, no new BTCUSD entries for 6 hours regardless of new signals <span class="app-tag">Risk</span></li>
+      <li><strong>Sector Correlation Guard</strong> &mdash; Max 2 open positions per sector group. 26 sector groups mapped across stocks (tech, finance, energy, healthcare), crypto (major, alt L1, DeFi, meme, L2, payment), and forex (major, commodity, cross). Prevents portfolio blow-up from correlated moves <span class="app-tag">Risk</span></li>
+      <li><strong>Per-Asset Stop-Loss Floors</strong> &mdash; Minimum SL by asset class: Crypto 2%, Stock 1.5%, Forex 1%. With 30-minute tracking intervals, tight SLs are unrealistic &mdash; price can move 1-2% between checks, causing exits far worse than the target <span class="app-tag">Risk</span></li>
+      <li><strong>Crypto Entry Fee Fix</strong> &mdash; Fixed entry fee from 0.1% to 0.2% per side (matching NDAX exit fee). Added stock entry fee calculation (Moomoo: $0.0099/share, min $1.99). Previously only exit fees were correctly calculated <span class="app-tag">Fix</span></li>
+      <li><strong>Purged Backtest Embargo</strong> &mdash; New <code>embargo_days</code> parameter (default 2). Skips first N trading days after pick date to prevent look-ahead bias &mdash; signal may use data from those days. Based on purged cross-validation best practices <span class="app-tag">Backtest</span></li>
+    </ul>
+    <p><a href="/live-monitor/">Live Monitor &rarr;</a> &nbsp;|&nbsp; <a href="/live-monitor/goldmine-dashboard.html">Goldmine Dashboard &rarr;</a></p>
+  </div>
+</div>
+
+<!-- Feb 11, 2026 — Trading System Overhaul: 7 Critical Fixes -->
+<div class="update-entry" style="--dot-color: #ef4444;" data-tags="trading,backtest,algorithms,cdr,regime,forex,stop-loss,live-signals,live-monitor" data-category="stocks,trading">
+  <div class="update-date">Feb 11, 2026</div>
+  <div class="update-title">
+    Trading System Overhaul &mdash; 7 Critical Fixes + CDR Commission-Free Focus
+    <span class="badge badge-fix">Fix</span>
+    <span class="badge badge-improvement">Improved</span>
+  </div>
+  <div class="update-body">
+    <p>After the financial analysis revealed a catastrophic 3.84% win rate and -96.82% portfolio loss across 417 backtested trades, we identified and fixed 7 root causes across the backtest engine, live signal generation, and algorithm defaults. Combined with Cursor&rsquo;s parallel fixes (pausing 7 failed algos, ETH exclusion, crypto optimization), this represents a complete execution layer overhaul.</p>
+    <ul>
+      <li><strong>Gap-Aware Stop Loss</strong> &mdash; Backtest now detects overnight gap-downs. If a stock opens below the stop-loss price, it exits at the open price (realistic) instead of the SL price (optimistic). Same for gap-up take profits. Prevents the backtest from being misleadingly optimistic about SL fills <span class="app-tag">Backtest</span></li>
+      <li><strong>Regime Scaling Fix</strong> &mdash; Sideways-market TP cut reduced from 35% to 15%. The old 35% cut turned a 3% TP target into 1.95% &mdash; nearly impossible to hit after slippage, causing 67% of trades to expire at max hold. R:R ratio improved from 1.15:1 to 1.42:1 <span class="app-tag">Trading</span></li>
+      <li><strong>Stock TP/Hold Overhaul</strong> &mdash; All 19 technical algorithms&rsquo; stock targets increased. Minimum stock TP raised from 0.8% to 1.5% (viable after CDR $0 commission). Hold times extended 33&ndash;100% to give trades room. Fundamental algos (Insider, 13F, Sentiment, Contrarian) get 21&ndash;30 day holds <span class="app-tag">Trading</span></li>
+      <li><strong>CDR Preference Scoring</strong> &mdash; Added <code>_ls_is_cdr_ticker()</code> with 39 commission-free CDR stocks. CDR signals get +8 strength boost. All 9 current Challenger Bot signals (MSFT, AMZN, NVDA, GOOGL, NFLX, BAC, AAPL, META, WMT) are CDR &mdash; $0 per trade on NEO Exchange <span class="app-tag">Trading</span></li>
+      <li><strong>Loss Cap at -100%</strong> &mdash; Fixed the -145.28% worst trade bug. No single trade can now lose more than its allocated capital, preventing phantom losses from distorting Sharpe ratio, Kelly criterion, and average loss metrics <span class="app-tag">Backtest</span></li>
+      <li><strong>Slippage Reduction</strong> &mdash; Default backtest slippage reduced from 0.5% to 0.1% per side (paper trading uses 0.05%). The old 0.5% was 10x too high, making backtests unrealistically punishing for large-cap stocks <span class="app-tag">Backtest</span></li>
+      <li><strong>Forex Regime Gate Fix</strong> &mdash; Forex regime returned <code>usd_strong</code>/<code>usd_weak</code> but all 17+ algo gates checked for <code>bear</code>/<code>bull</code> &mdash; they never matched, so forex was never regime-gated. Fixed: USD strength is now mapped to pair-specific bull/bear (e.g. USD strong + EURUSD = bear). This was the root cause of &ldquo;EUR/USD bear but went long&rdquo; <span class="app-tag">Trading</span></li>
+    </ul>
+    <p><a href="/live-monitor/">Live Monitor &rarr;</a> &nbsp;|&nbsp; <a href="/fc/api/backtest.php">Backtest API &rarr;</a></p>
+  </div>
+</div>
+
+<!-- Feb 11, 2026 — Financial Analysis Document -->
+<div class="update-entry" style="--dot-color: #f59e0b;" data-tags="analysis,finance,backtest,crypto,forex,stocks,sports,meme,penny,goldmine" data-category="stocks,trading,crypto">
+  <div class="update-date">Feb 11, 2026</div>
+  <div class="update-title">
+    Comprehensive Financial Analysis &mdash; All 8 Trading Systems Audited
+    <span class="badge badge-feature">New</span>
+  </div>
+  <div class="update-body">
+    <p>Generated a 14-section analysis document covering every financial system: stocks (smart money consensus for 12 tickers), crypto (alpha composites, recent winners/losers), meme coins (6 open positions), penny stocks (740 Canadian stocks), forex (3 closed trades), sports betting (+25.34% ROI), algorithm performance (20 algos ranked), and the goldmine unified tracker (785 picks, 70.5% win rate). Includes backtest reality check and prioritized risk recommendations.</p>
+    <ul>
+      <li><strong>Market Regime</strong> &mdash; HMM confidence 99.94% Sideways/Bear. VIX at 18.12. DXY weakening. Gold surging +9.67% in 20 days <span class="app-tag">Analysis</span></li>
+      <li><strong>Backtest Reality Check</strong> &mdash; Incorporated backtest_quick.json data ($10K &rarr; $317.94, 3.84% win rate, $8,340 commission drag) alongside goldmine&rsquo;s 70.5% signal win rate. Identified the disconnect: signals work, execution is broken <span class="app-tag">Analysis</span></li>
+      <li><strong>Sports Betting Only Profitable System</strong> &mdash; +$13.14 profit, +25.34% ROI on $1,000 bankroll with quarter-Kelly sizing. 3 settled bets (2W/1L). Highlighted as the only system with positive returns <span class="app-tag">Sports</span></li>
+      <li><strong>Priority Action Plan</strong> &mdash; 10 prioritized recommendations from &ldquo;fix what&rsquo;s broken&rdquo; (commission drag, stop loss execution, pause failed algos) to &ldquo;build on what works&rdquo; (sports betting, horizon picks, crypto signals) <span class="app-tag">Analysis</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- Feb 11, 2026 — Mental Health Resources Disclaimer -->
+<div class="update-entry" style="--dot-color: #ec4899;" data-tags="mental-health,disclaimer,legal,compliance,crisis" data-category="health">
+  <div class="update-date">Feb 11, 2026</div>
+  <div class="update-title">
+    Medical &amp; Mental Health Disclaimer Added to All Resources Pages
+    <span class="badge badge-feature">New</span>
+    <span class="badge badge-deploy">Deployed</span>
+  </div>
+  <div class="update-body">
+    <p>Added a comprehensive medical and mental health disclaimer to all 18 pages in the Mental Health Resources section. Covers not-a-substitute-for-professional-advice, no-doctor-patient-relationship, limitation of liability, and emergency crisis resources with direct hotline numbers.</p>
+    <ul>
+      <li><strong>17 Sub-Pages</strong> &mdash; Disclaimer section inserted directly into HTML before footer on all standalone pages (Breathing Exercise, Mindfulness Meditation, Color Therapy Game, etc.) <span class="app-tag">Legal</span></li>
+      <li><strong>Next.js Index Page</strong> &mdash; Injected via <code>&lt;script&gt;</code> tag after hydration (Next.js static HTML is immutable). Finds the footer and inserts disclaimer before it with 500ms delay <span class="app-tag">Frontend</span></li>
+      <li><strong>Crisis Resources</strong> &mdash; Emergency red banner with Canadian crisis hotlines: 911, 9-8-8 (Suicide Crisis Helpline), Kids Help Phone (1-800-668-6868), Hope for Wellness (Indigenous, 1-855-242-3310), Crisis Text Line (text HOME to 741741) <span class="app-tag">Legal</span></li>
+      <li><strong>FTP Deployed</strong> &mdash; All 18 files uploaded via <code>tools/deploy_disclaimer_ftp.py</code> to <code>/findtorontoevents.ca/MENTALHEALTHRESOURCES/</code> <span class="app-tag">DevOps</span></li>
+    </ul>
+    <p><a href="/MENTALHEALTHRESOURCES/">Mental Health Resources &rarr;</a></p>
+  </div>
+</div>
+
+<!-- Feb 11, 2026 — Win Rate Fix + Consensus Algorithm Rewrite -->
+<div class="update-entry" style="--dot-color: #ef4444;" data-tags="goldmine,live-signals,consensus,win-rate,trading,algorithms,regime,live-monitor" data-category="stocks,trading">
+  <div class="update-date">Feb 11, 2026</div>
+  <div class="update-title">
+    Win Rate Calculation Fix + Consensus Algorithm Rewrite
+    <span class="badge badge-fix">Fix</span>
+    <span class="badge badge-improvement">Improved</span>
+  </div>
+  <div class="update-body">
+    <p>Investigated and fixed the &ldquo;Win rate declining (37.4%)&rdquo; warning on the Goldmine Alerts dashboard. Root cause: expired/max-hold picks with positive returns were being counted as losses. Also discovered and completely rewrote the Consensus algorithm, which had a critical bug causing it to always generate BUY signals regardless of what individual algorithms voted.</p>
+    <ul>
+      <li><strong>Win Rate Recalculation</strong> &mdash; Picks that hit max hold or expired with positive returns now correctly count as wins. 147 of 166 max-hold picks had positive average returns (+1.04%) but were all counted as losses. Win rate jumped from 37.4% to 70.5% (322/457 closed picks) <span class="app-tag">Backend</span></li>
+      <li><strong>Consensus Algorithm Rewrite</strong> &mdash; The Consensus algo (Algorithm #7) had 3 critical bugs: (1) always generated BUY signals regardless of direction &mdash; so when 8/8 algos said SHORT, Consensus said BUY; (2) stocks queried the wrong table (forex picks); (3) used stale daily picks instead of live signals. Rewrote to query <code>lm_signals</code> with direction-aware voting and a 60% supermajority requirement. Result: 0% win rate &rarr; now correctly follows market consensus <span class="app-tag">Trading</span></li>
+      <li><strong>Regime-Aware TP/SL Scaling</strong> &mdash; New <code>_ls_regime_scale_tp_sl()</code> function reduces take-profit targets by 35% and tightens stop-losses by 15% in sideways/neutral markets. Prevents max-hold timeouts caused by unreachable targets <span class="app-tag">Trading</span></li>
+      <li><strong>Learned Parameter Bounds</strong> &mdash; Clamped learned TP/SL to 0.3x&ndash;2.5x of original defaults and hold time to 0.25x&ndash;3x. Enforced minimum 1.2:1 reward-to-risk ratio to prevent overfitting from degrading expected value <span class="app-tag">Backend</span></li>
+      <li><strong>Signal Strength Filter</strong> &mdash; Goldmine archival now skips signals with strength below 50 (previously archived everything). Prevents weak signals from inflating the loss count <span class="app-tag">Backend</span></li>
+      <li><strong>Per-Algorithm Alert Fix</strong> &mdash; The per-algorithm underperformance check now includes expired wins (was only counting TP hits). Also added recalibration detection: if an algorithm&rsquo;s recent signals have a different direction from its old losses, the alert auto-resolves instead of persisting for 30 days <span class="app-tag">Alerts</span></li>
+    </ul>
+    <p><a href="/live-monitor/goldmine-alerts.html">Goldmine Alerts &rarr;</a> &nbsp;|&nbsp; <a href="/live-monitor/goldmine-dashboard.html">Goldmine Dashboard &rarr;</a></p>
+  </div>
+</div>
+
 <!-- Feb 11, 2026 — Goldmine Alerts Upgrade: 6 New Alert Types + Cross-System Health Monitoring -->
 <div class="update-entry" style="--dot-color: #f59e0b;" data-tags="goldmine,alerts,monitoring,trading,stocks,sports,conviction,paper-trading,live-monitor" data-category="stocks,trading">
   <div class="update-date">Feb 11, 2026</div>

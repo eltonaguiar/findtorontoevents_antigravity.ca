@@ -99,7 +99,13 @@ jobs:
       run: |
         curl -s --max-time 10 "https://findtorontoevents.ca/live-monitor/api/live_signals.php?action=expire" > /dev/null 2>&1 || true
 
-    # ─── Step 6: Check circuit breakers ───
+    # ─── Step 6: Recalculate Kelly fractions ───
+    - name: Recalculate Kelly fractions
+      continue-on-error: true
+      run: |
+        curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/live_trade.php?action=recalculate_kelly&key=livetrader2026" > /dev/null 2>&1 || true
+
+    # ─── Step 7: Check circuit breakers (was Step 6) ───
     - name: Check circuit breakers
       continue-on-error: true
       run: |

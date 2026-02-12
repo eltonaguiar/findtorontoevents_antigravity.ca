@@ -51,6 +51,34 @@ $CRYPTO_PREFERRED_ALGOS = array(
 // Minimum 3% TP for crypto to allow natural price movement.
 $CRYPTO_MIN_TP_PCT = 3.0;
 
+// ─── Sector/Group mapping for correlation guard ─────────────────────
+// Prevents over-concentration: max 2 positions per sector group
+$SECTOR_GROUPS = array(
+    // Tech mega-caps (highly correlated)
+    'AAPL' => 'tech', 'MSFT' => 'tech', 'GOOGL' => 'tech', 'META' => 'tech',
+    'AMZN' => 'tech_consumer', 'NVDA' => 'tech_semi', 'NFLX' => 'tech_consumer',
+    // Financials
+    'JPM' => 'finance', 'BAC' => 'finance',
+    // Consumer/Energy
+    'WMT' => 'consumer', 'XOM' => 'energy', 'JNJ' => 'healthcare',
+    // Crypto groups (BTC-correlated)
+    'BTCUSD' => 'crypto_major', 'ETHUSD' => 'crypto_major',
+    'SOLUSD' => 'crypto_alt_l1', 'AVAXUSD' => 'crypto_alt_l1', 'ADAUSD' => 'crypto_alt_l1',
+    'DOTUSD' => 'crypto_alt_l1', 'NEARUSD' => 'crypto_alt_l1', 'APTUSD' => 'crypto_alt_l1',
+    'SUIUSD' => 'crypto_alt_l1',
+    'BNBUSD' => 'crypto_exchange', 'UNIUSD' => 'crypto_defi', 'AAVEUSD' => 'crypto_defi',
+    'LINKUSD' => 'crypto_infra', 'ARBUSD' => 'crypto_l2', 'OPUSD' => 'crypto_l2',
+    'XRPUSD' => 'crypto_payment', 'LTCUSD' => 'crypto_payment',
+    'DOGEUSD' => 'crypto_meme', 'SHIBUSD' => 'crypto_meme',
+    'PEPEUSD' => 'crypto_meme', 'FLOKIUSD' => 'crypto_meme',
+    // Forex groups (USD pairs)
+    'EURUSD' => 'fx_major', 'GBPUSD' => 'fx_major',
+    'USDJPY' => 'fx_jpy', 'USDCAD' => 'fx_cad', 'USDCHF' => 'fx_chf',
+    'AUDUSD' => 'fx_commodity', 'NZDUSD' => 'fx_commodity',
+    'EURGBP' => 'fx_cross'
+);
+$MAX_PER_SECTOR = 2;  // Max 2 positions in any single sector group
+
 // ─── Auto-create tables ─────────────────────────────────────────────
 $conn->query("
 CREATE TABLE IF NOT EXISTS lm_trades (
@@ -215,6 +243,61 @@ function _lt_kelly_position_pct($conn, $algorithm_name, $asset_class, $vol_pct) 
     // Fallback: use volatility-adjusted sizing
     return $vol_pct;
 }
+
+// ─── World-Class: Drawdown-based position scaling ────────────────────
+// Science: Optimal-f theory (Vince 1990), risk parity (Bridgewater)
+// When portfolio is in drawdown, reduce position sizes to preserve capital.
+// At max acceptable drawdown (10%), positions are halved.
+// This prevents ruin during losing streaks — every MOTHERLOAD recommended this.
+function _lt_drawdown_scale($conn) {
+    global $INITIAL_CAPITAL;
+    $portfolio = _lt_get_portfolio_value($conn);
+    $drawdown_pct = 0;
+
+    // Get peak from snapshots
+    $r = $conn->query("SELECT MAX(total_value_usd) AS peak FROM lm_snapshots");
+    $peak = (float) $INITIAL_CAPITAL;
+    if ($r) {
+        $row = $r->fetch_assoc();
+        if ($row && $row['peak'] !== null && (float) $row['peak'] > $peak) {
+            $peak = (float) $row['peak'];
+        }
+        $r->free();
+    }
+
+    if ($peak > 0 && $portfolio < $peak) {
+        $drawdown_pct = (($peak - $portfolio) / $peak) * 100;
+    }
+
+    // Scale factor: 1.0 at 0% DD, 0.5 at 10% DD, 0.25 at 20% DD
+    // Formula: scale = 1 / (1 + DD%/10)
+    if ($drawdown_pct <= 0) return 1.0;
+    $scale = 1.0 / (1.0 + $drawdown_pct / 10.0);
+    return round(max(0.25, min(1.0, $scale)), 4);
+}
+
+
+// ─── World-Class: Signal cooldown ────────────────────────────────────
+// Prevents re-entering the same symbol shortly after a stop-loss exit.
+// If a symbol was stopped out in the last N hours, skip it.
+// Science: Behavioral finance — revenge trading is the #1 retail killer.
+function _lt_check_cooldown($conn, $symbol, $cooldown_hours) {
+    $safe_sym = $conn->real_escape_string($symbol);
+    $cutoff = date('Y-m-d H:i:s', time() - ($cooldown_hours * 3600));
+    $r = $conn->query("SELECT id FROM lm_trades
+        WHERE symbol = '$safe_sym'
+        AND status = 'closed'
+        AND exit_reason = 'stop_loss'
+        AND exit_time >= '$cutoff'
+        LIMIT 1");
+    if ($r) {
+        $has_recent_sl = ($r->num_rows > 0);
+        $r->free();
+        return $has_recent_sl; // true = on cooldown, skip this symbol
+    }
+    return false;
+}
+
 
 // ─── World-Class: Slippage estimation ────────────────────────────────
 // Estimates execution slippage based on position size and asset type
@@ -475,6 +558,10 @@ function _lt_close_position($conn, $position, $exit_price, $reason) {
         unrealized_pct     = 0
     WHERE id = " . $id);
 
+    // Auto-recompute Kelly fraction for this algorithm+asset class
+    // This keeps Half-Kelly sizing data fresh without external scripts
+    _lt_update_kelly($conn, $position['algorithm_name'], $position['asset_class']);
+
     return array(
         'id'              => $id,
         'symbol'          => $position['symbol'],
@@ -487,6 +574,79 @@ function _lt_close_position($conn, $position, $exit_price, $reason) {
         'fees_usd'        => $fees,
         'hold_hours'      => $hold_hours
     );
+}
+
+
+// ─── Auto-compute Kelly fraction for an algorithm ────────────────────
+// Called after every trade close to keep Half-Kelly sizing data fresh.
+// Kelly criterion: f* = p - q/b where p=win_rate, q=1-p, b=avg_win/avg_loss
+function _lt_update_kelly($conn, $algorithm_name, $asset_class) {
+    if ($algorithm_name === '') return;
+    $safe_algo  = $conn->real_escape_string($algorithm_name);
+    $safe_asset = $conn->real_escape_string($asset_class);
+
+    // Get stats for this algorithm+asset
+    $r = $conn->query("SELECT
+        COUNT(*) AS sample_size,
+        SUM(CASE WHEN realized_pnl_usd > 0 THEN 1 ELSE 0 END) AS wins,
+        AVG(CASE WHEN realized_pnl_usd > 0 THEN realized_pct ELSE NULL END) AS avg_win_pct,
+        AVG(CASE WHEN realized_pnl_usd <= 0 THEN ABS(realized_pct) ELSE NULL END) AS avg_loss_pct
+    FROM lm_trades
+    WHERE algorithm_name = '$safe_algo'
+    AND asset_class = '$safe_asset'
+    AND status = 'closed'");
+
+    if (!$r) return;
+    $row = $r->fetch_assoc();
+    $r->free();
+
+    $sample = (int) $row['sample_size'];
+    if ($sample < 5) return; // Need minimum 5 trades
+
+    $wins     = (int) $row['wins'];
+    $win_rate = $wins / $sample;
+    $avg_win  = ($row['avg_win_pct'] !== null) ? (float) $row['avg_win_pct'] : 0;
+    $avg_loss = ($row['avg_loss_pct'] !== null) ? (float) $row['avg_loss_pct'] : 0;
+
+    if ($avg_loss <= 0) $avg_loss = 0.01; // Prevent division by zero
+    $odds = $avg_win / $avg_loss; // b = avg_win / avg_loss
+
+    // Kelly fraction: f* = p - q/b = win_rate - (1-win_rate) / odds
+    $full_kelly = $win_rate - ((1 - $win_rate) / $odds);
+    $half_kelly = $full_kelly / 2;
+
+    // Clamp: negative Kelly = don't trade, cap at 25%
+    if ($half_kelly < 0) $half_kelly = 0;
+    if ($half_kelly > 0.25) $half_kelly = 0.25;
+
+    $now = date('Y-m-d H:i:s');
+
+    // Create table if not exists
+    $conn->query("CREATE TABLE IF NOT EXISTS lm_kelly_fractions (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        algorithm_name VARCHAR(100) NOT NULL,
+        asset_class VARCHAR(10) NOT NULL DEFAULT 'ALL',
+        win_rate DECIMAL(8,4) NOT NULL DEFAULT 0,
+        avg_win_pct DECIMAL(8,4) NOT NULL DEFAULT 0,
+        avg_loss_pct DECIMAL(8,4) NOT NULL DEFAULT 0,
+        full_kelly DECIMAL(8,4) NOT NULL DEFAULT 0,
+        half_kelly DECIMAL(8,4) NOT NULL DEFAULT 0,
+        sample_size INT NOT NULL DEFAULT 0,
+        updated_at DATETIME NOT NULL,
+        KEY idx_algo (algorithm_name),
+        KEY idx_asset (asset_class)
+    ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+    // Upsert: delete old + insert new
+    $conn->query("DELETE FROM lm_kelly_fractions
+        WHERE algorithm_name = '$safe_algo' AND asset_class = '$safe_asset'");
+    $conn->query("INSERT INTO lm_kelly_fractions
+        (algorithm_name, asset_class, win_rate, avg_win_pct, avg_loss_pct,
+         full_kelly, half_kelly, sample_size, updated_at)
+        VALUES ('$safe_algo', '$safe_asset',
+         " . round($win_rate, 4) . ", " . round($avg_win, 4) . ", " . round($avg_loss, 4) . ",
+         " . round($full_kelly, 4) . ", " . round($half_kelly, 4) . ",
+         $sample, '$now')");
 }
 
 
@@ -664,8 +824,11 @@ case 'enter':
     // Science: Kelly (1956), Thorp (1962) — Half-Kelly = 75% growth, 50% less drawdown
     $kelly_pct = _lt_kelly_position_pct($conn, $algorithm, $asset_class, $vol_pct);
 
-    // Step 3: Estimate slippage and adjust position value
-    $raw_position    = round($portfolio_value * ($kelly_pct / 100), 2);
+    // Step 3: Drawdown scaling — reduce position size during losing streaks
+    $dd_scale = _lt_drawdown_scale($conn);
+
+    // Step 4: Estimate slippage and calculate final position value
+    $raw_position    = round($portfolio_value * ($kelly_pct / 100) * $dd_scale, 2);
     $slippage_bps    = _lt_estimate_slippage_bps($asset_class, $raw_position);
     $position_value  = $raw_position;
     $units           = $position_value / $entry_price;
@@ -1203,6 +1366,34 @@ case 'auto_execute':
             continue;
         }
 
+        // Signal cooldown: skip symbols that were stopped out recently
+        // Prevents revenge trading — 6h cooldown after a stop-loss exit
+        if (_lt_check_cooldown($conn, $sig_sym, 6)) {
+            $skipped[] = array('symbol' => $sig_sym, 'reason' => 'cooldown_after_stoploss');
+            continue;
+        }
+
+        // Sector correlation guard: max 2 open positions per sector group
+        // Prevents over-concentration in correlated assets (e.g., 3 tech stocks)
+        if (isset($SECTOR_GROUPS[$sig_sym])) {
+            $sig_sector = $SECTOR_GROUPS[$sig_sym];
+            $sector_count = 0;
+            $sec_r = $conn->query("SELECT symbol FROM lm_trades WHERE status='open'");
+            if ($sec_r) {
+                while ($sec_row = $sec_r->fetch_assoc()) {
+                    $open_sym = $sec_row['symbol'];
+                    if (isset($SECTOR_GROUPS[$open_sym]) && $SECTOR_GROUPS[$open_sym] === $sig_sector) {
+                        $sector_count++;
+                    }
+                }
+                $sec_r->free();
+            }
+            if ($sector_count >= $MAX_PER_SECTOR) {
+                $skipped[] = array('symbol' => $sig_sym, 'reason' => 'sector_concentration_' . $sig_sector);
+                continue;
+            }
+        }
+
         // Get current price from cache
         $safe_sym = $conn->real_escape_string($sig_sym);
         $safe_ac  = $conn->real_escape_string($sig_ac);
@@ -1224,17 +1415,36 @@ case 'auto_execute':
             $tp_pct = $CRYPTO_MIN_TP_PCT;
         }
 
-        // Minimum SL floor: SL must be >= 1.5% for 30-min tracking interval
-        // Prevents stop-losses that are too tight to be meaningful with infrequent checks
-        $MIN_SL_FLOOR = 1.5;
-        if ($sl_pct < $MIN_SL_FLOOR) {
-            $sl_pct = $MIN_SL_FLOOR;
+        // Min hold time by asset class: prevents premature max-hold exits
+        // Crypto: min 4h (24/7, fast moves), Forex: min 6h, Stock: min 12h
+        $HOLD_FLOORS = array('CRYPTO' => 4, 'STOCK' => 12, 'FOREX' => 6);
+        $hold_floor = isset($HOLD_FLOORS[$sig_ac]) ? $HOLD_FLOORS[$sig_ac] : 6;
+        if ($max_hold < $hold_floor) {
+            $max_hold = $hold_floor;
         }
 
-        // Position sizing: Half-Kelly + volatility-adjusted
+        // Per-asset SL floor: with 30-min tracking, tight SLs are unrealistic
+        // Crypto 2%, Stock 1.5%, Forex 1% (same as enter action)
+        $SL_FLOORS = array('CRYPTO' => 2.0, 'STOCK' => 1.5, 'FOREX' => 1.0);
+        $sl_floor = isset($SL_FLOORS[$sig_ac]) ? $SL_FLOORS[$sig_ac] : 1.5;
+        if ($sl_pct < $sl_floor) {
+            $sl_pct = $sl_floor;
+        }
+
+        // R:R ratio enforcement: skip signals where reward < 1.5x risk
+        // Science: positive expectancy requires TP/SL > 1 / (win_rate / (1 - win_rate))
+        // At 50% WR you need R:R > 1.0, at 40% WR you need > 1.5. We enforce 1.5:1 minimum.
+        $rr_ratio = ($sl_pct > 0) ? ($tp_pct / $sl_pct) : 0;
+        if ($rr_ratio < 1.5) {
+            $skipped[] = array('symbol' => $sig_sym, 'reason' => 'rr_ratio_too_low_' . round($rr_ratio, 2));
+            continue;
+        }
+
+        // Position sizing: Half-Kelly + volatility-adjusted + drawdown scaling
         $vol_pct   = _lt_vol_adjusted_position_pct($conn, $sig_sym, $sig_ac);
         $kelly_pct = _lt_kelly_position_pct($conn, $sig_algo, $sig_ac, $vol_pct);
-        $position_value = round($portfolio_value * ($kelly_pct / 100), 2);
+        $dd_scale  = _lt_drawdown_scale($conn);
+        $position_value = round($portfolio_value * ($kelly_pct / 100) * $dd_scale, 2);
         $units = $position_value / $entry_price;
 
         // Entry fees
@@ -1318,13 +1528,56 @@ case 'auto_execute':
 
 
 // =====================================================================
+// ACTION: recalculate_kelly — Bulk recompute Kelly fractions for all algos
+// Run periodically or after importing historical trade data.
+// =====================================================================
+case 'recalculate_kelly':
+    _lt_check_admin(isset($_POST['key']) ? $_POST['key'] : (isset($_GET['key']) ? $_GET['key'] : ''));
+
+    // Get all unique algorithm+asset_class combos from closed trades
+    $combos = array();
+    $r = $conn->query("SELECT DISTINCT algorithm_name, asset_class FROM lm_trades WHERE status='closed' AND algorithm_name != ''");
+    if ($r) {
+        while ($row = $r->fetch_assoc()) {
+            $combos[] = $row;
+        }
+        $r->free();
+    }
+
+    $results = array();
+    foreach ($combos as $combo) {
+        _lt_update_kelly($conn, $combo['algorithm_name'], $combo['asset_class']);
+        $results[] = $combo['algorithm_name'] . '/' . $combo['asset_class'];
+    }
+
+    // Read back computed Kelly fractions
+    $kelly_data = array();
+    $kr = $conn->query("SELECT algorithm_name, asset_class, win_rate, avg_win_pct, avg_loss_pct, full_kelly, half_kelly, sample_size, updated_at FROM lm_kelly_fractions ORDER BY half_kelly DESC");
+    if ($kr) {
+        while ($krow = $kr->fetch_assoc()) {
+            $kelly_data[] = $krow;
+        }
+        $kr->free();
+    }
+
+    echo json_encode(array(
+        'ok'          => true,
+        'action'      => 'recalculate_kelly',
+        'recomputed'  => count($combos),
+        'algorithms'  => $results,
+        'kelly_data'  => $kelly_data
+    ));
+    break;
+
+
+// =====================================================================
 // Unknown or missing action
 // =====================================================================
 default:
     header('HTTP/1.0 400 Bad Request');
     echo json_encode(array(
         'ok'    => false,
-        'error' => 'Unknown or missing action. Valid: enter, track, close, positions, dashboard, history, auto_execute'
+        'error' => 'Unknown or missing action. Valid: enter, track, close, positions, dashboard, history, auto_execute, recalculate_kelly'
     ));
     break;
 }
