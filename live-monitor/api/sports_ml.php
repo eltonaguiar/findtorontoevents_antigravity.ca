@@ -148,9 +148,11 @@ function _ml_action_status($conn) {
             'market' => array('h2h', 'spreads', 'totals'),
             'sport' => array('NBA', 'NHL', 'NFL', 'MLB', 'NCAAB', 'MLS'),
             'context' => array('is_underdog', 'hours_to_game', 'day_of_week', 'num_books'),
-            'rolling' => array('win_rate_10', 'roi_10', 'clv_10', 'streak', 'bankroll_pct')
+            'rolling' => array('win_rate_10', 'roi_10', 'clv_10', 'streak', 'bankroll_pct'),
+            'scraper' => array('team_win_pct', 'team_streak', 'goal_diff', 'point_diff', 'injury_count')
         ),
-        'models' => array('RandomForest', 'GradientBoosting', 'XGBoost', 'LightGBM', 'LogisticRegression (meta)')
+        'models' => array('RandomForest', 'GradientBoosting', 'XGBoost', 'LightGBM', 'LogisticRegression (meta)'),
+        'scraper_data' => _ml_get_scraper_counts($conn)
     ));
 }
 
@@ -187,7 +189,7 @@ function _ml_action_predict($conn) {
 
     while ($vb = $vb_q->fetch_assoc()) {
         // ── ML-style scoring (PHP heuristic matching Python model logic) ──
-        $score = _ml_score_bet($vb, $stats);
+        $score = _ml_score_bet($vb, $stats, $conn);
 
         // Store prediction
         $conn->query("INSERT INTO lm_sports_ml_predictions "
@@ -388,7 +390,7 @@ function _ml_action_clv($conn) {
 //  ML Scoring Heuristic (PHP-native, mirrors Python model logic)
 // ════════════════════════════════════════════════════════════
 
-function _ml_score_bet($vb, $stats) {
+function _ml_score_bet($vb, $stats, $conn_ref) {
     $ev = (float)$vb['ev_pct'];
     $odds = (float)$vb['best_odds'];
     $ip = (float)$vb['true_prob'];
@@ -495,8 +497,11 @@ function _ml_score_bet($vb, $stats) {
         $reasons[] = 'Game imminent — odds may be stale';
     }
 
+    // ── Factor 8: Scraper intelligence (team stats, injuries) ──
+    $scraper_adj = _ml_scraper_factor($vb, $conn_ref, $reasons);
+
     // ── Combine all adjustments ──
-    $ml_prob = $base_prob + $ev_boost + $market_adj + $dog_adj + $consensus_adj + $momentum_adj + $sport_adj + $time_adj;
+    $ml_prob = $base_prob + $ev_boost + $market_adj + $dog_adj + $consensus_adj + $momentum_adj + $sport_adj + $time_adj + $scraper_adj;
 
     // Clip to valid range
     if ($ml_prob > 0.95) $ml_prob = 0.95;
@@ -599,6 +604,236 @@ function _ml_get_rolling_stats($conn) {
     }
 
     return $stats;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+//  FACTOR 8: Scraper-based team intelligence
+//  Uses Kimi Code's sport scrapers (lm_{sport}_team_stats,
+//  lm_{sport}_injuries) to enrich ML scoring
+// ═══════════════════════════════════════════════════════════
+
+function _ml_scraper_factor($vb, $conn, &$reasons) {
+    $adj = 0.0;
+    $home = isset($vb['home_team']) ? trim($vb['home_team']) : '';
+    $away = isset($vb['away_team']) ? trim($vb['away_team']) : '';
+    $outcome = isset($vb['outcome_name']) ? trim($vb['outcome_name']) : '';
+    $sport_key = isset($vb['sport']) ? strtolower(trim($vb['sport'])) : '';
+
+    // Map Odds API sport key to our scraper table prefix
+    $prefix = '';
+    if (strpos($sport_key, 'basketball_nba') !== false) {
+        $prefix = 'nba';
+    } elseif (strpos($sport_key, 'icehockey_nhl') !== false || strpos($sport_key, 'hockey') !== false) {
+        $prefix = 'nhl';
+    } elseif (strpos($sport_key, 'americanfootball_nfl') !== false || strpos($sport_key, 'football_nfl') !== false) {
+        $prefix = 'nfl';
+    } elseif (strpos($sport_key, 'baseball_mlb') !== false) {
+        $prefix = 'mlb';
+    }
+    if ($prefix === '' || $home === '' || $outcome === '') return 0.0;
+
+    // ── 8a. Team win percentage comparison ──
+    $stats_table = 'lm_' . $prefix . '_team_stats';
+    $home_stats = _ml_find_team_stats($conn, $stats_table, $home);
+    $away_stats = _ml_find_team_stats($conn, $stats_table, $away);
+
+    if ($home_stats && $away_stats) {
+        $h_wp = (float)$home_stats['win_pct'];
+        $a_wp = (float)$away_stats['win_pct'];
+        $diff = $h_wp - $a_wp;
+
+        // Determine which team the bet outcome is on
+        $on_home = (stripos($outcome, $home) !== false);
+        $on_away = !$on_home && (stripos($outcome, $away) !== false);
+
+        if ($on_home) {
+            if ($diff > 0.15) {
+                $adj += 0.06;
+                $reasons[] = 'Home team (' . round($h_wp * 100) . '% WR) significantly stronger than away (' . round($a_wp * 100) . '%)';
+            } elseif ($diff > 0.05) {
+                $adj += 0.03;
+            } elseif ($diff < -0.15) {
+                $adj -= 0.06;
+                $reasons[] = 'Home team (' . round($h_wp * 100) . '% WR) much weaker than away (' . round($a_wp * 100) . '%)';
+            } elseif ($diff < -0.05) {
+                $adj -= 0.03;
+            }
+        } elseif ($on_away) {
+            $diff = -$diff; // flip perspective
+            if ($diff > 0.15) {
+                $adj += 0.05;
+                $reasons[] = 'Away team (' . round($a_wp * 100) . '% WR) significantly stronger than home (' . round($h_wp * 100) . '%)';
+            } elseif ($diff > 0.05) {
+                $adj += 0.02;
+            } elseif ($diff < -0.15) {
+                $adj -= 0.06;
+                $reasons[] = 'Away team (' . round($a_wp * 100) . '% WR) much weaker than home (' . round($h_wp * 100) . '%)';
+            } elseif ($diff < -0.05) {
+                $adj -= 0.03;
+            }
+        }
+
+        // ── 8b. Hot/cold streaks ──
+        if ($on_home && isset($home_stats['streak'])) {
+            $sk = $home_stats['streak'];
+            if (strpos($sk, 'W') === 0) {
+                $n = (int)substr($sk, 1);
+                if ($n >= 5) {
+                    $adj += 0.04;
+                    $reasons[] = 'Home team on ' . $n . '-game win streak';
+                } elseif ($n >= 3) {
+                    $adj += 0.02;
+                }
+            } elseif (strpos($sk, 'L') === 0) {
+                $n = (int)substr($sk, 1);
+                if ($n >= 5) {
+                    $adj -= 0.04;
+                    $reasons[] = 'Home team on ' . $n . '-game losing streak';
+                } elseif ($n >= 3) {
+                    $adj -= 0.02;
+                }
+            }
+        }
+        if ($on_away && isset($away_stats['streak'])) {
+            $sk = $away_stats['streak'];
+            if (strpos($sk, 'W') === 0) {
+                $n = (int)substr($sk, 1);
+                if ($n >= 5) {
+                    $adj += 0.04;
+                    $reasons[] = 'Away team on ' . $n . '-game win streak';
+                } elseif ($n >= 3) {
+                    $adj += 0.02;
+                }
+            } elseif (strpos($sk, 'L') === 0) {
+                $n = (int)substr($sk, 1);
+                if ($n >= 5) {
+                    $adj -= 0.04;
+                    $reasons[] = 'Away team on ' . $n . '-game losing streak';
+                } elseif ($n >= 3) {
+                    $adj -= 0.02;
+                }
+            }
+        }
+
+        // ── 8c. NHL/NFL special: Points/Goals differential ──
+        if ($prefix === 'nhl') {
+            $h_gd = (int)$home_stats['gf'] - (int)$home_stats['ga'];
+            $a_gd = (int)$away_stats['gf'] - (int)$away_stats['ga'];
+            if ($on_home && $h_gd > 30) {
+                $adj += 0.02;
+                $reasons[] = 'Home GD +' . $h_gd . ' (strong offense/defense)';
+            } elseif ($on_home && $h_gd < -30) {
+                $adj -= 0.02;
+            }
+            if ($on_away && $a_gd > 30) {
+                $adj += 0.02;
+            } elseif ($on_away && $a_gd < -30) {
+                $adj -= 0.02;
+            }
+        }
+        if ($prefix === 'nfl') {
+            $h_pd = (int)$home_stats['pf'] - (int)$home_stats['pa'];
+            $a_pd = (int)$away_stats['pf'] - (int)$away_stats['pa'];
+            if ($on_home && $h_pd > 50) {
+                $adj += 0.03;
+            } elseif ($on_home && $h_pd < -50) {
+                $adj -= 0.03;
+            }
+        }
+    }
+
+    // ── 8d. Injury impact ──
+    $inj_table = 'lm_' . $prefix . '_injuries';
+    $h_inj = _ml_count_injuries($conn, $inj_table, $home);
+    $a_inj = _ml_count_injuries($conn, $inj_table, $away);
+    if ($h_inj >= 0 && $a_inj >= 0) {
+        $on_home_bet = (stripos($outcome, $home) !== false);
+        if ($on_home_bet && $h_inj > $a_inj + 3) {
+            $adj -= 0.03;
+            $reasons[] = 'Home team has ' . $h_inj . ' injuries vs ' . $a_inj . ' for away';
+        } elseif ($on_home_bet && $a_inj > $h_inj + 3) {
+            $adj += 0.02;
+            $reasons[] = 'Away team has ' . $a_inj . ' injuries vs ' . $h_inj . ' for home';
+        }
+        if (!$on_home_bet && $a_inj > $h_inj + 3) {
+            $adj -= 0.03;
+        } elseif (!$on_home_bet && $h_inj > $a_inj + 3) {
+            $adj += 0.02;
+        }
+    }
+
+    // Clamp scraper adjustment to reasonable range
+    if ($adj > 0.12) $adj = 0.12;
+    if ($adj < -0.12) $adj = -0.12;
+
+    return $adj;
+}
+
+
+// Helper: fuzzy team name match in scraper stats table
+function _ml_find_team_stats($conn, $table, $team_name) {
+    if (!$conn || $team_name === '') return null;
+
+    // Try exact match first
+    $tn = $conn->real_escape_string($team_name);
+    $q = $conn->query("SELECT * FROM " . $table . " WHERE team_name='" . $tn . "' ORDER BY updated_at DESC LIMIT 1");
+    if ($q && $q->num_rows > 0) return $q->fetch_assoc();
+
+    // Try LIKE match (partial name - e.g. "Lakers" matches "Los Angeles Lakers")
+    $words = explode(' ', $team_name);
+    $last_word = $conn->real_escape_string(end($words));
+    if (strlen($last_word) >= 3) {
+        $q = $conn->query("SELECT * FROM " . $table . " WHERE team_name LIKE '%" . $last_word . "%' ORDER BY updated_at DESC LIMIT 1");
+        if ($q && $q->num_rows > 0) return $q->fetch_assoc();
+    }
+
+    // Try abbreviation match
+    $q = $conn->query("SELECT * FROM " . $table . " WHERE abbreviation='" . $tn . "' ORDER BY updated_at DESC LIMIT 1");
+    if ($q && $q->num_rows > 0) return $q->fetch_assoc();
+
+    return null;
+}
+
+
+// Helper: count injuries for a team
+function _ml_count_injuries($conn, $table, $team_name) {
+    if (!$conn || $team_name === '') return -1;
+    $tn = $conn->real_escape_string($team_name);
+
+    // Check if table exists (scrapers may not have been run yet)
+    $check = @$conn->query("SELECT 1 FROM " . $table . " LIMIT 1");
+    if (!$check) return -1;
+
+    $q = $conn->query("SELECT COUNT(*) AS c FROM " . $table . " WHERE team LIKE '%" . $tn . "%'");
+    if ($q && $row = $q->fetch_assoc()) {
+        return (int)$row['c'];
+    }
+    return -1;
+}
+
+
+// Helper: get counts of scraper data across all 4 sports
+function _ml_get_scraper_counts($conn) {
+    $out = array();
+    $sports = array('nba', 'nhl', 'nfl', 'mlb');
+    foreach ($sports as $sp) {
+        $row = array('stats' => 0, 'injuries' => 0, 'odds' => 0, 'schedule' => 0);
+        $tables = array(
+            'stats'    => 'lm_' . $sp . '_team_stats',
+            'injuries' => 'lm_' . $sp . '_injuries',
+            'odds'     => 'lm_' . $sp . '_odds',
+            'schedule' => 'lm_' . $sp . '_schedule'
+        );
+        foreach ($tables as $key => $tbl) {
+            $q = @$conn->query("SELECT COUNT(*) AS c FROM " . $tbl);
+            if ($q && $r = $q->fetch_assoc()) {
+                $row[$key] = (int)$r['c'];
+            }
+        }
+        $out[$sp] = $row;
+    }
+    return $out;
 }
 
 ?>

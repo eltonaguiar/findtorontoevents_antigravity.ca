@@ -247,6 +247,31 @@
         }
         .disclaimer strong { color: var(--yellow); }
 
+        /* ─── Glossary / Analysis Tab Styles ─── */
+        .glossary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+        .glossary-item {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1rem; transition: border-color 0.2s;
+        }
+        .glossary-item:hover { border-color: var(--accent); }
+        .glossary-term {
+            font-weight: 700; font-size: 0.95rem; color: var(--accent);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem;
+        }
+        .glossary-def { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; }
+        .glossary-def strong { color: var(--text); }
+        .grade-explainer {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 0.7rem 1rem;
+            margin-bottom: 1rem; font-size: 0.8rem; color: var(--text-dim);
+            line-height: 1.6;
+        }
+        .grade-explainer strong { color: var(--text); }
+        .grade-explainer .ge-title { color: var(--accent); font-weight: 700; margin-bottom: 0.3rem; }
+        .section-title { font-size: 1.1rem; font-weight: 600; margin: 1rem 0 0.8rem; }
+        .badge-orange { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+        .badge-purple { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+
         /* ─── Export ─── */
         .export-btns { display: flex; gap: 0.5rem; margin-top: 1rem; }
 
@@ -296,6 +321,8 @@
         <div class="tab" data-tab="compare">Compare Strategies</div>
         <div class="tab" data-tab="optimal">Optimal Finder</div>
         <div class="tab" data-tab="signals">Signals</div>
+        <div class="tab" data-tab="analysis" style="color:#f59e0b;">System Analysis</div>
+        <div class="tab" data-tab="research" style="color:#a855f7;">Research &amp; Future</div>
     </div>
 
     <!-- ═══════════ TAB: What-If Analysis ═══════════ -->
@@ -622,6 +649,421 @@
                     <tbody></tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ TAB: System Analysis ═══════════ -->
+    <div class="tab-content" id="tab-analysis">
+        <div class="grade-explainer" style="background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(239,68,68,0.08));border-color:rgba(245,158,11,0.3);">
+            <div class="ge-title" style="color:#f59e0b;">Honest System Assessment -- Read Before Trading</div>
+            This page provides complete transparency about our crypto portfolio analysis system's current state, known limitations, and planned improvements. Every system has flaws and ours is no exception. We believe in honest disclosure.
+        </div>
+
+        <h3 class="section-title" style="color:#22c55e;">Current Strengths</h3>
+        <div class="glossary-grid">
+            <div class="glossary-item">
+                <div class="glossary-term"><span class="badge badge-green">EXCEPTIONAL FORWARD WR</span></div>
+                <div class="glossary-def"><strong>Ichimoku Cloud: 80% Win Rate (Live)</strong> -- 5 closed trades, 4 wins, 1 loss, +$44.97 PnL. This is the highest forward win rate of any asset class in our live-monitor system. The Ichimoku Cloud algorithm is performing exceptionally well on crypto pairs.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term"><span class="badge badge-green">DUAL ALGORITHM COVERAGE</span></div>
+                <div class="glossary-def"><strong>Two Live Algorithms</strong> -- Ichimoku Cloud (80% WR, 5 trades) and StochRSI Crossover (75% WR, 4 trades, +$4.25 PnL) are both running in production. Two independent signal sources reduce the risk of single-algorithm failure.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term"><span class="badge badge-green">PARAMETER LEARNING</span></div>
+                <div class="glossary-def"><strong>Adaptive TP Targets</strong> -- The learned-parameter system has already increased take-profit targets: +70% for Ichimoku (from base TP to wider targets capturing more upside) and +55% for StochRSI. The system adapts based on actual trade outcomes.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term"><span class="badge badge-green">BACKTESTED STRATEGIES</span></div>
+                <div class="glossary-def"><strong>What-If Engine</strong> -- Full backtest capability with configurable TP, SL, max hold, exchange fees, slippage, and position sizing. Grid search across all parameter permutations finds optimal conditions. Includes Sharpe ratio, profit factor, and expectancy metrics.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term"><span class="badge badge-green">MULTI-STRATEGY COMPARISON</span></div>
+                <div class="glossary-def"><strong>6 Preset Scenarios</strong> -- Scalp, Day Trade, Swing, HODL, DCA, and Momentum presets let you compare strategy performance side-by-side. Custom parameter entry for any configuration. Visual equity curves and detailed trade logs.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term"><span class="badge badge-green">PAPER TRADING</span></div>
+                <div class="glossary-def"><strong>No Real Money at Risk</strong> -- All live-monitor trades are simulated with $10K paper capital, 5% position sizing, max 10 concurrent positions. Automatic stop-loss and take-profit execution. All results tracked transparently.</div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#10b981;margin-top:1.5rem;">Deep Audit Findings (Feb 12, 2026)</h3>
+        <div style="background:var(--bg-card);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+            <p style="font-size:0.85rem;color:#e0e0f0;margin-bottom:0.8rem;"><strong>A comprehensive audit of the crypto portfolio system, live algorithms, and backtest pipeline was conducted. Here are the findings:</strong></p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
+                <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#ef4444;margin-bottom:0.4rem;">Critical Finding: A+ Strategy Not Deployed</div>
+                    <div style="font-size:0.78rem;color:#889;">The Trend Following strategy scored A+ in backtesting with a Sharpe ratio of 4.45 -- the highest of any strategy tested. However, it is NOT deployed to the live-monitor. Live trading uses Ichimoku Cloud and StochRSI instead, which have zero overlap with the backtested winner. This is a major disconnect between research and production.</div>
+                </div>
+                <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#22c55e;margin-bottom:0.4rem;">Positive Finding: Live WR Outperforms</div>
+                    <div style="font-size:0.78rem;color:#889;">Despite the strategy mismatch, live forward performance is excellent: Ichimoku at 80% WR and StochRSI at 75% WR. These outperform most other asset classes in our system. The parameter learning system is actively improving targets based on real trade data.</div>
+                </div>
+                <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#f59e0b;margin-bottom:0.4rem;">Sample Size Warning</div>
+                    <div style="font-size:0.78rem;color:#889;">Only 9 total closed crypto trades across both algorithms (5 Ichimoku + 4 StochRSI). An 80% win rate on 5 trades has a confidence interval of roughly 28% to 99%. We need at minimum 20 closed trades per algorithm for the ML grid search to activate and for statistically meaningful conclusions.</div>
+                </div>
+                <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#3b82f6;margin-bottom:0.4rem;">Mean Reversion Grade: D</div>
+                    <div style="font-size:0.78rem;color:#889;">The Mean Reversion strategy backtested with a Sharpe ratio of -1.56 on crypto -- a catastrophic result. Crypto markets trend heavily and mean reversion fails in trending markets. This D-grade strategy should be excluded from crypto pair analysis entirely, yet it remains in the backtest pipeline.</div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#6366f1;margin-top:1.5rem;">ML System Status (Live)</h3>
+        <div style="background:var(--bg-card);border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+            <div style="font-size:0.85rem;color:#889;">
+                <p style="margin-bottom:0.6rem;"><strong style="color:#e0e0f0;">Current Phase: Data Collection</strong></p>
+                <p style="margin-bottom:0.4rem;">The ML parameter learning system requires a minimum of <strong>20 closed trades per algorithm</strong> to activate grid search optimization. Current status:</p>
+                <ul style="margin-left:1.5rem;margin-bottom:0.6rem;">
+                    <li><strong>Ichimoku Cloud:</strong> 5/20 closed trades (25% to activation). Learned TP increased +70% from base.</li>
+                    <li><strong>StochRSI Crossover:</strong> 4/20 closed trades (20% to activation). Learned TP increased +55% from base.</li>
+                </ul>
+                <p style="margin-bottom:0.4rem;"><strong style="color:#6366f1;">What happens at 20 trades:</strong> The system runs a grid search across TP, SL, and hold period parameters, selects the configuration with the best risk-adjusted return, and deploys it as the "Learned" parameter set. The original and learned versions then run in parallel for comparison.</p>
+                <p><strong style="color:#f59e0b;">Estimated timeline:</strong> At current trade frequency (~2-3 crypto trades per week), full ML activation is approximately 5-7 weeks away for Ichimoku and 6-8 weeks for StochRSI.</p>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#ef4444;margin-top:1.5rem;">Known Flaws &amp; Limitations</h3>
+        <div class="glossary-grid">
+            <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                <div class="glossary-term"><span class="badge badge-red">STRATEGY DISCONNECT</span></div>
+                <div class="glossary-def"><strong>Backtest Winner Not Live</strong> -- Trend Following scored A+ (Sharpe 4.45) in backtesting but is not deployed to live trading. The live algorithms (Ichimoku, StochRSI) were never backtested through this portfolio tool. There is zero overlap between what was optimized and what is running.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                <div class="glossary-term"><span class="badge badge-red">TINY SAMPLE SIZE</span></div>
+                <div class="glossary-def"><strong>Only 9 Closed Trades</strong> -- With 5 Ichimoku and 4 StochRSI trades, no statistically valid conclusions can be drawn. An 80% WR on 5 trades could easily be luck. Need 50+ trades minimum, ideally 200+, for reliable performance metrics.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                <div class="glossary-term"><span class="badge badge-red">D-GRADE IN PIPELINE</span></div>
+                <div class="glossary-def"><strong>Mean Reversion Sharpe: -1.56</strong> -- A negative Sharpe ratio means the strategy loses money on a risk-adjusted basis. Crypto trends heavily (BTC went from $16K to $70K+ in one cycle). Mean reversion is fundamentally wrong for crypto, yet it remains an available strategy.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                <div class="glossary-term"><span class="badge badge-red">SINGLE DATA SOURCE</span></div>
+                <div class="glossary-def"><strong>FreeCryptoAPI Only</strong> -- All price data comes from a single free API covering 14 crypto pairs. No cross-exchange data (Binance, Coinbase, Kraken), no order book depth, no funding rates, no open interest. Professional crypto traders use 5-10+ data sources.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                <div class="glossary-term"><span class="badge badge-red">NO ON-CHAIN DATA</span></div>
+                <div class="glossary-def"><strong>Missing Blockchain Analytics</strong> -- No whale wallet tracking, no exchange inflow/outflow data, no mining difficulty analysis, no DeFi TVL monitoring, no stablecoin flow analysis. On-chain data is a critical edge in professional crypto trading.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                <div class="glossary-term"><span class="badge badge-red">NO SENTIMENT ANALYSIS</span></div>
+                <div class="glossary-def"><strong>Missing Social/News Signals</strong> -- No Twitter/X crypto sentiment, no Reddit r/cryptocurrency monitoring, no Fear &amp; Greed Index integration, no news event detection. Crypto markets are heavily sentiment-driven and we are blind to it.</div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#3b82f6;margin-top:1.5rem;">Improvement Roadmap</h3>
+        <div class="glossary-grid">
+            <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                <div class="glossary-term"><span class="badge badge-green">PHASE 1: LIVE SIGNALS</span></div>
+                <div class="glossary-def"><strong>Deployed and Running</strong> -- Ichimoku Cloud and StochRSI Crossover are live in the monitor. Paper trading with $10K capital, 5% sizing, auto SL/TP. 14 crypto pairs tracked. Forward performance: 80% and 75% WR respectively. Parameter learning active and adapting TP targets.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                <div class="glossary-term"><span class="badge badge-green">PHASE 2: BACKTEST ENGINE</span></div>
+                <div class="glossary-def"><strong>Deployed and Running</strong> -- Full What-If analysis with configurable parameters. Strategy comparison across 6 presets. Optimal Finder with grid search across all permutations. Trade log export, equity curves, Sharpe ratio, profit factor, and expectancy calculations.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                <div class="glossary-term"><span class="badge badge-green">PHASE 3: PARAMETER LEARNING</span></div>
+                <div class="glossary-def"><strong>Active -- Collecting Data</strong> -- The learned-vs-original parameter system is deployed. Ichimoku TP increased +70%, StochRSI TP increased +55%. Full ML grid search activates at 20 closed trades per algorithm. Currently at 5 and 4 trades respectively.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
+                <div class="glossary-term"><span class="badge badge-blue">PHASE 4: DEPLOY TREND FOLLOWING</span></div>
+                <div class="glossary-def"><strong>Planned</strong> -- The A+ backtested strategy (Sharpe 4.45) needs to be deployed to the live monitor as a third algorithm. This bridges the gap between backtest research and live trading. Requires signal generation code adapted for live-monitor format.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
+                <div class="glossary-term"><span class="badge badge-blue">PHASE 5: MULTI-SOURCE DATA</span></div>
+                <div class="glossary-def"><strong>Planned</strong> -- Add cross-exchange price feeds (Binance, Coinbase), order book depth, funding rates, and open interest. Cross-exchange divergence is a known alpha source. Requires API integration and data normalization layer.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
+                <div class="glossary-term"><span class="badge badge-blue">PHASE 6: ON-CHAIN + SENTIMENT</span></div>
+                <div class="glossary-def"><strong>Planned</strong> -- Integrate Glassnode/CryptoQuant for on-chain analytics, LunarCrush for social sentiment, Alternative.me for Fear &amp; Greed Index. These data sources are standard in institutional crypto trading and represent the biggest gap in our current system.</div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#eab308;margin-top:1.5rem;">Is It Production Ready?</h3>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+            <p style="font-size:0.9rem;color:#e0e0f0;margin-bottom:0.8rem;"><strong>Short Answer: Promising early results, but far too early to validate.</strong></p>
+            <p style="font-size:0.85rem;color:#889;margin-bottom:0.5rem;">Here is where we actually stand after the audit:</p>
+            <ul style="font-size:0.85rem;color:#889;margin-left:1.5rem;margin-bottom:0.8rem;">
+                <li>We have <strong>9 closed trades</strong> across 2 algorithms with 80% and 75% WR. Excellent but statistically insignificant.</li>
+                <li>The ML grid search needs <strong>20 trades per algorithm</strong> to activate. Currently at 25% and 20% of that threshold.</li>
+                <li>The <strong>best backtested strategy (Trend Following, A+) is not live</strong> -- a critical disconnect.</li>
+                <li>We rely on a <strong>single free data source</strong> for 14 pairs. Professional crypto funds use 10+ sources.</li>
+                <li>No on-chain analytics, no sentiment data, no cross-exchange feeds.</li>
+            </ul>
+            <p style="font-size:0.85rem;color:#e0e0f0;"><strong>What milestones remain?</strong></p>
+            <ul style="font-size:0.85rem;color:#889;margin-left:1.5rem;margin-bottom:0.8rem;">
+                <li><strong>20 closed trades per algo</strong> &rarr; ML grid search activates and optimizes parameters</li>
+                <li><strong>50 closed trades total</strong> &rarr; Statistically meaningful WR evaluation</li>
+                <li><strong>Trend Following deployed live</strong> &rarr; Bridges backtest-to-production gap</li>
+                <li><strong>Multi-source data</strong> &rarr; Cross-exchange validation and deeper signal quality</li>
+                <li><strong>200+ trades</strong> &rarr; Walk-forward validation confirms model robustness</li>
+            </ul>
+            <p style="font-size:0.85rem;color:#f59e0b;"><strong>Current Status:</strong> Paper trading with parameter learning active. The 80% forward WR on crypto is our best result across all asset classes, but the sample size is too small to draw conclusions. Do NOT trade real money based on this system until we hit the 50-trade milestone with consistent performance.</p>
+        </div>
+
+        <h3 class="section-title" style="color:#a855f7;margin-top:1.5rem;">System Architecture</h3>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;">
+            <p style="font-size:0.85rem;color:#889;margin-bottom:0.8rem;">The full crypto portfolio analysis pipeline and its components:</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;margin-bottom:1rem;">
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Backtest Engine (PHP)</div>
+                    <div style="font-size:0.78rem;color:#889;">Portfolio backtest.php runs What-If analysis with configurable TP/SL/hold/fees/slippage. Grid search across all permutations for optimal conditions. Outputs equity curves, trade logs, and risk metrics.</div>
+                </div>
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Signal Database (MySQL)</div>
+                    <div style="font-size:0.78rem;color:#889;">Crypto signals stored with pair, strategy, entry price, confidence, direction, and timestamp. Price history records for backtesting. Strategy definitions with algorithm parameters.</div>
+                </div>
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Live Monitor Integration</div>
+                    <div style="font-size:0.78rem;color:#889;">Ichimoku Cloud and StochRSI Crossover run in the live-monitor system. FreeCryptoAPI provides real-time prices for 14 crypto pairs. Paper trading with automatic SL/TP execution.</div>
+                </div>
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Parameter Learning (Python)</div>
+                    <div style="font-size:0.78rem;color:#889;">algo_performance.php tracks learned vs original parameters. At 20 closed trades, grid search runs across parameter space. Best risk-adjusted configuration deployed automatically. Ichimoku TP +70%, StochRSI TP +55%.</div>
+                </div>
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Data Pipeline</div>
+                    <div style="font-size:0.78rem;color:#889;">FreeCryptoAPI refreshes prices for BTC, ETH, SOL, ADA, DOT, AVAX, LINK, MATIC, UNI, ATOM, NEAR, FTM, ALGO, and XRP. GitHub Actions runs the live-monitor cycle. Price data seeded into portfolio backtest database.</div>
+                </div>
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Strategy Comparison</div>
+                    <div style="font-size:0.78rem;color:#889;">Side-by-side comparison of all preset scenarios with return charts, detailed tables, and risk metrics. Identifies optimal conditions per strategy type. Export to CSV for external analysis.</div>
+                </div>
+            </div>
+
+            <p style="font-size:0.85rem;color:#e0e0f0;margin-bottom:0.5rem;"><strong>Current Pipeline (Live):</strong></p>
+            <ol style="font-size:0.85rem;color:#889;margin-left:1.5rem;">
+                <li>FreeCryptoAPI fetches real-time prices for 14 crypto pairs</li>
+                <li>Live-monitor runs Ichimoku Cloud and StochRSI Crossover algorithms</li>
+                <li>Signals generated with entry price, direction, confidence, TP/SL levels</li>
+                <li>Paper trades executed with $10K capital, 5% position sizing</li>
+                <li>Auto SL/TP/max-hold execution on every price update</li>
+                <li style="color:#a855f7;"><strong>Parameter learning adjusts TP/SL based on closed trade outcomes</strong></li>
+                <li>Portfolio backtest engine available for historical What-If analysis</li>
+                <li>Optimal Finder grid searches all parameter permutations</li>
+            </ol>
+        </div>
+
+        <div style="margin-top:1.5rem;padding:1rem;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:12px;">
+            <div style="font-weight:600;color:#22c55e;margin-bottom:0.5rem;">Bottom Line</div>
+            <p style="font-size:0.85rem;color:#889;">This system shows the strongest early forward results of any asset class we track (80% WR on crypto). The backtest engine is thorough and the parameter learning system is actively improving. The critical gaps are: (1) deploy the A+ Trend Following strategy to live, (2) accumulate 20+ trades for ML activation, and (3) add multi-source data. The foundation is solid but the sample size makes all conclusions preliminary.</p>
+        </div>
+    </div>
+
+    <!-- ═══════════ TAB: Research & Future ═══════════ -->
+    <div class="tab-content" id="tab-research">
+        <div class="grade-explainer" style="background:linear-gradient(135deg,rgba(168,85,247,0.08),rgba(99,102,241,0.08));border-color:rgba(168,85,247,0.3);">
+            <div class="ge-title" style="color:#a855f7;">Research &amp; Future Enhancements</div>
+            This section documents the academic research behind our crypto trading strategies, the market inefficiencies we attempt to exploit, and the benchmarks we are targeting. Understanding crypto market microstructure is essential for building systems that can generate alpha.
+        </div>
+
+        <h3 class="section-title" style="color:#6366f1;">Core Methodology: Technical Analysis in Crypto</h3>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+            <p style="font-size:0.85rem;color:#889;margin-bottom:0.8rem;">Cryptocurrency markets behave differently from traditional equities. Our approach is grounded in these observations:</p>
+            <ul style="font-size:0.85rem;color:#889;margin-left:1.5rem;margin-bottom:0.8rem;">
+                <li><strong>Crypto trends persistently.</strong> Unlike stocks where mean reversion works 60% of the time, crypto assets exhibit strong momentum effects. BTC went from $3K to $69K to $16K to $73K -- these are multi-month trends, not noise.</li>
+                <li><strong>Technical analysis works better in crypto.</strong> Due to high retail participation and fewer institutional stabilizers, technical patterns (support/resistance, moving averages, Ichimoku) have higher signal-to-noise ratios than in equities.</li>
+                <li><strong>24/7 markets amplify edge.</strong> Unlike stocks with 6.5 hours of trading, crypto runs 24/7. Algorithms that capture overnight moves have a structural advantage over human traders who sleep.</li>
+                <li><strong>Volatility is the product, not the bug.</strong> Crypto volatility creates opportunity. Our Ichimoku and StochRSI algorithms are designed for volatile, trending environments.</li>
+            </ul>
+        </div>
+
+        <h3 class="section-title" style="color:#22c55e;margin-top:1.5rem;">Key Concepts</h3>
+        <div class="glossary-grid">
+            <div class="glossary-item" style="border-color:rgba(99,102,241,0.3);">
+                <div class="glossary-term"><span class="badge badge-blue">ICHIMOKU CLOUD</span></div>
+                <div class="glossary-def"><strong>Origins: Goichi Hosoda (1960s, Japan)</strong> -- A comprehensive indicator combining 5 lines (Tenkan-sen, Kijun-sen, Senkou Span A/B, Chikou Span) into a visual "cloud" that shows support, resistance, momentum, and trend direction simultaneously. Originally designed for Japanese rice futures. Adapted to crypto where its multi-timeframe nature captures both trends and reversals.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(99,102,241,0.3);">
+                <div class="glossary-term"><span class="badge badge-blue">STOCHASTIC RSI</span></div>
+                <div class="glossary-def"><strong>Combines RSI with Stochastic Oscillator</strong> -- StochRSI applies the Stochastic formula to RSI values instead of price, creating a more sensitive oscillator. In crypto, standard RSI often stays overbought during strong trends. StochRSI crossovers (K crossing above D) provide earlier entry signals during momentum moves.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(99,102,241,0.3);">
+                <div class="glossary-term"><span class="badge badge-blue">TREND FOLLOWING</span></div>
+                <div class="glossary-def"><strong>Sharpe 4.45 in Backtest (A+ Grade)</strong> -- Classic momentum strategy: buy when price is above moving averages and making higher highs, sell when trend breaks. Works exceptionally well in crypto due to strong trending behavior. Used by major crypto funds (Alameda, Jump Trading). Our highest-scoring backtest strategy.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(99,102,241,0.3);">
+                <div class="glossary-term"><span class="badge badge-blue">MEAN REVERSION</span></div>
+                <div class="glossary-def"><strong>Sharpe -1.56 in Backtest (D Grade)</strong> -- Buy oversold assets expecting them to bounce. Works in range-bound equity markets but fails catastrophically in trending crypto markets. Crypto can stay "oversold" for months during bear markets. Our worst-performing strategy on crypto -- included here as a cautionary example.</div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#3b82f6;margin-top:1.5rem;">Strategies Used in Our System</h3>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+            <p style="font-size:0.85rem;color:#889;margin-bottom:0.8rem;">Based on academic research and professional crypto trading literature:</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
+                <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">1. Ichimoku Cloud Signals</div>
+                    <div style="font-size:0.78rem;color:#889;">Buy when price crosses above the cloud, Tenkan crosses above Kijun, and Chikou confirms. Multiple conditions must align for signal generation. 80% WR on 5 live trades.</div>
+                </div>
+                <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">2. StochRSI Crossovers</div>
+                    <div style="font-size:0.78rem;color:#889;">Buy when StochRSI K line crosses above D line from oversold zone. Combines momentum and mean-reversion timing. 75% WR on 4 live trades. More frequent signals than Ichimoku.</div>
+                </div>
+                <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">3. Trend Following (Backtested)</div>
+                    <div style="font-size:0.78rem;color:#889;">Moving average crossover with higher-high/higher-low confirmation. A+ grade, Sharpe 4.45. Not yet deployed to live. Captures major crypto trends that last weeks to months.</div>
+                </div>
+                <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">4. What-If Backtest Engine</div>
+                    <div style="font-size:0.78rem;color:#889;">Grid search across TP (1-50%), SL (1-50%), hold period (1-365d), exchange fees, slippage, and position sizing. Finds optimal conditions for each strategy/pair combination.</div>
+                </div>
+                <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">5. Adaptive Parameter Learning</div>
+                    <div style="font-size:0.78rem;color:#889;">Closed trade outcomes feed back into the system. TP/SL targets adjust based on what actually works. Ichimoku TP +70%, StochRSI TP +55%. At 20 trades, full grid search replaces heuristic.</div>
+                </div>
+                <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">6. Multi-Scenario Comparison</div>
+                    <div style="font-size:0.78rem;color:#889;">Scalp (3% TP), Day Trade (5%), Swing (15%), HODL, DCA, and Momentum presets compared side-by-side with equity curves and detailed metrics. Identifies which approach suits each pair.</div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#f97316;margin-top:1.5rem;">Market Inefficiencies in Crypto</h3>
+        <div class="glossary-grid">
+            <div class="glossary-item" style="border-color:rgba(249,115,22,0.3);">
+                <div class="glossary-term"><span class="badge badge-orange">MOMENTUM EFFECT</span></div>
+                <div class="glossary-def"><strong>Crypto Momentum is Persistent (Liu et al. 2019)</strong> -- Unlike equities where momentum reverses at 12+ months, crypto momentum persists strongly at 1-4 week horizons. Winners keep winning. This is why our Trend Following strategy scored A+ and Mean Reversion scored D.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(249,115,22,0.3);">
+                <div class="glossary-term"><span class="badge badge-orange">CROSS-EXCHANGE ARBITRAGE</span></div>
+                <div class="glossary-def"><strong>Price Discrepancies Across Exchanges</strong> -- BTC price on Binance, Coinbase, Kraken, and Crypto.com can differ by 0.1-2% during volatile periods. High-frequency traders exploit these gaps. We currently use only one exchange -- a major missed opportunity.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(249,115,22,0.3);">
+                <div class="glossary-term"><span class="badge badge-orange">WEEKEND EFFECTS</span></div>
+                <div class="glossary-def"><strong>Lower Liquidity = Bigger Moves</strong> -- Crypto trading volume drops 20-40% on weekends. Reduced liquidity means larger price moves from smaller orders. Algorithms running 24/7 capture weekend dislocations that human traders miss.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(249,115,22,0.3);">
+                <div class="glossary-term"><span class="badge badge-orange">SENTIMENT DRIVEN</span></div>
+                <div class="glossary-def"><strong>Social Media Moves Markets</strong> -- A single Elon Musk tweet moved DOGE 30% in hours. Crypto Fear &amp; Greed Index extremes (below 20 or above 80) historically correlate with reversals. We currently have zero sentiment data integration.</div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#a855f7;margin-top:1.5rem;">Academic Research Sources</h3>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem;">
+                <div style="font-size:0.8rem;color:#889;line-height:1.6;">
+                    <strong style="color:#a855f7;">Liu, Tsyvinski &amp; Wu (2019)</strong><br>
+                    "Common Risk Factors in Cryptocurrency" -- Identified cryptocurrency-specific momentum factor. Found that a momentum strategy yields 25% monthly alpha. Foundational work for crypto quantitative strategies.
+                </div>
+                <div style="font-size:0.8rem;color:#889;line-height:1.6;">
+                    <strong style="color:#a855f7;">Goichi Hosoda (1960s-1969)</strong><br>
+                    Creator of the Ichimoku Kinko Hyo system. Originally designed for Japanese rice trading. The "one glance equilibrium chart" provides support, resistance, momentum, and trend direction in a single view. Adapted globally for all asset classes.
+                </div>
+                <div style="font-size:0.8rem;color:#889;line-height:1.6;">
+                    <strong style="color:#a855f7;">Baur &amp; Dimpfl (2021)</strong><br>
+                    "The Volatility of Bitcoin and its Role as a Medium of Exchange and a Store of Value" -- Demonstrated that BTC volatility is fundamentally different from equity volatility, exhibiting clustering and long-memory effects that trend-following algorithms can exploit.
+                </div>
+                <div style="font-size:0.8rem;color:#889;line-height:1.6;">
+                    <strong style="color:#a855f7;">Cong, He, Li &amp; Wei (2022)</strong><br>
+                    "Crypto Wash Trading" -- Found that up to 70% of reported crypto volume is wash trading. This means real liquidity is lower than it appears, making slippage modeling critical for realistic backtesting. Our configurable slippage parameter addresses this.
+                </div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#22c55e;margin-top:1.5rem;">How We Apply This Research</h3>
+        <div style="background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(99,102,241,0.08));border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:1rem;">
+            <p style="font-size:0.85rem;color:#889;margin-bottom:0.8rem;">Our system incorporates these findings:</p>
+            <ul style="font-size:0.85rem;color:#889;margin-left:1.5rem;margin-bottom:0.8rem;">
+                <li><strong>Momentum-First Approach:</strong> Trend Following (A+) and Ichimoku Cloud (80% WR) both capture momentum. Mean Reversion is deprioritized.</li>
+                <li><strong>Slippage Modeling:</strong> Configurable slippage (default 0.5%) accounts for wash trading volume and real execution costs.</li>
+                <li><strong>24/7 Monitoring:</strong> GitHub Actions runs the live-monitor cycle continuously. Algorithms capture overnight and weekend moves.</li>
+                <li><strong>Adaptive Parameters:</strong> Trade outcomes feed back to adjust TP/SL. The system learns from its own performance.</li>
+                <li><strong>Multi-Strategy Validation:</strong> What-If engine tests every strategy against historical data before deployment.</li>
+            </ul>
+            <p style="font-size:0.85rem;color:#22c55e;"><strong>Now implemented:</strong> Live Ichimoku/StochRSI signals, parameter learning, full backtest engine, optimal finder. <strong>Still missing:</strong> Trend Following live deployment, on-chain analytics, sentiment data, cross-exchange feeds.</p>
+        </div>
+
+        <h3 class="section-title" style="color:#10b981;margin-top:1.5rem;">Future Enhancements &amp; Research Priorities</h3>
+        <div style="background:var(--bg-card);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+            <p style="font-size:0.85rem;color:#e0e0f0;margin-bottom:0.8rem;"><strong>Based on our audit findings, these are the highest-impact improvements to pursue:</strong></p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
+                <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#ef4444;margin-bottom:0.3rem;">Priority 1: Deploy Trend Following</div>
+                    <div style="font-size:0.78rem;color:#889;">The A+ backtested strategy (Sharpe 4.45) must be deployed to live trading. This is the single highest-impact improvement. It bridges the gap between research and production. Implementation requires adapting the signal generation for the live-monitor format.</div>
+                </div>
+                <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#f59e0b;margin-bottom:0.3rem;">Priority 2: Accumulate Trade Data</div>
+                    <div style="font-size:0.78rem;color:#889;">ML grid search activates at 20 trades per algorithm. At ~2-3 trades/week, this is 5-8 weeks away. Increasing signal frequency (adding more pairs or lowering confidence thresholds) could accelerate data collection but may reduce quality.</div>
+                </div>
+                <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">Priority 3: On-Chain Analytics</div>
+                    <div style="font-size:0.78rem;color:#889;">Integrate Glassnode or CryptoQuant for: exchange inflow/outflow (large inflows = selling pressure), whale wallet tracking (addresses holding 1000+ BTC), MVRV ratio (market value vs realized value), and miner behavior. These are standard institutional signals.</div>
+                </div>
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Priority 4: Sentiment Integration</div>
+                    <div style="font-size:0.78rem;color:#889;">Add LunarCrush for social sentiment scoring, Alternative.me Fear &amp; Greed Index, and Reddit/Twitter mention velocity tracking. Crypto markets are more sentiment-driven than any other asset class. This is a critical missing data source.</div>
+                </div>
+                <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#10b981;margin-bottom:0.3rem;">Priority 5: Cross-Exchange Data</div>
+                    <div style="font-size:0.78rem;color:#889;">Add Binance and Coinbase price feeds alongside FreeCryptoAPI. Cross-exchange price divergence is a known alpha source. Even without executing arb, divergence signals can predict short-term price direction on the primary exchange.</div>
+                </div>
+                <div style="background:rgba(234,179,8,0.08);border:1px solid rgba(234,179,8,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#eab308;margin-bottom:0.3rem;">Priority 6: Remove D-Grade Strategy</div>
+                    <div style="font-size:0.78rem;color:#889;">Mean Reversion (Sharpe -1.56) should be excluded from crypto analysis entirely. Including a proven-bad strategy in backtest comparisons creates noise and could mislead users into deploying it. Replace with a crypto-native strategy (e.g., funding rate arbitrage).</div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#f59e0b;margin-top:1.5rem;">World-Class Benchmark Comparison</h3>
+        <div style="background:var(--bg-card);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+            <p style="font-size:0.85rem;color:#889;margin-bottom:0.8rem;">How top crypto trading firms compare, and where we need to be:</p>
+            <div style="overflow-x:auto;">
+                <table style="width:100%;font-size:0.78rem;color:#889;border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+                            <th style="text-align:left;padding:0.5rem;color:#e0e0f0;">Firm / Metric</th>
+                            <th style="text-align:center;padding:0.5rem;color:#22c55e;">Their Approach</th>
+                            <th style="text-align:center;padding:0.5rem;color:#f59e0b;">Our Current</th>
+                            <th style="text-align:center;padding:0.5rem;color:#3b82f6;">Gap</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:0.5rem;">Alameda Research (quant)</td>
+                            <td style="text-align:center;padding:0.5rem;">Multi-exchange arb, market making, 100+ pairs</td>
+                            <td style="text-align:center;padding:0.5rem;">Single exchange, 14 pairs, no arb</td>
+                            <td style="text-align:center;padding:0.5rem;color:#ef4444;">Massive data gap</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:0.5rem;">Jump Trading (crypto MM)</td>
+                            <td style="text-align:center;padding:0.5rem;">HFT, order book analysis, co-located servers</td>
+                            <td style="text-align:center;padding:0.5rem;">No order book data, API polling</td>
+                            <td style="text-align:center;padding:0.5rem;color:#ef4444;">Infrastructure gap</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:0.5rem;">Three Arrows Capital (failed)</td>
+                            <td style="text-align:center;padding:0.5rem;">Leveraged directional bets, no risk management</td>
+                            <td style="text-align:center;padding:0.5rem;">Paper trading, 5% sizing, auto SL</td>
+                            <td style="text-align:center;padding:0.5rem;color:#22c55e;">We are better here</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:0.5rem;">Wintermute (market making)</td>
+                            <td style="text-align:center;padding:0.5rem;">400+ pairs, 60+ exchanges, proprietary infra</td>
+                            <td style="text-align:center;padding:0.5rem;">14 pairs, 1 exchange, free API</td>
+                            <td style="text-align:center;padding:0.5rem;color:#ef4444;">Scale gap</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:0.5rem;">Win Rate (forward)</td>
+                            <td style="text-align:center;padding:0.5rem;">55-65% (institutional target)</td>
+                            <td style="text-align:center;padding:0.5rem;">80% Ichimoku (5 trades)</td>
+                            <td style="text-align:center;padding:0.5rem;color:#f59e0b;">Exceptional but tiny sample</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:0.5rem;">Data Sources</td>
+                            <td style="text-align:center;padding:0.5rem;">10-20 (price, on-chain, sentiment, order book)</td>
+                            <td style="text-align:center;padding:0.5rem;">1 (FreeCryptoAPI)</td>
+                            <td style="text-align:center;padding:0.5rem;color:#ef4444;">Critical data deficit</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div style="margin-top:1.5rem;padding:1rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:12px;">
+            <div style="font-weight:600;color:#ef4444;margin-bottom:0.5rem;">The Hard Truth</div>
+            <p style="font-size:0.85rem;color:#889;">Our 80% win rate on Ichimoku crypto trades is genuinely impressive -- but it is based on 5 trades. Five. A coin flip could produce 80% heads on 5 flips with 18.75% probability. The system shows promise, particularly in how the parameter learning is already adapting TP targets upward. But professional crypto trading firms operate on entirely different scales: hundreds of pairs, multiple exchanges, on-chain analytics, social sentiment, and co-located infrastructure. We have a strong backtest engine, two live algorithms, and adaptive learning. What we lack is data depth, data volume, and the A+ strategy deployed to production. Until we have 50+ closed trades with consistent results and multi-source data feeding the signals, this remains an experimental system with promising but unproven early results. Never trade real money based on these signals.</p>
         </div>
     </div>
 

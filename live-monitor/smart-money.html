@@ -345,6 +345,27 @@
             font-size: 0.8rem; border-top: 1px solid var(--border); margin-top: 2rem;
         }
 
+        /* ===== ANALYSIS & RESEARCH TAB STYLES ===== */
+        .glossary-item {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1rem; transition: border-color 0.2s;
+        }
+        .glossary-item:hover { border-color: var(--accent); }
+        .glossary-term {
+            font-weight: 700; font-size: 0.95rem; color: var(--accent);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem;
+        }
+        .glossary-def { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; }
+        .glossary-def strong { color: var(--text); }
+        .grade-explainer {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 0.7rem 1rem;
+            margin-bottom: 1rem; font-size: 0.8rem; color: var(--text-dim);
+            line-height: 1.6;
+        }
+        .grade-explainer strong { color: var(--text); }
+        .grade-explainer .ge-title { color: var(--accent); font-weight: 700; margin-bottom: 0.3rem; }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .header h1 { font-size: 1.5rem; }
@@ -408,6 +429,8 @@
             <button class="tab-btn" onclick="switchTab('smartmoney')">Smart Money (13F)</button>
             <button class="tab-btn" onclick="switchTab('leaderboard')">Leaderboard</button>
             <button class="tab-btn" onclick="switchTab('showdown')">Showdown</button>
+            <button class="tab-btn" onclick="switchTab('analysis')" style="color:#f59e0b;">System Analysis</button>
+            <button class="tab-btn" onclick="switchTab('research')" style="color:#a855f7;">Research &amp; Future</button>
         </div>
 
         <!-- ============================================================ -->
@@ -654,6 +677,46 @@
         </div>
     </div>
 
+    <!-- System Analysis -->
+    <div style="background:var(--bg-card);border:1px solid rgba(168,85,247,0.3);border-radius:var(--radius);padding:1.25rem;margin:0 1.5rem 1.5rem;">
+        <h3 style="font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;">
+            System Analysis
+            <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);">RESEARCH</span>
+        </h3>
+        <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
+            <strong style="color:var(--text);">How Smart Money Intelligence works:</strong><br>
+            Aggregates institutional and insider data from multiple sources into a single consensus score (0&ndash;100). Three data pillars: <strong>Analyst Ratings</strong> (Wall Street consensus from Finnhub &mdash; Buy/Hold/Sell distribution, average price target), <strong>Insider Trading</strong> (SEC Form 4 filings via EDGAR &mdash; insider buy/sell ratio, MSPR score), and <strong>13F Institutional Holdings</strong> (SEC EDGAR quarterly filings &mdash; which hedge funds are buying/selling). The consensus score weights all three pillars to produce an actionable signal.<br><br>
+            <strong style="color:var(--text);">Data pipeline:</strong><br>
+            &bull; Python scripts run via GitHub Actions (weekdays 6AM + Sunday 9AM EST)<br>
+            &bull; SEC EDGAR 13F parser: Extracts position changes from latest quarterly filings<br>
+            &bull; Form 4 parser: Real-time insider buy/sell tracking with MSPR (months since purchase ratio)<br>
+            &bull; Finnhub API: Analyst recommendations and price targets<br>
+            &bull; WSB sentiment: Reddit WallStreetBets mention velocity (experimental)<br><br>
+            <strong style="color:var(--text);">Current status:</strong><br>
+            &bull; This is a <strong>research-only</strong> system &mdash; it provides intelligence, not direct trade signals<br>
+            &bull; The Challenger Bot (algorithm #20 in Live Monitor) uses consensus scores for automated trading (&ge;70 = BUY, &le;30 = SHORT)<br>
+            &bull; Consensus accuracy tracking is active but insufficient data for statistical significance yet<br>
+            &bull; <a href="/live-monitor/algo-performance.html" style="color:#ffd700;">L vs O (#1 PICK)</a> is the only system with verified positive returns
+        </div>
+    </div>
+
+    <!-- Data Sources & Transparency -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin:0 1.5rem 1.5rem;">
+        <h3 style="font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;">
+            Data Sources & Transparency
+            <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(34,211,238,0.15);color:#22d3ee;border:1px solid rgba(34,211,238,0.3);">LIVE DATA</span>
+        </h3>
+        <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
+            <strong style="color:var(--text);">Where the numbers come from:</strong><br>
+            &bull; <strong>Consensus scores:</strong> <a href="api/smart_money.php?action=consensus&ticker=AAPL" target="_blank">smart_money.php?action=consensus</a> &mdash; combined analyst + insider + institutional score<br>
+            &bull; <strong>Analyst data:</strong> <a href="api/smart_money.php?action=analyst&ticker=AAPL" target="_blank">smart_money.php?action=analyst</a> &mdash; Finnhub recommendation trends<br>
+            &bull; <strong>Insider trades:</strong> <a href="api/smart_money.php?action=insider&ticker=AAPL" target="_blank">smart_money.php?action=insider</a> &mdash; SEC Form 4 filings via EDGAR<br>
+            &bull; <strong>13F holdings:</strong> <a href="api/smart_money.php?action=institutional&ticker=AAPL" target="_blank">smart_money.php?action=institutional</a> &mdash; quarterly hedge fund filings<br>
+            &bull; <strong>Leaderboard:</strong> <a href="api/smart_money.php?action=leaderboard" target="_blank">smart_money.php?action=leaderboard</a> &mdash; top-scored stocks across all pillars<br>
+            &bull; <strong>GitHub Actions:</strong> <code>smart-money-tracker.yml</code> &mdash; automated data refresh schedule
+        </div>
+    </div>
+
     <div class="footer">
         Smart Money Intelligence &mdash; Part of <a href="/">Find Toronto Events</a> &mdash; Data refreshes every 5 minutes
     </div>
@@ -781,7 +844,7 @@
                 panels[i].className = 'tab-panel' + (panels[i].id === 'tab-' + tab ? ' active' : '');
             }
             var btns = document.querySelectorAll('.tab-btn');
-            var tabNames = ['consensus', 'analyst', 'insider', 'smartmoney', 'leaderboard', 'showdown'];
+            var tabNames = ['consensus', 'analyst', 'insider', 'smartmoney', 'leaderboard', 'showdown', 'analysis', 'research'];
             for (var j = 0; j < btns.length; j++) {
                 btns[j].className = 'tab-btn' + (tabNames[j] === tab ? ' active' : '');
             }

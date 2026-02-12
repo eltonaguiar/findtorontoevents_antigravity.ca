@@ -234,6 +234,22 @@
         .badge-red { background: var(--red-dim); color: var(--red); }
         .badge-yellow { background: var(--yellow-dim); color: var(--yellow); }
         .badge-blue { background: rgba(59,130,246,0.15); color: var(--blue); }
+        .badge-orange { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+        .badge-purple { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+
+        /* ─── Analysis/Research Tab Styles ─── */
+        .section-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
+        .glossary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .glossary-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; }
+        .glossary-term { margin-bottom: 0.5rem; }
+        .glossary-def { font-size: 0.82rem; color: var(--text-dim); line-height: 1.6; }
+        .glossary-def strong { color: var(--text); }
+        .grade-explainer {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.5rem;
+            font-size: 0.85rem; color: var(--text-dim); line-height: 1.6;
+        }
+        .ge-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
 
         /* ─── Disclaimer ─── */
         .disclaimer {
@@ -303,6 +319,8 @@
         <div class="tab" data-tab="optimal">Optimal Finder</div>
         <div class="tab" data-tab="signals">Signals</div>
         <div class="tab" data-tab="history">Backtest History</div>
+        <div class="tab" data-tab="analysis" style="color:#f59e0b;">System Analysis</div>
+        <div class="tab" data-tab="research" style="color:#a855f7;">Research &amp; Future</div>
     </div>
 
     <!-- ═══════════ TAB: What-If Analysis ═══════════ -->
@@ -658,6 +676,417 @@
                     <tbody></tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ TAB: System Analysis ═══════════ -->
+    <div class="tab-content" id="tab-analysis">
+        <div class="grade-explainer" style="background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(239,68,68,0.08));border-color:rgba(245,158,11,0.3);">
+            <div class="ge-title" style="color:#f59e0b;">Honest System Assessment -- Forex Portfolio</div>
+            This page provides complete transparency about our forex trading system's current state, known limitations, and planned improvements. We believe in honest disclosure -- our forward-facing forex performance is currently 0% win rate with critical deployment issues identified.
+        </div>
+
+        <h3 class="section-title" style="color:#22c55e;">Current Strengths</h3>
+        <div class="glossary-grid">
+            <div class="glossary-item">
+                <div class="glossary-term"><span class="badge badge-green">SOLID FOUNDATION</span></div>
+                <div class="glossary-def"><strong>A-Grade Backtested Algorithms</strong> -- Trend Following (Sharpe 2.42, A grade) and Mean Reversion (Sharpe 2.29, A grade) demonstrate strong risk-adjusted returns in historical backtests. These are institutional-quality Sharpe ratios that suggest genuine edge in forex markets.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term"><span class="badge badge-green">MULTI-PAIR COVERAGE</span></div>
+                <div class="glossary-def"><strong>10 Forex Pairs Tracked</strong> -- TwelveData API provides real-time pricing for 10 major and cross pairs. Diversification across USD, EUR, GBP, JPY, AUD, and CAD reduces single-currency risk exposure.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term"><span class="badge badge-green">MULTIPLE ALGORITHMS</span></div>
+                <div class="glossary-def"><strong>Strategy Diversity</strong> -- Multiple backtested strategies with different approaches (trend-following, mean reversion) provide diversified signal generation. Each algorithm captures different market regimes.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term"><span class="badge badge-green">DISCIPLINED EXITS</span></div>
+                <div class="glossary-def"><strong>Configurable TP/SL/Max Hold</strong> -- Every scenario uses predefined take-profit, stop-loss, and maximum hold periods. No emotional decision-making. Multiple preset scenarios from Short Tactical (14d) to Conservative Hold (90d).</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term"><span class="badge badge-green">CARRY TRADE POTENTIAL</span></div>
+                <div class="glossary-def"><strong>Interest Rate Differential Opportunity</strong> -- With pairs like AUD/JPY, USD/JPY, and NZD/USD tracked, the system has the raw data needed to add carry trade scoring once interest rate differentials are integrated.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term"><span class="badge badge-green">ANALYSIS TOOLS</span></div>
+                <div class="glossary-def"><strong>Comprehensive Portfolio Analysis</strong> -- What-If analysis, strategy comparison, optimal finder, and backtest history provide robust tools for evaluating and refining forex strategies before deployment.</div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#10b981;margin-top:1.5rem;">Deep Audit Findings (Feb 12, 2026)</h3>
+        <div style="background:var(--bg-card);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+            <p style="font-size:0.85rem;color:#e0e0f0;margin-bottom:0.8rem;"><strong>A comprehensive audit of the forex system was conducted. Here are the findings:</strong></p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
+                <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#ef4444;margin-bottom:0.4rem;">CRITICAL: Wrong Algorithms Deployed</div>
+                    <div style="font-size:0.78rem;color:#889;">The A-grade Trend Following (Sharpe 2.42) and Mean Reversion (Sharpe 2.29) algorithms are NOT being used in live trading. Instead, Consensus (0% WR, 2 trades, 2 losses) and RSI Reversal (0% WR, 1 trade, 1 loss) are deployed -- these were never backtested for forex. This is the single highest-priority fix.</div>
+                </div>
+                <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#ef4444;margin-bottom:0.4rem;">Finding: 0% Forward Win Rate</div>
+                    <div style="font-size:0.78rem;color:#889;">All 3 closed forex trades resulted in losses. Consensus: 2 trades, 2 losses. RSI Reversal: 1 trade, 1 loss. The forward-facing results are completely misaligned with the A-grade backtest results because the wrong algorithms are in production.</div>
+                </div>
+                <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#f59e0b;margin-bottom:0.4rem;">Finding: Minimal Trade Data</div>
+                    <div style="font-size:0.78rem;color:#889;">Only 3 closed forex trades exist in the system. This is far too few for any statistical analysis or ML training (minimum 20 needed). Even after deploying correct algorithms, data accumulation will take weeks.</div>
+                </div>
+                <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#3b82f6;margin-bottom:0.4rem;">Finding: Bridge Script in Progress</div>
+                    <div style="font-size:0.78rem;color:#889;">A bridge script (<code>bridge_picks_to_signals.py</code>) is being developed to deploy the A-grade Trend Following and Mean Reversion algorithms to the live signal engine. ETA: 1-2 weeks for full deployment and validation.</div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#6366f1;margin-top:1.5rem;">ML System Status</h3>
+        <div style="background:var(--bg-card);border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+            <div style="font-size:0.85rem;color:#889;">
+                <p style="margin-bottom:0.8rem;"><strong style="color:#e0e0f0;">Current State: Cannot Train</strong></p>
+                <ul style="margin-left:1.5rem;margin-bottom:0.8rem;">
+                    <li>Only <strong>3 closed forex trades</strong> exist -- grid search / ML requires minimum 20</li>
+                    <li>Even if we had data, it would not help until the <strong>correct algorithms are deployed</strong></li>
+                    <li>The backtested strategies (Trend Following, Mean Reversion) have excellent historical metrics but no forward validation</li>
+                    <li>No parameter optimization has been performed on live forex data</li>
+                </ul>
+                <p style="color:#f59e0b;"><strong>Path to ML activation:</strong> Deploy correct algorithms (bridge script) &rarr; accumulate 20+ closed trades &rarr; run grid search on forex-specific parameters &rarr; enable Learned vs Original comparison.</p>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#ef4444;margin-top:1.5rem;">Known Flaws &amp; Limitations</h3>
+        <div class="glossary-grid">
+            <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                <div class="glossary-term"><span class="badge badge-red">WRONG ALGOS DEPLOYED</span></div>
+                <div class="glossary-def"><strong>Highest Priority Fix</strong> -- Consensus and RSI Reversal algorithms are deployed for forex live trading instead of the A-grade Trend Following (Sharpe 2.42) and Mean Reversion (Sharpe 2.29). This single issue explains the 0% forward win rate. Bridge script fix in progress.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                <div class="glossary-term"><span class="badge badge-red">0% FORWARD WIN RATE</span></div>
+                <div class="glossary-def"><strong>3 Trades, 3 Losses</strong> -- Every closed forex trade has been a loss. The system has negative forward performance despite A-grade backtests. Until the correct algorithms are deployed and accumulate data, no claims of profitability can be made.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                <div class="glossary-term"><span class="badge badge-red">NO CARRY TRADE</span></div>
+                <div class="glossary-def"><strong>Missing Key Forex Edge</strong> -- No interest rate differential tracking, no carry trade component. Professional forex systems exploit rate differentials across central banks. This is a fundamental missing feature for any serious forex system.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                <div class="glossary-term"><span class="badge badge-red">NO CENTRAL BANK CALENDAR</span></div>
+                <div class="glossary-def"><strong>Event Risk Blind Spot</strong> -- No integration with FOMC, ECB, BOJ, BOE, RBA, or BOC meeting schedules. Central bank decisions are the single largest driver of forex moves. Trading without event awareness is like driving blindfolded.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                <div class="glossary-term"><span class="badge badge-red">NO CORRELATION TRACKING</span></div>
+                <div class="glossary-def"><strong>Portfolio Risk Blind Spot</strong> -- No correlation matrix across the 10 tracked pairs. Holding long EUR/USD and long GBP/USD is essentially double-exposure to USD weakness. Without correlation tracking, position sizing ignores portfolio-level risk.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                <div class="glossary-term"><span class="badge badge-red">NO COMMODITY CORRELATION</span></div>
+                <div class="glossary-def"><strong>Missing Cross-Asset Signal</strong> -- AUD correlates with iron ore/gold, CAD with oil, NOK with Brent crude. Professional forex systems track commodity-currency correlations for additional signal confirmation. Currently absent.</div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#3b82f6;margin-top:1.5rem;">Improvement Roadmap</h3>
+        <div class="glossary-grid">
+            <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                <div class="glossary-term"><span class="badge badge-green">PHASE 1: BACKTESTS DONE</span></div>
+                <div class="glossary-def"><strong>A-Grade Strategies Validated</strong> -- Trend Following (Sharpe 2.42) and Mean Reversion (Sharpe 2.29) backtested successfully against historical forex data. Multiple scenario presets configured. What-If, comparison, and optimal finder tools operational.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                <div class="glossary-term"><span class="badge badge-green">PHASE 2: LIVE MONITOR DONE</span></div>
+                <div class="glossary-def"><strong>Real-Time Data Pipeline</strong> -- TwelveData API integration provides real-time pricing for 10 forex pairs. Live Monitor generates signals from 20 algorithms including forex-specific ones. Paper trading infrastructure operational.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
+                <div class="glossary-term"><span class="badge badge-blue">PHASE 3: BRIDGE SCRIPT</span></div>
+                <div class="glossary-def"><strong>Deploy Correct Algorithms (In Progress)</strong> -- Bridge script (<code>bridge_picks_to_signals.py</code>) will connect the A-grade Trend Following and Mean Reversion algorithms to the live signal engine. This is the critical fix that should transform forward performance. ETA: 1-2 weeks.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
+                <div class="glossary-term"><span class="badge badge-blue">PHASE 4: DATA ACCUMULATION</span></div>
+                <div class="glossary-def"><strong>Forward Trade Tracking</strong> -- After correct algorithms are deployed, accumulate 20+ closed trades for ML grid search activation. Track every forex signal with entry/exit prices, spread, and slippage data. Target: 50+ trades for statistical significance.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
+                <div class="glossary-term"><span class="badge badge-blue">PHASE 5: FOREX FEATURES</span></div>
+                <div class="glossary-def"><strong>Carry Trade &amp; Event Calendar</strong> -- Add interest rate differential scoring, central bank event calendar integration, session-aware trading (London/NY/Asian overlap detection), and commodity-currency correlation tracking.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
+                <div class="glossary-term"><span class="badge badge-blue">PHASE 6: ML OPTIMIZATION</span></div>
+                <div class="glossary-def"><strong>Learned vs Original for Forex</strong> -- Once enough closed trades exist, run grid search on forex-specific parameters. Enable the Learned vs Original comparison system that already works for crypto/stocks. Walk-forward backtest validates model before deployment.</div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#eab308;margin-top:1.5rem;">Is It Production Ready?</h3>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+            <p style="font-size:0.9rem;color:#e0e0f0;margin-bottom:0.8rem;"><strong>Short Answer: No. The wrong algorithms are deployed.</strong></p>
+            <p style="font-size:0.85rem;color:#889;margin-bottom:0.5rem;">Here is where we actually stand:</p>
+            <ul style="font-size:0.85rem;color:#889;margin-left:1.5rem;margin-bottom:0.8rem;">
+                <li>The backtested strategies are excellent (Sharpe 2.29-2.42) but they are <strong>not in live trading</strong></li>
+                <li>The algorithms that ARE live (Consensus, RSI Reversal) have <strong>0% win rate on forex</strong></li>
+                <li>Only <strong>3 closed trades</strong> exist -- far too few for any conclusions</li>
+                <li>No carry trade component, no central bank calendar, no correlation tracking</li>
+            </ul>
+            <p style="font-size:0.85rem;color:#e0e0f0;"><strong>What milestones remain?</strong></p>
+            <ul style="font-size:0.85rem;color:#889;margin-left:1.5rem;margin-bottom:0.8rem;">
+                <li><strong>Deploy bridge script</strong> &rarr; A-grade algorithms go live for forex signals</li>
+                <li><strong>20 closed trades</strong> &rarr; ML grid search can activate</li>
+                <li><strong>50+ closed trades</strong> &rarr; Statistically meaningful forward win rate</li>
+                <li><strong>Positive forward Sharpe &gt; 1.0</strong> &rarr; Validates backtested edge is real</li>
+                <li><strong>Carry trade + event calendar</strong> &rarr; Forex-specific features that professionals use</li>
+            </ul>
+            <p style="font-size:0.85rem;color:#f59e0b;"><strong>Current Status:</strong> The analysis tools on this page work well for backtesting and research. But the live trading component is fundamentally broken because the wrong algorithms are deployed. Do NOT rely on live forex signals until the bridge script is deployed and validated with 50+ trades.</p>
+        </div>
+
+        <h3 class="section-title" style="color:#a855f7;margin-top:1.5rem;">Architecture</h3>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;">
+            <p style="font-size:0.85rem;color:#889;margin-bottom:0.8rem;">System components and data flow:</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;">
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Data Source: TwelveData API</div>
+                    <div style="font-size:0.78rem;color:#889;">Real-time forex pricing for 10 pairs: EUR/USD, GBP/USD, USD/JPY, AUD/USD, USD/CAD, NZD/USD, EUR/GBP, EUR/JPY, GBP/JPY, USD/CHF. Refreshed via Live Monitor pipeline.</div>
+                </div>
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Signal Engine: Live Monitor</div>
+                    <div style="font-size:0.78rem;color:#889;">20 algorithms generate signals across crypto, forex, and stocks. Forex signals currently come from Consensus and RSI Reversal (wrong ones). Bridge script will route Trend Following and Mean Reversion signals instead.</div>
+                </div>
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Backtest Engine: forex_portfolio.php</div>
+                    <div style="font-size:0.78rem;color:#889;">PHP API handles strategy backtesting, scenario comparison, and optimal parameter finding. Uses historical price data to simulate trades with configurable TP/SL/hold periods.</div>
+                </div>
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Paper Trading: $10K Capital</div>
+                    <div style="font-size:0.78rem;color:#889;">Live Monitor runs paper trading with $10K capital, 5% position sizing, max 10 positions, and automatic SL/TP/max-hold enforcement. Forex shares this pool with crypto and stocks.</div>
+                </div>
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Performance Tracking: algo_performance.php</div>
+                    <div style="font-size:0.78rem;color:#889;">Tracks Learned vs Original algorithm parameters. Currently shows 0% forex win rate because wrong algorithms are deployed. Will become meaningful after bridge script deployment.</div>
+                </div>
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Frontend: This Portfolio Page</div>
+                    <div style="font-size:0.78rem;color:#889;">What-If analysis, strategy comparison, optimal finder, live signals display, and backtest history. Interactive charts via Chart.js. Fully functional for research and backtesting.</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:1.5rem;padding:1rem;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:12px;">
+            <div style="font-weight:600;color:#22c55e;margin-bottom:0.5rem;">Bottom Line</div>
+            <p style="font-size:0.85rem;color:#889;">The forex backtesting system is solid with A-grade results. However, the live trading component is completely broken because the wrong algorithms are deployed. The single most impactful fix is deploying the bridge script to route Trend Following and Mean Reversion signals to forex live trading. Until then, forward performance will continue to be 0% win rate.</p>
+        </div>
+    </div>
+
+    <!-- ═══════════ TAB: Research & Future ═══════════ -->
+    <div class="tab-content" id="tab-research">
+        <div class="grade-explainer" style="background:linear-gradient(135deg,rgba(168,85,247,0.08),rgba(99,102,241,0.08));border-color:rgba(168,85,247,0.3);">
+            <div class="ge-title" style="color:#a855f7;">Research &amp; Future Enhancements</div>
+            This section documents our research into professional forex trading theory, the academic foundations of our strategies, and the benchmarks we are targeting. Understanding how institutional forex desks operate is essential for building systems that can compete.
+        </div>
+
+        <h3 class="section-title" style="color:#6366f1;">Core Methodology: Trend Following &amp; Mean Reversion in FX</h3>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+            <p style="font-size:0.85rem;color:#889;margin-bottom:0.8rem;">Forex markets exhibit two primary exploitable patterns. Our backtested A-grade algorithms target each:</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
+                <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#22c55e;margin-bottom:0.3rem;">Trend Following (Sharpe 2.42)</div>
+                    <div style="font-size:0.78rem;color:#889;">Currencies trend because of persistent macroeconomic forces: diverging monetary policy, trade imbalances, and capital flows. When the Fed raises rates while BOJ holds, USD/JPY trends for months. Moving average crossovers and momentum indicators capture these multi-week trends.</div>
+                </div>
+                <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">Mean Reversion (Sharpe 2.29)</div>
+                    <div style="font-size:0.78rem;color:#889;">Exchange rates revert to purchasing power parity (PPP) and interest rate parity over time. When EUR/USD deviates significantly from fair value, institutional flows push it back. Bollinger Bands and RSI identify overextension points for counter-trend entries.</div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#22c55e;margin-top:1.5rem;">Key Forex Concepts</h3>
+        <div class="glossary-grid">
+            <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                <div class="glossary-term"><span class="badge badge-green">CARRY TRADE</span></div>
+                <div class="glossary-def"><strong>Interest Rate Differential Exploitation</strong> -- Borrow in low-yield currencies (JPY, CHF) and invest in high-yield currencies (AUD, NZD, emerging markets). The interest rate differential provides consistent returns as long as the exchange rate does not move against you. Carry trade is one of the most documented forex anomalies.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                <div class="glossary-term"><span class="badge badge-green">PURCHASING POWER PARITY</span></div>
+                <div class="glossary-def"><strong>Long-Run Fair Value Anchor</strong> -- PPP theory states that exchange rates should adjust so that identical goods cost the same across countries. While PPP does not hold in the short term, it provides a gravitational pull on exchange rates over multi-year horizons. Mean reversion strategies exploit deviations from PPP.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                <div class="glossary-term"><span class="badge badge-green">INTEREST RATE PARITY</span></div>
+                <div class="glossary-def"><strong>Forward Rate Relationship</strong> -- The forward exchange rate should reflect the interest rate differential between two currencies. When actual rates deviate from parity, arbitrage opportunities emerge. Central bank policy divergence creates the most persistent deviations.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                <div class="glossary-term"><span class="badge badge-green">CURRENCY MOMENTUM</span></div>
+                <div class="glossary-def"><strong>Cross-Sectional and Time-Series</strong> -- Academic research shows currencies that appreciated over the past 1-12 months tend to continue appreciating. Momentum is stronger in forex than in equities, with Sharpe ratios of 0.5-1.0 for simple momentum strategies across G10 currencies.</div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#3b82f6;margin-top:1.5rem;">Strategies Used in Our System</h3>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
+                <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">1. Trend Following (Moving Average)</div>
+                    <div style="font-size:0.78rem;color:#889;">Uses moving average crossovers (fast/slow MA) to identify trend direction. Enters on crossover confirmation, exits on reverse crossover or TP/SL. Backtested Sharpe: 2.42.</div>
+                </div>
+                <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">2. Mean Reversion (Bollinger/RSI)</div>
+                    <div style="font-size:0.78rem;color:#889;">Identifies overextended moves using Bollinger Bands and RSI. Enters counter-trend when price deviates 2+ standard deviations from mean. Exits on mean reversion or TP/SL. Backtested Sharpe: 2.29.</div>
+                </div>
+                <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">3. Consensus Algorithm (Currently Live)</div>
+                    <div style="font-size:0.78rem;color:#889;">Multi-algorithm consensus scoring that aggregates signals. Works well for crypto but NOT backtested for forex. 0% win rate on forex (2 trades, 2 losses). Should be replaced by Trend Following for forex.</div>
+                </div>
+                <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">4. RSI Reversal (Currently Live)</div>
+                    <div style="font-size:0.78rem;color:#889;">Pure RSI-based reversal strategy. Not specifically calibrated for forex session dynamics or pair-specific volatility. 0% win rate on forex (1 trade, 1 loss). Should be replaced by Mean Reversion for forex.</div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#f97316;margin-top:1.5rem;">Market Inefficiencies in Forex</h3>
+        <div class="glossary-grid">
+            <div class="glossary-item" style="border-color:rgba(249,115,22,0.3);">
+                <div class="glossary-term"><span class="badge badge-orange">FORWARD RATE BIAS</span></div>
+                <div class="glossary-def">Forward exchange rates are biased predictors of future spot rates. High-interest currencies do not depreciate as much as forwards predict, creating the carry trade profit. This is one of the most persistent anomalies in finance, documented since the 1980s.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(249,115,22,0.3);">
+                <div class="glossary-term"><span class="badge badge-orange">SESSION OVERLAPS</span></div>
+                <div class="glossary-def">Volatility and liquidity spike during London-New York overlap (13:00-17:00 UTC). Asian session (00:00-09:00 UTC) has lower volatility but different pair dynamics. Session-aware entry timing can improve fill quality and reduce false signals.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(249,115,22,0.3);">
+                <div class="glossary-term"><span class="badge badge-orange">CENTRAL BANK TELEGRAPHING</span></div>
+                <div class="glossary-def">Central banks increasingly telegraph policy changes through forward guidance. Markets often price in 80-90% of a rate decision before the announcement. The edge is in the remaining 10-20% surprise component and the pace of future changes.</div>
+            </div>
+            <div class="glossary-item" style="border-color:rgba(249,115,22,0.3);">
+                <div class="glossary-term"><span class="badge badge-orange">MONTH-END REBALANCING</span></div>
+                <div class="glossary-def">Large institutional portfolio managers rebalance currency hedges at month-end and quarter-end. This creates predictable flow patterns. USD typically strengthens on London Fix (4 PM GMT) during month-end due to US equity outperformance requiring USD buying.</div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#a855f7;margin-top:1.5rem;">Key Research Sources</h3>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem;">
+                <div style="font-size:0.8rem;color:#889;line-height:1.6;">
+                    <strong style="color:#a855f7;">Burnside et al. (2006)</strong><br>
+                    "The Returns to Currency Speculation" -- Foundational carry trade research showing that borrowing low-yield currencies and investing in high-yield currencies produces consistent excess returns of 4-5% annually.
+                </div>
+                <div style="font-size:0.8rem;color:#889;line-height:1.6;">
+                    <strong style="color:#a855f7;">Menkhoff et al. (2012)</strong><br>
+                    "Currency Momentum Strategies" -- Demonstrated that momentum in currencies is pervasive across 48 currencies over 35 years. Momentum strategies produce Sharpe ratios of 0.5-1.0, robust to transaction costs.
+                </div>
+                <div style="font-size:0.8rem;color:#889;line-height:1.6;">
+                    <strong style="color:#a855f7;">Engel &amp; Hamilton (1990)</strong><br>
+                    "Long Swings in the Dollar" -- Showed that exchange rates follow regime-switching patterns between appreciation and depreciation phases. Mean reversion strategies exploit the transitions between regimes.
+                </div>
+                <div style="font-size:0.8rem;color:#889;line-height:1.6;">
+                    <strong style="color:#a855f7;">Lustig &amp; Verdelhan (2007)</strong><br>
+                    "The Cross Section of Foreign Currency Risk Premia" -- Explained carry trade returns through a consumption-based asset pricing model. High-interest currencies are riskier and command a risk premium.
+                </div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#22c55e;margin-top:1.5rem;">How We Apply This Research</h3>
+        <div style="background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(99,102,241,0.08));border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+            <p style="font-size:0.85rem;color:#889;margin-bottom:0.8rem;">Our system incorporates academic findings in these ways:</p>
+            <ul style="font-size:0.85rem;color:#889;margin-left:1.5rem;margin-bottom:0.8rem;">
+                <li><strong>Trend Following:</strong> Captures Menkhoff et al. currency momentum through MA crossover signals</li>
+                <li><strong>Mean Reversion:</strong> Exploits Engel &amp; Hamilton regime switching via Bollinger Band deviation entries</li>
+                <li><strong>Multiple Timeframes:</strong> Backtests across different hold periods (14d to 90d) match short and medium-term anomalies</li>
+                <li><strong>Disciplined Exits:</strong> TP/SL framework prevents the common retail mistake of holding losing positions too long</li>
+            </ul>
+            <p style="font-size:0.85rem;color:#f59e0b;"><strong>Not yet applied:</strong> Carry trade (Burnside et al.), central bank policy analysis, session-aware trading, commodity-currency correlations, real-time economic calendar integration.</p>
+        </div>
+
+        <h3 class="section-title" style="color:#10b981;margin-top:1.5rem;">Future Enhancements &amp; Research Priorities</h3>
+        <div style="background:var(--bg-card);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+            <p style="font-size:0.85rem;color:#e0e0f0;margin-bottom:0.8rem;"><strong>Based on our audit findings, these are the highest-impact improvements to pursue:</strong></p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
+                <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#ef4444;margin-bottom:0.3rem;">P1: Deploy Correct Algorithms</div>
+                    <div style="font-size:0.78rem;color:#889;">The single most impactful fix. Bridge script will route A-grade Trend Following (Sharpe 2.42) and Mean Reversion (Sharpe 2.29) to forex live trading. Until this is done, all live forex trades are generated by the wrong algorithms.</div>
+                </div>
+                <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#ef4444;margin-bottom:0.3rem;">P1: Accumulate Trade Data</div>
+                    <div style="font-size:0.78rem;color:#889;">Need 20+ closed forex trades for ML activation and 50+ for statistical significance. Current count: 3. After bridge script deployment, continuous paper trading should generate sufficient data within 4-6 weeks.</div>
+                </div>
+                <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#f59e0b;margin-bottom:0.3rem;">P2: Carry Trade Component</div>
+                    <div style="font-size:0.78rem;color:#889;">Add interest rate differential tracking for all 10 pairs. Score pairs by carry attractiveness. Use central bank rate APIs to maintain current rate data. Carry is one of the most reliable forex edges and we are not using it.</div>
+                </div>
+                <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#f59e0b;margin-bottom:0.3rem;">P2: Central Bank Calendar</div>
+                    <div style="font-size:0.78rem;color:#889;">Integrate FOMC, ECB, BOJ, BOE, RBA, BOC meeting schedules. Flag pairs affected by upcoming decisions. Reduce position sizing 24h before major events. Add post-decision momentum capture logic.</div>
+                </div>
+                <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">P3: Session-Aware Trading</div>
+                    <div style="font-size:0.78rem;color:#889;">Detect London/NY/Asian sessions. Adjust signal confidence based on session volatility profiles. London-NY overlap generates best trend signals; Asian session suits mean reversion on JPY pairs.</div>
+                </div>
+                <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">P3: Correlation Matrix</div>
+                    <div style="font-size:0.78rem;color:#889;">Build real-time correlation matrix across all 10 pairs. Prevent overexposure to single-factor risk (e.g., USD weakness affecting EUR/USD + GBP/USD + AUD/USD simultaneously). Adjust position sizing by portfolio-level correlation.</div>
+                </div>
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">P4: Multi-Timeframe Confluence</div>
+                    <div style="font-size:0.78rem;color:#889;">Require 4H + daily + weekly alignment before entering trades. When all three timeframes agree on direction, win probability increases significantly. Currently using single-timeframe signals only.</div>
+                </div>
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                    <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">P4: Commodity-Currency Correlation</div>
+                    <div style="font-size:0.78rem;color:#889;">Track AUD with iron ore/gold, CAD with WTI crude, NOK with Brent. When commodity prices confirm currency direction, signals have higher conviction. Free commodity APIs (e.g., MetalpriceAPI) can provide this data.</div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="color:#f59e0b;margin-top:1.5rem;">World-Class Benchmark Comparison</h3>
+        <div style="background:var(--bg-card);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+            <p style="font-size:0.85rem;color:#889;margin-bottom:0.8rem;">How top forex trading operations compare, and where we need to be:</p>
+            <div style="overflow-x:auto;">
+                <table style="width:100%;font-size:0.78rem;color:#889;border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+                            <th style="text-align:left;padding:0.5rem;color:#e0e0f0;">Metric</th>
+                            <th style="text-align:center;padding:0.5rem;color:#22c55e;">World-Class Target</th>
+                            <th style="text-align:center;padding:0.5rem;color:#f59e0b;">Our Current</th>
+                            <th style="text-align:center;padding:0.5rem;color:#3b82f6;">Gap</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:0.5rem;">Forward Win Rate</td>
+                            <td style="text-align:center;padding:0.5rem;">55-65%</td>
+                            <td style="text-align:center;padding:0.5rem;">0% (3 trades)</td>
+                            <td style="text-align:center;padding:0.5rem;color:#ef4444;">Wrong algos deployed</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:0.5rem;">Backtested Sharpe Ratio</td>
+                            <td style="text-align:center;padding:0.5rem;">1.5-3.0</td>
+                            <td style="text-align:center;padding:0.5rem;">2.29-2.42</td>
+                            <td style="text-align:center;padding:0.5rem;color:#22c55e;">Excellent (backtested)</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:0.5rem;">Carry Trade Component</td>
+                            <td style="text-align:center;padding:0.5rem;">Yes (core strategy)</td>
+                            <td style="text-align:center;padding:0.5rem;">No</td>
+                            <td style="text-align:center;padding:0.5rem;color:#ef4444;">Not implemented</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:0.5rem;">Central Bank Calendar</td>
+                            <td style="text-align:center;padding:0.5rem;">Real-time integration</td>
+                            <td style="text-align:center;padding:0.5rem;">None</td>
+                            <td style="text-align:center;padding:0.5rem;color:#ef4444;">Critical gap</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:0.5rem;">Pairs Tracked</td>
+                            <td style="text-align:center;padding:0.5rem;">20-50 (G10 + EM)</td>
+                            <td style="text-align:center;padding:0.5rem;">10 (G10 majors)</td>
+                            <td style="text-align:center;padding:0.5rem;color:#f59e0b;">Adequate for start</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:0.5rem;">Session-Aware Trading</td>
+                            <td style="text-align:center;padding:0.5rem;">Yes (London/NY/Asian)</td>
+                            <td style="text-align:center;padding:0.5rem;">No</td>
+                            <td style="text-align:center;padding:0.5rem;color:#f59e0b;">Planned Phase 5</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:0.5rem;">ML/Grid Search</td>
+                            <td style="text-align:center;padding:0.5rem;">Walk-forward validated</td>
+                            <td style="text-align:center;padding:0.5rem;">Cannot train (3 trades)</td>
+                            <td style="text-align:center;padding:0.5rem;color:#ef4444;">Need 20+ trades</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p style="font-size:0.78rem;color:#666;margin-top:1rem;">Benchmark firms: Citadel (forex market making), Renaissance Technologies (stat arb), Deutsche Bank (macro), Bridgewater Associates (macro forex).</p>
+        </div>
+
+        <div style="margin-top:1.5rem;padding:1rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:12px;">
+            <div style="font-weight:600;color:#ef4444;margin-bottom:0.5rem;">The Hard Truth</div>
+            <p style="font-size:0.85rem;color:#889;">Our forex system has excellent backtested results (Sharpe 2.29-2.42) but a completely broken live implementation. The A-grade algorithms are sitting unused while inferior algorithms lose every trade. This is the most fixable problem in our entire platform -- the bridge script deployment will immediately address it. However, even after fixing, we still lack carry trade components, central bank calendar integration, and session-aware trading that every professional forex desk uses. The backtests give us confidence the core approach works; the question is whether the forward results will validate that confidence once the correct algorithms are deployed.</p>
         </div>
     </div>
 

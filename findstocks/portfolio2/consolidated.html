@@ -450,6 +450,32 @@
         .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
         .empty-state p { font-size: 0.85rem; max-width: 400px; margin: 0 auto; }
 
+        /* Glossary / Analysis tab styles */
+        .glossary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+        .glossary-item {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1rem; transition: border-color 0.2s;
+        }
+        .glossary-item:hover { border-color: var(--accent); }
+        .glossary-term {
+            font-weight: 700; font-size: 0.95rem; color: var(--accent);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem;
+        }
+        .glossary-def { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; }
+        .glossary-def strong { color: var(--text); }
+        .grade-explainer {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 0.7rem 1rem;
+            margin-bottom: 1rem; font-size: 0.8rem; color: var(--text-dim);
+            line-height: 1.6;
+        }
+        .grade-explainer strong { color: var(--text); }
+        .grade-explainer .ge-title { color: var(--accent); font-weight: 700; margin-bottom: 0.3rem; }
+        .badge-blue { background: rgba(59, 130, 246, 0.15); color: var(--blue); }
+        .badge-yellow { background: rgba(234, 179, 8, 0.15); color: var(--yellow); }
+        .badge-orange { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+        .badge-purple { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+
         @media (max-width: 768px) {
             .header { padding: 0.75rem 1rem; }
             .header h1 { font-size: 1.2rem; }
@@ -458,6 +484,7 @@
             .pick-metrics { grid-template-columns: 1fr 1fr; }
             .perf-hero { grid-template-columns: 1fr; }
             .pos-table { font-size: 0.7rem; }
+            .glossary-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -489,6 +516,8 @@
             <button class="tab-btn" onclick="switchTab('performance')">Performance <span class="tab-badge" id="perfBadge">-</span></button>
             <button class="tab-btn" onclick="switchTab('challenge')">$200/Day Challenge</button>
             <button class="tab-btn" onclick="switchTab('learning')">Self-Learning</button>
+            <button class="tab-btn" onclick="switchTab('analysis')" style="color:#f59e0b;">System Analysis</button>
+            <button class="tab-btn" onclick="switchTab('research')" style="color:#a855f7;">Research &amp; Future</button>
         </div>
 
         <!-- ═══════════════════════════════════════════ -->
@@ -708,6 +737,167 @@
             <div id="lessonsList">
                 <div class="loading"><div class="spinner"></div></div>
             </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- TAB 5: SYSTEM ANALYSIS -->
+        <!-- ═══════════════════════════════════════════ -->
+        <div class="tab-panel" id="tab-analysis">
+            <div class="section-title" style="color:#f59e0b;">System Analysis <span class="badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);">DIAGNOSIS</span></div>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem;">
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:var(--yellow);margin-bottom:0.5rem;">Current Status</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        &bull; 65 open positions, 0 closed<br>
+                        &bull; $10K starting capital, 5% sizing = $500/position<br>
+                        &bull; 65 positions x $500 = $32.5K needed (exceeds capital)<br>
+                        &bull; Exit rules: TP +8%, SL -4%, 14-day max hold<br>
+                        &bull; First closures expected ~Feb 24, 2026
+                    </div>
+                </div>
+                <div style="background:var(--bg-card);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:var(--red);margin-bottom:0.5rem;">Issues Identified</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        &bull; <strong>Over-diversified:</strong> 65 positions vs optimal 20-25 (research)<br>
+                        &bull; <strong>Capital exceeded:</strong> Need $32.5K but only have $10K<br>
+                        &bull; <strong>Stop too tight:</strong> -4% may cause premature exits (research says -5% to -7%)<br>
+                        &bull; <strong>Fixed TP caps winners:</strong> +8% TP limits upside vs trailing stop<br>
+                        &bull; <strong>Algorithm diversity unknown:</strong> 20 algos may be correlated
+                    </div>
+                </div>
+                <div style="background:var(--bg-card);border:1px solid rgba(34,197,94,0.3);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:var(--green);margin-bottom:0.5rem;">What's Working</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        &bull; Multi-algorithm consensus approach is academically validated<br>
+                        &bull; Forward-facing tracking (no backtesting bias)<br>
+                        &bull; Self-learning pattern detection after 5 closed trades<br>
+                        &bull; Transparent exit rules with honest reporting<br>
+                        &bull; Regime gate on 19/20 algorithms
+                    </div>
+                </div>
+            </div>
+
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:var(--yellow);">Research-Backed Improvements</h4>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:1rem;">
+                <table style="width:100%;font-size:12px;border-collapse:collapse;">
+                    <thead><tr style="border-bottom:1px solid var(--border);">
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Change</th>
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Current</th>
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Research Recommends</th>
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Source</th>
+                    </tr></thead>
+                    <tbody style="color:var(--text);">
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Position count</td><td style="padding:6px 8px;color:var(--red);">65</td><td style="padding:6px 8px;color:var(--green);">20-25</td><td style="padding:6px 8px;color:var(--text-dim);">Portfolio research, Danelfin</td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Stop loss</td><td style="padding:6px 8px;color:var(--red);">-4%</td><td style="padding:6px 8px;color:var(--green);">-5% to -7% or 2x ATR</td><td style="padding:6px 8px;color:var(--text-dim);">Minervini (7-8%), 567K backtests</td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Take profit</td><td style="padding:6px 8px;color:var(--yellow);">Fixed +8%</td><td style="padding:6px 8px;color:var(--green);">Trailing stop after +5%</td><td style="padding:6px 8px;color:var(--text-dim);">2M backtest study, Jha method</td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Consensus method</td><td style="padding:6px 8px;color:var(--yellow);">Count-based</td><td style="padding:6px 8px;color:var(--green);">Family-based (3-4 families)</td><td style="padding:6px 8px;color:var(--text-dim);">Ensemble ML research</td></tr>
+                        <tr><td style="padding:6px 8px;">Algorithm weighting</td><td style="padding:6px 8px;color:var(--yellow);">Equal weight</td><td style="padding:6px 8px;color:var(--green);">IC-based dynamic (rolling)</td><td style="padding:6px 8px;color:var(--text-dim);">IC-weighted ML study (+16.63%)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:var(--yellow);">Target Benchmarks</h4>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;margin-bottom:1rem;">
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:0.8rem;text-align:center;">
+                    <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;">Win Rate</div>
+                    <div style="font-size:1.3rem;font-weight:700;color:var(--green);">40-65%</div>
+                    <div style="font-size:10px;color:var(--text-dim);">with 1:2+ R:R</div>
+                </div>
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:0.8rem;text-align:center;">
+                    <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;">Sharpe Ratio</div>
+                    <div style="font-size:1.3rem;font-weight:700;color:var(--green);">&gt;1.5</div>
+                    <div style="font-size:10px;color:var(--text-dim);">Institutional min</div>
+                </div>
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:0.8rem;text-align:center;">
+                    <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;">Max Drawdown</div>
+                    <div style="font-size:1.3rem;font-weight:700;color:var(--yellow);">&lt;20%</div>
+                    <div style="font-size:10px;color:var(--text-dim);">Professional std</div>
+                </div>
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:0.8rem;text-align:center;">
+                    <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;">Profit Factor</div>
+                    <div style="font-size:1.3rem;font-weight:700;color:var(--green);">&gt;1.5</div>
+                    <div style="font-size:10px;color:var(--text-dim);">2.0+ excellent</div>
+                </div>
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:0.8rem;text-align:center;">
+                    <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;">Min Trades</div>
+                    <div style="font-size:1.3rem;font-weight:700;color:var(--cyan);">385</div>
+                    <div style="font-size:10px;color:var(--text-dim);">95% confidence</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- TAB 6: RESEARCH & FUTURE -->
+        <!-- ═══════════════════════════════════════════ -->
+        <div class="tab-panel" id="tab-research">
+            <div class="section-title" style="color:#a855f7;">Research Findings <span class="badge" style="background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);">WEB RESEARCH FEB 12</span></div>
+            <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1rem;">Based on analysis of Reddit (r/algotrading, r/stocks), academic papers, trading competition winners (US Investing Championship), AI platforms (Danelfin), and 567K+ backtests.</p>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem;margin-bottom:1.5rem;">
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:#a855f7;margin-bottom:0.5rem;">Competition Winners</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        <strong>J Law (2024-25):</strong> +353.9% and +252.3% returns. Growth/momentum.<br>
+                        <strong>Vibha Jha (2021-23):</strong> 7/10 trades were LOSERS, but 3 winners = 4x all losses. CANSLIM + TQQQ swings.<br>
+                        <strong>Mark Minervini:</strong> 220% CAGR, max 7-8% SL, never risk &gt;2% of capital. SEPA Trend Template.<br>
+                        <strong>Key insight:</strong> All winners optimize for avg win/avg loss ratio, NOT win rate. A 40% WR with 3:1 R:R beats 60% WR with 1:1.
+                    </div>
+                </div>
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:#a855f7;margin-bottom:0.5rem;">Danelfin AI Platform (Best Comparison)</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        <strong>Method:</strong> 10,000 features/stock/day, 900+ indicators (600 technical + 150 fundamental + 150 sentiment).<br>
+                        <strong>Architecture:</strong> Hundreds of decision trees, recalibrated daily.<br>
+                        <strong>Results:</strong> 60%+ WR on Buy signals since 2017. +376% cumulative (vs +166% S&amp;P 500).<br>
+                        <strong>10/10 stocks:</strong> +21.05% annualized alpha after 3 months.<br>
+                        <strong>Takeaway:</strong> Structured decision trees &gt; simple voting.
+                    </div>
+                </div>
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:#a855f7;margin-bottom:0.5rem;">Ensemble/Consensus Research</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        <strong>FinRL Competition (200+ teams):</strong> Ensembles reduced drawdown by 4.17%, improved Sharpe by 0.21.<br>
+                        <strong>Optimal ensemble size:</strong> 3-5 diverse models (diminishing returns after 7).<br>
+                        <strong>Diversity &gt; quantity:</strong> 5 different strategy types beats 20 momentum variants.<br>
+                        <strong>IC-weighted:</strong> Rolling accuracy weighting achieved +16.63% return vs +6.03% benchmark.<br>
+                        <strong>Critical:</strong> Ensembling poor strategies does NOT create edge. Each must have some individual edge.
+                    </div>
+                </div>
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:#a855f7;margin-bottom:0.5rem;">Exit Strategy Research (567K Backtests)</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        <strong>Best exits (ranked):</strong> Stop &amp; Reverse &gt; Dollar Target &gt; Breakeven Stops.<br>
+                        <strong>Simpler beats complex:</strong> Parabolic, Chandelier, and combo exits all underperformed simple ones.<br>
+                        <strong>2M backtest study:</strong> Take Profit has 56.9% WR (highest) but caps upside. Holding has highest expectancy.<br>
+                        <strong>Triple Barrier Method:</strong> TP/SL/Time stop &mdash; whichever hits first closes. Prevents overfitting.<br>
+                        <strong>Daily bars outperformed</strong> all shorter timeframes in exit effectiveness.
+                    </div>
+                </div>
+            </div>
+
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#a855f7;">Validated Strategy Win Rates</h4>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:1rem;">
+                <table style="width:100%;font-size:12px;border-collapse:collapse;">
+                    <thead><tr style="border-bottom:1px solid var(--border);">
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Strategy</th>
+                        <th style="text-align:center;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Win Rate</th>
+                        <th style="text-align:center;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Profit Factor</th>
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Notes</th>
+                    </tr></thead>
+                    <tbody style="color:var(--text);">
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">RSI(2) &lt; 10 + 200 SMA filter</td><td style="padding:6px 8px;text-align:center;color:var(--green);">90%</td><td style="padding:6px 8px;text-align:center;">5.0</td><td style="padding:6px 8px;color:var(--text-dim);">83 trades since 1993, very selective</td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">RSI mean reversion (QQQ)</td><td style="padding:6px 8px;text-align:center;color:var(--green);">75%</td><td style="padding:6px 8px;text-align:center;">3.0</td><td style="padding:6px 8px;color:var(--text-dim);">Sharpe 2.85, 232 trades</td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Danelfin AI (10/10 score)</td><td style="padding:6px 8px;text-align:center;color:var(--green);">60%+</td><td style="padding:6px 8px;text-align:center;">N/A</td><td style="padding:6px 8px;color:var(--text-dim);">+21% alpha, 900+ indicators</td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Multi-factor ML (IC-weighted)</td><td style="padding:6px 8px;text-align:center;color:var(--green);">N/A</td><td style="padding:6px 8px;text-align:center;">2.7+</td><td style="padding:6px 8px;color:var(--text-dim);">+16.63% return, 5.44% max DD</td></tr>
+                        <tr><td style="padding:6px 8px;">Professional swing traders</td><td style="padding:6px 8px;text-align:center;color:var(--yellow);">35-50%</td><td style="padding:6px 8px;text-align:center;">1.5-2.5</td><td style="padding:6px 8px;color:var(--text-dim);">With 3:1 R:R still highly profitable</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p style="font-size:0.75rem;color:var(--text-dim);line-height:1.6;margin-bottom:1rem;">
+                <strong>Sources:</strong> US Investing Championship (worldcupchampionships.com), Danelfin.com, FinRL ACM ICAIF 2024, KJ Trading Systems (567K backtests), Oleg Polakow (2M backtests), BuildAlpha, QuantConnect, Journal of Big Data, IEEE SVM multi-factor study, Reddit r/algotrading, r/stocks.
+            </p>
         </div>
 
         <!-- Data Sources & Transparency -->

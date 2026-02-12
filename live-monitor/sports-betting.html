@@ -536,7 +536,7 @@
                     </div>
                     <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:0.8rem;">
                         <div style="font-weight:600;color:#f59e0b;margin-bottom:0.4rem;">Database Finding: Sports DB Empty</div>
-                        <div style="font-size:0.78rem;color:#889;">The dedicated <code>ejaguiar1_sportsbet</code> database has zero tables. All data lives in the fallback database (<code>ejaguiar1_stocks</code>) via the PHP fallback logic in <code>sports_db_connect.php</code>. The pipeline works, but the intended dedicated database was never populated with schema.</div>
+                        <div style="font-size:0.78rem;color:#889;">The dedicated sports database had zero tables. All data was living in the fallback database via the PHP fallback logic in <code>sports_db_connect.php</code>. The pipeline works, but the intended dedicated database was never populated with schema.</div>
                     </div>
                     <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);border-radius:8px;padding:0.8rem;">
                         <div style="font-weight:600;color:#3b82f6;margin-bottom:0.4rem;">ML Finding: Script Was Disconnected</div>
@@ -549,6 +549,32 @@
             <div style="background:var(--bg-card);border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
                 <div id="ml-status-content" style="font-size:0.85rem;color:#889;">
                     <p>Loading ML status...</p>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#14b8a6;margin-top:1.5rem;">📡 Sports Scrapers — Data Pipeline (Live)</h3>
+            <div style="background:var(--bg-card);border:1px solid rgba(20,184,166,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+                <p style="font-size:0.85rem;color:#e0e0f0;margin-bottom:0.8rem;"><strong>Comprehensive scraping pipeline is now operational across 4 major sports:</strong></p>
+                <div id="scraper-status-content" style="margin-bottom:1rem;">
+                    <p style="font-size:0.78rem;color:#889;">Loading scraper status...</p>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
+                    <div style="background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#14b8a6;margin-bottom:0.3rem;">16 Scraper Tables</div>
+                        <div style="font-size:0.78rem;color:#889;">Each sport creates 4 tables: <code>lm_{sport}_odds</code>, <code>lm_{sport}_team_stats</code>, <code>lm_{sport}_injuries</code>, <code>lm_{sport}_schedule</code>. Plus <code>lm_scraper_log</code> and <code>lm_cron_log</code> for monitoring.</div>
+                    </div>
+                    <div style="background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#14b8a6;margin-bottom:0.3rem;">ESPN Multi-Source</div>
+                        <div style="font-size:0.78rem;color:#889;">ESPN JSON APIs for standings &amp; scoreboard, ESPN HTML for odds lines &amp; injuries. Runs every 2 hours via GitHub Actions cron. Weather module (NOAA + OpenWeatherMap) for outdoor sports.</div>
+                    </div>
+                    <div style="background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#14b8a6;margin-bottom:0.3rem;">ML Integration</div>
+                        <div style="font-size:0.78rem;color:#889;">Scraper data feeds into ML scoring as 5 new features: <code>home_win_pct</code>, <code>away_win_pct</code>, <code>team_wp_diff</code>, <code>home_streak_val</code>, and <code>home_injury_count</code>. Both PHP heuristic and Python ensemble use these.</div>
+                    </div>
+                    <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#f59e0b;margin-bottom:0.3rem;">Known Issues</div>
+                        <div style="font-size:0.78rem;color:#889;"><strong>Injury team mapping:</strong> ESPN HTML parses position (F/G/C) into team field instead of team name. <strong>Odds HTML:</strong> Only away team captured; home team field empty. <strong>Single source:</strong> ESPN only &mdash; no failover chain yet. These are on the fix list.</div>
+                    </div>
                 </div>
             </div>
 
@@ -568,11 +594,15 @@
                 </div>
                 <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
                     <div class="glossary-term"><span class="badge badge-red">ODDS API LIMITS</span></div>
-                    <div class="glossary-def"><strong>500 Credits/Month</strong> — The free tier of The Odds API limits us to 500 API calls per month. Data refreshes every 2-3 hours (not real-time). During high-volume periods, we may miss line movements or have stale data.</div>
+                    <div class="glossary-def"><strong>500 Credits/Month</strong> — The free tier of The Odds API limits us to 500 API calls per month. Data refreshes every 2-3 hours (not real-time). Scrapers reduce dependence by providing team stats/standings without using Odds API credits.</div>
                 </div>
                 <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
-                    <div class="glossary-term"><span class="badge badge-red">SPORT-SPECIFIC GAPS</span></div>
-                    <div class="glossary-def"><strong>Missing Key Factors</strong> — No weather integration (NFL/MLB), no umpire/referee tracking, no starting pitcher analysis (MLB), no travel distance modeling, no altitude effects (NBA/NHL in Denver), and limited live betting capability.</div>
+                    <div class="glossary-term"><span class="badge badge-red">SCRAPER DATA GAPS</span></div>
+                    <div class="glossary-def"><strong>Injury &amp; Odds Parsing Bugs</strong> — ESPN HTML scraping has known issues: injury team field stores position code instead of team name, odds scraper only captures away team. These reduce ML feature quality. Fix requires restructuring the ESPN HTML parser to extract section headers for team context.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                    <div class="glossary-term"><span class="badge badge-red">SINGLE DATA SOURCE</span></div>
+                    <div class="glossary-def"><strong>ESPN Only — No Failover</strong> — All 4 scrapers depend solely on ESPN. If ESPN changes their page structure or blocks our requests, we lose all team intelligence. Need to add Basketball Reference, NBA.com, CBS Sports, and Yahoo Sports as failover sources.</div>
                 </div>
                 <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
                     <div class="glossary-term"><span class="badge badge-red">MARKET EFFICIENCY</span></div>
@@ -598,12 +628,20 @@
                     <div class="glossary-term"><span class="badge badge-green">PHASE 4: ENSEMBLE ✅</span></div>
                     <div class="glossary-def"><strong>Hybrid System Active</strong> — Rule-based algorithm generates candidates &rarr; ML filter scores win probability &rarr; Only bets where ML says "take" AND EV &gt; 3% AND odds &lt; 6.0 are placed. Pipeline: GitHub Actions &rarr; PHP endpoint &rarr; Python model. 45 bets approved, heavy underdogs filtered out.</div>
                 </div>
+                <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                    <div class="glossary-term"><span class="badge badge-green">PHASE 5: SCRAPERS ✅</span></div>
+                    <div class="glossary-def"><strong>Multi-Sport Data Pipeline</strong> — Comprehensive scrapers deployed for NBA, NHL, NFL, MLB. 16 tables across 4 sports track standings, odds, injuries, and schedules from ESPN APIs + HTML. Integrated into both PHP heuristic (Factor 8) and Python ML (5 new features). Runs automatically via GitHub Actions every 2 hours. Weather module available for outdoor sports.</div>
+                </div>
                 <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
-                    <div class="glossary-term"><span class="badge badge-blue">PHASE 5: REAL-TIME</span></div>
+                    <div class="glossary-term"><span class="badge badge-blue">PHASE 6: FAILOVER SOURCES</span></div>
+                    <div class="glossary-def"><strong>Multi-Source Data Redundancy</strong> — Add Basketball Reference, NBA.com Stats, CBS Sports, Yahoo Sports as failover scrapers behind ESPN. Fix injury team-name parsing bug. Add BallDontLie API and API-Sports free tier. Target: 4-5 sources per sport cascading on failure.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
+                    <div class="glossary-term"><span class="badge badge-blue">PHASE 7: REAL-TIME</span></div>
                     <div class="glossary-def"><strong>Live Betting &amp; WebSockets</strong> — Upgrade to paid Odds API tier for real-time odds. Add line movement alerts, arbitrage detection, and live betting opportunities. Current 2-3 hour delay is too slow for sharp markets.</div>
                 </div>
                 <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
-                    <div class="glossary-term"><span class="badge badge-blue">PHASE 6: SELF-LEARNING</span></div>
+                    <div class="glossary-term"><span class="badge badge-blue">PHASE 8: SELF-LEARNING</span></div>
                     <div class="glossary-def"><strong>Adaptive Algorithm</strong> — Similar to our stock trading "Learned vs Original" system, track two versions: original static parameters vs. ML-tuned parameters. Auto-switch to better-performing version per sport/market. Walk-forward backtesting validates model before deployment.</div>
                 </div>
             </div>
@@ -639,8 +677,8 @@
                         <div style="font-size:0.78rem;color:#889;">4 base models (RandomForest, GradientBoosting, XGBoost, LightGBM) feed predictions into a calibrated LogisticRegression meta-learner. Platt scaling ensures well-calibrated probabilities.</div>
                     </div>
                     <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
-                        <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">30+ Features</div>
-                        <div style="font-size:0.78rem;color:#889;">Engineered from raw data: EV%, odds structure, sport encoding, market type, consensus strength, rolling win rate, rolling ROI, time-to-game, bankroll %, situation score, Canadian book flag, and more.</div>
+                        <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">35+ Features</div>
+                        <div style="font-size:0.78rem;color:#889;">Engineered from raw data: EV%, odds structure, sport encoding, market type, consensus strength, rolling win rate, rolling ROI, time-to-game, bankroll %, situation score, Canadian book flag, <strong>plus 5 scraper features</strong>: team win%, win% differential, streak momentum, goal/point differential, and injury count.</div>
                     </div>
                     <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
                         <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Heavy Underdog Filter</div>
@@ -663,9 +701,10 @@
                 <p style="font-size:0.85rem;color:#e0e0f0;margin-bottom:0.5rem;"><strong>Current Pipeline (Live in GitHub Actions):</strong></p>
                 <ol style="font-size:0.85rem;color:#889;margin-left:1.5rem;">
                     <li>Odds refresh from The Odds API (9 Canadian-legal books) &rarr; stored in <code>lm_sports_odds</code></li>
+                    <li style="color:#14b8a6;"><strong>Sports scrapers run</strong> (NBA, NHL, NFL, MLB) &rarr; team stats, injuries, schedules into 16 tables</li>
                     <li>ESPN intelligence fetch (injuries, standings, schedules) &rarr; situation scoring</li>
                     <li>Value bet analysis (EV calculation, vig removal, line shopping)</li>
-                    <li style="color:#a855f7;"><strong>ML Filter scores each value bet</strong> (PHP heuristic now, full ensemble at 20+ bets)</li>
+                    <li style="color:#a855f7;"><strong>ML Filter scores each value bet</strong> (PHP Factor 8 uses scraper data; full ensemble at 20+ bets)</li>
                     <li>Daily picks generated from ML-approved bets only</li>
                     <li>Auto-placement with quarter-Kelly sizing + circuit breakers</li>
                     <li>Auto-settlement via ESPN scores API</li>
@@ -675,8 +714,8 @@
 
             <div style="margin-top:1.5rem;padding:1rem;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:12px;">
                 <div style="font-weight:600;color:#22c55e;margin-bottom:0.5rem;">💡 Bottom Line</div>
-                <p style="font-size:0.85rem;color:#889;">This system has moved from <em>theory</em> to <em>active validation</em>. The ML pipeline, feature engineering, heavy underdog filter, and CLV tracking are all deployed. The critical remaining step is <strong>data accumulation</strong> -- we need 20+ settled bets for the full ML model to activate, and 500+ for statistically significant validation.</p>
-                <p style="font-size:0.85rem;color:#889;margin-top:0.5rem;">Current ROI is +19.87% but based on only 9 bets. The heavy underdog filter should meaningfully improve win rate going forward. Check the Performance tab for live tracking.</p>
+                <p style="font-size:0.85rem;color:#889;">This system has moved from <em>theory</em> to <em>active validation</em>. The ML pipeline, feature engineering, heavy underdog filter, CLV tracking, and now <strong>comprehensive sports scrapers</strong> are all deployed. The scraper integration adds real team performance data (win%, streaks, injuries, goal differential) directly into ML scoring — no longer relying solely on odds data.</p>
+                <p style="font-size:0.85rem;color:#889;margin-top:0.5rem;">Current ROI is +19.87% but based on only 9 bets. The heavy underdog filter + scraper intelligence should meaningfully improve win rate going forward. Critical next steps: fix injury parsing, add failover data sources, and accumulate 20+ settled bets for full ML activation. Check the Performance tab for live tracking.</p>
             </div>
         </div>
         <div class="tab-panel" id="tab-research">
@@ -1178,7 +1217,7 @@ function switchTab(tab) {
     if (tab === 'bets') loadBets('active');
     if (tab === 'performance') fetchPerformance();
     if (tab === 'history') fetchPickHistory();
-    if (tab === 'analysis') fetchMLStatus();
+    if (tab === 'analysis') { fetchMLStatus(); fetchScraperStatus(); }
     // Persist tab state for back-navigation
     try { sessionStorage.setItem('sports_tab', tab); } catch(e) {}
 }

@@ -721,6 +721,29 @@
         .sys-health-note{font-size:11px;color:var(--text-dim);margin-top:10px;line-height:1.6;padding-top:10px;border-top:1px solid rgba(255,255,255,0.05)}
         .flaw-item{display:flex;gap:8px;margin:8px 0;font-size:12px;line-height:1.5;color:#ccc}
         .flaw-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+
+        /* ===== ANALYSIS & RESEARCH TAB STYLES ===== */
+        .glossary-item {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1rem; transition: border-color 0.2s;
+        }
+        .glossary-item:hover { border-color: var(--accent); }
+        .glossary-term {
+            font-weight: 700; font-size: 0.95rem; color: var(--accent);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem;
+        }
+        .glossary-def { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; }
+        .glossary-def strong { color: var(--text); }
+        .grade-explainer {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 0.7rem 1rem;
+            margin-bottom: 1rem; font-size: 0.8rem; color: var(--text-dim);
+            line-height: 1.6;
+        }
+        .grade-explainer strong { color: var(--text); }
+        .grade-explainer .ge-title { color: var(--accent); font-weight: 700; margin-bottom: 0.3rem; }
+        .badge-orange { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+        .badge-purple { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
     </style>
 </head>
 <body>
@@ -822,6 +845,8 @@
         <button class="tab-btn" onclick="switchTab('positions')">Positions</button>
         <button class="tab-btn" onclick="switchTab('discovery')">Discovery</button>
         <button class="tab-btn" onclick="switchTab('performance')">Performance</button>
+        <button class="tab-btn" onclick="switchTab('analysis')" style="color:#f59e0b;">System Analysis</button>
+        <button class="tab-btn" onclick="switchTab('research')" style="color:#a855f7;">Research &amp; Future</button>
     </div>
 
     <!-- ============================================================== -->
@@ -1104,6 +1129,303 @@
         </div>
     </div>
 
+    <!-- ============================================================== -->
+    <!-- TAB 6: SYSTEM ANALYSIS                                         -->
+    <!-- ============================================================== -->
+    <div class="tab-panel" id="tab-analysis">
+        <div class="section-title" style="color:#f59e0b;border-bottom-color:rgba(245,158,11,0.3);">
+            <span>System Analysis <span class="badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);">DIAGNOSIS</span></span>
+        </div>
+
+        <!-- Status / Issues / Strengths cards -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem;">
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+                <h4 style="font-size:0.85rem;color:var(--yellow);margin-bottom:0.5rem;">Current Status</h4>
+                <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                    &bull; Real-time multi-asset paper trading<br>
+                    &bull; <strong style="color:var(--text)">14 crypto</strong> pairs, <strong style="color:var(--text)">10 forex</strong> pairs, <strong style="color:var(--text)">12 stocks</strong><br>
+                    &bull; $10K starting capital, 5% position sizing ($500/trade)<br>
+                    &bull; 20 algorithms active with regime gating<br>
+                    &bull; 12 closed trades, 58.33% WR, $45.58 PnL<br>
+                    &bull; Profit factor: 2.61
+                </div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);padding:1.2rem;">
+                <h4 style="font-size:0.85rem;color:var(--red);margin-bottom:0.5rem;">Issues Identified</h4>
+                <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                    &bull; <strong>Tiny sample:</strong> Only 12 closed trades &mdash; no statistical significance<br>
+                    &bull; <strong>Zero overlap:</strong> Top backtested algos not deployed forward<br>
+                    &bull; <strong>No walk-forward:</strong> No out-of-sample validation pipeline<br>
+                    &bull; <strong>No ensemble weighting:</strong> All 20 algos treated equally<br>
+                    &bull; <strong>Fixed sizing:</strong> 5% flat, no EGARCH volatility adjustment<br>
+                    &bull; <strong>Some algos at 0% WR:</strong> Consensus, RSI Reversal still losing
+                </div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid rgba(34,197,94,0.3);border-radius:var(--radius);padding:1.2rem;">
+                <h4 style="font-size:0.85rem;color:var(--green);margin-bottom:0.5rem;">What's Working</h4>
+                <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                    &bull; Multi-asset diversification (crypto + forex + stocks)<br>
+                    &bull; 20 algorithms with regime gating on 19/20<br>
+                    &bull; ML grid search parameter learning is ACTIVE<br>
+                    &bull; Transparent P&amp;L with real-time monitoring<br>
+                    &bull; Automated exit rules (TP/SL/max-hold)<br>
+                    &bull; Sector concentration cap (max 3 per sector)
+                </div>
+            </div>
+        </div>
+
+        <!-- Algorithm Performance Breakdown -->
+        <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#f59e0b;">Algorithm Performance Breakdown (Forward)</h4>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:1.5rem;">
+            <table style="width:100%;font-size:12px;border-collapse:collapse;">
+                <thead><tr style="border-bottom:1px solid var(--border);">
+                    <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Algorithm</th>
+                    <th style="text-align:center;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Win Rate</th>
+                    <th style="text-align:center;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">PnL</th>
+                    <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Status</th>
+                </tr></thead>
+                <tbody style="color:var(--text);">
+                    <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Ichimoku Cloud</td><td style="padding:6px 8px;text-align:center;color:var(--green);">80%</td><td style="padding:6px 8px;text-align:center;color:var(--green);">+$44.97</td><td style="padding:6px 8px;"><span class="badge badge-green">TOP</span></td></tr>
+                    <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">StochRSI Crossover</td><td style="padding:6px 8px;text-align:center;color:var(--green);">100%</td><td style="padding:6px 8px;text-align:center;color:var(--green);">+$16.39</td><td style="padding:6px 8px;"><span class="badge badge-green">TOP</span></td></tr>
+                    <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">MACD Divergence</td><td style="padding:6px 8px;text-align:center;color:var(--text-dim);">--</td><td style="padding:6px 8px;text-align:center;color:var(--text-dim);">--</td><td style="padding:6px 8px;"><span class="badge badge-yellow">LEARNING</span></td></tr>
+                    <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Consensus</td><td style="padding:6px 8px;text-align:center;color:var(--red);">0%</td><td style="padding:6px 8px;text-align:center;color:var(--red);">-$3.28</td><td style="padding:6px 8px;"><span class="badge badge-red">WORST</span></td></tr>
+                    <tr><td style="padding:6px 8px;">RSI Reversal</td><td style="padding:6px 8px;text-align:center;color:var(--red);">0%</td><td style="padding:6px 8px;text-align:center;color:var(--red);">-$0.17</td><td style="padding:6px 8px;"><span class="badge badge-red">WORST</span></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ML / Parameter Learning -->
+        <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#f59e0b;">ML Parameter Learning Status</h4>
+        <div class="grade-explainer" style="border-left:3px solid #f59e0b;">
+            <div class="ge-title" style="color:#f59e0b;">Grid Search Learning: ACTIVE</div>
+            <strong>Ichimoku learned:</strong> TP 8.5% (was 5%), SL 5% (was 2.5%). <strong>StochRSI learned:</strong> TP 7.75% (was 5%).
+            Total signals: <strong>2,491 learned</strong> vs 500 original. The system is adapting parameters based on forward trade outcomes, but only grid search is used &mdash; no full ML pipeline (gradient boosting, neural nets) yet.
+        </div>
+
+        <!-- Architecture -->
+        <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#f59e0b;">System Architecture</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem;">
+            <div class="glossary-item" style="border-left:3px solid var(--blue);">
+                <div class="glossary-term">Data Sources <span class="badge badge-blue">LIVE</span></div>
+                <div class="glossary-def">
+                    <strong>FreeCryptoAPI</strong> &mdash; 14 crypto pairs (BTC, ETH, SOL, etc.)<br>
+                    <strong>TwelveData</strong> &mdash; 10 forex pairs (EUR/USD, GBP/USD, etc.)<br>
+                    <strong>Finnhub</strong> &mdash; 12 stock tickers (AAPL, MSFT, TSLA, etc.)
+                </div>
+            </div>
+            <div class="glossary-item" style="border-left:3px solid var(--purple);">
+                <div class="glossary-term">Signal Pipeline <span class="badge badge-purple">20 ALGOS</span></div>
+                <div class="glossary-def">
+                    Prices &rarr; <strong>live_signals.php</strong> &rarr; lm_signals table &rarr; <strong>live_trade.php</strong> &rarr; lm_trades table. Each algorithm scores independently. Regime gate filters out counter-trend signals.
+                </div>
+            </div>
+            <div class="glossary-item" style="border-left:3px solid var(--green);">
+                <div class="glossary-term">Risk Management <span class="badge badge-green">ACTIVE</span></div>
+                <div class="glossary-def">
+                    5% position sizing, 10 max concurrent positions, auto stop-loss &amp; take-profit, max-hold time limit, sector concentration cap (max 3), circuit breakers for drawdown protection.
+                </div>
+            </div>
+        </div>
+
+        <!-- 20 Algorithms -->
+        <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#f59e0b;">The 20 Algorithms</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.6rem;margin-bottom:1.5rem;">
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--green);"><div style="font-size:12px;font-weight:700;color:var(--text);">1. Ichimoku Cloud</div><div style="font-size:11px;color:var(--text-dim);">Trend + momentum</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--green);"><div style="font-size:12px;font-weight:700;color:var(--text);">2. StochRSI Crossover</div><div style="font-size:11px;color:var(--text-dim);">Momentum oscillator</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--blue);"><div style="font-size:12px;font-weight:700;color:var(--text);">3. MACD Divergence</div><div style="font-size:11px;color:var(--text-dim);">Trend reversal</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--red);"><div style="font-size:12px;font-weight:700;color:var(--text);">4. RSI Reversal</div><div style="font-size:11px;color:var(--text-dim);">Mean reversion</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--blue);"><div style="font-size:12px;font-weight:700;color:var(--text);">5. Bollinger Squeeze</div><div style="font-size:11px;color:var(--text-dim);">Volatility breakout</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--blue);"><div style="font-size:12px;font-weight:700;color:var(--text);">6. Volume Breakout</div><div style="font-size:11px;color:var(--text-dim);">Volume + price</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--blue);"><div style="font-size:12px;font-weight:700;color:var(--text);">7. EMA Crossover</div><div style="font-size:11px;color:var(--text-dim);">Trend following</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--blue);"><div style="font-size:12px;font-weight:700;color:var(--text);">8. Support/Resistance</div><div style="font-size:11px;color:var(--text-dim);">Key price levels</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--blue);"><div style="font-size:12px;font-weight:700;color:var(--text);">9. VWAP Deviation</div><div style="font-size:11px;color:var(--text-dim);">Institutional flow</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--blue);"><div style="font-size:12px;font-weight:700;color:var(--text);">10. OBV Trend</div><div style="font-size:11px;color:var(--text-dim);">Volume confirmation</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--blue);"><div style="font-size:12px;font-weight:700;color:var(--text);">11. ADX Trend</div><div style="font-size:11px;color:var(--text-dim);">Trend strength</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--blue);"><div style="font-size:12px;font-weight:700;color:var(--text);">12. Parabolic SAR</div><div style="font-size:11px;color:var(--text-dim);">Trend reversal</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--blue);"><div style="font-size:12px;font-weight:700;color:var(--text);">13. Keltner Channel</div><div style="font-size:11px;color:var(--text-dim);">Volatility bands</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--blue);"><div style="font-size:12px;font-weight:700;color:var(--text);">14. Fibonacci Retrace</div><div style="font-size:11px;color:var(--text-dim);">Key levels</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--blue);"><div style="font-size:12px;font-weight:700;color:var(--text);">15. Williams %R</div><div style="font-size:11px;color:var(--text-dim);">Overbought/oversold</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--blue);"><div style="font-size:12px;font-weight:700;color:var(--text);">16. CCI Divergence</div><div style="font-size:11px;color:var(--text-dim);">Commodity channel</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--blue);"><div style="font-size:12px;font-weight:700;color:var(--text);">17. Stochastic Momentum</div><div style="font-size:11px;color:var(--text-dim);">SMI oscillator</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--orange);"><div style="font-size:12px;font-weight:700;color:var(--text);">18. Alpha Predator</div><div style="font-size:11px;color:var(--text-dim);">Multi-signal fusion</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--orange);"><div style="font-size:12px;font-weight:700;color:var(--text);">19. VAM</div><div style="font-size:11px;color:var(--text-dim);">Volume-adjusted momentum</div></div>
+            <div class="glossary-item" style="padding:0.7rem;border-left:3px solid var(--purple);"><div style="font-size:12px;font-weight:700;color:var(--text);">20. Challenger Bot</div><div style="font-size:11px;color:var(--text-dim);">Smart money consensus</div></div>
+        </div>
+
+        <!-- World-Class Comparison -->
+        <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#f59e0b;">World-Class Comparison</h4>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:1.5rem;">
+            <table style="width:100%;font-size:12px;border-collapse:collapse;">
+                <thead><tr style="border-bottom:1px solid var(--border);">
+                    <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Metric</th>
+                    <th style="text-align:center;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Renaissance</th>
+                    <th style="text-align:center;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Two Sigma</th>
+                    <th style="text-align:center;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Citadel</th>
+                    <th style="text-align:center;padding:6px 8px;color:#f59e0b;font-size:11px;text-transform:uppercase;">Ours</th>
+                </tr></thead>
+                <tbody style="color:var(--text);">
+                    <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Sharpe Ratio</td><td style="padding:6px 8px;text-align:center;">3-6</td><td style="padding:6px 8px;text-align:center;">1.5-2.5</td><td style="padding:6px 8px;text-align:center;">2-4</td><td style="padding:6px 8px;text-align:center;color:var(--yellow);">TBD (12 trades)</td></tr>
+                    <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Annual Return</td><td style="padding:6px 8px;text-align:center;">66%</td><td style="padding:6px 8px;text-align:center;">15-30%</td><td style="padding:6px 8px;text-align:center;">20-40%</td><td style="padding:6px 8px;text-align:center;color:var(--yellow);">TBD</td></tr>
+                    <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Algorithms</td><td style="padding:6px 8px;text-align:center;">100+</td><td style="padding:6px 8px;text-align:center;">50-200</td><td style="padding:6px 8px;text-align:center;">100+</td><td style="padding:6px 8px;text-align:center;color:var(--green);">20</td></tr>
+                    <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">ML Pipeline</td><td style="padding:6px 8px;text-align:center;">Full</td><td style="padding:6px 8px;text-align:center;">Full</td><td style="padding:6px 8px;text-align:center;">Full</td><td style="padding:6px 8px;text-align:center;color:var(--yellow);">Grid search only</td></tr>
+                    <tr><td style="padding:6px 8px;">Risk Management</td><td style="padding:6px 8px;text-align:center;">EGARCH+VaR</td><td style="padding:6px 8px;text-align:center;">EGARCH+VaR</td><td style="padding:6px 8px;text-align:center;">Dynamic</td><td style="padding:6px 8px;text-align:center;color:var(--red);">Fixed 5%</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Target Benchmarks -->
+        <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#f59e0b;">Target Benchmarks</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;margin-bottom:1rem;">
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:0.8rem;text-align:center;">
+                <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;">Win Rate</div>
+                <div style="font-size:1.3rem;font-weight:700;color:var(--green);">58.33%</div>
+                <div style="font-size:10px;color:var(--text-dim);">Target: 50-65%</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:0.8rem;text-align:center;">
+                <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;">Profit Factor</div>
+                <div style="font-size:1.3rem;font-weight:700;color:var(--green);">2.61</div>
+                <div style="font-size:10px;color:var(--text-dim);">Target: &gt;1.5</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:0.8rem;text-align:center;">
+                <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;">Sharpe Ratio</div>
+                <div style="font-size:1.3rem;font-weight:700;color:var(--yellow);">TBD</div>
+                <div style="font-size:10px;color:var(--text-dim);">Target: &gt;1.5</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:0.8rem;text-align:center;">
+                <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;">Max Drawdown</div>
+                <div style="font-size:1.3rem;font-weight:700;color:var(--yellow);">&lt;20%</div>
+                <div style="font-size:10px;color:var(--text-dim);">Professional std</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:0.8rem;text-align:center;">
+                <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;">Min Trades</div>
+                <div style="font-size:1.3rem;font-weight:700;color:#06b6d4;">385</div>
+                <div style="font-size:10px;color:var(--text-dim);">95% confidence</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 7: RESEARCH & FUTURE                                       -->
+    <!-- ============================================================== -->
+    <div class="tab-panel" id="tab-research">
+        <div class="section-title" style="color:#a855f7;border-bottom-color:rgba(168,85,247,0.3);">
+            <span>Research &amp; Future <span class="badge" style="background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);">ROADMAP</span></span>
+        </div>
+
+        <!-- Academic Research -->
+        <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#a855f7;">Academic Foundations</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem;margin-bottom:1.5rem;">
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+                <h4 style="font-size:0.85rem;color:#a855f7;margin-bottom:0.5rem;">Systematic Trading</h4>
+                <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                    <strong>Narang (2013):</strong> &ldquo;Inside the Black Box&rdquo; &mdash; systematic trading requires alpha models, risk models, transaction cost models, and execution algorithms working together.<br>
+                    <strong>Key insight:</strong> No single alpha model is sufficient. Combining uncorrelated signals via ensemble methods dramatically improves risk-adjusted returns.
+                </div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+                <h4 style="font-size:0.85rem;color:#a855f7;margin-bottom:0.5rem;">Regime Detection</h4>
+                <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                    <strong>Hamilton (1989):</strong> Markov-switching models identify bull/bear/sideways regimes with high accuracy. Most strategies fail when deployed in the wrong regime.<br>
+                    <strong>Our status:</strong> Regime gating is active on 19/20 algos &mdash; this is a strong foundation, but currently uses simple SMA-based detection rather than HMM.
+                </div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+                <h4 style="font-size:0.85rem;color:#a855f7;margin-bottom:0.5rem;">Multi-Algorithm Ensembles</h4>
+                <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                    <strong>Dietterich (2000):</strong> Ensemble methods reduce variance and improve generalization. Combining diverse models outperforms any single model, provided individual models have some predictive edge.<br>
+                    <strong>Key insight:</strong> 3-5 diverse strategy families beats 20 correlated momentum variants.
+                </div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+                <h4 style="font-size:0.85rem;color:#a855f7;margin-bottom:0.5rem;">Position Sizing &amp; Risk</h4>
+                <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                    <strong>Kelly Criterion:</strong> Optimal bet sizing maximizes long-term growth rate. Quarter-Kelly is recommended for noisy estimates.<br>
+                    <strong>EGARCH (Nelson 1991):</strong> Volatility forecasting model that captures leverage effects &mdash; used by Renaissance, Two Sigma, and Citadel for dynamic position sizing.
+                </div>
+            </div>
+        </div>
+
+        <!-- Strategy Types -->
+        <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#a855f7;">Strategy Families Deployed</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:0.75rem;margin-bottom:1.5rem;">
+            <div class="glossary-item" style="border-left:3px solid var(--green);">
+                <div class="glossary-term">Trend Following</div>
+                <div class="glossary-def">Ichimoku, EMA Crossover, Parabolic SAR, ADX &mdash; ride momentum in the direction of the prevailing trend. <strong>Best in bull/bear regimes.</strong></div>
+            </div>
+            <div class="glossary-item" style="border-left:3px solid var(--blue);">
+                <div class="glossary-term">Mean Reversion</div>
+                <div class="glossary-def">RSI Reversal, Bollinger Squeeze, Williams %R, CCI Divergence &mdash; trade price snapping back to the mean. <strong>Best in sideways regimes.</strong></div>
+            </div>
+            <div class="glossary-item" style="border-left:3px solid var(--orange);">
+                <div class="glossary-term">Momentum Oscillators</div>
+                <div class="glossary-def">StochRSI, MACD, Stochastic Momentum &mdash; detect acceleration and deceleration in price movement. <strong>Works across regimes with filters.</strong></div>
+            </div>
+            <div class="glossary-item" style="border-left:3px solid var(--purple);">
+                <div class="glossary-term">Volume-Based</div>
+                <div class="glossary-def">Volume Breakout, OBV Trend, VWAP Deviation, VAM &mdash; confirm price moves with volume. <strong>High-confidence signals when aligned with price.</strong></div>
+            </div>
+            <div class="glossary-item" style="border-left:3px solid #06b6d4;">
+                <div class="glossary-term">Multi-Signal Fusion</div>
+                <div class="glossary-def">Alpha Predator, Consensus, Challenger Bot &mdash; combine multiple indicators into a single score. <strong>Highest conviction, lowest frequency.</strong></div>
+            </div>
+            <div class="glossary-item" style="border-left:3px solid var(--yellow);">
+                <div class="glossary-term">Key Level Trading</div>
+                <div class="glossary-def">Support/Resistance, Fibonacci Retracement, Keltner Channel &mdash; trade bounces and breakouts at structurally significant price levels.</div>
+            </div>
+        </div>
+
+        <!-- Walk-Forward Validation -->
+        <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#a855f7;">Walk-Forward Validation (Missing)</h4>
+        <div class="grade-explainer" style="border-left:3px solid #a855f7;">
+            <div class="ge-title" style="color:#a855f7;">Pardo (2008): The Evaluation and Optimization of Trading Strategies</div>
+            Walk-forward analysis trains on in-sample data, then tests on out-of-sample data, rolling the window forward. This is the <strong>gold standard</strong> for avoiding overfitting. Our system currently lacks this &mdash; the grid search parameter learning is a step in the right direction, but it does not partition data into train/test windows. <strong>Priority P2</strong> on the roadmap.
+        </div>
+
+        <!-- Future Priorities -->
+        <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#a855f7;">Future Priorities</h4>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:1.5rem;">
+            <table style="width:100%;font-size:12px;border-collapse:collapse;">
+                <thead><tr style="border-bottom:1px solid var(--border);">
+                    <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Priority</th>
+                    <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Improvement</th>
+                    <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Expected Impact</th>
+                    <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Status</th>
+                </tr></thead>
+                <tbody style="color:var(--text);">
+                    <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;color:#a855f7;font-weight:700;">P1</td><td style="padding:6px 8px;">Deploy top backtested algos via bridge</td><td style="padding:6px 8px;">Close backtest-forward gap</td><td style="padding:6px 8px;"><span class="badge badge-yellow">PLANNED</span></td></tr>
+                    <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;color:#a855f7;font-weight:700;">P2</td><td style="padding:6px 8px;">Walk-forward validation pipeline</td><td style="padding:6px 8px;">Eliminate overfitting</td><td style="padding:6px 8px;"><span class="badge badge-yellow">PLANNED</span></td></tr>
+                    <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;color:#a855f7;font-weight:700;">P3</td><td style="padding:6px 8px;">EGARCH volatility-based position sizing</td><td style="padding:6px 8px;">Dynamic risk adjustment</td><td style="padding:6px 8px;"><span class="badge badge-yellow">PLANNED</span></td></tr>
+                    <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;color:#a855f7;font-weight:700;">P4</td><td style="padding:6px 8px;">Ensemble weighting (IC-based)</td><td style="padding:6px 8px;">+16% return improvement</td><td style="padding:6px 8px;"><span class="badge badge-yellow">PLANNED</span></td></tr>
+                    <tr><td style="padding:6px 8px;color:#a855f7;font-weight:700;">P5</td><td style="padding:6px 8px;">Portfolio-level risk controller</td><td style="padding:6px 8px;">VaR/CVaR limits</td><td style="padding:6px 8px;"><span class="badge badge-yellow">PLANNED</span></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Benchmark Comparison -->
+        <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#a855f7;">Benchmark Gap Analysis</h4>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:1.5rem;">
+            <table style="width:100%;font-size:12px;border-collapse:collapse;">
+                <thead><tr style="border-bottom:1px solid var(--border);">
+                    <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Dimension</th>
+                    <th style="text-align:center;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">World-Class</th>
+                    <th style="text-align:center;padding:6px 8px;color:#a855f7;font-size:11px;text-transform:uppercase;">Ours</th>
+                    <th style="text-align:center;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Gap</th>
+                </tr></thead>
+                <tbody style="color:var(--text);">
+                    <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Sharpe Ratio</td><td style="padding:6px 8px;text-align:center;">2-6</td><td style="padding:6px 8px;text-align:center;color:var(--yellow);">TBD (12 trades)</td><td style="padding:6px 8px;text-align:center;"><span class="badge badge-red">HIGH</span></td></tr>
+                    <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Active Algos</td><td style="padding:6px 8px;text-align:center;">50-200</td><td style="padding:6px 8px;text-align:center;color:var(--green);">20</td><td style="padding:6px 8px;text-align:center;"><span class="badge badge-yellow">MED</span></td></tr>
+                    <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">ML Pipeline</td><td style="padding:6px 8px;text-align:center;">Full pipeline</td><td style="padding:6px 8px;text-align:center;color:var(--yellow);">Grid search only</td><td style="padding:6px 8px;text-align:center;"><span class="badge badge-red">HIGH</span></td></tr>
+                    <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Risk Sizing</td><td style="padding:6px 8px;text-align:center;">EGARCH + VaR</td><td style="padding:6px 8px;text-align:center;color:var(--red);">Fixed 5%</td><td style="padding:6px 8px;text-align:center;"><span class="badge badge-red">HIGH</span></td></tr>
+                    <tr><td style="padding:6px 8px;">Validation</td><td style="padding:6px 8px;text-align:center;">Walk-forward</td><td style="padding:6px 8px;text-align:center;color:var(--red);">None</td><td style="padding:6px 8px;text-align:center;"><span class="badge badge-red">HIGH</span></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p style="font-size:0.75rem;color:var(--text-dim);line-height:1.6;margin-bottom:1rem;">
+            <strong>Sources:</strong> Narang (2013) &ldquo;Inside the Black Box&rdquo;, Hamilton (1989) Markov Regime Switching, Dietterich (2000) Ensemble Methods, Nelson (1991) EGARCH, Pardo (2008) Walk-Forward Analysis, Kelly (1956) Optimal Sizing, FinRL ACM ICAIF 2024 Competition.
+        </p>
+    </div>
+
 </div><!-- /.container -->
 
 <!-- ===== GLOSSARY & EDUCATION ===== -->
@@ -1275,6 +1597,46 @@
 
 </div>
 
+<!-- ===== SYSTEM ANALYSIS ===== -->
+<div style="background:var(--bg-card);border:1px solid rgba(168,85,247,0.3);border-radius:var(--radius);padding:1.25rem;margin:0 1.5rem 1.5rem;">
+    <h3 style="font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;">
+        System Analysis
+        <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);">DIAGNOSIS</span>
+    </h3>
+    <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
+        <strong style="color:var(--text);">How the Live Monitor works:</strong><br>
+        Runs 20 algorithms (19 original + Challenger Bot) across 36 assets: 14 crypto (via FreeCryptoAPI), 10 forex pairs (via TwelveData), and 12 US stocks (via Finnhub). Each algorithm generates BUY/SHORT signals every 30 minutes during market hours using different technical strategies (RSI, MACD, Bollinger, momentum, mean reversion, etc.). Signals are paper-traded with $10K starting capital, 5% position sizing, max 10 concurrent positions, and automated stop-loss/take-profit/max-hold exit rules.<br><br>
+        <strong style="color:var(--text);">Key architecture:</strong><br>
+        &bull; <strong>Regime gate:</strong> 19 of 20 algorithms check market regime (bull/bear/sideways) before entering &mdash; prevents counter-trend trades<br>
+        &bull; <strong>Sector concentration cap:</strong> Max 3 positions per sector to prevent over-exposure<br>
+        &bull; <strong>Challenger Bot:</strong> 20th algorithm uses Smart Money consensus score (&ge;70 = BUY, &le;30 = SHORT) instead of technical indicators<br>
+        &bull; <strong>Self-learning:</strong> Parameters adapt via grid search optimization (see <a href="algo-performance.html">L vs O</a> for learned vs original comparison)<br><br>
+        <strong style="color:var(--text);">Current performance:</strong><br>
+        &bull; Paper trading results tracked in real-time &mdash; this is not a backtest<br>
+        &bull; Overall signal win rate: ~44.3% (below breakeven due to early-stage learning)<br>
+        &bull; Best asset class: Crypto (87.5% WR with learned parameters via L vs O system)<br>
+        &bull; Stock positions still accumulating data (first closures expected ~Feb 24)<br>
+        &bull; <a href="algo-performance.html" style="color:#ffd700;">L vs O (#1 PICK)</a> shows the only system delivering positive real returns
+    </div>
+</div>
+
+<!-- ===== DATA SOURCES ===== -->
+<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin:0 1.5rem 1.5rem;">
+    <h3 style="font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;">
+        Data Sources & Transparency
+        <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(234,179,8,0.15);color:#eab308;border:1px solid rgba(234,179,8,0.3);">LIVE</span>
+    </h3>
+    <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
+        <strong style="color:var(--text);">Where the numbers come from:</strong><br>
+        &bull; <strong>Live signals:</strong> <a href="api/live_signals.php" target="_blank">live_signals.php</a> &mdash; 20 algorithms, real-time signal generation<br>
+        &bull; <strong>Live prices:</strong> <a href="api/live_prices.php" target="_blank">live_prices.php</a> &mdash; crypto (FreeCryptoAPI), forex (TwelveData), stocks (Finnhub)<br>
+        &bull; <strong>Paper trades:</strong> <a href="api/live_signals.php?action=trades" target="_blank">live_signals.php?action=trades</a> &mdash; every position with entry/exit prices<br>
+        &bull; <strong>Algorithm performance:</strong> <a href="api/algo_performance.php?action=summary&days=30" target="_blank">algo_performance.php?action=summary</a> &mdash; learned vs original comparison<br>
+        &bull; <strong>Smart Money overlay:</strong> <a href="api/smart_money.php?action=consensus&ticker=BTC" target="_blank">smart_money.php</a> &mdash; consensus scores for Challenger Bot<br>
+        &bull; <strong>Regime detection:</strong> Market regime (bull/bear/sideways) calculated from 50/200-day MA crossover
+    </div>
+</div>
+
 <!-- ===== FOOTER ===== -->
 <div class="footer">
     <p>Live Trading Monitor &mdash; findtorontoevents.ca &mdash; Paper Trading Simulation</p>
@@ -1318,7 +1680,7 @@ function toggleEdu(el){var b=el.nextElementSibling,a=el.querySelector('.edu-arro
             panels[j].classList.remove('active');
         }
         // Map tab names
-        var map = { prices: 0, signals: 1, positions: 2, discovery: 3, performance: 4 };
+        var map = { prices: 0, signals: 1, positions: 2, discovery: 3, performance: 4, analysis: 5, research: 6 };
         var idx = map[tabName];
         if (idx !== undefined) {
             btns[idx].classList.add('active');

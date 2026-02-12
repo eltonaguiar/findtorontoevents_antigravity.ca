@@ -198,6 +198,22 @@
         .badge-yellow { background: var(--yellow-dim); color: var(--yellow); }
         .badge-blue { background: rgba(59, 130, 246, 0.15); color: var(--blue); }
         .badge-purple { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+        .badge-orange { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+
+        /* Grade Explainer */
+        .grade-explainer {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.5rem;
+            font-size: 0.85rem; color: var(--text-dim); line-height: 1.6;
+        }
+        .ge-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+
+        /* Section titles & Glossary grid */
+        .section-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
+        .glossary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .glossary-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; }
+        .glossary-term { margin-bottom: 0.5rem; }
+        .glossary-def { font-size: 0.82rem; color: var(--text-dim); line-height: 1.6; }
 
         /* Stars */
         .stars { color: #eab308; letter-spacing: 1px; }
@@ -231,6 +247,28 @@
         <div style="background:rgba(136,136,170,0.08);border:1px solid rgba(136,136,170,0.3);border-radius:12px;padding:10px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;">
             <span style="background:rgba(136,136,170,0.15);color:#8888aa;padding:3px 10px;border-radius:6px;font-weight:800;font-size:11px;border:1px solid rgba(136,136,170,0.3);letter-spacing:0.5px;">BEST MF</span>
             <span style="color:#8888aa;">No forward-facing outcome tracking. 45 picks generated, 0 tracked with real results. Backtests only. Forward tracking needs to be built.</span>
+        </div>
+
+        <!-- System Analysis -->
+        <div style="background:var(--bg-card);border:1px solid rgba(168,85,247,0.3);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem;">
+            <h3 style="font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;">
+                System Analysis
+                <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);">DIAGNOSIS</span>
+            </h3>
+            <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
+                <strong style="color:var(--text);">How fund screening works:</strong><br>
+                Mutual funds are screened from Yahoo Finance using criteria including: trailing returns (1yr, 3yr, 5yr), expense ratio (MER), fund category, and Morningstar rating where available. Picks are generated based on trailing performance combined with risk metrics (standard deviation, Sharpe ratio approximation). Currently supports Canadian and US-listed mutual funds and ETFs.<br><br>
+                <strong style="color:var(--text);">Current status &mdash; critical gap:</strong><br>
+                &bull; 45 picks have been generated but <strong style="color:#ef4444;">zero have forward-facing outcome tracking</strong><br>
+                &bull; No entry prices recorded, no daily NAV refresh, no win/loss determination<br>
+                &bull; Without forward tracking, this system provides screening only &mdash; not performance data<br>
+                &bull; Backtests exist but are inherently biased (survivorship bias, look-ahead bias)<br><br>
+                <strong style="color:var(--text);">Platform comparison:</strong><br>
+                &bull; <strong style="color:#8888aa;">This system: No forward tracking</strong> &mdash; cannot verify if picks outperform index funds<br>
+                &bull; <a href="/findstocks/portfolio2/consolidated.html">Consolidated Stocks</a> &mdash; full forward tracking (65 positions, daily price refresh)<br>
+                &bull; <a href="/live-monitor/algo-performance.html">L vs O</a> &mdash; real closed trades with verified P&amp;L<br>
+                &bull; Building forward-facing tracking for mutual funds is a top-priority roadmap item
+            </div>
         </div>
 
         <!-- Data Sources & Transparency -->
@@ -303,6 +341,8 @@
             <div class="tab" data-tab="portfolios">Portfolio Templates</div>
             <div class="tab" data-tab="picks">Fund Picks</div>
             <div class="tab" data-tab="history">Backtest History</div>
+            <div class="tab" data-tab="analysis" style="color:#f59e0b;">System Analysis</div>
+            <div class="tab" data-tab="research" style="color:#a855f7;">Research &amp; Future</div>
         </div>
 
         <!-- TAB: What-If Analysis -->
@@ -561,6 +601,396 @@
                 </div>
             </div>
         </div>
+
+        <!-- ═══════════ TAB: System Analysis ═══════════ -->
+        <div class="tab-content" id="tab-analysis">
+            <div class="grade-explainer" style="background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(239,68,68,0.08));border-color:rgba(245,158,11,0.3);">
+                <div class="ge-title" style="color:#f59e0b;">Honest System Assessment -- Mutual Funds Portfolio</div>
+                This page provides complete transparency about our mutual fund analysis system's current state, known limitations, and planned improvements. We believe in honest disclosure -- this system has no forward-facing performance tracking whatsoever. All analysis is based on backtested scenarios using historical NAV data from Yahoo Finance.
+            </div>
+
+            <h3 class="section-title" style="color:#22c55e;">Current Strengths</h3>
+            <div class="glossary-grid">
+                <div class="glossary-item">
+                    <div class="glossary-term"><span class="badge badge-green">MULTIPLE ANALYSIS TOOLS</span></div>
+                    <div class="glossary-def"><strong>What-If Calculator</strong> -- Run custom scenarios with configurable target return, stop loss, and max hold days. 10 preset scenarios from Short Tactical (14d) to Buy &amp; Hold 1-Year (252d). See equity curves, exit reason breakdowns, and per-algorithm performance.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term"><span class="badge badge-green">STRATEGY COMPARISON</span></div>
+                    <div class="glossary-def"><strong>Side-by-Side Scenarios</strong> -- Compare all 10 preset strategies simultaneously with ranked performance tables. Includes win rate, return %, final value, max drawdown, fee drag, Sharpe ratio, and profit factor for each scenario.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term"><span class="badge badge-green">ALGORITHM COMPARISON</span></div>
+                    <div class="glossary-def"><strong>Per-Algorithm Breakdown</strong> -- Test each algorithm independently under the same scenario rules. Identifies which algorithm works best for mutual funds under different market conditions and holding periods.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term"><span class="badge badge-green">PORTFOLIO TEMPLATES</span></div>
+                    <div class="glossary-def"><strong>Pre-Configured Strategies</strong> -- Ready-made portfolio templates for different investor profiles (conservative, growth, income, aggressive rotation). Each template has preconfigured TP/SL/hold parameters and can be backtested with one click.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term"><span class="badge badge-green">FUND PICKS DATABASE</span></div>
+                    <div class="glossary-def"><strong>45 Picks Across Multiple Algorithms</strong> -- Fund picks filterable by algorithm, with fund name, family, category, NAV price, score, rating, Morningstar stars, and expense ratio displayed for each pick.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term"><span class="badge badge-green">USER-FRIENDLY INTERFACE</span></div>
+                    <div class="glossary-def"><strong>Multiple Analysis Angles</strong> -- Interactive charts via Chart.js, sortable tables, scenario presets with quick-apply, algorithm filtering, and saveable backtest results. Designed for both beginners and experienced fund investors.</div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#6366f1;margin-top:1.5rem;">ML System Status</h3>
+            <div style="background:var(--bg-card);border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+                <div style="font-size:0.85rem;color:#889;">
+                    <p style="margin-bottom:0.8rem;"><strong style="color:#e0e0f0;">Current State: No ML Pipeline Exists</strong></p>
+                    <ul style="margin-left:1.5rem;margin-bottom:0.8rem;">
+                        <li><strong>No closed trades tracked</strong> -- 45 picks generated but 0 tracked with real outcomes</li>
+                        <li>No grid search possible without forward-facing trade data</li>
+                        <li>No Learned vs Original comparison (nothing to learn from)</li>
+                        <li>All analysis is static/rule-based using historical NAV data from Yahoo Finance</li>
+                        <li>No parameter optimization has been performed on live mutual fund data</li>
+                    </ul>
+                    <p style="color:#f59e0b;"><strong>Path to ML activation:</strong> Build forward-facing outcome tracker &rarr; record entry/exit prices for each pick &rarr; accumulate 20+ closed positions &rarr; run grid search on fund-specific parameters &rarr; enable Learned vs Original comparison.</p>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#ef4444;margin-top:1.5rem;">Known Flaws &amp; Limitations</h3>
+            <div class="glossary-grid">
+                <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                    <div class="glossary-term"><span class="badge badge-red">NO LIVE TRACKING</span></div>
+                    <div class="glossary-def"><strong>Zero Forward-Facing Data</strong> -- 45 picks generated, 0 tracked with real results. No entry prices recorded, no exit conditions monitored, no win/loss ratio. Every other asset class in our system (stocks, crypto, forex) has some form of live tracking except mutual funds.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                    <div class="glossary-term"><span class="badge badge-red">NO EXPENSE RATIO OPTIMIZATION</span></div>
+                    <div class="glossary-def"><strong>Critical for Fund Selection</strong> -- Expense ratios are displayed but not factored into fund selection or ranking. Research shows each 1% in fees costs approximately 17% of returns over 20 years (Carhart 1997). This is the single highest-impact missing feature for mutual fund investors.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                    <div class="glossary-term"><span class="badge badge-red">NO TAX-LOSS HARVESTING</span></div>
+                    <div class="glossary-def"><strong>Missing Tax Efficiency</strong> -- No recommendations for tax-loss harvesting, no RRSP vs TFSA optimization, no capital gains distribution tracking. Professional robo-advisors (Wealthfront, Betterment) make tax-loss harvesting a core feature.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                    <div class="glossary-term"><span class="badge badge-red">NO REBALANCING ALERTS</span></div>
+                    <div class="glossary-def"><strong>No Drift Monitoring</strong> -- No automated rebalancing recommendations when portfolio allocation drifts from target. No alerts when a fund deviates from its stated strategy (style drift detection). Manual monitoring required.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                    <div class="glossary-term"><span class="badge badge-red">NO MARKET REGIME CORRELATION</span></div>
+                    <div class="glossary-def"><strong>Context-Blind Analysis</strong> -- No correlation with broader market regime (bull/bear/sideways). Fund performance varies dramatically across market conditions but our analysis treats all periods equally.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                    <div class="glossary-term"><span class="badge badge-red">SINGLE DATA SOURCE</span></div>
+                    <div class="glossary-def"><strong>Yahoo Finance Only</strong> -- All NAV data comes from Yahoo Finance. No Morningstar ratings integration, no Lipper data, no Bloomberg Terminal data. World-class fund analysis platforms use 5-10 data sources for comprehensive coverage.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                    <div class="glossary-term"><span class="badge badge-red">NO STYLE DRIFT DETECTION</span></div>
+                    <div class="glossary-def"><strong>Manager Risk Ignored</strong> -- Mutual fund managers may change their investment strategy over time (style drift). A "large-cap value" fund may gradually shift to "large-cap growth." Without style drift detection, past performance may not reflect future approach.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                    <div class="glossary-term"><span class="badge badge-red">NO MANAGER TENURE TRACKING</span></div>
+                    <div class="glossary-def"><strong>Key Predictor Missing</strong> -- Manager tenure is one of the strongest predictors of future fund performance consistency. When a star manager leaves, historical returns become less predictive. We do not track manager changes or tenure length.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                    <div class="glossary-term"><span class="badge badge-red">NO FLOW DATA</span></div>
+                    <div class="glossary-def"><strong>Capital Flows Ignored</strong> -- Fund inflows and outflows affect returns. Large outflows force fund managers to sell holdings at unfavorable prices. Large inflows create cash drag. Professional fund analysis always includes flow data.</div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#3b82f6;margin-top:1.5rem;">Improvement Roadmap</h3>
+            <div class="glossary-grid">
+                <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                    <div class="glossary-term"><span class="badge badge-green">DONE: ANALYSIS TOOLS</span></div>
+                    <div class="glossary-def"><strong>Backtesting Infrastructure Complete</strong> -- What-If analysis, strategy comparison, algorithm comparison, portfolio templates, fund picks database, and backtest history are all operational. 10 preset scenarios, interactive charts, saveable results.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                    <div class="glossary-term"><span class="badge badge-green">DONE: FUND PICKS</span></div>
+                    <div class="glossary-def"><strong>45 Picks Generated</strong> -- Multiple algorithms have generated fund picks with scores, ratings, and Morningstar star ratings. Yahoo Finance NAV data imported for backtesting against historical scenarios.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                    <div class="glossary-term"><span class="badge badge-red">PHASE 1: EXPENSE OPTIMIZATION</span></div>
+                    <div class="glossary-def"><strong>Highest Impact Fix</strong> -- Factor expense ratios into fund selection and ranking. Build expense ratio vs returns scatter plot. Flag funds where fees erode returns below index fund alternatives. This single feature would provide more value than any other improvement.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(245,158,11,0.3);">
+                    <div class="glossary-term"><span class="badge badge-yellow">PHASE 2: MORNINGSTAR DATA</span></div>
+                    <div class="glossary-def"><strong>Data Source Expansion</strong> -- Integrate Morningstar ratings and categories for richer fund analysis. Morningstar is the gold standard for mutual fund analysis ($200/yr subscription). Would add analyst ratings, category rankings, and style box classification.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
+                    <div class="glossary-term"><span class="badge badge-blue">PHASE 3: LIVE TRACKING</span></div>
+                    <div class="glossary-def"><strong>Forward-Facing Outcome Tracking</strong> -- Connect fund picks to actual NAV tracking with entry prices, exit conditions, and daily P&amp;L recording. Same model as Consolidated Stock Picks. Daily refresh via GitHub Actions.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
+                    <div class="glossary-term"><span class="badge badge-blue">PHASE 4: ML PIPELINE</span></div>
+                    <div class="glossary-def"><strong>Learn from Forward Data</strong> -- Once enough closed positions exist (20+ minimum), run grid search on fund-specific parameters. Learn which fund characteristics (expense ratio, AUM, manager tenure, category) predict outperformance. Enable Learned vs Original comparison.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
+                    <div class="glossary-term"><span class="badge badge-blue">PHASE 5: TAX EFFICIENCY</span></div>
+                    <div class="glossary-def"><strong>Tax-Loss Harvesting &amp; RRSP/TFSA Optimization</strong> -- Score funds by tax efficiency. Suggest tax-loss harvesting opportunities. Optimize fund placement across registered (RRSP, TFSA) and non-registered accounts based on distribution types.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
+                    <div class="glossary-term"><span class="badge badge-blue">PHASE 6: REBALANCING</span></div>
+                    <div class="glossary-def"><strong>Drift Monitoring &amp; Alerts</strong> -- Automated detection of portfolio drift from target allocation. Style drift detection for individual funds. Rebalancing recommendations with tax-aware trade suggestions.</div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#eab308;margin-top:1.5rem;">Is It Production Ready?</h3>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+                <p style="font-size:0.9rem;color:#e0e0f0;margin-bottom:0.8rem;"><strong>Short Answer: It is a research/analysis tool, not a trading system.</strong></p>
+                <p style="font-size:0.85rem;color:#889;margin-bottom:0.5rem;">Here is where we actually stand:</p>
+                <ul style="font-size:0.85rem;color:#889;margin-left:1.5rem;margin-bottom:0.8rem;">
+                    <li>The analysis tools work well for backtesting scenarios and comparing strategies</li>
+                    <li>45 fund picks exist but <strong>none are tracked with real outcomes</strong></li>
+                    <li>No ML pipeline -- all analysis is static/rule-based</li>
+                    <li>No expense ratio optimization (the single most impactful feature for fund investors)</li>
+                    <li>Data source: Yahoo Finance only -- no Morningstar, no Lipper, no Bloomberg</li>
+                </ul>
+                <p style="font-size:0.85rem;color:#e0e0f0;"><strong>What milestones remain?</strong></p>
+                <ul style="font-size:0.85rem;color:#889;margin-left:1.5rem;margin-bottom:0.8rem;">
+                    <li><strong>Expense ratio optimization</strong> &rarr; Factor fees into fund selection (highest impact)</li>
+                    <li><strong>Forward tracking built</strong> &rarr; Record entry/exit prices for every pick</li>
+                    <li><strong>20+ closed positions</strong> &rarr; ML grid search can activate</li>
+                    <li><strong>Morningstar integration</strong> &rarr; Gold standard fund data</li>
+                    <li><strong>Tax efficiency scoring</strong> &rarr; RRSP/TFSA optimization</li>
+                </ul>
+                <p style="font-size:0.85rem;color:#f59e0b;"><strong>Current Status:</strong> The backtesting and analysis tools on this page are fully functional for research purposes. Fund picks are generated by multiple algorithms with scores and ratings. However, there is zero forward-facing validation -- no picks have been tracked against real outcomes. Do NOT treat backtest results as predictive of future performance. Build the forward tracker before making allocation decisions.</p>
+            </div>
+
+            <h3 class="section-title" style="color:#a855f7;margin-top:1.5rem;">Architecture</h3>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;">
+                <p style="font-size:0.85rem;color:#889;margin-bottom:0.8rem;">System components and data flow:</p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;">
+                    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Data Source: Yahoo Finance</div>
+                        <div style="font-size:0.78rem;color:#889;">Daily NAV data for all tracked mutual funds. Single data source -- no Morningstar, no Lipper, no Bloomberg integration. NAV prices fetched via fetch_prices.php and stored in the database for backtesting.</div>
+                    </div>
+                    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">API: mutual_fund_portfolio.php</div>
+                        <div style="font-size:0.78rem;color:#889;">PHP backend handles stats, fund data, and backtest operations. Actions: stats (portfolio overview), funds (fund list with NAV), backtests (saved scenario results). Located at findmutualfunds2/portfolio2/api/.</div>
+                    </div>
+                    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Backtest Engine: whatif.php</div>
+                        <div style="font-size:0.78rem;color:#889;">Runs What-If scenarios, strategy comparisons, and algorithm comparisons against historical NAV data. Configurable TP/SL/hold parameters. Supports saving results to database.</div>
+                    </div>
+                    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Fund Picks: data.php?type=picks</div>
+                        <div style="font-size:0.78rem;color:#889;">45 fund picks across multiple algorithms. Each pick includes ticker, fund name, family, category, NAV, score, rating, Morningstar stars, and expense ratio. Filterable by algorithm.</div>
+                    </div>
+                    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Portfolio Templates: data.php?type=portfolios</div>
+                        <div style="font-size:0.78rem;color:#889;">Pre-configured fund portfolio strategies with backtest capability. Different investor profiles (conservative, growth, income, aggressive). Each template has preset TP/SL/hold/capital/sizing parameters.</div>
+                    </div>
+                    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Frontend: This Portfolio Page</div>
+                        <div style="font-size:0.78rem;color:#889;">What-If analysis, strategy comparison, algorithm comparison, portfolio templates, fund picks, backtest history, system analysis, and research tabs. Interactive charts via Chart.js. Fully functional for backtesting and research.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:1.5rem;padding:1rem;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:12px;">
+                <div style="font-weight:600;color:#22c55e;margin-bottom:0.5rem;">Bottom Line</div>
+                <p style="font-size:0.85rem;color:#889;">The mutual fund analysis tools are solid for backtesting and research -- multiple scenario presets, algorithm comparisons, portfolio templates, and saveable results. However, the system has zero forward-facing performance tracking. 45 picks exist but none have been tracked against real outcomes. The highest-impact next step is building expense ratio optimization, followed by a forward-facing outcome tracker modeled after the Consolidated Stock Picks system.</p>
+            </div>
+        </div>
+
+        <!-- ═══════════ TAB: Research & Future ═══════════ -->
+        <div class="tab-content" id="tab-research">
+            <div class="grade-explainer" style="background:linear-gradient(135deg,rgba(168,85,247,0.08),rgba(99,102,241,0.08));border-color:rgba(168,85,247,0.3);">
+                <div class="ge-title" style="color:#a855f7;">Research &amp; Future Enhancements</div>
+                This section documents our research into professional mutual fund analysis, the academic foundations behind fund selection, and the benchmarks we are targeting. Understanding how institutional fund analysis platforms operate is essential for building systems that can compete with Morningstar, Vanguard, and robo-advisors.
+            </div>
+
+            <h3 class="section-title" style="color:#6366f1;">Core Methodology: Backtested Strategy Comparison</h3>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+                <p style="font-size:0.85rem;color:#889;margin-bottom:0.8rem;">Our system evaluates mutual funds by backtesting different holding strategies against historical NAV data. The core approach:</p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
+                    <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#22c55e;margin-bottom:0.3rem;">Scenario-Based Backtesting</div>
+                        <div style="font-size:0.78rem;color:#889;">10 preset scenarios test different investment approaches: from Short Tactical (5% target, 14-day hold) to Buy &amp; Hold 1-Year (25% target, 252-day hold). Each scenario applies configurable take-profit, stop-loss, and max hold rules to historical NAV data.</div>
+                    </div>
+                    <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">Multi-Algorithm Selection</div>
+                        <div style="font-size:0.78rem;color:#889;">Multiple algorithms generate fund picks using different selection criteria. Each algorithm can be tested independently or in combination. Algorithm comparison reveals which selection method works best for different market conditions and holding periods.</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#22c55e;margin-top:1.5rem;">Key Mutual Fund Concepts</h3>
+            <div class="glossary-grid">
+                <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                    <div class="glossary-term"><span class="badge badge-green">ACTIVE VS PASSIVE</span></div>
+                    <div class="glossary-def"><strong>The Central Debate in Fund Selection</strong> -- Fama &amp; French (2010) demonstrated that most actively managed mutual funds underperform their benchmark indices after fees. Over 15-year periods, roughly 90% of active large-cap funds fail to beat the S&amp;P 500. This makes expense ratios the single most predictive factor in fund selection.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                    <div class="glossary-term"><span class="badge badge-green">EXPENSE RATIO IMPACT</span></div>
+                    <div class="glossary-def"><strong>The Silent Return Killer</strong> -- Carhart (1997) showed that each 1% in annual fees costs approximately 17% of total returns over a 20-year horizon due to compounding drag. A fund returning 8% gross with a 1.5% expense ratio delivers only 6.5% net -- and that 1.5% compounds against the investor every year.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                    <div class="glossary-term"><span class="badge badge-green">FACTOR INVESTING</span></div>
+                    <div class="glossary-def"><strong>Beyond Market Cap Weighting</strong> -- Academic research identifies persistent return factors: momentum (recent winners keep winning), value (cheap stocks outperform), quality (profitable companies outperform), and low-volatility (boring stocks have higher risk-adjusted returns). Smart beta mutual funds target these factors systematically.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                    <div class="glossary-term"><span class="badge badge-green">SHARPE RATIO</span></div>
+                    <div class="glossary-def"><strong>Risk-Adjusted Return Metric</strong> -- Measures excess return per unit of risk. A Sharpe ratio above 1.0 indicates good risk-adjusted performance. However, Sharpe ratio has limitations with non-normal return distributions (fat tails, skewness) common in mutual fund returns. Sortino ratio may be more appropriate for downside-focused investors.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                    <div class="glossary-term"><span class="badge badge-green">SURVIVORSHIP BIAS</span></div>
+                    <div class="glossary-def"><strong>Hidden Data Problem</strong> -- Fund databases drop funds that close or merge, removing the worst performers from historical records. This inflates average reported returns by 1-2% annually. Any backtest using only currently-existing funds overstates expected performance. Our system is exposed to this bias.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                    <div class="glossary-term"><span class="badge badge-green">MORNINGSTAR STARS</span></div>
+                    <div class="glossary-def"><strong>Backward-Looking Metric</strong> -- Kinnel (2010) showed that Morningstar's star ratings predict expense ratios more than future returns. 5-star funds do not consistently outperform 3-star funds. The stars reflect past risk-adjusted performance, not future potential. Expense ratio is a better predictor of future fund performance.</div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#f97316;margin-top:1.5rem;">Market Inefficiencies in Mutual Funds</h3>
+            <div class="glossary-grid">
+                <div class="glossary-item" style="border-color:rgba(249,115,22,0.3);">
+                    <div class="glossary-term"><span class="badge badge-orange">WINDOW DRESSING</span></div>
+                    <div class="glossary-def">Fund managers buy recent winners and sell losers before quarter-end reporting to make their portfolio look better. This creates predictable end-of-quarter trading patterns. Academic research documents this across thousands of funds.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(249,115,22,0.3);">
+                    <div class="glossary-term"><span class="badge badge-orange">TAX INEFFICIENCY</span></div>
+                    <div class="glossary-def">Many active mutual funds generate significant capital gains distributions that investors must pay taxes on, even if they did not sell their fund shares. Index funds and ETFs are typically more tax-efficient due to lower turnover. Tax drag can reduce after-tax returns by 1-2% annually.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(249,115,22,0.3);">
+                    <div class="glossary-term"><span class="badge badge-orange">CASH DRAG</span></div>
+                    <div class="glossary-def">Active funds typically hold 3-10% in cash for redemption buffers. In rising markets, this cash drag reduces returns vs fully-invested index funds. Some fund families use credit facilities to minimize cash drag, but most smaller funds absorb the cost.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(249,115,22,0.3);">
+                    <div class="glossary-term"><span class="badge badge-orange">CLOSET INDEXING</span></div>
+                    <div class="glossary-def">Some actively managed funds charge active management fees (1-2%) while closely tracking their benchmark index (R-squared &gt; 0.95). Investors pay active fees for passive returns. "Active share" measures how different a fund is from its benchmark -- low active share indicates closet indexing.</div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#a855f7;margin-top:1.5rem;">Key Research Sources</h3>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem;">
+                    <div style="font-size:0.8rem;color:#889;line-height:1.6;">
+                        <strong style="color:#a855f7;">Fama &amp; French (2010)</strong><br>
+                        "Luck versus Skill in the Cross-Section of Mutual Fund Returns" -- Demonstrated that the distribution of mutual fund returns matches what would be expected from chance alone. After fees, most active managers do not deliver alpha. The few that do are statistically indistinguishable from lucky coin flippers.
+                    </div>
+                    <div style="font-size:0.8rem;color:#889;line-height:1.6;">
+                        <strong style="color:#a855f7;">Carhart (1997)</strong><br>
+                        "On Persistence in Mutual Fund Performance" -- Extended the Fama-French 3-factor model with a momentum factor. Showed that most apparent fund outperformance is explained by factor exposures and fees, not manager skill. Expense ratios are the strongest negative predictor of fund returns.
+                    </div>
+                    <div style="font-size:0.8rem;color:#889;line-height:1.6;">
+                        <strong style="color:#a855f7;">Kinnel (2010)</strong><br>
+                        "How Expense Ratios and Star Ratings Predict Success" -- Morningstar's own director of research found that expense ratios are a better predictor of future fund performance than Morningstar's own star ratings. The cheapest quintile of funds outperformed the most expensive quintile in every category.
+                    </div>
+                    <div style="font-size:0.8rem;color:#889;line-height:1.6;">
+                        <strong style="color:#a855f7;">Cremers &amp; Petajisto (2009)</strong><br>
+                        "How Active Is Your Fund Manager?" -- Introduced the "active share" concept. Funds with high active share (truly different from benchmark) outperform after fees, while closet indexers (low active share) underperform. Active share is the best predictor of fund performance persistence.
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#22c55e;margin-top:1.5rem;">How We Apply This Research</h3>
+            <div style="background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(99,102,241,0.08));border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+                <p style="font-size:0.85rem;color:#889;margin-bottom:0.8rem;">Our system incorporates academic findings in these ways:</p>
+                <ul style="font-size:0.85rem;color:#889;margin-left:1.5rem;margin-bottom:0.8rem;">
+                    <li><strong>Multiple Scenarios:</strong> 10 preset strategies test different holding periods and exit rules, matching academic findings on optimal rebalancing frequencies</li>
+                    <li><strong>Algorithm Comparison:</strong> Side-by-side testing reveals which fund selection approaches work for different market conditions</li>
+                    <li><strong>Disciplined Exits:</strong> TP/SL framework prevents the common mistake of holding underperforming funds indefinitely</li>
+                    <li><strong>Expense Ratio Display:</strong> Shown for each fund pick (but not yet factored into selection -- a known gap)</li>
+                    <li><strong>Morningstar Stars:</strong> Displayed as context but not the primary selection criterion (per Kinnel 2010 findings)</li>
+                </ul>
+                <p style="font-size:0.85rem;color:#f59e0b;"><strong>Not yet applied:</strong> Expense ratio optimization (Carhart 1997), active share filtering (Cremers &amp; Petajisto), tax-loss harvesting, survivorship bias correction, factor exposure analysis, style drift detection, flow data tracking, rebalancing automation.</p>
+            </div>
+
+            <h3 class="section-title" style="color:#10b981;margin-top:1.5rem;">Future Enhancements &amp; Research Priorities</h3>
+            <div style="background:var(--bg-card);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+                <p style="font-size:0.85rem;color:#e0e0f0;margin-bottom:0.8rem;"><strong>Based on academic research and competitive analysis, these are the highest-impact improvements:</strong></p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
+                    <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#ef4444;margin-bottom:0.3rem;">P1: Expense Ratio Optimization</div>
+                        <div style="font-size:0.78rem;color:#889;">Highest-impact feature. Factor expense ratios into fund selection and ranking. Build expense vs return scatter plots. Auto-flag funds where fees erode returns below comparable index fund alternatives. Carhart (1997) shows this is the strongest predictor of future fund returns.</div>
+                    </div>
+                    <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#f59e0b;margin-bottom:0.3rem;">P2: Morningstar Data Integration</div>
+                        <div style="font-size:0.78rem;color:#889;">Morningstar is the gold standard for fund analysis ($200/yr). Would add analyst ratings (gold/silver/bronze), category rankings, style box classification, and manager tenure data. Currently we rely on Yahoo Finance only.</div>
+                    </div>
+                    <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">P3: Live Tracking</div>
+                        <div style="font-size:0.78rem;color:#889;">Connect fund picks to actual NAV tracking for forward validation. Record entry prices at pick generation, monitor daily NAV changes, apply exit rules (TP/SL/max hold). Same model as Consolidated Stock Picks with daily GitHub Actions refresh.</div>
+                    </div>
+                    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">P4: ML Pipeline</div>
+                        <div style="font-size:0.78rem;color:#889;">Learn which fund characteristics predict outperformance: expense ratio, AUM, manager tenure, category, factor exposures, active share, flow trends. Requires 20+ closed positions for grid search activation. Walk-forward validation before deployment.</div>
+                    </div>
+                    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">P5: Tax Efficiency Scoring</div>
+                        <div style="font-size:0.78rem;color:#889;">Score funds by tax efficiency (turnover ratio, capital gains distribution history). Suggest tax-loss harvesting opportunities. Optimize fund placement: high-turnover funds in registered accounts (RRSP, TFSA), tax-efficient funds in taxable accounts.</div>
+                    </div>
+                    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">P6: Rebalancing &amp; Drift Monitoring</div>
+                        <div style="font-size:0.78rem;color:#889;">Automated detection of portfolio allocation drift from targets. Style drift detection for individual funds (when a "value" fund starts behaving like "growth"). Rebalancing alerts with tax-aware trade suggestions to minimize capital gains realization.</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#f59e0b;margin-top:1.5rem;">World-Class Benchmark Comparison</h3>
+            <div style="background:var(--bg-card);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+                <p style="font-size:0.85rem;color:#889;margin-bottom:0.8rem;">How top mutual fund analysis platforms compare, and where we need to be:</p>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;font-size:0.78rem;color:#889;border-collapse:collapse;">
+                        <thead>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+                                <th style="text-align:left;padding:0.5rem;color:#e0e0f0;">Metric</th>
+                                <th style="text-align:center;padding:0.5rem;color:#22c55e;">World-Class Target</th>
+                                <th style="text-align:center;padding:0.5rem;color:#f59e0b;">Our Current</th>
+                                <th style="text-align:center;padding:0.5rem;color:#3b82f6;">Gap</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                                <td style="padding:0.5rem;">Data Sources</td>
+                                <td style="text-align:center;padding:0.5rem;">5-10 (Morningstar, Lipper, Bloomberg)</td>
+                                <td style="text-align:center;padding:0.5rem;">1 (Yahoo Finance)</td>
+                                <td style="text-align:center;padding:0.5rem;color:#ef4444;">Critical gap</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                                <td style="padding:0.5rem;">Expense Optimization</td>
+                                <td style="text-align:center;padding:0.5rem;">Yes (core feature)</td>
+                                <td style="text-align:center;padding:0.5rem;">None (displayed only)</td>
+                                <td style="text-align:center;padding:0.5rem;color:#ef4444;">Highest priority</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                                <td style="padding:0.5rem;">Tax Awareness</td>
+                                <td style="text-align:center;padding:0.5rem;">Full tax-lot tracking</td>
+                                <td style="text-align:center;padding:0.5rem;">None</td>
+                                <td style="text-align:center;padding:0.5rem;color:#ef4444;">Not implemented</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                                <td style="padding:0.5rem;">ML Integration</td>
+                                <td style="text-align:center;padding:0.5rem;">Walk-forward validated</td>
+                                <td style="text-align:center;padding:0.5rem;">None (no data to train)</td>
+                                <td style="text-align:center;padding:0.5rem;color:#ef4444;">Need forward tracker first</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                                <td style="padding:0.5rem;">Rebalancing</td>
+                                <td style="text-align:center;padding:0.5rem;">Automated with tax awareness</td>
+                                <td style="text-align:center;padding:0.5rem;">None</td>
+                                <td style="text-align:center;padding:0.5rem;color:#ef4444;">Not implemented</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                                <td style="padding:0.5rem;">Live Tracking</td>
+                                <td style="text-align:center;padding:0.5rem;">Real-time NAV + P&amp;L</td>
+                                <td style="text-align:center;padding:0.5rem;">None (backtest only)</td>
+                                <td style="text-align:center;padding:0.5rem;color:#ef4444;">Zero forward data</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:0.5rem;">Forward Validation</td>
+                                <td style="text-align:center;padding:0.5rem;">Yes (with attribution)</td>
+                                <td style="text-align:center;padding:0.5rem;">0 tracked outcomes</td>
+                                <td style="text-align:center;padding:0.5rem;color:#ef4444;">45 picks, 0 tracked</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p style="font-size:0.78rem;color:#666;margin-top:1rem;">Benchmark platforms: Vanguard ($7T AUM, lowest-cost index funds), Morningstar (gold standard analysis, $200/yr), Wealthfront (robo-advisor, tax-loss harvesting), Betterment (goal-based allocation), Fidelity (Zero-fee index funds, fund screener).</p>
+            </div>
+
+            <div style="margin-top:1.5rem;padding:1rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:12px;">
+                <div style="font-weight:600;color:#ef4444;margin-bottom:0.5rem;">The Hard Truth</div>
+                <p style="font-size:0.85rem;color:#889;">Our mutual fund system has solid backtesting and analysis tools but zero forward-facing performance data. The 45 fund picks are generated by algorithms but have never been tracked against real outcomes. Without live tracking, we cannot validate whether our fund selection actually outperforms simple index fund investing -- and academic research (Fama &amp; French 2010) strongly suggests most active fund selection strategies do not. The single highest-impact improvement is adding expense ratio optimization, because research consistently shows that fees are the strongest predictor of future fund returns. Until we build forward tracking and expense optimization, this system is a research tool, not a fund selection platform that can compete with Morningstar or robo-advisors.</p>
+            </div>
+        </div>
+
     </div>
 
 <script>

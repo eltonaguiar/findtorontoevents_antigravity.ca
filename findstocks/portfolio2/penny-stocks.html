@@ -550,6 +550,8 @@
             <button class="tab-btn active" onclick="switchTab('scanner')">Scanner</button>
             <button class="tab-btn" onclick="switchTab('picks')">Daily Picks <span class="tab-badge" id="picks-badge"></span></button>
             <button class="tab-btn" onclick="switchTab('performance')">Performance</button>
+            <button class="tab-btn" onclick="switchTab('analysis')" style="color:#f59e0b;">System Analysis</button>
+            <button class="tab-btn" onclick="switchTab('research')" style="color:#a855f7;">Research &amp; Future</button>
         </div>
 
         <!-- ============================================ -->
@@ -836,45 +838,178 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Data Sources & Transparency -->
-    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;max-width:1300px;margin:0 auto 1.5rem;">
-        <h3 style="font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;">
-            Data Sources & Transparency
-            <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(234,179,8,0.15);color:#eab308;border:1px solid rgba(234,179,8,0.3);">TRACKING</span>
-        </h3>
-        <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
-            <strong style="color:var(--text);">Where the numbers come from:</strong><br>
-            &bull; <strong>Stock screening:</strong> <a href="api/penny_stocks.php?action=scan&region=us" target="_blank">penny_stocks.php?action=scan</a> &mdash; Yahoo Finance screener proxy<br>
-            &bull; <strong>Pick performance:</strong> <a href="api/penny_stock_picks.php?action=performance" target="_blank">penny_stock_picks.php?action=performance</a> &mdash; 40 active picks, 0 closed<br>
-            &bull; <strong>7-factor scoring:</strong> Health (30%) + Momentum (25%) + Volume (10%) + Technical (10%) + Earnings (10%) + Smart Money (10%) + Quality (5%)<br>
-            &bull; <strong>Smart Money data:</strong> <a href="/live-monitor/api/smart_money.php?action=consensus&ticker=AAPL" target="_blank">smart_money.php</a> &mdash; analyst ratings, insider trades, 13F filings<br>
-            &bull; <strong>Exchange filter:</strong> TSX, TSX-V, CSE, NYSE, NASDAQ, NYSE American only. OTC/Pink Sheets excluded.<br>
-            &bull; <strong>GitHub Actions:</strong> <code>refresh-stocks-portfolio.yml</code> &mdash; daily automated scans
-        </div>
-    </div>
+        <!-- ============================================ -->
+        <!-- TAB 4: SYSTEM ANALYSIS -->
+        <!-- ============================================ -->
+        <div class="tab-panel" id="tab-analysis">
+            <div style="font-size:1.2rem;font-weight:700;margin:1.5rem 0 1rem;display:flex;align-items:center;gap:0.75rem;color:#f59e0b;">System Analysis <span style="font-size:0.6rem;padding:0.2rem 0.5rem;border-radius:99px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);">DIAGNOSIS</span></div>
 
-    <!-- Future Roadmap -->
-    <div style="background:var(--bg-card);border:1px solid rgba(234,179,8,0.3);border-radius:var(--radius);padding:1.25rem;max-width:1300px;margin:0 auto 1.5rem;">
-        <h3 style="font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;">
-            Future Roadmap
-            <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);">PLANNED</span>
-        </h3>
-        <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
-            <strong style="color:var(--green);">Near-term:</strong><br>
-            &bull; First batch of pick closures will produce real W/L data (exit rules: SL -15% / TP +30% / 90-day max hold)<br>
-            &bull; Win rate and cumulative P&L tracking goes live after first closures<br>
-            &bull; Add historical price charts for each tracked pick<br><br>
-            <strong style="color:var(--yellow);">Q2 2026:</strong><br>
-            &bull; Sector breakdown analysis (which penny stock sectors perform best)<br>
-            &bull; Volume-to-market-cap ratio alerts for unusual activity<br>
-            &bull; Compare penny stock 7-factor scoring accuracy vs random selection<br><br>
-            <strong style="color:var(--text-dim);">Long-term:</strong><br>
-            &bull; Machine learning model trained on closed trade outcomes<br>
-            &bull; Insider buying correlation with penny stock breakouts<br>
-            &bull; Risk-adjusted portfolio builder with position sizing recommendations
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem;">
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:var(--yellow);margin-bottom:0.5rem;">What This System Does</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        &bull; Yahoo Finance screener proxy scanning penny stocks ($0.10&ndash;$5.00)<br>
+                        &bull; 7-factor composite scoring: Health, Momentum, Volume, Technical, Earnings, Smart Money, Quality<br>
+                        &bull; Blocks OTC/Pink Sheets &mdash; exchange-listed stocks only<br>
+                        &bull; Multiple sort options (volume, % change, price, market cap)<br>
+                        &bull; Daily picks generated via GitHub Actions automation
+                    </div>
+                </div>
+                <div style="background:var(--bg-card);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:var(--red);margin-bottom:0.5rem;">Critical Flaws</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        &bull; <strong>No volume confirmation:</strong> Picks lack volume spike validation<br>
+                        &bull; <strong>Delayed data:</strong> Yahoo screener can be 15&ndash;20 min behind real-time<br>
+                        &bull; <strong>No sector analysis:</strong> No fundamental screening beyond price<br>
+                        &bull; <strong>No momentum indicators:</strong> Missing RSI/MACD confirmation for picks<br>
+                        &bull; <strong>No backtested history:</strong> Picks are completely unvalidated<br>
+                        &bull; <strong>No ML or learning:</strong> Rule-based screening only, no closed trade data<br>
+                        &bull; <strong>No pump-and-dump detection:</strong> Cannot identify manipulation schemes
+                    </div>
+                </div>
+                <div style="background:var(--bg-card);border:1px solid rgba(34,197,94,0.3);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:var(--green);margin-bottom:0.5rem;">What's Working</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        &bull; Automated daily scanning across multiple exchanges<br>
+                        &bull; OTC filtering removes the most dangerous stocks<br>
+                        &bull; Price range and volume filtering for basic safety<br>
+                        &bull; Multiple sort options for different strategies<br>
+                        &bull; RRSP eligibility tracking (Canadian investors)
+                    </div>
+                </div>
+            </div>
+
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#f59e0b;">ML &amp; Learning Status</h4>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:1rem;">
+                <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                    <strong style="color:var(--red);">No ML capability.</strong> This system is entirely rule-based screening. There are no closed trades tracked, no grid search possible, and no performance-based parameter tuning. The 7-factor scoring weights are static (manually assigned), not optimized from data.<br><br>
+                    <strong style="color:var(--text);">Why this matters:</strong> Without historical outcome data, we cannot validate whether the scoring model actually predicts good penny stock picks. The system finds stocks matching certain criteria, but cannot tell you if those criteria lead to profits.
+                </div>
+            </div>
+
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#f59e0b;">Safety Assessment</h4>
+            <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);padding:1.2rem;margin-bottom:1rem;">
+                <div style="font-size:12px;color:#fca5a5;line-height:1.7;">
+                    <strong style="color:var(--red);">NOT SAFE for real trading.</strong> Penny stocks are inherently extremely high-risk. This is a SCREENER only, not a recommendation engine. It cannot detect pump-and-dump schemes, cannot verify fundamentals beyond basic financial ratios, and cannot assess management quality or business viability. Use with extreme caution. Never invest money you cannot afford to lose entirely.
+                </div>
+            </div>
+
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#f59e0b;">API Endpoints</h4>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:1rem;">
+                <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
+                    &bull; <strong>Scanner:</strong> <a href="api/penny_stocks.php?action=scan&region=us" target="_blank">penny_stocks.php</a> &mdash; Yahoo Finance screener proxy<br>
+                    &bull; <strong>Daily picks:</strong> <a href="api/penny_stock_picks.php?action=picks" target="_blank">penny_stock_picks.php</a> &mdash; automated daily picks with 7-factor scores<br>
+                    &bull; <strong>Performance:</strong> <a href="api/penny_stock_picks.php?action=performance" target="_blank">penny_stock_picks.php?action=performance</a> &mdash; 40 active, 0 closed<br>
+                    &bull; <strong>Smart Money:</strong> <a href="/live-monitor/api/smart_money.php?action=consensus&ticker=AAPL" target="_blank">smart_money.php</a> &mdash; analyst, insider, 13F data
+                </div>
+            </div>
         </div>
+
+        <!-- ============================================ -->
+        <!-- TAB 5: RESEARCH & FUTURE -->
+        <!-- ============================================ -->
+        <div class="tab-panel" id="tab-research">
+            <div style="font-size:1.2rem;font-weight:700;margin:1.5rem 0 1rem;display:flex;align-items:center;gap:0.75rem;color:#a855f7;">Research Findings <span style="font-size:0.6rem;padding:0.2rem 0.5rem;border-radius:99px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);">PENNY STOCK RESEARCH</span></div>
+            <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1rem;">Our methodology is price-based screening with exchange-listing filters. Below is a comparison to academic research, professional tools, and world-class standards.</p>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem;margin-bottom:1.5rem;">
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:#a855f7;margin-bottom:0.5rem;">Academic Research</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        <strong>Jegadeesh &amp; Titman (1993):</strong> Momentum strategies work for stocks &mdash; but penny stocks have much higher noise-to-signal ratio.<br>
+                        <strong>SEC Rule 15g-9:</strong> Penny stock regulations require additional broker disclosures due to extreme risk of fraud.<br>
+                        <strong>Microstructure of low-price stocks:</strong> Wider bid-ask spreads, lower liquidity, higher manipulation risk.<br>
+                        <strong>Failure rate:</strong> &gt;90% of penny stocks fail to deliver sustained returns. Survivorship bias makes backtests unreliable.<br>
+                        <strong>Key insight:</strong> Penny stock backtests are essentially meaningless due to survivorship bias and delisting effects.
+                    </div>
+                </div>
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;">
+                    <h4 style="font-size:0.85rem;color:#a855f7;margin-bottom:0.5rem;">World-Class Tools Comparison</h4>
+                    <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
+                        <strong>OTC Markets research tools:</strong> Full company profiles, disclosure status, market activity data.<br>
+                        <strong>Finviz screener (free):</strong> Real-time screening, technical charting, pattern recognition.<br>
+                        <strong>Trade Ideas scanner ($120/mo):</strong> AI-powered real-time alerts, Level 2 data, volume analysis, SEC filing monitoring, social sentiment tracking.<br>
+                        <strong>What professionals need:</strong> Level 2 data, volume analysis, SEC filing monitoring, social sentiment tracking &mdash; none of which we have.
+                    </div>
+                </div>
+            </div>
+
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#a855f7;">World-Class Gap Analysis</h4>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:1rem;">
+                <table style="width:100%;font-size:12px;border-collapse:collapse;">
+                    <thead><tr style="border-bottom:1px solid var(--border);">
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Metric</th>
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">World-Class</th>
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Ours</th>
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:11px;text-transform:uppercase;">Gap</th>
+                    </tr></thead>
+                    <tbody style="color:var(--text);">
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Data Sources</td><td style="padding:6px 8px;color:var(--green);">5&ndash;10 (price, SEC, social, L2, news)</td><td style="padding:6px 8px;color:var(--red);">1 (Yahoo Finance only)</td><td style="padding:6px 8px;color:var(--red);">Massive</td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Screening Speed</td><td style="padding:6px 8px;color:var(--green);">Real-time (&lt;1s)</td><td style="padding:6px 8px;color:var(--yellow);">15&ndash;20 min delay</td><td style="padding:6px 8px;color:var(--yellow);">Moderate</td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Risk Filters</td><td style="padding:6px 8px;color:var(--green);">Comprehensive (fraud, manipulation, dilution)</td><td style="padding:6px 8px;color:var(--red);">Basic OTC block only</td><td style="padding:6px 8px;color:var(--red);">Large</td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">ML Integration</td><td style="padding:6px 8px;color:var(--green);">Full (pattern recognition, outcome prediction)</td><td style="padding:6px 8px;color:var(--red);">None</td><td style="padding:6px 8px;color:var(--red);">Massive</td></tr>
+                        <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Volume Analysis</td><td style="padding:6px 8px;color:var(--green);">Real-time, Level 2 depth</td><td style="padding:6px 8px;color:var(--red);">Basic volume filter only</td><td style="padding:6px 8px;color:var(--red);">Large</td></tr>
+                        <tr><td style="padding:6px 8px;">Social Sentiment</td><td style="padding:6px 8px;color:var(--green);">StockTwits, Reddit, Twitter integration</td><td style="padding:6px 8px;color:var(--red);">None</td><td style="padding:6px 8px;color:var(--red);">Massive</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:#a855f7;">Future Priorities</h4>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:1rem;">
+                <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
+                    <strong style="color:var(--green);">Priority 1 &mdash; Volume confirmation filter:</strong> Require volume spike (2x+ avg) before flagging a pick. Currently picks can have below-average volume.<br>
+                    <strong style="color:var(--green);">Priority 2 &mdash; Momentum indicator overlay:</strong> Add RSI/MACD confirmation to the 7-factor model before picks are generated.<br>
+                    <strong style="color:var(--yellow);">Priority 3 &mdash; Social sentiment integration:</strong> StockTwits and Reddit mention velocity for penny stocks. Social hype precedes penny stock pumps.<br>
+                    <strong style="color:var(--yellow);">Priority 4 &mdash; SEC filing monitoring:</strong> Detect red flags in 10-K/10-Q filings (going concern opinions, dilution events, shell company indicators).<br>
+                    <strong style="color:var(--text-dim);">Priority 5 &mdash; ML-based pick validation:</strong> After accumulating enough closed-trade data, train a model to learn which factor combinations actually predict penny stock gains.
+                </div>
+            </div>
+
+            <!-- Data Sources & Transparency -->
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem;">
+                <h3 style="font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;">
+                    Data Sources &amp; Transparency
+                    <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(234,179,8,0.15);color:#eab308;border:1px solid rgba(234,179,8,0.3);">TRACKING</span>
+                </h3>
+                <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
+                    <strong style="color:var(--text);">Where the numbers come from:</strong><br>
+                    &bull; <strong>Stock screening:</strong> <a href="api/penny_stocks.php?action=scan&region=us" target="_blank">penny_stocks.php?action=scan</a> &mdash; Yahoo Finance screener proxy<br>
+                    &bull; <strong>Pick performance:</strong> <a href="api/penny_stock_picks.php?action=performance" target="_blank">penny_stock_picks.php?action=performance</a> &mdash; 40 active picks, 0 closed<br>
+                    &bull; <strong>7-factor scoring:</strong> Health (30%) + Momentum (25%) + Volume (10%) + Technical (10%) + Earnings (10%) + Smart Money (10%) + Quality (5%)<br>
+                    &bull; <strong>Smart Money data:</strong> <a href="/live-monitor/api/smart_money.php?action=consensus&ticker=AAPL" target="_blank">smart_money.php</a> &mdash; analyst ratings, insider trades, 13F filings<br>
+                    &bull; <strong>Exchange filter:</strong> TSX, TSX-V, CSE, NYSE, NASDAQ, NYSE American only. OTC/Pink Sheets excluded.<br>
+                    &bull; <strong>GitHub Actions:</strong> <code>refresh-stocks-portfolio.yml</code> &mdash; daily automated scans
+                </div>
+            </div>
+
+            <!-- Future Roadmap -->
+            <div style="background:var(--bg-card);border:1px solid rgba(234,179,8,0.3);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem;">
+                <h3 style="font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;">
+                    Future Roadmap
+                    <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);">PLANNED</span>
+                </h3>
+                <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
+                    <strong style="color:var(--green);">Near-term:</strong><br>
+                    &bull; First batch of pick closures will produce real W/L data (exit rules: SL -15% / TP +30% / 90-day max hold)<br>
+                    &bull; Win rate and cumulative P&amp;L tracking goes live after first closures<br>
+                    &bull; Add historical price charts for each tracked pick<br><br>
+                    <strong style="color:var(--yellow);">Q2 2026:</strong><br>
+                    &bull; Sector breakdown analysis (which penny stock sectors perform best)<br>
+                    &bull; Volume-to-market-cap ratio alerts for unusual activity<br>
+                    &bull; Compare penny stock 7-factor scoring accuracy vs random selection<br><br>
+                    <strong style="color:var(--text-dim);">Long-term:</strong><br>
+                    &bull; Machine learning model trained on closed trade outcomes<br>
+                    &bull; Insider buying correlation with penny stock breakouts<br>
+                    &bull; Risk-adjusted portfolio builder with position sizing recommendations
+                </div>
+            </div>
+
+            <p style="font-size:0.75rem;color:var(--text-dim);line-height:1.6;margin-bottom:1rem;">
+                <strong>Sources:</strong> Jegadeesh &amp; Titman (1993) momentum research, SEC Rule 15g-9 penny stock regulations, OTC Markets Group research, Finviz, Trade Ideas scanner documentation, microstructure research on low-price stocks, SEC EDGAR filing analysis.
+            </p>
+        </div>
+
     </div>
 
     <div class="footer">
@@ -893,8 +1028,9 @@ var PAGE_SIZE = 50;
 
 // ── Tab Switching ──
 function switchTab(tab) {
-    document.querySelectorAll('.tab-btn').forEach(function(b, i) {
-        b.classList.toggle('active', ['scanner','picks','performance'][i] === tab);
+    var tabNames = ['scanner','picks','performance','analysis','research'];
+    document.querySelectorAll('.tabs .tab-btn').forEach(function(b, i) {
+        b.classList.toggle('active', tabNames[i] === tab);
     });
     document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
     document.getElementById('tab-' + tab).classList.add('active');

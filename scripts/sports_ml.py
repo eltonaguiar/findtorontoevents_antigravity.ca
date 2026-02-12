@@ -218,6 +218,13 @@ FEATURE_COLUMNS = [
     'rolling_clv_10',          # Avg CLV over last 10 bets
     'current_streak',          # Positive = win streak, negative = loss streak
     'bankroll_pct',            # Current bankroll as % of initial ($1000)
+
+    # Scraper intelligence features (from Kimi's sport scrapers)
+    'home_win_pct',            # Home team win % from standings
+    'away_win_pct',            # Away team win % from standings
+    'team_wp_diff',            # home_win_pct - away_win_pct
+    'home_streak_val',         # Win streak numeric (W5=+5, L3=-3)
+    'home_injury_count',       # Number of injuries on picked team
 ]
 
 SPORT_MAP = {
@@ -230,6 +237,115 @@ SPORT_MAP = {
     'soccer_usa_mls': 'sport_mls',
     'americanfootball_cfl': 'sport_other',
 }
+
+
+def _fetch_scraper_team_data(conn, sport_key, team_name):
+    """
+    Look up team stats from scraper tables.
+    Returns dict with win_pct, streak, injury_count or None.
+    """
+    prefix_map = {
+        'basketball_nba': 'nba',
+        'icehockey_nhl': 'nhl',
+        'americanfootball_nfl': 'nfl',
+        'baseball_mlb': 'mlb',
+    }
+    prefix = prefix_map.get(sport_key, '')
+    if not prefix or not team_name or not conn:
+        return None
+
+    cursor = conn.cursor(dictionary=True)
+    result = {'win_pct': None, 'streak': 0, 'injury_count': 0}
+
+    # Try exact match on team_name, then LIKE on last word
+    for q in [
+        "SELECT win_pct, streak FROM lm_{}_team_stats WHERE team_name=%s ORDER BY updated_at DESC LIMIT 1".format(prefix),
+    ]:
+        try:
+            cursor.execute(q, (team_name,))
+            row = cursor.fetchone()
+            if row:
+                result['win_pct'] = float(row['win_pct']) if row['win_pct'] else None
+                sk = str(row.get('streak', ''))
+                if sk.startswith('W'):
+                    result['streak'] = int(sk[1:]) if len(sk) > 1 else 1
+                elif sk.startswith('L'):
+                    result['streak'] = -int(sk[1:]) if len(sk) > 1 else -1
+                break
+        except Exception:
+            pass
+
+    if result['win_pct'] is None:
+        # fuzzy: match on last word of team name
+        words = team_name.strip().split()
+        last = words[-1] if words else team_name
+        try:
+            cursor.execute(
+                "SELECT win_pct, streak FROM lm_{}_team_stats WHERE team_name LIKE %s ORDER BY updated_at DESC LIMIT 1".format(prefix),
+                ('%' + last + '%',)
+            )
+            row = cursor.fetchone()
+            if row:
+                result['win_pct'] = float(row['win_pct']) if row['win_pct'] else None
+                sk = str(row.get('streak', ''))
+                if sk.startswith('W'):
+                    result['streak'] = int(sk[1:]) if len(sk) > 1 else 1
+                elif sk.startswith('L'):
+                    result['streak'] = -int(sk[1:]) if len(sk) > 1 else -1
+        except Exception:
+            pass
+
+    # Injury count
+    try:
+        cursor.execute(
+            "SELECT COUNT(*) AS c FROM lm_{}_injuries WHERE team LIKE %s".format(prefix),
+            ('%' + team_name.split()[-1] + '%',)
+        )
+        row = cursor.fetchone()
+        if row:
+            result['injury_count'] = int(row['c'])
+    except Exception:
+        pass
+
+    cursor.close()
+    return result
+
+
+def _enrich_scraper_features(features, df, conn=None):
+    """Add scraper-based features to a features DataFrame."""
+    features['home_win_pct'] = 0.5
+    features['away_win_pct'] = 0.5
+    features['team_wp_diff'] = 0.0
+    features['home_streak_val'] = 0
+    features['home_injury_count'] = 0
+
+    if conn is None:
+        try:
+            conn = connect_db()
+        except Exception:
+            return features
+
+    if conn is None:
+        return features
+
+    for idx in df.index:
+        sport = str(df.loc[idx, 'sport']) if 'sport' in df.columns else ''
+        home = str(df.loc[idx, 'home_team']) if 'home_team' in df.columns else ''
+        away = str(df.loc[idx, 'away_team']) if 'away_team' in df.columns else ''
+
+        h_data = _fetch_scraper_team_data(conn, sport, home)
+        a_data = _fetch_scraper_team_data(conn, sport, away)
+
+        if h_data and h_data['win_pct'] is not None:
+            features.loc[idx, 'home_win_pct'] = h_data['win_pct']
+            features.loc[idx, 'home_streak_val'] = h_data['streak']
+            features.loc[idx, 'home_injury_count'] = h_data['injury_count']
+        if a_data and a_data['win_pct'] is not None:
+            features.loc[idx, 'away_win_pct'] = a_data['win_pct']
+        if h_data and a_data and h_data['win_pct'] is not None and a_data['win_pct'] is not None:
+            features.loc[idx, 'team_wp_diff'] = h_data['win_pct'] - a_data['win_pct']
+
+    return features
 
 
 def engineer_features_from_bets(df):
@@ -340,6 +456,9 @@ def engineer_features_from_bets(df):
                 streaks.append(streak)
             features['current_streak'] = streaks
 
+    # ── Scraper intelligence features ──
+    features = _enrich_scraper_features(features, df)
+
     # Ensure all expected columns exist
     for col in FEATURE_COLUMNS:
         if col not in features.columns:
@@ -432,6 +551,9 @@ def engineer_features_from_value_bets(df):
     features['rolling_clv_10'] = 0.0
     features['current_streak'] = 0
     features['bankroll_pct'] = 100.0
+
+    # ── Scraper intelligence features ──
+    features = _enrich_scraper_features(features, df)
 
     for col in FEATURE_COLUMNS:
         if col not in features.columns:

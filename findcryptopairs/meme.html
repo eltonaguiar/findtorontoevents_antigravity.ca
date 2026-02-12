@@ -103,7 +103,15 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
 .factor-cell.f-mid{background:rgba(245,158,11,0.15);color:var(--gold)}
 .factor-cell.f-low{background:rgba(239,68,68,0.12);color:var(--red)}
 .verdict-skip{color:var(--dim);font-size:10px}
-/* Tabs */
+/* Main page tabs */
+.main-tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px}
+.main-tab-btn{flex:1;background:var(--card);color:var(--dim);border:none;padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;text-align:center}
+.main-tab-btn:not(:last-child){border-right:1px solid var(--border)}
+.main-tab-btn.active{background:var(--accent);color:#fff}
+.main-tab-btn:hover:not(.active){background:rgba(255,255,255,0.04);color:var(--text)}
+.main-panel{display:none}
+.main-panel.active{display:block}
+/* Perf period tabs */
 .tab-row{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
 .tab-btn{font-size:12px;padding:6px 16px;border-radius:20px;border:1px solid var(--border);color:var(--dim);background:transparent;cursor:pointer;transition:all 0.15s}
 .tab-btn:hover,.tab-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(232,121,249,0.08)}
@@ -150,6 +158,16 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
     <strong>&#9888; HIGH VOLATILITY:</strong>
     <span>Meme coins can drop 30-80% in hours. This scanner finds short-term momentum patterns &mdash; NOT safe long-term investments. Wider targets &amp; stops reflect extreme volatility. Never risk money you can't lose.</span>
   </div>
+
+  <!-- Main page tabs -->
+  <div class="main-tabs">
+    <button class="main-tab-btn active" onclick="switchMainTab('scanner')">Scanner</button>
+    <button class="main-tab-btn" onclick="switchMainTab('analysis')" style="color:#f59e0b;">System Analysis</button>
+    <button class="main-tab-btn" onclick="switchMainTab('research')" style="color:#a855f7;">Research &amp; Future</button>
+  </div>
+
+  <!-- TAB 1: SCANNER (all existing content) -->
+  <div class="main-panel active" id="main-scanner">
 
   <div class="stats-row" id="stats-row">
     <div class="stat-card"><div class="label">Win Rate</div><div class="value" id="s-wr">--</div><div class="sub">Resolved signals</div></div>
@@ -342,53 +360,204 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
       <strong style="color:#ef4444">The hard truth:</strong> Even the best meme coin scanner in the world is essentially gambling with better odds. Meme coins have no intrinsic value &mdash; they go up because people BELIEVE they'll go up, and they crash when belief evaporates. Use this tool to identify momentum patterns, not as investment advice. <strong>Only use money you are 100% willing to lose completely.</strong>
     </div>
   </div>
-  <!-- Data Sources & Transparency -->
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:16px;">
-    <h3 style="font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
-      Data Sources & Transparency
-      <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);">LOSING</span>
-    </h3>
-    <div style="font-size:12px;color:var(--dim);line-height:1.8;">
-      <strong style="color:var(--text);">Where the numbers come from:</strong><br>
-      &bull; <strong>Scanner stats:</strong> <a href="api/meme_scanner.php?action=stats" target="_blank" style="color:#c4b5fd">meme_scanner.php?action=stats</a> &mdash; 5% WR (1/19), all-time record<br>
-      &bull; <strong>Live signals:</strong> <a href="api/meme_scanner.php?action=scan" target="_blank" style="color:#c4b5fd">meme_scanner.php?action=scan</a> &mdash; top meme coins scored by 7 indicators<br>
-      &bull; <strong>Signal history:</strong> <a href="api/meme_scanner.php?action=history" target="_blank" style="color:#c4b5fd">meme_scanner.php?action=history</a> &mdash; every signal with resolved outcome<br>
-      &bull; <strong>Price data:</strong> Crypto.com Exchange public API (real-time, no delay)<br>
-      &bull; <strong>Scanner frequency:</strong> Every 10 minutes via GitHub Actions<br>
-      &bull; <strong>Compare to:</strong> <a href="/live-monitor/algo-performance.html" style="color:#c4b5fd">L vs O Algo Performance</a> &mdash; crypto trades at 87.5% WR (our best crypto system)
-    </div>
-  </div>
-
-  <!-- Future Roadmap -->
-  <div style="background:var(--card);border:1px solid rgba(232,121,249,0.3);border-radius:var(--radius);padding:16px;margin-top:12px;">
-    <h3 style="font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
-      Future Roadmap
-      <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);">PLANNED</span>
-    </h3>
-    <div style="font-size:12px;color:var(--dim);line-height:1.8;">
-      <strong style="color:var(--green);">Near-term:</strong><br>
-      &bull; Wider resolve windows (4h, 8h, 24h) to capture slower meme coin moves<br>
-      &bull; Social sentiment overlay (Reddit/X mention velocity)<br>
-      &bull; CEX listing event detection (new listings = instant pumps)<br><br>
-      <strong style="color:var(--gold);">Q2 2026:</strong><br>
-      &bull; Adaptive scoring weights based on which factors predict wins<br>
-      &bull; Cross-exchange arbitrage detection (Crypto.com vs Binance vs Coinbase)<br>
-      &bull; Volume spike alerts with push notifications<br><br>
-      <strong style="color:var(--dim);">Long-term:</strong><br>
-      &bull; Meme coin lifecycle classification (launch, hype, peak, decline)<br>
-      &bull; Machine learning model trained on resolved signal outcomes<br>
-      &bull; Risk-adjusted position sizing based on volatility regime
-    </div>
-  </div>
 
   <div class="disclaimer" style="margin-top:12px">
     <strong>Data source:</strong> Crypto.com Exchange public API (real-time). Scanner runs every 10 minutes via GitHub Actions. Signals resolved after 2 hours with continuous candle walk.<br>
     <strong>Resolve method:</strong> Continuous &mdash; every 5-minute candle during the 2h window is checked. If target or stop was hit at ANY point, it's recorded accurately.<br>
     <strong>Not financial advice.</strong> For educational and entertainment purposes only. Past performance does not guarantee future results. Meme coins carry extreme risk of total loss.
   </div>
+
+  </div><!-- end main-scanner panel -->
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- TAB 2: SYSTEM ANALYSIS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="main-panel" id="main-analysis">
+    <div class="section-title" style="color:#f59e0b;">System Analysis <span class="badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);">DIAGNOSIS</span></div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-bottom:20px;">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+        <h4 style="font-size:14px;color:var(--gold);margin-bottom:8px;">What This System Does</h4>
+        <div style="font-size:12px;color:var(--dim);line-height:1.7;">
+          &bull; Scans 600+ Crypto.com Exchange USDT pairs every 10 minutes<br>
+          &bull; Scores each meme coin 0&ndash;100 using 7 meme-specific indicators<br>
+          &bull; Automated momentum detection with daily/weekly/monthly views<br>
+          &bull; Historical signal tracking with continuous 2-hour resolve<br>
+          &bull; Covers 14+ established meme coins (Tier 1) plus emerging pumps (Tier 2)
+        </div>
+      </div>
+      <div style="background:var(--card);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);padding:16px;">
+        <h4 style="font-size:14px;color:var(--red);margin-bottom:8px;">Critical Flaws</h4>
+        <div style="font-size:12px;color:var(--dim);line-height:1.7;">
+          &bull; <strong>ZERO fundamental analysis:</strong> Meme coins have no fundamentals to analyze<br>
+          &bull; <strong>No social sentiment:</strong> Missing Reddit, Twitter/X, Telegram data<br>
+          &bull; <strong>No whale wallet tracking:</strong> Cannot detect large holder movements<br>
+          &bull; <strong>No rug-pull detection:</strong> Cannot identify scams or token exploits<br>
+          &bull; <strong>No liquidity pool analysis:</strong> Cannot verify DEX liquidity depth<br>
+          &bull; <strong>No smart contract audits:</strong> Cannot verify token contract safety<br>
+          &bull; <strong>No market cap verification:</strong> Circulating supply data not validated
+        </div>
+      </div>
+      <div style="background:var(--card);border:1px solid rgba(34,197,94,0.3);border-radius:var(--radius);padding:16px;">
+        <h4 style="font-size:14px;color:var(--green);margin-bottom:8px;">What's Working</h4>
+        <div style="font-size:12px;color:var(--dim);line-height:1.7;">
+          &bull; Automated 24/7 scanning (every 10 minutes)<br>
+          &bull; Momentum detection across multiple timeframes<br>
+          &bull; Honest performance tracking (5% WR reported transparently)<br>
+          &bull; Tier 1 vs Tier 2 separation for risk awareness<br>
+          &bull; Continuous candle-walk resolve method (accurate outcome tracking)
+        </div>
+      </div>
+    </div>
+
+    <h4 style="font-size:15px;margin-bottom:10px;color:#f59e0b;">ML &amp; Learning Status</h4>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;">
+      <div style="font-size:12px;color:var(--dim);line-height:1.7;">
+        <strong style="color:var(--red);">No ML capability.</strong> This system is entirely rule-based momentum scanning. There is no machine learning, no adaptive parameter tuning, and no pattern learning from past signals. The 7 meme-specific indicator weights are static and manually assigned.<br><br>
+        <strong style="color:var(--text);">Why this matters:</strong> The scanner cannot learn from its 5% win rate. It will keep applying the same rules regardless of outcomes. Future ML integration is planned but requires significantly more closed-trade data.
+      </div>
+    </div>
+
+    <h4 style="font-size:15px;margin-bottom:10px;color:#f59e0b;">Safety Assessment</h4>
+    <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);padding:16px;margin-bottom:16px;">
+      <div style="font-size:12px;color:#fca5a5;line-height:1.7;">
+        <strong style="color:var(--red);">ABSOLUTELY NOT SAFE for real trading.</strong> Meme coins are the highest-risk asset class in all of finance. Our scanner provides price data only &mdash; it cannot detect scams, rug pulls, or worthless tokens. The &gt;95% failure rate of meme coins means the vast majority of positions will lose money. Never invest money you cannot afford to lose entirely.
+      </div>
+    </div>
+
+    <h4 style="font-size:15px;margin-bottom:10px;color:#f59e0b;">API Endpoints</h4>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;">
+      <div style="font-size:12px;color:var(--dim);line-height:1.8;">
+        &bull; <strong>Scanner stats:</strong> <a href="api/meme_scanner.php?action=stats" target="_blank" style="color:#c4b5fd">meme_scanner.php?action=stats</a> &mdash; overall performance metrics<br>
+        &bull; <strong>Live signals:</strong> <a href="api/meme_scanner.php?action=scan" target="_blank" style="color:#c4b5fd">meme_scanner.php?action=scan</a> &mdash; current top meme coins<br>
+        &bull; <strong>Signal history:</strong> <a href="api/meme_scanner.php?action=history" target="_blank" style="color:#c4b5fd">meme_scanner.php?action=history</a> &mdash; all signals with outcomes<br>
+        &bull; <strong>Data source:</strong> FreeCryptoAPI for prices (real-time, no delay)
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- TAB 3: RESEARCH & FUTURE -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="main-panel" id="main-research">
+    <div class="section-title" style="color:#a855f7;">Research Findings <span class="badge" style="background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);">MEME COIN RESEARCH</span></div>
+    <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Our methodology is price momentum scanning with time-period filtering. Below is a comparison to academic research, professional on-chain tools, and world-class standards.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-bottom:20px;">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+        <h4 style="font-size:14px;color:#a855f7;margin-bottom:8px;">Academic Research</h4>
+        <div style="font-size:12px;color:var(--dim);line-height:1.7;">
+          <strong>Meme coin pump dynamics:</strong> Price surges driven primarily by social media virality, not fundamentals. Pumps follow power-law distributions with rapid onset and decay.<br>
+          <strong>Ante (2023):</strong> Social sentiment and crypto prices are strongly correlated in low-cap tokens. Twitter/Reddit volume precedes price movement by 30&ndash;120 minutes.<br>
+          <strong>Rug-pull detection research:</strong> Automated methods analyze contract code, liquidity locks, and holder concentration. None of which we implement.<br>
+          <strong>Dogecoin effect:</strong> Social media-driven price action can sustain for days but always reverts. Entry timing is everything &mdash; technical indicators lag social triggers.
+        </div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+        <h4 style="font-size:14px;color:#a855f7;margin-bottom:8px;">World-Class Tools Comparison</h4>
+        <div style="font-size:12px;color:var(--dim);line-height:1.7;">
+          <strong>Nansen ($100/mo):</strong> Full on-chain analytics, wallet labeling, smart money tracking, NFT analytics. Tracks whale movements in real-time.<br>
+          <strong>Dune Analytics:</strong> Custom blockchain queries, token holder analysis, protocol metrics. Community-built dashboards for any on-chain data.<br>
+          <strong>LunarCrush ($30/mo):</strong> Social intelligence for crypto. Real-time sentiment, influencer tracking, social volume metrics across Twitter, Reddit, YouTube.<br>
+          <strong>Bubblemaps:</strong> Visual wallet clustering and token holder distribution. Identifies connected wallets and concentration risk.<br>
+          <strong>What we have:</strong> Price data only &mdash; missing the entire on-chain and social intelligence layer.
+        </div>
+      </div>
+    </div>
+
+    <h4 style="font-size:15px;margin-bottom:10px;color:#a855f7;">World-Class Gap Analysis</h4>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;">
+      <table style="width:100%;font-size:12px;border-collapse:collapse;">
+        <thead><tr style="border-bottom:1px solid var(--border);">
+          <th style="text-align:left;padding:6px 8px;color:var(--dim);font-size:11px;text-transform:uppercase;">Metric</th>
+          <th style="text-align:left;padding:6px 8px;color:var(--dim);font-size:11px;text-transform:uppercase;">World-Class</th>
+          <th style="text-align:left;padding:6px 8px;color:var(--dim);font-size:11px;text-transform:uppercase;">Ours</th>
+          <th style="text-align:left;padding:6px 8px;color:var(--dim);font-size:11px;text-transform:uppercase;">Gap</th>
+        </tr></thead>
+        <tbody style="color:var(--text);">
+          <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">On-chain Data</td><td style="padding:6px 8px;color:var(--green);">Full (wallet tracking, tx analysis)</td><td style="padding:6px 8px;color:var(--red);">None</td><td style="padding:6px 8px;color:var(--red);">Massive</td></tr>
+          <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Social Sentiment</td><td style="padding:6px 8px;color:var(--green);">Real-time (Twitter, Reddit, Telegram)</td><td style="padding:6px 8px;color:var(--red);">None (price proxy only)</td><td style="padding:6px 8px;color:var(--red);">Massive</td></tr>
+          <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Rug-Pull Detection</td><td style="padding:6px 8px;color:var(--green);">Automated (contract analysis, liquidity)</td><td style="padding:6px 8px;color:var(--red);">None</td><td style="padding:6px 8px;color:var(--red);">Massive</td></tr>
+          <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Data Sources</td><td style="padding:6px 8px;color:var(--green);">5&ndash;10 (price, on-chain, social, news)</td><td style="padding:6px 8px;color:var(--red);">1 (FreeCryptoAPI only)</td><td style="padding:6px 8px;color:var(--red);">Massive</td></tr>
+          <tr style="border-bottom:1px solid rgba(42,42,74,0.5);"><td style="padding:6px 8px;">Whale Tracking</td><td style="padding:6px 8px;color:var(--green);">Real-time wallet monitoring</td><td style="padding:6px 8px;color:var(--red);">None</td><td style="padding:6px 8px;color:var(--red);">Large</td></tr>
+          <tr><td style="padding:6px 8px;">Liquidity Analysis</td><td style="padding:6px 8px;color:var(--green);">DEX pool depth, slippage calculation</td><td style="padding:6px 8px;color:var(--red);">None</td><td style="padding:6px 8px;color:var(--red);">Large</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 style="font-size:15px;margin-bottom:10px;color:#a855f7;">Future Priorities</h4>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;">
+      <div style="font-size:12px;color:var(--dim);line-height:1.8;">
+        <strong style="color:var(--green);">Priority 1 &mdash; Social sentiment integration:</strong> Reddit and Twitter/X trending score for meme coins. Social buzz precedes price movement by 30&ndash;120 min in academic research.<br>
+        <strong style="color:var(--green);">Priority 2 &mdash; Whale wallet tracking:</strong> Monitor known large holders for accumulation/distribution patterns. Single whale sells can crash meme coins 50%+.<br>
+        <strong style="color:var(--gold);">Priority 3 &mdash; Liquidity pool depth analysis:</strong> Check DEX liquidity before flagging a signal. Low liquidity = high slippage = worse execution.<br>
+        <strong style="color:var(--gold);">Priority 4 &mdash; Smart contract risk scoring:</strong> Automated analysis of token contract code for rug-pull indicators (mint functions, proxy patterns, hidden fees).<br>
+        <strong style="color:var(--dim);">Priority 5 &mdash; Market cap verification:</strong> Cross-reference circulating supply from multiple sources. Many meme coins report inflated or incorrect market caps.<br>
+        <strong style="color:var(--dim);">Priority 6 &mdash; Historical rug-pull pattern detection:</strong> ML model trained on known rug pulls to flag similar on-chain patterns before they happen.
+      </div>
+    </div>
+
+    <!-- Data Sources & Transparency -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;">
+      <h3 style="font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+        Data Sources &amp; Transparency
+        <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);">LOSING</span>
+      </h3>
+      <div style="font-size:12px;color:var(--dim);line-height:1.8;">
+        <strong style="color:var(--text);">Where the numbers come from:</strong><br>
+        &bull; <strong>Scanner stats:</strong> <a href="api/meme_scanner.php?action=stats" target="_blank" style="color:#c4b5fd">meme_scanner.php?action=stats</a> &mdash; 5% WR (1/19), all-time record<br>
+        &bull; <strong>Live signals:</strong> <a href="api/meme_scanner.php?action=scan" target="_blank" style="color:#c4b5fd">meme_scanner.php?action=scan</a> &mdash; top meme coins scored by 7 indicators<br>
+        &bull; <strong>Signal history:</strong> <a href="api/meme_scanner.php?action=history" target="_blank" style="color:#c4b5fd">meme_scanner.php?action=history</a> &mdash; every signal with resolved outcome<br>
+        &bull; <strong>Price data:</strong> Crypto.com Exchange public API (real-time, no delay)<br>
+        &bull; <strong>Scanner frequency:</strong> Every 10 minutes via GitHub Actions<br>
+        &bull; <strong>Compare to:</strong> <a href="/live-monitor/algo-performance.html" style="color:#c4b5fd">L vs O Algo Performance</a> &mdash; crypto trades at 87.5% WR (our best crypto system)
+      </div>
+    </div>
+
+    <!-- Future Roadmap -->
+    <div style="background:var(--card);border:1px solid rgba(232,121,249,0.3);border-radius:var(--radius);padding:16px;margin-bottom:16px;">
+      <h3 style="font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+        Future Roadmap
+        <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);">PLANNED</span>
+      </h3>
+      <div style="font-size:12px;color:var(--dim);line-height:1.8;">
+        <strong style="color:var(--green);">Near-term:</strong><br>
+        &bull; Wider resolve windows (4h, 8h, 24h) to capture slower meme coin moves<br>
+        &bull; Social sentiment overlay (Reddit/X mention velocity)<br>
+        &bull; CEX listing event detection (new listings = instant pumps)<br><br>
+        <strong style="color:var(--gold);">Q2 2026:</strong><br>
+        &bull; Adaptive scoring weights based on which factors predict wins<br>
+        &bull; Cross-exchange arbitrage detection (Crypto.com vs Binance vs Coinbase)<br>
+        &bull; Volume spike alerts with push notifications<br><br>
+        <strong style="color:var(--dim);">Long-term:</strong><br>
+        &bull; Meme coin lifecycle classification (launch, hype, peak, decline)<br>
+        &bull; Machine learning model trained on resolved signal outcomes<br>
+        &bull; Risk-adjusted position sizing based on volatility regime
+      </div>
+    </div>
+
+    <p style="font-size:11px;color:var(--dim);line-height:1.6;margin-bottom:16px;">
+      <strong>Sources:</strong> Ante (2023) social sentiment and crypto prices, meme coin pump dynamics research, rug-pull detection literature, DeFi liquidity analysis papers, Nansen.ai, Dune Analytics, LunarCrush, Bubblemaps, Dogecoin effect studies.
+    </p>
+  </div>
+
 </div>
 
 <script>
+// ── Main tab switching ──
+function switchMainTab(tab) {
+    var tabNames = ['scanner', 'analysis', 'research'];
+    var btns = document.querySelectorAll('.main-tab-btn');
+    var panels = document.querySelectorAll('.main-panel');
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.toggle('active', tabNames[i] === tab);
+    }
+    for (var j = 0; j < panels.length; j++) {
+        panels[j].classList.remove('active');
+    }
+    document.getElementById('main-' + tab).classList.add('active');
+}
+
 function toggleEdu(el) {
     var body = el.nextElementSibling;
     var arrow = el.querySelector('.edu-arrow');

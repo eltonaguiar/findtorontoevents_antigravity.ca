@@ -33,6 +33,7 @@ FILES = [
     ('live-monitor/api/goldmine_tracker.php', '/live-monitor/api/goldmine_tracker.php'),
     ('live-monitor/conviction-alerts.html', '/live-monitor/conviction-alerts.html'),
     ('live-monitor/sports-betting.html', '/live-monitor/sports-betting.html'),
+    ('live-monitor/smart-money.html', '/live-monitor/smart-money.html'),
     # Stock nav pages that got stock-nav.js added
     ('findcryptopairs/index.html', '/findcryptopairs/index.html'),
     ('findcryptopairs/meme.html', '/findcryptopairs/meme.html'),

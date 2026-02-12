@@ -54,6 +54,47 @@ jobs:
         except: print('Parse error')
         " || echo "Fetch: $RESULT"
 
+    - name: Run Kimi scrapers (all sports — stats, injuries, schedule)
+      continue-on-error: true
+      run: |
+        echo "=== Running comprehensive sports scrapers ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/live-monitor/api/scrapers/scraper_controller.php?action=run&sport=all&key=livetrader2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                for sport, info in d.get('results', {}).items():
+                    data = info.get('data', {})
+                    stats_n = len(data.get('stats', []))
+                    inj_n = len(data.get('injuries', []))
+                    sched_n = len(data.get('schedule', []))
+                    errs = data.get('errors', [])
+                    print(f'  {sport.upper()}: stats={stats_n} injuries={inj_n} schedule={sched_n} errors={len(errs)}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Scrapers: $RESULT"
+
+    - name: Check scraper data health
+      continue-on-error: true
+      run: |
+        echo "=== Scraper data health ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/scrapers/scraper_controller.php?action=health") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                for src, info in d.get('health', {}).items():
+                    status = 'OK' if info.get('ok') else 'FAIL'
+                    ms = info.get('ms', '?')
+                    print(f'  {src}: {status} ({ms}ms)')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except: print('Parse error')
+        " || echo "Health: $RESULT"
+
     - name: Refresh NBA team stats
       continue-on-error: true
       run: |
