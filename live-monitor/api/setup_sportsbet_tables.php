@@ -22,8 +22,9 @@ $results = array();
 $errors = array();
 
 // Helper function to check if column exists
-function _column_exists($conn, $table, $column) {
-    $check = $conn->query(\"SHOW COLUMNS FROM \" . $conn->real_escape_string($table) . \" LIKE '\" . $conn->real_escape_string($column) . \"'\");
+function _column_exists($conn, $table, $column)
+{
+    $check = $conn->query("SHOW COLUMNS FROM " . $conn->real_escape_string($table) . " LIKE '" . $conn->real_escape_string($column) . "'");
     return ($check && $check->num_rows > 0);
 }
 
@@ -36,12 +37,12 @@ $ml_fields = array(
     ),
     array(
         'name' => 'ml_prediction',
-        'definition' => \"VARCHAR(20) NOT NULL DEFAULT 'lean'\",
+        'definition' => "VARCHAR(20) NOT NULL DEFAULT 'lean'",
         'after' => 'ml_win_prob'
     ),
     array(
         'name' => 'ml_confidence',
-        'definition' => \"VARCHAR(20) NOT NULL DEFAULT 'low'\",
+        'definition' => "VARCHAR(20) NOT NULL DEFAULT 'low'",
         'after' => 'ml_prediction'
     ),
     array(
@@ -51,7 +52,7 @@ $ml_fields = array(
     ),
     array(
         'name' => 'ml_model_type',
-        'definition' => \"VARCHAR(50) NOT NULL DEFAULT 'baseline'\",
+        'definition' => "VARCHAR(50) NOT NULL DEFAULT 'baseline'",
         'after' => 'ml_should_bet'
     ),
     array(
@@ -63,18 +64,18 @@ $ml_fields = array(
 
 foreach ($ml_fields as $field) {
     if (!_column_exists($conn, 'lm_sports_bets', $field['name'])) {
-        $sql = \"ALTER TABLE lm_sports_bets ADD COLUMN \" . $field['name'] . \" \" . $field['definition'];
+        $sql = "ALTER TABLE lm_sports_bets ADD COLUMN " . $field['name'] . " " . $field['definition'];
         if (isset($field['after'])) {
-            $sql .= \" AFTER \" . $field['after'];
+            $sql .= " AFTER " . $field['after'];
         }
-        
+
         if ($conn->query($sql)) {
-            $results[] = \"Added column: \" . $field['name'];
+            $results[] = "Added column: " . $field['name'];
         } else {
-            $errors[] = \"Failed to add column \" . $field['name'] . \": \" . $conn->error;
+            $errors[] = "Failed to add column " . $field['name'] . ": " . $conn->error;
         }
     } else {
-        $results[] = \"Column already exists: \" . $field['name'];
+        $results[] = "Column already exists: " . $field['name'];
     }
 }
 
@@ -87,16 +88,16 @@ $ml_indexes = array(
 
 foreach ($ml_indexes as $idx) {
     // Check if index exists
-    $check_idx = $conn->query(\"SHOW INDEX FROM lm_sports_bets WHERE Key_name = '\" . $conn->real_escape_string($idx['name']) . \"'\");
+    $check_idx = $conn->query("SHOW INDEX FROM lm_sports_bets WHERE Key_name = '" . $conn->real_escape_string($idx['name']) . "'");
     if (!$check_idx || $check_idx->num_rows === 0) {
-        $sql = \"ALTER TABLE lm_sports_bets ADD KEY \" . $idx['name'] . \" (\" . $idx['columns'] . \")\";
+        $sql = "ALTER TABLE lm_sports_bets ADD KEY " . $idx['name'] . " (" . $idx['columns'] . ")";
         if ($conn->query($sql)) {
-            $results[] = \"Added index: \" . $idx['name'];
+            $results[] = "Added index: " . $idx['name'];
         } else {
-            $errors[] = \"Failed to add index \" . $idx['name'] . \": \" . $conn->error;
+            $errors[] = "Failed to add index " . $idx['name'] . ": " . $conn->error;
         }
     } else {
-        $results[] = \"Index already exists: \" . $idx['name'];
+        $results[] = "Index already exists: " . $idx['name'];
     }
 }
 
