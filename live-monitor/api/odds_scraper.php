@@ -1,4 +1,4 @@
-&lt;?php
+<?php
 /**
  * Odds Scraper - Failover for The Odds API
  * Scrapes odds from multiple sources when API is unavailable
@@ -17,7 +17,7 @@ function _scraper_http_get($url, $timeout = 10) {
         $body = curl_exec($ch);
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        if ($body !== false &amp;&amp; $code >= 200 &amp;&amp; $code &lt; 300) return $body;
+        if ($body !== false && $code >= 200 && $code < 300) return $body;
         return null;
     }
     $ctx = stream_context_create(array(
@@ -47,16 +47,16 @@ function scrape_espn_odds($sport) {
     
     // Parse games
     $events = array();
-    preg_match_all('/&lt;div class="game-line".*?&gt;(.*?)&lt;\/div&gt;/s', $body, $game_blocks);
+    preg_match_all('/<div class="game-line".*?>(.*?)<\/div>/s', $body, $game_blocks);
     
     foreach ($game_blocks[1] as $block) {
         // Extract teams
-        preg_match('/&lt;span class="team-name"&gt;(.*?)&lt;\/span&gt;/', $block, $away);
-        preg_match('/&lt;span class="team-name"&gt;(.*?)&lt;\/span&gt;/', $block, $home); // Second match
+        preg_match('/<span class="team-name">(.*?)<\/span>/', $block, $away);
+        preg_match('/<span class="team-name">(.*?)<\/span>/', $block, $home); // Second match
         
         $event = array(
-            'away_team' => trim($away[1]),
-            'home_team' => trim($home[1]),
+            'away_team' => isset($away[1]) ? trim($away[1]) : '',
+            'home_team' => isset($home[1]) ? trim($home[1]) : '',
             'bookmakers' => array() // Expand to parse odds from table
         );
         // TODO: Parse odds table within block
@@ -104,7 +104,7 @@ function scrape_bref_stats($sport) {
     if ($body === null) return array();
     
     // Parse Eastern Conference table (example)
-    preg_match('/&lt;table id="confs_standings_E".*?&gt;(.*?)&lt;\/table&gt;/s', $body, $east_table);
+    preg_match('/<table id="confs_standings_E".*?>(.*?)<\/table>/s', $body, $east_table);
     // Similar for West
     // Then extract rows with team names, records, etc.
     return array(); // Implement full parsing
@@ -121,11 +121,11 @@ function scrape_odds_failover($sport) {
     
     foreach ($scrapers as $func) {
         $data = call_user_func($func, $sport);
-        if (is_array($data) &amp;&amp; count($data) > 0) {
+        if (is_array($data) && count($data) > 0) {
             return $data;
         }
     }
     return array(); // All failed
 }
 
-?&gt;
+?>

@@ -192,10 +192,15 @@ function _ml_action_predict($conn) {
         $score = _ml_score_bet($vb, $stats, $conn);
 
         // Store prediction
+        // Ensure table has model_type column (add if missing)
+        @$conn->query("ALTER TABLE lm_sports_ml_predictions ADD COLUMN model_type VARCHAR(50) DEFAULT 'php_heuristic_v1' AFTER ml_should_bet");
+        @$conn->query("ALTER TABLE lm_sports_ml_predictions ADD COLUMN reasons TEXT AFTER model_type");
+
+        $reasons_json = $conn->real_escape_string(json_encode($score['reasons']));
         $conn->query("INSERT INTO lm_sports_ml_predictions "
             . "(value_bet_id, event_id, sport, home_team, away_team, outcome_name, market, "
             . "ev_pct, best_odds, ml_win_prob, ml_prediction, ml_confidence, ml_should_bet, "
-            . "model_type, predicted_at) VALUES ("
+            . "model_type, reasons, predicted_at) VALUES ("
             . (int)$vb['id'] . ", "
             . "'" . $conn->real_escape_string($vb['event_id']) . "', "
             . "'" . $conn->real_escape_string($vb['sport']) . "', "
@@ -210,6 +215,7 @@ function _ml_action_predict($conn) {
             . "'" . $conn->real_escape_string($score['confidence']) . "', "
             . ($score['should_bet'] ? 1 : 0) . ", "
             . "'php_heuristic_v1', "
+            . "'" . $reasons_json . "', "
             . "'" . $conn->real_escape_string($now) . "')");
 
         $pred = array(

@@ -113,15 +113,28 @@ $conn->close();
 
 // Helper functions
 function _check_table_status($conn, $table) {
-    $query = "SELECT COUNT(*) as count, MAX(updated_at) as last_update FROM $table";
-    $res = $conn->query($query);
-    if ($res && $row = $res->fetch_assoc()) {
-        return array(
-            'count' => (int)$row['count'],
-            'last_update' => $row['last_update']
-        );
+    // First just get count (always works if table exists)
+    $cnt_q = @$conn->query("SELECT COUNT(*) as count FROM `" . $table . "`");
+    if (!$cnt_q) {
+        return array('count' => 0, 'last_update' => null);
     }
-    return array('count' => 0, 'last_update' => null);
+    $cnt_row = $cnt_q->fetch_assoc();
+    $count = (int)$cnt_row['count'];
+
+    // Try common date columns for last_update
+    $last_update = null;
+    $date_cols = array('updated_at', 'reported_at', 'recorded_at', 'run_at');
+    foreach ($date_cols as $dc) {
+        $dq = @$conn->query("SELECT MAX(`" . $dc . "`) AS latest FROM `" . $table . "`");
+        if ($dq && $dr = $dq->fetch_assoc()) {
+            if ($dr['latest'] !== null) {
+                $last_update = $dr['latest'];
+                break;
+            }
+        }
+    }
+
+    return array('count' => $count, 'last_update' => $last_update);
 }
 
 function _http_get($url, $timeout = 30) {

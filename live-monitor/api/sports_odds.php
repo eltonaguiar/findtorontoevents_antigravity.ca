@@ -435,7 +435,7 @@ function _so_action_fetch($conn) {
         if ($odds_body === null) {
             // Fall to scraper
             $scraper_data = scrape_odds_failover($sport_key);
-            if (is_array($scraper_data) &amp;&amp; count($scraper_data) > 0) {
+            if (is_array($scraper_data) && count($scraper_data) > 0) {
                 $odds_body = json_encode($scraper_data);
                 $sport_details[] = array('sport' => $sport_key, 'source' => 'scraper');
             } else {
