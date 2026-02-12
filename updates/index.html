@@ -319,6 +319,58 @@ a:hover { text-decoration: underline; }
 
 <div class="section-year">February 2026</div>
 
+<!-- Feb 12, 2026 — Gap Bridge: Grade Gate, MF Forward Tracking, Live Monitor Fix -->
+<div class="update-entry" style="--dot-color: #14b8a6;" data-tags="grade-gate,mutual-funds,tracking,live-monitor,daily-picks,signals,fix,forward-tracking" data-category="trading" data-types="feature,improvement,fix">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    Gap Bridge &mdash; Grade Gate, MF Forward Tracking, Live Monitor Fix
+    <span class="badge badge-improvement">Quality</span>
+    <span class="badge badge-fix">Fix</span>
+  </div>
+  <div class="update-body">
+    <p>Bridged 5 identified infrastructure gaps across trading systems with surgical fixes and a new tracking feature.</p>
+
+    <p><strong>1. Algorithm Grade Gate (Signal Quality Filter)</strong></p>
+    <ul>
+      <li><strong>Problem:</strong> D-grade backtested algorithms (negative Sharpe, &lt;30% win rate) were still generating live signals and appearing in daily picks &mdash; actively losing money.</li>
+      <li><strong>Fix:</strong> Added <code>_ls_backtest_grade_gate()</code> to all 3 asset class loops (crypto, forex, stocks) in the signal engine. D-grade algos now auto-blocked before signal insertion. Also added <code>NOT EXISTS</code> subquery filter in Daily Picks API.</li>
+      <li><strong>Impact:</strong> Crypto Mean Reversion (Sharpe -1.56, grade D) immediately blocked. Any future algorithm that degrades to D-grade is auto-gated.</li>
+      <li><a href="https://findtorontoevents.ca/live-monitor/">Live Monitor</a> &middot; <a href="https://findtorontoevents.ca/live-monitor/api/daily_picks.php?action=all">Daily Picks API</a></li>
+    </ul>
+
+    <p><strong>2. Mutual Funds Forward Performance Tracking (NEW)</strong></p>
+    <ul>
+      <li><strong>Problem:</strong> MF system generated 45+ picks but never tracked outcomes &mdash; picks were a dead-end with no win/loss recording, no exit rules, no learning.</li>
+      <li><strong>Fix:</strong> Built complete forward tracking system: 3 new DB tables (<code>mf2_tracked_picks</code>, <code>mf2_tracking_daily</code>, <code>mf2_tracking_lessons</code>), 2 PHP APIs, automated via GitHub Actions workflow.</li>
+      <li><strong>Features:</strong> Auto-import picks &rarr; daily NAV refresh &rarr; exit rules (TP +5%, SL -3%, max hold 90 days) &rarr; daily snapshots &rarr; pattern detection after 5+ closed trades.</li>
+      <li><strong>Frontend:</strong> New Tracking tab on MF page with open/closed position tables, algorithm breakdown, and real-time stats.</li>
+      <li><a href="https://findtorontoevents.ca/findmutualfunds2/portfolio2/">Mutual Funds Portfolio</a> (click Tracking tab) &middot; <a href="https://findtorontoevents.ca/findmutualfunds2/portfolio2/api/mf2_performance_tracking.php?action=dashboard">Tracking API</a></li>
+    </ul>
+
+    <p><strong>3. Live Monitor Timestamp Fix</strong></p>
+    <ul>
+      <li><strong>Problem:</strong> All price cards showed "Updated --" (blank) instead of actual timestamps like "2m ago".</li>
+      <li><strong>Fix:</strong> Field name mismatch &mdash; API returns <code>last_updated</code> but the frontend was reading <code>updated_at</code>. Fixed to check <code>last_updated</code> first.</li>
+      <li><a href="https://findtorontoevents.ca/live-monitor/">Live Monitor</a> &mdash; price cards now show real update times.</li>
+    </ul>
+
+    <p><strong>4. Sports Betting Status Check</strong></p>
+    <ul>
+      <li><strong>Status:</strong> 9 settled bets (2W, 7L), 12 pending. 11 more needed to reach &ldquo;trainable&rdquo; threshold (20 bets). Auto-placing 5 bets/day &mdash; estimated 2&ndash;3 days to trainable.</li>
+      <li><a href="https://findtorontoevents.ca/live-monitor/api/sports_ml.php?action=status">Sports ML Status</a> &middot; <a href="https://findtorontoevents.ca/live-monitor/api/sports_bets.php?action=dashboard">Betting Dashboard</a></li>
+    </ul>
+
+    <p><strong>Realistic Gap Assessment:</strong></p>
+    <ul>
+      <li><strong>STOCK:</strong> Full ML pipeline. 12 closed trades, 58.33% WR, 2.61 PF. <span style="color:#22c55e;">PRODUCTION</span></li>
+      <li><strong>CRYPTO:</strong> Ichimoku 80% WR. Drift detection + multi-TF regime deployed. Grade gate now blocks D-grade algos. <span style="color:#22c55e;">LIVE</span></li>
+      <li><strong>FOREX:</strong> 19 algos with ML optimizer. Only 3 closed trades &mdash; needs 10+ for optimization. <span style="color:#f59e0b;">COLLECTING DATA</span></li>
+      <li><strong>MUTUAL FUNDS:</strong> 10 algos, walk-forward ML. Forward tracking now live with exit rules. <span style="color:#22c55e;">TRACKING ACTIVE</span></li>
+      <li><strong>SPORTS:</strong> XGBoost ensemble built. 9/20 bets settled, need 50+ for meaningful ML. <span style="color:#f59e0b;">COLLECTING DATA</span></li>
+    </ul>
+  </div>
+</div>
+
 <!-- Feb 12, 2026 — Complete ML Infrastructure Expansion: FOREX, Mutual Funds, Cross-Asset Intelligence -->
 <div class="update-entry" style="--dot-color: #22c55e;" data-tags="ml,machine-learning,forex,mutual-funds,cross-asset,drift-detection,regime,walk-forward,xgboost,grid-search" data-category="trading" data-types="feature,improvement">
   <div class="update-date">Feb 12, 2026</div>
