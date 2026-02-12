@@ -20,7 +20,7 @@ $FINNHUB_API_KEY       = 'cvstlkhr01qhup0t0j7gcvstlkhr01qhup0t0j80';
 // Sports Betting — separate database
 $sports_servername = 'mysql.50webs.com';
 $sports_username   = 'ejaguiar1_sportsbet';
-$sports_password   = 'eltonsportsbets';
+$sports_password   = 'wannabet';
 $sports_dbname     = 'ejaguiar1_sportsbet';
 
 // Sports Betting - The Odds API (free tier: 500 credits/month)

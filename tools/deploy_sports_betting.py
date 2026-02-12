@@ -5,7 +5,21 @@ import ssl
 import os
 import sys
 
-# Read FTP credentials from Windows environment variables
+# Load .env if present
+_env_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
+if os.path.exists(_env_file):
+    with open(_env_file) as _f:
+        for _line in _f:
+            _line = _line.strip()
+            if _line and not _line.startswith('#') and '=' in _line:
+                _k, _, _v = _line.partition('=')
+                _k, _v = _k.strip(), _v.strip()
+                if _k and not os.environ.get(_k):
+                    os.environ[_k] = _v
+    if 'FTP_SERVER' not in os.environ and os.environ.get('FTP_HOST'):
+        os.environ['FTP_SERVER'] = os.environ['FTP_HOST']
+
+# Read FTP credentials from environment variables
 SERVER = os.environ.get('FTP_SERVER', '')
 USER = os.environ.get('FTP_USER', '')
 PASS = os.environ.get('FTP_PASS', '')
@@ -31,6 +45,8 @@ FILES = [
     ('live-monitor/api/sports_schema.php', 'live-monitor/api/sports_schema.php'),
     # ML Integration
     ('live-monitor/api/sports_ml.php', 'live-monitor/api/sports_ml.php'),
+    # One-time setup / migration
+    ('live-monitor/api/sports_setup_dedicated_db.php', 'live-monitor/api/sports_setup_dedicated_db.php'),
     # NBA Stats Intelligence
     ('live-monitor/api/nba_stats.php', 'live-monitor/api/nba_stats.php'),
     # Frontend dashboard + JS module

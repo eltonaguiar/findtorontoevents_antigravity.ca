@@ -95,8 +95,9 @@ DB_PASS = os.getenv('DB_PASS', 'stocks')
 DB_NAME = os.getenv('DB_NAME', 'ejaguiar1_stocks')
 
 # Try dedicated sports DB first
+SPORTS_DB_HOST = os.getenv('SPORTS_DB_HOST', 'mysql.50webs.com')
 SPORTS_DB_USER = os.getenv('SPORTS_DB_USER', 'ejaguiar1_sportsbet')
-SPORTS_DB_PASS = os.getenv('SPORTS_DB_PASS', 'eltonsportsbets')
+SPORTS_DB_PASS = os.getenv('SPORTS_DB_PASS', 'wannabet')
 SPORTS_DB_NAME = os.getenv('SPORTS_DB_NAME', 'ejaguiar1_sportsbet')
 
 # Model persistence
@@ -136,7 +137,7 @@ def connect_db():
     # Try dedicated sports DB
     try:
         conn = mysql.connector.connect(
-            host=DB_HOST,
+            host=SPORTS_DB_HOST,
             user=SPORTS_DB_USER,
             password=SPORTS_DB_PASS,
             database=SPORTS_DB_NAME,
