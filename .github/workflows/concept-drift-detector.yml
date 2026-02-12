@@ -1,0 +1,50 @@
+name: Concept Drift Detector — Feature & Performance Monitoring
+
+on:
+  schedule:
+    # Daily at 6 PM EST (23:00 UTC) — after market close + position tracking
+    - cron: '0 23 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (show drift analysis without updating DB)'
+        required: false
+        default: 'false'
+
+jobs:
+  drift-detection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install --quiet mysql-connector-python requests numpy pandas
+
+    - name: Run Concept Drift Detector
+      env:
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASS: ${{ secrets.DB_PASS }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+      run: |
+        echo "=== Concept Drift Detector ==="
+        echo "Time: $(date -u)"
+        echo "Checks: PSI feature drift, win rate degradation, signal volume shifts"
+        echo ""
+
+        DRY_RUN_FLAG=""
+        if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+          DRY_RUN_FLAG="--dry-run"
+          echo "Running in DRY RUN mode"
+        fi
+
+        python scripts/concept_drift_detector.py $DRY_RUN_FLAG

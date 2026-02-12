@@ -1,0 +1,42 @@
+name: Multi-Timeframe Regime Detector — 4h/Daily/Weekly HMM
+
+on:
+  schedule:
+    # Every 4 hours — matches intraday regime detection cadence
+    - cron: '0 */4 * * *'
+    # Sunday comprehensive analysis at 1 PM EST (18:00 UTC)
+    - cron: '0 18 * * 0'
+  workflow_dispatch:
+
+jobs:
+  multi-tf-regime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install --quiet yfinance numpy hmmlearn mysql-connector-python
+
+    - name: Run Multi-Timeframe Regime Detector
+      env:
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASS: ${{ secrets.DB_PASS }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+      run: |
+        echo "=== Multi-Timeframe Regime Detector ==="
+        echo "Time: $(date -u)"
+        echo "Timeframes: 4h (intraday), 1d (daily), 1w (structural)"
+        echo "Assets: SPY, BTC-USD, EUR=X, TLT"
+        echo ""
+
+        python scripts/multi_timeframe_regime.py

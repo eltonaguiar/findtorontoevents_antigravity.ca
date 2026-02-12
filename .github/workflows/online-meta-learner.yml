@@ -1,0 +1,57 @@
+name: Online Meta-Learner — Incremental XGBoost Updates
+
+on:
+  schedule:
+    # Daily at 7 PM EST (00:00 UTC next day) — after drift detection, before next trading day
+    - cron: '0 0 * * 2-6'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force update even with few trades'
+        required: false
+        default: 'false'
+      dry_run:
+        description: 'Dry run (show analysis without updating model)'
+        required: false
+        default: 'false'
+
+jobs:
+  online-learning:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install --quiet xgboost scikit-learn pandas numpy mysql-connector-python requests
+
+    - name: Run Online Meta-Learner
+      env:
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASS: ${{ secrets.DB_PASS }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+      run: |
+        echo "=== Online Meta-Learner — Incremental XGBoost ==="
+        echo "Time: $(date -u)"
+        echo ""
+
+        FLAGS=""
+        if [ "${{ github.event.inputs.force }}" = "true" ]; then
+          FLAGS="$FLAGS --force"
+          echo "Force mode: updating even with few trades"
+        fi
+        if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+          FLAGS="$FLAGS --dry-run"
+          echo "Dry run mode: no model updates"
+        fi
+
+        python scripts/online_meta_learner.py $FLAGS
