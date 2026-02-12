@@ -24,6 +24,33 @@ $MAX_POSITION_PCT     = 7;   // Ceiling: never larger than 7%
 $TRAILING_ACTIVATE    = 0.50; // Activate trailing stop at 50% of TP reached
 $TRAILING_FACTOR      = 0.60; // Trail at 60% of SL below highest_price (tighter than original SL)
 
+// ─── Per-asset-class position limits (Feb 11, 2026) ─────────────────
+// Reduces concentration: crypto max 5, stock max 5, forex max 3
+$MAX_POSITIONS_PER_ASSET = array(
+    'CRYPTO' => 5,
+    'STOCK'  => 5,
+    'FOREX'  => 3
+);
+
+// ─── Crypto execution optimization (Feb 11, 2026) ──────────────────
+// Only these algorithms are allowed to open crypto paper trades.
+// Based on Goldmine tracker proven win rates:
+//   Momentum Burst (100%), Alpha Predator (87%), StochRSI Crossover (81%),
+//   Ichimoku Cloud (80%), RSI(2) Scalp (75%)
+// All other crypto algorithms have < 70% WR and are excluded from execution.
+$CRYPTO_PREFERRED_ALGOS = array(
+    'Momentum Burst',
+    'Alpha Predator',
+    'StochRSI Crossover',
+    'Ichimoku Cloud',
+    'RSI(2) Scalp'
+);
+
+// ─── Crypto TP floor (Feb 11, 2026) ────────────────────────────────
+// Crypto signals often have TP too tight after regime scaling.
+// Minimum 3% TP for crypto to allow natural price movement.
+$CRYPTO_MIN_TP_PCT = 3.0;
+
 // ─── Auto-create tables ─────────────────────────────────────────────
 $conn->query("
 CREATE TABLE IF NOT EXISTS lm_trades (
@@ -570,7 +597,7 @@ case 'enter':
         }
     }
 
-    // Check max concurrent open positions
+    // Check max concurrent open positions (global limit)
     $open_r = $conn->query("SELECT COUNT(*) AS cnt FROM lm_trades WHERE status='open'");
     $open_row = _lt_fetch_row($open_r);
     $open_count = $open_row ? (int) $open_row['cnt'] : 0;
@@ -578,6 +605,26 @@ case 'enter':
     if ($open_count >= $MAX_POSITIONS) {
         header('HTTP/1.0 400 Bad Request');
         echo json_encode(array('ok' => false, 'error' => 'Max concurrent positions reached (' . $MAX_POSITIONS . ')'));
+        exit;
+    }
+
+    // Per-asset-class position limit (Feb 11, 2026)
+    if (isset($MAX_POSITIONS_PER_ASSET[$asset_class])) {
+        $asset_max = $MAX_POSITIONS_PER_ASSET[$asset_class];
+        $asset_r = $conn->query("SELECT COUNT(*) AS cnt FROM lm_trades WHERE status='open' AND asset_class='" . $conn->real_escape_string($asset_class) . "'");
+        $asset_row = _lt_fetch_row($asset_r);
+        $asset_count = $asset_row ? (int) $asset_row['cnt'] : 0;
+        if ($asset_count >= $asset_max) {
+            header('HTTP/1.0 400 Bad Request');
+            echo json_encode(array('ok' => false, 'error' => 'Max ' . $asset_class . ' positions reached (' . $asset_max . ')'));
+            exit;
+        }
+    }
+
+    // Crypto algorithm filter — only preferred algos can open crypto trades (Feb 11, 2026)
+    if ($asset_class === 'CRYPTO' && $algorithm !== '' && !in_array($algorithm, $CRYPTO_PREFERRED_ALGOS)) {
+        header('HTTP/1.0 400 Bad Request');
+        echo json_encode(array('ok' => false, 'error' => 'Algorithm ' . $algorithm . ' not in crypto preferred list'));
         exit;
     }
 
@@ -592,6 +639,21 @@ case 'enter':
         exit;
     }
     $entry_price = (float) $price_row['price'];
+
+    // Crypto TP floor: enforce minimum 3% TP to avoid premature exits (Feb 11, 2026)
+    if ($asset_class === 'CRYPTO' && $tp_pct < $CRYPTO_MIN_TP_PCT) {
+        $tp_pct = $CRYPTO_MIN_TP_PCT;
+    }
+
+    // Minimum SL floor: with 30-min tracking interval, SLs below 1.5% are unrealistic.
+    // Price can easily move 1-2% between checks, making tight SLs meaningless and
+    // causing exits far worse than the target (e.g. -12% exit on -3% SL target).
+    // Per-asset floors: Crypto 2%, Stock 1.5%, Forex 1%
+    $SL_FLOORS = array('CRYPTO' => 2.0, 'STOCK' => 1.5, 'FOREX' => 1.0);
+    $sl_floor = isset($SL_FLOORS[$asset_class]) ? $SL_FLOORS[$asset_class] : 1.5;
+    if ($sl_pct < $sl_floor) {
+        $sl_pct = $sl_floor;
+    }
 
     // Calculate position size: Half-Kelly + volatility-adjusted (World-Class upgrade)
     // Step 1: Volatility-adjusted base (Kimi)
@@ -608,10 +670,13 @@ case 'enter':
     $position_value  = $raw_position;
     $units           = $position_value / $entry_price;
 
-    // Calculate entry fees
+    // Calculate entry fees (matching _lt_calc_fees model)
     $entry_fee = 0;
     if ($asset_class === 'CRYPTO') {
-        $entry_fee = round($entry_price * $units * 0.001, 2);
+        $entry_fee = round($entry_price * $units * 0.002, 2); // 0.20% per side (NDAX)
+    } elseif ($asset_class === 'STOCK') {
+        $entry_shares = abs((int) $units);
+        $entry_fee = max(1.99, $entry_shares * 0.0099); // Moomoo: $0.0099/share, min $1.99
     }
 
     $now = date('Y-m-d H:i:s');
@@ -1027,13 +1092,239 @@ case 'history':
 
 
 // =====================================================================
+// ACTION: auto_execute — Auto-enter positions from high-strength signals
+// Bridges the gap between signal generation and trade execution.
+// Only enters signals above a configurable strength threshold.
+// =====================================================================
+case 'auto_execute':
+    _lt_check_admin(isset($_POST['key']) ? $_POST['key'] : (isset($_GET['key']) ? $_GET['key'] : ''));
+
+    $min_strength = isset($_GET['min_strength']) ? (int) $_GET['min_strength'] : 70;
+    $max_entries  = isset($_GET['max_entries'])  ? (int) $_GET['max_entries']  : 3;
+    if ($min_strength < 30)  $min_strength = 30;
+    if ($min_strength > 100) $min_strength = 100;
+    if ($max_entries < 1)    $max_entries = 1;
+    if ($max_entries > 5)    $max_entries = 5;
+
+    $now = date('Y-m-d H:i:s');
+
+    // Get active signals above threshold, sorted by strength descending
+    $sig_sql = "SELECT * FROM lm_signals
+        WHERE status = 'active'
+        AND expires_at > '" . $conn->real_escape_string($now) . "'
+        AND signal_strength >= " . (int) $min_strength . "
+        ORDER BY signal_strength DESC
+        LIMIT 20";
+    $sig_res = $conn->query($sig_sql);
+
+    $candidates = array();
+    if ($sig_res) {
+        while ($srow = $sig_res->fetch_assoc()) {
+            $candidates[] = $srow;
+        }
+        $sig_res->free();
+    }
+
+    // Check current open positions count
+    $open_r = $conn->query("SELECT COUNT(*) AS cnt FROM lm_trades WHERE status='open'");
+    $open_row = _lt_fetch_row($open_r);
+    $open_count = $open_row ? (int) $open_row['cnt'] : 0;
+
+    // Check per-asset open counts
+    $asset_counts = array('CRYPTO' => 0, 'STOCK' => 0, 'FOREX' => 0);
+    $ac_r = $conn->query("SELECT asset_class, COUNT(*) AS cnt FROM lm_trades WHERE status='open' GROUP BY asset_class");
+    if ($ac_r) {
+        while ($ac_row = $ac_r->fetch_assoc()) {
+            $asset_counts[$ac_row['asset_class']] = (int) $ac_row['cnt'];
+        }
+        $ac_r->free();
+    }
+
+    // Check circuit breaker
+    $breaker_active = false;
+    $breaker_r = $conn->query("SELECT id FROM lm_breaker_log WHERE active = 1 LIMIT 1");
+    if ($breaker_r) {
+        $breaker_active = ($breaker_r->num_rows > 0);
+        $breaker_r->free();
+    }
+
+    // Get open symbols to prevent duplicate positions on same symbol
+    $open_symbols = array();
+    $os_r = $conn->query("SELECT CONCAT(symbol, '_', direction) AS sym_dir FROM lm_trades WHERE status='open'");
+    if ($os_r) {
+        while ($os_row = $os_r->fetch_assoc()) {
+            $open_symbols[] = $os_row['sym_dir'];
+        }
+        $os_r->free();
+    }
+
+    $entered   = array();
+    $skipped   = array();
+    $portfolio_value = _lt_get_portfolio_value($conn);
+
+    foreach ($candidates as $sig) {
+        if (count($entered) >= $max_entries) break;
+        if ($breaker_active) {
+            $skipped[] = array('symbol' => $sig['symbol'], 'reason' => 'circuit_breaker');
+            continue;
+        }
+
+        $sig_ac  = $sig['asset_class'];
+        $sig_sym = $sig['symbol'];
+        $sig_dir = (isset($sig['signal_type']) && ($sig['signal_type'] === 'SHORT' || $sig['signal_type'] === 'STRONG_SHORT')) ? 'SHORT' : 'LONG';
+
+        // Skip if already have an open position on this symbol+direction
+        $sym_dir_key = $sig_sym . '_' . $sig_dir;
+        if (in_array($sym_dir_key, $open_symbols)) {
+            $skipped[] = array('symbol' => $sig_sym, 'reason' => 'duplicate_position');
+            continue;
+        }
+
+        // Global position limit
+        if ($open_count >= $MAX_POSITIONS) {
+            $skipped[] = array('symbol' => $sig_sym, 'reason' => 'max_positions');
+            break;
+        }
+
+        // Per-asset limit
+        if (isset($MAX_POSITIONS_PER_ASSET[$sig_ac])) {
+            $asset_max = $MAX_POSITIONS_PER_ASSET[$sig_ac];
+            $cur_asset_count = isset($asset_counts[$sig_ac]) ? $asset_counts[$sig_ac] : 0;
+            if ($cur_asset_count >= $asset_max) {
+                $skipped[] = array('symbol' => $sig_sym, 'reason' => 'max_' . strtolower($sig_ac) . '_positions');
+                continue;
+            }
+        }
+
+        // Crypto algorithm filter
+        $sig_algo = isset($sig['algorithm_name']) ? $sig['algorithm_name'] : '';
+        if ($sig_ac === 'CRYPTO' && $sig_algo !== '' && !in_array($sig_algo, $CRYPTO_PREFERRED_ALGOS)) {
+            $skipped[] = array('symbol' => $sig_sym, 'reason' => 'algo_not_preferred_crypto');
+            continue;
+        }
+
+        // Get current price from cache
+        $safe_sym = $conn->real_escape_string($sig_sym);
+        $safe_ac  = $conn->real_escape_string($sig_ac);
+        $price_r  = $conn->query("SELECT price FROM lm_price_cache WHERE symbol = '" . $safe_sym . "' AND asset_class = '" . $safe_ac . "' ORDER BY last_updated DESC LIMIT 1");
+        $price_row = _lt_fetch_row($price_r);
+        if (!$price_row || (float) $price_row['price'] <= 0) {
+            $skipped[] = array('symbol' => $sig_sym, 'reason' => 'no_price');
+            continue;
+        }
+        $entry_price = (float) $price_row['price'];
+
+        // TP/SL from signal
+        $tp_pct  = isset($sig['target_tp_pct']) ? (float) $sig['target_tp_pct'] : 5;
+        $sl_pct  = isset($sig['target_sl_pct']) ? (float) $sig['target_sl_pct'] : 3;
+        $max_hold = isset($sig['max_hold_hours']) ? (int) $sig['max_hold_hours'] : 24;
+
+        // Crypto TP floor
+        if ($sig_ac === 'CRYPTO' && $tp_pct < $CRYPTO_MIN_TP_PCT) {
+            $tp_pct = $CRYPTO_MIN_TP_PCT;
+        }
+
+        // Minimum SL floor: SL must be >= 1.5% for 30-min tracking interval
+        // Prevents stop-losses that are too tight to be meaningful with infrequent checks
+        $MIN_SL_FLOOR = 1.5;
+        if ($sl_pct < $MIN_SL_FLOOR) {
+            $sl_pct = $MIN_SL_FLOOR;
+        }
+
+        // Position sizing: Half-Kelly + volatility-adjusted
+        $vol_pct   = _lt_vol_adjusted_position_pct($conn, $sig_sym, $sig_ac);
+        $kelly_pct = _lt_kelly_position_pct($conn, $sig_algo, $sig_ac, $vol_pct);
+        $position_value = round($portfolio_value * ($kelly_pct / 100), 2);
+        $units = $position_value / $entry_price;
+
+        // Entry fees
+        $entry_fee = 0;
+        if ($sig_ac === 'CRYPTO') {
+            $entry_fee = round($entry_price * $units * 0.002, 2);
+        } elseif ($sig_ac === 'STOCK') {
+            $shares = abs((int) $units);
+            $entry_fee = max(1.99, $shares * 0.0099);
+        }
+
+        $entry_now = date('Y-m-d H:i:s');
+
+        $conn->query("INSERT INTO lm_trades (
+            asset_class, symbol, algorithm_name, signal_id, direction,
+            entry_time, entry_price, position_size_units, position_value_usd,
+            target_tp_pct, target_sl_pct, max_hold_hours,
+            current_price, highest_price, lowest_price,
+            status, fees_usd, created_at
+        ) VALUES (
+            '" . $safe_ac . "',
+            '" . $safe_sym . "',
+            '" . $conn->real_escape_string($sig_algo) . "',
+            " . (int) $sig['id'] . ",
+            '" . $conn->real_escape_string($sig_dir) . "',
+            '" . $conn->real_escape_string($entry_now) . "',
+            " . (float) $entry_price . ",
+            " . (float) $units . ",
+            " . (float) $position_value . ",
+            " . (float) $tp_pct . ",
+            " . (float) $sl_pct . ",
+            " . (int) $max_hold . ",
+            " . (float) $entry_price . ",
+            " . (float) $entry_price . ",
+            " . (float) $entry_price . ",
+            'open',
+            " . (float) $entry_fee . ",
+            '" . $conn->real_escape_string($entry_now) . "'
+        )");
+
+        $new_id = $conn->insert_id;
+
+        // Mark signal as executed
+        $conn->query("UPDATE lm_signals SET status = 'executed' WHERE id = " . (int) $sig['id']);
+
+        $entered[] = array(
+            'trade_id'        => $new_id,
+            'signal_id'       => (int) $sig['id'],
+            'symbol'          => $sig_sym,
+            'asset_class'     => $sig_ac,
+            'direction'       => $sig_dir,
+            'algorithm'       => $sig_algo,
+            'signal_strength' => (int) $sig['signal_strength'],
+            'entry_price'     => $entry_price,
+            'position_value'  => $position_value,
+            'tp_pct'          => $tp_pct,
+            'sl_pct'          => $sl_pct,
+            'max_hold_hours'  => $max_hold
+        );
+
+        $open_count++;
+        if (isset($asset_counts[$sig_ac])) {
+            $asset_counts[$sig_ac]++;
+        }
+        $open_symbols[] = $sym_dir_key;
+    }
+
+    echo json_encode(array(
+        'ok'              => true,
+        'action'          => 'auto_execute',
+        'min_strength'    => $min_strength,
+        'candidates'      => count($candidates),
+        'entered'         => count($entered),
+        'skipped'         => count($skipped),
+        'positions_open'  => $open_count,
+        'portfolio_value' => $portfolio_value,
+        'entered_details' => $entered,
+        'skipped_details' => array_slice($skipped, 0, 10)
+    ));
+    break;
+
+
+// =====================================================================
 // Unknown or missing action
 // =====================================================================
 default:
     header('HTTP/1.0 400 Bad Request');
     echo json_encode(array(
         'ok'    => false,
-        'error' => 'Unknown or missing action. Valid: enter, track, close, positions, dashboard, history'
+        'error' => 'Unknown or missing action. Valid: enter, track, close, positions, dashboard, history, auto_execute'
     ));
     break;
 }

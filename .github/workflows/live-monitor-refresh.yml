@@ -72,13 +72,34 @@ jobs:
             print(f'Error: {d.get(\"error\",\"unknown\")}')
         " || echo "Scan: $RESULT"
 
-    # ─── Step 4: Expire old signals ───
+    # ─── Step 4: Auto-execute high-strength signals into paper trades ───
+    - name: Auto-execute signals
+      continue-on-error: true
+      run: |
+        echo "=== Auto-executing strong signals (strength >= 70) ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/live_trade.php?action=auto_execute&key=livetrader2026&min_strength=70&max_entries=3") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            print(f'Candidates: {d.get(\"candidates\",0)} (strength >= {d.get(\"min_strength\",70)})')
+            print(f'Entered: {d.get(\"entered\",0)} | Skipped: {d.get(\"skipped\",0)} | Open: {d.get(\"positions_open\",0)}')
+            print(f'Portfolio: \${d.get(\"portfolio_value\",0):,.2f}')
+            for e in d.get('entered_details', []):
+                print(f'  ENTERED: {e[\"symbol\"]:8s} {e[\"direction\"]:5s} {e[\"algorithm\"]:22s} str={e[\"signal_strength\"]} \${e[\"position_value\"]:,.2f}')
+            for s in d.get('skipped_details', [])[:5]:
+                print(f'  SKIP: {s[\"symbol\"]:8s} reason={s[\"reason\"]}')
+        else:
+            print(f'Error: {d.get(\"error\",\"unknown\")}')
+        " || echo "Auto-exec: $RESULT"
+
+    # ─── Step 5: Expire old signals ───
     - name: Expire old signals
       continue-on-error: true
       run: |
         curl -s --max-time 10 "https://findtorontoevents.ca/live-monitor/api/live_signals.php?action=expire" > /dev/null 2>&1 || true
 
-    # ─── Step 5: Check circuit breakers ───
+    # ─── Step 6: Check circuit breakers ───
     - name: Check circuit breakers
       continue-on-error: true
       run: |
@@ -97,7 +118,7 @@ jobs:
                 print('No active circuit breakers - trading allowed')
         " || echo "Breakers: $RESULT"
 
-    # ─── Step 6: Print portfolio summary ───
+    # ─── Step 7: Print portfolio summary ───
     - name: Portfolio summary
       continue-on-error: true
       run: |

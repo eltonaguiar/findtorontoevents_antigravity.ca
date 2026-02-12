@@ -12,7 +12,7 @@
  *   max_hold_days  — max holding period in trading days (e.g. 7)
  *   initial_capital— starting capital (default 10000)
  *   commission     — commission per trade in $ (default 10, ignored when fee_model=questrade)
- *   slippage       — slippage % (default 0.5)
+ *   slippage       — slippage % (default 0.1)
  *   position_size  — % of capital per position (default 10)
  *   fee_model      — questrade|flat_10|zero (default questrade)
  *   vol_filter     — off|skip_high|skip_elevated|calm_only|custom (default off)
@@ -58,12 +58,13 @@ $stop_loss       = (float)_bt_param('stop_loss',       isset($params['stop_loss'
 $max_hold_days   = (int)_bt_param('max_hold_days',     isset($params['max_hold_days']) ? $params['max_hold_days'] : 7);
 $initial_capital = (float)_bt_param('initial_capital', isset($params['initial_capital']) ? $params['initial_capital'] : 10000);
 $commission      = (float)_bt_param('commission',      isset($params['commission']) ? $params['commission'] : 10);
-$slippage_pct    = (float)_bt_param('slippage',        isset($params['slippage']) ? $params['slippage'] : 0.5);
+$slippage_pct    = (float)_bt_param('slippage',        isset($params['slippage']) ? $params['slippage'] : 0.1);
 $position_pct    = (float)_bt_param('position_size',   isset($params['position_size']) ? $params['position_size'] : 10);
 $fee_model       = _bt_param('fee_model', 'questrade');
 $vol_filter      = _bt_param('vol_filter', 'off');
 $max_vix         = (float)_bt_param('max_vix', 25);
 $save_results    = (int)_bt_param('save', 0);
+$embargo_days    = (int)_bt_param('embargo_days', 2);  // Purged embargo: skip N days after pick to prevent look-ahead bias
 
 // Strategy presets
 if ($strategy === 'daytrader') {
@@ -219,6 +220,7 @@ while ($pick = $picks_res->fetch_assoc()) {
     $exit_date    = '';
     $exit_reason  = '';
     $first_day    = true;
+    $embargo_skipped = 0;  // Purged embargo counter
 
     while ($day = $price_res->fetch_assoc()) {
         if ($first_day) {
@@ -228,6 +230,14 @@ while ($pick = $picks_res->fetch_assoc()) {
         }
 
         $day_count++;
+
+        // Purged embargo: skip the first N trading days after pick to prevent
+        // look-ahead bias (signal may use data from these days). Default 2 days.
+        if ($embargo_days > 0 && $day_count <= $embargo_days) {
+            $embargo_skipped++;
+            continue;
+        }
+        $day_open  = (float)$day['open_price'];
         $day_high  = (float)$day['high_price'];
         $day_low   = (float)$day['low_price'];
         $day_close = (float)$day['close_price'];
@@ -237,11 +247,29 @@ while ($pick = $picks_res->fetch_assoc()) {
         $tp_price = $effective_entry * (1 + $take_profit / 100);
         $sl_price = $effective_entry * (1 - $stop_loss / 100);
 
+        // Gap-aware stop loss: if day opens below SL, exit at open price (realistic gap fill)
+        if ($day_open > 0 && $day_open <= $sl_price && $stop_loss < 999 && $day_count > 1) {
+            $exit_price  = $day_open;  // Gap down — fill at open, not SL
+            $exit_date   = $day_date;
+            $exit_reason = 'stop_loss';
+            $sold = true;
+            break;
+        }
+
         // Check stop loss first (conservative assumption: SL triggers before TP on same day)
         if ($day_low <= $sl_price && $stop_loss < 999) {
             $exit_price  = $sl_price;
             $exit_date   = $day_date;
             $exit_reason = 'stop_loss';
+            $sold = true;
+            break;
+        }
+
+        // Gap-aware take profit: if day opens above TP, fill at open (realistic gap fill)
+        if ($day_open > 0 && $day_open >= $tp_price && $take_profit < 999 && $day_count > 1) {
+            $exit_price  = $day_open;  // Gap up — fill at open, not TP
+            $exit_date   = $day_date;
+            $exit_reason = 'take_profit';
             $sold = true;
             break;
         }
@@ -298,9 +326,15 @@ while ($pick = $picks_res->fetch_assoc()) {
     // Calculate profit/loss
     $gross_profit = ($effective_exit - $effective_entry) * $shares;
     $net_profit   = $gross_profit - $comm_total;
-    $return_pct   = ($effective_entry * $shares > 0)
-                    ? ($net_profit / ($effective_entry * $shares)) * 100
+    $position_value = $effective_entry * $shares;
+    $return_pct   = ($position_value > 0)
+                    ? ($net_profit / $position_value) * 100
                     : 0;
+
+    // Hard cap: no single trade can lose more than 100% of its allocated capital
+    // (prevents impossible -145% losses from calculation errors or leverage bugs)
+    if ($return_pct < -100) $return_pct = -100;
+    if ($net_profit < -$position_value) $net_profit = -$position_value;
 
     $trade = array(
         'ticker'         => $ticker,
@@ -432,7 +466,8 @@ $response = array(
         'fee_model_label' => questrade_fee_label($fee_model),
         'vol_filter'      => $vol_filter,
         'vol_filter_label'=> vol_filter_label($vol_filter, $max_vix),
-        'max_vix'         => $max_vix
+        'max_vix'         => $max_vix,
+        'embargo_days'    => $embargo_days
     ),
     'summary' => array(
         'initial_capital'  => $initial_capital,
