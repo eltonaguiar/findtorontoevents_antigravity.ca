@@ -1,0 +1,79 @@
+name: NBA Stats Intelligence — Daily Refresh
+
+on:
+  schedule:
+    # Daily at 6 AM and 6 PM EST (11:00, 23:00 UTC)
+    - cron: '0 11,23 * * *'
+  workflow_dispatch:
+
+jobs:
+  nba-refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: Refresh NBA team stats
+      continue-on-error: true
+      run: |
+        echo "=== Refreshing NBA Team Stats ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/live-monitor/api/nba_stats.php?action=refresh&key=livetrader2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Source: {d.get(\"source\", \"?\")}')
+                print(f'Teams stored: {d.get(\"teams_stored\", 0)}')
+                print(f'Games stored: {d.get(\"games_stored\", 0)}')
+                print(f'Updated: {d.get(\"updated_at\", \"?\")}')
+                if d.get('errors'):
+                    print(f'Failover notes: {d[\"errors\"]}')
+            else:
+                print(f'Error: {d.get(\"error\", \"unknown\")}')
+                if d.get('details'):
+                    for e in d['details']:
+                        print(f'  - {e}')
+        except: print('Parse error')
+        " || echo "Refresh: $RESULT"
+
+    - name: Verify team stats cache
+      continue-on-error: true
+      run: |
+        echo "=== Verifying cached stats ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/nba_stats.php?action=team_stats") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Teams in cache: {d.get(\"team_count\", 0)}')
+                print(f'Last updated: {d.get(\"updated_at\", \"?\")}')
+                teams = d.get('teams', {})
+                # Show top 5 by win pct
+                sorted_teams = sorted(teams.values(), key=lambda t: t.get('win_pct', 0), reverse=True)
+                print('\\nTop 5 by Win%:')
+                for t in sorted_teams[:5]:
+                    print(f'  {t.get(\"abbreviation\",\"?\")} {t.get(\"name\",\"?\")} — {t.get(\"wins\",0)}-{t.get(\"losses\",0)} ({t.get(\"win_pct\",0):.3f}) Streak: {t.get(\"streak\",\"--\")}')
+            else:
+                print(f'Error: {d.get(\"error\", \"unknown\")}')
+        except: print('Parse error')
+        " || echo "Verify: $RESULT"
+
+    - name: Check today's NBA games
+      continue-on-error: true
+      run: |
+        echo "=== Today's NBA Games ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/live-monitor/api/nba_stats.php?action=today_games") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Date: {d.get(\"date\", \"?\")}')
+                print(f'Games today: {d.get(\"count\", 0)}')
+                for g in d.get('games', []):
+                    print(f'  {g.get(\"away_team\",\"?\")} @ {g.get(\"home_team\",\"?\")} — {g.get(\"start_time\",\"?\")} ({g.get(\"status\",\"?\")})')
+            else:
+                print(f'Error: {d.get(\"error\", \"unknown\")}')
+        except: print('Parse error')
+        " || echo "Games: $RESULT"

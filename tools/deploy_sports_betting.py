@@ -27,8 +27,11 @@ FILES = [
     ('live-monitor/api/sports_picks.php', 'live-monitor/api/sports_picks.php'),
     ('live-monitor/api/sports_bets.php', 'live-monitor/api/sports_bets.php'),
     ('live-monitor/api/sports_scores.php', 'live-monitor/api/sports_scores.php'),
-    # Frontend dashboard
+    # NBA Stats Intelligence
+    ('live-monitor/api/nba_stats.php', 'live-monitor/api/nba_stats.php'),
+    # Frontend dashboard + JS module
     ('live-monitor/sports-betting.html', 'live-monitor/sports-betting.html'),
+    ('live-monitor/sports-betting.js', 'live-monitor/sports-betting.js'),
     # Updated nav pages
     ('live-monitor/live-monitor.html', 'live-monitor/live-monitor.html'),
     ('live-monitor/edge-dashboard.html', 'live-monitor/edge-dashboard.html'),
@@ -99,6 +102,7 @@ def main():
     print("  https://findtorontoevents.ca/live-monitor/api/sports_odds.php?action=sports")
     print("  https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=today")
     print("  https://findtorontoevents.ca/live-monitor/api/sports_bets.php?action=dashboard")
+    print("  https://findtorontoevents.ca/live-monitor/api/nba_stats.php?action=team_stats")
     print("  https://findtorontoevents.ca/live-monitor/sports-betting.html")
 
 
