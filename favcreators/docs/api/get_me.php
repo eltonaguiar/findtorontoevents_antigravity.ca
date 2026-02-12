@@ -3,11 +3,27 @@
 // Returns the currently logged-in user from PHP Session and, for admin, debug_log_enabled.
 // Also includes Discord link status if available.
 
-session_set_cookie_params(86400, '/', null, true, true);
+error_reporting(0);
+ob_start();
+
+// CORS headers — required for credentials: "include" from JS fetch
+header('Access-Control-Allow-Origin: https://findtorontoevents.ca');
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    ob_end_clean();
+    header('HTTP/1.0 204 No Content');
+    exit;
+}
+
+// Session cookie: 24h lifetime, SameSite=Lax for mobile browser compat
+session_set_cookie_params(86400, '/; SameSite=Lax', null, true, true);
 session_start();
 
 header('Content-Type: application/json');
-header('Cache-Control: no-cache, must-revalidate');
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
 
 $out = array("user" => null, "debug_log_enabled" => false);
 if (isset($_SESSION['user'])) {

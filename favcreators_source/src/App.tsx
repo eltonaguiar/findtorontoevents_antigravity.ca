@@ -880,24 +880,35 @@ function App() {
         }
       })();
 
-      if (cached?.provider === "admin") {
+      // Show cached user immediately to avoid flash of "Sign In"
+      if (cached) {
         setAuthUser(cached);
+      }
+
+      // Admin users: trust localStorage, skip server check
+      if (cached?.provider === "admin") {
         return;
       }
 
       try {
         const user = await fetchMe();
-        setAuthUser(user);
         if (user) {
+          // Server confirmed session — update cache
+          setAuthUser(user);
           localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(user));
-        } else {
-          localStorage.removeItem(AUTH_USER_STORAGE_KEY);
+        } else if (!cached) {
+          // No cached user AND server says no session — genuinely not logged in
+          setAuthUser(null);
         }
+        // If cached exists but server returns null (session expired),
+        // keep using the cached user — don't destroy localStorage.
+        // Only explicit logout should clear the cache.
       } catch (error) {
+        // Network error — keep cached user if available
         if (cached) {
           setAuthUser(cached);
         }
-        console.warn("Auth check failed", error);
+        console.warn("Auth check failed, using cached user", error);
       }
     };
 

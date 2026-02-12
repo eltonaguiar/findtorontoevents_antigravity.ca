@@ -2,12 +2,13 @@
 error_reporting(0);
 ob_start();
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: https://findtorontoevents.ca');
+header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     ob_end_clean();
-    header('HTTP/1.1 204 No Content');
+    header('HTTP/1.0 204 No Content');
     exit;
 }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -27,7 +28,7 @@ if (!$data) {
 
 // Admin backdoor - Check BEFORE connection; set session so admin-only APIs work
 if (isset($data['email']) && $data['email'] === 'admin' && isset($data['password']) && $data['password'] === 'adminelton2016') {
-    session_set_cookie_params(86400, '/', null, true, true);
+    session_set_cookie_params(86400, '/; SameSite=Lax', null, true, true);
     session_start();
     $_SESSION['user'] = array(
         'id' => 0,
@@ -61,7 +62,7 @@ if ($result && $result->num_rows > 0) {
             'provider' => 'local',
             'display_name' => $user['display_name']
         );
-        session_set_cookie_params(86400, '/', null, true, true);
+        session_set_cookie_params(86400, '/; SameSite=Lax', null, true, true);
         session_start();
         $_SESSION['user'] = $userObj;
         echo json_encode(array('user' => $userObj));
