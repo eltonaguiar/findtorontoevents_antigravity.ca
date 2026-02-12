@@ -202,7 +202,7 @@ def is_already_bridged(cursor, source_table, source_id):
 
 def create_signal(cursor, pick, algo_config):
     """Insert a signal into lm_signals and return the signal_id."""
-    now = datetime.utcnow().strftime('%Y-% m-%d %H:%M:%S')
+    now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     expires = (datetime.utcnow() + timedelta(hours=algo_config['hold'])).strftime('%Y-%m-%d %H:%M:%S')
 
     # Build algorithm name with [Bridge] prefix for traceability
@@ -231,7 +231,7 @@ def create_signal(cursor, pick, algo_config):
             f"Bridged from {pick['source_table']} #{pick['source_id']}. "
             f"Backtest grade: {algo_config['grade']}, Sharpe: {algo_config['sharpe']}. "
             f"{pick['rationale'][:200] if pick['rationale'] else ''}",
-            now.replace(' m-', 'm-'),  # fix any formatting issues
+            now,
             expires
         ))
         return cursor.lastrowid

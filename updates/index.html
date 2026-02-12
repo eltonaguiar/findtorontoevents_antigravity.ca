@@ -319,6 +319,111 @@ a:hover { text-decoration: underline; }
 
 <div class="section-year">February 2026</div>
 
+<!-- Feb 12, 2026 — ML Intelligence Infrastructure + Forward/Backtest Bridge -->
+<div class="update-entry" style="--dot-color: #a855f7;" data-tags="ml,machine-learning,infrastructure,tables,schema,tracking,world-class,forward-test,backtest,bridge,signals" data-category="trading,stocks,crypto" data-types="feature,improvement">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    ML Intelligence Infrastructure &mdash; 8 New Tracking Tables + Forward/Backtest Bridge
+    <span class="badge badge-feature">New</span>
+    <span class="badge badge-improvement">Infrastructure</span>
+  </div>
+  <div class="update-body">
+    <p>Major institutional-grade upgrade to our machine learning tracking infrastructure. Built 8 new database tables and a comprehensive API to track ML readiness per algorithm per asset class, plus a Python bridge script to close the critical forward/backtest overlap gap.</p>
+
+    <h4 style="color:#a855f7;margin:18px 0 8px;font-size:15px;">ML Tracking Tables (8 new)</h4>
+    <ul>
+      <li><strong>lm_ml_status</strong> &mdash; Bird's eye ML readiness per algorithm per asset class. Tracks closed trades, ML-ready threshold (20 trades), parameter source, backtest Sharpe/grade, forward/backtest overlap status <span class="app-tag">Core</span></li>
+      <li><strong>lm_walk_forward</strong> &mdash; Walk-forward validation: train/test splits, in-sample vs out-of-sample Sharpe, decay %, overfitting detection <span class="app-tag">Validation</span></li>
+      <li><strong>lm_feature_importance</strong> &mdash; Per-algorithm feature importance scores for interpretability <span class="app-tag">ML</span></li>
+      <li><strong>lm_model_versions</strong> &mdash; Parameter version tracking with deploy/retire dates and reason codes <span class="app-tag">Versioning</span></li>
+      <li><strong>lm_ensemble_weights</strong> &mdash; Optimal algorithm combination weights with correlation tracking <span class="app-tag">Ensemble</span></li>
+      <li><strong>lm_prediction_calibration</strong> &mdash; Confidence score calibration: predicted accuracy vs actual outcome rate <span class="app-tag">Calibration</span></li>
+      <li><strong>lm_cross_correlation</strong> &mdash; Correlation matrix between algorithms to avoid redundant signals <span class="app-tag">Correlation</span></li>
+      <li><strong>lm_picks_bridge</strong> &mdash; Maps daily stock picks to live signals for forward/backtest overlap tracking <span class="app-tag">Bridge</span></li>
+    </ul>
+
+    <h4 style="color:#22c55e;margin:18px 0 8px;font-size:15px;">ML Intelligence API</h4>
+    <ul>
+      <li><strong>status</strong> &mdash; Per-asset-class ML readiness: 15 algorithms tracked (4 collecting live data, 11 backtest-only)</li>
+      <li><strong>refresh</strong> &mdash; Recalculates ML status from lm_trades closed trades + syncs 11 backtested algorithm benchmarks</li>
+      <li><strong>gaps</strong> &mdash; Structured gap analysis per asset class with severity levels and ETAs</li>
+      <li><strong>evolution</strong> &mdash; Parameter version timeline showing learned vs default parameter changes</li>
+      <li><strong>bridge</strong> &mdash; Daily picks bridge status (backtested algorithms deployed to live trading)</li>
+    </ul>
+
+    <h4 style="color:#ef4444;margin:18px 0 8px;font-size:15px;">Critical Gap Fixed: Forward/Backtest Bridge</h4>
+    <p>The <strong>zero forward/backtest overlap</strong> gap has been addressed. A new Python bridge script (<code>bridge_picks_to_signals.py</code>) reads daily stock picks from backtested algorithms (Cursor Genius A+, ETF Masters A, Sector Momentum A) and inserts them as live signals for paper trading validation.</p>
+    <ul>
+      <li><strong>Problem</strong> &mdash; Backtested algorithms (Sharpe 2.05-5.27) were generating daily picks but NOT being paper traded. Live trading used different, untested algorithms</li>
+      <li><strong>Solution</strong> &mdash; Bridge script reads from stock_picks tables, creates lm_signals entries with "[Bridge]" suffix for traceability</li>
+      <li><strong>Safety</strong> &mdash; Only A/A+ grade algorithms enabled by default. C/D grade disabled. Supports --dry-run mode</li>
+      <li><strong>Impact</strong> &mdash; Can now validate if backtested Sharpe ratios (Cursor Genius 5.27, ETF Masters 2.05) hold up in live conditions</li>
+    </ul>
+
+    <h4 style="color:#3b82f6;margin:18px 0 8px;font-size:15px;">Current ML Status by Asset Class</h4>
+    <ul>
+      <li><strong>CRYPTO</strong> &mdash; 4 algorithms: Ichimoku (80% WR, collecting data), StochRSI (80% WR, collecting), Trend Following (A+ backtest, not yet live), Mean Reversion (D grade, disabled)</li>
+      <li><strong>FOREX</strong> &mdash; 4 algorithms: Wrong algorithms deployed (Consensus 0% WR). A-grade Trend Following and Mean Reversion awaiting bridge deployment</li>
+      <li><strong>STOCK</strong> &mdash; 7 algorithms: All backtest-only. Cursor Genius A+ (Sharpe 5.27) is top performer. Bridge will deploy top 3 to live trading</li>
+    </ul>
+
+    <p style="margin-top:12px;"><a href="https://findtorontoevents.ca/live-monitor/api/ml_intelligence.php?action=status">View ML Status API &rarr;</a> | <a href="https://findtorontoevents.ca/live-monitor/api/ml_intelligence.php?action=gaps">View Gap Analysis &rarr;</a></p>
+  </div>
+</div>
+
+<!-- Feb 12, 2026 — Algorithm Intelligence Report Page -->
+<div class="update-entry" style="--dot-color: #22c55e;" data-tags="algorithm,intelligence,report,bird-eye,forward,backtest,world-class,comparison,renaissance,two-sigma,citadel,methodology,transparency" data-category="trading,stocks,crypto" data-types="feature">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    Algorithm Intelligence Report &mdash; Bird's Eye View of All Algorithms
+    <span class="badge badge-feature">New</span>
+  </div>
+  <div class="update-body">
+    <p>New comprehensive <a href="https://findtorontoevents.ca/findstocks/portfolio2/algorithm-intelligence.html">Algorithm Intelligence Report</a> page providing a bird's eye view of all algorithms across all asset classes. Designed to be fed into AI systems for feedback and comparison against world-class algorithmic trading.</p>
+
+    <h4 style="color:#22c55e;margin:18px 0 8px;font-size:15px;">6-Tab Dashboard</h4>
+    <ul>
+      <li><strong>Executive Dashboard</strong> &mdash; KPI cards (portfolio Sharpe, forward win rate, ML-ready count), forward vs backtested matrix, system architecture overview, critical alerts</li>
+      <li><strong>Stocks</strong> &mdash; 7 backtested algorithms with full Sharpe/grade/WR metrics, forward-facing status, world-class comparison bars</li>
+      <li><strong>Crypto</strong> &mdash; Forward: Ichimoku 80% WR ($44.97 PnL), StochRSI 75% WR. Backtested: Trend Following A+ (Sharpe 4.45)</li>
+      <li><strong>Forex</strong> &mdash; Backtested A-grade algorithms (Sharpe 2.29-2.42) vs failing forward (0% WR with wrong algorithms deployed)</li>
+      <li><strong>ML &amp; Learning</strong> &mdash; Parameter evolution: Ichimoku TP +70%, StochRSI TP +55%, Consensus hold -50%. Signal stats: 2491 learned vs 500 original</li>
+      <li><strong>World-Class Gaps</strong> &mdash; Comparison against Renaissance (Sharpe 3-6+), Two Sigma (1.5-2.5), Citadel (1.5-3.0), DE Shaw, AQR. Gap analysis per asset class</li>
+    </ul>
+
+    <h4 style="color:#eab308;margin:18px 0 8px;font-size:15px;">Full Transparency</h4>
+    <ul>
+      <li>Every algorithm has clickable links to source pages showing raw data breakdowns</li>
+      <li>TBD items clearly explained with reasons and resolution timelines</li>
+      <li>Flaws, strengths, and improvement areas documented per algorithm</li>
+      <li>Quick links to L vs O Dashboard, Goldmine Tracker, Live Monitor, Backtest Results</li>
+    </ul>
+
+    <p style="margin-top:12px;"><a href="https://findtorontoevents.ca/findstocks/portfolio2/algorithm-intelligence.html">View Algorithm Intelligence Report &rarr;</a></p>
+  </div>
+</div>
+
+<!-- Feb 12, 2026 — Backtest Results Page -->
+<div class="update-entry" style="--dot-color: #6366f1;" data-tags="backtest,results,sharpe,2-year,algorithms,performance,stocks,crypto,forex" data-category="trading,stocks,crypto" data-types="feature">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    Backtest Results Dashboard &mdash; 2-Year Algorithm Performance
+    <span class="badge badge-feature">New</span>
+  </div>
+  <div class="update-body">
+    <p>New <a href="https://findtorontoevents.ca/findstocks/portfolio2/backtest-results.html">Backtest Results</a> page showing 2-year backtest performance (Feb 2024 &ndash; Feb 2026) for 11 algorithm-asset combinations across stocks, crypto, and forex.</p>
+
+    <ul>
+      <li><strong>Top Performers</strong> &mdash; Cursor Genius stocks A+ (Sharpe 5.27), Trend Following crypto A+ (4.45), Trend Following forex A (2.42)</li>
+      <li><strong>Per-Asset Sharpe</strong> &mdash; Stocks B (1.72), Crypto B (1.45), Forex A (2.34), Portfolio B (1.56)</li>
+      <li><strong>Industry Benchmarks</strong> &mdash; S&P500 0.9, Good 1.0, Very Good 2.0, Renaissance 2.5+</li>
+      <li><strong>6-Tab Layout</strong> &mdash; Overview, Stocks, Crypto, Forex, Portfolio, Methodology</li>
+    </ul>
+
+    <p style="margin-top:12px;"><a href="https://findtorontoevents.ca/findstocks/portfolio2/backtest-results.html">View Backtest Results &rarr;</a></p>
+  </div>
+</div>
+
 <!-- Feb 12, 2026 — Transparency: Data Sources, Roadmaps, and Critical Bug Fix -->
 <div class="update-entry" style="--dot-color: #22c55e;" data-tags="transparency,roadmap,source-links,bug-fix,fetch-prices,data-integrity" data-category="trading,platform">
   <div class="update-date">Feb 12, 2026</div>

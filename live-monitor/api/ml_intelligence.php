@@ -14,8 +14,8 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
-require_once __DIR__ . '/db_connect.php';
-require_once __DIR__ . '/ml_intelligence_schema.php';
+require_once dirname(__FILE__) . '/db_connect.php';
+require_once dirname(__FILE__) . '/ml_intelligence_schema.php';
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'status';
 $asset  = isset($_GET['asset'])  ? strtoupper($conn->real_escape_string($_GET['asset'])) : null;
