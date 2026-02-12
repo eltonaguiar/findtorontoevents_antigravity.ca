@@ -14,63 +14,12 @@
  */
 
 require_once dirname(__FILE__) . '/sports_db_connect.php';
+require_once dirname(__FILE__) . '/sports_schema.php';
 
 // ────────────────────────────────────────────────────────────
-//  Auto-create tables
+//  Auto-create tables (centralized in sports_schema.php)
 // ────────────────────────────────────────────────────────────
-
-$conn->query("CREATE TABLE IF NOT EXISTS lm_sports_odds (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    sport VARCHAR(50) NOT NULL,
-    event_id VARCHAR(100) NOT NULL,
-    home_team VARCHAR(100) NOT NULL,
-    away_team VARCHAR(100) NOT NULL,
-    commence_time DATETIME NOT NULL,
-    bookmaker VARCHAR(50) NOT NULL,
-    bookmaker_key VARCHAR(50) NOT NULL DEFAULT '',
-    market VARCHAR(20) NOT NULL,
-    outcome_name VARCHAR(100) NOT NULL,
-    outcome_price DECIMAL(10,4) NOT NULL DEFAULT 0,
-    outcome_point DECIMAL(6,2) DEFAULT NULL,
-    last_updated DATETIME NOT NULL,
-    KEY idx_sport (sport),
-    KEY idx_event (event_id),
-    KEY idx_bookmaker (bookmaker),
-    KEY idx_commence (commence_time),
-    UNIQUE KEY idx_unique_odds (event_id, bookmaker_key, market, outcome_name)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8");
-
-$conn->query("CREATE TABLE IF NOT EXISTS lm_sports_credit_usage (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    request_time DATETIME NOT NULL,
-    sport VARCHAR(50) NOT NULL DEFAULT 'all',
-    credits_used INT NOT NULL DEFAULT 0,
-    credits_remaining INT DEFAULT NULL,
-    KEY idx_time (request_time)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8");
-
-// Kimi: CLV (Closing Line Value) tracking table — snapshots opening odds for comparison
-$conn->query("CREATE TABLE IF NOT EXISTS lm_sports_clv (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    event_id VARCHAR(100) NOT NULL,
-    sport VARCHAR(50) NOT NULL DEFAULT '',
-    home_team VARCHAR(100) NOT NULL DEFAULT '',
-    away_team VARCHAR(100) NOT NULL DEFAULT '',
-    commence_time DATETIME NOT NULL,
-    bookmaker_key VARCHAR(50) NOT NULL DEFAULT '',
-    market VARCHAR(20) NOT NULL DEFAULT 'h2h',
-    outcome_name VARCHAR(100) NOT NULL DEFAULT '',
-    opening_price DECIMAL(10,4) NOT NULL DEFAULT 0,
-    closing_price DECIMAL(10,4) DEFAULT NULL,
-    opening_implied_prob DECIMAL(8,6) DEFAULT NULL,
-    closing_implied_prob DECIMAL(8,6) DEFAULT NULL,
-    clv_pct DECIMAL(8,4) DEFAULT NULL,
-    first_seen DATETIME NOT NULL,
-    last_updated DATETIME NOT NULL,
-    UNIQUE KEY idx_clv_unique (event_id, bookmaker_key, market, outcome_name),
-    KEY idx_clv_sport (sport),
-    KEY idx_clv_commence (commence_time)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+_sb_ensure_schema($conn);
 
 // ────────────────────────────────────────────────────────────
 //  Constants
@@ -335,12 +284,25 @@ function _so_action_fetch($conn) {
     $monthly_limit = 500;
     $credits_remaining = $monthly_limit - $monthly_used;
 
+    // ── Monthly budget tracker: calculate daily credit allowance ──
+    $day_of_month = (int)date('j');
+    $days_in_month = (int)date('t');
+    $days_remaining = $days_in_month - $day_of_month + 1;
+    // Reserve 10% buffer for end-of-month
+    $safe_remaining = $credits_remaining - 20;
+    // With 5 fetches/day, calculate max credits per fetch
+    $fetches_per_day = 5;
+    $credits_per_fetch = ($days_remaining > 0 && $safe_remaining > 0)
+        ? floor($safe_remaining / ($days_remaining * $fetches_per_day))
+        : 0;
+
     if ($credits_remaining < 20) {
         echo json_encode(array(
             'ok' => false,
             'error' => 'Monthly credit budget nearly exhausted',
             'credits_used_this_month' => $monthly_used,
-            'credits_remaining' => $credits_remaining
+            'credits_remaining' => $credits_remaining,
+            'daily_budget' => $credits_per_fetch * $fetches_per_day
         ));
         return;
     }
@@ -374,11 +336,68 @@ function _so_action_fetch($conn) {
         return;
     }
 
-    // Budget-safe mode: only fetch sports with games in next 6 hours
-    // (We'll estimate by limiting to fewer sports if budget is tight)
-    if ($budget_safe && $credits_remaining < 100) {
-        // Limit to at most 2 sports to conserve credits
-        $active_keys = array_slice($active_keys, 0, 2);
+    // ── Smart budget-safe mode ──
+    $skipped_sports = array();
+    if ($budget_safe) {
+        $filtered_keys = array();
+        foreach ($active_keys as $sport_key) {
+            // Skip 1: Check if odds for this sport were updated less than 2 hours ago
+            $recent_q = $conn->query("SELECT MAX(last_updated) as lu FROM lm_sports_odds WHERE sport='"
+                . $conn->real_escape_string($sport_key) . "'");
+            if ($recent_q && $rrow = $recent_q->fetch_assoc()) {
+                if ($rrow['lu'] !== null) {
+                    $last_ts = strtotime($rrow['lu']);
+                    if ($last_ts !== false && (time() - $last_ts) < 7200) {
+                        $skipped_sports[] = array('sport' => $sport_key, 'reason' => 'Updated ' . round((time() - $last_ts) / 60) . ' min ago (< 2hr)');
+                        continue;
+                    }
+                }
+            }
+
+            // Skip 2: Only fetch sports that have games in the next 24 hours
+            $upcoming_q = $conn->query("SELECT COUNT(*) as cnt FROM lm_sports_odds WHERE sport='"
+                . $conn->real_escape_string($sport_key)
+                . "' AND commence_time > NOW() AND commence_time < DATE_ADD(NOW(), INTERVAL 24 HOUR)");
+            $has_upcoming = false;
+            if ($upcoming_q && $urow = $upcoming_q->fetch_assoc()) {
+                $has_upcoming = ((int)$urow['cnt'] > 0);
+            }
+            // If we have NO cached data for this sport, always fetch (first time)
+            $any_q = $conn->query("SELECT COUNT(*) as cnt FROM lm_sports_odds WHERE sport='"
+                . $conn->real_escape_string($sport_key) . "'");
+            $has_any = false;
+            if ($any_q && $arow = $any_q->fetch_assoc()) {
+                $has_any = ((int)$arow['cnt'] > 0);
+            }
+
+            if ($has_any && !$has_upcoming) {
+                $skipped_sports[] = array('sport' => $sport_key, 'reason' => 'No games in next 24h');
+                continue;
+            }
+
+            $filtered_keys[] = $sport_key;
+        }
+        $active_keys = $filtered_keys;
+
+        // Additional throttle: if budget is tight, cap sports per fetch
+        if ($credits_remaining < 100 && count($active_keys) > 2) {
+            $active_keys = array_slice($active_keys, 0, 2);
+        } elseif ($credits_per_fetch < 8 && count($active_keys) > 1) {
+            // Very tight budget: only 1 sport per fetch
+            $active_keys = array_slice($active_keys, 0, 1);
+        }
+    }
+
+    if (count($active_keys) === 0) {
+        echo json_encode(array(
+            'ok' => true,
+            'sports_fetched' => 0,
+            'message' => 'All sports skipped by smart budget mode',
+            'skipped_sports' => $skipped_sports,
+            'credits_remaining' => $credits_remaining,
+            'credits_per_fetch_budget' => $credits_per_fetch
+        ));
+        return;
     }
 
     $total_events = 0;
@@ -523,7 +542,7 @@ function _so_action_fetch($conn) {
     // Expire old value bets
     $conn->query("UPDATE lm_sports_value_bets SET status='expired' WHERE commence_time < NOW() AND status='active'");
 
-    echo json_encode(array(
+    $result = array(
         'ok'              => true,
         'sports_fetched'  => $sports_fetched,
         'events_cached'   => $total_events,
@@ -531,8 +550,15 @@ function _so_action_fetch($conn) {
         'credits_used'    => $total_credits,
         'credits_remaining' => $api_remaining,
         'monthly_used'    => _so_monthly_credits($conn),
+        'monthly_limit'   => $monthly_limit,
+        'daily_budget'    => $credits_per_fetch * $fetches_per_day,
+        'days_remaining_in_month' => $days_remaining,
         'sport_details'   => $sport_details
-    ));
+    );
+    if (count($skipped_sports) > 0) {
+        $result['skipped_sports'] = $skipped_sports;
+    }
+    echo json_encode($result);
 }
 
 // ════════════════════════════════════════════════════════════

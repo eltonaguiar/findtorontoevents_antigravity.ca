@@ -16,7 +16,7 @@ on:
 jobs:
   worldclass-intelligence:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
     # ─── Step 0: Checkout code ───
@@ -122,6 +122,95 @@ jobs:
       run: |
         echo "=== Signal Bundle Consolidation (23 algos → 5 bundles) ==="
         python3 signal_bundles.py || echo "Signal bundles: completed with warnings"
+
+    # ─── Step 10a: FinBERT Sentiment Analysis (Sprint 1.1) ───
+    - name: FinBERT Sentiment Analysis
+      continue-on-error: true
+      working-directory: scripts
+      env:
+        SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+        SM_ADMIN_KEY: livetrader2026
+      run: |
+        echo "=== FinBERT Sentiment Analysis ==="
+        python3 finbert_sentiment.py || echo "FinBERT: completed with warnings"
+
+    # ─── Step 10b: CUSUM Change-Point Detection (Sprint 1.2) ───
+    - name: CUSUM Change-Point Detection
+      continue-on-error: true
+      working-directory: scripts
+      env:
+        SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+        SM_ADMIN_KEY: livetrader2026
+      run: |
+        echo "=== CUSUM Change-Point Decay Detection ==="
+        python3 cusum_detector.py || echo "CUSUM: completed with warnings"
+
+    # ─── Step 10c: Bayesian Hyperparameter Optimization (Sprint 1.3) ───
+    - name: Bayesian Hyperparameter Optimization
+      continue-on-error: true
+      if: github.event.schedule == '0 14 * * 0' || github.event_name == 'workflow_dispatch'
+      working-directory: scripts
+      env:
+        SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+        SM_ADMIN_KEY: livetrader2026
+      run: |
+        echo "=== Bayesian Hyperparameter Optimization ==="
+        python3 hyperparam_optimizer.py || echo "Optimizer: completed with warnings"
+
+    # ─── Step 10d: Congressional Trading Tracker (Sprint 1.5) ───
+    - name: Congressional Trading Tracker
+      continue-on-error: true
+      working-directory: scripts
+      env:
+        SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+        SM_ADMIN_KEY: livetrader2026
+      run: |
+        echo "=== Congressional Trading Tracker ==="
+        python3 congress_tracker.py || echo "Congress: completed with warnings"
+
+    # ─── Step 10e: Options Flow / GEX (Sprint 2.1) ───
+    - name: Options Flow / Gamma Exposure
+      continue-on-error: true
+      working-directory: scripts
+      env:
+        SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+        SM_ADMIN_KEY: livetrader2026
+      run: |
+        echo "=== Options Flow / Gamma Exposure (GEX) ==="
+        python3 options_flow.py || echo "Options: completed with warnings"
+
+    # ─── Step 10f: On-Chain Analytics (Sprint 2.2) ───
+    - name: On-Chain Crypto Analytics
+      continue-on-error: true
+      working-directory: scripts
+      env:
+        SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+        SM_ADMIN_KEY: livetrader2026
+      run: |
+        echo "=== On-Chain Crypto Analytics ==="
+        python3 onchain_analytics.py || echo "On-chain: completed with warnings"
+
+    # ─── Step 10g: Portfolio Optimizer (Sprint 2.3+2.4) ───
+    - name: Portfolio Optimizer (Black-Litterman + Risk Parity)
+      continue-on-error: true
+      working-directory: scripts
+      env:
+        SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+        SM_ADMIN_KEY: livetrader2026
+      run: |
+        echo "=== Portfolio Optimizer: Black-Litterman + Risk Parity ==="
+        python3 portfolio_optimizer.py || echo "Portfolio: completed with warnings"
+
+    # ─── Step 10h: Transfer Entropy Analysis (Sprint 2.5) ───
+    - name: Transfer Entropy Causal Analysis
+      continue-on-error: true
+      working-directory: scripts
+      env:
+        SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+        SM_ADMIN_KEY: livetrader2026
+      run: |
+        echo "=== Transfer Entropy: Causal Signal Detection ==="
+        python3 transfer_entropy_analyzer.py || echo "Entropy: completed with warnings"
 
     # ─── Step 11: Purged Walk-Forward Validation (Sunday only) ───
     - name: Purged Walk-Forward Validation

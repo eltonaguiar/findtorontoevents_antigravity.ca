@@ -19,45 +19,12 @@
 
 require_once dirname(__FILE__) . '/sports_db_connect.php';
 require_once dirname(__FILE__) . '/sports_scores.php';
+require_once dirname(__FILE__) . '/sports_schema.php';
 
 // ────────────────────────────────────────────────────────────
-//  Auto-create tables
+//  Auto-create tables (centralized in sports_schema.php)
 // ────────────────────────────────────────────────────────────
-
-$conn->query("CREATE TABLE IF NOT EXISTS lm_sports_bets (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    event_id VARCHAR(100) NOT NULL,
-    sport VARCHAR(50) NOT NULL,
-    home_team VARCHAR(100) NOT NULL,
-    away_team VARCHAR(100) NOT NULL,
-    commence_time DATETIME NOT NULL,
-    game_date DATE DEFAULT NULL,
-    bet_type VARCHAR(30) NOT NULL DEFAULT 'moneyline',
-    market VARCHAR(20) NOT NULL DEFAULT 'h2h',
-    pick VARCHAR(100) NOT NULL,
-    pick_point DECIMAL(6,2) DEFAULT NULL,
-    bookmaker VARCHAR(50) NOT NULL,
-    bookmaker_key VARCHAR(50) NOT NULL DEFAULT '',
-    odds DECIMAL(10,4) NOT NULL DEFAULT 0,
-    implied_prob DECIMAL(6,4) NOT NULL DEFAULT 0,
-    bet_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
-    potential_payout DECIMAL(10,2) NOT NULL DEFAULT 0,
-    algorithm VARCHAR(50) NOT NULL DEFAULT 'value_bet',
-    ev_pct DECIMAL(6,2) NOT NULL DEFAULT 0,
-    status VARCHAR(20) NOT NULL DEFAULT 'pending',
-    result VARCHAR(20) DEFAULT NULL,
-    pnl DECIMAL(10,2) DEFAULT NULL,
-    settled_at DATETIME DEFAULT NULL,
-    actual_home_score INT DEFAULT NULL,
-    actual_away_score INT DEFAULT NULL,
-    placed_at DATETIME NOT NULL,
-    KEY idx_status (status),
-    KEY idx_sport (sport),
-    KEY idx_algorithm (algorithm),
-    KEY idx_placed (placed_at),
-    KEY idx_event (event_id),
-    KEY idx_game_date (game_date)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+_sb_ensure_schema($conn);
 
 // Add game_date column if missing (for existing tables)
 $col_check = $conn->query("SHOW COLUMNS FROM lm_sports_bets LIKE 'game_date'");
@@ -67,21 +34,6 @@ if ($col_check && $col_check->num_rows === 0) {
     // Backfill from commence_time (UTC -> EST)
     $conn->query("UPDATE lm_sports_bets SET game_date = DATE(DATE_SUB(commence_time, INTERVAL 5 HOUR)) WHERE game_date IS NULL AND commence_time IS NOT NULL");
 }
-
-$conn->query("CREATE TABLE IF NOT EXISTS lm_sports_bankroll (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    snapshot_date DATE NOT NULL,
-    bankroll DECIMAL(10,2) NOT NULL DEFAULT 1000,
-    total_bets INT NOT NULL DEFAULT 0,
-    total_wins INT NOT NULL DEFAULT 0,
-    total_losses INT NOT NULL DEFAULT 0,
-    total_pushes INT NOT NULL DEFAULT 0,
-    win_rate DECIMAL(5,2) NOT NULL DEFAULT 0,
-    total_wagered DECIMAL(10,2) NOT NULL DEFAULT 0,
-    total_pnl DECIMAL(10,2) NOT NULL DEFAULT 0,
-    roi_pct DECIMAL(6,2) NOT NULL DEFAULT 0,
-    UNIQUE KEY idx_date (snapshot_date)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8");
 
 // ────────────────────────────────────────────────────────────
 //  Constants

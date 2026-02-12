@@ -242,37 +242,41 @@ class FeatureSelector:
         
         return selected_features, report
 
-# Example usage
-if __name__ == "__main__":
+def main():
+    """Main entry point for orchestrator integration."""
     # Create sample data for testing
     np.random.seed(42)
     n_samples = 1000
     n_features = 30
-    
+
     # Generate synthetic data with some informative features
-    X = pd.DataFrame(np.random.randn(n_samples, n_features), 
+    X = pd.DataFrame(np.random.randn(n_samples, n_features),
                      columns=[f'feature_{i}' for i in range(n_features)])
-    
+
     # Create target with relationship to first 5 features
-    y = (X['feature_0'] * 0.5 + 
-         X['feature_1'] * 0.3 + 
-         X['feature_2'] * 0.2 + 
+    y = (X['feature_0'] * 0.5 +
+         X['feature_1'] * 0.3 +
+         X['feature_2'] * 0.2 +
          X['feature_3'] * 0.1 +
          X['feature_4'] * 0.05 +
          np.random.randn(n_samples) * 0.1)
-    
+
     data = X.copy()
     data['returns'] = y
-    
+
     # Test feature selection
     selector = FeatureSelector()
     selected_features, report = selector.select_features(data)
-    
+
     print("\n=== Feature Selection Results ===")
     print(f"Original features: {report['original_feature_count']}")
     print(f"Selected features: {report['selected_feature_count']}")
     print(f"Reduction: {report['reduction_percent']:.1f}%")
     print(f"\nSelected features: {selected_features}")
-    
+
     print("\n=== Voting Summary ===")
     print(report['voting_summary'].head(10))
+
+
+if __name__ == "__main__":
+    main()

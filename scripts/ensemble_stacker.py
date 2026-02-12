@@ -279,51 +279,55 @@ class PerformanceWeightedBlender:
         
         return blended_predictions
 
-# Example usage
-if __name__ == "__main__":
+def main():
+    """Main entry point for orchestrator integration."""
     # Create sample data
     np.random.seed(42)
     n_samples = 1000
     n_features = 10
-    
-    X = pd.DataFrame(np.random.randn(n_samples, n_features), 
+
+    X = pd.DataFrame(np.random.randn(n_samples, n_features),
                      columns=[f'feature_{i}' for i in range(n_features)])
-    
+
     # Create target with some signal
-    y = (X['feature_0'] * 0.3 + 
-         X['feature_1'] * 0.2 + 
+    y = (X['feature_0'] * 0.3 +
+         X['feature_1'] * 0.2 +
          X['feature_2'] * 0.1 +
          np.random.randn(n_samples) * 0.1)
-    
+
     # Test ensemble stacking
     print("=== Ensemble Stacking Test ===")
-    
+
     ensemble = EnsembleStacker()
     ensemble.fit(X, y)
-    
+
     # Make predictions
     predictions = ensemble.predict(X.head(10))
     print(f"Sample predictions: {predictions[:5]}")
-    
+
     # Get model weights
     weights = ensemble.get_model_weights()
     print("\n=== Model Weights ===")
     print(weights.head())
-    
+
     # Test performance-weighted blending
     print("\n=== Performance-Weighted Blending Test ===")
-    
+
     blender = PerformanceWeightedBlender()
-    
+
     # Create sample predictions
     preds_dict = {
         'model1': y + np.random.normal(0, 0.05, len(y)),
         'model2': y + np.random.normal(0, 0.1, len(y)),
         'model3': y + np.random.normal(0, 0.02, len(y))
     }
-    
+
     weights = blender.calculate_performance_weights(preds_dict, y)
     print(f"Model weights: {weights}")
-    
+
     blended_preds = blender.blend_predictions(preds_dict)
     print(f"Blended predictions MSE: {mean_squared_error(y[:len(blended_preds)], blended_preds):.4f}")
+
+
+if __name__ == "__main__":
+    main()

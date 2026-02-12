@@ -271,6 +271,57 @@ a:hover { text-decoration: underline; }
 
 <div class="section-year">February 2026</div>
 
+<!-- Feb 12, 2026 — OPUS 4.6 Battle Plan Implementation: 4-Phase System Ramp-Up -->
+<div class="update-entry" style="--dot-color: #a855f7;" data-tags="opus46,pipeline,run-all,commission,position-sizing,failover,fred,sports,views,schema,intelligence" data-category="stocks,trading,crypto,sports">
+  <div class="update-date">Feb 12, 2026</div>
+  <div class="update-title">
+    OPUS 4.6 Battle Plan: 4-Phase System Ramp-Up &mdash; 28 Changes Deployed
+    <span class="badge badge-feature">New</span>
+    <span class="badge badge-improvement">Improved</span>
+    <span class="badge badge-fix">Fix</span>
+  </div>
+  <div class="update-body">
+    <p>After Claude Opus 4.6 synthesized findings from 9 AI models (Gemini, ChatGPT, Claude, DeepSeek, Copilot, Grok, Kimi, Windsurf, Antigravity) into a definitive analysis, a team of 8 parallel agents executed the 4-phase battle plan. 13 files modified, 8 new files created, addressing all 8 critical failures identified in the analysis.</p>
+
+    <p style="margin-top: 10px;"><strong>Phase 0 &mdash; Emergency Triage (Signal-to-Profit Pipeline)</strong></p>
+    <ul>
+      <li><strong>9 Orphaned Scripts Wired into Pipeline</strong> &mdash; <code>run_all.py</code> now has 28 total flags (up from 19). New flags: <code>--commission</code> (CDR routing), <code>--pause</code> (auto-pause failing algos), <code>--prune</code> (correlation pruning), <code>--ensemble</code> (ML stacking), <code>--features</code> (feature selection), <code>--stoploss</code> (gap-aware SL), <code>--dynsize</code> (dynamic sizing), <code>--momcrash</code> (momentum crash protection), <code>--deploy</code> (alpha engine). Every script that was &ldquo;built but not connected&rdquo; is now live <span class="app-tag">Pipeline</span></li>
+      <li><strong>Commission Eliminator Connected</strong> &mdash; Routes signals to 39 CDR (Canadian Depositary Receipt) tickers that trade commission-free on Cboe NEO Exchange. Addresses the #1 failure: 83.4% of simulated capital was consumed by broker fees ($8,975 on $10K). Now fully integrated into the daily pipeline <span class="app-tag">Trading</span></li>
+      <li><strong>Algorithm Pauser Active</strong> &mdash; Automatically pauses algorithms with &gt;20 consecutive losses. Prevents 125-loss streaks that previously destroyed paper portfolios <span class="app-tag">Risk</span></li>
+      <li><strong>Correlation Pruner Active</strong> &mdash; Removes algorithm pairs with &gt;0.7 signal correlation. Expected to reduce 23 correlated algos down to 8-12 truly independent signal sources <span class="app-tag">Risk</span></li>
+    </ul>
+
+    <p style="margin-top: 10px;"><strong>Phase 1 &mdash; Deploy What Exists (Eliminating Single Points of Failure)</strong></p>
+    <ul>
+      <li><strong>yfinance Failover Chain</strong> &mdash; New <code>data_fetcher.py</code> module with 3-tier data source failover: yfinance &rarr; Finnhub API (60 calls/min free) &rarr; Yahoo Finance direct chart API. If Yahoo breaks (it has before), the entire system no longer goes dark. Any script can <code>from data_fetcher import get_price_data</code> <span class="app-tag">Resilience</span></li>
+      <li><strong>Python Position Sizing Connected to PHP</strong> &mdash; The <code>position_sizer.py</code> script computes institutional-grade sizing (Half-Kelly + EWMA vol + regime modifier + alpha decay + CVaR limits + drawdown scaling), but the PHP trade executor was ignoring it. Now <code>live_trade.php</code> reads from <code>lm_position_sizing</code> table and applies Python-computed sizes, with PHP fallback if data is stale (&gt;24h) <span class="app-tag">Trading</span></li>
+      <li><strong>ML Ensemble Stacker Integrated</strong> &mdash; <code>ensemble_stacker.py</code> (RF + GBM + Ridge + LR meta-learner with performance-weighted blending) now runs as part of the pipeline instead of sitting idle <span class="app-tag">ML</span></li>
+      <li><strong>Feature Selector Integrated</strong> &mdash; 5-method consensus feature selection (RFE, Boruta, Permutation, Lasso, Univariate) prevents ML overfit. Was built but never plugged in <span class="app-tag">ML</span></li>
+    </ul>
+
+    <p style="margin-top: 10px;"><strong>Phase 2 &mdash; Intelligence Activation (8 Scripts Go Live)</strong></p>
+    <ul>
+      <li><strong>8 Intelligence Scripts Activated in GitHub Actions</strong> &mdash; Both workflow YAML files (<code>worldclass-intelligence.yml</code>, <code>worldclass-pipeline.yml</code>) now run: FinBERT NLP sentiment, CUSUM change-point detection, Bayesian hyperparameter optimization (Sundays only), Congressional trading tracker, Options flow / GEX computation, On-chain crypto analytics (DeFi Llama), Black-Litterman portfolio optimizer, and Transfer entropy causal analysis. All run with <code>continue-on-error: true</code> for resilience <span class="app-tag">Intelligence</span></li>
+    </ul>
+
+    <p style="margin-top: 10px;"><strong>Phase 3 &mdash; Optimization &amp; New Capabilities</strong></p>
+    <ul>
+      <li><strong>FRED Macro Overlay</strong> &mdash; New <code>fred_macro.py</code> fetches 7 key indicators (10Y-2Y yield spread, unemployment, VIX, Fed funds rate, 10Y treasury, USD index, breakeven inflation) from the Federal Reserve. Derives a macro regime score (Bullish / Cautious / Bearish) and writes to <code>data/macro_regime.json</code> for other scripts. Integrated as <code>--fred</code> flag <span class="app-tag">New</span></li>
+      <li><strong>Sports Betting Schema Centralized</strong> &mdash; New <code>sports_schema.php</code> consolidates all 7 sports table definitions into one file. Previously each PHP endpoint had its own inline CREATE TABLE. Now a single <code>require_once + _sb_ensure_schema()</code> call keeps everything synchronized <span class="app-tag">Architecture</span></li>
+      <li><strong>Sports API Credit Management Improved</strong> &mdash; Smart budget tracking in <code>sports_odds.php</code>: calculates daily credit allowance based on remaining monthly budget, skips fetching sports updated &lt;2 hours ago, and reserves 10% buffer for end-of-month. The 500 credits/month free tier was at risk of exhaustion <span class="app-tag">Sports</span></li>
+      <li><strong>Sports Predictions Page Live</strong> &mdash; <code>predictions/sports.html</code> upgraded from static hardcoded stats to live API integration. Now fetches real-time bankroll, ROI, win rate, today's value picks with grade badges (A+ through D), and performance analytics by sport/market/confidence/bookmaker <span class="app-tag">Dashboard</span></li>
+      <li><strong>9 SQL Views Created</strong> &mdash; New <code>create_views.php</code> creates 9 analytical views (algorithm leaderboard, hidden winners, system performance, risk dashboard, drawdown analysis, system correlation, backtest vs live, win/loss streaks) for the unified predictions dashboard. MySQL 5.x compatible (no CTEs or window functions) <span class="app-tag">Analytics</span></li>
+    </ul>
+
+    <p style="margin-top: 10px;"><strong>Database Audit Results</strong></p>
+    <ul>
+      <li><strong>208 Tables Verified</strong> &mdash; Full cross-reference of all tables against PHP APIs, Python scripts, and frontend code. Found 196 actively used, 12 orphaned (old v1 forex/mutual fund tables safe to drop), 0 critical schema mismatches. All 7 asset classes confirmed fully covered: stocks, crypto, meme coins, forex, mutual funds, penny stocks, sports betting <span class="app-tag">Audit</span></li>
+      <li><strong>Sports Bet DB Clarified</strong> &mdash; The <code>ejaguiar1_sportsbet</code> database is NOT empty on the server &mdash; tables are auto-created by PHP on first access. The empty SQL dump was a phpMyAdmin export issue. All 7 <code>lm_sports_*</code> tables confirmed operational with cross-DB access from the goldmine tracker working correctly <span class="app-tag">Audit</span></li>
+    </ul>
+    <p><a href="/findstocks/">Stock Picks &rarr;</a> &nbsp;|&nbsp; <a href="/live-monitor/">Live Monitor &rarr;</a> &nbsp;|&nbsp; <a href="/live-monitor/sports-betting.html">Sports Betting &rarr;</a> &nbsp;|&nbsp; <a href="/live-monitor/goldmine-dashboard.html">Goldmine &rarr;</a></p>
+  </div>
+</div>
+
 <!-- Feb 11, 2026 — GROK_XAI Integration + Multi-Agent Cross-Review + DB Schema Sync -->
 <div class="update-entry" style="--dot-color: #8b5cf6;" data-tags="grok,hmm,regime,kelly,correlation,forex,stock,algorithms,signals,dashboard,multi-agent" data-category="stocks,trading,crypto">
   <div class="update-date">Feb 11, 2026</div>

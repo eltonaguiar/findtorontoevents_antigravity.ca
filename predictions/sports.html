@@ -3,26 +3,403 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>⚽ Sports Betting Center | Unified Predictions</title>
+  <title>Sports Betting Performance Center | Unified Predictions</title>
   <link rel="stylesheet" href="css/dashboard.css">
+  <style>
+    .sports-header { text-align: center; margin-bottom: 30px; }
+    .sports-header h1 { margin: 0 0 8px; font-size: 2rem; }
+    .sports-header .subtitle { color: var(--text-2); font-size: 1rem; }
+    .sports-header .last-updated { color: var(--text-3); font-size: 0.85rem; margin-top: 6px; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      max-width: 1000px;
+      margin: 0 auto 30px;
+    }
+    .stat-card {
+      background: var(--surface-1);
+      border-radius: 12px;
+      padding: 20px 16px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .stat-val { font-size: 1.8rem; font-weight: 700; }
+    .stat-lbl { font-size: 0.85rem; color: var(--text-2); margin-top: 4px; }
+    .positive { color: #22c55e; }
+    .negative { color: #ef4444; }
+    .neutral  { color: #f59e0b; }
+
+    .section-title {
+      text-align: center;
+      font-size: 1.4rem;
+      margin: 36px 0 20px;
+      color: var(--text-1);
+    }
+
+    /* Picks table */
+    .picks-table-wrap {
+      max-width: 1100px;
+      margin: 0 auto 30px;
+      overflow-x: auto;
+    }
+    .picks-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    .picks-table th, .picks-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .picks-table th {
+      color: var(--text-2);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .picks-table tr:hover td { background: rgba(255,255,255,0.03); }
+    .grade-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .grade-A\+ { background: rgba(34,197,94,0.2); color: #22c55e; }
+    .grade-A   { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .grade-B\+ { background: rgba(59,130,246,0.2); color: #60a5fa; }
+    .grade-B   { background: rgba(59,130,246,0.15); color: #93c5fd; }
+    .grade-C\+ { background: rgba(251,191,36,0.2); color: #fbbf24; }
+    .grade-C   { background: rgba(251,191,36,0.15); color: #fcd34d; }
+    .grade-D   { background: rgba(239,68,68,0.15); color: #f87171; }
+
+    /* Performance breakdown */
+    .perf-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 1100px;
+      margin: 0 auto 30px;
+    }
+    .perf-panel {
+      background: var(--surface-1);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .perf-panel h4 {
+      margin: 0 0 14px;
+      color: var(--text-2);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .perf-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.9rem;
+    }
+    .perf-row:last-child { border-bottom: none; }
+
+    .loading-msg {
+      text-align: center;
+      color: var(--text-3);
+      padding: 40px;
+      font-size: 1.1rem;
+    }
+    .error-msg {
+      text-align: center;
+      color: #ef4444;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 600px;
+      margin: 20px auto;
+    }
+
+    .nav-link {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 10px 24px;
+      background: var(--pk-500);
+      color: #fff;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: opacity 0.2s;
+    }
+    .nav-link:hover { opacity: 0.85; }
+    .nav-links { text-align: center; margin-top: 20px; }
+  </style>
 </head>
 <body>
-  <h1>⚽ Sports Betting Performance Center</h1>
-  <p>+25.3% ROI Confirmed | Kelly Criterion Value Betting</p>
-  <div class="sports-stats">
-    <div class="metric-card">
-      <div class="metric-value">$1,013.14</div>
-      <div class="metric-label">Bankroll</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-value">+25.3%</div>
-      <div class="metric-label">ROI</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-value">33.3%</div>
-      <div class="metric-label">Win Rate</div>
-    </div>
+
+  <div class="sports-header">
+    <h1>Sports Betting Performance Center</h1>
+    <div class="subtitle" id="subtitle">Loading live data...</div>
+    <div class="last-updated" id="lastUpdated"></div>
   </div>
-  <p>Full integration with live-monitor/sports-betting.html coming in Phase 2.</p>
+
+  <!-- Dashboard Stats -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card"><div class="stat-val" id="bankroll">--</div><div class="stat-lbl">Bankroll</div></div>
+    <div class="stat-card"><div class="stat-val" id="roi">--</div><div class="stat-lbl">ROI</div></div>
+    <div class="stat-card"><div class="stat-val" id="winRate">--</div><div class="stat-lbl">Win Rate</div></div>
+    <div class="stat-card"><div class="stat-val" id="totalBets">--</div><div class="stat-lbl">Total Bets</div></div>
+    <div class="stat-card"><div class="stat-val" id="totalPnl">--</div><div class="stat-lbl">Total P&L</div></div>
+    <div class="stat-card"><div class="stat-val" id="activeBets">--</div><div class="stat-lbl">Active Bets</div></div>
+  </div>
+
+  <!-- Today's Picks -->
+  <h2 class="section-title" id="picksTitle">Today's Value Picks</h2>
+  <div id="picksContainer" class="loading-msg">Loading picks...</div>
+
+  <!-- Performance Analytics -->
+  <h2 class="section-title">Performance Analytics</h2>
+  <div id="perfContainer" class="loading-msg">Loading analytics...</div>
+
+  <div class="nav-links">
+    <a class="nav-link" href="/live-monitor/sports-bets.html">Full Sports Dashboard</a>
+    <a class="nav-link" href="/predictions/" style="margin-left:12px;">All Predictions</a>
+  </div>
+
+<script>
+(function() {
+  var API_BASE = '/live-monitor/api';
+
+  function $(id) { return document.getElementById(id); }
+
+  function fmt$(v) {
+    var n = parseFloat(v) || 0;
+    return (n < 0 ? '-$' : '$') + Math.abs(n).toFixed(2);
+  }
+
+  function fmtPct(v) {
+    var n = parseFloat(v) || 0;
+    return (n >= 0 ? '+' : '') + n.toFixed(1) + '%';
+  }
+
+  function colorClass(v) {
+    var n = parseFloat(v) || 0;
+    if (n > 0) return 'positive';
+    if (n < 0) return 'negative';
+    return 'neutral';
+  }
+
+  function gradeClass(g) {
+    var map = {'A+':'grade-A\\+','A':'grade-A','B+':'grade-B\\+','B':'grade-B','C+':'grade-C\\+','C':'grade-C','D':'grade-D'};
+    return map[g] || 'grade-C';
+  }
+
+  function escHtml(s) {
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(s || ''));
+    return d.innerHTML;
+  }
+
+  function fetchJSON(url, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.timeout = 15000;
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+          try { cb(null, JSON.parse(xhr.responseText)); }
+          catch(e) { cb('Invalid JSON response'); }
+        } else {
+          cb('HTTP ' + xhr.status);
+        }
+      }
+    };
+    xhr.ontimeout = function() { cb('Request timed out'); };
+    xhr.send();
+  }
+
+  // ── Load Dashboard ──
+  fetchJSON(API_BASE + '/sports_bets.php?action=dashboard', function(err, data) {
+    if (err || !data || !data.ok) {
+      $('subtitle').textContent = 'Kelly Criterion Value Betting | Could not load live data';
+      return;
+    }
+
+    var roi = parseFloat(data.roi_pct) || 0;
+    $('subtitle').textContent = fmtPct(roi) + ' ROI | Kelly Criterion Value Betting | ' + (data.total_bets || 0) + ' bets tracked';
+
+    $('bankroll').textContent = fmt$(data.bankroll);
+    $('bankroll').className = 'stat-val ' + colorClass(data.bankroll_change);
+
+    $('roi').textContent = fmtPct(roi);
+    $('roi').className = 'stat-val ' + colorClass(roi);
+
+    $('winRate').textContent = (data.win_rate || 0) + '%';
+
+    $('totalBets').textContent = data.total_bets || 0;
+
+    $('totalPnl').textContent = fmt$(data.total_pnl);
+    $('totalPnl').className = 'stat-val ' + colorClass(data.total_pnl);
+
+    $('activeBets').textContent = data.active_bets || 0;
+  });
+
+  // ── Load Today's Picks ──
+  fetchJSON(API_BASE + '/sports_picks.php?action=today', function(err, data) {
+    var el = $('picksContainer');
+    if (err || !data || !data.ok) {
+      el.innerHTML = '<div class="error-msg">Could not load today\'s picks. The API may be temporarily unavailable.</div>';
+      return;
+    }
+
+    var bets = data.value_bets || [];
+    if (bets.length === 0) {
+      el.innerHTML = '<div class="loading-msg">No value bets found for the next 24 hours. Check back when games are scheduled.</div>';
+      $('picksTitle').textContent = 'Today\'s Value Picks (0)';
+      return;
+    }
+
+    var summary = data.summary || {};
+    $('picksTitle').textContent = 'Today\'s Value Picks (' + bets.length + ')';
+
+    var html = '<div class="picks-table-wrap"><table class="picks-table">'
+      + '<thead><tr><th>Grade</th><th>Sport</th><th>Game</th><th>Pick</th><th>Odds</th><th>EV%</th><th>Book</th><th>Action</th></tr></thead><tbody>';
+
+    for (var i = 0; i < bets.length && i < 25; i++) {
+      var b = bets[i];
+      var grade = b.rating_grade || 'C';
+      var odds = parseFloat(b.best_odds) || 0;
+      var american = odds >= 2.0 ? '+' + Math.round((odds - 1) * 100) : Math.round(-100 / (odds - 1));
+      var ev = parseFloat(b.ev_pct) || 0;
+      var rec = b.recommendation || 'WAIT';
+      var recColor = rec === 'STRONG TAKE' ? 'positive' : (rec === 'TAKE' ? 'positive' : (rec === 'LEAN' ? 'neutral' : 'negative'));
+
+      html += '<tr>'
+        + '<td><span class="grade-badge grade-' + escHtml(grade).replace('+','\\+') + '">' + escHtml(grade) + '</span></td>'
+        + '<td>' + escHtml(b.sport_short || b.sport) + '</td>'
+        + '<td>' + escHtml(b.away_team) + ' @ ' + escHtml(b.home_team) + '</td>'
+        + '<td><strong>' + escHtml(b.outcome_name) + '</strong> <span style="color:var(--text-3);font-size:0.8rem">' + escHtml(b.market) + '</span></td>'
+        + '<td>' + american + ' <span style="color:var(--text-3);font-size:0.8rem">(' + odds.toFixed(2) + ')</span></td>'
+        + '<td class="positive">+' + ev.toFixed(1) + '%</td>'
+        + '<td>' + escHtml(b.best_book) + '</td>'
+        + '<td class="' + recColor + '" style="font-weight:600">' + escHtml(rec) + '</td>'
+        + '</tr>';
+    }
+
+    html += '</tbody></table></div>';
+
+    if (summary.avg_ev_pct) {
+      html += '<div style="text-align:center;color:var(--text-3);margin-top:10px;font-size:0.85rem">'
+        + 'Avg EV: +' + (summary.avg_ev_pct || 0).toFixed(1) + '% | '
+        + 'Strong Takes: ' + (summary.strong_takes || 0) + ' | '
+        + 'Takes: ' + (summary.takes || 0) + ' | '
+        + 'Canadian Picks: ' + (summary.canadian_picks || 0)
+        + '</div>';
+    }
+
+    if (data.generated_at) {
+      $('lastUpdated').textContent = 'Picks generated: ' + data.generated_at;
+    }
+
+    el.innerHTML = html;
+  });
+
+  // ── Load Performance Analytics ──
+  fetchJSON(API_BASE + '/sports_picks.php?action=performance', function(err, data) {
+    var el = $('perfContainer');
+    if (err || !data || !data.ok) {
+      el.innerHTML = '<div class="error-msg">Could not load performance analytics.</div>';
+      return;
+    }
+
+    var html = '<div class="perf-grid">';
+
+    // By Sport
+    var bySport = data.by_sport || [];
+    if (bySport.length > 0) {
+      html += '<div class="perf-panel"><h4>Performance by Sport</h4>';
+      for (var i = 0; i < bySport.length; i++) {
+        var s = bySport[i];
+        var pnlClass = parseFloat(s.pnl) >= 0 ? 'positive' : 'negative';
+        html += '<div class="perf-row"><span>' + escHtml(s.sport_short || s.sport) + ' (' + s.total + ' picks)</span>'
+          + '<span class="' + pnlClass + '">' + (parseFloat(s.win_rate) || 0) + '% W | ' + fmt$(s.pnl) + '</span></div>';
+      }
+      html += '</div>';
+    }
+
+    // By Market
+    var byMarket = data.by_market || [];
+    if (byMarket.length > 0) {
+      html += '<div class="perf-panel"><h4>Performance by Market</h4>';
+      var mktLabels = {'h2h':'Moneyline','spreads':'Spread','totals':'Totals'};
+      for (var i = 0; i < byMarket.length; i++) {
+        var m = byMarket[i];
+        var pnlClass = parseFloat(m.pnl) >= 0 ? 'positive' : 'negative';
+        html += '<div class="perf-row"><span>' + (mktLabels[m.market] || m.market) + ' (' + m.total + ')</span>'
+          + '<span class="' + pnlClass + '">' + (parseFloat(m.win_rate) || 0) + '% W | ' + fmt$(m.pnl) + '</span></div>';
+      }
+      html += '</div>';
+    }
+
+    // By Confidence
+    var byConf = data.by_confidence || [];
+    if (byConf.length > 0) {
+      html += '<div class="perf-panel"><h4>Performance by Confidence</h4>';
+      for (var i = 0; i < byConf.length; i++) {
+        var c = byConf[i];
+        var pnlClass = parseFloat(c.pnl) >= 0 ? 'positive' : 'negative';
+        html += '<div class="perf-row"><span style="text-transform:capitalize">' + escHtml(c.confidence) + ' (' + c.total + ')</span>'
+          + '<span class="' + pnlClass + '">' + (parseFloat(c.win_rate) || 0) + '% W | ' + fmt$(c.pnl) + '</span></div>';
+      }
+      html += '</div>';
+    }
+
+    // EV Buckets
+    var evB = data.ev_buckets || [];
+    if (evB.length > 0) {
+      html += '<div class="perf-panel"><h4>Win Rate by EV Range</h4>';
+      for (var i = 0; i < evB.length; i++) {
+        var e = evB[i];
+        var pnlClass = parseFloat(e.pnl) >= 0 ? 'positive' : 'negative';
+        html += '<div class="perf-row"><span>EV ' + escHtml(e.range) + ' (' + e.total + ')</span>'
+          + '<span class="' + pnlClass + '">' + (parseFloat(e.win_rate) || 0) + '% W | ' + fmt$(e.pnl) + '</span></div>';
+      }
+      html += '</div>';
+    }
+
+    // Streaks
+    var streaks = data.streaks || {};
+    if (streaks.current > 0) {
+      html += '<div class="perf-panel"><h4>Streaks</h4>';
+      var stType = (streaks.current_type === 'won') ? 'positive' : 'negative';
+      html += '<div class="perf-row"><span>Current Streak</span><span class="' + stType + '">'
+        + streaks.current + ' ' + (streaks.current_type || '') + '</span></div>';
+      html += '<div class="perf-row"><span>Longest Win Streak</span><span class="positive">' + (streaks.longest_win || 0) + '</span></div>';
+      html += '<div class="perf-row"><span>Longest Loss Streak</span><span class="negative">' + (streaks.longest_loss || 0) + '</span></div>';
+      html += '</div>';
+    }
+
+    // By Bookmaker
+    var byBook = data.by_book || [];
+    if (byBook.length > 0) {
+      html += '<div class="perf-panel"><h4>Performance by Bookmaker</h4>';
+      for (var i = 0; i < byBook.length && i < 8; i++) {
+        var bk = byBook[i];
+        var pnlClass = parseFloat(bk.pnl) >= 0 ? 'positive' : 'negative';
+        html += '<div class="perf-row"><span>' + escHtml(bk.best_book) + ' (' + bk.total + ')</span>'
+          + '<span class="' + pnlClass + '">' + (parseFloat(bk.win_rate) || 0) + '% W | ' + fmt$(bk.pnl) + '</span></div>';
+      }
+      html += '</div>';
+    }
+
+    html += '</div>';
+    el.innerHTML = html;
+  });
+})();
+</script>
 </body>
 </html>

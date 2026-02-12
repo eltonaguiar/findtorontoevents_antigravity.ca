@@ -215,6 +215,132 @@
         <p class="text-xs text-[var(--text-3)] mt-4" aria-live="polite">Data last updated: <time
             dateTime="2026-01-29T21:24:04.824Z">2026-01-29, 4:24:04 p.m.</time></p>
       </header>
+
+      <!-- ═══════════════════ NEWS SECTION ═══════════════════ -->
+      <section class="max-w-7xl mx-auto px-4 pt-6 pb-2" id="news-section">
+        <style>
+          .news-banner { position: relative; overflow: hidden; border-radius: 1rem; border: 1px solid rgba(139,92,246,0.25); background: linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(99,102,241,0.06) 50%, rgba(59,130,246,0.04) 100%); padding: 1.5rem 2rem; margin-bottom: 0.75rem; }
+          .news-banner::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #8b5cf6, #6366f1, #3b82f6); }
+          .news-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 1rem; }
+          .news-title { font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 3px; color: #a78bfa; display: flex; align-items: center; gap: 8px; }
+          .news-title-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; animation: pulse-dot 2s infinite; }
+          @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+          .news-see-all { font-size: 12px; color: #88aaff; text-decoration: none; letter-spacing: 1px; transition: color 0.15s; }
+          .news-see-all:hover { color: #aac8ff; text-decoration: underline; }
+          .news-entries { display: flex; flex-direction: column; gap: 12px; }
+          .news-entry { display: flex; gap: 16px; align-items: flex-start; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); background: rgba(0,0,0,0.2); transition: border-color 0.15s, background 0.15s; }
+          .news-entry:hover { border-color: rgba(139,92,246,0.2); background: rgba(139,92,246,0.04); }
+          .news-date { flex-shrink: 0; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #556; padding-top: 3px; min-width: 70px; }
+          .news-content { flex: 1; min-width: 0; }
+          .news-entry-title { font-size: 14px; font-weight: 600; color: #e2e8f0; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+          .news-entry-title a { color: #e2e8f0; text-decoration: none; }
+          .news-entry-title a:hover { color: #a78bfa; }
+          .news-desc { font-size: 12px; color: #778899; line-height: 1.5; }
+          .news-badge { display: inline-block; font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; padding: 1px 8px; border-radius: 3px; font-weight: 700; }
+          .nb-analysis { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.25); }
+          .nb-new { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.2); }
+          .nb-fix { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+          .nb-improved { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.2); }
+          .news-collapse-btn { display: none; margin-top: 8px; font-size: 12px; color: #88aaff; background: none; border: 1px solid rgba(136,170,255,0.2); padding: 6px 16px; border-radius: 20px; cursor: pointer; transition: all 0.15s; }
+          .news-collapse-btn:hover { background: rgba(136,170,255,0.08); border-color: rgba(136,170,255,0.4); }
+          @media (max-width: 640px) {
+            .news-banner { padding: 1rem 1.25rem; }
+            .news-entry { flex-direction: column; gap: 4px; }
+            .news-date { min-width: unset; }
+            .news-entry-title { font-size: 13px; }
+          }
+        </style>
+        <div class="news-banner">
+          <div class="news-header">
+            <div class="news-title"><span class="news-title-dot"></span> Latest Research &amp; Updates</div>
+            <a class="news-see-all" href="/updates/">View all updates →</a>
+          </div>
+          <div class="news-entries" id="news-entries">
+
+            <div class="news-entry">
+              <div class="news-date">Feb 11</div>
+              <div class="news-content">
+                <div class="news-entry-title">
+                  <a href="/findstocks/opus46-analysis.html">OPUS 4.6 — Definitive System Analysis &amp; Battle Plan</a>
+                  <span class="news-badge nb-analysis">Analysis</span>
+                  <span class="news-badge nb-new">New</span>
+                </div>
+                <div class="news-desc">Claude Opus 4.6 synthesized findings from 9 AI models (Gemini, ChatGPT, Claude, DeepSeek, GitHub Copilot, Grok, Kimi, Windsurf) into a comprehensive analysis of all 37 workflows, 34 Python scripts, 30+ API endpoints, and 23+ trading algorithms. Key finding: signals generate 53–70% win rates but execution destroys 97% of the edge. 12-week battle plan included.</div>
+              </div>
+            </div>
+
+            <div class="news-entry">
+              <div class="news-date">Feb 11</div>
+              <div class="news-content">
+                <div class="news-entry-title">
+                  <a href="/updates/#feb11-grok">Grok xAI Integration + 12 Schema Fixes + 8 New Python Scripts</a>
+                  <span class="news-badge nb-new">New</span>
+                  <span class="news-badge nb-fix">Fix</span>
+                </div>
+                <div class="news-desc">Integrated Grok xAI MOTHERLOAD recommendations. Fixed forex regime mapping (EUR/USD was never regime-gated). Paused 7 failing algorithms. Overhauled stock TP/SL defaults. Added CDR signal boost (+8 strength for 39 commission-free tickers). 8 new Python scripts: FinBERT, CUSUM, Optuna, Congress, Options Flow, On-Chain, Portfolio Optimizer, Transfer Entropy.</div>
+              </div>
+            </div>
+
+            <div class="news-entry">
+              <div class="news-date">Feb 11</div>
+              <div class="news-content">
+                <div class="news-entry-title">
+                  <a href="/updates/#feb11-autoexec">Auto-Execution Engine + 4 Risk Management Upgrades</a>
+                  <span class="news-badge nb-new">New</span>
+                  <span class="news-badge nb-improved">Improved</span>
+                </div>
+                <div class="news-desc">Built auto-execution engine bridging the signal-to-trade gap. Added drawdown-based position scaling, 6-hour signal cooldown after stop-loss, sector correlation guard (max 2 per sector), and per-asset stop-loss floors.</div>
+              </div>
+            </div>
+
+            <div class="news-entry" style="display:none" data-extra>
+              <div class="news-date">Feb 11</div>
+              <div class="news-content">
+                <div class="news-entry-title">
+                  <a href="/updates/#feb11-overhaul">Trading System Overhaul — 7 Critical Fixes</a>
+                  <span class="news-badge nb-fix">Fix</span>
+                  <span class="news-badge nb-improved">Improved</span>
+                </div>
+                <div class="news-desc">Gap-aware stop loss, regime TP scaling fix, stock TP/hold overhaul across 19 algorithms, CDR preference scoring, -100% loss cap, slippage reduction from 0.5% to 0.1%, and forex regime gate fix.</div>
+              </div>
+            </div>
+
+            <div class="news-entry" style="display:none" data-extra>
+              <div class="news-date">Feb 11</div>
+              <div class="news-content">
+                <div class="news-entry-title">
+                  <a href="/updates/#feb11-winrate">Win Rate Fix: 37.4% → 70.5% + Consensus Algorithm Rewrite</a>
+                  <span class="news-badge nb-fix">Fix</span>
+                </div>
+                <div class="news-desc">Expired picks with positive returns were counted as losses. 147 of 166 max-hold picks had positive average returns (+1.04%) but were all counted as losses. Consensus algorithm had 3 critical bugs causing it to always generate BUY regardless of direction.</div>
+              </div>
+            </div>
+
+            <div class="news-entry" style="display:none" data-extra>
+              <div class="news-date">Feb 11</div>
+              <div class="news-content">
+                <div class="news-entry-title">
+                  <a href="/updates/#feb11-worldclass">World-Class Algorithm Intelligence — 5-Layer Ensemble</a>
+                  <span class="news-badge nb-new">New</span>
+                </div>
+                <div class="news-desc">HMM Regime Detection, Hurst Exponent Gating, VIX Term Structure + Macro Overlay, Cross-Asset Momentum Spillover, WorldQuant 101 Alphas, XGBoost Meta-Labeling, Half-Kelly Sizing, Alpha Decay Monitoring, Purged Walk-Forward Validation. 125 intelligence metrics now feed real-time trade decisions.</div>
+              </div>
+            </div>
+
+          </div>
+          <button class="news-collapse-btn" id="news-toggle" onclick="(function(){var extras=document.querySelectorAll('[data-extra]'),btn=document.getElementById('news-toggle'),showing=extras[0]&&extras[0].style.display!=='none';extras.forEach(function(e){e.style.display=showing?'none':'flex'});btn.textContent=showing?'Show more updates ↓':'Show fewer ↑'})()">Show more updates ↓</button>
+          <script>
+            (function(){
+              var extras = document.querySelectorAll('[data-extra]');
+              if (extras.length > 0) {
+                document.getElementById('news-toggle').style.display = 'inline-block';
+              }
+            })();
+          </script>
+        </div>
+      </section>
+      <!-- ═══════════════════ END NEWS SECTION ═══════════════════ -->
+
       <section class="max-w-7xl mx-auto px-4 py-4" role="alert" aria-labelledby="risk-heading">
         <div class="rounded-xl border-2 border-amber-500/60 bg-amber-950/50 text-amber-100 p-4 md:p-6 shadow-lg">
           <div class="flex flex-wrap items-start justify-between gap-2">

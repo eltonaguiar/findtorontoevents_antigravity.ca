@@ -326,6 +326,54 @@ function _lt_estimate_slippage_bps($asset_class, $position_value_usd) {
 }
 
 
+// ─── World-Class: Python-computed position sizing from lm_position_sizing ─
+// Reads the pre-computed final_size_pct from the position_sizer.py output.
+// Python computes: Half-Kelly + EWMA vol + regime modifier + alpha decay weight.
+// This is more sophisticated than the PHP-only sizing because it has access to
+// full numpy/scipy capabilities for EWMA, PCA factor budgeting, and CVaR.
+// Falls back to 0 (meaning "use PHP sizing") if no data available.
+function _lt_python_position_pct($conn, $algorithm_name) {
+    $safe_algo = $conn->real_escape_string($algorithm_name);
+
+    // Check if lm_position_sizing table exists
+    $table_check = $conn->query("SHOW TABLES LIKE 'lm_position_sizing'");
+    if (!$table_check || $table_check->num_rows == 0) {
+        return 0;
+    }
+
+    // Get the latest Python-computed sizing for this algorithm
+    // Only use data from the last 24 hours (stale data is worse than no data)
+    $r = $conn->query("SELECT final_size_pct, is_decaying, algo_sharpe_30d,
+            regime_modifier, decay_weight
+        FROM lm_position_sizing
+        WHERE algorithm_name = '$safe_algo'
+        AND date >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+        ORDER BY id DESC LIMIT 1");
+
+    if (!$r || $r->num_rows == 0) {
+        return 0; // No recent Python sizing, fall back to PHP
+    }
+
+    $row = $r->fetch_assoc();
+    $r->free();
+
+    $final_pct = (float)$row['final_size_pct'];
+    $is_decaying = (int)$row['is_decaying'];
+
+    // Sanity bounds: Python should produce 1-15%, reject outliers
+    if ($final_pct < 0.5 || $final_pct > 20) {
+        return 0; // Reject unreasonable values
+    }
+
+    // If algorithm is flagged as decaying, cap at 3%
+    if ($is_decaying && $final_pct > 3) {
+        $final_pct = 3.0;
+    }
+
+    return round($final_pct, 2);
+}
+
+
 // ─── Helper: trailing stop calculation (Kimi recommendation) ─────────
 // Returns adjusted SL pct when trailing is active, or 0 if not triggered
 function _lt_trailing_stop_pct($pos, $current_price) {
@@ -815,17 +863,27 @@ case 'enter':
         $sl_pct = $sl_floor;
     }
 
-    // Calculate position size: Half-Kelly + volatility-adjusted (World-Class upgrade)
-    // Step 1: Volatility-adjusted base (Kimi)
+    // Calculate position size: Python-computed (preferred) or PHP Half-Kelly fallback
     $portfolio_value = _lt_get_portfolio_value($conn);
-    $vol_pct         = _lt_vol_adjusted_position_pct($conn, $symbol, $asset_class);
 
-    // Step 2: Half-Kelly override when sufficient trade history exists
-    // Science: Kelly (1956), Thorp (1962) — Half-Kelly = 75% growth, 50% less drawdown
-    $kelly_pct = _lt_kelly_position_pct($conn, $algorithm, $asset_class, $vol_pct);
+    // Step 0: Check for Python-computed position sizing from lm_position_sizing.
+    // Python position_sizer.py computes: Half-Kelly + EWMA vol + regime + alpha decay.
+    // This is more accurate than PHP-only sizing — uses full numpy/scipy capabilities.
+    $python_pct = _lt_python_position_pct($conn, $algorithm);
 
-    // Step 3: Drawdown scaling — reduce position size during losing streaks
-    $dd_scale = _lt_drawdown_scale($conn);
+    if ($python_pct > 0) {
+        // Use Python-computed sizing (already includes vol, regime, decay adjustments)
+        $kelly_pct = $python_pct;
+        $dd_scale = _lt_drawdown_scale($conn); // Still apply PHP drawdown guard
+    } else {
+        // Fallback: PHP-only sizing (original World-Class upgrade path)
+        // Step 1: Volatility-adjusted base (Kimi)
+        $vol_pct = _lt_vol_adjusted_position_pct($conn, $symbol, $asset_class);
+        // Step 2: Half-Kelly override when sufficient trade history exists
+        $kelly_pct = _lt_kelly_position_pct($conn, $algorithm, $asset_class, $vol_pct);
+        // Step 3: Drawdown scaling
+        $dd_scale = _lt_drawdown_scale($conn);
+    }
 
     // Step 4: Estimate slippage and calculate final position value
     $raw_position    = round($portfolio_value * ($kelly_pct / 100) * $dd_scale, 2);
@@ -1440,10 +1498,16 @@ case 'auto_execute':
             continue;
         }
 
-        // Position sizing: Half-Kelly + volatility-adjusted + drawdown scaling
-        $vol_pct   = _lt_vol_adjusted_position_pct($conn, $sig_sym, $sig_ac);
-        $kelly_pct = _lt_kelly_position_pct($conn, $sig_algo, $sig_ac, $vol_pct);
-        $dd_scale  = _lt_drawdown_scale($conn);
+        // Position sizing: Python-computed (preferred) or PHP Half-Kelly fallback
+        $python_pct = _lt_python_position_pct($conn, $sig_algo);
+        if ($python_pct > 0) {
+            $kelly_pct = $python_pct;
+            $dd_scale = _lt_drawdown_scale($conn);
+        } else {
+            $vol_pct   = _lt_vol_adjusted_position_pct($conn, $sig_sym, $sig_ac);
+            $kelly_pct = _lt_kelly_position_pct($conn, $sig_algo, $sig_ac, $vol_pct);
+            $dd_scale  = _lt_drawdown_scale($conn);
+        }
         $position_value = round($portfolio_value * ($kelly_pct / 100) * $dd_scale, 2);
         $units = $position_value / $entry_price;
 

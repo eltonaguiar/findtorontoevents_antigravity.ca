@@ -18,39 +18,12 @@
 
 require_once dirname(__FILE__) . '/sports_db_connect.php';
 require_once dirname(__FILE__) . '/sports_scores.php';
+require_once dirname(__FILE__) . '/sports_schema.php';
 
 // ────────────────────────────────────────────────────────────
-//  Auto-create table
+//  Auto-create tables (centralized in sports_schema.php)
 // ────────────────────────────────────────────────────────────
-
-$conn->query("CREATE TABLE IF NOT EXISTS lm_sports_value_bets (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    event_id VARCHAR(100) NOT NULL,
-    sport VARCHAR(50) NOT NULL,
-    home_team VARCHAR(100) NOT NULL,
-    away_team VARCHAR(100) NOT NULL,
-    commence_time DATETIME NOT NULL,
-    market VARCHAR(20) NOT NULL,
-    bet_type VARCHAR(50) NOT NULL,
-    outcome_name VARCHAR(100) NOT NULL DEFAULT '',
-    best_book VARCHAR(50) NOT NULL,
-    best_book_key VARCHAR(50) NOT NULL DEFAULT '',
-    best_odds DECIMAL(10,4) NOT NULL DEFAULT 0,
-    consensus_implied_prob DECIMAL(6,4) NOT NULL DEFAULT 0,
-    true_prob DECIMAL(6,4) NOT NULL DEFAULT 0,
-    edge_pct DECIMAL(6,2) NOT NULL DEFAULT 0,
-    ev_pct DECIMAL(6,2) NOT NULL DEFAULT 0,
-    kelly_fraction DECIMAL(6,4) NOT NULL DEFAULT 0,
-    kelly_bet DECIMAL(10,2) NOT NULL DEFAULT 0,
-    all_odds TEXT,
-    detected_at DATETIME NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'active',
-    KEY idx_sport (sport),
-    KEY idx_status (status),
-    KEY idx_ev (ev_pct),
-    KEY idx_event (event_id),
-    KEY idx_commence (commence_time)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+_sb_ensure_schema($conn);
 
 // ────────────────────────────────────────────────────────────
 //  Constants
@@ -95,38 +68,6 @@ $SPORT_SHORT = array(
 
 // NFL key numbers for spread analysis
 $NFL_KEY_NUMBERS = array(3, 7, 10, 14, 17, 21);
-
-// ────────────────────────────────────────────────────────────
-//  Auto-create daily picks table (timestamped historical picks)
-// ────────────────────────────────────────────────────────────
-
-$conn->query("CREATE TABLE IF NOT EXISTS lm_sports_daily_picks (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    pick_date DATE NOT NULL,
-    generated_at DATETIME NOT NULL,
-    sport VARCHAR(50) NOT NULL,
-    event_id VARCHAR(100) NOT NULL,
-    home_team VARCHAR(100) NOT NULL,
-    away_team VARCHAR(100) NOT NULL,
-    commence_time DATETIME NOT NULL,
-    market VARCHAR(20) NOT NULL,
-    pick_type VARCHAR(50) NOT NULL DEFAULT '',
-    outcome_name VARCHAR(100) NOT NULL DEFAULT '',
-    best_book VARCHAR(50) NOT NULL DEFAULT '',
-    best_book_key VARCHAR(50) NOT NULL DEFAULT '',
-    best_odds DECIMAL(10,4) NOT NULL DEFAULT 0,
-    ev_pct DECIMAL(6,2) NOT NULL DEFAULT 0,
-    kelly_bet DECIMAL(10,2) NOT NULL DEFAULT 0,
-    algorithm VARCHAR(50) NOT NULL DEFAULT 'value_bet',
-    confidence VARCHAR(20) NOT NULL DEFAULT 'medium',
-    result VARCHAR(20) DEFAULT NULL,
-    pnl DECIMAL(10,2) DEFAULT NULL,
-    all_odds TEXT,
-    KEY idx_date (pick_date),
-    KEY idx_sport (sport),
-    KEY idx_event (event_id),
-    KEY idx_result (result)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8");
 
 // ────────────────────────────────────────────────────────────
 //  Action routing

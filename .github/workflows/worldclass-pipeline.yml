@@ -114,6 +114,94 @@ jobs:
           echo "=== SIGNAL BUNDLES — $(date -u) ==="
           cd scripts && python signal_bundles.py
 
+  # ─── JOB 3b: Sprint 1+2 Intelligence Scripts ──────────────────────
+  intelligence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [regime, bundles]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --quiet -r scripts/worldclass/requirements.txt
+
+      - name: FinBERT Sentiment Analysis
+        continue-on-error: true
+        env:
+          SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+          SM_ADMIN_KEY: livetrader2026
+        run: |
+          echo "=== FINBERT SENTIMENT — $(date -u) ==="
+          cd scripts && python finbert_sentiment.py
+
+      - name: CUSUM Change-Point Detection
+        continue-on-error: true
+        env:
+          SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+          SM_ADMIN_KEY: livetrader2026
+        run: |
+          echo "=== CUSUM DETECTION — $(date -u) ==="
+          cd scripts && python cusum_detector.py
+
+      - name: Congressional Trading Tracker
+        continue-on-error: true
+        env:
+          SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+          SM_ADMIN_KEY: livetrader2026
+        run: |
+          echo "=== CONGRESSIONAL TRACKER — $(date -u) ==="
+          cd scripts && python congress_tracker.py
+
+      - name: Options Flow / GEX
+        continue-on-error: true
+        env:
+          SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+          SM_ADMIN_KEY: livetrader2026
+        run: |
+          echo "=== OPTIONS FLOW / GEX — $(date -u) ==="
+          cd scripts && python options_flow.py
+
+      - name: On-Chain Crypto Analytics
+        continue-on-error: true
+        env:
+          SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+          SM_ADMIN_KEY: livetrader2026
+        run: |
+          echo "=== ON-CHAIN ANALYTICS — $(date -u) ==="
+          cd scripts && python onchain_analytics.py
+
+      - name: Portfolio Optimizer
+        continue-on-error: true
+        env:
+          SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+          SM_ADMIN_KEY: livetrader2026
+        run: |
+          echo "=== PORTFOLIO OPTIMIZER — $(date -u) ==="
+          cd scripts && python portfolio_optimizer.py
+
+      - name: Transfer Entropy Analyzer
+        continue-on-error: true
+        env:
+          SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+          SM_ADMIN_KEY: livetrader2026
+        run: |
+          echo "=== TRANSFER ENTROPY — $(date -u) ==="
+          cd scripts && python transfer_entropy_analyzer.py
+
+      - name: FRED Macro Overlay
+        continue-on-error: true
+        env:
+          SM_API_BASE: https://findtorontoevents.ca/live-monitor/api
+          SM_ADMIN_KEY: livetrader2026
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: |
+          echo "=== FRED MACRO OVERLAY — $(date -u) ==="
+          cd scripts && python fred_macro.py
+
   # ─── JOB 4: Validation + Meta-Labeler (Sunday only) ───────────────
   validate:
     runs-on: ubuntu-latest
@@ -157,10 +245,10 @@ jobs:
           echo "=== META-LABELER TRAINING — $(date -u) ==="
           cd scripts && python meta_labeler.py
 
-  # ─── JOB 5: Summary ────────────────────────────────────────────────
+  # ─── JOB 6: Summary ────────────────────────────────────────────────
   summary:
     runs-on: ubuntu-latest
-    needs: [regime, alphas, bundles]
+    needs: [regime, alphas, bundles, intelligence]
     if: always()
     steps:
       - name: Pipeline Summary
@@ -171,5 +259,6 @@ jobs:
           echo "Regime Detection: ${{ needs.regime.result }}"
           echo "WorldQuant Alphas: ${{ needs.alphas.result }}"
           echo "Signal Bundles: ${{ needs.bundles.result }}"
+          echo "Intelligence (Sprint 1+2): ${{ needs.intelligence.result }}"
           echo "Date: $(date -u '+%Y-%m-%d %H:%M UTC')"
           echo "========================================"

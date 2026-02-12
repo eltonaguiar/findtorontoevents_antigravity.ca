@@ -71,14 +71,15 @@ def prune_correlated(prices, tickers, threshold=0.7):
                 to_keep.remove(j)
     return [tickers[i] for i in sorted(to_keep)]
 
-if __name__ == '__main__':
+def main():
+    """Main entry point for orchestrator integration."""
     top_picks = get_top_picks(50)
     if not top_picks:
         print('No active signals found.')
         os.makedirs('data', exist_ok=True)
         with open('data/pruned_picks.json', 'w') as f:
             json.dump([], f)
-        exit()
+        return
 
     prices, tickers = fetch_prices(top_picks)
     if len(tickers) < 2:
@@ -90,3 +91,7 @@ if __name__ == '__main__':
     with open('data/pruned_picks.json', 'w') as f:
         json.dump(pruned, f)
     print(f'Pruned {len(top_picks)} to {len(pruned)} picks')
+
+
+if __name__ == '__main__':
+    main()
