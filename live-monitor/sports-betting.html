@@ -427,6 +427,7 @@
             <button class="tab-btn" onclick="switchTab('history')">Pick History</button>
             <button class="tab-btn" onclick="switchTab('glossary')">Glossary</button>
             <button class="tab-btn" onclick="switchTab('analysis')" style="color:#f59e0b;">System Analysis</button>
+            <button class="tab-btn" onclick="switchTab('research')" style="color:#a855f7;">Research</button>
         </div>
 
         <div class="tab-panel active" id="tab-picks">
@@ -637,6 +638,178 @@
                 <p style="font-size:0.85rem;color:#889;margin-top:0.5rem;">Check back monthly for updates. We'll be transparent about every win, loss, and system improvement.</p>
             </div>
         </div>
+        <div class="tab-panel" id="tab-research">
+            <div class="grade-explainer" style="background:linear-gradient(135deg,rgba(168,85,247,0.08),rgba(99,102,241,0.08));border-color:rgba(168,85,247,0.3);">
+                <div class="ge-title" style="color:#a855f7;">Research: How Sportsbooks Work and How to Beat Them</div>
+                This section documents our research into professional sports betting theory. Understanding how sportsbooks operate is the first step toward building systems that can exploit their weaknesses.
+            </div>
+
+            <h3 class="section-title" style="color:#6366f1;">How Sportsbooks Set Odds</h3>
+            <div class="glossary-grid">
+                <div class="glossary-item" style="border-color:rgba(99,102,241,0.3);">
+                    <div class="glossary-term"><span class="badge badge-blue">PROBABILITY MODEL</span></div>
+                    <div class="glossary-def"><strong>Implied Probability</strong> -- Sportsbooks start with statistical models analyzing thousands of data points: team performance, injuries, weather, possession stats, shot conversion rates, even referee tendencies. For example, if a team averages 2.1 goals/game but their top scorer (40% of goals) is injured, the odds adjust downward.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(99,102,241,0.3);">
+                    <div class="glossary-term"><span class="badge badge-blue">THE VIG</span></div>
+                    <div class="glossary-def"><strong>Bookmaker Margin</strong> -- Fair odds for a 50/50 coin flip would be 2.00 each (100% total probability). But sportsbooks add a 5-10% margin, pricing both sides at ~1.91 (52.4% each, totaling 104.8%). This built-in edge ensures profit if betting is balanced.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(99,102,241,0.3);">
+                    <div class="glossary-term"><span class="badge badge-blue">LINE BALANCING</span></div>
+                    <div class="glossary-def"><strong>Risk Management</strong> -- Books do not try to predict winners; they try to balance action on both sides. If 70% of money is on Team A, they lower Team A's odds to attract more bets on Team B. The goal: equal money on both sides, collect the vig, and have zero risk.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(99,102,241,0.3);">
+                    <div class="glossary-term"><span class="badge badge-blue">SHARP MONEY</span></div>
+                    <div class="glossary-def"><strong>Professional Influence</strong> -- Sharps (pro bettors with models) bet early and move lines. When sharps heavily bet one side, books respect their edge and adjust. Books track sharp accounts closely. A line move without news often signals sharp action.</div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#22c55e;margin-top:1.5rem;">Closing Line Value (CLV)</h3>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+                <p style="font-size:0.9rem;color:#e0e0f0;margin-bottom:0.8rem;"><strong>What is CLV?</strong> The difference between the odds you bet and the final odds at game time (closing line). If you bet at +160 and the line closes at +140, you captured +20 cents of CLV.</p>
+                <p style="font-size:0.85rem;color:#889;margin-bottom:0.5rem;"><strong>Why CLV matters more than win rate:</strong></p>
+                <ul style="font-size:0.85rem;color:#889;margin-left:1.5rem;margin-bottom:0.8rem;">
+                    <li>The closing line reflects <strong>all available information</strong> after the market has settled</li>
+                    <li>Consistently beating the closing line means you are <strong>extracting value before the market corrects</strong></li>
+                    <li>A bettor who wins 48% of bets but gets +5% CLV will profit long-term</li>
+                    <li>A bettor who wins 55% but gets -2% CLV will lose money</li>
+                </ul>
+                <p style="font-size:0.85rem;color:#22c55e;"><strong>Key insight:</strong> Even if you lose a bet with positive CLV, you made a good bet. Short-term variance is noise; long-term CLV is signal.</p>
+            </div>
+
+            <div class="glossary-grid">
+                <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                    <div class="glossary-term"><span class="badge badge-green">KEY NUMBERS</span></div>
+                    <div class="glossary-def"><strong>Not All Points Are Equal</strong> -- In NFL, spreads of 3 and 7 matter enormously because so many games are decided by field goals and touchdowns. Moving from +2.5 to +3.5 is ~3x more valuable than moving from +7.5 to +8.5.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                    <div class="glossary-term"><span class="badge badge-green">VIG-FREE CLV</span></div>
+                    <div class="glossary-def"><strong>Remove the Juice</strong> -- To calculate true CLV, remove the vig from closing odds. If you bet -2.5 (-115) and closing is -3 (-110), the vig-free fair line is closer to -2.8. Your actual edge is smaller than it appears.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                    <div class="glossary-term"><span class="badge badge-green">CLV TRACKING</span></div>
+                    <div class="glossary-def"><strong>How to Measure</strong> -- Professional bettors log every bet with: (1) odds taken, (2) closing odds, (3) implied probability difference. Over 100+ bets, positive CLV correlates directly with profitability.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(34,197,94,0.3);">
+                    <div class="glossary-term"><span class="badge badge-green">MARKET EFFICIENCY</span></div>
+                    <div class="glossary-def"><strong>Efficient vs Inefficient</strong> -- NFL closing lines are highly efficient (hard to beat). WNBA, niche sports, and early-season college games are less efficient (more opportunity). CLV matters less in inefficient markets.</div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#eab308;margin-top:1.5rem;">Sharp Money vs Public Money</h3>
+            <div class="glossary-grid">
+                <div class="glossary-item" style="border-color:rgba(234,179,8,0.3);">
+                    <div class="glossary-term"><span class="badge badge-yellow">PUBLIC MONEY</span></div>
+                    <div class="glossary-def"><strong>The Herd</strong> -- Casual bettors bet on favorites, popular teams, and recent performance. They chase narratives and media hype. Public money is emotional, biased toward big markets (Lakers, Cowboys, Yankees), and inflates lines on popular sides.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(234,179,8,0.3);">
+                    <div class="glossary-term"><span class="badge badge-yellow">SHARP MONEY</span></div>
+                    <div class="glossary-def"><strong>The Pros</strong> -- Professional bettors use models, data, and discipline. They bet early, fade public bias, and seek value. When sharps hit a line hard, books move it fast. Sharps win 52-55% of bets but profit through +EV and CLV.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(234,179,8,0.3);">
+                    <div class="glossary-term"><span class="badge badge-yellow">REVERSE LINE MOVE</span></div>
+                    <div class="glossary-def"><strong>RLM Signal</strong> -- When 70% of bets are on Team A but the line moves toward Team B, that is reverse line movement. It means sharp money is on Team B despite public sentiment. This is one of the strongest signals in sports betting.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(234,179,8,0.3);">
+                    <div class="glossary-term"><span class="badge badge-yellow">STEAM MOVES</span></div>
+                    <div class="glossary-def"><strong>Coordinated Action</strong> -- When multiple sportsbooks move lines simultaneously on the same game, a steam move has occurred. Usually caused by syndicates hitting the same line across multiple books.</div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#3b82f6;margin-top:1.5rem;">Strategies to Beat Sportsbooks</h3>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+                <p style="font-size:0.85rem;color:#889;margin-bottom:0.8rem;">Based on academic research and professional betting literature:</p>
+                
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:1rem;">
+                    <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">1. Line Shopping</div>
+                        <div style="font-size:0.78rem;color:#889;">Getting +150 at Book A instead of +140 at Book B adds 5% to returns. Over hundreds of bets, this compounds dramatically.</div>
+                    </div>
+                    <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">2. Bet Early (Favorites)</div>
+                        <div style="font-size:0.78rem;color:#889;">Opening lines are softer. Sharp bettors bet early when lines have not been sharpened. Bet favorites early, underdogs late.</div>
+                    </div>
+                    <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">3. Specialization</div>
+                        <div style="font-size:0.78rem;color:#889;">Focus on niche markets where books invest less resources. Lower leagues, WNBA, international soccer have more inefficiencies.</div>
+                    </div>
+                    <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">4. Fade the Public</div>
+                        <div style="font-size:0.78rem;color:#889;">When public money heavily skews one side (greater than 70%), contrarian value often exists on the other side.</div>
+                    </div>
+                    <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">5. React to News Fast</div>
+                        <div style="font-size:0.78rem;color:#889;">Injuries, weather, lineup changes move lines. Being first to know and act creates CLV.</div>
+                    </div>
+                    <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#3b82f6;margin-bottom:0.3rem;">6. Arbitrage</div>
+                        <div style="font-size:0.78rem;color:#889;">When implied probabilities sum to less than 100% across books, bet both sides for guaranteed profit regardless of outcome.</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#f97316;margin-top:1.5rem;">Market Inefficiencies</h3>
+            <div class="glossary-grid">
+                <div class="glossary-item" style="border-color:rgba(249,115,22,0.3);">
+                    <div class="glossary-term"><span class="badge badge-orange">RECENCY BIAS</span></div>
+                    <div class="glossary-def">Bettors overvalue recent performance. A team that won big last week gets overbet. Sharps fade recency bias. Past performance does not always predict future results.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(249,115,22,0.3);">
+                    <div class="glossary-term"><span class="badge badge-orange">FAVORITE BIAS</span></div>
+                    <div class="glossary-def">Books shade lines on popular favorites to balance action. Value often lies in moderate underdogs (+150 to +300 range).</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(249,115,22,0.3);">
+                    <div class="glossary-term"><span class="badge badge-orange">HOME BIAS</span></div>
+                    <div class="glossary-def">Public overvalues home-field advantage. Books shade home teams knowing casual bettors prefer them. Road teams often offer value.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(249,115,22,0.3);">
+                    <div class="glossary-term"><span class="badge badge-orange">WEATHER LAG</span></div>
+                    <div class="glossary-def">NFL/MLB totals adjust slowly to weather. Wind greater than 15mph significantly reduces scoring. Books sometimes lag on weather adjustments.</div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#a855f7;margin-top:1.5rem;">Key Research Sources</h3>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem;">
+                    <div style="font-size:0.8rem;color:#889;line-height:1.6;">
+                        <strong style="color:#a855f7;">Kaunitz et al. (2017)</strong><br>
+                        Beating the House: Identified profitable strategy exploiting odds mispricings without building predictive models, using the books' own numbers against them.
+                    </div>
+                    <div style="font-size:0.8rem;color:#889;line-height:1.6;">
+                        <strong style="color:#a855f7;">Sauer (1998)</strong><br>
+                        The Economics of Wagering Markets -- Foundational work on market efficiency, vigorish, and efficient market hypothesis in betting.
+                    </div>
+                    <div style="font-size:0.8rem;color:#889;line-height:1.6;">
+                        <strong style="color:#a855f7;">Levitt (2004)</strong><br>
+                        Why Are Gambling Markets Organised So Differently -- Explains how books deliberately take positions rather than purely balancing books.
+                    </div>
+                    <div style="font-size:0.8rem;color:#889;line-height:1.6;">
+                        <strong style="color:#a855f7;">Walker and Gray (2009)</strong><br>
+                        Sharp bettors and the efficient market hypothesis -- Academic validation of sharp money's ability to predict line movements.
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#22c55e;margin-top:1.5rem;">How We Apply This Research</h3>
+            <div style="background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(99,102,241,0.08));border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:1rem;">
+                <p style="font-size:0.85rem;color:#889;margin-bottom:0.8rem;">Our algorithm incorporates these findings:</p>
+                <ul style="font-size:0.85rem;color:#889;margin-left:1.5rem;margin-bottom:0.8rem;">
+                    <li><strong>EV-Based Grading:</strong> Grades prioritize expected value over win probability</li>
+                    <li><strong>Line Shopping:</strong> System compares 9+ sportsbooks automatically</li>
+                    <li><strong>Vig Removal:</strong> Win probabilities strip out bookmaker margin</li>
+                    <li><strong>Quarter-Kelly Sizing:</strong> Conservative bankroll management</li>
+                    <li><strong>Situation Scoring:</strong> Captures factors books may miss</li>
+                </ul>
+                <p style="font-size:0.85rem;color:#22c55e;"><strong>What is missing:</strong> CLV tracking, arbitrage detection, and machine learning filters.</p>
+            </div>
+
+            <div style="margin-top:1.5rem;padding:1rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:12px;">
+                <div style="font-weight:600;color:#ef4444;margin-bottom:0.5rem;">The Hard Truth</div>
+                <p style="font-size:0.85rem;color:#889;">Academic research shows that while markets have inefficiencies, consistently profiting is extremely difficult. Books employ teams of mathematicians and have built-in 5-10% margins. Most bettors lose. The few who win: (1) specialize deeply, (2) move fast, (3) manage bankroll ruthlessly, (4) track thousands of bets. Our system is a starting point, not a magic formula.</p>
+            </div>
+        </div>
+
+
 
         <div class="tab-panel" id="tab-glossary">
             <h3 class="glossary-section-title">Grades &amp; Recommendations</h3>
@@ -772,7 +945,7 @@ function switchTab(tab) {
     document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
     document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
     document.getElementById('tab-' + tab).classList.add('active');
-    var tabs = {'picks':'Today','odds':'Odds','bets':'My Bets','performance':'Performance','history':'Pick History','glossary':'Glossary','analysis':'System Analysis'};
+    var tabs = {'picks':'Today','odds':'Odds','bets':'My Bets','performance':'Performance','history':'Pick History','glossary':'Glossary','analysis':'System Analysis','research':'Research'};
     var btns = document.querySelectorAll('.tab-btn');
     for (var i = 0; i < btns.length; i++) {
         if (btns[i].textContent === tabs[tab]) btns[i].classList.add('active');
