@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backtest Results | Cross-Strategy Performance</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #eab308;
+            --yellow-dim: rgba(234, 179, 8, 0.15);
+            --blue: #3b82f6;
+            --gold: #f59e0b;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #22d3ee, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-sub { color: var(--text-dim); font-size: 0.85rem; }
+        .header-links { display: flex; gap: 1rem; font-size: 0.9rem; }
+        .header-links a { color: var(--text-dim); }
+        .header-links a:hover { color: var(--text); }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+        }
+        .tab {
+            padding: 0.7rem 1.2rem;
+            cursor: pointer;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: var(--text); }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Summary Cards */
+        .summary-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .summary-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+        }
+        .summary-card .val { font-size: 1.8rem; font-weight: 800; }
+        .summary-card .lbl {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.25rem;
+        }
+        .summary-card .sub { font-size: 0.7rem; color: var(--text-dim); margin-top: 0.15rem; }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 1.5rem 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .section-title .badge {
+            font-size: 0.6rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 99px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .badge-backtest { background: rgba(59,130,246,0.2); color: var(--blue); }
+        .badge-live { background: rgba(34,211,238,0.2); color: #22d3ee; }
+        .badge-forward { background: rgba(34,197,94,0.2); color: var(--green); }
+
+        /* Data Table */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+        .data-table th {
+            background: #1a1a3a;
+            padding: 0.7rem 0.8rem;
+            text-align: left;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .data-table th:hover { color: var(--text); }
+        .data-table td {
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid rgba(42,42,74,0.5);
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+        .data-table tr { transition: background 0.15s; }
+        .data-table tr:hover { background: var(--bg-card-hover); }
+
+        .grade-badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+        .grade-a-plus { background: linear-gradient(135deg, #22c55e, #16a34a); color: #000; }
+        .grade-a { background: rgba(34,197,94,0.2); color: var(--green); }
+        .grade-b { background: rgba(59,130,246,0.2); color: var(--blue); }
+        .grade-c { background: var(--yellow-dim); color: var(--yellow); }
+        .grade-d { background: var(--red-dim); color: var(--red); }
+        .grade-f { background: rgba(239,68,68,0.3); color: #fca5a5; }
+
+        .val-green { color: var(--green); }
+        .val-red { color: var(--red); }
+        .val-yellow { color: var(--yellow); }
+        .val-blue { color: var(--blue); }
+
+        .pct-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+        }
+        .pct-badge.pos { background: var(--green-dim); color: var(--green); }
+        .pct-badge.neg { background: var(--red-dim); color: var(--red); }
+
+        /* Rank badge */
+        .rank-badge {
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center; justify-content: center;
+            font-size: 0.7rem; font-weight: 800;
+            background: var(--border);
+            color: var(--text-dim);
+        }
+        .rank-badge.gold { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; }
+        .rank-badge.silver { background: linear-gradient(135deg, #9ca3af, #6b7280); color: #000; }
+        .rank-badge.bronze { background: linear-gradient(135deg, #b45309, #92400e); color: #fff; }
+
+        /* Improvement Cards */
+        .improve-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .improve-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            border-left: 3px solid var(--accent);
+        }
+        .improve-card.critical { border-left-color: var(--red); }
+        .improve-card.warning { border-left-color: var(--yellow); }
+        .improve-card.success { border-left-color: var(--green); }
+        .improve-card h3 { font-size: 0.95rem; margin-bottom: 0.5rem; }
+        .improve-card p { font-size: 0.8rem; color: var(--text-dim); line-height: 1.6; }
+        .improve-card .metric { font-weight: 700; }
+        .improve-card .action {
+            margin-top: 0.75rem;
+            padding: 0.4rem 0.8rem;
+            background: rgba(99,102,241,0.15);
+            border: 1px solid rgba(99,102,241,0.3);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: var(--accent);
+            display: inline-block;
+        }
+
+        /* Forward-Facing Page Cards */
+        .page-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .page-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .page-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent);
+            text-decoration: none;
+            transform: translateY(-2px);
+        }
+        .page-card .page-name { font-weight: 700; font-size: 1rem; margin-bottom: 0.3rem; }
+        .page-card .page-desc { font-size: 0.78rem; color: var(--text-dim); line-height: 1.5; }
+        .page-card .page-badge {
+            display: inline-block;
+            font-size: 0.6rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .page-card .page-badge.live { background: rgba(34,211,238,0.2); color: #22d3ee; }
+        .page-card .page-badge.gold { background: rgba(245,158,11,0.2); color: var(--gold); }
+
+        /* Asset class comparison */
+        .asset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .asset-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+        }
+        .asset-card h3 {
+            font-size: 1rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .asset-card .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3rem 0;
+            font-size: 0.8rem;
+            border-bottom: 1px solid rgba(42,42,74,0.3);
+        }
+        .asset-card .stat-row:last-child { border-bottom: none; }
+        .asset-card .stat-label { color: var(--text-dim); }
+        .asset-card .stat-val { font-weight: 700; }
+
+        /* Loading */
+        .loading { text-align: center; padding: 3rem; color: var(--text-dim); }
+        .loading .spinner {
+            display: inline-block; width: 40px; height: 40px;
+            border: 3px solid var(--border); border-top-color: var(--accent);
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .disclaimer {
+            text-align: center; font-size: 0.7rem; color: var(--text-dim);
+            padding: 2rem 1rem; border-top: 1px solid var(--border); margin-top: 3rem;
+        }
+        .timestamp { text-align: center; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 1rem; }
+
+        /* Live trade log */
+        .trade-row.win { background: rgba(34,197,94,0.05); }
+        .trade-row.loss { background: rgba(239,68,68,0.05); }
+
+        @media (max-width: 800px) {
+            .header { padding: 0.75rem 1rem; }
+            .container { padding: 1rem; }
+            .summary-row { grid-template-columns: repeat(2, 1fr); }
+            .improve-grid, .page-grid, .asset-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <h1>Backtest Results & Strategy Intelligence</h1>
+        <div class="header-sub">Cross-strategy performance across all stock pages | Backtest + Live data</div>
+    </div>
+    <div class="header-links">
+        <a href="/findstocks/portfolio2/leaderboard.html">Leaderboard</a>
+        <a href="/live-monitor/algo-performance.html">L vs O</a>
+        <a href="/findstocks/portfolio2/hub.html">Hub</a>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab active" data-tab="overview">Overview</div>
+        <div class="tab" data-tab="backtests">Backtest Rankings</div>
+        <div class="tab" data-tab="live">Live Trading</div>
+        <div class="tab" data-tab="improvements">Improvements</div>
+        <div class="tab" data-tab="pages">Quality Pages</div>
+        <div class="tab" data-tab="methodology">Methodology</div>
+    </div>
+
+    <!-- TAB 1: Overview -->
+    <div id="tab-overview" class="tab-content active">
+        <div class="summary-row" id="overview-cards">
+            <div class="loading"><div class="spinner"></div><div style="margin-top:1rem">Loading backtest data...</div></div>
+        </div>
+
+        <div class="section-title">Asset Class Performance <span class="badge badge-backtest">2-Year Backtest</span></div>
+        <div class="asset-grid" id="asset-comparison"></div>
+
+        <div class="section-title">Top 6 Algorithms <span class="badge badge-backtest">Ranked by Sharpe</span></div>
+        <div class="table-wrap">
+            <table class="data-table" id="top-algos-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Algorithm</th>
+                        <th>Asset</th>
+                        <th>Grade</th>
+                        <th>Sharpe</th>
+                        <th>Win Rate</th>
+                        <th>Profit Factor</th>
+                        <th>Total PnL</th>
+                        <th>Trades</th>
+                    </tr>
+                </thead>
+                <tbody id="top-algos-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 2: Backtest Rankings -->
+    <div id="tab-backtests" class="tab-content">
+        <div class="section-title">All Algorithm Backtest Results <span class="badge badge-backtest">2-Year Window (2024-2026)</span></div>
+        <div class="table-wrap">
+            <table class="data-table" id="all-algos-table">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable('all-algos-body', 0, 'num')">Rank</th>
+                        <th onclick="sortTable('all-algos-body', 1, 'str')">Algorithm</th>
+                        <th onclick="sortTable('all-algos-body', 2, 'str')">Asset</th>
+                        <th onclick="sortTable('all-algos-body', 3, 'str')">Grade</th>
+                        <th onclick="sortTable('all-algos-body', 4, 'num')">Sharpe</th>
+                        <th onclick="sortTable('all-algos-body', 5, 'num')">Sortino</th>
+                        <th onclick="sortTable('all-algos-body', 6, 'num')">Win Rate</th>
+                        <th onclick="sortTable('all-algos-body', 7, 'num')">Profit Factor</th>
+                        <th onclick="sortTable('all-algos-body', 8, 'num')">Avg Win</th>
+                        <th onclick="sortTable('all-algos-body', 9, 'num')">Avg Loss</th>
+                        <th onclick="sortTable('all-algos-body', 10, 'num')">Total PnL</th>
+                        <th onclick="sortTable('all-algos-body', 11, 'num')">Max DD</th>
+                        <th onclick="sortTable('all-algos-body', 12, 'num')">Trades</th>
+                    </tr>
+                </thead>
+                <tbody id="all-algos-body"></tbody>
+            </table>
+        </div>
+
+        <div class="section-title">Portfolio-Level Stats <span class="badge badge-backtest">All Assets Combined</span></div>
+        <div id="portfolio-stats" class="summary-row"></div>
+    </div>
+
+    <!-- TAB 3: Live Trading -->
+    <div id="tab-live" class="tab-content">
+        <div class="section-title">Live Paper Trading Performance <span class="badge badge-live">LIVE</span></div>
+        <div class="summary-row" id="live-summary"></div>
+
+        <div class="section-title">Performance by Algorithm <span class="badge badge-live">LIVE</span></div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Algorithm</th>
+                        <th>Trades</th>
+                        <th>Wins</th>
+                        <th>Losses</th>
+                        <th>Win Rate</th>
+                        <th>Avg Return</th>
+                        <th>Total PnL</th>
+                        <th>Avg Hold (h)</th>
+                    </tr>
+                </thead>
+                <tbody id="live-by-algo"></tbody>
+            </table>
+        </div>
+
+        <div class="section-title">Closed Trade Log <span class="badge badge-live">LIVE</span></div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Algorithm</th>
+                        <th>Direction</th>
+                        <th>Asset</th>
+                        <th>Entry</th>
+                        <th>Exit</th>
+                        <th>Return %</th>
+                        <th>PnL $</th>
+                        <th>Exit Reason</th>
+                        <th>Hold (h)</th>
+                    </tr>
+                </thead>
+                <tbody id="trade-log"></tbody>
+            </table>
+        </div>
+
+        <div class="section-title">Open Positions <span class="badge badge-live">LIVE</span></div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Algorithm</th>
+                        <th>Direction</th>
+                        <th>Asset</th>
+                        <th>Entry Price</th>
+                        <th>Current</th>
+                        <th>Unrealized %</th>
+                        <th>PnL $</th>
+                        <th>Hold (h)</th>
+                    </tr>
+                </thead>
+                <tbody id="open-positions"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 4: Improvements -->
+    <div id="tab-improvements" class="tab-content">
+        <div class="section-title">Critical Issues <span class="badge" style="background:var(--red-dim);color:var(--red);">ACTION REQUIRED</span></div>
+        <div class="improve-grid" id="critical-issues"></div>
+
+        <div class="section-title">Opportunities <span class="badge" style="background:var(--yellow-dim);color:var(--yellow);">RECOMMENDED</span></div>
+        <div class="improve-grid" id="opportunities"></div>
+
+        <div class="section-title">Strengths <span class="badge" style="background:var(--green-dim);color:var(--green);">WORKING WELL</span></div>
+        <div class="improve-grid" id="strengths"></div>
+    </div>
+
+    <!-- TAB 5: Quality Pages -->
+    <div id="tab-pages" class="tab-content">
+        <div class="section-title">Top Forward-Facing Quality Stock Pages <span class="badge badge-forward">NOT BACKTESTED</span></div>
+        <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1.5rem;">
+            These pages show real-time, forward-looking stock data &mdash; not historical backtests.
+            They track live positions, institutional data, and consensus picks with real market verification.
+        </p>
+        <div class="page-grid" id="quality-pages"></div>
+    </div>
+
+    <!-- TAB 6: Methodology -->
+    <div id="tab-methodology" class="tab-content">
+        <div class="section-title">Backtest Methodology</div>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.5rem;">
+            <h3 style="margin-bottom:1rem;color:var(--gold);">How Backtests Are Run</h3>
+            <div style="font-size:0.85rem;color:var(--text-dim);line-height:1.8;">
+                <p><strong style="color:var(--text)">Data Source:</strong> Historical OHLCV data from <code>daily_prices</code> table (Yahoo Finance &amp; Finnhub). 2-year window: Feb 2024 &ndash; Feb 2026.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--text)">Entry Signals:</strong> Generated by each algorithm using its own indicator set (RSI, MACD, Bollinger, etc.). Stored in <code>stock_picks</code>, <code>miracle_picks2</code>, <code>miracle_picks3</code> tables.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--text)">Exit Logic:</strong> Bar-by-bar simulation checking: (1) If intraday low &le; stop-loss price &rarr; exit at SL, (2) If intraday high &ge; take-profit price &rarr; exit at TP, (3) If holding days &ge; max_hold &rarr; exit at close.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--text)">Commission Model:</strong> Questrade tiered commissions ($4.95&ndash;$9.95 per trade) + 0.1% slippage per side.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--text)">Position Sizing:</strong> 5% of capital per position, capped at $2,000. Max 20% per sector. Starting capital: $10,000.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--text)">Embargo:</strong> 2-day embargo after pick date to prevent look-ahead bias.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--text)">Execution:</strong> Backtests run nightly via GitHub Actions (<code>refresh-stocks-portfolio.yml</code>, weekdays 23:30 UTC). Results cached in <code>report_cache</code> table.</p>
+            </div>
+        </div>
+
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.5rem;">
+            <h3 style="margin-bottom:1rem;color:var(--gold);">Metric Definitions</h3>
+            <div style="font-size:0.85rem;color:var(--text-dim);line-height:1.8;">
+                <p><strong style="color:var(--text)">Sharpe Ratio</strong> = (Mean Daily Return / Std Dev) &times; &radic;252. Measures risk-adjusted return. &gt;2.0 = excellent, &gt;1.0 = good, &lt;0 = losing money.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--text)">Sortino Ratio</strong> = (Mean Return / Downside Deviation) &times; &radic;252. Like Sharpe but only penalizes downside volatility.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--text)">Profit Factor</strong> = Sum(Wins) / |Sum(Losses)|. &gt;1.5 = strong, 1.0&ndash;1.5 = marginal, &lt;1.0 = losing money.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--text)">Win Rate</strong> = Wins / Total Trades &times; 100. Note: win rate alone is misleading &mdash; a 40% WR with big winners can beat 60% WR with small winners.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--text)">Max Drawdown</strong> = Largest peak-to-trough decline in portfolio value. Measures worst-case scenario.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--text)">Expectancy</strong> = (WR &times; AvgWin) &ndash; ((1&ndash;WR) &times; AvgLoss). Expected return per trade. Must be positive for long-term profitability.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--text)">Grading Scale:</strong> A+ (Sharpe &gt;4), A (Sharpe 2&ndash;4), B (Sharpe 1&ndash;2), C (Sharpe 0.5&ndash;1), D (Sharpe &lt;0.5).</p>
+            </div>
+        </div>
+
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.5rem;">
+            <h3 style="margin-bottom:1rem;color:var(--gold);">Live Trading Methodology</h3>
+            <div style="font-size:0.85rem;color:var(--text-dim);line-height:1.8;">
+                <p><strong style="color:var(--text)">Paper Trading:</strong> $10,000 simulated capital. 5% position sizing (~$500 per trade). Max 10 concurrent positions.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--text)">Data Sources:</strong> Finnhub (stocks), FreeCryptoAPI (crypto), TwelveData (forex). Sub-minute refresh.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--text)">20 Algorithms:</strong> 19 technical + Challenger Bot (smart money consensus). Each generates signals independently.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--text)">Regime Gating:</strong> 19/20 algorithms use HMM regime detection (bull/sideways/bear). Signals suppressed when regime disagrees with trade direction.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--text)">Position Management:</strong> Auto SL/TP enforcement. Max hold caps: Crypto 24h, Stocks 72h, Forex 48h. Sector concentration max 2 per group.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--text)">Self-Learning:</strong> Parameters optimized via grid search on closed trades. Learned vs Original tracked in <code>lm_algo_performance</code> table.</p>
+            </div>
+        </div>
+
+        <div class="section-title">Source Code &amp; API Links</div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr><th>Component</th><th>Source File</th><th>API Endpoint</th><th>Description</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight:700">Backtest Engine (v1)</td>
+                        <td><code>findstocks/api/backtest.php</code></td>
+                        <td><a href="/findstocks/api/backtest.php?strategy=custom&take_profit=10&stop_loss=5&max_hold_days=7" target="_blank">Run Backtest</a></td>
+                        <td>Configurable TP/SL/hold, Questrade fees, vol filtering, embargo</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">Backtest Engine (v2)</td>
+                        <td><code>findstocks/portfolio2/api/backtest.php</code></td>
+                        <td><a href="/findstocks/portfolio2/api/backtest.php?strategy=custom&take_profit=10&stop_loss=5&max_hold_days=7" target="_blank">Run Backtest v2</a></td>
+                        <td>Concurrent positions, dynamic capital allocation, equity curve</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">What-If Scenarios</td>
+                        <td><code>findstocks/portfolio2/api/whatif.php</code></td>
+                        <td><a href="/findstocks/portfolio2/api/whatif.php?compare=1" target="_blank">10 Scenarios</a></td>
+                        <td>10 presets: DayTrader, Swing, Conservative, Momentum Ride, etc.</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">Horizon Picks</td>
+                        <td><code>findstocks/portfolio2/api/horizon_picks.php</code></td>
+                        <td><a href="/findstocks/portfolio2/api/horizon_picks.php" target="_blank">3 Horizons</a></td>
+                        <td>Quick Gains (10/5/10d), Swing (20/8/60d), Long-Term (40/15/252d)</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">Short Backtest</td>
+                        <td><code>findstocks/api/short_backtest.php</code></td>
+                        <td><a href="/findstocks/api/short_backtest.php" target="_blank">Short Trades</a></td>
+                        <td>Inverse logic with SPY regime detection (bull/bear/sideways)</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">Algo Performance</td>
+                        <td><code>live-monitor/api/algo_performance.php</code></td>
+                        <td><a href="/live-monitor/api/algo_performance.php?action=summary&days=30" target="_blank">30-Day Summary</a></td>
+                        <td>Learned vs Original comparison, daily snapshots, virtual what-if</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">Live Trading</td>
+                        <td><code>live-monitor/api/live_trade.php</code></td>
+                        <td><a href="/live-monitor/api/live_trade.php?action=dashboard" target="_blank">Dashboard</a></td>
+                        <td>Paper trading with 20 algorithms, auto SL/TP, regime gating</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">Sharpe Report</td>
+                        <td><code>scripts/comprehensive_performance_report.py</code></td>
+                        <td><a href="/data/sharpe_ratio_report.json" target="_blank">JSON Report</a></td>
+                        <td>Per-algorithm Sharpe, Sortino, Calmar, grades, benchmarks</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">Signal Engine</td>
+                        <td><code>live-monitor/api/live_signals.php</code></td>
+                        <td><a href="/live-monitor/api/live_signals.php?signal=fetch&asset=STOCK&symbols=AAPL" target="_blank">Fetch Signals</a></td>
+                        <td>20 algorithms with technical indicators, confidence scoring</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">Performance Report</td>
+                        <td><code>scripts/comprehensive_performance_report.py</code></td>
+                        <td><a href="/data/performance_report.json" target="_blank">Full Report</a></td>
+                        <td>2-year backtest with exit reason breakdown, sector analysis</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">Consensus Tracker</td>
+                        <td><code>findstocks/portfolio2/api/consensus_performance.php</code></td>
+                        <td><a href="/findstocks/portfolio2/api/consensus_performance.php?action=dashboard" target="_blank">Consensus</a></td>
+                        <td>2+ algo agreement tracking, $200/day challenge, pattern learning</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">Learning System</td>
+                        <td><code>findstocks/portfolio2/api/learning.php</code></td>
+                        <td>&mdash;</td>
+                        <td>Grid search TP/SL/hold optimization per algorithm + asset class</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section-title">Algorithm Source Pages</div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr><th>Algorithm</th><th>Type</th><th>Where To See Picks</th><th>Where To See Performance</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight:700">Cursor Genius</td><td>Technical</td>
+                        <td><a href="/findstocks/portfolio2/picks.html">Daily Picks</a></td>
+                        <td><a href="/live-monitor/algo-performance.html">L vs O Dashboard</a></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">ETF Masters</td><td>Sector ETF</td>
+                        <td><a href="/findstocks/portfolio2/picks.html">Daily Picks</a></td>
+                        <td><a href="/findstocks/portfolio2/leaderboard.html">Leaderboard</a></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">Sector Momentum</td><td>Sector Rotation</td>
+                        <td><a href="/findstocks/portfolio2/picks.html">Daily Picks</a></td>
+                        <td><a href="/findstocks/portfolio2/leaderboard.html">Leaderboard</a></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">Ichimoku Cloud</td><td>Trend</td>
+                        <td><a href="/live-monitor/live-monitor.html">Live Monitor</a></td>
+                        <td><a href="/live-monitor/algo-performance.html">L vs O Dashboard</a></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">StochRSI Crossover</td><td>Momentum</td>
+                        <td><a href="/live-monitor/live-monitor.html">Live Monitor</a></td>
+                        <td><a href="/live-monitor/algo-performance.html">L vs O Dashboard</a></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">Challenger Bot</td><td>Smart Money</td>
+                        <td><a href="/live-monitor/smart-money.html">Smart Money (Showdown tab)</a></td>
+                        <td><a href="/live-monitor/live-monitor.html">Live Monitor</a></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">Consensus</td><td>Multi-Algo Vote</td>
+                        <td><a href="/findstocks/portfolio2/consolidated.html">Consolidated Picks</a></td>
+                        <td><a href="/live-monitor/algo-performance.html">L vs O Dashboard</a></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">Trend Following</td><td>Trend</td>
+                        <td><a href="/findstocks/portfolio2/horizon-picks.html">Horizon Picks</a></td>
+                        <td><a href="/findstocks/portfolio2/leaderboard.html">Leaderboard</a></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">Mean Reversion</td><td>Reversion</td>
+                        <td><a href="/findstocks/portfolio2/horizon-picks.html">Horizon Picks</a></td>
+                        <td><a href="/findstocks/portfolio2/leaderboard.html">Leaderboard</a></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700">Blue Chip Growth</td><td>Fundamental</td>
+                        <td><a href="/findstocks/portfolio2/picks.html">Daily Picks</a></td>
+                        <td><a href="/findstocks/portfolio2/leaderboard.html">Leaderboard</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section-title">Benchmarks Used</div>
+        <div class="asset-grid">
+            <div class="asset-card">
+                <h3>Stocks</h3>
+                <div class="stat-row"><span class="stat-label">S&amp;P 500 Buy &amp; Hold</span><span class="stat-val">0.90</span></div>
+                <div class="stat-row"><span class="stat-label">Good Algorithm</span><span class="stat-val">1.00</span></div>
+                <div class="stat-row"><span class="stat-label">Very Good</span><span class="stat-val">2.00</span></div>
+                <div class="stat-row"><span class="stat-label">Renaissance (Elite)</span><span class="stat-val">2.50</span></div>
+            </div>
+            <div class="asset-card">
+                <h3>Crypto</h3>
+                <div class="stat-row"><span class="stat-label">BTC Buy &amp; Hold</span><span class="stat-val">1.10</span></div>
+                <div class="stat-row"><span class="stat-label">Good Algorithm</span><span class="stat-val">1.00</span></div>
+                <div class="stat-row"><span class="stat-label">Very Good</span><span class="stat-val">2.00</span></div>
+                <div class="stat-row"><span class="stat-label">Elite</span><span class="stat-val">3.00</span></div>
+            </div>
+            <div class="asset-card">
+                <h3>Forex</h3>
+                <div class="stat-row"><span class="stat-label">EUR/USD Carry</span><span class="stat-val">0.30</span></div>
+                <div class="stat-row"><span class="stat-label">Good Algorithm</span><span class="stat-val">0.80</span></div>
+                <div class="stat-row"><span class="stat-label">Very Good</span><span class="stat-val">1.50</span></div>
+                <div class="stat-row"><span class="stat-label">Elite</span><span class="stat-val">2.50</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="timestamp" id="timestamp"></div>
+
+    <div class="disclaimer">
+        Paper trading only. Past performance does not guarantee future results.
+        Backtest results include commissions (Questrade tiered) and 0.1% slippage.
+        Live trading uses $10K simulated capital with 5% position sizing.
+    </div>
+</div>
+
+<script>
+// ─── DATA ──────────────────────────────────────────────────────────────────
+
+var BACKTEST_DATA = [
+    { rank: 1, algorithm: 'Cursor Genius', asset: 'Stocks', grade: 'A+', sharpe: 5.271, sortino: 10.454, win_rate: 63.25, profit_factor: 2.276, avg_win: 4.04, avg_loss: 3.05, total_pnl: 43281, max_dd: -4160, trades: 302, expectancy: 1.43, source: '/findstocks/portfolio2/picks.html', perf: '/live-monitor/algo-performance.html' },
+    { rank: 2, algorithm: 'Trend Following', asset: 'Crypto', grade: 'A+', sharpe: 4.449, sortino: 9.159, win_rate: 47.62, profit_factor: 1.797, avg_win: 9.88, avg_loss: 5.00, total_pnl: 17538, max_dd: -8500, trades: 84, expectancy: 2.09, source: '/findstocks/portfolio2/horizon-picks.html', perf: '/findstocks/portfolio2/leaderboard.html' },
+    { rank: 3, algorithm: 'Trend Following', asset: 'Forex', grade: 'A', sharpe: 2.415, sortino: 4.444, win_rate: 48.82, profit_factor: 1.409, avg_win: 1.29, avg_loss: 0.88, total_pnl: 3865, max_dd: -1285, trades: 211, expectancy: 0.18, source: '/findstocks/portfolio2/horizon-picks.html', perf: '/findstocks/portfolio2/leaderboard.html' },
+    { rank: 4, algorithm: 'Mean Reversion', asset: 'Forex', grade: 'A', sharpe: 2.285, sortino: 4.153, win_rate: 49.41, profit_factor: 1.384, avg_win: 1.24, avg_loss: 0.88, total_pnl: 5760, max_dd: -2157, trades: 338, expectancy: 0.17, source: '/findstocks/portfolio2/horizon-picks.html', perf: '/findstocks/portfolio2/leaderboard.html' },
+    { rank: 5, algorithm: 'Sector Momentum', asset: 'Stocks', grade: 'A', sharpe: 2.118, sortino: 3.394, win_rate: 56.25, profit_factor: 1.378, avg_win: 2.86, avg_loss: 2.66, total_pnl: 3528, max_dd: -4052, trades: 80, expectancy: 0.44, source: '/findstocks/portfolio2/picks.html', perf: '/findstocks/portfolio2/leaderboard.html' },
+    { rank: 6, algorithm: 'ETF Masters', asset: 'Stocks', grade: 'A', sharpe: 2.053, sortino: 3.073, win_rate: 59.12, profit_factor: 1.387, avg_win: 2.32, avg_loss: 2.42, total_pnl: 15767, max_dd: -18264, trades: 411, expectancy: 0.38, source: '/findstocks/portfolio2/picks.html', perf: '/findstocks/portfolio2/leaderboard.html' },
+    { rank: 7, algorithm: 'Sector Rotation', asset: 'Stocks', grade: 'C', sharpe: 0.966, sortino: 1.397, win_rate: 57.36, profit_factor: 1.162, avg_win: 2.27, avg_loss: 2.62, total_pnl: 4804, max_dd: -11078, trades: 265, expectancy: 0.18, source: '/findstocks/portfolio2/picks.html', perf: '/findstocks/portfolio2/leaderboard.html' },
+    { rank: 8, algorithm: 'Blue Chip Growth', asset: 'Stocks', grade: 'D', sharpe: -0.739, sortino: -1.089, win_rate: 47.60, profit_factor: 0.891, avg_win: 3.16, avg_loss: 3.22, total_pnl: -6110, max_dd: -20374, trades: 334, expectancy: -0.18, source: '/findstocks/portfolio2/picks.html', perf: '/findstocks/portfolio2/leaderboard.html' },
+    { rank: 9, algorithm: 'Mean Reversion', asset: 'Crypto', grade: 'D', sharpe: -1.557, sortino: -2.510, win_rate: 28.89, profit_factor: 0.812, avg_win: 10.00, avg_loss: 5.00, total_pnl: -6000, max_dd: -13000, trades: 90, expectancy: -0.67, source: '/findstocks/portfolio2/horizon-picks.html', perf: '/findstocks/portfolio2/leaderboard.html' },
+    { rank: 10, algorithm: 'Technical Momentum', asset: 'Stocks', grade: 'D', sharpe: -3.090, sortino: -4.399, win_rate: 25.00, profit_factor: 0.649, avg_win: 7.59, avg_loss: 3.90, total_pnl: -1233, max_dd: -2511, trades: 12, expectancy: -1.03, source: '/findstocks/portfolio2/picks.html', perf: '/findstocks/portfolio2/leaderboard.html' },
+    { rank: 11, algorithm: 'Composite Rating', asset: 'Stocks', grade: 'D', sharpe: -3.355, sortino: -4.688, win_rate: 25.00, profit_factor: 0.626, avg_win: 7.32, avg_loss: 3.90, total_pnl: -1314, max_dd: -2511, trades: 12, expectancy: -1.10, source: '/findstocks/portfolio2/picks.html', perf: '/findstocks/portfolio2/leaderboard.html' }
+];
+
+var ASSET_CLASSES = {
+    stocks: { label: 'Stocks', icon: '\ud83d\udcc8', trades: 1422, win_rate: 55.98, sharpe: 1.721, pnl: 56220, pf: 1.313, grade: 'B', max_dd: -48250 },
+    crypto: { label: 'Crypto', icon: '\u20bf', trades: 174, win_rate: 37.93, sharpe: 1.452, pnl: 11538, pf: 1.214, grade: 'B', max_dd: -12000 },
+    forex: { label: 'Forex', icon: '\ud83d\udcb1', trades: 549, win_rate: 49.18, sharpe: 2.336, pnl: 9625, pf: 1.394, grade: 'A', max_dd: -2892 }
+};
+
+var PORTFOLIO = { trades: 2145, win_rate: 52.77, sharpe: 1.561, pnl: 77384, pf: 1.300, grade: 'B', expectancy: 0.36, max_dd: -48250 };
+
+var QUALITY_PAGES = [
+    { name: 'Consolidated Picks', href: '/findstocks/portfolio2/consolidated.html', badge: 'live', desc: 'Consensus-based position tracker. 65 positions tracked since Feb 10, 2026. Requires 2+ algorithms to agree. Exit: TP +8%, SL -4%, max 14 days.', data: 'Consensus DB' },
+    { name: 'Smart Money Intelligence', href: '/live-monitor/smart-money.html', badge: 'live', desc: '6-tab dashboard: analyst ratings, insider MSPR, 13F holdings, AI consensus scoring. Real SEC EDGAR data from Form 4 & 13F filings.', data: 'SEC/Yahoo/WSB' },
+    { name: 'Goldmine Dashboard', href: '/live-monitor/goldmine-dashboard.html', badge: 'live', desc: 'AI prediction verification with timestamped proof. Tracks prediction accuracy, alerts for underperforming systems, and system health.', data: 'Prediction DB' },
+    { name: 'L vs O Performance', href: '/live-monitor/algo-performance.html', badge: 'gold', desc: 'Learned vs Original parameter comparison. The only system with positive forward-facing returns (63.6% WR, +$45 PnL). Shows if learning improves or hurts.', data: 'Live Trades' },
+    { name: 'Live Trading Monitor', href: '/live-monitor/live-monitor.html', badge: 'live', desc: '20 algorithms trading simultaneously across stocks, crypto, forex. Real-time positions with auto SL/TP. $10K paper capital, 5% sizing.', data: 'Real-time APIs' },
+    { name: 'Stock Intel', href: '/findstocks/portfolio2/stock-intel.html', badge: '', desc: 'Per-stock deep analysis combining technicals (RSI, SMA, ATR), fundamentals (P/E, ROE), analyst ratings, and insider activity.', data: 'Yahoo/Finnhub' },
+    { name: 'Multi-Dimensional (9D)', href: '/live-monitor/multi-dimensional.html', badge: '', desc: '9-dimensional institutional scoring: momentum, value, growth, technical, sentiment, macro, insider, analyst, flow. Heatmap + radar charts.', data: '9D Engine' },
+    { name: 'Daily Picks', href: '/findstocks/portfolio2/picks.html', badge: '', desc: 'Algorithm-generated daily stock picks across multiple timeframes. Includes stocks, crypto, forex, mutual funds.', data: 'Algorithm Engine' },
+    { name: 'Penny Stock Finder', href: '/findstocks/portfolio2/penny-stocks.html', badge: '', desc: 'Yahoo screener proxy filtering penny stocks. Tabs: Micro Cap (<$1), Small Cap ($1-$5), High Volume, Fast Movers. Blocks OTC/Pink Sheets.', data: 'Yahoo Screener' },
+    { name: 'Edge Dashboard', href: '/live-monitor/edge-dashboard.html', badge: '', desc: 'High-conviction trade setups ranked by conviction tier (Very High/High/Medium). Shows R:R ratio, pattern recognition, algo source tags.', data: 'Multi-algo' },
+    { name: 'Opportunity Scanner', href: '/live-monitor/opportunity-scanner.html', badge: '', desc: 'Real-time multi-asset opportunity detection with confidence filtering. Identifies best entries across stocks, crypto, forex.', data: 'Real-time' },
+    { name: 'Dividends & Earnings', href: '/findstocks/portfolio2/dividends.html', badge: '', desc: '4-tab dashboard tracking dividend schedules, earnings dates, yield tracking, and fundamental metrics. Event-driven opportunities.', data: 'Yahoo v8/v10' }
+];
+
+var IMPROVEMENTS = {
+    critical: [
+        { title: 'Composite Rating: 25% Win Rate', text: 'Only 12 trades with 25% win rate and -$1,314 loss. Sharpe ratio of <span class="metric">-3.35</span> is the worst of all algorithms. Profit factor 0.63 means $0.63 gained per $1 lost.', action: 'Pause this algorithm immediately' },
+        { title: 'Technical Momentum: 25% Win Rate', text: 'Only 12 trades with 25% win rate and -$1,233 loss. Sharpe ratio <span class="metric">-3.09</span>. Same poor profile as Composite Rating.', action: 'Pause this algorithm immediately' },
+        { title: 'Mean Reversion Crypto: 28.9% Win Rate', text: '90 trades, -$6,000 loss. Applying mean reversion to crypto is fighting the trend. Crypto trends hard \u2014 reversion gets destroyed. Sharpe <span class="metric">-1.56</span>.', action: 'Disable Mean Reversion for crypto asset class' },
+        { title: 'Commissions Eating Profits', text: 'Default backtest: $10,177 in commissions on $10K capital (101%!). With commissions: -74% return. Without: +27.6% gross return. Commissions are the #1 profit destroyer.', action: 'Switch to zero-commission broker or reduce trade frequency' }
+    ],
+    warning: [
+        { title: 'Blue Chip Growth: Negative Sharpe', text: '334 trades, 47.6% win rate, -$6,110 total loss. Profit factor <span class="metric">0.89</span> means losing money on average. Max drawdown $20K.', action: 'Rework entry criteria or pause until regime improves' },
+        { title: 'Sector Rotation: Marginal Returns', text: '265 trades, 57.4% WR but only C grade (Sharpe 0.97). Positive PnL ($4,804) but $11K max drawdown \u2014 terrible risk-adjusted return.', action: 'Tighten stop losses from 5% to 3%' },
+        { title: 'Consensus Algo: 0% Live Win Rate', text: '2 live trades, both losses (forex LONG entries). Consensus requires regime-matching but forex entries expired at max_hold without hitting targets.', action: 'Disable Consensus for forex, keep for crypto/stocks only' },
+        { title: 'Crypto Win Rate: Only 37.9% (Backtest)', text: 'Despite generating most PnL, crypto only wins 38% of trades. Relies on big winners covering many small losses. Risk of drawdown during losing streaks.', action: 'Raise crypto SL thresholds or add trailing stops' }
+    ],
+    success: [
+        { title: 'Cursor Genius: A+ Grade Champion', text: '302 trades, <span class="metric">63.3% win rate</span>, Sharpe <span class="metric">5.27</span>, +$43,281 profit. Best algorithm by every metric. Profit factor 2.28 \u2014 $2.28 gained per $1 lost.', action: 'Increase position sizing allocation' },
+        { title: 'Ichimoku Cloud: 80% Live Win Rate', text: '5 live trades today, 4 wins. Average return +1.85% per trade. +$44.97 total PnL. Best performing live algorithm by far.', action: 'Monitor and maintain current parameters' },
+        { title: 'StochRSI Crossover: 100% Live Win Rate', text: '3 trades, 3 wins. All crypto shorts. Average +1.13% per trade, $16.39 total. Perfect record in current market.', action: 'Trusted for crypto, increase allocation' },
+        { title: 'Forex: A Grade (Best Risk-Adjusted)', text: '549 backtest trades, Sharpe <span class="metric">2.34</span> (best asset class). Small drawdowns ($2,892 max). Steady returns with low volatility.', action: 'Allocate more capital to forex strategies' },
+        { title: 'ETF Masters: Highest Volume Winner', text: '411 trades (most active), 59.1% WR, +$15,767 total. Consistent performer across all market regimes. A grade.', action: 'Keep as core allocation' }
+    ]
+};
+
+// ─── RENDER FUNCTIONS ──────────────────────────────────────────────────────
+
+function gradeClass(g) {
+    if (g === 'A+') return 'grade-a-plus';
+    if (g === 'A') return 'grade-a';
+    if (g === 'B') return 'grade-b';
+    if (g === 'C') return 'grade-c';
+    if (g === 'D') return 'grade-d';
+    return 'grade-f';
+}
+
+function fmtPnl(v) {
+    var s = v >= 0 ? '+' : '';
+    return s + '$' + Math.abs(v).toLocaleString();
+}
+
+function fmtPct(v, digits) {
+    digits = digits || 1;
+    var s = v >= 0 ? '+' : '';
+    return s + v.toFixed(digits) + '%';
+}
+
+function colorVal(v, invert) {
+    var pos = invert ? v < 0 : v > 0;
+    return pos ? 'val-green' : (v === 0 ? '' : 'val-red');
+}
+
+function rankBadge(r) {
+    var cls = r === 1 ? 'gold' : (r === 2 ? 'silver' : (r === 3 ? 'bronze' : ''));
+    return '<span class="rank-badge ' + cls + '">' + r + '</span>';
+}
+
+// ─── OVERVIEW TAB ──────────────────────────────────────────────────────────
+
+function renderOverview() {
+    var cards = document.getElementById('overview-cards');
+    cards.innerHTML =
+        '<div class="summary-card"><div class="val" style="color:var(--accent)">' + PORTFOLIO.trades + '</div><div class="lbl">Total Backtest Trades</div><div class="sub">2-year window</div></div>' +
+        '<div class="summary-card"><div class="val ' + colorVal(PORTFOLIO.win_rate - 50) + '">' + PORTFOLIO.win_rate + '%</div><div class="lbl">Portfolio Win Rate</div></div>' +
+        '<div class="summary-card"><div class="val ' + colorVal(PORTFOLIO.sharpe) + '">' + PORTFOLIO.sharpe.toFixed(2) + '</div><div class="lbl">Portfolio Sharpe</div><div class="sub">Grade: ' + PORTFOLIO.grade + '</div></div>' +
+        '<div class="summary-card"><div class="val ' + colorVal(PORTFOLIO.pnl) + '">' + fmtPnl(PORTFOLIO.pnl) + '</div><div class="lbl">Total Backtest PnL</div></div>' +
+        '<div class="summary-card"><div class="val" style="color:var(--gold)">11</div><div class="lbl">Algorithms Tested</div><div class="sub">3 asset classes</div></div>';
+
+    // Asset class cards
+    var ac = document.getElementById('asset-comparison');
+    var html = '';
+    var keys = ['stocks', 'crypto', 'forex'];
+    for (var i = 0; i < keys.length; i++) {
+        var k = keys[i];
+        var a = ASSET_CLASSES[k];
+        html += '<div class="asset-card">' +
+            '<h3>' + a.icon + ' ' + a.label + ' <span class="grade-badge ' + gradeClass(a.grade) + '">' + a.grade + '</span></h3>' +
+            '<div class="stat-row"><span class="stat-label">Trades</span><span class="stat-val">' + a.trades + '</span></div>' +
+            '<div class="stat-row"><span class="stat-label">Win Rate</span><span class="stat-val ' + colorVal(a.win_rate - 50) + '">' + a.win_rate + '%</span></div>' +
+            '<div class="stat-row"><span class="stat-label">Sharpe</span><span class="stat-val ' + colorVal(a.sharpe) + '">' + a.sharpe.toFixed(2) + '</span></div>' +
+            '<div class="stat-row"><span class="stat-label">Profit Factor</span><span class="stat-val ' + colorVal(a.pf - 1) + '">' + a.pf.toFixed(3) + '</span></div>' +
+            '<div class="stat-row"><span class="stat-label">Total PnL</span><span class="stat-val ' + colorVal(a.pnl) + '">' + fmtPnl(a.pnl) + '</span></div>' +
+            '<div class="stat-row"><span class="stat-label">Max Drawdown</span><span class="stat-val val-red">' + fmtPnl(a.max_dd) + '</span></div>' +
+            '</div>';
+    }
+    ac.innerHTML = html;
+
+    // Top 6 table
+    var tbody = document.getElementById('top-algos-body');
+    html = '';
+    for (var i = 0; i < 6 && i < BACKTEST_DATA.length; i++) {
+        var d = BACKTEST_DATA[i];
+        html += '<tr>' +
+            '<td>' + rankBadge(d.rank) + '</td>' +
+            '<td style="font-weight:700"><a href="' + d.source + '" style="color:var(--text);text-decoration:none" title="View picks">' + d.algorithm + '</a></td>' +
+            '<td>' + d.asset + '</td>' +
+            '<td><span class="grade-badge ' + gradeClass(d.grade) + '">' + d.grade + '</span></td>' +
+            '<td class="' + colorVal(d.sharpe) + '" style="font-weight:700">' + d.sharpe.toFixed(2) + '</td>' +
+            '<td class="' + colorVal(d.win_rate - 50) + '">' + d.win_rate + '%</td>' +
+            '<td class="' + colorVal(d.profit_factor - 1) + '">' + d.profit_factor.toFixed(3) + '</td>' +
+            '<td class="' + colorVal(d.total_pnl) + '" style="font-weight:700">' + fmtPnl(d.total_pnl) + '</td>' +
+            '<td>' + d.trades + '</td>' +
+            '</tr>';
+    }
+    tbody.innerHTML = html;
+}
+
+// ─── BACKTEST TAB ──────────────────────────────────────────────────────────
+
+function renderBacktests() {
+    var tbody = document.getElementById('all-algos-body');
+    var html = '';
+    for (var i = 0; i < BACKTEST_DATA.length; i++) {
+        var d = BACKTEST_DATA[i];
+        html += '<tr>' +
+            '<td>' + rankBadge(d.rank) + '</td>' +
+            '<td style="font-weight:700">' + d.algorithm + '</td>' +
+            '<td>' + d.asset + '</td>' +
+            '<td><span class="grade-badge ' + gradeClass(d.grade) + '">' + d.grade + '</span></td>' +
+            '<td class="' + colorVal(d.sharpe) + '" style="font-weight:700">' + d.sharpe.toFixed(2) + '</td>' +
+            '<td class="' + colorVal(d.sortino) + '">' + d.sortino.toFixed(2) + '</td>' +
+            '<td class="' + colorVal(d.win_rate - 50) + '">' + d.win_rate + '%</td>' +
+            '<td class="' + colorVal(d.profit_factor - 1) + '">' + d.profit_factor.toFixed(3) + '</td>' +
+            '<td class="val-green">' + d.avg_win.toFixed(1) + '%</td>' +
+            '<td class="val-red">' + d.avg_loss.toFixed(1) + '%</td>' +
+            '<td class="' + colorVal(d.total_pnl) + '" style="font-weight:700">' + fmtPnl(d.total_pnl) + '</td>' +
+            '<td class="val-red">' + fmtPnl(d.max_dd) + '</td>' +
+            '<td>' + d.trades + '</td>' +
+            '</tr>';
+    }
+    tbody.innerHTML = html;
+
+    // Portfolio stats
+    var ps = document.getElementById('portfolio-stats');
+    ps.innerHTML =
+        '<div class="summary-card"><div class="val">' + PORTFOLIO.trades + '</div><div class="lbl">Total Trades</div></div>' +
+        '<div class="summary-card"><div class="val ' + colorVal(PORTFOLIO.win_rate - 50) + '">' + PORTFOLIO.win_rate + '%</div><div class="lbl">Win Rate</div></div>' +
+        '<div class="summary-card"><div class="val ' + colorVal(PORTFOLIO.sharpe) + '">' + PORTFOLIO.sharpe.toFixed(2) + '</div><div class="lbl">Sharpe Ratio</div></div>' +
+        '<div class="summary-card"><div class="val ' + colorVal(PORTFOLIO.pf - 1) + '">' + PORTFOLIO.pf.toFixed(3) + '</div><div class="lbl">Profit Factor</div></div>' +
+        '<div class="summary-card"><div class="val ' + colorVal(PORTFOLIO.pnl) + '">' + fmtPnl(PORTFOLIO.pnl) + '</div><div class="lbl">Total PnL</div></div>' +
+        '<div class="summary-card"><div class="val val-red">' + fmtPnl(PORTFOLIO.max_dd) + '</div><div class="lbl">Max Drawdown</div></div>';
+}
+
+// ─── LIVE TRADING TAB ──────────────────────────────────────────────────────
+
+function renderLive() {
+    // Fetch live data
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/live-monitor/api/live_trade.php?action=dashboard');
+    xhr.timeout = 10000;
+    xhr.onload = function() {
+        try {
+            var data = JSON.parse(xhr.responseText);
+            if (!data.ok) return;
+
+            // Summary cards
+            var s = data.stats;
+            var ls = document.getElementById('live-summary');
+            ls.innerHTML =
+                '<div class="summary-card"><div class="val" style="color:var(--accent)">' + s.total_trades + '</div><div class="lbl">Closed Trades</div></div>' +
+                '<div class="summary-card"><div class="val ' + colorVal(s.win_rate - 50) + '">' + s.win_rate.toFixed(1) + '%</div><div class="lbl">Win Rate</div></div>' +
+                '<div class="summary-card"><div class="val ' + colorVal(s.total_pnl_usd) + '">' + fmtPnl(s.total_pnl_usd) + '</div><div class="lbl">Realized PnL</div></div>' +
+                '<div class="summary-card"><div class="val ' + colorVal(s.profit_factor - 1) + '">' + s.profit_factor.toFixed(2) + '</div><div class="lbl">Profit Factor</div></div>' +
+                '<div class="summary-card"><div class="val">' + s.avg_hold_hours.toFixed(1) + 'h</div><div class="lbl">Avg Hold Time</div></div>' +
+                '<div class="summary-card"><div class="val">' + (data.portfolio_value ? '$' + parseFloat(data.portfolio_value).toLocaleString() : 'N/A') + '</div><div class="lbl">Portfolio Value</div></div>';
+
+            // By algo
+            var ba = document.getElementById('live-by-algo');
+            var html = '';
+            var algos = data.by_algorithm || [];
+            algos.sort(function(a, b) { return b.win_rate - a.win_rate; });
+            for (var i = 0; i < algos.length; i++) {
+                var a = algos[i];
+                html += '<tr>' +
+                    '<td style="font-weight:700">' + (a.algorithm_name || '(unnamed)') + '</td>' +
+                    '<td>' + a.total_trades + '</td>' +
+                    '<td class="val-green">' + a.wins + '</td>' +
+                    '<td class="val-red">' + a.losses + '</td>' +
+                    '<td class="' + colorVal(a.win_rate - 50) + '" style="font-weight:700">' + a.win_rate.toFixed(0) + '%</td>' +
+                    '<td class="' + colorVal(a.avg_return_pct) + '">' + fmtPct(a.avg_return_pct) + '</td>' +
+                    '<td class="' + colorVal(a.total_pnl_usd) + '" style="font-weight:700">' + fmtPnl(a.total_pnl_usd) + '</td>' +
+                    '<td>' + a.avg_hold_hours.toFixed(1) + '</td>' +
+                    '</tr>';
+            }
+            ba.innerHTML = html;
+
+            // Open positions
+            var op = document.getElementById('open-positions');
+            html = '';
+            var positions = data.open_positions || [];
+            for (var i = 0; i < positions.length; i++) {
+                var p = positions[i];
+                var pct = parseFloat(p.unrealized_pct);
+                html += '<tr>' +
+                    '<td style="font-weight:700">' + p.symbol + '</td>' +
+                    '<td>' + p.algorithm_name + '</td>' +
+                    '<td>' + p.direction + '</td>' +
+                    '<td>' + p.asset_class + '</td>' +
+                    '<td>$' + parseFloat(p.entry_price).toFixed(2) + '</td>' +
+                    '<td>$' + parseFloat(p.current_price).toFixed(2) + '</td>' +
+                    '<td class="' + colorVal(pct) + '" style="font-weight:700">' + fmtPct(pct) + '</td>' +
+                    '<td class="' + colorVal(parseFloat(p.unrealized_pnl_usd)) + '">' + fmtPnl(parseFloat(p.unrealized_pnl_usd)) + '</td>' +
+                    '<td>' + parseFloat(p.hold_hours || 0).toFixed(1) + '</td>' +
+                    '</tr>';
+            }
+            op.innerHTML = html;
+        } catch(e) {
+            document.getElementById('live-summary').innerHTML = '<div class="summary-card"><div class="val val-red">Error</div><div class="lbl">Could not load live data</div></div>';
+        }
+    };
+    xhr.onerror = function() {
+        document.getElementById('live-summary').innerHTML = '<div class="summary-card"><div class="val val-red">Offline</div><div class="lbl">API unreachable</div></div>';
+    };
+    xhr.send();
+
+    // Fetch trade log
+    var xhr2 = new XMLHttpRequest();
+    xhr2.open('GET', '/live-monitor/api/live_trade.php?action=history&limit=50');
+    xhr2.timeout = 10000;
+    xhr2.onload = function() {
+        try {
+            var data = JSON.parse(xhr2.responseText);
+            if (!data.ok) return;
+            var tl = document.getElementById('trade-log');
+            var html = '';
+            var trades = data.trades || [];
+            for (var i = 0; i < trades.length; i++) {
+                var t = trades[i];
+                var pct = parseFloat(t.realized_pct);
+                var isWin = pct > 0;
+                html += '<tr class="trade-row ' + (isWin ? 'win' : 'loss') + '">' +
+                    '<td style="font-weight:700">' + t.symbol + '</td>' +
+                    '<td>' + (t.algorithm_name || '-') + '</td>' +
+                    '<td>' + t.direction + '</td>' +
+                    '<td>' + t.asset_class + '</td>' +
+                    '<td>$' + parseFloat(t.entry_price).toFixed(4) + '</td>' +
+                    '<td>$' + parseFloat(t.exit_price).toFixed(4) + '</td>' +
+                    '<td class="' + colorVal(pct) + '" style="font-weight:700">' + fmtPct(pct) + '</td>' +
+                    '<td class="' + colorVal(parseFloat(t.realized_pnl_usd)) + '">' + fmtPnl(parseFloat(t.realized_pnl_usd)) + '</td>' +
+                    '<td>' + t.exit_reason + '</td>' +
+                    '<td>' + parseFloat(t.hold_hours).toFixed(1) + '</td>' +
+                    '</tr>';
+            }
+            tl.innerHTML = html;
+        } catch(e) {}
+    };
+    xhr2.send();
+}
+
+// ─── IMPROVEMENTS TAB ──────────────────────────────────────────────────────
+
+function renderImprovements() {
+    function renderCards(container, items, cls) {
+        var el = document.getElementById(container);
+        var html = '';
+        for (var i = 0; i < items.length; i++) {
+            html += '<div class="improve-card ' + cls + '">' +
+                '<h3>' + items[i].title + '</h3>' +
+                '<p>' + items[i].text + '</p>' +
+                '<div class="action">' + items[i].action + '</div>' +
+                '</div>';
+        }
+        el.innerHTML = html;
+    }
+    renderCards('critical-issues', IMPROVEMENTS.critical, 'critical');
+    renderCards('opportunities', IMPROVEMENTS.warning, 'warning');
+    renderCards('strengths', IMPROVEMENTS.success, 'success');
+}
+
+// ─── QUALITY PAGES TAB ─────────────────────────────────────────────────────
+
+function renderPages() {
+    var el = document.getElementById('quality-pages');
+    var html = '';
+    for (var i = 0; i < QUALITY_PAGES.length; i++) {
+        var p = QUALITY_PAGES[i];
+        var badgeHtml = p.badge ? '<span class="page-badge ' + p.badge + '">' + (p.badge === 'live' ? 'LIVE' : '#1 PICK') + '</span> ' : '';
+        html += '<a class="page-card" href="' + p.href + '">' +
+            badgeHtml +
+            '<div class="page-name">' + p.name + '</div>' +
+            '<div class="page-desc">' + p.desc + '</div>' +
+            '<div style="margin-top:0.5rem;font-size:0.7rem;color:var(--accent)">Data: ' + p.data + '</div>' +
+            '</a>';
+    }
+    el.innerHTML = html;
+}
+
+// ─── TABLE SORTING ─────────────────────────────────────────────────────────
+
+function sortTable(tbodyId, colIdx, type) {
+    var tbody = document.getElementById(tbodyId);
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+    var asc = tbody.getAttribute('data-sort-col') == colIdx && tbody.getAttribute('data-sort-dir') !== 'asc';
+    tbody.setAttribute('data-sort-col', colIdx);
+    tbody.setAttribute('data-sort-dir', asc ? 'asc' : 'desc');
+
+    rows.sort(function(a, b) {
+        var aVal = a.cells[colIdx].textContent.replace(/[^0-9.\-]/g, '');
+        var bVal = b.cells[colIdx].textContent.replace(/[^0-9.\-]/g, '');
+        if (type === 'num') {
+            aVal = parseFloat(aVal) || 0;
+            bVal = parseFloat(bVal) || 0;
+        }
+        if (aVal < bVal) return asc ? -1 : 1;
+        if (aVal > bVal) return asc ? 1 : -1;
+        return 0;
+    });
+
+    for (var i = 0; i < rows.length; i++) {
+        tbody.appendChild(rows[i]);
+    }
+}
+
+// ─── TAB NAVIGATION ────────────────────────────────────────────────────────
+
+var tabs = document.querySelectorAll('.tab');
+for (var i = 0; i < tabs.length; i++) {
+    tabs[i].addEventListener('click', function() {
+        var target = this.getAttribute('data-tab');
+        // Deactivate all
+        var allTabs = document.querySelectorAll('.tab');
+        var allContents = document.querySelectorAll('.tab-content');
+        for (var j = 0; j < allTabs.length; j++) allTabs[j].classList.remove('active');
+        for (var j = 0; j < allContents.length; j++) allContents[j].classList.remove('active');
+        // Activate target
+        this.classList.add('active');
+        document.getElementById('tab-' + target).classList.add('active');
+        // Lazy render
+        if (target === 'live' && !document.getElementById('live-summary').innerHTML) renderLive();
+    });
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+
+document.getElementById('timestamp').textContent = 'Generated: ' + new Date().toLocaleString() + ' | Backtest window: Feb 2024 \u2013 Feb 2026';
+
+renderOverview();
+renderBacktests();
+renderImprovements();
+renderPages();
+
+// Persist tab in URL hash
+if (window.location.hash) {
+    var hashTab = window.location.hash.replace('#', '');
+    var targetTab = document.querySelector('.tab[data-tab="' + hashTab + '"]');
+    if (targetTab) targetTab.click();
+}
+tabs.forEach(function(t) {
+    t.addEventListener('click', function() {
+        window.location.hash = this.getAttribute('data-tab');
+    });
+});
+</script>
+<script defer src="/findstocks/portfolio2/stock-nav.js"></script>
+</body>
+</html>
