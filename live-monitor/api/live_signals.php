@@ -93,6 +93,20 @@ $stock_symbols = array(
 );
 
 // ────────────────────────────────────────────────────────────
+//  PAUSED ALGORITHMS (ALL ASSET CLASSES)
+//  Consensus algorithm paused Feb 12, 2026 due to critical underperformance:
+//  - Win Rate: 17.2% (below 20% minimum threshold)
+//  - Trades: 29 in last 30 days
+//  - Avg Return: -2.04%
+//  - Expected Value: (0.172 * 4.0%) + (0.828 * -2.0%) = -0.968% per trade
+//  Requires re-tuning: increase TP/SL ratio to 3:1 or 4:1, or increase
+//  quality threshold (require 4+ algorithms with 75%+ supermajority).
+// ────────────────────────────────────────────────────────────
+$PAUSED_ALGORITHMS = array(
+    'Consensus'
+);
+
+// ────────────────────────────────────────────────────────────
 //  PAUSED STOCK ALGORITHMS (Feb 11, 2026)
 //  All 7 backtested stock algorithms are deeply unprofitable:
 //  ETF Masters (3.37% WR), Sector Rotation (2.19%), Sector Momentum (0%),
@@ -1927,6 +1941,12 @@ function _ls_algo_consensus($conn, $price, $symbol, $asset) {
 
     $strength = min(100, $majority_count * 20 + 30);
 
+    // NOTE: Algorithm paused Feb 12, 2026 (17.2% WR, -2.04% avg return)
+    // Recommended re-tuning before re-enabling:
+    // Option 1: Increase TP/SL to 3:1 (TP=6.0%, SL=2.0%) for positive EV
+    // Option 2: Require 4+ algorithms with 75%+ supermajority
+    // Option 3: Add minimum signal_strength filter (e.g., avg >= 70)
+    // Current params: 2:1 ratio insufficient for 17% win rate
     // Improved TP/SL: 2:1 minimum ratio (was 1.5:1)
     $tp   = 4.0;
     $sl   = 2.0;
@@ -3495,6 +3515,10 @@ function _ls_action_scan($conn) {
 
         foreach ($algo_results as $sig) {
             if ($sig === null) continue;
+
+            // Skip paused algorithms (all asset classes)
+            if (in_array($sig['algorithm_name'], $PAUSED_ALGORITHMS)) continue;
+
             // Kimi: skip momentum algos during extreme volatility
             if ($vol_extreme && _ls_is_momentum_algo($sig['algorithm_name'])) continue;
 
@@ -3582,6 +3606,10 @@ function _ls_action_scan($conn) {
 
         foreach ($algo_results as $sig) {
             if ($sig === null) continue;
+
+            // Skip paused algorithms (all asset classes)
+            if (in_array($sig['algorithm_name'], $PAUSED_ALGORITHMS)) continue;
+
             // Kimi: skip momentum algos during extreme volatility
             if ($vol_extreme && _ls_is_momentum_algo($sig['algorithm_name'])) continue;
 
@@ -3696,6 +3724,9 @@ function _ls_action_scan($conn) {
 
             foreach ($algo_results as $sig) {
                 if ($sig === null) continue;
+
+                // Skip paused algorithms (all asset classes)
+                if (in_array($sig['algorithm_name'], $PAUSED_ALGORITHMS)) continue;
 
                 // Cursor: skip paused stock algorithms (backtest WR < 12%, see ANALYSIS_FINANCES)
                 if (in_array($sig['algorithm_name'], $PAUSED_STOCK_ALGOS)) continue;
