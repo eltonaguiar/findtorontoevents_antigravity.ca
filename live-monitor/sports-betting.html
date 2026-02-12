@@ -207,6 +207,17 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.5); pointer-events: none;
         }
         .grade-info-icon:hover .grade-tooltip { display: block; }
+        /* Win Rate Alert Tooltip */
+        .winrate-alert-icon { position: relative; display: inline-block; margin-left: 0.2rem; }
+        .winrate-tooltip {
+            display: none; position: absolute; bottom: 150%; left: 50%;
+            transform: translateX(-50%); width: 300px; padding: 0.8rem;
+            background: #1e1e3f; border: 1px solid #f59e0b;
+            border-radius: 8px; font-size: 0.75rem; color: var(--text);
+            line-height: 1.6; z-index: 1000; text-align: left;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5); pointer-events: none;
+        }
+        .winrate-alert-icon:hover .winrate-tooltip { display: block; }
         /* Glossary tab */
         .glossary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
         .glossary-item {
@@ -377,7 +388,20 @@
         <div class="stats-grid">
             <div class="stat-card"><div class="stat-label">Bankroll</div><div class="stat-value" id="stat-bankroll">$1,000</div><div class="stat-sub" id="stat-bankroll-change">+$0.00</div></div>
             <div class="stat-card"><div class="stat-label">Total Bets</div><div class="stat-value" id="stat-total-bets">0</div><div class="stat-sub" id="stat-wlp">W:0 L:0 P:0</div></div>
-            <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value" id="stat-win-rate">0%</div><div class="stat-sub">settled bets</div></div>
+            <div class="stat-card" style="position:relative;">
+                <div class="stat-label">Win Rate <span class="winrate-alert-icon" style="color:#f59e0b;cursor:help;font-size:0.9em;">&#9888;<span class="winrate-tooltip">
+                    <strong style="color:#f59e0b;">&#9888; Win Rate Currently Low or Unknown</strong><br><br>
+                    <strong>Why:</strong> Sports betting markets are highly efficient. The algorithm has minimal settled data (0-3 bets), making win rate statistically meaningless.<br><br>
+                    <strong>What We're Doing:</strong><br>
+                    &#8226; Collecting 100+ settled bets before evaluation<br>
+                    &#8226; Research-backed situation scoring (B2B fatigue, injuries, rest)<br>
+                    &#8226; Quarter-Kelly sizing limits losses<br>
+                    &#8226; Planned ML filter to improve pick quality<br><br>
+                    <em style="color:#888;">Paper trading only — no real money at risk.</em>
+                </span></span></div>
+                <div class="stat-value" id="stat-win-rate">0%</div>
+                <div class="stat-sub">settled bets</div>
+            </div>
             <div class="stat-card"><div class="stat-label">ROI</div><div class="stat-value" id="stat-roi">0%</div><div class="stat-sub" id="stat-pnl">$0.00 P&amp;L</div></div>
             <div class="stat-card"><div class="stat-label">Today's Picks</div><div class="stat-value" id="stat-picks">0</div><div class="stat-sub" id="stat-avg-ev">Avg EV: --%</div></div>
             <div class="stat-card"><div class="stat-label">Active Bets</div><div class="stat-value" id="stat-active">0</div><div class="stat-sub" id="stat-reserved">$0 reserved</div></div>
@@ -402,6 +426,7 @@
             <button class="tab-btn" onclick="switchTab('performance')">Performance</button>
             <button class="tab-btn" onclick="switchTab('history')">Pick History</button>
             <button class="tab-btn" onclick="switchTab('glossary')">Glossary</button>
+            <button class="tab-btn" onclick="switchTab('analysis')" style="color:#f59e0b;">System Analysis</button>
         </div>
 
         <div class="tab-panel active" id="tab-picks">
@@ -460,6 +485,157 @@
 
         <div class="tab-panel" id="tab-history">
             <div id="history-content"><div class="loading">Loading pick history...</div></div>
+        </div>
+
+        <div class="tab-panel" id="tab-analysis">
+            <div class="grade-explainer" style="background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(239,68,68,0.08));border-color:rgba(245,158,11,0.3);">
+                <div class="ge-title" style="color:#f59e0b;">⚠️ Honest System Assessment — Read Before Betting</div>
+                This page provides complete transparency about our sports betting algorithm's current state, known limitations, and planned improvements. We believe in honest disclosure — every system has flaws, and ours is no exception.
+            </div>
+
+            <h3 class="section-title" style="color:#22c55e;">✅ Current Strengths</h3>
+            <div class="glossary-grid">
+                <div class="glossary-item">
+                    <div class="glossary-term"><span class="badge badge-green">SOLID FOUNDATION</span></div>
+                    <div class="glossary-def"><strong>Rule-Based Value Algorithm</strong> — Uses proven mathematical concepts: Expected Value (EV), Kelly Criterion sizing, and vig-removed probability calculations. These are industry-standard approaches used by professional bettors.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term"><span class="badge badge-green">SITUATION INTEL</span></div>
+                    <div class="glossary-def"><strong>Multi-Sport Context</strong> — Incorporates research-backed factors: back-to-back fatigue (Dean Oliver 2004), rest advantage (Entine &amp; Small 2008), turnover margin (Biro 2017, 70% win rate), team ERA (MDPI 2021), and injury reports.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term"><span class="badge badge-green">RISK MANAGEMENT</span></div>
+                    <div class="glossary-def"><strong>Circuit Breakers</strong> — Auto-betting includes $100/day loss limit and $800 bankroll floor. Quarter-Kelly sizing (25% of full Kelly) reduces variance. Max 5% of bankroll per bet prevents ruin.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term"><span class="badge badge-green">LINE SHOPPING</span></div>
+                    <div class="glossary-def"><strong>Multi-Book Comparison</strong> — Compares odds across 9 Canadian-legal sportsbooks (bet365, FanDuel, DraftKings, BetMGM, PointsBet, Caesars, etc.) to find the best prices automatically.</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term"><span class="badge badge-green">GRADING SYSTEM</span></div>
+                    <div class="glossary-def"><strong>Structured Rating (A+ to D)</strong> — Composite scoring based on EV% (50 pts), book consensus (20 pts), market type (15 pts), CA-legal book (10 pts), timing (5 pts), plus situation score (0-30 bonus).</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-term"><span class="badge badge-green">PAPER TRADING</span></div>
+                    <div class="glossary-def"><strong>No Real Money at Risk</strong> — All bets are simulated with $1,000 paper bankroll. Perfect for testing strategies without financial risk. All picks tracked transparently with timestamps.</div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#ef4444;margin-top:1.5rem;">⚠️ Known Flaws &amp; Limitations</h3>
+            <div class="glossary-grid">
+                <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                    <div class="glossary-term"><span class="badge badge-red">NO SETTLED RESULTS</span></div>
+                    <div class="glossary-def"><strong>Zero Track Record</strong> — As of Feb 12, 2026, we have 69+ picks generated but <em>0 settled results</em>. The system is too new to evaluate. Win rates, ROI, and profitability are completely unknown. <strong>This is the biggest risk.</strong></div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                    <div class="glossary-term"><span class="badge badge-red">NO ML/LEARNING</span></div>
+                    <div class="glossary-def"><strong>Static Algorithm</strong> — Current system is 100% rule-based with no machine learning. It cannot adapt to changing market conditions, sport-specific patterns, or its own performance data. The "intelligence" is hardcoded, not learned.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                    <div class="glossary-term"><span class="badge badge-red">ODDS API LIMITS</span></div>
+                    <div class="glossary-def"><strong>500 Credits/Month</strong> — The free tier of The Odds API limits us to 500 API calls per month. Data refreshes every 2-3 hours (not real-time). During high-volume periods, we may miss line movements or have stale data.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                    <div class="glossary-term"><span class="badge badge-red">SPORT-SPECIFIC GAPS</span></div>
+                    <div class="glossary-def"><strong>Missing Key Factors</strong> — No weather integration (NFL/MLB), no umpire/referee tracking, no starting pitcher analysis (MLB), no travel distance modeling, no altitude effects (NBA/NHL in Denver), and limited live betting capability.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                    <div class="glossary-term"><span class="badge badge-red">MARKET EFFICIENCY</span></div>
+                    <div class="glossary-def"><strong>Efficient Market Hypothesis</strong> — If our edge detection actually worked consistently, sportsbooks would adjust. Finding +EV bets is mathematically hard. Most "value" bets may be false positives due to stale lines or incorrect probability modeling.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(239,68,68,0.3);">
+                    <div class="glossary-term"><span class="badge badge-red">EXECUTION GAPS</span></div>
+                    <div class="glossary-def"><strong>No Auto-Settlement</strong> — Scores must be fetched manually. Games can be postponed, odds can change after picks are made, and we may miss results due to API failures. Settlement relies on external score sources (ESPN, The Odds API).</div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#3b82f6;margin-top:1.5rem;">🔮 Improvement Roadmap</h3>
+            <div class="glossary-grid">
+                <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
+                    <div class="glossary-term"><span class="badge badge-blue">PHASE 1: DATA</span></div>
+                    <div class="glossary-def"><strong>Build Track Record</strong> — Need 100+ settled bets minimum before any statistical significance. Currently at 0. Target: 6 months of data collection before evaluating algorithm effectiveness. No ML until we have data.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
+                    <div class="glossary-term"><span class="badge badge-blue">PHASE 2: FEATURES</span></div>
+                    <div class="glossary-def"><strong>Add Missing Data Sources</strong> — Weather APIs (OpenWeatherMap), MLB starting pitchers, NBA referee assignments, NFL wind conditions, travel distance calculations, and altitude effects. These are "known unknowns" that could improve edge.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
+                    <div class="glossary-term"><span class="badge badge-blue">PHASE 3: ML LAYER</span></div>
+                    <div class="glossary-def"><strong>Machine Learning Integration</strong> — Train XGBoost or neural network on collected data to predict pick success probability. Features: EV%, sport, market type, situation score, bookmaker, time of day, etc. Use this as a <em>filter</em> on top of rule-based picks.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
+                    <div class="glossary-term"><span class="badge badge-blue">PHASE 4: ENSEMBLE</span></div>
+                    <div class="glossary-def"><strong>Hybrid System</strong> — Rule-based algorithm generates candidates → ML filter scores probability → Only bets with ML score &gt; 0.6 are executed. This combines human domain knowledge (rules) with data-driven pattern detection (ML).</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
+                    <div class="glossary-term"><span class="badge badge-blue">PHASE 5: REAL-TIME</span></div>
+                    <div class="glossary-def"><strong>Live Betting &amp; WebSockets</strong> — Upgrade to paid Odds API tier for real-time odds. Add line movement alerts, arbitrage detection, and live betting opportunities. Current 2-3 hour delay is too slow for sharp markets.</div>
+                </div>
+                <div class="glossary-item" style="border-color:rgba(59,130,246,0.3);">
+                    <div class="glossary-term"><span class="badge badge-blue">SELF-LEARNING</span></div>
+                    <div class="glossary-def"><strong>Adaptive Algorithm</strong> — Similar to our stock trading "Learned vs Original" system, track two versions: original static parameters vs. ML-tuned parameters. Auto-switch to better-performing version per sport/market.</div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="color:#eab308;margin-top:1.5rem;">⚡ Is It Safe to Bet On?</h3>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+                <p style="font-size:0.9rem;color:#e0e0f0;margin-bottom:0.8rem;"><strong>Short Answer: NO — Not yet.</strong></p>
+                <p style="font-size:0.85rem;color:#889;margin-bottom:0.5rem;">Here's the honest truth:</p>
+                <ul style="font-size:0.85rem;color:#889;margin-left:1.5rem;margin-bottom:0.8rem;">
+                    <li>We have <strong>zero settled results</strong>. The algorithm is completely untested.</li>
+                    <li>Sports betting markets are highly efficient. Finding consistent +EV is extremely difficult.</li>
+                    <li>Our rule-based system has no learning capability. It applies the same logic regardless of past performance.</li>
+                    <li>We may be picking up <strong>stale lines</strong> or <strong>false positives</strong> that look like value but aren't.</li>
+                </ul>
+                <p style="font-size:0.85rem;color:#e0e0f0;"><strong>When will it be "safe"?</strong> We need:</p>
+                <ul style="font-size:0.85rem;color:#889;margin-left:1.5rem;margin-bottom:0.8rem;">
+                    <li>Minimum <strong>100 settled bets</strong> per sport to evaluate win rates</li>
+                    <li>Positive ROI over <strong>3+ months</strong> of paper trading</li>
+                    <li>ML validation that our "value" bets actually win more often than implied probability suggests</li>
+                    <li>Implementation of self-learning parameter adaptation (like our stock system)</li>
+                </ul>
+                <p style="font-size:0.85rem;color:#22c55e;"><strong>Current Status:</strong> Use this as an <em>educational tool</em> and <em>paper trading simulator</em>. Track the picks, watch the results, but do NOT bet real money based on this system yet.</p>
+            </div>
+
+            <h3 class="section-title" style="color:#a855f7;margin-top:1.5rem;">📊 Why We Need Machine Learning</h3>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem;">
+                <p style="font-size:0.85rem;color:#889;margin-bottom:0.8rem;">Our stock trading system learned a hard lesson: <strong>signal quality ≠ execution quality</strong>. The sports system will face the same challenge. Here's why ML is essential:</p>
+                
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;margin-bottom:1rem;">
+                    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Pattern Detection</div>
+                        <div style="font-size:0.78rem;color:#889;">ML can identify which combinations of factors (EV% + situation score + sport + time) actually predict winners. Rules can't capture these complex interactions.</div>
+                    </div>
+                    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">False Positive Filter</div>
+                        <div style="font-size:0.78rem;color:#889;">Our EV calculation may flag "value" that isn't real. ML trained on actual outcomes can learn to filter these false signals before we bet.</div>
+                    </div>
+                    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Sport Adaptation</div>
+                        <div style="font-size:0.78rem;color:#889;">NFL spreads behave differently than NBA moneylines. ML can learn sport-specific patterns and adjust expectations accordingly.</div>
+                    </div>
+                    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:0.8rem;">
+                        <div style="font-weight:600;color:#a855f7;margin-bottom:0.3rem;">Continuous Improvement</div>
+                        <div style="font-size:0.78rem;color:#889;">Unlike static rules, ML models improve with more data. As we collect results, the system gets smarter automatically.</div>
+                    </div>
+                </div>
+
+                <p style="font-size:0.85rem;color:#e0e0f0;margin-bottom:0.5rem;"><strong>The ML Strategy (When We Have Data):</strong></p>
+                <ol style="font-size:0.85rem;color:#889;margin-left:1.5rem;">
+                    <li>Collect 100+ settled bets with all features (EV%, sport, market, situation score, etc.)</li>
+                    <li>Train binary classifier (win/loss) using XGBoost or LightGBM</li>
+                    <li>Use model to predict win probability for each new pick</li>
+                    <li>Only bet when: Rule-based EV &gt; 2% <strong>AND</strong> ML win probability &gt; implied probability + margin</li>
+                    <li>Track "ML filter" performance vs. "raw rule" performance (like our L vs O stock system)</li>
+                    <li>Auto-adjust model monthly with new data</li>
+                </ol>
+            </div>
+
+            <div style="margin-top:1.5rem;padding:1rem;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:12px;">
+                <div style="font-weight:600;color:#22c55e;margin-bottom:0.5rem;">💡 Bottom Line</div>
+                <p style="font-size:0.85rem;color:#889;">This system has a solid <em>theoretical foundation</em> but zero <em>proven results</em>. Treat it as a learning experiment, not a money-making tool. The path to profitability requires: (1) Data collection, (2) ML integration, (3) Continuous validation. We're currently at step 0.</p>
+                <p style="font-size:0.85rem;color:#889;margin-top:0.5rem;">Check back monthly for updates. We'll be transparent about every win, loss, and system improvement.</p>
+            </div>
         </div>
 
         <div class="tab-panel" id="tab-glossary">
@@ -596,7 +772,7 @@ function switchTab(tab) {
     document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
     document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
     document.getElementById('tab-' + tab).classList.add('active');
-    var tabs = {'picks':'Today','odds':'Odds','bets':'My Bets','performance':'Performance','history':'Pick History','glossary':'Glossary'};
+    var tabs = {'picks':'Today','odds':'Odds','bets':'My Bets','performance':'Performance','history':'Pick History','glossary':'Glossary','analysis':'System Analysis'};
     var btns = document.querySelectorAll('.tab-btn');
     for (var i = 0; i < btns.length; i++) {
         if (btns[i].textContent === tabs[tab]) btns[i].classList.add('active');
@@ -606,6 +782,7 @@ function switchTab(tab) {
     if (tab === 'bets') loadBets('active');
     if (tab === 'performance') fetchPerformance();
     if (tab === 'history') fetchPickHistory();
+    // analysis tab is static HTML, no fetch needed
     // Persist tab state for back-navigation
     try { sessionStorage.setItem('sports_tab', tab); } catch(e) {}
 }
