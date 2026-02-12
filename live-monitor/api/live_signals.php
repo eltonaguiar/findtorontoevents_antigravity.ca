@@ -136,6 +136,35 @@ $EXCLUDED_SYMBOLS = array(
 );
 
 // ────────────────────────────────────────────────────────────
+//  BACKTEST GRADE GATE — Skip D-grade algorithms automatically
+//  Queries lm_ml_status.backtest_grade. Algorithms graded 'D' in
+//  backtesting (negative Sharpe, <30% WR) are blocked from
+//  generating live signals. Cache per-scan to avoid repeated queries.
+// ────────────────────────────────────────────────────────────
+$_GRADE_CACHE = array();
+
+function _ls_backtest_grade_gate($conn, $algo_name, $asset_class) {
+    global $_GRADE_CACHE;
+    $cache_key = $algo_name . '|' . $asset_class;
+    if (isset($_GRADE_CACHE[$cache_key])) {
+        return $_GRADE_CACHE[$cache_key];
+    }
+    // Default: allow (no grade data = new algo, let it trade)
+    $_GRADE_CACHE[$cache_key] = true;
+    $a = $conn->real_escape_string($algo_name);
+    $ac = $conn->real_escape_string($asset_class);
+    $res = $conn->query("SELECT backtest_grade FROM lm_ml_status WHERE algorithm_name='" . $a . "' AND asset_class='" . $ac . "' LIMIT 1");
+    if ($res && $res->num_rows > 0) {
+        $row = $res->fetch_assoc();
+        $grade = strtoupper(trim($row['backtest_grade']));
+        if ($grade === 'D') {
+            $_GRADE_CACHE[$cache_key] = false;
+        }
+    }
+    return $_GRADE_CACHE[$cache_key];
+}
+
+// ────────────────────────────────────────────────────────────
 //  Symbol mapping helpers
 // ────────────────────────────────────────────────────────────
 
@@ -3571,6 +3600,9 @@ function _ls_action_scan($conn) {
             $algo_health = _ls_get_algo_weight($conn, $sig['algorithm_name'], 'CRYPTO');
             if ($algo_health['status'] === 'decayed') continue;
 
+            // Grade gate: skip D-grade algorithms (negative Sharpe in backtest)
+            if (!_ls_backtest_grade_gate($conn, $sig['algorithm_name'], 'CRYPTO')) continue;
+
             // World-Class: Apply online learning weight to signal strength
             if ($algo_health['weight'] > 0 && $algo_health['weight'] != 1.0) {
                 $sig['signal_strength'] = min(100, max(10,
@@ -3661,6 +3693,9 @@ function _ls_action_scan($conn) {
             // World-Class: Alpha decay check
             $algo_health = _ls_get_algo_weight($conn, $sig['algorithm_name'], 'FOREX');
             if ($algo_health['status'] === 'decayed') continue;
+
+            // Grade gate: skip D-grade algorithms (negative Sharpe in backtest)
+            if (!_ls_backtest_grade_gate($conn, $sig['algorithm_name'], 'FOREX')) continue;
 
             // World-Class: Apply online learning weight
             if ($algo_health['weight'] > 0 && $algo_health['weight'] != 1.0) {
@@ -3782,6 +3817,9 @@ function _ls_action_scan($conn) {
                 // World-Class: Alpha decay check
                 $algo_health = _ls_get_algo_weight($conn, $sig['algorithm_name'], 'STOCK');
                 if ($algo_health['status'] === 'decayed') continue;
+
+                // Grade gate: skip D-grade algorithms (negative Sharpe in backtest)
+                if (!_ls_backtest_grade_gate($conn, $sig['algorithm_name'], 'STOCK')) continue;
 
                 // World-Class: Apply online learning weight
                 if ($algo_health['weight'] > 0 && $algo_health['weight'] != 1.0) {

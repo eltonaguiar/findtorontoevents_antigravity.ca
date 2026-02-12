@@ -94,6 +94,14 @@ function _dp_get_picks($conn, $asset_class, $timeline, $min_strength) {
         $where .= " AND max_hold_hours <= " . (int)$max_hold;
     }
 
+    // Grade gate: exclude signals from D-grade backtested algorithms
+    $where .= " AND NOT EXISTS (
+        SELECT 1 FROM lm_ml_status ms
+        WHERE ms.algorithm_name = s.algorithm_name
+          AND ms.asset_class = s.asset_class
+          AND ms.backtest_grade = 'D'
+    )";
+
     $sql = "SELECT s.*, p.last_price as current_price
             FROM lm_signals s
             LEFT JOIN lm_price_cache p ON s.symbol = p.symbol

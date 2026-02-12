@@ -236,6 +236,23 @@ jobs:
         echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'MF NAVs fetched: {d.get(\"fetched\",0)}')" || echo "MF: $RESULT"
         curl -s --max-time 60 "https://findtorontoevents.ca/findmutualfunds2/portfolio2/api/learning.php?action=analyze_and_adjust" > /dev/null 2>&1 || true
 
+    # ─── Mutual Funds Forward Performance Tracking ───
+    - name: Track mutual fund pick performance
+      continue-on-error: true
+      run: |
+        echo "=== Tracking MF Pick Performance ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findmutualfunds2/portfolio2/api/mf2_performance_tracking.php?action=track&key=livetrader2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys,json
+        d=json.load(sys.stdin)
+        if d.get('ok'):
+            print(f'MF Tracking: imported={d.get(\"imported\",0)}, updated={d.get(\"updated\",0)}, closed={d.get(\"closed\",0)}')
+            s=d.get('snapshot',{})
+            if s: print(f'  Open: {s.get(\"open_positions\",0)}, Closed: {s.get(\"total_closed\",0)}, WR: {s.get(\"win_rate\",0)}%')
+        else:
+            print(f'MF Tracking error: {d.get(\"error\",\"unknown\")}')
+        " 2>/dev/null || echo "MF Track: $RESULT"
+
     # ─── Forex Refresh ───
     - name: Refresh forex price data
       continue-on-error: true
