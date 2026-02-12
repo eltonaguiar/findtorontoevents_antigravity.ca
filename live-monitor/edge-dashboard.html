@@ -144,21 +144,21 @@
         </div>
 
         <!-- Setups -->
-        <div id="setupsContainer"><div class="loading">Scanning for high-conviction setups...</div></div>
+        <div id="setupsContainer"><div class="loading">Scanning for high-conviction setups across all algorithms...</div></div>
 
         <!-- Edge Algorithm Performance -->
         <div class="section">
             <h2>Algorithm Edge Statistics</h2>
             <table>
                 <thead><tr><th>Algorithm</th><th>Source</th><th>Proven WR</th><th>Min Score</th><th>Edge?</th></tr></thead>
-                <tbody id="edgeTable"><tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
+                <tbody id="edgeTable"><tr><td colspan="5" class="loading">Loading algorithm edge statistics...</td></tr></tbody>
             </table>
         </div>
 
         <!-- Historical Performance -->
         <div class="section">
             <h2>Historical Edge-Filtered Performance (Last 30 Days)</h2>
-            <div id="historyStats" class="loading">Loading...</div>
+            <div id="historyStats" class="loading">Loading 30-day historical performance data...</div>
             <div style="overflow-x:auto;margin-top:1rem">
                 <table>
                     <thead><tr><th>Ticker</th><th>Algorithm</th><th>Entry</th><th>Latest</th><th>Return</th><th>Score</th><th>Date</th></tr></thead>
@@ -208,6 +208,7 @@
         </div>
 
         <div class="refresh-info" id="refreshInfo">Auto-refreshes every 5 minutes during market hours</div>
+        <div class="refresh-info" id="lastUpdated" style="margin-top:0.3rem">Last updated: --</div>
         <div style="text-align:center;font-size:0.75rem;color:#555;margin-top:1rem;padding:0.8rem;border:1px solid rgba(255,255,255,0.04);border-radius:8px">
           <strong>Not financial advice.</strong> For educational and research purposes only. Past performance does not guarantee future results. Always do your own research before trading.
         </div>
@@ -386,9 +387,15 @@ function loadHistory() {
     });
 }
 
+function updateTimestamp() {
+    var now = new Date();
+    document.getElementById('lastUpdated').textContent = 'Last updated: ' + now.toLocaleTimeString();
+}
+
 // Auto-refresh every 5 minutes
 loadAll();
-refreshTimer = setInterval(loadAll, 300000);
+updateTimestamp();
+refreshTimer = setInterval(function() { loadAll(); updateTimestamp(); }, 300000);
 </script>
 <script src="/findstocks/portfolio2/stock-nav.js"></script>
 </body>
