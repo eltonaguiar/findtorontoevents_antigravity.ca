@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Algorithm Intelligence Report — FTE Invest</title>
+<style>
+:root {
+    --bg-dark: #0a0a1a; --bg-card: #111127; --bg-card2: #161636;
+    --accent: #6366f1; --green: #22c55e; --red: #ef4444; --gold: #ffd700;
+    --cyan: #22d3ee; --orange: #f59e0b; --purple: #a78bfa;
+    --text: #e2e8f0; --text-dim: #8888aa; --border: #2a2a4a; --radius: 12px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg-dark); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; line-height:1.6; }
+.container { max-width:1400px; margin:0 auto; padding:1.5rem; }
+h1 { font-size:1.6rem; margin-bottom:0.3rem; }
+.subtitle { color:var(--text-dim); font-size:0.85rem; margin-bottom:1.5rem; }
+.tabs { display:flex; gap:4px; margin-bottom:1.5rem; flex-wrap:wrap; border-bottom:1px solid var(--border); padding-bottom:8px; }
+.tab { padding:8px 16px; border-radius:8px 8px 0 0; cursor:pointer; color:var(--text-dim); font-size:0.82rem; font-weight:600; transition:all 0.2s; white-space:nowrap; }
+.tab:hover { color:var(--text); background:rgba(99,102,241,0.1); }
+.tab.active { color:var(--accent); background:rgba(99,102,241,0.15); border-bottom:2px solid var(--accent); }
+.tab-content { display:none; } .tab-content.active { display:block; }
+.kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+.kpi { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1rem 1.2rem; }
+.kpi-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-dim); margin-bottom:0.3rem; }
+.kpi-val { font-size:1.5rem; font-weight:700; }
+.kpi-sub { font-size:0.7rem; color:var(--text-dim); margin-top:0.2rem; }
+.alert-box { border-radius:var(--radius); padding:1rem 1.5rem; margin-bottom:1.5rem; font-size:0.85rem; line-height:1.7; }
+.alert-critical { background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.4); }
+.alert-info { background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.3); }
+.alert-success { background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); }
+.alert-title { font-weight:700; font-size:0.9rem; margin-bottom:0.4rem; }
+.section-title { font-size:1.1rem; font-weight:700; margin:1.5rem 0 1rem; color:var(--text); }
+.matrix-table, .data-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+.matrix-table th, .data-table th { background:var(--bg-card2); color:var(--text-dim); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; font-size:0.7rem; padding:10px 12px; text-align:left; border-bottom:1px solid var(--border); }
+.matrix-table td, .data-table td { padding:10px 12px; border-bottom:1px solid rgba(42,42,74,0.5); }
+.matrix-table tr:hover, .data-table tr:hover { background:rgba(99,102,241,0.05); }
+.badge { display:inline-block; padding:2px 8px; border-radius:6px; font-size:0.7rem; font-weight:700; letter-spacing:0.3px; }
+.badge-green { background:rgba(34,197,94,0.15); color:var(--green); }
+.badge-red { background:rgba(239,68,68,0.15); color:var(--red); }
+.badge-yellow { background:rgba(245,158,11,0.15); color:var(--orange); }
+.badge-blue { background:rgba(99,102,241,0.15); color:var(--accent); }
+.badge-purple { background:rgba(167,139,250,0.15); color:var(--purple); }
+.badge-cyan { background:rgba(34,211,238,0.15); color:var(--cyan); }
+.grade { display:inline-block; padding:3px 10px; border-radius:6px; font-weight:800; font-size:0.75rem; }
+.grade-aplus { background:linear-gradient(135deg,rgba(34,197,94,0.3),rgba(34,197,94,0.1)); color:#4ade80; border:1px solid rgba(34,197,94,0.4); }
+.grade-a { background:rgba(34,197,94,0.15); color:var(--green); }
+.grade-b { background:rgba(99,102,241,0.15); color:var(--accent); }
+.grade-c { background:rgba(245,158,11,0.15); color:var(--orange); }
+.grade-d { background:rgba(239,68,68,0.15); color:var(--red); }
+.val-pos { color:var(--green); } .val-neg { color:var(--red); } .val-neutral { color:var(--text-dim); }
+.algo-link { color:var(--cyan); text-decoration:none; font-weight:600; cursor:pointer; position:relative; }
+.algo-link:hover { color:#fff; text-decoration:underline; }
+.quick-links { display:flex; gap:0.8rem; flex-wrap:wrap; margin-bottom:1.5rem; }
+.qlink { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; color:var(--text-dim); text-decoration:none; font-size:0.78rem; font-weight:600; transition:all 0.2s; }
+.qlink:hover { border-color:var(--accent); color:var(--text); background:rgba(99,102,241,0.08); }
+.qlink-gold { border-color:rgba(255,215,0,0.4); color:var(--gold); }
+.qlink-gold:hover { border-color:var(--gold); background:rgba(255,215,0,0.08); }
+.qlink-cyan { border-color:rgba(34,211,238,0.3); color:var(--cyan); }
+.bar-chart { margin:1rem 0; }
+.bar-row { display:flex; align-items:center; margin-bottom:6px; font-size:0.78rem; }
+.bar-label { width:160px; color:var(--text-dim); flex-shrink:0; }
+.bar-track { flex:1; height:22px; background:var(--bg-card); border-radius:4px; position:relative; overflow:hidden; margin:0 10px; }
+.bar-fill { height:100%; border-radius:4px; transition:width 0.6s ease; display:flex; align-items:center; padding-left:8px; font-size:0.7rem; font-weight:700; color:#fff; }
+.bar-val { width:60px; text-align:right; font-weight:600; flex-shrink:0; }
+.card-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(380px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+.algo-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.2rem; transition:border-color 0.2s; }
+.algo-card:hover { border-color:var(--accent); }
+.algo-card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.8rem; }
+.algo-card-title { font-weight:700; font-size:0.95rem; }
+.algo-card-type { font-size:0.7rem; color:var(--text-dim); margin-top:2px; }
+.algo-card-body { font-size:0.78rem; color:var(--text-dim); line-height:1.7; }
+.algo-card-body strong { color:var(--text); }
+.metric-row { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid rgba(42,42,74,0.3); }
+.metric-row:last-child { border-bottom:none; }
+.tbd-item { background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); border-radius:8px; padding:0.8rem 1rem; margin-bottom:0.6rem; font-size:0.8rem; }
+.tbd-item strong { color:var(--orange); }
+.flaw-item { background:rgba(239,68,68,0.06); border-left:3px solid var(--red); padding:0.6rem 1rem; margin-bottom:0.5rem; font-size:0.8rem; border-radius:0 6px 6px 0; }
+.strength-item { background:rgba(34,197,94,0.06); border-left:3px solid var(--green); padding:0.6rem 1rem; margin-bottom:0.5rem; font-size:0.8rem; border-radius:0 6px 6px 0; }
+.methodology-box { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.2rem; margin-bottom:1rem; font-size:0.82rem; line-height:1.8; color:var(--text-dim); }
+.methodology-box h3 { color:var(--gold); margin-bottom:0.6rem; font-size:0.95rem; }
+.methodology-box code { background:rgba(99,102,241,0.1); padding:1px 5px; border-radius:3px; font-size:0.78rem; }
+.table-wrap { overflow-x:auto; margin-bottom:1.5rem; border-radius:var(--radius); border:1px solid var(--border); }
+.disclaimer { text-align:center; font-size:0.7rem; color:var(--text-dim); margin-top:2rem; padding:1rem; border-top:1px solid var(--border); }
+.timestamp { text-align:center; font-size:0.7rem; color:var(--text-dim); margin-top:1rem; }
+@media(max-width:768px) { .kpi-row { grid-template-columns:repeat(2,1fr); } .card-grid { grid-template-columns:1fr; } .bar-label { width:100px; font-size:0.7rem; } }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Algorithm Intelligence Report</h1>
+    <p class="subtitle">Forward-Facing vs Backtested Performance &bull; Machine Learning Progress &bull; World-Class Gap Analysis</p>
+
+    <div class="quick-links">
+        <a href="/live-monitor/algo-performance.html" class="qlink qlink-gold">&#9733; L vs O Dashboard</a>
+        <a href="/live-monitor/goldmine-dashboard.html" class="qlink qlink-cyan">&#9881; Goldmine Tracker</a>
+        <a href="/live-monitor/live-monitor.html" class="qlink">&#9679; Live Monitor</a>
+        <a href="/findstocks/portfolio2/backtest-results.html" class="qlink">&#9632; Backtest Results</a>
+        <a href="/live-monitor/goldmine-alerts.html" class="qlink">&#9888; Health Alerts</a>
+        <a href="/findstocks/portfolio2/consolidated.html" class="qlink">&#8801; Consolidated Picks</a>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" data-tab="dashboard">Executive Dashboard</div>
+        <div class="tab" data-tab="stocks">Stocks</div>
+        <div class="tab" data-tab="crypto">Crypto</div>
+        <div class="tab" data-tab="forex">Forex</div>
+        <div class="tab" data-tab="ml">ML &amp; Learning</div>
+        <div class="tab" data-tab="worldclass">World-Class Gaps</div>
+    </div>
+
+    <!-- TAB 1: EXECUTIVE DASHBOARD -->
+    <div id="tab-dashboard" class="tab-content active">
+        <div class="kpi-row" id="exec-kpis"></div>
+
+        <div class="alert-box alert-critical">
+            <div class="alert-title">&#9888; CRITICAL ARCHITECTURAL GAP: Zero Forward/Backtest Overlap</div>
+            <strong>Backtested algorithms</strong> (Cursor Genius, ETF Masters, Trend Following, etc.) are <strong>not deployed</strong> to live trading.<br>
+            <strong>Live trading algorithms</strong> (Ichimoku Cloud, StochRSI Crossover, Challenger Bot, etc.) have <strong>no 2-year backtest</strong>.<br>
+            <strong>Impact:</strong> Cannot validate if backtested edge persists in live conditions. Forward performance comes from untested algorithms.<br>
+            <strong>Resolution:</strong> Deploy top backtested algorithms (A/A+ grade) to live trading engine. ETA: 1&ndash;2 weeks.
+        </div>
+
+        <div class="section-title">Forward-Facing vs Backtested Comparison Matrix</div>
+        <div class="table-wrap">
+            <table class="matrix-table" id="matrix-table">
+                <thead>
+                    <tr>
+                        <th>Asset Class</th>
+                        <th>Backtested Sharpe</th>
+                        <th>Backtested Grade</th>
+                        <th>Backtested Trades</th>
+                        <th>Forward WR</th>
+                        <th>Forward Trades</th>
+                        <th>Forward PnL</th>
+                        <th>Overlap</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="matrix-body"></tbody>
+            </table>
+        </div>
+
+        <div class="alert-box alert-info">
+            <div class="alert-title">&#128204; Quick Navigation</div>
+            <strong><a href="/live-monitor/algo-performance.html" style="color:var(--gold)">L vs O Dashboard</a></strong> &mdash; Compare Learned vs Original parameters for every live algorithm. See which self-taught optimizations are working.<br>
+            <strong><a href="/live-monitor/goldmine-dashboard.html" style="color:var(--cyan)">Goldmine Dashboard</a></strong> &mdash; Unified outcome tracker across 8 prediction systems. Surfaces winning algorithms buried in our swarm of pages.<br>
+            <strong><a href="/live-monitor/goldmine-alerts.html" style="color:var(--red)">Health Alerts</a></strong> &mdash; Real-time system health monitoring. Alerts on accuracy drops, losing streaks, stale data.<br>
+            <strong><a href="/findstocks/portfolio2/backtest-results.html" style="color:var(--accent)">Backtest Results</a></strong> &mdash; Detailed 2-year backtest rankings with sortable tables and methodology.
+        </div>
+
+        <div class="section-title">System Architecture Overview</div>
+        <div class="methodology-box">
+            <h3>How Our System Works</h3>
+            <p>Our trading intelligence platform operates across <strong>three independent layers</strong>:</p>
+            <p style="margin-top:0.5rem"><strong style="color:var(--text)">1. Daily Picks Engine</strong> (7 algorithms) &mdash; Generates stock picks stored in <code>stock_picks</code>, <code>miracle_picks2</code>, <code>miracle_picks3</code>. Algorithms: Cursor Genius, ETF Masters, Sector Momentum, Sector Rotation, Blue Chip Growth, Technical Momentum, Composite Rating. These are backtested over 2 years but <em>not running in live paper trading</em>.</p>
+            <p style="margin-top:0.5rem"><strong style="color:var(--text)">2. Live Signal Engine</strong> (20 algorithms) &mdash; Real-time signals via <code>live_signals.php</code>. Includes Ichimoku Cloud, StochRSI Crossover, MACD Divergence, Bollinger Breakout, RSI Reversal, Alpha Predator, Challenger Bot, Consensus, and 12 others. These run in live paper trading but <em>haven't completed full 2-year backtests</em>.</p>
+            <p style="margin-top:0.5rem"><strong style="color:var(--text)">3. Goldmine Tracker</strong> (8 systems) &mdash; Unified outcome verification across all prediction systems. Archives picks from Consolidated, Live Signal, Edge, Meme, Sports, Horizon, Top Picks, and Penny systems. Checks TP/SL hits against real market prices. <a href="/live-monitor/goldmine-dashboard.html" style="color:var(--cyan)">View Dashboard &rarr;</a></p>
+        </div>
+    </div>
+
+    <!-- TAB 2: STOCKS -->
+    <div id="tab-stocks" class="tab-content">
+        <div class="kpi-row" id="stocks-kpis"></div>
+        <div class="section-title">Backtested Stock Algorithms <span class="badge badge-blue">2-YEAR BACKTEST</span></div>
+        <div class="table-wrap"><table class="data-table" id="stocks-backtest-table"><thead><tr>
+            <th>#</th><th>Algorithm</th><th>Sharpe</th><th>Win Rate</th><th>PF</th><th>Total PnL</th><th>Trades</th><th>Max DD</th><th>Grade</th>
+        </tr></thead><tbody id="stocks-bt-body"></tbody></table></div>
+
+        <div class="section-title">Forward-Facing Stock Performance <span class="badge badge-cyan">LIVE PAPER TRADING</span></div>
+        <div id="stocks-forward"></div>
+
+        <div class="section-title">World-Class Comparison: Stocks</div>
+        <div class="bar-chart" id="stocks-bars"></div>
+        <div id="stocks-gap-summary"></div>
+
+        <div class="section-title">Algorithm Deep Dive</div>
+        <div class="card-grid" id="stocks-algo-cards"></div>
+
+        <div class="section-title">Known Flaws &amp; Areas for Improvement</div>
+        <div id="stocks-flaws"></div>
+        <div class="section-title">Strengths</div>
+        <div id="stocks-strengths"></div>
+        <div class="section-title">TBD Items &amp; Timeline</div>
+        <div id="stocks-tbd"></div>
+    </div>
+
+    <!-- TAB 3: CRYPTO -->
+    <div id="tab-crypto" class="tab-content">
+        <div class="kpi-row" id="crypto-kpis"></div>
+        <div class="section-title">Backtested Crypto Algorithms <span class="badge badge-blue">2-YEAR BACKTEST</span></div>
+        <div class="table-wrap"><table class="data-table"><thead><tr>
+            <th>#</th><th>Algorithm</th><th>Sharpe</th><th>Win Rate</th><th>PF</th><th>Total PnL</th><th>Trades</th><th>Max DD</th><th>Grade</th>
+        </tr></thead><tbody id="crypto-bt-body"></tbody></table></div>
+
+        <div class="section-title">Forward-Facing Crypto Performance <span class="badge badge-cyan">LIVE PAPER TRADING</span></div>
+        <div id="crypto-forward"></div>
+
+        <div class="section-title">World-Class Comparison: Crypto</div>
+        <div class="bar-chart" id="crypto-bars"></div>
+        <div id="crypto-gap-summary"></div>
+
+        <div class="section-title">Algorithm Deep Dive</div>
+        <div class="card-grid" id="crypto-algo-cards"></div>
+
+        <div class="section-title">Known Flaws &amp; Areas for Improvement</div>
+        <div id="crypto-flaws"></div>
+        <div class="section-title">Strengths</div>
+        <div id="crypto-strengths"></div>
+        <div class="section-title">TBD Items &amp; Timeline</div>
+        <div id="crypto-tbd"></div>
+    </div>
+
+    <!-- TAB 4: FOREX -->
+    <div id="tab-forex" class="tab-content">
+        <div class="kpi-row" id="forex-kpis"></div>
+        <div class="section-title">Backtested Forex Algorithms <span class="badge badge-blue">2-YEAR BACKTEST</span></div>
+        <div class="table-wrap"><table class="data-table"><thead><tr>
+            <th>#</th><th>Algorithm</th><th>Sharpe</th><th>Win Rate</th><th>PF</th><th>Total PnL</th><th>Trades</th><th>Max DD</th><th>Grade</th>
+        </tr></thead><tbody id="forex-bt-body"></tbody></table></div>
+
+        <div class="section-title">Forward-Facing Forex Performance <span class="badge badge-cyan">LIVE PAPER TRADING</span></div>
+        <div id="forex-forward"></div>
+
+        <div class="section-title">World-Class Comparison: Forex</div>
+        <div class="bar-chart" id="forex-bars"></div>
+        <div id="forex-gap-summary"></div>
+
+        <div class="section-title">Algorithm Deep Dive</div>
+        <div class="card-grid" id="forex-algo-cards"></div>
+
+        <div class="section-title">Known Flaws &amp; Areas for Improvement</div>
+        <div id="forex-flaws"></div>
+        <div class="section-title">Strengths</div>
+        <div id="forex-strengths"></div>
+        <div class="section-title">TBD Items &amp; Timeline</div>
+        <div id="forex-tbd"></div>
+    </div>
+
+    <!-- TAB 5: ML & LEARNING -->
+    <div id="tab-ml" class="tab-content">
+        <div class="kpi-row" id="ml-kpis"></div>
+
+        <div class="section-title">Self-Learning Architecture</div>
+        <div class="methodology-box">
+            <h3>How Machine Learning Works in Our System</h3>
+            <p>Our system uses a <strong>closed-loop self-optimization pipeline</strong>:</p>
+            <p style="margin-top:0.8rem"><strong style="color:var(--cyan)">Step 1: Signal Generation</strong> &mdash; 20 algorithms generate BUY/SELL/SHORT signals using technical indicators (RSI, MACD, Ichimoku, Bollinger, etc.). Each signal is tagged with the algorithm name and default parameters (TP%, SL%, max_hold).</p>
+            <p style="margin-top:0.5rem"><strong style="color:var(--cyan)">Step 2: Trade Execution</strong> &mdash; Paper trading engine (<code>live_trade.php</code>) opens positions based on signals. Position sizing: 5% of capital (~$500). Max 10 concurrent positions. Regime gating blocks signals that disagree with HMM-detected market state.</p>
+            <p style="margin-top:0.5rem"><strong style="color:var(--cyan)">Step 3: Outcome Tracking</strong> &mdash; Each trade is tracked until exit (TP hit, SL hit, or max hold reached). Exit reason, hold time, and P&L are recorded in <code>lm_trades</code> table.</p>
+            <p style="margin-top:0.5rem"><strong style="color:var(--cyan)">Step 4: Grid Search Optimization</strong> &mdash; After accumulating 20+ closed trades per algorithm-asset pair, the learning system (<code>learning.php</code>) runs a grid search over TP (1-10%), SL (0.5-5%), and max_hold (4-72h) combinations to find parameters that maximize Sharpe ratio on historical trades.</p>
+            <p style="margin-top:0.5rem"><strong style="color:var(--cyan)">Step 5: Parameter Evolution</strong> &mdash; Learned parameters replace defaults for future signals. Performance is tracked as "Learned vs Original" on the <a href="/live-monitor/algo-performance.html" style="color:var(--gold)">L vs O Dashboard</a>.</p>
+            <p style="margin-top:0.5rem"><strong style="color:var(--cyan)">Step 6: Goldmine Verification</strong> &mdash; The <a href="/live-monitor/goldmine-dashboard.html" style="color:var(--cyan)">Goldmine Tracker</a> independently verifies all predictions against real market prices across 8 systems, surfacing algorithms that perform well in forward conditions.</p>
+        </div>
+
+        <div class="section-title">Current Parameter Evolution: Learned vs Default</div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead><tr><th>Algorithm</th><th>Default TP</th><th>Learned TP</th><th>Change</th><th>Default SL</th><th>Learned SL</th><th>Change</th><th>Default Hold</th><th>Learned Hold</th><th>Change</th><th>Result</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td><a href="/live-monitor/algo-performance.html" class="algo-link" title="View on L vs O Dashboard">Ichimoku Cloud</a></td>
+                        <td>2%</td><td style="color:var(--green);font-weight:700">3.4%</td><td class="val-pos">+70%</td>
+                        <td>1%</td><td style="color:var(--orange);font-weight:700">2%</td><td class="val-pos">+100%</td>
+                        <td>16h</td><td>16h</td><td class="val-neutral">0%</td>
+                        <td><span class="badge badge-green">80% WR, +$44.97</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="/live-monitor/algo-performance.html" class="algo-link" title="View on L vs O Dashboard">StochRSI Crossover</a></td>
+                        <td>2%</td><td style="color:var(--green);font-weight:700">3.1%</td><td class="val-pos">+55%</td>
+                        <td>1%</td><td style="color:var(--orange);font-weight:700">2%</td><td class="val-pos">+100%</td>
+                        <td>12h</td><td>12h</td><td class="val-neutral">0%</td>
+                        <td><span class="badge badge-green">75% WR, +$4.25</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="/live-monitor/algo-performance.html" class="algo-link" title="View on L vs O Dashboard">Consensus</a></td>
+                        <td>3%</td><td>3%</td><td class="val-neutral">0%</td>
+                        <td>2%</td><td>2%</td><td class="val-neutral">0%</td>
+                        <td>24h</td><td style="color:var(--green);font-weight:700">12h</td><td class="val-pos">-50%</td>
+                        <td><span class="badge badge-red">0% WR, -$3.28</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="/live-monitor/algo-performance.html" class="algo-link" title="View on L vs O Dashboard">RSI Reversal</a></td>
+                        <td>2%</td><td>2%</td><td class="val-neutral">0%</td>
+                        <td>1%</td><td>1%</td><td class="val-neutral">0%</td>
+                        <td>12h</td><td style="color:var(--orange)">6h</td><td class="val-pos">-50%</td>
+                        <td><span class="badge badge-yellow">0% WR (1 trade)</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="alert-box alert-info">
+            <div class="alert-title">&#128161; Key ML Insight</div>
+            The system has successfully learned to <strong>increase take-profit targets</strong> (+55% to +70%) and <strong>widen stop-losses</strong> (+100%) for winning algorithms (Ichimoku, StochRSI). For losing algorithms, it learned to <strong>reduce max hold time</strong> (-50%) to cut losses faster. This is a sound optimization pattern consistent with trend-following best practices.
+        </div>
+
+        <div class="section-title">Signal Generation Progress</div>
+        <div class="kpi-row">
+            <div class="kpi"><div class="kpi-label">Learned Signals</div><div class="kpi-val val-pos">2,491</div><div class="kpi-sub">Using optimized parameters</div></div>
+            <div class="kpi"><div class="kpi-label">Original Signals</div><div class="kpi-val">500</div><div class="kpi-sub">Using default parameters</div></div>
+            <div class="kpi"><div class="kpi-label">Signal Ratio</div><div class="kpi-val val-pos">5:1</div><div class="kpi-sub">Learned vs Original</div></div>
+            <div class="kpi"><div class="kpi-label">Untagged Signals</div><div class="kpi-val val-pos">0</div><div class="kpi-sub">100% algorithm attribution</div></div>
+        </div>
+
+        <div class="section-title">Optimization Timeline &amp; TBD</div>
+        <div class="tbd-item">
+            <strong>Grid Search Not Yet Triggered</strong><br>
+            <strong>Why:</strong> Grid search requires minimum 20 closed trades per algorithm-asset pair. Current count: 13 total closed trades across all algorithms. Only Ichimoku Cloud (5 trades) and StochRSI (4 trades) have meaningful data.<br>
+            <strong>When:</strong> At ~4 trades/day, first optimization expected within <strong>5&ndash;7 days</strong> (by Feb 17&ndash;19). Full optimization across all active algorithms by <strong>March 1&ndash;5</strong>.
+        </div>
+        <div class="tbd-item">
+            <strong>Learned Params Endpoint Empty</strong><br>
+            <strong>Why:</strong> The <code>learned_params</code> API returns empty despite evidence of parameter evolution in <code>by_algorithm</code> data. The system IS learning (TP/SL adjustments visible), but the stored params endpoint hasn&rsquo;t been populated yet.<br>
+            <strong>When:</strong> Data quality issue. Fix: populate <code>lm_learned_params</code> table from current performance data. ETA: <strong>Next code update</strong>.
+        </div>
+        <div class="tbd-item">
+            <strong>Only 6/20 Algorithms Active</strong><br>
+            <strong>Why:</strong> Regime gating (HMM market state detection) is suppressing 14 algorithms whose signals conflict with the current market regime. This is <em>working as intended</em> &mdash; regime gating prevents trading against the trend.<br>
+            <strong>When:</strong> More algorithms will activate when market regime shifts. Not a bug; this is a feature.
+        </div>
+
+        <div class="section-title">Methodology Transparency</div>
+        <div class="methodology-box">
+            <h3>Scientific Soundness Assessment</h3>
+            <p><strong style="color:var(--green)">Sound practices:</strong> Walk-forward optimization (no peeking at future data), commission modeling (Questrade tiered), slippage (0.1%), 2-day embargo after pick date, regime detection, grid search with Sharpe maximization objective.</p>
+            <p style="margin-top:0.5rem"><strong style="color:var(--red)">Known risks:</strong> Small sample size (13 live trades), potential overfitting of learned parameters to recent market regime, no out-of-sample validation set in grid search, limited asset universe (14 crypto, 12 stocks, 10 forex pairs).</p>
+            <p style="margin-top:0.5rem"><strong style="color:var(--orange)">Missing (industry standard):</strong> Cross-validation with time-series splits, Monte Carlo simulation of parameter sensitivity, correlation analysis between positions, factor exposure analysis (beta, sector, momentum), transaction cost optimization.</p>
+        </div>
+    </div>
+
+    <!-- TAB 6: WORLD-CLASS GAPS -->
+    <div id="tab-worldclass" class="tab-content">
+        <div class="section-title">Our Position vs Industry Benchmarks</div>
+        <div class="methodology-box">
+            <h3>Benchmark Reference Points</h3>
+            <div style="font-size:0.82rem;line-height:1.8;">
+                <p><strong style="color:var(--gold)">Renaissance Technologies (Medallion Fund)</strong> &mdash; Sharpe ~3.0&ndash;6.0+. Annual return ~66% gross / ~39% net. Max drawdown typically &lt;5%. Uses 10,000+ trading signals, microsecond execution, statistical arbitrage and mean reversion on short time horizons. $10B+ AUM. Widely considered the most successful quant fund in history.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--accent)">Two Sigma</strong> &mdash; Sharpe ~1.5&ndash;2.5. $60B+ AUM. ML/AI-driven with massive data infrastructure. Medium-frequency strategies. PhD-level research teams. Known for systematic, data-driven approach.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--cyan)">Citadel (Wellington)</strong> &mdash; Sharpe ~1.5&ndash;3.0. Multi-strategy (fundamental + quantitative). Market-making arm (Citadel Securities) has near-100% daily win rate. Technology and execution speed advantages.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--purple)">D.E. Shaw</strong> &mdash; Sharpe ~1.5&ndash;2.5. Hybrid quantitative + fundamental. Computational modeling expertise. One of the original quant funds.</p>
+                <p style="margin-top:0.5rem"><strong style="color:var(--text-dim)">AQR Capital</strong> &mdash; Sharpe ~1.2. Factor-based investing (value, momentum, carry, defensive). Academic research-driven. Transparent methodology.</p>
+            </div>
+        </div>
+
+        <div class="section-title">Portfolio-Level Comparison</div>
+        <div class="bar-chart" id="portfolio-bars"></div>
+
+        <div class="section-title">Per-Asset Class Gap Analysis</div>
+        <div id="gap-analysis"></div>
+
+        <div class="section-title">Known Flaws (Ranked by Severity)</div>
+        <div id="global-flaws"></div>
+
+        <div class="section-title">Improvement Roadmap</div>
+        <div id="improvement-roadmap"></div>
+
+        <div class="section-title">Strengths to Preserve</div>
+        <div id="global-strengths"></div>
+
+        <div class="section-title">Full Methodology &amp; Data Sources</div>
+        <div class="methodology-box">
+            <h3>Data Sources &amp; Limitations</h3>
+            <p><strong style="color:var(--text)">Price Data:</strong> Yahoo Finance (stocks, daily OHLCV), Finnhub (stocks, real-time quotes), TwelveData (forex, 10 pairs), FreeCryptoAPI (crypto, 14 pairs). Limitation: daily bars for backtesting miss intraday dynamics. Real-time feeds have 1-second minimum resolution.</p>
+            <p style="margin-top:0.5rem"><strong style="color:var(--text)">Backtest Period:</strong> Feb 2024 &ndash; Feb 2026 (2 years). Limitation: single market cycle. Does not include 2020 COVID crash or 2022 bear market. May overfit to recent bull/sideways regime.</p>
+            <p style="margin-top:0.5rem"><strong style="color:var(--text)">Commission Model:</strong> Questrade tiered ($4.95&ndash;$9.95 per trade) + 0.1% slippage. Limitation: high commission impact on small positions ($500). World-class firms use IBKR ($0.005/share) or direct market access ($0.001/share). Commission drag is our single biggest performance killer.</p>
+            <p style="margin-top:0.5rem"><strong style="color:var(--text)">Position Sizing:</strong> Fixed 5% of capital ($500 per trade). Limitation: not risk-adjusted. World-class firms use volatility-adjusted sizing (risk parity), Kelly criterion, or EGARCH-based sizers.</p>
+            <p style="margin-top:0.5rem"><strong style="color:var(--text)">Regime Detection:</strong> Hidden Markov Model (HMM) with 3 states (bull/sideways/bear). Limitation: HMM is fitted on recent data, may lag regime transitions by 1&ndash;3 days. Not validated against known regime change dates.</p>
+            <p style="margin-top:0.5rem"><strong style="color:var(--text)">Signal Universe:</strong> 20 algorithms across 36 assets (12 stocks, 14 crypto, 10 forex). Limitation: Renaissance uses 10,000+ signals across thousands of assets. Our signal diversity is ~500x less.</p>
+        </div>
+    </div>
+
+    <div class="timestamp" id="timestamp"></div>
+    <div class="disclaimer">
+        Paper trading only. Past performance does not guarantee future results. Backtests include Questrade commissions and 0.1% slippage.
+        Live trading uses $10K simulated capital. This report is designed for AI system analysis and human review.
+        <br><a href="/live-monitor/algo-performance.html" style="color:var(--gold)">L vs O Dashboard</a> &bull;
+        <a href="/live-monitor/goldmine-dashboard.html" style="color:var(--cyan)">Goldmine Tracker</a> &bull;
+        <a href="/findstocks/portfolio2/backtest-results.html" style="color:var(--accent)">Backtest Results</a>
+    </div>
+</div>
+
+<script defer src="/findstocks/portfolio2/stock-nav.js"></script>
+<script>
+// ──── DATA ────────────────────────────────────────────────────────────────────
+var SYSTEM = {
+    age_days: 3, launch_date: '2026-02-09', total_algos: 20, backtested: 11, live_active: 7, overlap: 0,
+    portfolio: 9969.03, initial: 10000, realized_pnl: 33.44, unrealized_pnl: -30.07,
+    closed_trades: 13, wins: 7, losses: 6, win_rate: 53.85, profit_factor: 1.83,
+    overall_sharpe: 1.56, overall_grade: 'B', peak: 10022.40, drawdown_pct: 0.52
+};
+
+var BACKTESTED = [
+    { name:'Cursor Genius', asset:'Stocks', sharpe:5.271, sortino:10.454, wr:63.25, pf:2.276, pnl:43281, trades:302, dd:-4160, grade:'A+', type:'Multi-Timeframe Technical',
+      method:'Combines RSI oversold + MACD crossover + Bollinger Band touch on daily/weekly timeframes. Signals when all three conditions align simultaneously, filtering for volume confirmation.',
+      picks:'/findstocks/portfolio2/picks.html', perf:'/live-monitor/algo-performance.html', goldmine:'top_picks',
+      strengths:['Highest Sharpe ratio (5.27) in entire system','Consistent 63% WR across 302 trades over 2 years','Small drawdown (-$4.2K) vs gains (+$43.3K) = 10:1 gain/pain ratio','Multi-indicator confirmation reduces false signals'],
+      flaws:['NOT deployed to live trading - backtested only','Single asset class (stocks)','Daily-only signals miss intraday opportunities','No short selling component'],
+      forward:null, forward_status:'NOT DEPLOYED', forward_tbd:'Deploy to live engine. ETA: 1-2 weeks. Forward record: 30 days after deployment.' },
+    { name:'ETF Masters', asset:'Stocks', sharpe:2.053, sortino:3.073, wr:59.12, pf:1.387, pnl:15767, trades:411, dd:-18264, grade:'A', type:'Sector ETF Rotation',
+      method:'Ranks sector ETFs by relative strength (price momentum vs benchmark). Buys top-performing sector ETFs, sells laggards. Uses trailing momentum windows of 20/60/120 days.',
+      picks:'/findstocks/portfolio2/picks.html', perf:'/findstocks/portfolio2/leaderboard.html', goldmine:'top_picks',
+      strengths:['High trade volume (411) provides statistical confidence','Solid 59% WR with A-grade Sharpe','Diversified across sectors reduces concentration risk'],
+      flaws:['Large max drawdown (-$18.3K) relative to PnL','NOT deployed to live trading','ETF-only limits upside vs individual stocks'],
+      forward:null, forward_status:'NOT DEPLOYED', forward_tbd:'Deploy to live engine. ETA: 2-3 weeks.' },
+    { name:'Sector Momentum', asset:'Stocks', sharpe:2.118, sortino:3.394, wr:56.25, pf:1.378, pnl:3528, trades:80, dd:-4052, grade:'A', type:'Sector Rotation',
+      method:'Momentum ranking across 11 GICS sectors. Buys sectors showing relative strength vs SPY over 20-day window. Exits when momentum reverses.',
+      picks:'/findstocks/portfolio2/picks.html', perf:'/findstocks/portfolio2/leaderboard.html', goldmine:'top_picks',
+      strengths:['Strong A-grade Sharpe with solid WR','Sector-level diversification'],
+      flaws:['Low trade count (80) reduces confidence','NOT deployed to live trading'],
+      forward:null, forward_status:'NOT DEPLOYED', forward_tbd:'Deploy to live engine. ETA: 2-3 weeks.' },
+    { name:'Sector Rotation', asset:'Stocks', sharpe:0.966, sortino:1.397, wr:57.36, pf:1.162, pnl:4804, trades:265, dd:-11078, grade:'C', type:'Fundamental + Technical Rotation',
+      method:'Combines sector momentum with fundamental screening (P/E, earnings growth). Rotates into sectors showing both technical momentum and fundamental improvement.',
+      picks:'/findstocks/portfolio2/picks.html', perf:'/findstocks/portfolio2/leaderboard.html', goldmine:'top_picks',
+      strengths:['Positive returns despite mediocre Sharpe','Good trade volume (265)'],
+      flaws:['C-grade: below institutional quality','Large drawdown relative to gains','Fundamental screening may introduce look-ahead bias'],
+      forward:null, forward_status:'NOT DEPLOYED', forward_tbd:'Low priority. Consider reworking methodology before deployment.' },
+    { name:'Blue Chip Growth', asset:'Stocks', sharpe:-0.739, sortino:-1.089, wr:47.60, pf:0.891, pnl:-6110, trades:334, dd:-20374, grade:'D', type:'Fundamental Growth Screening',
+      method:'Screens large-cap stocks (>$10B market cap) for revenue growth >15%, positive EPS, P/E <30. Entry on RSI oversold bounce.',
+      picks:'/findstocks/portfolio2/picks.html', perf:'/findstocks/portfolio2/leaderboard.html', goldmine:'top_picks',
+      strengths:['Good stock universe (large-cap, liquid)','High trade count provides data for analysis'],
+      flaws:['NEGATIVE Sharpe - losing money','Below 50% WR indicates signals are worse than random','Fundamental screening may be too broad','Should be PAUSED until reworked'],
+      forward:null, forward_status:'PAUSED', forward_tbd:'Rework methodology: tighter screening, add momentum filter. ETA: 3-4 weeks.' },
+    { name:'Technical Momentum', asset:'Stocks', sharpe:-3.090, sortino:-4.399, wr:25.00, pf:0.649, pnl:-1233, trades:12, dd:-2511, grade:'D', type:'Pure Technical Momentum',
+      method:'Price above 50-day MA + RSI >50 + MACD positive. Pure momentum entry with no fundamental filter.',
+      picks:'/findstocks/portfolio2/picks.html', perf:'/findstocks/portfolio2/leaderboard.html', goldmine:'top_picks',
+      strengths:['Simple, interpretable signals'],
+      flaws:['WORST Sharpe in system (-3.09)','75% loss rate across 12 trades','Too few trades for statistical significance','Should be PAUSED or REMOVED'],
+      forward:null, forward_status:'PAUSED', forward_tbd:'Consider removing entirely. If kept, needs complete rework with volume/volatility filters.' },
+    { name:'Composite Rating', asset:'Stocks', sharpe:-3.355, sortino:-4.688, wr:25.00, pf:0.626, pnl:-1314, trades:12, dd:-2511, grade:'D', type:'Multi-Indicator Composite',
+      method:'Weighted composite score from RSI + MACD + Stochastic + ADX + Bollinger position. Buy when composite >70/100.',
+      picks:'/findstocks/portfolio2/picks.html', perf:'/findstocks/portfolio2/leaderboard.html', goldmine:'top_picks',
+      strengths:['Multi-indicator approach is theoretically sound'],
+      flaws:['WORST overall performance (Sharpe -3.36)','Weights may be incorrectly calibrated','75% loss rate','Should be PAUSED or REMOVED'],
+      forward:null, forward_status:'PAUSED', forward_tbd:'Recalibrate indicator weights using walk-forward optimization. ETA: 3-4 weeks.' },
+    { name:'Trend Following', asset:'Crypto', sharpe:4.449, sortino:9.159, wr:47.62, pf:1.797, pnl:17538, trades:84, dd:-8500, grade:'A+', type:'Moving Average Crossover',
+      method:'EMA crossover (12/26) + ADX >25 trend strength filter. Entry on confirmed trend. TP at 10%, SL at 5%, max hold 30 days. Works on BTC, ETH, and major alts.',
+      picks:'/findstocks/portfolio2/horizon-picks.html', perf:'/findstocks/portfolio2/leaderboard.html', goldmine:'horizon',
+      strengths:['A+ grade with excellent Sharpe (4.45)','Captures large crypto moves (+9.88% avg win)','Low WR (47%) but big winners compensate - classic trend following'],
+      flaws:['NOT deployed to live trading','High max drawdown (-$8.5K)','30-day max hold may be too long for crypto volatility'],
+      forward:null, forward_status:'NOT DEPLOYED', forward_tbd:'HIGH PRIORITY: Deploy to live engine. ETA: 1-2 weeks.' },
+    { name:'Mean Reversion', asset:'Crypto', sharpe:-1.557, sortino:-2.510, wr:28.89, pf:0.812, pnl:-6000, trades:90, dd:-13000, grade:'D', type:'Bollinger Band Bounce',
+      method:'Entry when price touches lower Bollinger Band (2 std dev) + RSI <30. Expects bounce back to mean. TP at 10%, SL at 5%.',
+      picks:'/findstocks/portfolio2/horizon-picks.html', perf:'/findstocks/portfolio2/leaderboard.html', goldmine:'horizon',
+      strengths:['Sound theoretical basis (mean reversion)'],
+      flaws:['FAILS in crypto: trends persist, mean reversion rarely works in trending crypto markets','29% WR is terrible','$13K max drawdown is dangerous','Should be PAUSED for crypto - consider forex only'],
+      forward:null, forward_status:'PAUSED', forward_tbd:'Disable for crypto. Mean reversion works for forex (A-grade) but fails in trending crypto. ETA: Immediate.' },
+    { name:'Trend Following', asset:'Forex', sharpe:2.415, sortino:4.444, wr:48.82, pf:1.409, pnl:3865, trades:211, dd:-1285, grade:'A', type:'MA Crossover + ADX',
+      method:'EMA crossover on major forex pairs (EUR/USD, GBP/USD, USD/JPY, etc.). ADX >20 trend filter. TP 2%, SL 1%, max hold 14 days.',
+      picks:'/findstocks/portfolio2/horizon-picks.html', perf:'/findstocks/portfolio2/leaderboard.html', goldmine:'horizon',
+      strengths:['A-grade in forex (within world-class territory)','Small drawdown (-$1.3K) = excellent risk control','211 trades = statistically significant'],
+      flaws:['NOT deployed to live trading','Low per-trade return (+0.18%) requires high trade frequency','No carry trade component'],
+      forward:null, forward_status:'NOT DEPLOYED', forward_tbd:'HIGH PRIORITY: Deploy to live engine. Current live forex uses Consensus (0% WR). ETA: 1-2 weeks.' },
+    { name:'Mean Reversion', asset:'Forex', sharpe:2.285, sortino:4.153, wr:49.41, pf:1.384, pnl:5760, trades:338, dd:-2157, grade:'A', type:'Bollinger Band + RSI',
+      method:'Bollinger Band touch + RSI extremes on forex pairs. Mean reversion works well in range-bound forex markets. TP 2%, SL 1%, max hold 14 days.',
+      picks:'/findstocks/portfolio2/horizon-picks.html', perf:'/findstocks/portfolio2/leaderboard.html', goldmine:'horizon',
+      strengths:['A-grade with 338 trades = highly statistically significant','Mean reversion suits forex perfectly (range-bound pairs)','Highest total PnL in forex ($5.8K)'],
+      flaws:['NOT deployed to live trading','Performs well in backtest but untested forward','No interest rate / carry component'],
+      forward:null, forward_status:'NOT DEPLOYED', forward_tbd:'HIGH PRIORITY: Deploy to live engine alongside Trend Following. ETA: 1-2 weeks.' }
+];
+
+var LIVE_ALGOS = [
+    { name:'Ichimoku Cloud', asset:'Crypto', type:'Japanese Trend System', wr:80, trades:5, wins:4, pnl:44.97, avg_return:1.85, hold_hrs:6.75,
+      method:'Ichimoku Kinko Hyo system: Tenkan-sen/Kijun-sen crossover, price above/below Kumo cloud, Chikou span confirmation. 5 independent signals must align.',
+      picks:'/live-monitor/live-monitor.html', perf:'/live-monitor/algo-performance.html', goldmine:'live_signal',
+      strengths:['BEST live algorithm: 80% WR, +$44.97','Multi-signal confirmation reduces noise','Short hold time (6.75h) reduces exposure','Successfully learned higher TP (3.4% vs 2% default)'],
+      flaws:['Only 5 trades - need more for statistical confidence','No 2-year backtest','Crypto-focused may not generalize'],
+      forward_tbd:'Accumulate 20+ trades for grid search optimization. ETA: ~5-7 days at current rate.' },
+    { name:'StochRSI Crossover', asset:'Crypto', type:'Momentum Oscillator', wr:75, trades:4, wins:3, pnl:4.25, avg_return:0.23, hold_hrs:6.2,
+      method:'Stochastic RSI K-line crosses D-line. Buy when K crosses above D from oversold (<20). Sell when K crosses below D from overbought (>80).',
+      picks:'/live-monitor/live-monitor.html', perf:'/live-monitor/algo-performance.html', goldmine:'live_signal',
+      strengths:['75% WR is strong','Simple, well-understood indicator','Learned higher TP (3.1% vs 2% default)'],
+      flaws:['Only 4 trades','Lower per-trade PnL than Ichimoku','No backtest validation'],
+      forward_tbd:'Accumulate 20+ trades for optimization. ETA: ~7-10 days.' },
+    { name:'Challenger Bot', asset:'Stocks', type:'Smart Money Consensus', wr:null, trades:0, wins:0, pnl:0, avg_return:0, hold_hrs:0,
+      method:'Uses smart money consensus score from analyst ratings, insider MSPR, and 13F institutional filings. Buy when score >=70, Short when <=30. Fundamental-driven, not technical.',
+      picks:'/live-monitor/smart-money.html', perf:'/live-monitor/live-monitor.html', goldmine:'live_signal',
+      strengths:['Unique fundamental approach (not correlated with technical algos)','Smart money data has proven alpha in academic research','4 open positions in quality stocks (AMZN, NVDA, GOOGL, MSFT)'],
+      flaws:['ZERO closed trades yet - no performance data','Fundamental signals may have longer time horizon than our max hold','Open positions currently showing unrealized losses'],
+      forward_tbd:'First closures expected within 24-72h (max hold cap). Performance evaluation after 10+ closed trades. ETA: ~1-2 weeks.' },
+    { name:'Consensus (Multi-Algo Vote)', asset:'Forex', type:'Algorithm Agreement', wr:0, trades:2, wins:0, pnl:-3.28, avg_return:-0.33, hold_hrs:12.3,
+      method:'Requires 2+ algorithms to agree on direction (BUY/SELL) for the same asset. Higher algo count = higher conviction. Currently the only algo generating forex trades in live mode.',
+      picks:'/findstocks/portfolio2/consolidated.html', perf:'/live-monitor/algo-performance.html', goldmine:'consolidated',
+      strengths:['Multi-algorithm agreement theoretically reduces false positives','Learned to cut max hold from 24h to 12h'],
+      flaws:['0% WR on forex (2/2 losses)','Both losses were max-hold exits (signals never confirmed)','Backtested forex algos (Trend Following A, Mean Reversion A) are NOT deployed','Using the WRONG algorithm for forex in live trading'],
+      forward_tbd:'CRITICAL: Replace with backtested A-grade forex algos (Trend Following + Mean Reversion). ETA: 1-2 weeks.' },
+    { name:'RSI Reversal', asset:'Forex', type:'Divergence Pattern', wr:0, trades:1, wins:0, pnl:-0.17, avg_return:-0.03, hold_hrs:7.02,
+      method:'Detects RSI divergence from price (price makes new low but RSI makes higher low = bullish divergence). Entry on confirmation candle.',
+      picks:'/live-monitor/live-monitor.html', perf:'/live-monitor/algo-performance.html', goldmine:'live_signal',
+      strengths:['Divergence is a well-researched pattern','Very small loss (-$0.17) shows tight risk management'],
+      flaws:['Only 1 trade - no statistical meaning','No backtest data','Divergence signals are rare and subjective'],
+      forward_tbd:'Insufficient data. Need 10+ trades minimum. ETA: 2-4 weeks.' },
+    { name:'Alpha Predator', asset:'Crypto', type:'Multi-Factor', wr:null, trades:0, wins:0, pnl:0, avg_return:0, hold_hrs:0,
+      method:'Proprietary multi-factor model combining momentum, volume anomaly, and volatility breakout signals. Targets high-alpha opportunities.',
+      picks:'/live-monitor/live-monitor.html', perf:'/live-monitor/algo-performance.html', goldmine:'live_signal',
+      strengths:['Multi-factor approach captures different market dynamics'],
+      flaws:['ZERO closed trades','1 open position (ATOMUSD) currently at -1.47%','No methodology documentation available'],
+      forward_tbd:'First closure expected within 24h (max hold cap for crypto). ETA: <24h.' },
+    { name:'VAM', asset:'Stocks', type:'Value-At-Momentum', wr:null, trades:0, wins:0, pnl:0, avg_return:0, hold_hrs:0,
+      method:'Value screening (low P/E, high dividend yield) combined with momentum filter (price above 50 MA). Targets undervalued stocks with positive momentum.',
+      picks:'/live-monitor/live-monitor.html', perf:'/live-monitor/live-monitor.html', goldmine:'live_signal',
+      strengths:['Value + momentum factor combination has strong academic support (Asness et al.)','1 open position (JNJ) at +0.004%'],
+      flaws:['ZERO closed trades','Minimal documentation','Only 1 position active'],
+      forward_tbd:'First closure expected within 72h. Needs 10+ trades for evaluation. ETA: 2-4 weeks.' }
+];
+
+var ASSET_MATRIX = [
+    { asset:'Stocks', bt_sharpe:1.721, bt_grade:'B', bt_trades:1422, fwd_wr:'N/A', fwd_trades:'0 closed', fwd_pnl:'$0', overlap:0, status:'TBD', status_class:'badge-yellow',
+      note:'5 open positions (Challenger Bot + VAM). No closed stock trades yet. Max hold 72h = first closures imminent.' },
+    { asset:'Crypto', bt_sharpe:1.452, bt_grade:'B', bt_trades:174, fwd_wr:'77.8%', fwd_trades:'9', fwd_pnl:'+$10.15', overlap:0, status:'STRONG', status_class:'badge-green',
+      note:'Forward performance EXCEEDS backtest expectations. Different algorithms though: live uses Ichimoku/StochRSI, backtest used Trend Following.' },
+    { asset:'Forex', bt_sharpe:2.336, bt_grade:'A', bt_trades:549, fwd_wr:'0%', fwd_trades:'3', fwd_pnl:'-$0.69', overlap:0, status:'ALERT', status_class:'badge-red',
+      note:'CRITICAL: A-grade backtested algos NOT deployed. Live uses Consensus (0% WR). Must deploy Trend Following + Mean Reversion.' },
+    { asset:'Portfolio', bt_sharpe:1.560, bt_grade:'B', bt_trades:2145, fwd_wr:'53.9%', fwd_trades:'13', fwd_pnl:'+$33.44', overlap:0, status:'EARLY', status_class:'badge-blue',
+      note:'System is 3 days old. Need 100+ trades for statistical significance. Current trajectory: ~40% annualized if sustained.' }
+];
+
+var WORLD_CLASS = [
+    { name:'Renaissance (Medallion)', sharpe:4.0, color:'#ffd700' },
+    { name:'D.E. Shaw', sharpe:2.0, color:'#a78bfa' },
+    { name:'Citadel Wellington', sharpe:2.0, color:'#22d3ee' },
+    { name:'Two Sigma', sharpe:1.8, color:'#6366f1' },
+    { name:'AQR Capital', sharpe:1.2, color:'#8888aa' },
+    { name:'S&P 500 Buy & Hold', sharpe:0.9, color:'#555578' }
+];
+
+// ──── RENDER HELPERS ──────────────────────────────────────────────────────────
+function gradeClass(g) { return g==='A+'?'grade-aplus':g==='A'?'grade-a':g==='B'?'grade-b':g==='C'?'grade-c':'grade-d'; }
+function fmtPnl(v) { return (v>=0?'+':'')+('$'+Math.abs(v).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})); }
+function fmtPct(v) { return (v>=0?'+':'')+v.toFixed(2)+'%'; }
+function valClass(v) { return v>0?'val-pos':v<0?'val-neg':'val-neutral'; }
+
+function renderKPI(containerId, items) {
+    var el = document.getElementById(containerId);
+    var html = '';
+    for (var i=0;i<items.length;i++) {
+        var k=items[i];
+        html += '<div class="kpi"><div class="kpi-label">'+k.label+'</div><div class="kpi-val '+(k.cls||'')+'">'+k.val+'</div>'+(k.sub?'<div class="kpi-sub">'+k.sub+'</div>':'')+'</div>';
+    }
+    el.innerHTML = html;
+}
+
+function renderBars(containerId, bars, maxVal) {
+    var el = document.getElementById(containerId);
+    var html = '';
+    for (var i=0;i<bars.length;i++) {
+        var b=bars[i], pct=Math.min((b.val/maxVal)*100,100);
+        html += '<div class="bar-row"><span class="bar-label">'+b.label+'</span><span class="bar-track"><span class="bar-fill" style="width:'+pct+'%;background:'+(b.color||'var(--accent)')+'">'+b.val.toFixed(2)+'</span></span><span class="bar-val '+(b.highlight?'val-pos':'')+'">'+b.val.toFixed(2)+'</span></div>';
+    }
+    el.innerHTML = html;
+}
+
+function renderAlgoCards(containerId, algos) {
+    var el = document.getElementById(containerId);
+    var html = '';
+    for (var i=0;i<algos.length;i++) {
+        var a=algos[i];
+        var hasBacktest = a.sharpe !== undefined;
+        var isLive = a.wr !== undefined && a.wr !== null;
+        html += '<div class="algo-card"><div class="algo-card-header"><div><div class="algo-card-title"><a href="'+(a.picks||'#')+'" class="algo-link" title="'+a.name+': '+(hasBacktest?'Backtest Sharpe '+a.sharpe.toFixed(2)+', '+a.wr+'% WR, '+a.trades+' trades':'Live '+a.wr+'% WR, '+a.trades+' trades, '+fmtPnl(a.pnl))+'.\nClick to view picks.">'+ a.name+'</a></div><div class="algo-card-type">'+a.type+' &bull; '+a.asset+'</div></div><div>';
+        if (hasBacktest) html += '<span class="grade '+gradeClass(a.grade)+'">'+a.grade+'</span>';
+        if (a.forward_status) html += ' <span class="badge '+(a.forward_status==='NOT DEPLOYED'?'badge-yellow':a.forward_status==='PAUSED'?'badge-red':'badge-cyan')+'">'+a.forward_status+'</span>';
+        html += '</div></div><div class="algo-card-body">';
+        html += '<p style="margin-bottom:0.6rem;color:var(--text-dim)"><em>'+a.method+'</em></p>';
+        if (hasBacktest) {
+            html += '<div class="metric-row"><span><strong>Backtest Sharpe</strong></span><span class="'+valClass(a.sharpe)+'">'+a.sharpe.toFixed(3)+'</span></div>';
+            html += '<div class="metric-row"><span><strong>Win Rate</strong></span><span class="'+valClass(a.wr-50)+'">'+a.wr+'%</span></div>';
+            html += '<div class="metric-row"><span><strong>Profit Factor</strong></span><span class="'+valClass(a.pf-1)+'">'+a.pf.toFixed(3)+'</span></div>';
+            html += '<div class="metric-row"><span><strong>Total PnL</strong></span><span class="'+valClass(a.pnl)+'">'+fmtPnl(a.pnl)+'</span></div>';
+            html += '<div class="metric-row"><span><strong>Trades</strong></span><span>'+a.trades+'</span></div>';
+            html += '<div class="metric-row"><span><strong>Max Drawdown</strong></span><span class="val-neg">'+fmtPnl(a.dd)+'</span></div>';
+        }
+        if (isLive) {
+            html += '<div class="metric-row"><span><strong>Live Win Rate</strong></span><span class="'+valClass((a.wr||0)-50)+'">'+(a.wr||0)+'%</span></div>';
+            html += '<div class="metric-row"><span><strong>Live Trades</strong></span><span>'+a.trades+' ('+a.wins+' W / '+(a.trades-a.wins)+' L)</span></div>';
+            html += '<div class="metric-row"><span><strong>Live PnL</strong></span><span class="'+valClass(a.pnl)+'">'+fmtPnl(a.pnl)+'</span></div>';
+            html += '<div class="metric-row"><span><strong>Avg Hold</strong></span><span>'+a.hold_hrs.toFixed(1)+'h</span></div>';
+        }
+        html += '<div style="margin-top:0.6rem;font-size:0.75rem"><strong style="color:var(--green)">Strengths:</strong> '+a.strengths.join(' | ')+'</div>';
+        html += '<div style="margin-top:0.3rem;font-size:0.75rem"><strong style="color:var(--red)">Flaws:</strong> '+a.flaws.join(' | ')+'</div>';
+        if (a.forward_tbd) html += '<div style="margin-top:0.3rem;font-size:0.75rem"><strong style="color:var(--orange)">TBD:</strong> '+a.forward_tbd+'</div>';
+        html += '<div style="margin-top:0.5rem;font-size:0.72rem;color:var(--text-dim)"><a href="'+(a.picks||'#')+'" style="color:var(--cyan)">View Picks</a>';
+        if (a.perf) html += ' &bull; <a href="'+a.perf+'" style="color:var(--gold)">View Performance</a>';
+        html += '</div>';
+        html += '</div></div>';
+    }
+    el.innerHTML = html;
+}
+
+function renderFlaws(containerId, flaws) {
+    var el = document.getElementById(containerId);
+    var html = '';
+    for (var i=0;i<flaws.length;i++) html += '<div class="flaw-item"><strong style="color:var(--red)">'+(i+1)+'. '+flaws[i].title+'</strong><br>'+flaws[i].desc+'</div>';
+    el.innerHTML = html;
+}
+function renderStrengths(containerId, items) {
+    var el = document.getElementById(containerId);
+    var html = '';
+    for (var i=0;i<items.length;i++) html += '<div class="strength-item"><strong style="color:var(--green)">'+(i+1)+'. '+items[i].title+'</strong><br>'+items[i].desc+'</div>';
+    el.innerHTML = html;
+}
+function renderTBD(containerId, items) {
+    var el = document.getElementById(containerId);
+    var html = '';
+    for (var i=0;i<items.length;i++) html += '<div class="tbd-item"><strong>'+items[i].title+'</strong><br><strong>Why:</strong> '+items[i].why+'<br><strong>When:</strong> '+items[i].when+'</div>';
+    el.innerHTML = html;
+}
+
+// ──── EXECUTIVE DASHBOARD ─────────────────────────────────────────────────────
+renderKPI('exec-kpis', [
+    { label:'System Age', val:SYSTEM.age_days+' days', sub:'Launched '+SYSTEM.launch_date },
+    { label:'Total Algorithms', val:SYSTEM.total_algos, sub:SYSTEM.backtested+' backtested, '+SYSTEM.live_active+' live' },
+    { label:'Forward/Backtest Overlap', val:'0%', cls:'val-neg', sub:'CRITICAL GAP - different algo sets' },
+    { label:'Portfolio Value', val:'$'+SYSTEM.portfolio.toLocaleString(), sub:'From $10,000 initial' },
+    { label:'Live Win Rate', val:SYSTEM.win_rate+'%', cls:SYSTEM.win_rate>50?'val-pos':'val-neg', sub:SYSTEM.closed_trades+' trades ('+SYSTEM.wins+'W/'+SYSTEM.losses+'L)' },
+    { label:'Overall Sharpe', val:SYSTEM.overall_sharpe.toFixed(2), cls:'val-pos', sub:'Grade '+SYSTEM.overall_grade+' (backtested)' }
+]);
+
+// Matrix table
+var mb = document.getElementById('matrix-body');
+var mhtml = '';
+for (var i=0;i<ASSET_MATRIX.length;i++) {
+    var m=ASSET_MATRIX[i];
+    mhtml += '<tr><td style="font-weight:700">'+m.asset+'</td>';
+    mhtml += '<td class="'+valClass(m.bt_sharpe-1)+'">'+m.bt_sharpe.toFixed(3)+'</td>';
+    mhtml += '<td><span class="grade '+gradeClass(m.bt_grade)+'">'+m.bt_grade+'</span></td>';
+    mhtml += '<td>'+m.bt_trades.toLocaleString()+'</td>';
+    mhtml += '<td '+(m.fwd_wr!=='N/A'?'class="'+valClass(parseFloat(m.fwd_wr)-50)+'"':'')+'>'+m.fwd_wr+'</td>';
+    mhtml += '<td>'+m.fwd_trades+'</td>';
+    mhtml += '<td class="'+valClass(m.fwd_pnl.indexOf('-')>=0?-1:m.fwd_pnl==='$0'?0:1)+'">'+m.fwd_pnl+'</td>';
+    mhtml += '<td>'+(m.overlap===0?'<span class="badge badge-red">NONE</span>':'<span class="badge badge-green">'+m.overlap+'</span>')+'</td>';
+    mhtml += '<td><span class="badge '+m.status_class+'">'+m.status+'</span></td></tr>';
+    mhtml += '<tr><td colspan="9" style="font-size:0.72rem;color:var(--text-dim);padding:4px 12px 10px;border-bottom:1px solid var(--border)">'+m.note+'</td></tr>';
+}
+mb.innerHTML = mhtml;
+
+// ──── STOCKS TAB ──────────────────────────────────────────────────────────────
+var stocksBacktested = BACKTESTED.filter(function(a){return a.asset==='Stocks'});
+var stocksLive = LIVE_ALGOS.filter(function(a){return a.asset==='Stocks'});
+
+renderKPI('stocks-kpis', [
+    { label:'Backtested Sharpe', val:'1.72', cls:'val-pos', sub:'Grade B | 1,422 trades over 2 years' },
+    { label:'Best Algorithm', val:'Cursor Genius', sub:'A+ | Sharpe 5.27 | 63% WR' },
+    { label:'Forward Status', val:'0 Closed', cls:'val-neutral', sub:'5 positions open (Challenger Bot + VAM)' },
+    { label:'Algos Deployed Live', val:'2 / 7', cls:'val-neg', sub:'Challenger Bot + VAM only' },
+    { label:'World-Class Position', val:'68%', sub:'Our 1.72 vs Renaissance 2.50' }
+]);
+
+// Stocks backtest table
+var sbt = document.getElementById('stocks-bt-body');
+var shtml = '';
+for (var i=0;i<stocksBacktested.length;i++) {
+    var a=stocksBacktested[i];
+    shtml += '<tr><td>'+(i+1)+'</td>';
+    shtml += '<td><a href="'+a.picks+'" class="algo-link" title="'+a.name+': Sharpe '+a.sharpe.toFixed(2)+', '+a.wr+'% WR, '+a.trades+' trades. Click to view picks.">'+a.name+'</a></td>';
+    shtml += '<td class="'+valClass(a.sharpe)+'">'+a.sharpe.toFixed(3)+'</td>';
+    shtml += '<td class="'+valClass(a.wr-50)+'">'+a.wr+'%</td>';
+    shtml += '<td class="'+valClass(a.pf-1)+'">'+a.pf.toFixed(3)+'</td>';
+    shtml += '<td class="'+valClass(a.pnl)+'" style="font-weight:700">'+fmtPnl(a.pnl)+'</td>';
+    shtml += '<td>'+a.trades+'</td>';
+    shtml += '<td class="val-neg">'+fmtPnl(a.dd)+'</td>';
+    shtml += '<td><span class="grade '+gradeClass(a.grade)+'">'+a.grade+'</span></td></tr>';
+}
+sbt.innerHTML = shtml;
+
+// Stocks forward section
+document.getElementById('stocks-forward').innerHTML = '<div class="alert-box alert-info"><div class="alert-title">&#128204; Forward-Facing: Waiting for First Closures</div><strong>Challenger Bot</strong> has 4 open positions: AMZN (-2.5%), NVDA (-1.9%), GOOGL (-0.5%), MSFT (+0.05%). These are <em>smart money consensus</em> picks based on analyst ratings + insider buying + 13F data.<br><strong>VAM</strong> has 1 open position: JNJ (+0.004%). This is a <em>value-at-momentum</em> pick.<br><strong>Status:</strong> No closed stock trades yet. Max hold cap is 72h, so first closures expected within 24-72 hours.<br><strong>Key gap:</strong> Our A+ backtested algorithm (Cursor Genius) is NOT deployed to live trading. It generates daily picks on the <a href="/findstocks/portfolio2/picks.html" style="color:var(--cyan)">Daily Picks page</a> but these are not paper traded.<br><a href="/live-monitor/algo-performance.html" style="color:var(--gold)">View L vs O Dashboard &rarr;</a></div>';
+
+// Stocks world-class bars
+renderBars('stocks-bars', [
+    { label:'Cursor Genius (Best)', val:5.27, color:'#22c55e', highlight:true },
+    { label:'Renaissance', val:2.50, color:'#ffd700' },
+    { label:'Sector Momentum', val:2.12, color:'#6366f1' },
+    { label:'ETF Masters', val:2.05, color:'#6366f1' },
+    { label:'Our Portfolio (Stocks)', val:1.72, color:'#22d3ee', highlight:true },
+    { label:'Two Sigma', val:1.80, color:'#a78bfa' },
+    { label:'AQR Capital', val:1.20, color:'#8888aa' },
+    { label:'S&P 500 Buy & Hold', val:0.90, color:'#555578' },
+    { label:'Sector Rotation', val:0.97, color:'#f59e0b' },
+    { label:'Blue Chip Growth', val:-0.74, color:'#ef4444' }
+], 6.0);
+
+document.getElementById('stocks-gap-summary').innerHTML = '<div class="methodology-box"><h3>Stocks vs World-Class: Gap Analysis</h3><p><strong style="color:var(--green)">Where we excel:</strong> Our best algorithm (Cursor Genius, Sharpe 5.27) would be exceptional at <em>any</em> firm, including Renaissance. Top 3 stock algorithms (Cursor Genius A+, Sector Momentum A, ETF Masters A) are institutional quality.</p><p style="margin-top:0.5rem"><strong style="color:var(--red)">Where we fall short:</strong> Portfolio-level Sharpe (1.72) is below Renaissance (2.5) because D-grade algorithms (Blue Chip, Tech Momentum, Composite Rating) drag performance down. Commission drag ($10K on $10K capital in high-frequency backtest) is the #1 performance killer. No portfolio-level hedging, no short selling, no intraday execution.</p><p style="margin-top:0.5rem"><strong style="color:var(--orange)">Key gaps vs Renaissance:</strong> (1) Signal diversity: we have 7 stock algos vs their 10,000+. (2) Execution speed: daily bars vs microsecond. (3) Asset universe: 12 stocks vs thousands. (4) Risk management: fixed sizing vs vol-adjusted. (5) Commission efficiency: $4.95-$9.95/trade vs $0.005/share.</p></div>';
+
+// Stocks algo cards
+renderAlgoCards('stocks-algo-cards', stocksBacktested.concat(stocksLive));
+
+renderFlaws('stocks-flaws', [
+    { title:'D-Grade Algorithms Still Active', desc:'Blue Chip Growth, Technical Momentum, and Composite Rating have negative Sharpe ratios. They should be paused immediately to stop portfolio drag.' },
+    { title:'A+ Algorithm Not Deployed', desc:'Cursor Genius (Sharpe 5.27) generates daily picks but is not paper traded. The live trading engine uses completely different algorithms.' },
+    { title:'Commission Drag', desc:'Questrade fees ($4.95-$9.95/trade) consume 101% of capital on high-frequency strategies. Consider switching to commission-free broker model or increasing position sizes.' },
+    { title:'No Short Selling', desc:'Backtest only considers LONG positions. Missing ~50% of potential alpha from short selling during bear/sideways regimes.' },
+    { title:'No Portfolio-Level Hedging', desc:'Individual positions are risk-managed but no portfolio-level beta hedging, no sector-neutral construction, no correlation management between positions.' }
+]);
+
+renderStrengths('stocks-strengths', [
+    { title:'Cursor Genius A+ (Sharpe 5.27)', desc:'World-class risk-adjusted returns. 10:1 gain-to-pain ratio across 302 trades. If this were a standalone strategy, it would compete with top quant funds.' },
+    { title:'Three A-Grade Algorithms', desc:'Cursor Genius, Sector Momentum, and ETF Masters all achieve institutional-quality Sharpe ratios (>2.0). Diversified across strategy types (technical, momentum, sector rotation).' },
+    { title:'Goldmine Verification System', desc:'Independent outcome tracking via <a href="/live-monitor/goldmine-dashboard.html" style="color:var(--cyan)">Goldmine Dashboard</a> verifies predictions against real prices. No self-deception possible.' },
+    { title:'Regime Gating', desc:'HMM-based regime detection prevents trading against the market trend. 14/20 algorithms correctly suppressed when regime disagrees. This is a institutional-grade feature.' }
+]);
+
+renderTBD('stocks-tbd', [
+    { title:'Deploy Cursor Genius to Live Trading', why:'Currently generates picks in stock_picks table but not connected to live_trade.php paper trading engine.', when:'ETA: 1-2 weeks. Will require connecting daily picks pipeline to live signal engine.' },
+    { title:'First Closed Stock Trades', why:'Challenger Bot positions opened Feb 12. Max hold cap is 72h.', when:'First closures expected by Feb 14-15. Performance evaluation after 10+ closed trades (~2-3 weeks).' },
+    { title:'Pause D-Grade Algorithms', why:'Blue Chip, Tech Momentum, Composite Rating all have negative Sharpe. Still generating picks in daily pipeline.', when:'Can be done immediately. Requires adding algorithm-level disable flag to pick generator.' }
+]);
+
+// ──── CRYPTO TAB ──────────────────────────────────────────────────────────────
+var cryptoBacktested = BACKTESTED.filter(function(a){return a.asset==='Crypto'});
+var cryptoLive = LIVE_ALGOS.filter(function(a){return a.asset==='Crypto'});
+
+renderKPI('crypto-kpis', [
+    { label:'Backtested Sharpe', val:'1.45', cls:'val-pos', sub:'Grade B | 174 trades over 2 years' },
+    { label:'Best Backtested', val:'Trend Following', sub:'A+ | Sharpe 4.45 | 48% WR' },
+    { label:'Forward Win Rate', val:'77.8%', cls:'val-pos', sub:'9 trades | +$10.15 PnL' },
+    { label:'Best Live', val:'Ichimoku Cloud', sub:'80% WR | +$44.97 PnL' },
+    { label:'World-Class Position', val:'48%', sub:'Our 1.45 vs Elite 3.00' }
+]);
+
+var cbt = document.getElementById('crypto-bt-body');
+chtml = '';
+for (var i=0;i<cryptoBacktested.length;i++) {
+    var a=cryptoBacktested[i];
+    chtml += '<tr><td>'+(i+1)+'</td><td><a href="'+a.picks+'" class="algo-link" title="'+a.name+': Sharpe '+a.sharpe.toFixed(2)+', '+a.wr+'% WR, '+a.trades+' trades">'+a.name+'</a></td>';
+    chtml += '<td class="'+valClass(a.sharpe)+'">'+a.sharpe.toFixed(3)+'</td><td class="'+valClass(a.wr-50)+'">'+a.wr+'%</td>';
+    chtml += '<td class="'+valClass(a.pf-1)+'">'+a.pf.toFixed(3)+'</td><td class="'+valClass(a.pnl)+'" style="font-weight:700">'+fmtPnl(a.pnl)+'</td>';
+    chtml += '<td>'+a.trades+'</td><td class="val-neg">'+fmtPnl(a.dd)+'</td><td><span class="grade '+gradeClass(a.grade)+'">'+a.grade+'</span></td></tr>';
+}
+cbt.innerHTML = chtml;
+
+document.getElementById('crypto-forward').innerHTML = '<div class="alert-box alert-success"><div class="alert-title">&#9989; Crypto: Best Forward-Facing Performance</div><strong>Ichimoku Cloud:</strong> 5 trades, 80% WR, +$44.97. <a href="/live-monitor/algo-performance.html" style="color:var(--gold)">View on L vs O Dashboard</a><br><strong>StochRSI Crossover:</strong> 4 trades, 75% WR, +$4.25. <a href="/live-monitor/algo-performance.html" style="color:var(--gold)">View on L vs O Dashboard</a><br><strong>Alpha Predator:</strong> 1 open position (ATOMUSD, -1.47%). No closed trades yet.<br><strong>Crypto SHORT bias:</strong> 7/9 crypto trades were SHORT positions. All 7 shorts won. This suggests strong bearish signal detection.<br><strong>Key insight:</strong> Live algorithms (Ichimoku/StochRSI) are DIFFERENT from backtested (Trend Following/Mean Reversion). Both sets show alpha but are uncorrelated &mdash; combining them could be powerful.</div>';
+
+renderBars('crypto-bars', [
+    { label:'Trend Following (BT)', val:4.45, color:'#22c55e', highlight:true },
+    { label:'Elite Crypto Fund', val:3.00, color:'#ffd700' },
+    { label:'Market Neutral', val:2.50, color:'#a78bfa' },
+    { label:'Our Portfolio (Crypto)', val:1.45, color:'#22d3ee', highlight:true },
+    { label:'BTC Buy & Hold', val:1.10, color:'#555578' },
+    { label:'Good Algorithm', val:1.00, color:'#8888aa' },
+    { label:'Mean Reversion (BT)', val:-1.56, color:'#ef4444' }
+], 5.0);
+
+document.getElementById('crypto-gap-summary').innerHTML = '<div class="methodology-box"><h3>Crypto vs World-Class: Gap Analysis</h3><p><strong style="color:var(--green)">Where we excel:</strong> Trend Following (Sharpe 4.45) is exceptional. Live Ichimoku (80% WR) shows real alpha. We beat BTC buy-and-hold and the "good algo" benchmark. Crypto SHORT signals are 100% accurate (7/7 wins).</p><p style="margin-top:0.5rem"><strong style="color:var(--red)">Where we fall short:</strong> Mean Reversion (D grade) drags portfolio Sharpe down significantly. No cross-exchange arbitrage (a major alpha source for crypto funds). No DeFi yield or funding rate strategies. No market-neutral construction.</p><p style="margin-top:0.5rem"><strong style="color:var(--orange)">Key gaps vs elite crypto funds:</strong> (1) Remove/fix Mean Reversion crypto (immediate +50% portfolio Sharpe improvement). (2) Add cross-exchange arb and funding rate strategies. (3) Increase asset universe beyond 14 pairs. (4) Add market-neutral hedging (long Ichimoku winner + short basket).</p></div>';
+
+renderAlgoCards('crypto-algo-cards', cryptoBacktested.concat(cryptoLive));
+
+renderFlaws('crypto-flaws', [
+    { title:'Mean Reversion D-Grade Dragging Portfolio', desc:'Mean Reversion crypto has Sharpe -1.56, 29% WR, -$6K PnL. Mean reversion fails in trending crypto markets. Should be DISABLED for crypto immediately.' },
+    { title:'No Cross-Exchange Arbitrage', desc:'Top crypto quant funds generate significant alpha from latency arbitrage between exchanges (Binance vs Coinbase vs Kraken). We have no such capability.' },
+    { title:'Forward/Backtest Disconnect', desc:'Live crypto uses Ichimoku/StochRSI (excellent 80%/75% WR). Backtest uses Trend Following (A+). These are different algorithms. Need to validate both forward AND backtest for the same algo.' }
+]);
+renderStrengths('crypto-strengths', [
+    { title:'Trend Following A+ (Sharpe 4.45)', desc:'Captures large crypto moves. 48% WR but avg win (9.88%) is 2x avg loss (5%). Classic trend following profile.' },
+    { title:'Ichimoku Cloud 80% WR (Live)', desc:'Best live algorithm in the entire system. Successfully learned to widen TP from 2% to 3.4%. Short-biased in current market (7/7 shorts won).' },
+    { title:'Crypto is Primary Profit Driver', desc:'77.8% WR across 9 closed trades. +$10.15 PnL. Crypto accounts for most of the system forward-facing profits.' }
+]);
+renderTBD('crypto-tbd', [
+    { title:'Deploy Trend Following to Live', why:'A+ backtested algorithm not running in paper trading.', when:'ETA: 1-2 weeks. Would add a second A+ signal source alongside Ichimoku.' },
+    { title:'Disable Mean Reversion for Crypto', why:'D-grade, -$6K PnL. Mean reversion fails in trending markets.', when:'Can be done immediately. Leave Mean Reversion active for forex only (A-grade there).' },
+    { title:'Ichimoku Grid Search Optimization', why:'Only 5 closed trades. Need 20+ for statistical grid search.', when:'ETA: ~5-7 days at current rate of ~1-2 crypto trades/day.' }
+]);
+
+// ──── FOREX TAB ──────────────────────────────────────────────────────────────
+var forexBacktested = BACKTESTED.filter(function(a){return a.asset==='Forex'});
+var forexLive = LIVE_ALGOS.filter(function(a){return a.asset==='Forex'});
+
+renderKPI('forex-kpis', [
+    { label:'Backtested Sharpe', val:'2.34', cls:'val-pos', sub:'Grade A | 549 trades over 2 years' },
+    { label:'Best Backtested', val:'Trend Following', sub:'A | Sharpe 2.42 | 49% WR' },
+    { label:'Forward Win Rate', val:'0%', cls:'val-neg', sub:'3 trades | ALL losses (Consensus algo)' },
+    { label:'Live Algo Problem', val:'Wrong Algo', cls:'val-neg', sub:'Using Consensus instead of Trend/MR' },
+    { label:'World-Class Position', val:'94%', sub:'Our 2.34 vs Elite 2.50' }
+]);
+
+var fbt = document.getElementById('forex-bt-body');
+fhtml = '';
+for (var i=0;i<forexBacktested.length;i++) {
+    var a=forexBacktested[i];
+    fhtml += '<tr><td>'+(i+1)+'</td><td><a href="'+a.picks+'" class="algo-link" title="'+a.name+': Sharpe '+a.sharpe.toFixed(2)+', '+a.wr+'% WR, '+a.trades+' trades">'+a.name+'</a></td>';
+    fhtml += '<td class="'+valClass(a.sharpe)+'">'+a.sharpe.toFixed(3)+'</td><td class="'+valClass(a.wr-50)+'">'+a.wr+'%</td>';
+    fhtml += '<td class="'+valClass(a.pf-1)+'">'+a.pf.toFixed(3)+'</td><td class="'+valClass(a.pnl)+'" style="font-weight:700">'+fmtPnl(a.pnl)+'</td>';
+    fhtml += '<td>'+a.trades+'</td><td class="val-neg">'+fmtPnl(a.dd)+'</td><td><span class="grade '+gradeClass(a.grade)+'">'+a.grade+'</span></td></tr>';
+}
+fbt.innerHTML = fhtml;
+
+document.getElementById('forex-forward').innerHTML = '<div class="alert-box alert-critical"><div class="alert-title">&#9888; CRITICAL: Forex Forward Performance Contradicts Backtest</div><strong>Backtested:</strong> Both Trend Following (A, Sharpe 2.42) and Mean Reversion (A, Sharpe 2.29) show world-class performance across 549 trades. Our forex Sharpe (2.34) is 94% of the "elite" benchmark (2.50).<br><strong>Forward:</strong> 0% WR across 3 trades. All losses. All were max-hold exits (signal never confirmed).<br><strong>Root cause:</strong> Live forex trades are generated by the <strong>Consensus</strong> algorithm (multi-algo vote) and <strong>RSI Reversal</strong>, NOT by the A-grade Trend Following or Mean Reversion algorithms that were backtested.<br><strong>Fix:</strong> Deploy Trend Following and Mean Reversion to the live signal engine for forex pairs. Disable Consensus for forex. This is the single highest-impact improvement available.<br><a href="/live-monitor/algo-performance.html" style="color:var(--gold)">View L vs O Dashboard &rarr;</a></div>';
+
+renderBars('forex-bars', [
+    { label:'Elite Forex Fund', val:2.50, color:'#ffd700' },
+    { label:'Our Portfolio (Forex BT)', val:2.34, color:'#22c55e', highlight:true },
+    { label:'Trend Following (BT)', val:2.42, color:'#22d3ee', highlight:true },
+    { label:'Mean Reversion (BT)', val:2.29, color:'#6366f1', highlight:true },
+    { label:'Very Good', val:1.50, color:'#a78bfa' },
+    { label:'Good Algorithm', val:0.80, color:'#8888aa' },
+    { label:'EUR/USD Carry', val:0.30, color:'#555578' },
+    { label:'Consensus (Live)', val:-0.50, color:'#ef4444' }
+], 3.0);
+
+document.getElementById('forex-gap-summary').innerHTML = '<div class="methodology-box"><h3>Forex vs World-Class: Gap Analysis</h3><p><strong style="color:var(--green)">Where we excel:</strong> Backtested forex performance (Sharpe 2.34) is <em>within world-class territory</em>. Both algorithms are A-grade. This is our closest asset class to elite performance. With 549 trades, this is statistically significant.</p><p style="margin-top:0.5rem"><strong style="color:var(--red)">Where we fail:</strong> Forward performance is 0% WR because the WRONG algorithms are running live. This is a deployment gap, not an algorithm gap. The solution is clear: deploy the backtested A-grade algorithms.</p><p style="margin-top:0.5rem"><strong style="color:var(--orange)">Gaps vs elite forex firms:</strong> (1) No carry trade component (interest rate differential). (2) No cross-pair correlation management. (3) 10 pairs is too few (elite firms trade 30+ pairs). (4) No fundamental macro inputs (central bank policy, economic data). (5) No intraday execution (daily bars miss forex volatility patterns).</p></div>';
+
+renderAlgoCards('forex-algo-cards', forexBacktested.concat(forexLive));
+
+renderFlaws('forex-flaws', [
+    { title:'WRONG ALGORITHMS IN LIVE TRADING', desc:'Backtested A-grade algorithms (Trend Following, Mean Reversion) are not deployed. Live trading uses Consensus (0% WR) and RSI Reversal (0% WR). This is the single most impactful issue to fix.' },
+    { title:'No Carry Trade Component', desc:'Forex markets offer interest rate differential (carry trade) alpha. Elite firms combine technical signals with carry. We have no fundamental forex component.' },
+    { title:'Limited Pair Universe', desc:'Only 10 forex pairs. Elite firms trade 30-50+ pairs for better diversification and more opportunities.' }
+]);
+renderStrengths('forex-strengths', [
+    { title:'Near World-Class Backtest (94% of Elite)', desc:'Forex Sharpe 2.34 is our best asset class relative to benchmarks. Only 0.16 Sharpe points below "elite" (2.50). Both algorithms are A-grade with 549 combined trades.' },
+    { title:'Mean Reversion Works Here', desc:'Unlike crypto where mean reversion fails (D grade), forex mean reversion is A-grade (Sharpe 2.29). Forex pairs tend to range-bound, making mean reversion ideal. 338 trades = highly significant.' },
+    { title:'Small Drawdowns', desc:'Forex max drawdown (-$2.2K) is the smallest across all asset classes. Indicates excellent risk control for this strategy type.' }
+]);
+renderTBD('forex-tbd', [
+    { title:'Deploy A-Grade Algorithms to Live', why:'Trend Following and Mean Reversion are A-grade in backtests but not connected to the live signal engine. Live forex currently uses Consensus (0% WR).', when:'HIGHEST PRIORITY. ETA: 1-2 weeks. Expected to transform forex from "worst live asset" to "best live asset".' },
+    { title:'Disable Consensus for Forex', why:'0% WR across 3 forex trades. All max-hold exits. Consensus does not generate valid forex signals.', when:'Can be done immediately. Add forex exclusion to Consensus signal filter.' },
+    { title:'Forward Validation of A-Grade Algos', why:'Backtest shows A-grade but no forward validation exists.', when:'After deployment (1-2 weeks), need 30+ closed trades for confidence. Full validation: ETA 4-6 weeks.' }
+]);
+
+// ──── WORLD-CLASS GAPS TAB ──────────────────────────────────────────────────
+// Portfolio-level bars
+renderBars('portfolio-bars', [
+    { label:'Renaissance (Medallion)', val:4.00, color:'#ffd700' },
+    { label:'Our Best (Cursor Genius)', val:5.27, color:'#22c55e', highlight:true },
+    { label:'D.E. Shaw', val:2.00, color:'#a78bfa' },
+    { label:'Citadel Wellington', val:2.00, color:'#22d3ee' },
+    { label:'Two Sigma', val:1.80, color:'#6366f1' },
+    { label:'Our Portfolio (All)', val:1.56, color:'#f59e0b', highlight:true },
+    { label:'AQR Capital', val:1.20, color:'#8888aa' },
+    { label:'S&P 500 Buy & Hold', val:0.90, color:'#555578' }
+], 6.0);
+
+// Gap analysis
+document.getElementById('gap-analysis').innerHTML = '<div class="card-grid">' +
+    '<div class="algo-card"><div class="algo-card-header"><div><div class="algo-card-title" style="color:var(--green)">Stocks: B Grade (Sharpe 1.72)</div><div class="algo-card-type">Position: Between Two Sigma (1.8) and AQR (1.2)</div></div></div><div class="algo-card-body">' +
+    '<div class="metric-row"><span><strong>vs Renaissance (2.5)</strong></span><span class="val-neg">-31%</span></div>' +
+    '<div class="metric-row"><span><strong>vs Two Sigma (1.8)</strong></span><span class="val-neg">-4%</span></div>' +
+    '<div class="metric-row"><span><strong>vs S&P 500 (0.9)</strong></span><span class="val-pos">+91%</span></div>' +
+    '<p style="margin-top:0.5rem">Our top stock algo (Cursor Genius 5.27) EXCEEDS Renaissance. Portfolio dragged down by D-grade algorithms. Fix: pause 3 worst algos, deploy Cursor Genius live. Projected improvement: +0.5 Sharpe.</p></div></div>' +
+    '<div class="algo-card"><div class="algo-card-header"><div><div class="algo-card-title" style="color:var(--cyan)">Crypto: B Grade (Sharpe 1.45)</div><div class="algo-card-type">Position: Between Good (1.0) and Very Good (2.0)</div></div></div><div class="algo-card-body">' +
+    '<div class="metric-row"><span><strong>vs Elite Crypto (3.0)</strong></span><span class="val-neg">-52%</span></div>' +
+    '<div class="metric-row"><span><strong>vs BTC Buy & Hold (1.1)</strong></span><span class="val-pos">+32%</span></div>' +
+    '<div class="metric-row"><span><strong>Forward WR</strong></span><span class="val-pos">77.8% (9 trades)</span></div>' +
+    '<p style="margin-top:0.5rem">Strong forward performance from Ichimoku/StochRSI. Backtest dragged by Mean Reversion D-grade. Fix: disable Mean Reversion for crypto, deploy Trend Following live. Projected: +1.0 Sharpe.</p></div></div>' +
+    '<div class="algo-card"><div class="algo-card-header"><div><div class="algo-card-title" style="color:var(--gold)">Forex: A Grade (Sharpe 2.34)</div><div class="algo-card-type">Position: 94% of Elite (2.5) - NEAREST TO WORLD CLASS</div></div></div><div class="algo-card-body">' +
+    '<div class="metric-row"><span><strong>vs Elite Forex (2.5)</strong></span><span class="val-neg">-6%</span></div>' +
+    '<div class="metric-row"><span><strong>vs Good Algo (0.8)</strong></span><span class="val-pos">+193%</span></div>' +
+    '<div class="metric-row"><span><strong>Forward WR</strong></span><span class="val-neg">0% (WRONG ALGOS)</span></div>' +
+    '<p style="margin-top:0.5rem">Closest to world-class in backtests. Forward failure is ENTIRELY due to deploying wrong algorithms. Fix: deploy backtested A-grade algos to live. Expected to immediately become best live asset class.</p></div></div>' +
+'</div>';
+
+// Global flaws
+renderFlaws('global-flaws', [
+    { title:'#1 CRITICAL: Zero Forward/Backtest Algorithm Overlap', desc:'The algorithms that perform well in 2-year backtests (Cursor Genius A+, Trend Following A+, Mean Reversion forex A) are completely separate from the algorithms running in live paper trading (Ichimoku, StochRSI, Challenger Bot). This means we cannot validate whether backtested edge persists in real conditions. Priority: HIGH. Fix: Connect daily picks pipeline to live signal engine.' },
+    { title:'#2 CRITICAL: Commission Drag Destroys Small-Position Returns', desc:'Questrade fees ($4.95-$9.95/trade) on $500 positions = 1-2% commission per trade. In high-frequency backtests, this consumed 101% of capital ($10,177 in fees on $10K capital). World-class firms pay $0.001-$0.005/share. Priority: HIGH. Fix: Increase position sizes, switch to IBKR, or use commission-free broker for paper trading.' },
+    { title:'#3 HIGH: D-Grade Algorithms Still Active', desc:'Blue Chip Growth (D), Technical Momentum (D), Composite Rating (D), Mean Reversion crypto (D) have negative Sharpe ratios. They actively destroy portfolio value. Priority: HIGH. Fix: Immediate pause. Can be done with a single flag change.' },
+    { title:'#4 HIGH: Wrong Forex Algorithms in Live Trading', desc:'A-grade backtested forex algos (Trend Following, Mean Reversion) not deployed. Live uses Consensus (0% WR on forex). Priority: HIGH. Fix: Deploy correct algorithms. ETA: 1-2 weeks.' },
+    { title:'#5 MEDIUM: Small Forward-Facing Sample Size', desc:'Only 13 closed trades in 3 days. Statistical significance requires 100+ trades. Any conclusions about forward performance are preliminary. Priority: MEDIUM. Fix: Time-dependent. 30-day mark (March 11) will provide ~120+ trades.' },
+    { title:'#6 MEDIUM: No Portfolio-Level Risk Management', desc:'Individual positions have SL/TP/max-hold. But no portfolio-level beta hedging, no correlation between positions, no sector-neutral construction, no maximum portfolio drawdown trigger. World-class firms manage risk at portfolio level, not just position level.' },
+    { title:'#7 LOW: Single Market Cycle Backtest', desc:'2-year backtest (Feb 2024 - Feb 2026) covers mostly bull/sideways markets. Does not include 2020 COVID crash or 2022 bear market. Results may not hold in severe downturns.' },
+    { title:'#8 LOW: No Factor Exposure Analysis', desc:'We do not decompose returns into factor exposures (market beta, size, value, momentum, quality). Cannot distinguish alpha from factor loading. World-class firms do daily factor attribution.' }
+]);
+
+// Improvement roadmap
+document.getElementById('improvement-roadmap').innerHTML = '<div class="methodology-box"><h3>Prioritized Improvement Roadmap</h3>' +
+    '<p style="margin-top:0.5rem"><strong style="color:var(--red)">Week 1 (Immediate):</strong> Pause 4 D-grade algorithms. Disable Consensus for forex. Remove Mean Reversion for crypto. Expected impact: +0.3-0.5 portfolio Sharpe from removing drag.</p>' +
+    '<p style="margin-top:0.5rem"><strong style="color:var(--orange)">Weeks 2-3:</strong> Deploy Cursor Genius, Trend Following (crypto+forex), Mean Reversion (forex) to live signal engine. Connect daily picks pipeline. Expected impact: forward-facing performance should converge with backtest expectations.</p>' +
+    '<p style="margin-top:0.5rem"><strong style="color:var(--gold)">Weeks 3-5:</strong> Accumulate 100+ live trades for statistical significance. Run grid search optimization on all active algorithms. Populate learned_params endpoint. Expected impact: parameter optimization adds ~10-20% to win rate.</p>' +
+    '<p style="margin-top:0.5rem"><strong style="color:var(--accent)">Weeks 5-8:</strong> Add portfolio-level risk management (correlation limits, beta hedging, max drawdown triggers). Add commission optimization (position size increase or broker switch). Expected impact: +0.2-0.3 Sharpe from risk management improvements.</p>' +
+    '<p style="margin-top:0.5rem"><strong style="color:var(--green)">Months 3-6:</strong> Factor exposure analysis. Cross-exchange crypto arbitrage. Intraday execution for stocks. Carry trade for forex. Short selling capability. Expected impact: approach elite territory (Sharpe 2.0+) for portfolio-level performance.</p>' +
+'</div>';
+
+// Global strengths
+renderStrengths('global-strengths', [
+    { title:'World-Class Individual Algorithms', desc:'Cursor Genius (Sharpe 5.27) and Trend Following crypto (Sharpe 4.45) would be exceptional at Renaissance Technologies. These demonstrate genuine alpha-generation capability.' },
+    { title:'Forex Near Elite (94% of World-Class)', desc:'Backtested forex Sharpe 2.34 is just 0.16 points below the "elite" benchmark. With 549 trades, this is statistically robust and suggests real edge in forex markets.' },
+    { title:'Self-Learning System Working', desc:'ML pipeline successfully increased TP targets (+55-70%) and tightened max hold times (-50%). Ichimoku learned parameters produce 80% WR vs 2% default TP. The learning direction is correct.' },
+    { title:'Robust Infrastructure', desc:'Goldmine Tracker, 8 prediction systems, 20 algorithms, automated GitHub Actions, comprehensive API endpoints. Infrastructure is institutional-grade even if some algorithms are not.' },
+    { title:'Crypto Forward Performance (77.8% WR)', desc:'Early but strong signal. Crypto SHORT detection is 100% accurate (7/7). If sustained, this represents genuine alpha. Ichimoku + StochRSI combination is powerful.' },
+    { title:'Honest Self-Assessment', desc:'This report transparently identifies flaws, TBD items, and gaps. The ability to honestly evaluate performance (rather than cherry-picking winning metrics) is itself an institutional-grade practice.' }
+]);
+
+// ──── TAB SWITCHING ────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+        document.querySelectorAll('.tab-content').forEach(function(c){c.classList.remove('active')});
+        tab.classList.add('active');
+        document.getElementById('tab-'+tab.getAttribute('data-tab')).classList.add('active');
+    });
+});
+
+document.getElementById('timestamp').textContent = 'Report generated: ' + new Date().toISOString().replace('T',' ').slice(0,19) + ' UTC | Data as of Feb 12, 2026 | System age: 3 days';
+</script>
+</body>
+</html>

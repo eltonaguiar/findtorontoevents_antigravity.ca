@@ -51,6 +51,7 @@
     { text: 'Multi-Dim', href: '/live-monitor/multi-dimensional.html' },
     { text: 'Capital Eff', href: '/live-monitor/capital-efficiency.html' },
     { text: 'Backtests', href: '/findstocks/portfolio2/backtest-results.html' },
+    { text: 'Algo Intel', href: '/findstocks/portfolio2/algorithm-intelligence.html' },
     { text: 'All Tools', href: '/findstocks/tools.html' }
   ];
 
