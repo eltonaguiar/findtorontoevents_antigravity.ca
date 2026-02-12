@@ -77,7 +77,22 @@ def train_stacker(asset_class=None):
     model.save_model(MODEL_PATH)
     return model
 
-def stack_predict(new_signals_df):
+def stack_predict(new_signals_df, alphas_df):
+    import xgboost as xgb
+    model = xgb.XGBClassifier()
+    model.load_model(MODEL_PATH)
+    
+    X, _, _ = prepare_stacking_data(new_signals_df.fillna(0))
+    
+    # Blend in alphas
+    for i in range(len(new_signals_df)):
+        ticker = new_signals_df.iloc[i]['ticker']
+        if ticker in alphas_df.index:
+            alpha_scores = alphas_df.loc[ticker]
+            X.loc[i, 'avg_alpha'] = np.mean(list(alpha_scores.values()))
+    
+    probs = model.predict_proba(X)[:, 1]
+    return probs
     import xgboost as xgb
     model = xgb.XGBClassifier()
     model.load_model(MODEL_PATH)
