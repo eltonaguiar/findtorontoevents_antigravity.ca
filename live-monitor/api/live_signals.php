@@ -1955,21 +1955,22 @@ function _ls_algo_consensus($conn, $price, $symbol, $asset) {
     $short_count = count($short_algos);
     $total       = $buy_count + $short_count;
 
-    // Require minimum 4 algorithms total (was 3 — too noisy)
-    if ($total < 4) return null;
+    // v3: Require minimum 5 algorithms total (was 4 — still too noisy at 23.9% WR)
+    if ($total < 5) return null;
 
-    // Determine majority direction — require 85% supermajority (was 70%)
+    // Determine majority direction — require 90% supermajority (was 85%)
+    // Higher bar reduces false positives significantly
     $direction = null;
     $majority_count = 0;
     $majority_algos = array();
     $majority_strengths = array();
 
-    if ($buy_count >= 4 && ($buy_count / $total) >= 0.85) {
+    if ($buy_count >= 5 && ($buy_count / $total) >= 0.90) {
         $direction = 'BUY';
         $majority_count = $buy_count;
         $majority_algos = array_keys($buy_algos);
         $majority_strengths = $buy_strengths;
-    } elseif ($short_count >= 4 && ($short_count / $total) >= 0.85) {
+    } elseif ($short_count >= 5 && ($short_count / $total) >= 0.90) {
         $direction = 'SHORT';
         $majority_count = $short_count;
         $majority_algos = array_keys($short_algos);
@@ -1979,7 +1980,7 @@ function _ls_algo_consensus($conn, $price, $symbol, $asset) {
     // No clear consensus — skip
     if ($direction === null) return null;
 
-    // Require average signal strength >= 75 across agreeing algos
+    // v3: Require average signal strength >= 80 across agreeing algos (was 75)
     $avg_strength = 0;
     if (count($majority_strengths) > 0) {
         $sum = 0;
@@ -1988,22 +1989,23 @@ function _ls_algo_consensus($conn, $price, $symbol, $asset) {
         }
         $avg_strength = $sum / count($majority_strengths);
     }
-    if ($avg_strength < 75) return null;
+    if ($avg_strength < 80) return null;
 
     // ── Regime gate: block counter-regime signals ──
     if ($regime === 'bear' && $direction === 'BUY') return null;
     if ($regime === 'bull' && $direction === 'SHORT') return null;
 
-    // ── Recent performance gate: skip if Consensus has been losing ──
+    // ── Recent performance gate v3: tighter circuit breaker ──
+    // Was: 25% over 14 days — too slow to react. Now: 30% over 7 days.
     $recent_trades = $conn->query("SELECT COUNT(*) as total,
         SUM(CASE WHEN realized_pnl_usd > 0 THEN 1 ELSE 0 END) as wins
         FROM lm_trades WHERE algorithm_name = 'Consensus'
-        AND status = 'closed' AND closed_at >= DATE_SUB(NOW(), INTERVAL 14 DAY)");
+        AND status = 'closed' AND closed_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
     if ($recent_trades && $rt = $recent_trades->fetch_assoc()) {
         $rt_total = (int)$rt['total'];
         $rt_wins  = (int)$rt['wins'];
-        // If 5+ recent trades and win rate < 25%, pause this algo
-        if ($rt_total >= 5 && $rt_total > 0 && ($rt_wins / $rt_total) < 0.25) {
+        // If 3+ recent trades and win rate < 30%, pause this algo
+        if ($rt_total >= 3 && $rt_total > 0 && ($rt_wins / $rt_total) < 0.30) {
             return null;
         }
     }

@@ -1228,10 +1228,16 @@ function _gm_check_health($conn) {
     $CRIT_WIN_RATE  = 25;
     $WARN_CONSEC    = 5;
     $CRIT_CONSEC    = 10;
-    $WARN_STALE     = 3;   // days
+    $WARN_STALE     = 3;   // days (default)
     $CRIT_STALE     = 7;
     $WARN_AVG_RET   = -2;
     $CRIT_AVG_RET   = -5;
+
+    // Per-system stale overrides: selective systems legitimately go days without picks
+    $stale_overrides = array(
+        'edge'   => array('warn' => 5, 'crit' => 14),  // Edge Finder is very selective
+        'penny'  => array('warn' => 5, 'crit' => 10)   // Penny stocks are rare
+    );
 
     $alerts_created = 0;
     $health_snaps = 0;
@@ -1319,23 +1325,25 @@ function _gm_check_health($conn) {
             $alerts_created++;
         }
 
-        // Check staleness
+        // Check staleness (with per-system threshold overrides)
+        $sys_warn_stale = isset($stale_overrides[$sys]) ? $stale_overrides[$sys]['warn'] : $WARN_STALE;
+        $sys_crit_stale = isset($stale_overrides[$sys]) ? $stale_overrides[$sys]['crit'] : $CRIT_STALE;
         $last_pick = $s['last_pick_date'];
         if ($last_pick) {
             $days_since = (strtotime($today) - strtotime($last_pick)) / 86400;
-            if ($days_since >= $CRIT_STALE) {
+            if ($days_since >= $sys_crit_stale) {
                 $fail_reasons[] = 'No picks in ' . intval($days_since) . ' days';
                 _gm_create_alert($conn, $sys, 'stale_data', 'critical',
                     $sys . ': No new picks for ' . intval($days_since) . ' days',
                     'This system has not generated any new picks recently. Check data sources and cron jobs.',
-                    '', $days_since, $CRIT_STALE, isset($page_urls[$sys]) ? $page_urls[$sys] : '');
+                    '', $days_since, $sys_crit_stale, isset($page_urls[$sys]) ? $page_urls[$sys] : '');
                 $alerts_created++;
-            } elseif ($days_since >= $WARN_STALE) {
+            } elseif ($days_since >= $sys_warn_stale) {
                 $fail_reasons[] = 'No picks in ' . intval($days_since) . ' days';
                 _gm_create_alert($conn, $sys, 'stale_data', 'warning',
                     $sys . ': ' . intval($days_since) . ' days since last pick',
                     'Data may be going stale. Check refresh mechanisms.',
-                    '', $days_since, $WARN_STALE, isset($page_urls[$sys]) ? $page_urls[$sys] : '');
+                    '', $days_since, $sys_warn_stale, isset($page_urls[$sys]) ? $page_urls[$sys] : '');
                 $alerts_created++;
             }
         }

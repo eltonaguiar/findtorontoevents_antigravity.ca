@@ -102,7 +102,9 @@ function _source_label($source_table) {
 // ═══════════════════════════════════════════
 if ($action === 'consensus') {
     $days = isset($_GET['days']) ? max(1, min(90, (int)$_GET['days'])) : 14;
-    $min_consensus = isset($_GET['min_consensus']) ? max(1, (int)$_GET['min_consensus']) : 1;
+    // v2: Default min_consensus raised from 1 to 3 — single-algo picks were dragging
+    // win rate to 9.1%. Require at least 3 independent algorithms to agree.
+    $min_consensus = isset($_GET['min_consensus']) ? max(2, (int)$_GET['min_consensus']) : 3;
     $limit = isset($_GET['limit']) ? max(1, min(200, (int)$_GET['limit'])) : 100;
 
     // Check cache (30 min)
@@ -226,9 +228,33 @@ if ($action === 'consensus') {
     }
 
     // Compute consensus score per ticker
+    // v2: Added algorithm win rate floor — exclude picks from algorithms with < 25% WR
     $consensus_list = array();
     foreach ($by_ticker as $t => $data) {
-        $consensus_count = count($data['algos']); // distinct algorithm sources
+        // Pre-filter: remove picks from algorithms with known terrible win rates
+        $filtered_picks = array();
+        $filtered_algos = array();
+        $filtered_tables = array();
+        foreach ($data['picks'] as $p) {
+            $algo_key = $p['source_table'] . ':' . $p['source_algo'];
+            $static_wr = isset($algo_win_rates[$algo_key]) ? $algo_win_rates[$algo_key] : 50;
+            // Skip algorithms with proven bad performance (< 25% win rate)
+            // Only skip if we have actual data (not the default 50%)
+            if (isset($algo_win_rates[$algo_key]) && $static_wr < 25) continue;
+            $filtered_picks[] = $p;
+            if (!in_array($algo_key, $filtered_algos)) {
+                $filtered_algos[] = $algo_key;
+            }
+            if (!in_array($p['source_table'], $filtered_tables)) {
+                $filtered_tables[] = $p['source_table'];
+            }
+        }
+        // Update data with filtered picks
+        $data['picks'] = $filtered_picks;
+        $data['algos'] = $filtered_algos;
+        $data['tables'] = $filtered_tables;
+
+        $consensus_count = count($data['algos']); // distinct algorithm sources after filtering
         if ($consensus_count < $min_consensus) continue;
 
         // Weighted consensus score (uses exponential recency decay + rolling algo weights)
@@ -276,40 +302,49 @@ if ($action === 'consensus') {
         $current_return = ($avg_entry > 0 && $latest_price > 0)
             ? round(($latest_price - $avg_entry) / $avg_entry * 100, 2) : 0;
 
-        // ── Corrective scoring: penalize/boost based on real performance ──
+        // ── Corrective scoring v2: heavier penalties for losing picks ──
+        // Previous version was too lenient — 9.1% win rate resulted.
         $score_adjustments = array();
         $original_score = $weighted_score;
 
-        // Penalty 1: Momentum lag — losing picks with high consensus get penalized
-        if ($current_return < -3 && $consensus_count >= 5) {
-            $penalty = 0.7; // -30%
+        // Penalty 1: Momentum lag — losing picks get penalized aggressively
+        if ($current_return < -3 && $consensus_count >= 3) {
+            $penalty = 0.5; // -50% (was -30%)
             $weighted_score *= $penalty;
-            $score_adjustments[] = 'Momentum lag penalty (-30%): down ' . $current_return . '% despite ' . $consensus_count . ' algos';
-        } elseif ($current_return < -1 && $consensus_count >= 3) {
-            $penalty = 0.85; // -15%
+            $score_adjustments[] = 'Momentum lag penalty (-50%): down ' . $current_return . '% despite ' . $consensus_count . ' algos';
+        } elseif ($current_return < -1) {
+            $penalty = 0.75; // -25% (was -15%)
             $weighted_score *= $penalty;
-            $score_adjustments[] = 'Declining trend penalty (-15%): ' . $current_return . '% return';
+            $score_adjustments[] = 'Declining trend penalty (-25%): ' . $current_return . '% return';
         }
 
-        // Penalty 2: Falling knife — deep losses get heavy penalty
+        // Penalty 2: Falling knife — deep losses should be excluded
         if ($current_return < -5) {
-            $weighted_score *= 0.6;
-            $score_adjustments[] = 'Falling knife penalty (-40%): down ' . $current_return . '%';
+            $weighted_score *= 0.3; // -70% (was -40%) — nearly kill the score
+            $score_adjustments[] = 'Falling knife penalty (-70%): down ' . $current_return . '%';
         }
 
-        // Boost 1: Winning picks get momentum boost
+        // Penalty 3: Stale picks — picks older than 7 days lose confidence
+        $pick_age_for_penalty = ($data['latest_pick_date'] !== '') ? max(0, (int)((time() - strtotime($data['latest_pick_date'])) / 86400)) : 0;
+        if ($pick_age_for_penalty > 7) {
+            $stale_penalty = max(0.4, 1.0 - ($pick_age_for_penalty - 7) * 0.1);
+            $weighted_score *= $stale_penalty;
+            $score_adjustments[] = 'Stale pick penalty (-' . round((1 - $stale_penalty) * 100) . '%): ' . $pick_age_for_penalty . 'd old';
+        }
+
+        // Boost 1: Winning picks get momentum boost (only if actually winning)
         if ($current_return > 3) {
-            $weighted_score *= 1.2;
-            $score_adjustments[] = 'Winner momentum boost (+20%): up +' . $current_return . '%';
+            $weighted_score *= 1.15; // Reduced from 1.2
+            $score_adjustments[] = 'Winner momentum boost (+15%): up +' . $current_return . '%';
         } elseif ($current_return > 1) {
-            $weighted_score *= 1.1;
-            $score_adjustments[] = 'Positive trend boost (+10%): +' . $current_return . '%';
+            $weighted_score *= 1.08; // Reduced from 1.1
+            $score_adjustments[] = 'Positive trend boost (+8%): +' . $current_return . '%';
         }
 
-        // Penalty 3: No price data at all
+        // Penalty 4: No price data at all
         if ($latest_price <= 0) {
-            $weighted_score *= 0.5;
-            $score_adjustments[] = 'No price data penalty (-50%): ticker not in price database';
+            $weighted_score *= 0.3; // Increased from -50% to -70%
+            $score_adjustments[] = 'No price data penalty (-70%): ticker not in price database';
         }
 
         // Build source details
