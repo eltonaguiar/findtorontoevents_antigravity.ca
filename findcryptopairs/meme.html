@@ -2755,13 +2755,26 @@
       // Show timestamp
       var timeEl = document.getElementById('hot-timestamp');
       if (timeEl && data.timestamp) {
-        var scanTime = new Date(data.timestamp.replace(' ', 'T') + 'Z');
-        var ageMin = Math.floor((Date.now() - scanTime.getTime()) / 60000);
-        var timeStr = scanTime.toISOString().substring(11, 19) + ' UTC';
-        var ageStr = ageMin < 1 ? 'just now' : ageMin + ' min ago';
-        var color = ageMin < 5 ? '#22c55e' : ageMin < 15 ? '#f59e0b' : '#ef4444';
-        timeEl.innerHTML = '<span style="color:' + color + '">●</span> Scan: ' + timeStr + ' (' + ageStr + ')';
-        timeEl.style.display = 'block';
+        try {
+          // Parse timestamp - handle format "2026-02-13 21:15:30 UTC"
+          var ts = data.timestamp.replace(' UTC', '');
+          var scanTime = new Date(ts.replace(' ', 'T') + 'Z');
+          if (isNaN(scanTime.getTime())) {
+            // Fallback if parsing fails
+            timeEl.innerHTML = '<span style="color:#888">●</span> Scan: ' + data.timestamp;
+            timeEl.style.display = 'block';
+          } else {
+            var ageMin = Math.floor((Date.now() - scanTime.getTime()) / 60000);
+            var timeStr = scanTime.toISOString().substring(11, 19) + ' UTC';
+            var ageStr = ageMin < 1 ? 'just now' : ageMin + ' min ago';
+            var color = ageMin < 5 ? '#22c55e' : ageMin < 15 ? '#f59e0b' : '#ef4444';
+            timeEl.innerHTML = '<span style="color:' + color + '">●</span> Scan: ' + timeStr + ' (' + ageStr + ')';
+            timeEl.style.display = 'block';
+          }
+        } catch (e) {
+          timeEl.innerHTML = '<span style="color:#888">●</span> Scan: ' + data.timestamp;
+          timeEl.style.display = 'block';
+        }
       }
       
       // Show sections
