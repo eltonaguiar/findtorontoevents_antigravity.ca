@@ -209,7 +209,7 @@ function _mp_action_kraken_pairs()
 // ═══════════════════════════════════════════════════════════════════════
 function _mp_action_kraken_ranked()
 {
-    global $CACHE_DIR;
+    global $CACHE_DIR, $KRAKEN_MEMES;
     $start = microtime(true);
 
     // Check cache (45s TTL — fast enough for real-time)
