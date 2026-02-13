@@ -76,6 +76,12 @@ switch ($action) {
     case 'pulse':
         _mp_action_pulse();
         break;
+    case 'kraken_ranked':
+        _mp_action_kraken_ranked();
+        break;
+    case 'kraken_pairs':
+        _mp_action_kraken_pairs();
+        break;
     case 'kraken_scan':
         _mp_action_kraken_scan();
         break;
@@ -84,6 +90,166 @@ switch ($action) {
         break;
     default:
         echo json_encode(array('ok' => false, 'error' => 'Unknown action: ' . $action));
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  KRAKEN PAIRS — return the canonical list of known Kraken meme pairs
+//  Used by other files (scanner, frontend) as the single source of truth
+// ═══════════════════════════════════════════════════════════════════════
+function _mp_action_kraken_pairs() {
+    global $KRAKEN_MEMES;
+    $pairs = array();
+    foreach ($KRAKEN_MEMES as $key => $info) {
+        $pairs[] = array(
+            'symbol' => $info[0],
+            'key' => $key,
+            'usdt_pair' => $key . '_USDT',
+            'kraken_pairs_try' => $info[1],
+            'coingecko_id' => $info[2]
+        );
+    }
+    echo json_encode(array(
+        'ok' => true,
+        'count' => count($pairs),
+        'pairs' => $pairs
+    ));
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  KRAKEN RANKED — ALL Kraken meme coins ranked 1-10, always returns full list
+//  This is the primary endpoint for the "What should I buy right now?" view
+//
+//  Score model (1-10 scale):
+//    The rating combines 5 real-time factors from Kraken + CoinGecko:
+//    1. Momentum (35%) — 24h price change sweet spot (3-15% ideal)
+//    2. Volume (25%) — 24h USD volume on Kraken (liquidity)
+//    3. Social Buzz (15%) — CoinGecko trending bonus
+//    4. Entry Position (15%) — Where price sits in daily range (lower = better)
+//    5. Spread (10%) — Bid/ask spread tightness (execution quality)
+//
+//  Urgency zones:
+//    8-10: Strong buy — multiple factors aligned, act now
+//    5-7:  Warming up — some momentum, watch closely
+//    1-4:  Quiet — no signal, be patient
+// ═══════════════════════════════════════════════════════════════════════
+function _mp_action_kraken_ranked() {
+    global $CACHE_DIR;
+    $start = microtime(true);
+
+    // Check cache (45s TTL — fast enough for real-time)
+    $cache_file = $CACHE_DIR . '/mp_kraken_ranked.json';
+    $force = isset($_GET['force']) && $_GET['force'] === '1';
+    if (!$force && file_exists($cache_file)) {
+        $age = time() - filemtime($cache_file);
+        if ($age < 45) {
+            $cached = json_decode(file_get_contents($cache_file), true);
+            if ($cached) {
+                $cached['cached'] = true;
+                $cached['cache_age_s'] = $age;
+                echo json_encode($cached);
+                return;
+            }
+        }
+    }
+
+    // 1. Scan all Kraken meme coins (batch ticker)
+    $kraken_results = _mp_scan_kraken_memes();
+
+    // 2. Fetch CoinGecko trending for social buzz bonus
+    $cg_trending = _mp_fetch_cg_trending();
+
+    // 3. Fetch CoinGecko meme gainers for cross-reference
+    $cg_gainers = _mp_fetch_cg_meme_gainers();
+
+    // 4. Score and rank ALL coins
+    $top_pick_data = _mp_compute_top_pick($kraken_results, $cg_trending, $cg_gainers);
+    $all_scored = isset($top_pick_data['all_scored']) ? $top_pick_data['all_scored'] : array();
+
+    // 5. Convert pulse_score (0-100) to rating_10 (1-10) for each coin
+    $rankings = array();
+    for ($i = 0; $i < count($all_scored); $i++) {
+        $coin = $all_scored[$i];
+        $ps = intval($coin['pulse_score']);
+        $r10 = _mp_score_to_rating($ps);
+        $coin['rating_10'] = $r10;
+        $coin['rating_label'] = _mp_rating_label($r10);
+        $coin['rating_zone'] = _mp_rating_zone($r10);
+        $coin['rank'] = $i + 1;
+        $rankings[] = $coin;
+    }
+
+    // 6. Market mood
+    $mood = _mp_market_mood($kraken_results);
+
+    $latency_ms = round((microtime(true) - $start) * 1000, 1);
+
+    $result = array(
+        'ok' => true,
+        'timestamp' => gmdate('Y-m-d H:i:s') . ' UTC',
+        'latency_ms' => $latency_ms,
+        'cached' => false,
+        'total_coins' => count($rankings),
+        'mood' => $mood,
+        'rankings' => $rankings,
+        'model' => array(
+            'name' => 'Meme Buy Rating',
+            'version' => '3.0',
+            'scale' => '1-10',
+            'description' => 'Real-time buy rating for Kraken meme coins. Combines momentum, volume, social buzz, entry position, and spread quality. Higher = stronger buy signal.',
+            'factors' => array(
+                array('name' => 'Momentum', 'weight' => '35%', 'max_pts' => 35, 'description' => '24h price change. Sweet spot is +3% to +15% (gaining but not overextended). Over +25% = FOMO danger zone.'),
+                array('name' => 'Volume', 'weight' => '25%', 'max_pts' => 25, 'description' => '24h USD volume on Kraken. Higher volume = better liquidity for entry and exit. $500K+ is ideal.'),
+                array('name' => 'Social Buzz', 'weight' => '15%', 'max_pts' => 15, 'description' => 'Bonus if coin is trending on CoinGecko. Trending = social media buzz driving interest.'),
+                array('name' => 'Entry Position', 'weight' => '15%', 'max_pts' => 15, 'description' => 'Where price sits in the 24h range. Near the low = better entry. Near the high = chasing.'),
+                array('name' => 'Spread', 'weight' => '10%', 'max_pts' => 10, 'description' => 'Bid/ask spread on Kraken. Tighter spread = less slippage when you buy/sell.')
+            ),
+            'zones' => array(
+                array('range' => '8-10', 'label' => 'Strong Buy', 'color' => '#22c55e', 'description' => 'Multiple factors aligned. Momentum, volume, and conditions favor a buy.'),
+                array('range' => '5-7', 'label' => 'Warming Up', 'color' => '#f59e0b', 'description' => 'Some momentum building. Watch closely but conditions are not ideal yet.'),
+                array('range' => '1-4', 'label' => 'Quiet', 'color' => '#6b7280', 'description' => 'No clear signal. Be patient and wait for better conditions.')
+            ),
+            'data_sources' => array('Kraken Ticker API (real-time)', 'CoinGecko Trending API', 'CoinGecko Meme Category API'),
+            'disclaimer' => 'This is a momentum indicator, not financial advice. Meme coins can lose 50%+ in minutes. Never risk more than 1-2% of your portfolio on any single trade.'
+        )
+    );
+
+    @file_put_contents($cache_file, json_encode($result));
+    echo json_encode($result);
+}
+
+/**
+ * Convert 0-100 pulse score to 1-10 rating.
+ * Distribution designed so most coins cluster at 2-5 and only exceptional coins hit 8+.
+ */
+function _mp_score_to_rating($score) {
+    if ($score >= 90) return 10;
+    if ($score >= 80) return 9;
+    if ($score >= 70) return 8;
+    if ($score >= 60) return 7;
+    if ($score >= 50) return 6;
+    if ($score >= 40) return 5;
+    if ($score >= 30) return 4;
+    if ($score >= 20) return 3;
+    if ($score >= 10) return 2;
+    return 1;
+}
+
+function _mp_rating_label($r) {
+    if ($r >= 9) return 'Exceptional';
+    if ($r >= 8) return 'Strong Buy';
+    if ($r >= 7) return 'Buy';
+    if ($r >= 6) return 'Lean Buy';
+    if ($r >= 5) return 'Warming Up';
+    if ($r >= 4) return 'Mild Activity';
+    if ($r >= 3) return 'Quiet';
+    if ($r >= 2) return 'Very Quiet';
+    return 'Dead';
+}
+
+function _mp_rating_zone($r) {
+    if ($r >= 8) return 'strong_buy';
+    if ($r >= 5) return 'warming_up';
+    return 'quiet';
 }
 
 // ═══════════════════════════════════════════════════════════════════════

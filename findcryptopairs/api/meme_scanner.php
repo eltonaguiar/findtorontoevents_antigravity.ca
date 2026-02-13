@@ -362,15 +362,18 @@ function _mc_action_scan($conn) {
         _mc_discord_alert($winners, $scan_id, count($scored), $elapsed);
     }
 
-    // Save ALL analyzed to scan_log
+    // Save ALL analyzed to scan_log (with Kraken eligibility)
+    $kraken_lookup = _mc_get_kraken_lookup();
     foreach ($scored as $s) {
         $esc_pair_log    = $conn->real_escape_string($s['pair']);
         $esc_scan_log    = $conn->real_escape_string($scan_id);
         $esc_factors_log = $conn->real_escape_string(json_encode($s['factors']));
         $esc_verdict_log = $conn->real_escape_string($s['verdict']);
         $esc_tier_log    = $conn->real_escape_string($s['tier']);
-        $sql_log = "INSERT INTO mc_scan_log (scan_id, pair, price, score, factors_json, verdict, chg_24h, vol_usd_24h, tier, created_at)
-                    VALUES ('$esc_scan_log', '$esc_pair_log', " . floatval($s['price']) . ", " . intval($s['score']) . ", '$esc_factors_log', '$esc_verdict_log', " . floatval($s['chg_24h']) . ", " . floatval($s['vol_usd']) . ", '$esc_tier_log', NOW())";
+        $base_sym = strtoupper(str_replace('_USDT', '', $s['pair']));
+        $is_on_kraken = isset($kraken_lookup[$base_sym]) ? 1 : 0;
+        $sql_log = "INSERT INTO mc_scan_log (scan_id, pair, price, score, factors_json, verdict, chg_24h, vol_usd_24h, tier, on_kraken, created_at)
+                    VALUES ('$esc_scan_log', '$esc_pair_log', " . floatval($s['price']) . ", " . intval($s['score']) . ", '$esc_factors_log', '$esc_verdict_log', " . floatval($s['chg_24h']) . ", " . floatval($s['vol_usd']) . ", '$esc_tier_log', $is_on_kraken, NOW())";
         $conn->query($sql_log);
     }
 
@@ -1445,6 +1448,27 @@ function _mc_api($endpoint) {
     return json_decode($resp, true);
 }
 
+/**
+ * Get a lookup table of symbols known to be on Kraken.
+ * Reads from the $KRAKEN_MEMES list in meme_market_pulse.php (canonical source).
+ * Returns array('PEPE' => true, 'DOGE' => true, ...) for fast checking.
+ */
+function _mc_get_kraken_lookup() {
+    // Canonical Kraken meme list — kept in sync with meme_market_pulse.php $KRAKEN_MEMES
+    $known = array(
+        'DOGE', 'SHIB', 'PEPE', 'FLOKI', 'BONK', 'WIF', 'TURBO', 'NEIRO',
+        'MEME', 'TRUMP', 'FARTCOIN', 'PNUT', 'PENGU', 'POPCAT', 'BRETT',
+        'MOG', 'BOME', 'ACT', 'SPX', 'PONKE', 'FWOG', 'SLERF', 'AI16Z',
+        'VIRTUAL', 'MYRO', 'GOAT', 'MOODENG', 'GIGA', 'DEGEN', 'BABYDOGE',
+        'WOJAK', 'SATS', 'COQ', 'DOG', 'CHILLGUY'
+    );
+    $lookup = array();
+    for ($i = 0; $i < count($known); $i++) {
+        $lookup[$known[$i]] = true;
+    }
+    return $lookup;
+}
+
 function _mc_ends_with($str, $suffix) {
     return substr($str, -strlen($suffix)) === $suffix;
 }
@@ -2074,10 +2098,14 @@ function _mc_ensure_schema($conn) {
         chg_24h DOUBLE DEFAULT 0,
         vol_usd_24h DOUBLE DEFAULT 0,
         tier VARCHAR(10) DEFAULT '',
+        on_kraken TINYINT NOT NULL DEFAULT 0,
         created_at DATETIME NOT NULL,
         INDEX idx_mc_log_scan (scan_id),
         INDEX idx_mc_log_created (created_at)
     ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+    // Add on_kraken column if it doesn't exist (for existing tables)
+    @$conn->query("ALTER TABLE mc_scan_log ADD COLUMN on_kraken TINYINT NOT NULL DEFAULT 0");
 
     $conn->query("CREATE TABLE IF NOT EXISTS mc_daily_snapshots (
         id INT AUTO_INCREMENT PRIMARY KEY,
