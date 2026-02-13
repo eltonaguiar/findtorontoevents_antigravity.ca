@@ -226,6 +226,16 @@ function _mp_action_kraken_ranked()
             if ($cached) {
                 $cached['cached'] = true;
                 $cached['cache_age_s'] = $age;
+                // Ensure scan_stats are present even in cached data
+                if (!isset($cached['scan_stats']) || !isset($cached['scan_stats']['configured']) || $cached['scan_stats']['configured'] == 0) {
+                    $cached['scan_stats'] = array(
+                        'configured' => count($KRAKEN_MEMES),
+                        'matched_on_kraken' => isset($cached['scan_stats']['matched_on_kraken']) ? $cached['scan_stats']['matched_on_kraken'] : count($cached['rankings']),
+                        'tickers_fetched' => isset($cached['scan_stats']['tickers_fetched']) ? $cached['scan_stats']['tickers_fetched'] : count($cached['rankings']),
+                        'successful' => isset($cached['scan_stats']['successful']) ? $cached['scan_stats']['successful'] : count($cached['rankings']),
+                        'coverage_pct' => round((count($cached['rankings']) / count($KRAKEN_MEMES)) * 100, 1)
+                    );
+                }
                 echo json_encode($cached);
                 return;
             }
