@@ -292,26 +292,58 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
     <span style="margin-left:auto;font-size:11px;color:var(--dim)" id="live-status"></span>
   </div>
 
-  <!-- KRAKEN BUY NOW SECTION -->
-  <div id="kraken-buy-now-section" style="margin-bottom:24px">
-    <div class="section-title" style="color:#f59e0b">
-      🎯 Kraken BUY NOW Recommendation 
+  <!-- MARKET PULSE — Real-time Kraken Meme Scanner -->
+  <div id="market-pulse-section" style="margin-bottom:24px">
+    <div class="section-title" style="color:#f59e0b;margin-bottom:12px">
+      Market Pulse &mdash; Kraken Meme Coins
       <span class="badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)">REAL-TIME</span>
+      <i class="info-tip">i<span class="tip-text">Scans 35 meme coins directly on Kraken for gainers, cross-references CoinGecko trending, and picks the #1 buy. All data is live from Kraken's public API.</span></i>
     </div>
-    <div id="kraken-recommendation" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
-      <div class="loading">Loading Kraken analysis...</div>
+
+    <!-- Market Mood Bar -->
+    <div id="pulse-mood-bar" style="display:flex;align-items:center;gap:10px;padding:10px 16px;margin-bottom:12px;border-radius:var(--radius);font-size:12px;border:1px solid var(--border);background:var(--card)">
+      <span style="color:var(--dim)">Loading market mood...</span>
     </div>
-    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-      <button onclick="refreshKrakenBuyNow()" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600">
-        🔄 Refresh Recommendation
+
+    <!-- #1 TOP PICK CARD -->
+    <div id="pulse-top-pick" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px">
+      <div class="loading">Scanning Kraken meme coins...</div>
+    </div>
+
+    <!-- Controls -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <button onclick="loadMarketPulse(true)" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;transition:all 0.15s" onmouseover="this.style.background='rgba(245,158,11,0.25)'" onmouseout="this.style.background='rgba(245,158,11,0.15)'">
+        Refresh Now
       </button>
-      <button onclick="toggleKrakenLiveMode()" id="kraken-live-toggle" style="background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border);padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer">
-        ⏱️ Enable Live Updates (30s)
+      <button onclick="togglePulseLiveMode()" id="pulse-live-toggle" style="background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border);padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer;transition:all 0.15s">
+        Enable Live Updates (60s)
       </button>
-      <span style="font-size:11px;color:var(--dim);align-self:center" id="kraken-last-updated"></span>
+      <span style="font-size:11px;color:var(--dim);align-self:center" id="pulse-last-updated"></span>
     </div>
-    <div style="margin-top:12px;padding:12px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-size:12px;color:#fca5a5">
-      <strong>⚠️ SAFETY WARNING:</strong> Meme coins can lose 50%+ in minutes. Never risk more than 1-2% of your portfolio. Prices shown are from Kraken and may differ from other exchanges. Always verify current price before buying.
+
+    <!-- Kraken Meme Gainers Grid -->
+    <div style="margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:8px">
+        Kraken Meme Gainers <span id="pulse-gainer-count" style="font-size:11px;color:var(--dim);font-weight:400"></span>
+      </div>
+      <div id="pulse-gainers-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+
+    <!-- CoinGecko Trending -->
+    <div style="margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:8px">
+        Trending on CoinGecko
+        <i class="info-tip">i<span class="tip-text">Coins trending on CoinGecko right now. Trending = social buzz. Coins marked with a flag are available on Kraken for Canadian traders.</span></i>
+      </div>
+      <div id="pulse-trending" style="display:flex;gap:8px;flex-wrap:wrap">
+        <span style="color:var(--dim);font-size:12px">Loading...</span>
+      </div>
+    </div>
+
+    <div style="padding:10px 12px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-size:11px;color:#fca5a5">
+      <strong>WARNING:</strong> Meme coins can lose 50%+ in minutes. Never risk more than 1-2% of your portfolio. Prices are from Kraken's public API. Always verify before buying.
     </div>
   </div>
 
@@ -2204,173 +2236,330 @@ setInterval(function() {
 }, 90000);
 
 // ═══════════════════════════════════════════════════════════════════
-//  KRAKEN BUY NOW RECOMMENDATION SYSTEM
+//  MARKET PULSE — Real-time Kraken Meme Scanner
+//  Scans 35 meme coins on Kraken, cross-references CoinGecko trending,
+//  produces #1 Top Pick with TP/SL, shows all gainers in a grid.
 // ═══════════════════════════════════════════════════════════════════
-var krakenLiveMode = false;
-var krakenLiveInterval = null;
-var KRAKEN_API = '/findcryptopairs/api/kraken_meme_scanner.php';
+var PULSE_API = '/findcryptopairs/api/meme_market_pulse.php';
+var pulseLiveMode = false;
+var pulseLiveInterval = null;
 
-function loadKrakenBuyNow() {
-    var container = document.getElementById('kraken-recommendation');
-    container.innerHTML = '<div class="loading">Analyzing Kraken markets...</div>';
-    
+function loadMarketPulse(force) {
+    var pickEl = document.getElementById('pulse-top-pick');
+    var moodEl = document.getElementById('pulse-mood-bar');
+    if (!force) {
+        pickEl.innerHTML = '<div class="loading">Scanning Kraken meme coins...</div>';
+    }
+
+    var url = PULSE_API + '?action=pulse' + (force ? '&force=1' : '') + '&_=' + Date.now();
     var x = new XMLHttpRequest();
-    x.open('GET', KRAKEN_API + '?action=buynow&_=' + Date.now());
+    x.open('GET', url);
     x.onload = function() {
         try {
             var r = JSON.parse(x.responseText);
-            renderKrakenRecommendation(r);
+            if (!r.ok) {
+                pickEl.innerHTML = '<div style="color:var(--red)">Error: ' + (r.error || 'Unknown') + '</div>';
+                return;
+            }
+            renderPulseMood(r.mood);
+            renderPulseTopPick(r.top_pick);
+            renderPulseGainers(r.kraken_gainers, r.kraken_total);
+            renderPulseTrending(r.trending, r.cg_gainers);
+            var ts = document.getElementById('pulse-last-updated');
+            if (ts) ts.textContent = 'Updated: ' + new Date().toLocaleTimeString() + (r.cached ? ' (cached ' + r.cache_age_s + 's)' : ' (live)');
         } catch(e) {
-            container.innerHTML = '<div style="color:var(--red)">Error loading Kraken data</div>';
+            pickEl.innerHTML = '<div style="color:var(--red)">Error parsing response</div>';
         }
     };
     x.onerror = function() {
-        container.innerHTML = '<div style="color:var(--red)">Network error</div>';
+        pickEl.innerHTML = '<div style="color:var(--red)">Network error — check connection</div>';
     };
     x.send();
 }
 
-function renderKrakenRecommendation(data) {
-    var container = document.getElementById('kraken-recommendation');
-    var timestamp = document.getElementById('kraken-last-updated');
-    
-    timestamp.textContent = 'Updated: ' + new Date().toLocaleTimeString();
-    
-    if (!data.ok) {
-        container.innerHTML = '<div style="color:var(--red)">' + (data.error || 'Unknown error') + '</div>';
-        return;
-    }
-    
-    if (!data.has_recommendation) {
-        container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--dim)">' +
-            '<div style="font-size:40px;margin-bottom:12px">⚠️</div>' +
-            '<div style="font-size:16px;color:#fff;margin-bottom:8px">No BUY NOW Recommendation</div>' +
-            '<div>' + data.message + '</div>' +
+function renderPulseMood(mood) {
+    var el = document.getElementById('pulse-mood-bar');
+    if (!el || !mood) return;
+
+    var moodConfig = {
+        'euphoric':  {icon: '&#128293;', color: '#22c55e', bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.3)'},
+        'bullish':   {icon: '&#128994;', color: '#86efac', bg: 'rgba(34,197,94,0.06)', border: 'rgba(34,197,94,0.25)'},
+        'mild_bull': {icon: '&#128154;', color: '#6ee7b7', bg: 'rgba(34,197,94,0.04)', border: 'rgba(34,197,94,0.2)'},
+        'neutral':   {icon: '&#128992;', color: '#fcd34d', bg: 'rgba(245,158,11,0.06)', border: 'rgba(245,158,11,0.25)'},
+        'mild_bear': {icon: '&#128308;', color: '#fca5a5', bg: 'rgba(239,68,68,0.04)', border: 'rgba(239,68,68,0.2)'},
+        'bearish':   {icon: '&#128308;', color: '#ef4444', bg: 'rgba(239,68,68,0.06)', border: 'rgba(239,68,68,0.25)'},
+        'panic':     {icon: '&#128680;', color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)'}
+    };
+    var cfg = moodConfig[mood.mood] || moodConfig['neutral'];
+
+    el.style.background = cfg.bg;
+    el.style.borderColor = cfg.border;
+    el.innerHTML = '<span style="font-size:16px">' + cfg.icon + '</span>' +
+        '<span style="color:' + cfg.color + ';font-weight:700;font-size:13px">' + mood.label + '</span>' +
+        '<span style="color:var(--dim);font-size:12px">' +
+        '<span style="color:var(--green)">' + mood.gainers + ' gaining</span> / ' +
+        '<span style="color:var(--red)">' + mood.losers + ' dropping</span> / ' +
+        mood.flat + ' flat' +
+        '</span>' +
+        '<span style="margin-left:auto;font-size:11px;color:var(--dim)">Avg: ' +
+        '<span style="color:' + (mood.avg_chg >= 0 ? 'var(--green)' : 'var(--red)') + '">' + (mood.avg_chg >= 0 ? '+' : '') + mood.avg_chg + '%</span>' +
+        ' | Vol: $' + formatLargeNum(mood.total_vol) + ' | ' + mood.coins_scanned + ' coins</span>';
+}
+
+function renderPulseTopPick(pick) {
+    var el = document.getElementById('pulse-top-pick');
+    if (!el) return;
+
+    if (!pick || !pick.available) {
+        el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--dim)">' +
+            '<div style="font-size:36px;margin-bottom:8px">&#128056;</div>' +
+            '<div style="font-size:16px;color:#fff;margin-bottom:6px">No Strong Buy Right Now</div>' +
+            '<div style="font-size:12px">' + (pick ? pick.reason : 'No Kraken meme data') + '. Check the gainers below for emerging setups.</div>' +
             '</div>';
         return;
     }
-    
-    var pick = data.pick;
-    var confidenceColor = pick.confidence === 'EXTREMELY HIGH' ? '#22c55e' : (pick.confidence === 'HIGH' ? '#f59e0b' : '#888');
-    
+
+    var priceDecimals = pick.price >= 1 ? 4 : pick.price >= 0.01 ? 6 : pick.price >= 0.0001 ? 8 : 10;
+    var tpDecimals = pick.tp_price >= 1 ? 4 : pick.tp_price >= 0.01 ? 6 : pick.tp_price >= 0.0001 ? 8 : 10;
+    var slDecimals = pick.sl_price >= 1 ? 4 : pick.sl_price >= 0.01 ? 6 : pick.sl_price >= 0.0001 ? 8 : 10;
+
+    var confColors = {'STRONG': '#22c55e', 'BUY': '#a78bfa', 'LEAN': '#f59e0b', 'SKIP': '#888'};
+    var confColor = confColors[pick.confidence] || '#888';
+    var confBgs = {'STRONG': 'rgba(34,197,94,0.1)', 'BUY': 'rgba(167,139,250,0.1)', 'LEAN': 'rgba(245,158,11,0.1)', 'SKIP': 'rgba(255,255,255,0.03)'};
+    var confBg = confBgs[pick.confidence] || 'rgba(255,255,255,0.03)';
+
     var html = '<div style="position:relative">';
-    
-    // Top pick badge
-    html += '<div style="position:absolute;top:-8px;right:-8px;background:linear-gradient(135deg,#e879f9,#06b6d4);color:#fff;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;box-shadow:0 2px 8px rgba(232,121,249,0.4)">TOP PICK</div>';
-    
+
+    // TOP PICK badge
+    if (pick.confidence === 'STRONG' || pick.confidence === 'BUY') {
+        html += '<div style="position:absolute;top:-8px;right:-8px;background:linear-gradient(135deg,#e879f9,#06b6d4);color:#fff;padding:5px 12px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;box-shadow:0 2px 8px rgba(232,121,249,0.4)">#1 TOP PICK</div>';
+    }
+
     // Header
-    html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">';
-    html += '<div style="font-size:24px;font-weight:700;color:#fff">' + pick.name + '</div>';
-    html += '<span class="badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)">' + pick.rating + '</span>';
-    html += '<span class="badge" style="background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3)">Score: ' + pick.score + '/100</span>';
+    html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">';
+    html += '<div style="font-size:22px;font-weight:700;color:#fff">' + pick.symbol + '/USD</div>';
+    html += '<span style="font-size:11px;padding:2px 8px;border-radius:4px;font-weight:700;background:' + confBg + ';color:' + confColor + ';border:1px solid ' + confColor + '40;letter-spacing:0.5px">' + pick.confidence + ' BUY</span>';
+    html += '<span style="font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(232,121,249,0.15);color:#e879f9;border:1px solid rgba(232,121,249,0.3);font-weight:700">Score: ' + pick.pulse_score + '/100</span>';
+    if (pick.is_trending) {
+        html += '<span style="font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(6,182,212,0.15);color:#06b6d4;border:1px solid rgba(6,182,212,0.3);font-weight:700">TRENDING</span>';
+    }
     html += '</div>';
-    
-    // Price row
-    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px">';
-    html += '<div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;text-align:center">';
-    html += '<div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px">Current Price</div>';
-    html += '<div style="font-size:20px;font-weight:700;color:#fff">$' + pick.price_formatted + '</div>';
+
+    // Price grid
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px">';
+    html += '<div style="background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;text-align:center">';
+    html += '<div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px">Kraken Price</div>';
+    html += '<div style="font-size:18px;font-weight:700;color:#fff">$' + pick.price.toFixed(priceDecimals) + '</div>';
+    html += '<div style="font-size:11px;color:' + (pick.chg_24h >= 0 ? 'var(--green)' : 'var(--red)') + '">' + (pick.chg_24h >= 0 ? '+' : '') + pick.chg_24h + '% (24h)</div>';
     html += '</div>';
-    html += '<div style="background:rgba(34,197,94,0.08);padding:12px;border-radius:8px;text-align:center;border:1px solid rgba(34,197,94,0.2)">';
-    html += '<div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px">Target Price</div>';
-    html += '<div style="font-size:20px;font-weight:700;color:var(--green)">$' + pick.target_price_formatted + '</div>';
-    html += '<div style="font-size:11px;color:var(--green)">+' + pick.target_pct + '%</div>';
+    html += '<div style="background:rgba(34,197,94,0.06);padding:10px;border-radius:8px;text-align:center;border:1px solid rgba(34,197,94,0.15)">';
+    html += '<div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px">Take Profit</div>';
+    html += '<div style="font-size:18px;font-weight:700;color:var(--green)">$' + pick.tp_price.toFixed(tpDecimals) + '</div>';
+    html += '<div style="font-size:11px;color:var(--green)">+' + pick.tp_pct + '%</div>';
     html += '</div>';
-    html += '<div style="background:rgba(239,68,68,0.08);padding:12px;border-radius:8px;text-align:center;border:1px solid rgba(239,68,68,0.2)">';
-    html += '<div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px">Stop Loss</div>';
-    html += '<div style="font-size:20px;font-weight:700;color:var(--red)">$' + pick.stop_price_formatted + '</div>';
-    html += '<div style="font-size:11px;color:var(--red)">-' + pick.stop_pct + '%</div>';
+    html += '<div style="background:rgba(239,68,68,0.06);padding:10px;border-radius:8px;text-align:center;border:1px solid rgba(239,68,68,0.15)">';
+    html += '<div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px">Stop Loss</div>';
+    html += '<div style="font-size:18px;font-weight:700;color:var(--red)">$' + pick.sl_price.toFixed(slDecimals) + '</div>';
+    html += '<div style="font-size:11px;color:var(--red)">-' + pick.sl_pct + '%</div>';
+    html += '</div>';
+    html += '<div style="background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;text-align:center">';
+    html += '<div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px">R:R Ratio</div>';
+    html += '<div style="font-size:18px;font-weight:700;color:var(--cyan)">' + pick.rr_ratio + ':1</div>';
+    html += '<div style="font-size:11px;color:var(--dim)">Risk/Reward</div>';
+    html += '</div>';
+
+    // Extra stats
+    html += '<div style="background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;text-align:center">';
+    html += '<div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px">Volume</div>';
+    html += '<div style="font-size:18px;font-weight:700;color:#fff">$' + formatLargeNum(pick.vol_24h_usd) + '</div>';
+    html += '<div style="font-size:11px;color:var(--dim)">' + (pick.trades_24h ? pick.trades_24h.toLocaleString() + ' trades' : '24h') + '</div>';
+    html += '</div>';
+    html += '<div style="background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;text-align:center">';
+    html += '<div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px">Spread</div>';
+    html += '<div style="font-size:18px;font-weight:700;color:#fff">' + pick.spread_pct + '%</div>';
+    html += '<div style="font-size:11px;color:var(--dim)">Bid/Ask</div>';
     html += '</div>';
     html += '</div>';
-    
-    // Stats row
-    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:16px;font-size:12px">';
-    html += '<div><span style="color:var(--dim)">1h:</span> <span style="color:' + (pick.change_1h >= 0 ? 'var(--green)' : 'var(--red)') + '">' + (pick.change_1h >= 0 ? '+' : '') + pick.change_1h + '%</span></div>';
-    html += '<div><span style="color:var(--dim)">24h:</span> <span style="color:' + (pick.change_24h >= 0 ? 'var(--green)' : 'var(--red)') + '">' + (pick.change_24h >= 0 ? '+' : '') + pick.change_24h + '%</span></div>';
-    html += '<div><span style="color:var(--dim)">RSI:</span> ' + pick.rsi + '</div>';
-    html += '<div><span style="color:var(--dim)">Safety:</span> ' + pick.safety_score + '/10</div>';
-    html += '</div>';
-    
-    // Rationale
-    html += '<div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;margin-bottom:16px;font-size:13px;line-height:1.6">';
-    html += '<strong style="color:#fff">Why this signal?</strong><br>';
-    html += '<span style="color:var(--dim)">' + pick.rationale + '</span>';
-    html += '</div>';
-    
-    // Confidence and position size
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:16px">';
-    html += '<div><span style="color:var(--dim)">Confidence:</span> <span style="color:' + confidenceColor + ';font-weight:700">' + pick.confidence + '</span></div>';
-    html += '<div><span style="color:var(--dim)">Position Size:</span> <strong style="color:#fff">' + pick.position_size + '</strong></div>';
-    html += '<div><span style="color:var(--dim)">Time Horizon:</span> <strong style="color:#fff">' + pick.time_horizon + '</strong></div>';
-    html += '</div>';
-    
-    // Actions
-    html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
-    html += '<a href="https://pro.kraken.com/app/trade/' + pick.pair.replace('USD', '_USD') + '" target="_blank" style="flex:1;min-width:140px;text-align:center;padding:12px 20px;background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(245,158,11,0.1));color:#f59e0b;border:1px solid rgba(245,158,11,0.4);border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;transition:all 0.2s" onmouseover="this.style.transform=\'scale(1.02)\'" onmouseout="this.style.transform=\'scale(1)\'">🚀 Trade on Kraken</a>';
-    html += '<button onclick="verifyKrakenPrice(\'' + pick.pair + '\', ' + pick.price + ')" style="flex:1;min-width:140px;padding:12px 20px;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-weight:600;font-size:14px">🔍 Verify Price</button>';
-    html += '</div>';
-    
-    html += '</div>';
-    
-    // Alternatives
-    if (data.alternatives && data.alternatives.length > 0) {
-        html += '<div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">';
-        html += '<div style="font-size:12px;color:var(--dim);margin-bottom:8px">Alternative picks (lower confidence):</div>';
-        html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
-        for (var i = 0; i < data.alternatives.length; i++) {
-            var alt = data.alternatives[i];
-            html += '<div style="background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:6px;font-size:12px">';
-            html += '<strong>' + alt.name + '</strong> (' + alt.score + '/100)';
+
+    // Score breakdown
+    if (pick.scores) {
+        var sc = pick.scores;
+        html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">';
+        var scoreItems = [
+            {name: 'Momentum', val: sc.momentum, max: 35, color: sc.momentum >= 25 ? 'var(--green)' : sc.momentum >= 15 ? 'var(--gold)' : 'var(--red)'},
+            {name: 'Volume', val: sc.volume, max: 25, color: sc.volume >= 18 ? 'var(--green)' : sc.volume >= 10 ? 'var(--gold)' : 'var(--red)'},
+            {name: 'Trending', val: sc.trending, max: 15, color: sc.trending > 0 ? 'var(--cyan)' : 'var(--dim)'},
+            {name: 'Entry Pos', val: sc.entry_position, max: 15, color: sc.entry_position >= 10 ? 'var(--green)' : sc.entry_position >= 5 ? 'var(--gold)' : 'var(--red)'},
+            {name: 'Spread', val: sc.spread, max: 10, color: sc.spread >= 6 ? 'var(--green)' : 'var(--gold)'}
+        ];
+        for (var si = 0; si < scoreItems.length; si++) {
+            var s = scoreItems[si];
+            html += '<div style="flex:1;min-width:80px;background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:6px;text-align:center;font-size:11px">';
+            html += '<div style="color:var(--dim);font-size:9px;text-transform:uppercase;letter-spacing:0.5px">' + s.name + '</div>';
+            html += '<div style="font-weight:700;color:' + s.color + '">' + s.val + '/' + s.max + '</div>';
             html += '</div>';
         }
-        html += '</div></div>';
+        html += '</div>';
     }
-    
-    container.innerHTML = html;
+
+    // Reasons
+    if (pick.reasons && pick.reasons.length > 0) {
+        html += '<div style="background:rgba(255,255,255,0.03);padding:10px 12px;border-radius:8px;margin-bottom:14px;font-size:12px;line-height:1.7">';
+        html += '<strong style="color:#fff;font-size:11px;text-transform:uppercase;letter-spacing:0.5px">Why this pick?</strong><br>';
+        for (var ri = 0; ri < pick.reasons.length; ri++) {
+            html += '<span style="color:var(--dim)">&bull; ' + pick.reasons[ri] + '</span><br>';
+        }
+        html += '</div>';
+    }
+
+    // Trade actions
+    var baseSym = pick.symbol.toLowerCase();
+    html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+    html += '<a href="https://pro.kraken.com/app/trade/' + baseSym + '-usd" target="_blank" style="flex:1;min-width:140px;text-align:center;padding:10px 16px;background:linear-gradient(135deg,rgba(114,66,200,0.25),rgba(114,66,200,0.15));color:#9b7cdb;border:1px solid rgba(114,66,200,0.4);border-radius:8px;text-decoration:none;font-weight:700;font-size:13px;transition:all 0.15s" onmouseover="this.style.background=\'rgba(114,66,200,0.35)\'" onmouseout="this.style.background=\'linear-gradient(135deg,rgba(114,66,200,0.25),rgba(114,66,200,0.15))\'">Trade on Kraken</a>';
+    html += '<a href="https://www.coingecko.com/en/coins/' + (pick.coingecko_id || baseSym) + '" target="_blank" style="flex:1;min-width:100px;text-align:center;padding:10px 16px;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border);border-radius:8px;text-decoration:none;font-size:12px;transition:all 0.15s" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">CoinGecko</a>';
+    html += '</div>';
+    html += '</div>';
+
+    // Runner-up
+    if (pick.runner_up) {
+        var ru = pick.runner_up;
+        var ruDec = ru.price >= 1 ? 4 : ru.price >= 0.01 ? 6 : 8;
+        html += '<div style="margin-top:12px;padding:10px 14px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;font-size:12px">';
+        html += '<span style="color:var(--dim)">Runner-up:</span>';
+        html += '<span style="color:#fff;font-weight:700">' + ru.symbol + '/USD</span>';
+        html += '<span style="color:var(--dim)">$' + ru.price.toFixed(ruDec) + '</span>';
+        html += '<span style="color:' + (ru.chg_24h >= 0 ? 'var(--green)' : 'var(--red)') + '">' + (ru.chg_24h >= 0 ? '+' : '') + ru.chg_24h + '%</span>';
+        html += '<span style="color:var(--accent);font-weight:700">Score: ' + ru.pulse_score + '</span>';
+        html += '</div>';
+    }
+
+    el.innerHTML = html;
 }
 
-function refreshKrakenBuyNow() {
-    loadKrakenBuyNow();
+function renderPulseGainers(gainers, total) {
+    var grid = document.getElementById('pulse-gainers-grid');
+    var countEl = document.getElementById('pulse-gainer-count');
+    if (!grid) return;
+
+    if (countEl) countEl.textContent = '(' + total + ' coins on Kraken)';
+
+    if (!gainers || gainers.length === 0) {
+        grid.innerHTML = '<div style="color:var(--dim);font-size:12px;padding:8px">No Kraken meme data available</div>';
+        return;
+    }
+
+    var html = '';
+    for (var i = 0; i < gainers.length; i++) {
+        var g = gainers[i];
+        var chg = parseFloat(g.chg_24h);
+        var chgColor = chg >= 5 ? 'var(--green)' : chg >= 0 ? '#6ee7b7' : chg >= -3 ? 'var(--gold)' : 'var(--red)';
+        var borderColor = chg >= 5 ? 'rgba(34,197,94,0.3)' : chg >= 0 ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)';
+        var bgGlow = chg >= 10 ? 'rgba(34,197,94,0.06)' : chg >= 5 ? 'rgba(34,197,94,0.03)' : 'transparent';
+        var prDec = g.price >= 1 ? 4 : g.price >= 0.01 ? 6 : g.price >= 0.0001 ? 8 : 10;
+
+        html += '<div style="background:' + bgGlow + ';border:1px solid ' + borderColor + ';border-radius:8px;padding:10px 12px;transition:all 0.15s;cursor:default" onmouseover="this.style.transform=\'translateY(-1px)\';this.style.boxShadow=\'0 2px 8px rgba(0,0,0,0.2)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\'">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">';
+        html += '<span style="font-weight:700;font-size:13px;color:#fff">' + g.symbol + '</span>';
+        html += '<span style="font-weight:700;font-size:13px;color:' + chgColor + '">' + (chg >= 0 ? '+' : '') + chg.toFixed(1) + '%</span>';
+        html += '</div>';
+        html += '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--dim)">';
+        html += '<span>$' + g.price.toFixed(prDec) + '</span>';
+        html += '<span>Vol: $' + formatLargeNum(g.vol_24h_usd) + '</span>';
+        html += '</div>';
+        // Mini bar showing position in daily range
+        if (g.high_24h > g.low_24h) {
+            var rangePos = ((g.price - g.low_24h) / (g.high_24h - g.low_24h)) * 100;
+            html += '<div style="margin-top:4px;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;position:relative">';
+            html += '<div style="position:absolute;left:0;top:0;height:100%;width:' + rangePos.toFixed(0) + '%;background:' + chgColor + ';border-radius:2px;opacity:0.6"></div>';
+            html += '</div>';
+        }
+        html += '</div>';
+    }
+    grid.innerHTML = html;
 }
 
-function toggleKrakenLiveMode() {
-    krakenLiveMode = !krakenLiveMode;
-    var btn = document.getElementById('kraken-live-toggle');
-    
-    if (krakenLiveMode) {
+function renderPulseTrending(trending, cgGainers) {
+    var el = document.getElementById('pulse-trending');
+    if (!el) return;
+
+    // Combine trending + CG gainers, remove duplicates, show chips
+    var seen = {};
+    var items = [];
+
+    if (trending) {
+        for (var i = 0; i < trending.length; i++) {
+            var t = trending[i];
+            if (seen[t.symbol]) continue;
+            seen[t.symbol] = true;
+            items.push({symbol: t.symbol, name: t.name, chg: t.chg_24h, on_kraken: t.on_kraken, type: 'trending', rank: t.trending_rank});
+        }
+    }
+    if (cgGainers) {
+        for (var j = 0; j < Math.min(cgGainers.length, 10); j++) {
+            var g = cgGainers[j];
+            if (seen[g.symbol]) continue;
+            seen[g.symbol] = true;
+            if (g.chg_24h > 0) {
+                items.push({symbol: g.symbol, name: g.name, chg: g.chg_24h, on_kraken: g.on_kraken, type: 'gainer', vol: g.vol_24h});
+            }
+        }
+    }
+
+    if (items.length === 0) {
+        el.innerHTML = '<span style="color:var(--dim);font-size:12px">No trending data available</span>';
+        return;
+    }
+
+    var html = '';
+    for (var k = 0; k < items.length; k++) {
+        var item = items[k];
+        var chg = parseFloat(item.chg) || 0;
+        var chgStr = chg !== 0 ? (' ' + (chg >= 0 ? '+' : '') + chg.toFixed(1) + '%') : '';
+        var chgColor = chg >= 0 ? 'var(--green)' : 'var(--red)';
+        var krakenFlag = item.on_kraken ? ' <span title="Available on Kraken" style="font-size:10px">&#127464;&#127462;</span>' : '';
+        var typeBadge = item.type === 'trending' ? '<span style="font-size:9px;color:var(--cyan)">#' + item.rank + '</span> ' : '';
+        var borderCol = item.on_kraken ? 'rgba(114,66,200,0.3)' : 'var(--border)';
+        var bgCol = item.on_kraken ? 'rgba(114,66,200,0.06)' : 'rgba(255,255,255,0.03)';
+
+        html += '<div style="background:' + bgCol + ';border:1px solid ' + borderCol + ';border-radius:6px;padding:4px 10px;font-size:12px;display:flex;align-items:center;gap:4px">';
+        html += typeBadge + '<strong style="color:#fff">' + item.symbol + '</strong>' + krakenFlag;
+        if (chgStr) html += '<span style="color:' + chgColor + ';font-size:11px;font-weight:600">' + chgStr + '</span>';
+        html += '</div>';
+    }
+    el.innerHTML = html;
+}
+
+function togglePulseLiveMode() {
+    pulseLiveMode = !pulseLiveMode;
+    var btn = document.getElementById('pulse-live-toggle');
+
+    if (pulseLiveMode) {
         btn.innerHTML = '<span class="live-pulse"></span> Live Updates: ON';
         btn.style.background = 'rgba(34,197,94,0.15)';
         btn.style.color = '#22c55e';
         btn.style.borderColor = 'rgba(34,197,94,0.3)';
-        loadKrakenBuyNow();
-        krakenLiveInterval = setInterval(loadKrakenBuyNow, 30000);
+        loadMarketPulse(true);
+        pulseLiveInterval = setInterval(function() { loadMarketPulse(true); }, 60000);
     } else {
-        btn.innerHTML = '⏱️ Enable Live Updates (30s)';
+        btn.innerHTML = 'Enable Live Updates (60s)';
         btn.style.background = 'rgba(255,255,255,0.05)';
         btn.style.color = 'var(--dim)';
         btn.style.borderColor = 'var(--border)';
-        if (krakenLiveInterval) clearInterval(krakenLiveInterval);
+        if (pulseLiveInterval) clearInterval(pulseLiveInterval);
+        pulseLiveInterval = null;
     }
 }
 
-function verifyKrakenPrice(pair, signalPrice) {
-    var userPrice = prompt('Enter current price from Kraken for ' + pair + ' (signal was at $' + signalPrice + '):');
-    if (!userPrice) return;
-    
-    var price = parseFloat(userPrice);
-    var deviation = Math.abs((price - signalPrice) / signalPrice) * 100;
-    
-    if (deviation < 2) {
-        alert('✅ Price verified! Deviation: ' + deviation.toFixed(2) + '% (within acceptable range)');
-    } else if (deviation < 5) {
-        alert('⚠️ Price drifted ' + deviation.toFixed(2) + '%. Consider recalculating position size.');
-    } else {
-        alert('❌ Price changed ' + deviation.toFixed(2) + '%! Signal may be stale. Refresh for new recommendation.');
-    }
+function formatLargeNum(n) {
+    n = parseFloat(n) || 0;
+    if (n >= 1000000000) return (n / 1000000000).toFixed(1) + 'B';
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(0) + 'K';
+    return '' + Math.round(n);
 }
 
-// Load Kraken BUY NOW on page load
-loadKrakenBuyNow();
+// Load Market Pulse on page load
+loadMarketPulse(false);
 </script>
 <script src="/findstocks/portfolio2/stock-nav.js"></script>
 <script src="/live-monitor/api/scope_labels.js"></script>
