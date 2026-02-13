@@ -1462,26 +1462,76 @@ function _mc_discord_alert($winners, $scan_id, $analyzed, $elapsed) {
     $buy = 0;
     $lean = 0;
     $msg_lines = array();
-    foreach (array_slice($winners, 0, 8) as $w) {
+    
+    // Header line with timestamp
+    $msg_lines[] = "**🐸 Meme Coin Signals — " . date('M j, g:i A T') . "**";
+    $msg_lines[] = "";
+    
+    foreach (array_slice($winners, 0, 6) as $w) {
         $pair = str_replace('_USDT', '/USDT', $w['pair']);
-        $tier_label = ($w['tier'] === 'tier1') ? '' : ' [NEW]';
-        $emoji = '';
-        if ($w['verdict'] === 'STRONG_BUY') { $emoji = "\xF0\x9F\x9A\x80"; $strong++; }
-        elseif ($w['verdict'] === 'BUY') { $emoji = "\xF0\x9F\x94\xB5"; $buy++; }
-        else { $emoji = "\xF0\x9F\x9F\xA1"; $lean++; }
-        $msg_lines[] = $emoji . ' **' . $pair . '**' . $tier_label . ' Score:' . $w['score'] . ' +' . round($w['chg_24h'], 1) . '% Target:+' . $w['target_pct'] . '%';
+        $tier_label = ($w['tier'] === 'tier1') ? ' [T1]' : ' [T2]';
+        
+        // Signal strength rating based on score
+        $strength = '';
+        $strength_emoji = '';
+        if ($w['score'] >= 90) {
+            $strength = '🔥 EXTREMELY STRONG';
+            $strength_emoji = "\xF0\x9F\x94\xA5";
+            $strong++;
+        } elseif ($w['score'] >= 85) {
+            $strength = '🚀 STRONG BUY';
+            $strength_emoji = "\xF0\x9F\x9A\x80";
+            $strong++;
+        } elseif ($w['score'] >= 78) {
+            $strength = '🔵 BUY';
+            $strength_emoji = "\xF0\x9F\x94\xB5";
+            $buy++;
+        } else {
+            $strength = '🟡 LEAN BUY';
+            $strength_emoji = "\xF0\x9F\x9F\xA1";
+            $lean++;
+        }
+        
+        // Calculate TP and SL prices
+        $entry = floatval($w['price']);
+        $target_pct = floatval($w['target_pct']);
+        $risk_pct = floatval($w['risk_pct']);
+        $tp_price = $entry * (1 + $target_pct / 100);
+        $sl_price = $entry * (1 - $risk_pct / 100);
+        
+        // Format prices based on magnitude
+        $decimals = $entry >= 1 ? 4 : ($entry >= 0.01 ? 6 : ($entry >= 0.0001 ? 8 : 10));
+        $entry_str = number_format($entry, $decimals);
+        $tp_str = number_format($tp_price, $decimals);
+        $sl_str = number_format($sl_price, $decimals);
+        
+        // Build signal line
+        $msg_lines[] = $strength_emoji . ' **' . $pair . '**' . $tier_label . ' | **' . $strength . '**';
+        $msg_lines[] = '```';
+        $msg_lines[] = '💰 Entry: $' . $entry_str;
+        $msg_lines[] = '🎯 Target: $' . $tp_str . ' (+' . $target_pct . '%)';
+        $msg_lines[] = '🛑 Stop: $' . $sl_str . ' (-' . $risk_pct . '%)';
+        $msg_lines[] = '📊 Score: ' . $w['score'] . '/100 | 24h: ' . round($w['chg_24h'], 1) . '%';
+        $msg_lines[] = '```';
     }
-    if (count($winners) > 8) {
-        $msg_lines[] = '... and ' . (count($winners) - 8) . ' more';
+    
+    if (count($winners) > 6) {
+        $msg_lines[] = '';
+        $msg_lines[] = '*... and ' . (count($winners) - 6) . ' more signals*';
     }
+    
+    // Summary line
+    $msg_lines[] = '';
+    $msg_lines[] = '📈 **Summary:** ' . $strong . ' Strong | ' . $buy . ' Buy | ' . $lean . ' Lean';
 
-    $title = "\xF0\x9F\x90\xB8 Meme Scanner: " . count($winners) . ' meme' . (count($winners) > 1 ? 's' : '') . ' pumping!';
+    $title = "\xF0\x9F\x90\xB8 Meme Scanner Alert — " . count($winners) . ' Signal' . (count($winners) > 1 ? 's' : '');
     $embed = array(
         'title' => $title,
         'description' => implode("\n", $msg_lines),
-        'color' => ($strong > 0) ? 15277667 : (($buy > 0) ? 10181046 : 16776960),
-        'footer' => array('text' => 'Scan #' . $scan_id . ' | ' . $analyzed . ' analyzed in ' . $elapsed . 's'),
-        'url' => 'https://findtorontoevents.ca/findcryptopairs/meme.html'
+        'color' => ($strong > 0) ? 16729344 : (($buy > 0) ? 3447003 : 16776960),
+        'footer' => array('text' => 'Scan #' . $scan_id . ' | ' . $analyzed . ' analyzed in ' . $elapsed . 's | v2 Algorithm'),
+        'url' => 'https://findtorontoevents.ca/findcryptopairs/meme.html',
+        'timestamp' => date('c')
     );
 
     $payload = json_encode(array('embeds' => array($embed)));

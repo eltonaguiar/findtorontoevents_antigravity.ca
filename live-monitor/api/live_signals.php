@@ -54,8 +54,8 @@ $conn->query("CREATE TABLE IF NOT EXISTS lm_signals (
     signal_type VARCHAR(20) NOT NULL DEFAULT 'BUY',
     signal_strength INT NOT NULL DEFAULT 0,
     entry_price DECIMAL(18,8) NOT NULL DEFAULT 0,
-    target_tp_pct DECIMAL(6,2) NOT NULL DEFAULT 5,
-    target_sl_pct DECIMAL(6,2) NOT NULL DEFAULT 3,
+    target_tp_pct DECIMAL(6,2) NOT NULL DEFAULT 10,
+    target_sl_pct DECIMAL(6,2) NOT NULL DEFAULT 4,
     max_hold_hours INT NOT NULL DEFAULT 24,
     timeframe VARCHAR(20) NOT NULL DEFAULT '1h',
     rationale TEXT,
@@ -1559,9 +1559,9 @@ function _ls_algo_momentum_burst($candles, $price, $symbol, $asset) {
     if ($signal_type === 'BUY' && $regime === 'bear') return null;
     if ($signal_type === 'SHORT' && $regime === 'bull') return null;
 
-    $tp  = 3.0;
-    $sl  = 1.5;
-    $hold = 8;
+    $tp  = 8.0;
+    $sl  = 3.0;
+    $hold = 12;
 
     // Check learned params
     $lp = _ls_get_learned_params($conn, 'Momentum Burst', $asset);
@@ -1609,9 +1609,9 @@ function _ls_algo_rsi_reversal($candles, $price, $symbol, $asset) {
     $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
     if ($signal_type === 'BUY' && $regime === 'bear') return null;
 
-    $tp   = 2.0;
-    $sl   = 1.0;
-    $hold = 12;
+    $tp   = 8.0;
+    $sl   = 3.0;
+    $hold = 16;
 
     $lp = _ls_get_learned_params($conn, 'RSI Reversal', $asset);
     if ($lp !== null) {
@@ -1678,9 +1678,9 @@ function _ls_algo_breakout_24h($candles, $price, $symbol, $asset) {
     $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
     if ($regime === 'bear') return null;
 
-    $tp   = 8.0;
-    $sl   = 2.0;
-    $hold = 16;
+    $tp   = 12.0;
+    $sl   = 4.0;
+    $hold = 24;
 
     $lp = _ls_get_learned_params($conn, 'Breakout 24h', $asset);
     if ($lp !== null) {
@@ -1736,8 +1736,8 @@ function _ls_algo_dca_dip($candles, $price, $symbol, $asset) {
     $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
     if ($regime === 'bear') return null;
 
-    $tp   = 5.0;
-    $sl   = 3.0;
+    $tp   = 10.0;
+    $sl   = 4.0;
     $hold = 48;
 
     $lp = _ls_get_learned_params($conn, 'DCA Dip', $asset);
@@ -1806,9 +1806,9 @@ function _ls_algo_bollinger_squeeze($candles, $price, $symbol, $asset) {
     $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
     if ($regime === 'bear') return null;
 
-    $tp   = 2.5;
-    $sl   = 1.5;
-    $hold = 8;
+    $tp   = 8.0;
+    $sl   = 3.0;
+    $hold = 12;
 
     $lp = _ls_get_learned_params($conn, 'Bollinger Squeeze', $asset);
     if ($lp !== null) {
@@ -1869,9 +1869,9 @@ function _ls_algo_macd_crossover($candles, $price, $symbol, $asset) {
     if ($signal_type === 'BUY' && $regime === 'bear') return null;
     if ($signal_type === 'SHORT' && $regime === 'bull') return null;
 
-    $tp   = 2.0;
-    $sl   = 1.0;
-    $hold = 12;
+    $tp   = 8.0;
+    $sl   = 3.0;
+    $hold = 16;
 
     $lp = _ls_get_learned_params($conn, 'MACD Crossover', $asset);
     if ($lp !== null) {
@@ -2011,8 +2011,8 @@ function _ls_algo_consensus($conn, $price, $symbol, $asset) {
     $strength = min(100, $majority_count * 15 + 40);
 
     // 3:1 TP/SL ratio — tighter SL for faster exit on losers
-    $tp   = 4.5;
-    $sl   = 1.5;
+    $tp   = 10.0;
+    $sl   = 3.0;
     $hold = 24;
 
     // Only use learned params if they maintain >= 2.5:1 TP/SL ratio
@@ -2096,9 +2096,9 @@ function _ls_algo_volatility_breakout($candles, $price, $symbol, $asset) {
     $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
     if ($regime === 'bear') return null;
 
-    $tp   = 3.0;
-    $sl   = 2.0;
-    $hold = 16;
+    $tp   = 10.0;
+    $sl   = 4.0;
+    $hold = 24;
 
     $lp = _ls_get_learned_params($conn, 'Volatility Breakout', $asset);
     if ($lp !== null) {
@@ -2259,13 +2259,13 @@ function _ls_algo_trend_sniper($candles, $price, $symbol, $asset) {
 
     $strength = min(100, (int)(abs($composite)));
 
-    // TP/SL by asset class
+    // TP/SL by asset class (Feb 12, 2026: increased targets)
     if ($asset === 'CRYPTO') {
-        $tp = 1.5; $sl = 0.75; $hold = 8;
+        $tp = 8.0; $sl = 3.0; $hold = 12;
     } elseif ($asset === 'FOREX') {
-        $tp = 0.4; $sl = 0.2; $hold = 8;
+        $tp = 2.0; $sl = 1.0; $hold = 12;
     } else {
-        $tp = 1.0; $sl = 0.5; $hold = 8;
+        $tp = 8.0; $sl = 3.0; $hold = 24;
     }
 
     $lp = _ls_get_learned_params($conn, 'Trend Sniper', $asset);
@@ -2379,11 +2379,11 @@ function _ls_algo_dip_recovery($candles, $price, $symbol, $asset) {
     if ($regime === 'bear') return null;
 
     if ($asset === 'CRYPTO') {
-        $tp = 2.5; $sl = 1.5; $hold = 16;
+        $tp = 8.0; $sl = 3.0; $hold = 24;
     } elseif ($asset === 'FOREX') {
-        $tp = 0.6; $sl = 0.4; $hold = 16;
+        $tp = 3.0; $sl = 1.5; $hold = 24;
     } else {
-        $tp = 1.5; $sl = 1.0; $hold = 16;
+        $tp = 12.0; $sl = 4.0; $hold = 72;
     }
 
     $lp = _ls_get_learned_params($conn, 'Dip Recovery', $asset);
@@ -2444,11 +2444,11 @@ function _ls_algo_volume_spike($candles, $price, $symbol, $asset) {
     if ($signal_type === 'SHORT' && $regime === 'bull') return null;
 
     if ($asset === 'CRYPTO') {
-        $tp = 2.0; $sl = 1.0; $hold = 12;
+        $tp = 8.0; $sl = 3.0; $hold = 16;
     } elseif ($asset === 'FOREX') {
-        $tp = 0.5; $sl = 0.3; $hold = 12;
+        $tp = 3.0; $sl = 1.5; $hold = 16;
     } else {
-        $tp = 1.5; $sl = 0.8; $hold = 12;
+        $tp = 10.0; $sl = 4.0; $hold = 48;
     }
 
     $lp = _ls_get_learned_params($conn, 'Volume Spike', $asset);
@@ -2509,11 +2509,11 @@ function _ls_algo_vam($candles, $price, $symbol, $asset) {
     if ($signal_type === 'SHORT' && $regime === 'bull') return null;
 
     if ($asset === 'CRYPTO') {
-        $tp = 2.0; $sl = 1.0; $hold = 12;
+        $tp = 8.0; $sl = 3.0; $hold = 16;
     } elseif ($asset === 'FOREX') {
-        $tp = 0.4; $sl = 0.2; $hold = 12;
+        $tp = 2.0; $sl = 1.0; $hold = 16;
     } else {
-        $tp = 1.2; $sl = 0.6; $hold = 12;
+        $tp = 10.0; $sl = 4.0; $hold = 48;
     }
 
     $lp = _ls_get_learned_params($conn, 'VAM', $asset);
@@ -2579,19 +2579,19 @@ function _ls_algo_mean_reversion_sniper($candles, $price, $symbol, $asset) {
     $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
     if ($regime === 'bear') return null;
 
-    // TP targets middle Bollinger band
+    // TP targets middle Bollinger band (Feb 12, 2026: raised caps)
     $tp_from_bb = (($bb['middle'] - $price) / $price) * 100;
-    if ($tp_from_bb < 0.3) $tp_from_bb = 0.3;
+    if ($tp_from_bb < 1.0) $tp_from_bb = 1.0;
 
     if ($asset === 'CRYPTO') {
-        $tp = min(3.0, max(0.5, $tp_from_bb));
-        $sl = 1.0; $hold = 12;
+        $tp = min(10.0, max(3.0, $tp_from_bb * 3));
+        $sl = 3.0; $hold = 16;
     } elseif ($asset === 'FOREX') {
-        $tp = min(0.8, max(0.15, $tp_from_bb));
-        $sl = 0.3; $hold = 12;
+        $tp = min(4.0, max(1.5, $tp_from_bb * 3));
+        $sl = 1.5; $hold = 16;
     } else {
-        $tp = min(2.0, max(0.3, $tp_from_bb));
-        $sl = 0.7; $hold = 12;
+        $tp = min(12.0, max(4.0, $tp_from_bb * 3));
+        $sl = 4.0; $hold = 48;
     }
 
     $lp = _ls_get_learned_params($conn, 'Mean Reversion Sniper', $asset);
@@ -2660,10 +2660,10 @@ function _ls_algo_adx_trend($candles, $price, $symbol, $asset) {
     if ($direction === 'BUY' && $regime === 'bear') return null;
     if ($direction === 'SHORT' && $regime === 'bull') return null;
 
-    // Asset-class TP/SL
-    $tp = 1.5; $sl = 0.75; $hold = 12;
-    if ($asset === 'FOREX') { $tp = 0.4; $sl = 0.2; $hold = 12; }
-    if ($asset === 'STOCK') { $tp = 1.0; $sl = 0.5; $hold = 12; }
+    // Asset-class TP/SL (Feb 12, 2026: increased targets)
+    $tp = 8.0; $sl = 3.0; $hold = 16;
+    if ($asset === 'FOREX') { $tp = 2.0; $sl = 1.0; $hold = 16; }
+    if ($asset === 'STOCK') { $tp = 10.0; $sl = 4.0; $hold = 48; }
 
     // Check learned params
     global $conn;
@@ -2739,10 +2739,10 @@ function _ls_algo_stoch_rsi_cross($candles, $price, $symbol, $asset) {
     if ($signal === 'BUY' && $regime === 'bear') return null;
     if ($signal === 'SHORT' && $regime === 'bull') return null;
 
-    // Asset-class TP/SL
-    $tp = 2.0; $sl = 1.0; $hold = 12;
-    if ($asset === 'FOREX') { $tp = 0.5; $sl = 0.25; $hold = 12; }
-    if ($asset === 'STOCK') { $tp = 1.2; $sl = 0.6; $hold = 12; }
+    // Asset-class TP/SL (Feb 12, 2026: increased targets)
+    $tp = 8.0; $sl = 3.0; $hold = 16;
+    if ($asset === 'FOREX') { $tp = 3.0; $sl = 1.5; $hold = 16; }
+    if ($asset === 'STOCK') { $tp = 8.0; $sl = 3.0; $hold = 24; }
 
     $learned = _ls_get_learned_params($conn, 'StochRSI Crossover', $asset);
     if ($learned) {
@@ -2820,10 +2820,10 @@ function _ls_algo_awesome_osc($candles, $price, $symbol, $asset) {
         if ($signal === 'SHORT' && $rsi_conf > 55) return null;
     }
 
-    // Asset-class TP/SL
-    $tp = 1.8; $sl = 0.9; $hold = 12;
-    if ($asset === 'FOREX') { $tp = 0.4; $sl = 0.2; $hold = 12; }
-    if ($asset === 'STOCK') { $tp = 1.0; $sl = 0.5; $hold = 12; }
+    // Asset-class TP/SL (Feb 12, 2026: increased targets)
+    $tp = 8.0; $sl = 3.0; $hold = 16;
+    if ($asset === 'FOREX') { $tp = 2.0; $sl = 1.0; $hold = 16; }
+    if ($asset === 'STOCK') { $tp = 8.0; $sl = 3.0; $hold = 24; }
 
     $learned = _ls_get_learned_params($conn, 'Awesome Oscillator', $asset);
     if ($learned) {
@@ -2895,10 +2895,10 @@ function _ls_algo_rsi2_scalp($candles, $price, $symbol, $asset) {
     $regime = _ls_get_regime($conn, $asset, $candles, $symbol);
     if ($signal === 'BUY' && $regime === 'bear') return null;
 
-    // Shorter hold for scalp trades
-    $tp = 1.2; $sl = 0.6; $hold = 6;
-    if ($asset === 'FOREX') { $tp = 0.3; $sl = 0.15; $hold = 6; }
-    if ($asset === 'STOCK') { $tp = 0.8; $sl = 0.4; $hold = 6; }
+    // Shorter hold for scalp trades (Feb 12, 2026: increased targets)
+    $tp = 5.0; $sl = 2.0; $hold = 8;
+    if ($asset === 'FOREX') { $tp = 2.0; $sl = 1.0; $hold = 8; }
+    if ($asset === 'STOCK') { $tp = 8.0; $sl = 3.0; $hold = 16; }
 
     $learned = _ls_get_learned_params($conn, 'RSI(2) Scalp', $asset);
     if ($learned) {
@@ -3010,10 +3010,10 @@ function _ls_algo_ichimoku_cloud($candles, $price, $symbol, $asset) {
     $adx_conf = _ls_calc_adx($highs, $lows, $closes, 14);
     if ($adx_conf === null || $adx_conf['adx'] < 20) return null;
 
-    // TP/SL
-    $tp = 2.0; $sl = 1.0; $hold = 16;
-    if ($asset === 'FOREX') { $tp = 0.5; $sl = 0.25; $hold = 16; }
-    if ($asset === 'STOCK') { $tp = 1.2; $sl = 0.6; $hold = 16; }
+    // TP/SL (Feb 12, 2026: increased targets)
+    $tp = 10.0; $sl = 3.0; $hold = 24;
+    if ($asset === 'FOREX') { $tp = 3.0; $sl = 1.5; $hold = 24; }
+    if ($asset === 'STOCK') { $tp = 12.0; $sl = 4.0; $hold = 72; }
 
     $learned = _ls_get_learned_params($conn, 'Ichimoku Cloud', $asset);
     if ($learned) {
@@ -3155,10 +3155,10 @@ function _ls_algo_alpha_predator($candles, $price, $symbol, $asset) {
     if ($signal === 'BUY' && $regime === 'bear') return null;
     if ($signal === 'SHORT' && $regime === 'bull') return null;
 
-    // TP/SL: tighter for high-conviction
-    $tp = 2.0; $sl = 1.0; $hold = 12;
-    if ($asset === 'FOREX') { $tp = 0.5; $sl = 0.25; $hold = 12; }
-    if ($asset === 'STOCK') { $tp = 1.2; $sl = 0.6; $hold = 12; }
+    // TP/SL (Feb 12, 2026: increased targets for high-conviction)
+    $tp = 10.0; $sl = 3.0; $hold = 16;
+    if ($asset === 'FOREX') { $tp = 3.0; $sl = 1.5; $hold = 16; }
+    if ($asset === 'STOCK') { $tp = 12.0; $sl = 4.0; $hold = 48; }
 
     $learned = _ls_get_learned_params($conn, 'Alpha Predator', $asset);
     if ($learned) {
@@ -3257,40 +3257,42 @@ function _ls_insert_signal($conn, $asset_class, $symbol, $price, $sig) {
 
 // ── Hardcoded default params for each algorithm (pre-learning) ──
 function _ls_get_original_defaults($algo_name, $asset_class) {
-    // (Feb 2026 overhaul) Stock TP/hold targets increased — previous values
-    // were too small to overcome slippage + fees, causing 67% max-hold exits
-    // and avg loss 16.7x larger than avg win. Min stock TP now 1.5% (CDR $0
-    // commission). Fundamental algos get longer holds. Crypto/Forex unchanged.
+    // (Feb 12, 2026 overhaul) TP targets increased across ALL asset classes.
+    // Previous stock TPs (1.5-3%) were too small to overcome slippage + fees,
+    // causing 67% max-hold exits and avg loss 16.7x larger than avg win.
+    // New targets: Stock swing 12-15% TP / 4-5% SL, Stock day 8% TP / 3% SL,
+    // Crypto 8-12% TP / 3-4% SL, Forex 3-5% TP / 1.5-2% SL.
+    // Hard SL cap of 8% enforced in live_trade.php prevents catastrophic losses.
     $d = array(
-        'Momentum Burst'        => array('CRYPTO' => array(3.0, 1.5, 8),   'FOREX' => array(1.5, 0.75, 8),  'STOCK' => array(2.0, 1.0, 16)),
-        'RSI Reversal'          => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(2.0, 1.0, 12),  'STOCK' => array(2.5, 1.2, 16)),
-        'Breakout 24h'          => array('CRYPTO' => array(8.0, 2.0, 16),  'FOREX' => array(8.0, 2.0, 16),  'STOCK' => array(8.0, 2.5, 24)),
-        'DCA Dip'               => array('CRYPTO' => array(5.0, 3.0, 48),  'FOREX' => array(5.0, 3.0, 48),  'STOCK' => array(5.0, 3.0, 48)),
-        'Bollinger Squeeze'     => array('CRYPTO' => array(2.5, 1.5, 8),   'FOREX' => array(2.5, 1.5, 8),   'STOCK' => array(3.0, 1.5, 16)),
-        'MACD Crossover'        => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(2.0, 1.0, 12),  'STOCK' => array(2.5, 1.2, 16)),
-        'Consensus'             => array('CRYPTO' => array(4.5, 1.5, 24),  'FOREX' => array(4.5, 1.5, 24),  'STOCK' => array(5.0, 1.5, 24)),
-        'Volatility Breakout'   => array('CRYPTO' => array(3.0, 2.0, 16),  'FOREX' => array(3.0, 2.0, 16),  'STOCK' => array(3.5, 2.0, 24)),
-        'Trend Sniper'          => array('CRYPTO' => array(1.5, 0.75, 8),  'FOREX' => array(0.4, 0.2, 8),   'STOCK' => array(1.5, 0.75, 12)),
-        'Dip Recovery'          => array('CRYPTO' => array(2.5, 1.5, 16),  'FOREX' => array(0.6, 0.4, 16),  'STOCK' => array(2.0, 1.0, 24)),
-        'Volume Spike'          => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.3, 12),  'STOCK' => array(2.0, 1.0, 16)),
-        'VAM'                   => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.8, 0.9, 16)),
-        'Mean Reversion Sniper' => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.3, 12),  'STOCK' => array(2.0, 1.0, 16)),
-        'ADX Trend Strength'    => array('CRYPTO' => array(1.5, 0.75, 12), 'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.5, 0.75, 16)),
-        'StochRSI Crossover'    => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.25, 12), 'STOCK' => array(1.5, 0.75, 16)),
-        'Awesome Oscillator'    => array('CRYPTO' => array(1.8, 0.9, 12),  'FOREX' => array(0.4, 0.2, 12),  'STOCK' => array(1.5, 0.75, 16)),
-        'RSI(2) Scalp'          => array('CRYPTO' => array(1.2, 0.6, 6),   'FOREX' => array(0.3, 0.15, 6),  'STOCK' => array(1.5, 0.75, 8)),
-        'Ichimoku Cloud'        => array('CRYPTO' => array(2.0, 1.0, 16),  'FOREX' => array(0.5, 0.25, 16), 'STOCK' => array(1.8, 0.9, 24)),
-        'Alpha Predator'        => array('CRYPTO' => array(2.0, 1.0, 12),  'FOREX' => array(0.5, 0.25, 12), 'STOCK' => array(1.8, 0.9, 16)),
-        'Insider Cluster Buy'   => array('STOCK' => array(10.0, 5.0, 504)),
-        '13F New Position'      => array('STOCK' => array(12.0, 6.0, 720)),
-        'Sentiment Divergence'  => array('STOCK' => array(4.0, 2.5, 240)),
-        'Contrarian Fear/Greed' => array('CRYPTO' => array(5.0, 3.0, 168), 'FOREX' => array(2.0, 1.5, 168), 'STOCK' => array(5.0, 3.0, 504))
+        'Momentum Burst'        => array('CRYPTO' => array(8.0, 3.0, 12),  'FOREX' => array(3.0, 1.5, 12),  'STOCK' => array(8.0, 3.0, 24)),
+        'RSI Reversal'          => array('CRYPTO' => array(8.0, 3.0, 16),  'FOREX' => array(3.0, 1.5, 16),  'STOCK' => array(10.0, 4.0, 48)),
+        'Breakout 24h'          => array('CRYPTO' => array(12.0, 4.0, 24), 'FOREX' => array(5.0, 2.0, 24),  'STOCK' => array(15.0, 5.0, 72)),
+        'DCA Dip'               => array('CRYPTO' => array(10.0, 4.0, 48), 'FOREX' => array(5.0, 2.0, 48),  'STOCK' => array(12.0, 4.0, 72)),
+        'Bollinger Squeeze'     => array('CRYPTO' => array(8.0, 3.0, 12),  'FOREX' => array(3.0, 1.5, 12),  'STOCK' => array(10.0, 4.0, 48)),
+        'MACD Crossover'        => array('CRYPTO' => array(8.0, 3.0, 16),  'FOREX' => array(3.0, 1.5, 16),  'STOCK' => array(10.0, 4.0, 48)),
+        'Consensus'             => array('CRYPTO' => array(10.0, 3.0, 24), 'FOREX' => array(5.0, 2.0, 24),  'STOCK' => array(12.0, 4.0, 72)),
+        'Volatility Breakout'   => array('CRYPTO' => array(10.0, 4.0, 24), 'FOREX' => array(4.0, 2.0, 24),  'STOCK' => array(12.0, 4.0, 72)),
+        'Trend Sniper'          => array('CRYPTO' => array(8.0, 3.0, 12),  'FOREX' => array(2.0, 1.0, 12),  'STOCK' => array(8.0, 3.0, 24)),
+        'Dip Recovery'          => array('CRYPTO' => array(8.0, 3.0, 24),  'FOREX' => array(3.0, 1.5, 24),  'STOCK' => array(12.0, 4.0, 72)),
+        'Volume Spike'          => array('CRYPTO' => array(8.0, 3.0, 16),  'FOREX' => array(3.0, 1.5, 16),  'STOCK' => array(10.0, 4.0, 48)),
+        'VAM'                   => array('CRYPTO' => array(8.0, 3.0, 16),  'FOREX' => array(2.0, 1.0, 16),  'STOCK' => array(10.0, 4.0, 48)),
+        'Mean Reversion Sniper' => array('CRYPTO' => array(8.0, 3.0, 16),  'FOREX' => array(3.0, 1.5, 16),  'STOCK' => array(10.0, 4.0, 48)),
+        'ADX Trend Strength'    => array('CRYPTO' => array(8.0, 3.0, 16),  'FOREX' => array(2.0, 1.0, 16),  'STOCK' => array(10.0, 4.0, 48)),
+        'StochRSI Crossover'    => array('CRYPTO' => array(8.0, 3.0, 16),  'FOREX' => array(3.0, 1.5, 16),  'STOCK' => array(8.0, 3.0, 24)),
+        'Awesome Oscillator'    => array('CRYPTO' => array(8.0, 3.0, 16),  'FOREX' => array(2.0, 1.0, 16),  'STOCK' => array(8.0, 3.0, 24)),
+        'RSI(2) Scalp'          => array('CRYPTO' => array(5.0, 2.0, 8),   'FOREX' => array(2.0, 1.0, 8),   'STOCK' => array(8.0, 3.0, 16)),
+        'Ichimoku Cloud'        => array('CRYPTO' => array(10.0, 3.0, 24), 'FOREX' => array(3.0, 1.5, 24),  'STOCK' => array(12.0, 4.0, 72)),
+        'Alpha Predator'        => array('CRYPTO' => array(10.0, 3.0, 16), 'FOREX' => array(3.0, 1.5, 16),  'STOCK' => array(12.0, 4.0, 48)),
+        'Insider Cluster Buy'   => array('STOCK' => array(15.0, 5.0, 504)),
+        '13F New Position'      => array('STOCK' => array(15.0, 5.0, 720)),
+        'Sentiment Divergence'  => array('STOCK' => array(12.0, 4.0, 240)),
+        'Contrarian Fear/Greed' => array('CRYPTO' => array(10.0, 4.0, 168), 'FOREX' => array(4.0, 2.0, 168), 'STOCK' => array(12.0, 4.0, 504))
     );
     if (isset($d[$algo_name]) && isset($d[$algo_name][$asset_class])) {
         $v = $d[$algo_name][$asset_class];
         return array('tp' => $v[0], 'sl' => $v[1], 'hold' => $v[2]);
     }
-    return array('tp' => 3.0, 'sl' => 2.0, 'hold' => 12);
+    return array('tp' => 8.0, 'sl' => 3.0, 'hold' => 24);
 }
 
 // ────────────────────────────────────────────────────────────
@@ -3405,9 +3407,9 @@ function _ls_regime_scale_tp_sl($conn, $sig, $asset_class) {
         $sig['target_sl_pct'] = round($orig_sl * 0.95, 2);
     }
 
-    // Ensure minimums
-    if ($sig['target_tp_pct'] < 0.1) $sig['target_tp_pct'] = 0.1;
-    if ($sig['target_sl_pct'] < 0.05) $sig['target_sl_pct'] = 0.05;
+    // Ensure minimums (Feb 12, 2026: raised floors)
+    if ($sig['target_tp_pct'] < 3.0) $sig['target_tp_pct'] = 3.0;
+    if ($sig['target_sl_pct'] < 1.0) $sig['target_sl_pct'] = 1.0;
 
     // Tag rationale
     $rationale = json_decode($sig['rationale'], true);
@@ -4418,10 +4420,10 @@ function _ls_algo_insider_cluster($conn, $price, $symbol, $asset) {
         'algorithm_name' => 'Insider Cluster Buy',
         'signal_type' => 'BUY',
         'signal_strength' => $strength,
-        'target_tp_pct' => 8,
-        'target_sl_pct' => 4,
-        'max_hold_hours' => 336,
-        'timeframe' => '14d',
+        'target_tp_pct' => 15,
+        'target_sl_pct' => 5,
+        'max_hold_hours' => 504,
+        'timeframe' => '21d',
         'rationale' => $rationale
     );
 }
@@ -4479,10 +4481,10 @@ function _ls_algo_13f_new_position($conn, $price, $symbol, $asset) {
         'algorithm_name' => '13F New Position',
         'signal_type' => 'BUY',
         'signal_strength' => $strength,
-        'target_tp_pct' => 10,
+        'target_tp_pct' => 15,
         'target_sl_pct' => 5,
-        'max_hold_hours' => 672,
-        'timeframe' => '28d',
+        'max_hold_hours' => 720,
+        'timeframe' => '30d',
         'rationale' => $rationale
     );
 }
@@ -4528,9 +4530,9 @@ function _ls_algo_sentiment_divergence($conn, $candles, $price, $symbol, $asset)
             'algorithm_name' => 'Sentiment Divergence',
             'signal_type' => 'BUY',
             'signal_strength' => $strength,
-            'target_tp_pct' => 3,
-            'target_sl_pct' => 2,
-            'max_hold_hours' => 168,
+            'target_tp_pct' => 12,
+            'target_sl_pct' => 4,
+            'max_hold_hours' => 240,
             'timeframe' => '7d',
             'rationale' => json_encode(array(
                 'sentiment_score' => $score,
@@ -4552,9 +4554,9 @@ function _ls_algo_sentiment_divergence($conn, $candles, $price, $symbol, $asset)
             'algorithm_name' => 'Sentiment Divergence',
             'signal_type' => 'SHORT',
             'signal_strength' => $strength,
-            'target_tp_pct' => 3,
-            'target_sl_pct' => 2,
-            'max_hold_hours' => 168,
+            'target_tp_pct' => 12,
+            'target_sl_pct' => 4,
+            'max_hold_hours' => 240,
             'timeframe' => '7d',
             'rationale' => json_encode(array(
                 'sentiment_score' => $score,
@@ -4633,8 +4635,8 @@ function _ls_algo_contrarian_fg($conn, $candles, $price, $symbol, $asset) {
             'algorithm_name' => 'Contrarian Fear/Greed',
             'signal_type' => 'BUY',
             'signal_strength' => $strength,
-            'target_tp_pct' => ($asset === 'CRYPTO') ? 5 : (($asset === 'FOREX') ? 2 : 4),
-            'target_sl_pct' => ($asset === 'CRYPTO') ? 3 : (($asset === 'FOREX') ? 1.5 : 2.5),
+            'target_tp_pct' => ($asset === 'CRYPTO') ? 10 : (($asset === 'FOREX') ? 4 : 12),
+            'target_sl_pct' => ($asset === 'CRYPTO') ? 4 : (($asset === 'FOREX') ? 2 : 4),
             'max_hold_hours' => ($asset === 'STOCK') ? 336 : 168,
             'timeframe' => ($asset === 'STOCK') ? '14d' : '7d',
             'rationale' => json_encode(array(
@@ -4658,8 +4660,8 @@ function _ls_algo_contrarian_fg($conn, $candles, $price, $symbol, $asset) {
             'algorithm_name' => 'Contrarian Fear/Greed',
             'signal_type' => 'SHORT',
             'signal_strength' => $strength,
-            'target_tp_pct' => ($asset === 'CRYPTO') ? 5 : (($asset === 'FOREX') ? 2 : 4),
-            'target_sl_pct' => ($asset === 'CRYPTO') ? 3 : (($asset === 'FOREX') ? 1.5 : 2.5),
+            'target_tp_pct' => ($asset === 'CRYPTO') ? 10 : (($asset === 'FOREX') ? 4 : 12),
+            'target_sl_pct' => ($asset === 'CRYPTO') ? 4 : (($asset === 'FOREX') ? 2 : 4),
             'max_hold_hours' => ($asset === 'STOCK') ? 336 : 168,
             'timeframe' => ($asset === 'STOCK') ? '14d' : '7d',
             'rationale' => json_encode(array(

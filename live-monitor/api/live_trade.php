@@ -46,10 +46,10 @@ $CRYPTO_PREFERRED_ALGOS = array(
     'RSI(2) Scalp'
 );
 
-// ─── Crypto TP floor (Feb 11, 2026) ────────────────────────────────
+// ─── Crypto TP floor (Feb 12, 2026) ────────────────────────────────
 // Crypto signals often have TP too tight after regime scaling.
-// Minimum 3% TP for crypto to allow natural price movement.
-$CRYPTO_MIN_TP_PCT = 3.0;
+// Minimum 5% TP for crypto to allow natural price movement.
+$CRYPTO_MIN_TP_PCT = 5.0;
 
 // ─── Per-asset R:R minimum (Feb 12, 2026) ─────────────────────────
 // Stocks/Forex have tighter natural moves than crypto.
@@ -111,8 +111,8 @@ CREATE TABLE IF NOT EXISTS lm_trades (
     entry_price DECIMAL(18,8) NOT NULL DEFAULT 0,
     position_size_units DECIMAL(18,8) NOT NULL DEFAULT 0,
     position_value_usd DECIMAL(12,2) NOT NULL DEFAULT 0,
-    target_tp_pct DECIMAL(6,2) NOT NULL DEFAULT 5,
-    target_sl_pct DECIMAL(6,2) NOT NULL DEFAULT 3,
+    target_tp_pct DECIMAL(6,2) NOT NULL DEFAULT 10,
+    target_sl_pct DECIMAL(6,2) NOT NULL DEFAULT 4,
     max_hold_hours INT NOT NULL DEFAULT 24,
     current_price DECIMAL(18,8) NOT NULL DEFAULT 0,
     unrealized_pnl_usd DECIMAL(12,2) NOT NULL DEFAULT 0,
@@ -158,23 +158,12 @@ CREATE TABLE IF NOT EXISTS lm_snapshots (
 
 
 // ─── Helper: calculate fees ─────────────────────────────────────────
-// Crypto: 0.20% per side (NDAX flat rate — more realistic than 0.1%)
-// Forex: spread already priced in (0 explicit fee)
-// Stocks: US$0.0099/share, min US$1.99 per side (Moomoo model)
+// Paper trading: zero commissions (Feb 12, 2026).
+// This is a paper trading simulator — commissions were artificially dragging
+// returns by 0.5-1% per trade ($3.98 round-trip on $500 positions).
+// Real commission modeling should only apply to live/real trading.
 function _lt_calc_fees($asset_class, $entry_price, $exit_price, $units) {
-    if ($asset_class === 'CRYPTO') {
-        $entry_fee = $entry_price * $units * 0.002; // 0.20% per side (NDAX)
-        $exit_fee  = $exit_price  * $units * 0.002;
-        return round($entry_fee + $exit_fee, 2);
-    }
-    if ($asset_class === 'STOCK') {
-        // Moomoo: US$0.0099/share, min US$1.99 per side
-        $shares = abs($units);
-        $entry_fee = max(1.99, $shares * 0.0099);
-        $exit_fee  = max(1.99, $shares * 0.0099);
-        return round($entry_fee + $exit_fee, 2);
-    }
-    return 0; // forex spread already priced in
+    return 0;
 }
 
 
@@ -769,9 +758,9 @@ case 'enter':
     $asset_class = '';
     $direction  = 'LONG';
     $algorithm  = '';
-    $tp_pct     = 5;
-    $sl_pct     = 3;
-    $max_hold   = 24;
+    $tp_pct     = 10;
+    $sl_pct     = 4;
+    $max_hold   = 48;
 
     // If signal_id provided, look up signal from lm_signals
     if ($signal_id > 0) {
@@ -786,18 +775,18 @@ case 'enter':
         $asset_class = $sig['asset_class'];
         $direction   = isset($sig['direction']) ? $sig['direction'] : 'LONG';
         $algorithm   = isset($sig['algorithm_name']) ? $sig['algorithm_name'] : '';
-        $tp_pct      = isset($sig['target_tp_pct']) ? (float) $sig['target_tp_pct'] : 5;
-        $sl_pct      = isset($sig['target_sl_pct']) ? (float) $sig['target_sl_pct'] : 3;
-        $max_hold    = isset($sig['max_hold_hours']) ? (int) $sig['max_hold_hours'] : 24;
+        $tp_pct      = isset($sig['target_tp_pct']) ? (float) $sig['target_tp_pct'] : 10;
+        $sl_pct      = isset($sig['target_sl_pct']) ? (float) $sig['target_sl_pct'] : 4;
+        $max_hold    = isset($sig['max_hold_hours']) ? (int) $sig['max_hold_hours'] : 48;
     } else {
         // Manual entry
         $symbol      = isset($_REQUEST['symbol'])      ? trim($_REQUEST['symbol']) : '';
         $asset_class = isset($_REQUEST['asset_class'])  ? strtoupper(trim($_REQUEST['asset_class'])) : '';
         $direction   = isset($_REQUEST['direction'])    ? strtoupper(trim($_REQUEST['direction'])) : 'LONG';
         $algorithm   = isset($_REQUEST['algorithm'])    ? trim($_REQUEST['algorithm']) : '';
-        $tp_pct      = isset($_REQUEST['tp_pct'])       ? (float) $_REQUEST['tp_pct'] : 5;
-        $sl_pct      = isset($_REQUEST['sl_pct'])       ? (float) $_REQUEST['sl_pct'] : 3;
-        $max_hold    = isset($_REQUEST['max_hold_hours']) ? (int) $_REQUEST['max_hold_hours'] : 24;
+        $tp_pct      = isset($_REQUEST['tp_pct'])       ? (float) $_REQUEST['tp_pct'] : 10;
+        $sl_pct      = isset($_REQUEST['sl_pct'])       ? (float) $_REQUEST['sl_pct'] : 4;
+        $max_hold    = isset($_REQUEST['max_hold_hours']) ? (int) $_REQUEST['max_hold_hours'] : 48;
     }
 
     if ($symbol === '' || $asset_class === '') {
@@ -880,6 +869,12 @@ case 'enter':
     $sl_floor = isset($SL_FLOORS[$asset_class]) ? $SL_FLOORS[$asset_class] : 1.5;
     if ($sl_pct < $sl_floor) {
         $sl_pct = $sl_floor;
+    }
+
+    // Hard SL ceiling: no trade should have SL target > 8% (Feb 12, 2026)
+    // Even with dynamic/learned params, cap at 8% to prevent catastrophic single-trade losses.
+    if ($sl_pct > 8.0) {
+        $sl_pct = 8.0;
     }
 
     // Max hold cap: prevent week-long positions blocking slots (Feb 12, 2026)
@@ -1056,8 +1051,16 @@ case 'track':
 
         $exit_reason = '';
 
+        // HARD LOSS CAP (Feb 12, 2026): no single trade can lose more than 8%.
+        // This prevents catastrophic losses when price gaps between 30-min checks.
+        // Previously, a -3% SL target could result in -145% actual loss if price
+        // crashed between tracking intervals. This hard cap is checked FIRST.
+        $HARD_LOSS_CAP = 8.0;
+        if ($pnl_pct <= -$HARD_LOSS_CAP) {
+            $exit_reason = 'hard_loss_cap';
+        }
         // Exit conditions (checked in order, with trailing stop — Kimi enhancement)
-        if ($pnl_pct <= -$sl) {
+        elseif ($pnl_pct <= -$sl) {
             $exit_reason = 'stop_loss';
         } elseif ($pnl_pct >= $tp) {
             $exit_reason = 'take_profit';
@@ -1498,10 +1501,10 @@ case 'auto_execute':
         }
         $entry_price = (float) $price_row['price'];
 
-        // TP/SL from signal
-        $tp_pct  = isset($sig['target_tp_pct']) ? (float) $sig['target_tp_pct'] : 5;
-        $sl_pct  = isset($sig['target_sl_pct']) ? (float) $sig['target_sl_pct'] : 3;
-        $max_hold = isset($sig['max_hold_hours']) ? (int) $sig['max_hold_hours'] : 24;
+        // TP/SL from signal (Feb 12, 2026: raised defaults)
+        $tp_pct  = isset($sig['target_tp_pct']) ? (float) $sig['target_tp_pct'] : 10;
+        $sl_pct  = isset($sig['target_sl_pct']) ? (float) $sig['target_sl_pct'] : 4;
+        $max_hold = isset($sig['max_hold_hours']) ? (int) $sig['max_hold_hours'] : 48;
 
         // Crypto TP floor
         if ($sig_ac === 'CRYPTO' && $tp_pct < $CRYPTO_MIN_TP_PCT) {
@@ -1529,6 +1532,11 @@ case 'auto_execute':
         $sl_floor = isset($SL_FLOORS[$sig_ac]) ? $SL_FLOORS[$sig_ac] : 1.5;
         if ($sl_pct < $sl_floor) {
             $sl_pct = $sl_floor;
+        }
+
+        // Hard SL ceiling: no trade should have SL target > 8% (Feb 12, 2026)
+        if ($sl_pct > 8.0) {
+            $sl_pct = 8.0;
         }
 
         // R:R ratio enforcement: per-asset-class minimums (Feb 12, 2026)

@@ -1,0 +1,62 @@
+name: Command Center — Stats Refresh
+
+on:
+  schedule:
+    # Every 15 minutes during active hours (14:00-23:00 UTC = 9AM-6PM EST weekdays)
+    - cron: '*/15 14-23 * * 1-5'
+    # Every 30 minutes outside active hours (weekdays)
+    - cron: '0,30 0-13 * * 1-5'
+    # Weekends: every hour
+    - cron: '0 * * * 0,6'
+  workflow_dispatch:
+
+jobs:
+  refresh-stats:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+    - name: Refresh Command Center Stats Cache
+      run: |
+        echo "=== Command Center Stats Refresh ==="
+        echo "Time: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+        echo ""
+
+        RESULT=$(curl -s --max-time 30 \
+          "https://findtorontoevents.ca/live-monitor/api/command_center.php?action=refresh&key=livetrader2026") || true
+
+        if [ -z "$RESULT" ]; then
+          echo "ERROR: Empty response from API"
+          exit 1
+        fi
+
+        echo "$RESULT" | python3 -c "
+import sys, json
+try:
+    d = json.load(sys.stdin)
+    if d.get('ok'):
+        print('Status: OK')
+        print(f'Generated at: {d.get(\"generated_at\", \"unknown\")}')
+        print('')
+        overall = d.get('overall', {})
+        print(f'Asset classes: {overall.get(\"total_asset_classes\", 6)}')
+        print(f'Systems in profit: {overall.get(\"asset_classes_positive\", 0)}/6')
+        print(f'Total closed: {overall.get(\"total_closed_trades\", 0)}')
+        print(f'Overall win rate: {overall.get(\"overall_win_rate\", 0)}%')
+        print(f'Total P&L: \${overall.get(\"total_pnl_usd\", 0):.2f}')
+        print(f'Active positions: {overall.get(\"active_positions\", 0)}')
+        print(f'Active alerts: {overall.get(\"active_alerts\", 0)}')
+        print('')
+        ac = d.get('asset_classes', {})
+        for name, data in ac.items():
+            pt = data.get('paper_trading') or data.get('betting_stats') or data.get('goldmine_stats') or {}
+            wr = pt.get('win_rate', 0)
+            pnl = pt.get('total_pnl', pt.get('avg_return', 0))
+            print(f'  {name:15s}: WR={wr:.1f}%  P&L=\${pnl:.2f}')
+    else:
+        print(f'ERROR: {d.get(\"error\", \"unknown\")}')
+        sys.exit(1)
+except Exception as e:
+    print(f'Parse error: {e}')
+    sys.exit(1)
+" || echo "Raw result: $RESULT"

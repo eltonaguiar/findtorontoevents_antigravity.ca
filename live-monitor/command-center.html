@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Command Center — All Asset Classes | FTE Invest</title>
+    <meta name="description" content="Real-time performance dashboard across all 6 asset classes. Stocks, crypto, meme coins, forex, sports betting, and penny stocks.">
+    <link rel="canonical" href="https://findtorontoevents.ca/live-monitor/command-center.html">
+    <meta property="og:title" content="Command Center — All Asset Classes | FTE Invest">
+    <meta property="og:description" content="Real-time performance across all 6 asset classes — stocks, crypto, forex, meme coins, sports betting, penny stocks.">
+    <meta property="og:url" content="https://findtorontoevents.ca/live-monitor/command-center.html">
+    <meta property="og:site_name" content="Find Toronto Events">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Command Center — All Asset Classes | FTE Invest">
+    <meta name="twitter:description" content="Real-time performance across all 6 asset classes.">
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        /* ===== CSS VARIABLES ===== */
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --text-muted: #555578;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --yellow: #f59e0b;
+            --yellow-dim: rgba(245, 158, 11, 0.15);
+            --blue: #3b82f6;
+            --blue-dim: rgba(59, 130, 246, 0.15);
+            --orange: #f97316;
+            --orange-dim: rgba(249, 115, 22, 0.15);
+            --purple: #a855f7;
+            --purple-dim: rgba(168, 85, 247, 0.15);
+            --cyan: #06b6d4;
+            --cyan-dim: rgba(6, 182, 212, 0.15);
+            --pink: #ec4899;
+            --pink-dim: rgba(236, 72, 153, 0.15);
+            --amber: #f59e0b;
+            --amber-dim: rgba(245, 158, 11, 0.15);
+            --radius: 12px;
+        }
+
+        /* ===== RESET ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 50%, #1a1040 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem 2rem 1.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at 30% 40%, rgba(168, 85, 247, 0.12) 0%, transparent 55%),
+                        radial-gradient(ellipse at 70% 60%, rgba(99, 102, 241, 0.08) 0%, transparent 45%);
+            pointer-events: none;
+        }
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+        .header-logo {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .header-scope-badge {
+            display: inline-block;
+            background: var(--purple-dim);
+            color: var(--purple);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--purple), #818cf8, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1.5px;
+            margin-bottom: 0.3rem;
+        }
+        .header-subtitle {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            font-weight: 400;
+        }
+
+        /* ===== LAST UPDATED BAR ===== */
+        .last-updated-bar {
+            text-align: center;
+            padding: 0.6rem 1rem;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        .refresh-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+        .refresh-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .refresh-btn.spinning {
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== CONTAINER ===== */
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+        /* ===== SECTION HEADERS ===== */
+        .section-header {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+            margin: 2rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .section-header .sh-icon {
+            font-size: 1.2rem;
+            color: var(--purple);
+        }
+
+        /* ===== GLOBAL STATS ROW (6 KPI cards) ===== */
+        .global-stats {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem 1.2rem;
+            text-align: center;
+            transition: border-color 0.3s, transform 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .kpi-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--purple));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .kpi-card:hover::before { opacity: 1; }
+        .kpi-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-dim);
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+        }
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .kpi-sub {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            margin-top: 0.2rem;
+        }
+
+        /* ===== ASSET CLASS GRID (2x3) ===== */
+        .asset-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        .asset-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.4rem;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .asset-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            border-color: var(--accent);
+        }
+        .asset-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+        .asset-card[data-class="stocks"]::before { background: var(--blue); }
+        .asset-card[data-class="crypto"]::before { background: var(--orange); }
+        .asset-card[data-class="meme"]::before { background: var(--pink); }
+        .asset-card[data-class="forex"]::before { background: var(--cyan); }
+        .asset-card[data-class="sports"]::before { background: var(--green); }
+        .asset-card[data-class="penny"]::before { background: var(--amber); }
+
+        .ac-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .ac-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .ac-icon {
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+        .ac-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .ac-scope-badge {
+            display: inline-block;
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 0.2rem 0.55rem;
+            border-radius: 10px;
+        }
+
+        .ac-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.6rem 1rem;
+            margin-bottom: 0.8rem;
+        }
+        .ac-metric {
+            display: flex;
+            flex-direction: column;
+        }
+        .ac-metric-label {
+            font-size: 0.68rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 0.1rem;
+        }
+        .ac-metric-value {
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .ac-secondary {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 0.8rem;
+            padding: 0.5rem 0;
+            border-top: 1px solid rgba(42, 42, 74, 0.5);
+            border-bottom: 1px solid rgba(42, 42, 74, 0.5);
+            font-size: 0.82rem;
+        }
+        .ac-secondary-item {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: var(--text-dim);
+        }
+        .ac-secondary-item strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .ac-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.6rem;
+        }
+        .ac-link {
+            font-size: 0.82rem;
+            color: var(--accent);
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .ac-link:hover {
+            color: #818cf8;
+            text-decoration: underline;
+        }
+        .ac-health {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        /* ===== HEALTH DOTS WITH PULSE ===== */
+        .health-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+        .health-dot.green {
+            background: var(--green);
+            box-shadow: 0 0 6px var(--green);
+            animation: pulse-green 2s ease-in-out infinite;
+        }
+        .health-dot.yellow {
+            background: var(--yellow);
+            box-shadow: 0 0 6px var(--yellow);
+            animation: pulse-yellow 2s ease-in-out infinite;
+        }
+        .health-dot.red {
+            background: var(--red);
+            box-shadow: 0 0 6px var(--red);
+            animation: pulse-red 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 4px var(--green); }
+            50% { box-shadow: 0 0 12px var(--green), 0 0 20px rgba(34, 197, 94, 0.3); }
+        }
+        @keyframes pulse-yellow {
+            0%, 100% { box-shadow: 0 0 4px var(--yellow); }
+            50% { box-shadow: 0 0 12px var(--yellow), 0 0 20px rgba(245, 158, 11, 0.3); }
+        }
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 4px var(--red); }
+            50% { box-shadow: 0 0 14px var(--red), 0 0 24px rgba(239, 68, 68, 0.4); }
+        }
+
+        /* ===== COLOR CLASSES ===== */
+        .text-green { color: var(--green); }
+        .text-red { color: var(--red); }
+        .text-yellow { color: var(--yellow); }
+        .text-blue { color: var(--blue); }
+        .text-orange { color: var(--orange); }
+        .text-pink { color: var(--pink); }
+        .text-cyan { color: var(--cyan); }
+        .text-amber { color: var(--amber); }
+        .text-purple { color: var(--purple); }
+        .text-dim { color: var(--text-dim); }
+        .text-muted { color: var(--text-muted); }
+        .text-accent { color: var(--accent); }
+        .pos { color: var(--green); }
+        .neg { color: var(--red); }
+
+        /* ===== BADGE ===== */
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.55rem;
+            border-radius: 10px;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+        .badge-green { background: var(--green-dim); color: var(--green); }
+        .badge-red { background: var(--red-dim); color: var(--red); }
+        .badge-yellow { background: var(--yellow-dim); color: var(--yellow); }
+        .badge-blue { background: var(--blue-dim); color: var(--blue); }
+        .badge-purple { background: var(--purple-dim); color: var(--purple); }
+        .badge-orange { background: var(--orange-dim); color: var(--orange); }
+        .badge-cyan { background: var(--cyan-dim); color: var(--cyan); }
+        .badge-pink { background: var(--pink-dim); color: var(--pink); }
+        .badge-amber { background: var(--amber-dim); color: var(--amber); }
+
+        /* ===== CHART BOX ===== */
+        .chart-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .chart-box h3 {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        canvas { max-height: 400px; }
+
+        /* ===== ACTIVITY FEED ===== */
+        .activity-feed {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .activity-feed h3 {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .activity-scroll {
+            max-height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+        .activity-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .activity-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .activity-scroll::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+        .activity-scroll::-webkit-scrollbar-thumb:hover {
+            background: var(--text-dim);
+        }
+        .activity-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.65rem 0;
+            border-bottom: 1px solid rgba(42, 42, 74, 0.5);
+            font-size: 0.82rem;
+        }
+        .activity-row:last-child { border-bottom: none; }
+        .activity-time {
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            min-width: 100px;
+            flex-shrink: 0;
+        }
+        .activity-badge {
+            min-width: 90px;
+            flex-shrink: 0;
+            text-align: center;
+        }
+        .activity-desc {
+            color: var(--text);
+            flex: 1;
+        }
+        .activity-desc .ticker {
+            font-weight: 700;
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: var(--text-dim);
+            font-size: 0.88rem;
+            font-style: italic;
+        }
+
+        /* ===== LOADING SPINNER ===== */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-dim);
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 0.8rem;
+        }
+        .error-box {
+            background: var(--red-dim);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            color: #fca5a5;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            text-align: center;
+            padding: 1.5rem 2rem;
+            color: var(--text-dim);
+            font-size: 0.78rem;
+            border-top: 1px solid var(--border);
+            margin-top: 1rem;
+        }
+        .footer p + p { margin-top: 0.3rem; }
+        .footer .disclaimer {
+            margin-top: 0.6rem;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+        .footer .countdown-label {
+            color: var(--text-muted);
+        }
+        .footer .countdown-value {
+            color: var(--accent);
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1200px) {
+            .global-stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .asset-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.5rem; letter-spacing: 1px; }
+            .header { padding: 1.2rem 1rem; }
+            .header-top { flex-direction: column; gap: 0.5rem; align-items: center; }
+            .container { padding: 1rem; }
+            .global-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.6rem;
+            }
+            .kpi-value { font-size: 1.5rem; }
+            .asset-grid { grid-template-columns: 1fr; }
+            .ac-metrics {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 0.4rem 0.8rem;
+            }
+            .activity-row {
+                flex-wrap: wrap;
+                gap: 0.4rem;
+            }
+            .activity-time { min-width: auto; }
+            .activity-badge { min-width: auto; }
+        }
+        @media (max-width: 480px) {
+            .global-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+            .header h1 { font-size: 1.2rem; }
+            .kpi-value { font-size: 1.3rem; }
+            .ac-metrics {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.4rem 1rem;
+            }
+            .ac-metric-value { font-size: 1rem; }
+            .ac-secondary { flex-direction: column; gap: 0.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <div class="header">
+        <div class="header-inner">
+            <div class="header-top">
+                <div class="header-logo">FTE Invest</div>
+                <span class="header-scope-badge">ALL ASSET CLASSES</span>
+            </div>
+            <h1>Command Center</h1>
+            <div class="header-subtitle">Real-time performance across all 6 asset classes</div>
+        </div>
+    </div>
+
+    <!-- ===== LAST UPDATED BAR ===== -->
+    <div class="last-updated-bar">
+        <span id="last-updated-text">Last updated: loading...</span>
+        <button class="refresh-btn" id="refresh-btn" onclick="manualRefresh()" title="Refresh data">&#8635; Refresh</button>
+    </div>
+
+    <div class="container">
+
+        <!-- ===== GLOBAL STATS ROW ===== -->
+        <div class="global-stats" id="global-stats">
+            <div class="kpi-card">
+                <div class="kpi-label">Total Systems</div>
+                <div class="kpi-value text-accent" id="kpi-systems">6</div>
+                <div class="kpi-sub">Asset classes tracked</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Systems in Profit</div>
+                <div class="kpi-value text-dim" id="kpi-profitable">--</div>
+                <div class="kpi-sub">Positive P&amp;L</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Total Closed Trades</div>
+                <div class="kpi-value text-dim" id="kpi-closed">--</div>
+                <div class="kpi-sub">All systems combined</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Overall Win Rate</div>
+                <div class="kpi-value text-dim" id="kpi-winrate">--</div>
+                <div class="kpi-sub">Weighted average</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Total P&amp;L</div>
+                <div class="kpi-value text-dim" id="kpi-pnl">--</div>
+                <div class="kpi-sub">Paper trading</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Active Alerts</div>
+                <div class="kpi-value text-dim" id="kpi-alerts">--</div>
+                <div class="kpi-sub">Requiring attention</div>
+            </div>
+        </div>
+
+        <!-- ===== ASSET CLASS GRID ===== -->
+        <div class="section-header">
+            <span class="sh-icon">&#9670;</span>
+            Asset Classes
+        </div>
+
+        <div class="asset-grid" id="asset-grid">
+            <!-- STOCKS & ETFs -->
+            <div class="asset-card" data-class="stocks" id="card-stocks">
+                <div class="ac-header">
+                    <div class="ac-header-left">
+                        <span class="ac-icon">&#128200;</span>
+                        <span class="ac-name" style="color:var(--blue)">Stocks &amp; ETFs</span>
+                    </div>
+                    <span class="ac-scope-badge badge-blue">STOCKS</span>
+                </div>
+                <div class="ac-metrics">
+                    <div class="ac-metric">
+                        <span class="ac-metric-label">Win Rate</span>
+                        <span class="ac-metric-value text-dim" id="stocks-winrate">--</span>
+                    </div>
+                    <div class="ac-metric">
+                        <span class="ac-metric-label">Trades</span>
+                        <span class="ac-metric-value text-dim" id="stocks-trades">--</span>
+                    </div>
+                    <div class="ac-metric">
+                        <span class="ac-metric-label">P&amp;L</span>
+                        <span class="ac-metric-value text-dim" id="stocks-pnl">--</span>
+                    </div>
+                </div>
+                <div class="ac-secondary">
+                    <span class="ac-secondary-item">Open: <strong id="stocks-open">--</strong></span>
+                    <span class="ac-secondary-item">Signals: <strong id="stocks-signals">--</strong></span>
+                </div>
+                <div class="ac-footer">
+                    <a class="ac-link" href="/findstocks/portfolio2/consolidated.html">View Details &rarr;</a>
+                    <div class="ac-health" id="stocks-health">
+                        <span class="health-dot yellow"></span>
+                        <span>Loading</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CRYPTOCURRENCY -->
+            <div class="asset-card" data-class="crypto" id="card-crypto">
+                <div class="ac-header">
+                    <div class="ac-header-left">
+                        <span class="ac-icon">&#8383;</span>
+                        <span class="ac-name" style="color:var(--orange)">Cryptocurrency</span>
+                    </div>
+                    <span class="ac-scope-badge badge-orange">CRYPTO</span>
+                </div>
+                <div class="ac-metrics">
+                    <div class="ac-metric">
+                        <span class="ac-metric-label">Win Rate</span>
+                        <span class="ac-metric-value text-dim" id="crypto-winrate">--</span>
+                    </div>
+                    <div class="ac-metric">
+                        <span class="ac-metric-label">Trades</span>
+                        <span class="ac-metric-value text-dim" id="crypto-trades">--</span>
+                    </div>
+                    <div class="ac-metric">
+                        <span class="ac-metric-label">P&amp;L</span>
+                        <span class="ac-metric-value text-dim" id="crypto-pnl">--</span>
+                    </div>
+                </div>
+                <div class="ac-secondary">
+                    <span class="ac-secondary-item">Open: <strong id="crypto-open">--</strong></span>
+                    <span class="ac-secondary-item">Signals: <strong id="crypto-signals">--</strong></span>
+                </div>
+                <div class="ac-footer">
+                    <a class="ac-link" href="/findcryptopairs/winners.html">View Details &rarr;</a>
+                    <div class="ac-health" id="crypto-health">
+                        <span class="health-dot yellow"></span>
+                        <span>Loading</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MEME COINS -->
+            <div class="asset-card" data-class="meme" id="card-meme">
+                <div class="ac-header">
+                    <div class="ac-header-left">
+                        <span class="ac-icon">&#128021;</span>
+                        <span class="ac-name" style="color:var(--pink)">Meme Coins</span>
+                    </div>
+                    <span class="ac-scope-badge badge-pink">MEME COINS</span>
+                </div>
+                <div class="ac-metrics">
+                    <div class="ac-metric">
+                        <span class="ac-metric-label">Win Rate</span>
+                        <span class="ac-metric-value text-dim" id="meme-winrate">--</span>
+                    </div>
+                    <div class="ac-metric">
+                        <span class="ac-metric-label">Trades</span>
+                        <span class="ac-metric-value text-dim" id="meme-trades">--</span>
+                    </div>
+                    <div class="ac-metric">
+                        <span class="ac-metric-label">P&amp;L</span>
+                        <span class="ac-metric-value text-dim" id="meme-pnl">--</span>
+                    </div>
+                </div>
+                <div class="ac-secondary">
+                    <span class="ac-secondary-item">Open: <strong id="meme-open">--</strong></span>
+                    <span class="ac-secondary-item">Signals: <strong id="meme-signals">--</strong></span>
+                </div>
+                <div class="ac-footer">
+                    <a class="ac-link" href="/findcryptopairs/meme.html">View Details &rarr;</a>
+                    <div class="ac-health" id="meme-health">
+                        <span class="health-dot yellow"></span>
+                        <span>Loading</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FOREX -->
+            <div class="asset-card" data-class="forex" id="card-forex">
+                <div class="ac-header">
+                    <div class="ac-header-left">
+                        <span class="ac-icon">&#128177;</span>
+                        <span class="ac-name" style="color:var(--cyan)">Forex</span>
+                    </div>
+                    <span class="ac-scope-badge badge-cyan">FOREX</span>
+                </div>
+                <div class="ac-metrics">
+                    <div class="ac-metric">
+                        <span class="ac-metric-label">Win Rate</span>
+                        <span class="ac-metric-value text-dim" id="forex-winrate">--</span>
+                    </div>
+                    <div class="ac-metric">
+                        <span class="ac-metric-label">Trades</span>
+                        <span class="ac-metric-value text-dim" id="forex-trades">--</span>
+                    </div>
+                    <div class="ac-metric">
+                        <span class="ac-metric-label">P&amp;L</span>
+                        <span class="ac-metric-value text-dim" id="forex-pnl">--</span>
+                    </div>
+                </div>
+                <div class="ac-secondary">
+                    <span class="ac-secondary-item">Open: <strong id="forex-open">--</strong></span>
+                    <span class="ac-secondary-item">Signals: <strong id="forex-signals">--</strong></span>
+                </div>
+                <div class="ac-footer">
+                    <a class="ac-link" href="/findforex2/portfolio/">View Details &rarr;</a>
+                    <div class="ac-health" id="forex-health">
+                        <span class="health-dot yellow"></span>
+                        <span>Loading</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SPORTS BETTING -->
+            <div class="asset-card" data-class="sports" id="card-sports">
+                <div class="ac-header">
+                    <div class="ac-header-left">
+                        <span class="ac-icon">&#127944;</span>
+                        <span class="ac-name" style="color:var(--green)">Sports Betting</span>
+                    </div>
+                    <span class="ac-scope-badge badge-green">SPORTS</span>
+                </div>
+                <div class="ac-metrics">
+                    <div class="ac-metric">
+                        <span class="ac-metric-label">Win Rate</span>
+                        <span class="ac-metric-value text-dim" id="sports-winrate">--</span>
+                    </div>
+                    <div class="ac-metric">
+                        <span class="ac-metric-label">Bets</span>
+                        <span class="ac-metric-value text-dim" id="sports-trades">--</span>
+                    </div>
+                    <div class="ac-metric">
+                        <span class="ac-metric-label">P&amp;L</span>
+                        <span class="ac-metric-value text-dim" id="sports-pnl">--</span>
+                    </div>
+                </div>
+                <div class="ac-secondary">
+                    <span class="ac-secondary-item">Open: <strong id="sports-open">--</strong></span>
+                    <span class="ac-secondary-item">Signals: <strong id="sports-signals">--</strong></span>
+                </div>
+                <div class="ac-footer">
+                    <a class="ac-link" href="/live-monitor/sports-betting.html">View Details &rarr;</a>
+                    <div class="ac-health" id="sports-health">
+                        <span class="health-dot yellow"></span>
+                        <span>Loading</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PENNY STOCKS -->
+            <div class="asset-card" data-class="penny" id="card-penny">
+                <div class="ac-header">
+                    <div class="ac-header-left">
+                        <span class="ac-icon">&#129689;</span>
+                        <span class="ac-name" style="color:var(--amber)">Penny Stocks</span>
+                    </div>
+                    <span class="ac-scope-badge badge-amber">PENNY STOCKS</span>
+                </div>
+                <div class="ac-metrics">
+                    <div class="ac-metric">
+                        <span class="ac-metric-label">Win Rate</span>
+                        <span class="ac-metric-value text-dim" id="penny-winrate">--</span>
+                    </div>
+                    <div class="ac-metric">
+                        <span class="ac-metric-label">Trades</span>
+                        <span class="ac-metric-value text-dim" id="penny-trades">--</span>
+                    </div>
+                    <div class="ac-metric">
+                        <span class="ac-metric-label">P&amp;L</span>
+                        <span class="ac-metric-value text-dim" id="penny-pnl">--</span>
+                    </div>
+                </div>
+                <div class="ac-secondary">
+                    <span class="ac-secondary-item">Open: <strong id="penny-open">--</strong></span>
+                    <span class="ac-secondary-item">Signals: <strong id="penny-signals">--</strong></span>
+                </div>
+                <div class="ac-footer">
+                    <a class="ac-link" href="/findstocks/portfolio2/penny-stocks.html">View Details &rarr;</a>
+                    <div class="ac-health" id="penny-health">
+                        <span class="health-dot yellow"></span>
+                        <span>Loading</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== GOLDMINE SYSTEMS CHART ===== -->
+        <div class="section-header">
+            <span class="sh-icon">&#9670;</span>
+            Cross-System Performance
+        </div>
+
+        <div class="chart-box" id="goldmine-chart-box">
+            <h3>All Goldmine Systems Ranked by Win Rate</h3>
+            <div id="goldmine-chart-container" style="position:relative;">
+                <canvas id="chart-goldmine"></canvas>
+                <div class="loading" id="chart-loading">
+                    <div class="loading-spinner"></div>
+                    <div>Loading chart data...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== RECENT ACTIVITY FEED ===== -->
+        <div class="section-header">
+            <span class="sh-icon">&#9670;</span>
+            Recent Activity
+        </div>
+
+        <div class="activity-feed" id="activity-feed">
+            <h3>Latest Events Across All Systems</h3>
+            <div class="activity-scroll" id="activity-list">
+                <div class="loading" id="activity-loading">
+                    <div class="loading-spinner"></div>
+                    <div>Loading activity...</div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /.container -->
+
+    <!-- ===== FOOTER ===== -->
+    <div class="footer">
+        <p>
+            <span class="countdown-label">Auto-refreshes every 60 seconds</span>
+            &bull;
+            <span class="countdown-label">Next refresh in </span>
+            <span class="countdown-value" id="countdown">60s</span>
+        </p>
+        <p class="disclaimer">Paper trading simulation only &mdash; not financial advice. Past performance does not guarantee future results.</p>
+    </div>
+
+<script>
+/* ===================================================================
+   COMMAND CENTER — Vanilla JS (PHP 5.2-compatible XHR)
+   No ES6+. var only. No arrow functions. No template literals.
+   =================================================================== */
+
+var API_URL = '/live-monitor/api/command_center.php';
+var REFRESH_INTERVAL = 60;
+var countdown = REFRESH_INTERVAL;
+var refreshTimer = null;
+var countdownTimer = null;
+var goldmineChart = null;
+
+/* ===== Asset Class Configuration ===== */
+var ASSET_CLASSES = {
+    stocks:  { key: 'stocks',  name: 'Stocks & ETFs',    color: '#3b82f6', badgeCls: 'badge-blue',   link: '/findstocks/portfolio2/consolidated.html' },
+    crypto:  { key: 'crypto',  name: 'Cryptocurrency',   color: '#f97316', badgeCls: 'badge-orange', link: '/findcryptopairs/winners.html' },
+    meme:    { key: 'meme',    name: 'Meme Coins',       color: '#ec4899', badgeCls: 'badge-pink',   link: '/findcryptopairs/meme.html' },
+    forex:   { key: 'forex',   name: 'Forex',            color: '#06b6d4', badgeCls: 'badge-cyan',   link: '/findforex2/portfolio/' },
+    sports:  { key: 'sports',  name: 'Sports Betting',   color: '#22c55e', badgeCls: 'badge-green',  link: '/live-monitor/sports-betting.html' },
+    penny:   { key: 'penny',   name: 'Penny Stocks',     color: '#f59e0b', badgeCls: 'badge-amber',  link: '/findstocks/portfolio2/penny-stocks.html' }
+};
+
+/* ===== Utility Functions ===== */
+function fmtNum(n, dec) {
+    if (n === null || n === undefined || isNaN(n)) return '--';
+    return parseFloat(n).toFixed(dec !== undefined ? dec : 2);
+}
+
+function fmtPct(n) {
+    if (n === null || n === undefined || isNaN(n)) return '--';
+    var v = parseFloat(n);
+    return (v > 0 ? '+' : '') + v.toFixed(1) + '%';
+}
+
+function fmtMoney(n) {
+    if (n === null || n === undefined || isNaN(n)) return '--';
+    var v = parseFloat(n);
+    var prefix = v >= 0 ? '+$' : '-$';
+    return prefix + Math.abs(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtDate(d) {
+    if (!d) return '--';
+    try {
+        var dt = new Date(d);
+        if (isNaN(dt.getTime())) return d;
+        var m = dt.getMonth() + 1;
+        var day = dt.getDate();
+        var h = dt.getHours();
+        var mi = dt.getMinutes();
+        return m + '/' + day + ' ' + (h < 10 ? '0' : '') + h + ':' + (mi < 10 ? '0' : '') + mi;
+    } catch (e) { return d; }
+}
+
+function colorByValue(val) {
+    var v = parseFloat(val);
+    if (isNaN(v)) return '';
+    if (v > 0) return 'pos';
+    if (v < 0) return 'neg';
+    return '';
+}
+
+function healthStatus(winRate, hasTrades, hasRecentData) {
+    var wr = parseFloat(winRate);
+    if (isNaN(wr) && !hasTrades) return { cls: 'yellow', label: 'No Data' };
+    if (wr >= 55 || (hasTrades && hasRecentData)) return { cls: 'green', label: 'Online' };
+    if (wr >= 40 || !hasRecentData) return { cls: 'yellow', label: 'Caution' };
+    return { cls: 'red', label: 'Underperforming' };
+}
+
+function assetBadgeHtml(key) {
+    var config = ASSET_CLASSES[key];
+    if (!config) return '<span class="badge badge-purple">' + (key || 'Unknown') + '</span>';
+    return '<span class="badge ' + config.badgeCls + '">' + config.name + '</span>';
+}
+
+function safeInt(v) {
+    var n = parseInt(v);
+    return isNaN(n) ? 0 : n;
+}
+
+function safeFloat(v) {
+    var n = parseFloat(v);
+    return isNaN(n) ? 0 : n;
+}
+
+
+/* ===================================================================
+   MAIN DATA LOADER
+   =================================================================== */
+function loadStats() {
+    var btn = document.getElementById('refresh-btn');
+    if (btn) btn.classList.add('spinning');
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API_URL + '?action=stats', true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (btn) btn.classList.remove('spinning');
+
+            if (xhr.status === 200) {
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data.ok) {
+                        renderOverall(data.overall);
+                        renderAssetCards(data.asset_classes);
+                        renderGoldmineChart(data.goldmine);
+                        renderActivity(data.recent_activity);
+                        updateTimestamp(data.generated_at, data.from_cache);
+                    } else {
+                        showNoData('API returned no data');
+                    }
+                } catch(e) {
+                    console.error('Command Center parse error:', e);
+                    showNoData('Failed to parse response');
+                }
+            } else {
+                showNoData('API returned status ' + xhr.status);
+            }
+        }
+    };
+    xhr.onerror = function() {
+        if (btn) btn.classList.remove('spinning');
+        showNoData('Connection error');
+    };
+    xhr.send();
+}
+
+
+/* ===================================================================
+   RENDER: Overall KPI Cards
+   =================================================================== */
+function renderOverall(overall) {
+    if (!overall) {
+        overall = { total_asset_classes: 6, asset_classes_positive: 0, total_closed_trades: 0, overall_win_rate: 0, total_pnl_usd: 0, active_alerts: 0 };
+    }
+
+    // Total Systems
+    var sysEl = document.getElementById('kpi-systems');
+    sysEl.textContent = (overall.total_asset_classes || 6).toString();
+
+    // Systems in Profit
+    var profEl = document.getElementById('kpi-profitable');
+    var profVal = safeInt(overall.asset_classes_positive);
+    profEl.textContent = profVal.toString();
+    if (profVal > 3) profEl.className = 'kpi-value text-green';
+    else if (profVal === 3) profEl.className = 'kpi-value text-yellow';
+    else if (profVal > 0) profEl.className = 'kpi-value text-red';
+    else profEl.className = 'kpi-value text-dim';
+
+    // Total Closed Trades
+    var closedEl = document.getElementById('kpi-closed');
+    var closedVal = safeInt(overall.total_closed_trades);
+    closedEl.textContent = closedVal.toLocaleString();
+    closedEl.className = 'kpi-value ' + (closedVal > 0 ? 'text-accent' : 'text-dim');
+
+    // Overall Win Rate
+    var wrEl = document.getElementById('kpi-winrate');
+    var wrVal = safeFloat(overall.overall_win_rate);
+    if (closedVal > 0) {
+        wrEl.textContent = fmtNum(wrVal, 1) + '%';
+        if (wrVal > 60) wrEl.className = 'kpi-value text-green';
+        else if (wrVal >= 50) wrEl.className = 'kpi-value text-yellow';
+        else wrEl.className = 'kpi-value text-red';
+    } else {
+        wrEl.textContent = 'N/A';
+        wrEl.className = 'kpi-value text-dim';
+    }
+
+    // Total P&L
+    var pnlEl = document.getElementById('kpi-pnl');
+    var pnlVal = safeFloat(overall.total_pnl_usd);
+    if (closedVal > 0) {
+        pnlEl.textContent = fmtMoney(pnlVal);
+        pnlEl.className = 'kpi-value ' + (pnlVal >= 0 ? 'text-green' : 'text-red');
+    } else {
+        pnlEl.textContent = '$0.00';
+        pnlEl.className = 'kpi-value text-dim';
+    }
+
+    // Active Alerts
+    var alertEl = document.getElementById('kpi-alerts');
+    var alertVal = safeInt(overall.active_alerts);
+    alertEl.textContent = alertVal.toString();
+    alertEl.className = 'kpi-value ' + (alertVal > 0 ? 'text-red' : 'text-green');
+}
+
+
+/* ===================================================================
+   RENDER: Asset Class Cards
+   =================================================================== */
+function renderAssetCards(assetClasses) {
+    if (!assetClasses) return;
+
+    // Map API keys to DOM element ID prefixes
+    var keyMap = [
+        ['stocks',       'stocks'],
+        ['crypto',       'crypto'],
+        ['meme_coins',   'meme'],
+        ['forex',        'forex'],
+        ['sports',       'sports'],
+        ['penny_stocks', 'penny']
+    ];
+
+    for (var i = 0; i < keyMap.length; i++) {
+        var apiKey = keyMap[i][0];
+        var domKey = keyMap[i][1];
+        var ac = assetClasses[apiKey] || {};
+
+        // Normalize: API nests stats under paper_trading, betting_stats, or goldmine_stats
+        var pt = ac.paper_trading || ac.betting_stats || ac.goldmine_stats || {};
+        var wr = parseFloat(pt.win_rate);
+        var trades = safeInt(pt.total_trades || pt.total_bets || pt.total_picks || 0);
+        var closedTrades = safeInt(pt.wins || 0) + safeInt(pt.losses || 0);
+        if (pt.closed !== undefined) closedTrades = safeInt(pt.closed);
+        var pnl = safeFloat(pt.total_pnl || 0);
+        var openPos = safeInt(pt.open_positions || pt.pending || 0);
+        var signals = safeInt(ac.active_signals || 0);
+        var hasRecent = true;
+
+        // Win Rate
+        var wrEl = document.getElementById(domKey + '-winrate');
+        if (wrEl) {
+            if (closedTrades > 0 && !isNaN(wr)) {
+                wrEl.textContent = fmtNum(wr, 1) + '%';
+                wrEl.className = 'ac-metric-value ' + (wr >= 60 ? 'text-green' : wr >= 50 ? 'text-yellow' : 'text-red');
+            } else {
+                wrEl.textContent = 'N/A';
+                wrEl.className = 'ac-metric-value text-dim';
+            }
+        }
+
+        // Total Trades
+        var trEl = document.getElementById(domKey + '-trades');
+        if (trEl) {
+            trEl.textContent = trades > 0 ? trades.toLocaleString() : '0';
+            trEl.className = 'ac-metric-value' + (trades > 0 ? '' : ' text-dim');
+        }
+
+        // P&L
+        var pnlEl = document.getElementById(domKey + '-pnl');
+        if (pnlEl) {
+            if (closedTrades > 0) {
+                pnlEl.textContent = fmtMoney(pnl);
+                pnlEl.className = 'ac-metric-value ' + colorByValue(pnl);
+            } else {
+                pnlEl.textContent = '$0.00';
+                pnlEl.className = 'ac-metric-value text-dim';
+            }
+        }
+
+        // Open Positions
+        var openEl = document.getElementById(domKey + '-open');
+        if (openEl) {
+            openEl.textContent = openPos.toString();
+            openEl.style.color = openPos > 0 ? 'var(--accent)' : 'var(--text-dim)';
+        }
+
+        // Signals
+        var sigEl = document.getElementById(domKey + '-signals');
+        if (sigEl) {
+            sigEl.textContent = signals.toString();
+            sigEl.style.color = signals > 0 ? 'var(--accent)' : 'var(--text-dim)';
+        }
+
+        // Health status
+        var healthEl = document.getElementById(domKey + '-health');
+        if (healthEl) {
+            var h = healthStatus(wr, closedTrades > 0, hasRecent);
+            healthEl.innerHTML = '<span class="health-dot ' + h.cls + '"></span><span>' + h.label + '</span>';
+        }
+    }
+}
+
+
+/* ===================================================================
+   RENDER: Goldmine Systems Chart (Horizontal Bar)
+   =================================================================== */
+function renderGoldmineChart(goldmine) {
+    var container = document.getElementById('goldmine-chart-container');
+    var loadingEl = document.getElementById('chart-loading');
+
+    if (loadingEl) loadingEl.style.display = 'none';
+
+    if (!goldmine || !goldmine.length || goldmine.length === 0) {
+        var canvas = document.getElementById('chart-goldmine');
+        if (canvas) canvas.style.display = 'none';
+        container.innerHTML = '<div class="empty-state">Goldmine system data will appear once systems have verified outcomes to analyze.</div>';
+        return;
+    }
+
+    // Ensure canvas exists
+    var canvas = document.getElementById('chart-goldmine');
+    if (!canvas) {
+        container.innerHTML = '<canvas id="chart-goldmine"></canvas>';
+        canvas = document.getElementById('chart-goldmine');
+    }
+    canvas.style.display = '';
+
+    // Sort by win rate descending
+    var sorted = goldmine.slice().sort(function(a, b) {
+        return safeFloat(b.win_rate) - safeFloat(a.win_rate);
+    });
+
+    var labels = [];
+    var values = [];
+    var colors = [];
+
+    for (var i = 0; i < sorted.length; i++) {
+        var sys = sorted[i];
+        var name = sys.name || sys.system || sys.source_system || 'System ' + (i + 1);
+        var wr = safeFloat(sys.win_rate);
+
+        labels.push(name + ' (' + fmtNum(wr, 1) + '%)');
+        values.push(wr);
+
+        // Color by win rate threshold
+        if (wr > 60) colors.push('#22c55e');       // green
+        else if (wr >= 40) colors.push('#f59e0b');  // yellow
+        else colors.push('#ef4444');                // red
+    }
+
+    // Destroy previous chart instance
+    if (goldmineChart) {
+        goldmineChart.destroy();
+        goldmineChart = null;
+    }
+
+    // Wait for Chart.js to be loaded
+    if (typeof Chart === 'undefined') {
+        container.innerHTML = '<div class="empty-state">Chart library loading...</div>';
+        setTimeout(function() { renderGoldmineChart(goldmine); }, 500);
+        return;
+    }
+
+    goldmineChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Win Rate %',
+                data: values,
+                backgroundColor: colors,
+                borderRadius: 6,
+                barThickness: 28
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1a1a3a',
+                    borderColor: '#2a2a4a',
+                    borderWidth: 1,
+                    titleColor: '#e0e0f0',
+                    bodyColor: '#e0e0f0',
+                    padding: 10,
+                    callbacks: {
+                        label: function(ctx) {
+                            return ctx.parsed.x.toFixed(1) + '% win rate';
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: { color: 'rgba(42, 42, 74, 0.5)' },
+                    ticks: {
+                        color: '#8888aa',
+                        callback: function(v) { return v + '%'; }
+                    }
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: {
+                        color: '#e0e0f0',
+                        font: { size: 12 }
+                    }
+                }
+            }
+        }
+    });
+
+    // Dynamic height based on system count
+    container.style.minHeight = Math.max(200, sorted.length * 45) + 'px';
+}
+
+
+/* ===================================================================
+   RENDER: Recent Activity Feed
+   =================================================================== */
+function renderActivity(activity) {
+    var el = document.getElementById('activity-list');
+    var loadingEl = document.getElementById('activity-loading');
+
+    if (loadingEl) loadingEl.style.display = 'none';
+
+    if (!activity || activity.length === 0) {
+        el.innerHTML = '<div class="empty-state">No recent activity across systems. Activity will appear as trades are opened and closed.</div>';
+        return;
+    }
+
+    var html = '';
+    var count = Math.min(activity.length, 10);
+
+    for (var i = 0; i < count; i++) {
+        var item = activity[i];
+        var assetKey = (item.asset || item.asset_class || '').toLowerCase();
+        var ticker = item.symbol || item.ticker || '';
+        var action = item.detail || item.action || item.description || '';
+        var pnlVal = parseFloat(item.pnl || item.pnl_pct || 0);
+
+        // Build description text
+        var desc = '';
+        if (ticker) {
+            desc += '<span class="ticker">' + ticker + '</span> ';
+        }
+        if (action) {
+            desc += action;
+        } else if (item.type === 'signal') {
+            desc += 'New signal';
+        } else {
+            desc += 'Trade closed';
+        }
+
+        // Append P&L if it's a closed trade or settled bet
+        if (item.type !== 'signal' && (item.pnl !== undefined && item.pnl !== null)) {
+            var pnlDisplay = fmtMoney(item.pnl);
+            if (pnlDisplay && pnlDisplay !== '--') {
+                var pnlColor = pnlVal >= 0 ? 'var(--green)' : 'var(--red)';
+                desc += ' <span style="color:' + pnlColor + ';font-weight:700;">' + pnlDisplay + '</span>';
+            }
+        }
+
+        html += '<div class="activity-row">'
+            + '<span class="activity-badge">' + assetBadgeHtml(assetKey) + '</span>'
+            + '<span class="activity-time">' + fmtDate(item.event_time || item.timestamp) + '</span>'
+            + '<span class="activity-desc">' + desc + '</span>'
+            + '</div>';
+    }
+
+    el.innerHTML = html;
+}
+
+
+/* ===================================================================
+   RENDER: Timestamp
+   =================================================================== */
+function updateTimestamp(generatedAt, fromCache) {
+    var el = document.getElementById('last-updated-text');
+    var timeStr = '';
+    if (generatedAt) {
+        try {
+            timeStr = new Date(generatedAt).toLocaleString();
+        } catch (e) {
+            timeStr = generatedAt;
+        }
+    } else {
+        timeStr = new Date().toLocaleString();
+    }
+    var cacheLabel = fromCache ? ' (cached)' : ' (fresh)';
+    el.textContent = 'Last updated: ' + timeStr + cacheLabel;
+}
+
+
+/* ===================================================================
+   NO DATA / ERROR STATE
+   =================================================================== */
+function showNoData(reason) {
+    renderOverall(null);
+
+    // Hide loading spinners
+    var chartLoading = document.getElementById('chart-loading');
+    if (chartLoading) chartLoading.style.display = 'none';
+    var actLoading = document.getElementById('activity-loading');
+    if (actLoading) actLoading.style.display = 'none';
+
+    // Set cards to no-data state
+    var keys = ['stocks', 'crypto', 'meme', 'forex', 'sports', 'penny'];
+    for (var i = 0; i < keys.length; i++) {
+        var k = keys[i];
+        var healthEl = document.getElementById(k + '-health');
+        if (healthEl) {
+            healthEl.innerHTML = '<span class="health-dot yellow"></span><span>No Data</span>';
+        }
+    }
+
+    // Activity feed
+    var actEl = document.getElementById('activity-list');
+    actEl.innerHTML = '<div class="empty-state">Unable to reach Command Center API. Data will appear once the API is deployed and systems report data.'
+        + (reason ? '<br><span style="font-size:0.75rem;color:var(--text-muted);">(' + reason + ')</span>' : '')
+        + '</div>';
+
+    // Chart
+    var chartContainer = document.getElementById('goldmine-chart-container');
+    var canvas = document.getElementById('chart-goldmine');
+    if (canvas) canvas.style.display = 'none';
+    chartContainer.innerHTML = '<div class="empty-state">Goldmine system data will appear once the API is online.</div>';
+
+    updateTimestamp(null, false);
+}
+
+
+/* ===================================================================
+   MANUAL REFRESH
+   =================================================================== */
+function manualRefresh() {
+    countdown = REFRESH_INTERVAL;
+    document.getElementById('countdown').textContent = countdown + 's';
+    loadStats();
+}
+
+
+/* ===================================================================
+   COUNTDOWN TIMER
+   =================================================================== */
+function startCountdown() {
+    if (countdownTimer) clearInterval(countdownTimer);
+    countdown = REFRESH_INTERVAL;
+
+    countdownTimer = setInterval(function() {
+        countdown--;
+        if (countdown <= 0) {
+            countdown = REFRESH_INTERVAL;
+            loadStats();
+        }
+        var el = document.getElementById('countdown');
+        if (el) el.textContent = countdown + 's';
+    }, 1000);
+}
+
+
+/* ===================================================================
+   INIT
+   =================================================================== */
+function init() {
+    loadStats();
+    startCountdown();
+}
+
+if (document.readyState !== 'loading') {
+    init();
+} else {
+    document.addEventListener('DOMContentLoaded', init);
+}
+</script>
+
+<script src="/findstocks/portfolio2/stock-nav.js"></script>
+<script src="/live-monitor/api/scope_labels.js"></script>
+</body>
+</html>

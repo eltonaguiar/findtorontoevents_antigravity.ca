@@ -92,6 +92,48 @@ function _cw_action_scan($conn) {
         if ($key) $tickers[$key] = $t;
     }
 
+    // 2b. BTC Regime Gate — only generate BUY signals when BTC is in bull regime
+    //     Bull = BTC price above its 24h SMA. This is the single biggest difference
+    //     between this scanner (8% WR) and live_signals.php (70%+ WR).
+    $btc_regime = 'bull'; // default to bull if BTC data unavailable
+    $btc_candles_raw = _cw_api('public/get-candlestick?instrument_name=BTC_USDT&timeframe=H1');
+    if ($btc_candles_raw && isset($btc_candles_raw['result']['data'])) {
+        $btc_data = $btc_candles_raw['result']['data'];
+        $btc_count = count($btc_data);
+        if ($btc_count >= 24) {
+            $btc_sum = 0;
+            for ($bi = $btc_count - 24; $bi < $btc_count; $bi++) {
+                $btc_sum += floatval($btc_data[$bi]['c']);
+            }
+            $btc_sma24 = $btc_sum / 24;
+            $btc_current = floatval($btc_data[$btc_count - 1]['c']);
+            $btc_regime = ($btc_current >= $btc_sma24) ? 'bull' : 'bear';
+        }
+    }
+
+    // In bear regime, skip scanning entirely — the scanner only generates BUY signals
+    // and buying in a bear market is the #1 cause of the 0% win rate
+    if ($btc_regime === 'bear') {
+        $elapsed = round(microtime(true) - $start, 2);
+        echo json_encode(array(
+            'ok' => true,
+            'scan_id' => date('YmdHis'),
+            'total_pairs' => count($pairs),
+            'candidates_filtered' => 0,
+            'deep_analyzed' => 0,
+            'winners_found' => 0,
+            'winners_saved' => 0,
+            'corr_penalized' => 0,
+            'regime_skipped' => true,
+            'btc_regime' => 'bear',
+            'elapsed_sec' => $elapsed,
+            'winners' => array(),
+            'top_candidates' => array(),
+            'note' => 'BTC in bear regime (below 24h SMA). Scanner paused to avoid counter-trend entries.'
+        ));
+        return;
+    }
+
     // 3. Pre-filter: only pairs with decent volume and positive movement
     $candidates = array();
     foreach ($pairs as $pair) {
@@ -104,9 +146,11 @@ function _cw_action_scan($conn) {
         $chg24_raw = isset($t['c']) ? floatval($t['c']) : 0; // 24h change as decimal ratio
         $chg24  = $chg24_raw * 100; // convert to percentage
 
-        // Minimum filters: $20K volume, positive 24h change
-        if ($volUsd < 20000) continue;
+        // Minimum filters: $100K volume (raised from $20K — low volume = illiquid = manipulation risk)
+        if ($volUsd < 100000) continue;
+        // Must be positive but cap at 30% to filter pump-and-dump
         if ($chg24 <= 0) continue;
+        if ($chg24 > 30) continue;
 
         $candidates[] = array(
             'pair'    => $pair,
@@ -148,65 +192,79 @@ function _cw_action_scan($conn) {
     // Sort by score descending
     usort($scored, '_cw_sort_by_score');
 
-    // 5a. Correlation filtering: fetch BTC candles, penalize BTC-correlated moves
-    $btc_candles = _cw_api('public/get-candlestick?instrument_name=BTC_USDT&timeframe=H1');
-    $btc_returns = array();
-    if ($btc_candles && isset($btc_candles['result']['data'])) {
-        $btc_data = $btc_candles['result']['data'];
-        for ($bi = 1; $bi < count($btc_data); $bi++) {
-            $prev = floatval($btc_data[$bi - 1]['c']);
-            if ($prev > 0) {
-                $btc_returns[] = (floatval($btc_data[$bi]['c']) - $prev) / $prev;
-            }
-        }
+    // 5a. Correlation filtering: reject BTC-correlated moves entirely
+    //     (Strengthened from -5 penalty to full rejection — correlated moves are not alpha)
+    $btc_ticker = isset($tickers['BTC_USDT']) ? $tickers['BTC_USDT'] : null;
+    $btc_chg = 0;
+    if ($btc_ticker) {
+        $btc_chg = isset($btc_ticker['c']) ? floatval($btc_ticker['c']) * 100 : 0;
     }
+
     $corr_filtered = 0;
-    if (count($btc_returns) >= 10) {
-        foreach ($scored as &$sc_item) {
-            if ($sc_item['score'] < 70 || $sc_item['pair'] === 'BTC_USDT') continue;
-            // We already have candle data in factors — recalculate returns from chg_24h and momentum
-            // Simplified correlation: if coin's 24h change is within 30% of BTC's 24h change,
-            // and BTC moved > 2%, consider it BTC-correlated and penalize score by 5
-            $btc_ticker = isset($tickers['BTC_USDT']) ? $tickers['BTC_USDT'] : null;
-            if ($btc_ticker) {
-                $btc_chg = isset($btc_ticker['c']) ? floatval($btc_ticker['c']) * 100 : 0;
-                $coin_chg = $sc_item['chg_24h'];
-                if (abs($btc_chg) > 2 && abs($coin_chg - $btc_chg) < abs($btc_chg) * 0.3) {
-                    $sc_item['score'] = $sc_item['score'] - 5;
+    if (abs($btc_chg) > 1.5) {
+        $new_scored = array();
+        foreach ($scored as $sc_item) {
+            if ($sc_item['pair'] === 'BTC_USDT') {
+                $new_scored[] = $sc_item;
+                continue;
+            }
+            $coin_chg = $sc_item['chg_24h'];
+            // If coin's 24h change is within 40% of BTC's change AND same direction, reject
+            if (($btc_chg > 0 && $coin_chg > 0) || ($btc_chg < 0 && $coin_chg < 0)) {
+                if (abs($coin_chg - $btc_chg) < abs($btc_chg) * 0.4) {
                     $sc_item['factors']['btc_correlation'] = array(
                         'btc_chg' => round($btc_chg, 2),
                         'coin_chg' => round($coin_chg, 2),
-                        'penalty' => -5,
-                        'note' => 'Move correlated with BTC'
+                        'action' => 'rejected',
+                        'note' => 'Move correlated with BTC — not independent alpha'
                     );
+                    $sc_item['verdict'] = 'SKIP';
+                    $sc_item['score'] = max(0, $sc_item['score'] - 15);
                     $corr_filtered++;
-                    // Re-evaluate verdict after penalty
-                    if ($sc_item['score'] >= 85) $sc_item['verdict'] = 'STRONG_BUY';
-                    elseif ($sc_item['score'] >= 75) $sc_item['verdict'] = 'BUY';
-                    elseif ($sc_item['score'] >= 70) $sc_item['verdict'] = 'LEAN_BUY';
-                    else $sc_item['verdict'] = 'SKIP';
-                } else {
-                    $sc_item['factors']['btc_correlation'] = array(
-                        'btc_chg' => round($btc_chg, 2),
-                        'coin_chg' => round($coin_chg, 2),
-                        'penalty' => 0,
-                        'note' => 'Independent move'
-                    );
+                    $new_scored[] = $sc_item; // keep in scored for scan_log transparency
+                    continue;
                 }
             }
+            $sc_item['factors']['btc_correlation'] = array(
+                'btc_chg' => round($btc_chg, 2),
+                'coin_chg' => round($coin_chg, 2),
+                'action' => 'passed',
+                'note' => 'Independent move'
+            );
+            $new_scored[] = $sc_item;
         }
-        unset($sc_item);
-        // Re-sort after penalties
+        $scored = $new_scored;
         usort($scored, '_cw_sort_by_score');
     }
 
-    // 5b. Save winners (score >= 70) to DB
+    // 5b. RSI overbought filter — reject coins with RSI > 75 (about to reverse)
+    $rsi_filtered = 0;
+    $new_scored2 = array();
+    foreach ($scored as $sc_item) {
+        if (isset($sc_item['factors']['rsi_sweet_spot'])) {
+            $rsi_val = $sc_item['factors']['rsi_sweet_spot']['rsi'];
+            if ($rsi_val > 75) {
+                $sc_item['verdict'] = 'SKIP';
+                $sc_item['factors']['rsi_gate'] = array(
+                    'rsi' => $rsi_val,
+                    'action' => 'rejected',
+                    'note' => 'RSI > 75 — overbought, reversal risk'
+                );
+                $rsi_filtered++;
+            }
+        }
+        $new_scored2[] = $sc_item;
+    }
+    $scored = $new_scored2;
+
+    // 5c. Save winners (score >= 75, raised from 70 to reduce noise) to DB
     $scan_id = date('YmdHis');
     $winners = array();
     $saved = 0;
 
     foreach ($scored as $s) {
-        if ($s['score'] < 70) continue;
+        if ($s['score'] < 75) continue;
+        if ($s['verdict'] === 'SKIP') continue;
         $winners[] = $s;
 
         $esc_pair    = $conn->real_escape_string($s['pair']);
@@ -259,7 +317,9 @@ function _cw_action_scan($conn) {
         'deep_analyzed' => count($scored),
         'winners_found' => count($winners),
         'winners_saved' => $saved,
-        'corr_penalized' => $corr_filtered,
+        'corr_rejected' => $corr_filtered,
+        'rsi_rejected' => $rsi_filtered,
+        'btc_regime' => $btc_regime,
         'elapsed_sec' => $elapsed,
         'winners' => array_slice($winners, 0, 15),
         'top_candidates' => $top_candidates
@@ -386,18 +446,16 @@ function _cw_score_pair($candidate, $candles_1h, $candles_5m) {
 
     if ($total >= 85) {
         $verdict = 'STRONG_BUY';
-        // Target = 1.5x ATR (volatility-adjusted), min 2%, max 6%
-        $target_pct = round(max(2.0, min(6.0, $atr_pct * 1.5)), 1);
-        $risk_pct = round(max(1.0, min(3.0, $atr_pct * 0.75)), 1);
+        // Target = 2x ATR (volatility-adjusted), min 3%, max 6% — widen TP for strong signals
+        $target_pct = round(max(3.0, min(6.0, $atr_pct * 2.0)), 1);
+        $risk_pct = round(max(1.0, min(2.0, $atr_pct * 0.5)), 1);
     } elseif ($total >= 75) {
         $verdict = 'BUY';
-        $target_pct = round(max(1.5, min(4.0, $atr_pct * 1.2)), 1);
-        $risk_pct = round(max(1.0, min(2.5, $atr_pct * 0.75)), 1);
-    } elseif ($total >= 70) {
-        $verdict = 'LEAN_BUY';
-        $target_pct = round(max(1.0, min(3.0, $atr_pct * 1.0)), 1);
-        $risk_pct = round(max(1.0, min(2.0, $atr_pct * 0.75)), 1);
+        // TP:SL ratio >= 2:1 (from ~1.5:1) — need positive expected value
+        $target_pct = round(max(2.5, min(5.0, $atr_pct * 1.5)), 1);
+        $risk_pct = round(max(1.0, min(2.0, $atr_pct * 0.5)), 1);
     }
+    // Removed LEAN_BUY (70-74) tier — too low conviction, was major source of losses
 
     $factors['volatility'] = array('atr' => round($atr, 8), 'atr_pct' => round($atr_pct, 2));
 
@@ -415,11 +473,12 @@ function _cw_score_pair($candidate, $candles_1h, $candles_5m) {
 //  in the 4-hour window by fetching 5-min candles and checking high/low
 // ═══════════════════════════════════════════════════════════════════════
 function _cw_action_resolve($conn) {
-    // Find unresolved winners older than 4 hours
+    // Find unresolved winners older than 8 hours (extended from 4h — 4h was too short
+    // for larger-cap crypto to develop moves; live_signals uses 8-24h hold periods)
     $sql = "SELECT id, pair, price_at_signal, target_pct, risk_pct, score, created_at
             FROM cw_winners
             WHERE outcome IS NULL
-            AND created_at < DATE_SUB(NOW(), INTERVAL 4 HOUR)
+            AND created_at < DATE_SUB(NOW(), INTERVAL 8 HOUR)
             ORDER BY created_at ASC
             LIMIT 50";
     $res = $conn->query($sql);

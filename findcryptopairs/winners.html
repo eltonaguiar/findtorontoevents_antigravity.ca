@@ -120,9 +120,9 @@ a{color:#88aaff;text-decoration:none}a:hover{text-decoration:underline}
 </div>
 <div class="container">
   <!-- Honest performance status banner -->
-  <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;">
-    <span style="background:rgba(239,68,68,0.15);color:#ef4444;padding:3px 10px;border-radius:6px;font-weight:800;font-size:11px;border:1px solid rgba(239,68,68,0.3);letter-spacing:0.5px;">CRYPTO SCANNER</span>
-    <span style="color:#fca5a5;">Forward-facing results: <strong style="color:#ef4444;">8.3% WR</strong> (1 win / 11 losses, 12 resolved). Our <a href="/live-monitor/algo-performance.html" style="color:#22d3ee;">learned algorithms</a> perform better on crypto (87.5% WR, +12.6% P&amp;L).</span>
+  <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;">
+    <span style="background:rgba(245,158,11,0.15);color:#f59e0b;padding:3px 10px;border-radius:6px;font-weight:800;font-size:11px;border:1px solid rgba(245,158,11,0.3);letter-spacing:0.5px;">CRYPTO SCANNER v2</span>
+    <span style="color:#fcd34d;">Upgraded Feb 12: BTC regime gate, raised thresholds (75+), BTC correlation rejection, RSI overbought filter, 8h resolve window, 2:1 TP/SL ratio. Prior results: 8.3% WR. Tracking new performance from this point forward. See <a href="/live-monitor/algo-performance.html" style="color:#22d3ee;">learned algorithms</a> for our best crypto system (87.5% WR).</span>
   </div>
   <div class="stats-row" id="stats-row">
     <div class="stat-card"><div class="label">Win Rate</div><div class="value" id="s-wr">--</div><div class="sub">Resolved signals</div></div>
@@ -156,25 +156,20 @@ a{color:#88aaff;text-decoration:none}a:hover{text-decoration:underline}
       <span class="edu-arrow">&#9660;</span>
     </div>
     <div class="edu-body">
-      <p style="font-size:13px;color:#bbb;margin-bottom:12px">Each coin is scored 0-100 across 7 independent indicators. The total score determines which confidence tier it falls into. <strong style="color:#fff">Higher tier = more indicators agreeing = higher conviction.</strong></p>
+      <p style="font-size:13px;color:#bbb;margin-bottom:12px">Each coin is scored 0-100 across 7 independent indicators. The total score determines which confidence tier it falls into. <strong style="color:#fff">Higher tier = more indicators agreeing = higher conviction.</strong> v2 raised the minimum threshold from 70 to 75 and removed the Lean Buy tier (which had the worst win rate).</p>
       <div class="tier-explain">
         <div class="tier-card strong">
           <div class="t-label">Strong Buy</div>
           <div class="t-range">Score 85-100</div>
-          <div class="t-desc">6-7 out of 7 indicators are strongly bullish. Momentum, volume, RSI, moving averages, MACD, price patterns, and breakout position are nearly all firing. <strong style="color:var(--green)">Target: +3.0%</strong> within 4 hours. Risk: -1.5%. This is the highest conviction level — the scanner is saying "almost everything lines up."</div>
+          <div class="t-desc">6-7 out of 7 indicators are strongly bullish. Momentum, volume, RSI, moving averages, MACD, price patterns, and breakout position are nearly all firing. <strong style="color:var(--green)">Target: +3-6%</strong> within 8 hours. Risk: -1-2%. TP:SL ratio >= 3:1. This is the highest conviction level.</div>
         </div>
         <div class="tier-card buy">
           <div class="t-label">Buy</div>
           <div class="t-range">Score 75-84</div>
-          <div class="t-desc">5-6 indicators are bullish, with maybe 1-2 being neutral or weak. Strong agreement but not unanimous. <strong style="color:var(--accent)">Target: +2.0%</strong> within 4 hours. Risk: -1.5%. Solid setup with most factors aligned.</div>
-        </div>
-        <div class="tier-card lean">
-          <div class="t-label">Lean Buy</div>
-          <div class="t-range">Score 70-74</div>
-          <div class="t-desc">4-5 indicators are bullish. There's a directional edge but it's not as strong. Some indicators may be neutral or conflicting. <strong style="color:var(--gold)">Target: +1.5%</strong> within 4 hours. Risk: -1.5%. More cautious — the edge is there, but narrower.</div>
+          <div class="t-desc">5-6 indicators are bullish, with maybe 1-2 being neutral or weak. Strong agreement but not unanimous. <strong style="color:var(--accent)">Target: +2.5-5%</strong> within 8 hours. Risk: -1-2%. TP:SL ratio >= 2:1. Solid setup with most factors aligned.</div>
         </div>
       </div>
-      <p style="font-size:12px;color:var(--dim);margin-top:8px"><strong>Below 70:</strong> Not shown as a winner. Even if some indicators are positive, the overall confluence is too weak. The scanner waits for stronger setups rather than forcing marginal calls.</p>
+      <p style="font-size:12px;color:var(--dim);margin-top:8px"><strong>Below 75:</strong> Not shown as a winner. The previous threshold was 70, which let in too many marginal signals. Lean Buy tier (70-74) was removed after performance analysis showed it contributed the most losses.</p>
     </div>
   </div>
 
@@ -355,17 +350,20 @@ a{color:#88aaff;text-decoration:none}a:hover{text-decoration:underline}
     <div style="font-size:12px;color:var(--dim);line-height:1.8;">
       <strong style="color:var(--text);">How the crypto scanner works:</strong><br>
       Scans 600+ pairs on Crypto.com Exchange every 15 minutes. Each coin gets a composite score (0&ndash;100) from 7 technical indicators: volume surge (unusual activity vs 24h average), momentum score (rate of price change), RSI positioning (50&ndash;70 sweet spot), MACD crossover strength, Bollinger Band breakout, support/resistance proximity, and market cap weighting (larger caps = more reliable signals). Scores above 85 = Strong Buy, 75&ndash;84 = Buy, 70&ndash;74 = Lean Buy.<br><br>
-      <strong style="color:var(--text);">Why performance needs improvement:</strong><br>
-      &bull; Current record: 8.3% win rate (1 win / 11 signals) &mdash; below breakeven threshold<br>
-      &bull; 4-hour resolve window may miss slower-developing moves in larger-cap crypto<br>
-      &bull; Fixed scoring weights don&rsquo;t adapt to market regime (bull vs bear vs sideways)<br>
-      &bull; No volume-weighted confidence &mdash; all signals treated equally regardless of conviction<br>
-      &bull; Market-wide crypto drawdowns create false technical signals (indicator noise)<br><br>
+      <strong style="color:var(--text);">v2 fixes applied (Feb 12, 2026):</strong><br>
+      &bull; <strong style="color:var(--green);">BTC regime gate:</strong> Scanner pauses entirely when BTC is below its 24h SMA (bear regime). This is the #1 fix from the live_signals system which uses the same gate.<br>
+      &bull; <strong style="color:var(--green);">Raised threshold:</strong> 75+ score required (from 70). Lean Buy tier removed.<br>
+      &bull; <strong style="color:var(--green);">BTC correlation rejection:</strong> Coins moving in lockstep with BTC are fully rejected (not just -5 penalty). Only independent movers pass.<br>
+      &bull; <strong style="color:var(--green);">RSI overbought filter:</strong> Coins with RSI > 75 are rejected (buying at the top).<br>
+      &bull; <strong style="color:var(--green);">Volume floor raised:</strong> $100K minimum (from $20K). Low-volume coins are manipulation targets.<br>
+      &bull; <strong style="color:var(--green);">Pump-and-dump filter:</strong> Coins up >30% in 24h are excluded (likely to reverse).<br>
+      &bull; <strong style="color:var(--green);">8h resolve window:</strong> Extended from 4h to give moves more time to develop.<br>
+      &bull; <strong style="color:var(--green);">TP:SL ratio >= 2:1:</strong> Widened targets, tightened stops for positive expected value.<br><br>
       <strong style="color:var(--text);">Platform comparison:</strong><br>
-      &bull; <strong style="color:#ef4444;">This system: 8.3% WR</strong> &mdash; needs significant improvement before generating reliable signals<br>
+      &bull; <strong style="color:#f59e0b;">This system (v2): tracking new performance</strong> &mdash; fixes aligned with live_signals architecture. Prior: 8.3% WR.<br>
       &bull; <a href="/live-monitor/algo-performance.html" style="color:#88aaff">L vs O crypto algorithms: 87.5% WR</a> &mdash; our best crypto system (adaptive parameters on 14 major coins)<br>
       &bull; <a href="/findcryptopairs/meme.html" style="color:#88aaff">Meme Scanner: 5% WR</a> &mdash; meme-specific scanner (even more volatile subset)<br>
-      &bull; Key difference: L vs O uses self-learning algorithms that adapt parameters over time, while this scanner uses static thresholds
+      &bull; Key difference: L vs O uses self-learning algorithms that adapt parameters over time. This scanner now shares the regime gate but still uses static scoring weights.
     </div>
   </div>
 
@@ -696,5 +694,6 @@ setInterval(function() {
 }, 120000);
 </script>
 <script src="/findstocks/portfolio2/stock-nav.js"></script>
+<script src="/live-monitor/api/scope_labels.js"></script>
 </body>
 </html>
