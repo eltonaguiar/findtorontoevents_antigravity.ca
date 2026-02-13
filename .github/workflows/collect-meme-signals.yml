@@ -1,4 +1,4 @@
-name: Collect Meme Signals
+name: Collect Meme Signals & ML Sync
 
 on:
   schedule:
@@ -10,30 +10,86 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Collect Current Signals
+
+      - name: Fetch current winners from meme scanner
         run: |
-          # Fetch current scanner signals
-          curl -s "https://ejaguiar1.50webs.com/findcryptopairs/api/meme_scanner.php?action=scan&limit=50" > current_signals.json
-          
-          # Send to ML engine for storage
-          curl -s -X POST "https://ejaguiar1.50webs.com/findcryptopairs/api/meme_ml_engine.php?action=batch" \
-            -H "Content-Type: application/x-www-form-urlencoded" \
-            -d "signals=$(cat current_signals.json | jq -r '.signals // .' | head -c 10000)"
-      
-      - name: Update Outcomes
+          echo "=== Fetching current meme winners ==="
+          curl -s "https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php?action=winners" > winners.json
+          echo "Winners response:"
+          cat winners.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'OK: {d.get(\"ok\")}, Count: {d.get(\"count\", 0)}')" 2>/dev/null || echo "Failed to parse"
+
+      - name: Transform winners to ML format and send to ML engine
         run: |
-          # Resolve pending signals (check if old signals hit targets)
-          curl -s "https://ejaguiar1.50webs.com/findcryptopairs/api/meme_ml_engine.php?action=retrain" > retrain_check.json
-          
-          # Show stats
-          curl -s "https://ejaguiar1.50webs.com/findcryptopairs/api/meme_ml_engine.php?action=stats" | jq .
-      
+          echo "=== Transforming winners for ML batch predict ==="
+          # Transform meme_scanner winners format into ML engine batch format
+          # ML engine expects: {signals: [{coin_symbol, explosive_volume, ...}]}
+          python3 -c "
+          import json, sys
+
+          with open('winners.json') as f:
+              data = json.load(f)
+
+          if not data.get('ok') or not data.get('winners'):
+              print('No winners to process')
+              sys.exit(0)
+
+          signals = []
+          for w in data['winners']:
+              factors = w.get('factors_json', {})
+              if isinstance(factors, str):
+                  factors = json.loads(factors)
+
+              signal = {
+                  'coin_symbol': w.get('pair', ''),
+                  'signal_id': str(w.get('id', '')),
+                  'explosive_volume': factors.get('explosive_volume', {}).get('score', 0) if isinstance(factors.get('explosive_volume'), dict) else 0,
+                  'parabolic_momentum': factors.get('parabolic_momentum', {}).get('score', 0) if isinstance(factors.get('parabolic_momentum'), dict) else 0,
+                  'rsi_hype_zone': factors.get('rsi_hype_zone', {}).get('score', 0) if isinstance(factors.get('rsi_hype_zone'), dict) else 0,
+                  'social_momentum_proxy': factors.get('social_proxy', {}).get('score', 0) if isinstance(factors.get('social_proxy'), dict) else 0,
+                  'volume_concentration': factors.get('volume_concentration', {}).get('score', 0) if isinstance(factors.get('volume_concentration'), dict) else 0,
+                  'breakout_4h': factors.get('breakout_4h', {}).get('score', 0) if isinstance(factors.get('breakout_4h'), dict) else 0,
+                  'low_market_cap_bonus': factors.get('low_cap_bonus', {}).get('score', 0) if isinstance(factors.get('low_cap_bonus'), dict) else 0,
+                  'total_score': w.get('score', 0),
+                  'tier': w.get('tier', 'tier1')
+              }
+              signals.append(signal)
+
+          with open('ml_signals.json', 'w') as f:
+              json.dump(signals, f)
+
+          print(f'Transformed {len(signals)} winners into ML format')
+          "
+
+          # Send to ML engine for batch prediction
+          if [ -f ml_signals.json ] && [ "$(cat ml_signals.json)" != "[]" ]; then
+            curl -s -X POST "https://findtorontoevents.ca/findcryptopairs/api/meme_ml_engine.php?action=batch" \
+              -H "Content-Type: application/x-www-form-urlencoded" \
+              -d "signals=$(cat ml_signals.json | head -c 10000)" > ml_batch_result.json
+            echo "ML batch result:"
+            cat ml_batch_result.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'OK: {d.get(\"ok\")}, Predictions: {d.get(\"count\", 0)}')" 2>/dev/null || echo "Failed to parse"
+          else
+            echo "No signals to send to ML"
+          fi
+
+      - name: Check if ML model needs retraining
+        run: |
+          echo "=== Checking ML retrain status ==="
+          curl -s "https://findtorontoevents.ca/findcryptopairs/api/meme_ml_engine.php?action=retrain" > retrain_check.json
+          cat retrain_check.json | python3 -m json.tool 2>/dev/null || cat retrain_check.json
+
+      - name: Show ML stats
+        run: |
+          echo "=== ML Engine Stats ==="
+          curl -s "https://findtorontoevents.ca/findcryptopairs/api/meme_ml_engine.php?action=stats" | python3 -m json.tool 2>/dev/null || echo "Stats fetch failed"
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: signal-data
+          name: signal-data-${{ github.run_number }}
           path: |
-            current_signals.json
+            winners.json
+            ml_signals.json
+            ml_batch_result.json
             retrain_check.json
+          retention-days: 7

@@ -2,10 +2,22 @@
 /**
  * Meme Coin Machine Learning Engine
  * Adaptive scoring system that learns from historical signal outcomes
+ * NOW connected directly to ejaguiar1_memecoin (mc_winners table)
  * PHP 5.2 compatible
  */
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
 
-require_once dirname(dirname(__FILE__)) . '/../live-monitor/api/sports_db_connect.php';
+error_reporting(0);
+ini_set('display_errors', '0');
+
+// Connect to the MEME database directly (same DB as meme_scanner.php)
+$conn = new mysqli('mysql.50webs.com', 'ejaguiar1_memecoin', 'testing123', 'ejaguiar1_memecoin');
+if ($conn->connect_error) {
+    echo json_encode(array('ok' => false, 'error' => 'ML DB connection failed'));
+    exit;
+}
+$conn->set_charset('utf8');
 
 class MemeMLEngine {
     private $conn;
@@ -37,31 +49,24 @@ class MemeMLEngine {
     
     /**
      * Train the ML model on historical signal data
+     * NOW reads directly from mc_winners (same DB as meme_scanner.php)
      */
     public function train_model($min_samples = 50) {
-        // Get historical signals with known outcomes
+        // Get resolved signals from mc_winners with factors_json
         $query = "SELECT 
-            s.signal_id,
-            s.coin_symbol,
-            s.explosive_volume,
-            s.parabolic_momentum,
-            s.rsi_hype_zone,
-            s.social_momentum_proxy,
-            s.volume_concentration,
-            s.breakout_4h,
-            s.low_market_cap_bonus,
-            s.total_score,
-            s.tier,
-            r.outcome,
-            r.profit_loss_pct,
-            r.max_profit_pct,
-            r.max_loss_pct,
-            r.resolved_at
-        FROM meme_signals s
-        JOIN meme_signal_results r ON s.signal_id = r.signal_id
-        WHERE r.outcome IS NOT NULL
-        AND s.created_at > DATE_SUB(NOW(), INTERVAL 90 DAY)
-        ORDER BY s.created_at DESC
+            id,
+            pair,
+            score,
+            factors_json,
+            tier,
+            outcome,
+            pnl_pct,
+            created_at,
+            resolved_at
+        FROM mc_winners
+        WHERE outcome IS NOT NULL
+        AND created_at > DATE_SUB(NOW(), INTERVAL 90 DAY)
+        ORDER BY created_at DESC
         LIMIT 1000";
         
         $res = $this->conn->query($query);
@@ -69,7 +74,8 @@ class MemeMLEngine {
             return array(
                 'ok' => false,
                 'error' => 'Insufficient training data. Need ' . $min_samples . ' samples, found ' . ($res ? $res->num_rows : 0),
-                'recommendation' => 'Continue collecting signal data. Current model will use default weights.'
+                'recommendation' => 'Continue collecting signal data. Current model will use default weights.',
+                'source' => 'mc_winners'
             );
         }
         
@@ -78,26 +84,31 @@ class MemeMLEngine {
         $losers = 0;
         
         while ($row = $res->fetch_assoc()) {
+            // Extract feature scores from factors_json
+            $factors = json_decode($row['factors_json'], true);
+            if (!is_array($factors)) $factors = array();
+            
             $features = array(
-                'explosive_volume' => (float)$row['explosive_volume'],
-                'parabolic_momentum' => (float)$row['parabolic_momentum'],
-                'rsi_hype_zone' => (float)$row['rsi_hype_zone'],
-                'social_momentum_proxy' => (float)$row['social_momentum_proxy'],
-                'volume_concentration' => (float)$row['volume_concentration'],
-                'breakout_4h' => (float)$row['breakout_4h'],
-                'low_market_cap_bonus' => (float)$row['low_market_cap_bonus'],
+                'explosive_volume' => $this->_extract_factor_score($factors, 'explosive_volume'),
+                'parabolic_momentum' => $this->_extract_factor_score($factors, 'parabolic_momentum'),
+                'rsi_hype_zone' => $this->_extract_factor_score($factors, 'rsi_hype_zone'),
+                'social_momentum_proxy' => $this->_extract_factor_score($factors, 'social_proxy'),
+                'volume_concentration' => $this->_extract_factor_score($factors, 'volume_concentration'),
+                'breakout_4h' => $this->_extract_factor_score($factors, 'breakout_4h'),
+                'low_market_cap_bonus' => $this->_extract_factor_score($factors, 'low_cap_bonus'),
                 'tier' => $row['tier'] === 'tier1' ? 1 : 2
             );
             
-            $outcome = $row['outcome'] === 'win' ? 1 : 0;
+            $is_win = ($row['outcome'] === 'win' || $row['outcome'] === 'partial_win');
+            $outcome = $is_win ? 1 : 0;
             if ($outcome === 1) $winners++;
             else $losers++;
             
             $samples[] = array(
                 'features' => $features,
                 'outcome' => $outcome,
-                'profit_loss' => (float)$row['profit_loss_pct'],
-                'coin' => $row['coin_symbol']
+                'profit_loss' => (float)$row['pnl_pct'],
+                'coin' => $row['pair']
             );
         }
         
@@ -250,18 +261,18 @@ class MemeMLEngine {
     public function compare_methods($days = 30) {
         $esc_days = (int)$days;
         
+        // Compare using mc_winners + meme_ml_predictions
         $query = "SELECT 
-            s.signal_id,
-            s.total_score as rule_based_score,
+            w.id as signal_id,
+            w.score as rule_based_score,
             p.predicted_probability as ml_probability,
-            r.outcome,
-            r.profit_loss_pct
-        FROM meme_signals s
-        JOIN meme_ml_predictions p ON s.signal_id = p.signal_id
-        JOIN meme_signal_results r ON s.signal_id = r.signal_id
-        WHERE s.created_at > DATE_SUB(NOW(), INTERVAL $esc_days DAY)
-        AND r.outcome IS NOT NULL
-        ORDER BY s.created_at DESC";
+            w.outcome,
+            w.pnl_pct as profit_loss_pct
+        FROM mc_winners w
+        LEFT JOIN meme_ml_predictions p ON CAST(w.id AS CHAR) = p.signal_id
+        WHERE w.created_at > DATE_SUB(NOW(), INTERVAL $esc_days DAY)
+        AND w.outcome IS NOT NULL
+        ORDER BY w.created_at DESC";
         
         $res = $this->conn->query($query);
         
@@ -328,16 +339,16 @@ class MemeMLEngine {
             $last_train = $row['last_train'];
         }
         
-        // Count new signals since last train
+        // Count new resolved signals since last train (from mc_winners)
         $new_signals = 0;
         if ($last_train) {
             $esc_date = $this->conn->real_escape_string($last_train);
             $res = $this->conn->query("SELECT COUNT(*) as cnt 
-                FROM meme_signal_results 
+                FROM mc_winners 
                 WHERE resolved_at > '$esc_date' 
                 AND outcome IS NOT NULL");
             if ($res && $row = $res->fetch_assoc()) {
-                $new_signals = $row['cnt'];
+                $new_signals = (int)$row['cnt'];
             }
         }
         
@@ -562,17 +573,16 @@ class MemeMLEngine {
     }
     
     private function _find_similar_signals($features, $limit = 5) {
-        // Find historically similar signals
+        // Find historically similar resolved signals from mc_winners
         $query = "SELECT 
-            s.signal_id,
-            s.coin_symbol,
-            s.total_score,
-            r.outcome,
-            r.profit_loss_pct
-        FROM meme_signals s
-        JOIN meme_signal_results r ON s.signal_id = r.signal_id
-        WHERE r.outcome IS NOT NULL
-        ORDER BY s.created_at DESC
+            id,
+            pair,
+            score,
+            outcome,
+            pnl_pct
+        FROM mc_winners
+        WHERE outcome IS NOT NULL
+        ORDER BY created_at DESC
         LIMIT 100";
         
         $res = $this->conn->query($query);
@@ -580,14 +590,26 @@ class MemeMLEngine {
         
         while ($res && $row = $res->fetch_assoc()) {
             $similar[] = array(
-                'coin' => $row['coin_symbol'],
-                'score' => (int)$row['total_score'],
+                'coin' => $row['pair'],
+                'score' => (int)$row['score'],
                 'outcome' => $row['outcome'],
-                'pl' => (float)$row['profit_loss_pct']
+                'pl' => (float)$row['pnl_pct']
             );
         }
         
         return array_slice($similar, 0, $limit);
+    }
+    
+    /**
+     * Extract factor score from factors_json structure
+     * Handles both {score: X} objects and direct values
+     */
+    private function _extract_factor_score($factors, $key) {
+        if (!isset($factors[$key])) return 0;
+        $f = $factors[$key];
+        if (is_array($f) && isset($f['score'])) return (float)$f['score'];
+        if (is_numeric($f)) return (float)$f;
+        return 0;
     }
     
     private function _get_latest_weights() {
@@ -677,17 +699,21 @@ class MemeMLEngine {
         $total = ($res && $row = $res->fetch_assoc()) ? (int)$row['total'] : 0;
         
         // Predictions with outcomes
-        $res = $this->conn->query("SELECT COUNT(*) as resolved FROM meme_ml_predictions WHERE actual_outcome IS NOT NULL");
-        $resolved = ($res && $row = $res->fetch_assoc()) ? (int)$row['total'] : 0;
+        $res2 = $this->conn->query("SELECT COUNT(*) as resolved FROM meme_ml_predictions WHERE actual_outcome IS NOT NULL");
+        $resolved = ($res2 && $row2 = $res2->fetch_assoc()) ? (int)$row2['resolved'] : 0;
         
         // Correct predictions
-        $res = $this->conn->query("SELECT COUNT(*) as correct FROM meme_ml_predictions 
+        $res3 = $this->conn->query("SELECT COUNT(*) as correct FROM meme_ml_predictions 
             WHERE actual_outcome IS NOT NULL AND predicted_outcome = actual_outcome");
-        $correct = ($res && $row = $res->fetch_assoc()) ? (int)$row['total'] : 0;
+        $correct = ($res3 && $row3 = $res3->fetch_assoc()) ? (int)$row3['correct'] : 0;
         
         // Latest model
-        $res = $this->conn->query("SELECT model_id, created_at FROM meme_ml_models ORDER BY created_at DESC LIMIT 1");
-        $latest_model = ($res && $row = $res->fetch_assoc()) ? $row : null;
+        $res4 = $this->conn->query("SELECT model_id, created_at FROM meme_ml_models ORDER BY created_at DESC LIMIT 1");
+        $latest_model = ($res4 && $row4 = $res4->fetch_assoc()) ? $row4 : null;
+        
+        // Training data available (from mc_winners)
+        $res5 = $this->conn->query("SELECT COUNT(*) as cnt FROM mc_winners WHERE outcome IS NOT NULL");
+        $training_data = ($res5 && $row5 = $res5->fetch_assoc()) ? (int)$row5['cnt'] : 0;
         
         return array(
             'ok' => true,
@@ -696,7 +722,9 @@ class MemeMLEngine {
             'correct_predictions' => $correct,
             'accuracy' => $resolved > 0 ? round($correct / $resolved, 4) : 0,
             'latest_model' => $latest_model,
-            'ready_for_training' => $resolved >= 30
+            'training_data_available' => $training_data,
+            'ready_for_training' => $training_data >= 30,
+            'data_source' => 'mc_winners (ejaguiar1_memecoin)'
         );
     }
     

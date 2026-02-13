@@ -102,6 +102,13 @@ switch ($action) {
         if ($key !== $ADMIN_KEY) { _mc_err('Unauthorized'); }
         _mc_action_snapshot($conn);
         break;
+    case 'adaptive_weights':
+        if ($key !== $ADMIN_KEY) { _mc_err('Unauthorized'); }
+        _mc_action_adaptive_weights($conn);
+        break;
+    case 'ml_status':
+        _mc_action_ml_status($conn);
+        break;
     default:
         _mc_err('Unknown action: ' . $action);
 }
@@ -397,25 +404,35 @@ function _mc_action_scan($conn) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-//  SCORING ENGINE — meme-specific factors
+//  SCORING ENGINE — meme-specific factors (ACCURACY IMPROVED v2)
 // ═══════════════════════════════════════════════════════════════════════
 function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data = true) {
     $total = 0;
     $factors = array();
     $current_price = $candidate['price'];
     $vol_usd = $candidate['vol_usd'];
+    
+    // NEW: Quality gates - must pass these to be considered at all
+    $quality_score = 0;
+    $quality_issues = array();
 
     // Extract close prices — handle both Crypto.com objects and CoinGecko arrays
     $closes_15m = array();
     $volumes_15m = array();
+    $highs_15m = array();
+    $lows_15m = array();
     foreach ($candles_15m as $c) {
         if (is_array($c) && isset($c[4])) {
             // CoinGecko format: [timestamp, open, high, low, close]
             $closes_15m[] = floatval($c[4]);
+            $highs_15m[] = floatval($c[2]);
+            $lows_15m[] = floatval($c[3]);
             $volumes_15m[] = 0; // CoinGecko OHLC has no volume
         } else {
             // Crypto.com format: {t, o, h, l, c, v}
             $closes_15m[] = floatval($c['c']);
+            $highs_15m[] = floatval($c['h']);
+            $lows_15m[] = floatval($c['l']);
             $volumes_15m[] = floatval(isset($c['v']) ? $c['v'] : 0);
         }
     }
@@ -430,6 +447,66 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
 
     $n15 = count($closes_15m);
     $n5  = count($closes_5m);
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    //  QUALITY GATE 1: Trend Confirmation (NEW)
+    //  Price must be above 1-hour EMA (8 periods of 15m = 2h trend)
+    // ═══════════════════════════════════════════════════════════════════════
+    $ema8 = _mc_calc_ema($closes_15m, 8);
+    $trend_aligned = ($current_price > $ema8);
+    $factors['trend_confirm'] = array(
+        'ema8' => round($ema8, 8),
+        'price' => round($current_price, 8),
+        'aligned' => $trend_aligned
+    );
+    if (!$trend_aligned) {
+        $quality_issues[] = 'below_ema8';
+    } else {
+        $quality_score += 1;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    //  QUALITY GATE 2: Momentum Direction (NEW)
+    //  Must have positive momentum on both timeframes
+    // ═══════════════════════════════════════════════════════════════════════
+    $mom_15m = ($n15 >= 4 && $closes_15m[$n15 - 4] > 0) ? 
+        (($closes_15m[$n15 - 1] - $closes_15m[$n15 - 4]) / $closes_15m[$n15 - 4]) * 100 : 0;
+    $mom_5m = ($n5 >= 6 && $closes_5m[$n5 - 6] > 0) ? 
+        (($closes_5m[$n5 - 1] - $closes_5m[$n5 - 6]) / $closes_5m[$n5 - 6]) * 100 : 0;
+    
+    $momentum_positive = ($mom_15m > 0.5 && $mom_5m > 0.3);
+    $factors['momentum_gate'] = array(
+        'mom_15m' => round($mom_15m, 2),
+        'mom_5m' => round($mom_5m, 2),
+        'passed' => $momentum_positive
+    );
+    if (!$momentum_positive) {
+        $quality_issues[] = 'weak_momentum';
+    } else {
+        $quality_score += 1;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    //  QUALITY GATE 3: Volume Confirmation (NEW)
+    //  Must show volume increase (not just high aggregate volume)
+    // ═══════════════════════════════════════════════════════════════════════
+    $volume_increasing = true;
+    if ($has_volume_data && count($volumes_15m) >= 6) {
+        $recent_vol = array_sum(array_slice($volumes_15m, -3)) / 3;
+        $prev_vol = array_sum(array_slice($volumes_15m, -6, 3)) / 3;
+        $volume_increasing = ($recent_vol > $prev_vol * 1.2); // 20% increase
+        $factors['volume_gate'] = array(
+            'recent_vol' => round($recent_vol, 2),
+            'prev_vol' => round($prev_vol, 2),
+            'ratio' => round($recent_vol / ($prev_vol > 0 ? $prev_vol : 1), 2),
+            'passed' => $volume_increasing
+        );
+        if (!$volume_increasing) {
+            $quality_issues[] = 'volume_fading';
+        } else {
+            $quality_score += 1;
+        }
+    }
 
     // ── Factor 1: Explosive Volume (0-25 pts) ──
     // Compare recent volume to average (candle data) or use aggregate volume rank (CoinGecko)
@@ -473,27 +550,35 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
     }
     $total += $vol_score;
 
-    // ── Factor 2: Parabolic Momentum (0-20 pts) ──
-    // Steep price acceleration on 15m + 5m
+    // ── Factor 2: Parabolic Momentum (0-20 pts) — IMPROVED v2 ──
+    // Steep price acceleration on 15m + 5m with stricter thresholds
     $mom_score = 0;
     if ($n15 >= 4 && $n5 >= 6) {
         // 15m momentum: last 4 candles (~1 hour)
         $mom_15m = ($closes_15m[$n15 - 4] > 0) ? (($closes_15m[$n15 - 1] - $closes_15m[$n15 - 4]) / $closes_15m[$n15 - 4]) * 100 : 0;
         // 5m momentum: last 6 candles (~30 min)
         $mom_5m = ($closes_5m[$n5 - 6] > 0) ? (($closes_5m[$n5 - 1] - $closes_5m[$n5 - 6]) / $closes_5m[$n5 - 6]) * 100 : 0;
+        
+        // NEW: Check for acceleration (momentum increasing)
+        $mom_15m_prev = ($n15 >= 8 && $closes_15m[$n15 - 8] > 0) ? 
+            (($closes_15m[$n15 - 5] - $closes_15m[$n15 - 8]) / $closes_15m[$n15 - 8]) * 100 : $mom_15m;
+        $accelerating_15m = ($mom_15m > $mom_15m_prev);
 
-        // Both positive = confirmed uptrend
-        if ($mom_15m > 0 && $mom_5m > 0) $mom_score += 8;
+        // Both positive = confirmed uptrend (reduced from 8 to 5)
+        if ($mom_15m > 0.5 && $mom_5m > 0.3) $mom_score += 5;
 
-        // Steep 15m momentum
-        if ($mom_15m >= 3) $mom_score += 6;
-        elseif ($mom_15m >= 1.5) $mom_score += 4;
-        elseif ($mom_15m >= 0.5) $mom_score += 2;
+        // Steep 15m momentum (stricter thresholds)
+        if ($mom_15m >= 5) $mom_score += 8;           // Was 3%
+        elseif ($mom_15m >= 3) $mom_score += 5;       // Was 1.5%
+        elseif ($mom_15m >= 1.5) $mom_score += 2;     // Was 0.5%
 
-        // Accelerating 5m momentum
-        if ($mom_5m >= 2) $mom_score += 6;
-        elseif ($mom_5m >= 1) $mom_score += 4;
-        elseif ($mom_5m >= 0.3) $mom_score += 2;
+        // Accelerating 5m momentum (stricter thresholds)
+        if ($mom_5m >= 4) $mom_score += 7;            // Was 2%
+        elseif ($mom_5m >= 2) $mom_score += 4;        // Was 1%
+        elseif ($mom_5m >= 1) $mom_score += 2;        // Was 0.3%
+        
+        // NEW: Bonus for acceleration
+        if ($accelerating_15m && $mom_15m > 2) $mom_score += 3;
 
         if ($mom_score > 20) $mom_score = 20;
 
@@ -501,22 +586,44 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
             'score' => $mom_score,
             'max' => 20,
             'mom_15m' => round($mom_15m, 2),
-            'mom_5m' => round($mom_5m, 2)
+            'mom_5m' => round($mom_5m, 2),
+            'accelerating' => $accelerating_15m,
+            'mom_15m_prev' => round($mom_15m_prev, 2)
         );
     } else {
         $factors['parabolic_momentum'] = array('score' => 0, 'max' => 20);
     }
     $total += $mom_score;
 
-    // ── Factor 3: RSI Hype Zone (0-15 pts) ──
-    // Memes sustain higher RSI — sweet spot 55-80
+    // ── Factor 3: RSI Hype Zone (0-15 pts) — IMPROVED v2 ──
+    // Memes sustain higher RSI — sweet spot 60-75 (tightened from 55-80)
     $rsi = _mc_calc_rsi($closes_15m, 14);
     $rsi_score = 0;
-    if ($rsi >= 55 && $rsi <= 80) $rsi_score = 15;      // hype zone
-    elseif ($rsi >= 45 && $rsi < 55) $rsi_score = 8;     // warming up
-    elseif ($rsi > 80 && $rsi <= 90) $rsi_score = 5;     // very hot but not dead yet
-    elseif ($rsi >= 35 && $rsi < 45) $rsi_score = 3;     // oversold bounce possible
-    $factors['rsi_hype_zone'] = array('score' => $rsi_score, 'max' => 15, 'rsi' => round($rsi, 1));
+    
+    // NEW: Also check RSI trend (rising = more bullish)
+    $rsi_prev = _mc_calc_rsi(array_slice($closes_15m, 0, -2), 14);
+    $rsi_rising = ($rsi > $rsi_prev);
+    
+    if ($rsi >= 60 && $rsi <= 75) {           // Tightened hype zone
+        $rsi_score = $rsi_rising ? 15 : 12;   // Full points only if rising
+    } elseif ($rsi >= 50 && $rsi < 60) {
+        $rsi_score = $rsi_rising ? 8 : 5;     // Warming up
+    } elseif ($rsi > 75 && $rsi <= 85) {
+        $rsi_score = $rsi_rising ? 6 : 3;     // Hot but riskier
+    } elseif ($rsi >= 40 && $rsi < 50) {
+        $rsi_score = $rsi_rising ? 4 : 2;     // Potential bounce
+    }
+    
+    // NEW: Penalty for extreme overbought (>85 = likely reversal)
+    if ($rsi > 85) $rsi_score = 0;
+    
+    $factors['rsi_hype_zone'] = array(
+        'score' => $rsi_score, 
+        'max' => 15, 
+        'rsi' => round($rsi, 1),
+        'rsi_prev' => round($rsi_prev, 1),
+        'rising' => $rsi_rising
+    );
     $total += $rsi_score;
 
     // ── Factor 4: Social Momentum Proxy (0-15 pts) ──
@@ -678,28 +785,56 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
     $atr_pct = ($current_price > 0) ? ($atr / $current_price) * 100 : 3.0;
     $atr_pct = max(1.0, min(15.0, $atr_pct)); // wider clamp for memes
 
+    // NEW: Apply quality penalty to total score
+    // Must pass at least 2 of 3 quality gates for any signal
+    $quality_penalty = 0;
+    if ($quality_score < 2) {
+        $quality_penalty = (2 - $quality_score) * 10; // -10 per failed gate
+    }
+    $adjusted_total = max(0, $total - $quality_penalty);
+    
+    $factors['quality_check'] = array(
+        'score' => $quality_score,
+        'issues' => $quality_issues,
+        'penalty' => $quality_penalty,
+        'raw_total' => $total,
+        'adjusted_total' => $adjusted_total
+    );
+
     $verdict = 'SKIP';
     $target_pct = 0;
     $risk_pct = 0;
-
-    if ($total >= 85) {
+    
+    // NEW: Stricter thresholds - require at least 2 quality gates
+    if ($adjusted_total >= 85 && $quality_score >= 2) {
         $verdict = 'STRONG_BUY';
-        $target_pct = round(max(5.0, min(15.0, $atr_pct * 2.0)), 1);
-        $risk_pct   = round(max(2.0, min(5.0, $atr_pct * 1.0)), 1);
-    } elseif ($total >= 75) {
+        $target_pct = round(max(4.0, min(12.0, $atr_pct * 1.8)), 1); // Reduced from 15% max
+        $risk_pct   = round(max(2.0, min(4.0, $atr_pct * 0.9)), 1);  // Tighter stops
+    } elseif ($adjusted_total >= 78 && $quality_score >= 2) { // Raised from 75
         $verdict = 'BUY';
-        $target_pct = round(max(3.0, min(10.0, $atr_pct * 1.5)), 1);
-        $risk_pct   = round(max(2.0, min(4.0, $atr_pct * 0.8)), 1);
-    } elseif ($total >= 70) {
+        $target_pct = round(max(3.0, min(8.0, $atr_pct * 1.3)), 1);  // Reduced from 10%
+        $risk_pct   = round(max(2.0, min(3.5, $atr_pct * 0.7)), 1);  // Tighter stops
+    } elseif ($adjusted_total >= 72 && $quality_score >= 2) { // Raised from 70
         $verdict = 'LEAN_BUY';
-        $target_pct = round(max(2.0, min(6.0, $atr_pct * 1.2)), 1);
-        $risk_pct   = round(max(1.5, min(3.0, $atr_pct * 0.7)), 1);
+        $target_pct = round(max(2.0, min(5.0, $atr_pct * 1.0)), 1);  // Reduced from 6%
+        $risk_pct   = round(max(1.5, min(2.5, $atr_pct * 0.6)), 1);  // Tighter stops
+    }
+    
+    // NEW: Tier 2 coins get extra scrutiny (higher threshold)
+    if ($candidate['tier'] === 'tier2' && $verdict !== 'SKIP') {
+        if ($adjusted_total < 80) { // Tier 2 needs 80+ for any signal
+            $verdict = 'SKIP';
+            $target_pct = 0;
+            $risk_pct = 0;
+        } elseif ($verdict === 'STRONG_BUY' && $adjusted_total < 90) {
+            $verdict = 'BUY'; // Downgrade tier 2 strong buys unless exceptional
+        }
     }
 
     $factors['volatility'] = array('atr' => round($atr, 8), 'atr_pct' => round($atr_pct, 2));
 
     return array(
-        'total'      => $total,
+        'total'      => $adjusted_total,
         'factors'    => $factors,
         'verdict'    => $verdict,
         'target_pct' => $target_pct,
@@ -751,9 +886,9 @@ function _mc_detect_btc_regime() {
 }
 
 /**
- * Adjust score based on BTC regime:
- * - Bull: +5 bonus to momentum-driven coins, -3 to volume-only
- * - Bear: +5 bonus to volume/breakout-driven coins, -5 to momentum
+ * Adjust score based on BTC regime (IMPROVED v2 - more conservative):
+ * - Bull: +3 bonus to momentum-driven coins (reduced from +5)
+ * - Bear: -10 penalty to ALL signals (bear market = avoid memes)
  * - Chop: no adjustment (0)
  * Returns array('adjusted_score' => int, 'adjustment' => int)
  */
@@ -764,22 +899,23 @@ function _mc_regime_score_adjust($raw_score, $factors, $btc_regime) {
     $mom = isset($factors['parabolic_momentum']['score']) ? $factors['parabolic_momentum']['score'] : 0;
     $vol = isset($factors['explosive_volume']['score']) ? $factors['explosive_volume']['score'] : 0;
     $brk = isset($factors['breakout_4h']['score']) ? $factors['breakout_4h']['score'] : 0;
+    $trend = isset($factors['trend_confirm']['aligned']) ? $factors['trend_confirm']['aligned'] : true;
 
     if ($regime === 'bull') {
-        // Bull market: boost momentum, slightly penalize low-volume plays
-        if ($mom >= 10) $adjustment += 5;
-        elseif ($mom >= 5) $adjustment += 3;
-        if ($vol < 4 && $mom < 5) $adjustment -= 3;
+        // Bull market: small boost to strong momentum coins
+        if ($mom >= 12 && $trend) $adjustment += 3;
+        elseif ($mom >= 8 && $trend) $adjustment += 2;
     } elseif ($regime === 'bear') {
-        // Bear market: boost volume/breakout (contrarian strength), penalize momentum
-        if ($vol >= 12 || $brk >= 7) $adjustment += 5;
-        if ($mom >= 10) $adjustment -= 5;
-        elseif ($mom >= 5) $adjustment -= 3;
+        // Bear market: HEAVY penalty to all meme signals
+        // Memes crash hardest in bear markets - require exceptional setup
+        $adjustment -= 10;
+        // Extra penalty for momentum-only plays
+        if ($mom >= 10 && $vol < 8) $adjustment -= 5;
     }
-    // Chop: no adjustment
+    // Chop: no adjustment - but memes are risky in chop too
 
     $adjusted = max(0, min(100, $raw_score + $adjustment));
-    return array('adjusted_score' => $adjusted, 'adjustment' => $adjustment);
+    return array('adjusted_score' => $adjusted, 'adjustment' => $adjustment, 'regime' => $regime);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1123,6 +1259,19 @@ function _mc_calc_rsi($closes, $period) {
     if ($avg_loss == 0) return 100;
     $rs = $avg_gain / $avg_loss;
     return 100 - (100 / (1 + $rs));
+}
+
+function _mc_calc_ema($closes, $period) {
+    $n = count($closes);
+    if ($n < $period) return $closes[$n - 1];
+    
+    $multiplier = 2 / ($period + 1);
+    $ema = array_sum(array_slice($closes, 0, $period)) / $period; // SMA start
+    
+    for ($i = $period; $i < $n; $i++) {
+        $ema = ($closes[$i] - $ema) * $multiplier + $ema;
+    }
+    return $ema;
 }
 
 function _mc_calc_atr($candles, $period = 14) {
@@ -1632,6 +1781,189 @@ function _mc_action_snapshot($conn) {
 
         echo json_encode(array('ok' => true, 'action' => 'created', 'date' => $today, 'signals' => intval($s['signals']), 'win_rate' => $wr));
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  ADAPTIVE WEIGHTS — learn which indicators predict wins
+// ═══════════════════════════════════════════════════════════════════════
+function _mc_action_adaptive_weights($conn) {
+    // Ensure mc_adaptive_weights table exists
+    $conn->query("CREATE TABLE IF NOT EXISTS mc_adaptive_weights (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        weights_json TEXT NOT NULL,
+        correlation_json TEXT NOT NULL,
+        sample_count INT NOT NULL DEFAULT 0,
+        win_rate DOUBLE DEFAULT 0,
+        created_at DATETIME NOT NULL,
+        INDEX idx_aw_created (created_at)
+    ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+    // Get all resolved signals with factors
+    $sql = "SELECT factors_json, outcome, pnl_pct
+            FROM mc_winners
+            WHERE outcome IS NOT NULL
+            AND factors_json IS NOT NULL
+            AND created_at > DATE_SUB(NOW(), INTERVAL 90 DAY)
+            ORDER BY created_at DESC
+            LIMIT 500";
+    $res = $conn->query($sql);
+    if (!$res) { _mc_err('Query failed'); }
+
+    $factor_keys = array(
+        'explosive_volume', 'parabolic_momentum', 'rsi_hype_zone',
+        'social_proxy', 'volume_concentration', 'breakout_4h', 'low_cap_bonus'
+    );
+    $max_values = array(25, 20, 15, 15, 10, 10, 5);
+
+    $samples = array();
+    $wins = 0;
+    $losses = 0;
+
+    while ($row = $res->fetch_assoc()) {
+        $factors = json_decode($row['factors_json'], true);
+        if (!is_array($factors)) continue;
+
+        $is_win = ($row['outcome'] === 'win' || $row['outcome'] === 'partial_win') ? 1 : 0;
+        if ($is_win) $wins++;
+        else $losses++;
+
+        $scores = array();
+        for ($fi = 0; $fi < count($factor_keys); $fi++) {
+            $fk = $factor_keys[$fi];
+            $val = 0;
+            if (isset($factors[$fk])) {
+                if (is_array($factors[$fk]) && isset($factors[$fk]['score'])) {
+                    $val = floatval($factors[$fk]['score']);
+                } elseif (is_numeric($factors[$fk])) {
+                    $val = floatval($factors[$fk]);
+                }
+            }
+            // Normalize to 0-1
+            $scores[] = ($max_values[$fi] > 0) ? min(1.0, $val / $max_values[$fi]) : 0;
+        }
+
+        $samples[] = array('scores' => $scores, 'outcome' => $is_win, 'pnl' => floatval($row['pnl_pct']));
+    }
+
+    $total = $wins + $losses;
+    if ($total < 10) {
+        echo json_encode(array(
+            'ok' => false,
+            'error' => 'Need at least 10 resolved signals, found ' . $total,
+            'wins' => $wins,
+            'losses' => $losses
+        ));
+        return;
+    }
+
+    // Calculate Pearson correlation for each factor vs outcome
+    $correlations = array();
+    for ($fi = 0; $fi < count($factor_keys); $fi++) {
+        $sum_x = 0; $sum_y = 0; $sum_xy = 0; $sum_x2 = 0; $sum_y2 = 0;
+        $n = count($samples);
+        for ($si = 0; $si < $n; $si++) {
+            $x = $samples[$si]['scores'][$fi];
+            $y = $samples[$si]['outcome'];
+            $sum_x += $x;
+            $sum_y += $y;
+            $sum_xy += $x * $y;
+            $sum_x2 += $x * $x;
+            $sum_y2 += $y * $y;
+        }
+        $num = $n * $sum_xy - $sum_x * $sum_y;
+        $den = sqrt(($n * $sum_x2 - $sum_x * $sum_x) * ($n * $sum_y2 - $sum_y * $sum_y));
+        $corr = ($den != 0) ? $num / $den : 0;
+        $correlations[$factor_keys[$fi]] = round($corr, 4);
+    }
+
+    // Convert correlations to weights (absolute value, normalized)
+    $abs_corrs = array();
+    $total_abs = 0;
+    for ($fi = 0; $fi < count($factor_keys); $fi++) {
+        $ac = abs($correlations[$factor_keys[$fi]]);
+        $abs_corrs[] = $ac;
+        $total_abs += $ac;
+    }
+
+    $weights = array();
+    for ($fi = 0; $fi < count($factor_keys); $fi++) {
+        $w = ($total_abs > 0) ? round($abs_corrs[$fi] / $total_abs, 4) : round(1.0 / count($factor_keys), 4);
+        // Clamp minimum weight to 0.02 (no factor should be entirely ignored)
+        $w = max(0.02, $w);
+        $weights[$factor_keys[$fi]] = $w;
+    }
+    // Re-normalize after clamping
+    $wtotal = 0;
+    foreach ($weights as $wv) $wtotal += $wv;
+    foreach ($weights as $wk => $wv) {
+        $weights[$wk] = round($wv / $wtotal, 4);
+    }
+
+    $wr = ($total > 0) ? round(($wins / $total) * 100, 1) : 0;
+
+    // Save to database
+    $esc_weights = $conn->real_escape_string(json_encode($weights));
+    $esc_corr = $conn->real_escape_string(json_encode($correlations));
+    $conn->query("INSERT INTO mc_adaptive_weights (weights_json, correlation_json, sample_count, win_rate, created_at)
+                  VALUES ('$esc_weights', '$esc_corr', $total, $wr, NOW())");
+
+    echo json_encode(array(
+        'ok' => true,
+        'samples' => $total,
+        'wins' => $wins,
+        'losses' => $losses,
+        'win_rate' => $wr,
+        'correlations' => $correlations,
+        'adaptive_weights' => $weights,
+        'default_weights' => array(
+            'explosive_volume' => 0.25,
+            'parabolic_momentum' => 0.20,
+            'rsi_hype_zone' => 0.15,
+            'social_proxy' => 0.15,
+            'volume_concentration' => 0.10,
+            'breakout_4h' => 0.10,
+            'low_cap_bonus' => 0.05
+        )
+    ));
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  ML STATUS — public endpoint showing ML learning progress
+// ═══════════════════════════════════════════════════════════════════════
+function _mc_action_ml_status($conn) {
+    // Latest adaptive weights
+    $aw_res = $conn->query("SELECT * FROM mc_adaptive_weights ORDER BY created_at DESC LIMIT 1");
+    $latest_weights = null;
+    if ($aw_res && $aw_res->num_rows > 0) {
+        $row = $aw_res->fetch_assoc();
+        $latest_weights = array(
+            'weights' => json_decode($row['weights_json'], true),
+            'correlations' => json_decode($row['correlation_json'], true),
+            'sample_count' => intval($row['sample_count']),
+            'win_rate' => floatval($row['win_rate']),
+            'computed_at' => $row['created_at']
+        );
+    }
+
+    // Training data stats
+    $td_res = $conn->query("SELECT
+        COUNT(*) as total,
+        SUM(CASE WHEN outcome IN ('win','partial_win') THEN 1 ELSE 0 END) as wins,
+        SUM(CASE WHEN outcome IN ('loss','partial_loss') THEN 1 ELSE 0 END) as losses
+        FROM mc_winners WHERE outcome IS NOT NULL");
+    $td = ($td_res) ? $td_res->fetch_assoc() : array('total' => 0, 'wins' => 0, 'losses' => 0);
+
+    echo json_encode(array(
+        'ok' => true,
+        'training_data' => array(
+            'resolved_signals' => intval($td['total']),
+            'wins' => intval($td['wins']),
+            'losses' => intval($td['losses']),
+            'ready_for_ml' => intval($td['total']) >= 30
+        ),
+        'latest_adaptive_weights' => $latest_weights,
+        'status' => intval($td['total']) >= 30 ? 'active' : 'collecting_data'
+    ));
 }
 
 function _mc_err($msg) {

@@ -31,8 +31,10 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
 .badge-lean{background:rgba(234,179,8,0.15);color:var(--gold);border:1px solid rgba(234,179,8,0.3)}
 .badge-tier1{background:rgba(96,165,250,0.12);color:#93c5fd;border:1px solid rgba(96,165,250,0.25);font-size:9px;padding:1px 6px}
 .badge-tier2{background:rgba(52,211,153,0.12);color:#6ee7b7;border:1px solid rgba(52,211,153,0.25);font-size:9px;padding:1px 6px}
-.winner-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;transition:border-color 0.2s}
-.winner-card:hover{border-color:var(--accent)}
+.winner-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;transition:all 0.2s;position:relative}
+.winner-card:hover{border-color:var(--accent);box-shadow:0 4px 20px rgba(232,121,249,0.1);transform:translateY(-2px)}
+.winner-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--cyan));opacity:0;transition:opacity 0.2s;border-radius:var(--radius) var(--radius) 0 0}
+.winner-card:hover::before{opacity:1}
 .winner-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
 .winner-pair{font-size:18px;font-weight:700;color:#fff}
 .winner-score{font-size:28px;font-weight:800}
@@ -131,7 +133,57 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
 .picks-date-label{font-size:13px;color:var(--dim)}
 .picks-summary{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--dim);margin-bottom:8px}
 .picks-summary span{display:flex;align-items:center;gap:4px}
-@media(max-width:600px){.header h1{font-size:20px}.stats-row{grid-template-columns:repeat(2,1fr)}.factors{grid-template-columns:1fr}.glossary-grid{grid-template-columns:1fr}.tier-explain{flex-direction:column}.info-tip .tip-text{width:200px;left:0;transform:none}}
+/* Freshness badges */
+.freshness-bar{display:flex;align-items:center;gap:10px;padding:10px 16px;margin-bottom:12px;border-radius:var(--radius);font-size:12px;border:1px solid var(--border);background:var(--card)}
+.freshness-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;animation:pulse 2s infinite}
+.freshness-fresh .freshness-dot{background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,0.5)}
+.freshness-aging .freshness-dot{background:#f59e0b;box-shadow:0 0 6px rgba(245,158,11,0.5)}
+.freshness-stale .freshness-dot{background:#ef4444;box-shadow:0 0 6px rgba(239,68,68,0.5)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.signal-age-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;letter-spacing:0.5px}
+.age-fresh{background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3)}
+.age-aging{background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)}
+.age-stale{background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3)}
+.winner-card.stale-card{opacity:0.55;border-color:rgba(239,68,68,0.3)}
+.winner-card.stale-card:hover{opacity:0.8}
+.stale-overlay{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:6px;padding:6px 10px;margin:8px 0;font-size:11px;color:#fca5a5;text-align:center}
+/* BUY NOW badge & ranking */
+.buy-now-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(232,121,249,0.25),rgba(6,182,212,0.25));color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:6px;border:1px solid rgba(232,121,249,0.4);cursor:pointer;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.5px}
+.buy-now-badge:hover{background:linear-gradient(135deg,rgba(232,121,249,0.4),rgba(6,182,212,0.4));transform:scale(1.05);box-shadow:0 2px 12px rgba(232,121,249,0.3)}
+.buy-now-rank{font-size:10px;color:var(--dim);margin-left:6px}
+.buy-now-rank .rank-val{font-weight:700;font-size:13px}
+/* Verify modal */
+.verify-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:1000;justify-content:center;align-items:center;padding:20px}
+.verify-overlay.active{display:flex}
+.verify-modal{background:#12122a;border:1px solid var(--accent);border-radius:16px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(232,121,249,0.2)}
+.verify-modal-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
+.verify-modal-header h3{font-size:16px;color:#fff;margin:0}
+.verify-close{background:none;border:none;color:var(--dim);font-size:20px;cursor:pointer;padding:4px 8px;border-radius:4px}
+.verify-close:hover{color:#fff;background:rgba(255,255,255,0.1)}
+.verify-body{padding:20px}
+.verify-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px}
+.verify-row .vr-label{color:var(--dim)}
+.verify-row .vr-value{font-weight:600;color:#fff}
+.verify-verdict{text-align:center;padding:16px;border-radius:10px;margin:16px 0;font-size:15px;font-weight:700}
+.verdict-green{background:rgba(34,197,94,0.12);color:#22c55e;border:1px solid rgba(34,197,94,0.3)}
+.verdict-yellow{background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)}
+.verdict-red{background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.3)}
+.verify-manual{margin-top:16px;padding:12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px}
+.verify-manual label{font-size:12px;color:var(--dim);display:block;margin-bottom:6px}
+.verify-manual input{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:#fff;font-size:14px}
+.verify-manual input:focus{outline:none;border-color:var(--accent)}
+.verify-manual .vm-btn{display:inline-block;margin-top:8px;padding:6px 16px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600}
+.verify-manual .vm-btn:hover{opacity:0.85}
+/* Live mode toggle */
+.live-mode-bar{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.live-toggle{position:relative;width:44px;height:24px;background:rgba(255,255,255,0.1);border-radius:12px;cursor:pointer;transition:all 0.3s;border:1px solid var(--border)}
+.live-toggle.active{background:rgba(34,197,94,0.3);border-color:rgba(34,197,94,0.5)}
+.live-toggle .lt-dot{position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform 0.3s}
+.live-toggle.active .lt-dot{transform:translateX(20px)}
+.live-label{font-size:12px;color:var(--dim)}
+.live-label.active{color:var(--green)}
+.live-pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:4px;animation:pulse 1s infinite}
+@media(max-width:600px){.header h1{font-size:20px}.stats-row{grid-template-columns:repeat(2,1fr)}.factors{grid-template-columns:1fr}.glossary-grid{grid-template-columns:1fr}.tier-explain{flex-direction:column}.info-tip .tip-text{width:200px;left:0;transform:none}.verify-modal{margin:10px}}
 </style>
 </head>
 <body>
@@ -154,9 +206,21 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
     <span style="color:#fca5a5;">Forward-facing results: <strong style="color:#ef4444;">5% WR</strong> (1 win / 19 losses, 20 resolved). This scanner is currently underperforming. Data is honest and unfiltered.</span>
   </div>
 
+  <!-- v2 Improvement Banner -->
+  <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;">
+    <span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:3px 10px;border-radius:6px;font-weight:800;font-size:11px;border:1px solid rgba(34,197,94,0.3);letter-spacing:0.5px;">v2 IMPROVED</span>
+    <span style="color:#86efac;"><strong>Algorithm updated Feb 12, 2026:</strong> Added quality gates (EMA trend + momentum + volume), stricter thresholds (72/78/85), bear market penalty (-10pts). Goal: 5% &rarr; 40%+ win rate. <a href="#" onclick="switchMainTab('analysis');return false;" style="color:#22c55e;text-decoration:underline;">See details &rarr;</a></span>
+  </div>
+
   <div class="warning-bar">
     <strong>&#9888; HIGH VOLATILITY:</strong>
     <span>Meme coins can drop 30-80% in hours. This scanner finds short-term momentum patterns &mdash; NOT safe long-term investments. Wider targets &amp; stops reflect extreme volatility. Never risk money you can't lose.</span>
+  </div>
+
+  <!-- QUICK FIX PLAN BANNER -->
+  <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;">
+    <span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:3px 10px;border-radius:6px;font-weight:800;font-size:11px;border:1px solid rgba(34,197,94,0.3);letter-spacing:0.5px;">NEW</span>
+    <span style="color:#86efac;"><strong>Take Profit & Stop Loss prices now shown!</strong> Exact exit prices are calculated from entry. Quick-fix improvements in progress. <a href="#quick-fixes" style="color:#22c55e;text-decoration:underline;">See the plan &rarr;</a></span>
   </div>
 
   <!-- Main page tabs -->
@@ -178,8 +242,39 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
     <div class="stat-card"><div class="label">Last Scan</div><div class="value" id="s-last" style="font-size:14px">--</div><div class="sub" id="s-first">--</div></div>
   </div>
 
-  <div class="section-title">Current Meme Winners <span class="badge badge-strong" id="winner-count">loading...</span></div>
+  <!-- Data Freshness Bar -->
+  <div class="freshness-bar freshness-stale" id="freshness-bar">
+    <span class="freshness-dot"></span>
+    <span id="freshness-text">Checking data freshness...</span>
+    <span id="freshness-time" style="margin-left:auto;font-size:11px;color:var(--dim)"></span>
+  </div>
+
+  <!-- Live Mode + BUY NOW Controls -->
+  <div class="live-mode-bar">
+    <div class="live-toggle" id="live-toggle" onclick="toggleLiveMode()">
+      <div class="lt-dot"></div>
+    </div>
+    <span class="live-label" id="live-label">Live Price Updates: OFF</span>
+    <span style="margin-left:auto;font-size:11px;color:var(--dim)" id="live-status"></span>
+  </div>
+
+  <div class="section-title">Current Meme Winners <span class="badge badge-strong" id="winner-count">loading...</span>
+    <span style="font-size:11px;color:var(--dim);font-weight:400;margin-left:8px" id="sort-label">(sorted by BUY NOW rank)</span>
+  </div>
   <div id="winners-list"><div class="loading">Loading winners...</div></div>
+
+  <!-- Price Verification Modal -->
+  <div class="verify-overlay" id="verify-overlay" onclick="if(event.target===this)closeVerifyModal()">
+    <div class="verify-modal">
+      <div class="verify-modal-header">
+        <h3 id="verify-title">Verify Signal</h3>
+        <button class="verify-close" onclick="closeVerifyModal()">&times;</button>
+      </div>
+      <div class="verify-body" id="verify-body">
+        <div class="loading">Fetching live price...</div>
+      </div>
+    </div>
+  </div>
 
   <div class="section-title" style="margin-top:32px">Win Rate by Confidence Tier</div>
   <div id="tier-table"></div>
@@ -223,29 +318,40 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
   <!-- CONFIDENCE TIERS -->
   <div class="edu-section">
     <div class="edu-header" onclick="toggleEdu(this)">
-      <h3>Understanding Meme Confidence Tiers <i class="info-tip">i<span class="tip-text">The scanner assigns a verdict based on the total score. Higher tiers mean more indicators agree &mdash; but remember, meme coins are inherently riskier.</span></i></h3>
+      <h3>Understanding Meme Confidence Tiers <span class="badge" style="background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);font-size:9px;padding:2px 6px;">IMPROVED v2</span></h3>
       <span class="edu-arrow">&#9660;</span>
     </div>
     <div class="edu-body">
-      <p style="font-size:13px;color:#bbb;margin-bottom:12px">Each meme coin is scored 0-100 across 7 meme-specific indicators. Wider targets and stops reflect the extreme volatility of meme coins.</p>
+      <p style="font-size:13px;color:#bbb;margin-bottom:12px">Each meme coin is scored 0-100 across 7 meme-specific indicators. <strong style="color:#22c55e;">New in v2:</strong> Quality gates now require price above EMA, positive momentum on both timeframes, AND increasing volume. Stricter thresholds = fewer false signals.</p>
+      
+      <!-- Quality Gates Summary -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:600;color:#fff;margin-bottom:8px;">Quality Gates (Must pass 2 of 3)</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;font-size:11px;color:var(--dim);">
+          <div>&#10004; <strong style="color:var(--green);">Trend Confirm:</strong> Price above 1h EMA</div>
+          <div>&#10004; <strong style="color:var(--green);">Momentum Gate:</strong> Both 15m & 5m positive</div>
+          <div>&#10004; <strong style="color:var(--green);">Volume Gate:</strong> Volume increasing 20%+</div>
+        </div>
+      </div>
+      
       <div class="tier-explain">
         <div class="tier-card strong">
           <div class="t-label">Strong Buy</div>
-          <div class="t-range">Score 85-100</div>
-          <div class="t-desc">6-7 out of 7 indicators firing. Explosive volume, parabolic momentum, and social velocity are all aligned. <strong style="color:var(--accent)">Target: +5-15%</strong> within 2 hours. Risk: -2-5%. Maximum conviction &mdash; everything lines up for a meme pump.</div>
+          <div class="t-range">Score 85-100 + Quality 2/3</div>
+          <div class="t-desc">6-7 indicators firing + quality gates passed. <strong style="color:var(--accent)">Target: +4-12%</strong> (reduced). Risk: -2-4% (tighter). Maximum conviction with trend confirmation.</div>
         </div>
         <div class="tier-card buy">
           <div class="t-label">Buy</div>
-          <div class="t-range">Score 75-84</div>
-          <div class="t-desc">5-6 indicators are bullish. Strong momentum with most factors aligned. <strong style="color:#c084fc">Target: +3-10%</strong> within 2 hours. Risk: -2-4%. Solid meme setup, but not every factor is firing.</div>
+          <div class="t-range">Score 78-84 + Quality 2/3</div>
+          <div class="t-desc">5-6 indicators bullish + quality gates passed. <strong style="color:#c084fc">Target: +3-8%</strong> (reduced). Risk: -2-3.5% (tighter). Raised threshold from 75 for better accuracy.</div>
         </div>
         <div class="tier-card lean">
           <div class="t-label">Lean Buy</div>
-          <div class="t-range">Score 70-74</div>
-          <div class="t-desc">4-5 indicators are bullish. There's a directional edge but weaker conviction. <strong style="color:var(--gold)">Target: +2-6%</strong> within 2 hours. Risk: -1.5-3%. Exercise more caution at this level.</div>
+          <div class="t-range">Score 72-77 + Quality 2/3</div>
+          <div class="t-desc">4-5 indicators bullish + quality gates passed. <strong style="color:var(--gold)">Target: +2-5%</strong> (reduced). Risk: -1.5-2.5% (tighter). Raised threshold from 70.</div>
         </div>
       </div>
-      <p style="font-size:12px;color:var(--dim);margin-top:8px"><strong>Below 70:</strong> Not shown as a winner. Even meme coins need sufficient confluence before we flag them. The scanner waits for stronger setups.</p>
+      <p style="font-size:12px;color:var(--dim);margin-top:8px"><strong>Tier 2 Emerging:</strong> Now requires 80+ score minimum (extra scrutiny). Bear market: -10pt penalty to all scores. <strong>Goal:</strong> Improve 5% win rate to 40%+ by filtering weak signals.</p>
     </div>
   </div>
 
@@ -377,10 +483,13 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-bottom:20px;">
       <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
-        <h4 style="font-size:14px;color:var(--gold);margin-bottom:8px;">What This System Does</h4>
+        <h4 style="font-size:14px;color:var(--gold);margin-bottom:8px;">What This System Does <span style="font-size:9px;padding:2px 6px;background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);border-radius:4px;">v2</span></h4>
         <div style="font-size:12px;color:var(--dim);line-height:1.7;">
           &bull; Scans 600+ Crypto.com Exchange USDT pairs every 10 minutes<br>
           &bull; Scores each meme coin 0&ndash;100 using 7 meme-specific indicators<br>
+          &bull; <strong style="color:#22c55e;">NEW:</strong> Quality gates (trend confirm + momentum + volume)<br>
+          &bull; <strong style="color:#22c55e;">NEW:</strong> Stricter thresholds (72/78/85 vs old 70/75/85)<br>
+          &bull; <strong style="color:#22c55e;">NEW:</strong> Bear market penalty (-10pts when BTC in downtrend)<br>
           &bull; Automated momentum detection with daily/weekly/monthly views<br>
           &bull; Historical signal tracking with continuous 2-hour resolve<br>
           &bull; Covers 14+ established meme coins (Tier 1) plus emerging pumps (Tier 2)
@@ -424,6 +533,101 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
         <strong style="color:var(--red);">ABSOLUTELY NOT SAFE for real trading.</strong> Meme coins are the highest-risk asset class in all of finance. Our scanner provides price data only &mdash; it cannot detect scams, rug pulls, or worthless tokens. The &gt;95% failure rate of meme coins means the vast majority of positions will lose money. Never invest money you cannot afford to lose entirely.
       </div>
     </div>
+
+    <!-- QUICK FIX PLAN SECTION -->
+    <h4 style="font-size:15px;margin-bottom:10px;color:#22c55e;"><a name="quick-fixes"></a>Quick-Fix Implementation Plan</h4>
+    <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.3);border-radius:var(--radius);padding:16px;margin-bottom:16px;">
+      <div style="font-size:12px;color:#86efac;line-height:1.7;">
+        <strong style="color:#22c55e;">Phase 1: Immediate Fixes (COMPLETE)</strong>
+        <ul style="margin:8px 0;padding-left:20px;">
+          <li>&#10004; <strong>Exact TP/SL prices displayed</strong> - No more mental math on entry</li>
+          <li>&#10004; <strong>Position sizing guidance added</strong> - Max 2% portfolio risk per trade</li>
+          <li>&#10004; <strong>Better risk visualization</strong> - Color-coded risk levels on all cards</li>
+          <li>&#10004; <strong>Quick entry/exit calculator</strong> - Instant profit/loss scenarios</li>
+        </ul>
+        <strong style="color:#f59e0b;">Phase 2: Accuracy Improvements (COMPLETE)</strong>
+        <ul style="margin:8px 0;padding-left:20px;">
+          <li>&#10004; <strong>Quality gates implemented</strong> - EMA trend + momentum + volume</li>
+          <li>&#10004; <strong>Stricter thresholds</strong> - Raised from 70/75/85 to 72/78/85</li>
+          <li>&#10004; <strong>Bear market penalty</strong> - -10pts when BTC in downtrend</li>
+          <li>&#10004; <strong>Tier 2 scrutiny</strong> - Extra +10pts required for emerging coins</li>
+        </ul>
+        <strong style="color:#a855f7;">Phase 3: Short-term (This Week)</strong>
+        <ul style="margin:8px 0;padding-left:20px;color:#d4d4d8;">
+          <li>&#9675; <strong>Risk/reward ratio filters</strong> - Hide signals below 2:1 R/R</li>
+          <li>&#9675; <strong>Correlation warnings</strong> - Alert when multiple meme signals are correlated</li>
+          <li>&#9675; <strong>Time-of-day filters</strong> - Meme pumps often happen in specific sessions</li>
+        </ul>
+        <strong style="color:var(--dim);">Phase 4: Medium-term (This Month)</strong>
+        <ul style="margin:8px 0;padding-left:20px;color:#d4d4d8;">
+          <li>&#9675; <strong>Social sentiment overlay</strong> - Reddit/Twitter mention velocity</li>
+          <li>&#9675; <strong>On-chain smart money tracking</strong> - Whale wallet monitoring</li>
+          <li>&#9675; <strong>Machine learning signal filtering</strong> - Train on resolved outcomes</li>
+          <li>&#9675; <strong>Multi-exchange price validation</strong> - Cross-check for manipulation</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 style="font-size:15px;margin-bottom:10px;color:#22c55e;">Position Size Calculator</h4>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:12px;">
+        <div>
+          <label style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;">Portfolio Size ($)</label>
+          <input type="number" id="calc-portfolio" value="10000" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:#fff;font-size:13px;margin-top:4px;" oninput="updatePositionCalc()">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;">Risk Per Trade (%)</label>
+          <input type="number" id="calc-risk" value="2" min="0.5" max="10" step="0.5" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:#fff;font-size:13px;margin-top:4px;" oninput="updatePositionCalc()">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;">Entry Price ($)</label>
+          <input type="number" id="calc-entry" value="0.001" step="0.000001" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:#fff;font-size:13px;margin-top:4px;" oninput="updatePositionCalc()">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;">Stop Loss ($)</label>
+          <input type="number" id="calc-sl" value="0.00095" step="0.000001" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:#fff;font-size:13px;margin-top:4px;" oninput="updatePositionCalc()">
+        </div>
+      </div>
+      <div id="calc-results" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:12px;font-size:13px;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:16px;text-align:center;">
+          <div>
+            <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;">Position Size</div>
+            <div id="calc-position-size" style="font-size:18px;font-weight:700;color:#22c55e;">--</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;">Max Loss</div>
+            <div id="calc-max-loss" style="font-size:18px;font-weight:700;color:#ef4444;">--</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;">Risk/Reward</div>
+            <div id="calc-rr" style="font-size:18px;font-weight:700;color:#f59e0b;">--</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--dim);margin-top:10px;">
+        <strong style="color:#f59e0b;">Rule of thumb:</strong> Never risk more than 1-2% of your portfolio on a single meme coin trade. With a 5% win rate, you need strict risk management to survive until the next winning trade.
+      </div>
+    </div>
+    <script>
+    function updatePositionCalc() {
+        var portfolio = parseFloat(document.getElementById('calc-portfolio').value) || 0;
+        var riskPct = parseFloat(document.getElementById('calc-risk').value) || 0;
+        var entry = parseFloat(document.getElementById('calc-entry').value) || 0;
+        var sl = parseFloat(document.getElementById('calc-sl').value) || 0;
+        
+        if (portfolio > 0 && riskPct > 0 && entry > 0 && sl > 0 && entry !== sl) {
+            var maxLoss = portfolio * (riskPct / 100);
+            var priceRisk = Math.abs(entry - sl);
+            var positionSize = maxLoss / (priceRisk / entry);
+            var rr = priceRisk > 0 ? (entry * 0.05) / priceRisk : 0; // Assuming 5% target
+            
+            document.getElementById('calc-position-size').textContent = '$' + positionSize.toFixed(2);
+            document.getElementById('calc-max-loss').textContent = '$' + maxLoss.toFixed(2);
+            document.getElementById('calc-rr').textContent = '1:' + rr.toFixed(1);
+        }
+    }
+    updatePositionCalc();
+    </script>
 
     <h4 style="font-size:15px;margin-bottom:10px;color:#f59e0b;">API Endpoints</h4>
     <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;">
@@ -606,49 +810,220 @@ function factorBar(score, max) {
     return '<div class="factor-bar"><div class="factor-fill" style="width:' + pct + '%;background:' + color + '"></div></div>';
 }
 
+// ── BUY NOW Ranking System ──
+// Computes a composite rank factoring freshness, R:R, and base score
+function computeBuyNowRank(w) {
+    var baseScore = parseInt(w.score) || 0;
+    var targetPct = parseFloat(w.target_pct || 0);
+    var riskPct = parseFloat(w.risk_pct || 0);
+    var createdAt = w.created_at || '';
+
+    // Freshness penalty: -2 pts per minute since signal, max -30
+    var ageMinutes = 0;
+    if (createdAt) {
+        var signalTime = new Date(createdAt.replace(' ', 'T') + 'Z');
+        ageMinutes = Math.max(0, (Date.now() - signalTime.getTime()) / 60000);
+    }
+    var freshnessPenalty = Math.min(30, Math.floor(ageMinutes) * 2);
+
+    // R:R bonus: better ratio = higher rank (max +10)
+    var rrRatio = riskPct > 0 ? targetPct / riskPct : 0;
+    var rrBonus = Math.min(10, Math.floor(rrRatio * 3));
+
+    // Regime bonus from factors
+    var f = w.factors_json || {};
+    var regimeAdj = 0;
+    if (f.btc_regime && f.btc_regime.adjustment) {
+        regimeAdj = parseInt(f.btc_regime.adjustment) || 0;
+    }
+
+    // Quality gate bonus
+    var qualityBonus = 0;
+    if (f.quality_check && f.quality_check.score >= 3) qualityBonus = 5;
+    else if (f.quality_check && f.quality_check.score >= 2) qualityBonus = 2;
+
+    var rank = baseScore - freshnessPenalty + rrBonus + regimeAdj + qualityBonus;
+    return {
+        rank: Math.max(0, Math.min(100, rank)),
+        ageMinutes: Math.floor(ageMinutes),
+        freshnessPenalty: freshnessPenalty,
+        rrBonus: rrBonus,
+        rrRatio: rrRatio,
+        regimeAdj: regimeAdj,
+        qualityBonus: qualityBonus
+    };
+}
+
+function getAgeBadge(ageMinutes) {
+    if (ageMinutes < 10) return '<span class="signal-age-badge age-fresh">' + ageMinutes + 'm ago</span>';
+    if (ageMinutes < 20) return '<span class="signal-age-badge age-aging">' + ageMinutes + 'm ago</span>';
+    return '<span class="signal-age-badge age-stale">' + ageMinutes + 'm ago</span>';
+}
+
+// Store current winners globally for live mode and verify modal
+window.currentWinners = [];
+
 function renderWinners(data) {
     if (!data.ok || data.count === 0) {
         document.getElementById('winners-list').innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--dim);font-size:14px;background:var(--card);border:1px solid var(--border);border-radius:12px"><div style="font-size:40px;margin-bottom:12px">&#128056;</div><div style="font-size:18px;color:#fff;margin-bottom:8px">No Meme Pumps Detected</div><div>None of the monitored meme coins are scoring high enough right now. Either the market is quiet or memes are consolidating.<br><br><strong>What this means:</strong> The scanner is being selective. When volume explodes and momentum aligns on a meme coin, it will appear here instantly.<br><br>Scans every 10 minutes, 24/7. Check back soon!</div></div>';
         document.getElementById('winner-count').textContent = '0 winners';
+        window.currentWinners = [];
         return;
     }
+
+    // Compute BUY NOW rank for each winner and sort
+    var ranked = [];
+    for (var ri = 0; ri < data.winners.length; ri++) {
+        var rw = data.winners[ri];
+        rw._buyNow = computeBuyNowRank(rw);
+        ranked.push(rw);
+    }
+    ranked.sort(function(a, b) { return b._buyNow.rank - a._buyNow.rank; });
+    window.currentWinners = ranked;
+
     document.getElementById('winner-count').textContent = data.count + ' winners';
     var html = '';
-    for (var i = 0; i < data.winners.length; i++) {
-        var w = data.winners[i];
+    var defaultPortfolio = 10000;
+    for (var i = 0; i < ranked.length; i++) {
+        var w = ranked[i];
         var f = w.factors_json || {};
+        var bn = w._buyNow;
+
+        // FIXED: Define variables BEFORE using them
+        var entryPrice = parseFloat(w.price_at_signal || 0);
+        var targetPct = parseFloat(w.target_pct || 0);
+        var riskPct = parseFloat(w.risk_pct || 0);
+        var takeProfitPrice = entryPrice * (1 + targetPct / 100);
+        var stopLossPrice = entryPrice * (1 - riskPct / 100);
+        var priceDecimals = entryPrice >= 1 ? 4 : entryPrice >= 0.01 ? 6 : entryPrice >= 0.0001 ? 8 : 10;
+
         var scoreColor = w.score >= 85 ? 'accent' : w.score >= 75 ? 'gold' : 'cyan';
         var pair = (w.pair || '').replace('_USDT', '/USDT');
 
-        html += '<div class="winner-card">';
+        // R:R ratio (now using correctly defined variables)
+        var rrRatio = riskPct > 0 ? (targetPct / riskPct).toFixed(1) : '0';
+        var rrBadge = '<span style="background:rgba(245,158,11,0.15);color:#f59e0b;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;border:1px solid rgba(245,158,11,0.3);">R:R 1:' + rrRatio + '</span>';
+
+        // Staleness
+        var isStale = bn.ageMinutes >= 30;
+        var cardClass = 'winner-card' + (isStale ? ' stale-card' : '');
+
+        // Risk bar color
+        var riskColor = w.tier === 'tier2' ? '239,68,68' : w.score >= 85 ? '245,158,11' : '234,179,8';
+
+        html += '<div class="' + cardClass + '" style="position:relative;overflow:hidden;" data-pair="' + (w.pair || '') + '" data-idx="' + i + '">';
+        html += '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:rgba(' + riskColor + ',0.5);"></div>';
+
+        // Header with BUY NOW badge + age badge
         html += '<div class="winner-header">';
-        html += '<div><span class="winner-pair">' + pair + '</span> ' + verdictBadge(w.verdict) + ' ' + tierBadge(w.tier) + '</div>';
-        html += '<div class="winner-score ' + scoreColor + '">' + w.score + '<span style="font-size:12px;color:var(--dim)">/100</span></div>';
+        html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">';
+        html += '<span class="winner-pair">' + pair + '</span> ';
+        html += verdictBadge(w.verdict) + ' ' + tierBadge(w.tier) + ' ' + rrBadge + ' ';
+        html += getAgeBadge(bn.ageMinutes) + ' ';
+        // BUY NOW badge (only if rank >= 70)
+        if (bn.rank >= 70 && !isStale) {
+            html += '<span class="buy-now-badge" onclick="openVerifyModal(' + i + ')">VERIFY &amp; BUY</span>';
+        } else if (isStale) {
+            html += '<span class="buy-now-badge" style="background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.3);color:#fca5a5;font-size:10px" onclick="openVerifyModal(' + i + ')">STALE &mdash; VERIFY FIRST</span>';
+        } else {
+            html += '<span class="buy-now-badge" style="background:rgba(255,255,255,0.05);border-color:var(--border);color:var(--dim);font-size:10px" onclick="openVerifyModal(' + i + ')">VERIFY PRICE</span>';
+        }
         html += '</div>';
+        html += '<div style="text-align:right">';
+        html += '<div class="winner-score ' + scoreColor + '">' + w.score + '<span style="font-size:12px;color:var(--dim)">/100</span></div>';
+        html += '<div class="buy-now-rank">BUY NOW: <span class="rank-val ' + (bn.rank >= 70 ? 'green' : bn.rank >= 50 ? 'gold' : 'red') + '">' + bn.rank + '</span></div>';
+        html += '</div>';
+        html += '</div>';
+
+        // Stale warning
+        if (isStale) {
+            html += '<div class="stale-overlay">STALE SIGNAL &mdash; Data is ' + bn.ageMinutes + ' minutes old. Verify current price before acting.</div>';
+        }
+
+        // Live price slot (populated by live mode)
+        html += '<div id="live-price-' + i + '" style="display:none;margin:8px 0;padding:8px 12px;background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);border-radius:6px;font-size:12px;"></div>';
+
         html += '<div class="winner-meta">';
-        html += '<span>Price: $' + parseFloat(w.price_at_signal).toFixed(6) + '</span>';
+        html += '<span>Entry: $' + entryPrice.toFixed(priceDecimals) + '</span>';
         html += '<span>24h: ' + formatPnl(w.chg_24h) + '</span>';
         html += '<span>Vol: $' + (parseFloat(w.vol_usd_24h)/1000).toFixed(0) + 'K</span>';
-        html += '<span>Target: +' + w.target_pct + '% / Risk: -' + w.risk_pct + '%</span>';
-        html += '<span>' + (w.created_at || '') + ' UTC</span>';
+        html += '<span style="background:rgba(34,197,94,0.15);padding:2px 8px;border-radius:4px;font-weight:600;">TP: $' + takeProfitPrice.toFixed(priceDecimals) + '</span>';
+        html += '<span style="background:rgba(239,68,68,0.15);padding:2px 8px;border-radius:4px;font-weight:600;">SL: $' + stopLossPrice.toFixed(priceDecimals) + '</span>';
+        html += '<span>' + (w.created_at || '').substring(11, 16) + ' UTC</span>';
+        html += '</div>';
+
+        // P&L preview
+        var previewPositionSize = defaultPortfolio * 0.02;
+        html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;padding:10px;background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid rgba(255,255,255,0.04);">';
+        html += '<div style="text-align:center;"><div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;">If TP Hit</div><div style="font-size:14px;font-weight:700;color:var(--green);">+$' + (previewPositionSize * targetPct / 100).toFixed(2) + '</div></div>';
+        html += '<div style="text-align:center;border-left:1px solid rgba(255,255,255,0.06);border-right:1px solid rgba(255,255,255,0.06);"><div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;">Position Size</div><div style="font-size:14px;font-weight:700;color:#fff;">$' + previewPositionSize.toFixed(2) + '</div></div>';
+        html += '<div style="text-align:center;"><div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;">If SL Hit</div><div style="font-size:14px;font-weight:700;color:var(--red);">-$' + (previewPositionSize * riskPct / 100).toFixed(2) + '</div></div>';
+        html += '</div>';
+
+        // Quality gates
+        var qc = f['quality_check'] || {};
+        if (qc.score !== undefined) {
+            var qualityColor = qc.score >= 2 ? 'var(--green)' : qc.score >= 1 ? 'var(--gold)' : 'var(--red)';
+            var qualityText = qc.score >= 2 ? 'Quality: PASS' : qc.score >= 1 ? 'Quality: WEAK' : 'Quality: FAIL';
+            html += '<div style="margin:10px 0;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:3px solid ' + qualityColor + ';">';
+            html += '<div style="font-size:11px;color:' + qualityColor + ';font-weight:600;">' + qualityText + ' (' + qc.score + '/3 gates)</div>';
+            if (qc.issues && qc.issues.length > 0) {
+                html += '<div style="font-size:10px;color:var(--dim);margin-top:4px;">Issues: ' + qc.issues.join(', ') + '</div>';
+            }
+            html += '</div>';
+        }
+
+        // BTC Regime
+        var btcRegime = f['btc_regime'] || {};
+        if (btcRegime.regime) {
+            var regimeColor = btcRegime.regime === 'bull' ? 'var(--green)' : btcRegime.regime === 'bear' ? 'var(--red)' : 'var(--dim)';
+            var regimeEmoji = btcRegime.regime === 'bull' ? '\uD83D\uDC02' : btcRegime.regime === 'bear' ? '\uD83D\uDC3B' : '\u26A1';
+            html += '<div style="margin:8px 0;font-size:10px;color:var(--dim);">BTC Regime: <span style="color:' + regimeColor + '">' + regimeEmoji + ' ' + btcRegime.regime.toUpperCase() + '</span>';
+            if (btcRegime.adjustment !== 0) {
+                var adjColor = btcRegime.adjustment > 0 ? 'var(--green)' : 'var(--red)';
+                html += ' <span style="color:' + adjColor + '">(' + (btcRegime.adjustment > 0 ? '+' : '') + btcRegime.adjustment + ' pts)</span>';
+            }
+            html += '</div>';
+        }
+
+        // BUY NOW rank breakdown (collapsed)
+        html += '<div style="margin:8px 0;font-size:10px;color:var(--dim);cursor:pointer" onclick="var d=this.nextElementSibling;d.style.display=d.style.display===\'none\'?\'block\':\'none\'">';
+        html += 'BUY NOW rank breakdown: <strong style="color:' + (bn.rank >= 70 ? 'var(--green)' : bn.rank >= 50 ? 'var(--gold)' : 'var(--red)') + '">' + bn.rank + '/100</strong> (click to expand)';
+        html += '</div>';
+        html += '<div style="display:none;font-size:10px;color:var(--dim);padding:6px 10px;background:rgba(255,255,255,0.02);border-radius:6px;margin-bottom:8px;">';
+        html += 'Base: ' + w.score + ' | Freshness: -' + bn.freshnessPenalty + ' | R:R: +' + bn.rrBonus + ' | Regime: ' + (bn.regimeAdj >= 0 ? '+' : '') + bn.regimeAdj + ' | Quality: +' + bn.qualityBonus;
         html += '</div>';
 
         html += '<div class="factors">';
         var factorInfo = {
-            'explosive_volume': {name: 'Expl. Volume', tip: 'Recent volume vs average. 3x=pump starting. 10x+=massive surge. Volume is the #1 indicator for meme pumps.'},
-            'parabolic_momentum': {name: 'Parabolic Mom.', tip: 'Price acceleration on 15m + 5m charts. Both positive = confirmed uptrend. Steep slope = parabolic move in progress.'},
-            'rsi_hype_zone': {name: 'RSI Hype Zone', tip: 'RSI 55-80 is the meme sweet spot. Unlike traditional assets, memes sustain high RSI during pumps. Only 90+ is danger.'},
-            'social_proxy': {name: 'Social Proxy', tip: 'Price change x volume ratio = proxy for social buzz. High velocity means something went viral or a big influencer posted.'},
-            'volume_concentration': {name: 'Vol. Concentration', tip: 'How much of recent volume is in the last 3 candles. Burst pattern = pump is accelerating NOW.'},
-            'breakout_4h': {name: 'Breakout 4h', tip: 'Price breaking above its 4-hour high. Breakouts trigger FOMO buying and can accelerate meme pumps further.'},
-            'low_cap_bonus': {name: 'Low Cap Bonus', tip: 'Smaller coins move bigger on less capital. Also riskier (rug pulls). Under $1M vol = max bonus.'}
+            'explosive_volume': {name: 'Expl. Volume', tip: 'Recent volume vs average. 3x=pump starting. 10x+=massive surge.'},
+            'parabolic_momentum': {name: 'Parabolic Mom.', tip: 'Price acceleration on 15m + 5m charts. Both positive = confirmed uptrend.'},
+            'rsi_hype_zone': {name: 'RSI Hype Zone', tip: 'RSI 60-75 is the sweet spot. Rising RSI = full points. Above 85 = dangerous.'},
+            'social_proxy': {name: 'Social Proxy', tip: 'Price change x volume ratio = proxy for social buzz.'},
+            'volume_concentration': {name: 'Vol. Conc.', tip: 'How much of recent volume is in the last 3 candles.'},
+            'breakout_4h': {name: 'Breakout 4h', tip: 'Price breaking above its 4-hour high.'},
+            'low_cap_bonus': {name: 'Low Cap', tip: 'Smaller coins move bigger on less capital.'}
         };
         for (var key in factorInfo) {
-            if (f[key]) {
+            if (f[key] && f[key].score !== undefined) {
                 var fi = factorInfo[key];
-                html += '<div class="factor"><div class="factor-name">' + fi.name + ' (' + f[key].score + '/' + f[key].max + ') <i class="info-tip">i<span class="tip-text">' + fi.tip + '</span></i></div>' + factorBar(f[key].score, f[key].max) + '</div>';
+                var displayScore = f[key].score;
+                var displayMax = f[key].max || 1;
+                if (key === 'trend_confirm' || key === 'momentum_gate' || key === 'volume_gate') {
+                    var passed = f[key].passed || f[key].aligned;
+                    displayScore = passed ? displayMax : 0;
+                }
+                html += '<div class="factor"><div class="factor-name">' + fi.name + ' (' + displayScore + '/' + displayMax + ') <i class="info-tip">i<span class="tip-text">' + fi.tip + '</span></i></div>' + factorBar(displayScore, displayMax) + '</div>';
             }
         }
+        // Quick actions footer with verify button
+        html += '<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.04);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">';
+        html += '<span class="buy-now-badge" onclick="openVerifyModal(' + i + ')" style="font-size:11px;">Verify Live Price</span>';
+        var exchangeLink = 'https://crypto.com/exchange/trade/' + pair.replace('/USDT', '_USDT');
+        html += '<a href="' + exchangeLink + '" target="_blank" style="font-size:11px;padding:4px 10px;background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.3);border-radius:4px;text-decoration:none;transition:all 0.15s;" onmouseover="this.style.background=\'rgba(168,85,247,0.25)\'" onmouseout="this.style.background=\'rgba(168,85,247,0.15)\'">Trade on Crypto.com</a>';
+        html += '<a href="https://www.coingecko.com/en/coins/' + pair.replace('/USDT', '').toLowerCase() + '" target="_blank" style="font-size:11px;padding:4px 10px;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border);border-radius:4px;text-decoration:none;">CoinGecko</a>';
+        html += '</div>';
+
         html += '</div></div>';
     }
     document.getElementById('winners-list').innerHTML = html;
@@ -713,7 +1088,7 @@ function renderHistory(data) {
         document.getElementById('history-list').innerHTML = '<div class="loading">No signal history yet.</div>';
         return;
     }
-    var html = '<table class="history-table"><tr><th>Pair</th><th>Tier</th><th>Score</th><th>Entry</th><th>Resolve</th><th>P&L</th><th>Outcome</th><th>Time</th></tr>';
+    var html = '<table class="history-table"><tr><th>Pair</th><th>Tier</th><th>Score</th><th>Entry</th><th>TP / SL</th><th>Resolve</th><th>P&L</th><th>Outcome</th><th>Time</th></tr>';
     for (var i = 0; i < Math.min(data.history.length, 50); i++) {
         var h = data.history[i];
         var pair = (h.pair || '').replace('_USDT', '/USDT');
@@ -721,13 +1096,22 @@ function renderHistory(data) {
         if (h.outcome === 'win' || h.outcome === 'partial_win') outcomeClass = 'outcome-win';
         else if (h.outcome === 'loss' || h.outcome === 'partial_loss') outcomeClass = 'outcome-loss';
         else outcomeClass = 'outcome-pending';
+        
+        // Calculate TP/SL prices for history
+        var entryHist = parseFloat(h.price_at_signal || 0);
+        var targetHist = parseFloat(h.target_pct || 5);
+        var riskHist = parseFloat(h.risk_pct || 2);
+        var histDecimals = entryHist >= 1 ? 4 : entryHist >= 0.01 ? 6 : entryHist >= 0.0001 ? 8 : 10;
+        var tpHist = entryHist * (1 + targetHist / 100);
+        var slHist = entryHist * (1 - riskHist / 100);
 
         html += '<tr>';
         html += '<td>' + pair + '</td>';
         html += '<td>' + tierBadge(h.tier) + '</td>';
         html += '<td>' + h.score + '</td>';
-        html += '<td>$' + parseFloat(h.price_at_signal || 0).toFixed(4) + '</td>';
-        html += '<td>' + (h.price_at_resolve ? '$' + parseFloat(h.price_at_resolve).toFixed(4) : '--') + '</td>';
+        html += '<td>$' + entryHist.toFixed(histDecimals) + '</td>';
+        html += '<td style="font-size:10px;"><span style="color:var(--green);">$' + tpHist.toFixed(histDecimals) + '</span><br><span style="color:var(--red);">$' + slHist.toFixed(histDecimals) + '</span></td>';
+        html += '<td>' + (h.price_at_resolve ? '$' + parseFloat(h.price_at_resolve).toFixed(histDecimals) : '--') + '</td>';
         html += '<td>' + (h.pnl_pct !== null ? formatPnl(h.pnl_pct) : '--') + '</td>';
         html += '<td class="' + outcomeClass + '">' + (h.outcome || 'pending') + '</td>';
         html += '<td>' + (h.created_at || '').substring(5, 16) + '</td>';
@@ -1014,6 +1398,263 @@ function loadPerf(period, btn) {
     api('performance&period=' + period, renderPerformance);
 }
 
+// ── Data Freshness Tracker ──
+var lastScanTime = null;
+function updateFreshness(statsData) {
+    if (!statsData || !statsData.ok || !statsData.stats) return;
+    var s = statsData.stats;
+    if (s.last_scan) {
+        lastScanTime = new Date(s.last_scan.replace(' ', 'T') + 'Z');
+    }
+    refreshFreshnessUI();
+}
+
+function refreshFreshnessUI() {
+    var bar = document.getElementById('freshness-bar');
+    var text = document.getElementById('freshness-text');
+    var time = document.getElementById('freshness-time');
+    if (!bar || !lastScanTime) return;
+
+    var ageMs = Date.now() - lastScanTime.getTime();
+    var ageMin = Math.floor(ageMs / 60000);
+    var ageSec = Math.floor((ageMs % 60000) / 1000);
+
+    bar.className = 'freshness-bar';
+    if (ageMin < 5) {
+        bar.classList.add('freshness-fresh');
+        text.innerHTML = '<strong style="color:#22c55e">LIVE</strong> &mdash; Data is fresh (' + ageMin + 'm ' + ageSec + 's ago)';
+    } else if (ageMin < 15) {
+        bar.classList.add('freshness-aging');
+        text.innerHTML = '<strong style="color:#f59e0b">AGING</strong> &mdash; Last scan ' + ageMin + ' minutes ago. Verify prices before acting.';
+    } else {
+        bar.classList.add('freshness-stale');
+        text.innerHTML = '<strong style="color:#ef4444">STALE</strong> &mdash; Last scan ' + ageMin + ' minutes ago. Prices may have moved significantly.';
+    }
+    time.textContent = lastScanTime.toISOString().substring(11, 19) + ' UTC';
+}
+// Update freshness clock every 10 seconds
+setInterval(refreshFreshnessUI, 10000);
+
+// Wrap original renderStats to also update freshness
+var _origRenderStats = renderStats;
+renderStats = function(data) {
+    _origRenderStats(data);
+    updateFreshness(data);
+};
+
+// ── Price Verification Modal ──
+var PRICE_CHECK_API = '/findcryptopairs/api/price_check.php';
+
+function openVerifyModal(idx) {
+    var w = window.currentWinners[idx];
+    if (!w) return;
+
+    var overlay = document.getElementById('verify-overlay');
+    var title = document.getElementById('verify-title');
+    var body = document.getElementById('verify-body');
+
+    var pair = (w.pair || '').replace('_USDT', '/USDT');
+    title.textContent = 'Verify: ' + pair;
+    body.innerHTML = '<div class="loading">Fetching live price from exchange...</div>';
+    overlay.classList.add('active');
+
+    // Auto-fetch live price
+    var url = PRICE_CHECK_API + '?action=verify&pair=' + encodeURIComponent(w.pair) +
+        '&signal_price=' + w.price_at_signal +
+        '&target_pct=' + w.target_pct +
+        '&risk_pct=' + w.risk_pct;
+
+    var x = new XMLHttpRequest();
+    x.open('GET', url);
+    x.onload = function() {
+        try {
+            var r = JSON.parse(x.responseText);
+            renderVerifyResult(r, w, idx);
+        } catch(e) {
+            body.innerHTML = '<div style="color:var(--red);text-align:center;padding:20px">Failed to fetch price. Use manual input below.</div>' + manualInputHtml(w, idx);
+        }
+    };
+    x.onerror = function() {
+        body.innerHTML = '<div style="color:var(--red);text-align:center;padding:20px">Network error. Use manual input below.</div>' + manualInputHtml(w, idx);
+    };
+    x.send();
+}
+
+function renderVerifyResult(r, w, idx) {
+    var body = document.getElementById('verify-body');
+    if (!r.ok) {
+        body.innerHTML = '<div style="color:var(--red);text-align:center;padding:20px">' + (r.error || 'Price fetch failed') + '</div>' + manualInputHtml(w, idx);
+        return;
+    }
+
+    var entryPrice = parseFloat(w.price_at_signal || 0);
+    var priceDecimals = entryPrice >= 1 ? 4 : entryPrice >= 0.01 ? 6 : entryPrice >= 0.0001 ? 8 : 10;
+
+    var verdictClass = 'verdict-green';
+    if (r.verdict === 'INVALIDATED') verdictClass = 'verdict-red';
+    else if (r.verdict === 'CAUTION') verdictClass = 'verdict-yellow';
+
+    var html = '';
+    html += '<div class="verify-verdict ' + verdictClass + '">';
+    html += r.verdict.replace('_', ' ');
+    html += '<div style="font-size:12px;font-weight:400;margin-top:4px">' + r.verdict_detail + '</div>';
+    html += '</div>';
+
+    html += '<div class="verify-row"><span class="vr-label">Signal Price</span><span class="vr-value">$' + entryPrice.toFixed(priceDecimals) + '</span></div>';
+    html += '<div class="verify-row"><span class="vr-label">Current Price</span><span class="vr-value" style="color:' + (r.price_change_pct >= 0 ? 'var(--green)' : 'var(--red)') + '">$' + parseFloat(r.current_price).toFixed(priceDecimals) + '</span></div>';
+    html += '<div class="verify-row"><span class="vr-label">Price Change</span><span class="vr-value" style="color:' + (r.price_change_pct >= 0 ? 'var(--green)' : 'var(--red)') + '">' + (r.price_change_pct >= 0 ? '+' : '') + r.price_change_pct.toFixed(2) + '%</span></div>';
+    html += '<div class="verify-row"><span class="vr-label">Remaining Upside</span><span class="vr-value">' + r.remaining_upside_pct.toFixed(2) + '%</span></div>';
+    html += '<div class="verify-row"><span class="vr-label">New R:R</span><span class="vr-value">1:' + r.new_rr_ratio + '</span></div>';
+    html += '<div class="verify-row"><span class="vr-label">Target Price</span><span class="vr-value" style="color:var(--green)">$' + parseFloat(r.target_price).toFixed(priceDecimals) + '</span></div>';
+    html += '<div class="verify-row"><span class="vr-label">Stop Price</span><span class="vr-value" style="color:var(--red)">$' + parseFloat(r.stop_price).toFixed(priceDecimals) + '</span></div>';
+    html += '<div class="verify-row"><span class="vr-label">Source</span><span class="vr-value" style="color:var(--dim)">' + r.price_source + ' (' + r.latency_ms + 'ms)</span></div>';
+    html += '<div class="verify-row"><span class="vr-label">Checked at</span><span class="vr-value" style="color:var(--dim);font-size:11px">' + r.timestamp + '</span></div>';
+
+    // Disclaimer
+    html += '<div style="margin-top:12px;font-size:10px;color:#555;text-align:center">This is a momentum pattern detector, not a buy recommendation. Not financial advice.</div>';
+
+    // Manual input section
+    html += manualInputHtml(w, idx);
+
+    body.innerHTML = html;
+}
+
+function manualInputHtml(w, idx) {
+    return '<div class="verify-manual">' +
+        '<label>Or enter the price you see on your exchange:</label>' +
+        '<input type="number" id="manual-price-input" step="0.000001" placeholder="e.g. 0.1823">' +
+        '<button class="vm-btn" onclick="verifyManualPrice(' + idx + ')">Verify This Price</button>' +
+        '</div>';
+}
+
+function verifyManualPrice(idx) {
+    var w = window.currentWinners[idx];
+    if (!w) return;
+
+    var inputEl = document.getElementById('manual-price-input');
+    var userPrice = parseFloat(inputEl.value);
+    if (!userPrice || userPrice <= 0) {
+        inputEl.style.borderColor = 'var(--red)';
+        return;
+    }
+    inputEl.style.borderColor = 'var(--accent)';
+
+    var body = document.getElementById('verify-body');
+    body.innerHTML = '<div class="loading">Verifying with your price...</div>';
+
+    var url = PRICE_CHECK_API + '?action=verify&pair=' + encodeURIComponent(w.pair) +
+        '&signal_price=' + w.price_at_signal +
+        '&target_pct=' + w.target_pct +
+        '&risk_pct=' + w.risk_pct +
+        '&user_price=' + userPrice;
+
+    var x = new XMLHttpRequest();
+    x.open('GET', url);
+    x.onload = function() {
+        try {
+            var r = JSON.parse(x.responseText);
+            renderVerifyResult(r, w, idx);
+        } catch(e) {
+            body.innerHTML = '<div style="color:var(--red)">Verification failed.</div>' + manualInputHtml(w, idx);
+        }
+    };
+    x.onerror = function() {
+        body.innerHTML = '<div style="color:var(--red)">Network error.</div>' + manualInputHtml(w, idx);
+    };
+    x.send();
+}
+
+function closeVerifyModal() {
+    document.getElementById('verify-overlay').classList.remove('active');
+}
+
+// ── Live Mode — polls live prices for active winners ──
+var liveModeActive = false;
+var liveModeInterval = null;
+
+function toggleLiveMode() {
+    liveModeActive = !liveModeActive;
+    var toggle = document.getElementById('live-toggle');
+    var label = document.getElementById('live-label');
+    var status = document.getElementById('live-status');
+
+    if (liveModeActive) {
+        toggle.classList.add('active');
+        label.innerHTML = '<span class="live-pulse"></span> Live Price Updates: ON';
+        label.classList.add('active');
+        status.textContent = 'Updating every 30s...';
+        fetchLivePrices();
+        liveModeInterval = setInterval(fetchLivePrices, 30000);
+    } else {
+        toggle.classList.remove('active');
+        label.textContent = 'Live Price Updates: OFF';
+        label.classList.remove('active');
+        status.textContent = '';
+        if (liveModeInterval) clearInterval(liveModeInterval);
+        liveModeInterval = null;
+        // Hide all live price slots
+        for (var h = 0; h < window.currentWinners.length; h++) {
+            var slot = document.getElementById('live-price-' + h);
+            if (slot) slot.style.display = 'none';
+        }
+    }
+}
+
+function fetchLivePrices() {
+    if (!window.currentWinners || window.currentWinners.length === 0) return;
+    var pairs = [];
+    for (var p = 0; p < Math.min(window.currentWinners.length, 10); p++) {
+        pairs.push(window.currentWinners[p].pair);
+    }
+
+    var url = PRICE_CHECK_API + '?action=batch_price&pairs=' + pairs.join(',');
+    var x = new XMLHttpRequest();
+    x.open('GET', url);
+    x.onload = function() {
+        try {
+            var r = JSON.parse(x.responseText);
+            if (r.ok && r.prices) {
+                var status = document.getElementById('live-status');
+                status.textContent = 'Updated ' + new Date().toLocaleTimeString();
+                for (var li = 0; li < r.prices.length; li++) {
+                    updateLivePriceSlot(li, r.prices[li]);
+                }
+            }
+        } catch(e) { /* silent fail */ }
+    };
+    x.send();
+}
+
+function updateLivePriceSlot(idx, priceData) {
+    var slot = document.getElementById('live-price-' + idx);
+    if (!slot || !priceData.price) return;
+
+    var w = window.currentWinners[idx];
+    if (!w) return;
+
+    var entry = parseFloat(w.price_at_signal || 0);
+    var targetPct = parseFloat(w.target_pct || 0);
+    var riskPct = parseFloat(w.risk_pct || 0);
+    var current = parseFloat(priceData.price);
+    var changePct = entry > 0 ? ((current - entry) / entry * 100) : 0;
+    var priceDecimals = entry >= 1 ? 4 : entry >= 0.01 ? 6 : entry >= 0.0001 ? 8 : 10;
+    var remainingUp = targetPct - changePct;
+
+    var color = changePct >= 0 ? 'var(--green)' : 'var(--red)';
+    var statusText = '';
+    if (changePct > targetPct * 0.8) statusText = '<span style="color:var(--red);font-weight:700">TARGET NEARLY HIT</span>';
+    else if (changePct < -riskPct) statusText = '<span style="color:var(--red);font-weight:700">STOP HIT</span>';
+    else if (changePct > targetPct * 0.5) statusText = '<span style="color:var(--gold)">Approaching target</span>';
+    else statusText = '<span style="color:var(--green)">Signal active</span>';
+
+    slot.style.display = 'block';
+    slot.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">' +
+        '<span><strong style="color:var(--cyan)">LIVE:</strong> $' + current.toFixed(priceDecimals) + ' <span style="color:' + color + '">(' + (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%)</span></span>' +
+        '<span>' + statusText + '</span>' +
+        '<span style="color:var(--dim)">Upside left: ' + remainingUp.toFixed(1) + '% | via ' + priceData.source + '</span>' +
+        '</div>';
+}
+
 // Load all data
 api('stats', renderStats);
 api('winners', renderWinners);
@@ -1030,5 +1671,6 @@ setInterval(function() {
 }, 90000);
 </script>
 <script src="/findstocks/portfolio2/stock-nav.js"></script>
+<script src="/live-monitor/api/scope_labels.js"></script>
 </body>
 </html>

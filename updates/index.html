@@ -319,6 +319,34 @@ a:hover { text-decoration: underline; }
 
 <div class="section-year">February 2026</div>
 
+<!-- Feb 13, 2026 — Meme Coin BUY NOW Ranking & Price Verification System -->
+<div class="update-entry" style="--dot-color: #e879f9;" data-tags="meme,crypto,buy-now,price-verification,ml,xgboost,ranking,live-mode,freshness,backtest,drift" data-category="trading,crypto" data-types="feature,improvement,fix">
+  <div class="update-date">Feb 13, 2026</div>
+  <div class="update-title">
+    Meme Coin &ldquo;BUY NOW&rdquo; Ranking &amp; Live Price Verification
+    <span class="badge badge-feature">Feature</span>
+    <span class="badge badge-improvement">Improvement</span>
+    <span class="badge badge-fix">Fix</span>
+  </div>
+  <div class="update-body">
+    <p>Complete overhaul of the meme coin scanner with a new BUY NOW ranking system, real-time price verification, ML pipeline connection, and data freshness transparency &mdash; addressing the core problem that signal prices can move significantly before users act.</p>
+    <ul>
+      <li><strong>BUY NOW Composite Ranking:</strong> Each signal now gets a 0&ndash;100 BUY NOW rank computed from base score, freshness penalty (-2pts/min), risk/reward ratio bonus, BTC regime adjustment, and quality gate score. Cards sorted by rank. Only rank &ge;70 shows &ldquo;VERIFY &amp; BUY&rdquo; badge.</li>
+      <li><strong>Live Price Verification Modal:</strong> Click &ldquo;VERIFY &amp; BUY&rdquo; on any winner card &rarr; modal auto-fetches current price from Crypto.com (CoinGecko fallback) &rarr; shows Go/No-Go verdict: <em>STILL VALID</em> (green), <em>CAUTION</em> (yellow), or <em>INVALIDATED</em> (red). Users can also type their own exchange price for manual verification.</li>
+      <li><strong>Price Check API:</strong> New <code>price_check.php</code> endpoint with live_price, batch_price, and verify actions. Crypto.com primary + CoinGecko fallback. 10-second file cache to prevent rate limiting.</li>
+      <li><strong>Data Freshness Bar:</strong> Page-level freshness indicator updates every 10 seconds with green/yellow/red status. Per-card age badges show signal age. Signals older than 30 minutes auto-dim with &ldquo;STALE&rdquo; overlay.</li>
+      <li><strong>Live Mode Toggle:</strong> Switch on to poll live prices every 30 seconds for all active winners. Shows real-time price, % change from signal, and auto-detects when targets or stops are hit.</li>
+      <li><strong>ML Pipeline Fix:</strong> Rewired <code>meme_ml_engine.php</code> to connect directly to <code>ejaguiar1_memecoin</code> and read from <code>mc_winners</code> (was disconnected, training on wrong DB). Fixed <code>collect-meme-signals.yml</code> workflow to transform scanner output correctly.</li>
+      <li><strong>Adaptive Weights Engine:</strong> New <code>?action=adaptive_weights</code> endpoint computes Pearson correlation between each indicator and win/loss outcomes, then derives optimized weights stored in <code>mc_adaptive_weights</code>.</li>
+      <li><strong>XGBoost Ranker:</strong> Gradient-boosted ensemble model with 12 features (7 indicators + tier, BTC regime, quality gates, historical coin WR, log volume). Cross-validates and calibrates optimal threshold.</li>
+      <li><strong>Meme Drift Detector:</strong> Dedicated concept drift monitor for meme signals &mdash; PSI on each indicator distribution, win rate degradation, signal volume changes across rolling windows.</li>
+      <li><strong>Backtest Framework:</strong> Replays all historical signals, computes BUY NOW rank at different thresholds, reports precision/recall/F1 for each. Compares ranking vs original scores.</li>
+      <li><strong>renderWinners Bug Fix:</strong> Fixed variable-before-definition bug where <code>riskPct</code>, <code>targetPct</code>, and <code>score</code> were used before being defined in the render loop.</li>
+    </ul>
+    <p><span class="app-tag">Crypto</span> <span class="app-tag">ML</span> <a href="https://findtorontoevents.ca/findcryptopairs/meme.html">Meme Coin Scanner (BUY NOW)</a></p>
+  </div>
+</div>
+
 <!-- Feb 12, 2026 — Algorithm Intelligence Rebuild + Algo Performance Fix -->
 <div class="update-entry" style="--dot-color: #ffd700;" data-tags="algorithm-intelligence,algo-performance,tabs,sports,penny,meme,ml,dynamic,api,fix,rebuild" data-category="trading" data-types="feature,fix,improvement">
   <div class="update-date">Feb 12, 2026</div>
