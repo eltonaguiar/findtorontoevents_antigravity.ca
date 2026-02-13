@@ -279,21 +279,23 @@ function _pc_action_sources() {
     echo json_encode(array(
         'ok' => true,
         'sources' => array(
-            array('name' => 'Crypto.com Exchange', 'type' => 'api', 'priority' => 1, 'pairs' => '400+ USDT pairs'),
-            array('name' => 'Binance', 'type' => 'api', 'priority' => 2, 'pairs' => '600+ USDT pairs'),
-            array('name' => 'KuCoin', 'type' => 'api', 'priority' => 3, 'pairs' => '800+ USDT pairs (great meme coverage)'),
-            array('name' => 'Gate.io', 'type' => 'api', 'priority' => 4, 'pairs' => '1700+ USDT pairs (widest meme coverage)'),
-            array('name' => 'MEXC', 'type' => 'api', 'priority' => 5, 'pairs' => '2000+ USDT pairs (lists almost everything)'),
-            array('name' => 'CoinGecko', 'type' => 'api', 'priority' => 6, 'pairs' => '15000+ coins via ID or search'),
-            array('name' => 'DexScreener', 'type' => 'api', 'priority' => 7, 'pairs' => 'DEX pairs across all chains (Solana, ETH, BSC, Base)')
+            array('name' => 'Kraken', 'type' => 'api', 'priority' => 1, 'pairs' => '635 USD/USDT pairs (Canadian-friendly, 33 meme coins)'),
+            array('name' => 'Crypto.com Exchange', 'type' => 'api', 'priority' => 2, 'pairs' => '400+ USDT pairs'),
+            array('name' => 'Binance', 'type' => 'api', 'priority' => 3, 'pairs' => '600+ USDT pairs'),
+            array('name' => 'KuCoin', 'type' => 'api', 'priority' => 4, 'pairs' => '800+ USDT pairs (great meme coverage)'),
+            array('name' => 'Gate.io', 'type' => 'api', 'priority' => 5, 'pairs' => '1700+ USDT pairs'),
+            array('name' => 'MEXC', 'type' => 'api', 'priority' => 6, 'pairs' => '2000+ USDT pairs'),
+            array('name' => 'CoinGecko', 'type' => 'api', 'priority' => 7, 'pairs' => '15000+ coins via ID or search'),
+            array('name' => 'DexScreener', 'type' => 'api', 'priority' => 8, 'pairs' => 'DEX pairs across all chains')
         ),
-        'failover' => 'Each source is tried in order. First successful response is returned. 10s cache per pair.'
+        'failover' => 'Kraken tried first (Canadian-eligible). Each source tried in order. 10s cache per pair.'
     ));
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-//  MASTER PRICE FETCHER — 7-source failover chain
-//  Order: Crypto.com → Binance → KuCoin → Gate.io → MEXC → CoinGecko → DexScreener
+//  MASTER PRICE FETCHER — 8-source failover chain
+//  Order: Kraken → Crypto.com → Binance → KuCoin → Gate.io → MEXC → CoinGecko → DexScreener
+//  Kraken is first because it's the primary Canadian-eligible exchange
 // ═══════════════════════════════════════════════════════════════════════
 function _pc_fetch_price($pair) {
     global $CACHE_DIR;
@@ -318,21 +320,28 @@ function _pc_fetch_price($pair) {
         }
     }
 
-    // Source 1: Crypto.com Exchange
+    // Source 1: Kraken (Canadian-eligible exchange — priority #1)
+    $result = _pc_fetch_kraken($pair);
+    if ($result) {
+        @file_put_contents($cache_file, json_encode($result));
+        return $result;
+    }
+
+    // Source 2: Crypto.com Exchange
     $result = _pc_fetch_cryptocom($pair);
     if ($result) {
         @file_put_contents($cache_file, json_encode($result));
         return $result;
     }
 
-    // Source 2: Binance
+    // Source 3: Binance
     $result = _pc_fetch_binance($pair);
     if ($result) {
         @file_put_contents($cache_file, json_encode($result));
         return $result;
     }
 
-    // Source 3: KuCoin
+    // Source 4: KuCoin
     $result = _pc_fetch_kucoin($pair);
     if ($result) {
         @file_put_contents($cache_file, json_encode($result));
@@ -371,7 +380,7 @@ function _pc_fetch_price($pair) {
 }
 
 function _pc_get_source_names() {
-    return array('crypto.com', 'binance', 'kucoin', 'gate.io', 'mexc', 'coingecko', 'dexscreener');
+    return array('kraken', 'crypto.com', 'binance', 'kucoin', 'gate.io', 'mexc', 'coingecko', 'dexscreener');
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -405,7 +414,80 @@ function _pc_curl($url, $timeout, $headers_arr) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-//  SOURCE 1: Crypto.com Exchange
+//  SOURCE 1: Kraken (Canadian-eligible exchange)
+//  Kraken uses USD pairs primarily (MOODENGUSD), some coins use USDT (SHIBUSDT)
+//  Docs: https://docs.kraken.com/api/kraken-rest-api/get-ticker-information
+// ═══════════════════════════════════════════════════════════════════════
+function _pc_fetch_kraken($pair) {
+    $base = _pc_base_symbol($pair);
+
+    // Kraken tries USD first, then USDT — most memes are on USD
+    $try_pairs = array($base . 'USD', $base . 'USDT');
+    // Special Kraken naming: DOGE → XDG, XRP → XXRP etc. — for the main ones
+    $kraken_renames = array(
+        'DOGE' => 'XDG',
+        'BTC'  => 'XBT'
+    );
+    if (isset($kraken_renames[$base])) {
+        $alt = $kraken_renames[$base];
+        $try_pairs[] = $alt . 'USD';
+        $try_pairs[] = $alt . 'USDT';
+    }
+
+    foreach ($try_pairs as $kpair) {
+        $url = 'https://api.kraken.com/0/public/Ticker?pair=' . urlencode($kpair);
+        $resp = _pc_curl($url, 5, array());
+        if (!$resp) continue;
+
+        $data = json_decode($resp, true);
+        if (!$data || (isset($data['error']) && count($data['error']) > 0)) continue;
+        if (!isset($data['result']) || empty($data['result'])) continue;
+
+        // Kraken returns result keyed by internal pair name
+        $ticker = null;
+        foreach ($data['result'] as $key => $val) {
+            $ticker = $val;
+            break;
+        }
+        if (!$ticker) continue;
+
+        // a = ask [price, whole_lot_volume, lot_volume]
+        // b = bid [price, whole_lot_volume, lot_volume]
+        // c = last trade closed [price, lot_volume]
+        // v = volume [today, 24h]
+        // p = vwap [today, 24h]
+        // h = high [today, 24h]
+        // l = low [today, 24h]
+        $price = isset($ticker['c'][0]) ? floatval($ticker['c'][0]) : 0;
+        if ($price <= 0) continue;
+
+        $vol24h = isset($ticker['v'][1]) ? floatval($ticker['v'][1]) * $price : 0;
+        $high24h = isset($ticker['h'][1]) ? floatval($ticker['h'][1]) : 0;
+        $low24h = isset($ticker['l'][1]) ? floatval($ticker['l'][1]) : 0;
+
+        // Calculate 24h change from open (Kraken doesn't give % directly)
+        $open = isset($ticker['o']) ? floatval($ticker['o']) : 0;
+        $chg24h = ($open > 0) ? round((($price - $open) / $open) * 100, 2) : 0;
+
+        return array(
+            'price' => $price,
+            'vol_24h' => $vol24h,
+            'chg_24h' => $chg24h,
+            'high_24h' => $high24h,
+            'low_24h' => $low24h,
+            'source' => 'kraken',
+            'kraken_pair' => $kpair,
+            'canadian_eligible' => true,
+            'timestamp' => gmdate('Y-m-d H:i:s') . ' UTC',
+            'cached' => false
+        );
+    }
+
+    return null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  SOURCE 2: Crypto.com Exchange
 //  Docs: https://exchange-docs.crypto.com/exchange/v1/rest-ws/index.html
 // ═══════════════════════════════════════════════════════════════════════
 function _pc_fetch_cryptocom($pair) {

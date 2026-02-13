@@ -1068,9 +1068,10 @@ function renderWinners(data) {
         html += '<span class="buy-now-badge" onclick="openVerifyModal(' + i + ')" style="font-size:11px;">Verify Live Price</span>';
         var baseSym = pair.replace('/USDT', '');
         var baseSymLower = baseSym.toLowerCase();
+        // Kraken trade link — primary for Canadian traders
+        html += '<a href="https://www.kraken.com/prices/' + baseSymLower + '" target="_blank" style="font-size:11px;padding:4px 10px;background:rgba(114,66,200,0.2);color:#9b7cdb;border:1px solid rgba(114,66,200,0.4);border-radius:4px;text-decoration:none;font-weight:700;transition:all 0.15s;" onmouseover="this.style.background=\'rgba(114,66,200,0.35)\'" onmouseout="this.style.background=\'rgba(114,66,200,0.2)\'">&#127464;&#127462; Kraken</a>';
         html += '<a href="https://www.kucoin.com/trade/' + baseSym + '-USDT" target="_blank" style="font-size:11px;padding:4px 10px;background:rgba(35,185,140,0.15);color:#23b98c;border:1px solid rgba(35,185,140,0.3);border-radius:4px;text-decoration:none;transition:all 0.15s;" onmouseover="this.style.background=\'rgba(35,185,140,0.25)\'" onmouseout="this.style.background=\'rgba(35,185,140,0.15)\'">KuCoin</a>';
         html += '<a href="https://www.gate.io/trade/' + baseSym + '_USDT" target="_blank" style="font-size:11px;padding:4px 10px;background:rgba(44,125,255,0.15);color:#2c7dff;border:1px solid rgba(44,125,255,0.3);border-radius:4px;text-decoration:none;transition:all 0.15s;" onmouseover="this.style.background=\'rgba(44,125,255,0.25)\'" onmouseout="this.style.background=\'rgba(44,125,255,0.15)\'">Gate.io</a>';
-        html += '<a href="https://www.mexc.com/exchange/' + baseSym + '_USDT" target="_blank" style="font-size:11px;padding:4px 10px;background:rgba(0,182,255,0.15);color:#00b6ff;border:1px solid rgba(0,182,255,0.3);border-radius:4px;text-decoration:none;transition:all 0.15s;" onmouseover="this.style.background=\'rgba(0,182,255,0.25)\'" onmouseout="this.style.background=\'rgba(0,182,255,0.15)\'">MEXC</a>';
         html += '<a href="https://www.coingecko.com/en/coins/' + baseSymLower + '" target="_blank" style="font-size:11px;padding:4px 10px;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border);border-radius:4px;text-decoration:none;">CoinGecko</a>';
         html += '</div>';
 
@@ -1222,7 +1223,9 @@ function applyAutoVerifyResults(priceMap) {
             bannerHtml += '<span style="font-size:14px">&#9989;</span> ';
         }
         bannerHtml += '<span>' + verdict + ': ' + verdictText + '</span>';
-        bannerHtml += '<span class="v-price">Now: $' + currentPrice.toFixed(priceDecimals) + ' (' + (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%) via ' + pd.source + '</span>';
+        var sourceLabel = pd.source;
+        if (pd.source === 'kraken') sourceLabel = 'Kraken &#127464;&#127462;';
+        bannerHtml += '<span class="v-price">Now: $' + currentPrice.toFixed(priceDecimals) + ' (' + (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%) via ' + sourceLabel + '</span>';
         bannerHtml += '</div>';
         verdictSlot.innerHTML = bannerHtml;
         verdictSlot.style.display = 'block';
@@ -1887,7 +1890,11 @@ function renderVerifyResult(r, w, idx) {
     html += '<div class="verify-row"><span class="vr-label">New R:R</span><span class="vr-value">1:' + r.new_rr_ratio + '</span></div>';
     html += '<div class="verify-row"><span class="vr-label">Target Price</span><span class="vr-value" style="color:var(--green)">$' + parseFloat(r.target_price).toFixed(priceDecimals) + '</span></div>';
     html += '<div class="verify-row"><span class="vr-label">Stop Price</span><span class="vr-value" style="color:var(--red)">$' + parseFloat(r.stop_price).toFixed(priceDecimals) + '</span></div>';
-    html += '<div class="verify-row"><span class="vr-label">Source</span><span class="vr-value" style="color:var(--dim)">' + r.price_source + ' (' + r.latency_ms + 'ms)</span></div>';
+    var sourceDisplay = r.price_source + ' (' + r.latency_ms + 'ms)';
+    if (r.price_source === 'kraken') {
+        sourceDisplay = '<span style="color:#9b7cdb;font-weight:700">&#127464;&#127462; Kraken</span> <span style="color:var(--dim)">(' + r.latency_ms + 'ms) — Canadian-eligible</span>';
+    }
+    html += '<div class="verify-row"><span class="vr-label">Source</span><span class="vr-value">' + sourceDisplay + '</span></div>';
     html += '<div class="verify-row"><span class="vr-label">Checked at</span><span class="vr-value" style="color:var(--dim);font-size:11px">' + r.timestamp + '</span></div>';
 
     // Disclaimer
