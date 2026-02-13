@@ -468,10 +468,8 @@ function _kraken_trending_memes()
         }
     }
 
-    // Sort by 24h change
-    usort($trending, function ($a, $b) {
-        return $b['change_24h_pct'] - $a['change_24h_pct'];
-    });
+    // Sort by 24h change (named function for PHP 5.2 compat)
+    usort($trending, '_kraken_sort_by_change');
 
     echo json_encode(array(
         'ok' => true,
@@ -662,6 +660,16 @@ function _kraken_build_rationale($pick)
 function _kraken_sort_by_score($a, $b)
 {
     return $b['score'] - $a['score'];
+}
+
+/**
+ * Sort by 24h change (PHP 5.2 compatible - no closures)
+ */
+function _kraken_sort_by_change($a, $b)
+{
+    if ($b['change_24h_pct'] == $a['change_24h_pct'])
+        return 0;
+    return ($b['change_24h_pct'] > $a['change_24h_pct']) ? 1 : -1;
 }
 
 /**
