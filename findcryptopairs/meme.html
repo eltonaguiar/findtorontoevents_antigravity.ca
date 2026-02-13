@@ -4148,13 +4148,20 @@
     
     function renderAuditBody(data) {
       var body = document.getElementById('audit-body');
+      var title = document.getElementById('audit-title');
       var html = '';
+      
+      // Update title with full name
+      if (data.full_name) {
+        title.innerHTML = '🔍 Audit Trail: ' + data.symbol + ' <span style="font-size:14px;font-weight:400;color:#888;">(' + data.full_name + ')</span>';
+      }
       
       // Summary section
       html += '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:16px;margin-bottom:16px;">';
       html += '<div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:12px;">📊 Summary</div>';
       html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;font-size:12px;">';
-      html += '<div><span style="color:var(--dim);">Coin:</span> <strong style="color:#fff;">' + data.symbol + '</strong></div>';
+      var fullNameDisplay = data.full_name ? data.symbol + ' <span style="color:#888;font-weight:400;">(' + data.full_name + ')</span>' : data.symbol;
+      html += '<div><span style="color:var(--dim);">Coin:</span> <strong style="color:#fff;">' + fullNameDisplay + '</strong></div>';
       html += '<div><span style="color:var(--dim);">Type:</span> <strong style="color:#fff;">' + data.type + '</strong></div>';
       if (data.audit_data.rating_10 || data.audit_data.rating) {
         html += '<div><span style="color:var(--dim);">Rating:</span> <strong style="color:#22c55e;">' + (data.audit_data.rating_10 || data.audit_data.rating) + '/10</strong></div>';

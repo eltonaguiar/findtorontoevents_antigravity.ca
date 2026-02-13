@@ -77,12 +77,17 @@ function _generate_kraken_audit($symbol) {
         return array('ok' => false, 'error' => 'Coin not found in current rankings');
     }
     
+    // Add full name to avoid confusion
+    $full_name = _get_coin_full_name($symbol);
+    $coin_data['full_name'] = $full_name;
+    
     $audit_text = _build_audit_text($symbol, $coin_data, 'Kraken Rankings v2.2');
     
     return array(
         'ok' => true,
         'type' => 'kraken',
         'symbol' => $symbol,
+        'full_name' => $full_name,
         'timestamp' => date('c'),
         'audit_data' => $coin_data,
         'audit_text' => $audit_text,
@@ -120,12 +125,17 @@ function _generate_hot_audit($symbol) {
         return array('ok' => false, 'error' => 'Coin not found in hot trending');
     }
     
+    // Add full name to avoid confusion (use existing name if available, otherwise lookup)
+    $full_name = isset($coin_data['name']) && $coin_data['name'] ? $coin_data['name'] : _get_coin_full_name($symbol);
+    $coin_data['full_name'] = $full_name;
+    
     $audit_text = _build_hot_audit_text($symbol, $coin_data);
     
     return array(
         'ok' => true,
         'type' => 'hot',
         'symbol' => $symbol,
+        'full_name' => $full_name,
         'timestamp' => date('c'),
         'audit_data' => $coin_data,
         'audit_text' => $audit_text,
@@ -373,4 +383,88 @@ function _fetch_pulse_data() {
         }
     }
     return array('rankings' => array());
+}
+
+/**
+ * Get full name for a coin symbol to avoid confusion
+ */
+function _get_coin_full_name($symbol) {
+    $names = array(
+        'DOGE' => 'Dogecoin',
+        'SHIB' => 'Shiba Inu',
+        'PEPE' => 'Pepe',
+        'FLOKI' => 'Floki',
+        'BONK' => 'Bonk',
+        'WIF' => 'Dogwifhat',
+        'TURBO' => 'Turbo',
+        'NEIRO' => 'Neiro',
+        'MEME' => 'Memecoin',
+        'TRUMP' => 'Official Trump',
+        'FARTCOIN' => 'Fartcoin',
+        'PNUT' => 'Peanut the Squirrel',
+        'PENGU' => 'Pudgy Penguins',
+        'POPCAT' => 'Popcat',
+        'BRETT' => 'Brett',
+        'MOG' => 'Mog Coin',
+        'BOME' => 'Book of Meme',
+        'ACT' => 'Act I: The AI Prophecy',
+        'SPX' => 'SPX6900',
+        'PONKE' => 'Ponke',
+        'FWOG' => 'Fwog',
+        'SLERF' => 'Slerf',
+        'AI16Z' => 'AI16Z',
+        'VIRTUAL' => 'Virtual Protocol',
+        'MYRO' => 'Myro',
+        'GOAT' => 'Goatseus Maximus',
+        'MOODENG' => 'Moo Deng',
+        'GIGA' => 'Gigachad',
+        'DEGEN' => 'Degen',
+        'BABYDOGE' => 'Baby Doge Coin',
+        'WOJAK' => 'Wojak',
+        'SATS' => '1000SATS',
+        'COQ' => 'Coq Inu',
+        'DOG' => 'DOG (Runes)',
+        'CHILLGUY' => 'Just a Chill Guy',
+        'TOSHI' => 'Toshi',
+        'ME' => 'Magic Eden',
+        'KEEP' => 'Keep Network',
+        'LRC' => 'Loopring',
+        'PEP' => 'Pepecoin Network',
+        'CAMP' => 'Camp Network',
+        'SRM' => 'Serum',
+        'ESP' => 'Espresso',
+        'SOSO' => 'Sosovalue',
+        'AZTEC' => 'Aztec Protocol',
+        'BTC' => 'Bitcoin',
+        'ETH' => 'Ethereum',
+        'SOL' => 'Solana',
+        'XRP' => 'Ripple',
+        'ADA' => 'Cardano',
+        'DOT' => 'Polkadot',
+        'LINK' => 'Chainlink',
+        'UNI' => 'Uniswap',
+        'AAVE' => 'Aave',
+        'SNX' => 'Synthetix',
+        'MKR' => 'Maker',
+        'CRV' => 'Curve DAO',
+        'LDO' => 'Lido DAO',
+        'GMX' => 'GMX',
+        'DYDX' => 'dYdX',
+        'APE' => 'ApeCoin',
+        'SAND' => 'The Sandbox',
+        'MANA' => 'Decentraland',
+        'AXS' => 'Axie Infinity',
+        'GALA' => 'Gala',
+        'ENJ' => 'Enjin Coin',
+        'CHZ' => 'Chiliz',
+        'FTM' => 'Fantom',
+        'AVAX' => 'Avalanche',
+        'NEAR' => 'NEAR Protocol',
+        'ATOM' => 'Cosmos',
+        'ALGO' => 'Algorand',
+        'XTZ' => 'Tezos',
+        'FIL' => 'Filecoin',
+        'AR' => 'Arweave'
+    );
+    return isset($names[$symbol]) ? $names[$symbol] : $symbol;
 }
