@@ -95,9 +95,9 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
 .scan-meta{font-size:11px;color:var(--dim)}
 .scan-log-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px}
 .scan-log-table th{text-align:center;padding:6px 4px;color:var(--dim);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap}
-.scan-log-table th:first-child,.scan-log-table th:nth-child(2),.scan-log-table th:nth-child(3){text-align:left}
+.scan-log-table th:first-child,.scan-log-table th:nth-child(2){text-align:left}
 .scan-log-table td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:center;white-space:nowrap}
-.scan-log-table td:first-child,.scan-log-table td:nth-child(2),.scan-log-table td:nth-child(3){text-align:left}
+.scan-log-table td:first-child,.scan-log-table td:nth-child(2){text-align:left}
 .scan-log-table tr:hover{background:rgba(255,255,255,0.02)}
 .scan-log-table tr.is-winner{background:rgba(232,121,249,0.04)}
 .factor-cell{display:inline-flex;align-items:center;justify-content:center;min-width:36px;padding:2px 5px;border-radius:4px;font-size:10px;font-weight:600}
@@ -2596,6 +2596,173 @@ function formatLargeNum(n) {
 
 // Load Market Pulse on page load
 loadMarketPulse(false);
+
+// ═══════════════════════════════════════════════════════════════════
+//  KRAKEN RANKINGS — Full ranked list of ALL Kraken meme coins (1-10)
+//  The primary "what should I buy right now?" view
+// ═══════════════════════════════════════════════════════════════════
+var RANKED_API = '/findcryptopairs/api/meme_market_pulse.php';
+var rankingLiveMode = false;
+var rankingLiveInterval = null;
+
+function loadKrakenRankings(force) {
+    var container = document.getElementById('kraken-rankings-list');
+    if (!force && container) {
+        container.innerHTML = '<div class="loading">Scanning all Kraken meme coins...</div>';
+    }
+
+    var url = RANKED_API + '?action=kraken_ranked' + (force ? '&force=1' : '') + '&_=' + Date.now();
+    var x = new XMLHttpRequest();
+    x.open('GET', url);
+    x.onload = function() {
+        try {
+            var r = JSON.parse(x.responseText);
+            if (!r.ok) {
+                container.innerHTML = '<div style="color:var(--red);padding:16px">Error: ' + (r.error || 'Unknown') + '</div>';
+                return;
+            }
+            renderKrakenRankings(r.rankings, r.total_coins);
+            if (r.mood) renderPulseMood(r.mood);
+            var ts = document.getElementById('ranking-last-updated');
+            if (ts) ts.textContent = 'Updated: ' + new Date().toLocaleTimeString() + (r.cached ? ' (cached ' + r.cache_age_s + 's)' : ' (live)');
+            var cc = document.getElementById('ranking-coin-count');
+            if (cc) cc.textContent = r.total_coins + ' coins on Kraken';
+
+            // Also render top pick if rankings have it
+            if (r.rankings && r.rankings.length > 0) {
+                var topCoin = r.rankings[0];
+                if (topCoin.rating_10 >= 6) {
+                    renderPulseTopPick(topCoin);
+                } else {
+                    renderPulseTopPick({available: false, reason: 'Best coin is only ' + topCoin.rating_10 + '/10 — no strong buy signal right now'});
+                }
+            }
+        } catch(e) {
+            if (container) container.innerHTML = '<div style="color:var(--red);padding:16px">Error parsing response: ' + e.message + '</div>';
+        }
+    };
+    x.onerror = function() {
+        if (container) container.innerHTML = '<div style="color:var(--red);padding:16px">Network error — check connection</div>';
+    };
+    x.send();
+}
+
+function renderKrakenRankings(rankings, total) {
+    var container = document.getElementById('kraken-rankings-list');
+    if (!container || !rankings) return;
+
+    if (rankings.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--dim)">No Kraken meme data available. Try refreshing.</div>';
+        return;
+    }
+
+    var html = '<table class="scan-log-table" style="font-size:12px">';
+    html += '<tr>';
+    html += '<th style="width:30px">#</th>';
+    html += '<th style="text-align:left">Coin</th>';
+    html += '<th style="width:70px">Rating</th>';
+    html += '<th style="text-align:left;width:90px">Signal</th>';
+    html += '<th>Price</th>';
+    html += '<th>24h</th>';
+    html += '<th>Volume</th>';
+    html += '<th>Mom</th><th>Vol</th><th>Buzz</th><th>Entry</th><th>Sprd</th>';
+    html += '<th style="width:60px">Trade</th>';
+    html += '</tr>';
+
+    for (var i = 0; i < rankings.length; i++) {
+        var c = rankings[i];
+        var r10 = c.rating_10 || 1;
+        var zone = c.rating_zone || 'quiet';
+        var chg = parseFloat(c.chg_24h) || 0;
+        var prDec = c.price >= 1 ? 4 : c.price >= 0.01 ? 6 : c.price >= 0.0001 ? 8 : 10;
+
+        // Row styling by zone
+        var rowBg = '';
+        if (zone === 'strong_buy') rowBg = 'background:rgba(34,197,94,0.05);';
+        else if (zone === 'warming_up') rowBg = 'background:rgba(245,158,11,0.03);';
+
+        // Rating badge colors
+        var ratingColor, ratingBg, ratingBorder;
+        if (r10 >= 8) { ratingColor = '#22c55e'; ratingBg = 'rgba(34,197,94,0.15)'; ratingBorder = 'rgba(34,197,94,0.3)'; }
+        else if (r10 >= 5) { ratingColor = '#f59e0b'; ratingBg = 'rgba(245,158,11,0.15)'; ratingBorder = 'rgba(245,158,11,0.3)'; }
+        else { ratingColor = '#6b7280'; ratingBg = 'rgba(107,114,128,0.1)'; ratingBorder = 'rgba(107,114,128,0.2)'; }
+
+        // Signal label
+        var signalHtml = '';
+        if (r10 >= 9) signalHtml = '<span style="color:#22c55e;font-weight:700;font-size:11px">EXCEPTIONAL</span>';
+        else if (r10 >= 8) signalHtml = '<span style="color:#22c55e;font-weight:700;font-size:11px">STRONG BUY</span>';
+        else if (r10 >= 7) signalHtml = '<span style="color:#86efac;font-weight:600;font-size:11px">BUY</span>';
+        else if (r10 >= 6) signalHtml = '<span style="color:#fcd34d;font-weight:600;font-size:11px">LEAN BUY</span>';
+        else if (r10 >= 5) signalHtml = '<span style="color:#f59e0b;font-size:11px">WARMING</span>';
+        else if (r10 >= 4) signalHtml = '<span style="color:#9ca3af;font-size:11px">MILD</span>';
+        else if (r10 >= 3) signalHtml = '<span style="color:#6b7280;font-size:11px">QUIET</span>';
+        else signalHtml = '<span style="color:#4b5563;font-size:11px">DEAD</span>';
+
+        var scores = c.scores || {};
+
+        html += '<tr style="' + rowBg + '">';
+        html += '<td style="color:var(--dim);font-size:11px">' + (i + 1) + '</td>';
+        html += '<td style="text-align:left"><strong style="color:#fff;font-size:13px">' + c.symbol + '</strong>';
+        if (c.is_trending) html += ' <span style="font-size:9px;color:var(--cyan)" title="Trending on CoinGecko">TREND</span>';
+        html += '</td>';
+
+        // Rating badge - big and prominent
+        html += '<td><div style="display:inline-flex;align-items:center;justify-content:center;min-width:40px;padding:4px 10px;border-radius:6px;background:' + ratingBg + ';color:' + ratingColor + ';border:1px solid ' + ratingBorder + ';font-weight:800;font-size:16px">' + r10 + '<span style="font-size:10px;font-weight:400;opacity:0.7">/10</span></div></td>';
+
+        html += '<td style="text-align:left">' + signalHtml + '</td>';
+        html += '<td style="color:#fff;font-weight:600">$' + c.price.toFixed(prDec) + '</td>';
+        html += '<td style="color:' + (chg >= 0 ? 'var(--green)' : 'var(--red)') + ';font-weight:600">' + (chg >= 0 ? '+' : '') + chg.toFixed(1) + '%</td>';
+        html += '<td style="color:var(--dim)">$' + formatLargeNum(c.vol_24h_usd) + '</td>';
+
+        // Factor mini-scores
+        html += '<td>' + _ratingFactorCell(scores.momentum || 0, 35) + '</td>';
+        html += '<td>' + _ratingFactorCell(scores.volume || 0, 25) + '</td>';
+        html += '<td>' + _ratingFactorCell(scores.trending || 0, 15) + '</td>';
+        html += '<td>' + _ratingFactorCell(scores.entry_position || 0, 15) + '</td>';
+        html += '<td>' + _ratingFactorCell(scores.spread || 0, 10) + '</td>';
+
+        // Trade link
+        var symLower = c.symbol.toLowerCase();
+        html += '<td><a href="https://pro.kraken.com/app/trade/' + symLower + '-usd" target="_blank" style="font-size:10px;padding:3px 8px;background:rgba(114,66,200,0.15);color:#9b7cdb;border:1px solid rgba(114,66,200,0.3);border-radius:4px;text-decoration:none;font-weight:600">BUY</a></td>';
+        html += '</tr>';
+    }
+    html += '</table>';
+    container.innerHTML = html;
+}
+
+function _ratingFactorCell(val, max) {
+    var pct = max > 0 ? (val / max) : 0;
+    var cls = pct >= 0.7 ? 'f-high' : pct >= 0.4 ? 'f-mid' : 'f-low';
+    return '<span class="factor-cell ' + cls + '">' + val + '</span>';
+}
+
+function toggleRankingModel() {
+    var el = document.getElementById('ranking-model-explain');
+    if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleRankingLiveMode() {
+    rankingLiveMode = !rankingLiveMode;
+    var btn = document.getElementById('ranking-live-toggle');
+    if (rankingLiveMode) {
+        btn.innerHTML = '<span class="live-pulse"></span> Auto-Refresh: ON';
+        btn.style.background = 'rgba(34,197,94,0.15)';
+        btn.style.color = '#22c55e';
+        btn.style.borderColor = 'rgba(34,197,94,0.3)';
+        loadKrakenRankings(true);
+        rankingLiveInterval = setInterval(function() { loadKrakenRankings(true); }, 45000);
+    } else {
+        btn.innerHTML = 'Auto-Refresh (45s)';
+        btn.style.background = 'rgba(255,255,255,0.05)';
+        btn.style.color = 'var(--dim)';
+        btn.style.borderColor = 'var(--border)';
+        if (rankingLiveInterval) clearInterval(rankingLiveInterval);
+        rankingLiveInterval = null;
+    }
+}
+
+// Load Kraken Rankings on page load (the primary view)
+loadKrakenRankings(false);
 </script>
 <script src="/findstocks/portfolio2/stock-nav.js"></script>
 <script src="/live-monitor/api/scope_labels.js"></script>
