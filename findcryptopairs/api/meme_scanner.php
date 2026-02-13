@@ -185,6 +185,35 @@ function _mc_action_scan($conn)
     global $MEME_TIER1, $MEME_KEYWORDS, $CG_TIER1_IDS;
     $start = microtime(true);
 
+    // ── CIRCUIT BREAKER: pause scanning if recent performance is terrible ──
+    // If win rate < 15% over last 7 days with 3+ resolved trades, skip scan entirely.
+    $cb_res = $conn->query("SELECT COUNT(*) as total,
+        SUM(CASE WHEN outcome = 'win' THEN 1 ELSE 0 END) as wins
+        FROM mc_winners WHERE outcome IS NOT NULL
+        AND resolved_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
+    if ($cb_res) {
+        $cb = $cb_res->fetch_assoc();
+        $cb_total = intval($cb['total']);
+        $cb_wins = intval($cb['wins']);
+        if ($cb_total >= 3 && $cb_total > 0) {
+            $cb_wr = ($cb_wins / $cb_total) * 100;
+            if ($cb_wr < 15) {
+                echo json_encode(array(
+                    'ok' => true,
+                    'scan_id' => 'PAUSED',
+                    'circuit_breaker' => true,
+                    'reason' => 'Scanning paused: 7-day win rate is ' . round($cb_wr, 1) . '% (' . $cb_wins . '/' . $cb_total . ' wins). Minimum 15% required to resume.',
+                    'recent_win_rate' => round($cb_wr, 1),
+                    'recent_trades' => $cb_total,
+                    'winners_found' => 0,
+                    'winners_saved' => 0,
+                    'winners' => array()
+                ));
+                return;
+            }
+        }
+    }
+
     // ── PHASE 1: Crypto.com Exchange data ──
     $instruments = _mc_api('public/get-instruments');
     $all_usdt_pairs = array();
@@ -390,13 +419,13 @@ function _mc_action_scan($conn)
             'adjustment' => $regime_adj['adjustment'],
             'raw_score' => $raw_score
         );
-        // Re-evaluate verdict with adjusted score
+        // Re-evaluate verdict with adjusted score (v3 thresholds)
         $adj = $score_details['total'];
-        if ($adj >= 85) {
+        if ($adj >= 88) {
             $score_details['verdict'] = 'STRONG_BUY';
-        } elseif ($adj >= 75) {
+        } elseif ($adj >= 82) {
             $score_details['verdict'] = 'BUY';
-        } elseif ($adj >= 70) {
+        } elseif ($adj >= 78) {
             $score_details['verdict'] = 'LEAN_BUY';
         } else {
             $score_details['verdict'] = 'SKIP';
@@ -413,13 +442,13 @@ function _mc_action_scan($conn)
 
     usort($scored, '_mc_sort_by_score');
 
-    // 5. Save winners (score >= 70) to DB
+    // 5. Save winners (score >= 78) to DB — raised from 70 to match v3 thresholds
     $scan_id = date('YmdHis');
     $winners = array();
     $saved = 0;
 
     foreach ($scored as $s) {
-        if ($s['score'] < 70)
+        if ($s['score'] < 78)
             continue;
         $winners[] = $s;
 
@@ -533,6 +562,18 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
 
     $n15 = count($closes_15m);
     $n5 = count($closes_5m);
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  PUMP-AND-DUMP DETECTION — hard reject before quality gates
+    //  Saves processing time by rejecting obvious P&D patterns early
+    // ═══════════════════════════════════════════════════════════════════════
+    $pnd_result = _mc_detect_pump_and_dump($closes_15m, $closes_5m, $highs_15m, $lows_15m, $volumes_15m, $candidate);
+    $factors['pump_dump'] = $pnd_result;
+
+    if ($pnd_result['detected']) {
+        // 2+ P&D signals = hard reject — do not generate a signal
+        return null;
+    }
 
     // ═══════════════════════════════════════════════════════════════════════
     //  QUALITY GATE 1: Trend Confirmation (NEW)
@@ -920,16 +961,16 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
     $atr_pct = ($current_price > 0) ? ($atr / $current_price) * 100 : 3.0;
     $atr_pct = max(1.0, min(15.0, $atr_pct)); // wider clamp for memes
 
-    // FLAW #4 FIX: Quality gates are now HARD exclusions, not soft penalties.
-    // Must pass at least 2 of 3 quality gates to generate ANY signal.
-    // Previously this was a -10pt penalty which was trivially overcome by high momentum.
-    if ($quality_score < 2) {
-        // Hard reject: not enough quality confirmation
+    // FLAW #4 FIX v3: Quality gates are HARD exclusions — ALL 3 required.
+    // Previous v2 required 2/3 but still let through weak signals (0% win rate).
+    // Now: must pass ALL 3 quality gates (trend + momentum + volume).
+    if ($quality_score < 3) {
+        // Hard reject: ALL three gates required for meme signals
         $factors['quality_check'] = array(
             'score' => $quality_score,
             'issues' => $quality_issues,
             'verdict' => 'REJECTED',
-            'reason' => 'Failed ' . (3 - $quality_score) . ' of 3 quality gates',
+            'reason' => 'Failed ' . (3 - $quality_score) . ' of 3 quality gates (all 3 required)',
             'raw_total' => $total
         );
         return null; // Do not generate a signal
@@ -949,28 +990,31 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
     $target_pct = 0;
     $risk_pct = 0;
 
-    // NEW: Stricter thresholds - require at least 2 quality gates
-    if ($adjusted_total >= 85 && $quality_score >= 2) {
+    // v3: Raised thresholds — previous version had 0% win rate, too loose.
+    // All verdicts require ALL 3 quality gates (enforced above).
+    // Score thresholds raised: STRONG_BUY 88+, BUY 82+, LEAN_BUY 78+
+    // Tighter stop losses: max risk clamped to 3% (was 4%)
+    if ($adjusted_total >= 88 && $quality_score >= 3) {
         $verdict = 'STRONG_BUY';
-        $target_pct = round(max(4.0, min(12.0, $atr_pct * 1.8)), 1); // Reduced from 15% max
-        $risk_pct = round(max(2.0, min(4.0, $atr_pct * 0.9)), 1);  // Tighter stops
-    } elseif ($adjusted_total >= 78 && $quality_score >= 2) { // Raised from 75
+        $target_pct = round(max(3.5, min(8.0, $atr_pct * 1.5)), 1);  // Reduced max from 12% to 8%
+        $risk_pct = round(max(1.5, min(3.0, $atr_pct * 0.7)), 1);    // Tighter: max 3%
+    } elseif ($adjusted_total >= 82 && $quality_score >= 3) {
         $verdict = 'BUY';
-        $target_pct = round(max(3.0, min(8.0, $atr_pct * 1.3)), 1);  // Reduced from 10%
-        $risk_pct = round(max(2.0, min(3.5, $atr_pct * 0.7)), 1);  // Tighter stops
-    } elseif ($adjusted_total >= 72 && $quality_score >= 2) { // Raised from 70
+        $target_pct = round(max(3.0, min(6.0, $atr_pct * 1.2)), 1);  // Reduced max from 8% to 6%
+        $risk_pct = round(max(1.5, min(2.5, $atr_pct * 0.6)), 1);    // Tighter: max 2.5%
+    } elseif ($adjusted_total >= 78 && $quality_score >= 3) {
         $verdict = 'LEAN_BUY';
-        $target_pct = round(max(2.0, min(5.0, $atr_pct * 1.0)), 1);  // Reduced from 6%
-        $risk_pct = round(max(1.5, min(2.5, $atr_pct * 0.6)), 1);  // Tighter stops
+        $target_pct = round(max(2.0, min(4.0, $atr_pct * 0.9)), 1);  // Reduced max from 5% to 4%
+        $risk_pct = round(max(1.0, min(2.0, $atr_pct * 0.5)), 1);    // Tighter: max 2%
     }
 
-    // NEW: Tier 2 coins get extra scrutiny (higher threshold)
+    // Tier 2 coins: even higher bar (85+ for any signal, 92+ for STRONG_BUY)
     if ($candidate['tier'] === 'tier2' && $verdict !== 'SKIP') {
-        if ($adjusted_total < 80) { // Tier 2 needs 80+ for any signal
+        if ($adjusted_total < 85) {
             $verdict = 'SKIP';
             $target_pct = 0;
             $risk_pct = 0;
-        } elseif ($verdict === 'STRONG_BUY' && $adjusted_total < 90) {
+        } elseif ($verdict === 'STRONG_BUY' && $adjusted_total < 92) {
             $verdict = 'BUY'; // Downgrade tier 2 strong buys unless exceptional
         }
     }
@@ -1057,14 +1101,22 @@ function _mc_regime_score_adjust($raw_score, $factors, $btc_regime)
         elseif ($mom >= 8 && $trend)
             $adjustment += 2;
     } elseif ($regime === 'bear') {
-        // Bear market: moderate penalty — still show signals but with clear warnings
-        // Previous -10/-15 penalty was blocking ALL signals; users need actionable data
-        $adjustment -= 5;
-        // Extra penalty for weak momentum-only plays (no volume confirmation)
+        // Bear market: heavy penalty — memes are death in bear markets.
+        // Previous -5 was far too lenient (0% win rate resulted).
+        // Now -12 base, -5 extra for weak plays = effectively blocks most signals.
+        $adjustment -= 12;
+        // Extra penalty for momentum-only plays without volume confirmation
         if ($mom >= 10 && $vol < 6)
+            $adjustment -= 5;
+        // Extra penalty for breakout plays in bear (usually bull traps)
+        if ($brk >= 5)
             $adjustment -= 3;
+    } else {
+        // Chop regime: memes are still risky — apply moderate penalty
+        $adjustment -= 4;
+        if ($mom < 10 && $vol < 10)
+            $adjustment -= 3; // Extra penalty for weak signals in chop
     }
-    // Chop: no adjustment - but memes are risky in chop too
 
     $adjusted = max(0, min(100, $raw_score + $adjustment));
     return array('adjusted_score' => $adjusted, 'adjustment' => $adjustment, 'regime' => $regime);
@@ -1075,10 +1127,12 @@ function _mc_regime_score_adjust($raw_score, $factors, $btc_regime)
 // ═══════════════════════════════════════════════════════════════════════
 function _mc_action_resolve($conn)
 {
+    // v3: Extended resolve window from 2h to 4h — gives more time for targets to be hit.
+    // Previous 2h window was too short for meme moves which can take 3-4h to play out.
     $sql = "SELECT id, pair, price_at_signal, target_pct, risk_pct, score, created_at
             FROM mc_winners
             WHERE outcome IS NULL
-            AND created_at < DATE_SUB(NOW(), INTERVAL 2 HOUR)
+            AND created_at < DATE_SUB(NOW(), INTERVAL 4 HOUR)
             ORDER BY created_at ASC
             LIMIT 20";
     $res = $conn->query($sql);
@@ -2389,5 +2443,94 @@ function _mc_ensure_schema($conn)
 
     // Purge old scan log entries (5 days for memes — higher frequency)
     $conn->query("DELETE FROM mc_scan_log WHERE created_at < DATE_SUB(NOW(), INTERVAL 5 DAY)");
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  PUMP-AND-DUMP DETECTION — Multi-signal pattern recognition
+//  Detects 4 classic P&D patterns:
+//    1. Parabolic Rise — >50% 24h or >15% 1h + >25% 6h
+//    2. RSI Exhaustion — RSI >85 + price turning negative (dump starting)
+//    3. Volume Dump   — volume surging 5x+ while price dropping (smart $ exit)
+//    4. Wick Trap     — long upper wick >3x body (rejected at highs)
+//  2+ signals = hard reject, 1 signal = elevated risk warning
+// ═══════════════════════════════════════════════════════════════════════
+function _mc_detect_pump_and_dump($closes_15m, $closes_5m, $highs_15m, $lows_15m, $volumes_15m, $candidate)
+{
+    $n15 = count($closes_15m);
+    $n5 = count($closes_5m);
+    $signals = array();
+    $rsi = 0;
+
+    // Calculate short-term price changes
+    $chg_24h = floatval(isset($candidate['chg_24h']) ? $candidate['chg_24h'] : 0);
+    $chg_1h = 0;
+    $chg_6h = 0;
+    if ($n15 >= 4 && $closes_15m[$n15 - 4] > 0) {
+        $chg_1h = (($closes_15m[$n15 - 1] - $closes_15m[$n15 - 4]) / $closes_15m[$n15 - 4]) * 100;
+    }
+    if ($n15 >= 24 && $closes_15m[max(0, $n15 - 24)] > 0) {
+        $chg_6h = (($closes_15m[$n15 - 1] - $closes_15m[max(0, $n15 - 24)]) / $closes_15m[max(0, $n15 - 24)]) * 100;
+    }
+
+    // 1. PARABOLIC RISE — extreme price surge
+    if ($chg_24h > 50 || ($chg_1h > 15 && $chg_6h > 25)) {
+        $signals[] = 'parabolic_rise';
+    }
+
+    // 2. RSI EXHAUSTION — extreme overbought + price turning down
+    if ($n15 >= 14) {
+        $rsi = _mc_calc_rsi($closes_15m, 14);
+        if ($rsi > 85 && $chg_1h < 0) {
+            $signals[] = 'rsi_exhaustion';
+        }
+    }
+
+    // 3. VOLUME SPIKE + REVERSAL — volume surging but price fading (smart money exiting)
+    if (count($volumes_15m) >= 10) {
+        $total_vol = array_sum($volumes_15m);
+        $vol_count = count($volumes_15m);
+        $avg_vol = $total_vol / $vol_count;
+        $recent_vol = (array_sum(array_slice($volumes_15m, -3))) / 3;
+        $vol_ratio = ($avg_vol > 0) ? $recent_vol / $avg_vol : 1;
+
+        if ($vol_ratio >= 5 && $chg_1h < -1) {
+            $signals[] = 'volume_dump';
+        }
+    }
+
+    // 4. WICK TRAP — last candle has a long upper wick (rejected at highs)
+    if ($n15 >= 2 && count($highs_15m) >= $n15 && count($lows_15m) >= $n15) {
+        $last_high = $highs_15m[$n15 - 1];
+        $last_close = $closes_15m[$n15 - 1];
+        $last_open = $closes_15m[$n15 - 2]; // previous close as proxy for open
+        $body = abs($last_close - $last_open);
+        $upper_wick = $last_high - max($last_close, $last_open);
+
+        if ($body > 0 && $upper_wick > $body * 3) {
+            $signals[] = 'wick_trap';
+        }
+    }
+
+    // Decision: 2+ signals = hard reject, 1 = elevated risk
+    $signal_count = count($signals);
+    $detected = ($signal_count >= 2);
+    if ($signal_count >= 2) {
+        $risk_level = 'critical';
+    } elseif ($signal_count >= 1) {
+        $risk_level = 'elevated';
+    } else {
+        $risk_level = 'none';
+    }
+
+    return array(
+        'detected' => $detected,
+        'signals' => $signals,
+        'signal_count' => $signal_count,
+        'risk_level' => $risk_level,
+        'chg_1h' => round($chg_1h, 2),
+        'chg_6h' => round($chg_6h, 2),
+        'chg_24h' => round($chg_24h, 2),
+        'rsi' => round($rsi, 1)
+    );
 }
 ?>

@@ -947,6 +947,31 @@ function _mp_compute_top_pick($kraken_coins, $trending, $cg_gainers)
             $total = min($total, 45); // caps at 5/10 rating max
         }
 
+        // ── Pump-and-Dump Risk Assessment (ticker-only signals) ──
+        $pnd_signals = array();
+        // 1. Parabolic rise
+        if ($chg > 50) {
+            $pnd_signals[] = 'parabolic_rise';
+        }
+        // 2. High-range exhaustion: near 24h high but momentum fading
+        if ($from_high > -1 && $is_negative_momentum && $range > 15) {
+            $pnd_signals[] = 'high_range_exhaustion';
+        }
+        // 3. Wide range trap: >30% daily range + near high = classic P&D shape
+        if ($range > 30 && $from_high > -5) {
+            $pnd_signals[] = 'wide_range_trap';
+        }
+        $pnd_signal_count = count($pnd_signals);
+        if ($pnd_signal_count >= 2) {
+            $pnd_risk = 'critical';
+            $total = min($total, 20); // hard cap
+        } elseif ($pnd_signal_count >= 1) {
+            $pnd_risk = 'elevated';
+            $total = min($total, 55); // max 6/10
+        } else {
+            $pnd_risk = 'none';
+        }
+
         // Confidence level
         $confidence = 'SKIP';
         $confidence_emoji = '';
@@ -1017,6 +1042,8 @@ function _mp_compute_top_pick($kraken_coins, $trending, $cg_gainers)
             'confidence' => $confidence,
             'is_trending' => $is_trending,
             'liquidity_warning' => $liquidity_warning,
+            'pump_dump_risk' => $pnd_risk,
+            'pump_dump_signals' => $pnd_signals,
             'tp_pct' => $tp_pct,
             'sl_pct' => $sl_pct,
             'tp_price' => round($coin['price'] * (1 + $tp_pct / 100), 10),
