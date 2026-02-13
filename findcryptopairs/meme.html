@@ -1498,6 +1498,7 @@
     <!-- Main page tabs -->
     <div class="main-tabs">
       <button class="main-tab-btn active" onclick="switchMainTab('scanner')">Scanner</button>
+      <button class="main-tab-btn" onclick="switchMainTab('hot')" style="color:#ef4444;">🔥 Hot Trending</button>
       <button class="main-tab-btn" onclick="switchMainTab('analysis')" style="color:#f59e0b;">System Analysis</button>
       <button class="main-tab-btn" onclick="switchMainTab('research')" style="color:#a855f7;">Research &amp;
         Future</button>
@@ -2054,7 +2055,88 @@
     </div><!-- end main-scanner panel -->
 
     <!-- ═══════════════════════════════════════════ -->
-    <!-- TAB 2: SYSTEM ANALYSIS -->
+    <!-- TAB 2: HOT TRENDING (NEW) -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="main-panel" id="main-hot">
+      <div class="section-title" style="color:#ef4444;">🔥 Hot Trending Right Now
+        <span class="badge" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);">LIVE</span>
+        <span class="badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);">BETA</span>
+      </div>
+      
+      <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;font-size:12px;color:#fca5a5;line-height:1.6;">
+        <strong>🔥 Hot Trending:</strong> Coins trending on CoinMarketCap/CoinGecko in the last 30 minutes to 4 hours. 
+        Cross-checked against Kraken for immediate tradability. <strong>Confidence %</strong> = probability of continued upward movement based on technical analysis (momentum, volume, RSI, EMA alignment).
+      </div>
+
+      <!-- Timeframe selector -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center">
+        <span style="font-size:12px;color:var(--dim);">Trending window:</span>
+        <button onclick="loadHotTrending('30m')" class="hot-tf-btn active" id="tf-30m" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;font-weight:600;">30 min</button>
+        <button onclick="loadHotTrending('1h')" class="hot-tf-btn" id="tf-1h" style="background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;">1 hour</button>
+        <button onclick="loadHotTrending('4h')" class="hot-tf-btn" id="tf-4h" style="background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;">4 hours</button>
+        <button onclick="loadHotTrending('24h')" class="hot-tf-btn" id="tf-24h" style="background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;">24 hours</button>
+        <button onclick="loadHotTrending(true)" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;margin-left:auto;">🔄 Refresh</button>
+      </div>
+
+      <!-- Scan status -->
+      <div id="hot-scan-status" style="text-align:center;padding:20px;color:var(--dim);">
+        <div style="font-size:24px;margin-bottom:8px;">🔥</div>
+        <div>Scanning hot trending coins...</div>
+      </div>
+
+      <!-- Hot on Kraken Section -->
+      <div id="hot-kraken-section" style="display:none;">
+        <div class="section-title" style="font-size:16px;color:#22c55e;">
+          ✅ Tradable on Kraken — High Confidence
+          <span style="font-size:11px;color:var(--dim);font-weight:400;">(Confidence ≥ 60%)</span>
+        </div>
+        <div id="hot-kraken-list"></div>
+      </div>
+
+      <!-- Watch List Section -->
+      <div id="hot-watch-section" style="display:none;margin-top:24px;">
+        <div class="section-title" style="font-size:16px;color:#f59e0b;">
+          👀 Watch List
+          <span style="font-size:11px;color:var(--dim);font-weight:400;">(Confidence 40-59%)</span>
+        </div>
+        <div id="hot-watch-list"></div>
+      </div>
+
+      <!-- Other Trending Section -->
+      <div id="hot-other-section" style="display:none;margin-top:24px;">
+        <div class="section-title" style="font-size:16px;color:var(--dim);">
+          📊 Other Trending
+          <span style="font-size:11px;color:var(--dim);font-weight:400;">(Not on Kraken or lower confidence)</span>
+        </div>
+        <div id="hot-other-list"></div>
+      </div>
+
+      <!-- Empty state -->
+      <div id="hot-empty-state" style="display:none;text-align:center;padding:40px 20px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);">
+        <div style="font-size:40px;margin-bottom:12px;">🔍</div>
+        <div style="font-size:16px;color:#fff;margin-bottom:8px;">No Hot Coins Right Now</div>
+        <div style="font-size:13px;color:var(--dim);">No trending coins meet the high confidence threshold. Check back in 15-30 minutes.</div>
+      </div>
+
+      <!-- Methodology -->
+      <div style="margin-top:32px;padding:16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:var(--radius);">
+        <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:12px;">📈 How Confidence is Calculated</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;font-size:11px;color:var(--dim);line-height:1.6;">
+          <div><strong style="color:#22c55e;">Trend Alignment (35 pts):</strong> Price above EMA-12 and EMA-26, bullish EMA crossover</div>
+          <div><strong style="color:#22c55e;">Momentum (25 pts):</strong> 5m > 15m > 1h price change (acceleration pattern)</div>
+          <div><strong style="color:#22c55e;">Volume (15 pts):</strong> Current volume > 2x 20-period average</div>
+          <div><strong style="color:#22c55e;">RSI Sweet Spot (15 pts):</strong> RSI between 50-75 (momentum but not overbought)</div>
+          <div><strong style="color:#22c55e;">Not Overbought (10 pts):</strong> RSI < 80, no parabolic blow-off</div>
+        </div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.05);font-size:11px;color:#fca5a5;">
+          <strong>⚠️ Disclaimer:</strong> Confidence % estimates probability of continued upward movement based on technical factors. 
+          It does NOT guarantee future performance. Meme coins can reverse violently at any time. Never risk more than 1-2% of portfolio.
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- TAB 3: SYSTEM ANALYSIS -->
     <!-- ═══════════════════════════════════════════ -->
     <div class="main-panel" id="main-analysis">
       <div class="section-title" style="color:#f59e0b;">System Analysis <span class="badge"
@@ -2571,7 +2653,7 @@
   <script>
     // ── Main tab switching ──
     function switchMainTab(tab) {
-      var tabNames = ['scanner', 'analysis', 'research'];
+      var tabNames = ['scanner', 'hot', 'analysis', 'research'];
       var btns = document.querySelectorAll('.main-tab-btn');
       var panels = document.querySelectorAll('.main-panel');
       for (var i = 0; i < btns.length; i++) {
@@ -2581,6 +2663,183 @@
         panels[j].classList.remove('active');
       }
       document.getElementById('main-' + tab).classList.add('active');
+      
+      // Load hot trending if switching to that tab
+      if (tab === 'hot' && !window.hotTrendingLoaded) {
+        window.hotTrendingLoaded = true;
+        loadHotTrending('30m');
+      }
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    //  HOT TRENDING SCANNER — Real-time momentum detection
+    // ═══════════════════════════════════════════════════════════════════════
+    var HOT_API = '/findcryptopairs/api/hot_trending_scanner.php';
+    var currentHotTimeframe = '30m';
+    
+    function loadHotTrending(timeframe) {
+      if (typeof timeframe === 'string') {
+        currentHotTimeframe = timeframe;
+        // Update button states
+        document.querySelectorAll('.hot-tf-btn').forEach(function(btn) {
+          btn.classList.remove('active');
+          btn.style.background = 'rgba(255,255,255,0.05)';
+          btn.style.color = 'var(--dim)';
+          btn.style.borderColor = 'var(--border)';
+        });
+        var activeBtn = document.getElementById('tf-' + timeframe);
+        if (activeBtn) {
+          activeBtn.classList.add('active');
+          activeBtn.style.background = 'rgba(239,68,68,0.15)';
+          activeBtn.style.color = '#ef4444';
+          activeBtn.style.borderColor = 'rgba(239,68,68,0.3)';
+        }
+      }
+      
+      var statusEl = document.getElementById('hot-scan-status');
+      if (statusEl) statusEl.style.display = 'block';
+      
+      var url = HOT_API + '?action=scan&tf=' + currentHotTimeframe + '&_=' + Date.now();
+      var x = new XMLHttpRequest();
+      x.open('GET', url);
+      x.onload = function() {
+        try {
+          var r = JSON.parse(x.responseText);
+          if (r.ok) {
+            renderHotTrending(r);
+          } else {
+            showHotError(r.error || 'Unknown error');
+          }
+        } catch (e) {
+          showHotError('Parse error: ' + e.message);
+        }
+      };
+      x.onerror = function() {
+        showHotError('Network error');
+      };
+      x.send();
+    }
+    
+    function renderHotTrending(data) {
+      // Hide loading
+      var statusEl = document.getElementById('hot-scan-status');
+      if (statusEl) statusEl.style.display = 'none';
+      
+      // Show sections
+      var krakenSection = document.getElementById('hot-kraken-section');
+      var watchSection = document.getElementById('hot-watch-section');
+      var otherSection = document.getElementById('hot-other-section');
+      var emptyState = document.getElementById('hot-empty-state');
+      
+      // Render Kraken Hot (high confidence)
+      var krakenList = document.getElementById('hot-kraken-list');
+      if (data.kraken_hot && data.kraken_hot.length > 0) {
+        krakenList.innerHTML = renderHotCoinCards(data.kraken_hot, 'high');
+        krakenSection.style.display = 'block';
+      } else {
+        krakenSection.style.display = 'none';
+      }
+      
+      // Render Watch List
+      var watchList = document.getElementById('hot-watch-list');
+      if (data.watch_list && data.watch_list.length > 0) {
+        watchList.innerHTML = renderHotCoinCards(data.watch_list, 'medium');
+        watchSection.style.display = 'block';
+      } else {
+        watchSection.style.display = 'none';
+      }
+      
+      // Render Other
+      var otherList = document.getElementById('hot-other-list');
+      if (data.other_trending && data.other_trending.length > 0) {
+        otherList.innerHTML = renderHotCoinCards(data.other_trending, 'low');
+        otherSection.style.display = 'block';
+      } else {
+        otherSection.style.display = 'none';
+      }
+      
+      // Show empty state if nothing found
+      if ((!data.kraken_hot || data.kraken_hot.length === 0) &&
+          (!data.watch_list || data.watch_list.length === 0)) {
+        emptyState.style.display = 'block';
+      } else {
+        emptyState.style.display = 'none';
+      }
+    }
+    
+    function renderHotCoinCards(coins, tier) {
+      var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;">';
+      
+      for (var i = 0; i < coins.length; i++) {
+        var c = coins[i];
+        var confColor = c.confidence >= 75 ? '#22c55e' : c.confidence >= 60 ? '#86efac' : c.confidence >= 45 ? '#fcd34d' : '#9ca3af';
+        var recColor = c.recommendation === 'STRONG_BUY' ? '#22c55e' : c.recommendation === 'BUY' ? '#86efac' : c.recommendation === 'WATCH' ? '#fcd34d' : '#9ca3af';
+        var recText = c.recommendation === 'STRONG_BUY' ? 'Strong Buy' : c.recommendation === 'BUY' ? 'Buy' : c.recommendation === 'WATCH' ? 'Watch' : c.recommendation === 'WEAK' ? 'Weak' : 'Not Tradable';
+        
+        html += '<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;position:relative;overflow:hidden;">';
+        
+        // Confidence bar at top
+        html += '<div style="position:absolute;top:0;left:0;right:0;height:4px;background:' + confColor + ';opacity:0.8;"></div>';
+        
+        // Header
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
+        html += '<div><strong style="font-size:18px;color:#fff;">' + c.symbol + '</strong>';
+        html += '<div style="font-size:11px;color:var(--dim);">' + c.name + '</div></div>';
+        html += '<div style="text-align:right;">';
+        html += '<div style="font-size:24px;font-weight:800;color:' + confColor + ';">' + c.confidence + '<span style="font-size:12px;">%</span></div>';
+        html += '<div style="font-size:10px;color:var(--dim);text-transform:uppercase;">Confidence</div>';
+        html += '</div></div>';
+        
+        // Price and change
+        html += '<div style="display:flex;gap:16px;margin-bottom:12px;font-size:13px;">';
+        html += '<span>Price: <strong style="color:#fff;">$' + (c.price ? c.price.toFixed(6) : '--') + '</strong></span>';
+        html += '<span>24h: <strong style="color:' + (c.chg_24h >= 0 ? '#22c55e' : '#ef4444') + ';">' + (c.chg_24h >= 0 ? '+' : '') + (c.chg_24h ? c.chg_24h.toFixed(2) : '0') + '%</strong></span>';
+        html += '</div>';
+        
+        // Technical factors
+        if (c.technical && c.technical.factors) {
+          html += '<div style="margin-bottom:12px;">';
+          html += '<div style="font-size:10px;color:var(--dim);margin-bottom:4px;">Technical Factors:</div>';
+          html += '<div style="display:flex;flex-wrap:wrap;gap:4px;">';
+          for (var j = 0; j < c.technical.factors.length; j++) {
+            var factor = c.technical.factors[j];
+            var factorLabel = factor.replace(/_/g, ' ');
+            html += '<span style="font-size:9px;padding:2px 6px;background:rgba(34,197,94,0.15);color:#22c55e;border-radius:3px;">' + factorLabel + '</span>';
+          }
+          html += '</div></div>';
+        }
+        
+        // RSI and Volume
+        if (c.technical) {
+          html += '<div style="display:flex;gap:12px;margin-bottom:12px;font-size:11px;color:var(--dim);">';
+          if (c.technical.rsi) html += '<span>RSI: <strong style="color:#fff;">' + c.technical.rsi.toFixed(1) + '</strong></span>';
+          if (c.technical.volume_ratio) html += '<span>Vol: <strong style="color:#fff;">' + c.technical.volume_ratio.toFixed(1) + 'x</strong></span>';
+          html += '</div>';
+        }
+        
+        // Recommendation and Trade button
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.05);">';
+        html += '<span style="font-size:11px;padding:3px 10px;border-radius:4px;background:' + recColor + '20;color:' + recColor + ';border:1px solid ' + recColor + '40;font-weight:600;">' + recText + '</span>';
+        
+        if (c.on_kraken && c.kraken_pair) {
+          var symLower = c.symbol.toLowerCase();
+          html += '<a href="https://pro.kraken.com/app/trade/' + symLower + '-usd" target="_blank" style="font-size:11px;padding:4px 12px;background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:4px;text-decoration:none;font-weight:600;">Trade on Kraken →</a>';
+        } else {
+          html += '<span style="font-size:10px;color:var(--dim);">Not on Kraken</span>';
+        }
+        
+        html += '</div></div>';
+      }
+      
+      html += '</div>';
+      return html;
+    }
+    
+    function showHotError(msg) {
+      var statusEl = document.getElementById('hot-scan-status');
+      if (statusEl) {
+        statusEl.innerHTML = '<div style="color:#ef4444;">Error: ' + msg + '</div>';
+      }
     }
 
     function toggleEdu(el) {
