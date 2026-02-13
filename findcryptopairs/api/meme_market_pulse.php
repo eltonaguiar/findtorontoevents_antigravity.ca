@@ -43,6 +43,7 @@ if (!is_dir($CACHE_DIR)) {
 // ═══════════════════════════════════════════════════════════════════════
 $KRAKEN_MEMES = array(
     // Format: internal_pair => array(display_name, kraken_pairs_to_try, coingecko_id)
+    // Tier 1: Established meme coins
     'DOGE' => array('DOGE', 'XDGUSD,DOGEUSD,XDGUSDT,DOGEUSDT', 'dogecoin'),
     'SHIB' => array('SHIB', 'SHIBUSD,SHIBUSDT', 'shiba-inu'),
     'PEPE' => array('PEPE', 'PEPEUSD,PEPEUSDT', 'pepe'),
@@ -77,7 +78,19 @@ $KRAKEN_MEMES = array(
     'SATS' => array('1000SATS', '1000SATSUSD,SATSUSD,1000SATSUSDT', '1000sats'),
     'COQ' => array('COQ', 'COQUSD,COQUSDT', 'coq-inu'),
     'DOG' => array('DOG', 'DOGUSD,DOGUSDT', 'dog-go-to-the-moon-runes'),
-    'CHILLGUY' => array('CHILLGUY', 'CHILLGUYUSD,CHILLGUYUSDT', 'just-a-chill-guy')
+    'CHILLGUY' => array('CHILLGUY', 'CHILLGUYUSD,CHILLGUYUSDT', 'just-a-chill-guy'),
+    
+    // v2.2: Trending/Hot coins from Kraken Explore
+    'TOSHI' => array('TOSHI', 'TOSHIUSD,TOSHIUSDT', 'toshi'),
+    'ME' => array('ME', 'MEUSD,MEUSDT', 'magic-eden'),
+    'KEEP' => array('KEEP', 'KEEPUSD,KEEPUSDT', 'keep-network'),
+    'LRC' => array('LRC', 'LRCUSD,LRCUSDT', 'loopring'),
+    'PEP' => array('PEP', 'PEPUSD,PEPUSDT', 'pepecoin-network'),
+    'CAMP' => array('CAMP', 'CAMPUSD,CAMPUSDT', 'camp-network'),
+    'SRM' => array('SRM', 'SRMUSD,SRMUSDT', 'serum'),
+    'ESP' => array('ESP', 'ESPUSD,ESPUSDT', 'espresso'),
+    'SOSO' => array('SOSO', 'SOSOUSD,SOSOUSDT', 'sosovalue'),
+    'AZTEC' => array('AZTEC', 'AZTECUSD,AZTECUSDT', 'aztec-protocol')
 );
 
 switch ($action) {
@@ -250,11 +263,25 @@ function _mp_action_kraken_ranked()
 
     $latency_ms = round((microtime(true) - $start) * 1000, 1);
 
+    // Scan statistics for transparency
+    $scan_stats = isset($GLOBALS['_mp_scan_debug']) ? $GLOBALS['_mp_scan_debug'] : array();
+    $coins_configured = count($KRAKEN_MEMES);
+    $coins_matched = isset($scan_stats['all_try_pairs_count']) ? $scan_stats['all_try_pairs_count'] : 0;
+    $coins_scanned = isset($scan_stats['tickers_found']) ? $scan_stats['tickers_found'] : 0;
+    $coins_successful = isset($scan_stats['results_count']) ? $scan_stats['results_count'] : 0;
+    
     $result = array(
         'ok' => true,
         'timestamp' => gmdate('Y-m-d H:i:s') . ' UTC',
         'latency_ms' => $latency_ms,
         'cached' => false,
+        'scan_stats' => array(
+            'configured' => $coins_configured,
+            'matched_on_kraken' => $coins_matched,
+            'tickers_fetched' => $coins_scanned,
+            'successful' => $coins_successful,
+            'coverage_pct' => $coins_configured > 0 ? round(($coins_successful / $coins_configured) * 100, 1) : 0
+        ),
         'total_coins' => count($rankings),
         'mood' => $mood,
         'rankings' => $rankings,

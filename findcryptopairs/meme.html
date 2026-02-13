@@ -1685,6 +1685,13 @@
           <span style="font-size:11px;color:var(--dim)" id="ranking-last-updated"></span>
           <span style="margin-left:auto;font-size:11px;color:var(--dim)" id="ranking-coin-count"></span>
         </div>
+        
+        <!-- Scan Stats -->
+        <div id="scan-stats-bar" style="display:none;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:var(--dim);">
+          <span><strong style="color:#fff">Scan Coverage:</strong> <span id="scan-success-count">--</span>/<span id="scan-total-count">--</span> coins</span>
+          <span style="color:var(--green)" id="scan-coverage-pct">--%</span>
+          <span style="margin-left:auto;font-size:10px;opacity:0.7">Data from Kraken + CoinGecko</span>
+        </div>
 
         <!-- Full Rankings Table -->
         <div id="kraken-rankings-list">
@@ -4326,6 +4333,18 @@
           if (ts) ts.textContent = 'Updated: ' + new Date().toLocaleTimeString() + (r.cached ? ' (cached ' + r.cache_age_s + 's)' : ' (live)');
           var cc = document.getElementById('ranking-coin-count');
           if (cc) cc.textContent = r.total_coins + ' coins on Kraken';
+          
+          // Update scan stats
+          if (r.scan_stats) {
+            var ss = document.getElementById('scan-stats-bar');
+            if (ss) ss.style.display = 'flex';
+            var ssc = document.getElementById('scan-success-count');
+            if (ssc) ssc.textContent = r.scan_stats.successful;
+            var sst = document.getElementById('scan-total-count');
+            if (sst) sst.textContent = r.scan_stats.configured;
+            var ssp = document.getElementById('scan-coverage-pct');
+            if (ssp) ssp.textContent = r.scan_stats.coverage_pct + '%';
+          }
 
           // Also render top pick if rankings have it
           if (r.rankings && r.rankings.length > 0) {
@@ -4417,7 +4436,12 @@
 
         html += '<tr style="' + rowBg + '">';
         html += '<td style="color:var(--dim);font-size:11px">' + (i + 1) + '</td>';
+        // Check if this is a v2.2 trending coin
+        var trendingCoins = ['TOSHI','ME','KEEP','LRC','PEP','CAMP','SRM','ESP','SOSO','AZTEC'];
+        var isNewTrending = trendingCoins.indexOf(c.symbol) >= 0;
+        
         html += '<td style="text-align:left"><strong style="color:#fff;font-size:13px">' + c.symbol + '</strong>';
+        if (isNewTrending) html += ' <span style="font-size:9px;color:#a855f7;background:rgba(168,85,247,0.15);padding:1px 4px;border-radius:3px;border:1px solid rgba(168,85,247,0.3)" title="New v2.2 trending coin from Kraken Explore">🔥 NEW</span>';
         if (c.is_trending) html += ' <span style="font-size:9px;color:var(--cyan)" title="Trending on CoinGecko (+15 pts). This can change quickly.">🐸 TREND</span>';
         if (c.chasing_warning) html += ' <span style="font-size:9px;color:#ef4444;background:rgba(239,68,68,0.15);padding:1px 4px;border-radius:3px;border:1px solid rgba(239,68,68,0.3)" title="Momentum is high but entry position is poor. You\'d be chasing the pump (-' + c.chasing_penalty + ' pts)">⚠️ CHASING</span>';
         if (c.pump_dump_risk === 'critical') html += ' <span style="font-size:9px;color:#ef4444;background:rgba(239,68,68,0.15);padding:1px 4px;border-radius:3px;border:1px solid rgba(239,68,68,0.3)" title="P&D signals: ' + (c.pump_dump_signals || []).join(', ') + '">⚠️ P&D</span>';
