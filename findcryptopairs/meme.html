@@ -1748,6 +1748,30 @@
         </div>
       </div>
 
+      <!-- Audit Trail Modal -->
+      <div class="verify-overlay" id="audit-overlay" onclick="if(event.target===this)closeAuditModal()">
+        <div class="verify-modal" style="max-width:700px;max-height:85vh;">
+          <div class="verify-modal-header">
+            <h3 id="audit-title">🔍 Audit Trail</h3>
+            <button class="verify-close" onclick="closeAuditModal()">&times;</button>
+          </div>
+          <div class="verify-body" id="audit-body" style="max-height:70vh;overflow-y:auto;">
+            <div class="loading">Loading audit data...</div>
+          </div>
+          <div style="padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;">
+            <button onclick="copyAuditToClipboard()" style="flex:1;min-width:140px;background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);padding:10px 16px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600;">
+              📋 Copy for AI Analysis
+            </button>
+            <button onclick="copyAuditRaw()" style="flex:1;min-width:140px;background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3);padding:10px 16px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600;">
+              📄 Copy Raw Data
+            </button>
+            <button onclick="window.open('https://chat.openai.com','_blank')" style="flex:1;min-width:140px;background:rgba(16,163,127,0.15);color:#10a37f;border:1px solid rgba(16,163,127,0.3);padding:10px 16px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600;">
+              🤖 Open ChatGPT
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="section-title" style="margin-top:32px">Win Rate by Confidence Tier</div>
       <div id="tier-table"></div>
 
@@ -2817,16 +2841,20 @@
           html += '</div>';
         }
         
-        // Recommendation and Trade button
-        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.05);">';
-        html += '<span style="font-size:11px;padding:3px 10px;border-radius:4px;background:' + recColor + '20;color:' + recColor + ';border:1px solid ' + recColor + '40;font-weight:600;">' + recText + '</span>';
+        // Recommendation, Audit, and Trade buttons
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.05);gap:8px;">';
+        html += '<span style="font-size:11px;padding:3px 10px;border-radius:4px;background:' + recColor + '20;color:' + recColor + ';border:1px solid ' + recColor + '40;font-weight:600;flex-shrink:0;">' + recText + '</span>';
         
+        html += '<div style="display:flex;gap:6px;">';
+        // Audit button
+        html += '<button onclick="openAuditModal(\'' + c.symbol + '\', \'hot\')" style="font-size:10px;padding:4px 8px;background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3);border-radius:4px;cursor:pointer;font-weight:600;" title="View audit trail">🔍 Audit</button>';
+        
+        // Trade button
         if (c.on_kraken && c.kraken_pair) {
           var symLower = c.symbol.toLowerCase();
-          html += '<a href="https://pro.kraken.com/app/trade/' + symLower + '-usd" target="_blank" style="font-size:11px;padding:4px 12px;background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:4px;text-decoration:none;font-weight:600;">Trade on Kraken →</a>';
-        } else {
-          html += '<span style="font-size:10px;color:var(--dim);">Not on Kraken</span>';
+          html += '<a href="https://pro.kraken.com/app/trade/' + symLower + '-usd" target="_blank" style="font-size:10px;padding:4px 10px;background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:4px;text-decoration:none;font-weight:600;">Trade →</a>';
         }
+        html += '</div>';
         
         html += '</div></div>';
       }
@@ -4058,6 +4086,188 @@
       document.getElementById('verify-overlay').classList.remove('active');
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    //  AUDIT TRAIL MODAL — View methodology and copy for AI analysis
+    // ═══════════════════════════════════════════════════════════════════════
+    var currentAuditData = null;
+    var currentAuditText = '';
+    
+    function openAuditModal(symbol, type) {
+      var overlay = document.getElementById('audit-overlay');
+      var body = document.getElementById('audit-body');
+      var title = document.getElementById('audit-title');
+      
+      title.textContent = '🔍 Audit Trail: ' + symbol;
+      body.innerHTML = '<div class="loading">Loading audit data...</div>';
+      overlay.classList.add('active');
+      
+      // Fetch audit data
+      var url = '/findcryptopairs/api/audit_recommendation.php?type=' + type + '&symbol=' + symbol + '&_=' + Date.now();
+      var x = new XMLHttpRequest();
+      x.open('GET', url);
+      x.onload = function() {
+        try {
+          var r = JSON.parse(x.responseText);
+          if (r.ok) {
+            currentAuditData = r.audit_data;
+            currentAuditText = r.formatted_for_ai || r.audit_text;
+            renderAuditBody(r);
+          } else {
+            body.innerHTML = '<div style="color:#ef4444;padding:20px;">Error: ' + (r.error || 'Unknown') + '</div>';
+          }
+        } catch (e) {
+          body.innerHTML = '<div style="color:#ef4444;padding:20px;">Error parsing response</div>';
+        }
+      };
+      x.onerror = function() {
+        body.innerHTML = '<div style="color:#ef4444;padding:20px;">Network error</div>';
+      };
+      x.send();
+    }
+    
+    function renderAuditBody(data) {
+      var body = document.getElementById('audit-body');
+      var html = '';
+      
+      // Summary section
+      html += '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:16px;margin-bottom:16px;">';
+      html += '<div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:12px;">📊 Summary</div>';
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;font-size:12px;">';
+      html += '<div><span style="color:var(--dim);">Coin:</span> <strong style="color:#fff;">' + data.symbol + '</strong></div>';
+      html += '<div><span style="color:var(--dim);">Type:</span> <strong style="color:#fff;">' + data.type + '</strong></div>';
+      if (data.audit_data.rating_10 || data.audit_data.rating) {
+        html += '<div><span style="color:var(--dim);">Rating:</span> <strong style="color:#22c55e;">' + (data.audit_data.rating_10 || data.audit_data.rating) + '/10</strong></div>';
+      }
+      if (data.audit_data.confidence) {
+        html += '<div><span style="color:var(--dim);">Confidence:</span> <strong style="color:#22c55e;">' + data.audit_data.confidence + '%</strong></div>';
+      }
+      html += '</div></div>';
+      
+      // Scoring breakdown
+      if (data.audit_data.scores) {
+        html += '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:16px;margin-bottom:16px;">';
+        html += '<div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:12px;">🎯 Scoring Breakdown</div>';
+        html += '<div style="font-size:12px;line-height:1.8;">';
+        var scores = data.audit_data.scores;
+        html += _auditScoreRow('Momentum (35%)', scores.momentum, 35, '24h price change sweet spot');
+        html += _auditScoreRow('Volume (25%)', scores.volume, 25, '24h USD volume');
+        html += _auditScoreRow('Social Buzz (15%)', scores.trending, 15, 'CoinGecko trending bonus');
+        html += _auditScoreRow('Entry Position (15%)', scores.entry_position, 15, 'Position in 24h range');
+        html += _auditScoreRow('Spread (10%)', scores.spread, 10, 'Bid/ask tightness');
+        html += '</div></div>';
+      }
+      
+      // Technical analysis
+      if (data.audit_data.technical) {
+        html += '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:16px;margin-bottom:16px;">';
+        html += '<div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:12px;">📈 Technical Analysis</div>';
+        html += '<div style="font-size:12px;line-height:1.8;">';
+        var t = data.audit_data.technical;
+        if (t.rsi) html += '<div><span style="color:var(--dim);">RSI:</span> <strong style="color:#fff;">' + t.rsi.toFixed(1) + '</strong> (50-75 sweet spot)</div>';
+        if (t.volume_ratio) html += '<div><span style="color:var(--dim);">Volume Ratio:</span> <strong style="color:#fff;">' + t.volume_ratio.toFixed(1) + 'x</strong> avg</div>';
+        if (t.ema_12) html += '<div><span style="color:var(--dim);">EMA-12:</span> <strong style="color:#fff;">$' + t.ema_12.toFixed(6) + '</strong></div>';
+        if (t.ema_26) html += '<div><span style="color:var(--dim);">EMA-26:</span> <strong style="color:#fff;">$' + t.ema_26.toFixed(6) + '</strong></div>';
+        if (t.momentum_5m !== undefined) html += '<div><span style="color:var(--dim);">Momentum 5m:</span> <strong style="color:#fff;">' + t.momentum_5m.toFixed(2) + '%</strong></div>';
+        if (t.momentum_acceleration !== undefined) html += '<div><span style="color:var(--dim);">Acceleration:</span> <strong style="color:#fff;">' + (t.momentum_acceleration ? '✓ Yes' : '✗ No') + '</strong></div>';
+        if (t.factors && t.factors.length > 0) {
+          html += '<div style="margin-top:8px;"><span style="color:var(--dim);">Active Factors:</span></div>';
+          html += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">';
+          for (var i = 0; i < t.factors.length; i++) {
+            html += '<span style="font-size:10px;padding:2px 6px;background:rgba(34,197,94,0.15);color:#22c55e;border-radius:3px;">' + t.factors[i].replace(/_/g, ' ') + '</span>';
+          }
+          html += '</div>';
+        }
+        html += '</div></div>';
+      }
+      
+      // Warnings
+      var warnings = [];
+      if (data.audit_data.chasing_warning) warnings.push({type: 'error', text: 'Chasing Penalty: -' + data.audit_data.chasing_penalty + ' pts (buying near daily high)'});
+      if (data.audit_data.pump_dump_risk && data.audit_data.pump_dump_risk !== 'none') warnings.push({type: 'error', text: 'Pump & Dump Risk: ' + data.audit_data.pump_dump_risk});
+      if ((data.audit_data.scores && data.audit_data.scores.entry_position <= 3)) warnings.push({type: 'warning', text: 'Poor Entry Position: Near 24h high'});
+      
+      if (warnings.length > 0) {
+        html += '<div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:16px;margin-bottom:16px;">';
+        html += '<div style="font-size:13px;font-weight:600;color:#ef4444;margin-bottom:8px;">⚠️ Warnings</div>';
+        html += '<ul style="margin:0;padding-left:16px;font-size:12px;color:#fca5a5;line-height:1.8;">';
+        for (var w = 0; w < warnings.length; w++) {
+          html += '<li>' + warnings[w].text + '</li>';
+        }
+        html += '</ul></div>';
+      }
+      
+      // Methodology
+      html += '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:16px;margin-bottom:16px;">';
+      html += '<div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:8px;">📖 Methodology Notes</div>';
+      html += '<div style="font-size:11px;color:var(--dim);line-height:1.6;">';
+      html += 'This recommendation is based on technical analysis of price action, volume, and momentum indicators. ';
+      html += 'The algorithm does NOT consider fundamental analysis, social sentiment (beyond CoinGecko trending), or on-chain data. ';
+      html += 'Past performance does not guarantee future results. Always do your own research.';
+      html += '</div></div>';
+      
+      // Raw data toggle
+      html += '<div style="margin-top:16px;">';
+      html += '<button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'block\':\'none\'" style="font-size:11px;padding:6px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--dim);border-radius:4px;cursor:pointer;">Toggle Raw Data</button>';
+      html += '<pre style="display:none;margin-top:8px;padding:12px;background:#0a0a1a;border-radius:4px;font-size:10px;color:#889;overflow-x:auto;">' + JSON.stringify(data.audit_data, null, 2) + '</pre>';
+      html += '</div>';
+      
+      body.innerHTML = html;
+    }
+    
+    function _auditScoreRow(name, score, max, desc) {
+      var pct = max > 0 ? (score / max) : 0;
+      var color = pct >= 0.7 ? '#22c55e' : pct >= 0.4 ? '#f59e0b' : '#ef4444';
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.03);">' +
+        '<span style="color:var(--dim);">' + name + '</span>' +
+        '<span style="color:' + color + ';font-weight:600;">' + score + '/' + max + '</span>' +
+        '</div>' +
+        '<div style="font-size:10px;color:#555;margin-bottom:4px;">' + desc + '</div>';
+    }
+    
+    function closeAuditModal() {
+      document.getElementById('audit-overlay').classList.remove('active');
+      currentAuditData = null;
+      currentAuditText = '';
+    }
+    
+    function copyAuditToClipboard() {
+      if (!currentAuditText) return;
+      
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(currentAuditText).then(function() {
+          alert('✅ Audit data copied! Paste into ChatGPT, Claude, or any AI for analysis.');
+        });
+      } else {
+        // Fallback
+        var textarea = document.createElement('textarea');
+        textarea.value = currentAuditText;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('✅ Audit data copied! Paste into ChatGPT, Claude, or any AI for analysis.');
+      }
+    }
+    
+    function copyAuditRaw() {
+      if (!currentAuditData) return;
+      var raw = JSON.stringify(currentAuditData, null, 2);
+      
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(raw).then(function() {
+          alert('✅ Raw JSON data copied!');
+        });
+      } else {
+        var textarea = document.createElement('textarea');
+        textarea.value = raw;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('✅ Raw JSON data copied!');
+      }
+    }
+
     // ── Hide Invalidated toggle — on by default ──
     var hideInvalidated = true;
     var krakenOnlyMode = true;
@@ -4725,9 +4935,12 @@
         html += '<td>' + _ratingFactorCell(scores.entry_position || 0, 15) + '</td>';
         html += '<td>' + _ratingFactorCell(scores.spread || 0, 10) + '</td>';
 
-        // Trade link
+        // Trade + Audit buttons
         var symLower = c.symbol.toLowerCase();
-        html += '<td><a href="https://pro.kraken.com/app/trade/' + symLower + '-usd" target="_blank" style="font-size:10px;padding:3px 8px;background:rgba(114,66,200,0.15);color:#9b7cdb;border:1px solid rgba(114,66,200,0.3);border-radius:4px;text-decoration:none;font-weight:600">BUY</a></td>';
+        html += '<td style="white-space:nowrap;">';
+        html += '<a href="https://pro.kraken.com/app/trade/' + symLower + '-usd" target="_blank" style="font-size:10px;padding:3px 8px;background:rgba(114,66,200,0.15);color:#9b7cdb;border:1px solid rgba(114,66,200,0.3);border-radius:4px;text-decoration:none;font-weight:600;margin-right:4px;">BUY</a>';
+        html += '<button onclick="openAuditModal(\'' + c.symbol + '\', \'kraken\')" style="font-size:10px;padding:3px 6px;background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3);border-radius:4px;cursor:pointer;font-weight:600;" title="View audit trail for AI analysis">🔍</button>';
+        html += '</td>';
         html += '</tr>';
       }
       html += '</table>';
