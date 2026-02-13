@@ -260,7 +260,7 @@ function _mp_action_kraken_ranked()
         'rankings' => $rankings,
         'model' => array(
             'name' => 'Meme Buy Rating',
-            'version' => '3.0',
+            'version' => '2.1',
             'scale' => '1-10',
             'description' => 'Real-time buy rating for Kraken meme coins. Combines momentum, volume, social buzz, entry position, and spread quality. Higher = stronger buy signal.',
             'factors' => array(
@@ -946,6 +946,16 @@ function _mp_compute_top_pick($kraken_coins, $trending, $cg_gainers)
         if ($is_negative_momentum) {
             $total = min($total, 45); // caps at 5/10 rating max
         }
+        
+        // v2.1: Chasing penalty — buying momentum at the top is risky
+        // If momentum is high (30+) but entry position is poor (<=3), apply penalty
+        $chasing_penalty = 0;
+        $chasing_warning = false;
+        if ($mom_score >= 30 && $entry_score <= 3) {
+            $chasing_penalty = 8; // Reduce score by 8 points
+            $chasing_warning = true;
+            $total = max(0, $total - $chasing_penalty);
+        }
 
         // ── Pump-and-Dump Risk Assessment (ticker-only signals) ──
         $pnd_signals = array();
@@ -1044,6 +1054,9 @@ function _mp_compute_top_pick($kraken_coins, $trending, $cg_gainers)
             'liquidity_warning' => $liquidity_warning,
             'pump_dump_risk' => $pnd_risk,
             'pump_dump_signals' => $pnd_signals,
+            'chasing_warning' => $chasing_warning,
+            'chasing_penalty' => $chasing_penalty,
+            'price_in_range_pct' => $range > 0 ? round((($coin['price'] - $coin['low_24h']) / ($coin['high_24h'] - $coin['low_24h'])) * 100, 1) : 50,
             'tp_pct' => $tp_pct,
             'sl_pct' => $sl_pct,
             'tp_price' => round($coin['price'] * (1 + $tp_pct / 100), 10),
@@ -1167,6 +1180,8 @@ function _mp_market_mood($kraken_coins)
         $label = 'Mildly Bearish';
     }
 
+    $gainer_ratio = $n > 0 ? round($gainers / $n, 2) : 0;
+    
     return array(
         'mood' => $mood,
         'label' => $label,
@@ -1176,7 +1191,9 @@ function _mp_market_mood($kraken_coins)
         'big_movers' => $big_movers,
         'avg_chg' => $avg_chg,
         'total_vol' => round($total_vol, 0),
-        'coins_scanned' => $n
+        'coins_scanned' => $n,
+        'gainer_ratio' => $gainer_ratio,
+        'correlation_warning' => ($gainer_ratio >= 0.7 && $n >= 10) // 70%+ green = elevated correlation risk
     );
 }
 

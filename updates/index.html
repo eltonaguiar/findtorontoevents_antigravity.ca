@@ -319,6 +319,127 @@ a:hover { text-decoration: underline; }
 
 <div class="section-year">February 2026</div>
 
+<!-- Feb 13, 2026 — Meme Coin Scanner v2.1: Critical Transparency Updates -->
+<div class="update-entry" style="--dot-color: #f59e0b;" data-tags="meme,coin,scanner,transparency,warnings,chasing,correlation,entry,position,fix" data-category="crypto,trading" data-types="fix,improvement">
+  <div class="update-date">Feb 13, 2026</div>
+  <div class="update-title">
+    Meme Coin Scanner v2.1 — Critical Transparency Updates
+    <span class="badge badge-fix">Fix</span>
+    <span class="badge badge-improvement">Transparency</span>
+  </div>
+  <div class="update-body">
+    <p>Addressed critical algorithm transparency issues identified in third-party audit (Opus 4.6 Max analysis). Added warnings for "chasing" behavior, market correlation risk, and CoinGecko dependency fragility.</p>
+
+    <h4 style="color:#22c55e;margin:18px 0 8px;font-size:15px;">✅ What's New</h4>
+    <ul>
+      <li><strong>Chasing Penalty</strong> — New algorithm penalty (-8 points) when momentum is high (30+/35) but entry position is poor (3/15 or worse). Prevents "buying the top" scenarios that were inflating ratings.</li>
+      <li><strong>Correlation Warning Banner</strong> — Displays when 70%+ of tracked meme coins are green simultaneously. Warns users that correlated pumps often lead to correlated dumps.</li>
+      <li><strong>Entry Quality Warning</strong> — New banner appears when top 3+ rated coins all have poor entry positions (near 24h highs). Explicitly warns: "You'd be buying at the top of the daily range."</li>
+      <li><strong>CoinGecko Dependency Indicator</strong> — Coins boosted by CoinGecko trending now show "🐸 TREND" badge with tooltip explaining this is a binary +15 point factor that can change quickly.</li>
+      <li><strong>"CHASING" Warning Badge</strong> — Individual coin rows now display "⚠️ CHASING" when the chasing penalty is applied, with hover tooltip explaining the deduction.</li>
+      <li><strong>"📈 HIGH" Entry Badge</strong> — Shows when price is >80% up the daily range, even if not triggering the full chasing penalty.</li>
+    </ul>
+
+    <h4 style="color:#f59e0b;margin:18px 0 8px;font-size:15px;">⚠️ KNOWN ISSUES (Not Yet Fixed)</h4>
+    <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:12px;margin:12px 0;font-size:13px;color:#fca5a5;line-height:1.7;">
+      <strong style="color:#ef4444;">The following issues remain unresolved and require further development:</strong><br><br>
+      
+      <strong>1. Feature Conflict (Momentum vs Entry Position)</strong><br>
+      The algorithm still has contradictory heuristics: Momentum rewards +3-15% daily gains, but Entry Position penalizes being near the 24h high. In strong breakouts, these conflict. The chasing penalty is a band-aid, not a fix.<br><br>
+      
+      <strong>2. No Order Book Depth</strong><br>
+      Spread is used as a liquidity proxy, but spread alone is misleading. A coin can have tight spread while being thin (high slippage). Real depth data requires Kraken WebSocket API integration — not yet implemented.<br><br>
+      
+      <strong>3. Social Data Still Binary</strong><br>
+      CoinGecko trending is still binary (15 pts or 0). True mention velocity from Reddit/Twitter is being built in v3.0 but not yet live.<br><br>
+      
+      <strong>4. No Whale Wallet Tracking</strong><br>
+      Cannot detect when large holders are accumulating or distributing. On-chain analysis requires third-party APIs (Nansen, Dune) or node infrastructure — not yet implemented.<br><br>
+      
+      <strong>5. Historical Win Rate Remains Low</strong><br>
+      The 3.4% win rate (1/29 signals) has not improved. These transparency updates help users understand <em>why</em> ratings may be misleading, but don't make the predictions more accurate. v3.0 ML pipeline is targeting 40%+ but is not yet deployed.
+    </div>
+
+    <h4 style="color:#a855f7;margin:18px 0 8px;font-size:15px;">📊 Impact on Current Ratings</h4>
+    <ul>
+      <li><strong>PENGU (was 9/10)</strong> — Now shows "🐸 TREND" + "📈 HIGH" badges. Entry position is 3/15. Chasing penalty applies if momentum increases further.</li>
+      <li><strong>DOGE (was 8/10)</strong> — Shows "📈 HIGH" badge. No CoinGecko boost. Rating is more defensible due to high volume ($5.6M Kraken).</li>
+      <li><strong>Correlation Warning</strong> — Currently showing (Feb 13) because 25/27 coins are green. This is a market-wide pump, not coin-specific strength.</li>
+    </ul>
+
+    <p style="margin-top:16px;font-size:13px;color:#889;">
+      <span class="app-tag">Crypto</span>
+      <span class="app-tag">Trading</span>
+      <span class="app-tag">Transparency</span>
+      <a href="/findcryptopairs/meme.html" style="color:#88aaff;">View Meme Scanner →</a>
+    </p>
+  </div>
+</div>
+
+<!-- Feb 16, 2026 — Meme Coin System v3.0: AI Enhancement Infrastructure Deployed -->
+<div class="update-entry" style="--dot-color: #a855f7;" data-tags="meme,coin,enhancement,infrastructure,ml,xgboost,sentiment,on-chain,safety,backtesting,chatgpt,kimi,grok,ai" data-category="crypto,trading" data-types="feature,improvement">
+  <div class="update-date">Feb 16, 2026</div>
+  <div class="update-title">
+    Meme Coin System v3.0 — AI Enhancement Infrastructure Deployed
+    <span class="badge badge-feature">Major</span>
+    <span class="badge badge-improvement">ML Pipeline</span>
+  </div>
+  <div class="update-body">
+    <p>Complete next-generation infrastructure deployment for the meme coin prediction system based on comprehensive third-party AI audits (ChatGPT, Kimi, Grok). Targeting 40%+ win rate improvement from current 3-5% baseline using entirely free data sources.</p>
+
+    <h4 style="color:#a855f7;margin:18px 0 8px;font-size:15px;">🔧 Phase 1: Multi-Exchange Data Infrastructure</h4>
+    <ul>
+      <li><strong>Multi-Exchange Price Aggregator</strong> — 4-exchange failover (Kraken → Binance → Coinbase → CoinGecko) with price anomaly detection (>2% spread warnings), 30-second caching, rate limit tracking, and health checks. <code>multi_exchange_prices.php</code></li>
+      <li><strong>Reddit Sentiment Scraper</strong> — Monitors r/CryptoMoonShots, r/SatoshiStreetBets, r/CryptoCurrency, r/memecoins for mention velocity, upvote ratios, comment velocity, and keyword sentiment. <code>sentiment_reddit.php</code></li>
+      <li><strong>Google Trends Scraper</strong> — Tracks search interest (0-100 scale), interest velocity, and related queries for early hype detection. <code>sentiment_trends.php</code></li>
+      <li><strong>4chan /biz/ Scraper</strong> — Thread monitoring for meme coin mentions, reply velocity, and unique poster analysis. <code>sentiment_4chan.php</code></li>
+      <li><strong>Nitter (Twitter/X) Scraper</strong> — Multi-instance failover for tweet velocity, engagement metrics, and hashtag tracking. <code>sentiment_nitter.php</code></li>
+      <li><strong>Unified Sentiment Aggregator</strong> — Combines all 4 sources with weighted consensus (Reddit 30%, Trends 25%, 4chan 20%, Nitter 25%), conflict resolution, velocity/acceleration metrics, and viral probability detection. <code>sentiment_aggregate.php</code></li>
+    </ul>
+
+    <h4 style="color:#22c55e;margin:18px 0 8px;font-size:15px;">🤖 Phase 2: XGBoost ML Pipeline</h4>
+    <ul>
+      <li><strong>Feature Engineering</strong> — 15+ engineered features: price returns (5m/15m/1h/4h/24h), volatility, volume ratio, Reddit velocity, Trends velocity, cross-platform correlation, BTC trend, time features. <code>ml/features.php</code></li>
+      <li><strong>XGBoost Training Pipeline</strong> — Walk-forward cross-validation (prevents overfitting), 200 estimators, handles class imbalance. Target: 70%+ CV accuracy. <code>ml/train_model.py</code></li>
+      <li><strong>Prediction API</strong> — Returns buy/hold/sell predictions with confidence tiers (strong/moderate/lean), probability scores, expected returns, and risk/reward ratios. <code>ml/predict.php</code></li>
+      <li><strong>Model Versioning</strong> — A/B testing support, model persistence, and version tracking for gradual rollout.</li>
+    </ul>
+
+    <h4 style="color:#f59e0b;margin:18px 0 8px;font-size:15px;">🛡️ Phase 3: On-Chain Safety Layer</h4>
+    <ul>
+      <li><strong>Safety Scoring (100 points)</strong> — Contract safety (40 pts): verified, no mint, no blacklist. Liquidity safety (30 pts): locked >6mo, LP burned, $50k+. Holder distribution (20 pts): top 10 <30%. Transaction safety (10 pts): not honeypot, taxes <5%.</li>
+      <li><strong>Etherscan Integration</strong> — Contract verification, source analysis, holder distribution, large transfer alerts. <code>safety_etherscan.php</code></li>
+      <li><strong>TokenSniffer Integration</strong> — Honeypot detection, liquidity analysis, contract audits. <code>safety_tokensniffer.php</code></li>
+      <li><strong>Risk Levels</strong> — Green (80-100): low risk. Yellow (60-79): medium. Orange (40-59): high. Red (0-39): critical/likely scam.</li>
+    </ul>
+
+    <h4 style="color:#06b6d4;margin:18px 0 8px;font-size:15px;">📊 Phase 4: Backtesting & Validation</h4>
+    <ul>
+      <li><strong>Walk-Forward Backtesting</strong> — Purged time-series cross-validation, transaction cost modeling (fees + slippage), no lookahead bias. <code>ml/backtest.php</code></li>
+      <li><strong>Comprehensive Metrics</strong> — Win rate by tier, expectancy, Sharpe ratio, max drawdown, profit factor, trade duration, consecutive wins/losses.</li>
+      <li><strong>Statistical Validity</strong> — Wilson confidence intervals, minimum 350 signals check for 95% CI at 40% target win rate.</li>
+    </ul>
+
+    <h4 style="color:#ef4444;margin:18px 0 8px;font-size:15px;">🔍 Diagnostic Tools</h4>
+    <ul>
+      <li><strong>Inverted Tier Diagnosis</strong> — Analyzes why "Strong Buy" (8-10) has 0% win rate while "Lean Buy" (1-4) has 5%. Feature correlation analysis, threshold optimization, signal inversion testing, momentum exhaustion detection. <code>diagnose_tiers.php</code></li>
+    </ul>
+
+    <h4 style="color:#22c55e;margin:18px 0 8px;font-size:15px;">📈 Expected Performance Roadmap</h4>
+    <ul>
+      <li><strong>Baseline (Now)</strong> — 3-5% win rate, 20 resolved signals, inverted confidence tiers</li>
+      <li><strong>Week 2</strong> — 10-15% win rate with multi-exchange validation + sentiment data</li>
+      <li><strong>Week 6</strong> — 25-35% win rate with XGBoost model + fixed confidence tiers</li>
+      <li><strong>Week 12</strong> — 40%+ validated win rate with statistical proof (n>350)</li>
+    </ul>
+
+    <h4 style="color:#8888aa;margin:18px 0 8px;font-size:15px;">💰 Total Cost: $0</h4>
+    <p>All components use free API tiers: Etherscan (5 req/sec), Binance (1200 req/min), Coinbase (100 req/sec), Reddit JSON endpoints, Google Trends unofficial, 4chan API, Nitter instances, TokenSniffer free tier. CPU-based XGBoost training.</p>
+
+    <p><span class="app-tag">Crypto</span> <span class="app-tag">ML</span> <span class="app-tag">AI</span> <a href="/findcryptopairs/meme.html">Meme Coin Scanner</a> | <a href="/MEME_COIN_EXECUTION_PLAN.md">Execution Plan</a> | <a href="/MEME_ENHANCEMENT_DEPLOYMENT_SUMMARY.md">Deployment Summary</a></p>
+  </div>
+</div>
+
 <!-- Feb 14, 2026 — Kraken Meme Rankings: 1-10 Buy Scale for All Meme Coins -->
 <div class="update-entry" style="--dot-color: #e879f9;" data-tags="kraken,meme,coin,rankings,1-10,buy,score,real-time,canadian,momentum,volume,spread,coingecko,trending" data-category="crypto,trading" data-types="feature,improvement">
   <div class="update-date">Feb 14, 2026</div>
