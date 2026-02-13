@@ -43,6 +43,9 @@ h1 { font-size:1.6rem; margin-bottom:0.3rem; }
 .badge-blue { background:rgba(99,102,241,0.15); color:var(--accent); }
 .badge-purple { background:rgba(167,139,250,0.15); color:var(--purple); }
 .badge-cyan { background:rgba(34,211,238,0.15); color:var(--cyan); }
+.badge-gold { background:rgba(255,215,0,0.15); color:var(--gold); border:1px solid rgba(255,215,0,0.3); }
+.ds-legend { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:1rem; padding:0.6rem 1rem; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); font-size:0.75rem; align-items:center; }
+.ds-legend-label { color:var(--text-dim); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.5px; margin-right:4px; }
 .grade { display:inline-block; padding:3px 10px; border-radius:6px; font-weight:800; font-size:0.75rem; }
 .grade-aplus { background:linear-gradient(135deg,rgba(34,197,94,0.3),rgba(34,197,94,0.1)); color:#4ade80; border:1px solid rgba(34,197,94,0.4); }
 .grade-a { background:rgba(34,197,94,0.15); color:var(--green); }
@@ -99,6 +102,13 @@ h1 { font-size:1.6rem; margin-bottom:0.3rem; }
         <a href="/findstocks/portfolio2/backtest-results.html" class="qlink">&#9632; Backtest Results</a>
         <a href="/live-monitor/goldmine-alerts.html" class="qlink">&#9888; Health Alerts</a>
         <a href="/findstocks/portfolio2/consolidated.html" class="qlink">&#8801; Consolidated Picks</a>
+    </div>
+
+    <div class="ds-legend">
+        <span class="ds-legend-label">Data source key:</span>
+        <span><span class="badge badge-cyan" style="font-size:0.65rem">FORWARD</span> Live paper trading results</span>
+        <span><span class="badge badge-blue" style="font-size:0.65rem">BACKTESTED</span> 2-year historical simulation</span>
+        <span><span class="badge badge-gold" style="font-size:0.65rem">ML ADAPTIVE</span> Machine learning optimized</span>
     </div>
 
     <div class="tabs" id="main-tabs">
@@ -255,7 +265,7 @@ h1 { font-size:1.6rem; margin-bottom:0.3rem; }
     <div id="tab-ml" class="tab-content">
         <div class="kpi-row" id="ml-kpis"></div>
 
-        <div class="section-title">Self-Learning Architecture</div>
+        <div class="section-title">Self-Learning Architecture <span class="badge badge-gold" style="font-size:0.6rem">ML ADAPTIVE</span></div>
         <div class="methodology-box">
             <h3>How Machine Learning Works in Our System</h3>
             <p>Our system uses a <strong>closed-loop self-optimization pipeline</strong>:</p>
@@ -267,7 +277,7 @@ h1 { font-size:1.6rem; margin-bottom:0.3rem; }
             <p style="margin-top:0.5rem"><strong style="color:var(--cyan)">Step 6: Goldmine Verification</strong> &mdash; The <a href="/live-monitor/goldmine-dashboard.html" style="color:var(--cyan)">Goldmine Tracker</a> independently verifies all predictions against real market prices across 8 systems, surfacing algorithms that perform well in forward conditions.</p>
         </div>
 
-        <div class="section-title">Current Parameter Evolution: Learned vs Default</div>
+        <div class="section-title">Current Parameter Evolution: Learned vs Default <span class="badge badge-gold" style="font-size:0.6rem">ML ADAPTIVE</span> <span class="badge badge-cyan" style="font-size:0.6rem">FORWARD</span></div>
         <div class="table-wrap">
             <table class="data-table">
                 <thead><tr><th>Algorithm</th><th>Default TP</th><th>Learned TP</th><th>Change</th><th>Default SL</th><th>Learned SL</th><th>Change</th><th>Default Hold</th><th>Learned Hold</th><th>Change</th><th>Result</th></tr></thead>
@@ -738,7 +748,8 @@ function renderAlgoCards(containerId, algos) {
         var hasBacktest = a.sharpe !== undefined;
         var isLive = a.hold_hrs !== undefined;
         html += '<div class="algo-card"><div class="algo-card-header"><div><div class="algo-card-title"><a href="'+(a.picks||'#')+'" class="algo-link" title="'+a.name+': '+(hasBacktest?'Backtest Sharpe '+a.sharpe.toFixed(2)+', '+a.wr+'% WR, '+a.trades+' trades':'Live '+a.wr+'% WR, '+a.trades+' trades, '+fmtPnl(a.pnl))+'.\nClick to view picks.">'+ a.name+'</a></div><div class="algo-card-type">'+a.type+' &bull; '+a.asset+'</div></div><div>';
-        if (hasBacktest) html += '<span class="grade '+gradeClass(a.grade)+'">'+a.grade+'</span>';
+        if (hasBacktest) html += '<span class="badge badge-blue" style="font-size:0.6rem;vertical-align:middle">BACKTESTED</span> <span class="grade '+gradeClass(a.grade)+'">'+a.grade+'</span>';
+        if (isLive) html += '<span class="badge badge-cyan" style="font-size:0.6rem;vertical-align:middle">FORWARD</span>';
         if (a.forward_status) html += ' <span class="badge '+(a.forward_status==='NOT DEPLOYED'?'badge-yellow':a.forward_status==='PAUSED'?'badge-red':'badge-cyan')+'">'+a.forward_status+'</span>';
         html += '</div></div><div class="algo-card-body">';
         html += '<p style="margin-bottom:0.6rem;color:var(--text-dim)"><em>'+a.method+'</em></p>';

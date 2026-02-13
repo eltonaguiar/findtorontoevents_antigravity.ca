@@ -9,6 +9,7 @@
     {
       label: 'Top Tools',
       links: [
+        { text: 'Command Center', href: '/live-monitor/command-center.html', cc: true },
         { text: 'Consolidated', href: '/findstocks/portfolio2/consolidated.html', glow: true },
         { text: 'Smart Money', href: '/live-monitor/smart-money.html', glow: true },
         { text: 'Goldmine', href: '/live-monitor/goldmine-dashboard.html', glow: true },
@@ -52,7 +53,8 @@
     { text: 'Capital Eff', href: '/live-monitor/capital-efficiency.html' },
     { text: 'Backtests', href: '/findstocks/portfolio2/backtest-results.html' },
     { text: 'Algo Intel', href: '/findstocks/portfolio2/algorithm-intelligence.html' },
-    { text: 'All Tools', href: '/findstocks/tools.html' }
+    { text: 'All Tools', href: '/findstocks/tools.html' },
+    { text: 'Updates', href: '/findstocks/updates.html' }
   ];
 
   // Detect active page
@@ -92,6 +94,10 @@
     '.sn-link.sn-gold:hover{color:#fff;background:rgba(255,215,0,0.18);text-shadow:0 0 14px rgba(255,215,0,0.7);border-color:rgba(255,215,0,0.6)}',
     '.sn-link.sn-gold::after{content:"#1";font-size:7px;font-weight:800;letter-spacing:0.5px;background:linear-gradient(135deg,#ffd700,#f59e0b);color:#0a0e1a;padding:1px 4px;border-radius:3px;margin-left:3px;vertical-align:super;line-height:1}',
     '@keyframes sn-gold-pulse{0%,100%{text-shadow:0 0 8px rgba(255,215,0,0.5);border-color:rgba(255,215,0,0.4)}50%{text-shadow:0 0 16px rgba(255,215,0,0.8),0 0 24px rgba(255,215,0,0.3);border-color:rgba(255,215,0,0.7)}}',
+    '.sn-link.sn-cc{color:#a855f7;text-shadow:0 0 8px rgba(168,85,247,0.5);font-weight:700;border:1px solid rgba(168,85,247,0.4);background:rgba(168,85,247,0.08);animation:sn-cc-pulse 2.5s ease-in-out infinite}',
+    '.sn-link.sn-cc:hover{color:#fff;background:rgba(168,85,247,0.18);text-shadow:0 0 14px rgba(168,85,247,0.7);border-color:rgba(168,85,247,0.6)}',
+    '.sn-link.sn-cc::after{content:"HQ";font-size:7px;font-weight:800;letter-spacing:0.5px;background:linear-gradient(135deg,#a855f7,#6366f1);color:#0a0e1a;padding:1px 4px;border-radius:3px;margin-left:3px;vertical-align:super;line-height:1}',
+    '@keyframes sn-cc-pulse{0%,100%{text-shadow:0 0 8px rgba(168,85,247,0.5);border-color:rgba(168,85,247,0.4)}50%{text-shadow:0 0 16px rgba(168,85,247,0.8),0 0 24px rgba(168,85,247,0.3);border-color:rgba(168,85,247,0.7)}}',
     '#stock-nav-toggle{display:none;background:none;border:1px solid #2a2a4a;color:#8888aa;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:16px;margin-left:auto;line-height:1}',
     '#stock-nav-toggle:hover{color:#e0e0f0;border-color:#4a4a6a}',
     '#stock-nav-links{display:flex;align-items:center;flex-wrap:wrap;flex:1}',
@@ -156,10 +162,11 @@
     var links = NAV_GROUPS[g].links;
     for (var i = 0; i < links.length; i++) {
       var a = document.createElement('a');
-      a.className = 'sn-link' + (isActive(links[i].href) ? ' active' : '') + (links[i].gold ? ' sn-gold' : (links[i].glow ? ' sn-glow' : ''));
+      a.className = 'sn-link' + (isActive(links[i].href) ? ' active' : '') + (links[i].cc ? ' sn-cc' : (links[i].gold ? ' sn-gold' : (links[i].glow ? ' sn-glow' : '')));
       a.href = links[i].href;
       a.textContent = links[i].text;
-      if (links[i].gold) a.title = '#1 Pick — Only system with positive forward-facing returns (63.6% WR, +11.92% P\u0026L)';
+      if (links[i].cc) a.title = 'Command Center — Unified HQ across all asset classes';
+      else if (links[i].gold) a.title = '#1 Pick — Only system with positive forward-facing returns (63.6% WR, +11.92% P\u0026L)';
       else if (links[i].glow) a.title = 'Real forward-looking performance data (not backtested)';
       group.appendChild(a);
     }
@@ -224,6 +231,48 @@
       linksContainer.classList.remove('open');
     }
   });
+
+  // ──── DATA SOURCE CLASSIFICATION BAR ────────────────────────────────────────
+  // Shows FORWARD / BACKTESTED / ML ADAPTIVE badges on every page
+  var DS_TYPES = {
+    forward: { label: 'FORWARD', color: '#22d3ee', bg: 'rgba(34,211,238,0.12)', border: 'rgba(34,211,238,0.3)', tip: 'Live paper trading results — real-time signals executed against live market prices' },
+    backtested: { label: 'BACKTESTED', color: '#818cf8', bg: 'rgba(99,102,241,0.12)', border: 'rgba(99,102,241,0.3)', tip: '2-year historical simulation (Feb 2024\u2013Feb 2026) — not live traded' },
+    ml: { label: 'ML ADAPTIVE', color: '#ffd700', bg: 'rgba(255,215,0,0.12)', border: 'rgba(255,215,0,0.3)', tip: 'Machine learning optimized \u2014 parameters adapt based on trade outcomes' }
+  };
+  var PAGE_DS = {};
+  var _fwd = ['/live-monitor/live-monitor.html','/findstocks/portfolio2/consolidated.html','/live-monitor/goldmine-dashboard.html','/live-monitor/goldmine-alerts.html','/findstocks/portfolio2/dashboard.html','/live-monitor/edge-dashboard.html','/live-monitor/capital-efficiency.html','/live-monitor/conviction-alerts.html','/live-monitor/winning-patterns.html','/live-monitor/multi-dimensional.html','/live-monitor/opportunity-scanner.html','/live-monitor/smart-money.html','/live-monitor/real_time_dashboard.html','/findstocks/portfolio2/stock-intel.html','/findcryptopairs/winners.html','/live-monitor/sports-betting.html','/predictions/sports.html'];
+  for (var _i = 0; _i < _fwd.length; _i++) PAGE_DS[_fwd[_i]] = ['forward'];
+  var _fml = ['/live-monitor/algo-performance.html','/findstocks/portfolio2/penny-stocks.html','/findcryptopairs/meme.html','/live-monitor/hour-learning.html','/findstocks/portfolio2/learning-lab.html'];
+  for (var _i = 0; _i < _fml.length; _i++) PAGE_DS[_fml[_i]] = ['forward','ml'];
+  var _bt = ['/findstocks/portfolio2/backtest-results.html','/findstocks/portfolio2/picks.html','/findstocks/portfolio2/leaderboard.html','/findstocks/portfolio2/horizon-picks.html'];
+  for (var _i = 0; _i < _bt.length; _i++) PAGE_DS[_bt[_i]] = ['backtested'];
+  PAGE_DS['/findstocks/portfolio2/algorithm-intelligence.html'] = ['forward','backtested','ml'];
+  PAGE_DS['/live-monitor/command-center.html'] = ['forward','backtested','ml'];
+  PAGE_DS['/findstocks/portfolio2/algo-study.html'] = ['forward','backtested'];
+  PAGE_DS['/findstocks/portfolio2/daytrader-sim.html'] = ['forward'];
+  PAGE_DS['/findstocks/portfolio2/stock-profile.html'] = ['forward'];
+  PAGE_DS['/findstocks/portfolio2/dividends.html'] = ['forward'];
+  PAGE_DS['/findstocks/tools.html'] = ['forward','backtested','ml'];
+
+  var _pt = PAGE_DS[path];
+  if (_pt && _pt.length > 0) {
+    var dsBar = document.createElement('div');
+    dsBar.id = 'ds-bar';
+    dsBar.style.cssText = 'background:#080814;border-top:1px solid #1a1a3a;padding:5px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;max-width:1400px;margin:0 auto';
+    var dsLbl = document.createElement('span');
+    dsLbl.style.cssText = 'color:#555578;font-size:10px;text-transform:uppercase;letter-spacing:0.5px';
+    dsLbl.textContent = 'DATA SOURCE:';
+    dsBar.appendChild(dsLbl);
+    for (var _t = 0; _t < _pt.length; _t++) {
+      var _ti = DS_TYPES[_pt[_t]];
+      var dsB = document.createElement('span');
+      dsB.style.cssText = 'display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;cursor:help;background:'+_ti.bg+';color:'+_ti.color+';border:1px solid '+_ti.border;
+      dsB.textContent = _ti.label;
+      dsB.title = _ti.tip;
+      dsBar.appendChild(dsB);
+    }
+    nav.appendChild(dsBar);
+  }
 
   // Goldmine failure alert banner — inject if active alerts exist
   setTimeout(function() {
