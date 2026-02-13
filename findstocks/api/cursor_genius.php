@@ -248,6 +248,34 @@ foreach ($universe as $stock) {
                 $seeded++;
                 $ticker_seeded++;
                 $last_entry_idx = $i;
+
+                // Audit Trail Logging
+                $audit_reasons = $stock['why'] . '. Tier ' . $tier_num . ' entry on ' . round($pullback_pct * 100, 2) . '% pullback from 20-day high.';
+                $audit_supporting_data = json_encode(array(
+                    'tier' =&gt; $tier_num,
+                    'pullback_pct' =&gt; round($pullback_pct * 100, 2),
+                    'high_20' =&gt; round($high_20, 4),
+                    'strategy' =&gt; 'cursor_genius_dip_buy'
+                ));
+                $audit_pick_details = json_encode(array(
+                    'entry_price' =&gt; $entry_price,
+                    'score' =&gt; $score,
+                    'rating' =&gt; $rating,
+                    'risk_level' =&gt; $risk,
+                    'timeframe' =&gt; '90d'
+                ));
+                $audit_formatted_for_ai = "Analyze this stock pick:\nSymbol: " . $ticker . "\nStrategy: Cursor Genius\nRationale: " . $audit_reasons . "\nSupporting Data: " . $audit_supporting_data . "\n\nQuestions:\n1. Is this dip-buy opportunity valid?\n2. What are the upside catalysts?";
+
+                $safe_reasons = $conn->real_escape_string($audit_reasons);
+                $safe_supporting = $conn->real_escape_string($audit_supporting_data);
+                $safe_details = $conn->real_escape_string($audit_pick_details);
+                $safe_formatted = $conn->real_escape_string($audit_formatted_for_ai);
+                $pick_timestamp = $pick_time;
+
+                $audit_sql = "INSERT INTO audit_trails 
+                              (asset_class, symbol, pick_timestamp, generation_source, reasons, supporting_data, pick_details, formatted_for_ai)
+                              VALUES ('STOCKS', '$safe_ticker', '$pick_timestamp', 'cursor_genius.php', '$safe_reasons', '$safe_supporting', '$safe_details', '$safe_formatted')";
+                $conn->query($audit_sql);
             }
         }
     }

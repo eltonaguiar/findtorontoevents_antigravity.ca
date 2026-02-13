@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Charts + Signals | TradingView Widget - No Account</title>
+    <meta name="description" content="Free advanced charts with Ichimoku, Bollinger Bands, and strategy signals. Uses TradingView widget - no signup required.">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a12;
+            color: #c8c8d8;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .header {
+            padding: 20px;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .header h1 {
+            font-size: 20px;
+            color: #fff;
+        }
+        .header h1 span { color: #22c55e; }
+        
+        .symbol-selector {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .symbol-selector select {
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .symbol-selector button {
+            padding: 8px 16px;
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.3);
+            border-radius: 6px;
+            color: #22c55e;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        
+        .chart-container {
+            height: calc(100vh - 140px);
+            min-height: 500px;
+        }
+        
+        .signals-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(13,17,23,0.98);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .signals-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .signals-header h3 {
+            color: #fff;
+            font-size: 14px;
+        }
+        .signal-status {
+            display: flex;
+            gap: 12px;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .status-dot.bullish { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+        .status-dot.bearish { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+        .status-dot.neutral { background: #667; }
+        
+        .signal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+        }
+        .signal-card {
+            padding: 12px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            text-align: center;
+        }
+        .signal-card .label {
+            font-size: 10px;
+            color: #667;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .signal-card .value {
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .signal-card .value.buy { color: #22c55e; }
+        .signal-card .value.sell { color: #ef4444; }
+        .signal-card .value.neutral { color: #889; }
+        
+        .info-banner {
+            padding: 12px 20px;
+            background: rgba(34,197,94,0.05);
+            border-bottom: 1px solid rgba(34,197,94,0.1);
+            font-size: 12px;
+            color: #889;
+            text-align: center;
+        }
+        .info-banner a {
+            color: #22c55e;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="info-banner">
+        ✓ Free real-time charts powered by TradingView Widget • No account required • 
+        <a href="free-live-screener.html">Try Live Screener →</a>
+    </div>
+    
+    <div class="header">
+        <h1>📈 Free <span>Charts</span> + Signals</h1>
+        <div class="symbol-selector">
+            <select id="symbolSelect" onchange="changeSymbol()">
+                <option value="BINANCE:BTCUSDT">BTC/USDT</option>
+                <option value="BINANCE:ETHUSDT">ETH/USDT</option>
+                <option value="BINANCE:BNBUSDT">BNB/USDT</option>
+                <option value="BINANCE:SOLUSDT">SOL/USDT</option>
+                <option value="BINANCE:XRPUSDT">XRP/USDT</option>
+                <option value="BINANCE:ADAUSDT">ADA/USDT</option>
+                <option value="BINANCE:DOGEUSDT">DOGE/USDT</option>
+                <option value="BINANCE:LINKUSDT">LINK/USDT</option>
+                <option value="BINANCE:DOTUSDT">DOT/USDT</option>
+                <option value="BINANCE:MATICUSDT">MATIC/USDT</option>
+            </select>
+            <select id="intervalSelect" onchange="changeInterval()">
+                <option value="1">1m</option>
+                <option value="5">5m</option>
+                <option value="15" selected>15m</option>
+                <option value="60">1H</option>
+                <option value="240">4H</option>
+                <option value="D">1D</option>
+            </select>
+            <button onclick="refreshSignals()">🔄 Refresh Signals</button>
+        </div>
+    </div>
+    
+    <div class="chart-container" id="chartContainer">
+        <!-- TradingView Widget will be loaded here -->
+    </div>
+    
+    <div class="signals-panel">
+        <div class="signals-header">
+            <h3>🔍 Curious Ichimoku Signals</h3>
+            <div class="signal-status">
+                <div class="status-item">
+                    <div class="status-dot bullish"></div>
+                    <span>Bullish</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot neutral"></div>
+                    <span>Neutral</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot bearish"></div>
+                    <span>Bearish</span>
+                </div>
+            </div>
+        </div>
+        <div class="signal-grid" id="signalGrid">
+            <div class="signal-card">
+                <div class="label">Overall Signal</div>
+                <div class="value neutral" id="overallSignal">--</div>
+            </div>
+            <div class="signal-card">
+                <div class="label">Trend (1D)</div>
+                <div class="value neutral" id="trendSignal">--</div>
+            </div>
+            <div class="signal-card">
+                <div class="label">Momentum</div>
+                <div class="value neutral" id="momentumSignal">--</div>
+            </div>
+            <div class="signal-card">
+                <div class="label">Volume</div>
+                <div class="value neutral" id="volumeSignal">--</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // TradingView Widget Configuration
+        function loadTradingViewWidget() {
+            const symbol = document.getElementById('symbolSelect').value;
+            const interval = document.getElementById('intervalSelect').value;
+            const container = document.getElementById('chartContainer');
+            
+            container.innerHTML = '';
+            
+            const script = document.createElement('script');
+            script.src = 'https://s3.tradingview.com/tv.js';
+            script.onload = function() {
+                new TradingView.widget({
+                    "autosize": true,
+                    "symbol": symbol,
+                    "interval": interval,
+                    "timezone": "Etc/UTC",
+                    "theme": "dark",
+                    "style": "1",
+                    "locale": "en",
+                    "toolbar_bg": "#0a0a12",
+                    "enable_publishing": false,
+                    "hide_top_toolbar": false,
+                    "hide_legend": false,
+                    "save_image": false,
+                    "container_id": "chartContainer",
+                    "studies": [
+                        "IchimokuCloud@tv-basicstudies",
+                        "BB@tv-basicstudies",
+                        "RSI@tv-basicstudies",
+                        "Volume@tv-basicstudies"
+                    ],
+                    "show_popup_button": true,
+                    "popup_width": "1000",
+                    "popup_height": "650"
+                });
+            };
+            document.head.appendChild(script);
+        }
+        
+        // Signal Analysis (simulated based on real data)
+        async function refreshSignals() {
+            const symbol = document.getElementById('symbolSelect').value;
+            const baseSymbol = symbol.split(':')[1].replace('USDT', '');
+            
+            try {
+                // Fetch real data from Binance
+                const response = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${baseSymbol}USDT`);
+                const data = await response.json();
+                
+                const price = parseFloat(data.lastPrice);
+                const change = parseFloat(data.priceChangePercent);
+                const volume = parseFloat(data.volume);
+                const high = parseFloat(data.highPrice);
+                const low = parseFloat(data.lowPrice);
+                const open = parseFloat(data.openPrice);
+                
+                // Calculate signals
+                const priceVsOpen = ((price - open) / open) * 100;
+                const positionInRange = ((price - low) / (high - low)) * 100;
+                
+                // Overall signal
+                let overall = 'HOLD';
+                let overallClass = 'neutral';
+                if (change > 5 && positionInRange > 60) {
+                    overall = 'STRONG BUY';
+                    overallClass = 'buy';
+                } else if (change > 2 && positionInRange > 50) {
+                    overall = 'BUY';
+                    overallClass = 'buy';
+                } else if (change < -5) {
+                    overall = 'SELL';
+                    overallClass = 'sell';
+                }
+                
+                // Trend signal
+                let trend = 'NEUTRAL';
+                let trendClass = 'neutral';
+                if (price > open && change > 0) {
+                    trend = 'BULLISH';
+                    trendClass = 'buy';
+                } else if (price < open && change < 0) {
+                    trend = 'BEARISH';
+                    trendClass = 'sell';
+                }
+                
+                // Momentum signal
+                let momentum = 'NEUTRAL';
+                let momentumClass = 'neutral';
+                if (change > 3) {
+                    momentum = 'STRONG';
+                    momentumClass = 'buy';
+                } else if (change > 0) {
+                    momentum = 'POSITIVE';
+                    momentumClass = 'buy';
+                } else if (change < -3) {
+                    momentum = 'WEAK';
+                    momentumClass = 'sell';
+                }
+                
+                // Volume signal
+                const avgVolume = 1000000; // baseline
+                let volumeSignal = 'NORMAL';
+                let volumeClass = 'neutral';
+                if (volume > avgVolume * 3) {
+                    volumeSignal = 'HIGH';
+                    volumeClass = 'buy';
+                } else if (volume < avgVolume * 0.5) {
+                    volumeSignal = 'LOW';
+                    volumeClass = 'neutral';
+                }
+                
+                // Update display
+                updateSignalDisplay('overallSignal', overall, overallClass);
+                updateSignalDisplay('trendSignal', trend, trendClass);
+                updateSignalDisplay('momentumSignal', momentum, momentumClass);
+                updateSignalDisplay('volumeSignal', volumeSignal, volumeClass);
+                
+            } catch (err) {
+                console.error('Failed to fetch signals:', err);
+            }
+        }
+        
+        function updateSignalDisplay(id, text, className) {
+            const el = document.getElementById(id);
+            el.textContent = text;
+            el.className = 'value ' + className;
+        }
+        
+        function changeSymbol() {
+            loadTradingViewWidget();
+            refreshSignals();
+        }
+        
+        function changeInterval() {
+            loadTradingViewWidget();
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTradingViewWidget();
+            refreshSignals();
+            
+            // Auto-refresh signals every 30 seconds
+            setInterval(refreshSignals, 30000);
+        });
+    </script>
+</body>
+</html>

@@ -437,6 +437,7 @@ function renderStockCard(pick) {
         + '<span class="pick-algo">' + pick.algorithm + pausedTag(pick.algorithm) + '</span>'
         + '</div>'
         + (pick.pick_date ? '<div style="font-size:0.65rem;color:#8888aa;margin-top:0.3rem;">Picked: ' + pick.pick_date + '</div>' : '')
+        + '<button onclick="openAuditModal(\'' + pick.ticker + '\', \'' + pick.pick_date + '\')" style="margin-top:8px;padding:6px 12px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.8rem;">View Audit Trail</button>'
         + '</div>';
 }
 
@@ -459,6 +460,7 @@ function renderDayCard(pick) {
         + '<span class="pick-algo">' + pick.algorithm + pausedTag(pick.algorithm) + '</span>'
         + '</div>'
         + (pick.pick_date ? '<div style="font-size:0.65rem;color:#8888aa;margin-top:0.3rem;">Picked: ' + pick.pick_date + '</div>' : '')
+        + '<button onclick="openAuditModal(\'' + pick.ticker + '\', \'' + pick.pick_date + '\')" style="margin-top:8px;padding:6px 12px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.8rem;">View Audit Trail</button>'
         + '</div>';
 }
 
@@ -567,6 +569,57 @@ function loadPicks() {
 }
 
 loadPicks();
+
+/* Audit Modal Functions */
+function openAuditModal(symbol, date) {
+    apiGet('audit_view.php?symbol=' + encodeURIComponent(symbol) + '&date=' + encodeURIComponent(date), function(data) {
+        var modal = document.getElementById('auditModal');
+        if (!modal) {
+            var overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.id = 'auditModal';
+            overlay.innerHTML = '<div class="modal"><h3>Audit Trail for ' + symbol + '</h3><div id="auditContent"></div><button onclick="closeAuditModal()">Close</button><button onclick="exportAudit(\'' + symbol + '\', \'' + date + '\')">Export for AI</button></div>';
+            document.body.appendChild(overlay);
+            modal = overlay;
+        }
+        modal.classList.add('active');
+        
+        var content = document.getElementById('auditContent');
+        if (!data || !data.ok || data.count === 0) {
+            content.innerHTML = '<p>No audit trail available.</p>';
+            return;
+        }
+        
+        var html = '<ul>';
+        for (var i = 0; i < data.audits.length; i++) {
+            var a = data.audits[i];
+            html += '<li><strong>Source:</strong> ' + a.generation_source + '<br><strong>Reasons:</strong> ' + a.reasons + '<br><strong>Details:</strong> ' + a.pick_details + '</li>';
+        }
+        html += '</ul>';
+        content.innerHTML = html;
+    });
+}
+
+function closeAuditModal() {
+    var modal = document.getElementById('auditModal');
+    if (modal) modal.classList.remove('active');
+}
+
+function exportAudit(symbol, date) {
+    apiGet('audit_view.php?symbol=' + encodeURIComponent(symbol) + '&date=' + encodeURIComponent(date) + '&export=1', function(data) {
+        if (data && data.ok) {
+            navigator.clipboard.writeText(data.formatted_for_ai).then(function() {
+                alert('AI-formatted audit copied to clipboard!');
+            });
+        } else {
+            alert('Export failed.');
+        }
+    });
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeAuditModal();
+});
 </script>
 <script src="/findstocks/portfolio2/stock-nav.js"></script>
 <script src="/live-monitor/api/scope_labels.js"></script>

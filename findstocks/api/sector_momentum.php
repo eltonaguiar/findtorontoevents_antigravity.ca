@@ -200,6 +200,33 @@ foreach ($monthly_dates as $entry_date) {
             $per_ticker[$ticker]['seeded']++;
             $per_ticker[$ticker]['selected_months']++;
             $month_picks_info[] = $ticker . ' (' . round($ranked['return_60d'], 1) . '%)';
+
+            // Audit Trail Logging
+            $audit_reasons = 'Top ' . $momentum_rank . ' momentum sector with ' . round($ranked['return_60d'], 1) . '% 60d return.';
+            $audit_supporting_data = json_encode(array(
+                'sector' =&gt; $ranked['sector'],
+                'momentum_rank' =&gt; $momentum_rank,
+                'trailing_60d_return' =&gt; round($ranked['return_60d'], 2)
+            ));
+            $audit_pick_details = json_encode(array(
+                'entry_price' =&gt; $entry_price,
+                'score' =&gt; $score,
+                'rating' =&gt; $rating,
+                'risk_level' =&gt; 'Medium',
+                'timeframe' =&gt; '30d'
+            ));
+            $audit_formatted_for_ai = "Analyze this sector momentum pick:\nSymbol: " . $ticker . "\nStrategy: Sector Momentum\nRationale: " . $audit_reasons . "\nSupporting Data: " . $audit_supporting_data . "\n\nQuestions:\n1. Will this sector continue outperforming?\n2. What catalysts drive it?";
+
+            $safe_reasons = $conn->real_escape_string($audit_reasons);
+            $safe_supporting = $conn->real_escape_string($audit_supporting_data);
+            $safe_details = $conn->real_escape_string($audit_pick_details);
+            $safe_formatted = $conn->real_escape_string($audit_formatted_for_ai);
+            $pick_timestamp = $pick_time;
+
+            $audit_sql = "INSERT INTO audit_trails 
+                          (asset_class, symbol, pick_timestamp, generation_source, reasons, supporting_data, pick_details, formatted_for_ai)
+                          VALUES ('STOCKS', '$safe_ticker', '$pick_timestamp', 'sector_momentum.php', '$safe_reasons', '$safe_supporting', '$safe_details', '$safe_formatted')";
+            $conn->query($audit_sql);
         }
     }
     $monthly_picks[] = array('date' => $entry_date, 'picks' => $month_picks_info);

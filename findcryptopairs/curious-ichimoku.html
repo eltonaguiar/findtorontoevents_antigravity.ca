@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curious Ichimoku Cloud Strategy | Multi-Timeframe Trend Alignment</title>
+    <meta name="description" content="Sunday analysis strategy: 1D Ichimoku trend + 4H/1H confirmation + 15m/5m entry edge using Stochastics and Bollinger Bands">
+    <link rel="canonical" href="https://findtorontoevents.ca/findcryptopairs/curious-ichimoku.html">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0a0a12 0%, #1a1a2e 100%);
+            color: #c8c8d8;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            background: rgba(0,0,0,0.2);
+        }
+        .header h1 {
+            font-size: 42px;
+            font-weight: 200;
+            letter-spacing: 4px;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+        .header h1 span { color: #a855f7; font-weight: 600; }
+        .header .subtitle {
+            color: #889;
+            font-size: 16px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .header .tagline {
+            color: #22c55e;
+            font-size: 14px;
+            margin-top: 16px;
+            font-style: italic;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        /* Strategy Info Panel */
+        .strategy-info {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 32px;
+        }
+        .strategy-info h2 {
+            color: #fff;
+            font-size: 22px;
+            font-weight: 400;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .strategy-info h2::before {
+            content: '📊';
+            font-size: 24px;
+        }
+        
+        .methodology-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+        .method-card {
+            background: rgba(0,0,0,0.2);
+            border-left: 3px solid #a855f7;
+            padding: 20px;
+            border-radius: 0 12px 12px 0;
+        }
+        .method-card h4 {
+            color: #a855f7;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+        .method-card p {
+            color: #aab;
+            font-size: 14px;
+        }
+        .method-card .timeframe {
+            color: #22c55e;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        
+        /* Weights Table */
+        .weights-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .weights-table th {
+            background: rgba(168,85,247,0.1);
+            color: #a855f7;
+            text-align: left;
+            padding: 12px 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+        .weights-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .weights-table tr:hover td {
+            background: rgba(255,255,255,0.02);
+        }
+        .weight-bar {
+            height: 6px;
+            background: rgba(168,85,247,0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            width: 100px;
+        }
+        .weight-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #a855f7, #d946ef);
+            border-radius: 3px;
+        }
+        
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 32px;
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .control-group label {
+            font-size: 13px;
+            color: #889;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        select, button {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        select:hover, button:hover {
+            border-color: #a855f7;
+            background: rgba(168,85,247,0.1);
+        }
+        button {
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            border: none;
+            font-weight: 600;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(168,85,247,0.3);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Results Grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 24px;
+        }
+        
+        .result-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .result-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(168,85,247,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .result-card.strong-buy { border-color: rgba(34,197,94,0.4); }
+        .result-card.moderate-buy { border-color: rgba(168,85,247,0.4); }
+        .result-card.lean-buy { border-color: rgba(59,130,246,0.4); }
+        .result-card.watch { border-color: rgba(245,158,11,0.4); }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .symbol {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .tier-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .tier-badge.strong-buy { background: rgba(34,197,94,0.15); color: #22c55e; }
+        .tier-badge.moderate-buy { background: rgba(168,85,247,0.15); color: #a855f7; }
+        .tier-badge.lean-buy { background: rgba(59,130,246,0.15); color: #3b82f6; }
+        .tier-badge.watch { background: rgba(245,158,11,0.15); color: #f59e0b; }
+        
+        .score-display {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+        }
+        .score-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            position: relative;
+        }
+        .score-circle.strong { background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.05)); border: 2px solid #22c55e; color: #22c55e; }
+        .score-circle.moderate { background: linear-gradient(135deg, rgba(168,85,247,0.2), rgba(168,85,247,0.05)); border: 2px solid #a855f7; color: #a855f7; }
+        .score-circle.lean { background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(59,130,246,0.05)); border: 2px solid #3b82f6; color: #3b82f6; }
+        .score-value { font-size: 24px; }
+        .score-label { font-size: 9px; text-transform: uppercase; }
+        .trend-indicator {
+            font-size: 14px;
+            color: #889;
+        }
+        .trend-indicator span {
+            color: #fff;
+            font-weight: 600;
+        }
+        
+        .entry-box {
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        .entry-box h5 {
+            color: #fff;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        .entry-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            text-align: center;
+        }
+        .entry-item {
+            padding: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+        }
+        .entry-item .label {
+            font-size: 11px;
+            color: #667;
+            text-transform: uppercase;
+        }
+        .entry-item .value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            margin-top: 4px;
+        }
+        .entry-item .value.entry { color: #3b82f6; }
+        .entry-item .value.target { color: #22c55e; }
+        .entry-item .value.stop { color: #ef4444; }
+        
+        .signals-list {
+            margin-top: 16px;
+            font-size: 13px;
+        }
+        .signal-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .signal-item:last-child { border-bottom: none; }
+        .signal-icon { font-size: 14px; }
+        .signal-text { color: #aab; }
+        
+        /* Workflow Section */
+        .workflow-section {
+            background: rgba(34,197,94,0.05);
+            border: 1px solid rgba(34,197,94,0.15);
+            border-radius: 16px;
+            padding: 28px;
+            margin-top: 40px;
+        }
+        .workflow-section h2 {
+            color: #22c55e;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        .workflow-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .step-number {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .step-content h4 {
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .step-content p {
+            color: #889;
+            font-size: 13px;
+        }
+        
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(168,85,247,0.2);
+            border-top-color: #a855f7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #667;
+        }
+        .empty-state h3 {
+            color: #889;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 28px; }
+            .results-grid { grid-template-columns: 1fr; }
+            .entry-grid { grid-template-columns: 1fr; }
+            .methodology-grid { grid-template-columns: 1fr; }
+        }
+        
+        /* Disclaimer */
+        .disclaimer {
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.15);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 40px;
+            font-size: 13px;
+            color: #ef4444;
+        }
+        .disclaimer strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><span>Curious</span> Ichimoku Cloud</h1>
+        <div class="subtitle">Multi-Timeframe Trend Alignment Strategy</div>
+        <div class="tagline">"20-30 minutes on Sunday. Set alerts. Let trades come to you."</div>
+    </div>
+    
+    <div class="container">
+        <!-- Strategy Info -->
+        <div class="strategy-info">
+            <h2>Strategy Methodology</h2>
+            <p style="color:#889;margin-bottom:20px;">
+                This strategy aligns trends across multiple timeframes for high-probability setups. 
+                It combines the predictive power of Ichimoku Cloud with precision entry tools on lower timeframes.
+            </p>
+            
+            <div class="methodology-grid">
+                <div class="method-card">
+                    <h4>Step 1: Primary Trend</h4>
+                    <p>Use Ichimoku Cloud on the Daily chart to identify the main trend direction.</p>
+                    <div class="timeframe">1D Chart</div>
+                </div>
+                <div class="method-card">
+                    <h4>Step 2: Confirmation</h4>
+                    <p>Confirm the same trend exists on 4H or 1H using Ichimoku alignment.</p>
+                    <div class="timeframe">4H / 1H Chart</div>
+                </div>
+                <div class="method-card">
+                    <h4>Step 3: Entry Edge</h4>
+                    <p>Use 15m/5m with Stochastics (30,10,10) + Bollinger Bands (1std-2std) for entry.</p>
+                    <div class="timeframe">15m / 5m Chart</div>
+                </div>
+            </div>
+            
+            <!-- Strategy Tools Links -->
+            <div style="margin:24px 0;padding:20px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.15);border-radius:12px;">
+                <p style="color:#aab;font-size:14px;margin-bottom:16px;">
+                    <strong style="color:#22c55e;">🚀 Want to use this strategy in your own charts?</strong>
+                    Get the Pine Script for TradingView or StockFetcher queries to scan for setups:
+                </p>
+                <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                    <a href="../findstocks/portfolio2/strategy-tools.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;color:#22c55e;text-decoration:none;font-size:13px;font-weight:500;transition:all 0.2s;">
+                        <span>📊</span> Get Pine Script
+                    </a>
+                    <a href="../findstocks/portfolio2/strategy-tools.html#stockfetcher" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:8px;color:#a855f7;text-decoration:none;font-size:13px;font-weight:500;transition:all 0.2s;">
+                        <span>🔍</span> StockFetcher Queries
+                    </a>
+                </div>
+            </div>
+            
+            <h3 style="color:#fff;font-size:16px;margin:24px 0 16px;">Scoring Weights</h3>
+            <table class="weights-table">
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Weight</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Daily Ichimoku Trend</td>
+                        <td><div class="weight-bar"><div class="weight-fill" style="width:25%"></div></div> 25%</td>
+                        <td>Price above/below cloud, Tenkan/Kijun cross, future cloud</td>
+                    </tr>
+                    <tr>
+                        <td>Hourly Confirmation</td>
+                        <td><div class="weight-bar"><div class="weight-fill" style="width:20%"></div></div> 20%</td>
+                        <td>4H and 1H trend alignment with daily direction</td>
+                    </tr>
+                    <tr>
+                        <td>Bollinger Position</td>
+                        <td><div class="weight-bar"><div class="weight-fill" style="width:15%"></div></div> 15%</td>
+                        <td>Price between 1std and 2std (trending, not overextended)</td>
+                    </tr>
+                    <tr>
+                        <td>Stochastics Setup</td>
+                        <td><div class="weight-bar"><div class="weight-fill" style="width:15%"></div></div> 15%</td>
+                        <td>Custom (30,10,10) settings for pullback entries</td>
+                    </tr>
+                    <tr>
+                        <td>Support/Resistance</td>
+                        <td><div class="weight-bar"><div class="weight-fill" style="width:10%"></div></div> 10%</td>
+                        <td>Ichimoku-based S/R confluence</td>
+                    </tr>
+                    <tr>
+                        <td>Relative Strength</td>
+                        <td><div class="weight-bar"><div class="weight-fill" style="width:10%"></div></div> 10%</td>
+                        <td>Performance vs BTC (crypto) or SPY (stocks)</td>
+                    </tr>
+                    <tr>
+                        <td>Candlestick Pattern</td>
+                        <td><div class="weight-bar"><div class="weight-fill" style="width:5%"></div></div> 5%</td>
+                        <td>Pinbar, engulfing, trendline breaks</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Controls -->
+        <div class="controls">
+            <div class="control-group">
+                <label>Asset Class</label>
+                <select id="assetSelect">
+                    <option value="crypto">Cryptocurrency</option>
+                    <option value="stocks">Stocks</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Symbol (optional)</label>
+                <input type="text" id="symbolInput" placeholder="e.g., BTC/USD" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 16px;border-radius:8px;width:140px;">
+            </div>
+            <button id="scanBtn" onclick="runScan()">🔍 Scan Markets</button>
+            <button onclick="showExplanation()" style="background:rgba(255,255,255,0.05);">📖 How It Works</button>
+        </div>
+        
+        <!-- Results Container -->
+        <div id="resultsContainer">
+            <div class="empty-state">
+                <h3>Ready to scan</h3>
+                <p>Select an asset class and click "Scan Markets" to find Curious Ichimoku setups</p>
+            </div>
+        </div>
+        
+        <!-- Workflow -->
+        <div class="workflow-section">
+            <h2>📅 Weekly Workflow</h2>
+            <div class="workflow-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Sunday Analysis</h4>
+                        <p>Spend 20-30 minutes scanning Daily charts. Identify 5-10 strong trends.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Set Alerts</h4>
+                        <p>Set price alerts at key Ichimoku levels (Kijun, cloud edges).</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Wait Patiently</h4>
+                        <p>Let the market come to you. No screen watching needed.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Execute on Alert</h4>
+                        <p>When alerted, check 15m/5m for Stoch + BB confirmation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+            <strong>⚠️ NOT FINANCIAL ADVICE</strong>
+            This strategy is for educational and research purposes only. Past performance does not guarantee future results. 
+            Always conduct your own due diligence, manage risk appropriately, and never trade with money you cannot afford to lose. 
+            The Curious Ichimoku Cloud strategy is based on technical analysis concepts shared by a community member and has not been independently verified.
+        </div>
+    </div>
+    
+    <script>
+        let isScanning = false;
+        
+        async function runScan() {
+            if (isScanning) return;
+            
+            const asset = document.getElementById('assetSelect').value;
+            const symbol = document.getElementById('symbolInput').value.trim();
+            const container = document.getElementById('resultsContainer');
+            const btn = document.getElementById('scanBtn');
+            
+            isScanning = true;
+            btn.disabled = true;
+            btn.textContent = 'Scanning...';
+            
+            container.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Analyzing multi-timeframe Ichimoku alignment...</p>
+                    <p style="font-size:12px;color:#667;margin-top:8px;">This may take 30-60 seconds</p>
+                </div>
+            `;
+            
+            try {
+                let url = `api/curious_ichimoku.php?action=scan&asset=${asset}`;
+                if (symbol) {
+                    url += `&symbol=${encodeURIComponent(symbol)}`;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.ok) {
+                    renderResults(data);
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <h3>Error</h3>
+                            <p>${data.error || 'Failed to scan'}</p>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Scan Error</h3>
+                        <p>${err.message}</p>
+                    </div>
+                `;
+            } finally {
+                isScanning = false;
+                btn.disabled = false;
+                btn.textContent = '🔍 Scan Markets';
+            }
+        }
+        
+        function renderResults(data) {
+            const container = document.getElementById('resultsContainer');
+            
+            if (data.results.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No setups found</h3>
+                        <p>No Curious Ichimoku setups meeting criteria at this time.</p>
+                        <p style="font-size:12px;color:#667;margin-top:8px;">Check back later or try a different asset class</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const tierOrder = { 'Strong Buy': 0, 'Moderate Buy': 1, 'Lean Buy': 2, 'Watch': 3 };
+            
+            let html = `
+                <div style="margin-bottom:20px;color:#889;font-size:14px;">
+                    Found <strong style="color:#fff;">${data.results.length}</strong> setups 
+                    <span style="margin-left:16px;">Asset: <strong style="color:#a855f7;">${data.asset_class}</strong></span>
+                    <span style="margin-left:16px;">Last updated: ${new Date().toLocaleTimeString()}</span>
+                </div>
+                <div class="results-grid">
+            `;
+            
+            for (const result of data.results) {
+                const tierClass = result.tier.toLowerCase().replace(' ', '-');
+                const scoreClass = result.total_score >= 80 ? 'strong' : (result.total_score >= 65 ? 'moderate' : 'lean');
+                
+                html += `
+                    <div class="result-card ${tierClass}">
+                        <div class="card-header">
+                            <div class="symbol">${result.symbol}</div>
+                            <div class="tier-badge ${tierClass}">${result.tier}</div>
+                        </div>
+                        
+                        <div class="score-display">
+                            <div class="score-circle ${scoreClass}">
+                                <div class="score-value">${result.total_score}</div>
+                                <div class="score-label">SCORE</div>
+                            </div>
+                            <div class="trend-indicator">
+                                <div>Trend: <span style="color:${result.trend_direction === 'bullish' ? '#22c55e' : '#ef4444'}">${result.trend_direction.toUpperCase()}</span></div>
+                                <div style="margin-top:4px;font-size:12px;color:#667;">Max: ${result.max_possible}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="entry-box">
+                            <h5>📊 Entry Parameters</h5>
+                            <div class="entry-grid">
+                                <div class="entry-item">
+                                    <div class="label">Entry</div>
+                                    <div class="value entry">$${result.entry.entry_price}</div>
+                                </div>
+                                <div class="entry-item">
+                                    <div class="label">Target</div>
+                                    <div class="value target">$${result.entry.target_price}</div>
+                                </div>
+                                <div class="entry-item">
+                                    <div class="label">Stop</div>
+                                    <div class="value stop">$${result.entry.stop_loss}</div>
+                                </div>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06);">
+                                <span style="font-size:12px;color:#667;">R:R Ratio: <strong style="color:#fff;">${result.entry.risk_reward_ratio}:1</strong></span>
+                                <span style="font-size:12px;color:#667;">Size: <strong style="color:#fff;">${result.entry.position_size_suggestion}</strong></span>
+                            </div>
+                        </div>
+                        
+                        <div class="signals-list">
+                            ${result.analysis_summary.map(s => `
+                                <div class="signal-item">
+                                    <span class="signal-icon">✓</span>
+                                    <span class="signal-text">${s}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);font-size:12px;color:#a855f7;font-style:italic;">
+                            ${result.recommendation}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        async function showExplanation() {
+            try {
+                const response = await fetch('api/curious_ichimoku.php?action=explain');
+                const data = await response.json();
+                
+                if (data.ok) {
+                    alert(JSON.stringify(data, null, 2));
+                }
+            } catch (err) {
+                console.error('Failed to load explanation:', err);
+            }
+        }
+        
+        // Auto-scan on load if requested
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('scan') === 'true') {
+            runScan();
+        }
+    </script>
+    
+    <!-- Footer Navigation -->
+    <div style="padding:40px 20px;background:rgba(0,0,0,0.2);border-top:1px solid rgba(255,255,255,0.06);margin-top:40px;">
+        <div style="max-width:1200px;margin:0 auto;text-align:center;">
+            <p style="color:#667;font-size:13px;margin-bottom:20px;">Want to test this strategy with real-time data?</p>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
+                <a href="../findstocks/portfolio2/strategy-tools.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;color:#22c55e;text-decoration:none;font-size:13px;font-weight:500;">
+                    <span>📊</span> Get Pine Script
+                </a>
+                <a href="../findstocks/portfolio2/live-testing-guide.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:8px;color:#f59e0b;text-decoration:none;font-size:13px;font-weight:500;">
+                    <span>📡</span> Forward Test This Strategy
+                </a>
+                <a href="../findstocks/portfolio2/rocket-ride-strategy.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;color:#ef4444;text-decoration:none;font-size:13px;font-weight:500;">
+                    <span>🚀</span> Rocket Ride Strategy
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

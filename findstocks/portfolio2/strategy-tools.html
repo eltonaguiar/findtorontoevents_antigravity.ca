@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategy Tools | Pine Script & StockFetcher Converter</title>
+    <meta name="description" content="Convert trading strategies to TradingView Pine Script and StockFetcher queries. Test strategies across different markets.">
+    <link rel="canonical" href="https://findtorontoevents.ca/findstocks/portfolio2/strategy-tools.html">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0a0a12 0%, #1a1a2e 100%);
+            color: #c8c8d8;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            background: rgba(0,0,0,0.2);
+        }
+        .header h1 {
+            font-size: 42px;
+            font-weight: 200;
+            letter-spacing: 4px;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+        .header h1 span { color: #22c55e; font-weight: 600; }
+        .header .subtitle {
+            color: #889;
+            font-size: 16px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 32px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 1px;
+        }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: #667;
+            padding: 16px 28px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .tab-btn:hover {
+            color: #aab;
+        }
+        .tab-btn.active {
+            color: #22c55e;
+            border-bottom-color: #22c55e;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Strategy Cards */
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        .strategy-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+        .strategy-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(34,197,94,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .strategy-card.featured {
+            border-color: rgba(168,85,247,0.3);
+            background: linear-gradient(135deg, rgba(168,85,247,0.05), transparent);
+        }
+        .strategy-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .strategy-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .strategy-card.featured .strategy-icon {
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+        }
+        .strategy-title {
+            font-size: 18px;
+            color: #fff;
+            font-weight: 600;
+        }
+        .strategy-desc {
+            font-size: 13px;
+            color: #889;
+            margin-bottom: 20px;
+        }
+        
+        .strategy-meta {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .meta-tag {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.05);
+            color: #778;
+        }
+        .meta-tag.timeframe {
+            background: rgba(34,197,94,0.1);
+            color: #22c55e;
+        }
+        
+        /* Code Blocks */
+        .code-block {
+            background: #0d1117;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 16px;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .code-label {
+            font-size: 12px;
+            color: #667;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .copy-btn {
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.2);
+            color: #22c55e;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .copy-btn:hover {
+            background: rgba(34,197,94,0.2);
+        }
+        .copy-btn.copied {
+            background: rgba(34,197,94,0.3);
+        }
+        pre {
+            padding: 16px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #e6edf3;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        code {
+            font-family: inherit;
+        }
+        
+        /* Syntax Highlighting */
+        .pine-comment { color: #8b949e; }
+        .pine-keyword { color: #ff7b72; }
+        .pine-function { color: #d2a8ff; }
+        .pine-variable { color: #79c0ff; }
+        .pine-string { color: #a5d6ff; }
+        .pine-number { color: #79c0ff; }
+        .pine-operator { color: #ff7b72; }
+        
+        /* StockFetcher Specific */
+        .sf-condition { color: #7ee787; }
+        .sf-indicator { color: #79c0ff; }
+        .sf-operator { color: #ff7b72; }
+        .sf-value { color: #ffa657; }
+        
+        /* Tool Sections */
+        .tool-section {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 32px;
+        }
+        .tool-section h2 {
+            color: #fff;
+            font-size: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        /* Query Builder */
+        .query-builder {
+            display: grid;
+            gap: 20px;
+        }
+        .builder-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 12px;
+            align-items: center;
+        }
+        @media (max-width: 768px) {
+            .builder-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        select, input[type="text"], input[type="number"] {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: #22c55e;
+        }
+        .remove-btn {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.2);
+            color: #ef4444;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .add-btn {
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.2);
+            color: #22c55e;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 500;
+        }
+        .generate-btn {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border: none;
+            color: #fff;
+            padding: 14px 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        /* Instructions */
+        .instructions {
+            background: rgba(59,130,246,0.05);
+            border: 1px solid rgba(59,130,246,0.15);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 24px;
+        }
+        .instructions h4 {
+            color: #3b82f6;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        .instructions ol {
+            padding-left: 20px;
+            color: #aab;
+            font-size: 13px;
+        }
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        /* Footer */
+        .disclaimer {
+            background: rgba(239,68,68,0.05);
+            border: 1px solid rgba(239,68,68,0.15);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 40px;
+            font-size: 12px;
+            color: #ef4444;
+        }
+        .disclaimer strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 28px; }
+            .tab-btn { padding: 12px 16px; font-size: 12px; }
+            .strategy-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Strategy <span>Tools</span></h1>
+        <div class="subtitle">Convert trading strategies to Pine Script and StockFetcher queries</div>
+    </div>
+    
+    <div class="container">
+        <!-- Free Tools Banner - NO ACCOUNT NEEDED -->
+        <div style="margin-bottom:24px;padding:24px;background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(59,130,246,0.05));border:1px solid rgba(34,197,94,0.2);border-radius:16px;">
+            <div style="display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;margin-bottom:20px;">
+                <div style="font-size:40px;">⚡</div>
+                <div style="flex:1;">
+                    <div style="color:#fff;font-weight:600;font-size:18px;">Start Trading NOW - No Signup Required</div>
+                    <div style="color:#889;font-size:14px;margin-top:6px;line-height:1.6;">
+                        These tools work immediately with free public data feeds. 
+                        <strong style="color:#22c55e;">Zero setup. Zero accounts. Zero cost.</strong>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+                <a href="free-live-screener.html" style="padding:16px;background:rgba(0,0,0,0.2);border:1px solid rgba(34,197,94,0.2);border-radius:12px;text-decoration:none;transition:all 0.2s;">
+                    <div style="font-size:24px;margin-bottom:8px;">📊</div>
+                    <div style="color:#22c55e;font-weight:600;font-size:14px;">Live Screener</div>
+                    <div style="color:#667;font-size:12px;margin-top:4px;">Real-time crypto scanner with paper trading</div>
+                </a>
+                <a href="free-charts.html" style="padding:16px;background:rgba(0,0,0,0.2);border:1px solid rgba(59,130,246,0.2);border-radius:12px;text-decoration:none;transition:all 0.2s;">
+                    <div style="font-size:24px;margin-bottom:8px;">📈</div>
+                    <div style="color:#3b82f6;font-weight:600;font-size:14px;">Free Charts</div>
+                    <div style="color:#667;font-size:12px;margin-top:4px;">TradingView charts + Ichimoku signals</div>
+                </a>
+                <a href="live-testing-guide.html" style="padding:16px;background:rgba(0,0,0,0.2);border:1px solid rgba(245,158,11,0.2);border-radius:12px;text-decoration:none;transition:all 0.2s;">
+                    <div style="font-size:24px;margin-bottom:8px;">📡</div>
+                    <div style="color:#f59e0b;font-weight:600;font-size:14px;">Advanced Setup</div>
+                    <div style="color:#667;font-size:12px;margin-top:4px;">Paper trading with API accounts</div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Tab Navigation -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('pinescript')">📊 TradingView Pine Script</button>
+            <button class="tab-btn" onclick="switchTab('stockfetcher')">🔍 StockFetcher Queries</button>
+            <button class="tab-btn" onclick="switchTab('builder')">🛠️ Query Builder</button>
+        </div>
+        
+        <!-- Pine Script Tab -->
+        <div id="pinescript" class="tab-content active">
+            <div class="tool-section">
+                <h2>🎯 Top Strategies - Pine Script Library</h2>
+                <p style="color:#889;margin-bottom:24px;">
+                    Copy these Pine Script indicators directly into TradingView. Each script includes alerts, visual signals, and customizable parameters.
+                </p>
+                
+                <div class="strategy-grid">
+                    <!-- Curious Ichimoku -->
+                    <div class="strategy-card featured">
+                        <div class="strategy-header">
+                            <div class="strategy-icon">☁️</div>
+                            <div class="strategy-title">Curious Ichimoku Cloud</div>
+                        </div>
+                        <div class="strategy-desc">
+                            Multi-timeframe trend alignment with Stochastics (30,10,10) and dual Bollinger Bands entry confirmation.
+                        </div>
+                        <div class="strategy-meta">
+                            <span class="meta-tag timeframe">1D + 4H + 15m</span>
+                            <span class="meta-tag">Trend Following</span>
+                            <span class="meta-tag">Swing Trading</span>
+                        </div>
+                        <button class="generate-btn" onclick="showPineScript('ichimoku')">📋 Get Pine Script</button>
+                    </div>
+                    
+                    <!-- Rocket Ride -->
+                    <div class="strategy-card" style="border-color:rgba(245,158,11,0.3);background:linear-gradient(135deg,rgba(245,158,11,0.05),transparent);">
+                        <div class="strategy-header">
+                            <div class="strategy-icon" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">🚀</div>
+                            <div class="strategy-title">Rocket Ride Momentum</div>
+                        </div>
+                        <div class="strategy-desc">
+                            <strong>HIGH RISK/HIGH REWARD:</strong> Real-time momentum explosion detector for catching explosive upward moves with profit-locking exits.
+                        </div>
+                        <div class="strategy-meta">
+                            <span class="meta-tag timeframe" style="background:rgba(245,158,11,0.1);color:#f59e0b;">1min + 5min + 15min</span>
+                            <span class="meta-tag">Day Trading</span>
+                            <span class="meta-tag">Momentum</span>
+                        </div>
+                        <div style="display:flex;gap:10px;">
+                            <button class="generate-btn" onclick="showPineScript('rocket-ride')" style="flex:1;background:rgba(245,158,11,0.1);color:#f59e0b;border-color:rgba(245,158,11,0.3);">📋 Get Pine Script</button>
+                            <a href="rocket-ride-strategy.html" style="display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;color:#ef4444;text-decoration:none;font-size:13px;font-weight:500;">
+                                🚀 Full Strategy
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Ichimoku Cloud Basic -->
+                    <div class="strategy-card">
+                        <div class="strategy-header">
+                            <div class="strategy-icon">🎌</div>
+                            <div class="strategy-title">Ichimoku Cloud Signals</div>
+                        </div>
+                        <div class="strategy-desc">
+                            Classic Ichimoku Cloud with Tenkan-Kijun crosses, cloud breaks, and Chikou span confirmation.
+                        </div>
+                        <div class="strategy-meta">
+                            <span class="meta-tag timeframe">Any</span>
+                            <span class="meta-tag">Trend/Momentum</span>
+                            <span class="meta-tag">All Markets</span>
+                        </div>
+                        <button class="generate-btn" onclick="showPineScript('ichimoku-basic')">📋 Get Pine Script</button>
+                    </div>
+                    
+                    <!-- Multi-Timeframe Momentum -->
+                    <div class="strategy-card">
+                        <div class="strategy-header">
+                            <div class="strategy-icon">📈</div>
+                            <div class="strategy-title">3-Timeframe Momentum</div>
+                        </div>
+                        <div class="strategy-desc">
+                            RSI alignment across Daily, 4H, and 1H with overbought/oversold filters and divergence detection.
+                        </div>
+                        <div class="strategy-meta">
+                            <span class="meta-tag timeframe">1D + 4H + 1H</span>
+                            <span class="meta-tag">Momentum</span>
+                            <span class="meta-tag">Mean Reversion</span>
+                        </div>
+                        <button class="generate-btn" onclick="showPineScript('momentum')">📋 Get Pine Script</button>
+                    </div>
+                    
+                    <!-- Bollinger Band Squeeze -->
+                    <div class="strategy-card">
+                        <div class="strategy-header">
+                            <div class="strategy-icon">⚡</div>
+                            <div class="strategy-title">BB Squeeze + Volume</div>
+                        </div>
+                        <div class="strategy-desc">
+                            Bollinger Band squeeze detection with volume confirmation. Identifies low-volatility setups before expansion.
+                        </div>
+                        <div class="strategy-meta">
+                            <span class="meta-tag timeframe">Any</span>
+                            <span class="meta-tag">Volatility</span>
+                            <span class="meta-tag">Breakout</span>
+                        </div>
+                        <button class="generate-btn" onclick="showPineScript('squeeze')">📋 Get Pine Script</button>
+                    </div>
+                    
+                    <!-- Support/Resistance Bounce -->
+                    <div class="strategy-card">
+                        <div class="strategy-header">
+                            <div class="strategy-icon">🎯</div>
+                            <div class="strategy-title">S/R Zone Bounce</div>
+                        </div>
+                        <div class="strategy-desc">
+                            Automatic support/resistance detection with pinbar/hammer confirmation for high-probability reversals.
+                        </div>
+                        <div class="strategy-meta">
+                            <span class="meta-tag timeframe">1H + 15m</span>
+                            <span class="meta-tag">Reversal</span>
+                            <span class="meta-tag">Day Trading</span>
+                        </div>
+                        <button class="generate-btn" onclick="showPineScript('sr-bounce')">📋 Get Pine Script</button>
+                    </div>
+                    
+                    <!-- Relative Strength Leader -->
+                    <div class="strategy-card">
+                        <div class="strategy-header">
+                            <div class="strategy-icon">🏆</div>
+                            <div class="strategy-title">RS Leader Scanner</div>
+                        </div>
+                        <div class="strategy-desc">
+                            Compare symbol performance vs SPY/BTC benchmark. Identifies relative strength leaders and laggards.
+                        </div>
+                        <div class="strategy-meta">
+                            <span class="meta-tag timeframe">Daily</span>
+                            <span class="meta-tag">Rotation</span>
+                            <span class="meta-tag">Stock Picking</span>
+                        </div>
+                        <button class="generate-btn" onclick="showPineScript('rs-leader')">📋 Get Pine Script</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pine Script Code Display -->
+            <div id="pineScriptDisplay" class="tool-section" style="display:none;">
+                <h2 id="pineTitle">Pine Script Code</h2>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-label">Pine Script v5</span>
+                        <button class="copy-btn" onclick="copyCode('pineCode')">📋 Copy to Clipboard</button>
+                    </div>
+                    <pre><code id="pineCode"></code></pre>
+                </div>
+                <div class="instructions">
+                    <h4>📖 How to use in TradingView:</h4>
+                    <ol>
+                        <li>Copy the code above</li>
+                        <li>Open TradingView and click "Pine Editor" at the bottom</li>
+                        <li>Delete existing code and paste the new script</li>
+                        <li>Click "Add to Chart" (or "Save" then add)</li>
+                        <li>Set alerts by clicking the alarm clock icon next to the indicator</li>
+                        <li>Customize parameters in the indicator settings</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <!-- StockFetcher Tab -->
+        <div id="stockfetcher" class="tab-content">
+            <div class="tool-section">
+                <h2>🔍 StockFetcher Query Library</h2>
+                <p style="color:#889;margin-bottom:24px;">
+                    Pre-built StockFetcher queries for scanning US stocks. Paste these into StockFetcher to find matching setups.
+                </p>
+                
+                <div class="strategy-grid">
+                    <!-- Ichimoku Scan -->
+                    <div class="strategy-card featured">
+                        <div class="strategy-header">
+                            <div class="strategy-icon">☁️</div>
+                            <div class="strategy-title">Ichimoku Cloud Breakout</div>
+                        </div>
+                        <div class="strategy-desc">
+                            Stocks breaking above Ichimoku Cloud with volume confirmation. Strong bullish trend initiation.
+                        </div>
+                        <div class="strategy-meta">
+                            <span class="meta-tag timeframe">Daily</span>
+                            <span class="meta-tag">Bullish</span>
+                            <span class="meta-tag">Trend</span>
+                        </div>
+                        <button class="generate-btn" onclick="showStockFetcher('ichimoku-breakout')">📋 Get Query</button>
+                    </div>
+                    
+                    <!-- Volume Spike -->
+                    <div class="strategy-card">
+                        <div class="strategy-header">
+                            <div class="strategy-icon">📊</div>
+                            <div class="strategy-title">Volume Spike + Price</div>
+                        </div>
+                        <div class="strategy-desc">
+                            Unusual volume (>2x average) with positive price action. Indicates institutional interest.
+                        </div>
+                        <div class="strategy-meta">
+                            <span class="meta-tag timeframe">Daily</span>
+                            <span class="meta-tag">Momentum</span>
+                            <span class="meta-tag">Institutional</span>
+                        </div>
+                        <button class="generate-btn" onclick="showStockFetcher('volume-spike')">📋 Get Query</button>
+                    </div>
+                    
+                    <!-- RSI Oversold Bounce -->
+                    <div class="strategy-card">
+                        <div class="strategy-header">
+                            <div class="strategy-icon">🔄</div>
+                            <div class="strategy-title">RSI Oversold Bounce</div>
+                        </div>
+                        <div class="strategy-desc">
+                            RSI(14) crossed above 30 from oversold territory with bullish candlestick confirmation.
+                        </div>
+                        <div class="strategy-meta">
+                            <span class="meta-tag timeframe">Daily</span>
+                            <span class="meta-tag">Mean Reversion</span>
+                            <span class="meta-tag">Swing</span>
+                        </div>
+                        <button class="generate-btn" onclick="showStockFetcher('rsi-oversold')">📋 Get Query</button>
+                    </div>
+                    
+                    <!-- 52-Week High -->
+                    <div class="strategy-card">
+                        <div class="strategy-header">
+                            <div class="strategy-icon">🚀</div>
+                            <div class="strategy-title">New 52-Week High</div>
+                        </div>
+                        <div class="strategy-desc">
+                            Stocks making new 52-week highs with strong relative strength. Momentum continuation plays.
+                        </div>
+                        <div class="strategy-meta">
+                            <span class="meta-tag timeframe">Daily</span>
+                            <span class="meta-tag">Momentum</span>
+                            <span class="meta-tag">Breakout</span>
+                        </div>
+                        <button class="generate-btn" onclick="showStockFetcher('52week-high')">📋 Get Query</button>
+                    </div>
+                    
+                    <!-- Golden Cross -->
+                    <div class="strategy-card">
+                        <div class="strategy-header">
+                            <div class="strategy-icon">✨</div>
+                            <div class="strategy-title">Golden Cross Setup</div>
+                        </div>
+                        <div class="strategy-desc">
+                            50-day SMA crossing above 200-day SMA. Classic long-term bullish trend change signal.
+                        </div>
+                        <div class="strategy-meta">
+                            <span class="meta-tag timeframe">Daily</span>
+                            <span class="meta-tag">Trend</span>
+                            <span class="meta-tag">Long-term</span>
+                        </div>
+                        <button class="generate-btn" onclick="showStockFetcher('golden-cross')">📋 Get Query</button>
+                    </div>
+                    
+                    <!-- Low Float Momentum -->
+                    <div class="strategy-card">
+                        <div class="strategy-header">
+                            <div class="strategy-icon">⚡</div>
+                            <div class="strategy-title">Low Float Momentum</div>
+                        </div>
+                        <div class="strategy-desc">
+                            Low float stocks (<50M shares) with high relative volume. Day trading and swing setups.
+                        </div>
+                        <div class="strategy-meta">
+                            <span class="meta-tag timeframe">Daily</span>
+                            <span class="meta-tag">Volatile</span>
+                            <span class="meta-tag">Day Trade</span>
+                        </div>
+                        <button class="generate-btn" onclick="showStockFetcher('low-float')">📋 Get Query</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- StockFetcher Code Display -->
+            <div id="sfDisplay" class="tool-section" style="display:none;">
+                <h2 id="sfTitle">StockFetcher Query</h2>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-label">StockFetcher Syntax</span>
+                        <button class="copy-btn" onclick="copyCode('sfCode')">📋 Copy to Clipboard</button>
+                    </div>
+                    <pre><code id="sfCode"></code></pre>
+                </div>
+                <div class="instructions">
+                    <h4>📖 How to use in StockFetcher:</h4>
+                    <ol>
+                        <li>Go to <a href="https://stockfetcher.com" target="_blank" style="color:#3b82f6;">stockfetcher.com</a></li>
+                        <li>Sign in (free account available)</li>
+                        <li>Paste the query into the search box</li>
+                        <li>Click "Fetch Stocks" to run the scan</li>
+                        <li>Save the query to your watchlist for daily use</li>
+                        <li>Set up email alerts for new matches</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Query Builder Tab -->
+        <div id="builder" class="tab-content">
+            <div class="tool-section">
+                <h2>🛠️ Custom StockFetcher Query Builder</h2>
+                <p style="color:#889;margin-bottom:24px;">
+                    Build your own StockFetcher query by adding conditions. Perfect for testing custom strategies.
+                </p>
+                
+                <div class="query-builder">
+                    <div id="builderRows">
+                        <div class="builder-row">
+                            <select class="sf-indicator">
+                                <option value="close">Close Price</option>
+                                <option value="open">Open Price</option>
+                                <option value="high">High</option>
+                                <option value="low">Low</option>
+                                <option value="volume">Volume</option>
+                                <option value="rsi">RSI(14)</option>
+                                <option value="sma50">SMA(50)</option>
+                                <option value="sma200">SMA(200)</option>
+                                <option value="ema20">EMA(20)</option>
+                                <option value="atr">ATR(14)</option>
+                                <option value="adx">ADX(14)</option>
+                                <option value="macd">MACD</option>
+                                <option value="bbupper">BB Upper</option>
+                                <option value="bblower">BB Lower</option>
+                            </select>
+                            <select class="sf-operator">
+                                <option value=">">Greater than (&gt;)</option>
+                                <option value="<">Less than (&lt;)</option>
+                                <option value=">=">Greater or equal (&gt;=)</option>
+                                <option value="<=">Less or equal (&lt;=)</option>
+                                <option value="=">Equals (=)</option>
+                                <option value="crossed above">Crossed Above</option>
+                                <option value="crossed below">Crossed Below</option>
+                                <option value="is above">Is Above</option>
+                                <option value="is below">Is Below</option>
+                            </select>
+                            <input type="text" class="sf-value" placeholder="Value (e.g., 50, sma(200), 1.5)">
+                            <button class="remove-btn" onclick="removeRow(this)">✕</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex;gap:12px;margin-top:20px;">
+                        <button class="add-btn" onclick="addRow()">+ Add Condition</button>
+                        <button class="generate-btn" onclick="generateQuery()">⚡ Generate Query</button>
+                    </div>
+                </div>
+                
+                <div id="builderResult" style="margin-top:24px;display:none;">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-label">Your Custom Query</span>
+                            <button class="copy-btn" onclick="copyCode('customQuery')">📋 Copy to Clipboard</button>
+                        </div>
+                        <pre><code id="customQuery"></code></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Preset Templates -->
+            <div class="tool-section">
+                <h2>📚 Quick Templates</h2>
+                <p style="color:#889;margin-bottom:20px;">Click to load pre-built templates into the builder:</p>
+                
+                <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                    <button class="copy-btn" onclick="loadTemplate('trending')" style="background:rgba(168,85,247,0.1);color:#a855f7;border-color:rgba(168,85,247,0.2);">📈 Trending Up</button>
+                    <button class="copy-btn" onclick="loadTemplate('oversold')" style="background:rgba(34,197,94,0.1);color:#22c55e;border-color:rgba(34,197,94,0.2);">🔄 Oversold Bounce</button>
+                    <button class="copy-btn" onclick="loadTemplate('breakout')" style="background:rgba(245,158,11,0.1);color:#f59e0b;border-color:rgba(245,158,11,0.2);">🚀 Breakout</button>
+                    <button class="copy-btn" onclick="loadTemplate('volatile')" style="background:rgba(239,68,68,0.1);color:#ef4444;border-color:rgba(239,68,68,0.2);">⚡ High Volatility</button>
+                    <button class="copy-btn" onclick="loadTemplate('value')" style="background:rgba(59,130,246,0.1);color:#3b82f6;border-color:rgba(59,130,246,0.2);">💎 Value Play</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+            <strong>⚠️ IMPORTANT DISCLAIMER</strong>
+            These scripts and queries are for educational and research purposes only. They have not been backtested or verified for profitability. 
+            Past performance does not guarantee future results. Always test strategies on historical data before using with real capital. 
+            Trading involves substantial risk of loss. Never trade with money you cannot afford to lose.
+        </div>
+    </div>
+    
+    <script>
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // Pine Script Library
+        const pineScripts = {
+            'ichimoku': `// @version=5
+indicator("Curious Ichimoku Cloud Strategy", shorttitle="CIC Strategy", overlay=true)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// CURIOUS ICHIMOKU CLOUD STRATEGY
+// Multi-timeframe trend alignment with precision entry
+// ═════════════════════════════════════════════════════════════════════════════
+
+// ═════════════════════════════════════════════════════════════════════════════
+// INPUTS
+// ═════════════════════════════════════════════════════════════════════════════
+title1 = 'Ichimoku Settings'
+conversionLength = input.int(9, 'Tenkan-sen (Conversion)', minval=1, group=title1)
+baseLength = input.int(26, 'Kijun-sen (Base)', minval=1, group=title1)
+laggingSpanLength = input.int(52, 'Senkou Span B', minval=1, group=title1)
+displacement = input.int(26, 'Displacement', minval=1, group=title1)
+
+title2 = 'Stochastics Settings'
+stochLength = input.int(30, 'Stoch Length', minval=1, group=title2)
+smoothK = input.int(10, 'Smooth K', minval=1, group=title2)
+smoothD = input.int(10, 'Smooth D', minval=1, group=title2)
+
+title3 = 'Bollinger Settings'
+bbLength = input.int(20, 'BB Length', minval=1, group=title3)
+bbMult = input.float(2.0, 'BB StdDev', minval=0.1, group=title3)
+
+title4 = 'Strategy Settings'
+minScore = input.int(65, 'Minimum Score for Signal', minval=0, max=100, group=title4)
+showLabels = input.bool(true, 'Show Signal Labels', group=title4)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// ICHIMOKU CALCULATIONS
+// ═════════════════════════════════════════════════════════════════════════════
+donchian(len) => math.avg(ta.highest(len), ta.lowest(len))
+
+tenkan = donchian(conversionLength)
+kijun = donchian(baseLength)
+senkouA = math.avg(tenkan, kijun)
+senkouB = donchian(laggingSpanLength)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// STOCHASTICS (30,10,10)
+// ═════════════════════════════════════════════════════════════════════════════
+stochK = ta.sma(ta.stoch(close, high, low, stochLength), smoothK)
+stochD = ta.sma(stochK, smoothD)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// BOLLINGER BANDS
+// ═════════════════════════════════════════════════════════════════════════════
+bbBasis = ta.sma(close, bbLength)
+bbDev = bbMult * ta.stdev(close, bbLength)
+bbUpper2 = bbBasis + bbDev      // 2 std
+bbUpper1 = bbBasis + bbDev/2    // 1 std
+bbLower1 = bbBasis - bbDev/2    // 1 std
+bbLower2 = bbBasis - bbDev      // 2 std
+
+// ═════════════════════════════════════════════════════════════════════════════
+// SCORING SYSTEM
+// ═════════════════════════════════════════════════════════════════════════════
+var float score = 0
+var string trend = "neutral"
+
+// 1. Price vs Cloud (25 pts max)
+cloudTop = math.max(senkouA, senkouB)
+cloudBottom = math.min(senkouA, senkouB)
+priceAboveCloud = close > cloudTop
+priceBelowCloud = close < cloudBottom
+inCloud = not priceAboveCloud and not priceBelowCloud
+
+scorePrice = priceAboveCloud ? 10 : priceBelowCloud ? 0 : 3
+
+// 2. Tenkan vs Kijun (7 pts)
+tenkanAboveKijun = tenkan > kijun
+scoreTK = tenkanAboveKijun ? 7 : 0
+
+// 3. Future Cloud (8 pts)
+futureBullish = senkouA > senkouB
+scoreFuture = futureBullish ? 8 : 0
+
+// 4. Bollinger Position (15 pts)
+inTrendingZone = (close <= bbUpper2 and close > bbUpper1) or 
+                 (close >= bbLower2 and close < bbLower1)
+normalZone = close > bbLower1 and close < bbUpper1
+
+scoreBB = inTrendingZone ? 15 : normalZone ? 8 : 2
+
+// 5. Stochastics (15 pts)
+stochBullish = stochK > 20 and stochK < 50 and stochK > stochD
+stochOversold = stochK < 20
+scoreStoch = stochBullish ? 15 : stochOversold ? 8 : 0
+
+// Total Score
+totalScore = scorePrice + scoreTK + scoreFuture + scoreBB + scoreStoch
+trend := priceAboveCloud ? "bullish" : priceBelowCloud ? "bearish" : "neutral"
+
+// ═════════════════════════════════════════════════════════════════════════════
+// SIGNALS
+// ═════════════════════════════════════════════════════════════════════════════
+strongBuy = totalScore >= 80 and trend == "bullish"
+moderateBuy = totalScore >= 65 and totalScore < 80 and trend == "bullish"
+leanBuy = totalScore >= 50 and totalScore < 65 and trend == "bullish"
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PLOTTING
+// ═════════════════════════════════════════════════════════════════════════════
+// Ichimoku Cloud
+plot(tenkan, color=color.new(#0496ff, 0), title="Tenkan-sen", linewidth=2)
+plot(kijun, color=color.new(#991515, 0), title="Kijun-sen", linewidth=2)
+plot(close, offset=-displacement, color=color.new(#459915, 0), title="Chikou Span")
+
+p1 = plot(senkouA, offset=displacement, color=color.new(#089981, 0), title="Senkou Span A")
+p2 = plot(senkouB, offset=displacement, color=color.new(#f23645, 0), title="Senkou Span B")
+fill(p1, p2, color=senkouA > senkouB ? color.new(#089981, 90) : color.new(#f23645, 90), title="Cloud")
+
+// Signals
+plotshape(showLabels and strongBuy, "Strong Buy", shape.labelup, location.belowbar, 
+         color.green, text="STRONG BUY", textcolor=color.white, size=size.small)
+plotshape(showLabels and moderateBuy, "Moderate Buy", shape.labelup, location.belowbar, 
+         color.purple, text="MODERATE", textcolor=color.white, size=size.small)
+plotshape(showLabels and leanBuy, "Lean Buy", shape.triangleup, location.belowbar, 
+         color.blue, text="LEAN", textcolor=color.white, size=size.tiny)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// ALERTS
+// ═════════════════════════════════════════════════════════════════════════════
+alertcondition(strongBuy, title="Strong Buy Signal", message="Curious Ichimoku: Strong Buy on {{ticker}}")
+alertcondition(moderateBuy, title="Moderate Buy Signal", message="Curious Ichimoku: Moderate Buy on {{ticker}}")
+
+// ═════════════════════════════════════════════════════════════════════════════
+// INFO PANEL
+// ═════════════════════════════════════════════════════════════════════════════
+var table infoPanel = table.new(position.top_right, 2, 6, bgcolor=color.black, 
+                               border_width=1, border_color=color.gray)
+
+if barstate.islast
+    table.cell(infoPanel, 0, 0, "SCORE", text_color=color.gray, text_size=size.small)
+    table.cell(infoPanel, 1, 0, str.tostring(totalScore) + "/100", text_color=totalScore >= 80 ? color.green : totalScore >= 65 ? color.purple : color.gray, text_size=size.small)
+    table.cell(infoPanel, 0, 1, "TREND", text_color=color.gray, text_size=size.small)
+    table.cell(infoPanel, 1, 1, trend, text_color=trend == "bullish" ? color.green : trend == "bearish" ? color.red : color.gray, text_size=size.small)
+    table.cell(infoPanel, 0, 2, "STOCH K", text_color=color.gray, text_size=size.small)
+    table.cell(infoPanel, 1, 2, str.tostring(stochK, "#.##"), text_color=color.white, text_size=size.small)
+    table.cell(infoPanel, 0, 3, "TENKAN", text_color=color.gray, text_size=size.small)
+    table.cell(infoPanel, 1, 3, str.tostring(tenkan, "#.##"), text_color=color.white, text_size=size.small)
+    table.cell(infoPanel, 0, 4, "KIJUN", text_color=color.gray, text_size=size.small)
+    table.cell(infoPanel, 1, 4, str.tostring(kijun, "#.##"), text_color=color.white, text_size=size.small)`,
+
+            'ichimoku-basic': `// @version=5
+indicator("Ichimoku Cloud Signals", shorttitle="Ichi Signals", overlay=true)
+
+// Inputs
+conversionLength = input.int(9, minval=1, title="Tenkan-sen")
+baseLength = input.int(26, minval=1, title="Kijun-sen")
+spanLength = input.int(52, minval=1, title="Senkou Span B")
+displacement = input.int(26, minval=1, title="Displacement")
+
+// Calculations
+donchian(len) => math.avg(ta.highest(len), ta.lowest(len))
+tenkan = donchian(conversionLength)
+kijun = donchian(baseLength)
+senkouA = math.avg(tenkan, kijun)
+senkouB = donchian(spanLength)
+
+// Signals
+tkCrossUp = ta.crossover(tenkan, kijun)
+tkCrossDown = ta.crossunder(tenkan, kijun)
+priceAboveCloud = close > math.max(senkouA, senkouB)
+priceBelowCloud = close < math.min(senkouA, senkouB)
+
+// Plots
+plot(tenkan, color=#0496ff, title="Tenkan")
+plot(kijun, color=#991515, title="Kijun")
+p1 = plot(senkouA, offset=displacement, color=green, title="Span A")
+p2 = plot(senkouB, offset=displacement, color=red, title="Span B")
+fill(p1, p2, color=senkouA > senkouB ? color.green : color.red, transp=70)
+
+// Signal Shapes
+plotshape(tkCrossUp and priceAboveCloud, "Bullish TK Cross", shape.triangleup, 
+         location.belowbar, color.green, size=size.small)
+plotshape(tkCrossDown and priceBelowCloud, "Bearish TK Cross", shape.triangledown, 
+         location.abovebar, color.red, size=size.small)
+
+// Alerts
+alertcondition(tkCrossUp, "Bullish TK Cross", "TK Cross UP on {{ticker}}")
+alertcondition(tkCrossDown, "Bearish TK Cross", "TK Cross DOWN on {{ticker}}")`,
+
+            'momentum': `// @version=5
+indicator("Multi-Timeframe Momentum", shorttitle="MTF Momentum")
+
+// RSI Inputs
+rsiLength = input.int(14, "RSI Length")
+overbought = input.int(70, "Overbought")
+oversold = input.int(30, "Oversold")
+
+// Calculate RSI
+dailyRsi = request.security(syminfo.tickerid, "D", ta.rsi(close, rsiLength))
+h4Rsi = request.security(syminfo.tickerid, "240", ta.rsi(close, rsiLength))
+h1Rsi = request.security(syminfo.tickerid, "60", ta.rsi(close, rsiLength))
+
+// Plot
+plot(dailyRsi, "Daily RSI", color.blue, 2)
+plot(h4Rsi, "4H RSI", color.purple, 1)
+plot(h1Rsi, "1H RSI", color.orange, 1)
+hline(overbought, "Overbought", color.red)
+hline(50, "Midline", color.gray)
+hline(oversold, "Oversold", color.green)
+
+// Background color for alignment
+alignedBullish = dailyRsi > 50 and h4Rsi > 50 and h1Rsi > 50
+alignedBearish = dailyRsi < 50 and h4Rsi < 50 and h1Rsi < 50
+bgcolor(alignedBullish ? color.new(color.green, 90) : alignedBearish ? color.new(color.red, 90) : na)
+
+// Signal
+bullishAlign = dailyRsi > 50 and h4Rsi > 50 and h1Rsi > 50 and 
+               dailyRsi[1] < 50
+plotshape(bullishAlign, "Bullish Alignment", shape.triangleup, location.bottom, color.green)`,
+
+            'squeeze': `// @version=5
+indicator("BB Squeeze + Volume", shorttitle="BB Squeeze")
+
+// Inputs
+bbLength = input.int(20, "BB Length")
+bbMult = input.float(2.0, "BB Multiplier")
+squeezeLength = input.int(20, "Squeeze Lookback")
+volMult = input.float(1.5, "Volume Multiplier")
+
+// Bollinger Bands
+basis = ta.sma(close, bbLength)
+dev = bbMult * ta.stdev(close, bbLength)
+upper = basis + dev
+lower = basis - dev
+
+// Squeeze detection
+bbWidth = (upper - lower) / basis
+lowestWidth = ta.lowest(bbWidth, squeezeLength)
+isSqueeze = bbWidth == lowestWidth
+
+// Volume
+avgVol = ta.sma(volume, 20)
+highVol = volume > avgVol * volMult
+
+// Signals
+squeezeRelease = isSqueeze[1] and not isSqueeze
+breakoutUp = close > upper and highVol
+breakoutDown = close < lower and highVol
+
+// Plot
+plot(isSqueeze ? 1 : 0, "Squeeze", color=color.new(color.blue, 50), style=plot.style_histogram)
+plot(breakoutUp ? 2 : breakoutDown ? -2 : 0, "Breakout", color=breakoutUp ? color.green : breakoutDown ? color.red : na, style=plot.style_circles)
+
+// Alert
+alertcondition(squeezeRelease and highVol, "Squeeze Release", "BB Squeeze releasing on {{ticker}} with volume")`,
+
+            'sr-bounce': `// @version=5
+indicator("Support/Resistance Bounce", shorttitle="S/R Bounce", overlay=true)
+
+// Inputs
+pivotLength = input.int(10, "Pivot Length")
+showSR = input.bool(true, "Show S/R Lines")
+
+// Calculate pivots
+pivotHigh = ta.pivothigh(high, pivotLength, pivotLength)
+pivotLow = ta.pivotlow(low, pivotLength, pivotLength)
+
+// Track S/R levels
+var float resistance = na
+var float support = na
+
+if not na(pivotHigh)
+    resistance := pivotHigh
+if not na(pivotLow)
+    support := pivotLow
+
+// Plot S/R
+plot(showSR ? resistance : na, "Resistance", color.red, style=plot.style_cross)
+plot(showSR ? support : na, "Support", color.green, style=plot.style_cross)
+
+// Detect bounces (pinbars at S/R)
+isPinbar = (close > open and low < open and (high - close) < (close - open) * 0.5) or
+           (close < open and high > open and (close - low) < (open - close) * 0.5)
+
+nearSupport = math.abs(close - support) / close < 0.01
+nearResistance = math.abs(close - resistance) / close < 0.01
+
+bullishBounce = isPinbar and nearSupport and close > open
+bearishBounce = isPinbar and nearResistance and close < open
+
+// Signals
+plotshape(bullishBounce, "Bullish Bounce", shape.triangleup, location.belowbar, color.green, size=size.small)
+plotshape(bearishBounce, "Bearish Bounce", shape.triangledown, location.abovebar, color.red, size=size.small)
+
+alertcondition(bullishBounce, "Support Bounce", "Bullish bounce at support on {{ticker}}")`,
+
+            'rs-leader': `// @version=5
+indicator("Relative Strength Leader", shorttitle="RS Leader")
+
+// Inputs
+benchmark = input.symbol("SPY", "Benchmark")
+rsLength = input.int(20, "RS Lookback")
+
+// Get benchmark data
+benchClose = request.security(benchmark, timeframe.period, close)
+
+// Calculate relative strength
+symbolChange = (close - close[rsLength]) / close[rsLength] * 100
+benchChange = (benchClose - benchClose[rsLength]) / benchClose[rsLength] * 100
+relativeStrength = symbolChange - benchChange
+
+// Plot
+plot(relativeStrength, "Relative Strength %", color=relativeStrength > 0 ? color.green : color.red, linewidth=2)
+hline(0, "Benchmark", color.gray)
+
+// Leader/Laggard labels
+isLeader = relativeStrength > 10
+isLaggard = relativeStrength < -10
+
+plotshape(isLeader, "Leader", shape.triangleup, location.top, color.green, size=size.tiny)
+plotshape(isLaggard, "Laggard", shape.triangledown, location.bottom, color.red, size=size.tiny)
+
+// Background
+bgcolor(isLeader ? color.new(color.green, 90) : isLaggard ? color.new(color.red, 90) : na)
+
+// Table
+var table info = table.new(position.top_right, 2, 3, bgcolor=color.black)
+if barstate.islast
+    table.cell(info, 0, 0, "Symbol", text_color=color.gray)
+    table.cell(info, 1, 0, str.tostring(symbolChange, "#.1f") + "%", text_color=color.white)
+    table.cell(info, 0, 1, "Benchmark", text_color=color.gray)
+    table.cell(info, 1, 1, str.tostring(benchChange, "#.1f") + "%", text_color=color.white)
+    table.cell(info, 0, 2, "RS vs Bench", text_color=color.gray)
+    table.cell(info, 1, 2, str.tostring(relativeStrength, "#.1f") + "%", 
+              text_color=relativeStrength > 0 ? color.green : color.red)`,
+
+            'rocket-ride': `// @version=5
+indicator("🚀 Rocket Ride Strategy", shorttitle="Rocket Ride", overlay=true)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// ROCKET RIDE STRATEGY - Real-Time Momentum Explosion Detector
+// For catching sustained upward moves with maximum profit capture
+// ═════════════════════════════════════════════════════════════════════════════
+
+// ═════════════════════════════════════════════════════════════════════════════
+// INPUTS
+// ═════════════════════════════════════════════════════════════════════════════
+// Momentum Settings
+momShort = input.int(1, "Momentum: 1-min ROC", group="🔥 Momentum")
+momMed = input.int(5, "Momentum: 5-min ROC", group="🔥 Momentum")
+momLong = input.int(15, "Momentum: 15-min ROC", group="🔥 Momentum")
+accThreshold = input.float(2.0, "Acceleration Threshold %", group="🔥 Momentum")
+
+// Volume Settings
+volLength = input.int(20, "Volume Average Length", group="💥 Volume")
+volMult = input.float(3.0, "Volume Multiplier", group="💥 Volume")
+
+// VWAP Settings
+vwapDevEntry = input.float(2.0, "VWAP Entry Deviation %", group="🎯 VWAP")
+vwapDevExit = input.float(-1.0, "VWAP Exit Deviation %", group="🎯 VWAP")
+
+// Score Thresholds
+scoreWatch = input.int(70, "Watch Threshold", group="🚦 Signals")
+scorePrepare = input.int(80, "Prepare Threshold", group="🚦 Signals")
+scoreEnter = input.int(90, "Enter Threshold", group="🚦 Signals")
+
+// ═════════════════════════════════════════════════════════════════════════════
+// CALCULATIONS
+// ═════════════════════════════════════════════════════════════════════════════
+// Rate of Change (momentum)
+roc1 = ta.roc(close, momShort)
+roc5 = ta.roc(close, momMed)
+roc15 = ta.roc(close, momLong)
+
+// Momentum Acceleration
+momentumUp = roc1 > roc5 and roc5 > roc15 and roc1 > 0
+acceleration = roc1 - roc15
+
+// Volume Analysis
+avgVol = ta.sma(volume, volLength)
+relVolume = volume / avgVol
+volSpike = relVolume > volMult
+volSustained = volume > avgVol * 2
+
+// VWAP Calculation
+vwapValue = ta.vwap(hlc3)
+vwapDev = ((close - vwapValue) / vwapValue) * 100
+aboveVwap = vwapDev > vwapDevEntry
+vwapBroken = vwapDev < vwapDevExit
+
+// Price Action
+new5MinHigh = high > ta.highest(high, 5)[1]
+new15MinHigh = high > ta.highest(high, 15)[1]
+noLowerLows = low > ta.lowest(low, 3)[1]
+
+// ═════════════════════════════════════════════════════════════════════════════
+// ROCKET SCORE CALCULATION (0-100)
+// ═════════════════════════════════════════════════════════════════════════════
+var float rocketScore = 0
+
+// Momentum Acceleration (25 pts)
+momScore = 0.0
+if roc1 > 1
+    momScore := 10
+    if roc1 > roc5
+        momScore := 15
+        if roc5 > roc15
+            momScore := 20
+            if acceleration > accThreshold
+                momScore := 25
+
+// Volume Score (25 pts)
+volScore = 0.0
+if volume > avgVol
+    volScore := 10
+    if relVolume > 2
+        volScore := 15
+        if relVolume > volMult
+            volScore := 20
+            if volSustained
+                volScore := 25
+
+// VWAP Score (20 pts)
+vwapScore = 0.0
+if close > vwapValue
+    vwapScore := 10
+    if vwapDev > 1
+        vwapScore := 15
+        if vwapDev > vwapDevEntry
+            vwapScore := 20
+
+// Trend Strength (15 pts)
+trendScore = 0.0
+if close > open
+    trendScore := 5
+    if new5MinHigh
+        trendScore := 10
+        if new15MinHigh
+            trendScore := 15
+
+// Consistency (15 pts)
+consistencyScore = 0.0
+if noLowerLows
+    consistencyScore := 5
+    if close > ta.ema(close, 9)
+        consistencyScore := 10
+        if momentumUp
+            consistencyScore := 15
+
+// Total Score
+rocketScore := momScore + volScore + vwapScore + trendScore + consistencyScore
+
+// ═════════════════════════════════════════════════════════════════════════════
+// SIGNALS
+// ═════════════════════════════════════════════════════════════════════════════
+watchSignal = rocketScore >= scoreWatch and rocketScore < scorePrepare
+prepareSignal = rocketScore >= scorePrepare and rocketScore < scoreEnter
+enterSignal = rocketScore >= scoreEnter and aboveVwap and volSpike
+exitSignal = vwapBroken or (rocketScore < 50 and close < open)
+
+// Profit targets
+takeProfit1 = close > (close[1] * 1.10)
+takeProfit2 = close > (close[1] * 1.20)
+takeProfit3 = close > (close[1] * 1.35)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PLOTTING
+// ═════════════════════════════════════════════════════════════════════════════
+plot(vwapValue, "VWAP", color=color.new(#f59e0b, 0), linewidth=2)
+
+// Entry/Exit Zones
+bgcolor(watchSignal ? color.new(#3b82f6, 90) : 
+        prepareSignal ? color.new(#a855f7, 85) : 
+        enterSignal ? color.new(#22c55e, 80) : na, title="Signal Zones")
+
+// Signal Shapes
+plotshape(watchSignal and not watchSignal[1], "👀 WATCH", shape.circle, 
+         location.belowbar, color.blue, size=size.small)
+plotshape(prepareSignal and not prepareSignal[1], "⏳ PREPARE", shape.diamond, 
+         location.belowbar, color.purple, size=size.small)
+plotshape(enterSignal and not enterSignal[1], "🚀 ENTER", shape.triangleup, 
+         location.belowbar, color.green, size=size.normal)
+plotshape(exitSignal, "❌ EXIT", shape.triangledown, 
+         location.abovebar, color.red, size=size.small)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// INFO PANEL
+// ═════════════════════════════════════════════════════════════════════════════
+var table infoPanel = table.new(position.top_right, 2, 8, 
+                               bgcolor=color.new(#0d1117, 10),
+                               border_width=1, 
+                               border_color=color.new(#f59e0b, 50))
+
+if barstate.islast
+    table.cell(infoPanel, 0, 0, "🚀 ROCKET SCORE", text_color=color.gray, text_size=size.small)
+    table.cell(infoPanel, 1, 0, str.tostring(rocketScore, "#") + "/100", 
+              text_color=rocketScore >= 90 ? color.green : rocketScore >= 80 ? color.purple : color.white, 
+              text_size=size.normal)
+    
+    table.cell(infoPanel, 0, 1, "1min ROC", text_color=color.gray, text_size=size.tiny)
+    table.cell(infoPanel, 1, 1, str.tostring(roc1, "#.2f") + "%", 
+              text_color=roc1 > 0 ? color.green : color.red, text_size=size.tiny)
+    
+    table.cell(infoPanel, 0, 2, "5min ROC", text_color=color.gray, text_size=size.tiny)
+    table.cell(infoPanel, 1, 2, str.tostring(roc5, "#.2f") + "%", 
+              text_color=roc5 > 0 ? color.green : color.red, text_size=size.tiny)
+    
+    table.cell(infoPanel, 0, 3, "Rel Volume", text_color=color.gray, text_size=size.tiny)
+    table.cell(infoPanel, 1, 3, "x" + str.tostring(relVolume, "#.1f"), 
+              text_color=relVolume > 3 ? color.orange : relVolume > 2 ? color.yellow : color.white, 
+              text_size=size.tiny)
+    
+    table.cell(infoPanel, 0, 4, "VWAP Dev", text_color=color.gray, text_size=size.tiny)
+    table.cell(infoPanel, 1, 4, str.tostring(vwapDev, "#.2f") + "%", 
+              text_color=vwapDev > 2 ? color.green : vwapDev > 0 ? color.lime : color.red, 
+              text_size=size.tiny)
+    
+    table.cell(infoPanel, 0, 5, "Status", text_color=color.gray, text_size=size.tiny)
+    status = enterSignal ? "🚀 ENTER" : prepareSignal ? "⏳ PREPARE" : watchSignal ? "👀 WATCH" : "WAIT"
+    statusColor = enterSignal ? color.green : prepareSignal ? color.purple : watchSignal ? color.blue : color.gray
+    table.cell(infoPanel, 1, 5, status, text_color=statusColor, text_size=size.small)
+
+// ═════════════════════════════════════════════════════════════════════════════
+// ALERTS
+// ═════════════════════════════════════════════════════════════════════════════
+alertcondition(enterSignal, "🚀 ROCKET ENTRY", 
+              "Rocket Ride ENTRY signal on {{ticker}}! Score: " + str.tostring(rocketScore))
+alertcondition(prepareSignal and not prepareSignal[1], "⏳ ROCKET PREPARE", 
+              "Rocket Ride PREPARE signal on {{ticker}} - Getting ready")
+alertcondition(exitSignal, "❌ ROCKET EXIT", 
+              "Rocket Ride EXIT signal on {{ticker}} - Take profits!")`
+        };
+        
+        // StockFetcher Library
+        const stockFetcherQueries = {
+            'ichimoku-breakout': `// Ichimoku Cloud Breakout Scan
+// Finds stocks breaking above the cloud with volume
+
+Close is above Ichimoku Cloud(9,26,52)
+and Close 1 day ago is below Ichimoku Cloud(9,26,52) 1 day ago
+and Volume is above Volume average(20) by 50%
+and Close is above Close 20 days ago by 5%
+
+add column Ichimoku Conversion(9,26,52)
+add column Ichimoku Base(9,26,52)
+add column Volume average(20)
+sort by Volume average(20) descending
+
+// Instructions: Copy everything above this line into StockFetcher`,
+
+            'volume-spike': `// Volume Spike + Price Momentum
+// Unusual volume with positive price action
+
+Volume is above Volume average(20) by 100%
+and Close is above Open
+and Close is above Close 1 day ago
+and RSI(14) is between 40 and 70
+
+add column Volume ratio(20)
+add column RSI(14)
+add column Close Change(1)
+sort by Volume ratio(20) descending
+
+// Look for institutional accumulation`,
+
+            'rsi-oversold': `// RSI Oversold Bounce
+// Classic mean reversion setup
+
+RSI(14) crossed above 30
+and RSI(14) 1 day ago is below 35
+and Close is above Open
+and Volume is above Volume average(20)
+
+add column RSI(14)
+add column RSI(14) 5 days ago
+add column Close
+add column Low 20 days
+
+sort by RSI(14) ascending
+
+// Wait for confirmation candle`,
+
+            '52week-high': `// New 52-Week High
+// Strong momentum continuation
+
+Close is at New High 250 days
+and Volume is above Volume average(20) by 20%
+and Close is above SMA(50)
+and SMA(50) is above SMA(200)
+
+add column High 250 days
+add column Volume average(20)
+add column SMA(50)
+add column SMA(200)
+
+sort by Volume average(20) descending
+
+// Strong uptrend confirmation`,
+
+            'golden-cross': `// Golden Cross Setup
+// Long-term trend change
+
+SMA(50) crossed above SMA(200)
+and Close is above SMA(50)
+and Volume is above Volume average(20)
+
+add column SMA(50)
+add column SMA(200)
+add column Volume average(20)
+
+sort by Market Cap descending
+
+// Major trend reversal signal`,
+
+            'low-float': `// Low Float Momentum
+// High volatility day trading candidates
+
+Float is below 50000000
+and Volume is above Volume average(20) by 150%
+and Close Change(1) is above 5%
+and Price is between 2 and 50
+
+add column Float
+add column Volume ratio(20)
+add column Close Change(1)
+
+sort by Volume ratio(20) descending
+
+// High risk, high reward setups`
+        };
+        
+        // Show Pine Script
+        function showPineScript(strategy) {
+            const code = pineScripts[strategy];
+            const titles = {
+                'ichimoku': 'Curious Ichimoku Cloud - Full Strategy',
+                'ichimoku-basic': 'Ichimoku Cloud Basic Signals',
+                'momentum': 'Multi-Timeframe Momentum',
+                'squeeze': 'Bollinger Band Squeeze + Volume',
+                'sr-bounce': 'Support/Resistance Bounce',
+                'rs-leader': 'Relative Strength Leader',
+                'rocket-ride': '🚀 Rocket Ride Momentum Strategy'
+            };
+            
+            document.getElementById('pineCode').textContent = code;
+            document.getElementById('pineTitle').textContent = titles[strategy] || 'Pine Script';
+            document.getElementById('pineScriptDisplay').style.display = 'block';
+            document.getElementById('pineScriptDisplay').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Show StockFetcher
+        function showStockFetcher(query) {
+            const code = stockFetcherQueries[query];
+            const titles = {
+                'ichimoku-breakout': 'Ichimoku Cloud Breakout',
+                'volume-spike': 'Volume Spike + Price',
+                'rsi-oversold': 'RSI Oversold Bounce',
+                '52week-high': 'New 52-Week High',
+                'golden-cross': 'Golden Cross Setup',
+                'low-float': 'Low Float Momentum'
+            };
+            
+            document.getElementById('sfCode').textContent = code;
+            document.getElementById('sfTitle').textContent = titles[query] || 'StockFetcher Query';
+            document.getElementById('sfDisplay').style.display = 'block';
+            document.getElementById('sfDisplay').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Copy Code
+        function copyCode(elementId) {
+            const code = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✓ Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+        
+        // Query Builder Functions
+        function addRow() {
+            const container = document.getElementById('builderRows');
+            const newRow = document.createElement('div');
+            newRow.className = 'builder-row';
+            newRow.innerHTML = `
+                <select class="sf-indicator">
+                    <option value="close">Close Price</option>
+                    <option value="open">Open Price</option>
+                    <option value="high">High</option>
+                    <option value="low">Low</option>
+                    <option value="volume">Volume</option>
+                    <option value="rsi">RSI(14)</option>
+                    <option value="sma50">SMA(50)</option>
+                    <option value="sma200">SMA(200)</option>
+                    <option value="ema20">EMA(20)</option>
+                    <option value="atr">ATR(14)</option>
+                    <option value="adx">ADX(14)</option>
+                    <option value="macd">MACD</option>
+                    <option value="bbupper">BB Upper</option>
+                    <option value="bblower">BB Lower</option>
+                </select>
+                <select class="sf-operator">
+                    <option value=">">Greater than (&gt;)</option>
+                    <option value="<">Less than (&lt;)</option>
+                    <option value=">=">Greater or equal (&gt;=)</option>
+                    <option value="<=">Less or equal (&lt;=)</option>
+                    <option value="=">Equals (=)</option>
+                    <option value="crossed above">Crossed Above</option>
+                    <option value="crossed below">Crossed Below</option>
+                    <option value="is above">Is Above</option>
+                    <option value="is below">Is Below</option>
+                </select>
+                <input type="text" class="sf-value" placeholder="Value (e.g., 50, sma(200), 1.5)">
+                <button class="remove-btn" onclick="removeRow(this)">✕</button>
+            `;
+            container.appendChild(newRow);
+        }
+        
+        function removeRow(btn) {
+            const rows = document.querySelectorAll('.builder-row');
+            if (rows.length > 1) {
+                btn.closest('.builder-row').remove();
+            }
+        }
+        
+        function generateQuery() {
+            const rows = document.querySelectorAll('.builder-row');
+            const conditions = [];
+            
+            rows.forEach(row => {
+                const indicator = row.querySelector('.sf-indicator').value;
+                const operator = row.querySelector('.sf-operator').value;
+                const value = row.querySelector('.sf-value').value;
+                
+                if (value) {
+                    const indMap = {
+                        'close': 'Close', 'open': 'Open', 'high': 'High', 'low': 'Low',
+                        'volume': 'Volume', 'rsi': 'RSI(14)', 'sma50': 'SMA(50)',
+                        'sma200': 'SMA(200)', 'ema20': 'EMA(20)', 'atr': 'ATR(14)',
+                        'adx': 'ADX(14)', 'macd': 'MACD', 'bbupper': 'Bollinger Band(20) Upper',
+                        'bblower': 'Bollinger Band(20) Lower'
+                    };
+                    
+                    conditions.push(`${indMap[indicator]} ${operator} ${value}`);
+                }
+            });
+            
+            if (conditions.length === 0) {
+                alert('Please add at least one condition');
+                return;
+            }
+            
+            const query = `// Custom StockFetcher Query
+// Generated by Strategy Tools
+
+${conditions.join('\nand ')}
+
+add column Close
+add column Volume
+add column RSI(14)
+
+sort by Close descending
+
+// End of query`;
+            
+            document.getElementById('customQuery').textContent = query;
+            document.getElementById('builderResult').style.display = 'block';
+        }
+        
+        // Template Loader
+        function loadTemplate(type) {
+            const templates = {
+                'trending': [
+                    { ind: 'close', op: '>', val: 'sma(50)' },
+                    { ind: 'sma50', op: '>', val: 'sma(200)' },
+                    { ind: 'rsi', op: '>', val: '50' }
+                ],
+                'oversold': [
+                    { ind: 'rsi', op: '<', val: '30' },
+                    { ind: 'close', op: '>', val: 'Open' },
+                    { ind: 'volume', op: '>', val: 'Volume average(20)' }
+                ],
+                'breakout': [
+                    { ind: 'close', op: 'crossed above', val: 'High 20 days' },
+                    { ind: 'volume', op: '>', val: 'Volume average(20) * 1.5' },
+                    { ind: 'rsi', op: '>', val: '50' }
+                ],
+                'volatile': [
+                    { ind: 'atr', op: '>', val: 'ATR(14) average(20) * 1.5' },
+                    { ind: 'volume', op: '>', val: 'Volume average(20) * 2' },
+                    { ind: 'rsi', op: 'between', val: '30 and 70' }
+                ],
+                'value': [
+                    { ind: 'close', op: '<', val: 'SMA(200)' },
+                    { ind: 'rsi', op: '<', val: '40' },
+                    { ind: 'volume', op: '>', val: '100000' }
+                ]
+            };
+            
+            const container = document.getElementById('builderRows');
+            container.innerHTML = '';
+            
+            templates[type].forEach(t => {
+                const row = document.createElement('div');
+                row.className = 'builder-row';
+                row.innerHTML = `
+                    <select class="sf-indicator">
+                        <option value="close" ${t.ind === 'close' ? 'selected' : ''}>Close Price</option>
+                        <option value="open" ${t.ind === 'open' ? 'selected' : ''}>Open Price</option>
+                        <option value="high" ${t.ind === 'high' ? 'selected' : ''}>High</option>
+                        <option value="low" ${t.ind === 'low' ? 'selected' : ''}>Low</option>
+                        <option value="volume" ${t.ind === 'volume' ? 'selected' : ''}>Volume</option>
+                        <option value="rsi" ${t.ind === 'rsi' ? 'selected' : ''}>RSI(14)</option>
+                        <option value="sma50" ${t.ind === 'sma50' ? 'selected' : ''}>SMA(50)</option>
+                        <option value="sma200" ${t.ind === 'sma200' ? 'selected' : ''}>SMA(200)</option>
+                        <option value="ema20" ${t.ind === 'ema20' ? 'selected' : ''}>EMA(20)</option>
+                        <option value="atr" ${t.ind === 'atr' ? 'selected' : ''}>ATR(14)</option>
+                        <option value="adx" ${t.ind === 'adx' ? 'selected' : ''}>ADX(14)</option>
+                        <option value="macd" ${t.ind === 'macd' ? 'selected' : ''}>MACD</option>
+                        <option value="bbupper" ${t.ind === 'bbupper' ? 'selected' : ''}>BB Upper</option>
+                        <option value="bblower" ${t.ind === 'bblower' ? 'selected' : ''}>BB Lower</option>
+                    </select>
+                    <select class="sf-operator">
+                        <option value=">" ${t.op === '>' ? 'selected' : ''}>Greater than (&gt;)</option>
+                        <option value="<" ${t.op === '<' ? 'selected' : ''}>Less than (&lt;)</option>
+                        <option value=">=" ${t.op === '>=' ? 'selected' : ''}>Greater or equal (&gt;=)</option>
+                        <option value="<=" ${t.op === '<=' ? 'selected' : ''}>Less or equal (&lt;=)</option>
+                        <option value="=" ${t.op === '=' ? 'selected' : ''}>Equals (=)</option>
+                        <option value="crossed above" ${t.op === 'crossed above' ? 'selected' : ''}>Crossed Above</option>
+                        <option value="crossed below" ${t.op === 'crossed below' ? 'selected' : ''}>Crossed Below</option>
+                        <option value="is above" ${t.op === 'is above' ? 'selected' : ''}>Is Above</option>
+                        <option value="is below" ${t.op === 'is below' ? 'selected' : ''}>Is Below</option>
+                    </select>
+                    <input type="text" class="sf-value" value="${t.val}" placeholder="Value">
+                    <button class="remove-btn" onclick="removeRow(this)">✕</button>
+                `;
+                container.appendChild(row);
+            });
+            
+            // Clear previous result
+            document.getElementById('builderResult').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

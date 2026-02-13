@@ -288,6 +288,23 @@ foreach ($categories_to_build as $cat) {
         'picks'       => $cat_picks,
         'pick_count'  => count($cat_picks)
     );
+
+    // Quick audit log for quick_picks generation (non-pick specific)
+    $audit_reasons = 'Generated quick picks for category: ' . $cat;
+    $audit_supporting_data = json_encode(array('pick_count' =&gt; count($cat_picks)));
+    $audit_pick_details = json_encode($profile);
+    $audit_formatted_for_ai = "Review quick picks generation for $cat:\nRationale: " . $audit_reasons . "\nData: " . $audit_supporting_data;
+
+    $safe_reasons = $conn->real_escape_string($audit_reasons);
+    $safe_supporting = $conn->real_escape_string($audit_supporting_data);
+    $safe_details = $conn->real_escape_string($audit_pick_details);
+    $safe_formatted = $conn->real_escape_string($audit_formatted_for_ai);
+    $pick_timestamp = date('Y-m-d H:i:s');
+
+    $audit_sql = "INSERT INTO audit_trails 
+                  (asset_class, symbol, pick_timestamp, generation_source, reasons, supporting_data, pick_details, formatted_for_ai)
+                  VALUES ('STOCKS', 'QUICK_PICKS', '$pick_timestamp', 'quick_picks.php', '$safe_reasons', '$safe_supporting', '$safe_details', '$safe_formatted')";
+    $conn->query($audit_sql);
 }
 
 // ─── Summary stats ───

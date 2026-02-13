@@ -1,0 +1,114 @@
+name: Shadow Signal Collection
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # Every 30 minutes
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to run'
+        required: true
+        default: 'full_cycle'
+        type: choice
+        options:
+          - full_cycle
+          - collect
+          - resolve
+          - report
+
+jobs:
+  shadow-collect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Shadow Signal Collection
+        id: collect
+        run: |
+          ACTION="${{ github.event.inputs.action || 'full_cycle' }}"
+          echo "Running action: $ACTION"
+          
+          if [ "$ACTION" = "report" ]; then
+            # Just get the report
+            RESPONSE=$(curl -s "https://findtorontoevents.ca/findcryptopairs/ml/shadow_collector.php?action=report")
+            echo "report=$RESPONSE" >> $GITHUB_OUTPUT
+          else
+            # Run the action with admin key
+            RESPONSE=$(curl -s -X POST "https://findtorontoevents.ca/findcryptopairs/ml/shadow_collector.php?action=$ACTION&key=${{ secrets.SHADOW_COLLECTOR_KEY }}")
+            echo "result=$RESPONSE" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "Response: $RESPONSE"
+      
+      - name: Get Progress Report
+        id: progress
+        run: |
+          PROGRESS=$(curl -s "https://findtorontoevents.ca/findcryptopairs/ml/shadow_collector.php?action=progress")
+          echo "progress=$PROGRESS" >> $GITHUB_OUTPUT
+          echo "Progress: $PROGRESS"
+      
+      - name: Parse Progress
+        id: parse
+        run: |
+          PROGRESS='${{ steps.progress.outputs.progress }}'
+          CURRENT=$(echo $PROGRESS | jq -r '.progress.current_signals')
+          TARGET=$(echo $PROGRESS | jq -r '.progress.target_signals')
+          PERCENT=$(echo $PROGRESS | jq -r '.progress.percent_complete')
+          WIN_RATE=$(echo $PROGRESS | jq -r '.progress.current_win_rate')
+          IS_VALID=$(echo $PROGRESS | jq -r '.progress.is_statistically_valid')
+          
+          echo "current=$CURRENT" >> $GITHUB_OUTPUT
+          echo "target=$TARGET" >> $GITHUB_OUTPUT
+          echo "percent=$PERCENT" >> $GITHUB_OUTPUT
+          echo "win_rate=$WIN_RATE" >> $GITHUB_OUTPUT
+          echo "is_valid=$IS_VALID" >> $GITHUB_OUTPUT
+          
+          echo "Current Signals: $CURRENT / $TARGET ($PERCENT%)"
+          echo "Win Rate: $WIN_RATE%"
+          echo "Statistically Valid: $IS_VALID"
+      
+      - name: Comment on PR (if triggered by PR)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const current = '${{ steps.parse.outputs.current }}';
+            const target = '${{ steps.parse.outputs.target }}';
+            const percent = '${{ steps.parse.outputs.percent }}';
+            const winRate = '${{ steps.parse.outputs.win_rate }}';
+            const isValid = '${{ steps.parse.outputs.is_valid }}' === 'true';
+            
+            const status = isValid ? '✅ Statistically Valid' : '⏳ Collecting Data';
+            const progressBar = '█'.repeat(Math.floor(percent / 5)) + '░'.repeat(20 - Math.floor(percent / 5));
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🎯 Shadow Mode Signal Collection\n\n${status}\n\n**Progress:** ${percent}% (${current}/${target})\n\n\`\`\`\n${progressBar}\n\`\`\`\n\n**Current Win Rate:** ${winRate}%\n\n*Target: 350+ signals for 95% CI at 40% win rate*`
+            });
+      
+      - name: Notify on Completion
+        if: steps.parse.outputs.is_valid == 'true'
+        run: |
+          echo "🎉 TARGET REACHED! Shadow mode has collected 350+ signals."
+          echo "The ML model is now statistically validated."
+      
+      - name: Summary
+        run: |
+          echo "## Shadow Signal Collection Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Action:** ${{ github.event.inputs.action || 'full_cycle' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Progress" >> $GITHUB_STEP_SUMMARY
+          echo "- Current Signals: ${{ steps.parse.outputs.current }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Target Signals: ${{ steps.parse.outputs.target }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Completion: ${{ steps.parse.outputs.percent }}%" >> $GITHUB_STEP_SUMMARY
+          echo "- Win Rate: ${{ steps.parse.outputs.win_rate }}%" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.parse.outputs.is_valid }}" = "true" ]; then
+            echo "### ✅ Statistically Valid" >> $GITHUB_STEP_SUMMARY
+            echo "The ML model has collected sufficient data for validation." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ⏳ Collecting Data" >> $GITHUB_STEP_SUMMARY
+            echo "Need ${{ steps.parse.outputs.target }} signals for 95% CI." >> $GITHUB_STEP_SUMMARY
+          fi

@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTCC Volatility Scanner &amp; Top Picks | FTE Crypto</title>
+    <meta name="description"
+        content="Real-time BTCC crypto pair scanner with volatility ranking, TP/SL targets, and trading signals for the most profitable futures pairs.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #06080f;
+            --bg-secondary: #0c1021;
+            --bg-card: #111827;
+            --bg-card-hover: #151d30;
+            --border: #1e293b;
+            --border-active: #3b82f6;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-amber: #f59e0b;
+            --accent-pink: #ec4899;
+            --glow-blue: rgba(59, 130, 246, 0.15);
+            --glow-green: rgba(16, 185, 129, 0.15);
+            --glow-red: rgba(239, 68, 68, 0.15);
+            --glow-purple: rgba(139, 92, 246, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── Animated Background ── */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-grid::before {
+            content: '';
+            position: absolute;
+            inset: -50%;
+            background: radial-gradient(circle at 30% 20%, rgba(59, 130, 246, 0.06) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 50%), radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.03) 0%, transparent 50%);
+            animation: bgPulse 12s ease-in-out infinite alternate;
+        }
+
+        @keyframes bgPulse {
+            0% {
+                transform: scale(1) rotate(0deg);
+            }
+
+            100% {
+                transform: scale(1.1) rotate(3deg);
+            }
+        }
+
+        /* ── Top Bar ── */
+        .top-bar {
+            position: relative;
+            z-index: 10;
+            background: rgba(12, 16, 33, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.6rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+        }
+
+        .top-bar a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .top-bar a:hover {
+            color: var(--text-primary);
+        }
+
+        .top-bar .live-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            animation: livePulse 2s ease-in-out infinite;
+            margin-right: 6px;
+        }
+
+        @keyframes livePulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+            }
+
+            50% {
+                box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+            }
+        }
+
+        /* ── Hero ── */
+        .hero {
+            position: relative;
+            z-index: 5;
+            padding: 2.5rem 1.5rem 1.5rem;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(59, 130, 246, 0.04) 0%, transparent 100%);
+        }
+
+        .hero h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 30%, #06b6d4 60%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.4rem;
+        }
+
+        .hero .subtitle {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .hero .stat {
+            text-align: center;
+        }
+
+        .hero .stat-val {
+            font-size: 1.3rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .hero .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* ── Controls ── */
+        .controls {
+            position: relative;
+            z-index: 5;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--accent-blue);
+            color: var(--text-primary);
+        }
+
+        .filter-btn.active {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .search-input {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-family: 'Inter', sans-serif;
+            flex: 1;
+            min-width: 160px;
+            max-width: 280px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border: none;
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 16px rgba(59, 130, 246, 0.3);
+        }
+
+        .refresh-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .refresh-btn .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ── Grid ── */
+        .main-content {
+            position: relative;
+            z-index: 5;
+            padding: 0.5rem 1rem 2rem;
+        }
+
+        .pairs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 0.75rem;
+        }
+
+        /* ── Pair Card ── */
+        .pair-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1rem 1.15rem;
+            transition: all 0.25s cubic-bezier(.4, 0, .2, 1);
+            cursor: default;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pair-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .pair-card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            background: var(--bg-card-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .pair-card:hover::before {
+            opacity: 1;
+        }
+
+        .pair-card.top-pick {
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .pair-card.top-pick::before {
+            background: linear-gradient(90deg, transparent, var(--accent-green), transparent);
+            opacity: 0.7;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.6rem;
+        }
+
+        .pair-name {
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .pair-name .base {
+            color: var(--text-primary);
+        }
+
+        .pair-name .target {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .rank-badge {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
+            color: var(--accent-blue);
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.05em;
+        }
+
+        .rank-badge.gold {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(236, 72, 153, 0.15));
+            color: var(--accent-amber);
+        }
+
+        .rank-badge.silver {
+            background: linear-gradient(135deg, rgba(148, 163, 184, 0.15), rgba(100, 116, 139, 0.1));
+            color: var(--text-secondary);
+        }
+
+        .rank-badge.bronze {
+            background: linear-gradient(135deg, rgba(217, 119, 6, 0.15), rgba(180, 83, 9, 0.1));
+            color: #d97706;
+        }
+
+        .card-price {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .price {
+            font-size: 1.35rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .price-change {
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+
+        .price-change.up {
+            color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .price-change.down {
+            color: var(--accent-red);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .card-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 0.65rem;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 0.4rem;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 8px;
+        }
+
+        .metric-label {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 600;
+        }
+
+        .metric-val {
+            font-size: 0.85rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 2px;
+        }
+
+        .card-targets {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .target-box {
+            padding: 0.4rem 0.6rem;
+            border-radius: 8px;
+        }
+
+        .target-box.tp {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .target-box.sl {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .target-box .label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+        }
+
+        .target-box.tp .label {
+            color: var(--accent-green);
+        }
+
+        .target-box.sl .label {
+            color: var(--accent-red);
+        }
+
+        .target-box .val {
+            font-size: 0.9rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-primary);
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .rating-stars {
+            color: var(--accent-amber);
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
+
+        .rating-score {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .signal-badge {
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .signal-badge.strong-buy {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .signal-badge.buy {
+            background: rgba(59, 130, 246, 0.12);
+            color: var(--accent-blue);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+        }
+
+        .signal-badge.hold {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--accent-amber);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .signal-badge.sell {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--accent-red);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .trade-link {
+            font-size: 0.7rem;
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .trade-link:hover {
+            color: var(--text-primary);
+            text-decoration: underline;
+        }
+
+        /* ── Volatility Bar ── */
+        .vol-bar-wrap {
+            margin-bottom: 0.5rem;
+        }
+
+        .vol-bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 3px;
+        }
+
+        .vol-bar {
+            height: 4px;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .vol-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.6s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .vol-bar-fill.low {
+            background: linear-gradient(90deg, #10b981, #06b6d4);
+        }
+
+        .vol-bar-fill.med {
+            background: linear-gradient(90deg, #f59e0b, #ec4899);
+        }
+
+        .vol-bar-fill.high {
+            background: linear-gradient(90deg, #ef4444, #ec4899);
+        }
+
+        .vol-bar-fill.extreme {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+            animation: volPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes volPulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        /* ── Loading State ── */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.4s;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-orb {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            animation: orbPulse 1.5s ease-in-out infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes orbPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+            }
+
+            50% {
+                transform: scale(1.15);
+                box-shadow: 0 0 40px rgba(139, 92, 246, 0.4);
+            }
+        }
+
+        .loading-text {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* ── Disclaimer ── */
+        .disclaimer {
+            position: relative;
+            z-index: 5;
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            border-top: 1px solid var(--border);
+            margin-top: 1rem;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 1.4rem;
+            }
+
+            .pairs-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero .stats-row {
+                gap: 1rem;
+            }
+
+            .controls {
+                gap: 0.4rem;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .card-metrics {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.3rem;
+            }
+
+            .metric-val {
+                font-size: 0.75rem;
+            }
+
+            .price {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-grid"></div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-orb"></div>
+        <div class="loading-text">Scanning BTCC Pairs...</div>
+    </div>
+
+    <div class="top-bar">
+        <div>
+            <a href="/findcryptopairs/">← Crypto Scanner</a>
+            <span style="margin: 0 8px; color: var(--border);">|</span>
+            <a href="/findcryptopairs/winners.html">Winners</a>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+            <span class="live-dot"></span>
+            <span style="color:var(--accent-green);font-weight:600;font-size:0.75rem;">LIVE</span>
+            <span id="lastUpdate" style="color:var(--text-muted);font-size:0.7rem;"></span>
+        </div>
+    </div>
+
+    <div class="hero">
+        <h1>⚡ BTCC Volatility Scanner</h1>
+        <p class="subtitle">Real-time pair ranking with TP/SL targets for the most volatile BTCC futures pairs</p>
+        <div class="stats-row">
+            <div class="stat">
+                <div class="stat-val" id="totalPairs" style="color:var(--accent-blue);">--</div>
+                <div class="stat-label">Pairs Scanned</div>
+            </div>
+            <div class="stat">
+                <div class="stat-val" id="topVolatility" style="color:var(--accent-amber);">--</div>
+                <div class="stat-label">Top Spread %</div>
+            </div>
+            <div class="stat">
+                <div class="stat-val" id="totalVolume" style="color:var(--accent-green);">--</div>
+                <div class="stat-label">24h Volume</div>
+            </div>
+            <div class="stat">
+                <div class="stat-val" id="strongBuys" style="color:var(--accent-cyan);">--</div>
+                <div class="stat-label">Strong Buys</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All Pairs</button>
+        <button class="filter-btn" data-filter="strong-buy" onclick="setFilter('strong-buy')">🔥 Strong Buy</button>
+        <button class="filter-btn" data-filter="buy" onclick="setFilter('buy')">📈 Buy</button>
+        <button class="filter-btn" data-filter="volatile" onclick="setFilter('volatile')">💥 Volatile</button>
+        <button class="filter-btn" data-filter="large-cap" onclick="setFilter('large-cap')">🏦 Large Cap</button>
+        <button class="filter-btn" data-filter="meme" onclick="setFilter('meme')">🐸 Meme</button>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search pair... (BTC, SOL, AVAX)"
+            oninput="filterPairs()">
+        <button class="refresh-btn" id="refreshBtn" onclick="fetchData()">
+            ↻ Refresh
+        </button>
+    </div>
+
+    <div class="main-content">
+        <div class="pairs-grid" id="pairsGrid"></div>
+    </div>
+
+    <div class="disclaimer">
+        ⚠️ Not financial advice. All targets are algorithm-generated based on spread &amp; volume analysis.
+        BTCC futures carry high risk — never trade with money you can't afford to lose.
+        <br>Data via CoinGecko &amp; Binance public APIs. Auto-refreshes every 60s.
+    </div>
+
+    <script>
+        // ── Config ───────────────────────────────────────────────────
+        const COINGECKO_BTCC = 'https://api.coingecko.com/api/v3/exchanges/btcc/tickers';
+        const BINANCE_TICKER = 'https://api.binance.com/api/v3/ticker/24hr';
+        const BINANCE_KLINES = 'https://api.binance.com/api/v3/klines';
+
+        const MEME_COINS = new Set(['DOGE', 'SHIB', 'PEPE', 'BONK', 'WIF', 'FLOKI', 'NEIRO', 'PNUT', 'PENGU', 'TRUMP', 'PUMP']);
+        const LARGE_CAP = new Set(['BTC', 'ETH', 'BNB', 'XRP', 'SOL', 'ADA', 'TRX', 'TON', 'AVAX', 'DOT', 'LINK', 'BCH', 'LTC', 'HBAR']);
+
+        let allPairs = [];
+        let currentFilter = 'all';
+        let refreshInterval;
+
+        // ── Data Fetching ────────────────────────────────────────────
+        async function fetchData() {
+            const btn = document.getElementById('refreshBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Scanning...';
+
+            try {
+                // 1. Get BTCC tickers from CoinGecko
+                const resp = await fetch(COINGECKO_BTCC);
+                const data = await resp.json();
+                const btccTickers = data.tickers || [];
+
+                // 2. Filter to USDT pairs only (for trading), skip stablecoins
+                const stablecoins = new Set(['USDC', 'USDT', 'USD1', 'XUSD', 'PAXG']);
+                const usdtPairs = btccTickers.filter(t =>
+                    t.target === 'USDT' && !stablecoins.has(t.base)
+                );
+
+                // 3. Try to enrich with Binance 24h stats for volatility data
+                let binanceMap = {};
+                try {
+                    const bResp = await fetch(BINANCE_TICKER);
+                    const bData = await bResp.json();
+                    bData.forEach(t => {
+                        binanceMap[t.symbol] = t;
+                    });
+                } catch (e) { console.warn('Binance ticker fallback:', e); }
+
+                // 4. Score and rank each pair
+                allPairs = usdtPairs.map((ticker, i) => {
+                    const symbol = ticker.base + 'USDT';
+                    const binance = binanceMap[symbol] || {};
+                    const price = ticker.last;
+                    const vol24h = ticker.converted_volume?.usd || 0;
+                    const spread = ticker.bid_ask_spread_percentage || 0;
+                    const mcap = ticker.coin_mcap_usd || 0;
+
+                    // Binance enrichment
+                    const priceChange = binance.priceChangePercent ? parseFloat(binance.priceChangePercent) : null;
+                    const high24h = binance.highPrice ? parseFloat(binance.highPrice) : null;
+                    const low24h = binance.lowPrice ? parseFloat(binance.lowPrice) : null;
+
+                    // Volatility from Binance high-low range
+                    let volatility = spread; // fallback to spread
+                    if (high24h && low24h && low24h > 0) {
+                        volatility = ((high24h - low24h) / low24h) * 100;
+                    }
+
+                    // ── Scoring Algorithm ──
+                    let score = 0;
+                    let signals = [];
+
+                    // Volume score (0-25): higher volume = more liquid = tradeable
+                    if (vol24h > 10000000) { score += 25; signals.push('High Volume'); }
+                    else if (vol24h > 1000000) { score += 18; signals.push('Good Volume'); }
+                    else if (vol24h > 500000) { score += 12; }
+                    else { score += 5; }
+
+                    // Volatility score (0-25): sweet spot is 3-8% daily range
+                    if (volatility >= 3 && volatility <= 8) { score += 25; signals.push('Ideal Volatility'); }
+                    else if (volatility >= 2 && volatility <= 12) { score += 18; }
+                    else if (volatility > 12) { score += 10; signals.push('⚠ Extreme Vol'); }
+                    else { score += 5; }
+
+                    // Price momentum (0-20)
+                    if (priceChange !== null) {
+                        if (priceChange >= 2 && priceChange <= 10) { score += 20; signals.push('Bullish Momentum'); }
+                        else if (priceChange >= 0.5) { score += 15; }
+                        else if (priceChange >= -2) { score += 10; }
+                        else if (priceChange < -5) { score += 5; signals.push('Oversold Bounce?'); }
+                        else { score += 8; }
+                    } else { score += 10; }
+
+                    // Spread score (0-15): tighter spread = better execution
+                    if (spread < 0.05) { score += 15; signals.push('Tight Spread'); }
+                    else if (spread < 0.15) { score += 10; }
+                    else if (spread < 0.3) { score += 5; }
+                    else { score += 2; signals.push('Wide Spread'); }
+
+                    // Market cap bonus (0-15)
+                    if (mcap > 10000000000) { score += 15; }
+                    else if (mcap > 1000000000) { score += 12; }
+                    else if (mcap > 100000000) { score += 8; }
+                    else { score += 4; }
+
+                    // ── TP / SL Calculation (ATR-based proxy) ──
+                    const atrProxy = volatility > 0 ? (price * volatility / 100) : (price * spread / 100 * 10);
+                    const tp1 = price + (atrProxy * 0.8);  // Conservative TP
+                    const tp2 = price + (atrProxy * 1.5);  // Aggressive TP 
+                    const sl = price - (atrProxy * 0.5);   // Stop loss
+                    const rr = atrProxy > 0 ? ((tp1 - price) / (price - sl)).toFixed(1) : '?';
+
+                    // ── Signal determination ──
+                    let signal = 'hold';
+                    if (score >= 80) signal = 'strong-buy';
+                    else if (score >= 65) signal = 'buy';
+                    else if (score >= 45) signal = 'hold';
+                    else signal = 'sell';
+
+                    return {
+                        base: ticker.base,
+                        target: ticker.target,
+                        symbol,
+                        price,
+                        priceChange,
+                        vol24h,
+                        spread,
+                        volatility,
+                        mcap,
+                        score,
+                        signal,
+                        signals,
+                        tp1, tp2, sl, rr,
+                        high24h, low24h,
+                        tradeUrl: ticker.trade_url,
+                        coinId: ticker.coin_id,
+                        isMeme: MEME_COINS.has(ticker.base),
+                        isLargeCap: LARGE_CAP.has(ticker.base),
+                        timestamp: ticker.timestamp
+                    };
+                });
+
+                // Sort by score descending
+                allPairs.sort((a, b) => b.score - a.score);
+
+                // Assign ranks
+                allPairs.forEach((p, i) => p.rank = i + 1);
+
+                // Update stats
+                document.getElementById('totalPairs').textContent = allPairs.length;
+                document.getElementById('topVolatility').textContent =
+                    allPairs.length > 0 ? Math.max(...allPairs.map(p => p.volatility)).toFixed(1) + '%' : '--';
+                const totalVol = allPairs.reduce((s, p) => s + p.vol24h, 0);
+                document.getElementById('totalVolume').textContent = formatUSD(totalVol);
+                document.getElementById('strongBuys').textContent = allPairs.filter(p => p.signal === 'strong-buy').length;
+
+                document.getElementById('lastUpdate').textContent =
+                    'Updated: ' + new Date().toLocaleTimeString();
+
+                renderPairs();
+
+            } catch (err) {
+                console.error('Fetch error:', err);
+                document.getElementById('pairsGrid').innerHTML =
+                    `<div style="grid-column:1/-1;text-align:center;color:var(--accent-red);padding:2rem;">
+        Error fetching data: ${err.message}. Retrying in 30s...
+      </div>`;
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '↻ Refresh';
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+
+        // ── Rendering ────────────────────────────────────────────────
+        function renderPairs() {
+            const grid = document.getElementById('pairsGrid');
+            const query = document.getElementById('searchInput').value.toUpperCase();
+
+            let filtered = allPairs.filter(p => {
+                // Search filter
+                if (query && !p.symbol.includes(query) && !p.base.includes(query)) return false;
+
+                // Category filter
+                if (currentFilter === 'strong-buy') return p.signal === 'strong-buy';
+                if (currentFilter === 'buy') return p.signal === 'buy' || p.signal === 'strong-buy';
+                if (currentFilter === 'volatile') return p.volatility > 5;
+                if (currentFilter === 'large-cap') return p.isLargeCap;
+                if (currentFilter === 'meme') return p.isMeme;
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:2rem;">
+      No pairs match your filters. Try broadening your search.
+    </div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(p => buildCard(p)).join('');
+        }
+
+        function buildCard(p) {
+            const rankClass = p.rank <= 3 ? (p.rank === 1 ? 'gold' : p.rank === 2 ? 'silver' : 'bronze') : '';
+            const topPick = p.rank <= 5 ? 'top-pick' : '';
+
+            const changeClass = p.priceChange !== null ? (p.priceChange >= 0 ? 'up' : 'down') : '';
+            const changeSymbol = p.priceChange !== null ? (p.priceChange >= 0 ? '+' : '') : '';
+            const changeText = p.priceChange !== null ? `${changeSymbol}${p.priceChange.toFixed(2)}%` : 'N/A';
+
+            const volLevel = p.volatility > 10 ? 'extreme' : p.volatility > 5 ? 'high' : p.volatility > 2 ? 'med' : 'low';
+            const volWidth = Math.min(100, (p.volatility / 15) * 100);
+
+            const stars = getStars(p.score);
+
+            const signalLabel = {
+                'strong-buy': 'STRONG BUY',
+                'buy': 'BUY',
+                'hold': 'HOLD',
+                'sell': 'AVOID'
+            }[p.signal] || 'HOLD';
+
+            return `
+    <div class="pair-card ${topPick}" id="pair-${p.base}">
+      <div class="card-header">
+        <div class="pair-name">
+          <span class="base">${p.base}</span><span class="target">/USDT</span>
+          ${p.isMeme ? ' 🐸' : ''}${p.isLargeCap ? ' 🏦' : ''}
+        </div>
+        <span class="rank-badge ${rankClass}">#${p.rank}</span>
+      </div>
+      
+      <div class="card-price">
+        <span class="price">$${formatPrice(p.price)}</span>
+        <span class="price-change ${changeClass}">${changeText}</span>
+      </div>
+      
+      <div class="vol-bar-wrap">
+        <div class="vol-bar-label">
+          <span>Volatility</span>
+          <span>${p.volatility.toFixed(2)}%</span>
+        </div>
+        <div class="vol-bar">
+          <div class="vol-bar-fill ${volLevel}" style="width:${volWidth}%"></div>
+        </div>
+      </div>
+      
+      <div class="card-metrics">
+        <div class="metric">
+          <div class="metric-label">24h Volume</div>
+          <div class="metric-val">${formatCompact(p.vol24h)}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Spread</div>
+          <div class="metric-val">${p.spread.toFixed(3)}%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">R:R Ratio</div>
+          <div class="metric-val" style="color:${parseFloat(p.rr) >= 1.5 ? 'var(--accent-green)' : p.rr === '?' ? 'var(--text-muted)' : 'var(--accent-amber)'}">${p.rr}:1</div>
+        </div>
+      </div>
+      
+      <div class="card-targets">
+        <div class="target-box tp">
+          <div class="label">TP Target</div>
+          <div class="val">$${formatPrice(p.tp1)}</div>
+        </div>
+        <div class="target-box sl">
+          <div class="label">Stop Loss</div>
+          <div class="val">$${formatPrice(p.sl)}</div>
+        </div>
+      </div>
+      
+      <div class="card-footer">
+        <div class="rating">
+          <span class="rating-stars">${stars}</span>
+          <span class="rating-score">${p.score}/100</span>
+        </div>
+        <span class="signal-badge ${p.signal}">${signalLabel}</span>
+        <a href="${p.tradeUrl || '#'}" target="_blank" rel="noopener" class="trade-link">Trade ↗</a>
+      </div>
+    </div>`;
+        }
+
+        // ── Utilities ────────────────────────────────────────────────
+        function formatPrice(n) {
+            if (n === undefined || n === null || isNaN(n)) return '?.??';
+            if (n >= 1000) return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            if (n >= 1) return n.toFixed(4);
+            if (n >= 0.001) return n.toFixed(6);
+            return n.toExponential(3);
+        }
+
+        function formatCompact(n) {
+            if (n >= 1e9) return '$' + (n / 1e9).toFixed(1) + 'B';
+            if (n >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
+            if (n >= 1e3) return '$' + (n / 1e3).toFixed(0) + 'K';
+            return '$' + n.toFixed(0);
+        }
+
+        function formatUSD(n) {
+            if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
+            if (n >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
+            return '$' + n.toLocaleString();
+        }
+
+        function getStars(score) {
+            const full = Math.floor(score / 20);
+            const half = score % 20 >= 10 ? 1 : 0;
+            const empty = 5 - full - half;
+            return '★'.repeat(full) + (half ? '☆' : '') + '☆'.repeat(empty);
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.filter === filter);
+            });
+            renderPairs();
+        }
+
+        function filterPairs() {
+            renderPairs();
+        }
+
+        // ── Init ─────────────────────────────────────────────────────
+        fetchData();
+        refreshInterval = setInterval(fetchData, 60000); // Auto-refresh every 60s
+    </script>
+
+    <script src="/findstocks/portfolio2/stock-nav.js"></script>
+</body>
+
+</html>

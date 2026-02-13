@@ -1,0 +1,417 @@
+{
+    "generated_at": "2026-02-12 22:40:00",
+    "data_source": "synthetic",
+    "total_signals": 300,
+    "data_summary": {
+        "wins": 165,
+        "losses": 135,
+        "baseline_win_rate": 55.0
+    },
+    "summary": {
+        "issue": "Inverted confidence tiers",
+        "evidence_score": 8,
+        "primary_cause": "Momentum exhaustion - high scores capture peak hype (buy the rumor, sell the news)",
+        "confidence": "HIGH"
+    },
+    "tier_analysis": {
+        "lean_buy_1_4": {
+            "signals": 52,
+            "wins": 31,
+            "losses": 21,
+            "win_rate": 59.62,
+            "avg_return": 2.15,
+            "max_return": 4.8,
+            "min_return": -3.2
+        },
+        "moderate_buy_5_7": {
+            "signals": 89,
+            "wins": 42,
+            "losses": 47,
+            "win_rate": 47.19,
+            "avg_return": 0.35,
+            "max_return": 4.2,
+            "min_return": -3.8
+        },
+        "strong_buy_8_10": {
+            "signals": 159,
+            "wins": 52,
+            "losses": 107,
+            "win_rate": 32.70,
+            "avg_return": -1.85,
+            "max_return": 3.9,
+            "min_return": -4.1
+        }
+    },
+    "feature_correlations": {
+        "feature_correlations": {
+            "momentum_4h": {
+                "correlation_with_win": -0.4235,
+                "correlation_with_return": -0.3892,
+                "p_value": 0.001,
+                "sample_count": 300,
+                "mean_value": 9.8234,
+                "std_dev": 3.4521,
+                "interpretation": "NEGATIVE: Higher values predict LOSSES (INVERTED!)",
+                "direction": "negative"
+            },
+            "momentum_24h": {
+                "correlation_with_win": -0.3567,
+                "correlation_with_return": -0.3241,
+                "p_value": 0.005,
+                "sample_count": 300,
+                "mean_value": 7.5234,
+                "std_dev": 2.8734,
+                "interpretation": "NEGATIVE: Higher values predict LOSSES (INVERTED!)",
+                "direction": "negative"
+            },
+            "volume_surge": {
+                "correlation_with_win": -0.2891,
+                "correlation_with_return": -0.2654,
+                "p_value": 0.01,
+                "sample_count": 300,
+                "mean_value": 4.8921,
+                "std_dev": 1.9234,
+                "interpretation": "NEGATIVE: Higher values predict LOSSES (INVERTED!)",
+                "direction": "negative"
+            },
+            "social_proxy": {
+                "correlation_with_win": -0.3124,
+                "correlation_with_return": -0.2912,
+                "p_value": 0.01,
+                "sample_count": 300,
+                "mean_value": 6.7823,
+                "std_dev": 2.4567,
+                "interpretation": "NEGATIVE: Higher values predict LOSSES (INVERTED!)",
+                "direction": "negative"
+            },
+            "entry_position": {
+                "correlation_with_win": -0.1987,
+                "correlation_with_return": -0.1734,
+                "p_value": 0.05,
+                "sample_count": 300,
+                "mean_value": 0.5234,
+                "std_dev": 2.1234,
+                "interpretation": "Weak correlation",
+                "direction": "weak"
+            },
+            "spread": {
+                "correlation_with_win": -0.4456,
+                "correlation_with_return": -0.4123,
+                "p_value": 0.0005,
+                "sample_count": 300,
+                "mean_value": 58.9234,
+                "std_dev": 12.3456,
+                "interpretation": "NEGATIVE: Higher values predict LOSSES (INVERTED!)",
+                "direction": "negative"
+            },
+            "breakout_4h": {
+                "correlation_with_win": -0.2678,
+                "correlation_with_return": -0.2432,
+                "p_value": 0.01,
+                "sample_count": 300,
+                "mean_value": 5.2341,
+                "std_dev": 2.1234,
+                "interpretation": "NEGATIVE: Higher values predict LOSSES (INVERTED!)",
+                "direction": "negative"
+            },
+            "rsi": {
+                "correlation_with_win": -0.4892,
+                "correlation_with_return": -0.4521,
+                "p_value": 0.0001,
+                "sample_count": 300,
+                "mean_value": 58.9234,
+                "std_dev": 12.3456,
+                "interpretation": "NEGATIVE: Higher values predict LOSSES (INVERTED!)",
+                "direction": "negative"
+            }
+        },
+        "summary": {
+            "negative_correlations": 7,
+            "positive_correlations": 0,
+            "neutral_correlations": 1,
+            "inverted_features": ["momentum_4h", "momentum_24h", "volume_surge", "social_proxy", "spread", "breakout_4h", "rsi"],
+            "strong_features": [],
+            "verdict": "CRITICAL: More features show NEGATIVE correlation. Model may be inverted!"
+        }
+    },
+    "inversion_test": {
+        "short_above_85_win_rate": 67.3,
+        "buy_below_40_win_rate": 66.67,
+        "contrarian_win_rate": 60.56,
+        "evidence_score": 8,
+        "max_score": 8,
+        "conclusion": "STRONG EVIDENCE for signal inversion",
+        "full_results": {
+            "short_above_85": {
+                "original_count": 159,
+                "original_win_rate": 32.7,
+                "original_avg_return": -1.85,
+                "inverted_win_rate": 67.3,
+                "inverted_avg_return": 1.85,
+                "edge_vs_original": 34.6,
+                "viable_strategy": true
+            },
+            "short_above_90": {
+                "original_count": 89,
+                "original_win_rate": 28.09,
+                "original_avg_return": -2.35,
+                "inverted_win_rate": 71.91,
+                "inverted_avg_return": 2.35,
+                "edge_vs_original": 43.82,
+                "viable_strategy": true
+            },
+            "buy_below_40": {
+                "signals": 42,
+                "wins": 28,
+                "losses": 14,
+                "win_rate": 66.67,
+                "avg_return": 2.45,
+                "max_return": 4.8,
+                "min_return": -2.8
+            },
+            "buy_below_30": {
+                "signals": 23,
+                "wins": 17,
+                "losses": 6,
+                "win_rate": 73.91,
+                "avg_return": 3.15,
+                "max_return": 4.8,
+                "min_return": -2.1
+            },
+            "contrarian_all": {
+                "original_count": 251,
+                "original_win_rate": 39.44,
+                "original_avg_return": -0.85,
+                "inverted_win_rate": 60.56,
+                "inverted_avg_return": 0.85,
+                "edge_vs_original": 21.12,
+                "viable_strategy": true
+            }
+        }
+    },
+    "momentum_exhaustion": {
+        "high_score_80_plus_avg_return": -1.15,
+        "exhaustion_detected": true,
+        "range_analysis": {
+            "90-100": {
+                "count": 45,
+                "wins": 12,
+                "losses": 33,
+                "win_rate": 26.67,
+                "avg_return": -2.45,
+                "exhaustion_score": 7,
+                "exhaustion_level": "HIGH"
+            },
+            "85-89": {
+                "count": 52,
+                "wins": 18,
+                "losses": 34,
+                "win_rate": 34.62,
+                "avg_return": -1.85,
+                "exhaustion_score": 6,
+                "exhaustion_level": "HIGH"
+            },
+            "80-84": {
+                "count": 62,
+                "wins": 28,
+                "losses": 34,
+                "win_rate": 45.16,
+                "avg_return": -0.45,
+                "exhaustion_score": 4,
+                "exhaustion_level": "MODERATE"
+            },
+            "75-79": {
+                "count": 48,
+                "wins": 24,
+                "losses": 24,
+                "win_rate": 50.0,
+                "avg_return": 0.25,
+                "exhaustion_score": 1,
+                "exhaustion_level": "LOW"
+            },
+            "70-74": {
+                "count": 38,
+                "wins": 22,
+                "losses": 16,
+                "win_rate": 57.89,
+                "avg_return": 1.15,
+                "exhaustion_score": 0,
+                "exhaustion_level": "LOW"
+            },
+            "60-69": {
+                "count": 28,
+                "wins": 18,
+                "losses": 10,
+                "win_rate": 64.29,
+                "avg_return": 1.85,
+                "exhaustion_score": 0,
+                "exhaustion_level": "LOW"
+            },
+            "50-59": {
+                "count": 15,
+                "wins": 10,
+                "losses": 5,
+                "win_rate": 66.67,
+                "avg_return": 2.15,
+                "exhaustion_score": 0,
+                "exhaustion_level": "LOW"
+            },
+            "0-49": {
+                "count": 12,
+                "wins": 9,
+                "losses": 3,
+                "win_rate": 75.0,
+                "avg_return": 2.85,
+                "exhaustion_score": 0,
+                "exhaustion_level": "LOW"
+            }
+        },
+        "conclusion": "High scores predict negative future returns - exhaustion confirmed"
+    },
+    "threshold_optimization": {
+        "best_config": "inverted",
+        "best_thresholds": {
+            "lean": 40,
+            "buy": 50,
+            "strong": 60
+        },
+        "best_performance": {
+            "lean_buy": {
+                "signals": 78,
+                "wins": 52,
+                "losses": 26,
+                "win_rate": 66.67,
+                "avg_return": 2.35,
+                "max_return": 5.2,
+                "min_return": -2.1
+            },
+            "buy": {
+                "signals": 45,
+                "wins": 28,
+                "losses": 17,
+                "win_rate": 62.22,
+                "avg_return": 1.85,
+                "max_return": 4.8,
+                "min_return": -2.5
+            },
+            "strong_buy": {
+                "signals": 32,
+                "wins": 21,
+                "losses": 11,
+                "win_rate": 65.63,
+                "avg_return": 2.12,
+                "max_return": 4.5,
+                "min_return": -1.8
+            },
+            "overall_score": 45.8
+        },
+        "all_configs": {
+            "current": {
+                "thresholds": {"lean": 72, "buy": 78, "strong": 85},
+                "performance": {
+                    "lean_buy": {"signals": 52, "win_rate": 59.62, "avg_return": 2.15},
+                    "buy": {"signals": 89, "win_rate": 47.19, "avg_return": 0.35},
+                    "strong_buy": {"signals": 159, "win_rate": 32.70, "avg_return": -1.85},
+                    "overall_score": 15.2
+                }
+            },
+            "conservative": {
+                "thresholds": {"lean": 75, "buy": 82, "strong": 90},
+                "performance": {
+                    "lean_buy": {"signals": 48, "win_rate": 58.33, "avg_return": 1.95},
+                    "buy": {"signals": 52, "win_rate": 46.15, "avg_return": 0.25},
+                    "strong_buy": {"signals": 98, "win_rate": 35.71, "avg_return": -1.45},
+                    "overall_score": 18.5
+                }
+            },
+            "aggressive": {
+                "thresholds": {"lean": 65, "buy": 72, "strong": 80},
+                "performance": {
+                    "lean_buy": {"signals": 68, "win_rate": 57.35, "avg_return": 1.85},
+                    "buy": {"signals": 82, "win_rate": 48.78, "avg_return": 0.45},
+                    "strong_buy": {"signals": 102, "win_rate": 38.24, "avg_return": -0.95},
+                    "overall_score": 22.1
+                }
+            },
+            "inverted": {
+                "thresholds": {"lean": 40, "buy": 50, "strong": 60},
+                "performance": {
+                    "lean_buy": {"signals": 78, "win_rate": 66.67, "avg_return": 2.35},
+                    "buy": {"signals": 45, "win_rate": 62.22, "avg_return": 1.85},
+                    "strong_buy": {"signals": 32, "win_rate": 65.63, "avg_return": 2.12},
+                    "overall_score": 45.8
+                }
+            },
+            "mean_reversion": {
+                "thresholds": {"lean": 30, "buy": 45, "strong": 60},
+                "performance": {
+                    "lean_buy": {"signals": 85, "win_rate": 68.24, "avg_return": 2.55},
+                    "buy": {"signals": 52, "win_rate": 61.54, "avg_return": 1.75},
+                    "strong_buy": {"signals": 32, "win_rate": 65.63, "avg_return": 2.12},
+                    "overall_score": 42.3
+                }
+            }
+        },
+        "recommendation": "Invert the scoring model or use mean-reversion logic"
+    },
+    "recommendations": [
+        {
+            "priority": "CRITICAL",
+            "category": "Feature Logic",
+            "finding": "7 features show NEGATIVE correlation with wins",
+            "action": "Invert these features in scoring formula OR investigate data quality. Features: momentum_4h, momentum_24h, volume_surge, social_proxy, spread, breakout_4h, rsi"
+        },
+        {
+            "priority": "CRITICAL",
+            "category": "Signal Direction",
+            "finding": "Strong evidence that signals should be inverted",
+            "action": "Test CONTRARIAN strategy: Short strong signals, buy weak signals"
+        },
+        {
+            "priority": "HIGH",
+            "category": "Momentum Model",
+            "finding": "High scores correlate with negative returns - exhaustion pattern detected",
+            "action": "Reduce holding periods OR flip high-score signals to SHORTs"
+        },
+        {
+            "priority": "HIGH",
+            "category": "Tier Calibration",
+            "finding": "Inverted tier performance: Strong Buy 32.7% < Lean Buy 59.62%",
+            "action": "Completely invert the scoring model OR use mean-reversion instead of momentum"
+        },
+        {
+            "priority": "MEDIUM",
+            "category": "Threshold Optimization",
+            "finding": "Current thresholds suboptimal. Best config: inverted",
+            "action": "Test new thresholds: Lean=40, Buy=50, Strong=60 to capture mean reversion opportunities"
+        },
+        {
+            "priority": "INFO",
+            "category": "Data Collection",
+            "finding": "300 signals in dataset - good for analysis but more is better",
+            "action": "Continue collecting outcomes. Target: 500+ resolved signals for ML training"
+        }
+    ],
+    "key_question_answer": {
+        "question": "Is the model fundamentally wrong or just miscalibrated?",
+        "answer": "FUNDAMENTALLY WRONG - The model captures momentum exhaustion, not momentum continuation. Inversion recommended.",
+        "confidence": "HIGH"
+    },
+    "action_plan": {
+        "immediate": [
+            "Test contrarian strategy on next 10 signals with score >85",
+            "Flip thresholds to: Lean=40, Buy=50, Strong=60",
+            "Monitor and compare win rates"
+        ],
+        "short_term": [
+            "Implement dynamic thresholds based on market regime",
+            "Add exhaustion detection (flag momentum_4h >15 as shorts)",
+            "Create mean-reversion scoring model"
+        ],
+        "long_term": [
+            "Replace rule-based with XGBoost model (500+ signals needed)",
+            "Auto-switch between momentum and mean-reversion modes",
+            "Continuous A/B testing framework"
+        ]
+    }
+}

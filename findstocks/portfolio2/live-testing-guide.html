@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Live Testing Guide | Real-Time Data, Paper Trading & Algo Platforms</title>
+    <meta name="description" content="Free resources for forward-testing trading strategies with real-time data, paper trading, and algorithmic trading platforms. No credit card required.">
+    <link rel="canonical" href="https://findtorontoevents.ca/findstocks/portfolio2/live-testing-guide.html">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0a0a12 0%, #0d1f0d 50%, #0a121a 100%);
+            color: #c8c8d8;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            background: linear-gradient(180deg, rgba(34,197,94,0.1), transparent);
+        }
+        .header h1 {
+            font-size: 42px;
+            font-weight: 200;
+            letter-spacing: 3px;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+        .header h1 span { color: #22c55e; font-weight: 600; }
+        .header .subtitle {
+            color: #889;
+            font-size: 17px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .header .tagline {
+            color: #22c55e;
+            font-size: 14px;
+            margin-top: 16px;
+            font-weight: 500;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        /* Section Cards */
+        .section-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+        .section-card h2 {
+            color: #fff;
+            font-size: 24px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .section-intro {
+            color: #889;
+            font-size: 15px;
+            margin-bottom: 24px;
+            line-height: 1.7;
+        }
+        
+        /* Platform Grid */
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .platform-card {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .platform-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(34,197,94,0.3);
+        }
+        .platform-card.featured {
+            border-color: rgba(245,158,11,0.3);
+            background: linear-gradient(135deg, rgba(245,158,11,0.05), transparent);
+        }
+        .platform-card.best {
+            border-color: rgba(34,197,94,0.3);
+            background: linear-gradient(135deg, rgba(34,197,94,0.05), transparent);
+        }
+        
+        .platform-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .platform-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .icon-alpaca { background: linear-gradient(135deg, #f4a261, #e76f51); }
+        .icon-quantconnect { background: linear-gradient(135deg, #9b5de5, #f15bb5); }
+        .icon-tradingview { background: linear-gradient(135deg, #00d4aa, #00a8e8); }
+        .icon-binance { background: linear-gradient(135deg, #f0b90b, #fcd535); }
+        .icon-webull { background: linear-gradient(135deg, #ff6b35, #f7931e); }
+        .icon-backtrader { background: linear-gradient(135deg, #4361ee, #3a0ca3); }
+        
+        .platform-title {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .platform-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            font-size: 10px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .badge-free { background: rgba(34,197,94,0.2); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+        .badge-best { background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+        
+        .platform-desc {
+            color: #aab;
+            font-size: 13px;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+        
+        .platform-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+        .platform-features li {
+            color: #889;
+            font-size: 12px;
+            padding: 6px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        .platform-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #22c55e;
+        }
+        .platform-features li.limit::before {
+            content: '⚠';
+            color: #f59e0b;
+        }
+        
+        .platform-cta {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-primary {
+            flex: 1;
+            padding: 12px;
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.3);
+            color: #22c55e;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover {
+            background: rgba(34,197,94,0.2);
+        }
+        .btn-secondary {
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #889;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 13px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .btn-secondary:hover {
+            border-color: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+        
+        /* Comparison Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .comparison-table th {
+            background: rgba(255,255,255,0.05);
+            color: #889;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 14px;
+            text-align: left;
+        }
+        .comparison-table td {
+            padding: 16px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #aab;
+            font-size: 13px;
+        }
+        .comparison-table tr:hover td {
+            background: rgba(255,255,255,0.02);
+        }
+        .check { color: #22c55e; font-weight: 600; }
+        .partial { color: #f59e0b; }
+        .cross { color: #ef4444; }
+        
+        /* Step Guide */
+        .step-flow {
+            display: grid;
+            gap: 16px;
+        }
+        .step-card {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            gap: 20px;
+        }
+        @media (max-width: 600px) {
+            .step-card { flex-direction: column; }
+        }
+        .step-number {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .step-content h3 {
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        .step-content p {
+            color: #889;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+        .step-code {
+            background: #0d1117;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #e6edf3;
+            overflow-x: auto;
+        }
+        
+        /* Code Block */
+        .code-block {
+            background: #0d1117;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .code-label {
+            font-size: 12px;
+            color: #667;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .copy-btn {
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.3);
+            color: #22c55e;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        pre {
+            padding: 20px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #e6edf3;
+            max-height: 400px;
+        }
+        
+        /* Architecture Diagram */
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 32px;
+            flex-wrap: wrap;
+        }
+        .arch-box {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px 24px;
+            text-align: center;
+            min-width: 140px;
+        }
+        .arch-box .icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .arch-box .label {
+            color: #fff;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .arch-box .sub {
+            color: #667;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+        .arch-arrow {
+            color: #22c55e;
+            font-size: 24px;
+        }
+        @media (max-width: 768px) {
+            .arch-flow { flex-direction: column; }
+            .arch-arrow { transform: rotate(90deg); }
+        }
+        
+        /* Warning Box */
+        .warning-box {
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+        .warning-box h4 {
+            color: #ef4444;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        .warning-box p {
+            color: #b88;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+        
+        /* Tips Grid */
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+        .tip-card {
+            background: rgba(59,130,246,0.05);
+            border: 1px solid rgba(59,130,246,0.15);
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .tip-card h4 {
+            color: #3b82f6;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        .tip-card p {
+            color: #889;
+            font-size: 12px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 28px; }
+            .platform-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><span>Free</span> Live Testing Guide</h1>
+        <div class="subtitle">
+            Real-time data, paper trading, and algorithmic trading platforms.<br>
+            Forward-test your strategies without risking real money. No credit card required.
+        </div>
+        <div class="tagline">📊 REAL-TIME DATA → 🤖 PAPER TRADING → 📈 FORWARD RESULTS</div>
+    </div>
+    
+    <div class="container">
+        
+        <!-- Immediate Start Banner -->
+        <div style="margin-bottom:24px;padding:24px;background:linear-gradient(135deg,rgba(34,197,94,0.1),rgba(59,130,246,0.05));border:1px solid rgba(34,197,94,0.2);border-radius:16px;">
+            <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+                <div style="font-size:48px;">🚀</div>
+                <div style="flex:1;">
+                    <div style="color:#fff;font-weight:600;font-size:18px;">Want to start RIGHT NOW without any setup?</div>
+                    <div style="color:#889;font-size:14px;margin-top:6px;">
+                        Try our <strong style="color:#22c55e;">Free Live Screener</strong> - works instantly with real-time crypto data, 
+                        paper trading, and Ichimoku signals. No accounts, no API keys, no waiting.
+                    </div>
+                </div>
+                <a href="free-live-screener.html" style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:10px;color:#22c55e;text-decoration:none;font-size:14px;font-weight:600;white-space:nowrap;">
+                    ⚡ Launch Screener Now
+                </a>
+            </div>
+        </div>
+        
+        <!-- Architecture Overview -->
+        <div class="section-card">
+            <h2>🎯 The Forward Testing Architecture</h2>
+            <p class="section-intro">
+                Backtesting tells you what WOULD have worked. Forward testing shows you what IS working. 
+                Here's the complete free stack to test your strategies with real market data:
+            </p>
+            
+            <div class="arch-flow">
+                <div class="arch-box">
+                    <div class="icon">📊</div>
+                    <div class="label">TradingView</div>
+                    <div class="sub">Pine Script Signals</div>
+                </div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-box">
+                    <div class="icon">⚡</div>
+                    <div class="label">Webhook/Alert</div>
+                    <div class="sub">Real-time Trigger</div>
+                </div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-box">
+                    <div class="icon">🤖</div>
+                    <div class="label">Alpaca Bot</div>
+                    <div class="sub">Paper Trading</div>
+                </div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-box">
+                    <div class="icon">📈</div>
+                    <div class="label">Live Results</div>
+                    <div class="sub">Track Performance</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Free Data Sources -->
+        <div class="section-card">
+            <h2>📡 Free Real-Time Data Sources</h2>
+            <p class="section-intro">
+                Quality data is the foundation. Here are the best free real-time data providers for stocks and crypto.
+            </p>
+            
+            <div class="platform-grid">
+                <!-- Alpaca -->
+                <div class="platform-card best">
+                    <span class="platform-badge badge-best">Best for Stocks</span>
+                    <div class="platform-header">
+                        <div class="platform-icon icon-alpaca">🦙</div>
+                        <div class="platform-title">Alpaca Markets</div>
+                    </div>
+                    <div class="platform-desc">
+                        Developer-first API with FREE real-time US stock data, unlimited paper trading, and no account minimums.
+                    </div>
+                    <ul class="platform-features">
+                        <li>Free real-time US stock data (SIP)</li>
+                        <li>Unlimited paper trading account</li>
+                        <li>10,000 API calls/minute</li>
+                        <li>WebSocket streaming</li>
+                        <li>Python/JS SDKs</li>
+                        <li class="limit">US stocks only</li>
+                    </ul>
+                    <div class="platform-cta">
+                        <a href="https://alpaca.markets/" target="_blank" class="btn-primary">Get Free API Key</a>
+                        <a href="https://docs.alpaca.markets/" target="_blank" class="btn-secondary">Docs</a>
+                    </div>
+                </div>
+                
+                <!-- Binance -->
+                <div class="platform-card best">
+                    <span class="platform-badge badge-best">Best for Crypto</span>
+                    <div class="platform-header">
+                        <div class="platform-icon icon-binance">🟡</div>
+                        <div class="platform-title">Binance API</div>
+                    </div>
+                    <div class="platform-desc">
+                        The largest crypto exchange offers completely FREE real-time data via WebSocket for 1000+ trading pairs.
+                    </div>
+                    <ul class="platform-features">
+                        <li>Free real-time tick data</li>
+                        <li>WebSocket streaming</li>
+                        <li>1ms latency on trades</li>
+                        <li>Testnet (paper trading)</li>
+                        <li>No API key needed for data</li>
+                        <li class="limit">Crypto only</li>
+                    </ul>
+                    <div class="platform-cta">
+                        <a href="https://binance-docs.github.io/apidocs/spot/en/" target="_blank" class="btn-primary">View API Docs</a>
+                        <a href="https://testnet.binance.vision/" target="_blank" class="btn-secondary">Testnet</a>
+                    </div>
+                </div>
+                
+                <!-- Finnhub -->
+                <div class="platform-card">
+                    <span class="platform-badge badge-free">Free Tier</span>
+                    <div class="platform-header">
+                        <div class="platform-icon" style="background:linear-gradient(135deg,#667,#445);">📈</div>
+                        <div class="platform-title">Finnhub.io</div>
+                    </div>
+                    <div class="platform-desc">
+                        Real-time WebSocket data for US stocks, forex, and crypto. 60 calls/minute on free tier.
+                    </div>
+                    <ul class="platform-features">
+                        <li>WebSocket real-time trades</li>
+                        <li>US stocks + forex + crypto</li>
+                        <li>Free API key</li>
+                        <li>Good documentation</li>
+                        <li class="limit">60 calls/minute limit</li>
+                    </ul>
+                    <div class="platform-cta">
+                        <a href="https://finnhub.io/" target="_blank" class="btn-primary">Get API Key</a>
+                    </div>
+                </div>
+                
+                <!-- Coinbase -->
+                <div class="platform-card">
+                    <span class="platform-badge badge-free">Free</span>
+                    <div class="platform-header">
+                        <div class="platform-icon" style="background:linear-gradient(135deg,#0052ff,#00d4ff);">💠</div>
+                        <div class="platform-title">Coinbase Pro API</div>
+                    </div>
+                    <div class="platform-desc">
+                        Free real-time crypto data from one of the most trusted US exchanges.
+                    </div>
+                    <ul class="platform-features">
+                        <li>Free WebSocket feed</li>
+                        <li>Level 2 order book data</li>
+                        <li>Sandbox environment</li>
+                        <li>US regulated</li>
+                        <li class="limit">Crypto only, fewer pairs</li>
+                    </ul>
+                    <div class="platform-cta">
+                        <a href="https://docs.cloud.coinbase.com/exchange/docs/welcome" target="_blank" class="btn-primary">View Docs</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Paper Trading Platforms -->
+        <div class="section-card">
+            <h2>🎮 Free Paper Trading Platforms</h2>
+            <p class="section-intro">
+                Paper trading simulates real trading with fake money but real market data. Essential for forward testing.
+            </p>
+            
+            <div class="platform-grid">
+                <!-- Alpaca Paper -->
+                <div class="platform-card best">
+                    <span class="platform-badge badge-best">Recommended</span>
+                    <div class="platform-header">
+                        <div class="platform-icon icon-alpaca">🦙</div>
+                        <div class="platform-title">Alpaca Paper Trading</div>
+                    </div>
+                    <div class="platform-desc">
+                        The gold standard for algo paper trading. Real-time execution, $100K fake money, reset anytime.
+                    </div>
+                    <ul class="platform-features">
+                        <li>Unlimited paper trading account</li>
+                        <li>$100,000 starting balance</li>
+                        <li>Real-time market execution</li>
+                        <li>Reset anytime</li>
+                        <li>Same API as live trading</li>
+                        <li>Portfolio tracking</li>
+                    </ul>
+                    <div class="platform-cta">
+                        <a href="https://app.alpaca.markets/paper/dashboard" target="_blank" class="btn-primary">Open Paper Account</a>
+                    </div>
+                </div>
+                
+                <!-- TradingView -->
+                <div class="platform-card featured">
+                    <span class="platform-badge badge-free">Popular</span>
+                    <div class="platform-header">
+                        <div class="platform-icon icon-tradingview">📊</div>
+                        <div class="platform-title">TradingView Paper</div>
+                    </div>
+                    <div class="platform-desc">
+                        Visual paper trading directly on charts. Great for manual strategy testing with $100K virtual money.
+                    </div>
+                    <ul class="platform-features">
+                        <li>$100,000 virtual money</li>
+                        <li>Trade directly from charts</li>
+                        <li>Visual entry/exit markers</li>
+                        <li>Performance analytics</li>
+                        <li class="limit">Manual trading only</li>
+                        <li class="limit">Need paid plan for alerts</li>
+                    </ul>
+                    <div class="platform-cta">
+                        <a href="https://www.tradingview.com/chart/" target="_blank" class="btn-primary">Start Paper Trading</a>
+                    </div>
+                </div>
+                
+                <!-- Webull -->
+                <div class="platform-card">
+                    <span class="platform-badge badge-free">Free</span>
+                    <div class="platform-header">
+                        <div class="platform-icon icon-webull">🌙</div>
+                        <div class="platform-title">Webull Paper</div>
+                    </div>
+                    <div class="platform-desc">
+                        Mobile-friendly paper trading with extended hours support and real-time data.
+                    </div>
+                    <ul class="platform-features">
+                        <li>$1,000,000 virtual money</li>
+                        <li>Extended hours trading</li>
+                        <li>Mobile app</li>
+                        <li>Options paper trading</li>
+                        <li class="limit">US only</li>
+                        <li class="limit">No API access</li>
+                    </ul>
+                    <div class="platform-cta">
+                        <a href="https://www.webull.com/paper-trading" target="_blank" class="btn-primary">Download App</a>
+                    </div>
+                </div>
+                
+                <!-- Binance Testnet -->
+                <div class="platform-card">
+                    <span class="platform-badge badge-free">Free</span>
+                    <div class="platform-header">
+                        <div class="platform-icon icon-binance">🟡</div>
+                        <div class="platform-title">Binance Testnet</div>
+                    </div>
+                    <div class="platform-desc">
+                        Full Binance functionality with fake money. Perfect for testing crypto bots.
+                    </div>
+                    <ul class="platform-features">
+                        <li>Free testnet account</li>
+                        <li>Same API as production</li>
+                        <li>Free testnet funds</li>
+                        <li>All trading pairs</li>
+                        <li>Futures testing</li>
+                        <li class="limit">Crypto only</li>
+                    </ul>
+                    <div class="platform-cta">
+                        <a href="https://testnet.binance.vision/" target="_blank" class="btn-primary">Get Testnet Key</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Algo Trading Platforms -->
+        <div class="section-card">
+            <h2>🤖 Free Algorithmic Trading Platforms</h2>
+            <p class="section-intro">
+                These platforms let you code, backtest, and live-trade your strategies for free.
+            </p>
+            
+            <div class="platform-grid">
+                <!-- QuantConnect -->
+                <div class="platform-card best">
+                    <span class="platform-badge badge-best">Most Powerful</span>
+                    <div class="platform-header">
+                        <div class="platform-icon icon-quantconnect">🔬</div>
+                        <div class="platform-title">QuantConnect</div>
+                    </div>
+                    <div class="platform-desc">
+                        Institutional-grade platform with free data, backtesting, and paper trading. C# and Python support.
+                    </div>
+                    <ul class="platform-features">
+                        <li>Free tick data (forex, crypto)</li>
+                        <li>Universe selection (scanning)</li>
+                        <li>Free paper trading</li>
+                        <li>C# and Python</li>
+                        <li>Machine learning support</li>
+                        <li>Cloud backtesting</li>
+                    </ul>
+                    <div class="platform-cta">
+                        <a href="https://www.quantconnect.com/" target="_blank" class="btn-primary">Start Coding</a>
+                    </div>
+                </div>
+                
+                <!-- Backtrader -->
+                <div class="platform-card">
+                    <span class="platform-badge badge-free">Open Source</span>
+                    <div class="platform-header">
+                        <div class="platform-icon icon-backtrader">🐍</div>
+                        <div class="platform-title">Backtrader</div>
+                    </div>
+                    <div class="platform-desc">
+                        Free Python framework for backtesting. Connect to Alpaca or Binance for live trading.
+                    </div>
+                    <ul class="platform-features">
+                        <li>100% free & open source</li>
+                        <li>Python-based</li>
+                        <li>Highly flexible</li>
+                        <li>Live trading support</li>
+                        <li>Large community</li>
+                        <li class="limit">Self-hosted</li>
+                    </ul>
+                    <div class="platform-cta">
+                        <a href="https://www.backtrader.com/" target="_blank" class="btn-primary">Learn More</a>
+                    </div>
+                </div>
+                
+                <!-- Lean Engine -->
+                <div class="platform-card">
+                    <span class="platform-badge badge-free">Open Source</span>
+                    <div class="platform-header">
+                        <div class="platform-icon" style="background:linear-gradient(135deg,#666,#333);">⚙️</div>
+                        <div class="platform-title">Lean Engine</div>
+                    </div>
+                    <div class="platform-desc">
+                        QuantConnect's open-source engine. Run locally with your own data.
+                    </div>
+                    <ul class="platform-features">
+                        <li>Open source (C#)</li>
+                        <li>Same as QuantConnect cloud</li>
+                        <li>Self-hosted</li>
+                        <li>Multi-asset support</li>
+                        <li class="limit">Need your own data</li>
+                    </ul>
+                    <div class="platform-cta">
+                        <a href="https://github.com/QuantConnect/Lean" target="_blank" class="btn-primary">GitHub</a>
+                    </div>
+                </div>
+                
+                <!-- Freqtrade -->
+                <div class="platform-card">
+                    <span class="platform-badge badge-free">Crypto Only</span>
+                    <div class="platform-header">
+                        <div class="platform-icon" style="background:linear-gradient(135deg,#00897b,#00bcd4);">🤖</div>
+                        <div class="platform-title">Freqtrade</div>
+                    </div>
+                    <div class="platform-desc">
+                        Free, open-source crypto trading bot written in Python. Strategy marketplace included.
+                    </div>
+                    <ul class="platform-features">
+                        <li>100% free & open source</li>
+                        <li>Python strategies</li>
+                        <li>Built-in web UI</li>
+                        <li>Strategy marketplace</li>
+                        <li>Dry-run (paper) mode</li>
+                        <li class="limit">Crypto only</li>
+                    </ul>
+                    <div class="platform-cta">
+                        <a href="https://www.freqtrade.io/" target="_blank" class="btn-primary">Get Started</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Start Guide -->
+        <div class="section-card">
+            <h2>🚀 Quick Start: Forward Test in 30 Minutes</h2>
+            <p class="section-intro">
+                Follow these exact steps to get your first forward test running today. No programming experience required.
+            </p>
+            
+            <div class="step-flow">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Create Alpaca Paper Account</h3>
+                        <p>Go to Alpaca, sign up for a paper trading account. It's free, no credit card needed. Copy your API Key ID and Secret Key.</p>
+                        <div class="step-code">Paper API Endpoint: paper-api.alpaca.markets
+WebSocket: wss://stream.data.alpaca.markets/v2/iex</div>
+                    </div>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Add Webhook URL to TradingView</h3>
+                        <p>Set up a webhook receiver (use webhook.site for testing) or connect to your bot. Copy the webhook URL.</p>
+                        <div class="step-code">Free webhook tester: https://webhook.site/
+(You'll get a unique URL like: https://webhook.site/abc-123-xyz)</div>
+                    </div>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Configure Pine Script Alerts</h3>
+                        <p>Add this to your Pine Script strategy to send alerts to your webhook when signals trigger.</p>
+                        <div class="step-code">// Add to your Pine Script:
+alertcondition(buySignal, "Buy Signal", "BUY: {{ticker}} @ {{close}}")
+alertcondition(sellSignal, "Sell Signal", "SELL: {{ticker}} @ {{close}}")
+
+// In TradingView alert message:
+{"action": "buy", "ticker": "{{ticker}}", "price": {{close}}, "time": "{{time}}"}</div>
+                    </div>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Create Simple Python Bot</h3>
+                        <p>This basic bot receives webhook alerts and places paper trades via Alpaca.</p>
+                        <div class="step-code">from flask import Flask, request
+import alpaca_trade_api as tradeapi
+
+API_KEY = 'YOUR_ALPACA_KEY'
+API_SECRET = 'YOUR_ALPACA_SECRET'
+BASE_URL = 'https://paper-api.alpaca.markets'
+
+api = tradeapi.REST(API_KEY, API_SECRET, BASE_URL)
+app = Flask(__name__)
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    data = request.json
+    if data['action'] == 'buy':
+        api.submit_order(
+            symbol=data['ticker'],
+            qty=10,
+            side='buy',
+            type='market',
+            time_in_force='day'
+        )
+    return 'OK', 200
+
+if __name__ == '__main__':
+    app.run(port=5000)</div>
+                    </div>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h3>Deploy and Monitor</h3>
+                        <p>Deploy your bot (use ngrok for local testing, or PythonAnywhere for free hosting). Watch your paper trades execute in real-time!</p>
+                        <div class="step-code"># Install dependencies:
+pip install flask alpaca-trade-api
+
+# Run locally with tunnel:
+ngrok http 5000
+
+# Then set TradingView webhook to your ngrok URL</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="warning-box">
+                <h4>⚠️ Important Setup Notes</h4>
+                <p>
+                    <strong>TradingView Webhooks:</strong> You need a TradingView Pro+ ($15/month) or Premium ($30/month) plan to use webhooks. 
+                    Alternatively, use the <strong>email-to-webhook</strong> workaround or run your strategy on QuantConnect (free webhooks).
+                </p>
+            </div>
+        </div>
+        
+        <!-- Platform Comparison -->
+        <div class="section-card">
+            <h2>📊 Platform Comparison Matrix</h2>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Platform</th>
+                        <th>Real-Time Data</th>
+                        <th>Paper Trading</th>
+                        <th>Automation</th>
+                        <th>Cost</th>
+                        <th>Best For</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Alpaca</strong></td>
+                        <td class="check">✓ Free</td>
+                        <td class="check">✓ Unlimited</td>
+                        <td class="check">✓ Full API</td>
+                        <td class="check">Free</td>
+                        <td>Stocks, Algos</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Binance</strong></td>
+                        <td class="check">✓ Free</td>
+                        <td class="check">✓ Testnet</td>
+                        <td class="check">✓ Full API</td>
+                        <td class="check">Free</td>
+                        <td>Crypto Trading</td>
+                    </tr>
+                    <tr>
+                        <td><strong>QuantConnect</strong></td>
+                        <td class="check">✓ Free Tier</td>
+                        <td class="check">✓ Free</td>
+                        <td class="check">✓ Full</td>
+                        <td class="partial">Limited Free</td>
+                        <td>Research</td>
+                    </tr>
+                    <tr>
+                        <td><strong>TradingView</strong></td>
+                        <td class="check">✓ With Broker</td>
+                        <td class="check">✓ Free</td>
+                        <td class="partial">Paid Only</td>
+                        <td class="partial">Freemium</td>
+                        <td>Charting</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Webull</strong></td>
+                        <td class="check">✓ Free</td>
+                        <td class="check">✓ Free</td>
+                        <td class="cross">✗ No API</td>
+                        <td class="check">Free</td>
+                        <td>Manual Testing</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Backtrader</strong></td>
+                        <td class="partial">Via Broker</td>
+                        <td class="partial">Via Broker</td>
+                        <td class="check">✓ Full</td>
+                        <td class="check">Free</td>
+                        <td>Python Developers</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Freqtrade</strong></td>
+                        <td class="check">✓ Via Exchange</td>
+                        <td class="check">✓ Dry-run</td>
+                        <td class="check">✓ Full</td>
+                        <td class="check">Free</td>
+                        <td>Crypto Bots</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Tips Section -->
+        <div class="section-card">
+            <h2>💡 Pro Tips for Forward Testing</h2>
+            
+            <div class="tips-grid">
+                <div class="tip-card">
+                    <h4>📈 Test Multiple Timeframes</h4>
+                    <p>Run the same strategy on 1min, 5min, and 15min charts simultaneously. Different timeframes can produce very different results.</p>
+                </div>
+                <div class="tip-card">
+                    <h4>📊 Track Everything</h4>
+                    <p>Log every trade, signal, and market condition. Use Google Sheets (free) to track: Entry price, exit price, slippage, fees, time held.</p>
+                </div>
+                <div class="tip-card">
+                    <h4>🎯 Set Minimum Test Period</h4>
+                    <p>Forward test for at least 30 days or 100 trades before trusting results. One good week doesn't mean the strategy works.</p>
+                </div>
+                <div class="tip-card">
+                    <h4>💰 Include Slippage</h4>
+                    <p>Add 0.1% slippage to your paper trades. Real execution is always worse than theoretical. Account for spread on crypto.</p>
+                </div>
+                <div class="tip-card">
+                    <h4>⏰ Test Different Sessions</h4>
+                    <p>Markets behave differently at market open (9:30), lunch (12:00), and close (16:00). Test all sessions separately.</p>
+                </div>
+                <div class="tip-card">
+                    <h4>🔧 Start Simple</h4>
+                    <p>Begin with 1 strategy, 1 symbol, small size. Scale up complexity only after consistent profitability.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cost Summary -->
+        <div class="section-card">
+            <h2>💵 Total Cost: $0 Setup</h2>
+            <p class="section-intro">
+                Here's your complete free stack for forward testing:
+            </p>
+            
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:20px;">
+                <div style="padding:20px;background:rgba(34,197,94,0.05);border-radius:12px;text-align:center;">
+                    <div style="font-size:28px;margin-bottom:8px;">📡</div>
+                    <div style="color:#fff;font-weight:600;">Real-Time Data</div>
+                    <div style="color:#22c55e;font-size:12px;margin-top:4px;">FREE</div>
+                    <div style="color:#667;font-size:11px;margin-top:4px;">Alpaca / Binance</div>
+                </div>
+                <div style="padding:20px;background:rgba(59,130,246,0.05);border-radius:12px;text-align:center;">
+                    <div style="font-size:28px;margin-bottom:8px;">🎮</div>
+                    <div style="color:#fff;font-weight:600;">Paper Trading</div>
+                    <div style="color:#3b82f6;font-size:12px;margin-top:4px;">FREE</div>
+                    <div style="color:#667;font-size:11px;margin-top:4px;">Alpaca / TradingView</div>
+                </div>
+                <div style="padding:20px;background:rgba(168,85,247,0.05);border-radius:12px;text-align:center;">
+                    <div style="font-size:28px;margin-bottom:8px;">🤖</div>
+                    <div style="color:#fff;font-weight:600;">Automation</div>
+                    <div style="color:#a855f7;font-size:12px;margin-top:4px;">FREE</div>
+                    <div style="color:#667;font-size:11px;margin-top:4px;">Python + Webhooks</div>
+                </div>
+                <div style="padding:20px;background:rgba(245,158,11,0.05);border-radius:12px;text-align:center;">
+                    <div style="font-size:28px;margin-bottom:8px;">☁️</div>
+                    <div style="color:#fff;font-weight:600;">Hosting</div>
+                    <div style="color:#f59e0b;font-size:12px;margin-top:4px;">FREE</div>
+                    <div style="color:#667;font-size:11px;margin-top:4px;">PythonAnywhere / ngrok</div>
+                </div>
+            </div>
+            
+            <div style="margin-top:24px;padding:20px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:12px;text-align:center;">
+                <div style="color:#22c55e;font-size:18px;font-weight:600;">✨ Total: $0.00 / month</div>
+                <div style="color:#889;font-size:13px;margin-top:8px;">
+                    Forward test with real-time data, unlimited paper trades, and full automation.<br>
+                    <strong>Only pay when you're ready to go live with real money.</strong>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Next Steps -->
+        <div class="section-card">
+            <h2>🎯 Recommended Next Steps</h2>
+            <p class="section-intro">
+                Based on your current setup, here's what I recommend:
+            </p>
+            
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;">
+                <div style="padding:24px;background:rgba(0,0,0,0.2);border-radius:12px;">
+                    <h4 style="color:#22c55e;margin-bottom:12px;">For Stocks (Curious Ichimoku)</h4>
+                    <ol style="color:#aab;font-size:13px;line-height:2;padding-left:20px;">
+                        <li>Sign up for <strong>Alpaca Paper</strong> account</li>
+                        <li>Get free API key</li>
+                        <li>Connect Pine Script alerts to Python bot</li>
+                        <li>Forward test for 30 days minimum</li>
+                        <li>Track results in spreadsheet</li>
+                    </ol>
+                    <a href="https://alpaca.markets/" target="_blank" class="btn-primary" style="display:block;margin-top:16px;text-align:center;">Get Started with Alpaca →</a>
+                </div>
+                
+                <div style="padding:24px;background:rgba(0,0,0,0.2);border-radius:12px;">
+                    <h4 style="color:#f59e0b;margin-bottom:12px;">For Crypto (Rocket Ride)</h4>
+                    <ol style="color:#aab;font-size:13px;line-height:2;padding-left:20px;">
+                        <li>Create <strong>Binance Testnet</strong> account</li>
+                        <li>Get free testnet API keys</li>
+                        <li>Use Freqtrade or custom Python bot</li>
+                        <li>Test on multiple trading pairs</li>
+                        <li>Measure against HODL benchmark</li>
+                    </ol>
+                    <a href="https://testnet.binance.vision/" target="_blank" class="btn-primary" style="display:block;margin-top:16px;text-align:center;background:rgba(245,158,11,0.1);color:#f59e0b;border-color:rgba(245,158,11,0.3);">Get Testnet Access →</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation Links -->
+        <div style="margin-top:32px;display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
+            <a href="strategy-tools.html" style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:10px;color:#22c55e;text-decoration:none;font-size:14px;font-weight:500;">
+                <span>📊</span> Strategy Tools
+            </a>
+            <a href="rocket-ride-strategy.html" style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:10px;color:#f59e0b;text-decoration:none;font-size:14px;font-weight:500;">
+                <span>🚀</span> Rocket Ride Strategy
+            </a>
+            <a href="../../findcryptopairs/curious-ichimoku.html" style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:10px;color:#a855f7;text-decoration:none;font-size:14px;font-weight:500;">
+                <span>☁️</span> Curious Ichimoku
+            </a>
+        </div>
+        
+    </div>
+    
+    <script>
+        // Copy code functionality
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const code = this.closest('.code-block').querySelector('pre').textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    const original = this.textContent;
+                    this.textContent = '✓ Copied!';
+                    setTimeout(() => this.textContent = original, 2000);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

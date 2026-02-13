@@ -197,6 +197,33 @@ foreach ($blue_chips as $bc) {
 
         if ($conn->query($sql)) {
             $ticker_seeded++;
+
+            // Audit Trail Logging
+            $audit_reasons = $bc['why'] . '. Strategy: monthly DCA into blue chip growth stock.';
+            $audit_supporting_data = json_encode(array(
+                'sector' => $bc['sector'],
+                'name' => $bc['name'],
+                'strategy' => 'monthly_dca'
+            ));
+            $audit_pick_details = json_encode(array(
+                'entry_price' => $entry_price,
+                'score' => 85,
+                'rating' => 'Strong Buy',
+                'risk_level' => 'Low',
+                'timeframe' => '3m'
+            ));
+            $audit_formatted_for_ai = "Analyze this stock pick:\nSymbol: " . $ticker . "\nStrategy: Blue Chip Growth\nRationale: " . $audit_reasons . "\nSupporting Data: " . $audit_supporting_data . "\n\nQuestions:\n1. Is this a good long-term hold?\n2. What are the growth prospects?";
+
+            $safe_reasons = $conn->real_escape_string($audit_reasons);
+            $safe_supporting = $conn->real_escape_string($audit_supporting_data);
+            $safe_details = $conn->real_escape_string($audit_pick_details);
+            $safe_formatted = $conn->real_escape_string($audit_formatted_for_ai);
+            $pick_timestamp = $pick_date . ' 09:30:00';
+
+            $audit_sql = "INSERT INTO audit_trails 
+                          (asset_class, symbol, pick_timestamp, generation_source, reasons, supporting_data, pick_details, formatted_for_ai)
+                          VALUES ('STOCKS', '$safe_ticker', '$pick_timestamp', 'blue_chip_picks.php', '$safe_reasons', '$safe_supporting', '$safe_details', '$safe_formatted')";
+            $conn->query($audit_sql);
         } else {
             $results['errors'][] = $ticker . ' ' . $pick_date . ': ' . $conn->error;
         }

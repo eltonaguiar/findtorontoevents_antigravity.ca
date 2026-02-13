@@ -1499,6 +1499,7 @@
     <div class="main-tabs">
       <button class="main-tab-btn active" onclick="switchMainTab('scanner')">Scanner</button>
       <button class="main-tab-btn" onclick="switchMainTab('hot')" style="color:#ef4444;">🔥 Hot Trending</button>
+      <button class="main-tab-btn" onclick="switchMainTab('universe')" style="color:#22c55e;">🌌 Universe</button>
       <button class="main-tab-btn" onclick="switchMainTab('analysis')" style="color:#f59e0b;">System Analysis</button>
       <button class="main-tab-btn" onclick="switchMainTab('research')" style="color:#a855f7;">Research &amp;
         Future</button>
@@ -2163,7 +2164,49 @@
     </div>
 
     <!-- ═══════════════════════════════════════════ -->
-    <!-- TAB 3: SYSTEM ANALYSIS -->
+    <!-- TAB 3: UNIVERSE SCANNER -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="main-panel" id="main-universe" style="display:none;">
+      <div class="section-title" style="color:#22c55e;">🌌 Kraken Universe Scanner
+        <span class="badge" style="background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);">NEW</span>
+      </div>
+      
+      <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;font-size:12px;color:#86efac;line-height:1.6;">
+        <strong>🌌 Universe Scanner:</strong> Analyzes <strong>ALL 250+ Kraken assets</strong> across 1h/4h/24h/7d timeframes. 
+        Uses multi-timeframe alignment scoring and pattern detection. Finds breakouts before they explode.
+      </div>
+      
+      <!-- Min momentum filter -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center">
+        <span style="font-size:13px;color:var(--dim);">Min 1h momentum:</span>
+        <button onclick="loadUniverseScanner(2)" class="universe-min-btn active" data-min="2" style="background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;">2%</button>
+        <button onclick="loadUniverseScanner(5)" class="universe-min-btn" data-min="5" style="background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;">5%</button>
+        <button onclick="loadUniverseScanner(10)" class="universe-min-btn" data-min="10" style="background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;">10%</button>
+        <button onclick="loadUniverseScanner(true)" style="background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;margin-left:auto;">🔄 Refresh</button>
+      </div>
+      
+      <!-- Scan status -->
+      <div id="universe-scan-status" style="text-align:center;padding:40px;color:var(--dim);">
+        <div style="font-size:32px;margin-bottom:12px;">🌌</div>
+        <div>Scanning Kraken universe...</div>
+        <div style="font-size:11px;margin-top:8px;opacity:0.7;">Analyzing 250+ assets across multiple timeframes</div>
+      </div>
+      
+      <!-- Results container -->
+      <div id="universe-results" style="display:none;">
+        <div id="universe-stats" style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--dim);"></div>
+        <div id="universe-list"></div>
+      </div>
+      
+      <div id="universe-empty" style="display:none;text-align:center;padding:40px;color:var(--dim);">
+        <div style="font-size:24px;margin-bottom:8px;">📊</div>
+        <div>No opportunities found with current filters.</div>
+        <div style="font-size:11px;margin-top:8px;">Try lowering the minimum momentum threshold.</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- TAB 4: SYSTEM ANALYSIS -->
     <!-- ═══════════════════════════════════════════ -->
     <div class="main-panel" id="main-analysis">
       <div class="section-title" style="color:#f59e0b;">System Analysis <span class="badge"
@@ -2680,7 +2723,7 @@
   <script>
     // ── Main tab switching ──
     function switchMainTab(tab) {
-      var tabNames = ['scanner', 'hot', 'analysis', 'research'];
+      var tabNames = ['scanner', 'hot', 'universe', 'analysis', 'research'];
       var btns = document.querySelectorAll('.main-tab-btn');
       var panels = document.querySelectorAll('.main-panel');
       for (var i = 0; i < btns.length; i++) {
@@ -2695,6 +2738,12 @@
       if (tab === 'hot' && !window.hotTrendingLoaded) {
         window.hotTrendingLoaded = true;
         loadHotTrending('30m');
+      }
+      
+      // Load universe scanner if switching to that tab
+      if (tab === 'universe' && !window.universeLoaded) {
+        window.universeLoaded = true;
+        loadUniverseScanner(2);
       }
     }
     
@@ -2893,6 +2942,135 @@
     
     function showHotError(msg) {
       var statusEl = document.getElementById('hot-scan-status');
+      if (statusEl) {
+        statusEl.innerHTML = '<div style="color:#ef4444;">Error: ' + msg + '</div>';
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  UNIVERSE SCANNER — All Kraken assets, multi-timeframe
+    // ═══════════════════════════════════════════════════════════════════════
+    var UNIVERSE_API = '/findcryptopairs/api/kraken_universe_scanner.php';
+    
+    function loadUniverseScanner(minMomentum) {
+      if (typeof minMomentum === 'boolean' && minMomentum === true) {
+        // Refresh with current setting
+        minMomentum = window.currentUniverseMin || 2;
+      }
+      window.currentUniverseMin = minMomentum;
+      
+      // Update button states
+      document.querySelectorAll('.universe-min-btn').forEach(function(btn) {
+        var btnMin = parseInt(btn.getAttribute('data-min'));
+        if (btnMin === minMomentum) {
+          btn.style.background = 'rgba(34,197,94,0.15)';
+          btn.style.color = '#22c55e';
+          btn.style.border = '1px solid rgba(34,197,94,0.3)';
+        } else {
+          btn.style.background = 'rgba(255,255,255,0.05)';
+          btn.style.color = 'var(--dim)';
+          btn.style.border = '1px solid var(--border)';
+        }
+      });
+      
+      var statusEl = document.getElementById('universe-scan-status');
+      var resultsEl = document.getElementById('universe-results');
+      var emptyEl = document.getElementById('universe-empty');
+      
+      if (statusEl) statusEl.style.display = 'block';
+      if (resultsEl) resultsEl.style.display = 'none';
+      if (emptyEl) emptyEl.style.display = 'none';
+      
+      var url = UNIVERSE_API + '?action=scan&min=' + minMomentum + '&_=' + Date.now();
+      var x = new XMLHttpRequest();
+      x.open('GET', url);
+      x.onload = function() {
+        try {
+          var r = JSON.parse(x.responseText);
+          if (r.ok) {
+            renderUniverseResults(r);
+          } else {
+            showUniverseError(r.error || 'Unknown error');
+          }
+        } catch (e) {
+          showUniverseError('Parse error');
+        }
+      };
+      x.onerror = function() {
+        showUniverseError('Network error');
+      };
+      x.send();
+    }
+    
+    function renderUniverseResults(data) {
+      var statusEl = document.getElementById('universe-scan-status');
+      var resultsEl = document.getElementById('universe-results');
+      var emptyEl = document.getElementById('universe-empty');
+      var statsEl = document.getElementById('universe-stats');
+      var listEl = document.getElementById('universe-list');
+      
+      if (statusEl) statusEl.style.display = 'none';
+      
+      if (!data.top_opportunities || data.top_opportunities.length === 0) {
+        if (emptyEl) emptyEl.style.display = 'block';
+        return;
+      }
+      
+      if (resultsEl) resultsEl.style.display = 'block';
+      
+      // Stats
+      if (statsEl) {
+        statsEl.innerHTML = '<strong>Scanned:</strong> ' + data.total_scanned + ' assets | ' +
+          '<strong>Opportunities:</strong> ' + data.opportunities_found + ' | ' +
+          '<strong>Updated:</strong> ' + data.timestamp;
+      }
+      
+      // Render list
+      var html = '';
+      for (var i = 0; i < Math.min(10, data.top_opportunities.length); i++) {
+        var opp = data.top_opportunities[i];
+        var rec = opp.recommendation;
+        var recColor = rec.action === 'STRONG_BUY' ? '#22c55e' : rec.action === 'BUY' ? '#86efac' : rec.action === 'WATCH' ? '#f59e0b' : 'var(--dim)';
+        
+        html += '<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
+        html += '<div><strong style="font-size:18px;color:#fff;">' + opp.symbol + '</strong> <span style="color:var(--dim);font-size:12px;">' + opp.name + '</span></div>';
+        html += '<div style="text-align:right;">';
+        html += '<div style="font-size:20px;font-weight:700;color:' + recColor + ';">' + opp.composite_score + '<span style="font-size:12px;">/100</span></div>';
+        html += '<div style="font-size:11px;color:' + recColor + ';">' + rec.action + '</div>';
+        html += '</div></div>';
+        
+        // Changes
+        html += '<div style="display:flex;gap:16px;margin-bottom:12px;font-size:13px;">';
+        html += '<span>1h: <strong style="color:' + (opp.changes['1h'] >= 0 ? '#22c55e' : '#ef4444') + ';">' + (opp.changes['1h'] >= 0 ? '+' : '') + opp.changes['1h'] + '%</strong></span>';
+        html += '<span>4h: <strong style="color:' + (opp.changes['4h'] >= 0 ? '#22c55e' : '#ef4444') + ';">' + (opp.changes['4h'] >= 0 ? '+' : '') + opp.changes['4h'] + '%</strong></span>';
+        html += '<span>24h: <strong style="color:' + (opp.changes['24h'] >= 0 ? '#22c55e' : '#ef4444') + ';">' + (opp.changes['24h'] >= 0 ? '+' : '') + opp.changes['24h'] + '%</strong></span>';
+        html += '</div>';
+        
+        // Pattern & alignment
+        html += '<div style="font-size:12px;color:var(--dim);margin-bottom:8px;">';
+        html += '<span style="background:rgba(99,102,241,0.15);color:#818cf8;padding:2px 8px;border-radius:4px;margin-right:8px;">' + opp.pattern.primary_pattern + '</span>';
+        html += opp.alignment.bullish_timeframes + ' of 4 timeframes bullish';
+        html += '</div>';
+        
+        // Signals
+        if (opp.alignment.signals && opp.alignment.signals.length > 0) {
+          html += '<div style="font-size:11px;color:#86efac;">✓ ' + opp.alignment.signals.join(' • ') + '</div>';
+        }
+        
+        // Risk warning
+        if (opp.risk_score > 60) {
+          html += '<div style="font-size:11px;color:#ef4444;margin-top:8px;">⚠ High Risk (' + opp.risk_score + '/100)</div>';
+        }
+        
+        html += '</div>';
+      }
+      
+      if (listEl) listEl.innerHTML = html;
+    }
+    
+    function showUniverseError(msg) {
+      var statusEl = document.getElementById('universe-scan-status');
       if (statusEl) {
         statusEl.innerHTML = '<div style="color:#ef4444;">Error: ' + msg + '</div>';
       }

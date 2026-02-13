@@ -829,6 +829,35 @@ if ($action === 'picks' || $action === 'all') {
                     'high', '1m', 'Medium', 8.0, 10.0, 25.0,
                     '$safe_rationale', 'Multi-strategy consensus', '', '$safe_hash', '$now')");
         $total_picks++;
+
+        // Audit Trail Logging for Consensus Pick
+        $audit_reasons = $safe_rationale;
+        $audit_supporting_data = json_encode(array(
+            'composite_score' => $cs,
+            'strategy_count' => $cnt,
+            'regime' => $regime,
+            'factors' => $top_factors
+        ));
+        $audit_pick_details = json_encode(array(
+            'entry_price' => $price,
+            'conviction' => 'high',
+            'horizon' => '1m',
+            'risk_level' => 'Medium',
+            'position_size_pct' => 8.0,
+            'stop_loss_pct' => 10.0,
+            'take_profit_pct' => 25.0
+        ));
+        $audit_formatted_for_ai = "Analyze this stock pick:\nSymbol: " . $t . "\nStrategy: Alpha Factor Consensus\nRationale: " . $audit_reasons . "\nSupporting Data: " . $audit_supporting_data . "\n\nQuestions:\n1. Is this a good pick?\n2. What are the risks?";
+
+        $safe_reasons = $conn->real_escape_string($audit_reasons);
+        $safe_supporting = $conn->real_escape_string($audit_supporting_data);
+        $safe_details = $conn->real_escape_string($audit_pick_details);
+        $safe_formatted = $conn->real_escape_string($audit_formatted_for_ai);
+
+        $audit_sql = "INSERT INTO audit_trails 
+                      (asset_class, symbol, pick_timestamp, generation_source, reasons, supporting_data, pick_details, formatted_for_ai)
+                      VALUES ('STOCKS', '$safe_ticker', '$now', 'alpha_engine.php - Consensus', '$safe_reasons', '$safe_supporting', '$safe_details', '$safe_formatted')";
+        $conn->query($audit_sql);
     }
 
     // ── UPDATE ALPHA STATUS ──
