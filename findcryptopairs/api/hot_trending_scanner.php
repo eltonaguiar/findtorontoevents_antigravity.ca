@@ -104,10 +104,19 @@ function _hot_scan($timeframe) {
     // Sort by confidence (highest first)
     usort($hot_coins, '_sort_by_confidence');
     
-    // Separate into tiers
-    $kraken_hot = array_filter($hot_coins, function($c) { return $c['on_kraken'] && $c['confidence'] >= 60; });
-    $watch_list = array_filter($hot_coins, function($c) { return $c['on_kraken'] && $c['confidence'] >= 40 && $c['confidence'] < 60; });
-    $other_trending = array_filter($hot_coins, function($c) { return !$c['on_kraken'] || $c['confidence'] < 40; });
+    // Separate into tiers (PHP 5.2 compatible - no anonymous functions)
+    $kraken_hot = array();
+    $watch_list = array();
+    $other_trending = array();
+    foreach ($hot_coins as $c) {
+        if ($c['on_kraken'] && $c['confidence'] >= 60) {
+            $kraken_hot[] = $c;
+        } elseif ($c['on_kraken'] && $c['confidence'] >= 40 && $c['confidence'] < 60) {
+            $watch_list[] = $c;
+        } else {
+            $other_trending[] = $c;
+        }
+    }
     
     $latency_ms = round((microtime(true) - $start) * 1000, 1);
     
@@ -120,11 +129,11 @@ function _hot_scan($timeframe) {
         'cached' => false,
         'summary' => array(
             'total_trending' => count($hot_coins),
-            'on_kraken' => count(array_filter($hot_coins, function($c) { return $c['on_kraken']; })),
+            'on_kraken' => _count_on_kraken($hot_coins),
             'high_confidence' => count($kraken_hot),
             'watch_list' => count($watch_list)
         ),
-        'top_pick' => count($kraken_hot) > 0 ? array_values($kraken_hot)[0] : null,
+        'top_pick' => _get_first_element($kraken_hot),
         'kraken_hot' => array_values($kraken_hot),
         'watch_list' => array_values($watch_list),
         'other_trending' => array_slice(array_values($other_trending), 0, 10),
@@ -146,6 +155,28 @@ function _hot_scan($timeframe) {
     
     @file_put_contents($cache_file, json_encode($result));
     echo json_encode($result);
+}
+
+/**
+ * Count coins that are on Kraken (PHP 5.2 compatible)
+ */
+function _count_on_kraken($coins) {
+    $count = 0;
+    foreach ($coins as $c) {
+        if ($c['on_kraken']) {
+            $count++;
+        }
+    }
+    return $count;
+}
+
+/**
+ * Get first element of array (PHP 5.2 compatible - no array dereferencing)
+ */
+function _get_first_element($arr) {
+    if (count($arr) == 0) return null;
+    $values = array_values($arr);
+    return $values[0];
 }
 
 /**
@@ -203,10 +234,10 @@ function _format_cmc_item($item) {
         'symbol' => $item['symbol'],
         'name' => $item['name'],
         'rank' => $item['cmc_rank'],
-        'price' => $quote['price'] ?? 0,
-        'chg_24h' => $quote['percent_change_24h'] ?? 0,
-        'volume_24h' => $quote['volume_24h'] ?? 0,
-        'market_cap' => $quote['market_cap'] ?? 0,
+        'price' => isset($quote['price']) ? $quote['price'] : 0,
+        'chg_24h' => isset($quote['percent_change_24h']) ? $quote['percent_change_24h'] : 0,
+        'volume_24h' => isset($quote['volume_24h']) ? $quote['volume_24h'] : 0,
+        'market_cap' => isset($quote['market_cap']) ? $quote['market_cap'] : 0,
         'trending_since' => time() - rand(300, 3600) // Simulated for now
     );
 }
@@ -229,7 +260,7 @@ function _fetch_cg_trending_as_cmc() {
         $results[] = array(
             'symbol' => strtoupper($item['symbol']),
             'name' => $item['name'],
-            'rank' => $item['market_cap_rank'] ?? 0,
+            'rank' => isset($item['market_cap_rank']) ? $item['market_cap_rank'] : 0,
             'price' => 0, // Will fetch from Kraken
             'chg_24h' => 0,
             'volume_24h' => 0,
