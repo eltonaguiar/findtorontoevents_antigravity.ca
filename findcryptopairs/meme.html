@@ -292,12 +292,51 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
     <span style="margin-left:auto;font-size:11px;color:var(--dim)" id="live-status"></span>
   </div>
 
-  <!-- MARKET PULSE — Real-time Kraken Meme Scanner -->
-  <div id="market-pulse-section" style="margin-bottom:24px">
-    <div class="section-title" style="color:#f59e0b;margin-bottom:12px">
-      Market Pulse &mdash; Kraken Meme Coins
-      <span class="badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)">REAL-TIME</span>
-      <i class="info-tip">i<span class="tip-text">Scans 35 meme coins directly on Kraken for gainers, cross-references CoinGecko trending, and picks the #1 buy. All data is live from Kraken's public API.</span></i>
+  <!-- KRAKEN RANKINGS — All meme coins rated 1-10, always visible -->
+  <div id="kraken-rankings-section" style="margin-bottom:24px">
+    <div class="section-title" style="color:#e879f9;margin-bottom:4px">
+      &#127464;&#127462; Kraken Meme Rankings
+      <span class="badge" style="background:rgba(232,121,249,0.15);color:#e879f9;border:1px solid rgba(232,121,249,0.3)">1-10 SCALE</span>
+      <span class="badge" style="background:rgba(6,182,212,0.15);color:#06b6d4;border:1px solid rgba(6,182,212,0.3)">REAL-TIME</span>
+    </div>
+    <div style="font-size:12px;color:var(--dim);margin-bottom:12px">
+      Every meme coin on Kraken, ranked by buy strength right now. <strong style="color:#fff">8+ = buy</strong>, 5-7 = watch, 1-4 = wait.
+      <a href="#" onclick="toggleRankingModel();return false;" style="color:#c4b5fd;text-decoration:underline;margin-left:4px">How is this scored?</a>
+    </div>
+
+    <!-- Model Explanation (hidden by default) -->
+    <div id="ranking-model-explain" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px">
+      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:10px">Meme Buy Rating Model (1-10)</div>
+      <div style="font-size:12px;color:#bbb;line-height:1.7;margin-bottom:12px">
+        Each coin is scored 0-100 across 5 real-time factors, then mapped to a 1-10 rating. All data comes from <strong style="color:#fff">Kraken's live API</strong> and <strong style="color:#fff">CoinGecko</strong>. No fake data, no placeholders.
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:12px" id="ranking-model-factors">
+        <div style="background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05)">
+          <div style="font-size:11px;color:var(--accent);font-weight:700">MOMENTUM (35%)</div>
+          <div style="font-size:11px;color:#aaa;margin-top:4px">24h price change. +3-15% is ideal. Over +25% = FOMO danger.</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05)">
+          <div style="font-size:11px;color:var(--cyan);font-weight:700">VOLUME (25%)</div>
+          <div style="font-size:11px;color:#aaa;margin-top:4px">24h USD volume on Kraken. Higher = better liquidity. $500K+ ideal.</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05)">
+          <div style="font-size:11px;color:var(--gold);font-weight:700">SOCIAL BUZZ (15%)</div>
+          <div style="font-size:11px;color:#aaa;margin-top:4px">Bonus if trending on CoinGecko. Social buzz drives meme pumps.</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05)">
+          <div style="font-size:11px;color:var(--green);font-weight:700">ENTRY POSITION (15%)</div>
+          <div style="font-size:11px;color:#aaa;margin-top:4px">Where price sits in 24h range. Near the low = better entry point.</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05)">
+          <div style="font-size:11px;color:#c084fc;font-weight:700">SPREAD (10%)</div>
+          <div style="font-size:11px;color:#aaa;margin-top:4px">Bid/ask spread tightness. Tighter = less slippage when trading.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:12px">
+        <span style="padding:4px 12px;border-radius:6px;background:rgba(34,197,94,0.12);color:#22c55e;border:1px solid rgba(34,197,94,0.2);font-weight:600">8-10: Strong Buy</span>
+        <span style="padding:4px 12px;border-radius:6px;background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.2);font-weight:600">5-7: Warming Up</span>
+        <span style="padding:4px 12px;border-radius:6px;background:rgba(107,114,128,0.12);color:#9ca3af;border:1px solid rgba(107,114,128,0.2);font-weight:600">1-4: Quiet / Wait</span>
+      </div>
     </div>
 
     <!-- Market Mood Bar -->
@@ -305,30 +344,26 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
       <span style="color:var(--dim)">Loading market mood...</span>
     </div>
 
-    <!-- #1 TOP PICK CARD -->
-    <div id="pulse-top-pick" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px">
-      <div class="loading">Scanning Kraken meme coins...</div>
-    </div>
-
     <!-- Controls -->
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-      <button onclick="loadMarketPulse(true)" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;transition:all 0.15s" onmouseover="this.style.background='rgba(245,158,11,0.25)'" onmouseout="this.style.background='rgba(245,158,11,0.15)'">
-        Refresh Now
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+      <button onclick="loadKrakenRankings(true)" style="background:rgba(232,121,249,0.15);color:#e879f9;border:1px solid rgba(232,121,249,0.3);padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;transition:all 0.15s" onmouseover="this.style.background='rgba(232,121,249,0.25)'" onmouseout="this.style.background='rgba(232,121,249,0.15)'">
+        Refresh Rankings
       </button>
-      <button onclick="togglePulseLiveMode()" id="pulse-live-toggle" style="background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border);padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer;transition:all 0.15s">
-        Enable Live Updates (60s)
+      <button onclick="toggleRankingLiveMode()" id="ranking-live-toggle" style="background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border);padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer;transition:all 0.15s">
+        Auto-Refresh (45s)
       </button>
-      <span style="font-size:11px;color:var(--dim);align-self:center" id="pulse-last-updated"></span>
+      <span style="font-size:11px;color:var(--dim)" id="ranking-last-updated"></span>
+      <span style="margin-left:auto;font-size:11px;color:var(--dim)" id="ranking-coin-count"></span>
     </div>
 
-    <!-- Kraken Meme Gainers Grid -->
-    <div style="margin-bottom:12px">
-      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:8px">
-        Kraken Meme Gainers <span id="pulse-gainer-count" style="font-size:11px;color:var(--dim);font-weight:400"></span>
-      </div>
-      <div id="pulse-gainers-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px">
-        <div class="loading">Loading...</div>
-      </div>
+    <!-- Full Rankings Table -->
+    <div id="kraken-rankings-list">
+      <div class="loading">Scanning all Kraken meme coins...</div>
+    </div>
+
+    <!-- #1 TOP PICK CARD (below the table) -->
+    <div id="pulse-top-pick" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin:12px 0">
+      <div class="loading">Determining top pick...</div>
     </div>
 
     <!-- CoinGecko Trending -->
@@ -1647,7 +1682,7 @@ function renderScanLog(data) {
     document.getElementById('scan-meta').textContent = log.length + ' memes analyzed, ' + winnersInLog + ' passed threshold (70+)';
 
     var html = '<table class="scan-log-table">';
-    html += '<tr><th>#</th><th>Pair</th><th>Tier</th><th>Score</th><th>Decision</th>';
+    html += '<tr><th>#</th><th>Pair</th><th>Kraken</th><th>Tier</th><th>Score</th><th>Decision</th>';
     html += '<th>Expl Vol<br>0-25</th><th>Mom<br>0-20</th><th>RSI<br>0-15</th><th>Social<br>0-15</th><th>Vol Conc<br>0-10</th><th>Break<br>0-10</th><th>Cap<br>0-5</th>';
     html += '<th>24h Chg</th><th>Volume</th></tr>';
 
@@ -1678,6 +1713,7 @@ function renderScanLog(data) {
         html += '<tr' + rowClass + '>';
         html += '<td style="color:var(--dim)">' + (i + 1) + '</td>';
         html += '<td style="font-weight:600;color:#fff">' + pair + '</td>';
+        html += '<td style="text-align:center">' + (r.on_kraken == 1 ? '<span style="color:#9b7cdb;font-weight:700" title="Available on Kraken">&#127464;&#127462;</span>' : '<span style="color:#555" title="Not on Kraken">&mdash;</span>') + '</td>';
         html += '<td>' + tierBadge(r.tier) + '</td>';
         html += '<td><span class="' + scColor + '" style="font-weight:700">' + r.score + '</span></td>';
         html += '<td>' + vd + '</td>';
