@@ -736,7 +736,7 @@ function renderAlgoCards(containerId, algos) {
     for (var i=0;i<algos.length;i++) {
         var a=algos[i];
         var hasBacktest = a.sharpe !== undefined;
-        var isLive = a.wr !== undefined && a.wr !== null;
+        var isLive = a.hold_hrs !== undefined;
         html += '<div class="algo-card"><div class="algo-card-header"><div><div class="algo-card-title"><a href="'+(a.picks||'#')+'" class="algo-link" title="'+a.name+': '+(hasBacktest?'Backtest Sharpe '+a.sharpe.toFixed(2)+', '+a.wr+'% WR, '+a.trades+' trades':'Live '+a.wr+'% WR, '+a.trades+' trades, '+fmtPnl(a.pnl))+'.\nClick to view picks.">'+ a.name+'</a></div><div class="algo-card-type">'+a.type+' &bull; '+a.asset+'</div></div><div>';
         if (hasBacktest) html += '<span class="grade '+gradeClass(a.grade)+'">'+a.grade+'</span>';
         if (a.forward_status) html += ' <span class="badge '+(a.forward_status==='NOT DEPLOYED'?'badge-yellow':a.forward_status==='PAUSED'?'badge-red':'badge-cyan')+'">'+a.forward_status+'</span>';
@@ -752,9 +752,9 @@ function renderAlgoCards(containerId, algos) {
         }
         if (isLive) {
             html += '<div class="metric-row"><span><strong>Live Win Rate</strong></span><span class="'+valClass((a.wr||0)-50)+'">'+(a.wr||0)+'%</span></div>';
-            html += '<div class="metric-row"><span><strong>Live Trades</strong></span><span>'+a.trades+' ('+a.wins+' W / '+(a.trades-a.wins)+' L)</span></div>';
+            html += '<div class="metric-row"><span><strong>Live Trades</strong></span><span>'+a.trades+' ('+(a.wins||0)+' W / '+(a.trades-(a.wins||0))+' L)</span></div>';
             html += '<div class="metric-row"><span><strong>Live PnL</strong></span><span class="'+valClass(a.pnl)+'">'+fmtPnl(a.pnl)+'</span></div>';
-            html += '<div class="metric-row"><span><strong>Avg Hold</strong></span><span>'+a.hold_hrs.toFixed(1)+'h</span></div>';
+            html += '<div class="metric-row"><span><strong>Avg Hold</strong></span><span>'+(a.hold_hrs||0).toFixed(1)+'h</span></div>';
         }
         html += '<div style="margin-top:0.6rem;font-size:0.75rem"><strong style="color:var(--green)">Strengths:</strong> '+a.strengths.join(' | ')+'</div>';
         html += '<div style="margin-top:0.3rem;font-size:0.75rem"><strong style="color:var(--red)">Flaws:</strong> '+a.flaws.join(' | ')+'</div>';
@@ -1062,17 +1062,17 @@ renderStrengths('global-strengths', [
 
 // ──── DYNAMIC API LOADING ──────────────────────────────────────────────────
 function loadDynamicData() {
-    // Sports betting dashboard
+    // Sports betting dashboard — fields at top level: bankroll, win_rate, active_bets, roi_pct
     fetch('/live-monitor/api/sports_bets.php?action=dashboard')
         .then(function(r) { return r.json(); })
         .then(function(d) {
             if (!d.ok) return;
-            var s = d.dashboard || d;
             var el;
-            if (s.bankroll) document.getElementById('sports-bankroll').textContent = '$' + parseFloat(s.bankroll).toLocaleString();
-            if (s.win_rate !== undefined) { el = document.getElementById('sports-wr'); el.textContent = s.win_rate + '%'; el.className = 'kpi-val ' + (s.win_rate > 50 ? 'val-pos' : 'val-neg'); }
-            if (s.active_bets !== undefined) document.getElementById('sports-active').textContent = s.active_bets;
-            if (s.roi !== undefined) { el = document.getElementById('sports-roi'); el.textContent = (s.roi >= 0 ? '+' : '') + parseFloat(s.roi).toFixed(1) + '%'; el.className = 'kpi-val ' + (s.roi >= 0 ? 'val-pos' : 'val-neg'); }
+            document.getElementById('sports-bankroll').textContent = '$' + parseFloat(d.bankroll).toLocaleString();
+            el = document.getElementById('sports-wr'); el.textContent = d.win_rate + '%'; el.className = 'kpi-val ' + (d.win_rate > 50 ? 'val-pos' : 'val-neg');
+            document.getElementById('sports-active').textContent = d.active_bets;
+            var roi = parseFloat(d.roi_pct);
+            el = document.getElementById('sports-roi'); el.textContent = (roi >= 0 ? '+' : '') + roi.toFixed(1) + '%'; el.className = 'kpi-val ' + (roi >= 0 ? 'val-pos' : 'val-neg');
         })['catch'](function() {
             document.getElementById('sports-bankroll').textContent = '$1,000';
             document.getElementById('sports-wr').textContent = 'N/A';
@@ -1080,43 +1080,47 @@ function loadDynamicData() {
             document.getElementById('sports-roi').textContent = 'N/A';
         });
 
-    // Penny stock performance
+    // Penny stock performance — fields under stats: active, win_rate, avg_return, avg_score
     fetch('/findstocks/portfolio2/api/penny_stock_picks.php?action=performance')
         .then(function(r) { return r.json(); })
         .then(function(d) {
-            if (!d.ok) return;
-            var el;
-            if (d.active_picks !== undefined) document.getElementById('penny-active').textContent = d.active_picks;
-            if (d.win_rate !== undefined) { el = document.getElementById('penny-wr'); el.textContent = d.win_rate + '%'; el.className = 'kpi-val ' + (d.win_rate > 50 ? 'val-pos' : 'val-neg'); }
-            if (d.avg_return !== undefined) { el = document.getElementById('penny-avg'); el.textContent = (d.avg_return >= 0 ? '+' : '') + parseFloat(d.avg_return).toFixed(1) + '%'; el.className = 'kpi-val ' + (d.avg_return >= 0 ? 'val-pos' : 'val-neg'); }
+            if (!d.ok || !d.stats) return;
+            var s = d.stats, el;
+            document.getElementById('penny-active').textContent = s.active || s.total_picks || 0;
+            el = document.getElementById('penny-wr'); el.textContent = s.win_rate + '%'; el.className = 'kpi-val ' + (s.win_rate > 50 ? 'val-pos' : s.win_rate > 0 ? 'val-neg' : 'val-neutral');
+            var avg = parseFloat(s.avg_return);
+            el = document.getElementById('penny-avg'); el.textContent = (avg >= 0 ? '+' : '') + avg.toFixed(1) + '%'; el.className = 'kpi-val ' + (avg > 0 ? 'val-pos' : avg < 0 ? 'val-neg' : 'val-neutral');
         })['catch'](function() {
             document.getElementById('penny-active').textContent = 'N/A';
             document.getElementById('penny-wr').textContent = 'N/A';
             document.getElementById('penny-avg').textContent = 'N/A';
         });
 
-    // Meme scanner stats
+    // Meme scanner stats — fields under stats: overall_win_rate, avg_pnl, pending
     fetch('/findcryptopairs/api/meme_scanner.php?action=stats')
         .then(function(r) { return r.json(); })
         .then(function(d) {
-            if (!d.ok) return;
-            var el;
-            if (d.win_rate !== undefined) { el = document.getElementById('meme-wr'); el.textContent = d.win_rate + '%'; el.className = 'kpi-val ' + (d.win_rate > 50 ? 'val-pos' : 'val-neg'); }
-            if (d.avg_pnl !== undefined) { el = document.getElementById('meme-pnl'); el.textContent = (d.avg_pnl >= 0 ? '+' : '') + parseFloat(d.avg_pnl).toFixed(1) + '%'; el.className = 'kpi-val ' + (d.avg_pnl >= 0 ? 'val-pos' : 'val-neg'); }
-            if (d.active_signals !== undefined) document.getElementById('meme-active').textContent = d.active_signals;
+            if (!d.ok || !d.stats) return;
+            var s = d.stats, el;
+            var wr = parseFloat(s.overall_win_rate || s.win_rate || 0);
+            el = document.getElementById('meme-wr'); el.textContent = wr + '%'; el.className = 'kpi-val ' + (wr > 50 ? 'val-pos' : 'val-neg');
+            var pnl = parseFloat(s.avg_pnl || 0);
+            el = document.getElementById('meme-pnl'); el.textContent = (pnl >= 0 ? '+' : '') + pnl.toFixed(2) + '%'; el.className = 'kpi-val ' + (pnl >= 0 ? 'val-pos' : 'val-neg');
+            document.getElementById('meme-active').textContent = s.pending || 0;
         })['catch'](function() {
             document.getElementById('meme-wr').textContent = 'N/A';
             document.getElementById('meme-pnl').textContent = 'N/A';
             document.getElementById('meme-active').textContent = 'N/A';
         });
 
-    // Meme ML status
-    fetch('/findcryptopairs/api/meme_ml_engine.php?action=status')
+    // Meme ML model — use performance action (status action not available)
+    fetch('/findcryptopairs/api/meme_ml_engine.php?action=performance')
         .then(function(r) { return r.json(); })
         .then(function(d) {
-            if (!d.ok) { document.getElementById('meme-ml').textContent = 'Not Trained'; return; }
-            document.getElementById('meme-ml').textContent = d.status || 'Active';
-            if (d.accuracy) document.getElementById('meme-ml-metrics').textContent = 'Accuracy: ' + d.accuracy + '%, F1: ' + (d.f1_score || 'N/A') + ', Samples: ' + (d.samples || 'N/A');
+            if (!d.ok || !d.model) { document.getElementById('meme-ml').textContent = 'Not Trained'; return; }
+            document.getElementById('meme-ml').textContent = 'Trained';
+            var m = d.model;
+            document.getElementById('meme-ml-metrics').textContent = 'Model: ' + (m.model_id || 'unknown') + ' | Accuracy: ' + (m.accuracy || 'N/A') + '%';
         })['catch'](function() {
             document.getElementById('meme-ml').textContent = 'N/A';
             document.getElementById('meme-ml-metrics').textContent = 'Unable to load';
