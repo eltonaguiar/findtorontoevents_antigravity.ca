@@ -103,11 +103,10 @@ function _generate_hot_audit($symbol) {
     }
     
     if ($hot_data) {
-        $all_coins = array_merge(
-            $hot_data['kraken_hot'] ?? array(),
-            $hot_data['watch_list'] ?? array(),
-            $hot_data['other_trending'] ?? array()
-        );
+        $kraken_hot = isset($hot_data['kraken_hot']) ? $hot_data['kraken_hot'] : array();
+        $watch_list = isset($hot_data['watch_list']) ? $hot_data['watch_list'] : array();
+        $other_trending = isset($hot_data['other_trending']) ? $hot_data['other_trending'] : array();
+        $all_coins = array_merge($kraken_hot, $watch_list, $other_trending);
         
         foreach ($all_coins as $c) {
             if ($c['symbol'] === $symbol) {
@@ -152,23 +151,23 @@ function _generate_scanner_audit($symbol) {
  * Build human-readable audit text
  */
 function _build_audit_text($symbol, $data, $source) {
-    $scores = $data['scores'] ?? array();
-    $rating = $data['rating_10'] ?? $data['rating'] ?? 'N/A';
-    $zone = $data['rating_zone'] ?? 'unknown';
+    $scores = isset($data['scores']) ? $data['scores'] : array();
+    $rating = isset($data['rating_10']) ? $data['rating_10'] : isset($data['rating']) ? $data['rating'] : 'N/A';
+    $zone = isset($data['rating_zone']) ? $data['rating_zone'] : 'unknown';
     
     $text = "=== RECOMMENDATION AUDIT TRAIL ===\n";
     $text .= "Source: $source\n";
     $text .= "Generated: " . date('Y-m-d H:i:s T') . "\n";
     $text .= "Coin: $symbol\n";
     $text .= "Current Rating: $rating/10 ($zone)\n";
-    $text .= "Price: \$" . ($data['price'] ?? 'N/A') . "\n";
-    $text .= "24h Change: " . ($data['chg_24h'] ?? 'N/A') . "%\n";
+    $text .= "Price: \\$" . (isset($data['price']) ? $data['price'] : 'N/A') . "\n";
+    $text .= "24h Change: " . (isset($data['chg_24h']) ? $data['chg_24h'] : 'N/A') . "%\n";
     $text .= "\n=== SCORING BREAKDOWN ===\n";
-    $text .= "Momentum (35 pts): " . ($scores['momentum'] ?? 'N/A') . "/35\n";
-    $text .= "Volume (25 pts): " . ($scores['volume'] ?? 'N/A') . "/25\n";
-    $text .= "Social Buzz (15 pts): " . ($scores['trending'] ?? 'N/A') . "/15\n";
-    $text .= "Entry Position (15 pts): " . ($scores['entry_position'] ?? 'N/A') . "/15\n";
-    $text .= "Spread (10 pts): " . ($scores['spread'] ?? 'N/A') . "/10\n";
+    $text .= "Momentum (35 pts): " . (isset($scores['momentum']) ? $scores['momentum'] : 'N/A') . "/35\n";
+    $text .= "Volume (25 pts): " . (isset($scores['volume']) ? $scores['volume'] : 'N/A') . "/25\n";
+    $text .= "Social Buzz (15 pts): " . (isset($scores['trending']) ? $scores['trending'] : 'N/A') . "/15\n";
+    $text .= "Entry Position (15 pts): " . (isset($scores['entry_position']) ? $scores['entry_position'] : 'N/A') . "/15\n";
+    $text .= "Spread (10 pts): " . (isset($scores['spread']) ? $scores['spread'] : 'N/A') . "/10\n";
     
     if (isset($data['chasing_warning']) && $data['chasing_warning']) {
         $text .= "\n⚠️ CHASING PENALTY APPLIED: -" . $data['chasing_penalty'] . " pts\n";
@@ -177,7 +176,7 @@ function _build_audit_text($symbol, $data, $source) {
     
     if (isset($data['pump_dump_risk']) && $data['pump_dump_risk'] !== 'none') {
         $text .= "\n⚠️ PUMP & DUMP RISK: " . strtoupper($data['pump_dump_risk']) . "\n";
-        $text .= "Signals: " . implode(', ', $data['pump_dump_signals'] ?? array()) . "\n";
+        $text .= "Signals: " . implode(', ', isset($data['pump_dump_signals']) ? $data['pump_dump_signals'] : array()) . "\n";
     }
     
     $text .= "\n=== METHODOLOGY NOTES ===\n";
@@ -197,14 +196,14 @@ function _build_audit_text($symbol, $data, $source) {
  * Build Hot Trending audit text
  */
 function _build_hot_audit_text($symbol, $data) {
-    $tech = $data['technical'] ?? array();
+    $tech = isset($data['technical']) ? $data['technical'] : array();
     
     $text = "=== HOT TRENDING AUDIT TRAIL ===\n";
     $text .= "Source: Hot Trending Scanner v1.0\n";
     $text .= "Generated: " . date('Y-m-d H:i:s T') . "\n";
     $text .= "Coin: $symbol\n";
-    $text .= "Name: " . ($data['name'] ?? 'N/A') . "\n";
-    $text .= "CMC Rank: " . ($data['cmc_rank'] ?? 'N/A') . "\n";
+    $text .= "Name: " . (isset($data['name']) ? $data['name'] : 'N/A') . "\n";
+    $text .= "CMC Rank: " . (isset($data['cmc_rank']) ? $data['cmc_rank'] : 'N/A') . "\n";
     $text .= "\n=== CONFIDENCE SCORE ===\n";
     $text .= "Confidence: " . $data['confidence'] . "%\n";
     $text .= "Trend Strength: " . $data['trend_strength'] . "/100\n";
@@ -212,23 +211,23 @@ function _build_hot_audit_text($symbol, $data) {
     $text .= "On Kraken: " . ($data['on_kraken'] ? 'Yes' : 'No') . "\n";
     
     $text .= "\n=== PRICE DATA ===\n";
-    $text .= "Price: \$" . ($data['price'] ?? 'N/A') . "\n";
-    $text .= "24h Change: " . ($data['chg_24h'] ?? 'N/A') . "%\n";
-    $text .= "24h Volume: \$" . number_format($data['volume_24h'] ?? 0) . "\n";
-    $text .= "Market Cap: \$" . number_format($data['market_cap'] ?? 0) . "\n";
+    $text .= "Price: \\$" . (isset($data['price']) ? $data['price'] : 'N/A') . "\n";
+    $text .= "24h Change: " . (isset($data['chg_24h']) ? $data['chg_24h'] : 'N/A') . "%\n";
+    $text .= "24h Volume: $" . number_format(isset($data['volume_24h']) ? $data['volume_24h'] : 0) . "\n";
+    $text .= "Market Cap: $" . number_format(isset($data['market_cap']) ? $data['market_cap'] : 0) . "\n";
     
     $text .= "\n=== TECHNICAL ANALYSIS ===\n";
     if ($tech) {
-        $text .= "EMA-12: \$" . ($tech['ema_12'] ?? 'N/A') . "\n";
-        $text .= "EMA-26: \$" . ($tech['ema_26'] ?? 'N/A') . "\n";
-        $text .= "RSI: " . ($tech['rsi'] ?? 'N/A') . "\n";
-        $text .= "Momentum 5m: " . ($tech['momentum_5m'] ?? 'N/A') . "%\n";
-        $text .= "Momentum 15m: " . ($tech['momentum_15m'] ?? 'N/A') . "%\n";
-        $text .= "Momentum 1h: " . ($tech['momentum_1h'] ?? 'N/A') . "%\n";
-        $text .= "Volume Ratio: " . ($tech['volume_ratio'] ?? 'N/A') . "x avg\n";
+        $text .= "EMA-12: $" . (isset($tech['ema_12']) ? $tech['ema_12'] : 'N/A') . "\n";
+        $text .= "EMA-26: $" . (isset($tech['ema_26']) ? $tech['ema_26'] : 'N/A') . "\n";
+        $text .= "RSI: " . (isset($tech['rsi']) ? $tech['rsi'] : 'N/A') . "\n";
+        $text .= "Momentum 5m: " . (isset($tech['momentum_5m']) ? $tech['momentum_5m'] : 'N/A') . "%\n";
+        $text .= "Momentum 15m: " . (isset($tech['momentum_15m']) ? $tech['momentum_15m'] : 'N/A') . "%\n";
+        $text .= "Momentum 1h: " . (isset($tech['momentum_1h']) ? $tech['momentum_1h'] : 'N/A') . "%\n";
+        $text .= "Volume Ratio: " . (isset($tech['volume_ratio']) ? $tech['volume_ratio'] : 'N/A') . "x avg\n";
         $text .= "Acceleration: " . ($tech['momentum_acceleration'] ? 'Yes' : 'No') . "\n";
         $text .= "\nActive Factors:\n";
-        foreach ($tech['factors'] ?? array() as $factor) {
+        foreach (isset($tech['factors']) ? $tech['factors'] : array() as $factor) {
             $text .= "  ✓ " . str_replace('_', ' ', $factor) . "\n";
         }
     }
@@ -257,29 +256,29 @@ function _format_for_ai($symbol, $data, $type) {
     $prompt .= "=== PICK DETAILS ===\n";
     $prompt .= "Coin: $symbol\n";
     $prompt .= "Source: " . ($type === 'kraken' ? 'Kraken Meme Rankings v2.2' : 'Unknown') . "\n";
-    $prompt .= "Rating: " . ($data['rating_10'] ?? 'N/A') . "/10\n";
-    $prompt .= "Price: \$" . ($data['price'] ?? 'N/A') . "\n";
-    $prompt .= "24h Change: " . ($data['chg_24h'] ?? 'N/A') . "%\n";
+    $prompt .= "Rating: " . (isset($data['rating_10']) ? $data['rating_10'] : 'N/A') . "/10\n";
+    $prompt .= "Price: \\$" . (isset($data['price']) ? $data['price'] : 'N/A') . "\n";
+    $prompt .= "24h Change: " . (isset($data['chg_24h']) ? $data['chg_24h'] : 'N/A') . "%\n";
     $prompt .= "\n=== SCORE BREAKDOWN ===\n";
     
-    $scores = $data['scores'] ?? array();
-    $prompt .= "- Momentum (35% weight): " . ($scores['momentum'] ?? 0) . "/35 points\n";
+    $scores = isset($data['scores']) ? $data['scores'] : array();
+    $prompt .= "- Momentum (35% weight): " . (isset($scores['momentum']) ? $scores['momentum'] : 0) . "/35 points\n";
     $prompt .= "  -> 24h price change sweet spot: +3% to +15%\n";
-    $prompt .= "  -> Current 24h: " . ($data['chg_24h'] ?? 'N/A') . "%\n";
+    $prompt .= "  -> Current 24h: " . (isset($data['chg_24h']) ? $data['chg_24h'] : 'N/A') . "%\n";
     $prompt .= "\n";
-    $prompt .= "- Volume (25% weight): " . ($scores['volume'] ?? 0) . "/25 points\n";
-    $prompt .= "  -> 24h Volume: \$" . number_format($data['vol_24h_usd'] ?? 0) . "\n";
+    $prompt .= "- Volume (25% weight): " . (isset($scores['volume']) ? $scores['volume'] : 0) . "/25 points\n";
+    $prompt .= "  -> 24h Volume: $" . number_format(isset($data['vol_24h_usd']) ? $data['vol_24h_usd'] : 0) . "\n";
     $prompt .= "\n";
-    $prompt .= "- Social Buzz (15% weight): " . ($scores['trending'] ?? 0) . "/15 points\n";
+    $prompt .= "- Social Buzz (15% weight): " . (isset($scores['trending']) ? $scores['trending'] : 0) . "/15 points\n";
     $prompt .= "  -> Binary bonus if trending on CoinGecko\n";
     $prompt .= "  -> Is Trending: " . ($data['is_trending'] ? 'Yes (+15 pts)' : 'No (0 pts)') . "\n";
     $prompt .= "\n";
-    $prompt .= "- Entry Position (15% weight): " . ($scores['entry_position'] ?? 0) . "/15 points\n";
-    $prompt .= "  -> Price position in 24h range: " . ($data['price_in_range_pct'] ?? 'N/A') . "%\n";
+    $prompt .= "- Entry Position (15% weight): " . (isset($scores['entry_position']) ? $scores['entry_position'] : 0) . "/15 points\n";
+    $prompt .= "  -> Price position in 24h range: " . (isset($data['price_in_range_pct']) ? $data['price_in_range_pct'] : 'N/A') . "%\n";
     $prompt .= "  -> Near 0% = near low (good), Near 100% = near high (bad)\n";
     $prompt .= "\n";
-    $prompt .= "- Spread (10% weight): " . ($scores['spread'] ?? 0) . "/10 points\n";
-    $prompt .= "  -> Bid/ask spread: " . ($data['spread_pct'] ?? 'N/A') . "%\n";
+    $prompt .= "- Spread (10% weight): " . (isset($scores['spread']) ? $scores['spread'] : 0) . "/10 points\n";
+    $prompt .= "  -> Bid/ask spread: " . (isset($data['spread_pct']) ? $data['spread_pct'] : 'N/A') . "%\n";
     $prompt .= "\n=== WARNINGS ===\n";
     
     if (isset($data['chasing_warning']) && $data['chasing_warning']) {
@@ -314,23 +313,23 @@ function _format_hot_for_ai($symbol, $data) {
     $prompt .= "Recommendation: " . $data['recommendation'] . "\n";
     $prompt .= "Tradable on Kraken: " . ($data['on_kraken'] ? 'Yes' : 'No') . "\n";
     $prompt .= "\n=== PRICE DATA ===\n";
-    $prompt .= "Price: \$" . ($data['price'] ?? 'N/A') . "\n";
-    $prompt .= "24h Change: " . ($data['chg_24h'] ?? 'N/A') . "%\n";
-    $prompt .= "24h Volume: \$" . number_format($data['volume_24h'] ?? 0) . "\n";
+    $prompt .= "Price: \\$" . (isset($data['price']) ? $data['price'] : 'N/A') . "\n";
+    $prompt .= "24h Change: " . (isset($data['chg_24h']) ? $data['chg_24h'] : 'N/A') . "%\n";
+    $prompt .= "24h Volume: $" . number_format(isset($data['volume_24h']) ? $data['volume_24h'] : 0) . "\n";
     $prompt .= "\n=== TECHNICAL ANALYSIS ===\n";
     
-    $tech = $data['technical'] ?? array();
+    $tech = isset($data['technical']) ? $data['technical'] : array();
     if ($tech) {
-        $prompt .= "EMA-12: \$" . ($tech['ema_12'] ?? 'N/A') . "\n";
-        $prompt .= "EMA-26: \$" . ($tech['ema_26'] ?? 'N/A') . "\n";
-        $prompt .= "RSI: " . ($tech['rsi'] ?? 'N/A') . "\n";
-        $prompt .= "5m Momentum: " . ($tech['momentum_5m'] ?? 'N/A') . "%\n";
-        $prompt .= "15m Momentum: " . ($tech['momentum_15m'] ?? 'N/A') . "%\n";
-        $prompt .= "1h Momentum: " . ($tech['momentum_1h'] ?? 'N/A') . "%\n";
-        $prompt .= "Volume Ratio: " . ($tech['volume_ratio'] ?? 'N/A') . "x average\n";
+        $prompt .= "EMA-12: $" . (isset($tech['ema_12']) ? $tech['ema_12'] : 'N/A') . "\n";
+        $prompt .= "EMA-26: $" . (isset($tech['ema_26']) ? $tech['ema_26'] : 'N/A') . "\n";
+        $prompt .= "RSI: " . (isset($tech['rsi']) ? $tech['rsi'] : 'N/A') . "\n";
+        $prompt .= "5m Momentum: " . (isset($tech['momentum_5m']) ? $tech['momentum_5m'] : 'N/A') . "%\n";
+        $prompt .= "15m Momentum: " . (isset($tech['momentum_15m']) ? $tech['momentum_15m'] : 'N/A') . "%\n";
+        $prompt .= "1h Momentum: " . (isset($tech['momentum_1h']) ? $tech['momentum_1h'] : 'N/A') . "%\n";
+        $prompt .= "Volume Ratio: " . (isset($tech['volume_ratio']) ? $tech['volume_ratio'] : 'N/A') . "x average\n";
         $prompt .= "Momentum Accelerating: " . ($tech['momentum_acceleration'] ? 'Yes' : 'No') . "\n";
         $prompt .= "\nActive Technical Factors:\n";
-        foreach ($tech['factors'] ?? array() as $factor) {
+        foreach (isset($tech['factors']) ? $tech['factors'] : array() as $factor) {
             $prompt .= "  ✓ " . str_replace('_', ' ', $factor) . "\n";
         }
     }
