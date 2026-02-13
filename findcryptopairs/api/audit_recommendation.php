@@ -4,6 +4,9 @@
  * Returns detailed methodology data for any pick that can be analyzed by other AIs
  */
 
+// Start output buffering to catch any errors
+ob_start();
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
@@ -15,27 +18,45 @@ $symbol = isset($_GET['symbol']) ? strtoupper($_GET['symbol']) : '';
 $timestamp = isset($_GET['ts']) ? $_GET['ts'] : date('Y-m-d H:i:s');
 
 if (empty($type) || empty($symbol)) {
+    ob_clean();
     echo json_encode(array('ok' => false, 'error' => 'Missing type or symbol'));
     exit;
 }
 
 // Generate comprehensive audit based on type
-switch ($type) {
-    case 'kraken':
-        $audit = _generate_kraken_audit($symbol);
-        break;
-    case 'hot':
-        $audit = _generate_hot_audit($symbol);
-        break;
-    case 'scanner':
-        $audit = _generate_scanner_audit($symbol);
-        break;
-    default:
-        echo json_encode(array('ok' => false, 'error' => 'Unknown type'));
-        exit;
+$audit = null;
+$function_error = null;
+
+try {
+    switch ($type) {
+        case 'kraken':
+            $audit = _generate_kraken_audit($symbol);
+            break;
+        case 'hot':
+            $audit = _generate_hot_audit($symbol);
+            break;
+        case 'scanner':
+            $audit = _generate_scanner_audit($symbol);
+            break;
+        default:
+            ob_clean();
+            echo json_encode(array('ok' => false, 'error' => 'Unknown type'));
+            exit;
+    }
+} catch (Exception $e) {
+    $function_error = $e->getMessage();
 }
 
-echo json_encode($audit);
+// Clear any unexpected output
+ob_clean();
+
+if ($function_error) {
+    echo json_encode(array('ok' => false, 'error' => 'Internal error: ' . $function_error));
+} elseif ($audit) {
+    echo json_encode($audit);
+} else {
+    echo json_encode(array('ok' => false, 'error' => 'Failed to generate audit'));
+}
 
 /**
  * Generate Kraken ranking audit
@@ -344,7 +365,13 @@ function _format_hot_for_ai($symbol, $data) {
 function _fetch_pulse_data() {
     $cache_file = dirname(__FILE__) . '/../../tmp/mp_kraken_ranked.json';
     if (file_exists($cache_file)) {
-        return json_decode(file_get_contents($cache_file), true);
+        $content = @file_get_contents($cache_file);
+        if ($content) {
+            $data = @json_decode($content, true);
+            if ($data && is_array($data) && isset($data['rankings'])) {
+                return $data;
+            }
+        }
     }
     return array('rankings' => array());
 }

@@ -4092,13 +4092,15 @@
     var currentAuditData = null;
     var currentAuditText = '';
     
-    function openAuditModal(symbol, type) {
+    function openAuditModal(symbol, type, triedFallback) {
       var overlay = document.getElementById('audit-overlay');
       var body = document.getElementById('audit-body');
       var title = document.getElementById('audit-title');
       
       title.textContent = '🔍 Audit Trail: ' + symbol;
-      body.innerHTML = '<div class="loading">Loading audit data...</div>';
+      if (!triedFallback) {
+        body.innerHTML = '<div class="loading">Loading audit data...</div>';
+      }
       overlay.classList.add('active');
       
       // Fetch audit data
@@ -4113,10 +4115,29 @@
             currentAuditText = r.formatted_for_ai || r.audit_text;
             renderAuditBody(r);
           } else {
-            body.innerHTML = '<div style="color:#ef4444;padding:20px;">Error: ' + (r.error || 'Unknown') + '</div>';
+            // If coin not found and we haven't tried fallback, try the other source
+            var errorMsg = (r.error || '').toLowerCase();
+            if (!triedFallback && (errorMsg.indexOf('not found') >= 0 || errorMsg.indexOf('no data') >= 0)) {
+              var fallbackType = type === 'kraken' ? 'hot' : 'kraken';
+              body.innerHTML = '<div class="loading">Trying ' + fallbackType + ' data...</div>';
+              openAuditModal(symbol, fallbackType, true);
+              return;
+            }
+            // Both failed or other error
+            body.innerHTML = '<div style="color:#ef4444;padding:20px;">' + 
+              '<strong>Audit Unavailable</strong><br><br>' + 
+              (r.error || 'Unknown error') + '<br><br>' +
+              '<span style="color:#888;font-size:11px;">This coin may not be in the current rankings or hot trending lists. The scanner tracks 43 Kraken-listed meme coins plus top CMC trending coins.</span>' +
+              '</div>';
           }
         } catch (e) {
-          body.innerHTML = '<div style="color:#ef4444;padding:20px;">Error parsing response</div>';
+          // Show raw response for debugging
+          var preview = x.responseText.substring(0, 200).replace(/</g, '&lt;');
+          body.innerHTML = '<div style="color:#ef4444;padding:20px;">' + 
+            '<strong>Error parsing response</strong><br><br>' +
+            '<span style="color:#888;font-size:11px;">Raw response preview:</span><br>' +
+            '<pre style="background:rgba(0,0,0,0.3);padding:8px;margin-top:8px;font-size:10px;color:#888;overflow:auto;">' + preview + '...</pre>' +
+            '</div>';
         }
       };
       x.onerror = function() {
