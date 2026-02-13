@@ -18,7 +18,9 @@ header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { exit; }
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit;
+}
 
 // Dedicated meme coin database (separate from stocks)
 error_reporting(0);
@@ -31,23 +33,29 @@ if ($conn->connect_error) {
 $conn->set_charset('utf8');
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'winners';
-$key    = isset($_GET['key']) ? $_GET['key'] : '';
+$key = isset($_GET['key']) ? $_GET['key'] : '';
 $ADMIN_KEY = 'memescan2026';
 
 // Tier 1: established meme coins (always scanned — NO filters applied)
 $MEME_TIER1 = array(
-    'DOGE_USDT', 'SHIB_USDT', 'PEPE_USDT', 'FLOKI_USDT',
-    'BONK_USDT', 'WIF_USDT', 'TURBO_USDT', 'NEIRO_USDT'
+    'DOGE_USDT',
+    'SHIB_USDT',
+    'PEPE_USDT',
+    'FLOKI_USDT',
+    'BONK_USDT',
+    'WIF_USDT',
+    'TURBO_USDT',
+    'NEIRO_USDT'
 );
 
 // CoinGecko IDs for Tier 1 (fallback when not on Crypto.com Exchange)
 $CG_TIER1_IDS = array(
-    'DOGE_USDT'  => 'dogecoin',
-    'SHIB_USDT'  => 'shiba-inu',
-    'PEPE_USDT'  => 'pepe',
+    'DOGE_USDT' => 'dogecoin',
+    'SHIB_USDT' => 'shiba-inu',
+    'PEPE_USDT' => 'pepe',
     'FLOKI_USDT' => 'floki',
-    'BONK_USDT'  => 'bonk',
-    'WIF_USDT'   => 'dogwifhat',
+    'BONK_USDT' => 'bonk',
+    'WIF_USDT' => 'dogwifhat',
     'TURBO_USDT' => 'turbo',
     'NEIRO_USDT' => 'neiro-3'
 );
@@ -55,22 +63,72 @@ $CG_TIER1_IDS = array(
 // Meme keyword fragments for dynamic discovery (Kimi: expanded from 27→55+)
 $MEME_KEYWORDS = array(
     // Original 27
-    'DOGE', 'SHIB', 'INU', 'PEPE', 'FLOKI', 'BONK', 'WIF', 'MEME',
-    'BABY', 'MOON', 'ELON', 'CAT', 'DOG', 'NEIRO', 'TURBO', 'BRETT',
-    'MOG', 'POPCAT', 'MYRO', 'SLERF', 'BOME', 'WOJAK', 'LADYS',
-    'SATS', 'ORDI', 'COQ', 'TOSHI',
+    'DOGE',
+    'SHIB',
+    'INU',
+    'PEPE',
+    'FLOKI',
+    'BONK',
+    'WIF',
+    'MEME',
+    'BABY',
+    'MOON',
+    'ELON',
+    'CAT',
+    'DOG',
+    'NEIRO',
+    'TURBO',
+    'BRETT',
+    'MOG',
+    'POPCAT',
+    'MYRO',
+    'SLERF',
+    'BOME',
+    'WOJAK',
+    'LADYS',
+    'SATS',
+    'ORDI',
+    'COQ',
+    'TOSHI',
     // 2025-2026 meme cycle additions
-    'PNUT', 'GOAT', 'ACT', 'CHILLGUY', 'SPX', 'GIGA', 'PONKE', 'NEIROCTO',
-    'PORK', 'BODEN', 'TREMP', 'TRUMP', 'FWOG', 'MICHI', 'WENMOON',
-    'NEKO', 'HAMSTER', 'CATE', 'DEGEN', 'CHAD', 'BASED', 'RIZZ',
-    'SNAIL', 'TOAD', 'APE', 'PIG', 'BEAR', 'BULL', 'FROG'
+    'PNUT',
+    'GOAT',
+    'ACT',
+    'CHILLGUY',
+    'SPX',
+    'GIGA',
+    'PONKE',
+    'NEIROCTO',
+    'PORK',
+    'BODEN',
+    'TREMP',
+    'TRUMP',
+    'FWOG',
+    'MICHI',
+    'WENMOON',
+    'NEKO',
+    'HAMSTER',
+    'CATE',
+    'DEGEN',
+    'CHAD',
+    'BASED',
+    'RIZZ',
+    'SNAIL',
+    'TOAD',
+    'APE',
+    'PIG',
+    'BEAR',
+    'BULL',
+    'FROG'
 );
 
 _mc_ensure_schema($conn);
 
 switch ($action) {
     case 'scan':
-        if ($key !== $ADMIN_KEY) { _mc_err('Unauthorized'); }
+        if ($key !== $ADMIN_KEY) {
+            _mc_err('Unauthorized');
+        }
         _mc_action_scan($conn);
         break;
     case 'winners':
@@ -80,7 +138,9 @@ switch ($action) {
         _mc_action_history($conn);
         break;
     case 'resolve':
-        if ($key !== $ADMIN_KEY) { _mc_err('Unauthorized'); }
+        if ($key !== $ADMIN_KEY) {
+            _mc_err('Unauthorized');
+        }
         _mc_action_resolve($conn);
         break;
     case 'leaderboard':
@@ -99,11 +159,15 @@ switch ($action) {
         _mc_action_performance($conn);
         break;
     case 'snapshot':
-        if ($key !== $ADMIN_KEY) { _mc_err('Unauthorized'); }
+        if ($key !== $ADMIN_KEY) {
+            _mc_err('Unauthorized');
+        }
         _mc_action_snapshot($conn);
         break;
     case 'adaptive_weights':
-        if ($key !== $ADMIN_KEY) { _mc_err('Unauthorized'); }
+        if ($key !== $ADMIN_KEY) {
+            _mc_err('Unauthorized');
+        }
         _mc_action_adaptive_weights($conn);
         break;
     case 'ml_status':
@@ -116,7 +180,8 @@ switch ($action) {
 // ═══════════════════════════════════════════════════════════════════════
 //  SCAN — the meme engine
 // ═══════════════════════════════════════════════════════════════════════
-function _mc_action_scan($conn) {
+function _mc_action_scan($conn)
+{
     global $MEME_TIER1, $MEME_KEYWORDS, $CG_TIER1_IDS;
     $start = microtime(true);
 
@@ -138,7 +203,8 @@ function _mc_action_scan($conn) {
     if ($tickers_raw && isset($tickers_raw['result']['data'])) {
         foreach ($tickers_raw['result']['data'] as $t) {
             $k = isset($t['i']) ? $t['i'] : (isset($t['symbol']) ? $t['symbol'] : '');
-            if ($k) $tickers[$k] = $t;
+            if ($k)
+                $tickers[$k] = $t;
         }
     }
 
@@ -156,35 +222,36 @@ function _mc_action_scan($conn) {
         $has_cc = isset($tickers[$meme]);
         $cg_match = _mc_find_cg_match($meme, $cg_memes, $CG_TIER1_IDS);
 
-        if (!$has_cc && !$cg_match) continue;
+        if (!$has_cc && !$cg_match)
+            continue;
 
         if ($has_cc) {
             $t = $tickers[$meme];
-            $price  = isset($t['a']) ? floatval($t['a']) : 0;
+            $price = isset($t['a']) ? floatval($t['a']) : 0;
             $volUsd = isset($t['vv']) ? floatval($t['vv']) : (floatval(isset($t['v']) ? $t['v'] : 0) * $price);
-            $chg24  = isset($t['c']) ? floatval($t['c']) * 100 : 0;
+            $chg24 = isset($t['c']) ? floatval($t['c']) * 100 : 0;
             // Use CoinGecko aggregate volume if available (much more representative)
             if ($cg_match && $cg_match['total_volume'] > $volUsd) {
                 $volUsd = floatval($cg_match['total_volume']);
-                $chg24  = floatval($cg_match['price_change_percentage_24h']);
+                $chg24 = floatval($cg_match['price_change_percentage_24h']);
             }
         } else {
-            $price  = floatval($cg_match['current_price']);
+            $price = floatval($cg_match['current_price']);
             $volUsd = floatval($cg_match['total_volume']);
-            $chg24  = floatval($cg_match['price_change_percentage_24h']);
+            $chg24 = floatval($cg_match['price_change_percentage_24h']);
         }
 
         $candidates[] = array(
-            'pair'       => $meme,
-            'price'      => $price,
-            'vol_usd'    => $volUsd,
-            'chg_24h'    => $chg24,
-            'high_24h'   => $has_cc && isset($tickers[$meme]['h']) ? floatval($tickers[$meme]['h']) : ($cg_match ? floatval($cg_match['high_24h']) : $price),
-            'low_24h'    => $has_cc && isset($tickers[$meme]['l']) ? floatval($tickers[$meme]['l']) : ($cg_match ? floatval($cg_match['low_24h']) : $price),
-            'tier'       => 'tier1',
-            'source'     => $has_cc ? 'crypto_com' : 'coingecko',
-            'cg_id'      => $cg_match ? $cg_match['id'] : (isset($CG_TIER1_IDS[$meme]) ? $CG_TIER1_IDS[$meme] : null),
-            'has_cc'     => $has_cc
+            'pair' => $meme,
+            'price' => $price,
+            'vol_usd' => $volUsd,
+            'chg_24h' => $chg24,
+            'high_24h' => $has_cc && isset($tickers[$meme]['h']) ? floatval($tickers[$meme]['h']) : ($cg_match ? floatval($cg_match['high_24h']) : $price),
+            'low_24h' => $has_cc && isset($tickers[$meme]['l']) ? floatval($tickers[$meme]['l']) : ($cg_match ? floatval($cg_match['low_24h']) : $price),
+            'tier' => 'tier1',
+            'source' => $has_cc ? 'crypto_com' : 'coingecko',
+            'cg_id' => $cg_match ? $cg_match['id'] : (isset($CG_TIER1_IDS[$meme]) ? $CG_TIER1_IDS[$meme] : null),
+            'has_cc' => $has_cc
         );
         $seen_pairs[$meme] = true;
         $tier1_found++;
@@ -193,17 +260,22 @@ function _mc_action_scan($conn) {
     // Tier 2 from Crypto.com: relaxed filters
     $tier2_pool = array();
     foreach ($all_usdt_pairs as $pair) {
-        if (isset($seen_pairs[$pair])) continue;
-        if (!isset($tickers[$pair])) continue;
+        if (isset($seen_pairs[$pair]))
+            continue;
+        if (!isset($tickers[$pair]))
+            continue;
 
         $t = $tickers[$pair];
-        $price  = isset($t['a']) ? floatval($t['a']) : 0;
+        $price = isset($t['a']) ? floatval($t['a']) : 0;
         $volUsd = isset($t['vv']) ? floatval($t['vv']) : (floatval(isset($t['v']) ? $t['v'] : 0) * $price);
-        $chg24  = isset($t['c']) ? floatval($t['c']) * 100 : 0;
+        $chg24 = isset($t['c']) ? floatval($t['c']) * 100 : 0;
 
-        if ($chg24 < 2) continue;          // relaxed from 5% to 2%
-        if ($volUsd < 25000) continue;      // relaxed from 100K to 25K
-        if ($volUsd > 500000000) continue;
+        if ($chg24 < 2)
+            continue;          // relaxed from 5% to 2%
+        if ($volUsd < 25000)
+            continue;      // relaxed from 100K to 25K
+        if ($volUsd > 500000000)
+            continue;
 
         $is_meme = false;
         $base = str_replace('_USDT', '', $pair);
@@ -214,47 +286,52 @@ function _mc_action_scan($conn) {
             }
         }
         $is_extreme_pump = ($chg24 >= 10 && $volUsd >= 100000);
-        if (!$is_meme && !$is_extreme_pump) continue;
+        if (!$is_meme && !$is_extreme_pump)
+            continue;
 
         $tier2_pool[] = array(
-            'pair'     => $pair,
-            'price'    => $price,
-            'vol_usd'  => $volUsd,
-            'chg_24h'  => $chg24,
+            'pair' => $pair,
+            'price' => $price,
+            'vol_usd' => $volUsd,
+            'chg_24h' => $chg24,
             'high_24h' => isset($t['h']) ? floatval($t['h']) : $price,
-            'low_24h'  => isset($t['l']) ? floatval($t['l']) : $price,
-            'tier'     => 'tier2',
-            'source'   => 'crypto_com',
-            'cg_id'    => null,
-            'has_cc'   => true
+            'low_24h' => isset($t['l']) ? floatval($t['l']) : $price,
+            'tier' => 'tier2',
+            'source' => 'crypto_com',
+            'cg_id' => null,
+            'has_cc' => true
         );
     }
 
     // Tier 2 from CoinGecko: find pumping meme coins not already seen
     foreach ($cg_memes as $cg) {
         $pair = strtoupper($cg['symbol']) . '_USDT';
-        if (isset($seen_pairs[$pair])) continue;
+        if (isset($seen_pairs[$pair]))
+            continue;
 
-        $vol   = floatval($cg['total_volume']);
+        $vol = floatval($cg['total_volume']);
         $chg24 = floatval($cg['price_change_percentage_24h']);
-        $mcap  = floatval($cg['market_cap']);
+        $mcap = floatval($cg['market_cap']);
 
         // CoinGecko Tier 2 filters (these are aggregate volumes, so higher thresholds)
-        if ($chg24 < 3) continue;
-        if ($vol < 1000000) continue;        // $1M aggregate min
-        if ($mcap > 10000000000) continue;   // skip $10B+ (BTC, ETH not in meme category anyway)
+        if ($chg24 < 3)
+            continue;
+        if ($vol < 1000000)
+            continue;        // $1M aggregate min
+        if ($mcap > 10000000000)
+            continue;   // skip $10B+ (BTC, ETH not in meme category anyway)
 
         $tier2_pool[] = array(
-            'pair'     => $pair,
-            'price'    => floatval($cg['current_price']),
-            'vol_usd'  => $vol,
-            'chg_24h'  => $chg24,
+            'pair' => $pair,
+            'price' => floatval($cg['current_price']),
+            'vol_usd' => $vol,
+            'chg_24h' => $chg24,
             'high_24h' => floatval($cg['high_24h']),
-            'low_24h'  => floatval($cg['low_24h']),
-            'tier'     => 'tier2',
-            'source'   => isset($tickers[$pair]) ? 'crypto_com' : 'coingecko',
-            'cg_id'    => $cg['id'],
-            'has_cc'   => isset($tickers[$pair])
+            'low_24h' => floatval($cg['low_24h']),
+            'tier' => 'tier2',
+            'source' => isset($tickers[$pair]) ? 'crypto_com' : 'coingecko',
+            'cg_id' => $cg['id'],
+            'has_cc' => isset($tickers[$pair])
         );
         $seen_pairs[$pair] = true;
     }
@@ -274,15 +351,15 @@ function _mc_action_scan($conn) {
     $scored = array();
     foreach ($candidates as $c) {
         $c15m = array();
-        $c5m  = array();
+        $c5m = array();
         $has_volume_data = false;
 
         // Try Crypto.com candles first (best: 5m + 15m with volume)
         if ($c['has_cc']) {
             $candles_15m = _mc_api('public/get-candlestick?instrument_name=' . $c['pair'] . '&timeframe=M15');
-            $candles_5m  = _mc_api('public/get-candlestick?instrument_name=' . $c['pair'] . '&timeframe=M5');
+            $candles_5m = _mc_api('public/get-candlestick?instrument_name=' . $c['pair'] . '&timeframe=M5');
             $c15m = isset($candles_15m['result']['data']) ? $candles_15m['result']['data'] : array();
-            $c5m  = isset($candles_5m['result']['data']) ? $candles_5m['result']['data'] : array();
+            $c5m = isset($candles_5m['result']['data']) ? $candles_5m['result']['data'] : array();
             $has_volume_data = (count($c15m) >= 8);
         }
 
@@ -291,13 +368,15 @@ function _mc_action_scan($conn) {
             $cg_ohlc = _mc_coingecko_ohlc($c['cg_id']);
             if (count($cg_ohlc) >= 8) {
                 $c15m = $cg_ohlc;
-                $c5m  = $cg_ohlc; // same granularity, less ideal but functional
+                $c5m = $cg_ohlc; // same granularity, less ideal but functional
                 $has_volume_data = false;
             }
         }
 
-        if (count($c15m) < 8) continue;
-        if (count($c5m) < 8) $c5m = $c15m;
+        if (count($c15m) < 8)
+            continue;
+        if (count($c5m) < 8)
+            $c5m = $c15m;
 
         $score_details = _mc_score_pair($c, $c15m, $c5m, $has_volume_data);
 
@@ -323,11 +402,11 @@ function _mc_action_scan($conn) {
             $score_details['verdict'] = 'SKIP';
         }
 
-        $c['score']      = $score_details['total'];
-        $c['factors']    = $score_details['factors'];
-        $c['verdict']    = $score_details['verdict'];
+        $c['score'] = $score_details['total'];
+        $c['factors'] = $score_details['factors'];
+        $c['verdict'] = $score_details['verdict'];
         $c['target_pct'] = $score_details['target_pct'];
-        $c['risk_pct']   = $score_details['risk_pct'];
+        $c['risk_pct'] = $score_details['risk_pct'];
 
         $scored[] = $c;
     }
@@ -340,14 +419,15 @@ function _mc_action_scan($conn) {
     $saved = 0;
 
     foreach ($scored as $s) {
-        if ($s['score'] < 70) continue;
+        if ($s['score'] < 70)
+            continue;
         $winners[] = $s;
 
-        $esc_pair    = $conn->real_escape_string($s['pair']);
-        $esc_scan    = $conn->real_escape_string($scan_id);
+        $esc_pair = $conn->real_escape_string($s['pair']);
+        $esc_scan = $conn->real_escape_string($scan_id);
         $esc_factors = $conn->real_escape_string(json_encode($s['factors']));
         $esc_verdict = $conn->real_escape_string($s['verdict']);
-        $esc_tier    = $conn->real_escape_string($s['tier']);
+        $esc_tier = $conn->real_escape_string($s['tier']);
 
         $sql = "INSERT INTO mc_winners (scan_id, pair, price_at_signal, score, factors_json, verdict, target_pct, risk_pct, vol_usd_24h, chg_24h, tier, created_at)
                 VALUES ('$esc_scan', '$esc_pair', " . floatval($s['price']) . ", " . intval($s['score']) . ", '$esc_factors', '$esc_verdict', " . floatval($s['target_pct']) . ", " . floatval($s['risk_pct']) . ", " . floatval($s['vol_usd']) . ", " . floatval($s['chg_24h']) . ", '$esc_tier', NOW())";
@@ -365,11 +445,11 @@ function _mc_action_scan($conn) {
     // Save ALL analyzed to scan_log (with Kraken eligibility)
     $kraken_lookup = _mc_get_kraken_lookup();
     foreach ($scored as $s) {
-        $esc_pair_log    = $conn->real_escape_string($s['pair']);
-        $esc_scan_log    = $conn->real_escape_string($scan_id);
+        $esc_pair_log = $conn->real_escape_string($s['pair']);
+        $esc_scan_log = $conn->real_escape_string($scan_id);
         $esc_factors_log = $conn->real_escape_string(json_encode($s['factors']));
         $esc_verdict_log = $conn->real_escape_string($s['verdict']);
-        $esc_tier_log    = $conn->real_escape_string($s['tier']);
+        $esc_tier_log = $conn->real_escape_string($s['tier']);
         $base_sym = strtoupper(str_replace('_USDT', '', $s['pair']));
         $is_on_kraken = isset($kraken_lookup[$base_sym]) ? 1 : 0;
         $sql_log = "INSERT INTO mc_scan_log (scan_id, pair, price, score, factors_json, verdict, chg_24h, vol_usd_24h, tier, on_kraken, created_at)
@@ -411,12 +491,13 @@ function _mc_action_scan($conn) {
 // ═══════════════════════════════════════════════════════════════════════
 //  SCORING ENGINE — meme-specific factors (ACCURACY IMPROVED v2)
 // ═══════════════════════════════════════════════════════════════════════
-function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data = true) {
+function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data = true)
+{
     $total = 0;
     $factors = array();
     $current_price = $candidate['price'];
     $vol_usd = $candidate['vol_usd'];
-    
+
     // NEW: Quality gates - must pass these to be considered at all
     $quality_score = 0;
     $quality_issues = array();
@@ -451,8 +532,8 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
     }
 
     $n15 = count($closes_15m);
-    $n5  = count($closes_5m);
-    
+    $n5 = count($closes_5m);
+
     // ═══════════════════════════════════════════════════════════════════════
     //  QUALITY GATE 1: Trend Confirmation (NEW)
     //  Price must be above 1-hour EMA (8 periods of 15m = 2h trend)
@@ -469,16 +550,16 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
     } else {
         $quality_score += 1;
     }
-    
+
     // ═══════════════════════════════════════════════════════════════════════
     //  QUALITY GATE 2: Momentum Direction (NEW)
     //  Must have positive momentum on both timeframes
     // ═══════════════════════════════════════════════════════════════════════
-    $mom_15m = ($n15 >= 4 && $closes_15m[$n15 - 4] > 0) ? 
+    $mom_15m = ($n15 >= 4 && $closes_15m[$n15 - 4] > 0) ?
         (($closes_15m[$n15 - 1] - $closes_15m[$n15 - 4]) / $closes_15m[$n15 - 4]) * 100 : 0;
-    $mom_5m = ($n5 >= 6 && $closes_5m[$n5 - 6] > 0) ? 
+    $mom_5m = ($n5 >= 6 && $closes_5m[$n5 - 6] > 0) ?
         (($closes_5m[$n5 - 1] - $closes_5m[$n5 - 6]) / $closes_5m[$n5 - 6]) * 100 : 0;
-    
+
     $momentum_positive = ($mom_15m > 0.5 && $mom_5m > 0.3);
     $factors['momentum_gate'] = array(
         'mom_15m' => round($mom_15m, 2),
@@ -490,7 +571,7 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
     } else {
         $quality_score += 1;
     }
-    
+
     // ═══════════════════════════════════════════════════════════════════════
     //  QUALITY GATE 3: Volume Confirmation (NEW)
     //  Must show volume increase (not just high aggregate volume)
@@ -524,11 +605,16 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
 
         $vol_ratio = ($avg_vol > 0) ? $recent_vol / $avg_vol : 1;
 
-        if ($vol_ratio >= 10) $vol_score = 25;
-        elseif ($vol_ratio >= 5) $vol_score = 18;
-        elseif ($vol_ratio >= 3) $vol_score = 12;
-        elseif ($vol_ratio >= 2) $vol_score = 8;
-        elseif ($vol_ratio >= 1.5) $vol_score = 4;
+        if ($vol_ratio >= 10)
+            $vol_score = 25;
+        elseif ($vol_ratio >= 5)
+            $vol_score = 18;
+        elseif ($vol_ratio >= 3)
+            $vol_score = 12;
+        elseif ($vol_ratio >= 2)
+            $vol_score = 8;
+        elseif ($vol_ratio >= 1.5)
+            $vol_score = 4;
 
         $factors['explosive_volume'] = array(
             'score' => $vol_score,
@@ -540,11 +626,16 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
     } else {
         // No per-candle volume — use 24h aggregate volume as proxy
         // Award points based on volume tier (higher aggregate vol = more interest)
-        if ($vol_usd >= 100000000) $vol_score = 20;       // $100M+ = very active meme
-        elseif ($vol_usd >= 50000000) $vol_score = 15;
-        elseif ($vol_usd >= 10000000) $vol_score = 10;
-        elseif ($vol_usd >= 1000000) $vol_score = 6;
-        elseif ($vol_usd >= 100000) $vol_score = 3;
+        if ($vol_usd >= 100000000)
+            $vol_score = 20;       // $100M+ = very active meme
+        elseif ($vol_usd >= 50000000)
+            $vol_score = 15;
+        elseif ($vol_usd >= 10000000)
+            $vol_score = 10;
+        elseif ($vol_usd >= 1000000)
+            $vol_score = 6;
+        elseif ($vol_usd >= 100000)
+            $vol_score = 3;
 
         $factors['explosive_volume'] = array(
             'score' => $vol_score,
@@ -563,29 +654,38 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
         $mom_15m = ($closes_15m[$n15 - 4] > 0) ? (($closes_15m[$n15 - 1] - $closes_15m[$n15 - 4]) / $closes_15m[$n15 - 4]) * 100 : 0;
         // 5m momentum: last 6 candles (~30 min)
         $mom_5m = ($closes_5m[$n5 - 6] > 0) ? (($closes_5m[$n5 - 1] - $closes_5m[$n5 - 6]) / $closes_5m[$n5 - 6]) * 100 : 0;
-        
+
         // NEW: Check for acceleration (momentum increasing)
-        $mom_15m_prev = ($n15 >= 8 && $closes_15m[$n15 - 8] > 0) ? 
+        $mom_15m_prev = ($n15 >= 8 && $closes_15m[$n15 - 8] > 0) ?
             (($closes_15m[$n15 - 5] - $closes_15m[$n15 - 8]) / $closes_15m[$n15 - 8]) * 100 : $mom_15m;
         $accelerating_15m = ($mom_15m > $mom_15m_prev);
 
         // Both positive = confirmed uptrend (reduced from 8 to 5)
-        if ($mom_15m > 0.5 && $mom_5m > 0.3) $mom_score += 5;
+        if ($mom_15m > 0.5 && $mom_5m > 0.3)
+            $mom_score += 5;
 
         // Steep 15m momentum (stricter thresholds)
-        if ($mom_15m >= 5) $mom_score += 8;           // Was 3%
-        elseif ($mom_15m >= 3) $mom_score += 5;       // Was 1.5%
-        elseif ($mom_15m >= 1.5) $mom_score += 2;     // Was 0.5%
+        if ($mom_15m >= 5)
+            $mom_score += 8;           // Was 3%
+        elseif ($mom_15m >= 3)
+            $mom_score += 5;       // Was 1.5%
+        elseif ($mom_15m >= 1.5)
+            $mom_score += 2;     // Was 0.5%
 
         // Accelerating 5m momentum (stricter thresholds)
-        if ($mom_5m >= 4) $mom_score += 7;            // Was 2%
-        elseif ($mom_5m >= 2) $mom_score += 4;        // Was 1%
-        elseif ($mom_5m >= 1) $mom_score += 2;        // Was 0.3%
-        
-        // NEW: Bonus for acceleration
-        if ($accelerating_15m && $mom_15m > 2) $mom_score += 3;
+        if ($mom_5m >= 4)
+            $mom_score += 7;            // Was 2%
+        elseif ($mom_5m >= 2)
+            $mom_score += 4;        // Was 1%
+        elseif ($mom_5m >= 1)
+            $mom_score += 2;        // Was 0.3%
 
-        if ($mom_score > 20) $mom_score = 20;
+        // NEW: Bonus for acceleration
+        if ($accelerating_15m && $mom_15m > 2)
+            $mom_score += 3;
+
+        if ($mom_score > 20)
+            $mom_score = 20;
 
         $factors['parabolic_momentum'] = array(
             'score' => $mom_score,
@@ -604,11 +704,11 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
     // Memes sustain higher RSI — sweet spot 60-75 (tightened from 55-80)
     $rsi = _mc_calc_rsi($closes_15m, 14);
     $rsi_score = 0;
-    
+
     // NEW: Also check RSI trend (rising = more bullish)
     $rsi_prev = _mc_calc_rsi(array_slice($closes_15m, 0, -2), 14);
     $rsi_rising = ($rsi > $rsi_prev);
-    
+
     if ($rsi >= 60 && $rsi <= 75) {           // Tightened hype zone
         $rsi_score = $rsi_rising ? 15 : 12;   // Full points only if rising
     } elseif ($rsi >= 50 && $rsi < 60) {
@@ -618,13 +718,14 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
     } elseif ($rsi >= 40 && $rsi < 50) {
         $rsi_score = $rsi_rising ? 4 : 2;     // Potential bounce
     }
-    
+
     // NEW: Penalty for extreme overbought (>85 = likely reversal)
-    if ($rsi > 85) $rsi_score = 0;
-    
+    if ($rsi > 85)
+        $rsi_score = 0;
+
     $factors['rsi_hype_zone'] = array(
-        'score' => $rsi_score, 
-        'max' => 15, 
+        'score' => $rsi_score,
+        'max' => 15,
         'rsi' => round($rsi, 1),
         'rsi_prev' => round($rsi_prev, 1),
         'rising' => $rsi_rising
@@ -643,11 +744,16 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
 
         $velocity = $mom_1h * $vr;
 
-        if ($velocity >= 20) $social_score = 15;
-        elseif ($velocity >= 10) $social_score = 12;
-        elseif ($velocity >= 5) $social_score = 8;
-        elseif ($velocity >= 2) $social_score = 5;
-        elseif ($velocity >= 1) $social_score = 2;
+        if ($velocity >= 20)
+            $social_score = 15;
+        elseif ($velocity >= 10)
+            $social_score = 12;
+        elseif ($velocity >= 5)
+            $social_score = 8;
+        elseif ($velocity >= 2)
+            $social_score = 5;
+        elseif ($velocity >= 1)
+            $social_score = 2;
 
         $factors['social_proxy'] = array(
             'score' => $social_score,
@@ -661,18 +767,27 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
         // No per-candle volume — use price momentum × aggregate volume rank
         $mom_1h = ($closes_15m[$n15 - 4] > 0) ? abs(($closes_15m[$n15 - 1] - $closes_15m[$n15 - 4]) / $closes_15m[$n15 - 4]) * 100 : 0;
         $vol_rank = 1.0;
-        if ($vol_usd >= 100000000) $vol_rank = 3.0;
-        elseif ($vol_usd >= 50000000) $vol_rank = 2.5;
-        elseif ($vol_usd >= 10000000) $vol_rank = 2.0;
-        elseif ($vol_usd >= 1000000) $vol_rank = 1.5;
+        if ($vol_usd >= 100000000)
+            $vol_rank = 3.0;
+        elseif ($vol_usd >= 50000000)
+            $vol_rank = 2.5;
+        elseif ($vol_usd >= 10000000)
+            $vol_rank = 2.0;
+        elseif ($vol_usd >= 1000000)
+            $vol_rank = 1.5;
 
         $velocity = $mom_1h * $vol_rank;
 
-        if ($velocity >= 15) $social_score = 15;
-        elseif ($velocity >= 8) $social_score = 12;
-        elseif ($velocity >= 4) $social_score = 8;
-        elseif ($velocity >= 2) $social_score = 5;
-        elseif ($velocity >= 0.5) $social_score = 2;
+        if ($velocity >= 15)
+            $social_score = 15;
+        elseif ($velocity >= 8)
+            $social_score = 12;
+        elseif ($velocity >= 4)
+            $social_score = 8;
+        elseif ($velocity >= 2)
+            $social_score = 5;
+        elseif ($velocity >= 0.5)
+            $social_score = 2;
 
         $factors['social_proxy'] = array(
             'score' => $social_score,
@@ -692,13 +807,17 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
     $conc_score = 0;
     if ($has_volume_data && count($volumes_15m) >= 12) {
         $last12_vol = array_sum(array_slice($volumes_15m, -12));
-        $last3_vol  = array_sum(array_slice($volumes_15m, -3));
+        $last3_vol = array_sum(array_slice($volumes_15m, -3));
         $conc_pct = ($last12_vol > 0) ? ($last3_vol / $last12_vol) * 100 : 0;
 
-        if ($conc_pct >= 60) $conc_score = 10;
-        elseif ($conc_pct >= 45) $conc_score = 7;
-        elseif ($conc_pct >= 35) $conc_score = 4;
-        elseif ($conc_pct >= 28) $conc_score = 2;
+        if ($conc_pct >= 60)
+            $conc_score = 10;
+        elseif ($conc_pct >= 45)
+            $conc_score = 7;
+        elseif ($conc_pct >= 35)
+            $conc_score = 4;
+        elseif ($conc_pct >= 28)
+            $conc_score = 2;
 
         $factors['volume_concentration'] = array(
             'score' => $conc_score,
@@ -725,9 +844,12 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
             $recent_range = array_sum(array_slice($ranges_all, -3));
             $range_pct = ($total_range > 0) ? ($recent_range / $total_range) * 100 : 0;
 
-            if ($range_pct >= 50) $conc_score = 8;
-            elseif ($range_pct >= 40) $conc_score = 5;
-            elseif ($range_pct >= 30) $conc_score = 3;
+            if ($range_pct >= 50)
+                $conc_score = 8;
+            elseif ($range_pct >= 40)
+                $conc_score = 5;
+            elseif ($range_pct >= 30)
+                $conc_score = 3;
 
             $factors['volume_concentration'] = array(
                 'score' => $conc_score,
@@ -753,14 +875,19 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
             } else {
                 $ch = floatval($candles_15m[$i]['h']); // Crypto.com
             }
-            if ($ch > $high_4h) $high_4h = $ch;
+            if ($ch > $high_4h)
+                $high_4h = $ch;
         }
         if ($high_4h > 0) {
             $breakout_pct = (($current_price - $high_4h) / $high_4h) * 100;
-            if ($breakout_pct >= 2) $breakout_score = 10;      // strong breakout
-            elseif ($breakout_pct >= 0.5) $breakout_score = 7;  // mild breakout
-            elseif ($breakout_pct >= 0) $breakout_score = 4;    // at the high
-            elseif ($breakout_pct >= -1) $breakout_score = 2;   // near the high
+            if ($breakout_pct >= 2)
+                $breakout_score = 10;      // strong breakout
+            elseif ($breakout_pct >= 0.5)
+                $breakout_score = 7;  // mild breakout
+            elseif ($breakout_pct >= 0)
+                $breakout_score = 4;    // at the high
+            elseif ($breakout_pct >= -1)
+                $breakout_score = 2;   // near the high
 
             $factors['breakout_4h'] = array(
                 'score' => $breakout_score,
@@ -779,9 +906,12 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
     // ── Factor 7: Low Market Cap Bonus (0-5 pts) ──
     // Smaller coins are more explosive
     $cap_score = 0;
-    if ($vol_usd < 1000000) $cap_score = 5;         // <$1M vol = micro
-    elseif ($vol_usd < 5000000) $cap_score = 3;     // <$5M vol = small
-    elseif ($vol_usd < 20000000) $cap_score = 1;    // <$20M = mid
+    if ($vol_usd < 1000000)
+        $cap_score = 5;         // <$1M vol = micro
+    elseif ($vol_usd < 5000000)
+        $cap_score = 3;     // <$5M vol = small
+    elseif ($vol_usd < 20000000)
+        $cap_score = 1;    // <$20M = mid
     $factors['low_cap_bonus'] = array('score' => $cap_score, 'max' => 5, 'vol_usd' => round($vol_usd, 0));
     $total += $cap_score;
 
@@ -790,14 +920,23 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
     $atr_pct = ($current_price > 0) ? ($atr / $current_price) * 100 : 3.0;
     $atr_pct = max(1.0, min(15.0, $atr_pct)); // wider clamp for memes
 
-    // NEW: Apply quality penalty to total score
-    // Must pass at least 2 of 3 quality gates for any signal
-    $quality_penalty = 0;
+    // FLAW #4 FIX: Quality gates are now HARD exclusions, not soft penalties.
+    // Must pass at least 2 of 3 quality gates to generate ANY signal.
+    // Previously this was a -10pt penalty which was trivially overcome by high momentum.
     if ($quality_score < 2) {
-        $quality_penalty = (2 - $quality_score) * 10; // -10 per failed gate
+        // Hard reject: not enough quality confirmation
+        $factors['quality_check'] = array(
+            'score' => $quality_score,
+            'issues' => $quality_issues,
+            'verdict' => 'REJECTED',
+            'reason' => 'Failed ' . (3 - $quality_score) . ' of 3 quality gates',
+            'raw_total' => $total
+        );
+        return null; // Do not generate a signal
     }
-    $adjusted_total = max(0, $total - $quality_penalty);
-    
+    $quality_penalty = 0; // Passed gates, no penalty needed
+    $adjusted_total = $total;
+
     $factors['quality_check'] = array(
         'score' => $quality_score,
         'issues' => $quality_issues,
@@ -809,22 +948,22 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
     $verdict = 'SKIP';
     $target_pct = 0;
     $risk_pct = 0;
-    
+
     // NEW: Stricter thresholds - require at least 2 quality gates
     if ($adjusted_total >= 85 && $quality_score >= 2) {
         $verdict = 'STRONG_BUY';
         $target_pct = round(max(4.0, min(12.0, $atr_pct * 1.8)), 1); // Reduced from 15% max
-        $risk_pct   = round(max(2.0, min(4.0, $atr_pct * 0.9)), 1);  // Tighter stops
+        $risk_pct = round(max(2.0, min(4.0, $atr_pct * 0.9)), 1);  // Tighter stops
     } elseif ($adjusted_total >= 78 && $quality_score >= 2) { // Raised from 75
         $verdict = 'BUY';
         $target_pct = round(max(3.0, min(8.0, $atr_pct * 1.3)), 1);  // Reduced from 10%
-        $risk_pct   = round(max(2.0, min(3.5, $atr_pct * 0.7)), 1);  // Tighter stops
+        $risk_pct = round(max(2.0, min(3.5, $atr_pct * 0.7)), 1);  // Tighter stops
     } elseif ($adjusted_total >= 72 && $quality_score >= 2) { // Raised from 70
         $verdict = 'LEAN_BUY';
         $target_pct = round(max(2.0, min(5.0, $atr_pct * 1.0)), 1);  // Reduced from 6%
-        $risk_pct   = round(max(1.5, min(2.5, $atr_pct * 0.6)), 1);  // Tighter stops
+        $risk_pct = round(max(1.5, min(2.5, $atr_pct * 0.6)), 1);  // Tighter stops
     }
-    
+
     // NEW: Tier 2 coins get extra scrutiny (higher threshold)
     if ($candidate['tier'] === 'tier2' && $verdict !== 'SKIP') {
         if ($adjusted_total < 80) { // Tier 2 needs 80+ for any signal
@@ -839,11 +978,11 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
     $factors['volatility'] = array('atr' => round($atr, 8), 'atr_pct' => round($atr_pct, 2));
 
     return array(
-        'total'      => $adjusted_total,
-        'factors'    => $factors,
-        'verdict'    => $verdict,
+        'total' => $adjusted_total,
+        'factors' => $factors,
+        'verdict' => $verdict,
         'target_pct' => $target_pct,
-        'risk_pct'   => $risk_pct
+        'risk_pct' => $risk_pct
     );
 }
 
@@ -856,14 +995,16 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
  * Uses SMA20 vs SMA50 crossover on BTC_USDT.
  * Returns array('regime' => 'bull|bear|chop', 'trend_pct' => float)
  */
-function _mc_detect_btc_regime() {
+function _mc_detect_btc_regime()
+{
     $default = array('regime' => 'chop', 'trend_pct' => 0.0);
 
     // Try Crypto.com 1h candles for BTC
     $raw = _mc_api('public/get-candlestick?instrument_name=BTC_USDT&timeframe=H1');
     $candles = isset($raw['result']['data']) ? $raw['result']['data'] : array();
 
-    if (count($candles) < 50) return $default;
+    if (count($candles) < 50)
+        return $default;
 
     $closes = array();
     foreach ($candles as $c) {
@@ -874,9 +1015,11 @@ function _mc_detect_btc_regime() {
     // Calculate SMA20 and SMA50
     $sma20 = 0;
     $sma50 = 0;
-    for ($i = $n - 20; $i < $n; $i++) $sma20 += $closes[$i];
+    for ($i = $n - 20; $i < $n; $i++)
+        $sma20 += $closes[$i];
     $sma20 /= 20;
-    for ($i = $n - 50; $i < $n; $i++) $sma50 += $closes[$i];
+    for ($i = $n - 50; $i < $n; $i++)
+        $sma50 += $closes[$i];
     $sma50 /= 50;
 
     $current = $closes[$n - 1];
@@ -897,7 +1040,8 @@ function _mc_detect_btc_regime() {
  * - Chop: no adjustment (0)
  * Returns array('adjusted_score' => int, 'adjustment' => int)
  */
-function _mc_regime_score_adjust($raw_score, $factors, $btc_regime) {
+function _mc_regime_score_adjust($raw_score, $factors, $btc_regime)
+{
     $adjustment = 0;
     $regime = $btc_regime['regime'];
 
@@ -908,14 +1052,17 @@ function _mc_regime_score_adjust($raw_score, $factors, $btc_regime) {
 
     if ($regime === 'bull') {
         // Bull market: small boost to strong momentum coins
-        if ($mom >= 12 && $trend) $adjustment += 3;
-        elseif ($mom >= 8 && $trend) $adjustment += 2;
+        if ($mom >= 12 && $trend)
+            $adjustment += 3;
+        elseif ($mom >= 8 && $trend)
+            $adjustment += 2;
     } elseif ($regime === 'bear') {
         // Bear market: moderate penalty — still show signals but with clear warnings
         // Previous -10/-15 penalty was blocking ALL signals; users need actionable data
         $adjustment -= 5;
         // Extra penalty for weak momentum-only plays (no volume confirmation)
-        if ($mom >= 10 && $vol < 6) $adjustment -= 3;
+        if ($mom >= 10 && $vol < 6)
+            $adjustment -= 3;
     }
     // Chop: no adjustment - but memes are risky in chop too
 
@@ -926,7 +1073,8 @@ function _mc_regime_score_adjust($raw_score, $factors, $btc_regime) {
 // ═══════════════════════════════════════════════════════════════════════
 //  RESOLVE — continuous resolve with 2-hour window
 // ═══════════════════════════════════════════════════════════════════════
-function _mc_action_resolve($conn) {
+function _mc_action_resolve($conn)
+{
     $sql = "SELECT id, pair, price_at_signal, target_pct, risk_pct, score, created_at
             FROM mc_winners
             WHERE outcome IS NULL
@@ -934,7 +1082,9 @@ function _mc_action_resolve($conn) {
             ORDER BY created_at ASC
             LIMIT 20";
     $res = $conn->query($sql);
-    if (!$res) { _mc_err('Query failed'); }
+    if (!$res) {
+        _mc_err('Query failed');
+    }
 
     $resolved = 0;
     $wins = 0;
@@ -942,28 +1092,30 @@ function _mc_action_resolve($conn) {
     $details = array();
 
     while ($row = $res->fetch_assoc()) {
-        $entry_price  = floatval($row['price_at_signal']);
-        $target       = floatval($row['target_pct']);
-        $risk         = floatval($row['risk_pct']);
+        $entry_price = floatval($row['price_at_signal']);
+        $target = floatval($row['target_pct']);
+        $risk = floatval($row['risk_pct']);
         $target_price = $entry_price * (1 + $target / 100);
-        $stop_price   = $entry_price * (1 - $risk / 100);
+        $stop_price = $entry_price * (1 - $risk / 100);
 
         // Continuous resolve: 5-min candles in 2h window (24 candles)
         $candles_raw = _mc_api('public/get-candlestick?instrument_name=' . $row['pair'] . '&timeframe=M5');
         $candles = isset($candles_raw['result']['data']) ? $candles_raw['result']['data'] : array();
 
-        $peak_price   = $entry_price;
+        $peak_price = $entry_price;
         $trough_price = $entry_price;
-        $hit_target   = false;
-        $hit_stop     = false;
+        $hit_target = false;
+        $hit_stop = false;
         $hit_target_first = false;
 
         if (count($candles) >= 8) {
             foreach ($candles as $c) {
                 $candle_high = floatval($c['h']);
-                $candle_low  = floatval($c['l']);
-                if ($candle_high > $peak_price) $peak_price = $candle_high;
-                if ($candle_low < $trough_price) $trough_price = $candle_low;
+                $candle_low = floatval($c['l']);
+                if ($candle_high > $peak_price)
+                    $peak_price = $candle_high;
+                if ($candle_low < $trough_price)
+                    $trough_price = $candle_low;
 
                 if (!$hit_stop && !$hit_target && $candle_low <= $stop_price) {
                     $hit_stop = true;
@@ -992,7 +1144,7 @@ function _mc_action_resolve($conn) {
         if ($ticker && isset($ticker['result']['data'][0])) {
             $current_price = floatval($ticker['result']['data'][0]['a']);
         }
-        $pnl_pct  = (($current_price - $entry_price) / $entry_price) * 100;
+        $pnl_pct = (($current_price - $entry_price) / $entry_price) * 100;
         $peak_pnl = (($peak_price - $entry_price) / $entry_price) * 100;
 
         $outcome = 'neutral';
@@ -1022,16 +1174,16 @@ function _mc_action_resolve($conn) {
         $resolved++;
 
         $details[] = array(
-            'pair'     => $row['pair'],
-            'entry'    => $entry_price,
-            'current'  => $current_price,
-            'peak'     => round($peak_price, 8),
+            'pair' => $row['pair'],
+            'entry' => $entry_price,
+            'current' => $current_price,
+            'peak' => round($peak_price, 8),
             'peak_pnl' => round($peak_pnl, 2),
-            'pnl_pct'  => round($pnl_pct, 2),
-            'outcome'  => $outcome,
+            'pnl_pct' => round($pnl_pct, 2),
+            'outcome' => $outcome,
             'hit_target' => $hit_target,
-            'hit_stop'   => $hit_stop,
-            'score'      => intval($row['score'])
+            'hit_stop' => $hit_stop,
+            'score' => intval($row['score'])
         );
 
         usleep(100000); // 100ms between API calls
@@ -1051,10 +1203,13 @@ function _mc_action_resolve($conn) {
 // ═══════════════════════════════════════════════════════════════════════
 //  WINNERS — get latest cached winners
 // ═══════════════════════════════════════════════════════════════════════
-function _mc_action_winners($conn) {
+function _mc_action_winners($conn)
+{
     $sql = "SELECT * FROM mc_winners WHERE created_at > DATE_SUB(NOW(), INTERVAL 4 HOUR) ORDER BY score DESC LIMIT 20";
     $res = $conn->query($sql);
-    if (!$res) { _mc_err('Query failed'); }
+    if (!$res) {
+        _mc_err('Query failed');
+    }
 
     $winners = array();
     while ($row = $res->fetch_assoc()) {
@@ -1085,14 +1240,18 @@ function _mc_action_winners($conn) {
 // ═══════════════════════════════════════════════════════════════════════
 //  HISTORY — past signals with outcomes
 // ═══════════════════════════════════════════════════════════════════════
-function _mc_action_history($conn) {
+function _mc_action_history($conn)
+{
     $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 50;
-    if ($limit > 200) $limit = 200;
+    if ($limit > 200)
+        $limit = 200;
 
     $sql = "SELECT pair, score, verdict, target_pct, risk_pct, pnl_pct, outcome, tier, chg_24h, created_at, resolved_at
             FROM mc_winners ORDER BY created_at DESC LIMIT $limit";
     $res = $conn->query($sql);
-    if (!$res) { _mc_err('Query failed'); }
+    if (!$res) {
+        _mc_err('Query failed');
+    }
 
     $history = array();
     while ($row = $res->fetch_assoc()) {
@@ -1109,7 +1268,8 @@ function _mc_action_history($conn) {
 // ═══════════════════════════════════════════════════════════════════════
 //  LEADERBOARD — win rate by tier and pair
 // ═══════════════════════════════════════════════════════════════════════
-function _mc_action_leaderboard($conn) {
+function _mc_action_leaderboard($conn)
+{
     // By verdict tier
     $sql = "SELECT verdict,
                 COUNT(*) as signals,
@@ -1183,7 +1343,8 @@ function _mc_action_leaderboard($conn) {
 // ═══════════════════════════════════════════════════════════════════════
 //  STATS — overall performance
 // ═══════════════════════════════════════════════════════════════════════
-function _mc_action_stats($conn) {
+function _mc_action_stats($conn)
+{
     $sql = "SELECT
                 COUNT(*) as total_signals,
                 SUM(CASE WHEN outcome IN ('win','partial_win') THEN 1 ELSE 0 END) as total_wins,
@@ -1213,9 +1374,11 @@ function _mc_action_stats($conn) {
 // ═══════════════════════════════════════════════════════════════════════
 //  SCAN LOG — full transparency
 // ═══════════════════════════════════════════════════════════════════════
-function _mc_action_scan_log($conn) {
+function _mc_action_scan_log($conn)
+{
     $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 100;
-    if ($limit > 500) $limit = 500;
+    if ($limit > 500)
+        $limit = 500;
 
     $scan_filter = '';
     if (isset($_GET['scan_id']) && $_GET['scan_id'] !== '') {
@@ -1231,7 +1394,9 @@ function _mc_action_scan_log($conn) {
 
     $sql = "SELECT * FROM mc_scan_log WHERE 1=1 $scan_filter ORDER BY score DESC LIMIT $limit";
     $res = $conn->query($sql);
-    if (!$res) { _mc_err('Query failed'); }
+    if (!$res) {
+        _mc_err('Query failed');
+    }
 
     $rows = array();
     while ($row = $res->fetch_assoc()) {
@@ -1261,52 +1426,61 @@ function _mc_action_scan_log($conn) {
 //  TECHNICAL INDICATORS
 // ═══════════════════════════════════════════════════════════════════════
 
-function _mc_calc_rsi($closes, $period) {
+function _mc_calc_rsi($closes, $period)
+{
     $n = count($closes);
-    if ($n < $period + 1) return 50;
+    if ($n < $period + 1)
+        return 50;
 
     $gains = 0;
     $losses_val = 0;
     for ($i = $n - $period; $i < $n; $i++) {
         $diff = $closes[$i] - $closes[$i - 1];
-        if ($diff > 0) $gains += $diff;
-        else $losses_val += abs($diff);
+        if ($diff > 0)
+            $gains += $diff;
+        else
+            $losses_val += abs($diff);
     }
     $avg_gain = $gains / $period;
     $avg_loss = $losses_val / $period;
-    if ($avg_loss == 0) return 100;
+    if ($avg_loss == 0)
+        return 100;
     $rs = $avg_gain / $avg_loss;
     return 100 - (100 / (1 + $rs));
 }
 
-function _mc_calc_ema($closes, $period) {
+function _mc_calc_ema($closes, $period)
+{
     $n = count($closes);
-    if ($n < $period) return $closes[$n - 1];
-    
+    if ($n < $period)
+        return $closes[$n - 1];
+
     $multiplier = 2 / ($period + 1);
     $ema = array_sum(array_slice($closes, 0, $period)) / $period; // SMA start
-    
+
     for ($i = $period; $i < $n; $i++) {
         $ema = ($closes[$i] - $ema) * $multiplier + $ema;
     }
     return $ema;
 }
 
-function _mc_calc_atr($candles, $period = 14) {
+function _mc_calc_atr($candles, $period = 14)
+{
     $n = count($candles);
-    if ($n < 2) return 0;
+    if ($n < 2)
+        return 0;
 
     $trs = array();
     for ($i = 1; $i < $n; $i++) {
         if (is_array($candles[$i]) && isset($candles[$i][2])) {
             // CoinGecko format: [timestamp, open, high, low, close]
             $high = floatval($candles[$i][2]);
-            $low  = floatval($candles[$i][3]);
+            $low = floatval($candles[$i][3]);
             $prev_close = floatval($candles[$i - 1][4]);
         } else {
             // Crypto.com format
             $high = floatval($candles[$i]['h']);
-            $low  = floatval($candles[$i]['l']);
+            $low = floatval($candles[$i]['l']);
             $prev_close = floatval($candles[$i - 1]['c']);
         }
         $tr = max($high - $low, abs($high - $prev_close), abs($low - $prev_close));
@@ -1324,7 +1498,8 @@ function _mc_calc_atr($candles, $period = 14) {
     return $sum / $period;
 }
 
-function _mc_binomial_significance($wins, $total, $null_p) {
+function _mc_binomial_significance($wins, $total, $null_p)
+{
     if ($total < 1) {
         return array(
             'is_significant' => false,
@@ -1343,28 +1518,40 @@ function _mc_binomial_significance($wins, $total, $null_p) {
 
     $z = ($observed_p - $null_p) / $se;
     $abs_z = abs($z);
-    if ($abs_z >= 3.29) $p_value = 0.0005;
-    elseif ($abs_z >= 2.58) $p_value = 0.005;
-    elseif ($abs_z >= 2.33) $p_value = 0.01;
-    elseif ($abs_z >= 1.96) $p_value = 0.025;
-    elseif ($abs_z >= 1.65) $p_value = 0.05;
-    elseif ($abs_z >= 1.28) $p_value = 0.10;
-    else $p_value = 0.5;
-    if ($z < 0) $p_value = 1 - $p_value;
+    if ($abs_z >= 3.29)
+        $p_value = 0.0005;
+    elseif ($abs_z >= 2.58)
+        $p_value = 0.005;
+    elseif ($abs_z >= 2.33)
+        $p_value = 0.01;
+    elseif ($abs_z >= 1.96)
+        $p_value = 0.025;
+    elseif ($abs_z >= 1.65)
+        $p_value = 0.05;
+    elseif ($abs_z >= 1.28)
+        $p_value = 0.10;
+    else
+        $p_value = 0.5;
+    if ($z < 0)
+        $p_value = 1 - $p_value;
 
     $is_sig = ($z > 0 && $p_value < 0.05);
     $confidence = 'not_significant';
-    if ($total < 30) $confidence = 'insufficient_data';
-    elseif ($is_sig && $p_value < 0.01) $confidence = 'highly_significant';
-    elseif ($is_sig) $confidence = 'significant';
-    elseif ($z > 0) $confidence = 'trending_positive';
+    if ($total < 30)
+        $confidence = 'insufficient_data';
+    elseif ($is_sig && $p_value < 0.01)
+        $confidence = 'highly_significant';
+    elseif ($is_sig)
+        $confidence = 'significant';
+    elseif ($z > 0)
+        $confidence = 'trending_positive';
 
     // Wilson CI
     $z95 = 1.96;
     $denom = 1 + $z95 * $z95 / $total;
     $center = ($observed_p + $z95 * $z95 / (2 * $total)) / $denom;
     $margin = $z95 * sqrt(($observed_p * (1 - $observed_p) + $z95 * $z95 / (4 * $total)) / $total) / $denom;
-    $ci_low  = round(max(0, ($center - $margin)) * 100, 1);
+    $ci_low = round(max(0, ($center - $margin)) * 100, 1);
     $ci_high = round(min(1, ($center + $margin)) * 100, 1);
 
     return array(
@@ -1386,7 +1573,8 @@ function _mc_binomial_significance($wins, $total, $null_p) {
 //  COINGECKO HELPERS — supplementary data source for better meme coverage
 // ═══════════════════════════════════════════════════════════════════════
 
-function _mc_coingecko_meme_market() {
+function _mc_coingecko_meme_market()
+{
     // Fetch top meme coins by volume from CoinGecko (free, no key, 30 calls/min)
     $url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=meme-token&order=volume_desc&per_page=50&page=1';
     $ch = curl_init($url);
@@ -1396,13 +1584,16 @@ function _mc_coingecko_meme_market() {
     curl_setopt($ch, CURLOPT_USERAGENT, 'MemeScanner/1.0');
     $resp = curl_exec($ch);
     curl_close($ch);
-    if (!$resp) return array();
+    if (!$resp)
+        return array();
     $data = json_decode($resp, true);
-    if (!is_array($data)) return array();
+    if (!is_array($data))
+        return array();
     return $data;
 }
 
-function _mc_coingecko_ohlc($coin_id) {
+function _mc_coingecko_ohlc($coin_id)
+{
     // Fetch 1-day OHLC (30-min candles, ~48 candles)
     // Format: [[timestamp, open, high, low, close], ...]
     $url = 'https://api.coingecko.com/api/v3/coins/' . urlencode($coin_id) . '/ohlc?vs_currency=usd&days=1';
@@ -1413,29 +1604,35 @@ function _mc_coingecko_ohlc($coin_id) {
     curl_setopt($ch, CURLOPT_USERAGENT, 'MemeScanner/1.0');
     $resp = curl_exec($ch);
     curl_close($ch);
-    if (!$resp) return array();
+    if (!$resp)
+        return array();
     $data = json_decode($resp, true);
-    if (!is_array($data)) return array();
+    if (!is_array($data))
+        return array();
     return $data;
 }
 
-function _mc_find_cg_match($pair, $cg_memes, $cg_id_map) {
+function _mc_find_cg_match($pair, $cg_memes, $cg_id_map)
+{
     // Try explicit ID mapping first
     if (isset($cg_id_map[$pair])) {
         $target_id = $cg_id_map[$pair];
         foreach ($cg_memes as $cg) {
-            if ($cg['id'] === $target_id) return $cg;
+            if ($cg['id'] === $target_id)
+                return $cg;
         }
     }
     // Fall back to symbol match
     $base = strtolower(str_replace('_USDT', '', $pair));
     foreach ($cg_memes as $cg) {
-        if ($cg['symbol'] === $base) return $cg;
+        if ($cg['symbol'] === $base)
+            return $cg;
     }
     return null;
 }
 
-function _mc_api($endpoint) {
+function _mc_api($endpoint)
+{
     $url = 'https://api.crypto.com/exchange/v1/' . $endpoint;
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -1444,7 +1641,8 @@ function _mc_api($endpoint) {
     curl_setopt($ch, CURLOPT_USERAGENT, 'MemeScanner/1.0');
     $resp = curl_exec($ch);
     curl_close($ch);
-    if (!$resp) return null;
+    if (!$resp)
+        return null;
     return json_decode($resp, true);
 }
 
@@ -1453,14 +1651,45 @@ function _mc_api($endpoint) {
  * Reads from the $KRAKEN_MEMES list in meme_market_pulse.php (canonical source).
  * Returns array('PEPE' => true, 'DOGE' => true, ...) for fast checking.
  */
-function _mc_get_kraken_lookup() {
+function _mc_get_kraken_lookup()
+{
     // Canonical Kraken meme list — kept in sync with meme_market_pulse.php $KRAKEN_MEMES
     $known = array(
-        'DOGE', 'SHIB', 'PEPE', 'FLOKI', 'BONK', 'WIF', 'TURBO', 'NEIRO',
-        'MEME', 'TRUMP', 'FARTCOIN', 'PNUT', 'PENGU', 'POPCAT', 'BRETT',
-        'MOG', 'BOME', 'ACT', 'SPX', 'PONKE', 'FWOG', 'SLERF', 'AI16Z',
-        'VIRTUAL', 'MYRO', 'GOAT', 'MOODENG', 'GIGA', 'DEGEN', 'BABYDOGE',
-        'WOJAK', 'SATS', 'COQ', 'DOG', 'CHILLGUY'
+        'DOGE',
+        'SHIB',
+        'PEPE',
+        'FLOKI',
+        'BONK',
+        'WIF',
+        'TURBO',
+        'NEIRO',
+        'MEME',
+        'TRUMP',
+        'FARTCOIN',
+        'PNUT',
+        'PENGU',
+        'POPCAT',
+        'BRETT',
+        'MOG',
+        'BOME',
+        'ACT',
+        'SPX',
+        'PONKE',
+        'FWOG',
+        'SLERF',
+        'AI16Z',
+        'VIRTUAL',
+        'MYRO',
+        'GOAT',
+        'MOODENG',
+        'GIGA',
+        'DEGEN',
+        'BABYDOGE',
+        'WOJAK',
+        'SATS',
+        'COQ',
+        'DOG',
+        'CHILLGUY'
     );
     $lookup = array();
     for ($i = 0; $i < count($known); $i++) {
@@ -1469,21 +1698,27 @@ function _mc_get_kraken_lookup() {
     return $lookup;
 }
 
-function _mc_ends_with($str, $suffix) {
+function _mc_ends_with($str, $suffix)
+{
     return substr($str, -strlen($suffix)) === $suffix;
 }
 
-function _mc_sort_by_change($a, $b) {
-    if ($b['chg_24h'] == $a['chg_24h']) return 0;
+function _mc_sort_by_change($a, $b)
+{
+    if ($b['chg_24h'] == $a['chg_24h'])
+        return 0;
     return ($b['chg_24h'] > $a['chg_24h']) ? 1 : -1;
 }
 
-function _mc_sort_by_score($a, $b) {
-    if ($b['score'] == $a['score']) return 0;
+function _mc_sort_by_score($a, $b)
+{
+    if ($b['score'] == $a['score'])
+        return 0;
     return ($b['score'] > $a['score']) ? 1 : -1;
 }
 
-function _mc_discord_alert($winners, $scan_id, $analyzed, $elapsed) {
+function _mc_discord_alert($winners, $scan_id, $analyzed, $elapsed)
+{
     $env_file = dirname(__FILE__) . '/../../favcreators/public/api/.env';
     $webhook_url = '';
     if (file_exists($env_file)) {
@@ -1495,21 +1730,22 @@ function _mc_discord_alert($winners, $scan_id, $analyzed, $elapsed) {
             }
         }
     }
-    if (!$webhook_url) return;
+    if (!$webhook_url)
+        return;
 
     $strong = 0;
     $buy = 0;
     $lean = 0;
     $msg_lines = array();
-    
+
     // Header line with timestamp
     $msg_lines[] = "**🐸 Meme Coin Signals — " . date('M j, g:i A T') . "**";
     $msg_lines[] = "";
-    
+
     foreach (array_slice($winners, 0, 6) as $w) {
         $pair = str_replace('_USDT', '/USDT', $w['pair']);
         $tier_label = ($w['tier'] === 'tier1') ? ' [T1]' : ' [T2]';
-        
+
         // Signal strength rating based on score
         $strength = '';
         $strength_emoji = '';
@@ -1530,20 +1766,20 @@ function _mc_discord_alert($winners, $scan_id, $analyzed, $elapsed) {
             $strength_emoji = "\xF0\x9F\x9F\xA1";
             $lean++;
         }
-        
+
         // Calculate TP and SL prices
         $entry = floatval($w['price']);
         $target_pct = floatval($w['target_pct']);
         $risk_pct = floatval($w['risk_pct']);
         $tp_price = $entry * (1 + $target_pct / 100);
         $sl_price = $entry * (1 - $risk_pct / 100);
-        
+
         // Format prices based on magnitude
         $decimals = $entry >= 1 ? 4 : ($entry >= 0.01 ? 6 : ($entry >= 0.0001 ? 8 : 10));
         $entry_str = number_format($entry, $decimals);
         $tp_str = number_format($tp_price, $decimals);
         $sl_str = number_format($sl_price, $decimals);
-        
+
         // Build signal line
         $msg_lines[] = $strength_emoji . ' **' . $pair . '**' . $tier_label . ' | **' . $strength . '**';
         $msg_lines[] = '```';
@@ -1553,12 +1789,12 @@ function _mc_discord_alert($winners, $scan_id, $analyzed, $elapsed) {
         $msg_lines[] = '📊 Score: ' . $w['score'] . '/100 | 24h: ' . round($w['chg_24h'], 1) . '%';
         $msg_lines[] = '```';
     }
-    
+
     if (count($winners) > 6) {
         $msg_lines[] = '';
         $msg_lines[] = '*... and ' . (count($winners) - 6) . ' more signals*';
     }
-    
+
     // Summary line
     $msg_lines[] = '';
     $msg_lines[] = '📈 **Summary:** ' . $strong . ' Strong | ' . $buy . ' Buy | ' . $lean . ' Lean';
@@ -1588,7 +1824,8 @@ function _mc_discord_alert($winners, $scan_id, $analyzed, $elapsed) {
 // ═══════════════════════════════════════════════════════════════════════
 //  DAILY PICKS — timestamped daily picks from algorithm
 // ═══════════════════════════════════════════════════════════════════════
-function _mc_action_daily_picks($conn) {
+function _mc_action_daily_picks($conn)
+{
     $date = isset($_GET['date']) ? $_GET['date'] : date('Y-m-d');
     // Validate date format
     if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
@@ -1660,7 +1897,8 @@ function _mc_action_daily_picks($conn) {
 // ═══════════════════════════════════════════════════════════════════════
 //  PERFORMANCE — daily/weekly/monthly/all-time tracker
 // ═══════════════════════════════════════════════════════════════════════
-function _mc_action_performance($conn) {
+function _mc_action_performance($conn)
+{
     $period = isset($_GET['period']) ? $_GET['period'] : 'all';
 
     // Daily performance breakdown
@@ -1701,7 +1939,8 @@ function _mc_action_performance($conn) {
             $day_return = floatval($d['avg_pnl']) * intval($d['resolved']) * 0.05 / 100;
             $equity = $equity * (1 + $day_return);
         }
-        if ($equity > $peak_equity) $peak_equity = $equity;
+        if ($equity > $peak_equity)
+            $peak_equity = $equity;
         $drawdown = ($peak_equity > 0) ? (($peak_equity - $equity) / $peak_equity) * 100 : 0;
         $equity_data[] = array(
             'date' => $d['trade_date'],
@@ -1715,9 +1954,12 @@ function _mc_action_performance($conn) {
 
     // Period summaries
     $period_sql = '';
-    if ($period === '7d') $period_sql = "AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
-    elseif ($period === '30d') $period_sql = "AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
-    elseif ($period === 'today') $period_sql = "AND DATE(created_at) = CURDATE()";
+    if ($period === '7d')
+        $period_sql = "AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+    elseif ($period === '30d')
+        $period_sql = "AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+    elseif ($period === 'today')
+        $period_sql = "AND DATE(created_at) = CURDATE()";
 
     $sql_period = "SELECT
                     COUNT(*) as total_signals,
@@ -1779,13 +2021,15 @@ function _mc_action_performance($conn) {
             if ($is_win) {
                 $win_streak++;
                 $loss_streak = 0;
-                if ($win_streak > $max_win_streak) $max_win_streak = $win_streak;
+                if ($win_streak > $max_win_streak)
+                    $max_win_streak = $win_streak;
                 $current_streak = $win_streak;
                 $current_type = 'W';
             } else {
                 $loss_streak++;
                 $win_streak = 0;
-                if ($loss_streak > $max_loss_streak) $max_loss_streak = $loss_streak;
+                if ($loss_streak > $max_loss_streak)
+                    $max_loss_streak = $loss_streak;
                 $current_streak = $loss_streak;
                 $current_type = 'L';
             }
@@ -1811,7 +2055,8 @@ function _mc_action_performance($conn) {
 // ═══════════════════════════════════════════════════════════════════════
 //  SNAPSHOT — record daily performance snapshot (called by GitHub Actions)
 // ═══════════════════════════════════════════════════════════════════════
-function _mc_action_snapshot($conn) {
+function _mc_action_snapshot($conn)
+{
     $today = date('Y-m-d');
 
     // Check if snapshot already exists for today
@@ -1875,7 +2120,8 @@ function _mc_action_snapshot($conn) {
 // ═══════════════════════════════════════════════════════════════════════
 //  ADAPTIVE WEIGHTS — learn which indicators predict wins
 // ═══════════════════════════════════════════════════════════════════════
-function _mc_action_adaptive_weights($conn) {
+function _mc_action_adaptive_weights($conn)
+{
     // Ensure mc_adaptive_weights table exists
     $conn->query("CREATE TABLE IF NOT EXISTS mc_adaptive_weights (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -1896,11 +2142,18 @@ function _mc_action_adaptive_weights($conn) {
             ORDER BY created_at DESC
             LIMIT 500";
     $res = $conn->query($sql);
-    if (!$res) { _mc_err('Query failed'); }
+    if (!$res) {
+        _mc_err('Query failed');
+    }
 
     $factor_keys = array(
-        'explosive_volume', 'parabolic_momentum', 'rsi_hype_zone',
-        'social_proxy', 'volume_concentration', 'breakout_4h', 'low_cap_bonus'
+        'explosive_volume',
+        'parabolic_momentum',
+        'rsi_hype_zone',
+        'social_proxy',
+        'volume_concentration',
+        'breakout_4h',
+        'low_cap_bonus'
     );
     $max_values = array(25, 20, 15, 15, 10, 10, 5);
 
@@ -1910,11 +2163,14 @@ function _mc_action_adaptive_weights($conn) {
 
     while ($row = $res->fetch_assoc()) {
         $factors = json_decode($row['factors_json'], true);
-        if (!is_array($factors)) continue;
+        if (!is_array($factors))
+            continue;
 
         $is_win = ($row['outcome'] === 'win' || $row['outcome'] === 'partial_win') ? 1 : 0;
-        if ($is_win) $wins++;
-        else $losses++;
+        if ($is_win)
+            $wins++;
+        else
+            $losses++;
 
         $scores = array();
         for ($fi = 0; $fi < count($factor_keys); $fi++) {
@@ -1948,7 +2204,11 @@ function _mc_action_adaptive_weights($conn) {
     // Calculate Pearson correlation for each factor vs outcome
     $correlations = array();
     for ($fi = 0; $fi < count($factor_keys); $fi++) {
-        $sum_x = 0; $sum_y = 0; $sum_xy = 0; $sum_x2 = 0; $sum_y2 = 0;
+        $sum_x = 0;
+        $sum_y = 0;
+        $sum_xy = 0;
+        $sum_x2 = 0;
+        $sum_y2 = 0;
         $n = count($samples);
         for ($si = 0; $si < $n; $si++) {
             $x = $samples[$si]['scores'][$fi];
@@ -1983,7 +2243,8 @@ function _mc_action_adaptive_weights($conn) {
     }
     // Re-normalize after clamping
     $wtotal = 0;
-    foreach ($weights as $wv) $wtotal += $wv;
+    foreach ($weights as $wv)
+        $wtotal += $wv;
     foreach ($weights as $wk => $wv) {
         $weights[$wk] = round($wv / $wtotal, 4);
     }
@@ -2019,7 +2280,8 @@ function _mc_action_adaptive_weights($conn) {
 // ═══════════════════════════════════════════════════════════════════════
 //  ML STATUS — public endpoint showing ML learning progress
 // ═══════════════════════════════════════════════════════════════════════
-function _mc_action_ml_status($conn) {
+function _mc_action_ml_status($conn)
+{
     // Latest adaptive weights
     $aw_res = $conn->query("SELECT * FROM mc_adaptive_weights ORDER BY created_at DESC LIMIT 1");
     $latest_weights = null;
@@ -2055,13 +2317,15 @@ function _mc_action_ml_status($conn) {
     ));
 }
 
-function _mc_err($msg) {
+function _mc_err($msg)
+{
     header('HTTP/1.0 400 Bad Request');
     echo json_encode(array('ok' => false, 'error' => $msg));
     exit;
 }
 
-function _mc_ensure_schema($conn) {
+function _mc_ensure_schema($conn)
+{
     $conn->query("CREATE TABLE IF NOT EXISTS mc_winners (
         id INT AUTO_INCREMENT PRIMARY KEY,
         scan_id VARCHAR(20) NOT NULL,

@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-Our Kraken meme coin scanner has been enhanced to align with academic best practices from Jegadeesh & Titman (momentum), Moskowitz et al. (time-series momentum), and Kelly criterion research.
+Our Kraken meme coin scanner applies **adapted** principles from academic research. Note: Jegadeesh & Titman momentum research validates strategies on **weeks-to-months** horizons, not intraday. Our scanner uses **intraday setup detection** inspired by, but not directly replicating, these findings. Position sizing uses Kelly criterion and volatility targeting which are horizon-agnostic.
 
 ---
 
@@ -53,15 +53,34 @@ $realized_vol = sqrt(sum_squared_deviations / (n-1)) * sqrt(8760);
 
 ---
 
-## 📊 Performance Targets (Based on Academic Literature)
+## 📊 Performance Targets & Acceptance Criteria
 
-| Metric | Target | Source |
-|--------|--------|--------|
-| Sharpe Ratio | > 1.0 | Fong & Wong (crypto momentum) |
-| Win Rate | 35-45% | Realistic for momentum strategies |
-| Avg Win/Loss | 1.5:1 | Minimum for profitability |
-| Max Drawdown | < 20% | Risk management threshold |
-| Turnover | < 50%/month | Control fee drag |
+### Measurable Acceptance Criteria (v2.0)
+
+| Metric | Current | Minimum Required | Goal | Evaluation Period |
+|--------|---------|-----------------|------|------------------|
+| Win Rate | ~5% | **>25%** | 35-45% | 50+ resolved signals |
+| Avg Win/Loss Ratio | Unknown | **>1.2:1** | 1.5:1 | 50+ resolved signals |
+| Max Drawdown | Unknown | **<30%** | <20% | 30+ calendar days |
+| Signal Frequency | ~2/day | >1/day | 3-5/day | Rolling 7-day avg |
+| Quality Gate Pass Rate | ~90% | N/A | 40-60% | Per scan |
+| False Positive Rate | ~95% | **<70%** | <55% | 50+ resolved signals |
+
+### v2.0 Scanner Must Demonstrate Before Live Trading:
+- **50+ paper trades** with full P&L tracking
+- **30+ calendar days** of forward testing
+- Win rate **above 25%** (vs current ~5%)
+- Positive expected value confirmed over the sample
+
+### Academic Reference Targets
+
+| Metric | Target | Source | Horizon Caveat |
+|--------|--------|--------|----------------|
+| Sharpe Ratio | > 1.0 | Fong & Wong (crypto momentum) | Multi-day holding |
+| Win Rate | 35-45% | Realistic for momentum strategies | Weeks-to-months |
+| Avg Win/Loss | 1.5:1 | Minimum for profitability | Any horizon |
+| Max Drawdown | < 20% | Risk management threshold | Any horizon |
+| Turnover | < 50%/month | Control fee drag | Monthly |
 
 ---
 
@@ -99,13 +118,20 @@ kraken_paper_trades:
 
 | Feature | Status | File |
 |---------|--------|------|
-| Momentum Scoring | ✅ Live | `kraken_meme_scanner.php` |
+| Setup-Based Scoring v2.0 | ✅ Live | `kraken_meme_scanner.php` |
+| Pump-and-Dump Detection | ✅ Live | `kraken_meme_scanner.php` |
+| BTC Regime Hard Gate | ✅ Live | `kraken_meme_scanner.php` |
+| Quality Gate Hard Exclusion | ✅ Live | `meme_scanner.php` |
+| Unified Pair Lists | ✅ Live | `kraken_meme_scanner.php` |
+| Sentiment Scraper v2.0 | ✅ Ready | `meme_sentiment_scraper.py` |
 | Volatility Targeting | ✅ Live | `kraken_enhanced.php` |
 | Kelly Sizing | ✅ Live | `kraken_enhanced.php` |
 | Liquidity Screen | ✅ Live | `kraken_enhanced.php` |
 | Paper Trading | ✅ Database ready | `kraken_enhanced.php` |
-| WebSocket Feeds | 🔄 Planned | Q1 2026 |
-| Correlation Tracking | 🔄 Planned | Q1 2026 |
+| XGBoost ML Ranker | ✅ Ready | `meme_xgboost_ranker.py` |
+| Drift Detection | ✅ Ready | `meme_drift_detector.py` |
+| WebSocket Feeds | 🔄 Planned | Q2 2026 |
+| Correlation Tracking | 🔄 Planned | Q2 2026 |
 
 ---
 
@@ -134,16 +160,24 @@ Response:
 
 ---
 
+## ⚠️ Horizon Caveat
+
+> **Important:** The academic papers cited below study momentum on weekly-to-monthly
+> horizons. Our intraday scanner **adapts** these concepts (volatility targeting,
+> Kelly sizing, trend-following) but does not directly replicate the multi-week
+> holding periods studied in the literature. Intraday results may differ
+> significantly from academic backtests.
+
 ## 📚 References
 
-1. Jegadeesh, N., & Titman, S. (1993). "Returns to Buying Winners and Selling Losers"
-2. Moskowitz, T. J., Ooi, Y. H., & Pedersen, L. H. (2012). "Time Series Momentum"
+1. Jegadeesh, N., & Titman, S. (1993). "Returns to Buying Winners and Selling Losers" *(weeks-to-months horizon)*
+2. Moskowitz, T. J., Ooi, Y. H., & Pedersen, L. H. (2012). "Time Series Momentum" *(monthly rebalancing)*
 3. Asness, C. S., Moskowitz, T. J., & Pedersen, L. H. (2013). "Value and Momentum Everywhere"
-4. MacLean, L. C., Thorp, E. O., & Ziemba, W. T. (2010). "Good and Bad Properties of the Kelly Criterion"
-5. Fong, W. M., & Wong, W. K. (2021). "Cryptocurrency Momentum"
+4. MacLean, L. C., Thorp, E. O., & Ziemba, W. T. (2010). "Good and Bad Properties of the Kelly Criterion" *(horizon-agnostic)*
+5. Fong, W. M., & Wong, W. K. (2021). "Cryptocurrency Momentum" *(daily-weekly)*
 
 ---
 
-**Last Updated:** February 2026  
-**Strategy Version:** 2.1-Academic  
+**Last Updated:** February 12, 2026  
+**Strategy Version:** 3.0-Setup-Based  
 **Risk Rating:** HIGH (Meme coins are speculative)
