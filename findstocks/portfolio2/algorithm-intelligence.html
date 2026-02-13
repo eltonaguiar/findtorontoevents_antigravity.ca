@@ -101,14 +101,27 @@ h1 { font-size:1.6rem; margin-bottom:0.3rem; }
         <a href="/findstocks/portfolio2/consolidated.html" class="qlink">&#8801; Consolidated Picks</a>
     </div>
 
-    <div class="tabs">
-        <div class="tab active" data-tab="dashboard">Executive Dashboard</div>
-        <div class="tab" data-tab="stocks">Stocks</div>
-        <div class="tab" data-tab="crypto">Crypto</div>
-        <div class="tab" data-tab="forex">Forex</div>
-        <div class="tab" data-tab="ml">ML &amp; Learning</div>
-        <div class="tab" data-tab="worldclass">World-Class Gaps</div>
+    <div class="tabs" id="main-tabs">
+        <div class="tab active" onclick="switchTab('dashboard',this)">Executive Dashboard</div>
+        <div class="tab" onclick="switchTab('stocks',this)">Stocks</div>
+        <div class="tab" onclick="switchTab('crypto',this)">Crypto</div>
+        <div class="tab" onclick="switchTab('forex',this)">Forex</div>
+        <div class="tab" onclick="switchTab('sports',this)">Sports Betting</div>
+        <div class="tab" onclick="switchTab('penny',this)">Penny Stocks</div>
+        <div class="tab" onclick="switchTab('meme',this)">Meme Coins</div>
+        <div class="tab" onclick="switchTab('ml',this)">ML &amp; Learning</div>
+        <div class="tab" onclick="switchTab('worldclass',this)">World-Class Gaps</div>
     </div>
+    <script>
+    function switchTab(name, el) {
+        var i, tabs = document.getElementById('main-tabs').children;
+        for (i = 0; i < tabs.length; i++) tabs[i].className = 'tab';
+        el.className = 'tab active';
+        var all = document.querySelectorAll('.tab-content');
+        for (i = 0; i < all.length; i++) all[i].className = 'tab-content';
+        document.getElementById('tab-' + name).className = 'tab-content active';
+    }
+    </script>
 
     <!-- TAB 1: EXECUTIVE DASHBOARD -->
     <div id="tab-dashboard" class="tab-content active">
@@ -296,6 +309,12 @@ h1 { font-size:1.6rem; margin-bottom:0.3rem; }
             The system has successfully learned to <strong>increase take-profit targets</strong> (+55% to +70%) and <strong>widen stop-losses</strong> (+100%) for winning algorithms (Ichimoku, StochRSI). For losing algorithms, it learned to <strong>reduce max hold time</strong> (-50%) to cut losses faster. This is a sound optimization pattern consistent with trend-following best practices.
         </div>
 
+        <div class="section-title">ML Engine Status</div>
+        <div class="alert-box alert-info">
+            <div class="alert-title">Penny Stock ML Engine</div>
+            <span id="ml-engine-status">Loading...</span>
+        </div>
+
         <div class="section-title">Signal Generation Progress</div>
         <div class="kpi-row">
             <div class="kpi"><div class="kpi-label">Learned Signals</div><div class="kpi-val val-pos">2,491</div><div class="kpi-sub">Using optimized parameters</div></div>
@@ -368,6 +387,166 @@ h1 { font-size:1.6rem; margin-bottom:0.3rem; }
             <p style="margin-top:0.5rem"><strong style="color:var(--text)">Position Sizing:</strong> Fixed 5% of capital ($500 per trade). Limitation: not risk-adjusted. World-class firms use volatility-adjusted sizing (risk parity), Kelly criterion, or EGARCH-based sizers.</p>
             <p style="margin-top:0.5rem"><strong style="color:var(--text)">Regime Detection:</strong> Hidden Markov Model (HMM) with 3 states (bull/sideways/bear). Limitation: HMM is fitted on recent data, may lag regime transitions by 1&ndash;3 days. Not validated against known regime change dates.</p>
             <p style="margin-top:0.5rem"><strong style="color:var(--text)">Signal Universe:</strong> 20 algorithms across 36 assets (12 stocks, 14 crypto, 10 forex). Limitation: Renaissance uses 10,000+ signals across thousands of assets. Our signal diversity is ~500x less.</p>
+        </div>
+    </div>
+
+    <!-- TAB: SPORTS BETTING -->
+    <div id="tab-sports" class="tab-content">
+        <div class="kpi-row">
+            <div class="kpi"><div class="kpi-label">Bankroll</div><div class="kpi-val" id="sports-bankroll">Loading...</div><div class="kpi-sub">Starting: $1,000</div></div>
+            <div class="kpi"><div class="kpi-label">Win Rate</div><div class="kpi-val" id="sports-wr">Loading...</div><div class="kpi-sub">Paper bets</div></div>
+            <div class="kpi"><div class="kpi-label">Active Bets</div><div class="kpi-val" id="sports-active">Loading...</div><div class="kpi-sub">Auto-placed value bets</div></div>
+            <div class="kpi"><div class="kpi-label">ROI</div><div class="kpi-val" id="sports-roi">Loading...</div><div class="kpi-sub">All-time return</div></div>
+            <div class="kpi"><div class="kpi-label">Bet Sizing</div><div class="kpi-val">5% Kelly</div><div class="kpi-sub">Quarter-Kelly criterion</div></div>
+        </div>
+
+        <div class="methodology-box">
+            <h3>Data Sources &amp; Links</h3>
+            <p><strong style="color:var(--cyan)">Dashboard:</strong> <a href="/live-monitor/sports-betting.html" style="color:var(--cyan)">Sports Betting Dashboard</a> &mdash; Real-time value bet finder with line shopping across 20+ bookmakers</p>
+            <p style="margin-top:0.3rem"><strong style="color:var(--text)">Data Source:</strong> The Odds API (free tier, 500 credits/month). Covers 8 sports: NHL, NBA, NFL, MLB, CFL, MLS, NCAAF, NCAAB. 20+ bookmakers (FanDuel, DraftKings, bet365, Pinnacle, etc.)</p>
+            <p style="margin-top:0.3rem"><strong style="color:var(--text)">APIs:</strong> <code>sports_odds.php</code> (odds cache), <code>sports_picks.php</code> (value bets + line shopping), <code>sports_bets.php</code> (paper betting), <code>sports_ml.php</code> (ML scoring)</p>
+            <p style="margin-top:0.3rem"><strong style="color:var(--text)">Automation:</strong> GitHub Actions runs 5x daily (10am, 1pm, 4pm, 7pm, 10pm EST). Fetches odds, runs Kimi scrapers (stats/injuries/schedule), scores with ML, auto-places top value bets (EV &ge; 3%), auto-settles completed bets.</p>
+            <p style="margin-top:0.3rem"><strong style="color:var(--text)">Goldmine:</strong> Tracked in <a href="/live-monitor/goldmine-dashboard.html" style="color:var(--cyan)">Goldmine Dashboard</a> as <code>sports_bets</code> + <code>sports_picks</code> systems</p>
+        </div>
+
+        <div class="section-title">How Sports Betting Algorithms Work</div>
+        <div class="methodology-box">
+            <h3>Value Bet Detection + Line Shopping</h3>
+            <p><strong style="color:var(--cyan)">Step 1: Odds Collection</strong> &mdash; Every ~5 hours, fetch real-time odds from 20+ sportsbooks via The Odds API. Cache in <code>lm_sports_odds</code> table.</p>
+            <p style="margin-top:0.3rem"><strong style="color:var(--cyan)">Step 2: Value Bet Analysis</strong> &mdash; Compare each bookmaker&rsquo;s odds against the sharp market (Pinnacle). When a book offers odds significantly above consensus, flag as a value bet with expected value (EV%).</p>
+            <p style="margin-top:0.3rem"><strong style="color:var(--cyan)">Step 3: ML Scoring</strong> &mdash; Score each value bet using features: historical Closing Line Value (CLV), team stats (NBA/NHL/NFL/MLB), injuries, schedule, and market consensus.</p>
+            <p style="margin-top:0.3rem"><strong style="color:var(--cyan)">Step 4: Auto-Placement</strong> &mdash; Top value bets (EV &ge; 3.0%) are auto-placed as paper bets. Position sizing: quarter-Kelly criterion (max 5% of bankroll per bet, 20 max concurrent positions).</p>
+            <p style="margin-top:0.3rem"><strong style="color:var(--cyan)">Step 5: Settlement</strong> &mdash; After games complete, auto-settle using final scores. Track P&amp;L, ROI, and win rate by sport and algorithm.</p>
+        </div>
+
+        <div class="section-title">Strengths</div>
+        <div>
+            <div class="strength-item"><strong style="color:var(--green)">1. Multi-Bookmaker Edge Detection</strong><br>Line shopping across 20+ books identifies mispriced odds that single-book bettors miss. Pinnacle benchmark provides sharp market consensus.</div>
+            <div class="strength-item"><strong style="color:var(--green)">2. Kelly Criterion Sizing</strong><br>Quarter-Kelly position sizing is academically proven to maximize long-term growth while limiting ruin probability.</div>
+            <div class="strength-item"><strong style="color:var(--green)">3. Comprehensive Data Intelligence</strong><br>Kimi scrapers gather team stats, injuries, and schedule data for all 4 major sports. ML model incorporates these features for scoring.</div>
+            <div class="strength-item"><strong style="color:var(--green)">4. Fully Automated Pipeline</strong><br>End-to-end: odds fetch &rarr; value detection &rarr; ML score &rarr; auto-place &rarr; auto-settle. No manual intervention required.</div>
+        </div>
+
+        <div class="section-title">Known Flaws</div>
+        <div>
+            <div class="flaw-item"><strong style="color:var(--red)">1. Free Tier API Limits</strong><br>500 credits/month limits odds refresh frequency. Professional sports bettors use real-time odds feeds. Our 5x daily refresh may miss line movements.</div>
+            <div class="flaw-item"><strong style="color:var(--red)">2. Paper Betting Only</strong><br>No real money at stake. Results may not reflect real-world execution (odds may have moved by the time you&rsquo;d actually bet).</div>
+            <div class="flaw-item"><strong style="color:var(--red)">3. No Live/In-Game Betting</strong><br>Only pre-game odds are analyzed. In-game betting is a major profit source for professional bettors.</div>
+        </div>
+    </div>
+
+    <!-- TAB: PENNY STOCKS -->
+    <div id="tab-penny" class="tab-content">
+        <div class="kpi-row">
+            <div class="kpi"><div class="kpi-label">Active Picks</div><div class="kpi-val" id="penny-active">Loading...</div><div class="kpi-sub">Current daily picks</div></div>
+            <div class="kpi"><div class="kpi-label">Win Rate</div><div class="kpi-val" id="penny-wr">Loading...</div><div class="kpi-sub">Historical picks</div></div>
+            <div class="kpi"><div class="kpi-label">Avg Return</div><div class="kpi-val" id="penny-avg">Loading...</div><div class="kpi-sub">Per pick</div></div>
+            <div class="kpi"><div class="kpi-label">Regions</div><div class="kpi-val">CA + US</div><div class="kpi-sub">Exchange-listed only (no OTC)</div></div>
+            <div class="kpi"><div class="kpi-label">Scoring</div><div class="kpi-val">8-Factor</div><div class="kpi-sub">Composite model</div></div>
+        </div>
+
+        <div class="methodology-box">
+            <h3>Data Sources &amp; Links</h3>
+            <p><strong style="color:var(--cyan)">Dashboard:</strong> <a href="/findstocks/portfolio2/penny-stocks.html" style="color:var(--cyan)">Penny Stock Finder</a> &mdash; Multi-tab dashboard: Finder, Picks, History, Performance</p>
+            <p style="margin-top:0.3rem"><strong style="color:var(--text)">Data Source:</strong> Yahoo Finance screener API (crumb-authenticated). Filters: exchange-listed only (blocks OTC/Pink Sheets), price $0.01&ndash;$5.00, min volume 100K.</p>
+            <p style="margin-top:0.3rem"><strong style="color:var(--text)">APIs:</strong> <code>penny_stocks.php</code> (Yahoo screener proxy, 30min cache), <code>penny_stock_picks.php</code> (daily picks + tracking)</p>
+            <p style="margin-top:0.3rem"><strong style="color:var(--text)">Automation:</strong> GitHub Actions weekdays 7:00 AM EST. Python engine (<code>scripts/penny_stock_picks.py</code>) scores and ranks penny stocks using 8-factor composite score. Tracking job updates prices and checks TP/SL.</p>
+            <p style="margin-top:0.3rem"><strong style="color:var(--text)">Goldmine:</strong> Tracked in <a href="/live-monitor/goldmine-dashboard.html" style="color:var(--cyan)">Goldmine Dashboard</a> as <code>penny_stocks</code> system</p>
+        </div>
+
+        <div class="section-title">8-Factor Scoring Model</div>
+        <div class="methodology-box">
+            <h3>How Penny Stock Picks Are Scored</h3>
+            <p>Each penny stock is scored across 8 dimensions to produce a composite score:</p>
+            <div style="margin-top:0.5rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0.5rem;">
+                <div style="padding:0.5rem;background:rgba(34,197,94,0.06);border-radius:6px;font-size:0.78rem"><strong style="color:var(--green)">Composite Score</strong> &mdash; Overall weighted ranking combining all factors</div>
+                <div style="padding:0.5rem;background:rgba(34,197,94,0.06);border-radius:6px;font-size:0.78rem"><strong style="color:var(--green)">Health Score</strong> &mdash; Financial health (debt, cash flow, burn rate)</div>
+                <div style="padding:0.5rem;background:rgba(34,211,238,0.06);border-radius:6px;font-size:0.78rem"><strong style="color:var(--cyan)">Momentum Score</strong> &mdash; Price momentum across 5/10/20-day windows</div>
+                <div style="padding:0.5rem;background:rgba(34,211,238,0.06);border-radius:6px;font-size:0.78rem"><strong style="color:var(--cyan)">Volume Score</strong> &mdash; Volume surge detection vs 20-day average</div>
+                <div style="padding:0.5rem;background:rgba(99,102,241,0.06);border-radius:6px;font-size:0.78rem"><strong style="color:var(--accent)">Technical Score</strong> &mdash; RSI, MACD, Bollinger Band signals</div>
+                <div style="padding:0.5rem;background:rgba(99,102,241,0.06);border-radius:6px;font-size:0.78rem"><strong style="color:var(--accent)">Earnings Score</strong> &mdash; EPS growth, revenue trends, surprises</div>
+                <div style="padding:0.5rem;background:rgba(255,215,0,0.06);border-radius:6px;font-size:0.78rem"><strong style="color:var(--gold)">Smart Money Score</strong> &mdash; Institutional + insider activity signals</div>
+                <div style="padding:0.5rem;background:rgba(255,215,0,0.06);border-radius:6px;font-size:0.78rem"><strong style="color:var(--gold)">Quality Score</strong> &mdash; Exchange listing, market cap, liquidity filters</div>
+            </div>
+        </div>
+
+        <div class="section-title">Risk Management</div>
+        <div class="alert-box alert-info">
+            <div class="alert-title">Position Risk Controls</div>
+            Each penny stock pick includes pre-calculated risk parameters:<br>
+            <strong>Stop Loss:</strong> Dynamically set per-pick based on volatility and health score.<br>
+            <strong>Take Profit:</strong> Set based on momentum score and historical price range.<br>
+            <strong>Max Hold:</strong> Configurable per-pick (prevents bag-holding).<br>
+            <strong>Position Size:</strong> Calculated as % of portfolio based on conviction score.
+        </div>
+
+        <div class="section-title">Known Flaws</div>
+        <div>
+            <div class="flaw-item"><strong style="color:var(--red)">1. High Volatility Asset Class</strong><br>Penny stocks are inherently high-risk. Even with 8-factor scoring, many picks will fail. This is expected and managed through position sizing and stop losses.</div>
+            <div class="flaw-item"><strong style="color:var(--red)">2. Liquidity Risk</strong><br>Even exchange-listed pennies can have thin order books. Actual fills may differ from Yahoo Finance quoted prices.</div>
+            <div class="flaw-item"><strong style="color:var(--red)">3. Yahoo Finance Dependency</strong><br>Single data source. If Yahoo changes their screener API or authentication, the system breaks.</div>
+        </div>
+    </div>
+
+    <!-- TAB: MEME COINS -->
+    <div id="tab-meme" class="tab-content">
+        <div class="kpi-row">
+            <div class="kpi"><div class="kpi-label">Win Rate</div><div class="kpi-val" id="meme-wr">Loading...</div><div class="kpi-sub">Historical signal outcomes</div></div>
+            <div class="kpi"><div class="kpi-label">Avg PnL</div><div class="kpi-val" id="meme-pnl">Loading...</div><div class="kpi-sub">Per signal</div></div>
+            <div class="kpi"><div class="kpi-label">Active Signals</div><div class="kpi-val" id="meme-active">Loading...</div><div class="kpi-sub">Current winners</div></div>
+            <div class="kpi"><div class="kpi-label">Scan Frequency</div><div class="kpi-val">10 min</div><div class="kpi-sub">24/7 scanning</div></div>
+            <div class="kpi"><div class="kpi-label">ML Model</div><div class="kpi-val" id="meme-ml">Loading...</div><div class="kpi-sub">Adaptive feature weights</div></div>
+        </div>
+
+        <div class="methodology-box">
+            <h3>Data Sources &amp; Links</h3>
+            <p><strong style="color:var(--cyan)">Dashboard:</strong> <a href="/findcryptopairs/meme.html" style="color:var(--cyan)">Meme Coin Scanner</a> &mdash; Winners leaderboard, scan history, educational resources</p>
+            <p style="margin-top:0.3rem"><strong style="color:var(--text)">Data Source:</strong> Crypto.com Exchange API (public, no auth) + CoinGecko fallback. Real-time OHLCV data for Tier 1 + discovered Tier 2 meme coins.</p>
+            <p style="margin-top:0.3rem"><strong style="color:var(--text)">APIs:</strong> <code>meme_scanner.php</code> (scan + score + winners), <code>meme_ml_engine.php</code> (adaptive ML model)</p>
+            <p style="margin-top:0.3rem"><strong style="color:var(--text)">Automation:</strong> GitHub Actions scans every 10 minutes (memes move fast). Resolves signals every 3 hours (2h outcome window). Daily ML retraining check at 6 AM UTC.</p>
+            <p style="margin-top:0.3rem"><strong style="color:var(--text)">Goldmine:</strong> Tracked in <a href="/live-monitor/goldmine-dashboard.html" style="color:var(--cyan)">Goldmine Dashboard</a> as <code>meme_scanner</code> system</p>
+        </div>
+
+        <div class="section-title">Meme Coin Tier System</div>
+        <div class="card-grid">
+            <div class="algo-card"><div class="algo-card-header"><div><div class="algo-card-title" style="color:var(--gold)">Tier 1 &mdash; Always Scanned</div><div class="algo-card-type">8 established meme coins, no volume filter</div></div></div><div class="algo-card-body"><p style="font-weight:700">DOGE, SHIB, PEPE, FLOKI, BONK, WIF, TURBO, NEIRO</p><p style="margin-top:0.3rem;color:var(--text-dim)">Most liquid meme coins with established markets. Scanned every 10 minutes regardless of volume conditions.</p></div></div>
+            <div class="algo-card"><div class="algo-card-header"><div><div class="algo-card-title" style="color:var(--cyan)">Tier 2 &mdash; Dynamic Discovery</div><div class="algo-card-type">55+ keywords for pattern matching</div></div></div><div class="algo-card-body"><p style="font-weight:700">PNUT, GOAT, ACT, CHILLGUY, SPX, and 50+ more</p><p style="margin-top:0.3rem;color:var(--text-dim)">New meme coins are automatically discovered when they appear on Crypto.com with matching keywords. Volume filters apply.</p></div></div>
+        </div>
+
+        <div class="section-title">7-Feature Scoring Model</div>
+        <div class="methodology-box">
+            <h3>How Meme Coins Are Scored</h3>
+            <p>Each coin is scored across 7 technical/volume features. Tiers: <span class="badge badge-green">STRONG (80+)</span> <span class="badge badge-blue">BUY (65-80)</span> <span class="badge badge-yellow">LEAN (50-65)</span></p>
+            <div style="margin-top:0.5rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0.5rem;font-size:0.78rem">
+                <div style="padding:0.5rem;background:rgba(239,68,68,0.06);border-radius:6px"><strong style="color:var(--red)">Explosive Volume</strong> &mdash; Detects sudden volume spikes vs baseline</div>
+                <div style="padding:0.5rem;background:rgba(245,158,11,0.06);border-radius:6px"><strong style="color:var(--orange)">Parabolic Momentum</strong> &mdash; Price acceleration detection</div>
+                <div style="padding:0.5rem;background:rgba(34,211,238,0.06);border-radius:6px"><strong style="color:var(--cyan)">RSI Hype Zone</strong> &mdash; RSI in overbought territory (meme momentum)</div>
+                <div style="padding:0.5rem;background:rgba(99,102,241,0.06);border-radius:6px"><strong style="color:var(--accent)">Social Momentum Proxy</strong> &mdash; Volume-based social interest proxy</div>
+                <div style="padding:0.5rem;background:rgba(167,139,250,0.06);border-radius:6px"><strong style="color:var(--purple)">Volume Concentration</strong> &mdash; Buy-side volume dominance</div>
+                <div style="padding:0.5rem;background:rgba(34,197,94,0.06);border-radius:6px"><strong style="color:var(--green)">Breakout 4h</strong> &mdash; 4-hour timeframe breakout confirmation</div>
+                <div style="padding:0.5rem;background:rgba(255,215,0,0.06);border-radius:6px"><strong style="color:var(--gold)">Low Market Cap Bonus</strong> &mdash; Small cap = higher potential upside</div>
+            </div>
+        </div>
+
+        <div class="section-title">ML Model (Adaptive)</div>
+        <div class="alert-box alert-info">
+            <div class="alert-title">Adaptive Feature Weights</div>
+            The meme ML engine (<code>meme_ml_engine.php</code>) periodically retrains on historical signal outcomes. It redistributes feature weights based on which indicators actually predicted winners. Auto-retrain triggers after 50 new signals or 7 days since last training.<br>
+            <strong>Training metrics:</strong> <span id="meme-ml-metrics">Loading...</span>
+        </div>
+
+        <div class="section-title">Strengths</div>
+        <div>
+            <div class="strength-item"><strong style="color:var(--green)">1. High-Frequency Scanning (Every 10 Min)</strong><br>Meme coins move fast. Our 10-minute scan interval catches momentum early. Most retail traders check manually &mdash; we automate detection.</div>
+            <div class="strength-item"><strong style="color:var(--green)">2. Adaptive ML Retraining</strong><br>Unlike fixed-weight systems, our ML model retrains when it detects enough new data. This adapts to changing market conditions and meme cycles.</div>
+            <div class="strength-item"><strong style="color:var(--green)">3. Dual Tier Discovery</strong><br>Tier 1 covers established memes. Tier 2 dynamically discovers new trending coins via keyword matching across 55+ patterns.</div>
+        </div>
+
+        <div class="section-title">Known Flaws</div>
+        <div>
+            <div class="flaw-item"><strong style="color:var(--red)">1. Extreme Volatility</strong><br>Meme coins can lose 50%+ in minutes. Even strong signals can fail due to whale manipulation, rug pulls, or sudden sentiment shifts.</div>
+            <div class="flaw-item"><strong style="color:var(--red)">2. No Fundamental Value</strong><br>Meme coins have no underlying business value. All analysis is technical/sentiment-based. Prices are entirely driven by hype cycles.</div>
+            <div class="flaw-item"><strong style="color:var(--red)">3. Exchange API Dependency</strong><br>Relies on Crypto.com public API. Only scans coins listed there. Many new meme coins launch on DEXs (Pump.fun, Raydium) before exchange listing.</div>
         </div>
     </div>
 
@@ -881,17 +1060,102 @@ renderStrengths('global-strengths', [
     { title:'Honest Self-Assessment', desc:'This report transparently identifies flaws, TBD items, and gaps. The ability to honestly evaluate performance (rather than cherry-picking winning metrics) is itself an institutional-grade practice.' }
 ]);
 
-// ──── TAB SWITCHING ────────────────────────────────────────────────────────
-document.querySelectorAll('.tab').forEach(function(tab) {
-    tab.addEventListener('click', function() {
-        document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
-        document.querySelectorAll('.tab-content').forEach(function(c){c.classList.remove('active')});
-        tab.classList.add('active');
-        document.getElementById('tab-'+tab.getAttribute('data-tab')).classList.add('active');
-    });
-});
+// ──── DYNAMIC API LOADING ──────────────────────────────────────────────────
+function loadDynamicData() {
+    // Sports betting dashboard
+    fetch('/live-monitor/api/sports_bets.php?action=dashboard')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (!d.ok) return;
+            var s = d.dashboard || d;
+            var el;
+            if (s.bankroll) document.getElementById('sports-bankroll').textContent = '$' + parseFloat(s.bankroll).toLocaleString();
+            if (s.win_rate !== undefined) { el = document.getElementById('sports-wr'); el.textContent = s.win_rate + '%'; el.className = 'kpi-val ' + (s.win_rate > 50 ? 'val-pos' : 'val-neg'); }
+            if (s.active_bets !== undefined) document.getElementById('sports-active').textContent = s.active_bets;
+            if (s.roi !== undefined) { el = document.getElementById('sports-roi'); el.textContent = (s.roi >= 0 ? '+' : '') + parseFloat(s.roi).toFixed(1) + '%'; el.className = 'kpi-val ' + (s.roi >= 0 ? 'val-pos' : 'val-neg'); }
+        })['catch'](function() {
+            document.getElementById('sports-bankroll').textContent = '$1,000';
+            document.getElementById('sports-wr').textContent = 'N/A';
+            document.getElementById('sports-active').textContent = '0';
+            document.getElementById('sports-roi').textContent = 'N/A';
+        });
 
-document.getElementById('timestamp').textContent = 'Report generated: ' + new Date().toISOString().replace('T',' ').slice(0,19) + ' UTC | Data as of Feb 12, 2026 | System age: 3 days';
+    // Penny stock performance
+    fetch('/findstocks/portfolio2/api/penny_stock_picks.php?action=performance')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (!d.ok) return;
+            var el;
+            if (d.active_picks !== undefined) document.getElementById('penny-active').textContent = d.active_picks;
+            if (d.win_rate !== undefined) { el = document.getElementById('penny-wr'); el.textContent = d.win_rate + '%'; el.className = 'kpi-val ' + (d.win_rate > 50 ? 'val-pos' : 'val-neg'); }
+            if (d.avg_return !== undefined) { el = document.getElementById('penny-avg'); el.textContent = (d.avg_return >= 0 ? '+' : '') + parseFloat(d.avg_return).toFixed(1) + '%'; el.className = 'kpi-val ' + (d.avg_return >= 0 ? 'val-pos' : 'val-neg'); }
+        })['catch'](function() {
+            document.getElementById('penny-active').textContent = 'N/A';
+            document.getElementById('penny-wr').textContent = 'N/A';
+            document.getElementById('penny-avg').textContent = 'N/A';
+        });
+
+    // Meme scanner stats
+    fetch('/findcryptopairs/api/meme_scanner.php?action=stats')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (!d.ok) return;
+            var el;
+            if (d.win_rate !== undefined) { el = document.getElementById('meme-wr'); el.textContent = d.win_rate + '%'; el.className = 'kpi-val ' + (d.win_rate > 50 ? 'val-pos' : 'val-neg'); }
+            if (d.avg_pnl !== undefined) { el = document.getElementById('meme-pnl'); el.textContent = (d.avg_pnl >= 0 ? '+' : '') + parseFloat(d.avg_pnl).toFixed(1) + '%'; el.className = 'kpi-val ' + (d.avg_pnl >= 0 ? 'val-pos' : 'val-neg'); }
+            if (d.active_signals !== undefined) document.getElementById('meme-active').textContent = d.active_signals;
+        })['catch'](function() {
+            document.getElementById('meme-wr').textContent = 'N/A';
+            document.getElementById('meme-pnl').textContent = 'N/A';
+            document.getElementById('meme-active').textContent = 'N/A';
+        });
+
+    // Meme ML status
+    fetch('/findcryptopairs/api/meme_ml_engine.php?action=status')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (!d.ok) { document.getElementById('meme-ml').textContent = 'Not Trained'; return; }
+            document.getElementById('meme-ml').textContent = d.status || 'Active';
+            if (d.accuracy) document.getElementById('meme-ml-metrics').textContent = 'Accuracy: ' + d.accuracy + '%, F1: ' + (d.f1_score || 'N/A') + ', Samples: ' + (d.samples || 'N/A');
+        })['catch'](function() {
+            document.getElementById('meme-ml').textContent = 'N/A';
+            document.getElementById('meme-ml-metrics').textContent = 'Unable to load';
+        });
+
+    // ML engine stats (penny stock ML)
+    fetch('/findstocks/portfolio2/api/ml_engine.php?action=stats')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            var el = document.getElementById('ml-engine-status');
+            if (!el) return;
+            if (d.ok) {
+                el.innerHTML = '<span class="badge badge-green">ACTIVE</span> Model trained on ' + (d.samples || '?') + ' samples. Accuracy: ' + (d.accuracy || '?') + '%';
+            } else {
+                el.innerHTML = '<span class="badge badge-yellow">' + (d.status || 'NOT TRAINED') + '</span> ' + (d.error || 'Awaiting training data');
+            }
+        })['catch'](function() {
+            var el = document.getElementById('ml-engine-status');
+            if (el) el.innerHTML = '<span class="badge badge-yellow">UNAVAILABLE</span>';
+        });
+
+    // Live algo performance
+    fetch('/live-monitor/api/algo_performance.php?action=summary&days=30')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (!d.ok || !d.performance || !d.performance.learned) return;
+            var p = d.performance.learned;
+            var wrEl = document.getElementById('exec-live-wr');
+            var tradesEl = document.getElementById('exec-live-trades');
+            var pnlEl = document.getElementById('exec-live-pnl');
+            if (wrEl) { wrEl.textContent = p.win_rate + '%'; wrEl.className = 'kpi-val ' + (p.win_rate > 50 ? 'val-pos' : 'val-neg'); }
+            if (tradesEl) tradesEl.textContent = p.trades;
+            if (pnlEl) { pnlEl.textContent = (p.total_pnl >= 0 ? '+' : '') + p.total_pnl.toFixed(2) + '%'; pnlEl.className = 'kpi-val ' + (p.total_pnl >= 0 ? 'val-pos' : 'val-neg'); }
+        })['catch'](function() {});
+}
+
+loadDynamicData();
+
+document.getElementById('timestamp').textContent = 'Report generated: ' + new Date().toISOString().replace('T',' ').slice(0,19) + ' UTC | Algorithm Intelligence Report';
 </script>
 </body>
 </html>

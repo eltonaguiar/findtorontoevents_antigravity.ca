@@ -132,7 +132,7 @@
                 </div>
             </div>
             <p style="color:var(--text-dim);font-size:0.75rem;margin-top:0.7rem;line-height:1.5;">
-                <strong style="color:#f59e0b;">Why #1?</strong> Every other system on the platform is either net-negative (Live Signals: 44.3% WR, -$302 P&amp;L), has zero closed trades (Consolidated: 65 open, 0 closed), or is research-only (Smart Money). This page shows the only algorithms that learned, adapted, and delivered real profit. Best asset class: Crypto (+12.6% P&amp;L, 87.5% WR). Stock positions still being tracked (first closures expected ~Feb 24).
+                <strong style="color:#f59e0b;">Why #1?</strong> Every other system on the platform is either net-negative, has zero closed trades, or is research-only (Smart Money). This page shows the only algorithms that learned, adapted, and delivered real profit across <span id="gold-closed-count">--</span> closed trades. Best asset class: Crypto (<span id="gold-crypto-pnl">--</span> P&amp;L, <span id="gold-crypto-wr">--</span> WR). Stock positions still being tracked (first closures expected ~Feb 24).
             </p>
         </div>
         <style>
@@ -273,7 +273,7 @@
                     <h4 style="font-size:0.85rem;color:var(--green);margin-bottom:0.5rem;">Strengths</h4>
                     <div style="font-size:12px;color:var(--text-dim);line-height:1.7;">
                         &bull; <strong>PROOF that ML learning improves results</strong> &mdash; learned params outperform defaults<br>
-                        &bull; Per-asset-class breakdown (Crypto 87.5% WR identifies strong spots)<br>
+                        &bull; Per-asset-class breakdown identifies strong spots per asset<br>
                         &bull; Transparent parameter comparison table<br>
                         &bull; Real-time trade logging with entry/exit prices<br>
                         &bull; Automated grid search optimization pipeline<br>
@@ -620,7 +620,7 @@
         </h3>
         <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
             <strong style="color:var(--green);">Near-term:</strong><br>
-            &bull; Add forex and stock trade data (currently crypto-dominant with 87.5% WR)<br>
+            &bull; Add forex and stock trade data (currently crypto-dominant)<br>
             &bull; Expand grid search to more parameter combinations<br>
             &bull; Weekly performance digest with automated email/Discord alerts<br><br>
             <strong style="color:var(--yellow);">Q2 2026:</strong><br>
@@ -880,10 +880,29 @@ function loadGoldBanner() {
         .then(function(d) {
             if (!d.ok) return;
             var learned = d.performance['learned'] || {};
+            var original = d.performance['original'] || {};
             var wr = document.getElementById('gold-wr');
             var pnl = document.getElementById('gold-pnl');
             if (wr && learned.win_rate !== undefined) wr.textContent = learned.win_rate + '%';
             if (pnl && learned.total_pnl !== undefined) pnl.textContent = (learned.total_pnl >= 0 ? '+' : '') + learned.total_pnl.toFixed(2) + '%';
+            // Populate closed trade count in banner paragraph
+            var closedEl = document.getElementById('gold-closed-count');
+            if (closedEl) {
+                var totalClosed = (learned.trades || 0) + (original.trades || 0);
+                closedEl.textContent = totalClosed;
+            }
+        });
+    fetch(API + '?action=by_asset&days=30')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (!d.ok) return;
+            var crypto = d.assets['CRYPTO'] && d.assets['CRYPTO']['learned'];
+            if (crypto) {
+                var cwr = document.getElementById('gold-crypto-wr');
+                var cpnl = document.getElementById('gold-crypto-pnl');
+                if (cwr) cwr.textContent = crypto.win_rate + '%';
+                if (cpnl) cpnl.textContent = (crypto.total_pnl >= 0 ? '+' : '') + crypto.total_pnl.toFixed(1) + '%';
+            }
         });
     fetch(API + '?action=by_algorithm&days=30')
         .then(function(r) { return r.json(); })
@@ -906,6 +925,7 @@ function loadGoldBanner() {
 loadGoldBanner();
 loadSummary();
 </script>
+<div style="text-align:center;font-size:0.7rem;color:#555577;padding:1.5rem;border-top:1px solid #1e1e3a;margin-top:1rem;">Paper trading simulation only. Not financial advice. Past performance does not guarantee future results.</div>
 <script src="/findstocks/portfolio2/stock-nav.js"></script>
 </body>
 </html>
