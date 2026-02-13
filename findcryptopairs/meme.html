@@ -2101,6 +2101,9 @@
         <button onclick="loadHotTrending('24h')" class="hot-tf-btn" id="tf-24h" style="background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;">24 hours</button>
         <button onclick="loadHotTrending(true)" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;margin-left:auto;">🔄 Refresh</button>
       </div>
+      
+      <!-- Scan timestamp -->
+      <div id="hot-timestamp" style="text-align:right;font-size:11px;color:var(--dim);padding:8px 4px;display:none;"></div>
 
       <!-- Scan status -->
       <div id="hot-scan-status" style="text-align:center;padding:20px;color:var(--dim);">
@@ -2748,6 +2751,18 @@
       // Hide loading
       var statusEl = document.getElementById('hot-scan-status');
       if (statusEl) statusEl.style.display = 'none';
+      
+      // Show timestamp
+      var timeEl = document.getElementById('hot-timestamp');
+      if (timeEl && data.timestamp) {
+        var scanTime = new Date(data.timestamp.replace(' ', 'T') + 'Z');
+        var ageMin = Math.floor((Date.now() - scanTime.getTime()) / 60000);
+        var timeStr = scanTime.toISOString().substring(11, 19) + ' UTC';
+        var ageStr = ageMin < 1 ? 'just now' : ageMin + ' min ago';
+        var color = ageMin < 5 ? '#22c55e' : ageMin < 15 ? '#f59e0b' : '#ef4444';
+        timeEl.innerHTML = '<span style="color:' + color + '">●</span> Scan: ' + timeStr + ' (' + ageStr + ')';
+        timeEl.style.display = 'block';
+      }
       
       // Show sections
       var krakenSection = document.getElementById('hot-kraken-section');
