@@ -149,6 +149,8 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
 .stale-overlay{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:6px;padding:6px 10px;margin:8px 0;font-size:11px;color:#fca5a5;text-align:center}
 .winner-card.card-invalidated{opacity:0.35;border-color:rgba(239,68,68,0.4);pointer-events:auto;position:relative;transition:all 0.3s}
 .hide-invalidated .winner-card.card-invalidated{display:none}
+.winner-card.card-not-kraken{position:relative}
+.kraken-only-mode .winner-card.card-not-kraken{display:none}
 .winner-card.card-invalidated:hover{opacity:0.55}
 .winner-card.card-invalidated .winner-pair{text-decoration:line-through;color:#888}
 .winner-card.card-invalidated .winner-score{text-decoration:line-through;opacity:0.5}
@@ -272,17 +274,45 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
   <div id="btc-regime-bar" style="display:none;padding:8px 16px;margin-bottom:12px;border-radius:var(--radius);font-size:12px;border:1px solid var(--border);background:var(--card);display:flex;align-items:center;gap:10px;flex-wrap:wrap"></div>
 
   <!-- Live Mode + BUY NOW Controls -->
-  <div class="live-mode-bar">
+  <div class="live-mode-bar" style="flex-wrap:wrap">
+    <div class="live-toggle active" id="kraken-only-toggle" onclick="toggleKrakenOnly()">
+      <div class="lt-dot"></div>
+    </div>
+    <span class="live-label active" id="kraken-only-label" style="color:#9b7cdb">&#127464;&#127462; Kraken Only</span>
+    <span style="margin:0 8px;color:rgba(255,255,255,0.1)">|</span>
     <div class="live-toggle active" id="hide-invalid-toggle" onclick="toggleHideInvalidated()">
       <div class="lt-dot"></div>
     </div>
-    <span class="live-label active" id="hide-invalid-label">Hide Invalidated: ON</span>
+    <span class="live-label active" id="hide-invalid-label">Hide Invalidated</span>
     <span style="margin:0 8px;color:rgba(255,255,255,0.1)">|</span>
     <div class="live-toggle" id="live-toggle" onclick="toggleLiveMode()">
       <div class="lt-dot"></div>
     </div>
-    <span class="live-label" id="live-label">Live Price Updates: OFF</span>
+    <span class="live-label" id="live-label">Live Prices</span>
     <span style="margin-left:auto;font-size:11px;color:var(--dim)" id="live-status"></span>
+  </div>
+
+  <!-- KRAKEN BUY NOW SECTION -->
+  <div id="kraken-buy-now-section" style="margin-bottom:24px">
+    <div class="section-title" style="color:#f59e0b">
+      🎯 Kraken BUY NOW Recommendation 
+      <span class="badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)">REAL-TIME</span>
+    </div>
+    <div id="kraken-recommendation" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+      <div class="loading">Loading Kraken analysis...</div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="refreshKrakenBuyNow()" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600">
+        🔄 Refresh Recommendation
+      </button>
+      <button onclick="toggleKrakenLiveMode()" id="kraken-live-toggle" style="background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border);padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer">
+        ⏱️ Enable Live Updates (30s)
+      </button>
+      <span style="font-size:11px;color:var(--dim);align-self:center" id="kraken-last-updated"></span>
+    </div>
+    <div style="margin-top:12px;padding:12px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-size:12px;color:#fca5a5">
+      <strong>⚠️ SAFETY WARNING:</strong> Meme coins can lose 50%+ in minutes. Never risk more than 1-2% of your portfolio. Prices shown are from Kraken and may differ from other exchanges. Always verify current price before buying.
+    </div>
   </div>
 
   <div class="section-title">Current Meme Winners <span class="badge badge-strong" id="winner-count">loading...</span>
@@ -1144,11 +1174,16 @@ function autoVerifyWinners() {
 }
 
 function applyAutoVerifyResults(priceMap) {
+    lastPriceMap = priceMap; // cache for re-render on Kraken toggle
     var winners = window.currentWinners;
     var validCount = 0;
     var cautionCount = 0;
     var invalidCount = 0;
     var noPriceCount = 0;
+    // Kraken-specific counters
+    var krakenValid = 0;
+    var krakenCaution = 0;
+    var krakenInvalid = 0;
 
     for (var i = 0; i < winners.length; i++) {
         var w = winners[i];
@@ -1159,9 +1194,13 @@ function applyAutoVerifyResults(priceMap) {
         var pd = priceMap[w.pair];
         if (!pd || !pd.price) {
             noPriceCount++;
+            // If no price data, assume not on Kraken
+            card.className = card.className.replace(/ card-not-kraken/g, '');
+            card.className += ' card-not-kraken';
             continue;
         }
 
+        var isKraken = (pd.source === 'kraken');
         var entryPrice = parseFloat(w.price_at_signal || 0);
         var targetPct = parseFloat(w.target_pct || 0);
         var riskPct = parseFloat(w.risk_pct || 0);
@@ -1182,34 +1221,44 @@ function applyAutoVerifyResults(priceMap) {
             verdictText = 'Price already moved +' + changePct.toFixed(1) + '% — target nearly hit, upside gone';
             verdictClass = 'v-invalidated';
             invalidCount++;
+            if (isKraken) krakenInvalid++;
         } else if (changePct < -riskPct) {
             verdict = 'INVALIDATED';
             verdictText = 'Price dropped ' + Math.abs(changePct).toFixed(1) + '% — past stop loss';
             verdictClass = 'v-invalidated';
             invalidCount++;
+            if (isKraken) krakenInvalid++;
         } else if (changePct > targetPct * 0.5) {
             verdict = 'CAUTION';
             verdictText = 'Price moved +' + changePct.toFixed(1) + '% — reduced R:R, be cautious';
             verdictClass = 'v-caution';
             cautionCount++;
+            if (isKraken) krakenCaution++;
         } else if (changePct < -(riskPct * 0.5)) {
             verdict = 'CAUTION';
             verdictText = 'Price dropped ' + Math.abs(changePct).toFixed(1) + '% — approaching stop loss';
             verdictClass = 'v-caution';
             cautionCount++;
+            if (isKraken) krakenCaution++;
         } else {
             verdictText = 'Signal still viable — ' + remainingUp.toFixed(1) + '% upside remaining';
             validCount++;
+            if (isKraken) krakenValid++;
         }
 
         // Apply card class
-        card.className = card.className.replace(/ card-invalidated| card-caution| card-valid/g, '');
+        card.className = card.className.replace(/ card-invalidated| card-caution| card-valid| card-not-kraken/g, '');
         if (verdict === 'INVALIDATED') {
             card.className += ' card-invalidated';
         } else if (verdict === 'CAUTION') {
             card.className += ' card-caution';
         } else {
             card.className += ' card-valid';
+        }
+
+        // Tag non-Kraken coins
+        if (!isKraken) {
+            card.className += ' card-not-kraken';
         }
 
         // Show inline verdict banner
@@ -1224,7 +1273,7 @@ function applyAutoVerifyResults(priceMap) {
         }
         bannerHtml += '<span>' + verdict + ': ' + verdictText + '</span>';
         var sourceLabel = pd.source;
-        if (pd.source === 'kraken') sourceLabel = 'Kraken &#127464;&#127462;';
+        if (isKraken) sourceLabel = 'Kraken &#127464;&#127462;';
         bannerHtml += '<span class="v-price">Now: $' + currentPrice.toFixed(priceDecimals) + ' (' + (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%) via ' + sourceLabel + '</span>';
         bannerHtml += '</div>';
         verdictSlot.innerHTML = bannerHtml;
@@ -1234,13 +1283,24 @@ function applyAutoVerifyResults(priceMap) {
     // Render summary banner
     var summaryEl = document.getElementById('auto-verify-summary');
     var totalChecked = validCount + cautionCount + invalidCount;
+    var krakenViable = krakenValid + krakenCaution;
+    var totalViable = validCount + cautionCount;
 
     if (totalChecked === 0) {
         summaryEl.innerHTML = '';
         return;
     }
 
-    if (validCount === 0 && cautionCount === 0) {
+    // Decide which banner to show based on Kraken mode
+    if (krakenOnlyMode && krakenViable === 0 && totalViable > 0) {
+        // There ARE viable signals but NONE on Kraken
+        var bannerHtml = '<div class="no-viable-banner" style="border-color:rgba(114,66,200,0.4);background:rgba(114,66,200,0.08)">' +
+            '<h3 style="color:#9b7cdb">&#127464;&#127462; No Kraken-Eligible Signals Right Now</h3>' +
+            '<p>' + totalViable + ' viable signal' + (totalViable > 1 ? 's' : '') + ' found on other exchanges, but none are tradeable on <strong>Kraken</strong> (Canadian-eligible).<br>' +
+            '<span style="color:#aaa;font-size:12px">Turn off "&#127464;&#127462; Kraken Only" above to see all ' + totalViable + ' viable signal' + (totalViable > 1 ? 's' : '') + '.</span></p>' +
+            '</div>';
+        summaryEl.innerHTML = bannerHtml;
+    } else if (validCount === 0 && cautionCount === 0) {
         // ALL invalidated
         var hiddenNote = hideInvalidated ?
             'Invalidated signals are hidden. Toggle "Hide Invalidated" above to show them.' :
@@ -1252,14 +1312,34 @@ function applyAutoVerifyResults(priceMap) {
             '<span style="color:#888;font-size:11px">' + hiddenNote + '</span></p>' +
             '</div>';
     } else {
+        // Build summary parts — total counts
         var summaryParts = [];
         if (validCount > 0) summaryParts.push('<span style="color:#86efac;font-weight:700">' + validCount + ' valid</span>');
         if (cautionCount > 0) summaryParts.push('<span style="color:#fcd34d;font-weight:700">' + cautionCount + ' caution</span>');
         if (invalidCount > 0) summaryParts.push('<span style="color:#fca5a5;font-weight:700">' + invalidCount + ' invalidated</span>');
 
+        // Build Kraken breakdown line
+        var krakenLine = '';
+        if (krakenOnlyMode) {
+            var krakenParts = [];
+            if (krakenValid > 0) krakenParts.push(krakenValid + ' valid');
+            if (krakenCaution > 0) krakenParts.push(krakenCaution + ' caution');
+            if (krakenViable > 0) {
+                krakenLine = '<br><span style="color:#9b7cdb;font-weight:700;font-size:13px">&#127464;&#127462; ' + krakenViable + ' on Kraken</span>' +
+                    '<span style="color:#aaa;font-size:11px"> (' + krakenParts.join(', ') + ')</span>';
+            } else {
+                krakenLine = '<br><span style="color:#9b7cdb;font-size:12px">&#127464;&#127462; 0 on Kraken</span>' +
+                    '<span style="color:#888;font-size:11px"> — turn off filter to see ' + totalViable + ' on other exchanges</span>';
+            }
+        }
+
+        // Show the EFFECTIVE visible count as the big number
+        var displayCount = krakenOnlyMode ? krakenViable : totalViable;
+        var displayLabel = krakenOnlyMode ? '&#127464;&#127462; VIABLE' : 'VIABLE';
+
         summaryEl.innerHTML = '<div class="some-viable-banner">' +
-            '<span class="viable-count">' + validCount + ' VIABLE</span>' +
-            '<span style="color:#ccc">Live-checked against 7 exchanges: ' + summaryParts.join(' &bull; ') + '</span>' +
+            '<span class="viable-count">' + displayCount + ' ' + displayLabel + '</span>' +
+            '<span style="color:#ccc">Live-checked against 8 exchanges: ' + summaryParts.join(' &bull; ') + krakenLine + '</span>' +
             '</div>';
     }
 
@@ -1957,8 +2037,11 @@ function closeVerifyModal() {
 
 // ── Hide Invalidated toggle — on by default ──
 var hideInvalidated = true;
-// Apply default state on load
+var krakenOnlyMode = true;
+var lastPriceMap = null; // cached for re-render on toggle
+// Apply default states on load
 document.getElementById('winners-list').parentNode.classList.add('hide-invalidated');
+document.getElementById('winners-list').parentNode.classList.add('kraken-only-mode');
 
 function toggleHideInvalidated() {
     hideInvalidated = !hideInvalidated;
@@ -1981,11 +2064,41 @@ function toggleHideInvalidated() {
 }
 
 function updateHiddenCount() {
-    var cards = document.querySelectorAll('.winner-card.card-invalidated');
-    var status = document.getElementById('live-status');
-    if (cards.length > 0 && hideInvalidated && status) {
-        status.textContent = cards.length + ' invalidated signal' + (cards.length > 1 ? 's' : '') + ' hidden';
+    var invalidCards = document.querySelectorAll('.winner-card.card-invalidated');
+    var nonKrakenCards = document.querySelectorAll('.winner-card.card-not-kraken');
+    var parts = [];
+    if (invalidCards.length > 0 && hideInvalidated) {
+        parts.push(invalidCards.length + ' invalidated');
     }
+    if (nonKrakenCards.length > 0 && krakenOnlyMode) {
+        parts.push(nonKrakenCards.length + ' non-Kraken');
+    }
+    var status = document.getElementById('live-status');
+    if (parts.length > 0 && status) {
+        status.textContent = parts.join(', ') + ' hidden';
+    } else if (status) {
+        status.textContent = '';
+    }
+}
+
+function toggleKrakenOnly() {
+    krakenOnlyMode = !krakenOnlyMode;
+    var toggle = document.getElementById('kraken-only-toggle');
+    var label = document.getElementById('kraken-only-label');
+    var wrapper = document.getElementById('winners-list');
+
+    if (krakenOnlyMode) {
+        toggle.classList.add('active');
+        label.style.color = '#9b7cdb';
+        if (wrapper && wrapper.parentNode) wrapper.parentNode.classList.add('kraken-only-mode');
+    } else {
+        toggle.classList.remove('active');
+        label.style.color = 'var(--dim)';
+        if (wrapper && wrapper.parentNode) wrapper.parentNode.classList.remove('kraken-only-mode');
+    }
+    // Re-render summary banner with updated Kraken counts
+    if (lastPriceMap) applyAutoVerifyResults(lastPriceMap);
+    updateHiddenCount();
 }
 
 // ── Live Mode — polls live prices for active winners ──
@@ -2089,6 +2202,175 @@ setInterval(function() {
     api('winners', renderWinners);
     api('stats', renderStats);
 }, 90000);
+
+// ═══════════════════════════════════════════════════════════════════
+//  KRAKEN BUY NOW RECOMMENDATION SYSTEM
+// ═══════════════════════════════════════════════════════════════════
+var krakenLiveMode = false;
+var krakenLiveInterval = null;
+var KRAKEN_API = '/findcryptopairs/api/kraken_meme_scanner.php';
+
+function loadKrakenBuyNow() {
+    var container = document.getElementById('kraken-recommendation');
+    container.innerHTML = '<div class="loading">Analyzing Kraken markets...</div>';
+    
+    var x = new XMLHttpRequest();
+    x.open('GET', KRAKEN_API + '?action=buynow&_=' + Date.now());
+    x.onload = function() {
+        try {
+            var r = JSON.parse(x.responseText);
+            renderKrakenRecommendation(r);
+        } catch(e) {
+            container.innerHTML = '<div style="color:var(--red)">Error loading Kraken data</div>';
+        }
+    };
+    x.onerror = function() {
+        container.innerHTML = '<div style="color:var(--red)">Network error</div>';
+    };
+    x.send();
+}
+
+function renderKrakenRecommendation(data) {
+    var container = document.getElementById('kraken-recommendation');
+    var timestamp = document.getElementById('kraken-last-updated');
+    
+    timestamp.textContent = 'Updated: ' + new Date().toLocaleTimeString();
+    
+    if (!data.ok) {
+        container.innerHTML = '<div style="color:var(--red)">' + (data.error || 'Unknown error') + '</div>';
+        return;
+    }
+    
+    if (!data.has_recommendation) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--dim)">' +
+            '<div style="font-size:40px;margin-bottom:12px">⚠️</div>' +
+            '<div style="font-size:16px;color:#fff;margin-bottom:8px">No BUY NOW Recommendation</div>' +
+            '<div>' + data.message + '</div>' +
+            '</div>';
+        return;
+    }
+    
+    var pick = data.pick;
+    var confidenceColor = pick.confidence === 'EXTREMELY HIGH' ? '#22c55e' : (pick.confidence === 'HIGH' ? '#f59e0b' : '#888');
+    
+    var html = '<div style="position:relative">';
+    
+    // Top pick badge
+    html += '<div style="position:absolute;top:-8px;right:-8px;background:linear-gradient(135deg,#e879f9,#06b6d4);color:#fff;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;box-shadow:0 2px 8px rgba(232,121,249,0.4)">TOP PICK</div>';
+    
+    // Header
+    html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">';
+    html += '<div style="font-size:24px;font-weight:700;color:#fff">' + pick.name + '</div>';
+    html += '<span class="badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)">' + pick.rating + '</span>';
+    html += '<span class="badge" style="background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3)">Score: ' + pick.score + '/100</span>';
+    html += '</div>';
+    
+    // Price row
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px">';
+    html += '<div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;text-align:center">';
+    html += '<div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px">Current Price</div>';
+    html += '<div style="font-size:20px;font-weight:700;color:#fff">$' + pick.price_formatted + '</div>';
+    html += '</div>';
+    html += '<div style="background:rgba(34,197,94,0.08);padding:12px;border-radius:8px;text-align:center;border:1px solid rgba(34,197,94,0.2)">';
+    html += '<div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px">Target Price</div>';
+    html += '<div style="font-size:20px;font-weight:700;color:var(--green)">$' + pick.target_price_formatted + '</div>';
+    html += '<div style="font-size:11px;color:var(--green)">+' + pick.target_pct + '%</div>';
+    html += '</div>';
+    html += '<div style="background:rgba(239,68,68,0.08);padding:12px;border-radius:8px;text-align:center;border:1px solid rgba(239,68,68,0.2)">';
+    html += '<div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px">Stop Loss</div>';
+    html += '<div style="font-size:20px;font-weight:700;color:var(--red)">$' + pick.stop_price_formatted + '</div>';
+    html += '<div style="font-size:11px;color:var(--red)">-' + pick.stop_pct + '%</div>';
+    html += '</div>';
+    html += '</div>';
+    
+    // Stats row
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:16px;font-size:12px">';
+    html += '<div><span style="color:var(--dim)">1h:</span> <span style="color:' + (pick.change_1h >= 0 ? 'var(--green)' : 'var(--red)') + '">' + (pick.change_1h >= 0 ? '+' : '') + pick.change_1h + '%</span></div>';
+    html += '<div><span style="color:var(--dim)">24h:</span> <span style="color:' + (pick.change_24h >= 0 ? 'var(--green)' : 'var(--red)') + '">' + (pick.change_24h >= 0 ? '+' : '') + pick.change_24h + '%</span></div>';
+    html += '<div><span style="color:var(--dim)">RSI:</span> ' + pick.rsi + '</div>';
+    html += '<div><span style="color:var(--dim)">Safety:</span> ' + pick.safety_score + '/10</div>';
+    html += '</div>';
+    
+    // Rationale
+    html += '<div style="background:rgba(255,255,255,0.03);padding:12px;border-radius:8px;margin-bottom:16px;font-size:13px;line-height:1.6">';
+    html += '<strong style="color:#fff">Why this signal?</strong><br>';
+    html += '<span style="color:var(--dim)">' + pick.rationale + '</span>';
+    html += '</div>';
+    
+    // Confidence and position size
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:16px">';
+    html += '<div><span style="color:var(--dim)">Confidence:</span> <span style="color:' + confidenceColor + ';font-weight:700">' + pick.confidence + '</span></div>';
+    html += '<div><span style="color:var(--dim)">Position Size:</span> <strong style="color:#fff">' + pick.position_size + '</strong></div>';
+    html += '<div><span style="color:var(--dim)">Time Horizon:</span> <strong style="color:#fff">' + pick.time_horizon + '</strong></div>';
+    html += '</div>';
+    
+    // Actions
+    html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+    html += '<a href="https://pro.kraken.com/app/trade/' + pick.pair.replace('USD', '_USD') + '" target="_blank" style="flex:1;min-width:140px;text-align:center;padding:12px 20px;background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(245,158,11,0.1));color:#f59e0b;border:1px solid rgba(245,158,11,0.4);border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;transition:all 0.2s" onmouseover="this.style.transform=\'scale(1.02)\'" onmouseout="this.style.transform=\'scale(1)\'">🚀 Trade on Kraken</a>';
+    html += '<button onclick="verifyKrakenPrice(\'' + pick.pair + '\', ' + pick.price + ')" style="flex:1;min-width:140px;padding:12px 20px;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-weight:600;font-size:14px">🔍 Verify Price</button>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Alternatives
+    if (data.alternatives && data.alternatives.length > 0) {
+        html += '<div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">';
+        html += '<div style="font-size:12px;color:var(--dim);margin-bottom:8px">Alternative picks (lower confidence):</div>';
+        html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+        for (var i = 0; i < data.alternatives.length; i++) {
+            var alt = data.alternatives[i];
+            html += '<div style="background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:6px;font-size:12px">';
+            html += '<strong>' + alt.name + '</strong> (' + alt.score + '/100)';
+            html += '</div>';
+        }
+        html += '</div></div>';
+    }
+    
+    container.innerHTML = html;
+}
+
+function refreshKrakenBuyNow() {
+    loadKrakenBuyNow();
+}
+
+function toggleKrakenLiveMode() {
+    krakenLiveMode = !krakenLiveMode;
+    var btn = document.getElementById('kraken-live-toggle');
+    
+    if (krakenLiveMode) {
+        btn.innerHTML = '<span class="live-pulse"></span> Live Updates: ON';
+        btn.style.background = 'rgba(34,197,94,0.15)';
+        btn.style.color = '#22c55e';
+        btn.style.borderColor = 'rgba(34,197,94,0.3)';
+        loadKrakenBuyNow();
+        krakenLiveInterval = setInterval(loadKrakenBuyNow, 30000);
+    } else {
+        btn.innerHTML = '⏱️ Enable Live Updates (30s)';
+        btn.style.background = 'rgba(255,255,255,0.05)';
+        btn.style.color = 'var(--dim)';
+        btn.style.borderColor = 'var(--border)';
+        if (krakenLiveInterval) clearInterval(krakenLiveInterval);
+    }
+}
+
+function verifyKrakenPrice(pair, signalPrice) {
+    var userPrice = prompt('Enter current price from Kraken for ' + pair + ' (signal was at $' + signalPrice + '):');
+    if (!userPrice) return;
+    
+    var price = parseFloat(userPrice);
+    var deviation = Math.abs((price - signalPrice) / signalPrice) * 100;
+    
+    if (deviation < 2) {
+        alert('✅ Price verified! Deviation: ' + deviation.toFixed(2) + '% (within acceptable range)');
+    } else if (deviation < 5) {
+        alert('⚠️ Price drifted ' + deviation.toFixed(2) + '%. Consider recalculating position size.');
+    } else {
+        alert('❌ Price changed ' + deviation.toFixed(2) + '%! Signal may be stale. Refresh for new recommendation.');
+    }
+}
+
+// Load Kraken BUY NOW on page load
+loadKrakenBuyNow();
 </script>
 <script src="/findstocks/portfolio2/stock-nav.js"></script>
 <script src="/live-monitor/api/scope_labels.js"></script>
