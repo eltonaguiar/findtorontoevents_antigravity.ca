@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meme Coin System Deep Research | ChatGPT Audit</title>
+  <style>
+    :root {
+      --bg: #0a0a1a;
+      --card: #12122a;
+      --border: #2a2a4a;
+      --text: #e0e0f0;
+      --dim: #8888aa;
+      --green: #22c55e;
+      --red: #ef4444;
+      --gold: #f59e0b;
+      --accent: #10a37f;
+      --cyan: #06b6d4;
+      --radius: 12px
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6
+    }
+    a { color: #c4b5fd; text-decoration: none }
+    a:hover { text-decoration: underline }
+    .header {
+      text-align: center;
+      padding: 40px 20px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.06)
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 200;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #fff
+    }
+    .header .sub { color: var(--dim); font-size: 13px; margin-top: 6px }
+    .nav {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      padding: 16px;
+      flex-wrap: wrap
+    }
+    .nav a {
+      font-size: 12px;
+      padding: 4px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      color: var(--dim);
+      transition: all 0.15s
+    }
+    .nav a:hover, .nav a.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      text-decoration: none;
+      background: rgba(16,163,127,0.08)
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 32px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #fff
+    }
+    .badge {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 1px
+    }
+    .badge-critical {
+      background: rgba(239,68,68,0.2);
+      color: var(--red);
+      border: 1px solid rgba(239,68,68,0.4)
+    }
+    .badge-improvement {
+      background: rgba(34,197,94,0.2);
+      color: var(--green);
+      border: 1px solid rgba(34,197,94,0.4)
+    }
+    .badge-audit {
+      background: rgba(16,163,127,0.2);
+      color: var(--accent);
+      border: 1px solid rgba(16,163,127,0.4)
+    }
+    .exec-summary {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px
+    }
+    .exec-summary h2 {
+      font-size: 18px;
+      color: var(--accent);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+    .key-finding {
+      background: rgba(255,255,255,0.03);
+      border-left: 3px solid var(--accent);
+      padding: 16px 20px;
+      margin: 16px 0;
+      border-radius: 0 8px 8px 0
+    }
+    .critical-issue {
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin: 16px 0
+    }
+    .critical-issue h3 {
+      color: var(--red);
+      font-size: 16px;
+      margin-bottom: 12px
+    }
+    .improvement-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px
+    }
+    .improvement-card h4 {
+      font-size: 15px;
+      color: var(--green);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+    .metric-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin: 16px 0
+    }
+    .metric-table th {
+      text-align: left;
+      padding: 12px;
+      color: var(--dim);
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      text-transform: uppercase
+    }
+    .metric-table td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.03)
+    }
+    .priority-high { color: var(--red); font-weight: 700 }
+    .priority-medium { color: var(--gold); font-weight: 700 }
+    .priority-low { color: var(--dim) }
+    .code-block {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      margin: 16px 0;
+      color: #c9d1d9
+    }
+    .code-comment { color: #8b949e }
+    .code-keyword { color: #ff7b72 }
+    .code-string { color: #a5d6ff }
+    .timeline {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 16px;
+      margin: 20px 0
+    }
+    .timeline-phase {
+      font-size: 12px;
+      color: var(--dim);
+      font-weight: 600;
+      text-transform: uppercase
+    }
+    .timeline-content {
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+      padding: 16px
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 20px 0
+    }
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center
+    }
+    .stat-box .value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #fff
+    }
+    .stat-box .label {
+      font-size: 12px;
+      color: var(--dim);
+      margin-top: 4px
+    }
+    .warning-box {
+      background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.3);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin: 16px 0;
+      font-size: 13px;
+      color: #fcd34d
+    }
+    @media(max-width:600px) {
+      .header h1 { font-size: 20px }
+      .timeline { grid-template-columns: 1fr }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Meme Coin System Audit</h1>
+    <div class="sub">Deep Research &amp; Improvement Roadmap | ChatGPT Analysis</div>
+  </div>
+  
+  <div class="nav">
+    <a href="/findcryptopairs/meme.html">&#8592; Back to Scanner</a>
+    <a href="#executive-summary">Executive Summary</a>
+    <a href="#critical-issues">Critical Issues</a>
+    <a href="#improvements">Improvements</a>
+    <a href="#roadmap">Roadmap</a>
+  </div>
+
+  <div class="container">
+    <!-- Executive Summary -->
+    <div id="executive-summary" class="exec-summary">
+      <h2>
+        <span style="font-size:24px">&#128200;</span> Executive Summary
+        <span class="badge badge-audit">ChatGPT Audit</span>
+      </h2>
+      
+      <div class="key-finding">
+        <strong style="color:var(--accent)">Core Finding:</strong> Your framework is actually <strong>two different systems</strong> on one page: (1) a Kraken-only real-time ranking model (5-factor, 1-10 scale) and (2) a Crypto.com 600+ pair scanner (7 indicators, tiered thresholds). The biggest issue is lack of a <strong>falsifiable, end-to-end definition of success</strong> for the Kraken ranking model, while the scanner tracks outcomes but reports only ~5% win rate with massive statistical uncertainty.
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="value" style="color:var(--red)">5%</div>
+          <div class="label">Current Win Rate<br>(1 win / 19 losses)</div>
+        </div>
+        <div class="stat-box">
+          <div class="value" style="color:var(--gold)">20</div>
+          <div class="label">Resolved Signals<br>(statistically underpowered)</div>
+        </div>
+        <div class="stat-box">
+          <div class="value" style="color:var(--green)">40%+</div>
+          <div class="label">Target Win Rate<br>(requires major changes)</div>
+        </div>
+        <div class="stat-box">
+          <div class="value" style="color:var(--accent)">350+</div>
+          <div class="label">Signals Needed<br>for reliable 40% &#177;5% estimate</div>
+        </div>
+      </div>
+
+      <p style="font-size:13px;color:var(--dim);line-height:1.8;margin-top:16px">
+        The 5% win rate with only 20 resolved signals has <strong>massive statistical uncertainty</strong>. Even with conservative intervals, the true win rate could plausibly be 0.9% to 23.6%&#8212;but the probability it is already near the 40%+ target is extremely small given current evidence.
+      </p>
+    </div>
+
+    <!-- Current System Architecture -->
+    <div class="section-title">
+      <span>&#128295;</span> Current System Architecture
+    </div>
+    
+    <div class="improvement-card">
+      <h4>System 1: Kraken Real-Time Ranking Model</h4>
+      <table class="metric-table">
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Implementation</th>
+            <th>Gap</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Scoring</strong></td>
+            <td>0-100 mapped to 1-10 rating</td>
+            <td class="priority-medium">No forward performance tracking</td>
+          </tr>
+          <tr>
+            <td><strong>Momentum (35%)</strong></td>
+            <td>24h price change; +3-15% "ideal"</td>
+            <td class="priority-low">Conflicts with Entry Position</td>
+          </tr>
+          <tr>
+            <td><strong>Volume (25%)</strong></td>
+            <td>24h USD volume; $500K+ ideal</td>
+            <td class="priority-medium">No depth proxy</td>
+          </tr>
+          <tr>
+            <td><strong>Social Buzz (15%)</strong></td>
+            <td>CoinGecko trending bonus (binary)</td>
+            <td class="priority-high">Too coarse; no velocity</td>
+          </tr>
+          <tr>
+            <td><strong>Entry Position (15%)</strong></td>
+            <td>Position in 24h range</td>
+            <td class="priority-medium">Mean-reversion vs momentum conflict</td>
+          </tr>
+          <tr>
+            <td><strong>Spread (10%)</strong></td>
+            <td>Bid/ask tightness</td>
+            <td class="priority-high">No depth = misleading</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="improvement-card">
+      <h4>System 2: Crypto.com Meme Scanner</h4>
+      <table class="metric-table">
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Implementation</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Indicators</strong></td>
+            <td>7 meme-specific factors</td>
+            <td class="priority-medium">Price/volume only</td>
+          </tr>
+          <tr>
+            <td><strong>Quality Gates</strong></td>
+            <td>Must pass 2/3 (EMA, momentum, volume)</td>
+            <td class="priority-high">Insufficient for 40% target</td>
+          </tr>
+          <tr>
+            <td><strong>Thresholds</strong></td>
+            <td>Strong Buy 85+, Buy 78-84, Lean 72-77</td>
+            <td class="priority-medium">Static, not calibrated</td>
+          </tr>
+          <tr>
+            <td><strong>Tiering</strong></td>
+            <td>Tier 1 (established) vs Tier 2 (emerging)</td>
+            <td class="priority-low">Good risk separation</td>
+          </tr>
+          <tr>
+            <td><strong>Tracking</strong></td>
+            <td>Forward performance logged</td>
+            <td class="priority-high">Only 20 resolved</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Critical Issues -->
+    <div id="critical-issues" class="section-title">
+      <span>&#9888;&#65039;</span> Critical Issues Identified
+      <span class="badge badge-critical">P0</span>
+    </div>
+
+    <div class="critical-issue">
+      <h3>1. Statistical Invalidity (Sample Size Crisis)</h3>
+      <p style="font-size:13px;color:var(--dim);line-height:1.8">
+        With only <strong>20 resolved signals</strong>, your measured performance cannot distinguish between a "broken" system and a "weak but fixable" one. To estimate a 40% win rate with &#177;5 percentage point precision, you need <strong>~350-400 resolved signals</strong>. The current "20 resolved" is an early pilot, not a production inference base.
+      </p>
+      <div class="warning-box">
+        <strong>Wilson Score Interval:</strong> For 1 win / 19 losses, the 95% confidence interval is approximately 0.9% to 23.6%. The probability that the true win rate is already near 40% is negligible.
+      </div>
+    </div>
+
+    <div class="critical-issue">
+      <h3>2. Feature Conflicts (Momentum vs Mean Reversion)</h3>
+      <p style="font-size:13px;color:var(--dim);line-height:1.8">
+        Your framework has <strong>conflicting heuristics</strong>: Momentum says "positive 24h change is good" (target +3-15%), but Entry Position says "near the 24h low is better entry." In strong breakouts, the best momentum entries often occur near the high, not the low. The system risks selecting trades that are neither good momentum entries nor good reversals.
+      </p>
+    </div>
+
+    <div class="critical-issue">
+      <h3>3. Microstructure Blind Spots (Depth Missing)</h3>
+      <p style="font-size:13px;color:var(--dim);line-height:1.8">
+        Spread alone is misleading in fast meme-coin moves. An order book can look tight while being thin. <strong>Slippage and adverse selection are driven by depth</strong>, not just top-of-book spread. Kraken itself monitors depth for healthy markets&#8212;your framework doesn't.
+      </p>
+    </div>
+
+    <div class="critical-issue">
+      <h3>4. Survivorship Bias (Kraken Universe)</h3>
+      <p style="font-size:13px;color:var(--dim);line-height:1.8">
+        The Kraken ranking universe is already a <strong>filtered set</strong> (Kraken's evaluation screens for security, compliance, liquidity). Any backtest using only currently-listed coins without accounting for delistings or newly listed assets will overstate robustness.
+      </p>
+    </div>
+
+    <div class="critical-issue">
+      <h3>5. No Falsifiable Definition of Success</h3>
+      <p style="font-size:13px;color:var(--dim);line-height:1.8">
+        The Kraken ranking model lacks <strong>tracked forward performance</strong>. You cannot improve what you don't measure. The core change needed: turn "a dashboard that ranks coins" into "a decision system with testable forecasts."
+      </p>
+    </div>
+
+    <!-- Proposed Improvements -->
+    <div id="improvements" class="section-title">
+      <span>&#128161;</span> Proposed System Improvements
+      <span class="badge badge-improvement">High Impact</span>
+    </div>
+
+    <div class="improvement-card">
+      <h4>
+        <span>&#9989;</span> 1. Unified Prediction Framework
+      </h4>
+      <p style="font-size:12px;color:var(--dim);line-height:1.8;margin-bottom:12px">
+        Define one canonical prediction task for both Kraken rankings and scanner:
+      </p>
+      <div class="code-block">
+        <span class="code-comment">// Canonical Prediction Task</span>
+        <span class="code-keyword">PREDICTION</span>: Will mid-price increase by +X% before decreasing by -Y% within H hours?
+        
+        <span class="code-comment">// Required for every signal:</span>
+        - Timestamped feature snapshot (Kraken + social + on-chain)
+        - Execution model (fees + spread + slippage + depth proxy)
+        - Deterministic resolution method (event ordering inside candles)
+        - Immutable storage with version hash
+      </div>
+    </div>
+
+    <div class="improvement-card">
+      <h4>
+        <span>&#9989;</span> 2. Microstructure & Execution Awareness
+      </h4>
+      <table class="metric-table">
+        <thead>
+          <tr>
+            <th>Current</th>
+            <th>Proposed</th>
+            <th>Expected Impact</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Spread only</td>
+            <td>Order-book depth buckets</td>
+            <td class="priority-high">Reduce slippage losses</td>
+          </tr>
+          <tr>
+            <td>No depth gating</td>
+            <td>MIN_DEPTH threshold</td>
+            <td class="priority-high">Filter toxic flow</td>
+          </tr>
+          <tr>
+            <td>Static slippage</td>
+            <td>Calibrated slippage model</td>
+            <td class="priority-medium">Realistic backtests</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="improvement-card">
+      <h4>
+        <span>&#9989;</span> 3. Social Velocity Integration
+      </h4>
+      <p style="font-size:12px;color:var(--dim);line-height:1.8">
+        Replace binary "CoinGecko trending" with <strong>mention velocity</strong> from X/Reddit/Telegram. Research shows Twitter activity precedes abnormal returns by 30-120 minutes. Add:
+      </p>
+      <ul style="font-size:12px;color:var(--dim);margin:12px 0 0 20px;line-height:1.8">
+        <li>Mention velocity (d/dt of mentions over 30-120 min)</li>
+        <li>Sentiment score with timestamp lag</li>
+        <li>Influencer concentration detection</li>
+        <li>Pump-channel anomaly detection</li>
+      </ul>
+    </div>
+
+    <div class="improvement-card">
+      <h4>
+        <span>&#9989;</span> 4. On-Chain Safety Gating (Tier 2)
+      </h4>
+      <p style="font-size:12px;color:var(--dim);line-height:1.8">
+        Add minimal on-chain risk gating for emerging coins:
+      </p>
+      <ul style="font-size:12px;color:var(--dim);margin:12px 0 0 20px;line-height:1.8">
+        <li><strong>Liquidity lock verification</strong> (Unicrypt/Timelock)</li>
+        <li><strong>Top-holder concentration</strong> (flag if top 10 > 30%)</li>
+        <li><strong>Contract risk flags</strong> (mint functions, proxy patterns, hidden fees)</li>
+        <li><strong>Tax/blacklist detection</strong></li>
+      </ul>
+      <p style="font-size:11px;color:var(--gold);margin-top:12px">
+        <strong>Research basis:</strong> Rug-pull detection literature shows high scam prevalence and ML feasibility. 64.7% of traders lose money due to undetected manipulations.
+      </p>
+    </div>
+
+    <div class="improvement-card">
+      <h4>
+        <span>&#9989;</span> 5. Calibration & Threshold Learning
+      </h4>
+      <p style="font-size:12px;color:var(--dim);line-height:1.8">
+        Replace static thresholds (72/78/85) with <strong>calibrated probabilities</strong>:
+      </p>
+      <div class="code-block">
+        <span class="code-comment">// Improved Scoring Pipeline</span>
+        raw_score = w1*momentum_short + w2*momentum_24h + w3*log(volume)
+                  + w4*social_vel + w5*sentiment
+                  - w6*spread - w7*volatility_penalty
+        
+        <span class="code-comment">// Calibration (logistic or isotonic)</span>
+        p_win = calibrated_model(raw_score, features)
+        
+        <span class="code-comment">// Expected value filtering</span>
+        expected_value = p_win*TP - (1-p_win)*SL - costs
+        publish only if expected_value > 0 AND p_win > threshold
+      </div>
+    </div>
+
+    <!-- Implementation Roadmap -->
+    <div id="roadmap" class="section-title">
+      <span>&#128640;</span> Implementation Roadmap
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-phase">Week 1</div>
+      <div class="timeline-content">
+        <strong style="color:#fff">Formalize Labels &amp; Evaluation (40-70 hrs)</strong>
+        <ul style="font-size:12px;color:var(--dim);margin:8px 0 0 16px;line-height:1.7">
+          <li>Define canonical outcome labels (TP/SL/horizon)</li>
+          <li>Build unified evaluation script for both systems</li>
+          <li>Add immutable logging (signals + features + version hash)</li>
+          <li>Transaction cost assumptions and fee modeling</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-phase">Weeks 2-3</div>
+      <div class="timeline-content">
+        <strong style="color:#fff">Microstructure &amp; Execution (60-120 hrs)</strong>
+        <ul style="font-size:12px;color:var(--dim);margin:8px 0 0 16px;line-height:1.7">
+          <li>Add Kraken depth proxies (order book depth buckets)</li>
+          <li>Calibrate slippage models with live paper-trades</li>
+          <li>Implement execution-aware scoring</li>
+          <li>Dashboards: win rate + expectancy + drawdown by tier</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-phase">Month 1-2</div>
+      <div class="timeline-content">
+        <strong style="color:#fff">Social + On-Chain Gating (120-220 hrs)</strong>
+        <ul style="font-size:12px;color:var(--dim);margin:8px 0 0 16px;line-height:1.7">
+          <li>Integrate mention velocity and sentiment (strict timestamping)</li>
+          <li>Implement Tier-2 on-chain safety checks</li>
+          <li>Run walk-forward tests</li>
+          <li>Freeze "v3" model with locked parameters</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-phase">Ongoing</div>
+      <div class="timeline-content">
+        <strong style="color:#fff">Validation &amp; A/B Testing</strong>
+        <ul style="font-size:12px;color:var(--dim);margin:8px 0 0 16px;line-height:1.7">
+          <li>Time-split backtests (walk-forward)</li>
+          <li>Cross-validation by regime (BTC up/down/sideways)</li>
+          <li>Metrics: Precision/Recall, Expectancy, Sharpe, Max Drawdown</li>
+          <li>Sample size tracking (target: 350+ resolved for 40% validation)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Validation Metrics -->
+    <div class="section-title">
+      <span>&#128202;</span> Required Validation Metrics
+    </div>
+
+    <div class="improvement-card">
+      <h4>Per-Tier Reporting (Tier 1 vs Tier 2)</h4>
+      <table class="metric-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Description</th>
+            <th>Target</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Precision/Recall</strong></td>
+            <td>Profitable signals detection</td>
+            <td class="priority-medium">Report by tier</td>
+          </tr>
+          <tr>
+            <td><strong>Hit Rate</strong></td>
+            <td>TP before SL</td>
+            <td class="priority-high">40%+ target</td>
+          </tr>
+          <tr>
+            <td><strong>Expectancy</strong></td>
+            <td>E[R] per trade (net of costs)</td>
+            <td class="priority-high">Positive EV</td>
+          </tr>
+          <tr>
+            <td><strong>Sharpe Ratio</strong></td>
+            <td>Risk-adjusted returns</td>
+            <td class="priority-medium">Portfolio sim</td>
+          </tr>
+          <tr>
+            <td><strong>Max Drawdown</strong></td>
+            <td>Worst peak-to-trough</td>
+            <td class="priority-high">Control tails</td>
+          </tr>
+          <tr>
+            <td><strong>Calibration</strong></td>
+            <td>Brier score / reliability</td>
+            <td class="priority-low">If probabilistic</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- References -->
+    <div class="section-title">
+      <span>&#128214;</span> Research References
+    </div>
+
+    <div class="improvement-card" style="font-size:12px;color:var(--dim);line-height:1.8">
+      <p><strong>Academic Sources:</strong></p>
+      <ul style="margin:8px 0 0 20px">
+        <li>Ante (2023): Social sentiment and crypto prices correlation (30-120 min lead time)</li>
+        <li>Pump-and-dump ecosystems: Coordinated via Telegram/Discord messaging platforms</li>
+        <li>Twitter promotion dynamics: High-frequency evidence of abnormal returns and reversals</li>
+        <li>Rug-pull detection literature: ML feasibility and 64.7% trader loss rate</li>
+        <li>Kraken listing evaluation: Security, regulatory, liquidity, market fit criteria</li>
+      </ul>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align:center;padding:40px 20px;color:var(--dim);font-size:12px;border-top:1px solid var(--border);margin-top:40px">
+      <p>Analysis generated by ChatGPT (OpenAI) | February 2026</p>
+      <p style="margin-top:8px">This is a third-party audit for improvement purposes. Not financial advice.</p>
+    </div>
+  </div>
+</body>
+</html>

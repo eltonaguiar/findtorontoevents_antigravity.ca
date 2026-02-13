@@ -1422,6 +1422,24 @@
         losses, 20 resolved). This scanner is currently underperforming. Data is honest and unfiltered.</span>
     </div>
 
+    <!-- Statistical Validity Warning (ChatGPT Audit) -->
+    <div
+      style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;">
+      <span
+        style="background:rgba(245,158,11,0.15);color:#f59e0b;padding:3px 10px;border-radius:6px;font-weight:800;font-size:11px;border:1px solid rgba(245,158,11,0.3);letter-spacing:0.5px;">SAMPLE SIZE</span>
+      <span style="color:#fcd34d;"><strong>20 resolved signals is statistically underpowered.</strong> Wilson 95% CI: ~0.9% to 23.6%. Need 350+ signals for reliable 40% estimate. 
+        <a href="/findcryptopairs/meme-research-chatgpt.html" style="color:#f59e0b;text-decoration:underline;">View full audit &#8594;</a></span>
+    </div>
+
+    <!-- Deep Research Link -->
+    <div
+      style="background:rgba(16,163,127,0.08);border:1px solid rgba(16,163,127,0.3);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;">
+      <span
+        style="background:rgba(16,163,127,0.15);color:#10a37f;padding:3px 10px;border-radius:6px;font-weight:800;font-size:11px;border:1px solid rgba(16,163,127,0.3);letter-spacing:0.5px;">NEW</span>
+      <span style="color:#6ee7b7;"><strong>ChatGPT Deep Research Audit:</strong> Comprehensive analysis of framework flaws, conflicts, and improvement roadmap. 
+        <a href="/findcryptopairs/meme-research-chatgpt.html" style="color:#10a37f;text-decoration:underline;">Read the full report &#8594;</a></span>
+    </div>
+
     <!-- v2 Improvement Banner -->
     <div
       style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;">
@@ -1552,6 +1570,12 @@
             Each coin is scored 0-100 across 5 real-time factors, then mapped to a 1-10 rating. All data comes from
             <strong style="color:#fff">Kraken's live API</strong> and <strong style="color:#fff">CoinGecko</strong>. No
             fake data, no placeholders.
+          </div>
+          <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:6px;padding:10px;margin-bottom:12px;font-size:11px;color:#fcd34d;">
+            <strong>&#9888; ChatGPT Audit Findings:</strong><br>
+            &#8226; <strong>Feature Conflict:</strong> Momentum ("+3-15% ideal") conflicts with Entry Position ("near 24h low is better"). In breakouts, best entries are often near highs, not lows.<br>
+            &#8226; <strong>Missing Depth:</strong> Spread alone is misleading. An order book can look tight while being thin. Depth proxy needed for realistic slippage estimation.<br>
+            &#8226; <strong>Social Too Coarse:</strong> Binary "CoinGecko trending" insufficient. Need mention velocity (X/Reddit 30-120 min lead time).
           </div>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:12px"
             id="ranking-model-factors">
@@ -1753,12 +1777,16 @@
           <div
             style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;">
             <div style="font-size:12px;font-weight:600;color:#fff;margin-bottom:8px;">Quality Gates (Must pass 2 of 3)
+              <span style="color:var(--gold);font-size:10px;font-weight:400"> &#8212; ChatGPT Audit: Should be 3/3 for 40% target</span>
             </div>
             <div
               style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;font-size:11px;color:var(--dim);">
               <div>&#10004; <strong style="color:var(--green);">Trend Confirm:</strong> Price above 1h EMA</div>
               <div>&#10004; <strong style="color:var(--green);">Momentum Gate:</strong> Both 15m & 5m positive</div>
               <div>&#10004; <strong style="color:var(--green);">Volume Gate:</strong> Volume increasing 20%+</div>
+            </div>
+            <div style="font-size:10px;color:var(--gold);margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.05);">
+              <strong>Audit Finding:</strong> 2/3 gates insufficient for 40% win rate target. Need all 3 + social + on-chain gating.
             </div>
           </div>
 
@@ -1983,6 +2011,25 @@
     <div class="main-panel" id="main-analysis">
       <div class="section-title" style="color:#f59e0b;">System Analysis <span class="badge"
           style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);">DIAGNOSIS</span>
+        <a href="/findcryptopairs/meme-research-chatgpt.html" style="margin-left:auto;font-size:12px;color:#10a37f;text-decoration:underline;">View ChatGPT Audit &#8594;</a>
+      </div>
+
+      <!-- Statistical Validity Warning -->
+      <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);padding:16px;margin-bottom:16px;">
+        <h4 style="font-size:14px;color:var(--red);margin-bottom:8px;">&#9888;&#65039; Critical: Statistical Invalidity</h4>
+        <div style="font-size:12px;color:#fca5a5;line-height:1.7;">
+          With only <strong>20 resolved signals</strong>, our 5% win rate measurement has <strong>massive uncertainty</strong>. The Wilson 95% confidence interval is ~0.9% to 23.6%. We cannot distinguish between "broken" and "weak but fixable" with this sample size.<br><br>
+          To validate a 40% win rate with &#177;5 percentage point precision, we need <strong>350-400 resolved signals</strong>. Current data is an early pilot, not production evidence.
+          <a href="/findcryptopairs/meme-research-chatgpt.html" style="color:#fca5a5;text-decoration:underline;">Read full analysis &#8594;</a>
+        </div>
+      </div>
+
+      <!-- Feature Conflicts -->
+      <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:var(--radius);padding:16px;margin-bottom:16px;">
+        <h4 style="font-size:14px;color:var(--gold);margin-bottom:8px;">&#9888; Feature Conflicts Identified</h4>
+        <div style="font-size:12px;color:#fcd34d;line-height:1.7;">
+          <strong>Momentum vs Entry Position Conflict:</strong> The framework has conflicting heuristics. Momentum says "positive 24h change is good" (target +3-15%), but Entry Position says "near the 24h low is better." In strong breakouts, the best momentum entries occur near the high, not the low. The system risks selecting trades that are neither good momentum entries nor good reversals.
+        </div>
       </div>
 
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-bottom:20px;">
@@ -2011,7 +2058,9 @@
             &bull; <strong>No rug-pull detection:</strong> Cannot identify scams or token exploits<br>
             &bull; <strong>No liquidity pool analysis:</strong> Cannot verify DEX liquidity depth<br>
             &bull; <strong>No smart contract audits:</strong> Cannot verify token contract safety<br>
-            &bull; <strong>No market cap verification:</strong> Circulating supply data not validated
+            &bull; <strong>No market cap verification:</strong> Circulating supply data not validated<br>
+            &bull; <strong>No order book depth:</strong> Spread alone is misleading; thin books cause 50%+ slippage<br>
+            &bull; <strong>Feature conflicts:</strong> Momentum vs mean-reversion heuristics contradict each other
           </div>
         </div>
         <div
@@ -2188,7 +2237,22 @@
     <!-- ═══════════════════════════════════════════ -->
     <div class="main-panel" id="main-research">
       <div class="section-title" style="color:#a855f7;">Third-Party Analysis <span class="badge"
-          style="background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);">GROK.COM REVIEW</span></div>
+          style="background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);">GROK.COM REVIEW</span>
+        <a href="/findcryptopairs/meme-research-chatgpt.html" style="margin-left:12px;font-size:12px;color:#10a37f;text-decoration:underline;">View ChatGPT Audit &#8594;</a>
+      </div>
+
+      <!-- ChatGPT Deep Research Banner -->
+      <div style="background:rgba(16,163,127,0.08);border:1px solid rgba(16,163,127,0.3);border-radius:var(--radius);padding:16px;margin-bottom:20px;">
+        <h4 style="font-size:15px;color:#10a37f;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+          <span>&#128241;</span> ChatGPT Deep Research Audit Available
+        </h4>
+        <div style="font-size:12px;color:#6ee7b7;line-height:1.7;">
+          Comprehensive third-party analysis covering: statistical validity (sample size crisis), feature conflicts (momentum vs entry position), 
+          microstructure blind spots (depth missing), survivorship bias, and a 4-phase implementation roadmap to achieve 40%+ win rate.
+          <br><br>
+          <a href="/findcryptopairs/meme-research-chatgpt.html" style="display:inline-block;padding:8px 16px;background:rgba(16,163,127,0.2);color:#10a37f;border:1px solid rgba(16,163,127,0.4);border-radius:6px;text-decoration:none;font-weight:600;">Read Full Audit Report &#8594;</a>
+        </div>
+      </div>
       <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Comprehensive third-party analysis from Grok.com (xAI) evaluating our framework's strengths, flaws, and competitive positioning against industry best practices.</p>
 
       <!-- Framework Strengths -->
@@ -2376,35 +2440,36 @@
         </div>
       </div>
 
-      <!-- Implementation Roadmap -->
+      <!-- Implementation Roadmap (Combined Grok + ChatGPT) -->
       <div style="background:var(--card);border:1px solid rgba(232,121,249,0.3);border-radius:var(--radius);padding:16px;margin-bottom:16px;">
         <h3 style="font-size:15px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
           Implementation Roadmap
-          <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);">POST-GROK</span>
+          <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);">POST-AUDIT</span>
         </h3>
         <div style="font-size:12px;color:var(--dim);line-height:1.9;">
-          <strong style="color:var(--green);">Phase 1 &#8212; Immediate (This Week):</strong><br>
-          &#8226; Fix 5% win rate: Tighten quality gates from 2/3 to 3/3 required<br>
-          &#8226; Add narrative rotation tracking (AI-memes, animal themes)<br>
-          &#8226; Implement position sizing calculator with 1% max risk default<br><br>
+          <strong style="color:var(--green);">Week 1 &#8212; Formalize Labels &amp; Evaluation (ChatGPT P0):</strong><br>
+          &#8226; Define canonical prediction task (TP/SL/horizon) for both Kraken &amp; scanner<br>
+          &#8226; Build unified evaluation script with same resolution rules<br>
+          &#8226; Add immutable logging (signals + features + version hash)<br>
+          &#8226; Target: 350+ resolved signals for statistical validity<br><br>
           
-          <strong style="color:var(--gold);">Phase 2 &#8212; Short-Term (This Month):</strong><br>
-          &#8226; Integrate DexScreener API for liquidity pool depth analysis<br>
-          &#8226; Add Twitter/X scraping for real-time sentiment (LunarCrush alternative)<br>
-          &#8226; Implement whale wallet tracking for top 10 holder concentration<br>
-          &#8226; Expand to Binance/Coinbase cross-exchange price validation<br><br>
+          <strong style="color:var(--gold);">Weeks 2-3 &#8212; Microstructure &amp; Execution (ChatGPT P0):</strong><br>
+          &#8226; Add Kraken depth proxies (order book depth buckets)<br>
+          &#8226; Calibrate slippage models with live paper-trades<br>
+          &#8226; Resolve momentum vs entry position conflict (pick one regime)<br>
+          &#8226; Dashboards: expectancy + drawdown by tier/regime<br><br>
           
-          <strong style="color:#a855f7;">Phase 3 &#8212; Medium-Term (Q2 2026):</strong><br>
-          &#8226; Deploy ML model for rug-pull pattern detection (train on known scams)<br>
-          &#8226; AI/NLP sentiment analysis with 30-120 min price prediction<br>
-          &#8226; Smart contract risk scoring (mint functions, proxy patterns)<br>
-          &#8226; Momentum surfing algorithm (24-72h top performer detection)<br><br>
+          <strong style="color:#a855f7;">Month 1-2 &#8212; Social + On-Chain Gating:</strong><br>
+          &#8226; Integrate mention velocity &amp; sentiment (30-120 min lag, timestamped)<br>
+          &#8226; Implement Tier-2 on-chain safety (LP lock, top-holder %, contract flags)<br>
+          &#8226; Run walk-forward tests; freeze "v3" with locked parameters<br>
+          &#8226; Replace static thresholds (72/78/85) with calibrated probabilities<br><br>
           
-          <strong style="color:var(--dim);">Phase 4 &#8212; Long-Term (2026+):</strong><br>
-          &#8226; Full on-chain analytics integration (Nansen-level wallet labeling)<br>
-          &#8226; Meme coin lifecycle classification (launch &#8594; hype &#8594; peak &#8594; decline)<br>
-          &#8226; Predictive whale movement alerts (accumulation/distribution detection)<br>
-          &#8226; Target: 40%+ win rate through multi-factor AI convergence
+          <strong style="color:var(--dim);">Long-Term &#8212; 40%+ Win Rate Target:</strong><br>
+          &#8226; Full on-chain analytics (Nansen-level wallet labeling)<br>
+          &#8226; AI/NLP sentiment with price prediction (research shows 80%+ accuracy)<br>
+          &#8226; ML rug-pull detection (trained on known scams)<br>
+          &#8226; Unified backtesting + online evaluation with A/B testing
         </div>
       </div>
 
