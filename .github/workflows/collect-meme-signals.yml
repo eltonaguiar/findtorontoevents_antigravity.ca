@@ -2,7 +2,7 @@ name: Collect Meme Signals & ML Sync
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Every hour
+    - cron: '*/15 * * * *'  # Every 15 minutes — memes move fast
   workflow_dispatch:
 
 jobs:
@@ -11,12 +11,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Trigger fresh meme scan
+        run: |
+          echo "=== Triggering fresh meme scan ==="
+          curl -s --max-time 90 "https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php?action=scan&key=memescan2026" > scan_result.json
+          echo "Scan result:"
+          cat scan_result.json | python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)
+          print(f'OK: {d.get(\"ok\")}')
+          print(f'BTC Regime: {d.get(\"btc_regime\", \"unknown\")} ({d.get(\"btc_trend_pct\", 0):.1f}%)')
+          print(f'Analyzed: {d.get(\"deep_analyzed\", 0)}, Winners: {d.get(\"winners_found\", 0)}')
+          print(f'Elapsed: {d.get(\"elapsed_sec\", 0)}s')
+          for w in d.get('winners', [])[:5]:
+              print(f'  {w[\"pair\"]} score={w[\"score\"]} verdict={w[\"verdict\"]}')
+          " 2>/dev/null || echo "Failed to parse scan result"
+
+      - name: Also resolve pending signals
+        run: |
+          echo "=== Resolving pending signals ==="
+          curl -s --max-time 60 "https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php?action=resolve&key=memescan2026" > resolve_result.json
+          cat resolve_result.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Resolved: {d.get(\"resolved\", 0)}, Wins: {d.get(\"wins\", 0)}')" 2>/dev/null || echo "Resolve done"
+
       - name: Fetch current winners from meme scanner
         run: |
           echo "=== Fetching current meme winners ==="
           curl -s "https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php?action=winners" > winners.json
           echo "Winners response:"
-          cat winners.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'OK: {d.get(\"ok\")}, Count: {d.get(\"count\", 0)}')" 2>/dev/null || echo "Failed to parse"
+          cat winners.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'OK: {d.get(\"ok\")}, Count: {d.get(\"count\", 0)}, BTC Regime: {d.get(\"btc_regime\", \"?\")}')" 2>/dev/null || echo "Failed to parse"
 
       - name: Transform winners to ML format and send to ML engine
         run: |

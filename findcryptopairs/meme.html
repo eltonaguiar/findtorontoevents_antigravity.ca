@@ -147,6 +147,25 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
 .winner-card.stale-card{opacity:0.55;border-color:rgba(239,68,68,0.3)}
 .winner-card.stale-card:hover{opacity:0.8}
 .stale-overlay{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:6px;padding:6px 10px;margin:8px 0;font-size:11px;color:#fca5a5;text-align:center}
+.winner-card.card-invalidated{opacity:0.35;border-color:rgba(239,68,68,0.4);pointer-events:auto;position:relative;transition:all 0.3s}
+.hide-invalidated .winner-card.card-invalidated{display:none}
+.winner-card.card-invalidated:hover{opacity:0.55}
+.winner-card.card-invalidated .winner-pair{text-decoration:line-through;color:#888}
+.winner-card.card-invalidated .winner-score{text-decoration:line-through;opacity:0.5}
+.winner-card.card-invalidated .buy-now-badge{display:none}
+.winner-card.card-caution{border-color:rgba(245,158,11,0.5);box-shadow:inset 0 0 20px rgba(245,158,11,0.05)}
+.winner-card.card-valid{border-color:rgba(34,197,94,0.4);box-shadow:inset 0 0 20px rgba(34,197,94,0.05)}
+.live-verdict-banner{padding:8px 12px;border-radius:6px;margin:0 0 8px 0;font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.live-verdict-banner.v-invalidated{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5}
+.live-verdict-banner.v-caution{background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:#fcd34d}
+.live-verdict-banner.v-valid{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#86efac}
+.live-verdict-banner .v-price{font-weight:400;font-size:11px;color:var(--dim)}
+#auto-verify-summary{margin-bottom:12px;transition:all 0.3s}
+.no-viable-banner{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:12px;padding:20px;text-align:center;margin-bottom:16px}
+.no-viable-banner h3{color:#fca5a5;margin:0 0 8px 0;font-size:16px}
+.no-viable-banner p{color:var(--dim);margin:0;font-size:13px;line-height:1.6}
+.some-viable-banner{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px}
+.some-viable-banner .viable-count{background:rgba(34,197,94,0.2);color:#86efac;padding:3px 10px;border-radius:6px;font-weight:800;font-size:12px;border:1px solid rgba(34,197,94,0.3)}
 /* BUY NOW badge & ranking */
 .buy-now-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(232,121,249,0.25),rgba(6,182,212,0.25));color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:6px;border:1px solid rgba(232,121,249,0.4);cursor:pointer;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.5px}
 .buy-now-badge:hover{background:linear-gradient(135deg,rgba(232,121,249,0.4),rgba(6,182,212,0.4));transform:scale(1.05);box-shadow:0 2px 12px rgba(232,121,249,0.3)}
@@ -249,8 +268,16 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
     <span id="freshness-time" style="margin-left:auto;font-size:11px;color:var(--dim)"></span>
   </div>
 
+  <!-- BTC Market Regime Indicator -->
+  <div id="btc-regime-bar" style="display:none;padding:8px 16px;margin-bottom:12px;border-radius:var(--radius);font-size:12px;border:1px solid var(--border);background:var(--card);display:flex;align-items:center;gap:10px;flex-wrap:wrap"></div>
+
   <!-- Live Mode + BUY NOW Controls -->
   <div class="live-mode-bar">
+    <div class="live-toggle active" id="hide-invalid-toggle" onclick="toggleHideInvalidated()">
+      <div class="lt-dot"></div>
+    </div>
+    <span class="live-label active" id="hide-invalid-label">Hide Invalidated: ON</span>
+    <span style="margin:0 8px;color:rgba(255,255,255,0.1)">|</span>
     <div class="live-toggle" id="live-toggle" onclick="toggleLiveMode()">
       <div class="lt-dot"></div>
     </div>
@@ -261,6 +288,7 @@ a{color:#c4b5fd;text-decoration:none}a:hover{text-decoration:underline}
   <div class="section-title">Current Meme Winners <span class="badge badge-strong" id="winner-count">loading...</span>
     <span style="font-size:11px;color:var(--dim);font-weight:400;margin-left:8px" id="sort-label">(sorted by BUY NOW rank)</span>
   </div>
+  <div id="auto-verify-summary"></div>
   <div id="winners-list"><div class="loading">Loading winners...</div></div>
 
   <!-- Price Verification Modal -->
@@ -864,10 +892,26 @@ function getAgeBadge(ageMinutes) {
 window.currentWinners = [];
 
 function renderWinners(data) {
+    // Show BTC regime indicator if available
+    updateBtcRegimeBar(data.btc_regime, data.btc_trend_pct, data.last_scan);
+
     if (!data.ok || data.count === 0) {
-        document.getElementById('winners-list').innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--dim);font-size:14px;background:var(--card);border:1px solid var(--border);border-radius:12px"><div style="font-size:40px;margin-bottom:12px">&#128056;</div><div style="font-size:18px;color:#fff;margin-bottom:8px">No Meme Pumps Detected</div><div>None of the monitored meme coins are scoring high enough right now. Either the market is quiet or memes are consolidating.<br><br><strong>What this means:</strong> The scanner is being selective. When volume explodes and momentum aligns on a meme coin, it will appear here instantly.<br><br>Scans every 10 minutes, 24/7. Check back soon!</div></div>';
         document.getElementById('winner-count').textContent = '0 winners';
         window.currentWinners = [];
+        // Show helpful empty state with watchlist from scan log
+        var emptyHtml = '<div style="text-align:center;padding:30px 20px;color:var(--dim);font-size:14px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:12px">';
+        emptyHtml += '<div style="font-size:40px;margin-bottom:12px">&#128056;</div>';
+        emptyHtml += '<div style="font-size:18px;color:#fff;margin-bottom:8px">No Buy Signals Right Now</div>';
+        emptyHtml += '<div>None of the monitored meme coins are scoring above 70/100. The scanner is being selective &mdash; when volume explodes and momentum aligns, signals will appear instantly.';
+        if (data.btc_regime === 'bear') {
+            emptyHtml += '<br><br><span style="color:#fca5a5;font-weight:600">&#128308; BTC is in a bear regime, which reduces meme coin scores and suppresses signals.</span>';
+        }
+        emptyHtml += '<br><br>Scans every 15 minutes, 24/7. See the <strong>watchlist</strong> below for the closest candidates.</div>';
+        emptyHtml += '</div>';
+        emptyHtml += '<div id="watchlist-container"><div class="loading">Loading watchlist...</div></div>';
+        document.getElementById('winners-list').innerHTML = emptyHtml;
+        document.getElementById('auto-verify-summary').innerHTML = '';
+        loadWatchlist();
         return;
     }
 
@@ -911,7 +955,7 @@ function renderWinners(data) {
         // Risk bar color
         var riskColor = w.tier === 'tier2' ? '239,68,68' : w.score >= 85 ? '245,158,11' : '234,179,8';
 
-        html += '<div class="' + cardClass + '" style="position:relative;overflow:hidden;" data-pair="' + (w.pair || '') + '" data-idx="' + i + '">';
+        html += '<div class="' + cardClass + '" id="winner-card-' + i + '" style="position:relative;overflow:hidden;" data-pair="' + (w.pair || '') + '" data-idx="' + i + '">';
         html += '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:rgba(' + riskColor + ',0.5);"></div>';
 
         // Header with BUY NOW badge + age badge
@@ -939,6 +983,9 @@ function renderWinners(data) {
         if (isStale) {
             html += '<div class="stale-overlay">STALE SIGNAL &mdash; Data is ' + bn.ageMinutes + ' minutes old. Verify current price before acting.</div>';
         }
+
+        // Auto-verify verdict banner (populated on page load)
+        html += '<div id="live-verdict-' + i + '" style="display:none"></div>';
 
         // Live price slot (populated by live mode)
         html += '<div id="live-price-' + i + '" style="display:none;margin:8px 0;padding:8px 12px;background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);border-radius:6px;font-size:12px;"></div>';
@@ -1019,14 +1066,344 @@ function renderWinners(data) {
         // Quick actions footer with verify button
         html += '<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.04);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">';
         html += '<span class="buy-now-badge" onclick="openVerifyModal(' + i + ')" style="font-size:11px;">Verify Live Price</span>';
-        var exchangeLink = 'https://crypto.com/exchange/trade/' + pair.replace('/USDT', '_USDT');
-        html += '<a href="' + exchangeLink + '" target="_blank" style="font-size:11px;padding:4px 10px;background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.3);border-radius:4px;text-decoration:none;transition:all 0.15s;" onmouseover="this.style.background=\'rgba(168,85,247,0.25)\'" onmouseout="this.style.background=\'rgba(168,85,247,0.15)\'">Trade on Crypto.com</a>';
-        html += '<a href="https://www.coingecko.com/en/coins/' + pair.replace('/USDT', '').toLowerCase() + '" target="_blank" style="font-size:11px;padding:4px 10px;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border);border-radius:4px;text-decoration:none;">CoinGecko</a>';
+        var baseSym = pair.replace('/USDT', '');
+        var baseSymLower = baseSym.toLowerCase();
+        html += '<a href="https://www.kucoin.com/trade/' + baseSym + '-USDT" target="_blank" style="font-size:11px;padding:4px 10px;background:rgba(35,185,140,0.15);color:#23b98c;border:1px solid rgba(35,185,140,0.3);border-radius:4px;text-decoration:none;transition:all 0.15s;" onmouseover="this.style.background=\'rgba(35,185,140,0.25)\'" onmouseout="this.style.background=\'rgba(35,185,140,0.15)\'">KuCoin</a>';
+        html += '<a href="https://www.gate.io/trade/' + baseSym + '_USDT" target="_blank" style="font-size:11px;padding:4px 10px;background:rgba(44,125,255,0.15);color:#2c7dff;border:1px solid rgba(44,125,255,0.3);border-radius:4px;text-decoration:none;transition:all 0.15s;" onmouseover="this.style.background=\'rgba(44,125,255,0.25)\'" onmouseout="this.style.background=\'rgba(44,125,255,0.15)\'">Gate.io</a>';
+        html += '<a href="https://www.mexc.com/exchange/' + baseSym + '_USDT" target="_blank" style="font-size:11px;padding:4px 10px;background:rgba(0,182,255,0.15);color:#00b6ff;border:1px solid rgba(0,182,255,0.3);border-radius:4px;text-decoration:none;transition:all 0.15s;" onmouseover="this.style.background=\'rgba(0,182,255,0.25)\'" onmouseout="this.style.background=\'rgba(0,182,255,0.15)\'">MEXC</a>';
+        html += '<a href="https://www.coingecko.com/en/coins/' + baseSymLower + '" target="_blank" style="font-size:11px;padding:4px 10px;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border);border-radius:4px;text-decoration:none;">CoinGecko</a>';
         html += '</div>';
 
         html += '</div></div>';
     }
     document.getElementById('winners-list').innerHTML = html;
+
+    // Auto-verify all winners against live prices on render
+    if (ranked.length > 0) {
+        autoVerifyWinners();
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  AUTO-VERIFY: batch check all winners against live prices on page load
+//  Marks each card as VALID / CAUTION / INVALIDATED and shows summary
+// ═══════════════════════════════════════════════════════════════════════
+var _autoVerifyRunning = false;
+function autoVerifyWinners() {
+    if (_autoVerifyRunning) return;
+    _autoVerifyRunning = true;
+
+    var winners = window.currentWinners;
+    if (!winners || winners.length === 0) {
+        _autoVerifyRunning = false;
+        return;
+    }
+
+    // Collect unique pairs for batch fetch
+    var pairSet = {};
+    for (var pi = 0; pi < winners.length; pi++) {
+        pairSet[winners[pi].pair] = true;
+    }
+    var uniquePairs = [];
+    for (var pk in pairSet) {
+        if (pairSet.hasOwnProperty(pk)) uniquePairs.push(pk);
+    }
+
+    var summaryEl = document.getElementById('auto-verify-summary');
+    summaryEl.innerHTML = '<div style="text-align:center;padding:8px;color:var(--dim);font-size:12px">Verifying live prices across 7 exchanges...</div>';
+
+    // Batch price fetch
+    var url = PRICE_CHECK_API + '?action=batch_price&pairs=' + encodeURIComponent(uniquePairs.join(','));
+    var x = new XMLHttpRequest();
+    x.open('GET', url);
+    x.onload = function() {
+        _autoVerifyRunning = false;
+        try {
+            var r = JSON.parse(x.responseText);
+            if (!r.ok) {
+                summaryEl.innerHTML = '';
+                return;
+            }
+            // Build price map
+            var priceMap = {};
+            for (var pi2 = 0; pi2 < r.prices.length; pi2++) {
+                var pd = r.prices[pi2];
+                if (pd.price) priceMap[pd.pair] = pd;
+            }
+            applyAutoVerifyResults(priceMap);
+        } catch(e) {
+            summaryEl.innerHTML = '';
+        }
+    };
+    x.onerror = function() {
+        _autoVerifyRunning = false;
+        summaryEl.innerHTML = '';
+    };
+    x.send();
+}
+
+function applyAutoVerifyResults(priceMap) {
+    var winners = window.currentWinners;
+    var validCount = 0;
+    var cautionCount = 0;
+    var invalidCount = 0;
+    var noPriceCount = 0;
+
+    for (var i = 0; i < winners.length; i++) {
+        var w = winners[i];
+        var card = document.getElementById('winner-card-' + i);
+        var verdictSlot = document.getElementById('live-verdict-' + i);
+        if (!card || !verdictSlot) continue;
+
+        var pd = priceMap[w.pair];
+        if (!pd || !pd.price) {
+            noPriceCount++;
+            continue;
+        }
+
+        var entryPrice = parseFloat(w.price_at_signal || 0);
+        var targetPct = parseFloat(w.target_pct || 0);
+        var riskPct = parseFloat(w.risk_pct || 0);
+        var currentPrice = parseFloat(pd.price);
+        if (entryPrice <= 0) continue;
+
+        var changePct = ((currentPrice - entryPrice) / entryPrice) * 100;
+        var remainingUp = targetPct - changePct;
+        var priceDecimals = entryPrice >= 1 ? 4 : entryPrice >= 0.01 ? 6 : entryPrice >= 0.0001 ? 8 : 10;
+
+        // Determine verdict (same logic as price_check.php)
+        var verdict = 'VALID';
+        var verdictText = '';
+        var verdictClass = 'v-valid';
+
+        if (changePct > targetPct * 0.8) {
+            verdict = 'INVALIDATED';
+            verdictText = 'Price already moved +' + changePct.toFixed(1) + '% — target nearly hit, upside gone';
+            verdictClass = 'v-invalidated';
+            invalidCount++;
+        } else if (changePct < -riskPct) {
+            verdict = 'INVALIDATED';
+            verdictText = 'Price dropped ' + Math.abs(changePct).toFixed(1) + '% — past stop loss';
+            verdictClass = 'v-invalidated';
+            invalidCount++;
+        } else if (changePct > targetPct * 0.5) {
+            verdict = 'CAUTION';
+            verdictText = 'Price moved +' + changePct.toFixed(1) + '% — reduced R:R, be cautious';
+            verdictClass = 'v-caution';
+            cautionCount++;
+        } else if (changePct < -(riskPct * 0.5)) {
+            verdict = 'CAUTION';
+            verdictText = 'Price dropped ' + Math.abs(changePct).toFixed(1) + '% — approaching stop loss';
+            verdictClass = 'v-caution';
+            cautionCount++;
+        } else {
+            verdictText = 'Signal still viable — ' + remainingUp.toFixed(1) + '% upside remaining';
+            validCount++;
+        }
+
+        // Apply card class
+        card.className = card.className.replace(/ card-invalidated| card-caution| card-valid/g, '');
+        if (verdict === 'INVALIDATED') {
+            card.className += ' card-invalidated';
+        } else if (verdict === 'CAUTION') {
+            card.className += ' card-caution';
+        } else {
+            card.className += ' card-valid';
+        }
+
+        // Show inline verdict banner
+        var changeColor = changePct >= 0 ? 'var(--green)' : 'var(--red)';
+        var bannerHtml = '<div class="live-verdict-banner ' + verdictClass + '">';
+        if (verdict === 'INVALIDATED') {
+            bannerHtml += '<span style="font-size:14px">&#10060;</span> ';
+        } else if (verdict === 'CAUTION') {
+            bannerHtml += '<span style="font-size:14px">&#9888;&#65039;</span> ';
+        } else {
+            bannerHtml += '<span style="font-size:14px">&#9989;</span> ';
+        }
+        bannerHtml += '<span>' + verdict + ': ' + verdictText + '</span>';
+        bannerHtml += '<span class="v-price">Now: $' + currentPrice.toFixed(priceDecimals) + ' (' + (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%) via ' + pd.source + '</span>';
+        bannerHtml += '</div>';
+        verdictSlot.innerHTML = bannerHtml;
+        verdictSlot.style.display = 'block';
+    }
+
+    // Render summary banner
+    var summaryEl = document.getElementById('auto-verify-summary');
+    var totalChecked = validCount + cautionCount + invalidCount;
+
+    if (totalChecked === 0) {
+        summaryEl.innerHTML = '';
+        return;
+    }
+
+    if (validCount === 0 && cautionCount === 0) {
+        // ALL invalidated
+        var hiddenNote = hideInvalidated ?
+            'Invalidated signals are hidden. Toggle "Hide Invalidated" above to show them.' :
+            'Invalidated signals are shown crossed out below for transparency.';
+        summaryEl.innerHTML = '<div class="no-viable-banner">' +
+            '<h3>&#10060; No Viable Signals Right Now</h3>' +
+            '<p>All ' + invalidCount + ' signal' + (invalidCount > 1 ? 's' : '') + ' have been invalidated — prices moved past their targets or stop losses since they were generated. ' +
+            'The scanner checks every 15 minutes. Fresh signals will appear when new setups form.<br>' +
+            '<span style="color:#888;font-size:11px">' + hiddenNote + '</span></p>' +
+            '</div>';
+    } else {
+        var summaryParts = [];
+        if (validCount > 0) summaryParts.push('<span style="color:#86efac;font-weight:700">' + validCount + ' valid</span>');
+        if (cautionCount > 0) summaryParts.push('<span style="color:#fcd34d;font-weight:700">' + cautionCount + ' caution</span>');
+        if (invalidCount > 0) summaryParts.push('<span style="color:#fca5a5;font-weight:700">' + invalidCount + ' invalidated</span>');
+
+        summaryEl.innerHTML = '<div class="some-viable-banner">' +
+            '<span class="viable-count">' + validCount + ' VIABLE</span>' +
+            '<span style="color:#ccc">Live-checked against 7 exchanges: ' + summaryParts.join(' &bull; ') + '</span>' +
+            '</div>';
+    }
+
+    // Update hidden count for the toggle label
+    if (typeof updateHiddenCount === 'function') updateHiddenCount();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  WATCHLIST: Show top candidates when no signals are above threshold
+//  Fetches scan_log and displays the closest-to-threshold coins
+// ═══════════════════════════════════════════════════════════════════════
+function loadWatchlist() {
+    var url = '/findcryptopairs/api/meme_scanner.php?action=scan_log&limit=20';
+    var x = new XMLHttpRequest();
+    x.open('GET', url);
+    x.onload = function() {
+        try {
+            var r = JSON.parse(x.responseText);
+            renderWatchlist(r);
+        } catch(e) {
+            var c = document.getElementById('watchlist-container');
+            if (c) c.innerHTML = '';
+        }
+    };
+    x.onerror = function() {
+        var c = document.getElementById('watchlist-container');
+        if (c) c.innerHTML = '';
+    };
+    x.send();
+}
+
+function renderWatchlist(data) {
+    var container = document.getElementById('watchlist-container');
+    if (!container || !data.ok) {
+        if (container) container.innerHTML = '';
+        return;
+    }
+
+    var items = data.log || [];
+    if (items.length === 0) {
+        container.innerHTML = '<div style="color:var(--dim);text-align:center;padding:12px">No scan data available yet.</div>';
+        return;
+    }
+
+    // Sort by score descending, take top 8
+    items.sort(function(a, b) { return (parseInt(b.score) || 0) - (parseInt(a.score) || 0); });
+    items = items.slice(0, 8);
+
+    var html = '<div style="margin-bottom:8px;font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px">';
+    html += '<span style="font-size:16px">&#128065;</span> Watchlist &mdash; Top Candidates (not buy signals)';
+    html += '</div>';
+
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px">';
+    for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        var score = parseInt(item.score) || 0;
+        var pair = (item.pair || '').replace('_USDT', '/USDT');
+        var chg = parseFloat(item.chg_24h || 0);
+        var vol = parseFloat(item.vol_usd_24h || 0);
+        var price = parseFloat(item.price || 0);
+        var priceDecimals = price >= 1 ? 4 : price >= 0.01 ? 6 : price >= 0.0001 ? 8 : 10;
+
+        var scoreColor = score >= 50 ? '#fcd34d' : score >= 30 ? '#94a3b8' : '#475569';
+        var barWidth = Math.min(100, Math.max(3, score));
+        var chgColor = chg >= 0 ? 'var(--green)' : 'var(--red)';
+
+        html += '<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;opacity:0.7;transition:opacity 0.2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">';
+        html += '<span style="font-weight:700;font-size:13px;color:#fff">' + pair + '</span>';
+        html += '<span style="font-size:12px;color:' + scoreColor + ';font-weight:700">' + score + '<span style="color:var(--dim);font-weight:400">/100</span></span>';
+        html += '</div>';
+
+        // Score bar
+        html += '<div style="height:3px;background:rgba(255,255,255,0.05);border-radius:2px;margin-bottom:6px">';
+        html += '<div style="height:100%;width:' + barWidth + '%;background:' + scoreColor + ';border-radius:2px;transition:width 0.3s"></div>';
+        html += '</div>';
+
+        html += '<div style="display:flex;gap:8px;font-size:11px;color:var(--dim);flex-wrap:wrap">';
+        html += '<span>$' + price.toFixed(priceDecimals) + '</span>';
+        html += '<span style="color:' + chgColor + '">' + (chg >= 0 ? '+' : '') + chg.toFixed(1) + '%</span>';
+        html += '<span>Vol: $' + (vol >= 1000000 ? (vol / 1000000).toFixed(1) + 'M' : (vol / 1000).toFixed(0) + 'K') + '</span>';
+        if (score >= 50) {
+            html += '<span style="color:#fcd34d;font-weight:600">Closest to threshold</span>';
+        }
+        html += '</div>';
+        html += '</div>';
+    }
+    html += '</div>';
+
+    html += '<div style="text-align:center;margin-top:8px;font-size:11px;color:#555">Coins need a score of 70+ across 7 technical indicators to generate a buy signal. These are the current leaders.</div>';
+
+    container.innerHTML = html;
+}
+
+function updateBtcRegimeBar(regime, trendPct, lastScan) {
+    var bar = document.getElementById('btc-regime-bar');
+    if (!bar) return;
+
+    if (!regime) {
+        bar.style.display = 'none';
+        return;
+    }
+
+    bar.style.display = 'flex';
+    var icon = '';
+    var label = '';
+    var color = '';
+    var bgColor = '';
+    var borderColor = '';
+    var detail = '';
+
+    if (regime === 'bull') {
+        icon = '&#128994;';
+        label = 'BULL MARKET';
+        color = '#86efac';
+        bgColor = 'rgba(34,197,94,0.06)';
+        borderColor = 'rgba(34,197,94,0.3)';
+        detail = 'BTC trending up (' + (trendPct > 0 ? '+' : '') + (trendPct || 0).toFixed(1) + '% vs 24h SMA). Meme coins have better odds.';
+    } else if (regime === 'bear') {
+        icon = '&#128308;';
+        label = 'BEAR MARKET';
+        color = '#fca5a5';
+        bgColor = 'rgba(239,68,68,0.06)';
+        borderColor = 'rgba(239,68,68,0.3)';
+        detail = 'BTC trending down (' + (trendPct || 0).toFixed(1) + '% vs 24h SMA). Meme signals carry extra risk. Scores adjusted.';
+    } else {
+        icon = '&#128992;';
+        label = 'CHOPPY MARKET';
+        color = '#fcd34d';
+        bgColor = 'rgba(245,158,11,0.06)';
+        borderColor = 'rgba(245,158,11,0.3)';
+        detail = 'BTC in sideways range. Mixed conditions for meme plays.';
+    }
+
+    var scanAge = '';
+    if (lastScan) {
+        var scanDate = new Date(lastScan.replace(' ', 'T') + 'Z');
+        var ageMin = Math.floor((Date.now() - scanDate.getTime()) / 60000);
+        scanAge = '<span style="margin-left:auto;font-size:11px;color:var(--dim)">Last scan: ' + ageMin + 'm ago</span>';
+    }
+
+    bar.style.background = bgColor;
+    bar.style.borderColor = borderColor;
+    bar.innerHTML = '<span style="font-size:14px">' + icon + '</span>' +
+        '<span style="background:' + bgColor + ';color:' + color + ';padding:2px 8px;border-radius:4px;font-weight:800;font-size:11px;border:1px solid ' + borderColor + ';letter-spacing:0.5px">' + label + '</span>' +
+        '<span style="color:' + color + ';font-size:12px">' + detail + '</span>' +
+        scanAge;
 }
 
 function renderStats(data) {
@@ -1455,7 +1832,7 @@ function openVerifyModal(idx) {
 
     var pair = (w.pair || '').replace('_USDT', '/USDT');
     title.textContent = 'Verify: ' + pair;
-    body.innerHTML = '<div class="loading">Fetching live price from exchange...</div>';
+    body.innerHTML = '<div class="loading">Fetching live price across 7 sources (Crypto.com, Binance, KuCoin, Gate.io, MEXC, CoinGecko, DexScreener)...</div>';
     overlay.classList.add('active');
 
     // Auto-fetch live price
@@ -1483,7 +1860,10 @@ function openVerifyModal(idx) {
 function renderVerifyResult(r, w, idx) {
     var body = document.getElementById('verify-body');
     if (!r.ok) {
-        body.innerHTML = '<div style="color:var(--red);text-align:center;padding:20px">' + (r.error || 'Price fetch failed') + '</div>' + manualInputHtml(w, idx);
+        var sourcesTried = (r.sources_tried || []).join(', ') || 'unknown';
+        body.innerHTML = '<div style="color:var(--red);text-align:center;padding:20px">' + (r.error || 'Price fetch failed') + '</div>' +
+            '<div style="color:var(--dim);text-align:center;font-size:11px;margin-bottom:12px">Sources tried: ' + sourcesTried + '</div>' +
+            manualInputHtml(w, idx);
         return;
     }
 
@@ -1566,6 +1946,39 @@ function verifyManualPrice(idx) {
 
 function closeVerifyModal() {
     document.getElementById('verify-overlay').classList.remove('active');
+}
+
+// ── Hide Invalidated toggle — on by default ──
+var hideInvalidated = true;
+// Apply default state on load
+document.getElementById('winners-list').parentNode.classList.add('hide-invalidated');
+
+function toggleHideInvalidated() {
+    hideInvalidated = !hideInvalidated;
+    var toggle = document.getElementById('hide-invalid-toggle');
+    var label = document.getElementById('hide-invalid-label');
+    var wrapper = document.getElementById('winners-list');
+
+    if (hideInvalidated) {
+        toggle.classList.add('active');
+        label.classList.add('active');
+        label.textContent = 'Hide Invalidated: ON';
+        if (wrapper && wrapper.parentNode) wrapper.parentNode.classList.add('hide-invalidated');
+    } else {
+        toggle.classList.remove('active');
+        label.classList.remove('active');
+        label.textContent = 'Hide Invalidated: OFF';
+        if (wrapper && wrapper.parentNode) wrapper.parentNode.classList.remove('hide-invalidated');
+    }
+    updateHiddenCount();
+}
+
+function updateHiddenCount() {
+    var cards = document.querySelectorAll('.winner-card.card-invalidated');
+    var status = document.getElementById('live-status');
+    if (cards.length > 0 && hideInvalidated && status) {
+        status.textContent = cards.length + ' invalidated signal' + (cards.length > 1 ? 's' : '') + ' hidden';
+    }
 }
 
 // ── Live Mode — polls live prices for active winners ──

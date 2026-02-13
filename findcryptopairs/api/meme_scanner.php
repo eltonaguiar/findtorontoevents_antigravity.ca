@@ -397,6 +397,8 @@ function _mc_action_scan($conn) {
         'deep_analyzed' => count($scored),
         'winners_found' => count($winners),
         'winners_saved' => $saved,
+        'btc_regime' => $btc_regime['regime'],
+        'btc_trend_pct' => $btc_regime['trend_pct'],
         'elapsed_sec' => $elapsed,
         'winners' => array_slice($winners, 0, 15),
         'top_candidates' => $top_candidates
@@ -906,11 +908,11 @@ function _mc_regime_score_adjust($raw_score, $factors, $btc_regime) {
         if ($mom >= 12 && $trend) $adjustment += 3;
         elseif ($mom >= 8 && $trend) $adjustment += 2;
     } elseif ($regime === 'bear') {
-        // Bear market: HEAVY penalty to all meme signals
-        // Memes crash hardest in bear markets - require exceptional setup
-        $adjustment -= 10;
-        // Extra penalty for momentum-only plays
-        if ($mom >= 10 && $vol < 8) $adjustment -= 5;
+        // Bear market: moderate penalty — still show signals but with clear warnings
+        // Previous -10/-15 penalty was blocking ALL signals; users need actionable data
+        $adjustment -= 5;
+        // Extra penalty for weak momentum-only plays (no volume confirmation)
+        if ($mom >= 10 && $vol < 6) $adjustment -= 3;
     }
     // Chop: no adjustment - but memes are risky in chop too
 
@@ -1047,7 +1049,7 @@ function _mc_action_resolve($conn) {
 //  WINNERS — get latest cached winners
 // ═══════════════════════════════════════════════════════════════════════
 function _mc_action_winners($conn) {
-    $sql = "SELECT * FROM mc_winners WHERE created_at > DATE_SUB(NOW(), INTERVAL 2 HOUR) ORDER BY score DESC LIMIT 20";
+    $sql = "SELECT * FROM mc_winners WHERE created_at > DATE_SUB(NOW(), INTERVAL 4 HOUR) ORDER BY score DESC LIMIT 20";
     $res = $conn->query($sql);
     if (!$res) { _mc_err('Query failed'); }
 
@@ -1057,10 +1059,23 @@ function _mc_action_winners($conn) {
         $winners[] = $row;
     }
 
+    // Include current BTC regime so the frontend can show market conditions
+    $btc_regime = _mc_detect_btc_regime();
+
+    // Also get last scan time
+    $last_scan_res = $conn->query("SELECT MAX(created_at) as last_scan FROM mc_winners");
+    $last_scan = '';
+    if ($last_scan_res && $ls = $last_scan_res->fetch_assoc()) {
+        $last_scan = isset($ls['last_scan']) ? $ls['last_scan'] : '';
+    }
+
     echo json_encode(array(
         'ok' => true,
         'count' => count($winners),
-        'winners' => $winners
+        'winners' => $winners,
+        'btc_regime' => $btc_regime['regime'],
+        'btc_trend_pct' => $btc_regime['trend_pct'],
+        'last_scan' => $last_scan
     ));
 }
 
