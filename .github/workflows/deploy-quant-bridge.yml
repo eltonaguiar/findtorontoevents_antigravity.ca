@@ -1,0 +1,72 @@
+name: Deploy Quant Bridge to Live Site
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'live-monitor/quant-bridge.html'
+      - 'live-monitor/api/quant_bridge.php'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy via FTP
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          if [ -z "$FTP_SERVER" ] || [ -z "$FTP_USER" ]; then
+            echo "::error::FTP credentials not configured. Set FTP_SERVER, FTP_USER, FTP_PASS in repository secrets."
+            exit 1
+          fi
+
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp > /dev/null 2>&1
+
+          REMOTE_BASE="/findtorontoevents.ca"
+
+          echo "=== Deploying Quant Bridge files ==="
+
+          lftp -u "$FTP_USER,$FTP_PASS" "$FTP_SERVER" << FTPEOF
+          set ssl:verify-certificate no
+          set net:timeout 30
+          set net:max-retries 3
+
+          # Dashboard HTML
+          cd $REMOTE_BASE/live-monitor
+          put live-monitor/quant-bridge.html
+
+          # PHP API endpoint
+          cd $REMOTE_BASE/live-monitor/api
+          put live-monitor/api/quant_bridge.php
+
+          echo "Upload complete"
+          bye
+          FTPEOF
+
+          if [ $? -eq 0 ]; then
+            echo "Deployed successfully!"
+            echo "Dashboard: https://findtorontoevents.ca/live-monitor/quant-bridge.html"
+            echo "API:       https://findtorontoevents.ca/live-monitor/api/quant_bridge.php?action=dashboard"
+          else
+            echo "::error::FTP upload failed"
+            exit 1
+          fi
+
+      - name: Verify deployment
+        run: |
+          sleep 5
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://findtorontoevents.ca/live-monitor/quant-bridge.html")
+          echo "HTTP status: $HTTP_CODE"
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "Page is live!"
+          else
+            echo "::warning::Page returned HTTP $HTTP_CODE — may need cache purge or DNS propagation"
+          fi
