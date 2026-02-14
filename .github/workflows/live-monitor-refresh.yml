@@ -93,7 +93,24 @@ jobs:
             print(f'Error: {d.get(\"error\",\"unknown\")}')
         " || echo "Auto-exec: $RESULT"
 
-    # ─── Step 5: Expire old signals ───
+    # ─── Step 5: Monitor signals — check TP/SL vs live prices ───
+    - name: Monitor signal outcomes
+      continue-on-error: true
+      run: |
+        echo "=== Monitoring active signals (TP/SL check) ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/live-monitor/api/live_signals.php?action=monitor") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        d = json.load(sys.stdin)
+        if d.get('ok'):
+            print(f'Checked: {d.get(\"checked\",0)} | Resolved: {d.get(\"resolved\",0)} (TP/SL) | Expired: {d.get(\"expired\",0)} | Prices updated: {d.get(\"prices_updated\",0)}')
+            for r in d.get('results', []):
+                print(f'  {r[\"symbol\"]:8s} {r[\"action\"]:12s} PnL: {r[\"pnl\"]:+.2f}%')
+        else:
+            print(f'Error: {d.get(\"error\",\"unknown\")}')
+        " || echo "Monitor: $RESULT"
+
+    # ─── Step 5b: Expire old signals (time-based fallback) ───
     - name: Expire old signals
       continue-on-error: true
       run: |
