@@ -1,527 +1,321 @@
-&lt;!DOCTYPE html&gt;
-
-&lt;html lang=&quot;en&quot;&gt;
-
-&lt;head&gt;
-
-    &lt;meta charset=&quot;UTF-8&quot;&gt;
-
-    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
-
-    &lt;title&gt;Platform Updates | FTE Invest&lt;/title&gt;
-
-    &lt;style&gt;
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platform Updates | FTE Invest</title>
+    <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-
-            background: #0a0e1a;
-
-            color: #e0e0f0;
-
-            min-height: 100vh;
-
-            line-height: 1.6;
-
-        }
-
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0e1a; color: #e0e0f0; min-height: 100vh; line-height: 1.6; }
         a { color: #6366f1; text-decoration: none; }
-
         a:hover { text-decoration: underline; }
-
-
-
-        .hero {
-
-            background: linear-gradient(135deg, #12122a 0%, #1a1040 50%, #0a0e1a 100%);
-
-            border-bottom: 1px solid #1e1e3a;
-
-            padding: 2.5rem 2rem 2rem;
-
-            text-align: center;
-
-        }
-
-        .hero h1 {
-
-            font-size: 2rem;
-
-            font-weight: 800;
-
-            background: linear-gradient(135deg, #6366f1, #a78bfa, #22d3ee);
-
-            -webkit-background-clip: text;
-
-            -webkit-text-fill-color: transparent;
-
-            background-clip: text;
-
-            margin-bottom: 0.4rem;
-
-        }
-
-        .hero .subtitle {
-
-            color: #8888aa;
-
-            font-size: 1rem;
-
-        }
-
-
-
-        .container {
-
-            max-width: 800px;
-
-            margin: 0 auto;
-
-            padding: 2rem 1.5rem 3rem;
-
-        }
-
-
-
-        .update-entry {
-
-            background: #12122a;
-
-            border: 1px solid #1e1e3a;
-
-            border-radius: 12px;
-
-            padding: 1.5rem;
-
-            margin-bottom: 1.5rem;
-
-        }
-
-        .update-entry:first-child {
-
-            border-color: rgba(99, 102, 241, 0.4);
-
-            box-shadow: 0 0 12px rgba(99, 102, 241, 0.08);
-
-        }
-
-
-
-        .update-date {
-
-            font-size: 0.8rem;
-
-            color: #8888aa;
-
-            text-transform: uppercase;
-
-            letter-spacing: 0.5px;
-
-            margin-bottom: 0.3rem;
-
-        }
-
-        .update-title {
-
-            font-size: 1.2rem;
-
-            font-weight: 700;
-
-            color: #e0e0f0;
-
-            margin-bottom: 0.75rem;
-
-        }
-
-        .update-body {
-
-            font-size: 0.9rem;
-
-            color: #aaaacc;
-
-            line-height: 1.7;
-
-        }
-
-        .update-body ul {
-
-            margin: 0.5rem 0 0.5rem 1.5rem;
-
-        }
-
-        .update-body li {
-
-            margin-bottom: 0.3rem;
-
-        }
-
-        .update-body strong {
-
-            color: #e0e0f0;
-
-        }
-
-
-
-        .tag {
-
-            display: inline-block;
-
-            padding: 2px 8px;
-
-            border-radius: 4px;
-
-            font-size: 0.7rem;
-
-            font-weight: 700;
-
-            text-transform: uppercase;
-
-            letter-spacing: 0.3px;
-
-            margin-right: 6px;
-
-        }
-
-        .tag-improvement {
-
-            background: rgba(34, 197, 94, 0.15);
-
-            color: #22c55e;
-
-        }
-
-        .tag-new {
-
-            background: rgba(168, 85, 247, 0.15);
-
-            color: #a855f7;
-
-        }
-
-        .tag-fix {
-
-            background: rgba(245, 158, 11, 0.15);
-
-            color: #f59e0b;
-
-        }
-
-        .tag-review {
-
-            background: rgba(59, 130, 246, 0.15);
-
-            color: #3b82f6;
-
-        }
-
-        .tag-beta {
-
-            background: rgba(234, 179, 8, 0.15);
-
-            color: #eab308;
-
-        }
-
-
-
-        .footer-note {
-
-            text-align: center;
-
-            color: #555577;
-
-            font-size: 0.8rem;
-
-            margin-top: 2rem;
-
-            padding-top: 1.5rem;
-
-            border-top: 1px solid #1e1e3a;
-
-        }
-
-
-
-        @media (max-width: 600px) {
-
-            .hero { padding: 1.5rem 1rem; }
-
-            .hero h1 { font-size: 1.5rem; }
-
-            .container { padding: 1rem; }
-
-            .update-entry { padding: 1rem; }
-
-        }
-
-    &lt;/style&gt;
-
-&lt;/head&gt;
-
-&lt;body&gt;
-
-
-
-&lt;div class=&quot;hero&quot;&gt;
-
-    &lt;h1&gt;Platform Updates&lt;/h1&gt;
-
-    &lt;p class=&quot;subtitle&quot;&gt;Recent changes, improvements, and system status&lt;/p&gt;
-
-&lt;/div&gt;
-
-
-
-&lt;div class=&quot;container&quot;&gt;
-
-    &lt;!-- Feb 13, 2026 — External Validation & Feedback --&gt;
-    &lt;div class=&quot;update-entry&quot;&gt;
-        &lt;div class=&quot;update-date&quot;&gt;February 13, 2026&lt;/div&gt;
-        &lt;div class=&quot;update-title&quot;&gt;External Validation &amp; Expert Feedback Received&lt;/div&gt;
-        &lt;div class=&quot;update-body&quot;&gt;
-            &lt;ul&gt;
-                &lt;li&gt;&lt;span class=&quot;tag tag-review&quot;&gt;Validation&lt;/span&gt; &lt;strong&gt;&lt;a href=&quot;/findcryptopairs/feedback-validation-feb13-2026.html&quot;&gt;External Technical Review&lt;/a&gt;&lt;/strong&gt; &mdash; Independent validation of our meme coin scanner data accuracy and methodology&lt;/li&gt;
-                &lt;li&gt;&lt;span class=&quot;tag tag-improvement&quot;&gt;Confirmed&lt;/span&gt; PENGU, DOGE, PEPE data accuracy validated against live market conditions&lt;/li&gt;
-                &lt;li&gt;&lt;span class=&quot;tag tag-info&quot;&gt;Note&lt;/span&gt; AZTEC is an L2 privacy project (not a "meme") but remains tracked as a valid Kraken momentum opportunity&lt;/li&gt;
-                &lt;li&gt;&lt;span class=&quot;tag tag-new&quot;&gt;Planned&lt;/span&gt; Social signals (Twitter velocity), "Days Since Listing" penalty, and meme purity filter in development&lt;/li&gt;
-            &lt;/ul&gt;
-        &lt;/div&gt;
-    &lt;/div&gt;
-
-
-
-    &lt;!-- Feb 12, 2026 — Enhanced Meme Scanner --&gt;
-
-    &lt;div class=&quot;update-entry&quot;&gt;
-
-        &lt;div class=&quot;update-date&quot;&gt;February 12, 2026&lt;/div&gt;
-
-        &lt;div class=&quot;update-title&quot;&gt;Enhanced Meme Coin Scanner with Failover API&lt;/div&gt;
-
-        &lt;div class=&quot;update-body&quot;&gt;
-
-            &lt;ul&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-new&quot;&gt;New&lt;/span&gt; &lt;strong&gt;&lt;a href=&quot;/findcryptopairs/api/enhanced_meme_scanner.php&quot;&gt;Enhanced Meme Scanner API&lt;/a&gt;&lt;/strong&gt; &mdash; New endpoint with failover chain using multiple APIs and scrapers for improved data reliability and meme coin momentum detection&lt;/li&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-improvement&quot;&gt;Improvement&lt;/span&gt; Enhanced scoring with aggregated data from new sources including CoinGecko and CoinMarketCap&lt;/li&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-fix&quot;&gt;Fix&lt;/span&gt; Resolved deployment issues causing the endpoint to be unavailable&lt;/li&gt;
-
-            &lt;/ul&gt;
-
-        &lt;/div&gt;
-
-    &lt;/div&gt;
-
-
-
-    &lt;!-- Feb 12, 2026 — Command Center --&gt;
-
-    &lt;div class=&quot;update-entry&quot;&gt;
-
-        &lt;div class=&quot;update-date&quot;&gt;February 12, 2026&lt;/div&gt;
-
-        &lt;div class=&quot;update-title&quot;&gt;Command Center &amp; Asset Class Scope Labels&lt;/div&gt;
-
-        &lt;div class=&quot;update-body&quot;&gt;
-
-            &lt;ul&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-new&quot;&gt;New&lt;/span&gt; &lt;strong&gt;&lt;a href=&quot;/live-monitor/command-center.html&quot;&gt;Command Center&lt;/a&gt;&lt;/strong&gt; &mdash; unified HQ dashboard showing real-time stats across all 6 asset classes (stocks, crypto, forex, meme coins, penny stocks, sports betting) with KPI cards, goldmine system comparison chart, and live activity feed&lt;/li&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-new&quot;&gt;New&lt;/span&gt; &lt;strong&gt;Unified Stats API&lt;/strong&gt; &mdash; &lt;code&gt;command_center.php&lt;/code&gt; aggregates paper trading, consensus picks, goldmine, and sports betting data with 5-minute caching&lt;/li&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-new&quot;&gt;New&lt;/span&gt; &lt;strong&gt;Scope labels on all pages&lt;/strong&gt; &mdash; every dashboard now shows a color-coded banner indicating its asset class scope (e.g. &ldquo;STOCKS ONLY&rdquo;, &ldquo;ALL ASSET CLASSES&rdquo;) so you always know what data you&rsquo;re viewing&lt;/li&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-improvement&quot;&gt;Improvement&lt;/span&gt; &lt;strong&gt;Navigation updated&lt;/strong&gt; &mdash; Command Center added as top link in nav bar with purple &ldquo;HQ&rdquo; badge&lt;/li&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-new&quot;&gt;New&lt;/span&gt; &lt;strong&gt;Auto-refresh workflow&lt;/strong&gt; &mdash; GitHub Actions refreshes Command Center cache every 15 minutes during market hours&lt;/li&gt;
-
-            &lt;/ul&gt;
-
-        &lt;/div&gt;
-
-    &lt;/div&gt;
-
-
-
-    &lt;!-- Feb 12, 2026 — Review --&gt;
-
-    &lt;div class=&quot;update-entry&quot;&gt;
-
-        &lt;div class=&quot;update-date&quot;&gt;February 12, 2026&lt;/div&gt;
-
-        &lt;div class=&quot;update-title&quot;&gt;System Performance Review &amp; Improvements&lt;/div&gt;
-
-        &lt;div class=&quot;update-body&quot;&gt;
-
-            &lt;p&gt;A comprehensive review of all trading algorithms and system components was conducted. Several improvements have been made to improve accuracy and transparency:&lt;/p&gt;
-
-            &lt;ul&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-improvement&quot;&gt;Improvement&lt;/span&gt; &lt;strong&gt;Algorithm parameters optimized&lt;/strong&gt; &mdash; profit targets and stop losses tightened based on forward performance analysis&lt;/li&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-review&quot;&gt;Review&lt;/span&gt; &lt;strong&gt;Underperforming algorithms paused&lt;/strong&gt; &mdash; algorithms with consistently negative forward returns placed under review&lt;/li&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-improvement&quot;&gt;Improvement&lt;/span&gt; &lt;strong&gt;Crypto scanner alignment&lt;/strong&gt; &mdash; scanner signals aligned with proven goldmine patterns for higher-quality alerts&lt;/li&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-beta&quot;&gt;Beta&lt;/span&gt; &lt;strong&gt;Mutual funds module marked as beta&lt;/strong&gt; &mdash; NAV data sources under evaluation; forward tracking may have gaps&lt;/li&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-improvement&quot;&gt;Improvement&lt;/span&gt; &lt;strong&gt;Disclaimers and transparency&lt;/strong&gt; &mdash; paper trading notices and risk warnings added across all dashboards&lt;/li&gt;
-
-            &lt;/ul&gt;
-
-            &lt;p style=&quot;margin-top:0.75rem;&quot;&gt;All trading on this platform is &lt;strong&gt;paper trading only&lt;/strong&gt; (simulated). No real money is at risk. We are committed to honest, transparent reporting of both successes and failures.&lt;/p&gt;
-
-        &lt;/div&gt;
-
-    &lt;/div&gt;
-
-
-
-    &lt;!-- Feb 11, 2026 --&gt;
-
-    &lt;div class=&quot;update-entry&quot;&gt;
-
-        &lt;div class=&quot;update-date&quot;&gt;February 11, 2026&lt;/div&gt;
-
-        &lt;div class=&quot;update-title&quot;&gt;Consolidated Picks Live Tracking Begins&lt;/div&gt;
-
-        &lt;div class=&quot;update-body&quot;&gt;
-
-            &lt;ul&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-new&quot;&gt;New&lt;/span&gt; &lt;strong&gt;Daily price tracking&lt;/strong&gt; &mdash; GitHub Actions now refresh prices for all 65 tracked positions at 23:30 UTC weekdays&lt;/li&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-new&quot;&gt;New&lt;/span&gt; &lt;strong&gt;Auto-diagnosis engine&lt;/strong&gt; &mdash; sector performance, algorithm report cards, and market notes generated from real data&lt;/li&gt;
-
-            &lt;/ul&gt;
-
-        &lt;/div&gt;
-
-    &lt;/div&gt;
-
-
-
-    &lt;!-- Feb 10, 2026 --&gt;
-
-    &lt;div class=&quot;update-entry&quot;&gt;
-
-        &lt;div class=&quot;update-date&quot;&gt;February 10, 2026&lt;/div&gt;
-
-        &lt;div class=&quot;update-title&quot;&gt;Consolidated Picks &amp; $200/Day Challenge Launch&lt;/div&gt;
-
-        &lt;div class=&quot;update-body&quot;&gt;
-
-            &lt;ul&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-new&quot;&gt;New&lt;/span&gt; &lt;strong&gt;Consolidated Picks tracker&lt;/strong&gt; &mdash; consensus-based position tracker with 65 initial positions from 20 algorithms&lt;/li&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-new&quot;&gt;New&lt;/span&gt; &lt;strong&gt;$200/Day Challenge&lt;/strong&gt; &mdash; daily P&amp;L tracking in consensus and ML-enhanced modes&lt;/li&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-new&quot;&gt;New&lt;/span&gt; &lt;strong&gt;Self-learning tab&lt;/strong&gt; &mdash; pattern detection engine (activates after 5+ closed trades)&lt;/li&gt;
-
-            &lt;/ul&gt;
-
-        &lt;/div&gt;
-
-    &lt;/div&gt;
-
-
-
-    &lt;!-- Feb 8, 2026 --&gt;
-
-    &lt;div class=&quot;update-entry&quot;&gt;
-
-        &lt;div class=&quot;update-date&quot;&gt;February 8, 2026&lt;/div&gt;
-
-        &lt;div class=&quot;update-title&quot;&gt;Smart Money Intelligence System&lt;/div&gt;
-
-        &lt;div class=&quot;update-body&quot;&gt;
-
-            &lt;ul&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-new&quot;&gt;New&lt;/span&gt; &lt;strong&gt;Smart Money dashboard&lt;/strong&gt; &mdash; 6-tab interface for SEC 13F, insider trading (Form 4), analyst ratings, and WSB sentiment&lt;/li&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-new&quot;&gt;New&lt;/span&gt; &lt;strong&gt;Challenger Bot&lt;/strong&gt; &mdash; 20th algorithm using smart money consensus score&lt;/li&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-new&quot;&gt;New&lt;/span&gt; &lt;strong&gt;GitHub Actions automation&lt;/strong&gt; &mdash; data refreshed weekdays 6 AM + Sundays 9 AM EST&lt;/li&gt;
-
-            &lt;/ul&gt;
-
-        &lt;/div&gt;
-
-    &lt;/div&gt;
-
-
-
-    &lt;!-- Feb 5, 2026 --&gt;
-
-    &lt;div class=&quot;update-entry&quot;&gt;
-
-        &lt;div class=&quot;update-date&quot;&gt;February 5, 2026&lt;/div&gt;
-
-        &lt;div class=&quot;update-title&quot;&gt;Live Trading Monitor &amp; Algorithm Performance&lt;/div&gt;
-
-        &lt;div class=&quot;update-body&quot;&gt;
-
-            &lt;ul&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-new&quot;&gt;New&lt;/span&gt; &lt;strong&gt;20-algorithm live monitor&lt;/strong&gt; &mdash; real-time paper trading across crypto, forex, and stocks&lt;/li&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-new&quot;&gt;New&lt;/span&gt; &lt;strong&gt;L vs O performance tracking&lt;/strong&gt; &mdash; compare learned vs original algorithm parameters&lt;/li&gt;
-
-                &lt;li&gt;&lt;span class=&quot;tag tag-new&quot;&gt;New&lt;/span&gt; &lt;strong&gt;Goldmine prediction auditing&lt;/strong&gt; &mdash; algorithm accuracy verification system&lt;/li&gt;
-
-            &lt;/ul&gt;
-
-        &lt;/div&gt;
-
-    &lt;/div&gt;
-
-
-
-    &lt;div class=&quot;footer-note&quot;&gt;
-
-        All data is from paper trading simulations. Not financial advice. Past performance does not guarantee future results.
-
-    &lt;/div&gt;
-
-&lt;/div&gt;
-
-
-
-&lt;script src=&quot;/findstocks/portfolio2/stock-nav.js&quot;&gt;&lt;/script&gt;
-
-&lt;script src=&quot;/live-monitor/api/scope_labels.js&quot;&gt;&lt;/script&gt;
-
-&lt;/body&gt;
-
-&lt;/html&gt
-    <!-- AI System Evaluation / Deep Research -->
-    <div class="update-entry" style="border-color: rgba(167, 139, 250, 0.4); box-shadow: 0 0 16px rgba(167, 139, 250, 0.1);">
-        <div class="update-date">February 12, 2026</div>
-        <div class="update-title">🧠 AI System Evaluation &amp; Deep Research</div>
-        <div class="update-body">
-            <p>Comprehensive algorithm analysis performed by <strong>9 different AI systems</strong>, each independently evaluating our trading algorithms, comparing against industry standards (Renaissance, Two Sigma, Citadel, AQR), and proposing enhancement roadmaps. <a href="/findstocks/ai-research/">View all &rarr;</a></p>
-            <ul>
-                <li><span class="tag tag-review">Research</span> <strong><a href="/findstocks/ai-research/antigravity-motherload.html">Antigravity (Gemini 2.0 Flash)</a></strong> &mdash; Complete algorithm analysis &amp; industry standards comparison</li>
-                <li><span class="tag tag-review">Research</span> <strong><a href="/findstocks/ai-research/windsurf-motherload.html">Windsurf Cascade</a></strong> &mdash; Battle plan with 50+ upgrades, live data audit</li>
-                <li><span class="tag tag-review">Research</span> <strong><a href="/findstocks/ai-research/kimi-agentswarm-motherload.html">Kimi Agent Swarm</a></strong> &mdash; Agent swarm architecture &amp; technical deep-dive</li>
-                <li><span class="tag tag-review">Research</span> <strong><a href="/findstocks/ai-research/kimi-motherload.html">Kimi AI</a></strong> &mdash; 23-algorithm inventory &amp; performance analysis</li>
-                <li><span class="tag tag-review">Research</span> <strong><a href="/findstocks/ai-research/deepseek-motherload.html">DeepSeek V3.1 (671B)</a></strong> &mdash; Enhancement roadmap &amp; phased implementation</li>
-                <li><span class="tag tag-review">Research</span> <strong><a href="/findstocks/ai-research/opus46-motherload.html">Opus 4.6 (Anthropic)</a></strong> &mdash; Zero-budget quant empire roadmap</li>
-                <li><span class="tag tag-review">Research</span> <strong><a href="/findstocks/ai-research/grok-xai-motherload.html">Grok-4 (xAI)</a></strong> &mdash; Zero-budget quant arsenal &amp; code drafts</li>
-                <li><span class="tag tag-review">Research</span> <strong><a href="/findstocks/ai-research/github-motherload.html">GitHub Copilot</a></strong> &mdash; Underdog vs. big players strategy</li>
-                <li><span class="tag tag-review">Research</span> <strong><a href="/findstocks/ai-research/chatgpt-codex-motherload.html">ChatGPT Codex</a></strong> &mdash; Phased strategy roadmap</li>
-            </ul>
-            <p style="margin-top:0.75rem; color: #666688; font-size: 0.85rem;">All documents have been sanitized &mdash; security-sensitive information (database schemas, API keys, internal infrastructure) has been redacted.</p>
+        .hero { background: linear-gradient(135deg, #12122a 0%, #1a1040 50%, #0a0e1a 100%); border-bottom: 1px solid #1e1e3a; padding: 2.5rem 2rem 2rem; text-align: center; }
+        .hero h1 { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #6366f1, #a78bfa, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.4rem; }
+        .hero .subtitle { color: #8888aa; font-size: 1rem; }
+        .container { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem 3rem; }
+        .update-entry { background: #12122a; border: 1px solid #1e1e3a; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .update-entry:first-child { border-color: rgba(255, 215, 0, 0.4); box-shadow: 0 0 12px rgba(255, 215, 0, 0.08); }
+        .update-date { font-size: 0.8rem; color: #8888aa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.3rem; }
+        .update-title { font-size: 1.2rem; font-weight: 700; color: #e0e0f0; margin-bottom: 0.75rem; }
+        .update-body { font-size: 0.9rem; color: #aaaacc; line-height: 1.7; }
+        .update-body ul { margin: 0.5rem 0 0.5rem 1.5rem; }
+        .update-body li { margin-bottom: 0.3rem; }
+        .update-body strong { color: #e0e0f0; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; margin-right: 6px; }
+        .tag-improvement { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+        .tag-new { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+        .tag-fix { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+        .tag-review { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .tag-beta { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+        .tag-challenge { background: rgba(255, 107, 53, 0.15); color: #ff6b35; }
+        .tag-results { background: rgba(255, 215, 0, 0.15); color: #ffd700; }
+        .tag-auto { background: rgba(6, 182, 212, 0.15); color: #06b6d4; }
+        .quick-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 1rem 0; }
+        .quick-links a { font-size: 0.8rem; padding: 6px 14px; border-radius: 8px; border: 1px solid #2a2a4a; background: #1a1a3a; color: #aaa; transition: all 0.15s; }
+        .quick-links a:hover { border-color: #6366f1; color: #6366f1; text-decoration: none; }
+        .footer-note { text-align: center; color: #555577; font-size: 0.8rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #1e1e3a; }
+        @media (max-width: 600px) { .hero { padding: 1.5rem 1rem; } .hero h1 { font-size: 1.5rem; } .container { padding: 1rem; } .update-entry { padding: 1rem; } }
+    </style>
+</head>
+<body>
+
+<div class="hero">
+    <h1>Platform Updates</h1>
+    <p class="subtitle">Recent changes, improvements, challenges, and system status</p>
+</div>
+
+<div class="container">
+
+    <!-- Quick Links to All Dashboards -->
+    <div style="margin-bottom: 1.5rem;">
+        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #555; margin-bottom: 8px;">Quick Links &mdash; All Dashboards</div>
+        <div class="quick-links">
+            <a href="/findcryptopairs/alpha-hunter.html" style="border-color:rgba(255,215,0,0.4);color:#ffd700">Alpha Hunter</a>
+            <a href="/findcryptopairs/pro-signals.html" style="border-color:rgba(255,107,53,0.4);color:#ff6b35">Pro Signals (100 Strats)</a>
+            <a href="/findcryptopairs/pump-watch.html" style="border-color:rgba(249,115,22,0.4);color:#f97316">Pump Watch</a>
+            <a href="/findcryptopairs/algo-competition.html" style="border-color:rgba(6,182,212,0.4);color:#06b6d4">Algo Battle</a>
+            <a href="/findcryptopairs/ai-predictions.html" style="border-color:rgba(168,85,247,0.4);color:#a855f7">AI Predictions</a>
+            <a href="/findcryptopairs/predictions.html">Prediction Tracker</a>
+            <a href="/findcryptopairs/btcc-scanner.html">BTCC Scanner</a>
+            <a href="/findcryptopairs/meme.html">Meme Scanner</a>
+            <a href="/findcryptopairs/winners.html">Winner Scanner</a>
+            <a href="/findcryptopairs/">Crypto Hub</a>
+            <a href="/live-monitor/live-monitor.html">Live Monitor</a>
+            <a href="/live-monitor/command-center.html">Command Center</a>
+            <a href="/live-monitor/smart-money.html">Smart Money</a>
+            <a href="/live-monitor/sports-betting.html">Sports Betting</a>
+            <a href="/findstocks/portfolio2/consolidated.html">Stock Picks</a>
         </div>
     </div>
 
-    ;
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 14, 2026 — Alpha Hunter -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry" style="border-color: rgba(255, 215, 0, 0.4); box-shadow: 0 0 16px rgba(255, 215, 0, 0.08);">
+        <div class="update-date">February 14, 2026</div>
+        <div class="update-title">Alpha Hunter &mdash; Reverse-Engineer Past Pump Winners</div>
+        <div class="update-body">
+            <p><span class="tag tag-challenge">Challenge</span> Instead of designing strategies from theory, <strong>study what actually happened before real pumps</strong> and extract the common pattern. This is what paid Discord alpha groups do.</p>
+            <ul>
+                <li><span class="tag tag-new">New</span> <strong><a href="/findcryptopairs/alpha-hunter.html">Alpha Hunter Dashboard</a></strong> &mdash; Scanned 55 Kraken pairs, found <strong>405 verified pump events</strong> (15%+ in 3-4 candles), reverse-engineered what indicators looked like 5 candles BEFORE each pump</li>
+                <li><span class="tag tag-results">Results</span> <strong>Pre-Pump Fingerprint</strong>: Avg RSI=47.4 (neutral), BB in lower half (value zone), ADX=33 (consolidation), MACD negative-to-positive flip, 24.4% had BB squeeze, 38.8% near support</li>
+                <li><span class="tag tag-results">Results</span> <strong>5 active signals</strong>: LRC/USD (score 77), FLOW/USD (67), DOG/USD (50), AXS/USD (47), XRP/USD (40) &mdash; all matching the pre-pump fingerprint</li>
+                <li><span class="tag tag-auto">Auto</span> <strong>GitHub Actions</strong>: Full pipeline every 4h, quick scan every 30 min, signal monitoring every 6h</li>
+                <li><span class="tag tag-improvement">Improvement</span> 12 scoring traits: BB squeeze, OBV divergence, volume accumulation, higher lows, MACD momentum shift, stochastic oversold, MFI accumulation, ATR volatility, support proximity</li>
+                <li><span class="tag tag-auto">Auto</span> Client-side auto-refresh every 2 minutes with live countdown</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 13-14 — Pro Signal Engine -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry" style="border-color: rgba(255, 107, 53, 0.4); box-shadow: 0 0 16px rgba(255, 107, 53, 0.08);">
+        <div class="update-date">February 13&ndash;14, 2026</div>
+        <div class="update-title">Pro Signal Engine &mdash; 100 Strategy Tournament &amp; Confluence Scanner</div>
+        <div class="update-body">
+            <p><span class="tag tag-challenge">Challenge</span> Backtest 100 different strategies across volatile Kraken pairs to find "extremely high certainty signals" like paid Discord groups provide.</p>
+            <ul>
+                <li><span class="tag tag-new">New</span> <strong><a href="/findcryptopairs/pro-signals.html">Pro Signal Engine</a></strong> &mdash; 100 distinct strategies (Trend, Mean Reversion, Momentum, Breakout, Volume, Smart Money, Regime, Confluence) backtested across 25 volatile pairs</li>
+                <li><span class="tag tag-results">Results</span> <strong>Tournament elimination</strong>: Activity &rarr; Win Rate (33%+) &rarr; Profit Factor (1.0+) &rarr; Drawdown (&lt;40%) &rarr; Composite Score. <strong>100 strategies filtered to 15 winners</strong></li>
+                <li><span class="tag tag-results">Results</span> <strong>12 confluence signals</strong> generated. Top: ZEC/USD (6 strategies agree, 70% confidence), COMP/USD (5 strategies, 65%), BCH/USD (4 strategies, 60%)</li>
+                <li><span class="tag tag-improvement">Improvement</span> ATR-based TP/SL with trailing stops replaced fixed-% exits for realistic volatile-market execution</li>
+                <li><span class="tag tag-new">New</span> Full audit trail &mdash; every tournament round, elimination reason, and signal logged</li>
+                <li><span class="tag tag-auto">Auto</span> <strong>GitHub Actions added</strong> &mdash; Full pipeline every 6h, live scan every 2h</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 13 — Pump Watch v2 -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry" style="border-color: rgba(249, 115, 22, 0.4);">
+        <div class="update-date">February 13, 2026</div>
+        <div class="update-title">Pump Watch v2 &mdash; Forensic Pump Scanner (3,375 episodes)</div>
+        <div class="update-body">
+            <ul>
+                <li><span class="tag tag-new">New</span> <strong><a href="/findcryptopairs/pump-watch.html">Pump Watch Dashboard</a></strong> &mdash; Scanned 616 Kraken pairs across 2 years. Found <strong>3,375 verified pump episodes</strong> (50%+ in 7 days). Filtered out 59 rug pulls</li>
+                <li><span class="tag tag-results">Results</span> 8-component scoring model: RSI, BB squeeze, volume accumulation, OBV divergence, MACD, higher lows, ATR, support proximity</li>
+                <li><span class="tag tag-auto">Auto</span> 231 live pairs scored every 4h via GitHub Actions with automatic TP/SL tracking</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 13 — Algo Competition + Consensus -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry">
+        <div class="update-date">February 13, 2026</div>
+        <div class="update-title">Algorithm Competition &mdash; 10 Algorithms Head-to-Head + Consensus Check</div>
+        <div class="update-body">
+            <p><span class="tag tag-challenge">Challenge</span> Research 10 extra algorithms (half academic, half social media), make them compete, and check if consensus picks perform better.</p>
+            <ul>
+                <li><span class="tag tag-new">New</span> <strong><a href="/findcryptopairs/algo-competition.html">Algorithm Battle Royale</a></strong> &mdash; 10 algorithms competing on live crypto predictions</li>
+                <li><span class="tag tag-review">Research</span> 5 academic: RSI Mean Reversion, MACD Crossover, Bollinger Breakout, Ichimoku Cloud, Multi-Confluence</li>
+                <li><span class="tag tag-review">Research</span> 5 social media: OBV Divergence, Smart Money Concepts, Volume Profile, Twitter Momentum, Reddit Sentiment</li>
+                <li><span class="tag tag-results">Results</span> <strong>Consensus check</strong>: picks common between 3+ algorithms showed higher win rates than individual algorithms</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 13 — AI Predictions + Meme Monitoring -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry">
+        <div class="update-date">February 13, 2026</div>
+        <div class="update-title">AI Price Predictions &amp; Meme Coin Monitoring</div>
+        <div class="update-body">
+            <p><span class="tag tag-challenge">Challenge</span> Make AI predictions on trending meme coins, track them live, and see if the theory is right or wrong.</p>
+            <ul>
+                <li><span class="tag tag-new">New</span> <strong><a href="/findcryptopairs/ai-predictions.html">AI Predictions Dashboard</a></strong> &mdash; AI-generated price predictions with confidence scores, TP/SL, and thesis</li>
+                <li><span class="tag tag-new">New</span> <strong><a href="/findcryptopairs/predictions.html">Prediction Tracker</a></strong> &mdash; Full log with entry/exit timestamps, P&amp;L, and verification vs real prices</li>
+                <li><span class="tag tag-auto">Auto</span> Meme signals collected every 10-15 min, ML training weekly via GitHub Actions</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 13 — External Validation -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry">
+        <div class="update-date">February 13, 2026</div>
+        <div class="update-title">External Validation &amp; Expert Feedback Received</div>
+        <div class="update-body">
+            <ul>
+                <li><span class="tag tag-review">Validation</span> <strong><a href="/findcryptopairs/feedback-validation-feb13-2026.html">External Technical Review</a></strong> &mdash; Independent validation of meme coin scanner data accuracy and methodology</li>
+                <li><span class="tag tag-improvement">Confirmed</span> PENGU, DOGE, PEPE data accuracy validated against live market conditions</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 12 — Enhanced Meme Scanner -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry">
+        <div class="update-date">February 12, 2026</div>
+        <div class="update-title">Enhanced Meme Coin Scanner with Failover API</div>
+        <div class="update-body">
+            <ul>
+                <li><span class="tag tag-new">New</span> <strong>Enhanced Meme Scanner API</strong> &mdash; Failover chain using multiple APIs and scrapers for improved data reliability</li>
+                <li><span class="tag tag-improvement">Improvement</span> Aggregated data from CoinGecko, CoinMarketCap, Kraken</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 12 — Command Center -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry">
+        <div class="update-date">February 12, 2026</div>
+        <div class="update-title">Command Center &amp; Asset Class Scope Labels</div>
+        <div class="update-body">
+            <ul>
+                <li><span class="tag tag-new">New</span> <strong><a href="/live-monitor/command-center.html">Command Center</a></strong> &mdash; Unified HQ dashboard showing real-time stats across all 6 asset classes (stocks, crypto, forex, meme coins, penny stocks, sports betting)</li>
+                <li><span class="tag tag-new">New</span> Scope labels on all pages &mdash; color-coded banner indicating asset class scope</li>
+                <li><span class="tag tag-auto">Auto</span> GitHub Actions refreshes Command Center cache every 15 minutes during market hours</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 12 — AI Research -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry" style="border-color: rgba(167, 139, 250, 0.4);">
+        <div class="update-date">February 12, 2026</div>
+        <div class="update-title">AI System Evaluation &amp; Deep Research</div>
+        <div class="update-body">
+            <p>Comprehensive algorithm analysis by <strong>9 different AI systems</strong>, each independently evaluating our trading algorithms.</p>
+            <ul>
+                <li><span class="tag tag-review">Research</span> <strong><a href="/findstocks/ai-research/">View All AI Research</a></strong> &mdash; Gemini, Windsurf, Kimi, DeepSeek, Opus 4.6, Grok-4, GitHub Copilot, ChatGPT Codex</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 12 — System Review -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry">
+        <div class="update-date">February 12, 2026</div>
+        <div class="update-title">System Performance Review &amp; Improvements</div>
+        <div class="update-body">
+            <ul>
+                <li><span class="tag tag-improvement">Improvement</span> Algorithm parameters optimized &mdash; profit targets and stop losses tightened</li>
+                <li><span class="tag tag-review">Review</span> Underperforming algorithms paused</li>
+                <li><span class="tag tag-improvement">Improvement</span> Crypto scanner signals aligned with proven goldmine patterns</li>
+            </ul>
+            <p style="margin-top:0.75rem;">All trading on this platform is <strong>paper trading only</strong> (simulated). No real money is at risk.</p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 11 — Consolidated Picks -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry">
+        <div class="update-date">February 11, 2026</div>
+        <div class="update-title">Consolidated Picks Live Tracking Begins</div>
+        <div class="update-body">
+            <ul>
+                <li><span class="tag tag-new">New</span> Daily price tracking &mdash; GitHub Actions refreshes prices for all 65 positions at 23:30 UTC weekdays</li>
+                <li><span class="tag tag-new">New</span> Auto-diagnosis engine &mdash; sector performance, algorithm report cards generated from real data</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 10 — Consolidated + $200/Day -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry">
+        <div class="update-date">February 10, 2026</div>
+        <div class="update-title">Consolidated Picks &amp; $200/Day Challenge Launch</div>
+        <div class="update-body">
+            <ul>
+                <li><span class="tag tag-new">New</span> Consolidated Picks tracker &mdash; consensus-based with 65 positions from 20 algorithms</li>
+                <li><span class="tag tag-challenge">Challenge</span> $200/Day Challenge &mdash; daily P&amp;L tracking in consensus and ML-enhanced modes</li>
+                <li><span class="tag tag-new">New</span> Self-learning tab &mdash; pattern detection engine (activates after 5+ closed trades)</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 8 — Smart Money -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry">
+        <div class="update-date">February 8, 2026</div>
+        <div class="update-title">Smart Money Intelligence System</div>
+        <div class="update-body">
+            <ul>
+                <li><span class="tag tag-new">New</span> <strong><a href="/live-monitor/smart-money.html">Smart Money Dashboard</a></strong> &mdash; SEC 13F, insider trading, analyst ratings, WSB sentiment</li>
+                <li><span class="tag tag-new">New</span> Challenger Bot &mdash; 20th algorithm using smart money consensus score</li>
+                <li><span class="tag tag-auto">Auto</span> GitHub Actions: data refreshed weekdays 6 AM + Sundays 9 AM EST</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 5 — Live Monitor -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry">
+        <div class="update-date">February 5, 2026</div>
+        <div class="update-title">Live Trading Monitor &amp; Algorithm Performance</div>
+        <div class="update-body">
+            <ul>
+                <li><span class="tag tag-new">New</span> <strong><a href="/live-monitor/live-monitor.html">20-algorithm live monitor</a></strong> &mdash; real-time paper trading across crypto, forex, and stocks</li>
+                <li><span class="tag tag-new">New</span> L vs O performance tracking &mdash; compare learned vs original algorithm parameters</li>
+                <li><span class="tag tag-new">New</span> Goldmine prediction auditing &mdash; algorithm accuracy verification system</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- GitHub Actions Status Summary -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry" style="border-color: rgba(6, 182, 212, 0.3);">
+        <div class="update-date">Automated Systems</div>
+        <div class="update-title">GitHub Actions &mdash; Active Automation Summary</div>
+        <div class="update-body">
+            <p>All systems below run automatically 24/7 via GitHub Actions:</p>
+            <ul>
+                <li><span class="tag tag-auto">Every 30m</span> <strong>Alpha Hunter</strong> quick scan (full pipeline every 4h)</li>
+                <li><span class="tag tag-auto">Every 2h</span> <strong>Pro Signal Engine</strong> live scan (full pipeline every 6h)</li>
+                <li><span class="tag tag-auto">Every 4h</span> <strong>Pump Watch</strong> forensic scan of 231 pairs</li>
+                <li><span class="tag tag-auto">Every 15m</span> <strong>Crypto Winner Scanner</strong> 600+ pairs momentum scan</li>
+                <li><span class="tag tag-auto">Every 10m</span> <strong>Meme Scanner</strong> meme coin signal collection + ML sync</li>
+                <li><span class="tag tag-auto">Every 30m</span> <strong>Live Monitor</strong> prices, signals, positions refresh</li>
+                <li><span class="tag tag-auto">Every 15m</span> <strong>Command Center</strong> aggregated stats during market hours</li>
+                <li><span class="tag tag-auto">Every 3h</span> <strong>Sports Betting</strong> odds refresh &amp; auto-settle</li>
+                <li><span class="tag tag-auto">Daily</span> <strong>Stock Portfolio</strong> price tracking &amp; performance calculation</li>
+                <li><span class="tag tag-auto">Daily</span> <strong>Alpha Engine</strong> stock picks generation</li>
+                <li><span class="tag tag-auto">Weekly</span> <strong>ML Training</strong> self-learning, pattern detection, regime analysis</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        All data is from paper trading simulations. Not financial advice. Past performance does not guarantee future results.
+    </div>
+</div>
+
+<script src="/findstocks/portfolio2/stock-nav.js"></script>
+<script src="/live-monitor/api/scope_labels.js"></script>
+</body>
+</html>

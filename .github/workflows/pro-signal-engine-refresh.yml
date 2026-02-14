@@ -1,0 +1,122 @@
+name: Pro Signal Engine — Tournament & Scan
+
+on:
+  schedule:
+    # Every 6 hours — full pipeline: fetch data, run all 100 backtests, tournament, live scan
+    - cron: '0 */6 * * *'
+    # Every 2 hours — quick live scan only (reuse existing tournament winners)
+    - cron: '30 1,3,5,7,9,11,13,15,17,19,21,23 * * *'
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  pro-signal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    # ─── Step 1: Full pipeline every 6 hours ───
+    - name: Fetch OHLCV data for all volatile pairs
+      if: github.event.schedule == '0 */6 * * *' || github.event_name == 'workflow_dispatch'
+      continue-on-error: true
+      run: |
+        echo "=== Pro Signal Engine — Fetching OHLCV data ==="
+        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findcryptopairs/api/pro_signal_engine.php?action=fetch_data") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Pairs cached: {d.get(\"pairs_cached\",0)}')
+                print(f'Candles: {d.get(\"total_candles\",0)}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Parse error')
+        " || echo "Fetch: $RESULT"
+
+    - name: Run all 100 strategy backtests
+      if: github.event.schedule == '0 */6 * * *' || github.event_name == 'workflow_dispatch'
+      continue-on-error: true
+      run: |
+        echo "=== Running 100 strategy backtests ==="
+        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findcryptopairs/api/pro_signal_engine.php?action=run_all") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Strategies: {d.get(\"strategies\",0)} | Pairs: {d.get(\"pairs\",0)}')
+                print(f'Tests: {d.get(\"tests_run\",0)} | Elapsed: {d.get(\"elapsed_sec\",0)}s')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Parse error')
+        " || echo "Run: $RESULT"
+
+    - name: Run tournament elimination
+      if: github.event.schedule == '0 */6 * * *' || github.event_name == 'workflow_dispatch'
+      continue-on-error: true
+      run: |
+        echo "=== Tournament elimination ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/api/pro_signal_engine.php?action=tournament") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                w = d.get('winners',[])
+                print(f'Winners: {len(w)}')
+                for s in w[:10]:
+                    print(f'  {s.get(\"name\",\"?\"):30s} WR={s.get(\"avg_wr\",0):.1f}% PF={s.get(\"avg_pf\",0):.2f} score={s.get(\"composite\",0):.2f}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Parse error')
+        " || echo "Tournament: $RESULT"
+
+    # ─── Step 2: Live scan (runs every 2h + every 6h) ───
+    - name: Live scan for pro signals
+      continue-on-error: true
+      run: |
+        echo "=== Scanning for confluence pro signals ==="
+        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findcryptopairs/api/pro_signal_engine.php?action=live_scan") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                sigs = d.get('pro_signals', [])
+                print(f'Pro signals found: {len(sigs)}')
+                print(f'Strategies used: {d.get(\"strategies_used\",0)} | Pairs: {d.get(\"pairs_scanned\",0)}')
+                for s in sigs:
+                    pair = s.get('pair','?').replace('USD','')
+                    print(f'  {pair+\"/USD\":14s} conf={s.get(\"confluence_count\",0)} dir={s.get(\"direction\",\"?\")} TP={s.get(\"tp_pct\",0):.1f}% SL={s.get(\"sl_pct\",0):.1f}%')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Parse error')
+        " || echo "Scan: $RESULT"
+
+    # ─── Step 3: Print signal summary ───
+    - name: Print signal summary
+      continue-on-error: true
+      run: |
+        echo "=== Pro Signal Summary ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/findcryptopairs/api/pro_signal_engine.php?action=signals") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                active = d.get('active_signals', [])
+                stats = d.get('stats', {})
+                print(f'Active signals: {len(active)}')
+                print(f'Win rate: {stats.get(\"win_rate\",\"--\")}%')
+                print(f'Avg PnL: {stats.get(\"avg_pnl\",\"--\")}%')
+                for a in active[:10]:
+                    print(f'  {a.get(\"pair\",\"?\"):14s} confidence={a.get(\"confidence\",\"?\")}% dir={a.get(\"direction\",\"?\")}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Parse error')
+        " || echo "Signals: $RESULT"
