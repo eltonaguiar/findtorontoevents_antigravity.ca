@@ -1,0 +1,51 @@
+name: Hybrid Engine Refresh
+on:
+  schedule:
+    # Full pipeline (backtest + scan): every 8 hours
+    - cron: '0 */8 * * *'
+    # Quick scan + monitor: every 2 hours
+    - cron: '30 1,3,5,7,9,11,13,15,17,19,21,23 * * *'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action (full_run, scan, monitor, backtest)'
+        required: false
+        default: 'full_run'
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Determine action
+        id: action
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "action=${{ github.event.inputs.action }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "0 */8 * * *" ]; then
+            echo "action=full_run" >> $GITHUB_OUTPUT
+          else
+            echo "action=scan_monitor" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run full pipeline
+        if: steps.action.outputs.action == 'full_run'
+        run: |
+          echo "=== Hybrid Engine Full Pipeline ==="
+          curl -s --max-time 180 "https://findtorontoevents.ca/findcryptopairs/api/hybrid_engine.php?action=full_run" | head -c 3000
+          echo ""
+
+      - name: Run scan + monitor
+        if: steps.action.outputs.action == 'scan_monitor'
+        run: |
+          echo "=== Scan ==="
+          curl -s --max-time 90 "https://findtorontoevents.ca/findcryptopairs/api/hybrid_engine.php?action=scan" | head -c 2000
+          echo ""
+          echo "=== Monitor ==="
+          curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/api/hybrid_engine.php?action=monitor" | head -c 500
+          echo ""
+
+      - name: Run manual
+        if: steps.action.outputs.action != 'full_run' && steps.action.outputs.action != 'scan_monitor'
+        run: |
+          curl -s --max-time 180 "https://findtorontoevents.ca/findcryptopairs/api/hybrid_engine.php?action=${{ steps.action.outputs.action }}" | head -c 3000
