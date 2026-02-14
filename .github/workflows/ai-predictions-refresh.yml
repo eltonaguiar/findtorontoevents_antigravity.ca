@@ -1,0 +1,51 @@
+name: AI Predictions — Monitor & Refresh
+
+on:
+  schedule:
+    # Check live prices every 30 minutes
+    - cron: '10,40 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ai-predictions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: Monitor AI predictions (resolve TP/SL)
+      continue-on-error: true
+      run: |
+        echo "=== AI Predictions — Monitor ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/api/ai_prediction_tracker.php?action=monitor&key=ai_predict2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Checked: {d.get(\"checked\",0)} predictions')
+                print(f'Resolved: {d.get(\"resolved\",0)}')
+                for det in d.get('details', [])[:5]:
+                    print(f'  {det.get(\"symbol\",\"?\")}: PnL={det.get(\"pnl_pct\",0):+.2f}%')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Monitor done')
+        " || echo "Monitor: $RESULT"
+
+    - name: Print stats
+      continue-on-error: true
+      run: |
+        echo "=== AI Predictions — Stats ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/findcryptopairs/api/ai_prediction_tracker.php?action=stats") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                o = d.get('overall', {})
+                print(f'Total: {o.get(\"total_predictions\",0)} | Open: {o.get(\"open\",0)} | Resolved: {o.get(\"resolved\",0)}')
+                print(f'Wins: {o.get(\"wins\",0)} | Losses: {o.get(\"losses\",0)} | Win Rate: {o.get(\"win_rate\",0)}%')
+                print(f'Avg Open PnL: {o.get(\"avg_open_pnl\",0):+.2f}%')
+        except:
+            print('Stats loaded')
+        " || echo "Stats: $RESULT"

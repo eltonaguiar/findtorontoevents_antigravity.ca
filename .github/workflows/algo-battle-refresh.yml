@@ -1,0 +1,94 @@
+name: Algo Battle Royale — Monitor & Refresh
+
+on:
+  schedule:
+    # Monitor live prices every 30 minutes (resolve TP/SL)
+    - cron: '*/30 * * * *'
+    # Run new predictions every 6 hours
+    - cron: '0 */6 * * *'
+    # Consensus analysis every 12 hours
+    - cron: '30 */12 * * *'
+  workflow_dispatch:
+
+jobs:
+  algo-battle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - name: Monitor live prices (resolve TP/SL)
+      continue-on-error: true
+      run: |
+        echo "=== Algo Battle — Monitor ==="
+        RESULT=$(curl -s --max-time 45 "https://findtorontoevents.ca/findcryptopairs/api/algo_battle.php?action=monitor&key=algo_battle_2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Checked: {d.get(\"checked\",0)} open picks')
+                print(f'Resolved: {d.get(\"resolved\",0)}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Monitor done (or parse issue)')
+        " || echo "Monitor: $RESULT"
+
+    - name: Run new predictions (6h schedule)
+      continue-on-error: true
+      if: github.event.schedule == '0 */6 * * *' || github.event_name == 'workflow_dispatch'
+      run: |
+        echo "=== Algo Battle — Run All Algos ==="
+        RESULT=$(curl -s --max-time 90 "https://findtorontoevents.ca/findcryptopairs/api/algo_battle.php?action=run_all&key=algo_battle_2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Batch: {d.get(\"batch_id\",\"?\")}')
+                print(f'Predictions made: {d.get(\"total_predictions\",0)}')
+                for p in d.get('predictions', [])[:10]:
+                    print(f'  {p.get(\"algo_name\",\"?\")}: {p.get(\"symbol\",\"?\")} {p.get(\"direction\",\"?\")} conf={p.get(\"confidence\",\"?\")}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Run complete (or parse issue)')
+        " || echo "Run: $RESULT"
+
+    - name: Consensus check (12h schedule)
+      continue-on-error: true
+      if: github.event.schedule == '30 */12 * * *' || github.event_name == 'workflow_dispatch'
+      run: |
+        echo "=== Algo Battle — Consensus ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/api/algo_battle.php?action=consensus") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                cons = d.get('consensus', [])
+                print(f'Consensus picks: {len(cons)}')
+                for c in cons[:10]:
+                    print(f'  {c.get(\"symbol\",\"?\")}: {c.get(\"algo_count\",0)} algos agree, grade={c.get(\"grade\",\"?\")}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Consensus done')
+        " || echo "Consensus: $RESULT"
+
+    - name: Print leaderboard
+      continue-on-error: true
+      run: |
+        echo "=== Algo Battle — Leaderboard ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/findcryptopairs/api/algo_battle.php?action=leaderboard") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                for a in d.get('leaderboard', []):
+                    wr = a.get('win_rate', 0)
+                    print(f'  {a[\"algo_name\"]:<28} Picks:{a[\"total_picks\"]:>3} Open:{a[\"open_picks\"]:>3} W:{a[\"wins\"]} L:{a[\"losses\"]} WR:{wr}%')
+        except:
+            print('Parse error')
+        " || echo "LB: $RESULT"

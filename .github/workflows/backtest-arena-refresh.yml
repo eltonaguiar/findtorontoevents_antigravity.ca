@@ -1,0 +1,91 @@
+name: Backtest Arena — Monitor & Refresh
+
+on:
+  schedule:
+    # Monitor active picks every hour
+    - cron: '15 * * * *'
+    # Re-run backtests and generate new picks daily at 6 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  backtest-arena:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Monitor active picks
+      continue-on-error: true
+      run: |
+        echo "=== Backtest Arena — Monitor Picks ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/api/backtest100.php?action=monitor_picks&key=bt100_2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Checked: {d.get(\"checked\",0)} picks')
+                print(f'Resolved: {d.get(\"resolved\",0)}')
+            else:
+                print(f'Response: {str(d)[:200]}')
+        except:
+            print('Monitor done')
+        " || echo "Monitor: $RESULT"
+
+    - name: Run backtest batch (daily)
+      continue-on-error: true
+      if: github.event.schedule == '0 6 * * *' || github.event_name == 'workflow_dispatch'
+      run: |
+        echo "=== Backtest Arena — Batch Run ==="
+        RESULT=$(curl -s --max-time 90 "https://findtorontoevents.ca/findcryptopairs/api/backtest100.php?action=backtest_batch&key=bt100_2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Backtested: {d.get(\"tested\",0)} strategy-pair combos')
+                print(f'Elapsed: {d.get(\"elapsed_sec\",0)}s')
+            else:
+                print(f'Response: {str(d)[:200]}')
+        except:
+            print('Batch done')
+        " || echo "Batch: $RESULT"
+
+    - name: Generate top picks (daily)
+      continue-on-error: true
+      if: github.event.schedule == '0 6 * * *' || github.event_name == 'workflow_dispatch'
+      run: |
+        echo "=== Backtest Arena — Generate Picks ==="
+        RESULT=$(curl -s --max-time 60 "https://findtorontoevents.ca/findcryptopairs/api/backtest100.php?action=top_picks&key=bt100_2026") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                picks = d.get('picks', [])
+                print(f'Top picks generated: {len(picks)}')
+                for p in picks[:10]:
+                    print(f'  {p.get(\"pair\",\"?\"):<16} {p.get(\"direction\",\"?\")} certainty={p.get(\"certainty_pct\",\"?\")}%')
+            else:
+                print(f'Response: {str(d)[:200]}')
+        except:
+            print('Picks done')
+        " || echo "Picks: $RESULT"
+
+    - name: Print rankings
+      continue-on-error: true
+      run: |
+        echo "=== Backtest Arena — Strategy Rankings ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/findcryptopairs/api/backtest100.php?action=rank") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                ranked = d.get('rankings', d.get('top', []))
+                print(f'Top strategies: {len(ranked)}')
+                for s in ranked[:10]:
+                    print(f'  {s.get(\"strategy_name\",s.get(\"name\",\"?\")):<30} WR:{s.get(\"win_rate\",\"?\")}%')
+        except:
+            print('Rankings loaded')
+        " || echo "Rank: $RESULT"
