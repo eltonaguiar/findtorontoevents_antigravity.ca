@@ -1,0 +1,57 @@
+name: Proven Picks — Forward Test Pipeline
+on:
+  schedule:
+    # Generate new picks every 4 hours (polls all 6 engines)
+    - cron: '0 */4 * * *'
+    # Monitor active picks every hour
+    - cron: '30 * * * *'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to run'
+        required: false
+        default: 'full_run'
+        type: choice
+        options:
+          - full_run
+          - generate
+          - monitor
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Determine action
+        id: action
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "action=${{ github.event.inputs.action }}" >> $GITHUB_OUTPUT
+          elif [ "$(date +%M)" = "00" ]; then
+            echo "action=full_run" >> $GITHUB_OUTPUT
+          else
+            echo "action=monitor" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run full pipeline (generate + monitor)
+        if: steps.action.outputs.action == 'full_run' || steps.action.outputs.action == 'generate'
+        run: |
+          echo "=== Proven Picks: Full Run ==="
+          echo "Step 1: Monitor existing picks..."
+          curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/api/proven_picks.php?action=monitor"
+          echo ""
+          echo "Step 2: Generate new consensus picks..."
+          curl -s --max-time 120 "https://findtorontoevents.ca/findcryptopairs/api/proven_picks.php?action=generate"
+          echo ""
+          echo "Step 3: Update equity curve..."
+          curl -s --max-time 10 "https://findtorontoevents.ca/findcryptopairs/api/proven_picks.php?action=equity"
+          echo ""
+          echo "Done."
+
+      - name: Monitor active picks
+        if: steps.action.outputs.action == 'monitor'
+        run: |
+          echo "=== Proven Picks: Monitor ==="
+          curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/api/proven_picks.php?action=monitor"
+          echo ""
+          echo "Done."

@@ -1,0 +1,48 @@
+name: Expert Consensus Engine Refresh
+on:
+  schedule:
+    - cron: '0 */4 * * *'   # Full analysis every 4 hours
+    - cron: '15 */2 * * *'  # Monitor active signals every 2 hours
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to run'
+        required: false
+        default: 'full_run'
+        type: choice
+        options:
+          - full_run
+          - analyze
+          - monitor
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Determine action
+        id: action
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "action=${{ github.event.inputs.action }}" >> $GITHUB_OUTPUT
+          elif [ "$(date +%M)" = "00" ]; then
+            echo "action=full_run" >> $GITHUB_OUTPUT
+          else
+            echo "action=monitor" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run full analysis
+        if: steps.action.outputs.action == 'full_run' || steps.action.outputs.action == 'analyze'
+        run: |
+          echo "Running Expert Consensus full analysis..."
+          curl -s --max-time 120 "https://findtorontoevents.ca/findcryptopairs/api/expert_consensus.php?action=analyze"
+          echo ""
+          echo "Done."
+
+      - name: Monitor active signals
+        if: steps.action.outputs.action == 'monitor' || steps.action.outputs.action == 'full_run'
+        run: |
+          echo "Monitoring active signals..."
+          curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/api/expert_consensus.php?action=monitor"
+          echo ""
+          echo "Done."

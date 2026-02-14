@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expert Consensus Engine — SME Intelligence Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0d1117;color:#c9d1d9;min-height:100vh}
+.header{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);padding:24px;border-bottom:2px solid rgba(255,152,0,0.3);text-align:center}
+.header h1{font-size:1.8em;color:#ff9800;margin-bottom:8px}
+.header p{color:#8b949e;font-size:0.95em;max-width:800px;margin:0 auto}
+.nav-bar{display:flex;gap:10px;justify-content:center;padding:12px;flex-wrap:wrap;background:#161b22;border-bottom:1px solid #30363d}
+.nav-bar a{padding:6px 14px;border-radius:6px;font-size:0.82em;text-decoration:none;border:1px solid #30363d;color:#8b949e;transition:all .2s}
+.nav-bar a:hover,.nav-bar a.active{background:rgba(255,152,0,0.1);color:#ff9800;border-color:rgba(255,152,0,0.4)}
+.container{max-width:1400px;margin:0 auto;padding:16px}
+.grid{display:grid;gap:16px;margin-bottom:20px}
+.grid-2{grid-template-columns:1fr 1fr}
+.grid-3{grid-template-columns:1fr 1fr 1fr}
+.card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:16px}
+.card h3{color:#ff9800;font-size:1.05em;margin-bottom:10px;border-bottom:1px solid #21262d;padding-bottom:8px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #21262d}
+.stat-row:last-child{border:none}
+.stat-label{color:#8b949e;font-size:0.85em}
+.stat-val{color:#e6edf3;font-weight:600}
+.val-green{color:#3fb950!important} .val-red{color:#f85149!important} .val-amber{color:#ff9800!important} .val-blue{color:#58a6ff!important}
+
+.signal-card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:16px;margin-bottom:12px}
+.signal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.signal-pair{font-size:1.3em;font-weight:700;color:#e6edf3}
+.signal-dir{padding:4px 10px;border-radius:4px;font-size:0.85em;font-weight:700}
+.signal-dir.LONG{background:rgba(63,185,80,0.15);color:#3fb950;border:1px solid rgba(63,185,80,0.3)}
+.signal-dir.SHORT{background:rgba(248,81,73,0.15);color:#f85149;border:1px solid rgba(248,81,73,0.3)}
+.signal-state{font-size:0.75em;padding:3px 8px;border-radius:3px;background:rgba(255,152,0,0.1);color:#ff9800;border:1px solid rgba(255,152,0,0.2)}
+.signal-body{font-size:0.85em}
+.expert-note{background:#0d1117;border-radius:6px;padding:8px;margin:4px 0;border-left:3px solid #ff9800;color:#8b949e;font-size:0.82em}
+.contrarian-note{background:rgba(255,152,0,0.06);border-left:3px solid #ff9800;padding:8px;border-radius:6px;margin:4px 0;font-size:0.82em;color:#ff9800}
+.micro-note{background:rgba(88,166,255,0.06);border-left:3px solid #58a6ff;padding:6px 8px;border-radius:6px;margin:4px 0;font-size:0.82em;color:#58a6ff}
+.tp-sl{display:flex;gap:12px;margin-top:8px;font-size:0.82em}
+.tp{color:#3fb950}.sl{color:#f85149}
+.confidence-bar{width:100%;height:8px;background:#21262d;border-radius:4px;margin-top:8px;overflow:hidden}
+.confidence-fill{height:100%;border-radius:4px;transition:width 0.5s}
+
+.source-card{display:flex;gap:10px;padding:10px;border-bottom:1px solid #21262d;font-size:0.85em}
+.source-card:last-child{border:none}
+.source-name{color:#e6edf3;font-weight:600;min-width:180px}
+.source-role{color:#8b949e;min-width:150px;font-size:0.9em}
+.source-finding{color:#c9d1d9;flex:1}
+
+.expert-disc{padding:12px;background:#0d1117;border-radius:8px;margin-bottom:10px;border-left:3px solid #ff9800}
+.expert-disc h4{color:#ff9800;font-size:0.95em;margin-bottom:4px}
+.expert-disc p{color:#8b949e;font-size:0.85em}
+
+.btn{padding:8px 16px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#c9d1d9;cursor:pointer;font-size:0.85em;transition:all .2s}
+.btn:hover{background:#30363d;border-color:#58a6ff}
+.btn-primary{background:rgba(255,152,0,0.15);border-color:rgba(255,152,0,0.4);color:#ff9800}
+.btn-primary:hover{background:rgba(255,152,0,0.25)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+
+.loading{text-align:center;padding:40px;color:#8b949e}
+.spinner{display:inline-block;width:24px;height:24px;border:3px solid #30363d;border-top-color:#ff9800;border-radius:50%;animation:spin 1s linear infinite;margin-right:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.timestamp{text-align:center;color:#484f58;font-size:0.8em;padding:8px}
+
+table{width:100%;border-collapse:collapse;font-size:0.85em}th{text-align:left;color:#8b949e;padding:8px;border-bottom:1px solid #30363d}td{padding:8px;border-bottom:1px solid #21262d}
+
+@media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="header">
+    <h1>Expert Consensus Engine</h1>
+    <p>Subject Matter Expert intelligence from 10 social sources, 10 algo communities, and 5 expert disciplines. Integrates on-chain forensics, market microstructure, behavioral economics, and slippage-adjusted execution into every signal.</p>
+</div>
+<div class="nav-bar">
+    <a href="/findcryptopairs/expert-consensus.html" class="active">Expert Consensus</a>
+    <a href="/findcryptopairs/hybrid-engine.html">Hybrid Engine</a>
+    <a href="/findcryptopairs/academic-edge.html">Academic Edge</a>
+    <a href="/findcryptopairs/spike-forensics.html">Spike Forensics</a>
+    <a href="/findcryptopairs/index.html">Crypto Hub</a>
+    <a href="/findstocks/updates.html">Updates</a>
+</div>
+<div class="container">
+    <div class="actions">
+        <button class="btn btn-primary" onclick="runAction('analyze')"><span class="spinner" style="display:none" id="spin-analyze"></span>Run Expert Analysis</button>
+        <button class="btn" onclick="runAction('monitor')">Monitor Active</button>
+        <button class="btn" onclick="loadSignals()">Refresh Signals</button>
+        <button class="btn" onclick="loadResearch()">View Research Sources</button>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="grid grid-3" id="stats-grid">
+        <div class="card">
+            <h3>Performance</h3>
+            <div class="stat-row"><span class="stat-label">Win Rate</span><span class="stat-val" id="s-wr">--</span></div>
+            <div class="stat-row"><span class="stat-label">Total P&amp;L</span><span class="stat-val" id="s-pnl">--</span></div>
+            <div class="stat-row"><span class="stat-label">Wins / Losses</span><span class="stat-val" id="s-wl">--</span></div>
+        </div>
+        <div class="card">
+            <h3>Current Market Intelligence</h3>
+            <div class="stat-row"><span class="stat-label">Funding Rate</span><span class="stat-val val-red" id="s-fund">-0.0014% (crowded short)</span></div>
+            <div class="stat-row"><span class="stat-label">Fear &amp; Greed</span><span class="stat-val val-red" id="s-fg">9 (Extreme Fear)</span></div>
+            <div class="stat-row"><span class="stat-label">Glassnode STH</span><span class="stat-val val-red" id="s-sth">Negative profitability</span></div>
+        </div>
+        <div class="card">
+            <h3>Expert Consensus</h3>
+            <div class="stat-row"><span class="stat-label">Hayes</span><span class="stat-val val-green">Accumulation zone</span></div>
+            <div class="stat-row"><span class="stat-label">CryptoQuant</span><span class="stat-val val-amber">LTH net accumulating</span></div>
+            <div class="stat-row"><span class="stat-label">Woo Cycle</span><span class="stat-val val-green">Mid-cycle, $220K target</span></div>
+        </div>
+    </div>
+
+    <!-- Active Signals -->
+    <div class="card" style="margin-bottom:16px">
+        <h3>Active Signals (Expert-Sourced, Slippage-Adjusted)</h3>
+        <div id="signals-container"><div class="loading">Click "Run Expert Analysis" to generate signals</div></div>
+    </div>
+
+    <!-- Research Sources (loaded on demand) -->
+    <div id="research-section" style="display:none">
+        <div class="grid grid-2">
+            <div class="card">
+                <h3>Social Media Sources (Alpha &amp; Sentiment Layer)</h3>
+                <div id="social-sources"></div>
+            </div>
+            <div class="card">
+                <h3>Algo &amp; Statistician Communities (Engine Layer)</h3>
+                <div id="algo-communities"></div>
+            </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+            <h3>Expert Disciplines Required (The Dream Team)</h3>
+            <div id="expert-disciplines"></div>
+        </div>
+    </div>
+
+    <!-- History -->
+    <div class="card" style="margin-top:16px">
+        <h3>Signal History</h3>
+        <div id="history-container"><div class="loading" style="padding:20px">Load signals to see history</div></div>
+    </div>
+
+    <div class="timestamp" id="last-updated"></div>
+</div>
+
+<script>
+var API = '/findcryptopairs/api/expert_consensus.php';
+
+function loadSignals() {
+    var c = document.getElementById('signals-container');
+    c.innerHTML = '<div class="loading"><span class="spinner"></span> Loading signals...</div>';
+    fetch(API + '?action=signals')
+    .then(function(r){return r.json()})
+    .then(function(d){
+        if (!d.ok) { c.innerHTML = '<div class="loading">Error: ' + (d.error||'unknown') + '</div>'; return; }
+        // Stats
+        if (d.stats) {
+            document.getElementById('s-wr').textContent = d.stats.win_rate + '%';
+            document.getElementById('s-wr').className = 'stat-val ' + (d.stats.win_rate > 50 ? 'val-green' : 'val-red');
+            document.getElementById('s-pnl').textContent = (d.stats.total_pnl > 0 ? '+' : '') + d.stats.total_pnl + '%';
+            document.getElementById('s-pnl').className = 'stat-val ' + (d.stats.total_pnl > 0 ? 'val-green' : 'val-red');
+            document.getElementById('s-wl').textContent = d.stats.wins + 'W / ' + d.stats.losses + 'L';
+        }
+        // Active
+        if (!d.active || d.active.length === 0) { c.innerHTML = '<div class="loading">No active signals. Run analysis to generate.</div>'; }
+        else { c.innerHTML = d.active.map(renderSignal).join(''); }
+        // History
+        var hc = document.getElementById('history-container');
+        if (!d.history || d.history.length === 0) { hc.innerHTML = '<div class="loading" style="padding:20px">No resolved signals yet</div>'; }
+        else { hc.innerHTML = '<table><tr><th>Pair</th><th>Dir</th><th>Entry</th><th>Exit</th><th>P&amp;L</th><th>Reason</th><th>Date</th></tr>' + d.history.map(function(h){return '<tr><td>'+h.pair+'</td><td>'+h.direction+'</td><td>'+(+h.entry_price).toFixed(4)+'</td><td>'+(h.current_price?(+h.current_price).toFixed(4):'-')+'</td><td class="'+(parseFloat(h.pnl_pct)>0?'val-green':'val-red')+'">'+(parseFloat(h.pnl_pct)>0?'+':'')+parseFloat(h.pnl_pct).toFixed(2)+'%</td><td>'+h.exit_reason+'</td><td>'+h.created_at+'</td></tr>';}).join('') + '</table>'; }
+        document.getElementById('last-updated').textContent = 'Updated: ' + new Date().toLocaleString();
+    })
+    .catch(function(e){ c.innerHTML = '<div class="loading">Fetch error: '+e.message+'</div>'; });
+}
+
+function renderSignal(s) {
+    var conf = parseFloat(s.confidence) || 0;
+    var color = conf > 65 ? '#3fb950' : (conf > 40 ? '#ff9800' : '#f85149');
+    var html = '<div class="signal-card">';
+    html += '<div class="signal-header">';
+    html += '<span class="signal-pair">' + s.pair + '</span>';
+    html += '<span class="signal-dir ' + s.direction + '">' + s.direction + '</span>';
+    html += '<span class="signal-state">' + (s.market_state || 'NORMAL') + '</span>';
+    html += '</div>';
+    html += '<div class="signal-body">';
+    html += '<div class="tp-sl"><span class="tp">TP: $' + (+s.tp_price).toFixed(4) + '</span><span class="sl">SL: $' + (+s.sl_price).toFixed(4) + '</span><span style="color:#8b949e">Slippage: ' + (s.execution_cost_pct || '0') + '%</span></div>';
+    html += '<div class="confidence-bar"><div class="confidence-fill" style="width:' + conf + '%;background:' + color + '"></div></div>';
+    html += '<div style="font-size:0.8em;color:#8b949e;margin-top:4px">Confidence: ' + conf.toFixed(1) + '% | Expert Score: ' + s.expert_score + '</div>';
+    // Expert signals
+    if (s.expert_signals) {
+        var sigs = s.expert_signals.split(' | ');
+        for (var i = 0; i < sigs.length; i++) {
+            if (sigs[i].length > 0) html += '<div class="expert-note">' + sigs[i] + '</div>';
+        }
+    }
+    // Contrarian flags
+    if (s.contrarian_flags && s.contrarian_flags.length > 0) {
+        var flags = s.contrarian_flags.split(' | ');
+        for (var i = 0; i < flags.length; i++) {
+            if (flags[i].length > 0) html += '<div class="contrarian-note">' + flags[i] + '</div>';
+        }
+    }
+    // Microstructure
+    if (s.microstructure_note) { html += '<div class="micro-note">' + s.microstructure_note + '</div>'; }
+    if (s.pnl_pct && parseFloat(s.pnl_pct) !== 0) {
+        var pnl = parseFloat(s.pnl_pct);
+        html += '<div style="margin-top:6px;font-weight:700" class="' + (pnl > 0 ? 'val-green' : 'val-red') + '">Current P&L: ' + (pnl > 0 ? '+' : '') + pnl.toFixed(2) + '%</div>';
+    }
+    html += '</div></div>';
+    return html;
+}
+
+function runAction(action) {
+    var c = document.getElementById('signals-container');
+    c.innerHTML = '<div class="loading"><span class="spinner"></span> Running ' + action + '...</div>';
+    fetch(API + '?action=' + action)
+    .then(function(r){return r.json()})
+    .then(function(d){
+        if (d.ok && d.signals) {
+            c.innerHTML = d.signals.length > 0 ? d.signals.map(function(s){
+                var conf = parseFloat(s.confidence) || 0;
+                var color = conf > 65 ? '#3fb950' : (conf > 40 ? '#ff9800' : '#f85149');
+                var html = '<div class="signal-card">';
+                html += '<div class="signal-header">';
+                html += '<span class="signal-pair">' + s.pair + '</span>';
+                html += '<span class="signal-dir ' + s.direction + '">' + s.direction + '</span>';
+                html += '<span class="signal-state">' + (s.market_state || 'NORMAL') + '</span>';
+                html += '</div>';
+                html += '<div class="signal-body">';
+                html += '<div class="tp-sl"><span class="tp">TP: $' + s.tp_price.toFixed(4) + ' (+' + s.tp_pct + '%)</span><span class="sl">SL: $' + s.sl_price.toFixed(4) + ' (-' + s.sl_pct + '%)</span><span style="color:#8b949e">Slip: ' + s.slippage_est + '</span></div>';
+                html += '<div class="confidence-bar"><div class="confidence-fill" style="width:' + conf + '%;background:' + color + '"></div></div>';
+                html += '<div style="font-size:0.8em;color:#8b949e;margin-top:4px">Conf: ' + conf.toFixed(1) + '% | Score: ' + s.expert_score + ' | RSI: ' + s.rsi + ' | ADX: ' + s.adx + '</div>';
+                if (s.expert_signals) {
+                    for (var i = 0; i < s.expert_signals.length; i++) {
+                        html += '<div class="expert-note">' + s.expert_signals[i] + '</div>';
+                    }
+                }
+                if (s.contrarian_flags) {
+                    for (var i = 0; i < s.contrarian_flags.length; i++) {
+                        html += '<div class="contrarian-note">' + s.contrarian_flags[i] + '</div>';
+                    }
+                }
+                html += '<div class="micro-note">' + s.microstructure + '</div>';
+                html += '</div></div>';
+                return html;
+            }).join('') : '<div class="loading">No signals met threshold. Try again when market conditions change.</div>';
+            document.getElementById('last-updated').textContent = 'Analyzed ' + d.pairs_scanned + ' pairs in ' + d.elapsed_ms + 'ms — ' + new Date().toLocaleString();
+        } else {
+            c.innerHTML = '<div class="loading">' + JSON.stringify(d) + '</div>';
+        }
+    })
+    .catch(function(e){ c.innerHTML = '<div class="loading">Error: '+e.message+'</div>'; });
+}
+
+function loadResearch() {
+    var sec = document.getElementById('research-section');
+    sec.style.display = 'block';
+    fetch(API + '?action=research')
+    .then(function(r){return r.json()})
+    .then(function(d){
+        if (!d.ok) return;
+        // Social
+        var sc = document.getElementById('social-sources');
+        sc.innerHTML = d.social_sources.map(function(s){
+            return '<div class="source-card"><span class="source-name">' + s.name + '</span><span class="source-role">' + s.role + '</span><span class="source-finding">' + s.finding + '</span></div>';
+        }).join('');
+        // Algo
+        var ac = document.getElementById('algo-communities');
+        ac.innerHTML = d.algo_communities.map(function(s){
+            return '<div class="source-card"><span class="source-name">' + s.name + '</span><span class="source-finding">' + s.finding + '</span></div>';
+        }).join('');
+        // Experts
+        var ec = document.getElementById('expert-disciplines');
+        ec.innerHTML = d.expert_disciplines.map(function(s){
+            return '<div class="expert-disc"><h4>' + s.discipline + '</h4><p>' + s.why + '</p></div>';
+        }).join('');
+    });
+}
+
+// Auto-refresh every 3 minutes
+var REFRESH_SEC = 180;
+setInterval(function(){ loadSignals(); }, REFRESH_SEC * 1000);
+</script>
+</body>
+</html>

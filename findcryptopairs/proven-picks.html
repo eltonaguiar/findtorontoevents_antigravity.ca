@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proven Picks — Forward-Tested Multi-Engine Consensus</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#080c14;color:#c9d1d9;min-height:100vh}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#0a0f1c 0%,#111827 30%,#1a1040 70%,#0a0f1c 100%);padding:32px 20px;text-align:center;border-bottom:2px solid rgba(255,215,0,0.25);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at center,rgba(255,215,0,0.03) 0%,transparent 50%);animation:pulse 8s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:0.3}50%{opacity:1}}
+.hero h1{font-size:2.2em;font-weight:900;background:linear-gradient(135deg,#ffd700,#ffaa00,#ff8c00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;position:relative;z-index:1}
+.hero .sub{color:#8b949e;font-size:0.95em;max-width:750px;margin:0 auto;position:relative;z-index:1}
+.hero .badge{display:inline-block;margin-top:10px;padding:4px 14px;border-radius:20px;font-size:0.75em;font-weight:700;background:rgba(255,215,0,0.1);color:#ffd700;border:1px solid rgba(255,215,0,0.3);position:relative;z-index:1}
+
+/* NAV */
+.nav{display:flex;gap:8px;justify-content:center;padding:10px;flex-wrap:wrap;background:#0d1117;border-bottom:1px solid #21262d}
+.nav a{padding:5px 12px;border-radius:6px;font-size:0.8em;text-decoration:none;border:1px solid #21262d;color:#8b949e;transition:all .2s}
+.nav a:hover,.nav a.active{background:rgba(255,215,0,0.08);color:#ffd700;border-color:rgba(255,215,0,0.3)}
+
+.container{max-width:1400px;margin:0 auto;padding:16px}
+
+/* STATS BANNER */
+.stats-banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px}
+.stat-card{background:#0d1117;border:1px solid #21262d;border-radius:10px;padding:14px;text-align:center;transition:border-color .3s}
+.stat-card:hover{border-color:rgba(255,215,0,0.3)}
+.stat-card .label{font-size:0.7em;color:#484f58;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+.stat-card .value{font-size:1.6em;font-weight:800}
+.stat-card .detail{font-size:0.7em;color:#484f58;margin-top:2px}
+.val-gold{color:#ffd700!important} .val-green{color:#3fb950!important} .val-red{color:#f85149!important}
+.val-blue{color:#58a6ff!important} .val-amber{color:#ff9800!important}
+
+/* ACTIONS */
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.btn{padding:8px 18px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:#c9d1d9;cursor:pointer;font-size:0.85em;font-weight:600;transition:all .2s}
+.btn:hover{background:#21262d;border-color:#58a6ff}
+.btn-gold{background:linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,140,0,0.1));border-color:rgba(255,215,0,0.4);color:#ffd700}
+.btn-gold:hover{background:linear-gradient(135deg,rgba(255,215,0,0.25),rgba(255,140,0,0.2))}
+
+/* PICKS */
+.card{background:#0d1117;border:1px solid #21262d;border-radius:12px;padding:16px;margin-bottom:16px}
+.card h3{color:#e6edf3;font-size:1.05em;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #161b22}
+.pick{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:16px;margin-bottom:10px;transition:border-color .3s;position:relative}
+.pick:hover{border-color:rgba(255,215,0,0.2)}
+.pick.tier-S{border-left:4px solid #ffd700}
+.pick.tier-A{border-left:4px solid #3fb950}
+.pick.tier-B{border-left:4px solid #58a6ff}
+.pick.tier-C{border-left:4px solid #484f58}
+.pick-header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.pick-pair{font-size:1.4em;font-weight:800;color:#e6edf3}
+.pick-dir{padding:3px 10px;border-radius:4px;font-size:0.8em;font-weight:700}
+.pick-dir.LONG{background:rgba(63,185,80,0.12);color:#3fb950;border:1px solid rgba(63,185,80,0.25)}
+.pick-dir.SHORT{background:rgba(248,81,73,0.12);color:#f85149;border:1px solid rgba(248,81,73,0.25)}
+.tier-badge{padding:2px 8px;border-radius:3px;font-size:0.7em;font-weight:800;letter-spacing:0.5px}
+.tier-badge.S{background:rgba(255,215,0,0.12);color:#ffd700;border:1px solid rgba(255,215,0,0.3)}
+.tier-badge.A{background:rgba(63,185,80,0.12);color:#3fb950;border:1px solid rgba(63,185,80,0.3)}
+.tier-badge.B{background:rgba(88,166,255,0.12);color:#58a6ff;border:1px solid rgba(88,166,255,0.3)}
+.tier-badge.C{background:rgba(72,79,88,0.2);color:#484f58;border:1px solid rgba(72,79,88,0.3)}
+.consensus-count{font-size:0.75em;color:#8b949e}
+.consensus-count strong{color:#ffd700}
+.engines-list{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}
+.eng-tag{padding:2px 7px;border-radius:3px;font-size:0.7em;background:rgba(88,166,255,0.08);color:#58a6ff;border:1px solid rgba(88,166,255,0.15)}
+.price-row{display:flex;gap:16px;font-size:0.85em;margin:8px 0;flex-wrap:wrap}
+.price-entry{color:#8b949e}.price-tp{color:#3fb950}.price-sl{color:#f85149}
+.conf-bar{width:100%;height:6px;background:#161b22;border-radius:3px;overflow:hidden;margin:6px 0}
+.conf-fill{height:100%;border-radius:3px}
+.pnl-tag{display:inline-block;padding:3px 10px;border-radius:4px;font-weight:700;font-size:0.9em}
+.pnl-positive{background:rgba(63,185,80,0.12);color:#3fb950}
+.pnl-negative{background:rgba(248,81,73,0.12);color:#f85149}
+
+/* EQUITY CHART (canvas) */
+.chart-container{position:relative;height:200px;margin:16px 0}
+canvas{width:100%!important;height:100%!important}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;font-size:0.82em}
+th{text-align:left;color:#484f58;padding:8px;border-bottom:1px solid #21262d;font-size:0.8em;text-transform:uppercase;letter-spacing:0.3px}
+td{padding:8px;border-bottom:1px solid #161b22}
+tr:hover td{background:rgba(255,215,0,0.02)}
+
+/* STATUS */
+.status-badge{padding:2px 8px;border-radius:3px;font-size:0.72em;font-weight:600}
+.status-badge.TP_HIT{background:rgba(63,185,80,0.12);color:#3fb950}
+.status-badge.SL_HIT{background:rgba(248,81,73,0.12);color:#f85149}
+.status-badge.EXPIRED{background:rgba(139,148,158,0.12);color:#8b949e}
+.status-badge.ACTIVE{background:rgba(255,215,0,0.12);color:#ffd700}
+
+.loading{text-align:center;padding:30px;color:#484f58}
+.spinner{display:inline-block;width:20px;height:20px;border:3px solid #21262d;border-top-color:#ffd700;border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.timestamp{text-align:center;color:#30363d;font-size:0.75em;padding:10px}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}.stats-banner{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.stats-banner{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="hero">
+    <h1>PROVEN PICKS</h1>
+    <p class="sub">Multi-engine consensus picks, forward-tested with real prices. Every trade tracked, win or lose. No cherry-picking. No paper profits. Just results.</p>
+    <span class="badge">6 ENGINES &bull; FORWARD-TESTED &bull; SLIPPAGE-ADJUSTED &bull; FULLY AUDITABLE</span>
+</div>
+<div class="nav">
+    <a href="/findcryptopairs/proven-picks.html" class="active">Proven Picks</a>
+    <a href="/findcryptopairs/expert-consensus.html">Expert Consensus</a>
+    <a href="/findcryptopairs/hybrid-engine.html">Hybrid Engine</a>
+    <a href="/findcryptopairs/academic-edge.html">Academic Edge</a>
+    <a href="/findcryptopairs/spike-forensics.html">Spike Forensics</a>
+    <a href="/findcryptopairs/index.html">Crypto Hub</a>
+    <a href="/findstocks/updates.html">Updates</a>
+</div>
+<div class="container">
+    <!-- STATS BANNER -->
+    <div class="stats-banner" id="stats-banner">
+        <div class="stat-card"><div class="label">Win Rate</div><div class="value val-gold" id="s-wr">--</div></div>
+        <div class="stat-card"><div class="label">Total P&amp;L</div><div class="value" id="s-pnl">--</div></div>
+        <div class="stat-card"><div class="label">Sharpe Ratio</div><div class="value val-blue" id="s-sharpe">--</div></div>
+        <div class="stat-card"><div class="label">Profit Factor</div><div class="value val-green" id="s-pf">--</div></div>
+        <div class="stat-card"><div class="label">Win / Loss</div><div class="value" id="s-wl">--</div></div>
+        <div class="stat-card"><div class="label">Max Drawdown</div><div class="value val-red" id="s-dd">--</div></div>
+        <div class="stat-card"><div class="label">Avg Win</div><div class="value val-green" id="s-aw">--</div></div>
+        <div class="stat-card"><div class="label">Avg Loss</div><div class="value val-red" id="s-al">--</div></div>
+        <div class="stat-card"><div class="label">Streak</div><div class="value" id="s-streak">--</div></div>
+        <div class="stat-card"><div class="label">Active Picks</div><div class="value val-gold" id="s-active">--</div></div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions">
+        <button class="btn btn-gold" onclick="runGenerate()"><span class="spinner" style="display:none" id="spin-gen"></span>Generate Picks</button>
+        <button class="btn" onclick="runMonitor()">Monitor Active</button>
+        <button class="btn" onclick="loadPicks()">Refresh</button>
+        <button class="btn" onclick="loadEquity()">Equity Curve</button>
+    </div>
+
+    <!-- ACTIVE PICKS -->
+    <div class="card">
+        <h3 id="active-title">Active Picks — Multi-Engine Consensus</h3>
+        <div id="active-container"><div class="loading">Click "Generate Picks" or "Refresh" to load</div></div>
+    </div>
+
+    <!-- EQUITY CURVE -->
+    <div class="card" id="equity-section" style="display:none">
+        <h3>Equity Curve — Cumulative Forward-Tested P&amp;L</h3>
+        <div class="chart-container"><canvas id="equity-canvas"></canvas></div>
+    </div>
+
+    <!-- TIER BREAKDOWN + HISTORY -->
+    <div class="grid-2">
+        <div class="card">
+            <h3>Tier Breakdown</h3>
+            <div id="tier-container"><div class="loading" style="padding:16px">Load picks to see tiers</div></div>
+        </div>
+        <div class="card">
+            <h3>How It Works</h3>
+            <div style="font-size:0.85em;color:#8b949e;line-height:1.7">
+                <p><strong style="color:#ffd700">6 engines</strong> independently scan 30 crypto pairs.</p>
+                <p>Only picks where <strong style="color:#e6edf3">2+ engines agree</strong> on direction make the cut.</p>
+                <p><strong style="color:#ffd700">Tier S</strong>: 4+ engines, 70%+ confidence</p>
+                <p><strong style="color:#3fb950">Tier A</strong>: 3+ engines, 55%+ confidence</p>
+                <p><strong style="color:#58a6ff">Tier B</strong>: 2+ engines, 40%+ confidence</p>
+                <p style="margin-top:8px">Every pick is tracked from entry to exit:</p>
+                <p>&bull; Entry at Kraken mid-price + slippage</p>
+                <p>&bull; Exit at TP, SL, or 96h expiry</p>
+                <p>&bull; Memecoins: 50bps slippage. Majors: 15bps</p>
+                <p>&bull; No cherry-picking. Every pick logged.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- HISTORY TABLE -->
+    <div class="card" style="margin-top:16px">
+        <h3>Trade History — Full Audit Trail</h3>
+        <div id="history-container" style="overflow-x:auto"><div class="loading" style="padding:20px">Load picks to see history</div></div>
+    </div>
+
+    <div class="timestamp" id="last-updated"></div>
+</div>
+
+<script>
+var API = '/findcryptopairs/api/proven_picks.php';
+
+function loadPicks() {
+    var ac = document.getElementById('active-container');
+    ac.innerHTML = '<div class="loading"><span class="spinner"></span> Loading picks...</div>';
+    fetch(API + '?action=picks').then(function(r){return r.json()}).then(function(d){
+        if (!d.ok) { ac.innerHTML = '<div class="loading">Error</div>'; return; }
+        renderStats(d.stats);
+        renderActive(d.active);
+        renderHistory(d.history);
+        renderTiers(d.stats);
+        document.getElementById('last-updated').textContent = 'Updated: ' + new Date().toLocaleString();
+    }).catch(function(e){ ac.innerHTML = '<div class="loading">'+e.message+'</div>'; });
+}
+
+function renderStats(s) {
+    if (!s) return;
+    document.getElementById('s-wr').textContent = s.win_rate + '%';
+    document.getElementById('s-wr').className = 'value ' + (s.win_rate >= 55 ? 'val-gold' : (s.win_rate >= 45 ? 'val-amber' : 'val-red'));
+    var pnlEl = document.getElementById('s-pnl');
+    pnlEl.textContent = (s.cumulative_pnl > 0 ? '+' : '') + s.cumulative_pnl + '%';
+    pnlEl.className = 'value ' + (s.cumulative_pnl > 0 ? 'val-green' : 'val-red');
+    document.getElementById('s-sharpe').textContent = s.sharpe;
+    document.getElementById('s-pf').textContent = s.profit_factor;
+    document.getElementById('s-wl').textContent = s.wins + 'W / ' + s.losses + 'L';
+    document.getElementById('s-dd').textContent = '-' + s.max_drawdown + '%';
+    document.getElementById('s-aw').textContent = '+' + s.avg_win + '%';
+    document.getElementById('s-al').textContent = '-' + s.avg_loss + '%';
+    var streak = s.current_streak;
+    var sEl = document.getElementById('s-streak');
+    sEl.textContent = (streak > 0 ? '+' : '') + streak;
+    sEl.className = 'value ' + (streak > 0 ? 'val-green' : (streak < 0 ? 'val-red' : ''));
+    document.getElementById('s-active').textContent = s.active_count;
+}
+
+function renderActive(picks) {
+    var c = document.getElementById('active-container');
+    document.getElementById('active-title').textContent = 'Active Picks (' + picks.length + ') — Multi-Engine Consensus';
+    if (!picks || picks.length === 0) { c.innerHTML = '<div class="loading">No active picks. Run "Generate Picks" to create new ones.</div>'; return; }
+    c.innerHTML = picks.map(function(p) {
+        var conf = parseFloat(p.confidence) || 0;
+        var color = conf >= 65 ? '#ffd700' : (conf >= 45 ? '#3fb950' : '#58a6ff');
+        var pnl = parseFloat(p.pnl_pct) || 0;
+        var html = '<div class="pick tier-' + p.tier + '">';
+        html += '<div class="pick-header">';
+        html += '<span class="pick-pair">' + p.pair + '</span>';
+        html += '<span class="pick-dir ' + p.direction + '">' + p.direction + '</span>';
+        html += '<span class="tier-badge ' + p.tier + '">TIER ' + p.tier + '</span>';
+        html += '<span class="consensus-count"><strong>' + p.consensus_count + '</strong> engines agree</span>';
+        html += '</div>';
+        // Engines
+        var engines = (p.engines_agreeing || '').split(', ');
+        html += '<div class="engines-list">' + engines.map(function(e){return '<span class="eng-tag">'+e+'</span>';}).join('') + '</div>';
+        // Prices
+        html += '<div class="price-row">';
+        html += '<span class="price-entry">Entry: $' + (+p.entry_price).toFixed(4) + '</span>';
+        html += '<span class="price-tp">TP: $' + (+p.tp_price).toFixed(4) + '</span>';
+        html += '<span class="price-sl">SL: $' + (+p.sl_price).toFixed(4) + '</span>';
+        html += '<span style="color:#484f58">Slip: ' + p.slippage_bps + 'bps</span>';
+        html += '</div>';
+        // Confidence bar
+        html += '<div class="conf-bar"><div class="conf-fill" style="width:' + conf + '%;background:' + color + '"></div></div>';
+        html += '<div style="display:flex;justify-content:space-between;font-size:0.78em;color:#484f58">';
+        html += '<span>Confidence: ' + conf.toFixed(1) + '%</span>';
+        if (p.hours_held) html += '<span>' + parseFloat(p.hours_held).toFixed(1) + 'h held</span>';
+        html += '</div>';
+        // PnL
+        if (pnl !== 0) {
+            html += '<div style="margin-top:8px"><span class="pnl-tag ' + (pnl > 0 ? 'pnl-positive' : 'pnl-negative') + '">' + (pnl > 0 ? '+' : '') + pnl.toFixed(2) + '%</span></div>';
+        }
+        html += '</div>';
+        return html;
+    }).join('');
+}
+
+function renderHistory(hist) {
+    var c = document.getElementById('history-container');
+    if (!hist || hist.length === 0) { c.innerHTML = '<div class="loading" style="padding:16px">No resolved picks yet</div>'; return; }
+    var html = '<table><tr><th>Pick ID</th><th>Pair</th><th>Dir</th><th>Tier</th><th>Engines</th><th>Entry</th><th>Exit</th><th>P&amp;L</th><th>Reason</th><th>Held</th><th>Date</th></tr>';
+    html += hist.map(function(h) {
+        var pnl = parseFloat(h.pnl_after_slip) || 0;
+        return '<tr><td style="font-size:0.75em;color:#484f58">' + h.pick_id + '</td>'
+            + '<td><strong>' + h.pair + '</strong></td>'
+            + '<td><span class="pick-dir ' + h.direction + '" style="font-size:0.7em">' + h.direction + '</span></td>'
+            + '<td><span class="tier-badge ' + h.tier + '">' + h.tier + '</span></td>'
+            + '<td style="font-size:0.75em;max-width:120px;overflow:hidden;text-overflow:ellipsis">' + (h.engines_agreeing || '') + '</td>'
+            + '<td>$' + (+h.entry_price).toFixed(4) + '</td>'
+            + '<td>' + (h.current_price ? '$' + (+h.current_price).toFixed(4) : '-') + '</td>'
+            + '<td class="' + (pnl > 0 ? 'val-green' : 'val-red') + '" style="font-weight:700">' + (pnl > 0 ? '+' : '') + pnl.toFixed(2) + '%</td>'
+            + '<td><span class="status-badge ' + (h.exit_reason || '').replace('_96H','') + '">' + (h.exit_reason || '') + '</span></td>'
+            + '<td>' + (h.hours_held ? parseFloat(h.hours_held).toFixed(1) + 'h' : '-') + '</td>'
+            + '<td style="font-size:0.75em">' + (h.created_at || '') + '</td></tr>';
+    }).join('');
+    html += '</table>';
+    c.innerHTML = html;
+}
+
+function renderTiers(stats) {
+    var c = document.getElementById('tier-container');
+    if (!stats || !stats.tier_breakdown) { c.innerHTML = '<div class="loading" style="padding:16px">No data</div>'; return; }
+    var tb = stats.tier_breakdown;
+    var html = '';
+    var tiers = ['S','A','B','C'];
+    var colors = {'S':'#ffd700','A':'#3fb950','B':'#58a6ff','C':'#484f58'};
+    for (var i = 0; i < tiers.length; i++) {
+        var t = tiers[i];
+        var d = tb[t] || {w:0,l:0,pnl:0};
+        var total = d.w + d.l;
+        var wr = total > 0 ? (d.w / total * 100).toFixed(1) : '0';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #161b22">';
+        html += '<span class="tier-badge ' + t + '">TIER ' + t + '</span>';
+        html += '<span style="font-size:0.85em">' + d.w + 'W / ' + d.l + 'L</span>';
+        html += '<span style="font-size:0.85em;color:' + colors[t] + '">' + wr + '%</span>';
+        html += '<span style="font-size:0.85em" class="' + (d.pnl > 0 ? 'val-green' : 'val-red') + '">' + (d.pnl > 0 ? '+' : '') + d.pnl.toFixed(2) + '%</span>';
+        html += '</div>';
+    }
+    c.innerHTML = html;
+}
+
+function runGenerate() {
+    var ac = document.getElementById('active-container');
+    ac.innerHTML = '<div class="loading"><span class="spinner"></span> Polling 6 engines + generating consensus picks...</div>';
+    fetch(API + '?action=generate').then(function(r){return r.json()}).then(function(d){
+        if (!d.ok) { ac.innerHTML = '<div class="loading">Error: ' + JSON.stringify(d) + '</div>'; return; }
+        if (d.picks && d.picks.length > 0) {
+            ac.innerHTML = d.picks.map(function(p) {
+                var conf = p.confidence || 0;
+                var color = conf >= 65 ? '#ffd700' : (conf >= 45 ? '#3fb950' : '#58a6ff');
+                var html = '<div class="pick tier-' + p.tier + '">';
+                html += '<div class="pick-header">';
+                html += '<span class="pick-pair">' + p.pair + '</span>';
+                html += '<span class="pick-dir ' + p.direction + '">' + p.direction + '</span>';
+                html += '<span class="tier-badge ' + p.tier + '">TIER ' + p.tier + '</span>';
+                html += '<span class="consensus-count"><strong>' + p.consensus_count + '</strong> engines agree</span>';
+                html += '</div>';
+                html += '<div class="engines-list">' + p.engines.map(function(e){return '<span class="eng-tag">'+e+'</span>';}).join('') + '</div>';
+                html += '<div class="price-row">';
+                html += '<span class="price-entry">Entry: $' + p.entry_price.toFixed(4) + '</span>';
+                html += '<span class="price-tp">TP: $' + p.tp_price.toFixed(4) + ' (+' + p.tp_pct + '%)</span>';
+                html += '<span class="price-sl">SL: $' + p.sl_price.toFixed(4) + ' (-' + p.sl_pct + '%)</span>';
+                html += '</div>';
+                html += '<div class="conf-bar"><div class="conf-fill" style="width:' + conf + '%;background:' + color + '"></div></div>';
+                html += '<div style="font-size:0.78em;color:#484f58">Conf: ' + conf.toFixed(1) + '% | Market: ' + p.market_state + ' | Slip: ' + p.slippage_bps + 'bps</div>';
+                if (p.details && p.details.length > 0) {
+                    html += '<div style="margin-top:6px;font-size:0.75em;color:#484f58;border-top:1px solid #21262d;padding-top:6px">';
+                    for (var i = 0; i < p.details.length; i++) html += '<div>' + p.details[i] + '</div>';
+                    html += '</div>';
+                }
+                html += '</div>';
+                return html;
+            }).join('');
+        } else {
+            ac.innerHTML = '<div class="loading">No consensus picks at this time. Engines scanned ' + d.engines_polled + ' sources. Picks require 2+ engines to agree.</div>';
+        }
+        document.getElementById('last-updated').textContent = 'Generated in ' + d.elapsed_ms + 'ms | Engines polled: ' + d.engines_polled + ' | ' + new Date().toLocaleString();
+    }).catch(function(e){ ac.innerHTML = '<div class="loading">'+e.message+'</div>'; });
+}
+
+function runMonitor() {
+    fetch(API + '?action=monitor').then(function(r){return r.json()}).then(function(d){
+        alert('Monitored ' + (d.checked || 0) + ' picks. Resolved: ' + (d.resolved || 0));
+        loadPicks();
+    });
+}
+
+function loadEquity() {
+    document.getElementById('equity-section').style.display = 'block';
+    fetch(API + '?action=equity').then(function(r){return r.json()}).then(function(d){
+        if (!d.ok || !d.equity_curve || d.equity_curve.length === 0) return;
+        drawEquity(d.equity_curve);
+    });
+}
+
+function drawEquity(data) {
+    var canvas = document.getElementById('equity-canvas');
+    var ctx = canvas.getContext('2d');
+    var rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * 2;
+    canvas.height = 400;
+    ctx.scale(2, 2);
+    var w = rect.width;
+    var h = 200;
+    var pad = {t:20,r:20,b:30,l:60};
+    var pw = w - pad.l - pad.r;
+    var ph = h - pad.t - pad.b;
+
+    var vals = data.map(function(d){return parseFloat(d.cumulative_pnl);});
+    var mn = Math.min(0, Math.min.apply(null, vals));
+    var mx = Math.max.apply(null, vals);
+    if (mx === mn) mx = mn + 1;
+
+    ctx.fillStyle = '#0d1117';
+    ctx.fillRect(0, 0, w, h);
+
+    // Grid
+    ctx.strokeStyle = '#161b22';
+    ctx.lineWidth = 0.5;
+    for (var i = 0; i < 5; i++) {
+        var y = pad.t + (ph / 4) * i;
+        ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+        var val = mx - (mx - mn) * (i / 4);
+        ctx.fillStyle = '#484f58';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(val.toFixed(1) + '%', pad.l - 5, y + 3);
+    }
+
+    // Zero line
+    var zy = pad.t + (mx / (mx - mn)) * ph;
+    ctx.strokeStyle = '#30363d';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.l, zy); ctx.lineTo(w - pad.r, zy); ctx.stroke();
+
+    // Line
+    ctx.beginPath();
+    ctx.strokeStyle = '#ffd700';
+    ctx.lineWidth = 2;
+    for (var i = 0; i < data.length; i++) {
+        var x = pad.l + (i / Math.max(1, data.length - 1)) * pw;
+        var y = pad.t + ((mx - vals[i]) / (mx - mn)) * ph;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Fill
+    ctx.lineTo(pad.l + pw, pad.t + ph);
+    ctx.lineTo(pad.l, pad.t + ph);
+    ctx.closePath();
+    var grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + ph);
+    grad.addColorStop(0, 'rgba(255,215,0,0.15)');
+    grad.addColorStop(1, 'rgba(255,215,0,0)');
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Date labels
+    ctx.fillStyle = '#484f58';
+    ctx.font = '9px sans-serif';
+    ctx.textAlign = 'center';
+    var step = Math.max(1, Math.floor(data.length / 6));
+    for (var i = 0; i < data.length; i += step) {
+        var x = pad.l + (i / Math.max(1, data.length - 1)) * pw;
+        ctx.fillText(data[i].date_point, x, h - 5);
+    }
+}
+
+// Auto-refresh
+setInterval(function(){ loadPicks(); }, 120000);
+</script>
+</body>
+</html>
