@@ -1,0 +1,66 @@
+name: Kimi-Enhanced Backtest & Scan Pipeline
+on:
+  schedule:
+    # Full backtest + scan every 6 hours
+    - cron: '0 */6 * * *'
+    # Quick scan + monitor every 2 hours
+    - cron: '30 1,3,5,7,9,11,13,15,17,19,21,23 * * *'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to run'
+        required: false
+        default: 'full_run'
+        type: choice
+        options:
+          - full_run
+          - backtest
+          - scan
+          - monitor
+          - compare
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Determine action
+        id: action
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "action=${{ github.event.inputs.action }}" >> $GITHUB_OUTPUT
+          elif [ "$(date +%M)" = "00" ]; then
+            echo "action=full_run" >> $GITHUB_OUTPUT
+          else
+            echo "action=scan_monitor" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run full pipeline (backtest + scan)
+        if: steps.action.outputs.action == 'full_run' || steps.action.outputs.action == 'backtest'
+        run: |
+          echo "=== Kimi-Enhanced: Full Run ==="
+          echo "Step 1: Monitor active signals..."
+          curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/api/kimi_enhanced.php?action=monitor"
+          echo ""
+          echo "Step 2: Walk-forward backtest (4H candles)..."
+          curl -s --max-time 180 "https://findtorontoevents.ca/findcryptopairs/api/kimi_enhanced.php?action=backtest"
+          echo ""
+          echo "Step 3: Live scan with asset-specific modules..."
+          curl -s --max-time 60 "https://findtorontoevents.ca/findcryptopairs/api/kimi_enhanced.php?action=scan"
+          echo ""
+          echo "Done."
+
+      - name: Quick scan + monitor
+        if: steps.action.outputs.action == 'scan_monitor'
+        run: |
+          echo "=== Kimi-Enhanced: Quick Scan ==="
+          curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/api/kimi_enhanced.php?action=monitor"
+          echo ""
+          curl -s --max-time 60 "https://findtorontoevents.ca/findcryptopairs/api/kimi_enhanced.php?action=scan"
+          echo ""
+          echo "Done."
+
+      - name: Compare strategies
+        if: steps.action.outputs.action == 'compare'
+        run: |
+          curl -s --max-time 10 "https://findtorontoevents.ca/findcryptopairs/api/kimi_enhanced.php?action=compare"
