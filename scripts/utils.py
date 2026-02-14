@@ -111,6 +111,30 @@ def call_api(action, params=''):
         return {'ok': False, 'error': str(e)}
 
 
+def post_to_bridge(module, data, summary=''):
+    """POST results to quant_bridge.php for the dashboard front-end."""
+    logger = logging.getLogger('utils')
+    url = f"{API_BASE}/quant_bridge.php?action=store_results&key={ADMIN_KEY}"
+    try:
+        payload = {
+            'module': module,
+            'source': 'github',
+            'status': 'success',
+            'data': json.dumps(data) if not isinstance(data, str) else data,
+            'summary': summary
+        }
+        resp = requests.post(url, data=payload, headers=API_HEADERS, timeout=60)
+        result = resp.json()
+        if result.get('ok'):
+            logger.info(f"Bridge POST {module}: OK")
+        else:
+            logger.warning(f"Bridge POST {module}: {result.get('error', 'unknown')}")
+        return result
+    except Exception as e:
+        logger.warning(f"Bridge POST {module} failed: {e}")
+        return {'ok': False, 'error': str(e)}
+
+
 def parse_tickers_from_text(text):
     """Extract stock tickers from text (e.g., $GME, $TSLA)."""
     from config import TRACKED_TICKERS, WSB_EXTRA_TICKERS

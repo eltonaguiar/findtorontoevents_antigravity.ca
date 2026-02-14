@@ -33,7 +33,7 @@ warnings.filterwarnings('ignore')
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from utils import post_to_api, call_api
+from utils import post_to_api, post_to_bridge, call_api
 from config import API_BASE, ADMIN_KEY
 
 logger = logging.getLogger('hyperparam_optimizer')
@@ -354,6 +354,11 @@ def run_optimization():
             logger.info("Optimization results posted to API")
         else:
             logger.warning("API post error: %s", api_result.get('error', 'unknown'))
+
+    # Post to bridge dashboard
+    if optimization_results:
+        post_to_bridge('hyperparam_optimizer', {'optimizations': optimization_results},
+                       "%d algos optimized" % len(optimization_results))
 
     # Summary
     logger.info("")

@@ -1,0 +1,158 @@
+name: Quant Bridge — Test All Modules
+
+on:
+  workflow_dispatch:
+    inputs:
+      sprint:
+        description: 'Which sprint to test'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - sprint1
+          - sprint2
+          - cusum
+          - congress
+          - optimize
+          - options
+          - onchain
+          - portfolio
+          - entropy
+
+jobs:
+  test-bridge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install all dependencies
+        run: |
+          pip install --quiet \
+            numpy>=1.24 \
+            pandas>=2.0 \
+            scipy>=1.11 \
+            requests>=2.31 \
+            yfinance>=0.2.30 \
+            ruptures>=1.1.8 \
+            optuna>=3.4.0 \
+            riskfolio-lib>=4.0.0
+
+      - name: Determine modules to run
+        id: modules
+        run: |
+          SPRINT="${{ github.event.inputs.sprint }}"
+          case "$SPRINT" in
+            all)       FLAGS="--cusum --congress --optimize --options --onchain --portfolio --entropy" ;;
+            sprint1)   FLAGS="--cusum --congress --optimize" ;;
+            sprint2)   FLAGS="--options --onchain --portfolio --entropy" ;;
+            *)         FLAGS="--$SPRINT" ;;
+          esac
+          echo "flags=$FLAGS" >> $GITHUB_OUTPUT
+          echo "Running: $FLAGS"
+
+      - name: Run Quant Bridge modules
+        env:
+          SM_API_BASE: ${{ secrets.SM_API_BASE || 'https://findtorontoevents.ca/live-monitor/api' }}
+          SM_ADMIN_KEY: ${{ secrets.SM_ADMIN_KEY || 'livetrader2026' }}
+          FINNHUB: ${{ secrets.FINNHUB || '' }}
+        run: |
+          echo "=========================================="
+          echo "QUANT BRIDGE TEST — $(date -u '+%Y-%m-%d %H:%M UTC')"
+          echo "Modules: ${{ steps.modules.outputs.flags }}"
+          echo "=========================================="
+          python scripts/run_all.py ${{ steps.modules.outputs.flags }} 2>&1 | tee /tmp/bridge_output.txt
+
+      - name: Generate JSON results for dashboard
+        if: always()
+        run: |
+          python3 << 'PYEOF'
+          import json, os, re
+          from datetime import datetime
+
+          output_file = '/tmp/bridge_output.txt'
+          results = {
+              'run_id': os.environ.get('GITHUB_RUN_NUMBER', '0'),
+              'run_at': datetime.utcnow().isoformat() + 'Z',
+              'sprint': '${{ github.event.inputs.sprint }}',
+              'modules': {}
+          }
+
+          if os.path.exists(output_file):
+              with open(output_file) as f:
+                  text = f.read()
+
+              # Parse module results from output
+              modules = {
+                  'cusum': {'pattern': r'CUSUM DETECTION SUMMARY', 'status': 'not_run'},
+                  'congress': {'pattern': r'CONGRESSIONAL TRACKER SUMMARY', 'status': 'not_run'},
+                  'optimizer': {'pattern': r'OPTIMIZATION SUMMARY', 'status': 'not_run'},
+                  'options': {'pattern': r'OPTIONS FLOW SUMMARY', 'status': 'not_run'},
+                  'onchain': {'pattern': r'ON-CHAIN ANALYTICS SUMMARY', 'status': 'not_run'},
+                  'portfolio': {'pattern': r'PORTFOLIO OPTIMIZATION COMPLETE', 'status': 'not_run'},
+                  'entropy': {'pattern': r'TRANSFER ENTROPY SUMMARY', 'status': 'not_run'},
+              }
+
+              for name, info in modules.items():
+                  if re.search(info['pattern'], text):
+                      info['status'] = 'success'
+                  elif name.upper() in text and 'FAILED' in text:
+                      info['status'] = 'failed'
+
+                  results['modules'][name] = info['status']
+
+          # Save
+          os.makedirs('/tmp/bridge-results', exist_ok=True)
+          with open('/tmp/bridge-results/results.json', 'w') as f:
+              json.dump(results, f, indent=2)
+          with open('/tmp/bridge-results/output.txt', 'w') as f:
+              f.write(open(output_file).read() if os.path.exists(output_file) else 'No output')
+
+          print(json.dumps(results, indent=2))
+          PYEOF
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bridge-test-${{ github.run_number }}
+          path: /tmp/bridge-results/
+          retention-days: 30
+
+      - name: Commit results JSON to repo
+        if: always()
+        run: |
+          mkdir -p data
+          cp /tmp/bridge-results/results.json data/quant_bridge_latest.json 2>/dev/null || true
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add data/quant_bridge_latest.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "Quant Bridge: test results $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push || echo "Push failed (likely concurrent run)"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Quant Bridge — Full Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Sprint:** ${{ github.event.inputs.sprint }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Flags:** ${{ steps.modules.outputs.flags }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f /tmp/bridge-results/results.json ]; then
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            cat /tmp/bridge-results/results.json >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Output (last 80 lines)" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -80 /tmp/bridge_output.txt >> $GITHUB_STEP_SUMMARY 2>/dev/null || echo "No output"
+          echo '```' >> $GITHUB_STEP_SUMMARY

@@ -27,7 +27,7 @@ warnings.filterwarnings('ignore')
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from utils import post_to_api, safe_request, API_HEADERS
+from utils import post_to_api, post_to_bridge, safe_request, API_HEADERS
 from config import API_BASE, ADMIN_KEY, TRACKED_TICKERS, FINNHUB_API_KEY
 
 logger = logging.getLogger('finbert_sentiment')
@@ -290,14 +290,22 @@ def main():
         else:
             logger.warning("API post error: %s", result.get('error', 'unknown'))
 
+    # Post to bridge dashboard
+    if all_sentiments:
+        bullish = [s for s in all_sentiments if s['sentiment_label'] == 'bullish']
+        bearish = [s for s in all_sentiments if s['sentiment_label'] == 'bearish']
+        summary = "%d tickers: %d bullish, %d bearish" % (
+            len(all_sentiments), len(bullish), len(bearish))
+        post_to_bridge('finbert_sentiment', {'sentiments': all_sentiments}, summary)
+    else:
+        bullish = []
+        bearish = []
+
     # Summary
     logger.info("")
     logger.info("=" * 60)
     logger.info("FINBERT SENTIMENT SUMMARY")
     logger.info("  Tickers analyzed: %d", len(all_sentiments))
-
-    bullish = [s for s in all_sentiments if s['sentiment_label'] == 'bullish']
-    bearish = [s for s in all_sentiments if s['sentiment_label'] == 'bearish']
 
     if bullish:
         logger.info("  BULLISH: %s", ', '.join(s['ticker'] for s in bullish))

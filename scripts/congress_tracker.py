@@ -30,7 +30,7 @@ warnings.filterwarnings('ignore')
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from utils import post_to_api, safe_request
+from utils import post_to_api, post_to_bridge, safe_request
 from config import API_BASE, ADMIN_KEY, TRACKED_TICKERS, WSB_EXTRA_TICKERS
 
 logger = logging.getLogger('congress_tracker')
@@ -341,6 +341,16 @@ def main():
             logger.info("Congressional data posted to API")
         else:
             logger.warning("API post error: %s", api_result.get('error', 'unknown'))
+
+    # Post to bridge dashboard
+    post_to_bridge('congress_tracker', {
+        'signals': signals,
+        'analysis_summary': {
+            'total_buys': analysis['total_buys'],
+            'total_sells': analysis['total_sells'],
+            'cluster_buys': analysis['cluster_buys'],
+        }
+    }, "%d signals, %d buys, %d sells" % (len(signals), analysis['total_buys'], analysis['total_sells']))
 
     # Summary
     logger.info("")

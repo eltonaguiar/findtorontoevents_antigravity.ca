@@ -39,7 +39,7 @@ warnings.filterwarnings('ignore')
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from utils import post_to_api
+from utils import post_to_api, post_to_bridge
 from config import API_BASE, ADMIN_KEY, TRACKED_TICKERS
 
 logger = logging.getLogger('transfer_entropy')
@@ -366,6 +366,11 @@ def run_transfer_entropy():
         logger.info("Transfer entropy data posted to API")
     else:
         logger.warning("API post error: %s", api_result.get('error', 'unknown'))
+
+    # Post to bridge dashboard
+    top_leaders = [a for a in leaders if a['role'] == 'LEADER']
+    post_to_bridge('transfer_entropy', payload,
+                   "%d tickers, %d leaders" % (len(returns.columns), len(top_leaders)))
 
     # Summary
     logger.info("")

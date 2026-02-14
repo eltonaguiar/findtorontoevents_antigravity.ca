@@ -23,6 +23,7 @@ import logging
 import argparse
 import requests
 import mysql.connector
+from utils import post_to_api, post_to_bridge
 
 # --- Logging ---
 logging.basicConfig(
@@ -228,6 +229,28 @@ def run_onchain(coins=None, max_tx=DEFAULT_MAX_TX, whale_percentile=DEFAULT_WHAL
             store_onchain(coin, metrics)
         else:
             logger.warning("Skipping DB store for %s due to error: %s", coin, metrics['error'])
+
+        payload = {
+            'coin': coin,
+            'whale_count': metrics.get('whale_count', 0),
+            'total_sampled': metrics.get('total_sampled', 0),
+            'whale_threshold_wei': metrics.get('whale_threshold_wei', 0),
+            'whale_threshold_eth': metrics.get('whale_threshold_eth', 0),
+            'avg_value_wei': metrics.get('avg_value_wei', 0),
+            'max_value_wei': metrics.get('max_value_wei', 0),
+            'max_value_eth': metrics.get('max_value_eth', 0),
+        }
+
+        api_result = post_to_api('ingest_regime', payload)
+        if api_result.get('ok'):
+            logger.info("On-chain data posted to API")
+        else:
+            logger.warning("API post error: %s", api_result.get('error', 'unknown'))
+
+        post_to_bridge('onchain_analytics', payload,
+                       "BTC=$%s, TVL 7d=%+.1f%%" % (
+                           "{:,.0f}".format(0),
+                           0))
 
         print(f"{coin}: {metrics}")
 

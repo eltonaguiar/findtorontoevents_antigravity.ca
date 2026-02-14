@@ -32,7 +32,7 @@ warnings.filterwarnings('ignore')
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from utils import post_to_api, call_api
+from utils import post_to_api, post_to_bridge, call_api
 from config import API_BASE, ADMIN_KEY
 
 logger = logging.getLogger('cusum_detector')
@@ -326,6 +326,13 @@ def run_cusum_detection():
             logger.info("CUSUM results posted to API")
         else:
             logger.warning("API post error: %s", api_result.get('error', 'unknown'))
+
+    # Post to bridge dashboard
+    if health_results:
+        healthy = sum(1 for h in health_results if h['decay_status'] in ('strong', 'healthy'))
+        summary = "%d algos: %d healthy, %d warning/decayed" % (
+            len(health_results), healthy, len(health_results) - healthy)
+        post_to_bridge('cusum_detector', {'algo_health': health_results}, summary)
 
     # Summary
     logger.info("")

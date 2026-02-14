@@ -177,10 +177,10 @@ def main():
         from options_flow import main as options_main
         results['options'] = run_step('Options Flow / GEX', options_main)
 
-    # Step 17: On-Chain Analytics (Sprint 2.2)
+    # Step 17: DeFi On-Chain Analytics (Sprint 2.2)
     if '--onchain' in args or run_all:
-        from onchain_analytics import main as onchain_main
-        results['onchain'] = run_step('On-Chain Analytics', onchain_main)
+        from defi_onchain import main as onchain_main
+        results['onchain'] = run_step('DeFi On-Chain Analytics', onchain_main)
 
     # Step 18: Portfolio Optimizer — Black-Litterman + Risk Parity (Sprint 2.3+2.4)
     if '--portfolio' in args or run_all:

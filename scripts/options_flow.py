@@ -33,7 +33,7 @@ warnings.filterwarnings('ignore')
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from utils import post_to_api, safe_request
+from utils import post_to_api, post_to_bridge, safe_request
 from config import API_BASE, ADMIN_KEY, TRACKED_TICKERS
 
 logger = logging.getLogger('options_flow')
@@ -280,6 +280,11 @@ def main():
             logger.info("Options flow data posted to API")
         else:
             logger.warning("API post error: %s", api_result.get('error', 'unknown'))
+
+    # Post to bridge dashboard
+    if all_results:
+        post_to_bridge('options_flow', {'options_data': all_results},
+                       "%d tickers analyzed" % len(all_results))
 
     # Summary
     logger.info("")

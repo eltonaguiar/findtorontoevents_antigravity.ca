@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quant Bridge Dashboard | Live Trading Monitor</title>
+    <meta name="description" content="Real-time quant bridge dashboard — FinBERT sentiment, CUSUM decay detection, congressional trades, options flow, on-chain analytics, portfolio optimization, and transfer entropy.">
+    <style>
+        :root {
+            --bg: #0a0a1a; --card: #12122a; --card2: #1a1a3a; --border: #2a2a4a;
+            --text: #e0e0f0; --dim: #8888aa; --accent: #6366f1;
+            --green: #22c55e; --red: #ef4444; --yellow: #eab308; --blue: #3b82f6;
+            --gold: #fbbf24; --purple: #a855f7; --cyan: #06b6d4; --radius: 12px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+        a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
+
+        .header { background:linear-gradient(135deg,#12122a,#1e1e3f); border-bottom:1px solid var(--border); padding:1.5rem 2rem 1rem; text-align:center; }
+        .header h1 { font-size:2rem; background:linear-gradient(135deg,var(--cyan),var(--accent),var(--purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; letter-spacing:-0.02em; }
+        .header p { color:var(--dim); font-size:0.9rem; margin-top:0.3rem; }
+        .nav { display:flex; gap:1rem; justify-content:center; margin-top:0.8rem; font-size:0.85rem; flex-wrap:wrap; }
+        .nav a { color:var(--dim); padding:0.3rem 0.7rem; border-radius:8px; border:1px solid transparent; transition:all 0.2s; }
+        .nav a:hover { color:var(--text); border-color:var(--border); background:rgba(255,255,255,0.03); text-decoration:none; }
+        .nav a.active { color:var(--cyan); border-color:var(--cyan); background:rgba(6,182,212,0.08); }
+
+        .container { max-width:1400px; margin:0 auto; padding:1.5rem; }
+
+        /* Status bar */
+        .status-bar { display:flex; gap:0.8rem; flex-wrap:wrap; justify-content:center; padding:0.8rem; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:1.5rem; font-size:0.8rem; }
+        .status-item { display:flex; align-items:center; gap:0.4rem; }
+        .dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+        .dot.on { background:var(--green); box-shadow:0 0 6px var(--green); }
+        .dot.off { background:#555; }
+        .dot.warn { background:var(--yellow); box-shadow:0 0 6px var(--yellow); }
+        .dot.err { background:var(--red); box-shadow:0 0 6px var(--red); }
+
+        /* Sprint tabs */
+        .tabs { display:flex; gap:0.5rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+        .tab { padding:0.5rem 1.2rem; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--dim); cursor:pointer; font-size:0.85rem; transition:all 0.2s; }
+        .tab:hover { color:var(--text); border-color:var(--accent); }
+        .tab.active { color:var(--cyan); border-color:var(--cyan); background:rgba(6,182,212,0.1); }
+
+        /* Module sections */
+        .sprint-section { display:none; }
+        .sprint-section.active { display:block; }
+
+        .section { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; margin-bottom:1.5rem; }
+        .section h2 { font-size:1.15rem; margin-bottom:0.3rem; display:flex; align-items:center; gap:0.5rem; }
+        .section .sub { font-size:0.8rem; color:var(--dim); margin-bottom:1rem; }
+
+        /* Metric cards */
+        .metric-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+        .metric-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:1.2rem; text-align:center; }
+        .metric-card .label { font-size:0.7rem; color:var(--dim); text-transform:uppercase; letter-spacing:0.05em; }
+        .metric-card .value { font-size:1.8rem; font-weight:800; margin-top:0.2rem; }
+        .metric-card .detail { font-size:0.75rem; color:var(--dim); margin-top:0.2rem; }
+
+        /* Tables */
+        table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+        th { text-align:left; padding:0.6rem 0.5rem; color:var(--dim); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid var(--border); }
+        td { padding:0.6rem 0.5rem; border-bottom:1px solid rgba(42,42,74,0.5); }
+        tr:hover { background:rgba(99,102,241,0.04); }
+
+        /* Badges */
+        .badge { display:inline-block; padding:0.15rem 0.5rem; border-radius:4px; font-size:0.72rem; font-weight:600; }
+        .badge-green { background:rgba(34,197,94,0.15); color:var(--green); }
+        .badge-red { background:rgba(239,68,68,0.15); color:var(--red); }
+        .badge-yellow { background:rgba(234,179,8,0.15); color:var(--yellow); }
+        .badge-blue { background:rgba(59,130,246,0.15); color:var(--blue); }
+        .badge-purple { background:rgba(168,85,247,0.15); color:var(--purple); }
+        .badge-cyan { background:rgba(6,182,212,0.15); color:var(--cyan); }
+        .badge-dim { background:rgba(136,136,170,0.15); color:var(--dim); }
+
+        /* Bars */
+        .bar-container { width:100%; height:6px; background:var(--bg); border-radius:3px; overflow:hidden; }
+        .bar { height:100%; border-radius:3px; transition:width 0.5s; }
+        .bar-green { background:var(--green); }
+        .bar-red { background:var(--red); }
+        .bar-yellow { background:var(--yellow); }
+        .bar-blue { background:var(--blue); }
+
+        /* Sentiment meter */
+        .sentiment-meter { display:flex; align-items:center; gap:0.5rem; }
+        .sentiment-bar { flex:1; height:8px; background:var(--bg); border-radius:4px; overflow:hidden; position:relative; }
+        .sentiment-fill { height:100%; border-radius:4px; position:absolute; top:0; }
+        .sentiment-fill.pos { background:var(--green); right:50%; }
+        .sentiment-fill.neg { background:var(--red); left:50%; }
+
+        /* Loading */
+        .loading { text-align:center; padding:2rem; color:var(--dim); }
+        .spinner { display:inline-block; width:20px; height:20px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; margin-right:8px; vertical-align:middle; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+
+        /* Empty state */
+        .empty { text-align:center; padding:2rem; color:var(--dim); font-size:0.85rem; }
+        .empty .icon { font-size:2rem; margin-bottom:0.5rem; }
+
+        /* GEX visual */
+        .gex-indicator { display:flex; align-items:center; gap:0.5rem; }
+        .gex-arrow { font-size:1.2rem; font-weight:800; }
+        .gex-arrow.pos { color:var(--green); }
+        .gex-arrow.neg { color:var(--red); }
+
+        /* Footer */
+        .footer { text-align:center; padding:2rem 1rem 1rem; color:var(--dim); font-size:0.7rem; border-top:1px solid var(--border); margin-top:2rem; }
+
+        @media (max-width:768px) {
+            .container { padding:1rem; }
+            .header h1 { font-size:1.4rem; }
+            .metric-grid { grid-template-columns:repeat(2,1fr); }
+            table { font-size:0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Quant Bridge Dashboard</h1>
+        <p>Sprint 1 + Sprint 2 — Advanced Quant Techniques</p>
+        <div class="nav">
+            <a href="live-monitor.html">Live Monitor</a>
+            <a href="smart-money.html">Smart Money</a>
+            <a href="algo-performance.html">Algo Perf</a>
+            <a href="edge-dashboard.html">Edge Finder</a>
+            <a href="quant-bridge.html" class="active">Quant Bridge</a>
+            <a href="command-center.html">Command Center</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Status Bar -->
+        <div class="status-bar" id="statusBar">
+            <span class="spinner"></span> Loading module status...
+        </div>
+
+        <!-- Top Metrics -->
+        <div class="metric-grid" id="topMetrics">
+            <div class="metric-card">
+                <div class="label">Modules Active</div>
+                <div class="value" id="mModulesActive">--</div>
+                <div class="detail">of 9 total</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Algos Healthy</div>
+                <div class="value" id="mAlgosHealthy" style="color:var(--green)">--</div>
+                <div class="detail">CUSUM status</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Congress Signals</div>
+                <div class="value" id="mCongressSignals" style="color:var(--gold)">--</div>
+                <div class="detail">active alerts</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Sentiment Bias</div>
+                <div class="value" id="mSentimentBias">--</div>
+                <div class="detail">FinBERT aggregate</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">DeFi TVL</div>
+                <div class="value" id="mDefiTvl" style="color:var(--cyan)">--</div>
+                <div class="detail">7d change</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Last Updated</div>
+                <div class="value" id="mLastUpdated" style="font-size:1rem;color:var(--dim)">--</div>
+                <div class="detail">UTC</div>
+            </div>
+        </div>
+
+        <!-- Sprint Tabs -->
+        <div class="tabs">
+            <div class="tab active" onclick="showSprint('overview')">Overview</div>
+            <div class="tab" onclick="showSprint('sprint1')">Sprint 1 — Quick Wins</div>
+            <div class="tab" onclick="showSprint('sprint2')">Sprint 2 — Alt Data</div>
+        </div>
+
+        <!-- OVERVIEW -->
+        <div class="sprint-section active" id="sec-overview">
+            <div class="section">
+                <h2>Module Run Status</h2>
+                <div class="sub">Latest execution status for each quant bridge module</div>
+                <table>
+                    <thead><tr><th>Module</th><th>Sprint</th><th>Status</th><th>Last Run</th><th>Summary</th></tr></thead>
+                    <tbody id="tblRunStatus"><tr><td colspan="5" class="loading"><span class="spinner"></span> Loading...</td></tr></tbody>
+                </table>
+            </div>
+
+            <!-- CUSUM Summary -->
+            <div class="section">
+                <h2>Algorithm Health (CUSUM)</h2>
+                <div class="sub">Change-point detection on per-algorithm PnL — identifies decaying strategies</div>
+                <table>
+                    <thead><tr><th>Algorithm</th><th>Status</th><th>Weight</th><th>Sharpe</th><th>Win Rate</th><th>Trades</th><th>Change Pts</th></tr></thead>
+                    <tbody id="tblCusum"><tr><td colspan="7" class="loading"><span class="spinner"></span> Loading...</td></tr></tbody>
+                </table>
+            </div>
+
+            <!-- Congress Summary -->
+            <div class="section">
+                <h2>Congressional Trading Signals</h2>
+                <div class="sub">House + Senate stock trades — cluster buys signal institutional conviction</div>
+                <table>
+                    <thead><tr><th>Ticker</th><th>Signal</th><th>Strength</th><th>Members</th><th>Description</th></tr></thead>
+                    <tbody id="tblCongress"><tr><td colspan="5" class="loading"><span class="spinner"></span> Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SPRINT 1 -->
+        <div class="sprint-section" id="sec-sprint1">
+            <!-- Sentiment -->
+            <div class="section">
+                <h2>FinBERT Sentiment Analysis</h2>
+                <div class="sub">ProsusAI/FinBERT NLP — 87% accuracy on financial text vs 72% for VADER</div>
+                <table>
+                    <thead><tr><th>Ticker</th><th>Sentiment</th><th>Score</th><th>Confidence</th><th>Articles</th><th>Positive</th><th>Negative</th></tr></thead>
+                    <tbody id="tblSentiment"><tr><td colspan="7" class="loading"><span class="spinner"></span> Loading...</td></tr></tbody>
+                </table>
+            </div>
+
+            <!-- CUSUM Detail -->
+            <div class="section">
+                <h2>CUSUM Decay Detection (Detail)</h2>
+                <div class="sub">PELT change-point algorithm — detects structural breaks in algorithm performance</div>
+                <table>
+                    <thead><tr><th>Algorithm</th><th>Status</th><th>Rec. Weight</th><th>Last Sharpe</th><th>Win Rate</th><th>Total Trades</th><th>Change Points</th><th>Updated</th></tr></thead>
+                    <tbody id="tblCusumDetail"><tr><td colspan="8" class="loading"><span class="spinner"></span> Loading...</td></tr></tbody>
+                </table>
+            </div>
+
+            <!-- Congress Detail -->
+            <div class="section">
+                <h2>Congressional Tracker (Detail)</h2>
+                <div class="sub">Congress members outperform the market by 6-12% annually (academic studies)</div>
+                <table>
+                    <thead><tr><th>Ticker</th><th>Signal Type</th><th>Strength</th><th>Members Buying</th><th>Description</th><th>Updated</th></tr></thead>
+                    <tbody id="tblCongressDetail"><tr><td colspan="6" class="loading"><span class="spinner"></span> Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SPRINT 2 -->
+        <div class="sprint-section" id="sec-sprint2">
+            <!-- Options / GEX -->
+            <div class="section">
+                <h2>Options Flow / Gamma Exposure (GEX)</h2>
+                <div class="sub">Dealer hedging flows predict support/resistance better than technicals</div>
+                <table>
+                    <thead><tr><th>Ticker</th><th>Price</th><th>Net GEX</th><th>GEX Signal</th><th>P/C Ratio</th><th>PCR Signal</th><th>Unusual</th></tr></thead>
+                    <tbody id="tblOptions"><tr><td colspan="7" class="loading"><span class="spinner"></span> Loading...</td></tr></tbody>
+                </table>
+            </div>
+
+            <!-- On-Chain -->
+            <div class="section">
+                <h2>On-Chain Analytics</h2>
+                <div class="sub">BTC network health, DeFi TVL, stablecoin supply — leading crypto indicators</div>
+                <div class="metric-grid" id="onchainMetrics">
+                    <div class="metric-card">
+                        <div class="label">BTC Price</div>
+                        <div class="value" id="ocBtcPrice">--</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="label">BTC Hash Rate</div>
+                        <div class="value" id="ocHashRate">--</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="label">Mempool (Unconfirmed)</div>
+                        <div class="value" id="ocMempool">--</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="label">DeFi TVL</div>
+                        <div class="value" id="ocTvl">--</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="label">TVL 7d Change</div>
+                        <div class="value" id="ocTvl7d">--</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="label">Stablecoin Supply</div>
+                        <div class="value" id="ocStable">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transfer Entropy -->
+            <div class="section">
+                <h2>Transfer Entropy — Causal Lead-Lag</h2>
+                <div class="sub">Directional information flow — which assets CAUSE moves in others (Renaissance Tech core technique)</div>
+                <table>
+                    <thead><tr><th>Ticker</th><th>Role</th><th>Outgoing TE</th><th>Incoming TE</th><th>Net TE</th></tr></thead>
+                    <tbody id="tblEntropy"><tr><td colspan="5" class="loading"><span class="spinner"></span> Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Quant Bridge Dashboard | Paper trading simulation only. Not financial advice. Past performance does not guarantee future results.
+        <br>Powered by: FinBERT, CUSUM/PELT, Optuna, Black-Litterman, Transfer Entropy
+    </div>
+
+    <script>
+    var API_BASE = '/live-monitor/api/quant_bridge.php';
+    var dashData = null;
+
+    // ─── Tab switching ──────────────────────────────────────────────────
+    function showSprint(id) {
+        document.querySelectorAll('.sprint-section').forEach(function(s) { s.classList.remove('active'); });
+        document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+        document.getElementById('sec-' + id).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    // ─── Helpers ────────────────────────────────────────────────────────
+    function fmt(n, dec) { return n !== null && n !== undefined ? Number(n).toFixed(dec || 2) : '--'; }
+    function fmtPct(n) { return n !== null && n !== undefined ? Number(n).toFixed(1) + '%' : '--'; }
+    function fmtBig(n) {
+        if (!n && n !== 0) return '--';
+        n = Number(n);
+        if (Math.abs(n) >= 1e12) return (n/1e12).toFixed(1) + 'T';
+        if (Math.abs(n) >= 1e9) return (n/1e9).toFixed(1) + 'B';
+        if (Math.abs(n) >= 1e6) return (n/1e6).toFixed(1) + 'M';
+        if (Math.abs(n) >= 1e3) return (n/1e3).toFixed(1) + 'K';
+        return n.toFixed(0);
+    }
+    function fmtTime(dt) {
+        if (!dt) return '--';
+        var d = new Date(dt + (dt.indexOf('Z') < 0 && dt.indexOf('+') < 0 ? 'Z' : ''));
+        var now = new Date();
+        var diff = Math.floor((now - d) / 60000);
+        if (diff < 60) return diff + 'm ago';
+        if (diff < 1440) return Math.floor(diff/60) + 'h ago';
+        return Math.floor(diff/1440) + 'd ago';
+    }
+
+    function statusBadge(status) {
+        var map = {
+            'strong': 'badge-green', 'healthy': 'badge-green',
+            'warning': 'badge-yellow', 'decayed': 'badge-red',
+            'dead': 'badge-red', 'unknown': 'badge-dim',
+            'success': 'badge-green', 'failed': 'badge-red',
+            'not_run': 'badge-dim', 'done': 'badge-green',
+            'bullish': 'badge-green', 'bearish': 'badge-red', 'neutral': 'badge-dim',
+            'LEADER': 'badge-green', 'FOLLOWER': 'badge-yellow', 'NEUTRAL': 'badge-dim',
+            'POSITIVE_GAMMA': 'badge-green', 'NEGATIVE_GAMMA': 'badge-red',
+            'EXTREME_PUTS': 'badge-yellow', 'EXTREME_CALLS': 'badge-purple', 'NEUTRAL': 'badge-dim'
+        };
+        var cls = map[status] || 'badge-dim';
+        return '<span class="badge ' + cls + '">' + (status || 'N/A') + '</span>';
+    }
+
+    function dotClass(status) {
+        if (status === 'success' || status === 'done') return 'on';
+        if (status === 'failed') return 'err';
+        if (status === 'warning') return 'warn';
+        return 'off';
+    }
+
+    // ─── Module name map ────────────────────────────────────────────────
+    var MODULE_INFO = {
+        'finbert_sentiment': { name: 'FinBERT Sentiment', sprint: '1.1', icon: '' },
+        'cusum_detector':    { name: 'CUSUM Decay Detector', sprint: '1.2', icon: '' },
+        'hyperparam_optimizer': { name: 'Bayesian Optimizer', sprint: '1.3', icon: '' },
+        'congress_tracker':  { name: 'Congressional Tracker', sprint: '1.5', icon: '' },
+        'options_flow':      { name: 'Options Flow / GEX', sprint: '2.1', icon: '' },
+        'onchain_analytics': { name: 'On-Chain Analytics', sprint: '2.2', icon: '' },
+        'portfolio_optimizer': { name: 'Portfolio Optimizer', sprint: '2.3', icon: '' },
+        'transfer_entropy':  { name: 'Transfer Entropy', sprint: '2.5', icon: '' },
+        'cvar_monitor':      { name: 'CVaR Risk Monitor', sprint: '1.4', icon: '' }
+    };
+
+    // ─── Fetch and render ───────────────────────────────────────────────
+    function loadDashboard() {
+        fetch(API_BASE + '?action=dashboard')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.ok) throw new Error(data.error || 'API error');
+                dashData = data.dashboard;
+                renderStatusBar();
+                renderTopMetrics();
+                renderRunStatus();
+                renderCusum();
+                renderCongress();
+                renderSentiment();
+                renderCusumDetail();
+                renderCongressDetail();
+                renderOptions();
+                renderOnchain();
+                renderEntropy();
+            })
+            .catch(function(err) {
+                console.error('Dashboard load error:', err);
+                document.getElementById('statusBar').innerHTML =
+                    '<span class="dot err"></span> Dashboard unavailable — API may not be configured yet. ' +
+                    '<span style="color:var(--dim)">Run a GitHub Action to populate data.</span>';
+            });
+    }
+
+    // ─── Status Bar ─────────────────────────────────────────────────────
+    function renderStatusBar() {
+        var runs = dashData.latest_runs || [];
+        if (runs.length === 0) {
+            document.getElementById('statusBar').innerHTML =
+                '<span class="dot warn"></span> No module runs yet — trigger a GitHub Action to start';
+            return;
+        }
+        var html = '';
+        var allModules = ['cusum_detector','congress_tracker','finbert_sentiment','hyperparam_optimizer',
+                          'options_flow','onchain_analytics','portfolio_optimizer','transfer_entropy'];
+        var runMap = {};
+        runs.forEach(function(r) { runMap[r.module_name] = r; });
+
+        allModules.forEach(function(mod) {
+            var info = MODULE_INFO[mod] || { name: mod, sprint: '?' };
+            var run = runMap[mod];
+            var status = run ? run.status : 'not_run';
+            html += '<div class="status-item"><span class="dot ' + dotClass(status) + '"></span>' + info.name + '</div>';
+        });
+        document.getElementById('statusBar').innerHTML = html;
+    }
+
+    // ─── Top Metrics ────────────────────────────────────────────────────
+    function renderTopMetrics() {
+        var runs = dashData.latest_runs || [];
+        var activeCount = runs.filter(function(r) { return r.status === 'success'; }).length;
+        document.getElementById('mModulesActive').textContent = activeCount;
+
+        var cusum = dashData.cusum || [];
+        var healthy = cusum.filter(function(c) { return c.decay_status === 'strong' || c.decay_status === 'healthy'; }).length;
+        document.getElementById('mAlgosHealthy').textContent = healthy + '/' + cusum.length;
+
+        var congress = dashData.congress || [];
+        document.getElementById('mCongressSignals').textContent = congress.length;
+
+        var sentiment = dashData.sentiment || [];
+        if (sentiment.length > 0) {
+            var avgScore = sentiment.reduce(function(s,x) { return s + Number(x.sentiment_score); }, 0) / sentiment.length;
+            var label = avgScore > 0.1 ? 'Bullish' : avgScore < -0.1 ? 'Bearish' : 'Neutral';
+            var color = avgScore > 0.1 ? 'var(--green)' : avgScore < -0.1 ? 'var(--red)' : 'var(--dim)';
+            document.getElementById('mSentimentBias').textContent = label;
+            document.getElementById('mSentimentBias').style.color = color;
+        }
+
+        var onchain = dashData.onchain || [];
+        var tvl7d = onchain.find(function(o) { return o.metric_name === 'defi_tvl_7d_change_pct'; });
+        if (tvl7d) {
+            var v = Number(tvl7d.metric_value);
+            document.getElementById('mDefiTvl').textContent = (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
+            document.getElementById('mDefiTvl').style.color = v >= 0 ? 'var(--green)' : 'var(--red)';
+        }
+
+        if (runs.length > 0) {
+            var latest = runs.reduce(function(a,b) { return a.run_at > b.run_at ? a : b; });
+            document.getElementById('mLastUpdated').textContent = fmtTime(latest.run_at);
+        }
+    }
+
+    // ─── Run Status Table ───────────────────────────────────────────────
+    function renderRunStatus() {
+        var runs = dashData.latest_runs || [];
+        if (runs.length === 0) {
+            document.getElementById('tblRunStatus').innerHTML = '<tr><td colspan="5" class="empty"><div class="icon">--</div>No runs yet. Trigger a GitHub Action workflow to populate data.</td></tr>';
+            return;
+        }
+        var html = '';
+        runs.forEach(function(r) {
+            var info = MODULE_INFO[r.module_name] || { name: r.module_name, sprint: '?' };
+            html += '<tr>';
+            html += '<td><strong>' + info.name + '</strong></td>';
+            html += '<td><span class="badge badge-cyan">Sprint ' + info.sprint + '</span></td>';
+            html += '<td>' + statusBadge(r.status) + '</td>';
+            html += '<td>' + fmtTime(r.run_at) + '</td>';
+            html += '<td style="color:var(--dim);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (r.summary || '--') + '</td>';
+            html += '</tr>';
+        });
+        document.getElementById('tblRunStatus').innerHTML = html;
+    }
+
+    // ─── CUSUM Table ────────────────────────────────────────────────────
+    function renderCusum() { renderCusumTo('tblCusum', false); }
+    function renderCusumDetail() { renderCusumTo('tblCusumDetail', true); }
+    function renderCusumTo(id, detail) {
+        var cusum = dashData.cusum || [];
+        if (cusum.length === 0) {
+            var cols = detail ? 8 : 7;
+            document.getElementById(id).innerHTML = '<tr><td colspan="' + cols + '" class="empty"><div class="icon">--</div>No CUSUM data yet. Run: <code>python scripts/run_all.py --cusum</code></td></tr>';
+            return;
+        }
+        var html = '';
+        cusum.forEach(function(c) {
+            var wr = Number(c.last_win_rate);
+            html += '<tr>';
+            html += '<td><strong>' + c.algorithm_name + '</strong></td>';
+            html += '<td>' + statusBadge(c.decay_status) + '</td>';
+            html += '<td>' + fmt(c.recommended_weight) + '</td>';
+            html += '<td>' + fmt(c.last_sharpe) + '</td>';
+            html += '<td>' + fmtPct(wr * 100) + '</td>';
+            html += '<td>' + c.total_trades + '</td>';
+            html += '<td>' + c.change_points + '</td>';
+            if (detail) html += '<td style="color:var(--dim)">' + fmtTime(c.updated_at) + '</td>';
+            html += '</tr>';
+        });
+        document.getElementById(id).innerHTML = html;
+    }
+
+    // ─── Congress Table ─────────────────────────────────────────────────
+    function renderCongress() { renderCongressTo('tblCongress', false); }
+    function renderCongressDetail() { renderCongressTo('tblCongressDetail', true); }
+    function renderCongressTo(id, detail) {
+        var congress = dashData.congress || [];
+        if (congress.length === 0) {
+            var cols = detail ? 6 : 5;
+            document.getElementById(id).innerHTML = '<tr><td colspan="' + cols + '" class="empty"><div class="icon">--</div>No congressional signals yet. Run: <code>python scripts/run_all.py --congress</code></td></tr>';
+            return;
+        }
+        var html = '';
+        congress.forEach(function(c) {
+            var sigBadge = c.signal_type.indexOf('CLUSTER') >= 0 ? 'badge-gold' :
+                           c.signal_type.indexOf('SELLING') >= 0 ? 'badge-red' : 'badge-green';
+            html += '<tr>';
+            html += '<td><strong>' + c.ticker + '</strong></td>';
+            html += '<td><span class="badge ' + sigBadge + '">' + c.signal_type + '</span></td>';
+            html += '<td>' + c.strength + '</td>';
+            html += '<td>' + (c.members_buying || '--') + '</td>';
+            html += '<td style="color:var(--dim);max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.description || '') + '</td>';
+            if (detail) html += '<td style="color:var(--dim)">' + fmtTime(c.updated_at) + '</td>';
+            html += '</tr>';
+        });
+        document.getElementById(id).innerHTML = html;
+    }
+
+    // ─── Sentiment Table ────────────────────────────────────────────────
+    function renderSentiment() {
+        var sentiment = dashData.sentiment || [];
+        if (sentiment.length === 0) {
+            document.getElementById('tblSentiment').innerHTML = '<tr><td colspan="7" class="empty"><div class="icon">--</div>No sentiment data yet. Run: <code>python scripts/run_all.py --finbert</code></td></tr>';
+            return;
+        }
+        var html = '';
+        sentiment.forEach(function(s) {
+            var score = Number(s.sentiment_score);
+            var color = score > 0.15 ? 'var(--green)' : score < -0.15 ? 'var(--red)' : 'var(--dim)';
+            html += '<tr>';
+            html += '<td><strong>' + s.ticker + '</strong></td>';
+            html += '<td>' + statusBadge(s.sentiment_label) + '</td>';
+            html += '<td style="color:' + color + ';font-weight:700">' + (score >= 0 ? '+' : '') + fmt(score, 4) + '</td>';
+            html += '<td>' + fmtPct(Number(s.confidence) * 100) + '</td>';
+            html += '<td>' + s.num_articles + '</td>';
+            html += '<td style="color:var(--green)">' + fmtPct(Number(s.positive_pct)) + '</td>';
+            html += '<td style="color:var(--red)">' + fmtPct(Number(s.negative_pct)) + '</td>';
+            html += '</tr>';
+        });
+        document.getElementById('tblSentiment').innerHTML = html;
+    }
+
+    // ─── Options / GEX Table ────────────────────────────────────────────
+    function renderOptions() {
+        var options = dashData.options || [];
+        if (options.length === 0) {
+            document.getElementById('tblOptions').innerHTML = '<tr><td colspan="7" class="empty"><div class="icon">--</div>No options data yet. Run: <code>python scripts/run_all.py --options</code></td></tr>';
+            return;
+        }
+        var html = '';
+        options.forEach(function(o) {
+            var gex = Number(o.net_gex);
+            var gexColor = gex > 0 ? 'var(--green)' : 'var(--red)';
+            html += '<tr>';
+            html += '<td><strong>' + o.ticker + '</strong></td>';
+            html += '<td>$' + fmt(o.spot_price) + '</td>';
+            html += '<td style="color:' + gexColor + ';font-weight:700">' + fmtBig(gex) + '</td>';
+            html += '<td>' + statusBadge(o.gex_signal) + '</td>';
+            html += '<td>' + fmt(o.pc_oi_ratio, 3) + '</td>';
+            html += '<td>' + statusBadge(o.pcr_signal) + '</td>';
+            html += '<td>' + (o.unusual_count || 0) + '</td>';
+            html += '</tr>';
+        });
+        document.getElementById('tblOptions').innerHTML = html;
+    }
+
+    // ─── On-Chain Metrics ───────────────────────────────────────────────
+    function renderOnchain() {
+        var onchain = dashData.onchain || [];
+        if (onchain.length === 0) return;
+
+        var map = {};
+        onchain.forEach(function(o) { map[o.metric_name] = Number(o.metric_value); });
+
+        if (map['btc_market_price']) document.getElementById('ocBtcPrice').textContent = '$' + fmtBig(map['btc_market_price']);
+        if (map['btc_hash_rate']) document.getElementById('ocHashRate').textContent = fmtBig(map['btc_hash_rate']);
+        if (map['btc_unconfirmed_tx']) {
+            var mp = map['btc_unconfirmed_tx'];
+            document.getElementById('ocMempool').textContent = fmtBig(mp);
+            document.getElementById('ocMempool').style.color = mp > 200000 ? 'var(--red)' : 'var(--green)';
+        }
+        if (map['defi_total_tvl']) document.getElementById('ocTvl').textContent = '$' + fmtBig(map['defi_total_tvl']);
+        if (map['defi_tvl_7d_change_pct'] !== undefined) {
+            var v = map['defi_tvl_7d_change_pct'];
+            document.getElementById('ocTvl7d').textContent = (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
+            document.getElementById('ocTvl7d').style.color = v >= 0 ? 'var(--green)' : 'var(--red)';
+        }
+        if (map['defi_total_stablecoin_mcap']) document.getElementById('ocStable').textContent = '$' + fmtBig(map['defi_total_stablecoin_mcap']);
+    }
+
+    // ─── Transfer Entropy Table ─────────────────────────────────────────
+    function renderEntropy() {
+        var entropy = dashData.entropy || [];
+        if (entropy.length === 0) {
+            document.getElementById('tblEntropy').innerHTML = '<tr><td colspan="5" class="empty"><div class="icon">--</div>No entropy data yet. Run: <code>python scripts/run_all.py --entropy</code></td></tr>';
+            return;
+        }
+        var html = '';
+        entropy.forEach(function(e) {
+            var net = Number(e.net_te);
+            var color = net > 0.01 ? 'var(--green)' : net < -0.01 ? 'var(--yellow)' : 'var(--dim)';
+            html += '<tr>';
+            html += '<td><strong>' + e.ticker + '</strong></td>';
+            html += '<td>' + statusBadge(e.role) + '</td>';
+            html += '<td>' + fmt(e.outgoing_te, 4) + '</td>';
+            html += '<td>' + fmt(e.incoming_te, 4) + '</td>';
+            html += '<td style="color:' + color + ';font-weight:700">' + (net >= 0 ? '+' : '') + fmt(net, 4) + '</td>';
+            html += '</tr>';
+        });
+        document.getElementById('tblEntropy').innerHTML = html;
+    }
+
+    // ─── Init ───────────────────────────────────────────────────────────
+    loadDashboard();
+    setInterval(loadDashboard, 120000); // Refresh every 2 min
+    </script>
+    <script src="/findstocks/portfolio2/stock-nav.js"></script>
+    <script src="/live-monitor/api/scope_labels.js"></script>
+</body>
+</html>

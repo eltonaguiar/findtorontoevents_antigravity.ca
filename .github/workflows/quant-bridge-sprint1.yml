@@ -1,0 +1,106 @@
+name: Quant Bridge — Sprint 1 Quick Wins
+
+on:
+  schedule:
+    # Run daily at 9:30 PM UTC (4:30 PM EST) — after market close
+    - cron: '30 21 * * 1-5'
+    # Sunday full analysis
+    - cron: '0 15 * * 0'
+  workflow_dispatch:
+    inputs:
+      modules:
+        description: 'Modules to run (comma-separated: cusum,congress,optimize)'
+        required: false
+        default: 'cusum,congress,optimize'
+
+jobs:
+  sprint1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --quiet \
+            numpy>=1.24 \
+            pandas>=2.0 \
+            scipy>=1.11 \
+            requests>=2.31 \
+            yfinance>=0.2.30 \
+            ruptures>=1.1.8 \
+            optuna>=3.4.0
+
+      - name: Run CUSUM Change-Point Detector
+        if: contains(github.event.inputs.modules || 'cusum', 'cusum')
+        env:
+          SM_API_BASE: ${{ secrets.SM_API_BASE || 'https://findtorontoevents.ca/live-monitor/api' }}
+          SM_ADMIN_KEY: ${{ secrets.SM_ADMIN_KEY || 'livetrader2026' }}
+        run: |
+          echo "=========================================="
+          echo "CUSUM DECAY DETECTOR — $(date -u '+%Y-%m-%d %H:%M UTC')"
+          echo "=========================================="
+          python scripts/run_all.py --cusum 2>&1 | tee /tmp/cusum_output.txt
+          echo "CUSUM_STATUS=done" >> $GITHUB_ENV
+
+      - name: Run Congressional Trading Tracker
+        if: contains(github.event.inputs.modules || 'congress', 'congress')
+        env:
+          SM_API_BASE: ${{ secrets.SM_API_BASE || 'https://findtorontoevents.ca/live-monitor/api' }}
+          SM_ADMIN_KEY: ${{ secrets.SM_ADMIN_KEY || 'livetrader2026' }}
+        run: |
+          echo "=========================================="
+          echo "CONGRESSIONAL TRACKER — $(date -u '+%Y-%m-%d %H:%M UTC')"
+          echo "=========================================="
+          python scripts/run_all.py --congress 2>&1 | tee /tmp/congress_output.txt
+          echo "CONGRESS_STATUS=done" >> $GITHUB_ENV
+
+      - name: Run Bayesian Hyperparameter Optimizer
+        if: contains(github.event.inputs.modules || 'optimize', 'optimize')
+        env:
+          SM_API_BASE: ${{ secrets.SM_API_BASE || 'https://findtorontoevents.ca/live-monitor/api' }}
+          SM_ADMIN_KEY: ${{ secrets.SM_ADMIN_KEY || 'livetrader2026' }}
+        run: |
+          echo "=========================================="
+          echo "BAYESIAN OPTIMIZER — $(date -u '+%Y-%m-%d %H:%M UTC')"
+          echo "=========================================="
+          python scripts/run_all.py --optimize 2>&1 | tee /tmp/optimize_output.txt
+          echo "OPTIMIZE_STATUS=done" >> $GITHUB_ENV
+
+      - name: Save results as artifact
+        if: always()
+        run: |
+          mkdir -p /tmp/sprint1-results
+          cp /tmp/*_output.txt /tmp/sprint1-results/ 2>/dev/null || true
+          echo "Sprint 1 completed at $(date -u '+%Y-%m-%d %H:%M UTC')" > /tmp/sprint1-results/summary.txt
+          echo "CUSUM: ${CUSUM_STATUS:-skipped}" >> /tmp/sprint1-results/summary.txt
+          echo "Congress: ${CONGRESS_STATUS:-skipped}" >> /tmp/sprint1-results/summary.txt
+          echo "Optimizer: ${OPTIMIZE_STATUS:-skipped}" >> /tmp/sprint1-results/summary.txt
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sprint1-results-${{ github.run_number }}
+          path: /tmp/sprint1-results/
+          retention-days: 30
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Quant Bridge Sprint 1 Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Module | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| CUSUM Decay Detector | ${CUSUM_STATUS:-skipped} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Congressional Tracker | ${CONGRESS_STATUS:-skipped} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Bayesian Optimizer | ${OPTIMIZE_STATUS:-skipped} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Run at: $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY

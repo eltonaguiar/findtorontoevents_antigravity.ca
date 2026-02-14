@@ -34,7 +34,7 @@ warnings.filterwarnings('ignore')
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from utils import post_to_api, call_api
+from utils import post_to_api, post_to_bridge, call_api
 from config import API_BASE, ADMIN_KEY, TRACKED_TICKERS
 
 logger = logging.getLogger('portfolio_optimizer')
@@ -420,6 +420,10 @@ def run_portfolio_optimization():
         logger.info("Portfolio optimization posted to API")
     else:
         logger.warning("API post error: %s", api_result.get('error', 'unknown'))
+
+    # Post to bridge dashboard
+    post_to_bridge('portfolio_optimizer', payload,
+                   "Strategy: %s, %d tickers" % (best_name, len(best_weights)))
 
     # Summary
     logger.info("")

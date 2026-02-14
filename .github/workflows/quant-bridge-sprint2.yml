@@ -1,0 +1,119 @@
+name: Quant Bridge — Sprint 2 Alt Data & Portfolio
+
+on:
+  schedule:
+    # Run daily at 10:00 PM UTC (5:00 PM EST) — after Sprint 1
+    - cron: '0 22 * * 1-5'
+    # Sunday deep analysis
+    - cron: '0 16 * * 0'
+  workflow_dispatch:
+    inputs:
+      modules:
+        description: 'Modules to run (comma-separated: options,onchain,portfolio,entropy)'
+        required: false
+        default: 'options,onchain,portfolio,entropy'
+
+jobs:
+  sprint2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --quiet \
+            numpy>=1.24 \
+            pandas>=2.0 \
+            scipy>=1.11 \
+            requests>=2.31 \
+            yfinance>=0.2.30 \
+            riskfolio-lib>=4.0.0
+
+      - name: Run Options Flow / GEX Analyzer
+        if: contains(github.event.inputs.modules || 'options', 'options')
+        env:
+          SM_API_BASE: ${{ secrets.SM_API_BASE || 'https://findtorontoevents.ca/live-monitor/api' }}
+          SM_ADMIN_KEY: ${{ secrets.SM_ADMIN_KEY || 'livetrader2026' }}
+        run: |
+          echo "=========================================="
+          echo "OPTIONS FLOW / GEX — $(date -u '+%Y-%m-%d %H:%M UTC')"
+          echo "=========================================="
+          python scripts/run_all.py --options 2>&1 | tee /tmp/options_output.txt
+          echo "OPTIONS_STATUS=done" >> $GITHUB_ENV
+
+      - name: Run On-Chain Analytics
+        if: contains(github.event.inputs.modules || 'onchain', 'onchain')
+        env:
+          SM_API_BASE: ${{ secrets.SM_API_BASE || 'https://findtorontoevents.ca/live-monitor/api' }}
+          SM_ADMIN_KEY: ${{ secrets.SM_ADMIN_KEY || 'livetrader2026' }}
+        run: |
+          echo "=========================================="
+          echo "ON-CHAIN ANALYTICS — $(date -u '+%Y-%m-%d %H:%M UTC')"
+          echo "=========================================="
+          python scripts/run_all.py --onchain 2>&1 | tee /tmp/onchain_output.txt
+          echo "ONCHAIN_STATUS=done" >> $GITHUB_ENV
+
+      - name: Run Portfolio Optimizer (Black-Litterman + Risk Parity)
+        if: contains(github.event.inputs.modules || 'portfolio', 'portfolio')
+        env:
+          SM_API_BASE: ${{ secrets.SM_API_BASE || 'https://findtorontoevents.ca/live-monitor/api' }}
+          SM_ADMIN_KEY: ${{ secrets.SM_ADMIN_KEY || 'livetrader2026' }}
+        run: |
+          echo "=========================================="
+          echo "PORTFOLIO OPTIMIZER — $(date -u '+%Y-%m-%d %H:%M UTC')"
+          echo "=========================================="
+          python scripts/run_all.py --portfolio 2>&1 | tee /tmp/portfolio_output.txt
+          echo "PORTFOLIO_STATUS=done" >> $GITHUB_ENV
+
+      - name: Run Transfer Entropy Analyzer
+        if: contains(github.event.inputs.modules || 'entropy', 'entropy')
+        env:
+          SM_API_BASE: ${{ secrets.SM_API_BASE || 'https://findtorontoevents.ca/live-monitor/api' }}
+          SM_ADMIN_KEY: ${{ secrets.SM_ADMIN_KEY || 'livetrader2026' }}
+        run: |
+          echo "=========================================="
+          echo "TRANSFER ENTROPY — $(date -u '+%Y-%m-%d %H:%M UTC')"
+          echo "=========================================="
+          python scripts/run_all.py --entropy 2>&1 | tee /tmp/entropy_output.txt
+          echo "ENTROPY_STATUS=done" >> $GITHUB_ENV
+
+      - name: Save results as artifact
+        if: always()
+        run: |
+          mkdir -p /tmp/sprint2-results
+          cp /tmp/*_output.txt /tmp/sprint2-results/ 2>/dev/null || true
+          echo "Sprint 2 completed at $(date -u '+%Y-%m-%d %H:%M UTC')" > /tmp/sprint2-results/summary.txt
+          echo "Options Flow: ${OPTIONS_STATUS:-skipped}" >> /tmp/sprint2-results/summary.txt
+          echo "On-Chain: ${ONCHAIN_STATUS:-skipped}" >> /tmp/sprint2-results/summary.txt
+          echo "Portfolio: ${PORTFOLIO_STATUS:-skipped}" >> /tmp/sprint2-results/summary.txt
+          echo "Entropy: ${ENTROPY_STATUS:-skipped}" >> /tmp/sprint2-results/summary.txt
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sprint2-results-${{ github.run_number }}
+          path: /tmp/sprint2-results/
+          retention-days: 30
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Quant Bridge Sprint 2 Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Module | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Options Flow / GEX | ${OPTIONS_STATUS:-skipped} |" >> $GITHUB_STEP_SUMMARY
+          echo "| On-Chain Analytics | ${ONCHAIN_STATUS:-skipped} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Portfolio Optimizer | ${PORTFOLIO_STATUS:-skipped} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Transfer Entropy | ${ENTROPY_STATUS:-skipped} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Run at: $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
