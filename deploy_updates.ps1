@@ -29,7 +29,8 @@ $files = @(
     "updates/multi_timeframe_strategy.html",
     "updates/audit-response-enhancement.html",
     "updates/meme-strategy-v2.html",
-    "updates/ENHANCEMENTS.html"
+    "updates/ENHANCEMENTS.html",
+    "updates/backup-plan.html"
 )
 
 $success = 0
