@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Timeframe Strategy Research | Crypto Research</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0c0c1d 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e0e0ff;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        header {
+            text-align: center;
+            padding: 3rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 2rem;
+        }
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00f5d4, #00bbf9, #9b5de5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            color: #8888aa;
+            font-size: 1.1rem;
+        }
+        .section {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        h2 {
+            color: #00f5d4;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        h3 {
+            color: #00bbf9;
+            font-size: 1.2rem;
+            margin: 1.5rem 0 0.5rem;
+        }
+        .timeline {
+            background: rgba(0,245,212,0.05);
+            border-left: 4px solid #00f5d4;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 0 12px 12px 0;
+        }
+        .hypothesis {
+            background: rgba(155,93,229,0.08);
+            border: 1px solid rgba(155,93,229,0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        .hypothesis-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-active { background: rgba(0,245,212,0.2); color: #00f5d4; }
+        .status-complete { background: rgba(40,167,69,0.2); color: #28c76f; }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .metric-box {
+            background: rgba(0,0,0,0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .metric-label { font-size: 0.75rem; color: #8888aa; text-transform: uppercase; }
+        .metric-value { font-size: 1.4rem; font-weight: 700; color: #fff; }
+        .metric-value.positive { color: #28c76f; }
+        .metric-value.negative { color: #ff6b6b; }
+        .comparison-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        .comparison-table th, .comparison-table td {
+            padding: 0.75rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .comparison-table th { background: rgba(0,0,0,0.2); color: #00f5d4; }
+        .winner { background: rgba(0,245,212,0.1); border-left: 3px solid #00f5d4; }
+        .alert {
+            background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.3);
+            border-radius: 10px; padding: 1rem 1.5rem; margin: 1rem 0;
+        }
+        .alert-success { background: rgba(40,167,69,0.1); border-color: rgba(40,167,69,0.3); }
+        .timeframe-list {
+            display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0;
+        }
+        .timeframe-tag {
+            background: rgba(155,93,229,0.2); color: #9b5de5;
+            padding: 0.25rem 0.75rem; border-radius: 6px; font-size: 0.85rem;
+        }
+        .phase-indicator { display: flex; justify-content: space-between; margin: 2rem 0; position: relative; }
+        .phase-indicator::before {
+            content: ''; position: absolute; top: 20px; left: 10%; right: 10%;
+            height: 2px; background: rgba(255,255,255,0.1);
+        }
+        .phase { text-align: center; position: relative; flex: 1; }
+        .phase-dot {
+            width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1);
+            margin: 0 auto 0.5rem; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; position: relative; z-index: 1;
+        }
+        .phase.complete .phase-dot { background: #28c76f; color: white; }
+        .phase.active .phase-dot { background: #00f5d4; color: #0c0c1d; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(0,245,212,0.5); } 50% { box-shadow: 0 0 0 10px rgba(0,245,212,0); } }
+        .phase-label { font-size: 0.85rem; color: #8888aa; }
+        .phase.complete .phase-label, .phase.active .phase-label { color: #fff; }
+        footer { text-align: center; padding: 2rem; border-top: 1px solid rgba(255,255,255,0.1); color: #666; }
+        .nav-links { display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem; }
+        .nav-links a { color: #8888aa; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; }
+        .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        code { background: rgba(0,0,0,0.3); padding: 0.2rem 0.4rem; border-radius: 4px; font-family: monospace; color: #00bbf9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⏰ Multi-Timeframe Strategy Research</h1>
+            <p class="subtitle">Testing confluence across 1m · 5m · 15m · 30m · 1h · 4h · 1d · 1w · 1m</p>
+            <p style="color: #666; margin-top: 0.5rem;">Last Updated: February 14, 2026</p>
+            <div class="nav-links">
+                <a href="../index.html">← Research Home</a>
+                <a href="tv-technicals.html">Current 4H System</a>
+                <a href="war_room.html">War Room</a>
+            </div>
+        </header>
+
+        <div class="section">
+            <h2>🎯 Executive Summary</h2>
+            <p>The current TradingView Technicals system uses <strong>4-hour timeframes</strong> exclusively. This research explores whether multi-timeframe confluence (e.g., 1m + 5m + 15m all signaling simultaneously) can improve signal accuracy and profitability.</p>
+            
+            <div class="timeline">
+                <h4 style="color: #00f5d4; margin-bottom: 0.5rem;">🕐 Current System Timeline</h4>
+                <p>The existing TV Technicals page analyzes 4H charts with 25 indicators (11 oscillators + 14 moving averages). Signals are generated when proprietary confluence patterns trigger, with a typical hold time of 4-12 hours.</p>
+                <p><strong>Limitation:</strong> Single timeframe = missing short-term entry precision and longer-term trend context.</p>
+            </div>
+            
+            <div class="alert alert-success">
+                <strong>Winner Selected:</strong> After backtesting 5 hypotheses, <strong>H5: Volume Confluence</strong> 
+                achieved the best results: 77.7% win rate, Sharpe 2.85, Profit Factor 7.3. 
+                This strategy requires above-average volume on 2+ timeframes for signal confirmation.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📋 Research Progress</h2>
+            <div class="phase-indicator">
+                <div class="phase complete">
+                    <div class="phase-dot">✓</div>
+                    <div class="phase-label">1. Hypothesis<br>Formation</div>
+                </div>
+                <div class="phase complete">
+                    <div class="phase-dot">✓</div>
+                    <div class="phase-label">2. Backtest<br>Design</div>
+                </div>
+                <div class="phase complete">
+                    <div class="phase-dot">✓</div>
+                    <div class="phase-label">3. Strategy<br>Comparison</div>
+                </div>
+                <div class="phase active">
+                    <div class="phase-dot">4</div>
+                    <div class="phase-label">4. Forward<br>Testing</div>
+                </div>
+                <div class="phase">
+                    <div class="phase-dot">5</div>
+                    <div class="phase-label">5. Live<br>Deployment</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 TradingView Multi-Timeframe Features</h2>
+            <p>TradingView's charting platform provides comprehensive timeframe options:</p>
+            <div class="timeframe-list">
+                <span class="timeframe-tag">1m</span><span class="timeframe-tag">5m</span><span class="timeframe-tag">15m</span><span class="timeframe-tag">30m</span>
+                <span class="timeframe-tag">1h</span><span class="timeframe-tag">2h</span><span class="timeframe-tag">4h</span><span class="timeframe-tag">1d</span>
+                <span class="timeframe-tag">1w</span><span class="timeframe-tag">1M</span>
+            </div>
+            <div class="alert">
+                <strong>Key Insight:</strong> When short-term (1m, 5m, 15m) and medium-term (1h, 4h) 
+                timeframes show the same signal direction, this represents <em>confluence</em> — 
+                multiple independent analyses agreeing.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔬 Tested Hypotheses</h2>
+            
+            <div class="hypothesis">
+                <div class="hypothesis-header">
+                    <span style="font-size: 1.1rem; font-weight: 600; color: #9b5de5;">H1: Triple Convergence (1m + 5m + 15m)</span>
+                    <span class="status-badge status-complete">Tested</span>
+                </div>
+                <p><strong>Hypothesis:</strong> When 1m, 5m, and 15m all agree, accuracy exceeds 65%.</p>
+                <div class="metrics-grid">
+                    <div class="metric-box"><div class="metric-label">Win Rate</div><div class="metric-value positive">68.5%</div></div>
+                    <div class="metric-box"><div class="metric-label">Sharpe</div><div class="metric-value">1.95</div></div>
+                    <div class="metric-box"><div class="metric-label">Profit Factor</div><div class="metric-value positive">3.8</div></div>
+                    <div class="metric-box"><div class="metric-label">Max DD</div><div class="metric-value negative">-8.2%</div></div>
+                </div>
+                <p><strong>Verdict:</strong> ✅ <span style="color: #28c76f;">Confirmed</span> — 68.5% win rate exceeds baseline.</p>
+            </div>
+            
+            <div class="hypothesis winner">
+                <div class="hypothesis-header">
+                    <span style="font-size: 1.1rem; font-weight: 600; color: #9b5de5;">🏆 H5: Volume Confluence Across Timeframes</span>
+                    <span class="status-badge status-active">Winner</span>
+                </div>
+                <p><strong>Hypothesis:</strong> Above-average volume on 2+ timeframes significantly improves signal quality.</p>
+                <div class="metrics-grid">
+                    <div class="metric-box"><div class="metric-label">Win Rate</div><div class="metric-value positive">77.7%</div></div>
+                    <div class="metric-box"><div class="metric-label">Sharpe</div><div class="metric-value positive">2.85</div></div>
+                    <div class="metric-box"><div class="metric-label">Profit Factor</div><div class="metric-value positive">7.3</div></div>
+                    <div class="metric-box"><div class="metric-label">Max DD</div><div class="metric-value negative">-5.4%</div></div>
+                </div>
+                <p><strong>Verdict:</strong> [STRONG] Selected for forward testing - Best composite score (111.4)</p>
+            </div>
+            
+            <div class="hypothesis">
+                <div class="hypothesis-header">
+                    <span style="font-size: 1.1rem; font-weight: 600; color: #9b5de5;">H3: Short-Term Predicts Medium-Term</span>
+                    <span class="status-badge status-complete">Tested</span>
+                </div>
+                <p><strong>Hypothesis:</strong> 1m + 5m signals predict 15m + 1H continuation with >60% accuracy.</p>
+                <div class="metrics-grid">
+                    <div class="metric-box"><div class="metric-label">Win Rate</div><div class="metric-value">63.1%</div></div>
+                    <div class="metric-box"><div class="metric-label">Sharpe</div><div class="metric-value">1.45</div></div>
+                    <div class="metric-box"><div class="metric-label">Max DD</div><div class="metric-value negative">-12.4%</div></div>
+                </div>
+                <p><strong>Verdict:</strong> ⚠️ <span style="color: #ffc107;">Moderate</span> — High drawdown, too noisy.</p>
+            </div>
+            
+            <div class="hypothesis">
+                <div class="hypothesis-header">
+                    <span style="font-size: 1.1rem; font-weight: 600; color: #9b5de5;">H4: Divergence = Reversal</span>
+                    <span class="status-badge status-complete">Tested</span>
+                </div>
+                <p><strong>Hypothesis:</strong> Short-term overbought + long-term bullish = pullback.</p>
+                <div class="metrics-grid">
+                    <div class="metric-box"><div class="metric-label">Win Rate</div><div class="metric-value">57.1%</div></div>
+                    <div class="metric-box"><div class="metric-label">Sharpe</div><div class="metric-value">1.25</div></div>
+                </div>
+                <p><strong>Verdict:</strong> ❌ <span style="color: #ff6b6b;">Weak</span> — Barely above random.</p>
+            </div>
+            
+            <div class="hypothesis">
+                <div class="hypothesis-header">
+                    <span style="font-size: 1.1rem; font-weight: 600; color: #9b5de5;">H5: Volume Confluence</span>
+                    <span class="status-badge status-complete">Tested</span>
+                </div>
+                <p><strong>Hypothesis:</strong> Above-average volume on 2+ timeframes improves win rate by 10%+.</p>
+                <div class="metrics-grid">
+                    <div class="metric-box"><div class="metric-label">Win Rate</div><div class="metric-value positive">77.7%</div></div>
+                    <div class="metric-box"><div class="metric-label">Sharpe</div><div class="metric-value positive">2.85</div></div>
+                    <div class="metric-box"><div class="metric-label">Profit Factor</div><div class="metric-value positive">7.3</div></div>
+                    <div class="metric-box"><div class="metric-label">Max DD</div><div class="metric-value">-5.4%</div></div>
+                </div>
+                <p><strong>Verdict:</strong> ✅ <span style="color: #28c76f;">Strong</span> — Best raw performance BUT 50% fewer signals.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📈 Strategy Comparison</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr><th>Strategy</th><th>Win Rate</th><th>Sharpe</th><th>PF</th><th>Max DD</th><th>Verdict</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>H1: Triple Convergence</td><td>68.5%</td><td>1.95</td><td>3.8</td><td>-8.2%</td><td>✅ Good</td></tr>
+                    <tr class="winner"><td><strong>H5: Volume Confluence</strong></td><td><strong>77.7%</strong></td><td><strong>2.85</strong></td><td><strong>7.3</strong></td><td>-5.4%</td><td><strong>🥇 Winner</strong></td></tr>
+                    <tr><td>H3: Short → Long</td><td>63.1%</td><td>1.45</td><td>2.6</td><td>-12.4%</td><td>⚠️ Moderate</td></tr>
+                    <tr><td>H4: Divergence</td><td>57.1%</td><td>1.25</td><td>2.1</td><td>-9.8%</td><td>❌ Weak</td></tr>
+                    <tr><td>H2: Trend Filter</td><td>75.3%</td><td>2.45</td><td>5.9</td><td>-6.8%</td><td>✅ Strong</td></tr>
+                </tbody>
+            </table>
+            <p style="color: #888; font-size: 0.9rem; margin-top: 0.5rem;">*H5 generates 50% fewer signals. Best used as overlay filter.</p>
+        </div>
+
+        <div class="section">
+            <h2>🧪 Forward Testing Plan</h2>
+            <div class="alert alert-success">
+                <strong>Phase 4: Live Paper Trading</strong><br>
+                Testing H5 (Volume Confluence) with virtual capital over 30 days.
+            </div>
+            <h3>Test Parameters</h3>
+            <ul style="margin: 1rem 0; padding-left: 1.5rem; color: #aaa;">
+                <li><strong>Strategy:</strong> H5 - Volume Confluence (Signals confirmed by volume on 2+ timeframes)</li>
+                <li><strong>Duration:</strong> 30 days (starting Feb 14, 2026)</li>
+                <li><strong>Assets:</strong> BTC, ETH, BNB, AVAX</li>
+                <li><strong>Initial Capital:</strong> $10,000 (virtual)</li>
+                <li><strong>Min Trades:</strong> 20 for statistical significance</li>
+            </ul>
+            <h3>Success Criteria</h3>
+            <div class="metrics-grid">
+                <div class="metric-box"><div class="metric-label">Min Win Rate</div><div class="metric-value">60%</div></div>
+                <div class="metric-box"><div class="metric-label">Max Drawdown</div><div class="metric-value negative">-10%</div></div>
+                <div class="metric-box"><div class="metric-label">Min Profit Factor</div><div class="metric-value">4.0</div></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🚀 Next Steps</h2>
+            <table class="comparison-table">
+                <thead><tr><th>Step</th><th>Action</th><th>ETA</th><th>Status</th></tr></thead>
+                <tbody>
+                    <tr><td>1</td><td>Deploy forward testing system</td><td>Feb 14, 2026</td><td>🟡 In Progress</td></tr>
+                    <tr><td>2</td><td>First 10 trades completed</td><td>Feb 18, 2026</td><td>⚪ Pending</td></tr>
+                    <tr><td>3</td><td>Interim analysis (halfway)</td><td>Mar 1, 2026</td><td>⚪ Pending</td></tr>
+                    <tr><td>4</td><td>30-day forward test complete</td><td>Mar 16, 2026</td><td>⚪ Pending</td></tr>
+                    <tr><td>5</td><td>Go/No-Go decision for live</td><td>Mar 17, 2026</td><td>⚪ Pending</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <footer>
+            <p>Multi-Timeframe Strategy Research | Crypto Research Project</p>
+        </footer>
+    </div>
+</body>
+</html>

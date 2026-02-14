@@ -1,0 +1,219 @@
+# =============================================================================
+# UNIFIED PREDICTION TRACKING
+# =============================================================================
+# This workflow runs all prediction systems and records results to the
+# unified ledger for cross-system comparison
+# =============================================================================
+
+name: Unified Prediction Tracking
+
+on:
+  schedule:
+    # Run every 4 hours during market hours
+    - cron: '0 0,4,8,12,16,20 * * *'
+  workflow_dispatch:
+    inputs:
+      system:
+        description: 'Specific system to run (or "all")'
+        required: true
+        default: 'all'
+
+env:
+  DB_HOST: mysql.50webs.com
+  DB_PORT: 3306
+
+jobs:
+  # ==========================================================================
+  # Job 1: Run V2 Scientific Ledger & Record Predictions
+  # ==========================================================================
+  v2_ledger:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.system == 'all' || github.event.inputs.system == 'v2'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: |
+          cd STOCKSUNIFY2/scripts/v2
+          npm install
+      
+      - name: Run V2 Ledger
+        env:
+          DB_USER: ${{ secrets.DB_MEMECOIN_USER }}
+          DB_PASS: ${{ secrets.DB_MEMECOIN_PASS }}
+        run: |
+          cd STOCKSUNIFY2/scripts/v2
+          node scientificStockPicker.js --output=json > predictions_v2.json
+      
+      - name: Record to Unified Ledger
+        run: |
+          python database/record_to_ledger.py \
+            --system v2_scientific_ledger \
+            --input predictions_v2.json \
+            --db-host $DB_HOST \
+            --db-user ${{ secrets.DB_MEMECOIN_USER }} \
+            --db-pass ${{ secrets.DB_MEMECOIN_PASS }}
+
+  # ==========================================================================
+  # Job 2: Run CryptoAlpha Pro Signals
+  # ==========================================================================
+  cryptoalpha:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.system == 'all' || github.event.inputs.system == 'cryptoalpha'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      
+      - name: Run CryptoAlpha Signals
+        env:
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+        run: |
+          python live_signals_now.py --output=json > predictions_cryptoalpha.json
+      
+      - name: Record to Unified Ledger
+        run: |
+          python database/record_to_ledger.py \
+            --system cryptoalpha_pro \
+            --input predictions_cryptoalpha.json \
+            --db-host $DB_HOST \
+            --db-user ${{ secrets.DB_MEMECOIN_USER }} \
+            --db-pass ${{ secrets.DB_MEMECOIN_PASS }}
+
+  # ==========================================================================
+  # Job 3: Run Meme Coin Strategy V2
+  # ==========================================================================
+  meme_v2:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.system == 'all' || github.event.inputs.system == 'meme_v2'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pymysql
+      
+      - name: Run Meme Strategy V2
+        env:
+          DB_HOST: mysql.50webs.com
+          DB_USER: ${{ secrets.DB_MEMECOIN_USER }}
+          DB_PASS: ${{ secrets.DB_MEMECOIN_PASS }}
+        run: |
+          python meme_coin_strategy_v2.py --mode=live --output=json > predictions_meme_v2.json
+      
+      - name: Record to Unified Ledger
+        run: |
+          python database/record_to_ledger.py \
+            --system meme_coin_v2 \
+            --input predictions_meme_v2.json \
+            --db-host $DB_HOST \
+            --db-user ${{ secrets.DB_MEMECOIN_USER }} \
+            --db-pass ${{ secrets.DB_MEMECOIN_PASS }}
+
+  # ==========================================================================
+  # Job 4: Verify Results & Update Ledger
+  # ==========================================================================
+  verify_results:
+    runs-on: ubuntu-latest
+    needs: [v2_ledger, cryptoalpha, meme_v2]
+    if: always()
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install pymysql requests
+      
+      - name: Verify Pending Predictions
+        env:
+          DB_HOST: mysql.50webs.com
+          DB_USER: ${{ secrets.DB_MEMECOIN_USER }}
+          DB_PASS: ${{ secrets.DB_MEMECOIN_PASS }}
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+        run: |
+          python database/verify_and_update.py \
+            --db-host $DB_HOST \
+            --db-user $DB_USER \
+            --db-pass $DB_PASS
+      
+      - name: Generate Performance Report
+        env:
+          DB_HOST: mysql.50webs.com
+          DB_USER: ${{ secrets.DB_MEMECOIN_USER }}
+          DB_PASS: ${{ secrets.DB_MEMECOIN_PASS }}
+        run: |
+          python database/generate_report.py \
+            --db-host $DB_HOST \
+            --db-user $DB_USER \
+            --db-pass $DB_PASS \
+            --days 7 \
+            --output performance_report.json
+      
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: performance_report.json
+
+  # ==========================================================================
+  # Job 5: Early Warning Check
+  # ==========================================================================
+  early_warning:
+    runs-on: ubuntu-latest
+    needs: verify_results
+    if: always()
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install pymysql
+      
+      - name: Check System Health
+        env:
+          DB_HOST: mysql.50webs.com
+          DB_USER: ${{ secrets.DB_MEMECOIN_USER }}
+          DB_PASS: ${{ secrets.DB_MEMECOIN_PASS }}
+        run: |
+          python database/early_warning_check.py \
+            --db-host $DB_HOST \
+            --db-user $DB_USER \
+            --db-pass $DB_PASS \
+            --webhook ${{ secrets.DISCORD_WEBHOOK_URL }}

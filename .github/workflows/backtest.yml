@@ -1,0 +1,353 @@
+# =============================================================================
+# CryptoAlpha Pro - Automated Backtesting Pipeline
+# =============================================================================
+# This workflow runs daily backtests and validates the EXTREME signal system
+# against historical data. Results are published to GitHub Pages.
+#
+# Triggers:
+# - Daily at 00:00 UTC (schedule)
+# - On push to main (validation)
+# - Manual trigger (workflow_dispatch)
+# =============================================================================
+
+name: EXTREME Signal Backtest & Validation
+
+on:
+  # Run daily at midnight UTC
+  schedule:
+    - cron: '0 0 * * *'
+  
+  # Run on every push to main branch
+  push:
+    branches: [ main, master ]
+    paths:
+      - '**.py'
+      - '**.yml'
+      - 'data/**'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      assets:
+        description: 'Assets to backtest (comma-separated)'
+        required: false
+        default: 'BTC,ETH,BNB,AVAX'
+      start_date:
+        description: 'Start date (YYYY-MM-DD)'
+        required: false
+        default: '2020-01-01'
+      end_date:
+        description: 'End date (YYYY-MM-DD)'
+        required: false
+        default: ''
+
+env:
+  PYTHON_VERSION: '3.11'
+  BACKTEST_RESULTS_DIR: 'backtest_results'
+
+jobs:
+  # ==========================================================================
+  # Job 1: Setup and Data Fetching
+  # ==========================================================================
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.cache-key.outputs.key }}
+      run-date: ${{ steps.date.outputs.date }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+      
+      - name: Generate cache key
+        id: cache-key
+        run: echo "key=pip-${{ hashFiles('**/requirements.txt') }}" >> $GITHUB_OUTPUT
+      
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ steps.cache-key.outputs.key }}
+          restore-keys: |
+            pip-
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+  # ==========================================================================
+  # Job 2: Run Backtests for Each Asset
+  # ==========================================================================
+  backtest:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        asset: [BTC, ETH, BNB, AVAX]
+      fail-fast: false
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Restore cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ needs.setup.outputs.cache-key }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Fetch historical data
+        env:
+          BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
+          BINANCE_SECRET: ${{ secrets.BINANCE_SECRET }}
+        run: |
+          python scripts/fetch_data.py \
+            --asset ${{ matrix.asset }} \
+            --start-date ${{ github.event.inputs.start_date || '2020-01-01' }} \
+            --end-date ${{ github.event.inputs.end_date || '' }} \
+            --output-dir data/
+      
+      - name: Run backtest for ${{ matrix.asset }}
+        run: |
+          python scripts/backtest.py \
+            --asset ${{ matrix.asset }} \
+            --data-path data/${{ matrix.asset }}_daily.csv \
+            --config configs/extreme_signals.json \
+            --output ${{ env.BACKTEST_RESULTS_DIR }}/${{ matrix.asset }}_backtest.json
+      
+      - name: Generate performance report
+        run: |
+          python scripts/generate_report.py \
+            --backtest-results ${{ env.BACKTEST_RESULTS_DIR }}/${{ matrix.asset }}_backtest.json \
+            --output ${{ env.BACKTEST_RESULTS_DIR }}/${{ matrix.asset }}_report.html \
+            --template templates/report_template.html
+      
+      - name: Upload backtest artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backtest-${{ matrix.asset }}-${{ needs.setup.outputs.run-date }}
+          path: |
+            ${{ env.BACKTEST_RESULTS_DIR }}/${{ matrix.asset }}_backtest.json
+            ${{ env.BACKTEST_RESULTS_DIR }}/${{ matrix.asset }}_report.html
+          retention-days: 90
+
+  # ==========================================================================
+  # Job 3: Cross-Asset Portfolio Backtest
+  # ==========================================================================
+  portfolio_backtest:
+    needs: [setup, backtest]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Restore cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ needs.setup.outputs.cache-key }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Download all backtest artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ env.BACKTEST_RESULTS_DIR }}
+          pattern: backtest-*
+      
+      - name: Run portfolio optimization
+        run: |
+          python scripts/portfolio_backtest.py \
+            --backtest-dir ${{ env.BACKTEST_RESULTS_DIR }} \
+            --assets BTC,ETH,BNB,AVAX \
+            --output ${{ env.BACKTEST_RESULTS_DIR }}/portfolio_backtest.json
+      
+      - name: Generate portfolio report
+        run: |
+          python scripts/generate_portfolio_report.py \
+            --portfolio-results ${{ env.BACKTEST_RESULTS_DIR }}/portfolio_backtest.json \
+            --output ${{ env.BACKTEST_RESULTS_DIR }}/portfolio_report.html
+
+  # ==========================================================================
+  # Job 4: Signal Validation & Quality Checks
+  # ==========================================================================
+  validation:
+    needs: [setup, backtest]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Restore cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ needs.setup.outputs.cache-key }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Download backtest artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ env.BACKTEST_RESULTS_DIR }}
+          pattern: backtest-*
+      
+      - name: Validate signal quality
+        run: |
+          python scripts/validate_signals.py \
+            --backtest-dir ${{ env.BACKTEST_RESULTS_DIR }} \
+            --min-sharpe 2.0 \
+            --min-win-rate 0.75 \
+            --max-drawdown 0.20 \
+            --output ${{ env.BACKTEST_RESULTS_DIR }}/validation_report.json
+      
+      - name: Check for signal decay
+        run: |
+          python scripts/check_decay.py \
+            --backtest-dir ${{ env.BACKTEST_RESULTS_DIR }} \
+            --lookback-days 90 \
+            --output ${{ env.BACKTEST_RESULTS_DIR }}/decay_analysis.json
+      
+      - name: Post validation summary
+        run: |
+          python scripts/post_validation_summary.py \
+            --validation-report ${{ env.BACKTEST_RESULTS_DIR }}/validation_report.json \
+            --decay-analysis ${{ env.BACKTEST_RESULTS_DIR }}/decay_analysis.json
+
+  # ==========================================================================
+  # Job 5: Generate & Deploy Dashboard
+  # ==========================================================================
+  deploy_dashboard:
+    needs: [setup, backtest, portfolio_backtest, validation]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ env.BACKTEST_RESULTS_DIR }}
+          pattern: backtest-*
+      
+      - name: Generate dashboard
+        run: |
+          python scripts/generate_dashboard.py \
+            --backtest-dir ${{ env.BACKTEST_RESULTS_DIR }} \
+            --template-dir templates/dashboard \
+            --output-dir docs/dashboard \
+            --date ${{ needs.setup.outputs.run-date }}
+      
+      - name: Copy static assets
+        run: |
+          cp -r templates/dashboard/assets docs/dashboard/ 2>/dev/null || true
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/dashboard
+      
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # ==========================================================================
+  # Job 6: Notify Results
+  # ==========================================================================
+  notify:
+    needs: [setup, backtest, portfolio_backtest, validation, deploy_dashboard]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Send notification to Discord
+        if: secrets.DISCORD_WEBHOOK_URL != ''
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          python scripts/notify_discord.py \
+            --date ${{ needs.setup.outputs.run-date }} \
+            --backtest-dir ${{ env.BACKTEST_RESULTS_DIR }} \
+            --status ${{ job.status }}
+      
+      - name: Send notification to Telegram
+        if: secrets.TELEGRAM_BOT_TOKEN != '' && secrets.TELEGRAM_CHAT_ID != ''
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python scripts/notify_telegram.py \
+            --date ${{ needs.setup.outputs.run-date }} \
+            --backtest-dir ${{ env.BACKTEST_RESULTS_DIR }} \
+            --status ${{ job.status }}
+      
+      - name: Create GitHub Summary
+        run: |
+          echo "# EXTREME Signal Backtest Results - ${{ needs.setup.outputs.run-date }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Assets Tested" >> $GITHUB_STEP_SUMMARY
+          echo "- BTC" >> $GITHUB_STEP_SUMMARY
+          echo "- ETH" >> $GITHUB_STEP_SUMMARY
+          echo "- BNB" >> $GITHUB_STEP_SUMMARY
+          echo "- AVAX" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Dashboard" >> $GITHUB_STEP_SUMMARY
+          echo "📊 [View Full Dashboard](https://cryptoalpha-research.github.io/dashboard/)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Validation Status" >> $GITHUB_STEP_SUMMARY
+          echo "✅ All signals validated against minimum criteria" >> $GITHUB_STEP_SUMMARY

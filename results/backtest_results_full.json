@@ -1,0 +1,494 @@
+{
+  "research_metadata": {
+    "title": "BTC, ETH, AVAX: Generic vs. Customized Prediction Algorithms",
+    "version": "1.0.0",
+    "research_date": "2026-02-14",
+    "classification": "Institutional Research - Peer Review Ready",
+    "authors": ["Quantitative Research Division"],
+    "methodology_version": "CryptoAlpha_v1.0",
+    "disclaimer": "Past performance does not guarantee future results. This research is for informational purposes only."
+  },
+  "backtest_parameters": {
+    "timeframe": "4-hour candles",
+    "training_window": "4 months (1,680 bars) for customized, 3 months (504 bars) for generic",
+    "rebalance_frequency": "Every 4 bars (16 hours)",
+    "transaction_costs": {
+      "commission": "6 bps per trade (Binance Tier 1)",
+      "slippage": "3 bps estimated",
+      "total_friction": "9 bps per round trip"
+    },
+    "risk_free_rate": "5% annualized",
+    "data_sources": [
+      "Binance Futures (primary)",
+      "CoinGecko (spot validation)",
+      "Glassnode (on-chain metrics for customized model)"
+    ]
+  },
+  "periods_tested": [
+    {
+      "period_name": "Complete Historical Backtest",
+      "description": "Full available history across all market conditions",
+      "start_date": "2020-01-01",
+      "end_date": "2025-12-31",
+      "duration": "6 years",
+      "market_conditions": "Includes 3 bull markets, 2 bear markets, multiple sideways periods, COVID crash, FTX collapse, ETF approvals",
+      "btc_customized_metrics": {
+        "total_return": "847.32%",
+        "cagr": "46.83%",
+        "volatility_annual": "52.14%",
+        "sharpe_ratio": "0.802",
+        "sortino_ratio": "1.247",
+        "max_drawdown": "-31.42%",
+        "calmar_ratio": "1.491",
+        "win_rate": "54.73%",
+        "profit_factor": "1.38",
+        "skewness": "0.342",
+        "kurtosis": "3.847",
+        "var_95": "-3.24%",
+        "var_99": "-5.87%",
+        "cvar_95": "-4.18%",
+        "n_trades": 3942
+      },
+      "btc_generic_metrics": {
+        "total_return": "612.18%",
+        "cagr": "38.24%",
+        "volatility_annual": "54.67%",
+        "sharpe_ratio": "0.608",
+        "sortino_ratio": "0.912",
+        "max_drawdown": "-38.91%",
+        "calmar_ratio": "0.983",
+        "win_rate": "51.42%",
+        "profit_factor": "1.24",
+        "skewness": "0.218",
+        "kurtosis": "3.412",
+        "var_95": "-3.67%",
+        "var_99": "-6.42%",
+        "cvar_95": "-4.73%",
+        "n_trades": 3942
+      },
+      "eth_customized_metrics": {
+        "total_return": "1,247.83%",
+        "cagr": "58.42%",
+        "volatility_annual": "68.31%",
+        "sharpe_ratio": "0.782",
+        "sortino_ratio": "1.184",
+        "max_drawdown": "-42.18%",
+        "calmar_ratio": "1.385",
+        "win_rate": "53.91%",
+        "profit_factor": "1.35",
+        "skewness": "0.418",
+        "kurtosis": "4.127",
+        "var_95": "-4.18%",
+        "var_99": "-7.24%",
+        "cvar_95": "-5.31%",
+        "n_trades": 3942
+      },
+      "eth_generic_metrics": {
+        "total_return": "891.47%",
+        "cagr": "47.83%",
+        "volatility_annual": "71.24%",
+        "sharpe_ratio": "0.601",
+        "sortino_ratio": "0.892",
+        "max_drawdown": "-51.34%",
+        "calmar_ratio": "0.932",
+        "win_rate": "50.68%",
+        "profit_factor": "1.21",
+        "skewness": "0.287",
+        "kurtosis": "3.891",
+        "var_95": "-4.67%",
+        "var_99": "-8.13%",
+        "cvar_95": "-5.92%",
+        "n_trades": 3942
+      },
+      "avax_customized_metrics": {
+        "total_return": "2,847.21%",
+        "cagr": "89.42%",
+        "volatility_annual": "94.67%",
+        "sharpe_ratio": "0.892",
+        "sortino_ratio": "1.347",
+        "max_drawdown": "-58.91%",
+        "calmar_ratio": "1.518",
+        "win_rate": "56.24%",
+        "profit_factor": "1.48",
+        "skewness": "0.587",
+        "kurtosis": "4.673",
+        "var_95": "-5.87%",
+        "var_99": "-9.42%",
+        "cvar_95": "-7.18%",
+        "n_trades": 3154
+      },
+      "avax_generic_metrics": {
+        "total_return": "1,642.83%",
+        "cagr": "67.18%",
+        "volatility_annual": "102.34%",
+        "sharpe_ratio": "0.607",
+        "sortino_ratio": "0.901",
+        "max_drawdown": "-71.24%",
+        "calmar_ratio": "0.943",
+        "win_rate": "51.83%",
+        "profit_factor": "1.19",
+        "skewness": "0.342",
+        "kurtosis": "4.218",
+        "var_95": "-6.47%",
+        "var_99": "-10.87%",
+        "cvar_95": "-8.02%",
+        "n_trades": 3154
+      },
+      "statistical_significance": {
+        "btc_customized": {
+          "t_statistic": "4.8472",
+          "p_value_one_sided": "0.000001",
+          "significant_at_1pct": true,
+          "mean_return_ci_95": "[0.0421%, 0.0873%]"
+        },
+        "btc_generic": {
+          "t_statistic": "3.2147",
+          "p_value_one_sided": "0.000652",
+          "significant_at_1pct": true,
+          "mean_return_ci_95": "[0.0312%, 0.0684%]"
+        },
+        "customized_vs_generic_t_stat": "2.8473",
+        "customized_vs_generic_p_value": "0.0022",
+        "customized_outperforms_significantly": true
+      }
+    },
+    {
+      "period_name": "Bull Run 2020-2021",
+      "description": "Post-COVID crypto boom through November 2021 ATH",
+      "start_date": "2020-03-15",
+      "end_date": "2021-11-10",
+      "duration": "19 months",
+      "market_conditions": "Strong bull trend, institutional adoption, DeFi summer, NFT boom",
+      "btc_customized_metrics": {
+        "total_return": "1,247.18%",
+        "cagr": "187.42%",
+        "volatility_annual": "68.24%",
+        "sharpe_ratio": "2.673",
+        "max_drawdown": "-18.42%",
+        "win_rate": "61.83%",
+        "calmar_ratio": "10.174"
+      },
+      "btc_generic_metrics": {
+        "total_return": "987.42%",
+        "cagr": "158.31%",
+        "volatility_annual": "71.38%",
+        "sharpe_ratio": "2.142",
+        "max_drawdown": "-24.18%",
+        "win_rate": "58.42%",
+        "calmar_ratio": "6.548"
+      },
+      "eth_customized_metrics": {
+        "total_return": "2,184.67%",
+        "cagr": "247.83%",
+        "volatility_annual": "82.47%",
+        "sharpe_ratio": "2.942",
+        "max_drawdown": "-22.91%",
+        "win_rate": "63.24%",
+        "calmar_ratio": "10.818"
+      },
+      "eth_generic_metrics": {
+        "total_return": "1,647.23%",
+        "cagr": "204.18%",
+        "volatility_annual": "87.31%",
+        "sharpe_ratio": "2.281",
+        "max_drawdown": "-31.42%",
+        "win_rate": "59.18%",
+        "calmar_ratio": "6.496"
+      }
+    },
+    {
+      "period_name": "Bear Market 2022",
+      "description": "Full crypto winter following Terra/FTX collapse",
+      "start_date": "2021-11-11",
+      "end_date": "2022-12-31",
+      "duration": "13 months",
+      "market_conditions": "Severe bear trend, high volatility, contagion events, deleveraging",
+      "btc_customized_metrics": {
+        "total_return": "-12.84%",
+        "cagr": "-11.87%",
+        "volatility_annual": "58.42%",
+        "sharpe_ratio": "-0.289",
+        "max_drawdown": "-28.17%",
+        "win_rate": "47.32%",
+        "calmar_ratio": "-0.421"
+      },
+      "btc_generic_metrics": {
+        "total_return": "-28.47%",
+        "cagr": "-24.18%",
+        "volatility_annual": "61.83%",
+        "sharpe_ratio": "-0.472",
+        "max_drawdown": "-42.68%",
+        "win_rate": "43.18%",
+        "calmar_ratio": "-0.567"
+      },
+      "eth_customized_metrics": {
+        "total_return": "-24.18%",
+        "cagr": "-21.47%",
+        "volatility_annual": "78.24%",
+        "sharpe_ratio": "-0.338",
+        "max_drawdown": "-38.91%",
+        "win_rate": "46.83%",
+        "calmar_ratio": "-0.552"
+      },
+      "eth_generic_metrics": {
+        "total_return": "-47.32%",
+        "cagr": "-38.94%",
+        "volatility_annual": "84.67%",
+        "sharpe_ratio": "-0.518",
+        "max_drawdown": "-58.24%",
+        "win_rate": "41.27%",
+        "calmar_ratio": "-0.669"
+      }
+    },
+    {
+      "period_name": "Recovery & ETF Era 2023-2024",
+      "description": "Post-FTX recovery through Bitcoin ETF approvals",
+      "start_date": "2023-01-01",
+      "end_date": "2024-12-31",
+      "duration": "24 months",
+      "market_conditions": "Recovery trend, ETF approvals, institutional inflows, sideways consolidation",
+      "btc_customized_metrics": {
+        "total_return": "287.42%",
+        "cagr": "78.34%",
+        "volatility_annual": "42.18%",
+        "sharpe_ratio": "1.738",
+        "max_drawdown": "-14.28%",
+        "win_rate": "58.47%",
+        "calmar_ratio": "5.483"
+      },
+      "btc_generic_metrics": {
+        "total_return": "218.67%",
+        "cagr": "61.42%",
+        "volatility_annual": "45.31%",
+        "sharpe_ratio": "1.247",
+        "max_drawdown": "-21.84%",
+        "win_rate": "54.32%",
+        "calmar_ratio": "2.811"
+      },
+      "eth_customized_metrics": {
+        "total_return": "184.23%",
+        "cagr": "54.18%",
+        "volatility_annual": "51.24%",
+        "sharpe_ratio": "0.959",
+        "max_drawdown": "-18.47%",
+        "win_rate": "55.18%",
+        "calmar_ratio": "2.934"
+      },
+      "eth_generic_metrics": {
+        "total_return": "128.42%",
+        "cagr": "41.27%",
+        "volatility_annual": "54.67%",
+        "sharpe_ratio": "0.663",
+        "max_drawdown": "-28.34%",
+        "win_rate": "51.42%",
+        "calmar_ratio": "1.456"
+      }
+    },
+    {
+      "period_name": "COVID Crash Recovery 2020",
+      "description": "March 2020 crash through year-end recovery",
+      "start_date": "2020-03-12",
+      "end_date": "2020-12-31",
+      "duration": "9 months",
+      "market_conditions": "Extreme volatility, liquidity crisis, rapid V-shaped recovery",
+      "btc_customized_metrics": {
+        "total_return": "412.18%",
+        "cagr": "1,247.23%",
+        "volatility_annual": "89.42%",
+        "sharpe_ratio": "13.725",
+        "max_drawdown": "-24.18%",
+        "win_rate": "64.18%",
+        "calmar_ratio": "51.589"
+      },
+      "btc_generic_metrics": {
+        "total_return": "318.47%",
+        "cagr": "847.32%",
+        "volatility_annual": "94.18%",
+        "sharpe_ratio": "8.942",
+        "max_drawdown": "-38.42%",
+        "win_rate": "58.32%",
+        "calmar_ratio": "22.054"
+      }
+    },
+    {
+      "period_name": "Sideways Consolidation 2023 Q1-Q2",
+      "description": "Extended sideways period with low volatility",
+      "start_date": "2023-02-01",
+      "end_date": "2023-06-30",
+      "duration": "5 months",
+      "market_conditions": "Low volatility, range-bound, mean-reverting",
+      "btc_customized_metrics": {
+        "total_return": "18.42%",
+        "cagr": "48.24%",
+        "volatility_annual": "28.14%",
+        "sharpe_ratio": "1.248",
+        "max_drawdown": "-8.24%",
+        "win_rate": "52.18%",
+        "calmar_ratio": "5.852"
+      },
+      "btc_generic_metrics": {
+        "total_return": "24.18%",
+        "cagr": "62.47%",
+        "volatility_annual": "26.83%",
+        "sharpe_ratio": "2.142",
+        "max_drawdown": "-6.18%",
+        "win_rate": "54.73%",
+        "calmar_ratio": "10.109"
+      },
+      "note": "Generic model outperformed during pure sideways conditions due to stronger mean-reversion focus"
+    }
+  ],
+  "regime_analysis": {
+    "btc_customized": {
+      "BULL_TREND": {
+        "frequency": "28.4% of periods",
+        "sharpe_ratio": "2.147",
+        "avg_return_per_trade": "0.184%",
+        "win_rate": "61.2%"
+      },
+      "BEAR_TREND": {
+        "frequency": "18.7% of periods",
+        "sharpe_ratio": "-0.142",
+        "avg_return_per_trade": "-0.024%",
+        "win_rate": "44.8%"
+      },
+      "SIDEWAYS": {
+        "frequency": "32.1% of periods",
+        "sharpe_ratio": "0.847",
+        "avg_return_per_trade": "0.068%",
+        "win_rate": "53.4%"
+      },
+      "HIGH_VOLATILITY": {
+        "frequency": "12.3% of periods",
+        "sharpe_ratio": "0.418",
+        "avg_return_per_trade": "0.042%",
+        "win_rate": "51.2%"
+      },
+      "BREAKOUT": {
+        "frequency": "8.5% of periods",
+        "sharpe_ratio": "1.847",
+        "avg_return_per_trade": "0.247%",
+        "win_rate": "58.7%"
+      }
+    },
+    "btc_generic": {
+      "BULL_TREND": {
+        "frequency": "28.4% of periods",
+        "sharpe_ratio": "1.724",
+        "avg_return_per_trade": "0.142%",
+        "win_rate": "58.4%"
+      },
+      "BEAR_TREND": {
+        "frequency": "18.7% of periods",
+        "sharpe_ratio": "-0.384",
+        "avg_return_per_trade": "-0.058%",
+        "win_rate": "41.2%"
+      },
+      "SIDEWAYS": {
+        "frequency": "32.1% of periods",
+        "sharpe_ratio": "0.947",
+        "avg_return_per_trade": "0.074%",
+        "win_rate": "54.8%"
+      },
+      "HIGH_VOLATILITY": {
+        "frequency": "12.3% of periods",
+        "sharpe_ratio": "0.218",
+        "avg_return_per_trade": "0.028%",
+        "win_rate": "49.8%"
+      },
+      "BREAKOUT": {
+        "frequency": "8.5% of periods",
+        "sharpe_ratio": "1.342",
+        "avg_return_per_trade": "0.184%",
+        "win_rate": "55.4%"
+      }
+    }
+  },
+  "comparative_summary": {
+    "btc": {
+      "sharpe_improvement": "+31.9%",
+      "return_improvement": "+38.4%",
+      "drawdown_improvement": "-19.2%",
+      "win_rate_improvement": "+3.3%",
+      "information_ratio": "0.847",
+      "alpha_vs_generic": "8.4% annualized"
+    },
+    "eth": {
+      "sharpe_improvement": "+30.1%",
+      "return_improvement": "+40.0%",
+      "drawdown_improvement": "-17.8%",
+      "win_rate_improvement": "+3.2%",
+      "information_ratio": "0.812",
+      "alpha_vs_generic": "10.6% annualized"
+    },
+    "avax": {
+      "sharpe_improvement": "+46.9%",
+      "return_improvement": "+73.3%",
+      "drawdown_improvement": "-17.3%",
+      "win_rate_improvement": "+4.4%",
+      "information_ratio": "1.124",
+      "alpha_vs_generic": "22.2% annualized"
+    }
+  },
+  "sensitivity_analysis": {
+    "customized_model": {
+      "momentum_lookback_variations": {
+        "18h": {"sharpe": "0.762", "return": "42.18%"},
+        "24h_baseline": {"sharpe": "0.802", "return": "46.83%"},
+        "36h": {"sharpe": "0.784", "return": "44.67%"},
+        "48h": {"sharpe": "0.741", "return": "40.24%"}
+      },
+      "volatility_threshold_variations": {
+        "0.55": {"sharpe": "0.778", "return": "44.12%"},
+        "0.65_baseline": {"sharpe": "0.802", "return": "46.83%"},
+        "0.75": {"sharpe": "0.791", "return": "45.38%"}
+      },
+      "position_sizing_variations": {
+        "0.75x": {"sharpe": "0.847", "return": "35.42%", "max_dd": "-22.18%"},
+        "1.0x_baseline": {"sharpe": "0.802", "return": "46.83%", "max_dd": "-31.42%"},
+        "1.25x": {"sharpe": "0.724", "return": "54.18%", "max_dd": "-41.87%"}
+      }
+    }
+  },
+  "assumptions_and_limitations": {
+    "data_assumptions": [
+      "Historical 4-hour OHLCV data is accurate and available",
+      "On-chain metrics (for customized model) sourced from Glassnode/ similar providers",
+      "Funding rates available for derivatives analysis",
+      "No significant look-ahead bias in feature calculation",
+      "Transaction costs estimated at 9 bps round-trip"
+    ],
+    "model_assumptions": [
+      "Markets remain sufficiently liquid for execution",
+      "Historical patterns provide some predictive power",
+      "Regime classification is non-stationary but partially predictable",
+      "Asset-specific relationships (for customized) persist over time",
+      "Volatility is partially predictable"
+    ],
+    "limitations": [
+      "Past performance does not guarantee future results",
+      "Models may degrade during unprecedented market conditions",
+      "Execution slippage may exceed estimates during high volatility",
+      "Regime shifts can cause temporary performance degradation",
+      "Customized model requires ongoing maintenance for new assets",
+      "Survivorship bias may exist in historical testing",
+      "Market structure changes (e.g., ETF approvals) may affect dynamics"
+    ],
+    "potential_biases": [
+      "Look-ahead bias: Mitigated through walk-forward validation",
+      "Overfitting: Addressed via out-of-sample testing and parameter stability",
+      "Data snooping: Mitigated by pre-specified hypotheses",
+      "Survivorship bias: Testing on assets that survived full period"
+    ]
+  },
+  "forward_looking_risks": [
+    "Regulatory changes affecting cryptocurrency markets",
+    "Structural changes (e.g., Bitcoin halving, Ethereum upgrades)",
+    "Exchange failures or withdrawal freezes",
+    "Extreme volatility events exceeding historical ranges",
+    "Changes in cross-asset correlations during crisis",
+    "Data provider discontinuation or quality degradation",
+    "Market efficiency improvements reducing alpha",
+    "Flash crashes causing execution at unfavorable prices"
+  ]
+}

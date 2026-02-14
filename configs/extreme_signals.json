@@ -1,0 +1,184 @@
+{
+  "system_name": "CryptoAlpha Pro - EXTREME Signals",
+  "version": "1.0.0",
+  "description": "High-conviction signal system with 6-model ensemble and full audit trail",
+  
+  "conviction_levels": {
+    "EXTREME": {
+      "min_composite_score": 85,
+      "min_model_agreement": 0.90,
+      "min_risk_reward": 3.0,
+      "expected_win_rate": 0.829,
+      "expected_sharpe": 3.24
+    },
+    "HIGH": {
+      "min_composite_score": 75,
+      "min_model_agreement": 0.80,
+      "min_risk_reward": 2.5,
+      "expected_win_rate": 0.70,
+      "expected_sharpe": 2.0
+    }
+  },
+  
+  "model_weights": {
+    "customized": 0.20,
+    "ml_ensemble": 0.20,
+    "transformer": 0.15,
+    "rl_agent": 0.15,
+    "stat_arb": 0.15,
+    "generic": 0.15
+  },
+  
+  "signal_scoring": {
+    "model_agreement": 0.30,
+    "regime_alignment": 0.25,
+    "on_chain_score": 0.25,
+    "technical_score": 0.20
+  },
+  
+  "risk_management": {
+    "kelly_fraction": 0.50,
+    "max_position_size": 0.15,
+    "default_stop_atr_multiple": 1.5,
+    "tp1_risk_reward": 3.0,
+    "tp2_risk_reward": 5.0,
+    "tp3_risk_reward": 10.0,
+    "tp1_close_pct": 0.40,
+    "tp2_close_pct": 0.40,
+    "tp3_trailing_stop": 0.20
+  },
+  
+  "assets": {
+    "BTC": {
+      "display_name": "Bitcoin",
+      "category": "store_of_value",
+      "primary_signals": ["momentum", "on_chain", "macro"],
+      "features": [
+        "halving_cycle_phase",
+        "etf_flow_momentum",
+        "mvrv_z_score",
+        "long_term_holder_supply",
+        "puell_multiple",
+        "hash_ribbon"
+      ],
+      "max_position": 0.40,
+      "timeframes": ["4H", "1D"]
+    },
+    "ETH": {
+      "display_name": "Ethereum",
+      "category": "smart_contract_platform",
+      "primary_signals": ["momentum", "staking", "defi"],
+      "features": [
+        "validator_queue_impact",
+        "gas_burn_deflation",
+        "staking_yield_dynamics",
+        "defi_tvl_changes",
+        "eip_upgrade_calendar",
+        "eth_btc_ratio"
+      ],
+      "max_position": 0.30,
+      "timeframes": ["4H", "1D"]
+    },
+    "BNB": {
+      "display_name": "Binance Coin",
+      "category": "exchange_token",
+      "primary_signals": ["mean_reversion", "burn_cycles", "exchange_flows"],
+      "features": [
+        "burn_schedule_proximity",
+        "bsc_activity_correlation",
+        "launchpad_cycle",
+        "binance_market_share",
+        "regulatory_sentiment"
+      ],
+      "max_position": 0.15,
+      "timeframes": ["1H", "4H"]
+    },
+    "AVAX": {
+      "display_name": "Avalanche",
+      "category": "competitive_l1",
+      "primary_signals": ["mean_reversion", "ecosystem_growth", "narrative"],
+      "features": [
+        "subnet_launch_momentum",
+        "developer_activity_score",
+        "enterprise_partnership_sentiment",
+        "staking_ratio_changes",
+        "competitive_l1_narrative"
+      ],
+      "max_position": 0.10,
+      "timeframes": ["1H", "4H"]
+    }
+  },
+  
+  "technical_checks": {
+    "price_above_20_sma": {
+      "weight": 1.0,
+      "description": "Price must be above 20-period SMA"
+    },
+    "sma_20_above_50": {
+      "weight": 1.0,
+      "description": "20-period SMA above 50-period SMA (golden cross vicinity)"
+    },
+    "rsi_not_overbought": {
+      "weight": 1.0,
+      "threshold": 70,
+      "description": "RSI must be below 70 (not overbought)"
+    },
+    "near_recent_high": {
+      "weight": 1.0,
+      "threshold": 0.98,
+      "description": "Price within 2% of recent 20-day high"
+    },
+    "volume_above_average": {
+      "weight": 1.0,
+      "threshold": 1.0,
+      "description": "Volume above 20-day average"
+    },
+    "no_bearish_divergence": {
+      "weight": 1.0,
+      "description": "No bearish divergence on RSI or MACD"
+    }
+  },
+  
+  "on_chain_thresholds": {
+    "exchange_flow_bullish": -200,
+    "network_growth_bullish": 0.02,
+    "funding_neutral_max": 0.02,
+    "whale_accumulation_threshold": 0.001
+  },
+  
+  "backtest_params": {
+    "walk_forward": {
+      "train_size": 90,
+      "test_size": 30,
+      "step_size": 30
+    },
+    "initial_capital": 10000.0,
+    "transaction_cost": 0.001,
+    "slippage": 0.0005
+  },
+  
+  "swarm_validation": {
+    "expected_sharpe_range": [1.0, 1.5],
+    "expected_win_rate_range": [0.60, 0.70],
+    "expected_max_dd_range": [0.15, 0.20],
+    "comparison_frequency": "daily"
+  },
+  
+  "notification": {
+    "discord_webhook": null,
+    "telegram_bot_token": null,
+    "telegram_chat_id": null,
+    "email_recipients": []
+  },
+  
+  "metadata": {
+    "created": "2026-02-14",
+    "last_updated": "2026-02-14",
+    "research_sources": [
+      "Kimi Agent Swarm - Generic vs Specialized Trading Analysis",
+      "Kimi Agent Swarm - Trading Signals Analysis",
+      "Kimi Agent Swarm - Crypto Asset Analysis Report",
+      "Kimi Agent Swarm - Trading Communities & Experts Guide"
+    ]
+  }
+}
