@@ -1,0 +1,159 @@
+# GitHub Actions Workflow for Alpha Signal Monitoring
+# Automatically scans for high-certainty signals and updates dashboard
+
+name: Alpha Signal Monitor
+
+on:
+  # Run every 15 minutes during market hours (UTC)
+  schedule:
+    - cron: '*/15 6-23 * * *'  # Every 15 min, 6 AM - 11 PM UTC
+    - cron: '0 */4 0-5 * * *'  # Every 4 hours overnight
+  
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: 'Scan type'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - quick
+          - gems_only
+
+jobs:
+  scan-and-update:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas numpy requests
+      
+      - name: Run Alpha Signal Scanner
+        id: alpha_scan
+        run: |
+          python alpha_signals/alpha_engine.py --output-format json --save-to data/signals/
+        continue-on-error: true
+      
+      - name: Run Goldmine Gem Scanner
+        id: gem_scan
+        run: |
+          python goldmine_finder/scanners/new_pair_scanner.py --save-to data/gems/
+        continue-on-error: true
+      
+      - name: Run Prediction Tracker
+        id: prediction_tracker
+        run: |
+          python predictions/alert_system.ps1 -CheckOnly -OutputJson | ConvertFrom-Json | ConvertTo-Json -Depth 10 | Out-File data/predictions/current_status.json
+        shell: pwsh
+        continue-on-error: true
+      
+      - name: Update Signal Database
+        run: |
+          python monitoring/update_dashboard.py
+      
+      - name: Generate Status Report
+        id: status_report
+        run: |
+          echo "## Alpha Monitor Status Report" > data/REPORT.md
+          echo "Generated: $(date -u '+%Y-%m-%d %H:%M UTC')" >> data/REPORT.md
+          echo "" >> data/REPORT.md
+          
+          # Count signals
+          SIGNALS=$(find data/signals -name "*.json" -mtime -1 | wc -l)
+          GEMS=$(find data/gems -name "*.json" -mtime -1 | wc -l)
+          
+          echo "### Last 24 Hours" >> data/REPORT.md
+          echo "- Alpha Signals Found: $SIGNALS" >> data/REPORT.md
+          echo "- Gem Discoveries: $GEMS" >> data/REPORT.md
+          echo "" >> data/REPORT.md
+          
+          # List high-confidence signals
+          echo "### Active High-Confidence Signals (80+)" >> data/REPORT.md
+          find data/signals -name "*.json" -mtime -1 -exec grep -l '"confidence_score": 8[0-9]\|"confidence_score": 9[0-9]' {} \; | head -5 | while read f; do
+            echo "- $(basename $f .json)" >> data/REPORT.md
+          done
+      
+      - name: Commit and Push Updates
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Add all data updates
+          git add data/
+          git add monitoring/
+          
+          # Check if there are changes
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "📊 Auto-update: Alpha signals & gem discoveries [$(date -u '+%H:%M UTC')]"
+            git push
+          fi
+      
+      - name: Deploy Dashboard (GitHub Pages)
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./monitoring/dashboard
+          destination_dir: dashboard
+      
+      - name: Notify on High-Certainty Signal
+        if: steps.alpha_scan.outcome == 'success'
+        run: |
+          # Check for 90+ confidence signals
+          HIGH_SIGNALS=$(find data/signals -name "*.json" -mmin -20 -exec grep -l '"confidence_score": 9[0-9]' {} \; | wc -l)
+          
+          if [ "$HIGH_SIGNALS" -gt 0 ]; then
+            echo "🚨 HIGH CERTAINTY SIGNAL DETECTED!"
+            echo "Found $HIGH_SIGNALS S-grade signals in last 20 minutes"
+            # Could send webhook to Discord/Telegram here
+          fi
+
+  # Separate job for backtesting (runs once daily)
+  backtest-update:
+    runs-on: ubuntu-latest
+    needs: scan-and-update
+    if: github.event.schedule == '0 0 * * *'  # Only on daily cron
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          pip install pandas numpy
+      
+      - name: Update Backtest Results
+        run: |
+          python strategy_backtest/backtest_engine.py --update-results
+      
+      - name: Update Strategy Rankings
+        run: |
+          python strategy_backtest/elimination_framework.py --recalculate
+      
+      - name: Commit Backtest Updates
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add strategy_backtest/results/
+          git diff --cached --quiet || (git commit -m "📈 Daily backtest update [$(date -u '+%Y-%m-%d')]" && git push)

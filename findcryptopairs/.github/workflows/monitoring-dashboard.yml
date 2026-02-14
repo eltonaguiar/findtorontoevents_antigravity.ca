@@ -1,0 +1,107 @@
+name: Monitoring Dashboard — Data Refresh & Deploy
+
+on:
+  schedule:
+    # Every 15 minutes during market hours (6 AM - 11 PM UTC)
+    - cron: '*/15 6-23 * * *'
+    # Every 4 hours overnight
+    - cron: '0 */4 0-5 * * *'
+    # Daily at midnight (backtest update)
+    - cron: '0 0 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  update-dashboard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    # ─── Step 1: Checkout repository ───
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    # ─── Step 2: Setup Python ───
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    # ─── Step 3: Install dependencies ───
+    - name: Install dependencies
+      run: |
+        pip install --quiet requests>=2.31
+    
+    # ─── Step 4: Run data collector ───
+    - name: Collect dashboard data
+      env:
+        API_BASE: ${{ secrets.API_BASE || 'https://findtorontoevents.ca' }}
+      run: |
+        echo "=========================================="
+        echo "MONITORING DASHBOARD DATA COLLECTION"
+        echo "=========================================="
+        python monitoring/data_collector.py
+    
+    # ─── Step 5: Commit and push changes ───
+    - name: Commit changes
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        
+        # Check if there are changes
+        if git diff --quiet monitoring/data/dashboard.json; then
+          echo "No changes to commit"
+          exit 0
+        fi
+        
+        git add monitoring/data/dashboard.json
+        git commit -m "📊 Auto-update: Dashboard data $(date -u '+%Y-%m-%d %H:%M UTC')"
+        git push
+    
+    # ─── Step 6: Deploy to GitHub Pages (if on main branch) ───
+    - name: Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./monitoring/dashboard
+        destination_dir: monitoring
+        keep_files: true
+
+  # ─── Weekly job: Generate comprehensive report ───
+  weekly-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Only run on Sundays at 2 AM UTC
+    if: github.event.schedule == '0 0 * * 0' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        pip install --quiet requests>=2.31 pandas>=2.0
+    
+    - name: Generate weekly report
+      env:
+        API_BASE: ${{ secrets.API_BASE || 'https://findtorontoevents.ca' }}
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: |
+        echo "=========================================="
+        echo "GENERATING WEEKLY PERFORMANCE REPORT"
+        echo "=========================================="
+        python monitoring/weekly_report.py
+    
+    - name: Upload report
+      uses: actions/upload-artifact@v4
+      with:
+        name: weekly-report
+        path: monitoring/reports/
+        retention-days: 30

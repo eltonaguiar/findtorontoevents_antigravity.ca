@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unified Trading Command Center | FindCryptoPairs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-card: #1a1a24;
+  --bg-hover: #252535;
+  --border-color: #2a2a3a;
+  --text-primary: #f0f0f5;
+  --text-secondary: #a0a0b0;
+  --text-muted: #606070;
+  --accent-green: #22c55e;
+  --accent-red: #ef4444;
+  --accent-blue: #3b82f6;
+  --accent-purple: #a855f7;
+  --accent-orange: #f97316;
+  --accent-gold: #ffd700;
+  --accent-cyan: #06b6d4;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+.header {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+  border-bottom: 1px solid var(--border-color);
+  padding: 24px 32px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  background: linear-gradient(90deg, var(--text-primary), var(--accent-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.last-update {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+.last-update.fresh { color: var(--accent-green); }
+.last-update.stale { color: var(--accent-orange); }
+.last-update.critical { color: var(--accent-red); }
+
+.nav-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.nav-tab {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.nav-tab:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.nav-tab.active {
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: white;
+}
+
+.container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-blue);
+}
+.stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+.stat-value.positive { color: var(--accent-green); }
+.stat-value.negative { color: var(--accent-red); }
+.stat-value.neutral { color: var(--text-primary); }
+.stat-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* Panel Grid */
+.panel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+}
+.panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.panel-header {
+  background: var(--bg-secondary);
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-icon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.panel-icon.live { background: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); }
+.panel-icon.beta { background: var(--accent-orange); }
+.panel-icon.alpha { background: var(--accent-gold); }
+.panel-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--accent-green);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+.panel-body {
+  padding: 20px;
+}
+
+/* Signal Table */
+.signal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.signal-table th {
+  text-align: left;
+  padding: 10px 8px;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-color);
+}
+.signal-table td {
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+.signal-table tr:hover td {
+  background: var(--bg-hover);
+}
+.grade {
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+.grade.sp { color: var(--accent-gold); }
+.grade.s { color: #c0c0c0; }
+.grade.ap { color: var(--accent-purple); }
+.grade.a { color: var(--accent-blue); }
+.grade.b { color: var(--text-secondary); }
+
+/* Progress Bar */
+.progress-bar {
+  height: 6px;
+  background: var(--bg-secondary);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+.progress-fill.high { background: var(--accent-green); }
+.progress-fill.medium { background: var(--accent-orange); }
+.progress-fill.low { background: var(--accent-red); }
+
+/* Gem Card */
+.gem-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.gem-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.gem-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+.gem-score {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent-gold);
+}
+.gem-factors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.gem-factor {
+  font-size: 11px;
+  padding: 3px 8px;
+  background: var(--bg-hover);
+  border-radius: 4px;
+  color: var(--text-secondary);
+}
+.gem-factor.active {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--accent-green);
+}
+
+/* Prediction Card */
+.prediction-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+.prediction-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+.prediction-icon.bullish { background: rgba(34, 197, 94, 0.15); }
+.prediction-icon.bearish { background: rgba(239, 68, 68, 0.15); }
+.prediction-info {
+  flex: 1;
+}
+.prediction-symbol {
+  font-weight: 600;
+  font-size: 14px;
+}
+.prediction-target {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.prediction-progress {
+  width: 120px;
+}
+
+/* Links Section */
+.links-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color);
+}
+.links-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+.link-category {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+}
+.link-category h3 {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+.link-list {
+  list-style: none;
+}
+.link-list li {
+  margin-bottom: 8px;
+}
+.link-list a {
+  color: var(--accent-blue);
+  text-decoration: none;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.link-list a:hover {
+  text-decoration: underline;
+}
+.link-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: var(--bg-hover);
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+
+/* Footer */
+.footer {
+  margin-top: 40px;
+  padding: 24px;
+  text-align: center;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* Loading State */
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+}
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header { padding: 16px; }
+  .header h1 { font-size: 18px; }
+  .container { padding: 16px; }
+  .panel-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <h1>🎯 Unified Trading Command Center</h1>
+    <div class="last-update" id="lastUpdate">Loading...</div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('overview')">Overview</button>
+    <button class="nav-tab" onclick="switchTab('alpha')">Alpha Signals</button>
+    <button class="nav-tab" onclick="switchTab('gems')">Goldmine Gems</button>
+    <button class="nav-tab" onclick="switchTab('predictions')">Predictions</button>
+    <button class="nav-tab" onclick="switchTab('algorithms')">Algorithm Comp</button>
+    <button class="nav-tab" onclick="switchTab('links')">All Links</button>
+  </div>
+</div>
+
+<div class="container">
+  
+  <!-- Overview Tab -->
+  <div id="tab-overview" class="tab-content">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Active Alpha Signals</div>
+        <div class="stat-value neutral" id="alphaCount">--</div>
+        <div class="stat-sub" id="alphaGrade">Loading...</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Gem Candidates (90+ Score)</div>
+        <div class="stat-value positive" id="gemCount">--</div>
+        <div class="stat-sub">100x potential targets</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Predictions</div>
+        <div class="stat-value neutral" id="predCount">--</div>
+        <div class="stat-sub" id="predStatus">Tracking...</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Algorithm Consensus</div>
+        <div class="stat-value positive" id="consensusRate">--</div>
+        <div class="stat-sub">When 3+ agree: +15% WR</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Live Portfolio PnL</div>
+        <div class="stat-value" id="portfolioPnl">--</div>
+        <div class="stat-sub" id="portfolioTrades">-- trades</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Best Strategy</div>
+        <div class="stat-value positive" id="bestStrategy">--</div>
+        <div class="stat-sub" id="bestStrategyReturn">--</div>
+      </div>
+    </div>
+
+    <div class="panel-grid">
+      <!-- Top Alpha Signals -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="panel-icon live"></span>
+            Top Alpha Signals (80%+ Win Rate)
+          </div>
+          <span class="panel-badge">LIVE</span>
+        </div>
+        <div class="panel-body" id="alphaPanel">
+          <div class="loading">
+            <div class="spinner"></div>
+            Loading alpha signals...
+          </div>
+        </div>
+      </div>
+
+      <!-- Gem Scanner -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="panel-icon alpha"></span>
+            Goldmine Gem Scanner
+          </div>
+          <span class="panel-badge">BETA</span>
+        </div>
+        <div class="panel-body" id="gemPanel">
+          <div class="loading">
+            <div class="spinner"></div>
+            Scanning for gems...
+          </div>
+        </div>
+      </div>
+
+      <!-- Predictions -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="panel-icon beta"></span>
+            Active Predictions
+          </div>
+          <span class="panel-badge">TRACKING</span>
+        </div>
+        <div class="panel-body" id="predPanel">
+          <div class="loading">
+            <div class="spinner"></div>
+            Loading predictions...
+          </div>
+        </div>
+      </div>
+
+      <!-- Algorithm Standings -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="panel-icon live"></span>
+            Algorithm Competition
+          </div>
+          <span class="panel-badge">LIVE</span>
+        </div>
+        <div class="panel-body" id="algoPanel">
+          <div class="loading">
+            <div class="spinner"></div>
+            Loading standings...
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alpha Tab -->
+  <div id="tab-alpha" class="tab-content" style="display:none;">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">All Alpha Signals</div>
+      </div>
+      <div class="panel-body" id="alphaFullPanel">
+        <div class="loading">
+          <div class="spinner"></div>
+          Loading...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gems Tab -->
+  <div id="tab-gems" class="tab-content" style="display:none;">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">All Gem Candidates</div>
+      </div>
+      <div class="panel-body" id="gemsFullPanel">
+        <div class="loading">
+          <div class="spinner"></div>
+          Loading...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Predictions Tab -->
+  <div id="tab-predictions" class="tab-content" style="display:none;">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">All Predictions</div>
+      </div>
+      <div class="panel-body" id="predFullPanel">
+        <div class="loading">
+          <div class="spinner"></div>
+          Loading...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Algorithms Tab -->
+  <div id="tab-algorithms" class="tab-content" style="display:none;">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Full Algorithm Competition Results</div>
+      </div>
+      <div class="panel-body" id="algoFullPanel">
+        <div class="loading">
+          <div class="spinner"></div>
+          Loading...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Links Tab -->
+  <div id="tab-links" class="tab-content" style="display:none;">
+    <div class="links-section">
+      <div class="links-grid" id="linksGrid">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>Data refreshes every 15 minutes via GitHub Actions | Last data update: <span id="footerTime">--</span></p>
+  <p style="margin-top:8px;">
+    <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions" style="color:var(--accent-blue);" target="_blank">View GitHub Actions Workflows →</a>
+  </p>
+</div>
+
+<script>
+// Configuration
+const CONFIG = {
+  dataUrl: 'data/dashboard.json',
+  refreshInterval: 60000, // 60 seconds
+  versionBust: true
+};
+
+// State
+let currentData = null;
+let refreshTimer = null;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+  fetchDashboardData();
+  startAutoRefresh();
+  renderLinks();
+});
+
+// Tab switching
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+  document.getElementById('tab-' + tab).style.display = 'block';
+  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  // Load full data for specific tabs
+  if (tab === 'alpha' && currentData) renderAlphaFull(currentData.alpha_signals);
+  if (tab === 'gems' && currentData) renderGemsFull(currentData.goldmine_candidates);
+  if (tab === 'predictions' && currentData) renderPredictionsFull(currentData.predictions);
+  if (tab === 'algorithms' && currentData) renderAlgoFull(currentData.algorithm_standings);
+}
+
+// Fetch data
+async function fetchDashboardData() {
+  try {
+    const url = CONFIG.versionBust 
+      ? `${CONFIG.dataUrl}?t=${Date.now()}` 
+      : CONFIG.dataUrl;
+    
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Failed to fetch');
+    
+    const data = await response.json();
+    currentData = data;
+    
+    updateDashboard(data);
+    updateLastUpdate(data.timestamp);
+  } catch (error) {
+    console.error('Fetch error:', error);
+    document.getElementById('lastUpdate').textContent = 'Update failed';
+    document.getElementById('lastUpdate').className = 'last-update critical';
+  }
+}
+
+// Update dashboard
+function updateDashboard(data) {
+  // Stats
+  if (data.alpha_signals) {
+    const signals = data.alpha_signals.signals || [];
+    document.getElementById('alphaCount').textContent = signals.length;
+    const sPlus = signals.filter(s => s.grade === 'S+' || s.grade === 'S').length;
+    document.getElementById('alphaGrade').textContent = sPlus > 0 ? `${sPlus} S/S+ grade` : 'Active monitoring';
+  }
+  
+  if (data.goldmine_candidates) {
+    const gems = data.goldmine_candidates.candidates || [];
+    const highScore = gems.filter(g => g.score >= 90).length;
+    document.getElementById('gemCount').textContent = highScore;
+  }
+  
+  if (data.predictions) {
+    const preds = data.predictions.predictions || [];
+    document.getElementById('predCount').textContent = preds.length;
+    const tracking = preds.filter(p => p.status === 'tracking').length;
+    document.getElementById('predStatus').textContent = `${tracking} tracking`;
+  }
+  
+  if (data.algorithm_standings) {
+    const consensus = data.algorithm_standings.consensus || {};
+    const rate = consensus.win_rate_when_agreement || 70;
+    document.getElementById('consensusRate').textContent = rate + '%';
+  }
+  
+  if (data.portfolio) {
+    const pnl = data.portfolio.pnl || 0;
+    const pnlEl = document.getElementById('portfolioPnl');
+    pnlEl.textContent = (pnl >= 0 ? '+' : '') + pnl.toFixed(2) + '%';
+    pnlEl.className = 'stat-value ' + (pnl >= 0 ? 'positive' : 'negative');
+    document.getElementById('portfolioTrades').textContent = (data.portfolio.trades || 0) + ' trades';
+  }
+  
+  if (data.best_strategy) {
+    document.getElementById('bestStrategy').textContent = data.best_strategy.name || '--';
+    document.getElementById('bestStrategyReturn').textContent = 
+      (data.best_strategy.return || 0) > 0 ? '+' + (data.best_strategy.return || 0).toFixed(1) + '%' : '--';
+  }
+  
+  // Panels
+  if (data.alpha_signals) renderAlphaPanel(data.alpha_signals);
+  if (data.goldmine_candidates) renderGemPanel(data.goldmine_candidates);
+  if (data.predictions) renderPredPanel(data.predictions);
+  if (data.algorithm_standings) renderAlgoPanel(data.algorithm_standings);
+}
+
+// Render Alpha Panel
+function renderAlphaPanel(data) {
+  const signals = (data.signals || []).slice(0, 5);
+  const html = signals.length === 0 
+    ? '<div style="text-align:center;color:var(--text-muted);padding:20px;">No active S-grade signals</div>'
+    : `<table class="signal-table">
+        <tr><th>Symbol</th><th>Grade</th><th>Score</th><th>Key Factor</th></tr>
+        ${signals.map(s => `
+          <tr>
+            <td><strong>${s.symbol}</strong></td>
+            <td class="grade ${s.grade.toLowerCase().replace('+', 'p')}">${s.grade}</td>
+            <td>${s.score}</td>
+            <td style="font-size:11px;color:var(--text-secondary);">${s.key_factor || 'Technical'}</td>
+          </tr>
+        `).join('')}
+      </table>`;
+  document.getElementById('alphaPanel').innerHTML = html;
+}
+
+// Render Gem Panel
+function renderGemPanel(data) {
+  const gems = (data.candidates || []).slice(0, 3);
+  const html = gems.length === 0
+    ? '<div style="text-align:center;color:var(--text-muted);padding:20px;">No 90+ candidates found</div>'
+    : gems.map(g => `
+      <div class="gem-card">
+        <div class="gem-header">
+          <span class="gem-name">${g.name || g.symbol}</span>
+          <span class="gem-score">${g.score}</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill ${g.score >= 90 ? 'high' : g.score >= 75 ? 'medium' : 'low'}" style="width:${g.score}%"></div>
+        </div>
+        <div class="gem-factors" style="margin-top:10px;">
+          ${(g.factors || []).map(f => `<span class="gem-factor ${f.active ? 'active' : ''}">${f.name}</span>`).join('')}
+        </div>
+      </div>
+    `).join('');
+  document.getElementById('gemPanel').innerHTML = html;
+}
+
+// Render Prediction Panel
+function renderPredPanel(data) {
+  const preds = (data.predictions || []).slice(0, 3);
+  const html = preds.length === 0
+    ? '<div style="text-align:center;color:var(--text-muted);padding:20px;">No active predictions</div>'
+    : preds.map(p => `
+      <div class="prediction-card">
+        <div class="prediction-icon ${p.direction}">${p.direction === 'bullish' ? '🚀' : '🐻'}</div>
+        <div class="prediction-info">
+          <div class="prediction-symbol">${p.symbol}</div>
+          <div class="prediction-target">Target: ${p.target_price} | Current: ${p.current_price}</div>
+        </div>
+        <div class="prediction-progress">
+          <div style="font-size:11px;color:var(--text-muted);text-align:right;">${p.progress || 0}% complete</div>
+          <div class="progress-bar">
+            <div class="progress-fill ${p.progress >= 80 ? 'high' : p.progress >= 50 ? 'medium' : 'low'}" style="width:${p.progress || 0}%"></div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  document.getElementById('predPanel').innerHTML = html;
+}
+
+// Render Algo Panel
+function renderAlgoPanel(data) {
+  const algos = (data.standings || []).slice(0, 5);
+  const html = algos.length === 0
+    ? '<div style="text-align:center;color:var(--text-muted);padding:20px;">No algorithm data</div>'
+    : `<table class="signal-table">
+        <tr><th>Algorithm</th><th>Type</th><th>Win Rate</th><th>Return</th></tr>
+        ${algos.map(a => `
+          <tr>
+            <td><strong>${a.name}</strong></td>
+            <td style="font-size:11px;">${a.type}</td>
+            <td class="${a.win_rate >= 70 ? 'positive' : a.win_rate >= 50 ? 'neutral' : 'negative'}">${a.win_rate}%</td>
+            <td class="${a.return >= 0 ? 'positive' : 'negative'}">${a.return >= 0 ? '+' : ''}${a.return}%</td>
+          </tr>
+        `).join('')}
+      </table>`;
+  document.getElementById('algoPanel').innerHTML = html;
+}
+
+// Full renderers for tabs
+function renderAlphaFull(data) {
+  const signals = data.signals || [];
+  const html = signals.length === 0
+    ? '<div style="text-align:center;padding:40px;color:var(--text-muted);">No signals available</div>'
+    : `<table class="signal-table">
+        <tr><th>Symbol</th><th>Grade</th><th>Score</th><th>Entry</th><th>Stop</th><th>Target</th><th>Factors</th></tr>
+        ${signals.map(s => `
+          <tr>
+            <td><strong>${s.symbol}</strong></td>
+            <td class="grade ${s.grade.toLowerCase().replace('+', 'p')}">${s.grade}</td>
+            <td>${s.score}</td>
+            <td>$${s.entry_price}</td>
+            <td style="color:var(--accent-red)">$${s.stop_loss}</td>
+            <td style="color:var(--accent-green)">$${s.target_price}</td>
+            <td style="font-size:11px;">${(s.factors || []).join(', ')}</td>
+          </tr>
+        `).join('')}
+      </table>`;
+  document.getElementById('alphaFullPanel').innerHTML = html;
+}
+
+function renderGemsFull(data) {
+  const gems = data.candidates || [];
+  const html = gems.length === 0
+    ? '<div style="text-align:center;padding:40px;color:var(--text-muted);">No candidates available</div>'
+    : gems.map(g => `
+      <div class="gem-card">
+        <div class="gem-header">
+          <div>
+            <span class="gem-name">${g.name || g.symbol}</span>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">$${g.market_cap?.toLocaleString() || 'Unknown'} MC</div>
+          </div>
+          <span class="gem-score">${g.score}/100</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill ${g.score >= 90 ? 'high' : g.score >= 75 ? 'medium' : 'low'}" style="width:${g.score}%"></div>
+        </div>
+        <div class="gem-factors" style="margin-top:12px;">
+          ${(g.factors || []).map(f => `
+            <span class="gem-factor ${f.active ? 'active' : ''}" title="${f.description || ''}">
+              ${f.name} ${f.score ? `(${f.score})` : ''}
+            </span>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  document.getElementById('gemsFullPanel').innerHTML = html;
+}
+
+function renderPredictionsFull(data) {
+  const preds = data.predictions || [];
+  const html = preds.length === 0
+    ? '<div style="text-align:center;padding:40px;color:var(--text-muted);">No predictions available</div>'
+    : `<table class="signal-table">
+        <tr><th>Symbol</th><th>Direction</th><th>Entry</th><th>Target</th><th>Current</th><th>Progress</th><th>Status</th></tr>
+        ${preds.map(p => `
+          <tr>
+            <td><strong>${p.symbol}</strong></td>
+            <td class="${p.direction === 'bullish' ? 'positive' : 'negative'}">${p.direction === 'bullish' ? '🚀 Long' : '🐻 Short'}</td>
+            <td>$${p.entry_price}</td>
+            <td style="color:var(--accent-green)">$${p.target_price}</td>
+            <td>$${p.current_price}</td>
+            <td>
+              <div class="progress-bar" style="width:100px;">
+                <div class="progress-fill ${p.progress >= 80 ? 'high' : p.progress >= 50 ? 'medium' : 'low'}" style="width:${p.progress || 0}%"></div>
+              </div>
+            </td>
+            <td><span class="panel-badge">${p.status}</span></td>
+          </tr>
+        `).join('')}
+      </table>`;
+  document.getElementById('predFullPanel').innerHTML = html;
+}
+
+function renderAlgoFull(data) {
+  const algos = data.standings || [];
+  const html = algos.length === 0
+    ? '<div style="text-align:center;padding:40px;color:var(--text-muted);">No standings available</div>'
+    : `<table class="signal-table">
+        <tr><th>Rank</th><th>Algorithm</th><th>Type</th><th>Trades</th><th>Win Rate</th><th>Return</th><th>Sharpe</th></tr>
+        ${algos.map((a, i) => `
+          <tr>
+            <td>#${i + 1}</td>
+            <td><strong>${a.name}</strong></td>
+            <td style="font-size:11px;">${a.type}</td>
+            <td>${a.trades}</td>
+            <td class="${a.win_rate >= 70 ? 'positive' : a.win_rate >= 50 ? 'neutral' : 'negative'}">${a.win_rate}%</td>
+            <td class="${a.return >= 0 ? 'positive' : 'negative'}">${a.return >= 0 ? '+' : ''}${a.return}%</td>
+            <td>${a.sharpe || '--'}</td>
+          </tr>
+        `).join('')}
+      </table>`;
+  document.getElementById('algoFullPanel').innerHTML = html;
+}
+
+// Render Links
+function renderLinks() {
+  const categories = [
+    {
+      title: 'Live Trading Systems',
+      links: [
+        { name: 'Live Trading Monitor', url: '/live-monitor/live-monitor.html', badge: 'LIVE' },
+        { name: 'Algorithm Intelligence', url: '/findstocks/portfolio2/algorithm-intelligence.html', badge: 'REPORT' },
+        { name: 'Goldmine Dashboard', url: '/live-monitor/goldmine-dashboard.html', badge: 'TRACKING' },
+        { name: 'Smart Money Intelligence', url: '/live-monitor/smart-money.html', badge: 'INSTITUTIONAL' },
+        { name: 'Consolidated Picks', url: '/findstocks/portfolio2/consolidated.html', badge: 'STOCKS' },
+      ]
+    },
+    {
+      title: 'Crypto & Meme Scanners',
+      links: [
+        { name: 'Meme Coin Scanner', url: '/findcryptopairs/meme.html', badge: 'BETA' },
+        { name: 'Crypto Winner Scanner', url: '/findcryptopairs/winners.html', badge: 'LIVE' },
+        { name: 'Alpha Hunter', url: '/findcryptopairs/alpha-hunter.html', badge: 'NEW' },
+        { name: 'Kraken Universe Scanner', url: '/findcryptopairs/kraken-universe.html', badge: 'NEW' },
+        { name: 'Hot Trending Scanner', url: '/findcryptopairs/meme.html#hot', badge: 'BETA' },
+      ]
+    },
+    {
+      title: 'Performance & Research',
+      links: [
+        { name: 'Backtest Results', url: '/findstocks/portfolio2/backtest-results.html', badge: '2 YEAR' },
+        { name: 'Capital Efficiency Tracker', url: '/live-monitor/capital-efficiency.html', badge: 'METRICS' },
+        { name: 'Algorithm Leaderboard', url: '/findstocks/portfolio2/leaderboard.html', badge: 'RANKINGS' },
+        { name: 'Research Hub', url: '/findstocks/research/index.html', badge: 'ANALYSIS' },
+      ]
+    },
+    {
+      title: 'Other Asset Classes',
+      links: [
+        { name: 'Sports Betting', url: '/live-monitor/sports-betting.html', badge: 'SPORTS' },
+        { name: 'Penny Stock Finder', url: '/findstocks/portfolio2/penny-stocks.html', badge: 'PENNY' },
+        { name: 'Forex Portfolio', url: '/findforex2/portfolio/', badge: 'FOREX' },
+        { name: 'Mutual Funds Portfolio', url: '/findmutualfunds2/portfolio2/', badge: 'FUNDS' },
+      ]
+    }
+  ];
+  
+  const html = categories.map(cat => `
+    <div class="link-category">
+      <h3>${cat.title}</h3>
+      <ul class="link-list">
+        ${cat.links.map(l => `
+          <li><a href="${l.url}" target="_blank">${l.name} <span class="link-badge">${l.badge}</span></a></li>
+        `).join('')}
+      </ul>
+    </div>
+  `).join('');
+  
+  document.getElementById('linksGrid').innerHTML = html;
+}
+
+// Update timestamp
+function updateLastUpdate(timestamp) {
+  const el = document.getElementById('lastUpdate');
+  const footerEl = document.getElementById('footerTime');
+  
+  if (!timestamp) {
+    el.textContent = 'No data available';
+    el.className = 'last-update critical';
+    return;
+  }
+  
+  const updateTime = new Date(timestamp);
+  const now = new Date();
+  const diffMinutes = Math.floor((now - updateTime) / 60000);
+  
+  let statusClass = 'fresh';
+  let statusText = 'Fresh';
+  
+  if (diffMinutes > 30) {
+    statusClass = 'stale';
+    statusText = 'Stale';
+  }
+  if (diffMinutes > 120) {
+    statusClass = 'critical';
+    statusText = 'Critical';
+  }
+  
+  el.textContent = `${statusText} • Updated ${updateTime.toLocaleTimeString()}`;
+  el.className = 'last-update ' + statusClass;
+  footerEl.textContent = updateTime.toLocaleString();
+}
+
+// Auto refresh
+function startAutoRefresh() {
+  refreshTimer = setInterval(fetchDashboardData, CONFIG.refreshInterval);
+}
+
+// Cleanup on page hide
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    clearInterval(refreshTimer);
+  } else {
+    fetchDashboardData();
+    startAutoRefresh();
+  }
+});
+</script>
+
+</body>
+</html>
