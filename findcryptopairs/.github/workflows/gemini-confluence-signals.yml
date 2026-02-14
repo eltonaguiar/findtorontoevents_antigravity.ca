@@ -1,0 +1,301 @@
+name: 🧠 Gemini Confluence Signals
+
+on:
+  schedule:
+    # Run every 30 minutes during market hours
+    - cron: '*/30 6-23 * * *'
+    # Every 2 hours overnight
+    - cron: '0 */2 0-5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "gemini-signals"
+  cancel-in-progress: false
+
+jobs:
+  generate-signals:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install pandas numpy requests
+
+      - name: Fetch market data
+        id: fetch
+        run: |
+          python3 << 'EOF'
+          import requests
+          import json
+          import pandas as pd
+          import numpy as np
+          from datetime import datetime, timedelta
+
+          # Fetch from CoinGecko
+          COINS = ['bitcoin', 'ethereum', 'binancecoin', 'avalanche-2']
+          results = {}
+
+          for coin_id in COINS:
+              try:
+                  # Current price data
+                  url = f"https://api.coingecko.com/api/v3/coins/{coin_id}"
+                  params = {
+                      'localization': 'false',
+                      'tickers': 'false',
+                      'market_data': 'true',
+                      'community_data': 'false',
+                      'developer_data': 'false',
+                      'sparkline': 'false'
+                  }
+                  r = requests.get(url, params=params, timeout=30)
+                  data = r.json()
+
+                  # Get historical prices for MA/RSI calculation
+                  hist_url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
+                  hist_params = {'vs_currency': 'usd', 'days': '200', 'interval': 'daily'}
+                  hist = requests.get(hist_url, params=hist_params, timeout=30).json()
+                  prices = [p[1] for p in hist.get('prices', [])]
+                  volumes = [v[1] for v in hist.get('total_volumes', [])]
+
+                  if len(prices) >= 50:
+                      # Calculate indicators
+                      price_series = pd.Series(prices)
+                      ema_50 = price_series.ewm(span=50).mean().iloc[-1]
+                      ema_200 = price_series.ewm(span=200).mean().iloc[-1]
+                      
+                      # RSI calculation
+                      delta = price_series.diff()
+                      gain = (delta.where(delta > 0, 0)).ewm(span=14).mean()
+                      loss = (-delta.where(delta < 0, 0)).ewm(span=14).mean()
+                      rs = gain / loss
+                      rsi = 100 - (100 / (1 + rs.iloc[-1]))
+                      
+                      # Volume analysis
+                      vol_24h = volumes[-1] if volumes else 0
+                      vol_avg = np.mean(volumes[-30:]) if len(volumes) >= 30 else vol_24h
+                      
+                      # Bollinger Bands
+                      sma_20 = price_series.rolling(20).mean().iloc[-1]
+                      std_20 = price_series.rolling(20).std().iloc[-1]
+                      bb_upper = sma_20 + (2 * std_20)
+                      bb_lower = sma_20 - (2 * std_20)
+
+                      md = data.get('market_data', {})
+                      current_price = md.get('current_price', {}).get('usd', 0)
+                      
+                      symbol_map = {
+                          'bitcoin': 'BTCUSD',
+                          'ethereum': 'ETHUSD', 
+                          'binancecoin': 'BNBUSD',
+                          'avalanche-2': 'AVAXUSDT'
+                      }
+
+                      results[symbol_map[coin_id]] = {
+                          'symbol': symbol_map[coin_id],
+                          'price': current_price,
+                          'price_change_24h': md.get('price_change_percentage_24h', 0),
+                          'price_change_7d': md.get('price_change_percentage_7d', 0),
+                          'volume_24h': vol_24h,
+                          'volume_avg_30d': vol_avg,
+                          'ema_50': ema_50,
+                          'ema_200': ema_200,
+                          'rsi_daily': rsi,
+                          'bb_middle': sma_20,
+                          'bb_lower': bb_lower,
+                          'bb_upper': bb_upper,
+                          'ath': md.get('ath', {}).get('usd', 0),
+                          'atl': md.get('atl', {}).get('usd', 0),
+                          'market_cap': md.get('market_cap', {}).get('usd', 0),
+                          'prices': prices[-50:]  # Last 50 for calculations
+                      }
+                      
+                      print(f"✓ Fetched {symbol_map[coin_id]}: ${current_price:,.2f}")
+                      
+              except Exception as e:
+                  print(f"✗ Error fetching {coin_id}: {e}")
+
+          # Save raw market data
+          with open('predictions/gemini_market_data.json', 'w') as f:
+              json.dump({
+                  'timestamp': datetime.now().isoformat(),
+                  'data': results
+              }, f, indent=2)
+
+          print(f"\n✓ Market data saved for {len(results)} assets")
+          EOF
+
+      - name: Generate Gemini Confluence Signals
+        run: |
+          python3 << 'EOF'
+          import json
+          import sys
+          sys.path.insert(0, 'predictions')
+          from gemini_confluence_algorithms import GeminiConfluenceStrategy
+
+          # Load market data
+          with open('predictions/gemini_market_data.json', 'r') as f:
+              market_data = json.load(f)
+
+          strategy = GeminiConfluenceStrategy()
+          all_signals = []
+
+          for symbol, data in market_data['data'].items():
+              # Add derived fields
+              data['symbol'] = symbol
+              data['trend'] = 'uptrend' if data.get('ema_50', 0) > data.get('ema_200', 0) else 'downtrend'
+              
+              # Estimate MVRV (simplified - would need on-chain data for accuracy)
+              # Using price vs 200-day average as proxy
+              data['mvrv_z_score'] = (data['price'] - data.get('ema_200', data['price'])) / data.get('ema_200', data['price']) * 10
+              
+              # Weekly RSI (simplified)
+              data['rsi_weekly'] = data.get('rsi_daily', 50) * 0.9  # Rough approximation
+              
+              # 200-week MA proxy (using 200-day for this timeframe)
+              data['price_vs_200w_ma'] = data['price'] / data.get('ema_200', data['price'])
+              
+              # Funding rate estimate (neutral default)
+              data['funding_rate'] = 0.0
+              
+              # Range breakout calculation
+              prices = data.get('prices', [])
+              if len(prices) >= 30:
+                  recent_high = max(prices[-30:])
+                  data['price_vs_range_high'] = data['price'] / recent_high if recent_high > 0 else 0.9
+              else:
+                  data['price_vs_range_high'] = 0.9
+              
+              # TVL/DAA changes (defaults for now - would need DeFiLlama API)
+              data['ecosystem_tvl_change'] = 0.0
+              data['daa_change'] = data.get('price_change_7d', 0) / 100  # Rough proxy
+              
+              # Generate signal
+              signal = strategy.generate_signal(data)
+              
+              if signal['signals'] and signal['highest_confidence'] >= 60:
+                  all_signals.append({
+                      'symbol': symbol,
+                      'primary_zone': signal['primary_recommendation'],
+                      'confidence': signal['highest_confidence'],
+                      'top_signal': signal['signals'][0],
+                      'all_signals': signal['signals']
+                  })
+                  print(f"🎯 {symbol}: {signal['primary_recommendation'].upper()} ({signal['highest_confidence']}%)")
+
+          # Save signals
+          output = {
+              'timestamp': market_data['timestamp'],
+              'generated_by': 'Gemini Confluence Engine v1.0',
+              'total_signals': len(all_signals),
+              'signals': all_signals,
+              'methodology': 'Three Confluence Zones: Macro-Bottom, Ecosystem Breakout, Momentum Continuation'
+          }
+
+          with open('predictions/gemini_signals.json', 'w') as f:
+              json.dump(output, f, indent=2)
+
+          print(f"\n✓ Generated {len(all_signals)} high-confidence signals")
+          EOF
+
+      - name: Generate Active Predictions
+        run: |
+          python3 << 'EOF'
+          import json
+          from datetime import datetime, timedelta
+
+          # Load signals
+          with open('predictions/gemini_signals.json', 'r') as f:
+              signals_data = json.load(f)
+
+          # Convert to active predictions format
+          active_calls = {
+              "Metadata": {
+                  "Count": 0,
+                  "GeneratedAt": signals_data['timestamp'],
+                  "NextUpdate": (datetime.now() + timedelta(minutes=30)).isoformat(),
+                  "Source": "Gemini Confluence Engine",
+                  "Version": "1.0"
+              },
+              "Results": []
+          }
+
+          for sig in signals_data['signals']:
+              top = sig['top_signal']
+              
+              prediction = {
+                  "Symbol": sig['symbol'],
+                  "Zone": sig['primary_zone'],
+                  "Signal": "BUY" if sig['primary_zone'] != 'distribution' else "SELL",
+                  "Confidence": sig['confidence'],
+                  "Entry": top['entry'],
+                  "Target": top['target'],
+                  "StopLoss": top['stop'],
+                  "Timeframe": top['timeframe'],
+                  "Rationale": top['rationale'],
+                  "Indicators": top['indicators'],
+                  "CreatedAt": signals_data['timestamp'],
+                  "Status": "ACTIVE"
+              }
+              active_calls["Results"].append(prediction)
+
+          active_calls["Metadata"]["Count"] = len(active_calls["Results"])
+
+          # Merge with existing active calls if any
+          try:
+              with open('predictions/active_calls_v2.json', 'r') as f:
+                  existing = json.load(f)
+              
+              # Keep existing calls that are still valid
+              for call in existing.get("Results", []):
+                  # Check if symbol already in new signals
+                  if not any(c['Symbol'] == call['Symbol'] for c in active_calls["Results"]):
+                      call['Status'] = 'CARRY_OVER'
+                      active_calls["Results"].append(call)
+              
+              active_calls["Metadata"]["Count"] = len(active_calls["Results"])
+          except FileNotFoundError:
+              pass
+
+          with open('predictions/active_calls_v2.json', 'w') as f:
+              json.dump(active_calls, f, indent=2)
+
+          print(f"✓ Updated active_calls_v2.json with {active_calls['Metadata']['Count']} predictions")
+          EOF
+
+      - name: Commit and Push
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          
+          # Force timestamp update to ensure commit
+          echo "Last run: $(date -u '+%Y-%m-%d %H:%M UTC')" > predictions/.gemini_last_run
+          
+          git add predictions/gemini_market_data.json
+          git add predictions/gemini_signals.json  
+          git add predictions/active_calls_v2.json
+          git add predictions/.gemini_last_run
+          
+          git commit -m "🧠 Gemini Confluence Update: $(date -u '+%H:%M UTC')" || echo "No changes"
+          git push
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemini-signals
+          path: |
+            predictions/gemini_signals.json
+            predictions/active_calls_v2.json
+          retention-days: 7

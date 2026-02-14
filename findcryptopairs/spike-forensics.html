@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spike Forensics - BTC &amp; ETH Deep Analysis</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0a12;color:#e0e0e0;min-height:100vh}
+.header{background:linear-gradient(135deg,#1a0a2e 0%,#2d1b4e 50%,#1a0a3a 100%);padding:24px 32px;border-bottom:2px solid #4a2d7a;position:sticky;top:0;z-index:100}
+.header h1{font-size:28px;font-weight:700;background:linear-gradient(90deg,#bb86fc,#9c64f4,#7c4dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline}
+.header .sub{color:#b0a0c8;font-size:14px;margin-top:4px}
+.nav-bar{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;align-items:center}
+.nav-bar a{color:#bb86fc;text-decoration:none;font-size:13px;padding:4px 12px;border:1px solid #4a2d7a;border-radius:4px;transition:all .2s}
+.nav-bar a:hover{background:#4a2d7a;color:#fff}
+.auto-tag{background:#2d1b4e;color:#ffd54f;border:1px solid #ffd54f;font-size:12px;padding:3px 10px;border-radius:12px}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+@media(max-width:800px){.hero-grid{grid-template-columns:1fr}}
+.hero-card{background:linear-gradient(145deg,#1a1030,#251a40);border:1px solid #4a2d7a;border-radius:16px;padding:24px;position:relative;overflow:hidden}
+.hero-card .pair-name{font-size:22px;font-weight:700;margin-bottom:4px}
+.hero-card .btc{color:#f7931a}
+.hero-card .eth{color:#627eea}
+.hero-card .price{font-size:32px;font-weight:800;margin:8px 0}
+.hero-card .verdict{font-size:16px;font-weight:700;padding:6px 16px;border-radius:8px;display:inline-block;margin:8px 0}
+.verdict-strong{background:rgba(76,175,80,.2);color:#4caf50;border:1px solid #4caf50}
+.verdict-moderate{background:rgba(255,213,79,.2);color:#ffd54f;border:1px solid #ffd54f}
+.verdict-watch{background:rgba(158,158,158,.2);color:#9e9e9e;border:1px solid #9e9e9e}
+.conf-meter{height:10px;border-radius:5px;background:#1f1030;overflow:hidden;margin:8px 0}
+.conf-fill{height:100%;border-radius:5px;transition:width .5s}
+.conditions-list{list-style:none;padding:0;margin-top:12px}
+.conditions-list li{font-size:12px;padding:4px 8px;margin:3px 0;background:rgba(187,134,252,.08);border-left:3px solid #bb86fc;border-radius:0 4px 4px 0}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.stat-mini{background:#1a1030;border:1px solid #2d1b4e;border-radius:10px;padding:14px;text-align:center}
+.stat-mini .val{font-size:24px;font-weight:800;color:#bb86fc}
+.stat-mini .lbl{font-size:11px;color:#8070a0;margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+.section{background:#12101e;border:1px solid #2d1b4e;border-radius:12px;margin-bottom:20px;overflow:hidden}
+.section-hdr{padding:16px 20px;background:#1a1530;border-bottom:1px solid #2d1b4e;display:flex;justify-content:space-between;align-items:center}
+.section-hdr h2{font-size:18px;color:#e0d8f0}
+.badge{font-size:12px;padding:3px 10px;border-radius:12px;font-weight:600}
+.badge-forensic{background:rgba(187,134,252,.15);color:#bb86fc;border:1px solid #bb86fc}
+.badge-live{background:rgba(76,175,80,.15);color:#4caf50;border:1px solid #4caf50}
+.badge-fear{background:rgba(239,83,80,.15);color:#ef5350;border:1px solid #ef5350}
+.section-body{padding:20px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:8px 10px;font-size:11px;color:#8070a0;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #2d1b4e}
+td{padding:8px 10px;font-size:13px;border-bottom:1px solid #1a1530}
+tr:hover{background:rgba(187,134,252,.04)}
+.pnl-pos{color:#4caf50;font-weight:600}
+.pnl-neg{color:#ef5350;font-weight:600}
+.fp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.fp-card{background:#1a1530;border:1px solid #2d1b4e;border-radius:10px;padding:16px}
+.fp-card .metric-name{font-size:13px;font-weight:600;color:#bb86fc;margin-bottom:6px}
+.fp-card .metric-val{font-size:20px;font-weight:800;color:#e0d8f0}
+.fp-card .metric-range{font-size:11px;color:#8070a0;margin-top:4px}
+.fp-bar{height:6px;border-radius:3px;background:#1f1030;overflow:hidden;margin-top:6px}
+.fp-fill{height:100%;border-radius:3px;background:#bb86fc}
+.sentiment-box{background:linear-gradient(135deg,#1a0a2e,#331a4e);border:2px solid #ef5350;border-radius:12px;padding:20px;margin-bottom:24px;text-align:center}
+.sentiment-box h3{color:#ef5350;font-size:20px;margin-bottom:8px}
+.sentiment-box .gauge{font-size:48px;font-weight:800;color:#ef5350}
+.sentiment-box .note{font-size:13px;color:#b0a0c8;margin-top:8px}
+.btn{padding:8px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,#7c4dff,#bb86fc);color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-secondary{background:#2d1b4e;color:#b0a0c8;border:1px solid #4a2d7a}
+.loading{text-align:center;padding:40px;color:#8070a0}
+.spinner{display:inline-block;width:32px;height:32px;border:3px solid #2d1b4e;border-top-color:#bb86fc;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:40px;color:#8070a0;font-size:14px}
+</style>
+</head>
+<body>
+<div class="header">
+    <h1>Spike Forensics</h1>
+    <div class="sub">BTC &amp; ETH Exclusive - Every Historical Spike Reverse-Engineered</div>
+    <div class="nav-bar">
+        <span class="auto-tag" id="countdown-tag">Auto-refresh in 120s</span>
+        <a href="/findcryptopairs/index.html">Crypto Hub</a>
+        <a href="/findcryptopairs/alpha-hunter.html">Alpha Hunter</a>
+        <a href="/findcryptopairs/pro-signals.html">Pro Signals</a>
+        <a href="/findcryptopairs/academic-edge.html">Academic Edge</a>
+        <a href="/live-monitor/live-monitor.html">Live Monitor</a>
+    </div>
+</div>
+<div class="container">
+
+    <!-- Sentiment Alert -->
+    <div class="sentiment-box" id="sentiment-box" style="display:none">
+        <h3>MARKET SENTIMENT</h3>
+        <div class="gauge" id="sent-gauge">--</div>
+        <div class="note" id="sent-note"></div>
+    </div>
+
+    <!-- Hero Cards: BTC & ETH Status -->
+    <div class="hero-grid" id="hero-grid">
+        <div class="hero-card"><div class="loading"><div class="spinner"></div><p>Analyzing Bitcoin...</p></div></div>
+        <div class="hero-card"><div class="loading"><div class="spinner"></div><p>Analyzing Ethereum...</p></div></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row" id="stats-row">
+        <div class="stat-mini"><div class="val" id="st-spikes">--</div><div class="lbl">Spikes Analyzed</div></div>
+        <div class="stat-mini"><div class="val" id="st-active">--</div><div class="lbl">Active Signals</div></div>
+        <div class="stat-mini"><div class="val" id="st-wr">--</div><div class="lbl">Win Rate</div></div>
+        <div class="stat-mini"><div class="val" id="st-pnl">--</div><div class="lbl">Total P&L</div></div>
+    </div>
+
+    <!-- Fingerprint Visualization -->
+    <div class="section">
+        <div class="section-hdr"><h2>Pre-Spike Fingerprint (What BTC/ETH look like BEFORE a spike)</h2><span class="badge badge-forensic">FORENSIC DATA</span></div>
+        <div class="section-body">
+            <p style="color:#8070a0;font-size:13px;margin-bottom:16px">Statistical summary of indicator states captured 1 candle before every 5%+ spike. This is what the chart looks like right before a massive move.</p>
+            <div class="fp-grid" id="fp-grid"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+    </div>
+
+    <!-- Historical Spikes -->
+    <div class="section">
+        <div class="section-hdr"><h2>Historical Spikes (Reverse-Engineered)</h2><span class="badge badge-forensic">FORENSIC DATA</span></div>
+        <div class="section-body" id="spikes-body"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+
+    <!-- Signal History -->
+    <div class="section">
+        <div class="section-hdr"><h2>Signal History</h2><span class="badge badge-live">TRACKED</span></div>
+        <div class="section-body" id="history-body"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+
+    <!-- Actions -->
+    <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="runAction('full_run')">Run Full Analysis</button>
+        <button class="btn btn-primary" onclick="runAction('check_now')">Check Now</button>
+        <button class="btn btn-primary" onclick="runAction('monitor')">Monitor Signals</button>
+        <button class="btn btn-secondary" onclick="loadAll()">Refresh</button>
+    </div>
+</div>
+
+<script>
+var API = '/findcryptopairs/api/spike_forensics.php';
+var REFRESH_SEC = 120;
+var countdown = REFRESH_SEC;
+
+function loadCheckNow() {
+    fetch(API + '?action=check_now').then(function(r){return r.json()}).then(function(d) {
+        if (!d.ok || !d.signals) return;
+        var h = '';
+        d.signals.forEach(function(s) {
+            var isBTC = (s.pair === 'XXBTZUSD');
+            var color = isBTC ? '#f7931a' : '#627eea';
+            var pairClass = isBTC ? 'btc' : 'eth';
+            var verdictClass = (s.confidence >= 60) ? 'verdict-strong' : (s.confidence >= 40 ? 'verdict-moderate' : 'verdict-watch');
+            var confColor = (s.confidence >= 60) ? '#4caf50' : (s.confidence >= 40 ? '#ffd54f' : '#9e9e9e');
+            h += '<div class="hero-card">';
+            h += '<div class="pair-name ' + pairClass + '">' + s.pair_name + '</div>';
+            h += '<div class="price" style="color:' + color + '">$' + fmtPrice(s.price) + '</div>';
+            h += '<div class="verdict ' + verdictClass + '">' + s.verdict + '</div>';
+            h += '<div style="margin:8px 0;font-size:14px;color:#b0a0c8">Confidence: <strong style="color:' + confColor + '">' + s.confidence + '%</strong> (' + s.score + '/' + s.max_score + ' points)</div>';
+            h += '<div class="conf-meter"><div class="conf-fill" style="width:' + s.confidence + '%;background:' + confColor + '"></div></div>';
+            h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;font-size:13px">';
+            h += '<div>RSI: <strong>' + s.rsi + '</strong></div>';
+            h += '<div>ADX: <strong>' + s.adx + '</strong></div>';
+            h += '<div>BB Squeeze: <strong>' + (s.bb_squeeze ? 'YES' : 'No') + '</strong></div>';
+            h += '<div>Vol Ratio: <strong>' + s.vol_ratio + 'x</strong></div>';
+            h += '<div>Regime: <strong>' + s.regime + '</strong></div>';
+            h += '<div>Sentiment: <strong>' + s.sentiment + '</strong></div>';
+            h += '</div>';
+            h += '<div style="font-size:12px;color:#8070a0;margin:8px 0">TP: $' + fmtPrice(s.tp_price) + ' (+' + s.tp_pct + '%) | SL: $' + fmtPrice(s.sl_price) + ' (-' + s.sl_pct + '%)</div>';
+            if (s.matching_conditions && s.matching_conditions.length > 0) {
+                h += '<ul class="conditions-list">';
+                s.matching_conditions.forEach(function(c) { h += '<li>' + c + '</li>'; });
+                h += '</ul>';
+            }
+            h += '</div>';
+            // Sentiment box
+            if (s.sentiment === 'EXTREME_FEAR' || s.sentiment === 'CAPITULATION') {
+                document.getElementById('sentiment-box').style.display = '';
+                document.getElementById('sent-gauge').textContent = s.sentiment.replace('_',' ');
+                document.getElementById('sent-note').textContent = 'Historically, extreme fear in BTC/ETH has preceded 70% of major rallies. Contrarian signal: smart money buys when retail panics.';
+            }
+        });
+        document.getElementById('hero-grid').innerHTML = h || '<div class="hero-card"><div class="empty">No data. Click "Run Full Analysis" to start.</div></div>';
+    });
+}
+
+function loadSignals() {
+    fetch(API + '?action=signals').then(function(r){return r.json()}).then(function(d) {
+        if (!d.ok) return;
+        document.getElementById('st-active').textContent = d.active.length;
+        document.getElementById('st-wr').textContent = d.stats.win_rate + '%';
+        document.getElementById('st-pnl').textContent = (d.stats.total_pnl >= 0 ? '+' : '') + d.stats.total_pnl + '%';
+        // Fingerprint
+        if (d.fingerprint_summary && d.fingerprint_summary.length > 0) {
+            var fh = '';
+            d.fingerprint_summary.forEach(function(f) {
+                var name = f.metric_name.replace('pre_','').replace(/_/g,' ').toUpperCase();
+                var avg = parseFloat(f.avg_val) || 0;
+                var pct = parseFloat(f.pct_present) || 0;
+                var isBool = (pct < 100 && avg < 2);
+                fh += '<div class="fp-card">';
+                fh += '<div class="metric-name">' + name + '</div>';
+                if (isBool) {
+                    fh += '<div class="metric-val">' + pct.toFixed(0) + '%</div>';
+                    fh += '<div class="metric-range">Present in ' + pct.toFixed(0) + '% of pre-spike conditions</div>';
+                    fh += '<div class="fp-bar"><div class="fp-fill" style="width:' + pct + '%"></div></div>';
+                } else {
+                    fh += '<div class="metric-val">' + avg.toFixed(2) + '</div>';
+                    fh += '<div class="metric-range">Range: ' + parseFloat(f.min_val).toFixed(2) + ' to ' + parseFloat(f.max_val).toFixed(2) + ' | Median: ' + parseFloat(f.median_val).toFixed(2) + '</div>';
+                }
+                fh += '</div>';
+            });
+            document.getElementById('fp-grid').innerHTML = fh;
+        }
+        // History
+        if (d.history.length > 0) {
+            var hh = '<table><tr><th>Pair</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Exit</th><th>Confidence</th><th>Date</th></tr>';
+            d.history.forEach(function(s) {
+                var pnl = parseFloat(s.pnl_pct) || 0;
+                hh += '<tr><td>' + s.pair + '</td><td>$' + fmtPrice(s.entry_price) + '</td><td>$' + fmtPrice(s.current_price) + '</td>';
+                hh += '<td class="' + (pnl >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (pnl >= 0 ? '+' : '') + pnl.toFixed(2) + '%</td>';
+                hh += '<td>' + (s.exit_reason||'--') + '</td><td>' + parseFloat(s.confidence).toFixed(0) + '%</td>';
+                hh += '<td style="font-size:12px">' + (s.resolved_at||s.created_at) + '</td></tr>';
+            });
+            hh += '</table>';
+            document.getElementById('history-body').innerHTML = hh;
+        } else {
+            document.getElementById('history-body').innerHTML = '<div class="empty">No resolved signals yet.</div>';
+        }
+    });
+}
+
+function loadAudit() {
+    fetch(API + '?action=audit').then(function(r){return r.json()}).then(function(d) {
+        if (!d.ok) return;
+        document.getElementById('st-spikes').textContent = (d.spikes ? d.spikes.length : 0) + '+';
+        if (d.spikes && d.spikes.length > 0) {
+            var h = '<table><tr><th>Pair</th><th>Spike</th><th>Candles</th><th>Pre-RSI</th><th>BB Squeeze</th><th>OBV Div</th><th>Vol Ratio</th><th>ADX</th><th>Higher Lows</th><th>RSI Div</th><th>EMA Align</th></tr>';
+            d.spikes.forEach(function(s) {
+                h += '<tr><td>' + s.pair + '</td>';
+                h += '<td class="pnl-pos">+' + parseFloat(s.spike_pct).toFixed(1) + '%</td>';
+                h += '<td>' + s.spike_candles + '</td>';
+                h += '<td>' + parseFloat(s.pre_rsi).toFixed(1) + '</td>';
+                h += '<td>' + (parseInt(s.pre_bb_squeeze) ? 'YES' : '-') + '</td>';
+                h += '<td>' + (parseInt(s.pre_obv_divergence) ? 'YES' : '-') + '</td>';
+                h += '<td>' + parseFloat(s.pre_vol_ratio).toFixed(2) + 'x</td>';
+                h += '<td>' + parseFloat(s.pre_adx).toFixed(1) + '</td>';
+                h += '<td>' + (parseInt(s.pre_higher_lows) ? 'YES' : '-') + '</td>';
+                h += '<td>' + (parseInt(s.pre_rsi_divergence) ? 'YES' : '-') + '</td>';
+                h += '<td>' + (s.pre_ema_alignment||'--') + '</td></tr>';
+            });
+            h += '</table>';
+            document.getElementById('spikes-body').innerHTML = h;
+        }
+    });
+}
+
+function runAction(action) {
+    var btn = event.target; btn.disabled = true; btn.textContent = 'Running...';
+    fetch(API + '?action=' + action).then(function(r){return r.json()}).then(function(d) {
+        btn.disabled = false; btn.textContent = action;
+        if (d.ok) { loadAll(); alert('Done! ' + (d.elapsed_ms ? d.elapsed_ms + 'ms' : '')); }
+        else alert('Error: ' + (d.error||'unknown'));
+    }).catch(function(e) { btn.disabled = false; btn.textContent = action; alert('Error: ' + e.message); });
+}
+
+function loadAll() { loadCheckNow(); loadSignals(); loadAudit(); }
+function fmtPrice(p) { var v = parseFloat(p); if (v >= 1000) return v.toFixed(2); if (v >= 1) return v.toFixed(4); return v.toFixed(6); }
+
+var refreshTimer = setInterval(function() {
+    countdown--;
+    var el = document.getElementById('countdown-tag');
+    if (el) el.textContent = 'Auto-refresh in ' + countdown + 's';
+    if (countdown <= 0) { countdown = REFRESH_SEC; loadAll(); }
+}, 1000);
+
+loadAll();
+</script>
+</body>
+</html>

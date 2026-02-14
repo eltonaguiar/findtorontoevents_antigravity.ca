@@ -1,0 +1,53 @@
+name: Spike Forensics Refresh
+on:
+  schedule:
+    # Full analysis: every 6 hours
+    - cron: '0 */6 * * *'
+    # Quick check + monitor: every 2 hours
+    - cron: '30 1,3,5,7,9,11,13,15,17,19,21,23 * * *'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to run (full_run, check_now, monitor)'
+        required: false
+        default: 'full_run'
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Determine action
+        id: action
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "action=${{ github.event.inputs.action }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "0 */6 * * *" ]; then
+            echo "action=full_run" >> $GITHUB_OUTPUT
+          else
+            echo "action=check_monitor" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run full analysis
+        if: steps.action.outputs.action == 'full_run'
+        run: |
+          echo "=== Running Full Spike Forensics Pipeline ==="
+          curl -s --max-time 120 "https://findtorontoevents.ca/findcryptopairs/api/spike_forensics.php?action=full_run" | head -c 2000
+          echo ""
+          echo "=== Full run complete ==="
+
+      - name: Run quick check + monitor
+        if: steps.action.outputs.action == 'check_monitor'
+        run: |
+          echo "=== Quick Check ==="
+          curl -s --max-time 60 "https://findtorontoevents.ca/findcryptopairs/api/spike_forensics.php?action=check_now" | head -c 2000
+          echo ""
+          echo "=== Monitor ==="
+          curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/api/spike_forensics.php?action=monitor" | head -c 500
+          echo ""
+
+      - name: Run manual action
+        if: steps.action.outputs.action != 'full_run' && steps.action.outputs.action != 'check_monitor'
+        run: |
+          echo "=== Running: ${{ steps.action.outputs.action }} ==="
+          curl -s --max-time 120 "https://findtorontoevents.ca/findcryptopairs/api/spike_forensics.php?action=${{ steps.action.outputs.action }}" | head -c 2000
