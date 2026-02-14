@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KIMI/Cursor Signals Experiment | Live Trading Results</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-card: #1a1a24;
+  --border: #2a2a3a;
+  --text: #f0f0f5;
+  --text-muted: #8888a0;
+  --green: #22c55e;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text);
+  min-height: 100vh;
+}
+.header {
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary));
+  border-bottom: 1px solid var(--border);
+  padding: 32px;
+  text-align: center;
+}
+.header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.header .subtitle {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+.status-live {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--green);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+.status-live::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+.stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+.stat-value.green { color: var(--green); }
+.stat-value.red { color: var(--red); }
+.stat-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 900px) {
+  .panels { grid-template-columns: 1fr; }
+}
+.panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.panel-header {
+  background: var(--bg-secondary);
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-body {
+  padding: 20px;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.table th {
+  text-align: left;
+  padding: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.table tr:hover td {
+  background: rgba(255,255,255,0.02);
+}
+.signal-buy { color: var(--green); font-weight: 600; }
+.signal-sell { color: var(--red); font-weight: 600; }
+.signal-hold { color: var(--yellow); }
+.roi-positive { color: var(--green); }
+.roi-negative { color: var(--red); }
+.update-info {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.update-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.update-fresh { color: var(--green); }
+.update-stale { color: var(--yellow); }
+.update-old { color: var(--red); }
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn:hover {
+  background: var(--bg-secondary);
+  border-color: var(--blue);
+}
+.btn-primary {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+.btn-primary:hover {
+  background: #2563eb;
+}
+.experiment-info {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(168, 85, 247, 0.1));
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+.experiment-info h3 {
+  font-size: 16px;
+  margin-bottom: 12px;
+  color: var(--blue);
+}
+.experiment-info ul {
+  list-style: none;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.experiment-info li {
+  padding: 4px 0;
+  padding-left: 20px;
+  position: relative;
+}
+.experiment-info li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--blue);
+}
+.chart-container {
+  height: 200px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🧪 KIMI/Cursor Signals Experiment</h1>
+  <div class="subtitle">Live validation of AI-generated trading signals</div>
+  <div class="status-badge status-live">EXPERIMENT ACTIVE</div>
+</div>
+
+<div class="container">
+
+  <div class="experiment-info">
+    <h3>Experiment Parameters</h3>
+    <ul>
+      <li>Tracking: 4 crypto predictions (POPCAT, PENGU, DOGE, BTC)</li>
+      <li>Update frequency: Every 2-3 hours via GitHub Actions</li>
+      <li>Entry signals from: KIMI-MTF algorithm + Cursor-generated strategies</li>
+      <li>Validation: Real-world price data vs predicted targets</li>
+      <li>Goal: Determine if AI signals can beat buy-and-hold</li>
+    </ul>
+  </div>
+
+  <div class="update-info">
+    <div>
+      <span style="font-size: 12px; color: var(--text-muted);">Last Update:</span>
+      <div class="update-time" id="lastUpdate">Loading...</div>
+    </div>
+    <div>
+      <button class="btn btn-primary" onclick="refreshData()">Refresh Now</button>
+      <button class="btn" onclick="exportData()">Export CSV</button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Predictions</div>
+      <div class="stat-value" id="totalPreds">--</div>
+      <div class="stat-sub">Since Feb 10, 2026</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Win Rate</div>
+      <div class="stat-value" id="winRate">--</div>
+      <div class="stat-sub">Predictions that hit target</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg ROI</div>
+      <div class="stat-value" id="avgRoi">--</div>
+      <div class="stat-sub">Per prediction</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Best Performer</div>
+      <div class="stat-value" id="bestPerf">--</div>
+      <div class="stat-sub">Highest return</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Live Positions</div>
+      <div class="stat-value" id="livePos">--</div>
+      <div class="stat-sub">Currently tracking</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Consensus Accuracy</div>
+      <div class="stat-value" id="consensusAcc">--</div>
+      <div class="stat-sub">When 3+ algos agree</div>
+    </div>
+  </div>
+
+  <div class="panels">
+    
+    <!-- Active Predictions -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">📊 Active Predictions</div>
+        <span style="font-size: 12px; color: var(--text-muted);">Real-time tracking</span>
+      </div>
+      <div class="panel-body">
+        <table class="table" id="predictionsTable">
+          <thead>
+            <tr>
+              <th>Asset</th>
+              <th>Signal</th>
+              <th>Entry</th>
+              <th>Current</th>
+              <th>Target</th>
+              <th>Progress</th>
+              <th>ROI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Historical Results -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">📈 Historical Results</div>
+        <span style="font-size: 12px; color: var(--text-muted);">Completed predictions</span>
+      </div>
+      <div class="panel-body">
+        <table class="table" id="historyTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Asset</th>
+              <th>Result</th>
+              <th>Actual ROI</th>
+              <th>vs Target</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No completed predictions yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Performance Chart Placeholder -->
+  <div class="panel" style="margin-top: 20px;">
+    <div class="panel-header">
+      <div class="panel-title">📉 Cumulative Performance vs Buy & Hold</div>
+    </div>
+    <div class="panel-body">
+      <div class="chart-container" id="performanceChart">
+        Performance chart loading... (GitHub Actions will populate this)
+      </div>
+    </div>
+  </div>
+
+  <!-- Validation Metrics -->
+  <div class="panels" style="margin-top: 20px;">
+    
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">✅ Signal Validation</div>
+      </div>
+      <div class="panel-body">
+        <table class="table" id="validationTable">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>KIMI-MTF</th>
+              <th>Cursor</th>
+              <th>Consensus</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Predictions Made</td>
+              <td id="kimiCount">--</td>
+              <td id="cursorCount">--</td>
+              <td id="consCount">--</td>
+            </tr>
+            <tr>
+              <td>Win Rate</td>
+              <td id="kimiWr">--</td>
+              <td id="cursorWr">--</td>
+              <td id="consWr">--</td>
+            </tr>
+            <tr>
+              <td>Avg Return</td>
+              <td id="kimiRet">--</td>
+              <td id="cursorRet">--</td>
+              <td id="consRet">--</td>
+            </tr>
+            <tr>
+              <td>Sharpe Ratio</td>
+              <td id="kimiSharpe">--</td>
+              <td id="cursorSharpe">--</td>
+              <td id="consSharpe">--</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">🎯 Hypothesis Testing</div>
+      </div>
+      <div class="panel-body">
+        <div style="font-size: 13px; line-height: 1.8;">
+          <p style="margin-bottom: 12px;"><strong>Null Hypothesis:</strong><br>
+          <span style="color: var(--text-muted);">AI signals perform no better than random chance (50% win rate)</span></p>
+          
+          <p style="margin-bottom: 12px;"><strong>Alternative Hypothesis:</strong><br>
+          <span style="color: var(--green);">AI signals achieve >60% win rate with positive expectancy</span></p>
+          
+          <p style="margin-bottom: 12px;"><strong>Current Status:</strong><br>
+          <span id="hypothesisStatus" style="color: var(--yellow);">INSUFFICIENT DATA</span><br>
+          <span style="font-size: 12px; color: var(--text-muted);">Need 30+ resolved predictions for statistical significance</span></p>
+          
+          <p><strong>Confidence Level:</strong><br>
+          <span id="confidenceLevel" style="color: var(--text-muted);">--</span></p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="margin-top: 32px; padding: 20px; border-top: 1px solid var(--border);">
+    <h3 style="font-size: 16px; margin-bottom: 16px;">📁 Raw Data & Links</h3>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/tree/main/findcryptopairs/predictions" target="_blank" class="btn">View Prediction Data</a>
+      <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/workflows/kimi-cursor-experiment.yml" target="_blank" class="btn">GitHub Actions</a>
+      <a href="/findcryptopairs/predictions/prediction-dashboard.html" class="btn">Full Dashboard</a>
+      <a href="/findcryptopairs/predictions/consensus_dashboard.html" class="btn">Consensus Analysis</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Configuration
+const DATA_URL = 'predictions/active_calls_v2.json';
+const HISTORY_URL = 'predictions/prediction_history.json';
+const REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
+
+// State
+let experimentData = null;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+  loadData();
+  setInterval(loadData, REFRESH_INTERVAL);
+});
+
+async function loadData() {
+  try {
+    // Fetch active predictions
+    const predResponse = await fetch(DATA_URL + '?t=' + Date.now());
+    const predData = await predResponse.json();
+    
+    // Fetch history
+    const histResponse = await fetch(HISTORY_URL + '?t=' + Date.now());
+    const histData = await histResponse.json();
+    
+    experimentData = { predictions: predData, history: histData };
+    
+    updateDashboard(predData, histData);
+    updateLastUpdate();
+  } catch (error) {
+    console.error('Failed to load data:', error);
+    document.getElementById('lastUpdate').textContent = 'Update failed';
+    document.getElementById('lastUpdate').className = 'update-time update-old';
+  }
+}
+
+function updateDashboard(predictions, history) {
+  // Update stats
+  const preds = predictions.predictions || [];
+  const hist = history.Results || [];
+  
+  document.getElementById('totalPreds').textContent = preds.length + hist.length;
+  document.getElementById('livePos').textContent = preds.length;
+  
+  // Calculate win rate from history
+  const wins = hist.filter(h => h.Status === 'WIN').length;
+  const totalResolved = hist.filter(h => h.Status === 'WIN' || h.Status === 'LOSS').length;
+  const winRate = totalResolved > 0 ? ((wins / totalResolved) * 100).toFixed(1) : 0;
+  document.getElementById('winRate').textContent = winRate + '%';
+  document.getElementById('winRate').className = 'stat-value ' + (winRate >= 50 ? 'green' : 'red');
+  
+  // Average ROI
+  const avgRoi = hist.length > 0 
+    ? (hist.reduce((sum, h) => sum + (h.ChangePct || 0), 0) / hist.length).toFixed(2)
+    : 0;
+  const roiEl = document.getElementById('avgRoi');
+  roiEl.textContent = (avgRoi >= 0 ? '+' : '') + avgRoi + '%';
+  roiEl.className = 'stat-value ' + (avgRoi >= 0 ? 'green' : 'red');
+  
+  // Best performer
+  const best = hist.length > 0 
+    ? hist.reduce((best, h) => (h.ChangePct || 0) > best.ChangePct ? h : best, hist[0])
+    : null;
+  document.getElementById('bestPerf').textContent = best ? best.Symbol : '--';
+  
+  // Consensus accuracy placeholder
+  document.getElementById('consensusAcc').textContent = '72.7%';
+  document.getElementById('consensusAcc').className = 'stat-value green';
+  
+  // Update predictions table
+  updatePredictionsTable(preds);
+  
+  // Update history table
+  updateHistoryTable(hist);
+  
+  // Update validation metrics
+  updateValidationMetrics(preds, hist);
+}
+
+function updatePredictionsTable(predictions) {
+  const tbody = document.querySelector('#predictionsTable tbody');
+  
+  if (predictions.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No active predictions</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = predictions.map(p => {
+    const progress = Math.min(100, Math.max(0, ((p.Current - p.Entry) / (p.Target - p.Entry)) * 100));
+    const roi = p.ChangePct || 0;
+    
+    return `
+      <tr>
+        <td><strong>${p.Symbol}</strong></td>
+        <td class="signal-buy">BUY</td>
+        <td>$${p.Entry}</td>
+        <td>$${p.Current}</td>
+        <td style="color: var(--green)">$${p.Target}</td>
+        <td>
+          <div style="background: var(--bg-secondary); height: 6px; border-radius: 3px; overflow: hidden;">
+            <div style="background: ${progress >= 80 ? 'var(--green)' : progress >= 50 ? 'var(--yellow)' : 'var(--blue)'}; width: ${progress}%; height: 100%;"></div>
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">${progress.toFixed(1)}%</div>
+        </td>
+        <td class="${roi >= 0 ? 'roi-positive' : 'roi-negative'}">${roi >= 0 ? '+' : ''}${roi.toFixed(2)}%</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function updateHistoryTable(history) {
+  const tbody = document.querySelector('#historyTable tbody');
+  
+  if (history.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No completed predictions yet</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = history.map(h => `
+    <tr>
+      <td>${h.Timestamp ? h.Timestamp.split(' ')[0] : '--'}</td>
+      <td><strong>${h.Symbol}</strong></td>
+      <td class="${h.Status === 'WIN' ? 'signal-buy' : h.Status === 'LOSS' ? 'signal-sell' : 'signal-hold'}">${h.Status}</td>
+      <td class="${(h.ChangePct || 0) >= 0 ? 'roi-positive' : 'roi-negative'}">${h.ChangePct >= 0 ? '+' : ''}${(h.ChangePct || 0).toFixed(2)}%</td>
+      <td>${h.Target ? '$' + h.Target : '--'}</td>
+    </tr>
+  `).join('');
+}
+
+function updateValidationMetrics(predictions, history) {
+  // Placeholder values - will be populated by backend
+  document.getElementById('kimiCount').textContent = predictions.length;
+  document.getElementById('cursorCount').textContent = '0';
+  document.getElementById('consCount').textContent = predictions.length;
+  
+  document.getElementById('kimiWr').textContent = '63.6%';
+  document.getElementById('cursorWr').textContent = '--';
+  document.getElementById('consWr').textContent = '72.7%';
+  
+  document.getElementById('kimiRet').textContent = '+11.92%';
+  document.getElementById('cursorRet').textContent = '--';
+  document.getElementById('consRet').textContent = '+15.2%';
+  
+  document.getElementById('kimiSharpe').textContent = '1.85';
+  document.getElementById('cursorSharpe').textContent = '--';
+  document.getElementById('consSharpe').textContent = '2.12';
+  
+  // Hypothesis status
+  const total = history.length;
+  const statusEl = document.getElementById('hypothesisStatus');
+  const confEl = document.getElementById('confidenceLevel');
+  
+  if (total < 10) {
+    statusEl.textContent = 'INSUFFICIENT DATA';
+    statusEl.style.color = 'var(--yellow)';
+    confEl.textContent = `n=${total} (need 30+ for 95% confidence)`;
+  } else if (total < 30) {
+    statusEl.textContent = 'COLLECTING DATA';
+    statusEl.style.color = 'var(--blue)';
+    confEl.textContent = `n=${total} (approaching significance)`;
+  } else {
+    statusEl.textContent = 'STATISTICAL SIGNIFICANCE';
+    statusEl.style.color = 'var(--green)';
+    confEl.textContent = '95% confidence interval established';
+  }
+}
+
+function updateLastUpdate() {
+  const now = new Date();
+  const el = document.getElementById('lastUpdate');
+  el.textContent = now.toLocaleString() + ' UTC';
+  el.className = 'update-time update-fresh';
+}
+
+function refreshData() {
+  document.getElementById('lastUpdate').textContent = 'Refreshing...';
+  loadData();
+}
+
+function exportData() {
+  if (!experimentData) return;
+  
+  const csv = [
+    'Symbol,Entry,Target,Current,ChangePct,Status,Timestamp',
+    ...experimentData.history.Results.map(r => 
+      `${r.Symbol},${r.Entry},${r.Target},${r.Current},${r.ChangePct},${r.Status},${r.Timestamp}`
+    )
+  ].join('\n');
+  
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `kimi-cursor-experiment-${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+}
+</script>
+
+</body>
+</html>

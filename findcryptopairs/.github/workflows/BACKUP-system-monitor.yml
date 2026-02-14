@@ -1,0 +1,251 @@
+name: 🔒 BACKUP — System Health Monitor & Recovery
+
+on:
+  schedule:
+    # Every 30 minutes — watchdog for other workflows
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Recovery action'
+        required: true
+        default: 'check'
+        type: choice
+        options:
+          - check
+          - recover-stalled
+          - restart-all
+          - emergency-fallback
+
+env:
+  DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+  ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+
+jobs:
+  # ─────────────────────────────────────────────────────────
+  # JOB 1: Check if other workflows are actually working
+  # ─────────────────────────────────────────────────────────
+  health-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 50  # Need history to check commits
+      
+      - name: Check workflow activity
+        id: check
+        run: |
+          echo "=== WORKFLOW HEALTH CHECK ==="
+          
+          # Check last commit timestamps for each workflow type
+          NOW=$(date +%s)
+          
+          # Goldmine collector (should commit every 30-60 min)
+          LAST_GOLDMINE=$(git log --format=%ct -1 --grep="Update goldmine data" 2>/dev/null || echo "0")
+          GAP_GOLDMINE=$(( (NOW - LAST_GOLDMINE) / 60 ))
+          echo "goldmine_gap_minutes=$GAP_GOLDMINE" >> $GITHUB_OUTPUT
+          
+          # Dashboard (should commit every 15 min)
+          LAST_DASHBOARD=$(git log --format=%ct -1 --grep="Auto-update: Dashboard" 2>/dev/null || echo "0")
+          GAP_DASHBOARD=$(( (NOW - LAST_DASHBOARD) / 60 ))
+          echo "dashboard_gap_minutes=$GAP_DASHBOARD" >> $GITHUB_OUTPUT
+          
+          # Live monitor (every 30 min)
+          LAST_LIVE=$(git log --format=%ct -1 --grep="live monitor\|Live Monitor" 2>/dev/null || echo "0")
+          GAP_LIVE=$(( (NOW - LAST_LIVE) / 60 ))
+          echo "live_gap_minutes=$GAP_LIVE" >> $GITHUB_OUTPUT
+          
+          # Daily feed (hourly)
+          LAST_FEED=$(git log --format=%ct -1 --grep="daily feed" 2>/dev/null || echo "0")
+          GAP_FEED=$(( (NOW - LAST_FEED) / 60 ))
+          echo "feed_gap_minutes=$GAP_FEED" >> $GITHUB_OUTPUT
+          
+          echo ""
+          echo "⏱️ Time since last commits:"
+          echo "  Goldmine:  ${GAP_GOLDMINE}m ago"
+          echo "  Dashboard: ${GAP_DASHBOARD}m ago"
+          echo "  Live:      ${GAP_LIVE}m ago"
+          echo "  Feed:      ${GAP_FEED}m ago"
+          
+          # Determine status
+          FAILED=0
+          
+          if [ $GAP_GOLDMINE -gt 120 ]; then
+            echo "❌ GOLDMINE STALLED (>2h)"
+            FAILED=$((FAILED + 1))
+          fi
+          
+          if [ $GAP_DASHBOARD -gt 60 ]; then
+            echo "❌ DASHBOARD STALLED (>1h)"
+            FAILED=$((FAILED + 1))
+          fi
+          
+          if [ $GAP_LIVE -gt 120 ]; then
+            echo "❌ LIVE MONITOR STALLED (>2h)"
+            FAILED=$((FAILED + 1))
+          fi
+          
+          echo "failed_workflows=$FAILED" >> $GITHUB_OUTPUT
+          echo "check_time=$(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_OUTPUT
+      
+      - name: Alert on failures
+        if: steps.check.outputs.failed_workflows > 0
+        run: |
+          FAILED=${{ steps.check.outputs.failed_workflows }}
+          
+          echo "🚨 $FAILED WORKFLOW(S) STALLED"
+          echo "Triggering recovery procedures..."
+          
+          # Create alert file for downstream jobs
+          echo "{\"failed\": $FAILED, \"time\": \"${{ steps.check.outputs.check_time }}\"}" > workflow_alert.json
+          
+          # Discord notification (if configured)
+          if [ -n "$DISCORD_WEBHOOK" ]; then
+            curl -s -X POST "$DISCORD_WEBHOOK" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"embeds\": [{
+                  \"title\": \"⚠️ Workflow Health Alert\",
+                  \"color\": 16776960,
+                  \"fields\": [
+                    {\"name\": \"Goldmine\", \"value\": \"${{ steps.check.outputs.goldmine_gap_minutes }}m ago\", \"inline\": true},
+                    {\"name\": \"Dashboard\", \"value\": \"${{ steps.check.outputs.dashboard_gap_minutes }}m ago\", \"inline\": true},
+                    {\"name\": \"Live Monitor\", \"value\": \"${{ steps.check.outputs.live_gap_minutes }}m ago\", \"inline\": true}
+                  ],
+                  \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+                }]
+              }" || true
+          fi
+      
+      - name: Upload alert artifact
+        if: steps.check.outputs.failed_workflows > 0
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-health-alert
+          path: workflow_alert.json
+          retention-days: 7
+
+  # ─────────────────────────────────────────────────────────
+  # JOB 2: Emergency fallback data generation
+  # ─────────────────────────────────────────────────────────
+  emergency-fallback:
+    runs-on: ubuntu-latest
+    needs: health-check
+    if: needs.health-check.outputs.failed_workflows >= 2 || github.event.inputs.action == 'emergency-fallback'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Generate emergency fallback data
+        run: |
+          echo "=== EMERGENCY FALLBACK MODE ==="
+          
+          TIMESTAMP=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+          
+          # Create minimal viable dashboard data
+          cat > monitoring/data/dashboard.json << EOF
+          {
+            "timestamp": "$TIMESTAMP",
+            "emergency_mode": true,
+            "note": "Emergency fallback data - main workflows stalled",
+            "alpha_signals": {
+              "count": 0,
+              "signals": [],
+              "status": "WORKFLOW_STALLED",
+              "last_update": "$TIMESTAMP"
+            },
+            "goldmine_candidates": {
+              "count": 0,
+              "candidates": [],
+              "status": "WORKFLOW_STALLED",
+              "last_update": "$TIMESTAMP"
+            },
+            "predictions": {
+              "count": 0,
+              "predictions": [],
+              "status": "WORKFLOW_STALLED",
+              "last_update": "$TIMESTAMP"
+            },
+            "system_health": {
+              "status": "DEGRADED",
+              "message": "Backup workflow active - main workflows need attention"
+            }
+          }
+          EOF
+          
+          echo "✅ Emergency data generated"
+      
+      - name: Commit emergency data
+        run: |
+          git config user.name "GitHub Actions (Backup)"
+          git config user.email "actions@github.com"
+          
+          git add monitoring/data/dashboard.json
+          git commit -m "🚨 EMERGENCY FALLBACK: Main workflows stalled - $(date -u '+%H:%M UTC')"
+          git push || echo "Push failed, will retry"
+      
+      - name: Trigger workflow restart
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // List and re-trigger failed workflows
+            const workflows = [
+              'monitoring-dashboard.yml',
+              'alpha_monitoring.yml',
+              'live-monitor-refresh.yml',
+              'kimi-goldmine-collector.yml'
+            ];
+            
+            for (const workflow of workflows) {
+              try {
+                await github.rest.actions.createWorkflowDispatch({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  workflow_id: workflow,
+                  ref: 'main'
+                });
+                console.log(`✅ Triggered ${workflow}`);
+              } catch (e) {
+                console.log(`❌ Failed to trigger ${workflow}: ${e.message}`);
+              }
+            }
+
+  # ─────────────────────────────────────────────────────────
+  # JOB 3: Daily status report
+  # ─────────────────────────────────────────────────────────
+  daily-report:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 0 * * *'  # Daily at midnight
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 100
+      
+      - name: Generate 24h activity report
+        run: |
+          echo "=== 24 HOUR WORKFLOW ACTIVITY ==="
+          
+          SINCE=$(date -d '24 hours ago' +%s)
+          
+          echo "Commits in last 24h:"
+          git log --since="24 hours ago" --format="%h %s" --grep="Update goldmine\|Auto-update\|Auto-sync" | wc -l
+          
+          echo ""
+          echo "Workflow types active:"
+          git log --since="24 hours ago" --format="%s" | grep -oE "^(Update|Auto-sync|📊|🤖|🚨)" | sort | uniq -c | sort -rn
+      
+      - name: Create status badge
+        run: |
+          # Generate a simple health badge
+          cat > workflow_health_status.txt << EOF
+          Last check: $(date -u '+%Y-%m-%d %H:%M UTC')
+          Status: BACKUP_WORKFLOW_ACTIVE
+          EOF

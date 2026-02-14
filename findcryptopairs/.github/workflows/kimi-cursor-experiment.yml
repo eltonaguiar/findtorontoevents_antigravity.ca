@@ -1,0 +1,324 @@
+name: 🧪 KIMI/Cursor Experiment — Live Signal Tracking
+
+on:
+  schedule:
+    # Every 2-3 hours (staggered to avoid rate limits)
+    - cron: '0 */2 * * *'      # Every 2 hours: 00:00, 02:00, 04:00...
+    - cron: '30 1,4,7,10,13,16,19,22 * * *'  # Offset: 01:30, 04:30...
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'full-update'
+        type: choice
+        options:
+          - full-update
+          - price-check-only
+          - generate-report
+          - validate-signals
+
+env:
+  API_BASE: ${{ secrets.API_BASE || 'https://findtorontoevents.ca' }}
+  COINGECKO_API: ${{ secrets.COINGECKO_API_KEY }}
+  DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+jobs:
+  # ─────────────────────────────────────────────────────────
+  # JOB 1: Fetch live prices and update predictions
+  # ─────────────────────────────────────────────────────────
+  update-predictions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 20
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install --quiet requests>=2.31 pandas>=2.0 pytz
+      
+      # ─── Fetch current prices from CoinGecko ───
+      - name: Fetch live crypto prices
+        id: prices
+        run: |
+          echo "=== Fetching Live Prices ==="
+          
+          # CoinGecko API for our tracked assets
+          COINS="popcat,pudgy-penguins,dogecoin,bitcoin,sui,dog-go-to-the-moon-2,virtual-protocol,aztec,lrc,zcash"
+          
+          if [ -n "$COINGECKO_API" ]; then
+            URL="https://pro-api.coingecko.com/api/v3/simple/price?ids=$COINS&vs_currencies=usd&include_24hr_change=true"
+            HEADERS="x-cg-pro-api-key: $COINGECKO_API"
+          else
+            URL="https://api.coingecko.com/api/v3/simple/price?ids=$COINS&vs_currencies=usd&include_24hr_change=true"
+            HEADERS=""
+          fi
+          
+          RESPONSE=$(curl -s --max-time 30 "$URL" -H "$HEADERS" 2>/dev/null || echo "{}")
+          
+          echo "$RESPONSE" > prices_latest.json
+          echo "price_data=$RESPONSE" >> $GITHUB_OUTPUT
+          
+          echo "✅ Prices fetched"
+          echo "$RESPONSE" | python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)
+          for coin, data in d.items():
+            price = data.get('usd', 0)
+            change = data.get('usd_24h_change', 0)
+            print(f'  {coin}: ${price:.6f} ({change:+.2f}%)')
+          "
+      
+      # ─── Update prediction status ───
+      - name: Update prediction tracking
+        id: update
+        run: |
+          echo "=== Updating Prediction Status ==="
+          
+          python3 << 'PYTHON'
+          import json
+          import os
+          from datetime import datetime, timezone
+          
+          # Load current predictions
+          try:
+            with open('findcryptopairs/predictions/active_calls_v2.json') as f:
+              active = json.load(f)
+          except:
+            active = {'predictions': []}
+          
+          # Load price data
+          try:
+            with open('prices_latest.json') as f:
+              prices = json.load(f)
+          except:
+            prices = {}
+          
+          # Price mapping (CoinGecko ID -> Symbol)
+          mapping = {
+            'popcat': 'POPCAT',
+            'pudgy-penguins': 'PENGU',
+            'dogecoin': 'DOGE',
+            'bitcoin': 'BTC',
+            'sui': 'SUI'
+          }
+          
+          updated = []
+          wins = 0
+          losses = 0
+          
+          for pred in active.get('predictions', []):
+            symbol = pred.get('Symbol', '')
+            
+            # Find matching price
+            current_price = 0
+            for coin_id, data in prices.items():
+              if mapping.get(coin_id) == symbol:
+                current_price = data.get('usd', 0)
+                break
+            
+            if current_price > 0:
+              entry = float(pred.get('Entry', 0))
+              target = float(pred.get('Target', 0))
+              
+              # Calculate progress
+              if target != entry:
+                progress = ((current_price - entry) / (target - entry)) * 100
+              else:
+                progress = 0
+              
+              # Calculate ROI
+              roi = ((current_price - entry) / entry) * 100 if entry > 0 else 0
+              
+              pred['Current'] = current_price
+              pred['ChangePct'] = round(roi, 2)
+              pred['Progress'] = round(min(100, max(0, progress)), 1)
+              pred['LastUpdated'] = datetime.now(timezone.utc).isoformat()
+              
+              # Check if target hit (WIN)
+              if current_price >= target:
+                pred['Status'] = 'WIN'
+                wins += 1
+              # Check if stopped out (LOSS) - 20% below entry
+              elif current_price <= entry * 0.8:
+                pred['Status'] = 'LOSS'
+                losses += 1
+              else:
+                pred['Status'] = 'ACTIVE'
+              
+              updated.append(pred)
+          
+          # Save updated predictions
+          active['predictions'] = updated
+          active['last_updated'] = datetime.now(timezone.utc).isoformat()
+          active['stats'] = {
+            'total': len(updated),
+            'wins': wins,
+            'losses': losses,
+            'active': len(updated) - wins - losses
+          }
+          
+          with open('findcryptopairs/predictions/active_calls_v2.json', 'w') as f:
+            json.dump(active, f, indent=2)
+          
+          # Append to history
+          try:
+            with open('findcryptopairs/predictions/prediction_history.json') as f:
+              history = json.load(f)
+          except:
+            history = {'Results': []}
+          
+          # Add resolved predictions to history
+          for pred in updated:
+            if pred.get('Status') in ['WIN', 'LOSS']:
+              # Check if already in history
+              existing = [h for h in history['Results'] if h.get('ID') == pred.get('ID')]
+              if not existing:
+                history['Results'].append(pred)
+          
+          history['CheckTime'] = datetime.now(timezone.utc).isoformat()
+          
+          with open('findcryptopairs/predictions/prediction_history.json', 'w') as f:
+            json.dump(history, f, indent=2)
+          
+          print(f"✅ Updated {len(updated)} predictions")
+          print(f"   Wins: {wins}, Losses: {losses}, Active: {len(updated) - wins - losses}")
+          
+          # Set outputs for downstream jobs
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+            f.write(f"wins={wins}\n")
+            f.write(f"losses={losses}\n")
+            f.write(f"active={len(updated) - wins - losses}\n")
+          PYTHON
+      
+      # ─── Generate experiment report ───
+      - name: Generate experiment report
+        run: |
+          python3 << 'PYTHON'
+          import json
+          from datetime import datetime, timezone
+          
+          # Load data
+          try:
+            with open('findcryptopairs/predictions/prediction_history.json') as f:
+              history = json.load(f)
+            results = history.get('Results', [])
+          except:
+            results = []
+          
+          if len(results) == 0:
+            print("No resolved predictions yet")
+            exit(0)
+          
+          # Calculate metrics
+          wins = [r for r in results if r.get('Status') == 'WIN']
+          losses = [r for r in results if r.get('Status') == 'LOSS']
+          
+          win_rate = len(wins) / len(results) * 100 if results else 0
+          avg_roi = sum(r.get('ChangePct', 0) for r in results) / len(results) if results else 0
+          
+          # Generate report
+          report = {
+            'generated_at': datetime.now(timezone.utc).isoformat(),
+            'experiment': 'KIMI/Cursor Signal Validation',
+            'sample_size': len(results),
+            'win_rate': round(win_rate, 2),
+            'avg_roi': round(avg_roi, 2),
+            'wins': len(wins),
+            'losses': len(losses),
+            'winners': [
+              {
+                'symbol': w.get('Symbol'),
+                'roi': w.get('ChangePct'),
+                'date': w.get('Timestamp')
+              } for w in wins[-5:]  # Last 5 wins
+            ],
+            'losers': [
+              {
+                'symbol': l.get('Symbol'),
+                'roi': l.get('ChangePct'),
+                'date': l.get('Timestamp')
+              } for l in losses[-3:]  # Last 3 losses
+            ]
+          }
+          
+          with open('findcryptopairs/predictions/experiment_report.json', 'w') as f:
+            json.dump(report, f, indent=2)
+          
+          print("\n📊 EXPERIMENT REPORT")
+          print(f"Sample Size: {len(results)}")
+          print(f"Win Rate: {win_rate:.1f}%")
+          print(f"Avg ROI: {avg_roi:+.2f}%")
+          print(f"Wins: {len(wins)}, Losses: {len(losses)}")
+          
+          # Hypothesis test
+          if len(results) >= 30:
+            if win_rate >= 60:
+              print("\n✅ HYPOTHESIS VALIDATED: Win rate >= 60%")
+            else:
+              print(f"\n⚠️ Win rate {win_rate:.1f}% below 60% threshold")
+          else:
+            print(f"\n📈 Need {30 - len(results)} more predictions for statistical significance")
+          PYTHON
+      
+      # ─── Commit all changes ───
+      - name: Commit experiment updates
+        run: |
+          git config user.name "GitHub Actions (Experiment)"
+          git config user.email "actions@github.com"
+          
+          git add findcryptopairs/predictions/
+          git add prices_latest.json || true
+          
+          WINS=${{ steps.update.outputs.wins || 0 }}
+          LOSSES=${{ steps.update.outputs.losses || 0 }}
+          ACTIVE=${{ steps.update.outputs.active || 0 }}
+          
+          git commit -m "🧪 Experiment Update: W$WINS L$LOSSES A$ACTIVE | $(date -u '+%H:%M UTC')"
+          
+          # Push with retry
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && break
+            sleep 5
+          done
+          
+          echo "✅ Experiment data committed"
+      
+      # ─── Discord notification ───
+      - name: Notify results
+        if: env.DISCORD_WEBHOOK != ''
+        run: |
+          curl -s -X POST "$DISCORD_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"embeds\": [{
+                \"title\": \"🧪 KIMI/Cursor Experiment Update\",
+                \"color\": 3447003,
+                \"fields\": [
+                  {\"name\": \"Wins\", \"value\": \"${{ steps.update.outputs.wins || 0 }}\", \"inline\": true},
+                  {\"name\": \"Losses\", \"value\": \"${{ steps.update.outputs.losses || 0 }}\", \"inline\": true},
+                  {\"name\": \"Active\", \"value\": \"${{ steps.update.outputs.active || 0 }}\", \"inline\": true}
+                ],
+                \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+              }]
+            }" || true
+      
+      # ─── Upload artifacts ───
+      - name: Upload experiment data
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-data-${{ github.run_number }}
+          path: |
+            findcryptopairs/predictions/experiment_report.json
+            prices_latest.json
+          retention-days: 30

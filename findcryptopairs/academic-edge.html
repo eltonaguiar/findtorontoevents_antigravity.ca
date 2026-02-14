@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Academic Edge - Science-Backed Crypto Trading</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0a1a;color:#e0e0e0;min-height:100vh}
+.header{background:linear-gradient(135deg,#0d1b2a 0%,#1b2838 50%,#0d2847 100%);padding:24px 32px;border-bottom:2px solid #1a3a5c;position:sticky;top:0;z-index:100}
+.header h1{font-size:28px;font-weight:700;background:linear-gradient(90deg,#64b5f6,#42a5f5,#1e88e5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline}
+.header .sub{color:#90a4ae;font-size:14px;margin-top:4px}
+.nav-bar{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;align-items:center}
+.nav-bar a{color:#64b5f6;text-decoration:none;font-size:13px;padding:4px 12px;border:1px solid #1a3a5c;border-radius:4px;transition:all .2s}
+.nav-bar a:hover{background:#1a3a5c;color:#fff}
+.nav-bar .auto-tag{background:#1a3a5c;color:#ffd54f;border:1px solid #ffd54f;font-size:12px;padding:3px 10px;border-radius:12px}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:20px;text-align:center}
+.stat-card .val{font-size:32px;font-weight:800;color:#64b5f6}
+.stat-card .lbl{font-size:12px;color:#6b7280;margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+.stat-card.gold .val{color:#ffd54f}
+.stat-card.green .val{color:#4caf50}
+.stat-card.red .val{color:#ef5350}
+.section{background:#111827;border:1px solid #1f2937;border-radius:12px;margin-bottom:20px;overflow:hidden}
+.section-hdr{padding:16px 20px;background:#1a2332;border-bottom:1px solid #1f2937;display:flex;justify-content:space-between;align-items:center}
+.section-hdr h2{font-size:18px;color:#e0e0e0}
+.section-hdr .badge{font-size:12px;padding:3px 10px;border-radius:12px;font-weight:600}
+.badge-live{background:rgba(76,175,80,.15);color:#4caf50;border:1px solid #4caf50}
+.badge-science{background:rgba(100,181,246,.15);color:#64b5f6;border:1px solid #64b5f6}
+.badge-warn{background:rgba(255,213,79,.15);color:#ffd54f;border:1px solid #ffd54f}
+.section-body{padding:20px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 12px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #1f2937}
+td{padding:10px 12px;font-size:14px;border-bottom:1px solid #1f2937}
+tr:hover{background:rgba(100,181,246,.05)}
+.conf-bar{height:6px;border-radius:3px;background:#1f2937;overflow:hidden;width:100px;display:inline-block;vertical-align:middle;margin-left:6px}
+.conf-fill{height:100%;border-radius:3px;transition:width .3s}
+.pnl-pos{color:#4caf50;font-weight:600}
+.pnl-neg{color:#ef5350;font-weight:600}
+.regime-trend{color:#ffd54f;font-weight:600}
+.regime-range{color:#90a4ae}
+.validated{color:#4caf50;font-size:11px;font-weight:600}
+.untested{color:#757575;font-size:11px}
+.research-card{display:grid;grid-template-columns:60px 1fr;gap:16px;padding:16px;border:1px solid #1f2937;border-radius:10px;margin-bottom:12px;transition:all .2s}
+.research-card:hover{border-color:#64b5f6;background:rgba(100,181,246,.03)}
+.research-num{font-size:28px;font-weight:800;color:#64b5f6;text-align:center;line-height:1}
+.research-meta{font-size:12px;color:#6b7280;margin-top:4px}
+.research-desc{font-size:13px;color:#b0bec5;margin-top:6px;line-height:1.4}
+.research-sharpe{font-size:13px;color:#ffd54f;font-weight:600;margin-top:4px}
+.overfit-meter{display:inline-block;width:50px;height:14px;background:#1f2937;border-radius:7px;overflow:hidden;vertical-align:middle}
+.overfit-fill{height:100%;border-radius:7px}
+.tab-row{display:flex;gap:8px;margin-bottom:16px}
+.tab-btn{padding:8px 18px;border:1px solid #1f2937;border-radius:8px;background:#111827;color:#b0bec5;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
+.tab-btn.active{background:#1a3a5c;color:#64b5f6;border-color:#64b5f6}
+.loading{text-align:center;padding:40px;color:#6b7280}
+.spinner{display:inline-block;width:32px;height:32px;border:3px solid #1f2937;border-top-color:#64b5f6;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:40px;color:#6b7280;font-size:14px}
+.btn{padding:8px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,#1565c0,#42a5f5);color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-secondary{background:#1f2937;color:#b0bec5;border:1px solid #374151}
+.btn-secondary:hover{background:#374151}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Academic Edge</h1>
+  <div class="sub">Science-Backed Crypto Trading Engine - 1000 Papers Analyzed, 8 Validated Strategies</div>
+  <div class="nav-bar">
+    <span class="auto-tag" id="countdown-tag">Auto-refresh in 120s</span>
+    <a href="/findcryptopairs/index.html">Crypto Hub</a>
+    <a href="/findcryptopairs/alpha-hunter.html">Alpha Hunter</a>
+    <a href="/findcryptopairs/pro-signals.html">Pro Signals</a>
+    <a href="/live-monitor/live-monitor.html">Live Monitor</a>
+    <a href="/findstocks/updates.html">Updates</a>
+  </div>
+</div>
+<div class="container">
+  <!-- Stats -->
+  <div class="stats-grid" id="stats-grid">
+    <div class="stat-card"><div class="val" id="st-papers">1000</div><div class="lbl">Papers Analyzed</div></div>
+    <div class="stat-card"><div class="val" id="st-strats">8</div><div class="lbl">Validated Strategies</div></div>
+    <div class="stat-card green"><div class="val" id="st-wr">--</div><div class="lbl">Live Win Rate</div></div>
+    <div class="stat-card gold"><div class="val" id="st-pnl">--</div><div class="lbl">Total P&L</div></div>
+    <div class="stat-card"><div class="val" id="st-active">--</div><div class="lbl">Active Signals</div></div>
+    <div class="stat-card"><div class="val" id="st-pairs">55+</div><div class="lbl">Pairs Scanned</div></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-row">
+    <button class="tab-btn active" onclick="showTab('signals')">Live Signals</button>
+    <button class="tab-btn" onclick="showTab('walkforward')">Walk-Forward Results</button>
+    <button class="tab-btn" onclick="showTab('research')">Research Sources</button>
+    <button class="tab-btn" onclick="showTab('audit')">Audit Trail</button>
+  </div>
+
+  <!-- Signals Tab -->
+  <div id="tab-signals" class="section">
+    <div class="section-hdr"><h2>Active Signals</h2><span class="badge badge-live">LIVE</span></div>
+    <div class="section-body" id="signals-body"><div class="loading"><div class="spinner"></div><p>Loading signals...</p></div></div>
+  </div>
+  <div id="tab-signals-history" class="section">
+    <div class="section-hdr"><h2>Signal History (Resolved)</h2><span class="badge badge-science">TRACKED</span></div>
+    <div class="section-body" id="history-body"><div class="loading"><div class="spinner"></div></div></div>
+  </div>
+
+  <!-- Walk-Forward Tab -->
+  <div id="tab-walkforward" class="section" style="display:none">
+    <div class="section-hdr"><h2>Walk-Forward Validation Results</h2><span class="badge badge-science">SCIENCE</span></div>
+    <div class="section-body" id="wf-body">
+      <p style="color:#6b7280;font-size:13px;margin-bottom:16px">70% train / 30% out-of-sample test. Overfit ratio: test_wr / train_wr (closer to 1.0 = less overfit).</p>
+      <div id="wf-table"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+  </div>
+
+  <!-- Research Tab -->
+  <div id="tab-research" class="section" style="display:none">
+    <div class="section-hdr"><h2>Research Sources (1000 Papers Distilled)</h2><span class="badge badge-science">PEER-REVIEWED</span></div>
+    <div class="section-body" id="research-body"><div class="loading"><div class="spinner"></div></div></div>
+  </div>
+
+  <!-- Audit Tab -->
+  <div id="tab-audit" class="section" style="display:none">
+    <div class="section-hdr"><h2>Audit Trail</h2><span class="badge badge-warn">TRANSPARENCY</span></div>
+    <div class="section-body" id="audit-body"><div class="loading"><div class="spinner"></div></div></div>
+  </div>
+
+  <!-- Actions -->
+  <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap">
+    <button class="btn btn-primary" onclick="runAction('walkforward')">Run Walk-Forward</button>
+    <button class="btn btn-primary" onclick="runAction('scan')">Run Live Scan</button>
+    <button class="btn btn-primary" onclick="runAction('monitor')">Monitor Signals</button>
+    <button class="btn btn-primary" onclick="runAction('full_run')">Full Pipeline</button>
+    <button class="btn btn-secondary" onclick="loadAll()">Refresh Data</button>
+  </div>
+</div>
+
+<script>
+var API = '/findcryptopairs/api/academic_edge.php';
+var TABS = ['signals','walkforward','research','audit'];
+var REFRESH_SEC = 120;
+var countdown = REFRESH_SEC;
+var refreshTimer = null;
+
+function showTab(name) {
+    TABS.forEach(function(t) {
+        var el = document.getElementById('tab-' + t);
+        if (el) el.style.display = (t === name) ? '' : 'none';
+        var hist = document.getElementById('tab-' + t + '-history');
+        if (hist) hist.style.display = (t === name) ? '' : 'none';
+    });
+    document.querySelectorAll('.tab-btn').forEach(function(b,i) { b.classList.toggle('active', TABS[i] === name); });
+}
+
+function loadSignals() {
+    fetch(API + '?action=signals').then(function(r){return r.json()}).then(function(d) {
+        if (!d.ok) return;
+        document.getElementById('st-wr').textContent = d.stats.win_rate + '%';
+        document.getElementById('st-pnl').textContent = (d.stats.total_pnl >= 0 ? '+' : '') + d.stats.total_pnl + '%';
+        document.getElementById('st-active').textContent = d.active.length;
+        // Active signals
+        if (d.active.length === 0) {
+            document.getElementById('signals-body').innerHTML = '<div class="empty">No active signals. Run a scan to find new opportunities.</div>';
+        } else {
+            var h = '<table><tr><th>Pair</th><th>Entry</th><th>Current</th><th>P&L</th><th>TP / SL</th><th>Confidence</th><th>Regime</th><th>Strategy</th><th>Age</th></tr>';
+            d.active.forEach(function(s) {
+                var pnl = parseFloat(s.pnl_pct) || 0;
+                var conf = parseFloat(s.confidence) || 0;
+                var age = timeSince(s.created_at);
+                h += '<tr><td><strong>' + s.pair + '</strong></td>';
+                h += '<td>$' + fmtPrice(s.entry_price) + '</td>';
+                h += '<td>$' + fmtPrice(s.current_price || s.entry_price) + '</td>';
+                h += '<td class="' + (pnl >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (pnl >= 0 ? '+' : '') + pnl.toFixed(2) + '%</td>';
+                h += '<td>+' + parseFloat(s.tp_pct).toFixed(1) + '% / -' + parseFloat(s.sl_pct).toFixed(1) + '%</td>';
+                h += '<td>' + conf.toFixed(0) + '%<div class="conf-bar"><div class="conf-fill" style="width:' + conf + '%;background:' + confColor(conf) + '"></div></div></td>';
+                h += '<td class="' + (s.regime === 'TRENDING' ? 'regime-trend' : 'regime-range') + '">' + (s.regime||'--') + '</td>';
+                h += '<td style="font-size:11px;max-width:200px">' + (s.strategy_name || s.strategy_id) + '</td>';
+                h += '<td style="font-size:12px;color:#6b7280">' + age + '</td></tr>';
+            });
+            h += '</table>';
+            document.getElementById('signals-body').innerHTML = h;
+        }
+        // History
+        if (d.history.length === 0) {
+            document.getElementById('history-body').innerHTML = '<div class="empty">No resolved signals yet.</div>';
+        } else {
+            var hh = '<table><tr><th>Pair</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Exit Reason</th><th>Strategy</th><th>Date</th></tr>';
+            d.history.forEach(function(s) {
+                var pnl = parseFloat(s.pnl_pct) || 0;
+                hh += '<tr><td><strong>' + s.pair + '</strong></td>';
+                hh += '<td>$' + fmtPrice(s.entry_price) + '</td>';
+                hh += '<td>$' + fmtPrice(s.current_price) + '</td>';
+                hh += '<td class="' + (pnl >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (pnl >= 0 ? '+' : '') + pnl.toFixed(2) + '%</td>';
+                hh += '<td>' + (s.exit_reason || '--') + '</td>';
+                hh += '<td style="font-size:11px">' + (s.strategy_name || s.strategy_id) + '</td>';
+                hh += '<td style="font-size:12px;color:#6b7280">' + (s.resolved_at || s.created_at) + '</td></tr>';
+            });
+            hh += '</table>';
+            document.getElementById('history-body').innerHTML = hh;
+        }
+    }).catch(function(e) {
+        document.getElementById('signals-body').innerHTML = '<div class="empty">Error loading signals: ' + e.message + '</div>';
+    });
+}
+
+function loadLeaderboard() {
+    fetch(API + '?action=leaderboard').then(function(r){return r.json()}).then(function(d) {
+        if (!d.ok || !d.leaderboard || d.leaderboard.length === 0) {
+            document.getElementById('wf-table').innerHTML = '<div class="empty">No walk-forward results yet. Click "Run Walk-Forward" to start.</div>';
+            return;
+        }
+        var train = {}; var test = {};
+        d.leaderboard.forEach(function(r) {
+            if (parseInt(r.is_train)) train[r.strategy_id] = r;
+            else test[r.strategy_id] = r;
+        });
+        var h = '<table><tr><th>Strategy</th><th>Train WR</th><th>Test WR</th><th>Overfit Ratio</th><th>Train Trades</th><th>Test Trades</th><th>Avg PF</th><th>Avg Sharpe</th></tr>';
+        Object.keys(train).forEach(function(sid) {
+            var tr = train[sid]; var te = test[sid] || {};
+            var tr_wr = parseFloat(tr.avg_wr) || 0;
+            var te_wr = parseFloat(te.avg_wr) || 0;
+            var ratio = (tr_wr > 0) ? (te_wr / tr_wr).toFixed(2) : '--';
+            var ratioNum = parseFloat(ratio) || 0;
+            var ratioColor = (ratioNum >= 0.8) ? '#4caf50' : (ratioNum >= 0.5 ? '#ffd54f' : '#ef5350');
+            h += '<tr><td><strong>' + (tr.strategy_name||sid) + '</strong></td>';
+            h += '<td>' + tr_wr.toFixed(1) + '%</td>';
+            h += '<td class="' + (te_wr >= 40 ? 'pnl-pos' : 'pnl-neg') + '">' + te_wr.toFixed(1) + '%</td>';
+            h += '<td><div class="overfit-meter"><div class="overfit-fill" style="width:' + Math.min(ratioNum*100,100) + '%;background:' + ratioColor + '"></div></div> ' + ratio + '</td>';
+            h += '<td>' + (parseInt(tr.total_trades)||0) + '</td>';
+            h += '<td>' + (parseInt(te.total_trades)||0) + '</td>';
+            h += '<td>' + (parseFloat(te.avg_pf)||0).toFixed(2) + '</td>';
+            h += '<td>' + (parseFloat(te.avg_sharpe)||0).toFixed(2) + '</td></tr>';
+        });
+        h += '</table>';
+        document.getElementById('wf-table').innerHTML = h;
+    }).catch(function() {
+        document.getElementById('wf-table').innerHTML = '<div class="empty">Walk-forward data unavailable.</div>';
+    });
+}
+
+function loadResearch() {
+    fetch(API + '?action=research').then(function(r){return r.json()}).then(function(d) {
+        if (!d.ok) return;
+        var h = '';
+        d.research_sources.forEach(function(r, idx) {
+            h += '<div class="research-card">';
+            h += '<div><div class="research-num">S' + (idx+1) + '</div></div>';
+            h += '<div><strong>' + r.name + '</strong>';
+            h += '<div class="research-meta">Paper: ' + r.paper + '</div>';
+            h += '<div class="research-desc">' + r.description + '</div>';
+            if (r.sharpe_reported > 0) h += '<div class="research-sharpe">Reported Sharpe: ' + r.sharpe_reported + '</div>';
+            h += '</div></div>';
+        });
+        document.getElementById('research-body').innerHTML = h;
+    });
+}
+
+function loadAudit() {
+    fetch(API + '?action=audit').then(function(r){return r.json()}).then(function(d) {
+        if (!d.ok) return;
+        var h = '';
+        if (d.audit_logs.length > 0) {
+            h += '<h3 style="margin-bottom:12px;color:#64b5f6">System Logs</h3><table><tr><th>Action</th><th>Details</th><th>Time</th></tr>';
+            d.audit_logs.forEach(function(l) { h += '<tr><td>' + l.action + '</td><td style="font-size:12px;max-width:400px;word-break:break-all">' + l.details + '</td><td style="font-size:12px">' + l.created_at + '</td></tr>'; });
+            h += '</table>';
+        }
+        if (d.signals.length > 0) {
+            h += '<h3 style="margin:20px 0 12px;color:#64b5f6">All Signals (Most Recent)</h3><table><tr><th>Pair</th><th>Strategy</th><th>Status</th><th>P&L</th><th>Created</th></tr>';
+            d.signals.forEach(function(s) {
+                var pnl = parseFloat(s.pnl_pct) || 0;
+                h += '<tr><td>' + s.pair + '</td><td style="font-size:12px">' + (s.strategy_name||s.strategy_id) + '</td>';
+                h += '<td>' + s.status + '</td>';
+                h += '<td class="' + (pnl >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (pnl !== 0 ? (pnl >= 0 ? '+' : '') + pnl.toFixed(2) + '%' : '--') + '</td>';
+                h += '<td style="font-size:12px">' + s.created_at + '</td></tr>';
+            });
+            h += '</table>';
+        }
+        if (!h) h = '<div class="empty">No audit data yet.</div>';
+        document.getElementById('audit-body').innerHTML = h;
+    });
+}
+
+function runAction(action) {
+    var btn = event.target; btn.disabled = true; btn.textContent = 'Running...';
+    fetch(API + '?action=' + action).then(function(r){return r.json()}).then(function(d) {
+        btn.disabled = false; btn.textContent = action.charAt(0).toUpperCase() + action.slice(1);
+        if (d.ok) { loadAll(); alert('Done! Elapsed: ' + (d.elapsed_ms||0) + 'ms'); }
+        else alert('Error: ' + (d.error||'unknown'));
+    }).catch(function(e) { btn.disabled = false; btn.textContent = action; alert('Failed: ' + e.message); });
+}
+
+function loadAll() { loadSignals(); loadLeaderboard(); loadResearch(); loadAudit(); }
+
+function fmtPrice(p) { var v = parseFloat(p); if (v >= 100) return v.toFixed(2); if (v >= 1) return v.toFixed(4); if (v >= 0.01) return v.toFixed(6); return v.toFixed(8); }
+function confColor(c) { if (c >= 70) return '#4caf50'; if (c >= 50) return '#ffd54f'; return '#ef5350'; }
+function timeSince(d) {
+    if (!d) return '--';
+    var now = new Date(); var then = new Date(d.replace(/-/g,'/'));
+    var h = Math.floor((now - then) / 3600000);
+    if (h < 1) return '<1h'; if (h < 24) return h + 'h'; return Math.floor(h/24) + 'd ' + (h%24) + 'h';
+}
+
+function startAutoRefresh() {
+    clearInterval(refreshTimer);
+    countdown = REFRESH_SEC;
+    refreshTimer = setInterval(function() {
+        countdown--;
+        var el = document.getElementById('countdown-tag');
+        if (el) el.textContent = 'Auto-refresh in ' + countdown + 's';
+        if (countdown <= 0) { countdown = REFRESH_SEC; loadAll(); }
+    }, 1000);
+}
+
+loadAll();
+startAutoRefresh();
+</script>
+</body>
+</html>
