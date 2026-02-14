@@ -50,6 +50,7 @@
     <div style="margin-bottom: 1.5rem;">
         <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #555; margin-bottom: 8px;">Quick Links &mdash; All Dashboards</div>
         <div class="quick-links">
+            <a href="/findcryptopairs/hybrid-engine.html" style="border-color:rgba(88,166,255,0.4);color:#58a6ff">Hybrid Engine (8-Model Ensemble)</a>
             <a href="/findcryptopairs/spike-forensics.html" style="border-color:rgba(187,134,252,0.4);color:#bb86fc">Spike Forensics (BTC/ETH)</a>
             <a href="/findcryptopairs/academic-edge.html" style="border-color:rgba(100,181,246,0.4);color:#64b5f6">Academic Edge (1000 Papers)</a>
             <a href="/findcryptopairs/alpha-hunter.html" style="border-color:rgba(255,215,0,0.4);color:#ffd700">Alpha Hunter</a>
@@ -67,6 +68,27 @@
             <a href="/live-monitor/smart-money.html">Smart Money</a>
             <a href="/live-monitor/sports-betting.html">Sports Betting</a>
             <a href="/findstocks/portfolio2/consolidated.html">Stock Picks</a>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 14, 2026 — Hybrid Engine -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry" style="border-color: rgba(88, 166, 255, 0.5); box-shadow: 0 0 16px rgba(88, 166, 255, 0.1);">
+        <div class="update-date">February 14, 2026</div>
+        <div class="update-title">Hybrid Engine &mdash; 8-Model Ensemble with Adaptive Weights &amp; Regime Detection</div>
+        <div class="update-body">
+            <p><span class="tag tag-challenge">Challenge</span> Obliterate existing Sharpe ratios by combining the best of every approach into one ensemble. <strong>8 sub-models vote</strong>, weighted by recent performance, with regime-aware position sizing and walk-forward validation.</p>
+            <ul>
+                <li><span class="tag tag-new">New</span> <strong><a href="/findcryptopairs/hybrid-engine.html">Hybrid Engine Dashboard</a></strong> &mdash; 8-model ensemble with live Sharpe comparison against all other engines (Alpha Hunter, Academic Edge, Spike Forensics)</li>
+                <li><span class="tag tag-results">Results</span> <strong>32 engineered features</strong>: 8 Momentum (RSI-14, RSI-7, RSI slope, MACD hist, MACD slope, Stochastic, StochRSI, ROC) + 6 Trend (EMA crosses, ADX, DI diff, LR slope) + 6 Volatility (ATR%, BB bandwidth/position/squeeze, KC squeeze, HVol) + 6 Volume (ratio, trend, OBV slope/divergence, MFI, VWAP dist) + 6 Structure (higher lows, lower highs, range compress, RSI divergence, support proximity, body ratio)</li>
+                <li><span class="tag tag-results">Results</span> <strong>8 sub-models</strong>: M1 Transformer Proxy (multi-TF consensus), M2 RL Agent Proxy (reward-shaped adaptive), M3 Statistical Arbitrage (mean revert + regime filter), M4 ML Ensemble Proxy (feature-weighted scoring), M5 Volume-Weighted Momentum, M6 BB-KC Squeeze Breakout, M7 Multi-Divergence Detector, M8 Layered Confirmation Hierarchy</li>
+                <li><span class="tag tag-improvement">Innovation</span> <strong>Regime detection</strong>: HIGH_VOL (ADX&gt;30 + HVol&gt;3%), TRENDING (ADX&gt;25), LOW_VOL (HVol&lt;1.5%), NORMAL. Position size reduced to 30% in high-volatility regimes.</li>
+                <li><span class="tag tag-improvement">Innovation</span> <strong>Half-life position sizing</strong>: pos = (1 - e^(-k)) / sigma. Scales inversely with volatility. Capped at 1.0x, floored at 0.05x.</li>
+                <li><span class="tag tag-improvement">Innovation</span> <strong>Adaptive weights</strong>: Model weights update after each backtest based on out-of-sample Sharpe ratios. Better-performing models get more voting power.</li>
+                <li><span class="tag tag-results">Validation</span> <strong>Walk-forward with purge gap</strong>: 70% train / 30% test with 5-candle purge between splits to prevent lookahead bias</li>
+                <li><span class="tag tag-auto">Auto</span> <strong>GitHub Actions</strong>: Full pipeline (backtest + scan) every 8h, quick scan + monitor every 2h</li>
+            </ul>
         </div>
     </div>
 
@@ -335,6 +357,7 @@
         <div class="update-body">
             <p>All systems below run automatically 24/7 via GitHub Actions:</p>
             <ul>
+                <li><span class="tag tag-auto">Every 2h</span> <strong>Hybrid Engine</strong> scan + monitor (full pipeline every 8h)</li>
                 <li><span class="tag tag-auto">Every 2h</span> <strong>Spike Forensics</strong> BTC/ETH check + monitor (full pipeline every 6h)</li>
                 <li><span class="tag tag-auto">Every 2h</span> <strong>Academic Edge</strong> live scan (walk-forward + full pipeline every 6h)</li>
                 <li><span class="tag tag-auto">Every 30m</span> <strong>Alpha Hunter</strong> quick scan (full pipeline every 4h)</li>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hybrid Engine - Multi-Model Ensemble</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#08090f;color:#e0e0e0;min-height:100vh}
+.header{background:linear-gradient(135deg,#0d1117 0%,#161b22 50%,#0d1117 100%);padding:24px 32px;border-bottom:2px solid #30363d;position:sticky;top:0;z-index:100}
+.header h1{font-size:28px;font-weight:700;background:linear-gradient(90deg,#58a6ff,#1f6feb,#388bfd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline}
+.header .sub{color:#8b949e;font-size:14px;margin-top:4px}
+.nav-bar{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;align-items:center}
+.nav-bar a{color:#58a6ff;text-decoration:none;font-size:13px;padding:4px 12px;border:1px solid #30363d;border-radius:4px;transition:all .2s}
+.nav-bar a:hover{background:#1f6feb33;color:#fff}
+.auto-tag{background:#1f6feb22;color:#ffd54f;border:1px solid #ffd54f;font-size:12px;padding:3px 10px;border-radius:12px}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+.compare-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:24px}
+.compare-card{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:18px;text-align:center;transition:all .3s}
+.compare-card.winner{border-color:#3fb950;box-shadow:0 0 12px rgba(63,185,80,.15)}
+.compare-card .engine-name{font-size:14px;font-weight:700;color:#c9d1d9;margin-bottom:8px}
+.compare-card .sharpe-val{font-size:36px;font-weight:800;color:#58a6ff}
+.compare-card .sharpe-label{font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:1px}
+.compare-card .mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;font-size:12px;color:#8b949e}
+.compare-card .mini-stats strong{color:#c9d1d9}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+.stat-box{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:14px;text-align:center}
+.stat-box .val{font-size:26px;font-weight:800;color:#58a6ff}
+.stat-box .lbl{font-size:11px;color:#8b949e;margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+.stat-box.gold .val{color:#ffd54f}
+.stat-box.green .val{color:#3fb950}
+.section{background:#161b22;border:1px solid #30363d;border-radius:12px;margin-bottom:20px;overflow:hidden}
+.section-hdr{padding:14px 20px;background:#0d1117;border-bottom:1px solid #30363d;display:flex;justify-content:space-between;align-items:center}
+.section-hdr h2{font-size:17px;color:#c9d1d9}
+.badge{font-size:11px;padding:3px 10px;border-radius:12px;font-weight:600}
+.badge-live{background:rgba(63,185,80,.15);color:#3fb950;border:1px solid #3fb950}
+.badge-hybrid{background:rgba(31,111,235,.15);color:#58a6ff;border:1px solid #58a6ff}
+.badge-adapt{background:rgba(255,213,79,.15);color:#ffd54f;border:1px solid #ffd54f}
+.section-body{padding:16px 20px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:8px 10px;font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #30363d}
+td{padding:8px 10px;font-size:13px;border-bottom:1px solid #21262d}
+tr:hover{background:rgba(88,166,255,.04)}
+.pnl-pos{color:#3fb950;font-weight:600}
+.pnl-neg{color:#f85149;font-weight:600}
+.weight-bar{height:6px;border-radius:3px;background:#21262d;overflow:hidden;width:80px;display:inline-block;vertical-align:middle;margin-left:6px}
+.weight-fill{height:100%;border-radius:3px;background:#58a6ff}
+.conf-bar{height:6px;border-radius:3px;background:#21262d;overflow:hidden;width:80px;display:inline-block;vertical-align:middle;margin-left:6px}
+.conf-fill{height:100%;border-radius:3px}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.feat-card{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:10px;font-size:12px}
+.feat-cat{color:#58a6ff;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:1px}
+.feat-name{color:#c9d1d9;font-weight:600;margin-top:2px}
+.feat-desc{color:#8b949e;font-size:11px}
+.tab-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.tab-btn{padding:7px 16px;border:1px solid #30363d;border-radius:8px;background:#161b22;color:#8b949e;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
+.tab-btn.active{background:#1f6feb33;color:#58a6ff;border-color:#58a6ff}
+.btn{padding:8px 18px;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,#1f6feb,#58a6ff);color:#fff}
+.btn-primary:hover{opacity:.9}
+.btn-secondary{background:#21262d;color:#8b949e;border:1px solid #30363d}
+.loading{text-align:center;padding:40px;color:#8b949e}
+.spinner{display:inline-block;width:32px;height:32px;border:3px solid #30363d;border-top-color:#58a6ff;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:30px;color:#8b949e;font-size:14px}
+.regime-high{color:#f85149;font-weight:600}
+.regime-trend{color:#ffd54f;font-weight:600}
+.regime-low{color:#3fb950;font-weight:600}
+.regime-normal{color:#8b949e}
+</style>
+</head>
+<body>
+<div class="header">
+    <h1>Hybrid Engine</h1>
+    <div class="sub">8-Model Ensemble | 32 Features | Regime Detection | Walk-Forward Validated | Adaptive Weights</div>
+    <div class="nav-bar">
+        <span class="auto-tag" id="cd-tag">Auto-refresh in 120s</span>
+        <a href="/findcryptopairs/index.html">Crypto Hub</a>
+        <a href="/findcryptopairs/spike-forensics.html">Spike Forensics</a>
+        <a href="/findcryptopairs/academic-edge.html">Academic Edge</a>
+        <a href="/findcryptopairs/alpha-hunter.html">Alpha Hunter</a>
+        <a href="/findcryptopairs/pro-signals.html">Pro Signals</a>
+        <a href="/findstocks/updates.html">Updates</a>
+    </div>
+</div>
+<div class="container">
+    <!-- Engine Comparison -->
+    <div class="compare-grid" id="compare-grid">
+        <div class="compare-card"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-box"><div class="val" id="st-models">8</div><div class="lbl">Sub-Models</div></div>
+        <div class="stat-box"><div class="val" id="st-features">32</div><div class="lbl">Features</div></div>
+        <div class="stat-box green"><div class="val" id="st-wr">--</div><div class="lbl">Live Win Rate</div></div>
+        <div class="stat-box gold"><div class="val" id="st-sharpe">--</div><div class="lbl">Live Sharpe</div></div>
+        <div class="stat-box"><div class="val" id="st-active">--</div><div class="lbl">Active Signals</div></div>
+        <div class="stat-box"><div class="val" id="st-pnl">--</div><div class="lbl">Total P&L</div></div>
+    </div>
+    <!-- Tabs -->
+    <div class="tab-row">
+        <button class="tab-btn active" onclick="showTab('signals')">Live Signals</button>
+        <button class="tab-btn" onclick="showTab('weights')">Model Weights</button>
+        <button class="tab-btn" onclick="showTab('backtest')">Walk-Forward Results</button>
+        <button class="tab-btn" onclick="showTab('features')">32 Features</button>
+        <button class="tab-btn" onclick="showTab('audit')">Audit</button>
+    </div>
+    <!-- Signals -->
+    <div id="tab-signals">
+        <div class="section"><div class="section-hdr"><h2>Active Signals</h2><span class="badge badge-live">LIVE</span></div>
+        <div class="section-body" id="signals-body"><div class="loading"><div class="spinner"></div></div></div></div>
+        <div class="section"><div class="section-hdr"><h2>Resolved Signals</h2><span class="badge badge-hybrid">TRACKED</span></div>
+        <div class="section-body" id="history-body"><div class="loading"><div class="spinner"></div></div></div></div>
+    </div>
+    <!-- Weights -->
+    <div id="tab-weights" style="display:none">
+        <div class="section"><div class="section-hdr"><h2>Adaptive Model Weights (Performance-Based)</h2><span class="badge badge-adapt">ADAPTIVE</span></div>
+        <div class="section-body" id="weights-body"><div class="loading"><div class="spinner"></div></div></div></div>
+    </div>
+    <!-- Backtest -->
+    <div id="tab-backtest" style="display:none">
+        <div class="section"><div class="section-hdr"><h2>Walk-Forward Backtest (70/30 Purged Split)</h2><span class="badge badge-hybrid">SCIENCE</span></div>
+        <div class="section-body" id="bt-body"><div class="loading"><div class="spinner"></div></div></div></div>
+    </div>
+    <!-- Features -->
+    <div id="tab-features" style="display:none">
+        <div class="section"><div class="section-hdr"><h2>32 Engineered Features</h2><span class="badge badge-hybrid">FEATURE SET</span></div>
+        <div class="section-body" id="feat-body"><div class="loading"><div class="spinner"></div></div></div></div>
+    </div>
+    <!-- Audit -->
+    <div id="tab-audit" style="display:none">
+        <div class="section"><div class="section-hdr"><h2>Audit Trail</h2><span class="badge badge-adapt">TRANSPARENCY</span></div>
+        <div class="section-body" id="audit-body"><div class="loading"><div class="spinner"></div></div></div></div>
+    </div>
+    <!-- Actions -->
+    <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="runAction('full_run')">Full Pipeline (Backtest + Scan)</button>
+        <button class="btn btn-primary" onclick="runAction('scan')">Live Scan</button>
+        <button class="btn btn-primary" onclick="runAction('monitor')">Monitor Signals</button>
+        <button class="btn btn-secondary" onclick="loadAll()">Refresh</button>
+    </div>
+</div>
+<script>
+var API='/findcryptopairs/api/hybrid_engine.php';
+var TABS=['signals','weights','backtest','features','audit'];
+var RS=120,cd=RS;
+function showTab(n){TABS.forEach(function(t){var e=document.getElementById('tab-'+t);if(e)e.style.display=(t===n)?'':'none';});document.querySelectorAll('.tab-btn').forEach(function(b,i){b.classList.toggle('active',TABS[i]===n);});}
+function loadCompare(){
+    fetch(API+'?action=compare').then(function(r){return r.json()}).then(function(d){
+        if(!d.ok)return;var h='';var maxS=0;
+        d.comparison.forEach(function(e){if(e.sharpe>maxS)maxS=e.sharpe;});
+        d.comparison.forEach(function(e){
+            var isW=(e.sharpe>=maxS&&maxS>0);
+            h+='<div class="compare-card'+(isW?' winner':'')+'">';
+            h+='<div class="engine-name">'+e.name+(isW?' (LEADER)':'')+'</div>';
+            h+='<div class="sharpe-val">'+e.sharpe.toFixed(2)+'</div><div class="sharpe-label">Sharpe Ratio</div>';
+            h+='<div class="mini-stats"><div>WR: <strong>'+e.wr+'%</strong></div><div>Trades: <strong>'+e.trades+'</strong></div>';
+            h+='<div>P&L: <strong class="'+(e.pnl>=0?'pnl-pos':'pnl-neg')+'">'+(e.pnl>=0?'+':'')+e.pnl+'%</strong></div><div></div></div>';
+            h+='</div>';
+        });
+        document.getElementById('compare-grid').innerHTML=h;
+    }).catch(function(){document.getElementById('compare-grid').innerHTML='<div class="compare-card"><div class="empty">Run Full Pipeline first.</div></div>';});
+}
+function loadSignals(){
+    fetch(API+'?action=signals').then(function(r){return r.json()}).then(function(d){
+        if(!d.ok)return;
+        document.getElementById('st-wr').textContent=d.stats.win_rate+'%';
+        document.getElementById('st-sharpe').textContent=d.stats.sharpe_live;
+        document.getElementById('st-active').textContent=d.active.length;
+        document.getElementById('st-pnl').textContent=(d.stats.total_pnl>=0?'+':'')+d.stats.total_pnl+'%';
+        if(d.active.length>0){
+            var h='<table><tr><th>Pair</th><th>Entry</th><th>Current</th><th>P&L</th><th>Confidence</th><th>Regime</th><th>Pos Size</th><th>Models</th><th>Age</th></tr>';
+            d.active.forEach(function(s){
+                var pnl=parseFloat(s.pnl_pct)||0;var conf=parseFloat(s.confidence)||0;
+                var rc=s.regime==='HIGH_VOL'?'regime-high':(s.regime==='TRENDING'?'regime-trend':(s.regime==='LOW_VOL'?'regime-low':'regime-normal'));
+                var cc=conf>=70?'#3fb950':(conf>=50?'#ffd54f':'#f85149');
+                h+='<tr><td><strong>'+s.pair+'</strong></td>';
+                h+='<td>$'+fp(s.entry_price)+'</td><td>$'+fp(s.current_price||s.entry_price)+'</td>';
+                h+='<td class="'+(pnl>=0?'pnl-pos':'pnl-neg')+'">'+(pnl>=0?'+':'')+pnl.toFixed(2)+'%</td>';
+                h+='<td>'+conf.toFixed(0)+'%<div class="conf-bar"><div class="conf-fill" style="width:'+conf+'%;background:'+cc+'"></div></div></td>';
+                h+='<td class="'+rc+'">'+s.regime+'</td>';
+                h+='<td>'+parseFloat(s.position_size).toFixed(2)+'</td>';
+                h+='<td>'+s.models_agree+'/8</td>';
+                h+='<td style="font-size:12px;color:#8b949e">'+ts(s.created_at)+'</td></tr>';
+            });h+='</table>';document.getElementById('signals-body').innerHTML=h;
+        }else{document.getElementById('signals-body').innerHTML='<div class="empty">No active signals. Run a scan.</div>';}
+        if(d.history.length>0){
+            var hh='<table><tr><th>Pair</th><th>P&L</th><th>Exit</th><th>Models</th><th>Regime</th><th>Date</th></tr>';
+            d.history.forEach(function(s){var pnl=parseFloat(s.pnl_pct)||0;
+                hh+='<tr><td>'+s.pair+'</td><td class="'+(pnl>=0?'pnl-pos':'pnl-neg')+'">'+(pnl>=0?'+':'')+pnl.toFixed(2)+'%</td>';
+                hh+='<td>'+s.exit_reason+'</td><td>'+s.models_agree+'/8</td><td>'+s.regime+'</td>';
+                hh+='<td style="font-size:12px">'+s.resolved_at+'</td></tr>';});
+            hh+='</table>';document.getElementById('history-body').innerHTML=hh;
+        }else{document.getElementById('history-body').innerHTML='<div class="empty">No resolved signals yet.</div>';}
+        // Weights
+        if(d.weights&&d.weights.length>0){
+            var wh='<table><tr><th>Model</th><th>Weight</th><th>Visual</th><th>Recent Sharpe</th><th>Recent WR</th></tr>';
+            d.weights.forEach(function(w){
+                var wp=parseFloat(w.weight)*100;
+                wh+='<tr><td><strong>'+w.model_id+'</strong></td><td>'+parseFloat(w.weight).toFixed(4)+'</td>';
+                wh+='<td><div class="weight-bar"><div class="weight-fill" style="width:'+Math.min(wp*5,100)+'%"></div></div> '+wp.toFixed(1)+'%</td>';
+                wh+='<td>'+parseFloat(w.recent_sharpe).toFixed(3)+'</td>';
+                wh+='<td>'+parseFloat(w.recent_wr).toFixed(1)+'%</td></tr>';});
+            wh+='</table>';document.getElementById('weights-body').innerHTML=wh;
+        }
+    });
+}
+function loadFeatures(){
+    fetch(API+'?action=features').then(function(r){return r.json()}).then(function(d){
+        if(!d.ok)return;var h='<div class="feature-grid">';
+        d.features.forEach(function(f){
+            h+='<div class="feat-card"><div class="feat-cat">'+f.cat+'</div><div class="feat-name">'+f.name+'</div><div class="feat-desc">'+f.desc+'</div></div>';
+        });h+='</div>';document.getElementById('feat-body').innerHTML=h;
+    });
+}
+function loadBacktest(){
+    fetch(API+'?action=leaderboard').then(function(r){return r.json()}).then(function(d){
+        if(!d.ok||!d.leaderboard||d.leaderboard.length===0){document.getElementById('bt-body').innerHTML='<div class="empty">No backtest data. Run Full Pipeline first.</div>';return;}
+        var train={},test={};
+        d.leaderboard.forEach(function(r){if(parseInt(r.is_train))train[r.model_id]=r;else test[r.model_id]=r;});
+        var h='<table><tr><th>Model</th><th>Train WR</th><th>Test WR</th><th>Overfit</th><th>Train Sharpe</th><th>Test Sharpe</th><th>Trades</th></tr>';
+        Object.keys(train).forEach(function(id){
+            var tr=train[id],te=test[id]||{};
+            var tw=parseFloat(tr.avg_wr)||0,ew=parseFloat(te.avg_wr)||0;
+            var ratio=(tw>0)?(ew/tw).toFixed(2):'--';
+            var ts_s=parseFloat(tr.avg_sharpe)||0,es_s=parseFloat(te.avg_sharpe)||0;
+            h+='<tr><td><strong>'+(tr.model_name||id)+'</strong></td>';
+            h+='<td>'+tw.toFixed(1)+'%</td><td class="'+(ew>=40?'pnl-pos':'pnl-neg')+'">'+ew.toFixed(1)+'%</td>';
+            h+='<td>'+ratio+'</td>';
+            h+='<td>'+ts_s.toFixed(3)+'</td><td>'+es_s.toFixed(3)+'</td>';
+            h+='<td>'+(parseInt(te.total_trades)||0)+'</td></tr>';
+        });h+='</table>';document.getElementById('bt-body').innerHTML=h;
+    });
+}
+function loadAudit(){
+    fetch(API+'?action=audit').then(function(r){return r.json()}).then(function(d){
+        if(!d.ok)return;var h='';
+        if(d.audit_logs&&d.audit_logs.length>0){
+            h+='<h3 style="margin-bottom:10px;color:#58a6ff">System Logs</h3><table><tr><th>Action</th><th>Details</th><th>Time</th></tr>';
+            d.audit_logs.forEach(function(l){h+='<tr><td>'+l.action+'</td><td style="font-size:11px;max-width:400px;word-break:break-all">'+l.details+'</td><td style="font-size:12px">'+l.created_at+'</td></tr>';});
+            h+='</table>';
+        }
+        if(!h)h='<div class="empty">No audit data yet.</div>';
+        document.getElementById('audit-body').innerHTML=h;
+    });
+}
+function runAction(a){var b=event.target;b.disabled=true;b.textContent='Running...';
+    fetch(API+'?action='+a).then(function(r){return r.json()}).then(function(d){
+        b.disabled=false;b.textContent=a;if(d.ok){loadAll();alert('Done! '+(d.elapsed_ms||0)+'ms');}else alert('Error: '+(d.error||''));
+    }).catch(function(e){b.disabled=false;b.textContent=a;alert('Error: '+e.message);});}
+function loadAll(){loadCompare();loadSignals();loadFeatures();loadBacktest();loadAudit();}
+function fp(p){var v=parseFloat(p);if(v>=100)return v.toFixed(2);if(v>=1)return v.toFixed(4);if(v>=0.01)return v.toFixed(6);return v.toFixed(8);}
+function ts(d){if(!d)return'--';var n=new Date(),t=new Date(d.replace(/-/g,'/'));var h=Math.floor((n-t)/3600000);if(h<1)return'<1h';if(h<24)return h+'h';return Math.floor(h/24)+'d '+(h%24)+'h';}
+setInterval(function(){cd--;var e=document.getElementById('cd-tag');if(e)e.textContent='Auto-refresh in '+cd+'s';if(cd<=0){cd=RS;loadAll();}},1000);
+loadAll();
+</script>
+</body>
+</html>
