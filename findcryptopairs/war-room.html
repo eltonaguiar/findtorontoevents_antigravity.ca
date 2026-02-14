@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WAR ROOM — All-Engine Performance Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#080c14;color:#c9d1d9;min-height:100vh}
+
+.hero{background:linear-gradient(135deg,#0a0f1c 0%,#1a0a0a 30%,#2a0f0f 60%,#0a0f1c 100%);padding:28px 20px;text-align:center;border-bottom:2px solid rgba(255,68,68,0.3);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at center,rgba(255,68,68,0.04) 0%,transparent 50%);animation:pulse 4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:0.3}50%{opacity:1}}
+.hero h1{font-size:2.2em;font-weight:900;background:linear-gradient(135deg,#ff4444,#ff8888,#ffaaaa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px;position:relative;z-index:1;letter-spacing:2px}
+.hero .sub{color:#8b949e;font-size:0.9em;max-width:750px;margin:0 auto;position:relative;z-index:1}
+.hero .badge{display:inline-block;margin-top:8px;padding:4px 14px;border-radius:20px;font-size:0.72em;font-weight:700;background:rgba(255,68,68,0.1);color:#ff4444;border:1px solid rgba(255,68,68,0.3);position:relative;z-index:1;animation:glow 2s ease-in-out infinite alternate}
+@keyframes glow{0%{box-shadow:0 0 5px rgba(255,68,68,0.2)}100%{box-shadow:0 0 15px rgba(255,68,68,0.4)}}
+
+.nav{display:flex;gap:8px;justify-content:center;padding:10px;flex-wrap:wrap;background:#0d1117;border-bottom:1px solid #21262d}
+.nav a{padding:5px 12px;border-radius:6px;font-size:0.8em;text-decoration:none;border:1px solid #21262d;color:#8b949e;transition:all .2s}
+.nav a:hover,.nav a.active{background:rgba(255,68,68,0.08);color:#ff4444;border-color:rgba(255,68,68,0.3)}
+
+.container{max-width:1500px;margin:0 auto;padding:16px}
+
+/* TOAST NOTIFICATIONS */
+.toast-container{position:fixed;top:80px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px;max-width:380px;pointer-events:none}
+.toast{background:#0d1117;border:1px solid rgba(255,215,0,0.5);border-radius:12px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,0.6),0 0 20px rgba(255,215,0,0.15);transform:translateX(120%);transition:transform .5s cubic-bezier(.4,0,.2,1),opacity .5s;opacity:0;pointer-events:auto}
+.toast.show{transform:translateX(0);opacity:1}
+.toast.hide{transform:translateX(120%);opacity:0}
+.toast-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.toast-icon{font-size:1.2em}
+.toast-title{font-weight:800;font-size:0.95em;color:#ffd700}
+.toast-time{font-size:0.65em;color:#484f58;margin-left:auto}
+.toast-body{font-size:0.82em;color:#c9d1d9;line-height:1.5}
+.toast-pair{font-weight:800;font-size:1.1em}
+.toast-dir{padding:2px 8px;border-radius:4px;font-size:0.75em;font-weight:700;display:inline-block}
+.toast-dir.LONG{background:rgba(63,185,80,0.15);color:#3fb950}
+.toast-dir.SHORT{background:rgba(248,81,73,0.15);color:#f85149}
+.toast-reason{font-size:0.72em;color:#8b949e;margin-top:4px;font-style:italic}
+.toast-close{position:absolute;top:8px;right:10px;background:none;border:none;color:#484f58;cursor:pointer;font-size:1.1em}
+.toast-close:hover{color:#ff4444}
+
+/* MARKET BAR */
+.market-bar{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:12px;background:#0d1117;border:1px solid #21262d;border-radius:12px;margin-bottom:14px}
+.market-item{text-align:center;min-width:90px}
+.market-item .m-name{font-size:0.68em;color:#484f58;text-transform:uppercase}
+.market-item .m-price{font-size:1em;font-weight:700;color:#e6edf3}
+.market-item .m-change{font-size:0.72em;font-weight:600}
+
+/* SUMMARY */
+.summary-banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.sum-card{background:#0d1117;border:1px solid #21262d;border-radius:10px;padding:12px;text-align:center}
+.sum-card .s-label{font-size:0.62em;color:#484f58;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px}
+.sum-card .s-val{font-size:1.4em;font-weight:800}
+
+/* TABS */
+.tab-row{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tab-btn{padding:7px 16px;border:1px solid #30363d;border-radius:8px;background:#161b22;color:#8b949e;cursor:pointer;font-size:0.82em;font-weight:600;transition:all .2s}
+.tab-btn.active{background:rgba(255,68,68,0.1);color:#ff4444;border-color:rgba(255,68,68,0.4)}
+.tab-btn:hover{background:#21262d}
+
+/* ENGINE CARDS */
+.engine-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;margin-bottom:16px}
+.engine-card{background:#0d1117;border:1px solid #21262d;border-radius:12px;padding:14px;transition:all .3s}
+.engine-card:hover{border-color:rgba(255,215,0,0.2);transform:translateY(-1px)}
+.engine-card.top-performer{border-color:rgba(255,215,0,0.4);box-shadow:0 0 16px rgba(255,215,0,0.06)}
+.engine-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.engine-name{font-size:1em;font-weight:800;color:#e6edf3}
+.engine-status{padding:2px 8px;border-radius:4px;font-size:0.68em;font-weight:700}
+.status-live{background:rgba(63,185,80,0.12);color:#3fb950;border:1px solid rgba(63,185,80,0.25)}
+.status-offline{background:rgba(139,148,158,0.12);color:#8b949e;border:1px solid rgba(139,148,158,0.25)}
+.engine-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.e-stat{text-align:center}
+.e-stat .e-label{font-size:0.58em;color:#484f58;text-transform:uppercase;letter-spacing:0.5px}
+.e-stat .e-val{font-size:1.1em;font-weight:700}
+
+.signal-list{margin-top:8px;border-top:1px solid #161b22;padding-top:6px}
+.sig-row{padding:6px 4px;font-size:0.8em;border-bottom:1px solid #0d1117;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;transition:background .2s}
+.sig-row:hover{background:rgba(255,255,255,0.02)}
+.sig-pair{font-weight:800;color:#e6edf3;min-width:80px;font-size:1.05em}
+.sig-dir{padding:1px 6px;border-radius:3px;font-size:0.72em;font-weight:700}
+.sig-dir.LONG{background:rgba(63,185,80,0.1);color:#3fb950}
+.sig-dir.SHORT{background:rgba(248,81,73,0.1);color:#f85149}
+.sig-pnl{font-weight:700;min-width:55px;text-align:right}
+.sig-reason{font-size:0.68em;color:#585f68;flex-basis:100%;line-height:1.4;font-style:italic;padding-left:2px}
+.sig-meta{font-size:0.65em;color:#484f58;display:flex;gap:8px;flex-basis:100%;padding-left:2px;align-items:center;flex-wrap:wrap}
+.fresh-badge{padding:1px 6px;border-radius:3px;font-size:0.7em;font-weight:700;letter-spacing:0.3px}
+.fresh-new{background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid rgba(255,215,0,0.3);animation:freshPulse 2s ease-in-out infinite}
+.fresh-active{background:rgba(63,185,80,0.1);color:#3fb950;border:1px solid rgba(63,185,80,0.15)}
+.fresh-aging{background:rgba(139,148,158,0.08);color:#8b949e;border:1px solid rgba(139,148,158,0.15)}
+@keyframes freshPulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+/* PREDICTABILITY SCORE TABLE */
+.pred-table{width:100%;border-collapse:collapse;font-size:0.82em}
+.pred-table th{text-align:left;color:#484f58;padding:8px;border-bottom:1px solid #21262d;font-size:0.72em;text-transform:uppercase;letter-spacing:0.3px}
+.pred-table td{padding:8px;border-bottom:1px solid #161b22}
+.pred-table tr:hover td{background:rgba(255,215,0,0.02)}
+.pred-score{display:inline-flex;align-items:center;gap:4px}
+.pred-bar{width:80px;height:8px;background:#161b22;border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle}
+.pred-fill{height:100%;border-radius:4px}
+.pred-engines{display:flex;gap:3px;flex-wrap:wrap}
+.pred-eng{padding:1px 5px;border-radius:3px;font-size:0.68em;font-weight:600}
+.dir-agree{color:#3fb950;font-weight:700}.dir-mixed{color:#ff9800;font-weight:700}
+
+.card{background:#0d1117;border:1px solid #21262d;border-radius:12px;padding:16px;margin-bottom:16px}
+.card h3{color:#e6edf3;font-size:1em;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #161b22}
+
+table{width:100%;border-collapse:collapse;font-size:0.82em}
+th{text-align:left;color:#484f58;padding:8px;border-bottom:1px solid #21262d;font-size:0.72em;text-transform:uppercase;letter-spacing:0.3px}
+td{padding:8px;border-bottom:1px solid #161b22}
+tr:hover td{background:rgba(255,68,68,0.01)}
+
+.val-green{color:#3fb950!important} .val-red{color:#f85149!important} .val-gold{color:#ffd700!important}
+.val-blue{color:#58a6ff!important} .val-amber{color:#ff9800!important}
+
+.loading{text-align:center;padding:20px;color:#484f58}
+.spinner{display:inline-block;width:18px;height:18px;border:3px solid #21262d;border-top-color:#ff4444;border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.timestamp{text-align:center;color:#30363d;font-size:0.72em;padding:8px}
+.btn{padding:7px 16px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:#c9d1d9;cursor:pointer;font-size:0.82em;font-weight:600;transition:all .2s}
+.btn:hover{background:#21262d;border-color:#ff4444}
+.btn-red{background:linear-gradient(135deg,rgba(255,68,68,0.15),rgba(255,136,136,0.1));border-color:rgba(255,68,68,0.4);color:#ff4444}
+
+@media(max-width:700px){.engine-grid{grid-template-columns:1fr}.summary-banner{grid-template-columns:repeat(3,1fr)}.toast-container{right:10px;left:10px;max-width:100%}}
+</style>
+</head>
+<body>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<div class="hero">
+    <h1>WAR ROOM</h1>
+    <p class="sub">Real-time multi-engine consensus. Every signal tracked with reasoning, timestamps (EST), and predictability scores. No excuses.</p>
+    <span class="badge">LIVE &bull; ALL ENGINES &bull; EST TIMESTAMPS &bull; PREDICTABILITY SCORES</span>
+</div>
+<div class="nav">
+    <a href="/findcryptopairs/war-room.html" class="active">War Room</a>
+    <a href="/findcryptopairs/top-picks.html">Top Picks</a>
+    <a href="/findcryptopairs/proven-picks.html">Proven Picks</a>
+    <a href="/findcryptopairs/kimi-enhanced.html">Kimi Enhanced</a>
+    <a href="/findcryptopairs/hybrid-predictor.html">Hybrid Predictor</a>
+    <a href="/findcryptopairs/expert-consensus.html">Expert Consensus</a>
+    <a href="/findcryptopairs/hybrid-engine.html">Hybrid Engine</a>
+    <a href="/findcryptopairs/spike-forensics.html">Spike Forensics</a>
+    <a href="/findcryptopairs/index.html">Crypto Hub</a>
+    <a href="/live-monitor/command-center.html">Command Center</a>
+    <a href="/findstocks/updates.html">Updates</a>
+</div>
+<div class="container">
+    <!-- MARKET BAR -->
+    <div class="market-bar" id="market-bar"><div class="loading"><span class="spinner"></span> Loading market data...</div></div>
+
+    <!-- SUMMARY -->
+    <div class="summary-banner">
+        <div class="sum-card"><div class="s-label">Active Signals</div><div class="s-val val-gold" id="tot-active">--</div></div>
+        <div class="sum-card"><div class="s-label">Engines Online</div><div class="s-val val-green" id="tot-engines">--</div></div>
+        <div class="sum-card"><div class="s-label">Green / Red</div><div class="s-val" id="tot-gr">--</div></div>
+        <div class="sum-card"><div class="s-label">Best Engine</div><div class="s-val" id="tot-best" style="font-size:0.85em">--</div></div>
+        <div class="sum-card"><div class="s-label">Top Pred. Score</div><div class="s-val val-gold" id="tot-pred">--</div></div>
+        <div class="sum-card"><div class="s-label">Last Refresh (EST)</div><div class="s-val" id="tot-time" style="font-size:0.7em;color:#8b949e">--</div></div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tab-row">
+        <button class="tab-btn active" onclick="showTab('pred')">Predictability Scores</button>
+        <button class="tab-btn" onclick="showTab('engines')">Engine Breakdown</button>
+        <button class="tab-btn" onclick="showTab('backtest')">Backtest Leaderboard</button>
+        <button class="btn btn-red" onclick="loadAll()" style="margin-left:auto">Refresh All</button>
+    </div>
+
+    <!-- PREDICTABILITY SCORES -->
+    <div id="tab-pred">
+        <div class="card">
+            <h3>Predictability Score Per Pair — Multi-Engine Consensus</h3>
+            <p style="font-size:0.75em;color:#484f58;margin-bottom:10px">Score = (engines agreeing on direction x avg confidence x freshness weight). Higher = more engines agree, higher confidence, fresher signals. <strong style="color:#ffd700">FRESH</strong> = &lt;3h old. <strong style="color:#3fb950">ACTIVE</strong> = 3-12h. <strong style="color:#8b949e">AGING</strong> = &gt;12h. All times in EST.</p>
+            <div id="pred-container" style="overflow-x:auto"><div class="loading"><span class="spinner"></span> Loading...</div></div>
+        </div>
+    </div>
+
+    <!-- ENGINES -->
+    <div id="tab-engines" style="display:none">
+        <div class="engine-grid" id="engine-grid"><div class="loading"><span class="spinner"></span> Loading all engines...</div></div>
+    </div>
+
+    <!-- BACKTEST -->
+    <div id="tab-backtest" style="display:none">
+        <div class="card">
+            <h3>Kimi-Enhanced Backtest Leaderboard — Top 10 by Sharpe</h3>
+            <div id="backtest-container" style="overflow-x:auto"><div class="loading"><span class="spinner"></span> Loading...</div></div>
+        </div>
+    </div>
+
+    <div class="timestamp" id="last-updated"></div>
+</div>
+
+<script>
+var BASE = '/findcryptopairs/api';
+var engines = {};
+var allSignals = [];
+var krakenPrices = {};
+var totalGreen = 0, totalRed = 0, totalActive = 0, enginesOnline = 0;
+var toastQueue = [];
+var previousPairKeys = {};
+
+/* ── TIMEZONE ─────────────────────────────── */
+function toEST(utcStr) {
+    if (!utcStr) return '--';
+    var d = new Date(utcStr.replace(/-/g, '/') + ' UTC');
+    return d.toLocaleString('en-US', {timeZone: 'America/New_York', month:'short', day:'numeric', hour:'numeric', minute:'2-digit', hour12:true});
+}
+function nowEST() {
+    return new Date().toLocaleString('en-US', {timeZone:'America/New_York', month:'short', day:'numeric', hour:'numeric', minute:'2-digit', second:'2-digit', hour12:true});
+}
+function hoursAgo(utcStr) {
+    if (!utcStr) return 999;
+    var d = new Date(utcStr.replace(/-/g, '/') + ' UTC');
+    return (Date.now() - d.getTime()) / 3600000;
+}
+function freshBadge(utcStr) {
+    var h = hoursAgo(utcStr);
+    if (h < 3) return '<span class="fresh-badge fresh-new">FRESH ' + h.toFixed(1) + 'h</span>';
+    if (h < 12) return '<span class="fresh-badge fresh-active">ACTIVE ' + h.toFixed(1) + 'h</span>';
+    return '<span class="fresh-badge fresh-aging">AGING ' + h.toFixed(0) + 'h</span>';
+}
+
+/* ── TABS ─────────────────────────────────── */
+function showTab(t) {
+    var ids = ['pred','engines','backtest'];
+    for (var i = 0; i < ids.length; i++) document.getElementById('tab-' + ids[i]).style.display = 'none';
+    document.getElementById('tab-' + t).style.display = '';
+    var btns = document.querySelectorAll('.tab-btn');
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+    if (t === 'pred') btns[0].classList.add('active');
+    else if (t === 'engines') btns[1].classList.add('active');
+    else btns[2].classList.add('active');
+}
+
+/* ── TOAST NOTIFICATIONS ──────────────────── */
+function showToast(pair, direction, engine, confidence, reason, createdAt) {
+    var key = pair + '_' + direction + '_' + engine;
+    if (previousPairKeys[key]) return;
+    previousPairKeys[key] = true;
+    var c = document.getElementById('toast-container');
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.style.position = 'relative';
+    t.innerHTML = '<button class="toast-close" onclick="this.parentElement.className=\'toast hide\';setTimeout(function(){this.remove()}.bind(this.parentElement),600)">&times;</button>'
+        + '<div class="toast-header"><span class="toast-icon">&#x1F525;</span><span class="toast-title">FRESH SIGNAL</span><span class="toast-time">' + toEST(createdAt) + ' EST</span></div>'
+        + '<div class="toast-body"><span class="toast-pair">' + pair.replace('XXBTZUSD','BTC/USD').replace('XETHZUSD','ETH/USD').replace('XXRPZUSD','XRP/USD').replace('XXLMZUSD','XLM/USD').replace('XDGUSD','DOGE/USD') + '</span> '
+        + '<span class="toast-dir ' + direction + '">' + direction + '</span> '
+        + '<span style="color:#8b949e;font-size:0.85em">via ' + engine + '</span>'
+        + (confidence ? '<span style="color:#ffd700;margin-left:6px;font-size:0.85em">' + parseFloat(confidence).toFixed(0) + '% conf</span>' : '')
+        + (reason ? '<div class="toast-reason">' + reason.substring(0, 120) + '</div>' : '')
+        + '</div>';
+    c.appendChild(t);
+    setTimeout(function() { t.className = 'toast show'; }, 50);
+    setTimeout(function() { t.className = 'toast hide'; setTimeout(function() { if (t.parentElement) t.remove(); }, 600); }, 12000);
+}
+
+/* ── DATA LOADING ─────────────────────────── */
+function loadAll() {
+    totalGreen = 0; totalRed = 0; totalActive = 0; enginesOnline = 0;
+    engines = {}; allSignals = [];
+    var promises = [];
+    promises.push(loadEngine('Proven Picks', BASE + '/proven_picks.php?action=picks', 'proven', '/findcryptopairs/proven-picks.html', '#ffd700'));
+    promises.push(loadEngine('Kimi Enhanced', BASE + '/kimi_enhanced.php?action=signals', 'kimi', '/findcryptopairs/kimi-enhanced.html', '#00c853'));
+    promises.push(loadEngine('Expert Consensus', BASE + '/expert_consensus.php?action=signals', 'expert', '/findcryptopairs/expert-consensus.html', '#ff9800'));
+    promises.push(loadEngineSimple('Hybrid Engine', BASE + '/hybrid_engine.php?action=signals', 'hybrid', '/findcryptopairs/hybrid-engine.html', '#58a6ff'));
+    promises.push(loadEngineSimple('Alpha Hunter', BASE + '/alpha_hunter.php?action=signals', 'alpha', '/findcryptopairs/alpha-hunter.html', '#ffd700'));
+    promises.push(loadEngineSimple('Spike Forensics', BASE + '/spike_forensics.php?action=latest', 'spike', '/findcryptopairs/spike-forensics.html', '#bb86fc'));
+    promises.push(loadEngineSimple('Academic Edge', BASE + '/academic_edge.php?action=signals', 'academic', '/findcryptopairs/academic-edge.html', '#64b5f6'));
+    promises.push(loadMarketPrices());
+    promises.push(loadBacktestLeaderboard());
+    Promise.all(promises).then(function() {
+        renderEngineGrid();
+        buildPredictabilityScores();
+        updateSummary();
+        fireToasts();
+        document.getElementById('tot-time').textContent = nowEST();
+        document.getElementById('last-updated').textContent = 'War Room refreshed: ' + nowEST() + ' EST';
+    });
+}
+
+function loadEngine(name, url, key, link, color) {
+    return fetch(url, {signal: AbortSignal.timeout(15000)}).then(function(r) { return r.json(); }).then(function(d) {
+        if (!d.ok) { engines[key] = {name:name,link:link,color:color,status:'offline',active:[],stats:{},history:[]}; return; }
+        var active = d.active || []; var stats = d.stats || {}; var history = d.history || [];
+        var green = 0, red = 0;
+        for (var i = 0; i < active.length; i++) {
+            var pnl = parseFloat(active[i].pnl_pct) || 0;
+            if (pnl > 0) { green++; totalGreen++; } else if (pnl < 0) { red++; totalRed++; }
+            totalActive++;
+            active[i]._engine = name; active[i]._engineKey = key; active[i]._color = color;
+            allSignals.push(active[i]);
+        }
+        engines[key] = {name:name,link:link,color:color,status:'live',active:active,stats:stats,history:history,green:green,red:red};
+        enginesOnline++;
+    }).catch(function() { engines[key] = {name:name,link:link,color:color,status:'offline',active:[],stats:{},history:[]}; });
+}
+
+function loadEngineSimple(name, url, key, link, color) {
+    return fetch(url, {signal: AbortSignal.timeout(15000)}).then(function(r) { return r.json(); }).then(function(d) {
+        var active = [];
+        if (d && d.ok !== false) { active = d.active || d.signals || (Array.isArray(d) ? d : []); }
+        var green = 0, red = 0;
+        for (var i = 0; i < active.length; i++) {
+            var pnl = parseFloat(active[i].pnl_pct || active[i].pnl || 0);
+            if (pnl > 0) { green++; totalGreen++; } else if (pnl < 0) { red++; totalRed++; }
+            totalActive++;
+            active[i]._engine = name; active[i]._engineKey = key; active[i]._color = color;
+            allSignals.push(active[i]);
+        }
+        engines[key] = {name:name,link:link,color:color,status:'live',active:active,stats:d.stats||{},history:[],green:green,red:red};
+        enginesOnline++;
+    }).catch(function() { engines[key] = {name:name,link:link,color:color,status:'offline',active:[],stats:{},history:[]}; });
+}
+
+/* ── PREDICTABILITY SCORES ────────────────── */
+function buildPredictabilityScores() {
+    var pairs = {};
+    for (var i = 0; i < allSignals.length; i++) {
+        var s = allSignals[i];
+        var p = s.pair || s.symbol || '';
+        if (!p) continue;
+        if (!pairs[p]) pairs[p] = {engines:[], directions:[], pnls:[], confs:[], reasons:[], times:[], colors:[]};
+        pairs[p].engines.push(s._engine);
+        pairs[p].directions.push(s.direction || s.signal || '');
+        pairs[p].pnls.push(parseFloat(s.pnl_pct || s.pnl || 0));
+        pairs[p].confs.push(parseFloat(s.confidence || 0));
+        pairs[p].colors.push(s._color || '#8b949e');
+        pairs[p].times.push(s.created_at || '');
+        var reason = s.signal_weights || s.model_votes || s.engines_agreeing || s.strategy || s.rationale || '';
+        pairs[p].reasons.push(reason);
+    }
+    // Calculate scores
+    var scored = [];
+    for (var p in pairs) {
+        var info = pairs[p];
+        var dirs = {};
+        for (var j = 0; j < info.directions.length; j++) {
+            var d = info.directions[j];
+            if (!dirs[d]) dirs[d] = 0;
+            dirs[d]++;
+        }
+        var bestDir = '', bestCount = 0;
+        for (var d in dirs) { if (dirs[d] > bestCount) { bestCount = dirs[d]; bestDir = d; } }
+        var agree = Object.keys(dirs).length === 1;
+        var avgConf = 0; for (var j = 0; j < info.confs.length; j++) avgConf += info.confs[j];
+        avgConf = info.confs.length > 0 ? avgConf / info.confs.length : 0;
+        var avgPnl = 0; for (var j = 0; j < info.pnls.length; j++) avgPnl += info.pnls[j];
+        avgPnl = info.pnls.length > 0 ? avgPnl / info.pnls.length : 0;
+        // Freshness weight: fresh signals count more
+        var freshest = '';
+        for (var j = 0; j < info.times.length; j++) { if (info.times[j] > freshest) freshest = info.times[j]; }
+        var freshHours = hoursAgo(freshest);
+        var freshWeight = freshHours < 3 ? 1.5 : (freshHours < 12 ? 1.0 : 0.6);
+        // Predictability score: engine agreement * avg confidence * freshness * direction consensus bonus
+        var dirBonus = agree ? 1.2 : (bestCount >= 2 ? 0.8 : 0.5);
+        var score = Math.min(100, info.engines.length * 12 * (avgConf / 100) * freshWeight * dirBonus + (avgPnl > 0 ? Math.min(15, avgPnl) : 0));
+        // Live price
+        var livePrice = krakenPrices[p] || null;
+
+        scored.push({
+            pair: p, score: Math.round(score * 10) / 10, engineCount: info.engines.length,
+            bestDir: bestDir, agree: agree, avgConf: avgConf, avgPnl: avgPnl,
+            freshest: freshest, freshHours: freshHours,
+            engines: info.engines, directions: info.directions, pnls: info.pnls,
+            confs: info.confs, reasons: info.reasons, times: info.times, colors: info.colors,
+            livePrice: livePrice
+        });
+    }
+    scored.sort(function(a, b) { return b.score - a.score; });
+
+    // Update top pred score
+    if (scored.length > 0) document.getElementById('tot-pred').textContent = scored[0].score.toFixed(1) + ' (' + scored[0].pair.replace('XXBTZUSD','BTC').replace('XETHZUSD','ETH').replace('SOLUSD','SOL').replace('XXRPZUSD','XRP') + ')';
+
+    // Render table
+    var html = '<table class="pred-table"><tr><th>Rank</th><th>Pair</th><th>Pred. Score</th><th>Direction</th><th>Engines</th><th>Avg Conf</th><th>Avg P&L</th><th>Live Price</th><th>Freshest Signal</th><th>Status</th></tr>';
+    for (var i = 0; i < scored.length; i++) {
+        var s = scored[i];
+        var scoreColor = s.score >= 50 ? '#ffd700' : (s.score >= 25 ? '#3fb950' : (s.score >= 10 ? '#58a6ff' : '#484f58'));
+        var barW = Math.min(100, s.score);
+        html += '<tr>';
+        html += '<td style="font-weight:800;color:' + (i < 3 ? '#ffd700' : '#484f58') + '">#' + (i + 1) + '</td>';
+        html += '<td><strong style="font-size:1.1em">' + s.pair + '</strong></td>';
+        html += '<td><span class="pred-score"><strong style="color:' + scoreColor + ';font-size:1.2em">' + s.score.toFixed(1) + '</strong>';
+        html += '<span class="pred-bar"><span class="pred-fill" style="width:' + barW + '%;background:' + scoreColor + '"></span></span></span></td>';
+        html += '<td class="' + (s.agree ? 'dir-agree' : 'dir-mixed') + '">' + s.bestDir + (s.agree ? '' : ' (MIXED)') + '</td>';
+        html += '<td><div class="pred-engines">';
+        for (var j = 0; j < s.engines.length; j++) {
+            html += '<span class="pred-eng" style="background:' + s.colors[j] + '20;color:' + s.colors[j] + ';border:1px solid ' + s.colors[j] + '40">' + s.engines[j].split(' ')[0] + '</span>';
+        }
+        html += '</div></td>';
+        html += '<td>' + s.avgConf.toFixed(1) + '%</td>';
+        html += '<td class="' + (s.avgPnl >= 0 ? 'val-green' : 'val-red') + '" style="font-weight:700">' + (s.avgPnl > 0 ? '+' : '') + s.avgPnl.toFixed(2) + '%</td>';
+        html += '<td style="color:#e6edf3;font-weight:600">' + (s.livePrice ? '$' + s.livePrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: s.livePrice < 1 ? 6 : 2}) : '--') + '</td>';
+        html += '<td style="font-size:0.8em">' + toEST(s.freshest) + '</td>';
+        html += '<td>' + freshBadge(s.freshest) + '</td>';
+        html += '</tr>';
+        // Expandable reasoning row
+        html += '<tr style="display:none" id="reason-' + i + '"><td colspan="10" style="background:#0a0e14;padding:10px 16px;font-size:0.78em">';
+        for (var j = 0; j < s.engines.length; j++) {
+            html += '<div style="margin-bottom:6px;padding:4px 0;border-bottom:1px solid #161b22">';
+            html += '<strong style="color:' + s.colors[j] + '">' + s.engines[j] + '</strong> ';
+            html += '<span class="sig-dir ' + s.directions[j] + '">' + s.directions[j] + '</span> ';
+            html += '<span style="color:#484f58">Conf: ' + s.confs[j].toFixed(0) + '% | P&L: <span class="' + (s.pnls[j] >= 0 ? 'val-green' : 'val-red') + '">' + (s.pnls[j] > 0 ? '+' : '') + s.pnls[j].toFixed(2) + '%</span> | ' + toEST(s.times[j]) + ' EST</span>';
+            if (s.reasons[j]) html += '<div style="color:#585f68;font-style:italic;margin-top:2px">' + s.reasons[j].substring(0, 200) + '</div>';
+            html += '</div>';
+        }
+        html += '</td></tr>';
+        // Make main row clickable to expand
+        html = html.replace('<tr><td style="font-weight:800;color:' + (i < 3 ? '#ffd700' : '#484f58') + '">#' + (i + 1) + '</td>',
+            '<tr style="cursor:pointer" onclick="var r=document.getElementById(\'reason-' + i + '\');r.style.display=r.style.display===\'none\'?\'table-row\':\'none\'"><td style="font-weight:800;color:' + (i < 3 ? '#ffd700' : '#484f58') + '">#' + (i + 1) + '</td>');
+    }
+    html += '</table>';
+    html += '<div style="font-size:0.7em;color:#484f58;margin-top:8px;text-align:center">Click any row to expand reasoning per engine. All times in EST. Prices from Kraken real-time API.</div>';
+    document.getElementById('pred-container').innerHTML = html;
+}
+
+/* ── TOAST FIRE ────────────────────────────── */
+function fireToasts() {
+    var fresh = [];
+    for (var i = 0; i < allSignals.length; i++) {
+        var s = allSignals[i];
+        var h = hoursAgo(s.created_at);
+        var conf = parseFloat(s.confidence || 0);
+        // Toast for: fresh (<3h) AND (high confidence OR multi-engine proven pick)
+        if (h < 3 && (conf >= 50 || s._engineKey === 'proven')) {
+            fresh.push(s);
+        }
+    }
+    // Sort by confidence desc, show max 5
+    fresh.sort(function(a, b) { return (parseFloat(b.confidence) || 0) - (parseFloat(a.confidence) || 0); });
+    var delay = 0;
+    for (var i = 0; i < Math.min(5, fresh.length); i++) {
+        (function(s, d) {
+            setTimeout(function() {
+                showToast(s.pair || s.symbol, s.direction || s.signal, s._engine,
+                    s.confidence, s.signal_weights || s.model_votes || s.strategy || s.engines_agreeing || '',
+                    s.created_at);
+            }, d);
+        })(fresh[i], delay);
+        delay += 1500;
+    }
+}
+
+/* ── ENGINE GRID ──────────────────────────── */
+function renderEngineGrid() {
+    var html = '';
+    var order = ['proven', 'kimi', 'expert', 'hybrid', 'alpha', 'spike', 'academic'];
+    for (var i = 0; i < order.length; i++) {
+        var key = order[i]; var eng = engines[key];
+        if (!eng) continue;
+        var isTop = eng.active && eng.active.length > 0 && eng.green > eng.red;
+        html += '<div class="engine-card' + (isTop ? ' top-performer' : '') + '">';
+        html += '<div class="engine-header">';
+        html += '<a href="' + eng.link + '" style="text-decoration:none"><span class="engine-name" style="color:' + eng.color + '">' + eng.name + '</span></a>';
+        html += '<span class="engine-status status-' + eng.status + '">' + eng.status.toUpperCase() + '</span>';
+        html += '</div>';
+        html += '<div class="engine-stats">';
+        html += '<div class="e-stat"><div class="e-label">Active</div><div class="e-val val-gold">' + eng.active.length + '</div></div>';
+        html += '<div class="e-stat"><div class="e-label">Green/Red</div><div class="e-val"><span class="val-green">' + (eng.green || 0) + '</span>/<span class="val-red">' + (eng.red || 0) + '</span></div></div>';
+        var wr = eng.stats.win_rate || eng.stats.wr || 0;
+        var pnl = eng.stats.cumulative_pnl || eng.stats.total_pnl || eng.stats.pnl || 0;
+        html += '<div class="e-stat"><div class="e-label">WR / P&L</div><div class="e-val" style="font-size:0.85em"><span class="' + (wr >= 50 ? 'val-green' : (wr > 0 ? 'val-amber' : 'val-red')) + '">' + wr + '%</span> / <span class="' + (parseFloat(pnl) >= 0 ? 'val-green' : 'val-red') + '">' + (parseFloat(pnl) > 0 ? '+' : '') + parseFloat(pnl).toFixed(2) + '%</span></div></div>';
+        html += '</div>';
+        // Top signals with reasoning & timestamps
+        if (eng.active.length > 0) {
+            html += '<div class="signal-list">';
+            var sorted = eng.active.slice().sort(function(a, b) { return (parseFloat(b.pnl_pct) || 0) - (parseFloat(a.pnl_pct) || 0); });
+            var show = sorted.slice(0, 5);
+            for (var j = 0; j < show.length; j++) {
+                var s = show[j];
+                var spnl = parseFloat(s.pnl_pct || s.pnl || 0);
+                var reason = s.signal_weights || s.model_votes || s.engines_agreeing || s.strategy || '';
+                html += '<div class="sig-row">';
+                html += '<span class="sig-pair">' + (s.pair || s.symbol || '?') + '</span>';
+                html += '<span class="sig-dir ' + (s.direction || '') + '">' + (s.direction || s.signal || '?') + '</span>';
+                html += freshBadge(s.created_at);
+                html += '<span class="sig-pnl ' + (spnl >= 0 ? 'val-green' : 'val-red') + '">' + (spnl > 0 ? '+' : '') + spnl.toFixed(2) + '%</span>';
+                html += '<div class="sig-meta"><span>' + toEST(s.created_at) + ' EST</span>';
+                if (s.entry_price) html += '<span>Entry: $' + parseFloat(s.entry_price).toFixed(s.entry_price < 1 ? 6 : 2) + '</span>';
+                var lp = krakenPrices[s.pair || s.symbol];
+                if (lp) html += '<span style="color:#e6edf3">Now: $' + lp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: lp < 1 ? 6 : 2}) + '</span>';
+                html += '</div>';
+                if (reason) html += '<div class="sig-reason">' + reason.substring(0, 150) + '</div>';
+                html += '</div>';
+            }
+            if (sorted.length > 5) html += '<div style="font-size:0.68em;color:#484f58;text-align:center;padding:4px">+' + (sorted.length - 5) + ' more signals — <a href="' + eng.link + '" style="color:' + eng.color + '">view all</a></div>';
+            html += '</div>';
+        }
+        html += '</div>';
+    }
+    document.getElementById('engine-grid').innerHTML = html;
+}
+
+/* ── SUMMARY ──────────────────────────────── */
+function updateSummary() {
+    document.getElementById('tot-active').textContent = totalActive;
+    document.getElementById('tot-engines').textContent = enginesOnline + ' / 7';
+    document.getElementById('tot-gr').innerHTML = '<span class="val-green">' + totalGreen + '</span> / <span class="val-red">' + totalRed + '</span>';
+    var bestName = '--', bestPnl = -9999;
+    var keys = ['proven', 'kimi', 'expert', 'hybrid', 'alpha', 'spike', 'academic'];
+    for (var i = 0; i < keys.length; i++) {
+        var eng = engines[keys[i]]; if (!eng) continue;
+        var pnl = parseFloat(eng.stats.cumulative_pnl || eng.stats.total_pnl || eng.stats.pnl || 0);
+        if (pnl > bestPnl) { bestPnl = pnl; bestName = eng.name; }
+    }
+    var bestEl = document.getElementById('tot-best');
+    bestEl.innerHTML = '<span style="color:' + (bestPnl >= 0 ? '#3fb950' : '#f85149') + '">' + bestName + '<br>' + (bestPnl > 0 ? '+' : '') + bestPnl.toFixed(2) + '%</span>';
+}
+
+/* ── MARKET PRICES ────────────────────────── */
+function loadMarketPrices() {
+    var pairs = ['XXBTZUSD', 'XETHZUSD', 'SOLUSD', 'XXRPZUSD', 'ADAUSD', 'AVAXUSD', 'DOTUSD', 'LINKUSD', 'BNBUSD', 'NEARUSD', 'SUIUSD', 'INJUSD', 'BONKUSD', 'FLOKIUSD', 'XXLMZUSD', 'XDGUSD', 'TRUMPUSD'];
+    var labels = {XXBTZUSD:'BTC',XETHZUSD:'ETH',SOLUSD:'SOL',XXRPZUSD:'XRP',ADAUSD:'ADA',AVAXUSD:'AVAX',DOTUSD:'DOT',LINKUSD:'LINK',BNBUSD:'BNB',NEARUSD:'NEAR',SUIUSD:'SUI',INJUSD:'INJ',BONKUSD:'BONK',FLOKIUSD:'FLOKI',XXLMZUSD:'XLM',XDGUSD:'DOGE',TRUMPUSD:'TRUMP'};
+    return fetch('https://api.kraken.com/0/public/Ticker?pair=' + pairs.join(',')).then(function(r) { return r.json(); }).then(function(d) {
+        if (!d.result) return;
+        var html = '';
+        var mainPairs = ['XXBTZUSD', 'XETHZUSD', 'SOLUSD', 'XXRPZUSD', 'ADAUSD', 'AVAXUSD', 'DOTUSD', 'LINKUSD', 'BNBUSD'];
+        for (var i = 0; i < mainPairs.length; i++) {
+            var p = mainPairs[i]; var data = d.result[p]; if (!data) continue;
+            var price = parseFloat(data.c[0]);
+            var open = parseFloat(data.o);
+            var change = open > 0 ? ((price - open) / open * 100) : 0;
+            krakenPrices[p] = price;
+            html += '<div class="market-item">';
+            html += '<div class="m-name">' + labels[p] + '</div>';
+            html += '<div class="m-price">$' + price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</div>';
+            html += '<div class="m-change ' + (change >= 0 ? 'val-green' : 'val-red') + '">' + (change >= 0 ? '+' : '') + change.toFixed(2) + '%</div>';
+            html += '</div>';
+        }
+        // Store all prices for signals
+        for (var pk in d.result) { krakenPrices[pk] = parseFloat(d.result[pk].c[0]); }
+        document.getElementById('market-bar').innerHTML = html;
+    }).catch(function() {
+        document.getElementById('market-bar').innerHTML = '<div style="color:#484f58;font-size:0.85em">Market data unavailable</div>';
+    });
+}
+
+/* ── BACKTEST LEADERBOARD ─────────────────── */
+function loadBacktestLeaderboard() {
+    return fetch(BASE + '/kimi_enhanced.php?action=compare').then(function(r) { return r.json(); }).then(function(d) {
+        if (!d.ok || !d.backtest_leaderboard) return;
+        var lb = d.backtest_leaderboard.filter(function(s) { return parseFloat(s.test_sharpe) > 0; }).slice(0, 10);
+        if (lb.length === 0) { document.getElementById('backtest-container').innerHTML = '<div class="loading">No profitable strategies yet</div>'; return; }
+        var html = '<table><tr><th>#</th><th>Pair</th><th>Strategy</th><th>Type</th><th>Test WR%</th><th>Test P&L%</th><th>Sharpe</th><th>Max DD</th><th>PF</th></tr>';
+        for (var i = 0; i < lb.length; i++) {
+            var s = lb[i]; var sharpe = parseFloat(s.test_sharpe) || 0; var pnl = parseFloat(s.test_pnl) || 0;
+            html += '<tr><td style="font-weight:800;color:' + (i < 3 ? '#ffd700' : '#484f58') + '">#' + (i + 1) + '</td>';
+            html += '<td><strong>' + s.pair + '</strong></td>';
+            html += '<td style="color:#00c853">' + (s.strategy || '').replace(/^S\d+_/, '') + '</td>';
+            html += '<td style="color:#58a6ff">' + (s.strategy_type || '') + '</td>';
+            html += '<td>' + parseFloat(s.test_win_rate).toFixed(1) + '%</td>';
+            html += '<td class="' + (pnl >= 0 ? 'val-green' : 'val-red') + '" style="font-weight:700">' + (pnl > 0 ? '+' : '') + pnl.toFixed(2) + '%</td>';
+            html += '<td style="font-weight:700;color:' + (sharpe > 1 ? '#00c853' : '#3fb950') + '">' + sharpe.toFixed(2) + '</td>';
+            html += '<td class="val-red">' + parseFloat(s.test_max_dd).toFixed(2) + '%</td>';
+            html += '<td>' + parseFloat(s.test_profit_factor).toFixed(2) + '</td></tr>';
+        }
+        html += '</table>';
+        document.getElementById('backtest-container').innerHTML = html;
+    }).catch(function() { document.getElementById('backtest-container').innerHTML = '<div class="loading">Backtest data unavailable</div>'; });
+}
+
+loadAll();
+setInterval(function() { loadAll(); }, 120000);
+</script>
+</body>
+</html>

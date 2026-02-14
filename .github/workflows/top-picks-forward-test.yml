@@ -1,0 +1,156 @@
+name: Top Picks — Forward-Test Pipeline (Kimi-Enhanced)
+
+# Daily scan + resolve with derivatives risk filter
+# Engines: Hybrid v2.0 + Custom Model + Spike Detector + Derivatives Feed
+# Layer 4 architecture (Kimi Swarm): Direction → Confirmation → Entry Timing → Risk Filter
+
+on:
+  schedule:
+    # Full scan: 3x daily at 06:00, 14:00, 22:00 UTC
+    - cron: '0 6,14,22 * * *'
+    # Resolve open picks: every 2 hours
+    - cron: '30 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to run'
+        required: false
+        default: 'full_pipeline'
+        type: choice
+        options:
+          - full_pipeline
+          - scan_only
+          - resolve_only
+          - stats_only
+          - derivatives_check
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Determine action
+        id: action
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "action=${{ github.event.inputs.action }}" >> $GITHUB_OUTPUT
+          elif [ "$(date +%M)" = "00" ]; then
+            echo "action=full_pipeline" >> $GITHUB_OUTPUT
+          else
+            echo "action=resolve_only" >> $GITHUB_OUTPUT
+          fi
+
+      # ── FULL PIPELINE: Scan + Resolve + Stats ──
+      - name: Full Pipeline
+        if: steps.action.outputs.action == 'full_pipeline' || steps.action.outputs.action == 'scan_only'
+        run: |
+          echo "╔══════════════════════════════════════════════════════╗"
+          echo "║   TOP PICKS: Kimi-Enhanced Forward-Test Pipeline    ║"
+          echo "╚══════════════════════════════════════════════════════╝"
+          echo ""
+          echo "═══ Step 1: Derivatives Risk Check ═══"
+          DERIV=$(curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/api/derivatives_feed.php?action=all")
+          echo "$DERIV" | python3 -c "
+          import sys, json
+          try:
+              d = json.load(sys.stdin)
+              if d.get('ok'):
+                  print('Derivatives Feed: ONLINE')
+                  for asset in ['BTC','ETH','AVAX']:
+                      rs = d.get('risk_scores',{}).get(asset,{})
+                      st = d.get('supertrend',{}).get(asset,{})
+                      fr = d.get('funding',{}).get(asset,{})
+                      print(f'  {asset}: Risk={rs.get(\"risk_score\",\"?\")}/100 | {rs.get(\"assessment\",\"?\")} | Supertrend={st.get(\"signal\",\"?\")} | Funding={fr.get(\"extreme\",\"?\")}')
+              else:
+                  print('Derivatives Feed: ERROR')
+          except: print('Failed to parse derivatives data')
+          " || echo "Python parse failed"
+          echo ""
+
+          echo "═══ Step 2: Generate Consensus Picks ═══"
+          PICKS=$(curl -s --max-time 180 "https://findtorontoevents.ca/findcryptopairs/api/top_picks.php?action=scan&key=${{ secrets.TOP_PICKS_KEY }}")
+          echo "$PICKS" | python3 -c "
+          import sys, json
+          try:
+              d = json.load(sys.stdin)
+              if d.get('ok'):
+                  print(f'Scan complete in {d.get(\"latency_ms\",\"?\")}ms | Engines: {d.get(\"engines_online\",0)}/3 online')
+                  for p in d.get('picks',[]):
+                      g = p.get('grade','?')
+                      a = p.get('asset','?')
+                      s = p.get('status','?')
+                      e = p.get('engines_agree',0)
+                      t = p.get('engines_total',0)
+                      print(f'  {a}: Grade={g} | {s} | Consensus={e}/{t}')
+              else:
+                  print(f'Scan failed: {d.get(\"error\",\"unknown\")}')
+          except Exception as ex: print(f'Parse error: {ex}')
+          " || echo "Python parse failed"
+          echo ""
+
+          echo "═══ Step 3: Resolve Open Picks ═══"
+          RESOLVE=$(curl -s --max-time 60 "https://findtorontoevents.ca/findcryptopairs/api/top_picks.php?action=resolve")
+          echo "$RESOLVE" | python3 -c "
+          import sys, json
+          try:
+              d = json.load(sys.stdin)
+              if d.get('ok'):
+                  jr = d.get('just_resolved',[])
+                  so = d.get('still_open',[])
+                  print(f'Resolved: {len(jr)} picks | Still Open: {len(so)} picks')
+                  for r in jr:
+                      print(f'  RESOLVED: {r.get(\"asset\",\"?\")} → {r.get(\"status\",\"?\")} ({r.get(\"exit_reason\",\"?\")}) P&L={r.get(\"pnl_pct\",0):.2f}%')
+          except: print('Parse error')
+          " || echo "Python parse failed"
+          echo ""
+
+          echo "═══ Step 4: Performance Stats ═══"
+          STATS=$(curl -s --max-time 15 "https://findtorontoevents.ca/findcryptopairs/api/top_picks.php?action=stats")
+          echo "$STATS" | python3 -c "
+          import sys, json
+          try:
+              d = json.load(sys.stdin)
+              if d.get('ok'):
+                  s = d.get('overall',{})
+                  print(f'Total Picks: {s.get(\"total_picks\",0)} | Open: {s.get(\"open\",0)} | Resolved: {s.get(\"resolved\",0)}')
+                  print(f'Win Rate: {s.get(\"win_rate\",0)}% | Avg P&L: {s.get(\"avg_pnl\",\"--\")}% | Total P&L: {s.get(\"total_pnl\",\"--\")}%')
+                  print(f'Sharpe: {s.get(\"sharpe\",\"--\")} | Best: {s.get(\"best_trade\",\"--\")}% | Worst: {s.get(\"worst_trade\",\"--\")}%')
+                  print(f'Streak: {s.get(\"streak\",0)} {s.get(\"streak_type\",\"\")}')
+          except: print('Parse error')
+          " || echo "Python parse failed"
+          echo ""
+          echo "Pipeline complete at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+      # ── RESOLVE ONLY: Quick price check ──
+      - name: Resolve Open Picks
+        if: steps.action.outputs.action == 'resolve_only'
+        run: |
+          echo "═══ Resolving Open Picks ═══"
+          curl -s --max-time 60 "https://findtorontoevents.ca/findcryptopairs/api/top_picks.php?action=resolve" | python3 -c "
+          import sys, json
+          try:
+              d = json.load(sys.stdin)
+              if d.get('ok'):
+                  jr = d.get('just_resolved',[])
+                  so = d.get('still_open',[])
+                  lp = d.get('live_prices',{})
+                  print(f'Live prices: {lp}')
+                  print(f'Just resolved: {len(jr)} | Still open: {len(so)}')
+                  for r in jr:
+                      print(f'  {r.get(\"asset\")}: {r.get(\"status\")} ({r.get(\"exit_reason\")}) P&L={r.get(\"pnl_pct\",0):.2f}%')
+                  for o in so:
+                      print(f'  {o.get(\"asset\")}: OPEN P&L={o.get(\"pnl_pct\",0):.2f}% (peak={o.get(\"peak_pnl\",0):.2f}%)')
+          except: print('Parse error')
+          " || echo "Done"
+
+      # ── STATS ONLY ──
+      - name: Stats Only
+        if: steps.action.outputs.action == 'stats_only'
+        run: |
+          curl -s --max-time 15 "https://findtorontoevents.ca/findcryptopairs/api/top_picks.php?action=stats" | python3 -m json.tool
+
+      # ── DERIVATIVES CHECK ──
+      - name: Derivatives Check
+        if: steps.action.outputs.action == 'derivatives_check'
+        run: |
+          curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/api/derivatives_feed.php?action=all" | python3 -m json.tool

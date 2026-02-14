@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Top Picks | AI Consensus Engine</title>
+<meta name="description" content="Multi-engine AI consensus crypto picks. Forward-tested, verifiable, regime-aware.">
+<style>
+:root {
+  --bg: #06060e;
+  --surface: #0d0d1a;
+  --card: #111127;
+  --border: #1a1a3a;
+  --border2: #252550;
+  --text: #c8c8d8;
+  --dim: #6a6a8a;
+  --white: #eee;
+  --green: #22c55e;
+  --green-bg: rgba(34,197,94,0.08);
+  --red: #ef4444;
+  --red-bg: rgba(239,68,68,0.08);
+  --gold: #f59e0b;
+  --gold-bg: rgba(245,158,11,0.06);
+  --cyan: #06b6d4;
+  --purple: #a855f7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── HEADER ── */
+.hero{text-align:center;padding:48px 20px 32px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 50% 80%,rgba(245,158,11,0.03) 0%,transparent 50%);pointer-events:none}
+.hero .badge-row{display:flex;gap:8px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
+.hero .badge-row span{font-size:10px;padding:3px 12px;border-radius:20px;background:rgba(245,158,11,0.08);color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;font-weight:600}
+.hero h1{font-size:44px;font-weight:800;background:linear-gradient(135deg,#f59e0b 0%,#fbbf24 40%,#fff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-1px;margin-bottom:8px}
+.hero .sub{color:var(--dim);font-size:14px;max-width:600px;margin:0 auto;line-height:1.6}
+.hero .sub strong{color:var(--text)}
+
+/* ── NAV ── */
+.nav{display:flex;gap:8px;justify-content:center;padding:0 20px 24px;flex-wrap:wrap}
+.nav a{font-size:11px;padding:5px 16px;border-radius:20px;border:1px solid var(--border);color:var(--dim);text-decoration:none;transition:all .15s;font-weight:500;letter-spacing:.5px}
+.nav a:hover,.nav a.active{border-color:var(--gold);color:var(--gold);background:var(--gold-bg)}
+
+/* ── CONTAINER ── */
+.container{max-width:1200px;margin:0 auto;padding:0 20px 60px}
+
+/* ── STATUS BAR ── */
+.status-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:20px;font-size:11px;flex-wrap:wrap;gap:8px}
+.status-bar .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:6px;animation:pulse 2s infinite}
+.dot-green{background:var(--green)}
+.dot-gold{background:var(--gold)}
+.dot-red{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── STATS STRIP ── */
+.stats-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:28px}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 16px;text-align:center;transition:border-color .2s}
+.stat-box:hover{border-color:var(--border2)}
+.stat-box .label{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--dim);font-weight:600}
+.stat-box .val{font-size:30px;font-weight:800;margin-top:4px;line-height:1.1}
+.stat-box .sub-val{font-size:11px;color:var(--dim);margin-top:4px}
+.val-green{color:var(--green)}
+.val-red{color:var(--red)}
+.val-gold{color:var(--gold)}
+.val-cyan{color:var(--cyan)}
+.val-purple{color:var(--purple)}
+.val-white{color:var(--white)}
+
+/* ── SECTION HEADERS ── */
+.sec-title{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.sec-title .ct{font-size:11px;padding:2px 10px;border-radius:12px;font-weight:700}
+.ct-gold{background:var(--gold-bg);color:var(--gold)}
+.ct-green{background:var(--green-bg);color:var(--green)}
+.ct-cyan{background:rgba(6,182,212,.1);color:var(--cyan)}
+
+/* ── PICK CARDS ── */
+.pick-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;transition:all .2s;position:relative;overflow:hidden}
+.pick-card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.pick-card.grade-sp{border-left:3px solid var(--gold);background:linear-gradient(135deg,rgba(245,158,11,.03) 0%,var(--card) 40%)}
+.pick-card.grade-s{border-left:3px solid var(--gold)}
+.pick-card.grade-a{border-left:3px solid var(--green)}
+.pick-card.grade-b{border-left:3px solid var(--cyan)}
+.pick-card.grade-c{border-left:3px solid var(--dim)}
+.pick-card.grade-wait{border-left:3px solid var(--border);opacity:.6}
+.pick-card.status-win{border-left:3px solid var(--green)}
+.pick-card.status-loss{border-left:3px solid var(--red)}
+
+.pick-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.pick-asset{font-size:26px;font-weight:800;color:var(--white)}
+.pick-price{font-size:13px;color:var(--dim);font-weight:400;margin-left:8px}
+.pick-right{display:flex;align-items:center;gap:10px}
+
+/* GRADE BADGE */
+.grade-badge{font-size:18px;font-weight:900;padding:6px 16px;border-radius:10px;letter-spacing:1px;min-width:52px;text-align:center}
+.grade-sp-badge{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#000}
+.grade-s-badge{background:rgba(245,158,11,.15);color:var(--gold)}
+.grade-a-badge{background:var(--green-bg);color:var(--green)}
+.grade-b-badge{background:rgba(6,182,212,.12);color:var(--cyan)}
+.grade-c-badge{background:rgba(136,136,170,.1);color:var(--dim)}
+.grade-wait-badge{background:rgba(136,136,170,.06);color:#555}
+
+/* CONSENSUS GAUGE */
+.consensus{display:flex;gap:4px;align-items:center;margin-bottom:12px}
+.consensus .bar{width:36px;height:8px;border-radius:4px;background:rgba(255,255,255,.06);transition:background .3s}
+.consensus .bar.active{background:var(--green)}
+.consensus .bar.inactive{background:rgba(255,255,255,.04)}
+.consensus .txt{font-size:11px;color:var(--dim);margin-left:8px;font-weight:600}
+
+/* ENGINE PILLS */
+.engines-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.engine-pill{font-size:10px;padding:4px 10px;border-radius:6px;font-weight:600;letter-spacing:.3px;display:flex;align-items:center;gap:4px}
+.engine-pill .dot-sm{width:5px;height:5px;border-radius:50%;display:inline-block}
+.ep-buy{background:var(--green-bg);color:var(--green)}
+.ep-buy .dot-sm{background:var(--green)}
+.ep-wait{background:rgba(136,136,170,.08);color:var(--dim)}
+.ep-wait .dot-sm{background:var(--dim)}
+.ep-offline{background:rgba(239,68,68,.06);color:#a44}
+.ep-offline .dot-sm{background:#a44}
+
+/* LEVELS GRID */
+.levels-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:12px}
+.level{font-size:12px}
+.level .ll{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);font-weight:600}
+.level .lv{font-weight:700;margin-top:2px}
+.lv-green{color:var(--green)}.lv-red{color:var(--red)}.lv-gold{color:var(--gold)}
+
+/* PROGRESS BAR */
+.pbar-wrap{margin:12px 0 6px}
+.pbar{height:6px;border-radius:3px;background:rgba(255,255,255,.04);position:relative;overflow:hidden}
+.pbar .fill{height:100%;border-radius:3px;transition:width .5s ease}
+.pbar .fill-green{background:linear-gradient(90deg,var(--green),#4ade80)}
+.pbar .fill-red{background:linear-gradient(90deg,var(--red),#f87171)}
+.pbar-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--dim);margin-top:3px;font-weight:600}
+
+/* THESIS */
+.thesis{font-size:11px;color:var(--dim);padding:10px 14px;background:rgba(255,255,255,.02);border-radius:var(--radius-sm);margin-top:10px;line-height:1.6;border-left:2px solid var(--border)}
+
+/* PNL */
+.pnl-big{font-size:20px;font-weight:800}
+.pnl-pos{color:var(--green)}.pnl-neg{color:var(--red)}
+
+/* OUTCOME BADGE */
+.outcome{font-size:11px;padding:3px 10px;border-radius:6px;font-weight:700}
+.outcome-win{background:var(--green-bg);color:var(--green)}
+.outcome-loss{background:var(--red-bg);color:var(--red)}
+.outcome-expired{background:rgba(136,136,170,.1);color:var(--dim)}
+.outcome-open{background:rgba(6,182,212,.1);color:var(--cyan)}
+
+/* HISTORY TABLE */
+.history-table{width:100%;border-collapse:collapse;font-size:12px}
+.history-table th{text-align:left;padding:10px 12px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);font-weight:600;border-bottom:1px solid var(--border)}
+.history-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
+.history-table tr:hover td{background:rgba(255,255,255,.015)}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:60px 20px;color:var(--dim)}
+.empty .icon{font-size:48px;margin-bottom:12px}
+.empty .msg{font-size:14px;line-height:1.6}
+
+/* LOADING */
+.loading{text-align:center;padding:40px;color:var(--dim)}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top:3px solid var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* FOOTER */
+.footer{text-align:center;padding:40px 20px;color:#333;font-size:11px;border-top:1px solid rgba(255,255,255,.03);margin-top:40px}
+
+/* METHODOLOGY */
+.methodology{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-top:32px}
+.methodology h3{color:var(--white);font-size:15px;margin-bottom:12px;font-weight:700}
+.methodology p,.methodology li{font-size:12px;color:var(--dim);line-height:1.7}
+.methodology ul{padding-left:20px;margin-top:6px}
+.methodology li{margin-bottom:4px}
+.methodology .grade-key{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:12px}
+.methodology .gk{padding:8px 12px;border-radius:var(--radius-sm);font-size:11px;font-weight:600}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  .hero h1{font-size:30px}
+  .stats-strip{grid-template-columns:repeat(2,1fr)}
+  .stat-box .val{font-size:22px}
+  .pick-asset{font-size:20px}
+  .levels-grid{grid-template-columns:repeat(2,1fr)}
+  .history-table{font-size:11px}
+  .history-table th,.history-table td{padding:8px 6px}
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="badge-row">
+    <span>Multi-Engine Consensus</span>
+    <span>Forward-Tested</span>
+    <span>Regime-Aware</span>
+  </div>
+  <h1>TOP PICKS</h1>
+  <div class="sub">
+    <strong>3 independent AI engines</strong> analyze every asset.
+    Only when they <strong>agree</strong> do we pick.
+    Every pick is <strong>timestamped</strong> and <strong>forward-tested</strong> with live Kraken prices.
+    No backtesting tricks. Just verifiable results.
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <a href="war-room.html">War Room</a>
+  <a href="top-picks.html" class="active">Top Picks</a>
+  <a href="proven-picks.html">Proven Picks</a>
+  <a href="kimi-enhanced.html">Kimi Enhanced</a>
+  <a href="generic-vs-custom.html">Research</a>
+  <a href="/live-monitor/command-center.html">Command Center</a>
+  <a href="/updates/">Updates</a>
+</div>
+
+<div class="container">
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <div id="statusLeft"><span class="dot dot-gold"></span> <span id="statusText">Loading...</span></div>
+    <div style="color:var(--dim)" id="statusRight">--</div>
+  </div>
+
+  <!-- STATS STRIP -->
+  <div class="stats-strip" id="statsStrip">
+    <div class="stat-box"><div class="label">Win Rate</div><div class="val val-green" id="sWinRate">--</div><div class="sub-val" id="sWinRateSub">TP hits / resolved</div></div>
+    <div class="stat-box"><div class="label">Avg P&L</div><div class="val" id="sAvgPnl">--</div><div class="sub-val">per pick</div></div>
+    <div class="stat-box"><div class="label">Total P&L</div><div class="val" id="sTotalPnl">--</div><div class="sub-val">cumulative</div></div>
+    <div class="stat-box"><div class="label">Sharpe</div><div class="val val-gold" id="sSharpe">--</div><div class="sub-val">annualized</div></div>
+    <div class="stat-box"><div class="label">Streak</div><div class="val" id="sStreak">--</div><div class="sub-val" id="sStreakSub">current</div></div>
+    <div class="stat-box"><div class="label">Picks Tracked</div><div class="val val-white" id="sTotal">--</div><div class="sub-val" id="sTotalSub">total</div></div>
+  </div>
+
+  <!-- TODAY'S PICKS -->
+  <div class="sec-title">Today's Signals <span class="ct ct-gold" id="todayBadge">loading</span></div>
+  <div id="todayPicks">
+    <div class="loading"><div class="spinner"></div>Scanning engines...</div>
+  </div>
+
+  <!-- OPEN POSITIONS -->
+  <div class="sec-title" style="margin-top:32px">Open Positions <span class="ct ct-cyan" id="openBadge">--</span></div>
+  <div id="openPositions">
+    <div class="loading"><div class="spinner"></div>Checking live prices...</div>
+  </div>
+
+  <!-- TRACK RECORD -->
+  <div class="sec-title" style="margin-top:32px">Track Record <span class="ct ct-green" id="recordBadge">--</span></div>
+  <div id="trackRecord" style="overflow-x:auto">
+    <div class="loading"><div class="spinner"></div>Loading history...</div>
+  </div>
+
+  <!-- METHODOLOGY -->
+  <div class="methodology">
+    <h3>How Top Picks Works</h3>
+    <p>Every day, three independent AI engines analyze BTC, ETH, and AVAX:</p>
+    <ul>
+      <li><strong>Hybrid v2.0</strong> — 10-signal fusion engine with 32 engineered features, 6-regime detection, adaptive weighting, and dynamic risk management. Backtest Sharpe: 3.86 (BTC).</li>
+      <li><strong>Custom Model</strong> — Asset-specific scoring engine with tailored indicators and thresholds per asset. Backtest Sharpe: 3.31 (BTC).</li>
+      <li><strong>Spike Detector</strong> — 12-signal capitulation and reversal detection system monitoring volume climaxes, RSI extremes, and MA tests.</li>
+    </ul>
+    <p style="margin-top:10px">When engines agree, a consensus pick is generated with a grade:</p>
+    <div class="grade-key">
+      <div class="gk" style="background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(245,158,11,.04));color:var(--gold)">S+ — All engines BUY + high confidence + favorable regime</div>
+      <div class="gk" style="background:rgba(245,158,11,.08);color:var(--gold)">S — All engines BUY + good confidence</div>
+      <div class="gk" style="background:var(--green-bg);color:var(--green)">A — 2+ engines BUY</div>
+      <div class="gk" style="background:rgba(6,182,212,.08);color:var(--cyan)">B — 1 engine BUY + favorable conditions</div>
+      <div class="gk" style="background:rgba(136,136,170,.06);color:var(--dim)">C — 1 engine BUY (lower confidence)</div>
+    </div>
+    <p style="margin-top:12px">Every pick gets a <strong>take-profit</strong> and <strong>stop-loss</strong>. Outcomes are tracked automatically using live Kraken prices. Win = TP hit. Loss = SL hit. Expired = 30 days without either.</p>
+    <p style="margin-top:8px;color:var(--gold)"><strong>WAIT signals are a feature, not a bug.</strong> The system only picks when conditions are favorable. Discipline is the edge.</p>
+  </div>
+
+</div>
+
+<div class="footer">
+  Top Picks Engine v1.0 &mdash; Forward-tested with live Kraken prices. Not financial advice.<br>
+  <a href="/updates/" style="color:#555">Updates</a> &middot; <a href="/findcryptopairs/" style="color:#555">Crypto Hub</a>
+</div>
+
+<script>
+var API = '/findcryptopairs/api/top_picks.php';
+var REFRESH_SEC = 60;
+
+function fmt(p){p=parseFloat(p);if(isNaN(p))return'--';if(p>=100)return'$'+p.toFixed(2);if(p>=1)return'$'+p.toFixed(4);return'$'+p.toFixed(6)}
+function pnlStr(v){v=parseFloat(v);if(isNaN(v))return'--';return(v>=0?'+':'')+v.toFixed(2)+'%'}
+function pnlClass(v){return parseFloat(v)>=0?'pnl-pos':'pnl-neg'}
+function gradeCardClass(g){var m={'S+':'grade-sp','S':'grade-s','A':'grade-a','B':'grade-b','C':'grade-c','WAIT':'grade-wait'};return m[g]||'grade-wait'}
+function gradeBadgeClass(g){var m={'S+':'grade-sp-badge','S':'grade-s-badge','A':'grade-a-badge','B':'grade-b-badge','C':'grade-c-badge','WAIT':'grade-wait-badge'};return m[g]||'grade-wait-badge'}
+function enginePill(name,signal){
+  if(signal==='OFFLINE')return'<span class="engine-pill ep-offline"><span class="dot-sm"></span>'+name+': OFFLINE</span>';
+  if(signal==='BUY'||signal==='ACCUMULATE'||signal==='STRONG_BUY')return'<span class="engine-pill ep-buy"><span class="dot-sm"></span>'+name+': '+signal+'</span>';
+  return'<span class="engine-pill ep-wait"><span class="dot-sm"></span>'+name+': '+signal+'</span>'
+}
+function outcomeBadge(status,reason){
+  if(status==='WIN')return'<span class="outcome outcome-win">WIN</span>';
+  if(status==='LOSS')return'<span class="outcome outcome-loss">LOSS</span>';
+  if(status==='EXPIRED')return'<span class="outcome outcome-expired">EXPIRED</span>';
+  if(status==='OPEN')return'<span class="outcome outcome-open">TRACKING</span>';
+  if(status==='NO_TRADE')return'<span class="outcome" style="background:rgba(136,136,170,.06);color:#555">NO TRADE</span>';
+  return'<span class="outcome">'+status+'</span>'
+}
+
+function renderPickCard(p, showPnl){
+  var g = p.grade || 'WAIT';
+  var cls = gradeCardClass(g);
+  if(p.status==='WIN') cls='status-win';
+  if(p.status==='LOSS') cls='status-loss';
+
+  var consensusBars='';
+  var total = parseInt(p.engines_total)||3;
+  var agree = parseInt(p.engines_agree)||0;
+  for(var i=0;i<total;i++){
+    consensusBars+='<div class="bar '+(i<agree?'active':'inactive')+'"></div>';
+  }
+
+  var pnlHtml='';
+  if(showPnl && p.pnl_pct!==null && p.pnl_pct!==undefined){
+    pnlHtml='<span class="pnl-big '+pnlClass(p.pnl_pct)+'">'+pnlStr(p.pnl_pct)+'</span>';
+  }
+
+  var tp_pct = parseFloat(p.tp_pct)||8;
+  var sl_pct = parseFloat(p.sl_pct)||5;
+  var pnl_v  = parseFloat(p.pnl_pct)||0;
+  var barRange = tp_pct + sl_pct;
+  var barPct = Math.min(Math.max(((pnl_v + sl_pct) / barRange)*100,0),100);
+  var barFill = pnl_v>=0?'fill-green':'fill-red';
+
+  return '<div class="pick-card '+cls+'">'+
+    '<div class="pick-top">'+
+      '<div><span class="pick-asset">'+p.asset+'</span><span class="pick-price">'+fmt(p.entry_price)+'</span></div>'+
+      '<div class="pick-right">'+pnlHtml+' <div class="grade-badge '+gradeBadgeClass(g)+'">'+g+'</div></div>'+
+    '</div>'+
+    '<div class="consensus">'+consensusBars+
+      '<span class="txt">'+agree+'/'+total+' engines</span>'+
+      (p.hybrid_regime?' <span class="txt" style="color:var(--purple)">'+p.hybrid_regime+'</span>':'')+
+      ' '+outcomeBadge(p.status, p.exit_reason)+
+    '</div>'+
+    '<div class="engines-row">'+
+      enginePill('Hybrid v2.0', p.hybrid_signal)+
+      enginePill('Custom', p.custom_signal)+
+      enginePill('Spike', p.spike_signal||'N/A')+
+    '</div>'+
+    (g!=='WAIT'?
+    '<div class="levels-grid">'+
+      '<div class="level"><div class="ll">Entry</div><div class="lv">'+fmt(p.entry_price)+'</div></div>'+
+      '<div class="level"><div class="ll">Take Profit</div><div class="lv lv-green">'+fmt(p.tp_price)+' (+'+tp_pct+'%)</div></div>'+
+      '<div class="level"><div class="ll">Stop Loss</div><div class="lv lv-red">'+fmt(p.sl_price)+' (-'+sl_pct+'%)</div></div>'+
+      (p.current_price?'<div class="level"><div class="ll">Current</div><div class="lv" style="color:var(--'+(pnl_v>=0?'green':'red')+')">'+fmt(p.current_price)+'</div></div>':'')+
+      (p.peak_pnl!==null&&p.peak_pnl!==undefined?'<div class="level"><div class="ll">Peak</div><div class="lv">'+pnlStr(p.peak_pnl)+'</div></div>':'')+
+      (p.days_open!==undefined?'<div class="level"><div class="ll">Open</div><div class="lv">'+p.days_open+'d</div></div>':'')+
+    '</div>'+
+    '<div class="pbar-wrap"><div class="pbar"><div class="fill '+barFill+'" style="width:'+barPct+'%"></div></div>'+
+    '<div class="pbar-labels"><span>SL -'+sl_pct+'%</span><span>Entry</span><span>TP +'+tp_pct+'%</span></div></div>'
+    :'')+
+    (p.thesis?'<div class="thesis">'+p.thesis+'</div>':'')+
+  '</div>';
+}
+
+function renderHistoryRow(p){
+  var g = p.grade||'WAIT';
+  var pnl = parseFloat(p.pnl_pct);
+  return '<tr>'+
+    '<td>'+p.pick_date+'</td>'+
+    '<td><strong>'+p.asset+'</strong></td>'+
+    '<td><span class="grade-badge '+gradeBadgeClass(g)+'" style="font-size:11px;padding:2px 8px">'+g+'</span></td>'+
+    '<td>'+fmt(p.entry_price)+'</td>'+
+    '<td>'+(p.exit_price?fmt(p.exit_price):(p.current_price?fmt(p.current_price):'--'))+'</td>'+
+    '<td class="'+(isNaN(pnl)?'':pnlClass(pnl))+'" style="font-weight:700">'+(isNaN(pnl)?'--':pnlStr(pnl))+'</td>'+
+    '<td>'+outcomeBadge(p.status, p.exit_reason)+'</td>'+
+    '<td style="color:var(--dim);font-size:11px">'+parseInt(p.engines_agree)+'/'+parseInt(p.engines_total)+'</td>'+
+  '</tr>';
+}
+
+function loadStats(){
+  fetch(API+'?action=stats')
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(!d.ok)return;
+      var s=d.overall;
+      document.getElementById('sWinRate').textContent=s.win_rate+'%';
+      document.getElementById('sWinRate').className='val '+(s.win_rate>=50?'val-green':'val-red');
+
+      var ap=s.avg_pnl;
+      var apEl=document.getElementById('sAvgPnl');
+      apEl.textContent=ap!==null?pnlStr(ap):'--';
+      apEl.className='val '+(ap!==null&&ap>=0?'val-green':'val-red');
+
+      var tp=s.total_pnl;
+      var tpEl=document.getElementById('sTotalPnl');
+      tpEl.textContent=tp!==null?pnlStr(tp):'--';
+      tpEl.className='val '+(tp>=0?'val-green':'val-red');
+
+      document.getElementById('sSharpe').textContent=s.sharpe||'--';
+      var strEl=document.getElementById('sStreak');
+      strEl.textContent=s.streak||'0';
+      strEl.className='val '+(s.streak_type==='WIN'?'val-green':'val-red');
+      document.getElementById('sStreakSub').textContent=s.streak_type?s.streak+' '+s.streak_type.toLowerCase()+'s':'--';
+
+      document.getElementById('sTotal').textContent=s.total_picks;
+      document.getElementById('sTotalSub').textContent=s.wins+'W / '+s.losses+'L / '+s.open+' open';
+    }).catch(function(){});
+}
+
+function loadPicks(){
+  // Load latest picks (last 7 days)
+  fetch(API+'?action=picks&days=7')
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(!d.ok)return;
+      var picks=d.picks||[];
+
+      // Separate today vs older + open vs resolved
+      var today=new Date().toISOString().slice(0,10);
+      var todayPicks=[];
+      var openPicks=[];
+      var resolvedPicks=[];
+
+      for(var i=0;i<picks.length;i++){
+        var p=picks[i];
+        if(p.pick_date===today || p.pick_date===d.last_scan){
+          todayPicks.push(p);
+        }
+        if(p.status==='OPEN'){
+          openPicks.push(p);
+        }
+        if(p.status==='WIN'||p.status==='LOSS'||p.status==='EXPIRED'){
+          resolvedPicks.push(p);
+        }
+      }
+
+      // If no today picks, show the most recent scan
+      if(todayPicks.length===0 && picks.length>0){
+        var lastDate=picks[0].pick_date;
+        for(var j=0;j<picks.length;j++){
+          if(picks[j].pick_date===lastDate) todayPicks.push(picks[j]);
+        }
+      }
+
+      // Render today
+      var todayEl=document.getElementById('todayPicks');
+      if(todayPicks.length===0){
+        todayEl.innerHTML='<div class="empty"><div class="icon">&#128225;</div><div class="msg">No scan run yet today.<br>Waiting for the engines to analyze the market...</div></div>';
+        document.getElementById('todayBadge').textContent='no scan';
+      } else {
+        var html='';
+        var actionable=0;
+        for(var k=0;k<todayPicks.length;k++){
+          html+=renderPickCard(todayPicks[k],true);
+          if(todayPicks[k].grade!=='WAIT')actionable++;
+        }
+        todayEl.innerHTML=html;
+        var dateStr = todayPicks[0].pick_date || '';
+        document.getElementById('todayBadge').textContent=actionable+' actionable / '+todayPicks.length+' assets ('+dateStr+')';
+      }
+
+      // Render open
+      var openEl=document.getElementById('openPositions');
+      if(openPicks.length===0){
+        openEl.innerHTML='<div class="empty"><div class="icon">&#128064;</div><div class="msg">No open positions. The system is waiting for the right conditions.</div></div>';
+      } else {
+        var ohtml='';
+        for(var m=0;m<openPicks.length;m++) ohtml+=renderPickCard(openPicks[m],true);
+        openEl.innerHTML=ohtml;
+      }
+      document.getElementById('openBadge').textContent=openPicks.length+' tracking';
+
+      // Status
+      document.getElementById('statusText').textContent='Last scan: '+(d.last_scan||'never');
+      document.getElementById('statusRight').textContent='Refreshes every '+REFRESH_SEC+'s \u2022 '+new Date().toLocaleTimeString();
+    }).catch(function(e){
+      document.getElementById('statusText').textContent='Error: '+e.message;
+    });
+
+  // Load full history for track record table
+  fetch(API+'?action=history&limit=50')
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(!d.ok)return;
+      var hist=d.picks||[];
+      var resolved=[];
+      for(var i=0;i<hist.length;i++){
+        if(hist[i].status==='WIN'||hist[i].status==='LOSS'||hist[i].status==='EXPIRED'){
+          resolved.push(hist[i]);
+        }
+      }
+      var el=document.getElementById('trackRecord');
+      if(resolved.length===0){
+        el.innerHTML='<div class="empty"><div class="icon">&#9203;</div><div class="msg">No resolved picks yet. Track record will build as picks hit TP/SL or expire after 30 days.<br>Every pick is timestamped when created — no retroactive edits.</div></div>';
+      } else {
+        var thtml='<table class="history-table"><thead><tr><th>Date</th><th>Asset</th><th>Grade</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Result</th><th>Consensus</th></tr></thead><tbody>';
+        for(var j=0;j<resolved.length;j++) thtml+=renderHistoryRow(resolved[j]);
+        thtml+='</tbody></table>';
+        el.innerHTML=thtml;
+      }
+      document.getElementById('recordBadge').textContent=resolved.length+' resolved';
+    }).catch(function(){});
+}
+
+// Also resolve open picks (updates live prices in DB)
+function resolveOpen(){
+  fetch(API+'?action=resolve').then(function(){}).catch(function(){});
+}
+
+// Initial load
+loadStats();
+loadPicks();
+resolveOpen();
+
+// Auto refresh
+setInterval(function(){
+  loadStats();
+  loadPicks();
+  resolveOpen();
+}, REFRESH_SEC * 1000);
+</script>
+</body>
+</html>

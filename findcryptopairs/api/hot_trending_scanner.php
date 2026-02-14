@@ -246,8 +246,10 @@ function _format_cmc_item($item) {
  * Use CoinGecko as fallback for trending
  */
 function _fetch_cg_trending_as_cmc() {
+    @include_once(dirname(__FILE__) . '/cg_config.php');
+    $cg_h = function_exists('cg_auth_headers') ? cg_auth_headers() : array();
     $url = 'https://api.coingecko.com/api/v3/search/trending';
-    $resp = _hot_curl($url, 8);
+    $resp = _hot_curl($url, 8, $cg_h);
     
     if (!$resp) return array();
     

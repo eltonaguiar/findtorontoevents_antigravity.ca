@@ -75,11 +75,14 @@ tr:hover{background:rgba(88,166,255,.04)}
     <div class="sub">8-Model Ensemble | 32 Features | Regime Detection | Walk-Forward Validated | Adaptive Weights</div>
     <div class="nav-bar">
         <span class="auto-tag" id="cd-tag">Auto-refresh in 120s</span>
+        <a href="/findcryptopairs/war-room.html">War Room</a>
+        <a href="/findcryptopairs/proven-picks.html">Proven Picks</a>
+        <a href="/findcryptopairs/kimi-enhanced.html">Kimi Enhanced</a>
+        <a href="/findcryptopairs/hybrid-predictor.html">Hybrid Predictor</a>
         <a href="/findcryptopairs/index.html">Crypto Hub</a>
         <a href="/findcryptopairs/spike-forensics.html">Spike Forensics</a>
         <a href="/findcryptopairs/academic-edge.html">Academic Edge</a>
         <a href="/findcryptopairs/alpha-hunter.html">Alpha Hunter</a>
-        <a href="/findcryptopairs/pro-signals.html">Pro Signals</a>
         <a href="/findstocks/updates.html">Updates</a>
     </div>
 </div>
@@ -147,15 +150,26 @@ var RS=120,cd=RS;
 function showTab(n){TABS.forEach(function(t){var e=document.getElementById('tab-'+t);if(e)e.style.display=(t===n)?'':'none';});document.querySelectorAll('.tab-btn').forEach(function(b,i){b.classList.toggle('active',TABS[i]===n);});}
 function loadCompare(){
     fetch(API+'?action=compare').then(function(r){return r.json()}).then(function(d){
-        if(!d.ok)return;var h='';var maxS=0;
-        d.comparison.forEach(function(e){if(e.sharpe>maxS)maxS=e.sharpe;});
+        if(!d.ok)return;var h='';
+        // Find best by live_avg PnL (or sharpe if resolved trades exist)
+        var maxS=0;var bestLive=-999;
+        d.comparison.forEach(function(e){if(e.sharpe>maxS)maxS=e.sharpe;if((e.live_avg||0)>bestLive)bestLive=e.live_avg||0;});
         d.comparison.forEach(function(e){
-            var isW=(e.sharpe>=maxS&&maxS>0);
+            var hasResolved=(e.trades>0);
+            var isW=hasResolved?(e.sharpe>=maxS&&maxS>0):((e.live_avg||0)>=bestLive&&bestLive>0);
             h+='<div class="compare-card'+(isW?' winner':'')+'">';
             h+='<div class="engine-name">'+e.name+(isW?' (LEADER)':'')+'</div>';
-            h+='<div class="sharpe-val">'+e.sharpe.toFixed(2)+'</div><div class="sharpe-label">Sharpe Ratio</div>';
-            h+='<div class="mini-stats"><div>WR: <strong>'+e.wr+'%</strong></div><div>Trades: <strong>'+e.trades+'</strong></div>';
-            h+='<div>P&L: <strong class="'+(e.pnl>=0?'pnl-pos':'pnl-neg')+'">'+(e.pnl>=0?'+':'')+e.pnl+'%</strong></div><div></div></div>';
+            if(hasResolved){
+                h+='<div class="sharpe-val">'+e.sharpe.toFixed(2)+'</div><div class="sharpe-label">Sharpe Ratio</div>';
+                h+='<div class="mini-stats"><div>WR: <strong>'+e.wr+'%</strong></div><div>Resolved: <strong>'+e.trades+'</strong></div>';
+                h+='<div>P&L: <strong class="'+(e.pnl>=0?'pnl-pos':'pnl-neg')+'">'+(e.pnl>=0?'+':'')+e.pnl+'%</strong></div><div></div></div>';
+            }else{
+                var la=e.live_avg||0;
+                h+='<div class="sharpe-val" style="color:'+(la>=0?'#3fb950':'#f85149')+'">'+(la>=0?'+':'')+la.toFixed(2)+'%</div>';
+                h+='<div class="sharpe-label">Avg Live P&L</div>';
+                h+='<div class="mini-stats"><div>Active: <strong>'+(e.live_count||0)+'</strong></div><div>Green: <strong style="color:#3fb950">'+(e.live_green||0)+'</strong></div>';
+                h+='<div>Red: <strong style="color:#f85149">'+(e.live_red||0)+'</strong></div><div>Live P&L: <strong class="'+(((e.live_pnl||0)>=0)?'pnl-pos':'pnl-neg')+'">'+(((e.live_pnl||0)>=0)?'+':'')+(e.live_pnl||0).toFixed(2)+'%</strong></div></div>';
+            }
             h+='</div>';
         });
         document.getElementById('compare-grid').innerHTML=h;
@@ -164,10 +178,22 @@ function loadCompare(){
 function loadSignals(){
     fetch(API+'?action=signals').then(function(r){return r.json()}).then(function(d){
         if(!d.ok)return;
-        document.getElementById('st-wr').textContent=d.stats.win_rate+'%';
-        document.getElementById('st-sharpe').textContent=d.stats.sharpe_live;
+        var hasResolved=(d.stats.wins+d.stats.losses)>0;
+        if(hasResolved){
+            document.getElementById('st-wr').textContent=d.stats.win_rate+'%';
+            document.getElementById('st-sharpe').textContent=d.stats.sharpe_live;
+            document.getElementById('st-pnl').textContent=(d.stats.total_pnl>=0?'+':'')+d.stats.total_pnl+'%';
+        }else{
+            var lg=d.stats.live_green||0,lr=d.stats.live_red||0,la=d.stats.live_avg||0;
+            document.getElementById('st-wr').textContent=lg+'G / '+lr+'R';
+            document.getElementById('st-wr').parentElement.querySelector('.lbl').textContent='Live Green/Red';
+            document.getElementById('st-sharpe').textContent=(la>=0?'+':'')+la.toFixed(2)+'%';
+            document.getElementById('st-sharpe').parentElement.querySelector('.lbl').textContent='Avg Live P&L';
+            var lp=d.stats.live_pnl||0;
+            document.getElementById('st-pnl').textContent=(lp>=0?'+':'')+lp.toFixed(2)+'%';
+            document.getElementById('st-pnl').parentElement.querySelector('.lbl').textContent='Total Live P&L';
+        }
         document.getElementById('st-active').textContent=d.active.length;
-        document.getElementById('st-pnl').textContent=(d.stats.total_pnl>=0?'+':'')+d.stats.total_pnl+'%';
         if(d.active.length>0){
             var h='<table><tr><th>Pair</th><th>Entry</th><th>Current</th><th>P&L</th><th>Confidence</th><th>Regime</th><th>Pos Size</th><th>Models</th><th>Age</th></tr>';
             d.active.forEach(function(s){

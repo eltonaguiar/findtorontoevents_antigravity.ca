@@ -1,0 +1,112 @@
+name: Windsurf_VsAVAXBTCBNB_Patterns
+
+on:
+  schedule:
+    # Run daily at 6 AM UTC — full backtest refresh
+    - cron: '0 6 * * *'
+    # Run weekly deep analysis (year-by-year + bootstrap) Sunday 3 AM UTC
+    - cron: '0 3 * * 0'
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  windsurf-pattern-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        pip install ccxt pandas numpy matplotlib tabulate
+
+    # ─── Step 1: Run main 16-strategy backtest ───
+    - name: Run 16-Strategy Backtest (4 pairs × 16 strategies = 64 tests)
+      working-directory: crypto_signals
+      run: |
+        echo "=== Windsurf_VsAVAXBTCBNB_Patterns — Main Backtest ==="
+        echo "Pairs: BTC/USDT, ETH/USDT, AVAX/USDT, BNB/USDT"
+        echo "Strategies: 16 (from 500+ community sources)"
+        echo "Started: $(date -u)"
+        python backtest_engine.py
+        echo ""
+        echo "=== BACKTEST COMPLETE ==="
+        if [ -f backtest_results.json ]; then
+          echo "Results file size: $(wc -c < backtest_results.json) bytes"
+          python3 -c "
+        import json
+        with open('backtest_results.json') as f:
+            results = json.load(f)
+        print(f'Total backtests: {len(results)}')
+        survivors = [r for r in results if r.get('sharpe', 0) >= 0.3 and r.get('total_return', 0) > 0]
+        print(f'Survivors (Sharpe>=0.3 & positive return): {len(survivors)}')
+        for r in sorted(survivors, key=lambda x: x.get('sharpe', 0), reverse=True)[:5]:
+            print(f\"  {r['strategy']:20s} on {r['pair']:12s} Sharpe={r['sharpe']:.3f} CAGR={r['cagr']:.1f}% MaxDD={r['max_drawdown']:.1f}%\")
+          "
+        fi
+
+    # ─── Step 2: Run year-by-year honest analysis ───
+    - name: Year-by-Year Honest Backtest + 4H Signal Confidence + Bootstrap CIs
+      working-directory: crypto_signals
+      run: |
+        echo "=== Year-by-Year Analysis + Signal Confidence ==="
+        python year_by_year_backtest.py
+        echo ""
+        if [ -f year_by_year_results.json ]; then
+          echo "=== AVAX/USDT Year-by-Year Summary ==="
+          python3 -c "
+        import json
+        with open('year_by_year_results.json') as f:
+            data = json.load(f)
+        yby = [r for r in data.get('year_by_year', []) if r['symbol'] == 'AVAX/USDT' and r['strategy'] == 'MTF_Momentum']
+        for yr in sorted(yby, key=lambda x: x['year']):
+            beat = 'BEAT' if yr['beats_bh'] else 'LOST'
+            print(f\"  {yr['year']}: {yr['total_return_pct']:+7.1f}% vs B&H {yr['bh_return_pct']:+7.1f}% [{beat}] Sharpe={yr['sharpe']:.2f} Regime={yr['dominant_regime']}\")
+        print()
+        boot = data.get('bootstrap', {})
+        for strat, info in boot.items():
+            ci = info.get('sharpe_ci_95', [0, 0])
+            sig = 'SIGNIFICANT' if info.get('significant') else 'not significant'
+            print(f\"  {strat:20s} Sharpe CI=[{ci[0]:.3f}, {ci[1]:.3f}] {sig}\")
+          "
+        fi
+
+    # ─── Step 3: Print leaderboard summary ───
+    - name: Print Strategy Leaderboard
+      working-directory: crypto_signals
+      run: |
+        echo "=== STRATEGY LEADERBOARD ==="
+        if [ -f winning_strategies.json ]; then
+          python3 -c "
+        import json
+        with open('winning_strategies.json') as f:
+            winners = json.load(f)
+        print(f'Total surviving strategies: {len(winners)}')
+        print()
+        print(f'{\"Rank\":>4} {\"Strategy\":20s} {\"Pair\":12s} {\"CAGR\":>8} {\"Sharpe\":>8} {\"MaxDD\":>8} {\"WinRate\":>8} {\"Score\":>8}')
+        print('-' * 80)
+        for i, w in enumerate(winners[:10], 1):
+            beat = '*' if w.get('beats_bh') else ' '
+            print(f\"{i:4d} {w['strategy']:20s} {w['pair']:12s} {w['cagr']:7.1f}% {w['sharpe']:8.3f} {w['max_drawdown']:7.1f}% {w['win_rate']:7.1f}% {w.get('score', 0):8.3f}{beat}\")
+        print()
+        print('* = Beats buy-and-hold')
+          "
+        fi
+        echo ""
+        echo "=== Windsurf_VsAVAXBTCBNB_Patterns — Run Complete $(date -u) ==="
+
+    # ─── Step 4: Commit updated results ───
+    - name: Commit results
+      continue-on-error: true
+      run: |
+        git config user.name "Windsurf Bot"
+        git config user.email "bot@findtorontoevents.ca"
+        git add crypto_signals/backtest_results.json crypto_signals/winning_strategies.json crypto_signals/year_by_year_results.json crypto_signals/BACKTEST_REPORT.md crypto_signals/HONEST_YEAR_BY_YEAR_REPORT.md || true
+        git diff --cached --quiet || git commit -m "Windsurf_VsAVAXBTCBNB_Patterns: Auto-refresh $(date -u +%Y-%m-%d)"
+        git push || echo "Push failed (may need token permissions)"

@@ -267,6 +267,63 @@ a:hover { text-decoration: underline; }
   .filter-bar { padding: 16px 16px 0; }
   .filter-pill { font-size: 11px; padding: 3px 10px; }
 }
+
+/* ── Text-to-Speech Controls ── */
+.tts-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(136,170,255,0.1); border: 1px solid rgba(136,170,255,0.25);
+    color: #88aaff; border-radius: 8px; padding: 7px 14px; font-size: 13px;
+    cursor: pointer; transition: all 0.2s; margin-top: 12px; font-family: inherit;
+    letter-spacing: 1px;
+}
+.tts-btn:hover { background: rgba(136,170,255,0.2); border-color: rgba(136,170,255,0.4); color: #aaccff; }
+.tts-btn svg { width: 18px; height: 18px; fill: currentColor; flex-shrink: 0; }
+.tts-btn.playing { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.3); color: #f87171; }
+
+.tts-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+    background: rgba(10,10,18,0.96); backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(136,170,255,0.2);
+    padding: 10px 16px; display: none; align-items: center; gap: 10px;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.5); flex-wrap: wrap;
+}
+.tts-bar.active { display: flex; }
+.tts-bar button {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    color: #c8c8d8; border-radius: 6px; padding: 6px 12px; cursor: pointer;
+    font-size: 12px; transition: all 0.15s; font-family: inherit; display: inline-flex;
+    align-items: center; gap: 4px;
+}
+.tts-bar button:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); }
+.tts-bar button.active-ctrl { background: rgba(136,170,255,0.2); border-color: rgba(136,170,255,0.4); color: #88aaff; }
+.tts-bar .tts-progress {
+    flex: 1; min-width: 100px; font-size: 12px; color: #556;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.tts-bar .tts-speed {
+    font-size: 12px; color: #556; display: flex; align-items: center; gap: 4px;
+}
+.tts-bar .tts-speed select {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    color: #c8c8d8; border-radius: 4px; padding: 2px 4px; font-size: 12px; cursor: pointer;
+}
+.tts-bar .tts-close {
+    background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.25); color: #f87171;
+}
+.tts-bar .tts-close:hover { background: rgba(239,68,68,0.25); }
+.update-entry.tts-reading {
+    border-left-color: #88aaff !important;
+    background: rgba(136,170,255,0.03);
+    transition: border-left-color 0.3s, background 0.3s;
+}
+.update-entry.tts-reading::before {
+    background: #88aaff !important;
+    box-shadow: 0 0 8px rgba(136,170,255,0.5);
+}
+@media (max-width: 600px) {
+    .tts-bar { padding: 8px 10px; gap: 6px; }
+    .tts-bar button { padding: 5px 8px; font-size: 11px; }
+}
 </style>
 </head>
 <body>
@@ -278,6 +335,10 @@ a:hover { text-decoration: underline; }
     <a href="/">&larr; Back to Toronto Events</a> &nbsp;|&nbsp;
     <a href="https://tdotevent.ca/" target="_blank" rel="noopener">Visit our sister site: tdotevent.ca &rarr;</a>
   </div>
+  <button class="tts-btn" id="ttsToggle" onclick="ttsToggleRead()" title="Listen to this page">
+    <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+    <span id="ttsLabel">Listen to Updates</span>
+  </button>
 </div>
 
 <div class="filter-bar" id="filterBar">
@@ -318,6 +379,178 @@ a:hover { text-decoration: underline; }
 <div class="container" id="updatesContainer">
 
 <div class="section-year">February 2026</div>
+
+<!-- Feb 14, 2026 — CROSS-VALIDATED PREDICTION SYSTEMS AUDIT -->
+<div class="update-entry" style="--dot-color: #ef4444;" data-tags="audit,cross-validation,prediction,systems,ml,database,performance,win-rate,meme-scanner,hybrid-engine,sports,crypto,stocks" data-category="crypto,trading,infrastructure" data-types="feature,improvement">
+  <div class="update-date">Feb 14, 2026</div>
+  <div class="update-title">
+    <span class="tag tag-critical">AUDIT</span>
+    <span class="tag tag-ml">CROSS-VALIDATED</span>
+    Full Prediction Systems Audit &mdash; 17+ Systems, 353 Tables, 168K+ Rows Cross-Checked
+  </div>
+  <div class="update-body">
+    <p>Comprehensive audit of <strong>every prediction engine</strong> deployed across the platform &mdash; cross-validated against 17 live API endpoints. Key corrections from original audit:</p>
+    <ul>
+      <li><strong style="color:#22c55e">Database:</strong> 353 tables across 3 databases (was 25+). 253 populated. 168,763 total rows.</li>
+      <li><strong style="color:#22c55e">Systems:</strong> 17+ prediction systems (was 11). Audit missed TV Technicals, Proven Picks, Academic Edge, Kimi Enhanced, Alpha Hunter, Predictability Score, and others.</li>
+      <li><strong style="color:#ef4444">Meme Scanner:</strong> Win rate is actually 3.4% (corrected from 5%). 1 win, 28 losses.</li>
+      <li><strong style="color:#22c55e">Early Winners:</strong> Hybrid Engine (1 TP_HIT, +8.33%), Proven Picks (1 TP_HIT, +1.96%), Sports (+19.87% ROI).</li>
+      <li><strong style="color:#ef4444">Expert Consensus:</strong> 0% win rate (5/5 SL_HIT, -10.22%). Worst performer. Needs investigation.</li>
+      <li><strong style="color:#22c55e">New ML Infra:</strong> Feature store (40+ features), predictability scoring (36 assets), unified audit (82 predictions), 8 ML tables.</li>
+    </ul>
+    <p><a href="/updates/prediction-systems-audit.html" style="color:#ffd700;font-weight:700;font-size:15px">Read Full Audit Report &rarr;</a></p>
+  </div>
+</div>
+
+<!-- Feb 14, 2026 — AUDIT FIX SPRINT: Multi-AI Gap Analysis + 7 Critical Bug Fixes -->
+<div class="update-entry" style="--dot-color: #ef4444;" data-tags="audit,fix,expert-consensus,unified-audit,meme-scanner,engine-health,signal-resolver,github-actions,bug-fix,performance" data-category="trading,infrastructure,crypto" data-types="fix,feature">
+  <div class="update-date">Feb 14, 2026</div>
+  <div class="update-title">
+    Audit Fix Sprint &mdash; 7 Critical Bugs Fixed, 3 New Systems, 73 Signals Resolved
+    <span class="badge badge-fix">Critical</span>
+    <span class="badge badge-feature">AI-Driven</span>
+  </div>
+  <div class="update-body">
+    <p>Comprehensive gap analysis driven by Grok, ChatGPT, and Gemini feedback on our <a href="/updates/prediction-systems-audit.html#audit-fix-sprint" style="color:#ef4444;">Prediction Systems Audit</a>. Every identified gap was investigated, root-caused, and fixed.</p>
+    <p><strong>Bugs Fixed:</strong></p>
+    <ul>
+      <li><strong style="color:#ef4444;">Expert Consensus 0% WR:</strong> Was shorting in uptrends with no trend filter. Added trend gate + raised SHORT confidence bar. All 5 losses would not have occurred.</li>
+      <li><strong style="color:#ef4444;">Unified Audit 0 Resolved:</strong> Only inserted signals, never synced resolutions. 4 engines (Expert Consensus, Kimi, Academic Edge, Alpha Hunter) were never collected due to wrong API key names. Now 73 resolved, 158 tracked.</li>
+      <li><strong style="color:#ef4444;">Meme Scanner 3.4% WR:</strong> Buying tops (volume in coin units not USD, P&amp;D filter too loose). Converted to USD, tightened P&amp;D to reject on 1 signal, added late_entry_risk detection.</li>
+      <li><strong style="color:#ef4444;">Monitors incomplete:</strong> Only 3 of 7 engines had automated monitors. Now all 7 run every 6h.</li>
+    </ul>
+    <p><strong>New Systems:</strong></p>
+    <ul>
+      <li><strong style="color:#22c55e;">Engine Health Scorer</strong> (<a href="/findcryptopairs/api/engine_health.php?action=grade_all" style="color:#22c55e;">Live</a>) — Grades A-F. Hybrid: <strong>A (84.9)</strong>, Kimi: <strong>B (70.8)</strong>, Expert Consensus: <strong>F (4.0) DISABLE</strong>.</li>
+      <li><strong style="color:#f97316;">Universal Signal Resolver</strong> (<a href="/findcryptopairs/api/signal_resolver.php?action=status" style="color:#f97316;">Live</a>) — Checks all active signals against Kraken prices. Resolved 58 signals in first pass.</li>
+      <li><strong style="color:#a855f7;">UA Sync Resolutions</strong> — Syncs resolved signals from engine histories. Inserts missing resolved signals.</li>
+    </ul>
+    <p><strong>Result:</strong> Hybrid Engine confirmed <strong style="color:#22c55e;">Grade A (100% WR, +45.81% PnL)</strong>. Kimi Enhanced <strong style="color:#22c55e;">Grade B (72.7% WR, +23.50% PnL)</strong>. Expert Consensus <strong style="color:#ef4444;">Grade F (DISABLE)</strong>.</p>
+  </div>
+</div>
+
+<!-- Feb 14, 2026 — DATABASE AUDIT: Full Cross-Check of 3 Databases + Infrastructure Enhancement -->
+<div class="update-entry" style="--dot-color: #06b6d4;" data-tags="database,audit,ml,feature-store,health-monitor,github-actions,automation,pipeline,infrastructure,mysql,sports,crypto,stocks,forex" data-category="trading,infrastructure,automation" data-types="feature,improvement">
+  <div class="update-date">Feb 14, 2026</div>
+  <div class="update-title">
+    Full Database Audit &mdash; 3 Databases, 353 Tables, 168K+ Rows Cross-Checked
+    <span class="badge badge-feature">Infrastructure</span>
+    <span class="badge" style="background:rgba(6,182,212,0.2);color:#22d3ee;border:1px solid rgba(6,182,212,0.3);">DATABASE</span>
+  </div>
+  <div class="update-body">
+    <p>Performed a comprehensive audit across <strong>all 3 production MySQL databases</strong> (stocks, memecoin, sportsbet) to identify gaps, stale data, broken pipelines, and missing automation. Found and fixed critical infrastructure issues.</p>
+
+    <h4 style="color:#22d3ee;margin:18px 0 8px;font-size:15px;">Database Inventory</h4>
+    <table style="width:100%;font-size:11px;border-collapse:collapse;">
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.15);"><th style="padding:4px;text-align:left;color:#888;">Database</th><th style="padding:4px;text-align:right;color:#888;">Tables</th><th style="padding:4px;text-align:right;color:#888;">Populated</th><th style="padding:4px;text-align:right;color:#888;">Empty</th><th style="padding:4px;text-align:right;color:#888;">Rows</th></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;color:#ffd700;">ejaguiar1_stocks</td><td style="padding:3px;text-align:right;">258</td><td style="padding:3px;text-align:right;color:#22c55e;">176</td><td style="padding:3px;text-align:right;color:#ef4444;">82</td><td style="padding:3px;text-align:right;font-weight:700;">107,284</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;color:#c084fc;">ejaguiar1_memecoin</td><td style="padding:3px;text-align:right;">58</td><td style="padding:3px;text-align:right;color:#22c55e;">48</td><td style="padding:3px;text-align:right;color:#fbbf24;">10</td><td style="padding:3px;text-align:right;font-weight:700;">34,550</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;color:#fb923c;">ejaguiar1_sportsbet</td><td style="padding:3px;text-align:right;">37</td><td style="padding:3px;text-align:right;color:#22c55e;">29</td><td style="padding:3px;text-align:right;color:#fbbf24;">8</td><td style="padding:3px;text-align:right;font-weight:700;">26,929</td></tr>
+      <tr style="border-top:2px solid rgba(255,255,255,0.15);"><td style="padding:3px;font-weight:800;color:#fff;">TOTAL</td><td style="padding:3px;text-align:right;font-weight:800;">353</td><td style="padding:3px;text-align:right;color:#22c55e;font-weight:800;">253</td><td style="padding:3px;text-align:right;color:#ef4444;font-weight:800;">100</td><td style="padding:3px;text-align:right;font-weight:800;">168,763</td></tr>
+    </table>
+
+    <h4 style="color:#22c55e;margin:18px 0 8px;font-size:15px;">New Infrastructure Built</h4>
+    <ul>
+      <li><strong style="color:#22d3ee;">Feature Store Population Pipeline</strong> &mdash; Computes 40+ technical features (RSI, MACD, Bollinger, ADX, Hurst, OBV, volume ratios, engine consensus) for 36 crypto pairs. Foundation for ML model training.</li>
+      <li><strong style="color:#22d3ee;">Market Regime Snapshots</strong> &mdash; Daily snapshot: BTC trend, average Hurst exponent, trending vs random pair counts, recommended strategy.</li>
+      <li><strong style="color:#22d3ee;">Platform Daily Metrics</strong> &mdash; Signals generated, resolved, win rate, cumulative P&amp;L per day across all asset classes.</li>
+      <li><strong style="color:#22d3ee;">Learning Curve Tracking</strong> &mdash; Monitors each engine's improvement over time (rolling win rate, sample count).</li>
+      <li><strong style="color:#22d3ee;">Database Health Monitor</strong> &mdash; Automated daily check across all 3 databases. Flags stale data (&gt;48h), empty critical tables, connection failures.</li>
+      <li><strong style="color:#22d3ee;">Sports Data Bridge</strong> &mdash; Bridges unified odds data to sport-specific tables. Computes sports ML performance metrics.</li>
+      <li><strong style="color:#22d3ee;">Master Data Pipeline (GitHub Action)</strong> &mdash; Single workflow running every 6h: feature store, predictability scores, audit collection, signal monitoring, DB health.</li>
+    </ul>
+
+    <h4 style="color:#fb923c;margin:18px 0 8px;font-size:15px;">Issues Found &amp; Fixed</h4>
+    <ul>
+      <li>22 stale tables (&gt;48h): cp_signals (134h), fx_signals (92h), meme_ml_signals (178h), analyst_ratings (81h) &mdash; automation gaps patched</li>
+      <li>100 empty tables: 8 ML infra (now populating), ~45 low-priority schema stubs, 12 backtest results (need runs), 4 ESPN scraping (broken regex), 10 legacy Goldmine</li>
+      <li>Sports individual odds tables (lm_nba_odds, etc.) empty due to broken ESPN HTML scraping &mdash; data exists in unified lm_sports_odds (4,165 rows)</li>
+      <li>Bug fix: DB health monitor row count casting error (PHP 5.2 array-to-int issue)</li>
+    </ul>
+
+    <p style="margin-top:16px;font-size:13px;">
+      <span class="app-tag">Database Audit</span>
+      <span class="app-tag">ML Pipeline</span>
+      <span class="app-tag">Feature Store</span>
+      <span class="app-tag">Health Monitor</span>
+      <span class="app-tag">GitHub Actions</span>
+      <a href="/tools/db_health_monitor.php?action=summary" target="_blank" style="color:#22d3ee;font-weight:600;">DB Health (Live) &rarr;</a>
+      <a href="/findcryptopairs/api/feature_store_populate.php?action=status" target="_blank" style="color:#22c55e;font-weight:600;margin-left:8px;">Feature Store &rarr;</a>
+    </p>
+  </div>
+</div>
+
+<!-- Feb 14, 2026 — PREDICTABILITY SCORE ENGINE + ML INFRASTRUCTURE -->
+<div class="update-entry" style="--dot-color: #ffd700;" data-tags="predictability,score,hurst,exponent,autocorrelation,ml,machine-learning,feature-store,model-registry,ab-testing,ensemble,regime,calibration,unified-audit,crypto,forex,stocks" data-category="crypto,trading,infrastructure" data-types="feature">
+  <div class="update-date">Feb 14, 2026</div>
+  <div class="update-title">
+    Predictability Score Engine + ML Infrastructure &mdash; Quantitative Foundation for World-Class Predictions
+    <span class="badge badge-feature">Major</span>
+    <span class="badge" style="background:linear-gradient(135deg,rgba(255,215,0,0.2),rgba(168,85,247,0.2));color:#ffd700;border:1px solid rgba(255,215,0,0.3);font-weight:800;">ML</span>
+  </div>
+  <div class="update-body">
+    <p>Built a <strong>data-driven predictability score</strong> for every asset, based on peer-reviewed quantitative finance research. Also deployed 8 ML infrastructure tables and a unified prediction audit trail. This is the foundation that separates a hobby project from an industry-standard prediction platform.</p>
+
+    <h4 style="color:#ffd700;margin:18px 0 8px;font-size:15px;">Predictability Score (0&ndash;100) &mdash; 6 Quantitative Metrics</h4>
+    <table style="width:100%;font-size:11px;border-collapse:collapse;">
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.15);"><th style="padding:4px;text-align:left;color:#888;">Metric</th><th style="padding:4px;text-align:center;color:#888;">Weight</th><th style="padding:4px;text-align:left;color:#888;">What It Measures</th></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;color:#c084fc;">Hurst Exponent</td><td style="padding:3px;text-align:center;">25%</td><td style="padding:3px;">Trend persistence vs random walk. H&gt;0.5 = trending, H&lt;0.5 = mean-reverting. Deviation from 0.5 = more predictable.</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;color:#c084fc;">Autocorrelation</td><td style="padding:3px;text-align:center;">15%</td><td style="padding:3px;">How much past returns predict future returns. Higher |AC| = more exploitable patterns.</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;color:#c084fc;">Volatility Stability</td><td style="padding:3px;text-align:center;">15%</td><td style="padding:3px;">How consistent behavior is. Stable vol = predictable regimes.</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;color:#c084fc;">Signal-to-Noise Ratio</td><td style="padding:3px;text-align:center;">15%</td><td style="padding:3px;">Genuine trend strength vs random noise. Higher SNR = cleaner patterns.</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;color:#c084fc;">Engine Agreement</td><td style="padding:3px;text-align:center;">15%</td><td style="padding:3px;">How many independent engines agree on direction.</td></tr>
+      <tr><td style="padding:3px;font-weight:600;color:#c084fc;">Historical TP Rate</td><td style="padding:3px;text-align:center;">15%</td><td style="padding:3px;">What % of past signals on this asset hit TP. Built from resolved signals across all engines.</td></tr>
+    </table>
+
+    <h4 style="color:#22d3ee;margin:18px 0 8px;font-size:15px;">First Results: 36 Crypto Assets Scored</h4>
+    <table style="width:100%;font-size:11px;border-collapse:collapse;">
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.15);"><th style="padding:4px;text-align:left;color:#888;">Asset</th><th style="padding:4px;text-align:center;color:#888;">Score</th><th style="padding:4px;text-align:center;color:#888;">Grade</th><th style="padding:4px;text-align:left;color:#888;">Regime</th><th style="padding:4px;text-align:left;color:#888;">Best Strategy</th></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;">PEPE/USD</td><td style="padding:3px;text-align:center;color:#fbbf24;font-weight:700;">55.7</td><td style="padding:3px;text-align:center;color:#fbbf24;">C</td><td style="padding:3px;color:#22c55e;">TRENDING</td><td style="padding:3px;">Trend Following</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;">TRUMP/USD</td><td style="padding:3px;text-align:center;color:#fbbf24;font-weight:700;">53.7</td><td style="padding:3px;text-align:center;color:#fbbf24;">C</td><td style="padding:3px;color:#22c55e;">TRENDING</td><td style="padding:3px;">Trend Following</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;">BTC/USD</td><td style="padding:3px;text-align:center;color:#fbbf24;font-weight:700;">53.0</td><td style="padding:3px;text-align:center;color:#fbbf24;">C</td><td style="padding:3px;">RANDOM</td><td style="padding:3px;">Multi-Indicator</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;">SUI/USD</td><td style="padding:3px;text-align:center;color:#fbbf24;font-weight:700;">53.0</td><td style="padding:3px;text-align:center;color:#fbbf24;">C</td><td style="padding:3px;color:#22c55e;">TRENDING</td><td style="padding:3px;">Trend Following</td></tr>
+      <tr><td colspan="5" style="padding:3px;color:#556;text-align:center;">... 32 more pairs. <a href="/findcryptopairs/api/predictability_score.php?action=leaderboard" target="_blank" style="color:#88aaff;">View full leaderboard &rarr;</a></td></tr>
+    </table>
+    <p style="margin-top:8px;font-size:12px;color:#fb923c;"><strong>Honest note:</strong> No asset scored above 56 (Grade C) after 3 days. This is correct &mdash; the system rewards <em>proven</em> predictability, not hope. Scores will rise as historical outcomes accumulate.</p>
+
+    <h4 style="color:#c084fc;margin:18px 0 8px;font-size:15px;">ML Infrastructure (8 New Tables)</h4>
+    <ul>
+      <li><strong style="color:#22d3ee;">ml_feature_store</strong> &mdash; 40+ features per asset per timestamp (RSI, MACD, Bollinger, Hurst, volume, engine consensus). Feeds future ML models.</li>
+      <li><strong style="color:#22d3ee;">ml_model_registry</strong> &mdash; Model versioning: type, hyperparameters, accuracy, Sharpe, walk-forward validation, overfit score.</li>
+      <li><strong style="color:#22d3ee;">ml_ab_tests</strong> &mdash; Statistical A/B testing between model versions with p-values and confidence levels.</li>
+      <li><strong style="color:#22d3ee;">ml_ensemble_weights</strong> &mdash; Dynamic per-asset per-engine weights based on historical performance.</li>
+      <li><strong style="color:#22d3ee;">ml_regime_snapshots</strong> &mdash; Daily market regime detection (BTC trend, avg Hurst, strategy recommendation).</li>
+      <li><strong style="color:#22d3ee;">ml_calibration_log</strong> &mdash; Prediction calibration: when we say "80% confident", is it right 80% of the time?</li>
+      <li><strong style="color:#22d3ee;">ml_platform_daily</strong> &mdash; Daily platform dashboard: signals, outcomes, win rate, P&amp;L across all asset classes.</li>
+      <li><strong style="color:#22d3ee;">ml_learning_curve</strong> &mdash; Tracks each engine's improvement over time.</li>
+    </ul>
+
+    <h4 style="color:#a855f7;margin:18px 0 8px;font-size:15px;">Unified Prediction Audit Trail</h4>
+    <p>Every prediction from every engine now flows into one auditable table (<code>ua_predictions</code>). First collection: <strong>82 active predictions from 6 engines</strong>. Enables cross-engine performance comparison, per-asset reports, and predictability-weighted picks.</p>
+
+    <h4 style="color:#ef4444;margin:18px 0 8px;font-size:15px;">Roadmap to #1 Prediction Platform</h4>
+    <table style="width:100%;font-size:11px;border-collapse:collapse;">
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.15);"><th style="padding:4px;text-align:left;color:#888;">Phase</th><th style="padding:4px;text-align:left;color:#888;">Timeline</th><th style="padding:4px;text-align:left;color:#888;">Milestone</th></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;color:#fbbf24;">1. Data Accumulation</td><td style="padding:3px;">Now &rarr; Week 4</td><td style="padding:3px;">500+ resolved signals. Feature store filling. Identify first A-grade assets.</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;color:#fb923c;">2. First ML Models</td><td style="padding:3px;">Week 4&ndash;8</td><td style="padding:3px;">Train gradient-boosted models on feature store. A/B test vs rule-based engines.</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;color:#22c55e;">3. Ensemble Optimization</td><td style="padding:3px;">Week 8&ndash;12</td><td style="padding:3px;">Dynamic engine weights. Calibrate confidence. Eliminate underperformers.</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;color:#c084fc;">4. Multi-Asset ML</td><td style="padding:3px;">Week 12&ndash;20</td><td style="padding:3px;">Extend predictability to stocks, forex, sports. Cross-asset regime detection.</td></tr>
+      <tr><td style="padding:3px;font-weight:600;color:#ffd700;">5. Production Grade</td><td style="padding:3px;">Week 20+</td><td style="padding:3px;">5,000+ resolved predictions. Published win rates. Public leaderboard.</td></tr>
+    </table>
+
+    <p style="margin-top:16px;font-size:13px;">
+      <span class="app-tag">Predictability Score</span>
+      <span class="app-tag">Hurst Exponent</span>
+      <span class="app-tag">ML Infrastructure</span>
+      <span class="app-tag">Feature Store</span>
+      <span class="app-tag">Unified Audit</span>
+      <span class="app-tag">Regime Detection</span>
+      <a href="/findcryptopairs/api/predictability_score.php?action=leaderboard" target="_blank" style="color:#ffd700;font-weight:600;">Leaderboard (Live) &rarr;</a>
+      <a href="/findcryptopairs/api/unified_audit.php?action=audit" target="_blank" style="color:#a855f7;font-weight:600;margin-left:8px;">Audit Trail &rarr;</a>
+      <a href="/findcryptopairs/api/ml_infrastructure.php?action=status" target="_blank" style="color:#22d3ee;font-weight:600;margin-left:8px;">ML Status &rarr;</a>
+    </p>
+  </div>
+</div>
 
 <!-- Feb 14, 2026 — TOP PICKS: Kimi-Enhanced Consensus Engine + Derivatives Layer + Forward-Test Pipeline -->
 <div class="update-entry" style="--dot-color: #ffd700;" data-tags="top-picks,consensus,derivatives,funding-rate,supertrend,open-interest,long-short-ratio,forward-test,github-actions,kimi,integration,backtest,pipeline,btc,eth,avax" data-category="crypto,trading,automation" data-types="feature">
@@ -5663,6 +5896,285 @@ a:hover { text-decoration: underline; }
   document.getElementById('collapseAll').addEventListener('click', function() {
     for (var i = 0; i < entries.length; i++) entries[i].classList.add('collapsed');
   });
+})();
+</script>
+
+<!-- TTS Floating Control Bar -->
+<div class="tts-bar" id="ttsBar">
+    <button onclick="ttsPauseResume()" id="ttsPauseBtn" title="Pause / Resume">&#9654; Play</button>
+    <button onclick="ttsPrev()" title="Previous section">&#9664; Prev</button>
+    <button onclick="ttsNext()" title="Next section">Next &#9654;</button>
+    <div class="tts-progress" id="ttsProgress">Ready</div>
+    <div class="tts-speed">
+        <label for="ttsSpeed">Speed:</label>
+        <select id="ttsSpeed" onchange="ttsSetSpeed(this.value)">
+            <option value="0.7">0.7x</option>
+            <option value="0.85">0.85x</option>
+            <option value="1" selected>1x</option>
+            <option value="1.2">1.2x</option>
+            <option value="1.5">1.5x</option>
+            <option value="2">2x</option>
+        </select>
+    </div>
+    <button class="tts-close" onclick="ttsStop()" title="Stop reading">&#10005; Stop</button>
+</div>
+
+<script>
+/* ── Text-to-Speech Engine ── */
+(function() {
+    var synth = window.speechSynthesis;
+    var sections = [];
+    var currentIdx = -1;
+    var rate = 1;
+    var isPaused = false;
+    var isReading = false;
+    var utterance = null;
+
+    function getSections() {
+        /* Only read visible (not filtered-out, not collapsed) entries */
+        var entries = document.querySelectorAll('.update-entry');
+        var arr = [];
+        for (var i = 0; i < entries.length; i++) {
+            if (entries[i].style.display !== 'none') {
+                arr.push(entries[i]);
+            }
+        }
+        return arr;
+    }
+
+    function getTextFromEl(el) {
+        /* Expand collapsed entries temporarily for reading */
+        var wasCollapsed = el.classList.contains('collapsed');
+        if (wasCollapsed) el.classList.remove('collapsed');
+
+        var clone = el.cloneNode(true);
+        var links = clone.querySelectorAll('a');
+        for (var i = 0; i < links.length; i++) {
+            var txt = document.createTextNode(links[i].textContent);
+            links[i].parentNode.replaceChild(txt, links[i]);
+        }
+        var badges = clone.querySelectorAll('.badge, .app-tag');
+        for (var j = 0; j < badges.length; j++) {
+            badges[j].parentNode.removeChild(badges[j]);
+        }
+        /* Remove the collapse arrow character */
+        var text = clone.textContent || clone.innerText || '';
+        text = text.replace(/^\s*[\u25BE\u25B8▾▸]\s*/gm, '');
+        text = text.replace(/\s+/g, ' ').trim();
+        text = text.replace(/[\u2014\u2013]/g, ', ');
+        text = text.replace(/&mdash;/g, ', ');
+        text = text.replace(/\+/g, ' plus ');
+        text = text.replace(/\-(\d)/g, ' minus $1');
+        text = text.replace(/%/g, ' percent');
+        text = text.replace(/P&L/gi, 'P and L');
+        text = text.replace(/TP\/SL/gi, 'take profit slash stop loss');
+        text = text.replace(/\bSL\b/g, 'stop loss');
+        text = text.replace(/\bTP\b/g, 'take profit');
+        text = text.replace(/\bWR\b/g, 'win rate');
+        text = text.replace(/\bBTC\b/g, 'Bitcoin');
+        text = text.replace(/\bETH\b/g, 'Ethereum');
+        text = text.replace(/\bAVAX\b/g, 'Avalanche');
+        text = text.replace(/\bATR\b/g, 'A T R');
+        text = text.replace(/\bRSI\b/g, 'R S I');
+        text = text.replace(/\bMACD\b/g, 'M A C D');
+        text = text.replace(/\bOBV\b/g, 'O B V');
+        text = text.replace(/\bADX\b/g, 'A D X');
+        text = text.replace(/\bEMA\b/g, 'E M A');
+        text = text.replace(/\bHMM\b/g, 'H M M');
+        text = text.replace(/\bML\b/g, 'machine learning');
+        text = text.replace(/\bAPI\b/g, 'A P I');
+        text = text.replace(/\bUI\b/g, 'U I');
+        text = text.replace(/\bUX\b/g, 'U X');
+        text = text.replace(/\bCDR\b/g, 'C D R');
+        text = text.replace(/\bNBA\b/g, 'N B A');
+        text = text.replace(/\bNHL\b/g, 'N H L');
+        text = text.replace(/\bNFL\b/g, 'N F L');
+        text = text.replace(/\bMLB\b/g, 'M L B');
+
+        if (wasCollapsed) el.classList.add('collapsed');
+        return text;
+    }
+
+    function highlightSection(idx) {
+        for (var i = 0; i < sections.length; i++) {
+            sections[i].classList.remove('tts-reading');
+        }
+        if (idx >= 0 && idx < sections.length) {
+            sections[idx].classList.add('tts-reading');
+            /* Expand section if collapsed */
+            if (sections[idx].classList.contains('collapsed')) {
+                sections[idx].classList.remove('collapsed');
+            }
+            sections[idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    function updateProgress() {
+        var prog = document.getElementById('ttsProgress');
+        if (!prog) return;
+        if (currentIdx < 0 || currentIdx >= sections.length) {
+            prog.textContent = 'Ready';
+            return;
+        }
+        var dateEl = sections[currentIdx].querySelector('.update-date');
+        var titleEl = sections[currentIdx].querySelector('.update-title');
+        var label = '';
+        if (dateEl) label = dateEl.textContent.trim();
+        if (titleEl) {
+            var titleText = titleEl.textContent.replace(/^[\u25BE\u25B8▾▸]\s*/, '').trim();
+            label += (label ? ' — ' : '') + titleText.substring(0, 50);
+        }
+        prog.textContent = 'Section ' + (currentIdx + 1) + '/' + sections.length + ': ' + label;
+    }
+
+    function updatePauseBtn() {
+        var btn = document.getElementById('ttsPauseBtn');
+        if (!btn) return;
+        if (isPaused) {
+            btn.innerHTML = '&#9654; Resume';
+            btn.classList.remove('active-ctrl');
+        } else if (isReading) {
+            btn.innerHTML = '&#10074;&#10074; Pause';
+            btn.classList.add('active-ctrl');
+        } else {
+            btn.innerHTML = '&#9654; Play';
+            btn.classList.remove('active-ctrl');
+        }
+    }
+
+    function speakSection(idx) {
+        if (idx < 0 || idx >= sections.length) {
+            ttsStop();
+            return;
+        }
+        synth.cancel();
+        currentIdx = idx;
+        var text = getTextFromEl(sections[idx]);
+        if (!text) {
+            speakSection(idx + 1);
+            return;
+        }
+        /* Split long text into chunks (browsers choke on >~200 words) */
+        var chunks = [];
+        var sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
+        var buf = '';
+        for (var i = 0; i < sentences.length; i++) {
+            if ((buf + sentences[i]).length > 300 && buf.length > 0) {
+                chunks.push(buf.trim());
+                buf = '';
+            }
+            buf += sentences[i] + ' ';
+        }
+        if (buf.trim()) chunks.push(buf.trim());
+
+        highlightSection(idx);
+        updateProgress();
+        isPaused = false;
+        updatePauseBtn();
+
+        var chunkIdx = 0;
+        function speakChunk() {
+            if (chunkIdx >= chunks.length) {
+                speakSection(idx + 1);
+                return;
+            }
+            utterance = new SpeechSynthesisUtterance(chunks[chunkIdx]);
+            utterance.rate = rate;
+            utterance.pitch = 1;
+            utterance.onend = function() {
+                chunkIdx++;
+                speakChunk();
+            };
+            utterance.onerror = function(e) {
+                if (e.error !== 'canceled') {
+                    chunkIdx++;
+                    speakChunk();
+                }
+            };
+            synth.speak(utterance);
+        }
+        speakChunk();
+    }
+
+    window.ttsToggleRead = function() {
+        if (isReading) {
+            ttsStop();
+            return;
+        }
+        if (!synth) {
+            alert('Your browser does not support text-to-speech.');
+            return;
+        }
+        sections = getSections();
+        if (!sections.length) return;
+        isReading = true;
+        var toggleBtn = document.getElementById('ttsToggle');
+        var label = document.getElementById('ttsLabel');
+        if (toggleBtn) toggleBtn.classList.add('playing');
+        if (label) label.textContent = 'Stop Reading';
+        document.getElementById('ttsBar').classList.add('active');
+        speakSection(0);
+    };
+
+    window.ttsPauseResume = function() {
+        if (!isReading) {
+            ttsToggleRead();
+            return;
+        }
+        if (isPaused) {
+            synth.resume();
+            isPaused = false;
+        } else {
+            synth.pause();
+            isPaused = true;
+        }
+        updatePauseBtn();
+    };
+
+    window.ttsNext = function() {
+        if (!isReading) return;
+        synth.cancel();
+        isPaused = false;
+        speakSection(currentIdx + 1);
+    };
+
+    window.ttsPrev = function() {
+        if (!isReading) return;
+        synth.cancel();
+        isPaused = false;
+        speakSection(Math.max(0, currentIdx - 1));
+    };
+
+    window.ttsStop = function() {
+        synth.cancel();
+        isReading = false;
+        isPaused = false;
+        currentIdx = -1;
+        highlightSection(-1);
+        var toggleBtn = document.getElementById('ttsToggle');
+        var label = document.getElementById('ttsLabel');
+        if (toggleBtn) toggleBtn.classList.remove('playing');
+        if (label) label.textContent = 'Listen to Updates';
+        document.getElementById('ttsBar').classList.remove('active');
+        updatePauseBtn();
+        updateProgress();
+    };
+
+    window.ttsSetSpeed = function(val) {
+        rate = parseFloat(val) || 1;
+        if (isReading && !isPaused) {
+            synth.cancel();
+            speakSection(currentIdx);
+        }
+    };
+
+    /* Chrome bug workaround: resume paused speech every 10s */
+    setInterval(function() {
+        if (isReading && !isPaused && synth.speaking) {
+            synth.pause();
+            synth.resume();
+        }
+    }, 10000);
 })();
 </script>
 </body>

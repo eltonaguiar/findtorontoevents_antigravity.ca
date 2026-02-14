@@ -548,7 +548,11 @@ function _mc_score_pair($candidate, $candles_15m, $candles_5m, $has_volume_data 
             $closes_15m[] = floatval($c['c']);
             $highs_15m[] = floatval($c['h']);
             $lows_15m[] = floatval($c['l']);
-            $volumes_15m[] = floatval(isset($c['v']) ? $c['v'] : 0);
+            // FIX: Convert coin volume to USD volume (audit fix Feb 14 2026)
+            // Crypto.com v is base-asset (coin) volume; multiply by typical price for USD
+            $candle_price = (floatval($c['h']) + floatval($c['l']) + floatval($c['c'])) / 3;
+            $coin_vol = floatval(isset($c['v']) ? $c['v'] : 0);
+            $volumes_15m[] = ($candle_price > 0) ? $coin_vol * $candle_price : $coin_vol;
         }
     }
     $closes_5m = array();
@@ -1629,13 +1633,17 @@ function _mc_binomial_significance($wins, $total, $null_p)
 
 function _mc_coingecko_meme_market()
 {
-    // Fetch top meme coins by volume from CoinGecko (free, no key, 30 calls/min)
+    // Fetch top meme coins by volume from CoinGecko (Demo API key, 30 calls/min)
+    @include_once(dirname(__FILE__) . '/cg_config.php');
     $url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=meme-token&order=volume_desc&per_page=50&page=1';
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 12);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_USERAGENT, 'MemeScanner/1.0');
+    if (function_exists('cg_auth_headers')) {
+        curl_setopt($ch, CURLOPT_HTTPHEADER, cg_auth_headers());
+    }
     $resp = curl_exec($ch);
     curl_close($ch);
     if (!$resp)
@@ -1650,12 +1658,16 @@ function _mc_coingecko_ohlc($coin_id)
 {
     // Fetch 1-day OHLC (30-min candles, ~48 candles)
     // Format: [[timestamp, open, high, low, close], ...]
+    @include_once(dirname(__FILE__) . '/cg_config.php');
     $url = 'https://api.coingecko.com/api/v3/coins/' . urlencode($coin_id) . '/ohlc?vs_currency=usd&days=1';
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_USERAGENT, 'MemeScanner/1.0');
+    if (function_exists('cg_auth_headers')) {
+        curl_setopt($ch, CURLOPT_HTTPHEADER, cg_auth_headers());
+    }
     $resp = curl_exec($ch);
     curl_close($ch);
     if (!$resp)
@@ -2472,20 +2484,24 @@ function _mc_detect_pump_and_dump($closes_15m, $closes_5m, $highs_15m, $lows_15m
         $chg_6h = (($closes_15m[$n15 - 1] - $closes_15m[max(0, $n15 - 24)]) / $closes_15m[max(0, $n15 - 24)]) * 100;
     }
 
-    // 1. PARABOLIC RISE — extreme price surge
-    if ($chg_24h > 50 || ($chg_1h > 15 && $chg_6h > 25)) {
+    // 1. PARABOLIC RISE — extreme price surge (TIGHTENED: was 50/15+25, now 30/10+15)
+    if ($chg_24h > 30 || ($chg_1h > 10 && $chg_6h > 15)) {
         $signals[] = 'parabolic_rise';
     }
 
-    // 2. RSI EXHAUSTION — extreme overbought + price turning down
+    // 2. RSI EXHAUSTION — extreme overbought + price turning down (TIGHTENED: was >85, now >80)
     if ($n15 >= 14) {
         $rsi = _mc_calc_rsi($closes_15m, 14);
-        if ($rsi > 85 && $chg_1h < 0) {
+        if ($rsi > 80 && $chg_1h < 0) {
             $signals[] = 'rsi_exhaustion';
+        }
+        // NEW: RSI >85 alone is a P&D signal (even without negative momentum)
+        if ($rsi > 85) {
+            $signals[] = 'extreme_overbought';
         }
     }
 
-    // 3. VOLUME SPIKE + REVERSAL — volume surging but price fading (smart money exiting)
+    // 3. VOLUME SPIKE + REVERSAL — volume surging but price fading (TIGHTENED: was 5x, now 3x)
     if (count($volumes_15m) >= 10) {
         $total_vol = array_sum($volumes_15m);
         $vol_count = count($volumes_15m);
@@ -2493,12 +2509,12 @@ function _mc_detect_pump_and_dump($closes_15m, $closes_5m, $highs_15m, $lows_15m
         $recent_vol = (array_sum(array_slice($volumes_15m, -3))) / 3;
         $vol_ratio = ($avg_vol > 0) ? $recent_vol / $avg_vol : 1;
 
-        if ($vol_ratio >= 5 && $chg_1h < -1) {
+        if ($vol_ratio >= 3 && $chg_1h < -0.5) {
             $signals[] = 'volume_dump';
         }
     }
 
-    // 4. WICK TRAP — last candle has a long upper wick (rejected at highs)
+    // 4. WICK TRAP — last candle has a long upper wick (rejected at highs) (TIGHTENED: was 3x, now 2x)
     if ($n15 >= 2 && count($highs_15m) >= $n15 && count($lows_15m) >= $n15) {
         $last_high = $highs_15m[$n15 - 1];
         $last_close = $closes_15m[$n15 - 1];
@@ -2506,14 +2522,20 @@ function _mc_detect_pump_and_dump($closes_15m, $closes_5m, $highs_15m, $lows_15m
         $body = abs($last_close - $last_open);
         $upper_wick = $last_high - max($last_close, $last_open);
 
-        if ($body > 0 && $upper_wick > $body * 3) {
+        if ($body > 0 && $upper_wick > $body * 2) {
             $signals[] = 'wick_trap';
         }
     }
 
-    // Decision: 2+ signals = hard reject, 1 = elevated risk
+    // 5. NEW: LATE ENTRY — price already moved significantly (don't buy tops)
+    if ($chg_24h > 20 && $chg_1h > 5) {
+        $signals[] = 'late_entry_risk';
+    }
+
+    // Decision: 1+ signals = hard reject (TIGHTENED: was 2+, now 1+)
+    // Root cause of 3.4% WR: buying after pumps. Must be aggressive with rejection.
     $signal_count = count($signals);
-    $detected = ($signal_count >= 2);
+    $detected = ($signal_count >= 1);
     if ($signal_count >= 2) {
         $risk_level = 'critical';
     } elseif ($signal_count >= 1) {

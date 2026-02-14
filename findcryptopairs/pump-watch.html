@@ -92,11 +92,15 @@
       <span class="stat">32% had 2x+ volume spike at start</span> |
       <span class="stat">RSI 30-45 sweet spot</span>
     </div>
-    <div class="ctrl" style="margin-top:14px">
+    <div style="text-align:center;padding:8px;background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);border-radius:var(--radius);margin-top:14px;font-size:13px">
+      <span style="color:var(--orange);font-weight:700" id="dataAsOf">Loading...</span>
+    </div>
+    <div class="ctrl" style="margin-top:10px">
       <div><span id="statusMsg">Loading data...</span></div>
       <div style="display:flex;gap:6px;align-items:center">
         <span style="color:var(--dim);font-size:11px" id="scanInfo">--</span>
         <button class="btn btn-scan" id="scanBtn" onclick="runScan()">Scan Top Pairs</button>
+        <button class="btn btn-scan" style="background:linear-gradient(135deg,var(--purple),var(--cyan))" id="extraBtn" onclick="scanExtra()">Scan ORDI + Extras</button>
         <button class="btn btn-mon" onclick="monitor()">Monitor</button>
       </div>
     </div>
@@ -134,6 +138,18 @@
   <script>
     var API = '/findcryptopairs/api/pump_forensics.php';
     var KEY = 'pump_forensics_2026';
+    function toEST(utcStr, showSec) {
+      if (!utcStr) return '--';
+      var d = new Date(utcStr.replace(/-/g, '/') + ' UTC');
+      if (isNaN(d.getTime())) d = new Date(utcStr);
+      if (isNaN(d.getTime())) return utcStr;
+      var opts = {timeZone:'America/New_York', year:'numeric', month:'short', day:'numeric', hour:'numeric', minute:'2-digit', hour12:true};
+      if (showSec) opts.second = '2-digit';
+      return d.toLocaleString('en-US', opts) + ' EST';
+    }
+    function nowEST() {
+      return new Date().toLocaleString('en-US', {timeZone:'America/New_York', year:'numeric', month:'short', day:'numeric', hour:'numeric', minute:'2-digit', second:'2-digit', hour12:true}) + ' EST';
+    }
     var scanOffset = 0;
     var scanId = '';
 
@@ -172,7 +188,7 @@
     }
 
     function loadWatchlist() {
-      var url = API + '?action=watchlist&min_score=20';
+      var url = API + '?action=watchlist&min_score=15';
       fetch(url)
         .then(function(r) { return r.json(); })
         .then(function(data) {
@@ -198,6 +214,7 @@
             html += '<div class="pick-card ' + grade + '">';
             html += '<div class="pick-top"><div><span class="pick-pair">' + cleanPair(p.pair) + '</span> ' + gradeBadge + statusBadge + pnlStr + '</div>';
             html += '<div class="pick-score" style="color:' + scoreColor + '">' + Math.round(score) + '</div></div>';
+            html += '<div style="font-size:10px;color:var(--dim);margin-bottom:4px">' + toEST(p.created_at) + (p.scan_id ? ' | Scan: ' + p.scan_id : '') + '</div>';
             html += '<div class="score-bar"><div class="score-bar-fill" style="width:' + score + '%;background:' + scoreColor + '"></div></div>';
 
             var comps = [
@@ -251,7 +268,8 @@
         .then(function(data) {
           if (!data.ok) return;
           var ls = data.latest;
-          document.getElementById('lastScan').textContent = 'Last scan: ' + (ls.last_scan || 'never') + ' (' + (ls.pairs_scanned || 0) + ' pairs)';
+          var scanTime = ls.last_scan ? toEST(ls.last_scan, true) : 'never';
+          document.getElementById('lastScan').innerHTML = 'Last scan: <strong>' + scanTime + '</strong> (' + (ls.pairs_scanned || 0) + ' pairs) | Now: ' + nowEST();
         });
     }
 
@@ -313,13 +331,34 @@
             document.getElementById('auditContainer').innerHTML = '<div class="empty">No audit logs yet.</div>';
             return;
           }
-          var html = '';
+          var html = '<div style="font-size:10px;color:var(--purple);margin-bottom:8px">All times shown in Eastern Standard Time (EST)</div>';
           for (var i = 0; i < data.logs.length; i++) {
             var l = data.logs[i];
-            html += '<div class="audit-entry"><span class="phase">[' + l.phase + ']</span> <span style="color:var(--gold)">' + l.scan_id + '</span> &mdash; ' + l.detail + ' <span style="color:var(--dim);font-size:10px">' + l.created_at + '</span></div>';
+            html += '<div class="audit-entry"><span class="phase">[' + l.phase + ']</span> <span style="color:var(--gold)">' + l.scan_id + '</span> &mdash; ' + l.detail + ' <span style="color:var(--cyan);font-size:10px;font-weight:600">' + toEST(l.created_at, true) + '</span></div>';
           }
           document.getElementById('auditContainer').innerHTML = html;
         });
+    }
+
+    var extraPage = 0;
+    function scanExtra() {
+      setStatus('Scanning ORDI + extras via KuCoin (page ' + extraPage + ')...');
+      var btn = document.getElementById('extraBtn');
+      btn.disabled = true; btn.textContent = 'Scanning page ' + extraPage + '...';
+      fetch(API + '?action=scan_extra&key=' + KEY + '&page=' + extraPage)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          btn.disabled = false;
+          if (!data.ok) { setStatus('Error: ' + (data.error || '')); btn.textContent = 'Scan ORDI + Extras'; return; }
+          var tp = data.total_pages || 1;
+          extraPage = (data.page + 1) % tp;
+          var pairNames = [];
+          for (var i = 0; i < (data.results || []).length; i++) pairNames.push(data.results[i].pair);
+          setStatus('Scanned ' + pairNames.join(', ') + ' (' + (data.latency_ms || 0) + 'ms). Page ' + data.page + '/' + (tp - 1));
+          btn.textContent = 'Scan Next (' + (extraPage === 0 ? 'restart' : 'page ' + extraPage) + ')';
+          loadWatchlist(); loadStatus();
+        })
+        .catch(function(e) { btn.disabled = false; btn.textContent = 'Scan ORDI + Extras'; setStatus('Error: ' + e.message); });
     }
 
     function monitor() {
@@ -332,17 +371,24 @@
     }
 
     function cleanPair(p) {
-      return p.replace(/^X+/, '').replace(/^Z+(?=USD)/, '').replace('ZUSD', '/USD').replace('USD', '/USD');
+      return p.replace(/^X+/, '').replace(/^Z+(?=USD)/, '').replace('ZUSD', '/USD').replace('USD', '/USD').replace('USDT', '/USDT');
+    }
+
+    function updateDataAsOf() {
+      var el = document.getElementById('dataAsOf');
+      if (el) el.textContent = 'Data as of: ' + nowEST() + ' \u2014 auto-refreshes every 5 min';
     }
 
     // Initial load
     loadStatus();
     loadWatchlist();
+    updateDataAsOf();
 
     // Auto-refresh every 5 minutes
     setInterval(function() {
       loadStatus();
       loadWatchlist();
+      updateDataAsOf();
     }, 300000);
   </script>
 </body>

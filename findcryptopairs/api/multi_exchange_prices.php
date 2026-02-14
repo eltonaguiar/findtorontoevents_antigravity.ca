@@ -474,11 +474,13 @@ class MultiExchangePriceAggregator
         $cgId = isset($cgIds[$symbol]) ? $cgIds[$symbol] : strtolower($symbol);
         $vsCurrency = strtolower($quote);
         
+        @include_once(dirname(__FILE__) . '/cg_config.php');
+        $cg_h = function_exists('cg_auth_headers') ? cg_auth_headers() : array();
         $url = 'https://api.coingecko.com/api/v3/simple/price?ids=' . urlencode($cgId) . 
                '&vs_currencies=' . urlencode($vsCurrency) . 
                '&include_24hr_vol=true&include_24hr_change=true';
         
-        $resp = $this->httpGet($url);
+        $resp = $this->httpGet($url, $cg_h);
         
         if (!$resp) {
             return null;
@@ -596,14 +598,18 @@ class MultiExchangePriceAggregator
     /**
      * HTTP GET request with error handling
      */
-    private function httpGet($url)
+    private function httpGet($url, $extra_headers = null)
     {
+        if (!is_array($extra_headers)) $extra_headers = array();
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_USERAGENT, 'MultiExchangeAggregator/1.0');
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        if (count($extra_headers) > 0) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $extra_headers);
+        }
         
         $resp = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);

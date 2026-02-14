@@ -270,6 +270,8 @@ function _dm_action_movers($conn) {
 // =====================================================================
 function _dm_fetch_coingecko_markets() {
     $result = array();
+    @include_once(dirname(__FILE__) . '/../../findcryptopairs/api/cg_config.php');
+    $cg_h = function_exists('cg_auth_headers') ? cg_auth_headers() : array();
 
     // File cache: 5 minutes
     $cache_file = sys_get_temp_dir() . '/lm_cg_markets.json';
@@ -286,7 +288,7 @@ function _dm_fetch_coingecko_markets() {
          . '?vs_currency=usd&order=market_cap_desc&per_page=250&page=1'
          . '&sparkline=false&price_change_percentage=24h';
 
-    $body = _dm_http_get($url, 20);
+    $body = _dm_http_get($url, 20, $cg_h);
     if ($body === null) return $result;
 
     $data = json_decode($body, true);
@@ -433,6 +435,8 @@ function _dm_symbol_to_kraken($symbol) {
 // =====================================================================
 function _dm_fetch_coingecko_ohlc($coin_id, $limit) {
     if ($coin_id === '') return array();
+    @include_once(dirname(__FILE__) . '/../../findcryptopairs/api/cg_config.php');
+    $cg_h = function_exists('cg_auth_headers') ? cg_auth_headers() : array();
 
     $cache_file = sys_get_temp_dir() . '/lm_cg_ohlc_' . md5($coin_id) . '.json';
     if (file_exists($cache_file) && (time() - filemtime($cache_file)) < 120) {
@@ -447,7 +451,7 @@ function _dm_fetch_coingecko_ohlc($coin_id, $limit) {
     $url = 'https://api.coingecko.com/api/v3/coins/' . urlencode($coin_id)
          . '/ohlc?vs_currency=usd&days=2';
 
-    $body = _dm_http_get($url, 15);
+    $body = _dm_http_get($url, 15, $cg_h);
     if ($body === null) return array();
 
     $raw = json_decode($body, true);
@@ -779,18 +783,21 @@ function _dm_sort_by_change($a, $b) {
 // =====================================================================
 //  HTTP helper (same pattern as live_prices.php)
 // =====================================================================
-function _dm_http_get($url, $timeout) {
+function _dm_http_get($url, $timeout, $extra_headers = null) {
     if (!$timeout) $timeout = 10;
+    if (!is_array($extra_headers)) $extra_headers = array();
 
     if (function_exists('curl_init')) {
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        $headers = array(
             'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
             'Accept: application/json'
-        ));
+        );
+        foreach ($extra_headers as $eh) { $headers[] = $eh; }
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         $body = curl_exec($ch);
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);

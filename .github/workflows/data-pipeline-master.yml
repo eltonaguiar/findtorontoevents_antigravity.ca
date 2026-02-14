@@ -1,0 +1,215 @@
+name: Master Data Pipeline + DB Health
+
+on:
+  schedule:
+    # Feature store: every 6 hours (populate ML features)
+    - cron: '30 0,6,12,18 * * *'
+    # DB health check: once daily at 7 AM UTC
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+
+jobs:
+  feature-store:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Populate feature store (40+ features x 36 pairs)
+        run: |
+          echo "=== Feature Store Population ==="
+          RESP=$(curl -sf --max-time 120 \
+            "https://findtorontoevents.ca/findcryptopairs/api/feature_store_populate.php?action=populate_all" || echo '{"ok":false}')
+          echo "$RESP" | python3 -c "
+          import json,sys
+          try:
+            d=json.load(sys.stdin)
+            r=d.get('results',{})
+            f=r.get('features',{})
+            print('Features inserted:', f.get('features_inserted',0))
+            rg=r.get('regime',{})
+            print('Regime: BTC=%s Strategy=%s' % (rg.get('btc_trend','?'), rg.get('recommended_strategy','?')))
+            dl=r.get('daily',{})
+            print('Daily signals: crypto=%s stocks=%s forex=%s' % (
+              dl.get('signals',{}).get('crypto',0), dl.get('signals',{}).get('stocks',0), dl.get('signals',{}).get('forex',0)))
+            lc=r.get('learning',{})
+            print('Learning: %d engines' % lc.get('engines_tracked',0))
+          except: print('WARN: parse error')
+          "
+
+      - name: Collect unified audit trail
+        run: |
+          echo "=== Unified Audit Collection ==="
+          curl -sf --max-time 60 \
+            "https://findtorontoevents.ca/findcryptopairs/api/unified_audit.php?action=collect" \
+            | python3 -c "
+          import json,sys
+          try:
+            d=json.load(sys.stdin)
+            print('Collected:', d.get('collected',0), 'new |', 'Skipped:', d.get('skipped_duplicates',0))
+          except: print('WARN: parse error')
+          " || echo "Audit collection failed"
+
+      - name: Sync unified audit resolutions (NEW - fixes 0 resolved bug)
+        run: |
+          echo "=== Sync Resolutions from Engine History ==="
+          curl -sf --max-time 60 \
+            "https://findtorontoevents.ca/findcryptopairs/api/unified_audit.php?action=sync_resolutions" \
+            | python3 -c "
+          import json,sys
+          try:
+            d=json.load(sys.stdin)
+            print('Synced from engines:', d.get('synced_from_engines',0))
+            print('Expired stale:', d.get('expired_stale',0))
+            errs = d.get('errors',[])
+            if errs: print('Errors:', errs)
+          except: print('WARN: parse error')
+          " || echo "Sync resolutions failed"
+
+      - name: Recompute predictability scores
+        run: |
+          echo "=== Predictability Scores ==="
+          curl -sf --max-time 120 \
+            "https://findtorontoevents.ca/findcryptopairs/api/predictability_score.php?action=compute" \
+            | python3 -c "
+          import json,sys
+          try:
+            d=json.load(sys.stdin)
+            print('Pairs:', d.get('pairs_computed',0), '| Elapsed:', d.get('elapsed_ms',0), 'ms')
+            for r in d.get('results',[])[:3]:
+              print('  %s: Score=%s Grade=%s' % (r['pair'], r['score'], r['grade']))
+          except: print('WARN: parse error')
+          " || echo "Predictability compute failed"
+
+  stale-pipeline-refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Refresh crypto pairs signals (cp_signals stale)
+        run: |
+          echo "=== Crypto Pairs Signal Refresh ==="
+          curl -sf --max-time 60 \
+            "https://findtorontoevents.ca/findcryptopairs/api/setup_schema.php" || true
+          curl -sf --max-time 90 \
+            "https://findtorontoevents.ca/findcryptopairs/api/hybrid_engine.php?action=scan" \
+            | head -c 500 || echo "Hybrid scan done"
+
+      - name: Refresh meme scanner signals
+        run: |
+          curl -sf --max-time 60 \
+            "https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php?action=scan" \
+            | head -c 500 || echo "Meme scan done"
+
+      - name: Refresh TV technicals scan
+        run: |
+          curl -sf --max-time 90 \
+            "https://findtorontoevents.ca/findcryptopairs/api/tv_technicals.php?action=scan" \
+            | head -c 500 || echo "TV tech scan done"
+
+      - name: Refresh academic edge
+        run: |
+          curl -sf --max-time 60 \
+            "https://findtorontoevents.ca/findcryptopairs/api/academic_edge.php?action=scan" \
+            | head -c 300 || echo "Academic scan done"
+
+      - name: Monitor existing signals (resolve TP/SL) — ALL engines
+        run: |
+          echo "=== Signal Monitoring (All Engines) ==="
+          curl -sf --max-time 60 "https://findtorontoevents.ca/findcryptopairs/api/hybrid_engine.php?action=monitor" | head -c 300 || true
+          echo ""
+          curl -sf --max-time 60 "https://findtorontoevents.ca/findcryptopairs/api/tv_technicals.php?action=monitor" | head -c 300 || true
+          echo ""
+          curl -sf --max-time 60 "https://findtorontoevents.ca/findcryptopairs/api/kimi_enhanced.php?action=monitor" | head -c 300 || true
+          echo ""
+          curl -sf --max-time 60 "https://findtorontoevents.ca/findcryptopairs/api/expert_consensus.php?action=monitor" | head -c 300 || true
+          echo ""
+          curl -sf --max-time 60 "https://findtorontoevents.ca/findcryptopairs/api/academic_edge.php?action=monitor" | head -c 300 || true
+          echo ""
+          curl -sf --max-time 60 "https://findtorontoevents.ca/findcryptopairs/api/alpha_hunter.php?action=monitor" | head -c 300 || true
+          echo ""
+          curl -sf --max-time 60 "https://findtorontoevents.ca/findcryptopairs/api/proven_picks.php?action=monitor" | head -c 300 || true
+
+      - name: Sync resolutions after monitoring
+        run: |
+          echo "=== Post-monitor sync ==="
+          curl -sf --max-time 60 \
+            "https://findtorontoevents.ca/findcryptopairs/api/unified_audit.php?action=sync_resolutions" \
+            | head -c 300 || true
+
+      - name: Universal signal resolver (price-based TP/SL check)
+        run: |
+          echo "=== Universal Signal Resolution ==="
+          curl -sf --max-time 60 \
+            "https://findtorontoevents.ca/findcryptopairs/api/signal_resolver.php?action=resolve_all" \
+            | python3 -c "
+          import json,sys
+          try:
+            d=json.load(sys.stdin)
+            print('Checked:', d.get('checked',0), '| Resolved:', d.get('resolved',0), '| Expired:', d.get('expired',0))
+          except: print('WARN: parse error')
+          " || echo "Resolver failed"
+
+      - name: Engine health grading
+        run: |
+          echo "=== Engine Health Grades ==="
+          curl -sf --max-time 60 \
+            "https://findtorontoevents.ca/findcryptopairs/api/engine_health.php?action=grade_all" \
+            | python3 -c "
+          import json,sys
+          try:
+            d=json.load(sys.stdin)
+            for e in d.get('engines',[]):
+              print('%s: Grade=%s Score=%.0f WR=%.1f%% PnL=%+.2f Rec=%s' % (
+                e['engine'], e['grade'], e['score'], e['win_rate'], e['total_pnl'], e['recommendation']))
+          except: print('WARN: parse error')
+          " || echo "Health grading failed"
+
+  db-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event.schedule == '0 7 * * *' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Database health check (3 databases)
+        run: |
+          echo "=== Database Health Monitor ==="
+          RESP=$(curl -sf --max-time 120 \
+            "https://findtorontoevents.ca/tools/db_health_monitor.php?action=summary" || echo '{"ok":false}')
+          echo "$RESP" | python3 -c "
+          import json,sys
+          try:
+            d=json.load(sys.stdin)
+            for db in d.get('databases',[]):
+              print('%s: %s | Tables: %d (%d populated, %d empty) | Rows: %s' % (
+                db['database'], db.get('status','?'),
+                db.get('total_tables',0), db.get('populated',0), db.get('empty',0),
+                '{:,}'.format(db.get('total_rows',0))))
+          except: print('WARN: parse error')
+          "
+
+      - name: Detailed health warnings
+        run: |
+          RESP=$(curl -sf --max-time 120 \
+            "https://findtorontoevents.ca/tools/db_health_monitor.php?action=check" || echo '{"ok":false}')
+          echo "$RESP" | python3 -c "
+          import json,sys
+          try:
+            d=json.load(sys.stdin)
+            print('Status:', d.get('overall_status','?'))
+            for c in d.get('critical',[]): print('CRITICAL:', c)
+            for w in d.get('warnings',[])[:15]: print('WARNING:', w)
+          except: print('WARN: parse error')
+          "
+
+      - name: Feature store status
+        run: |
+          curl -sf --max-time 30 \
+            "https://findtorontoevents.ca/findcryptopairs/api/feature_store_populate.php?action=status" \
+            | python3 -c "
+          import json,sys
+          try:
+            d=json.load(sys.stdin)
+            for t in d.get('tables',[]):
+              print('  %-25s %d rows' % (t['table'], t['rows']))
+            pairs=d.get('feature_store_pairs',[])
+            if pairs:
+              print('Feature store: %d pairs, latest=%s' % (len(pairs), pairs[0].get('latest','')))
+          except: print('WARN: parse error')
+          " || echo "Feature store status check failed"

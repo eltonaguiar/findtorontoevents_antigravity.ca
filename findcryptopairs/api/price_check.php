@@ -642,12 +642,14 @@ function _pc_fetch_mexc($pair) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-//  SOURCE 6: CoinGecko (free API, no key required)
+//  SOURCE 6: CoinGecko (Demo API key for higher rate limits)
 //  Uses hardcoded ID map first, then falls back to search API
 //  Docs: https://www.coingecko.com/api/documentation
 // ═══════════════════════════════════════════════════════════════════════
 function _pc_fetch_coingecko($pair) {
     global $CG_ID_MAP, $CACHE_DIR;
+    @include_once(dirname(__FILE__) . '/cg_config.php');
+    $cg_headers = function_exists('cg_auth_headers') ? cg_auth_headers() : array();
 
     // Step 1: Look up in our hardcoded ID map
     $cg_id = isset($CG_ID_MAP[$pair]) ? $CG_ID_MAP[$pair] : null;
@@ -664,7 +666,7 @@ function _pc_fetch_coingecko($pair) {
 
     // Fetch price with the resolved ID
     $url = 'https://api.coingecko.com/api/v3/simple/price?ids=' . urlencode($cg_id) . '&vs_currencies=usd&include_24hr_vol=true&include_24hr_change=true';
-    $resp = _pc_curl($url, 8, array());
+    $resp = _pc_curl($url, 8, $cg_headers);
     if (!$resp) return null;
 
     $data = json_decode($resp, true);
@@ -723,8 +725,10 @@ function _pc_coingecko_search($pair) {
         }
     }
 
+    @include_once(dirname(__FILE__) . '/cg_config.php');
+    $cg_h = function_exists('cg_auth_headers') ? cg_auth_headers() : array();
     $url = 'https://api.coingecko.com/api/v3/search?query=' . urlencode($symbol_lower);
-    $resp = _pc_curl($url, 8, array());
+    $resp = _pc_curl($url, 8, $cg_h);
     if (!$resp) return null;
 
     $data = json_decode($resp, true);

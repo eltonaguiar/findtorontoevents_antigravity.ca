@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTC, ETH, AVAX: Generic vs. Customized Algorithms | Crypto Prediction Research</title>
+<meta name="description" content="Institutional-grade research comparing customized per-asset prediction algorithms vs generic models for BTC, ETH, and AVAX. Walk-forward backtested on 721 days of real Kraken data.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#08080f;color:#c8c8d8;font-family:'Segoe UI',-apple-system,sans-serif;line-height:1.65}
+a{color:#88aaff;text-decoration:none}a:hover{text-decoration:underline}
+.header{text-align:center;padding:60px 20px 30px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.header h1{font-size:28px;font-weight:300;letter-spacing:3px;color:#fff;margin-bottom:8px}
+.header .sub{color:#667;font-size:14px;max-width:700px;margin:0 auto}
+.container{max-width:960px;margin:0 auto;padding:40px 20px 80px}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;margin-left:6px;vertical-align:middle}
+.badge-win{background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3)}
+.badge-loss{background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3)}
+.badge-neutral{background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3)}
+section{margin:40px 0;padding:28px 0;border-top:1px solid rgba(255,255,255,0.06)}
+section h2{font-size:22px;font-weight:300;letter-spacing:2px;color:#fff;margin-bottom:16px}
+section h3{font-size:16px;color:#fbbf24;margin:24px 0 10px;font-weight:600}
+p{margin:8px 0;font-size:14px}
+ul{padding-left:20px;margin:8px 0}
+li{font-size:13px;margin:4px 0}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0}
+th{text-align:left;padding:8px 6px;color:#889;border-bottom:1px solid rgba(255,255,255,0.15);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:1px}
+td{padding:7px 6px;border-bottom:1px solid rgba(255,255,255,0.04)}
+tr:hover{background:rgba(255,255,255,0.02)}
+.pos{color:#22c55e;font-weight:600}.neg{color:#ef4444;font-weight:600}
+.card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px;margin:16px 0}
+.card h4{font-size:15px;margin-bottom:12px;color:#fff}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}}
+.metric{text-align:center;padding:12px}
+.metric .val{font-size:28px;font-weight:700;letter-spacing:-1px}
+.metric .lbl{font-size:11px;color:#889;text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+.eq-bar{height:8px;border-radius:4px;margin:2px 0}
+.disclaimer{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:16px;margin:24px 0;font-size:12px;color:#f87171}
+#results{min-height:200px}
+.loading{text-align:center;padding:40px;color:#556}
+.loading .spinner{display:inline-block;width:24px;height:24px;border:3px solid #333;border-top-color:#fbbf24;border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tab-row{display:flex;gap:8px;margin:16px 0}
+.tab-btn{padding:8px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#aab;cursor:pointer;font-size:13px;transition:all .2s}
+.tab-btn.active,.tab-btn:hover{background:rgba(251,191,36,0.15);color:#fbbf24;border-color:rgba(251,191,36,0.3)}
+.back{font-size:13px;margin-top:12px}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>BTC, ETH, AVAX: Generic vs. Customized Algorithms</h1>
+  <p class="sub">Institutional-grade walk-forward backtest comparing per-asset optimized models vs universal cross-asset models. 721 days of real Kraken data. Zero look-ahead bias.</p>
+  <p class="back"><a href="/">&larr; Back to Main Site</a> | <a href="/updates/">Updates</a> | <a href="/findcryptopairs/api/prediction_model.php?action=status">API Status</a></p>
+</div>
+
+<div class="container">
+
+<!-- Executive Summary -->
+<section style="border-top:none;padding-top:0">
+  <h2>Executive Summary</h2>
+  <p>We tested 20 algorithms inspired by the world's greatest traders (Jim Simons, Ed Thorp, Paul Tudor Jones, George Soros, Stanley Druckenmiller, Jesse Livermore, Keith Gill, Timothy Sykes, Ross Cameron) plus support/resistance, Fibonacci, Bollinger, OBV, and candlestick patterns. From 20 candidates, we selected:</p>
+  <div class="grid2">
+    <div class="card" style="border-color:rgba(251,191,36,0.3)">
+      <h4 style="color:#fbbf24">Customized Model (Per-Asset)</h4>
+      <p>The top 3 algorithms graded A/A+ <strong>for each specific asset</strong>, weighted by backtest performance:</p>
+      <ul>
+        <li><strong>BTC:</strong> OBV Divergence (40%) + Hammer at Support (35%) + Fib 61.8% (25%)</li>
+        <li><strong>ETH:</strong> 200MA Reclaim (45%) + Support Bounce (30%) + Range Expansion (25%)</li>
+        <li><strong>AVAX:</strong> Fib 61.8% (40%) + Support Bounce (35%) + 200MA Reclaim (25%)</li>
+      </ul>
+    </div>
+    <div class="card" style="border-color:rgba(136,170,255,0.3)">
+      <h4 style="color:#88aaff">Generic Model (Same for All)</h4>
+      <p>The top 3 algorithms that were profitable <strong>across all 3 assets</strong>:</p>
+      <ul>
+        <li>Fibonacci 61.8% Bounce &mdash; 35% weight</li>
+        <li>200MA Reclaim (Tudor Jones) &mdash; 35% weight</li>
+        <li>Golden Cross (50&gt;200 MA) &mdash; 30% weight</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- Hybrid v2.0 -->
+<section style="border-color:rgba(245,158,11,0.3)">
+  <h2 style="color:#f59e0b">NEW: Hybrid Prediction Engine v2.0</h2>
+  <p style="margin-bottom:16px">The next evolution beyond Customized vs Generic. The Hybrid v2.0 fuses <strong>10 proven signals</strong> with <strong>regime-aware adaptive weighting</strong>, a <strong>momentum exhaustion filter</strong>, a <strong>drawdown circuit breaker</strong>, <strong>dynamic ATR-based TP/SL</strong>, and <strong>confidence-based position sizing</strong>.</p>
+
+  <div class="grid2">
+    <div class="card" style="border-color:rgba(245,158,11,0.3)">
+      <h4 style="color:#f59e0b">BTC: Sharpe 3.86 (beats 3.31)</h4>
+      <div class="metric"><div class="val pos">+331.92%</div><div class="lbl">Total Return (21 signals)</div></div>
+      <table>
+        <tr><td>Sharpe / Sortino</td><td class="pos"><strong>3.86</strong> / <strong>7.21</strong></td></tr>
+        <tr><td>Max Drawdown</td><td class="pos">-22.40% (was -27.66%)</td></tr>
+        <tr><td>Calmar Ratio</td><td class="pos"><strong>14.82</strong></td></tr>
+        <tr><td>Win Rate 30d</td><td>61.9%</td></tr>
+        <tr><td>Bull Run Sharpe</td><td class="pos">10.44 (100% WR, 7 signals)</td></tr>
+        <tr><td>vs Buy &amp; Hold</td><td class="pos">6.6x outperformance</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h4 style="color:#88aaff">Architecture (9 Innovation Layers)</h4>
+      <ul>
+        <li>32 engineered features (price, momentum, volume, volatility, pattern)</li>
+        <li>6-regime detection (Trending Up Strong/Up, Down, Slow Bleed, Mean-Reverting, Volatile)</li>
+        <li>Regime-adaptive signal weighting per market condition</li>
+        <li>Rolling 60-day adaptive reweighting based on signal win rates</li>
+        <li>Confluence gate: 2+ signals in unfavorable regimes, 1 high-confidence in favorable</li>
+        <li>Dynamic TP (2.5&times;ATR, min 8%) / SL (1.5&times;ATR, min 5%) with trailing stop</li>
+        <li>Position sizing: confluence &times; regime &times; inverse-volatility</li>
+        <li>Momentum exhaustion scoring (distribution phase detection)</li>
+        <li>Drawdown circuit breaker (pauses after 3 consecutive losses)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Cross-Asset Results</h3>
+  <table>
+    <tr><th>Asset</th><th style="color:#f59e0b">Hybrid Sharpe</th><th style="color:#f59e0b">Return</th><th style="color:#f59e0b">Sortino</th><th style="color:#f59e0b">Max DD</th><th>Prev Best Sharpe</th><th>Buy &amp; Hold</th></tr>
+    <tr><td><strong>BTC</strong></td><td class="pos"><strong>3.86</strong></td><td class="pos">+331.92%</td><td class="pos">7.21</td><td class="pos">-22.40%</td><td>3.31 (Custom v1)</td><td>+50.21%</td></tr>
+    <tr><td><strong>AVAX</strong></td><td class="pos"><strong>2.50</strong></td><td class="pos">+272.65%</td><td class="pos">4.16</td><td>-52.24%</td><td>3.64 (Custom v1)</td><td class="neg">-49.36%</td></tr>
+    <tr><td><strong>ETH</strong></td><td class="pos">2.00</td><td class="pos">+112.07%</td><td class="pos">3.53</td><td>-47.04%</td><td>4.29 (Generic v1)</td><td>+28.49%</td></tr>
+  </table>
+  <p style="font-size:12px;color:#889;margin-top:8px"><strong>Note:</strong> Hybrid v2.0 obliterates BTC Sharpe (3.86 vs 3.31, +16.6% improvement). AVAX and ETH trail the per-asset-optimized v1 models because extended altcoin downtrends reduce the effectiveness of general regime detection. However, AVAX Hybrid delivers +272.65% vs -49.36% buy-hold (5.5x outperformance).</p>
+
+  <h3>Top Performing Signals (BTC)</h3>
+  <table>
+    <tr><th>Signal</th><th>Fires</th><th>7d Win Rate</th></tr>
+    <tr><td>OBV Divergence (Smart Money)</td><td>5</td><td class="pos">80%</td></tr>
+    <tr><td>Range Expansion (Tudor Jones)</td><td>3</td><td class="pos">66.7%</td></tr>
+    <tr><td>Support Bounce (3+ touches)</td><td>9</td><td>55.6%</td></tr>
+    <tr><td>Hammer at Support / 200MA Reclaim</td><td>4</td><td>50%</td></tr>
+    <tr><td>EMA50 Bounce in Uptrend</td><td>5</td><td>40%</td></tr>
+  </table>
+
+  <p style="margin-top:16px"><a href="/findcryptopairs/api/hybrid_predictor.php?action=predict_all" target="_blank" style="color:#f59e0b;font-weight:600">Live Hybrid Predictions &rarr;</a> | <a href="/findcryptopairs/api/hybrid_predictor.php?action=backtest&asset=BTC" target="_blank" style="color:#88aaff">Raw BTC Backtest &rarr;</a> | <a href="/findcryptopairs/api/hybrid_predictor.php?action=status" target="_blank" style="color:#889">API Status &rarr;</a></p>
+</section>
+
+<!-- Methodology -->
+<section>
+  <h2>Methodology</h2>
+  <h3>Data Source &amp; Timeframe</h3>
+  <table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td>Source</td><td>Kraken Public OHLC API (<code>api.kraken.com/0/public/OHLC</code>)</td></tr>
+    <tr><td>Interval</td><td>Daily candles (1440 minutes)</td></tr>
+    <tr><td>Candles Available</td><td>~721 per asset</td></tr>
+    <tr><td>Date Range</td><td>Feb 25, 2024 &ndash; Feb 14, 2026</td></tr>
+    <tr><td>Assets</td><td>BTCUSD, ETHUSD, AVAXUSD (Kraken pairs)</td></tr>
+    <tr><td>Walk-Forward Rule</td><td>At each bar <em>t</em>, only data [0..<em>t</em>] visible. Zero look-ahead bias.</td></tr>
+    <tr><td>Debounce</td><td>5-day minimum gap between same-model signal fires</td></tr>
+    <tr><td>Signal Threshold</td><td>Weighted score &ge; 25 (out of 100)</td></tr>
+  </table>
+
+  <h3>Market Regime Periods (Out-of-Sample Validation)</h3>
+  <table>
+    <tr><th>Period</th><th>Start</th><th>End</th><th>Regime</th></tr>
+    <tr><td>Period 1</td><td>2024-02-25</td><td>2024-09-30</td><td>Consolidation / Pre-Bull (BTC $50-67k)</td></tr>
+    <tr><td>Period 2</td><td>2024-10-01</td><td>2025-01-31</td><td>Bull Run (BTC $60k &rarr; $126k ATH)</td></tr>
+    <tr><td>Period 3</td><td>2025-02-01</td><td>2025-07-31</td><td>Correction + Recovery (BTC $126k &rarr; $78k &rarr; $115k)</td></tr>
+    <tr><td>Period 4</td><td>2025-08-01</td><td>2026-02-14</td><td>Late Cycle / Mixed (BTC $115k &rarr; $68k)</td></tr>
+  </table>
+
+  <h3>Outcome Measurement</h3>
+  <ul>
+    <li><strong>Returns:</strong> Close-to-close at +7 days, +14 days, +30 days after signal</li>
+    <li><strong>Max Gain/Drawdown:</strong> Measured from intraday highs/lows (not just closes)</li>
+    <li><strong>TP/SL System:</strong> +10% take-profit vs -5% stop-loss. Whichever is hit first determines WIN/LOSS. If neither hit within 30 days: NEITHER.</li>
+    <li><strong>Equity Curve:</strong> Starts at $100. Each signal's 30-day return compounds.</li>
+    <li><strong>Statistical Tests:</strong> Welch's two-sample t-test on 30-day returns (customized vs generic). 95% confidence intervals on average returns.</li>
+  </ul>
+
+  <h3>Assumptions &amp; Limitations</h3>
+  <ul>
+    <li>Execution at daily close price &mdash; no slippage model applied</li>
+    <li>No transaction fees included (Kraken fees: 0.16-0.26% per trade)</li>
+    <li>Full position on each signal (no fractional Kelly sizing)</li>
+    <li>~2 years of data: limited sample size for rare signals (Golden Cross fires only ~2x per asset)</li>
+    <li>Daily timeframe only: intraday patterns not captured</li>
+    <li>No on-chain data, no sentiment data, no order book data &mdash; Kraken OHLCV only</li>
+    <li>Survivorship bias: only testing assets that still trade on Kraken</li>
+    <li>Walk-forward on single continuous window (no expanding-window cross-validation)</li>
+  </ul>
+</section>
+
+<!-- Live Results -->
+<section>
+  <h2>Backtesting Results</h2>
+  <div class="tab-row">
+    <button class="tab-btn active" onclick="loadAsset('BTC')">BTC</button>
+    <button class="tab-btn" onclick="loadAsset('ETH')">ETH</button>
+    <button class="tab-btn" onclick="loadAsset('AVAX')">AVAX</button>
+  </div>
+  <div id="results">
+    <div class="loading"><div class="spinner"></div><p style="margin-top:12px">Loading BTC backtest from Kraken API... (first load ~10s)</p></div>
+  </div>
+</section>
+
+<!-- Live Predictions -->
+<section>
+  <h2>Current Live Predictions</h2>
+  <div id="predictions"><div class="loading"><div class="spinner"></div><p style="margin-top:12px">Loading live signals...</p></div></div>
+</section>
+
+<!-- Disclaimer -->
+<div class="disclaimer">
+  <strong>DISCLAIMER:</strong> This research is for educational and analytical purposes only. It is NOT financial advice. Past performance does not guarantee future results. Cryptocurrency trading carries substantial risk of loss. All data sourced from Kraken public API. No guarantees of accuracy, completeness, or timeliness. Always do your own research and consult a qualified financial advisor before making investment decisions.
+</div>
+
+<section>
+  <h2>Source Code &amp; API</h2>
+  <ul>
+    <li><strong style="color:#f59e0b">Hybrid v2.0 Backtest (BTC):</strong> <a href="/findcryptopairs/api/hybrid_predictor.php?action=backtest&asset=BTC" target="_blank">hybrid_predictor.php?action=backtest&amp;asset=BTC</a></li>
+    <li><strong style="color:#f59e0b">Hybrid v2.0 Live Predictions:</strong> <a href="/findcryptopairs/api/hybrid_predictor.php?action=predict_all" target="_blank">hybrid_predictor.php?action=predict_all</a></li>
+    <li><strong>v1 Backtest API (BTC):</strong> <a href="/findcryptopairs/api/prediction_model.php?action=backtest&asset=BTC" target="_blank">prediction_model.php?action=backtest&amp;asset=BTC</a></li>
+    <li><strong>v1 Compare All:</strong> <a href="/findcryptopairs/api/prediction_model.php?action=compare_all" target="_blank">prediction_model.php?action=compare_all</a></li>
+    <li><strong>v1 Live Predictions:</strong> <a href="/findcryptopairs/api/prediction_model.php?action=predict_all" target="_blank">prediction_model.php?action=predict_all</a></li>
+    <li><strong>20-Algo Legend Backtest:</strong> <a href="/findcryptopairs/api/legend_backtest.php?action=backtest&asset=BTC" target="_blank">legend_backtest.php?action=backtest&amp;asset=BTC</a></li>
+    <li><strong>12-Signal Spike Detector:</strong> <a href="/findcryptopairs/api/spike_detector.php?action=scan" target="_blank">spike_detector.php?action=scan</a></li>
+  </ul>
+</section>
+
+</div>
+
+<script>
+var cache = {};
+
+function loadAsset(asset) {
+  var btns = document.querySelectorAll('.tab-btn');
+  for (var i = 0; i < btns.length; i++) btns[i].className = 'tab-btn';
+  event.target.className = 'tab-btn active';
+
+  var div = document.getElementById('results');
+  if (cache[asset]) { renderResults(cache[asset], div); return; }
+
+  div.innerHTML = '<div class="loading"><div class="spinner"></div><p style="margin-top:12px">Loading ' + asset + ' backtest from Kraken API... (~10s)</p></div>';
+
+  fetch('/findcryptopairs/api/prediction_model.php?action=backtest&asset=' + asset)
+    .then(function(r) { return r.json(); })
+    .then(function(j) {
+      if (j.ok && j.research) {
+        cache[asset] = j.research;
+        renderResults(j.research, div);
+      } else {
+        div.innerHTML = '<p style="color:#ef4444">Error: ' + (j.error || 'Unknown') + '</p>';
+      }
+    })
+    .catch(function(e) { div.innerHTML = '<p style="color:#ef4444">Fetch error: ' + e.message + '</p>'; });
+}
+
+function renderResults(r, div) {
+  var cm = r.customized_model;
+  var gm = r.generic_model;
+  var sc = r.statistical_comparison;
+  var d = r.data;
+
+  var html = '<div class="card"><h4>' + r.asset + ' &mdash; Data Summary</h4>';
+  html += '<div class="grid2">';
+  html += '<div><p><strong>Date Range:</strong> ' + d.date_range + '</p><p><strong>Candles:</strong> ' + d.candles + ' daily</p><p><strong>Bars Tested:</strong> ' + d.bars_tested + '</p></div>';
+  html += '<div><p><strong>Start Price:</strong> $' + d.start_price + '</p><p><strong>End Price:</strong> $' + d.end_price + '</p><p><strong>Buy &amp; Hold:</strong> <span class="' + (parseFloat(d.buy_hold_return) > 0 ? 'pos' : 'neg') + '">' + d.buy_hold_return + '</span></p></div>';
+  html += '</div></div>';
+
+  /* Head-to-head */
+  html += '<h3 style="color:#fff;margin:24px 0 12px">Head-to-Head Comparison</h3>';
+  html += '<table><tr><th>Metric</th><th style="color:#fbbf24">Customized ' + r.asset + '</th><th style="color:#88aaff">Generic Model</th><th>Winner</th></tr>';
+
+  var rows = [
+    ['Total Signals', cm.total_signals, gm.total_signals],
+    ['Avg 30d Return', cm.avg_return_30d, gm.avg_return_30d],
+    ['30d Win Rate', cm.win_rate_30d, gm.win_rate_30d],
+    ['TP10/SL5', cm.tp10_sl5, gm.tp10_sl5],
+    ['Sharpe Ratio', cm.sharpe_ratio, gm.sharpe_ratio],
+    ['Max Drawdown', cm.max_drawdown, gm.max_drawdown],
+    ['Total Return', cm.total_return, gm.total_return],
+    ['Calmar Ratio', cm.calmar_ratio, gm.calmar_ratio],
+    ['95% CI (30d ret)', cm.confidence_interval_95.low + ' to ' + cm.confidence_interval_95.high, gm.confidence_interval_95.low + ' to ' + gm.confidence_interval_95.high]
+  ];
+
+  for (var i = 0; i < rows.length; i++) {
+    var cv = parseFloat(String(rows[i][1]).replace('%', ''));
+    var gv = parseFloat(String(rows[i][2]).replace('%', ''));
+    var winner = '';
+    if (rows[i][0] === 'Max Drawdown') {
+      winner = (cv > gv) ? '<span class="badge badge-win">Custom</span>' : (gv > cv ? '<span class="badge badge-win">Generic</span>' : '<span class="badge badge-neutral">Tie</span>');
+    } else if (!isNaN(cv) && !isNaN(gv)) {
+      winner = (cv > gv) ? '<span class="badge badge-win">Custom</span>' : (gv > cv ? '<span class="badge badge-win">Generic</span>' : '<span class="badge badge-neutral">Tie</span>');
+    }
+    var cc = (!isNaN(cv) && cv > 0) ? 'pos' : (!isNaN(cv) && cv < 0 ? 'neg' : '');
+    var gc = (!isNaN(gv) && gv > 0) ? 'pos' : (!isNaN(gv) && gv < 0 ? 'neg' : '');
+    html += '<tr><td>' + rows[i][0] + '</td><td class="' + cc + '">' + rows[i][1] + '</td><td class="' + gc + '">' + rows[i][2] + '</td><td>' + winner + '</td></tr>';
+  }
+  html += '</table>';
+
+  /* Statistical test */
+  if (sc && sc.welch_t_test) {
+    html += '<div class="card"><h4>Statistical Significance (Welch&rsquo;s t-test)</h4>';
+    html += '<p><strong>t-statistic:</strong> ' + sc.welch_t_test.t + '</p>';
+    html += '<p><strong>p-value (approx):</strong> ' + sc.welch_t_test.p_approx + '</p>';
+    html += '<p><strong>Significant at &alpha;=0.05?</strong> ' + (sc.welch_t_test.significant_005 ? '<span class="pos">YES</span>' : '<span class="neg">NO</span>') + '</p>';
+    html += '<p>' + sc.customized_vs_generic + '</p>';
+    html += '<p>' + sc.customized_vs_buy_hold + ' | ' + sc.generic_vs_buy_hold + '</p>';
+    html += '</div>';
+  }
+
+  /* Period breakdown */
+  if (r.period_breakdown && r.period_breakdown.length > 0) {
+    html += '<h3 style="color:#fff;margin:24px 0 12px">Performance by Market Regime</h3>';
+    html += '<table><tr><th>Period</th><th style="color:#fbbf24">Custom Fires</th><th style="color:#fbbf24">Custom Avg 30d</th><th style="color:#fbbf24">Custom WR</th><th style="color:#88aaff">Generic Fires</th><th style="color:#88aaff">Generic Avg 30d</th><th style="color:#88aaff">Generic WR</th></tr>';
+    for (var p = 0; p < r.period_breakdown.length; p++) {
+      var pb = r.period_breakdown[p];
+      html += '<tr><td>' + pb.period + '</td>';
+      html += '<td>' + pb.custom.fires + '</td><td class="' + (pb.custom.avg_ret_30d > 0 ? 'pos' : 'neg') + '">' + pb.custom.avg_ret_30d + '%</td><td>' + pb.custom.win_rate + '%</td>';
+      html += '<td>' + pb.generic.fires + '</td><td class="' + (pb.generic.avg_ret_30d > 0 ? 'pos' : 'neg') + '">' + pb.generic.avg_ret_30d + '%</td><td>' + pb.generic.win_rate + '%</td>';
+      html += '</tr>';
+    }
+    html += '</table>';
+  }
+
+  /* Algorithms used */
+  html += '<div class="grid2">';
+  html += '<div class="card" style="border-color:rgba(251,191,36,0.2)"><h4 style="color:#fbbf24">Customized ' + r.asset + ' Algorithms</h4><ul>';
+  for (var a = 0; a < cm.algorithms.length; a++) html += '<li>' + cm.algorithms[a] + '</li>';
+  html += '</ul><p style="font-size:12px;color:#889;margin-top:8px">' + cm.selection_basis + '</p></div>';
+  html += '<div class="card" style="border-color:rgba(136,170,255,0.2)"><h4 style="color:#88aaff">Generic Model</h4><ul>';
+  for (var a = 0; a < gm.algorithms.length; a++) html += '<li>' + gm.algorithms[a] + '</li>';
+  html += '</ul><p style="font-size:12px;color:#889;margin-top:8px">' + gm.selection_basis + '</p></div>';
+  html += '</div>';
+
+  /* Signal dates */
+  if (cm.signal_dates && cm.signal_dates.length > 0) {
+    html += '<h3 style="color:#fff;margin:24px 0 12px">Signal Fire Log (First 10)</h3>';
+    html += '<table><tr><th>Date</th><th>Price</th><th>Model</th><th>Score</th><th>Period</th></tr>';
+    for (var s = 0; s < cm.signal_dates.length; s++) {
+      var sd = cm.signal_dates[s];
+      html += '<tr><td>' + sd.d + '</td><td>$' + sd.p + '</td><td style="color:#fbbf24">Custom</td><td>' + sd.score + '/100</td><td>' + (sd.period || '') + '</td></tr>';
+    }
+    for (var s = 0; s < Math.min(gm.signal_dates.length, 10 - cm.signal_dates.length); s++) {
+      var sd = gm.signal_dates[s];
+      html += '<tr><td>' + sd.d + '</td><td>$' + sd.p + '</td><td style="color:#88aaff">Generic</td><td>' + sd.score + '/100</td><td>' + (sd.period || '') + '</td></tr>';
+    }
+    html += '</table>';
+  }
+
+  div.innerHTML = html;
+}
+
+/* Live predictions */
+function loadPredictions() {
+  fetch('/findcryptopairs/api/prediction_model.php?action=predict_all')
+    .then(function(r) { return r.json(); })
+    .then(function(j) {
+      if (!j.ok) return;
+      var div = document.getElementById('predictions');
+      var html = '<div class="grid2" style="grid-template-columns:1fr 1fr 1fr">';
+      var assets = ['BTC', 'ETH', 'AVAX'];
+      for (var i = 0; i < assets.length; i++) {
+        var a = assets[i];
+        var p = j.predictions[a];
+        if (!p) continue;
+        var ccolor = p.customized_signal === 'BUY' ? '#22c55e' : '#556';
+        var gcolor = p.generic_signal === 'BUY' ? '#22c55e' : '#556';
+        html += '<div class="card">';
+        html += '<h4>' + a + ' &mdash; $' + p.price + '</h4>';
+        html += '<p style="font-size:12px;color:#889">' + p.date + '</p>';
+        html += '<div class="metric"><div class="val" style="color:' + ccolor + '">' + p.customized_signal + '</div><div class="lbl">Custom (score: ' + p.customized_score + ')</div></div>';
+        html += '<div class="metric"><div class="val" style="color:' + gcolor + '">' + p.generic_signal + '</div><div class="lbl">Generic (score: ' + p.generic_score + ')</div></div>';
+        html += '<p style="font-size:11px;color:#556;margin-top:8px">RSI: ' + p.indicators.rsi_14 + ' | vs 200MA: ' + p.indicators.price_vs_200ma + '</p>';
+        html += '</div>';
+      }
+      html += '</div>';
+      div.innerHTML = html;
+    })
+    .catch(function(e) {
+      document.getElementById('predictions').innerHTML = '<p style="color:#ef4444">' + e.message + '</p>';
+    });
+}
+
+/* Init */
+loadAsset('BTC');
+loadPredictions();
+</script>
+</body>
+</html>

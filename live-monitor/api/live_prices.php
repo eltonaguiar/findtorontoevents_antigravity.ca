@@ -626,8 +626,9 @@ function _lp_symbol_to_finnhub($symbol) {
 // =====================================================================
 //  HTTP helper — cURL primary, file_get_contents fallback
 // =====================================================================
-function _lp_http_get($url, $timeout) {
+function _lp_http_get($url, $timeout, $extra_headers = null) {
     if (!$timeout) $timeout = 10;
+    if (!is_array($extra_headers)) $extra_headers = array();
 
     // Try cURL first (more reliable on shared hosting)
     if (function_exists('curl_init')) {
@@ -635,10 +636,12 @@ function _lp_http_get($url, $timeout) {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        $headers = array(
             'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
             'Accept: application/json'
-        ));
+        );
+        foreach ($extra_headers as $eh) { $headers[] = $eh; }
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         $body = curl_exec($ch);
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
@@ -707,6 +710,8 @@ function _lp_fetch_crypto_binance($symbol) {
 // =====================================================================
 function _lp_fetch_all_crypto_coingecko($symbols) {
     $result = array();
+    @include_once(dirname(__FILE__) . '/../../findcryptopairs/api/cg_config.php');
+    $cg_h = function_exists('cg_auth_headers') ? cg_auth_headers() : array();
 
     // Build comma-separated coin IDs
     $ids = array();
@@ -727,7 +732,7 @@ function _lp_fetch_all_crypto_coingecko($symbols) {
          . '&include_24hr_change=true'
          . '&include_last_updated_at=true';
 
-    $data = _lp_http_get($url, 15);
+    $data = _lp_http_get($url, 15, $cg_h);
     if ($data === null) return $result;
 
     foreach ($id_to_symbol as $cid => $symbol) {
@@ -1041,6 +1046,8 @@ function _lp_fetch_forex_currencylayer($symbols, $api_key) {
 //  Data Source: CoinGecko (crypto) — fallback
 // =====================================================================
 function _lp_fetch_crypto_coingecko($symbol) {
+    @include_once(dirname(__FILE__) . '/../../findcryptopairs/api/cg_config.php');
+    $cg_h = function_exists('cg_auth_headers') ? cg_auth_headers() : array();
     $coin_id = _lp_symbol_to_coingecko($symbol);
     if ($coin_id === '') return null;
 
@@ -1051,7 +1058,7 @@ function _lp_fetch_crypto_coingecko($symbol) {
          . '&include_24hr_change=true'
          . '&include_last_updated_at=true';
 
-    $data = _lp_http_get($url, 10);
+    $data = _lp_http_get($url, 10, $cg_h);
     if ($data === null || !isset($data[$coin_id])) return null;
 
     $coin = $data[$coin_id];

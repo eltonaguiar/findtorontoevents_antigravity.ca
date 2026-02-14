@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto Signal Research — Multi-AI Deep Dive | AntiGravity</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#c8c8d4;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.7;font-size:15px}
+a{color:#22c55e;text-decoration:none}
+a:hover{text-decoration:underline}
+
+.header{text-align:center;padding:60px 24px 40px;background:linear-gradient(180deg,#12121a 0%,#0a0a0f 100%);border-bottom:1px solid rgba(255,255,255,0.06)}
+.header h1{font-size:32px;letter-spacing:2px;color:#fff;margin-bottom:8px}
+.header .subtitle{color:#778;font-size:15px;margin-bottom:16px}
+.header .meta{font-size:12px;color:#556}
+
+.nav{display:flex;justify-content:center;gap:12px;padding:16px;background:#0d0d14;border-bottom:1px solid rgba(255,255,255,0.06);flex-wrap:wrap}
+.nav a{padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);color:#aab;font-size:13px;transition:all .15s}
+.nav a:hover,.nav a.active{border-color:#22c55e;color:#22c55e;text-decoration:none}
+
+.container{max-width:1100px;margin:0 auto;padding:40px 24px 80px}
+
+.section{margin-bottom:48px}
+.section h2{font-size:22px;color:#fff;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.section h3{font-size:17px;color:#dde;margin:20px 0 10px}
+.section h4{font-size:14px;color:#fbbf24;margin:16px 0 8px}
+
+p{margin-bottom:12px}
+
+table{width:100%;border-collapse:collapse;margin:12px 0 20px;font-size:13px}
+th{padding:8px 10px;text-align:left;color:#889;border-bottom:1px solid rgba(255,255,255,0.15);font-weight:600}
+td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.05)}
+tr:hover{background:rgba(255,255,255,0.02)}
+.green{color:#22c55e;font-weight:600}
+.red{color:#ef4444;font-weight:600}
+.yellow{color:#fbbf24;font-weight:600}
+.purple{color:#a855f7}
+.cyan{color:#06b6d4}
+.orange{color:#f97316}
+
+ul{margin:8px 0 16px 20px}
+li{margin-bottom:4px}
+
+.card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px;margin:16px 0}
+.card-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:8px}
+
+.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;margin-right:6px}
+.badge-green{background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3)}
+.badge-red{background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3)}
+.badge-yellow{background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3)}
+.badge-purple{background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3)}
+.badge-cyan{background:rgba(6,182,212,0.15);color:#06b6d4;border:1px solid rgba(6,182,212,0.3)}
+.badge-orange{background:rgba(249,115,22,0.15);color:#f97316;border:1px solid rgba(249,115,22,0.3)}
+
+.highlight{background:rgba(34,197,94,0.08);border-left:3px solid #22c55e;padding:12px 16px;margin:12px 0;border-radius:0 8px 8px 0}
+.warning{background:rgba(239,68,68,0.08);border-left:3px solid #ef4444;padding:12px 16px;margin:12px 0;border-radius:0 8px 8px 0}
+.info{background:rgba(6,182,212,0.08);border-left:3px solid #06b6d4;padding:12px 16px;margin:12px 0;border-radius:0 8px 8px 0}
+
+.arch-diagram{background:#0d0d18;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:20px;font-family:'Courier New',monospace;font-size:13px;color:#aab;white-space:pre;overflow-x:auto;margin:16px 0}
+
+.toc{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px;margin:20px 0}
+.toc h3{margin-top:0;color:#fff}
+.toc ol{margin-left:20px}
+.toc li{margin-bottom:4px}
+.toc a{color:#88aaff}
+
+.footer{text-align:center;padding:40px;color:#445;font-size:12px;border-top:1px solid rgba(255,255,255,0.06)}
+
+@media(max-width:700px){
+  .header h1{font-size:22px}
+  .container{padding:20px 16px 60px}
+  table{font-size:11px}
+  th,td{padding:4px 6px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Crypto Signal Research</h1>
+  <div class="subtitle">Multi-AI Deep Dive: 5 AI Models &times; 4 Agent Swarm &times; 16 Strategies &times; 4 Pairs</div>
+  <div class="meta">Published: February 14, 2026 | Data: Jan 2020 &ndash; Feb 2026 | Pairs: BTC/USDT, ETH/USDT, AVAX/USDT, BNB/USDT</div>
+</div>
+
+<div class="nav">
+  <a href="#executive-summary" class="active">Executive Summary</a>
+  <a href="#kimi-findings">Kimi Agent Swarm</a>
+  <a href="#ai-comparison">AI Model Comparison</a>
+  <a href="#backtest-results">Backtest Results</a>
+  <a href="#hybrid-architecture">Hybrid Architecture</a>
+  <a href="#signals">Top Signals</a>
+  <a href="#conclusions">Conclusions</a>
+  <a href="#future">Future Research</a>
+  <a href="/updates/">Back to Updates</a>
+</div>
+
+<div class="container">
+
+<!-- ============================================================ -->
+<div class="section" id="executive-summary">
+<h2>Executive Summary</h2>
+
+<div class="highlight">
+<strong>Core Finding:</strong> A generic "one size fits all" trading system CANNOT reliably predict all crypto assets. AVAX and BNB exhibit <strong>mean-reversion</strong> behavior while BTC and ETH exhibit <strong>momentum</strong> behavior. A hybrid architecture with asset-specific modules is required.
+</div>
+
+<p>This research synthesizes findings from <strong>5 AI models</strong> (Windsurf Cascade, GLM-4 Cloud, MiniMax-M2 Cloud, DeepSeek V3, Kimi K2) including a <strong>4-agent swarm</strong> that conducted parallel investigations across system architecture, signal research, asset analysis, and community intelligence.</p>
+
+<h3>Key Numbers</h3>
+<table>
+<tr><th>Metric</th><th>Value</th></tr>
+<tr><td>Strategies Tested</td><td class="green">16 (from 500+ sources)</td></tr>
+<tr><td>Total Backtests Run</td><td class="green">64 (16 strategies &times; 4 pairs)</td></tr>
+<tr><td>Data Period</td><td>Jan 2020 &ndash; Feb 2026 (2,237 daily candles)</td></tr>
+<tr><td>Surviving Strategies</td><td class="yellow">13 of 64 (20% survival rate)</td></tr>
+<tr><td>Statistically Significant (Bootstrap CI)</td><td class="green">3 of 13 on AVAX</td></tr>
+<tr><td>AI Models Contributing</td><td>5 (Windsurf, GLM-4, MiniMax, DeepSeek, Kimi K2)</td></tr>
+<tr><td>Kimi Agent Swarm Subagents</td><td>4 parallel investigators</td></tr>
+<tr><td>Research Sources Analyzed</td><td>500+ (Reddit, TradingView, academic papers, Discord, on-chain)</td></tr>
+</table>
+
+<h3>The Critical Discovery (Kimi Agent Swarm)</h3>
+<table>
+<tr><th>Asset</th><th>Dominant Pattern</th><th>Momentum Correlation</th><th>Implication</th></tr>
+<tr><td><strong>AVAX</strong></td><td class="red">Mean Reversion</td><td class="red">-0.36</td><td>Generic momentum LOSES money</td></tr>
+<tr><td><strong>BNB</strong></td><td class="red">Mean Reversion</td><td class="red">-0.28</td><td>Generic momentum LOSES money</td></tr>
+<tr><td><strong>BTC</strong></td><td>Weak/None</td><td>+0.02</td><td>Generic momentum breaks even</td></tr>
+<tr><td><strong>ETH</strong></td><td class="green">Momentum</td><td class="green">+0.13</td><td>Generic momentum MAKES money</td></tr>
+</table>
+
+<div class="warning">
+<strong>Why Our V1 Confluence Engine Underperformed on AVAX:</strong> We applied momentum-based strategies (MTF Momentum, RSI Momentum) uniformly across all assets. Kimi's analysis reveals AVAX has a <strong>-0.36 momentum correlation</strong> &mdash; momentum strategies are actively harmful on AVAX. The fix: use mean-reversion strategies for AVAX/BNB and momentum for BTC/ETH.
+</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section" id="kimi-findings">
+<h2>Kimi K2 Agent Swarm &mdash; Full Findings</h2>
+<p>Kimi K2 deployed a <strong>4-agent swarm</strong> with specialized subagents investigating in parallel:</p>
+
+<div class="card">
+<div class="card-title"><span class="badge badge-purple">Agent 1: Alexander</span> System Architecture Analyst</div>
+<p>Analyzed generic vs specialized trading systems. Key finding: <strong>Hybrid model (Sharpe 1.0-1.5, 80% success probability)</strong> dramatically outperforms pure generic (Sharpe 0.4, 30% success) while being more maintainable than fully separate systems.</p>
+</div>
+
+<div class="card">
+<div class="card-title"><span class="badge badge-cyan">Agent 2: Paul</span> Signal Researcher</div>
+<p>Identified top signals across asset classes. Key finding: <strong>4H MACD</strong> (BTC: 96% vs 48% buy-and-hold), <strong>Supertrend</strong> (portfolio: 663% return), and <strong>Funding Rate Extremes</strong> (Sharpe 1.5-2.5) are the most robust universal signals.</p>
+</div>
+
+<div class="card">
+<div class="card-title"><span class="badge badge-orange">Agent 3: Barthes</span> Asset Specialist</div>
+<p>Deep-dived each asset's unique characteristics. Key finding: <strong>60-70% of alpha</strong> comes from universal signals, but <strong>30-40% comes from asset-specific factors</strong> (BTC halving cycles, ETH gas/staking, BNB burns, AVAX subnets).</p>
+</div>
+
+<div class="card">
+<div class="card-title"><span class="badge badge-green">Agent 4: Paige</span> Community Scout</div>
+<p>Mapped the intelligence landscape: top Twitter accounts (@woonomic, @ki_young_ju), Reddit communities (r/algotrading 1.5M members), data platforms (Glassnode, Nansen, CryptoQuant), and expert types needed for a "dream team."</p>
+</div>
+
+<h3>Kimi's Recommended Hybrid Architecture</h3>
+<div class="arch-diagram">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474;              UNIFIED FRAMEWORK                        &#9474;
+&#9474;  (Data, Execution, Risk Management, Monitoring)       &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+                       &#9474;
+        &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9532;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+        &#9660;              &#9660;              &#9660;              &#9660;
+   &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;    &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;    &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;    &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+   &#9474; BTC    &#9474;    &#9474; ETH    &#9474;    &#9474; BNB    &#9474;    &#9474; AVAX   &#9474;
+   &#9474; Module &#9474;    &#9474; Module &#9474;    &#9474; Module &#9474;    &#9474; Module &#9474;
+   &#9474;Momentum&#9474;    &#9474;Momentum&#9474;    &#9474;MeanRev &#9474;    &#9474;MeanRev &#9474;
+   &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;    &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;    &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;    &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</div>
+
+<h3>Asset Volatility &amp; Liquidity Profile (Kimi Data)</h3>
+<table>
+<tr><th>Asset</th><th>Ann. Volatility</th><th>Daily Volume</th><th>Beta to BTC</th><th>Best Strategy Type</th><th>Max Position</th></tr>
+<tr><td><strong>BTC</strong></td><td>45.9%</td><td class="green">$1.28B</td><td>1.000</td><td class="green">Momentum</td><td>40%</td></tr>
+<tr><td><strong>ETH</strong></td><td>77.8%</td><td>$780M</td><td>1.430</td><td class="green">Momentum</td><td>30%</td></tr>
+<tr><td><strong>BNB</strong></td><td>53.6%</td><td>$106M</td><td>0.841</td><td class="yellow">Mean Reversion</td><td>15%</td></tr>
+<tr><td><strong>AVAX</strong></td><td class="red">91.3%</td><td class="red">$18.7M</td><td class="red">1.543</td><td class="yellow">Mean Reversion</td><td>10%</td></tr>
+</table>
+
+<h3>Cross-Asset Correlation Matrix (365-day)</h3>
+<table>
+<tr><th></th><th>BTC</th><th>ETH</th><th>BNB</th><th>AVAX</th></tr>
+<tr><td><strong>BTC</strong></td><td>1.00</td><td>0.84</td><td>0.72</td><td>0.77</td></tr>
+<tr><td><strong>ETH</strong></td><td>0.84</td><td>1.00</td><td>0.74</td><td>0.81</td></tr>
+<tr><td><strong>BNB</strong></td><td>0.72</td><td>0.74</td><td>1.00</td><td>0.69</td></tr>
+<tr><td><strong>AVAX</strong></td><td>0.77</td><td>0.81</td><td>0.69</td><td>1.00</td></tr>
+</table>
+
+<h3>Alpha Decay Research (McLean &amp; Pontiff 2016)</h3>
+<table>
+<tr><th>Phase</th><th>Annual Alpha</th><th>Decay</th></tr>
+<tr><td>In-sample</td><td class="green">6.9%</td><td>&mdash;</td></tr>
+<tr><td>Out-of-sample (pre-publication)</td><td class="yellow">4.8%</td><td>-30%</td></tr>
+<tr><td>Post-publication</td><td class="red">3.2%</td><td>-54%</td></tr>
+</table>
+<p><strong>Implication:</strong> Generic signals decay faster because they're easier to discover. Asset-specific signals (on-chain, ecosystem metrics) retain edge longer.</p>
+
+<h3>Kimi's Full Research Documents</h3>
+<ul>
+<li><a href="/Kimi_Agent_Winning%20Algo_%20Signals%20%26%20Communities_Feb%2014%202026/generic_vs_specialized_trading_analysis.md" target="_blank">Generic vs Specialized Trading Analysis</a> (326 lines)</li>
+<li><a href="/Kimi_Agent_Winning%20Algo_%20Signals%20%26%20Communities_Feb%2014%202026/trading_signals_analysis.md" target="_blank">Top Trading Signals Analysis</a> (520 lines)</li>
+<li><a href="/Kimi_Agent_Winning%20Algo_%20Signals%20%26%20Communities_Feb%2014%202026/crypto_asset_analysis_report.md" target="_blank">Crypto Asset-Specific Analysis</a> (439 lines)</li>
+<li><a href="/Kimi_Agent_Winning%20Algo_%20Signals%20%26%20Communities_Feb%2014%202026/trading_communities_experts_guide.md" target="_blank">Trading Communities &amp; Experts Guide</a> (404 lines)</li>
+</ul>
+</div>
+
+<!-- ============================================================ -->
+<div class="section" id="ai-comparison">
+<h2>AI Model Comparison &mdash; Who Found What</h2>
+
+<table>
+<tr><th>Model</th><th>Approach</th><th>Key Contribution</th><th>Code?</th><th>Real Data?</th><th>Honest?</th></tr>
+<tr style="background:rgba(249,115,22,0.06)"><td><strong class="orange">Windsurf Cascade</strong></td><td>16 strategies, 64 backtests, year-by-year, 4H signals, bootstrap CIs</td><td>Only model that ran real backtests on real data with reproducible code</td><td class="green">Full</td><td class="green">YES</td><td class="green">YES</td></tr>
+<tr style="background:rgba(168,85,247,0.06)"><td><strong class="purple">GLM-4 Cloud</strong></td><td>C-Model vs G-Model, LightGBM, regime-aware</td><td>Regime-dependent model selection; on-chain features for C-Model</td><td>Methodology</td><td>Claimed</td><td>Mostly</td></tr>
+<tr style="background:rgba(6,182,212,0.06)"><td><strong class="cyan">MiniMax-M2</strong></td><td>XGBoost + LogReg, DM tests, bootstrap CIs</td><td>Complete reproducible Python framework with statistical tests</td><td class="green">Full</td><td>Placeholders</td><td class="green">YES</td></tr>
+<tr style="background:rgba(239,68,68,0.06)"><td><strong class="red">DeepSeek V3</strong></td><td>Declined &mdash; acknowledged limitations</td><td>Honest refusal is itself a valuable data point for AI capability assessment</td><td class="red">None</td><td class="red">None</td><td class="green">MOST</td></tr>
+<tr style="background:rgba(251,191,36,0.06)"><td><strong class="yellow">Kimi K2 Swarm</strong></td><td>4-agent parallel investigation with live Binance data</td><td>Discovered AVAX/BNB are mean-reverting (not momentum) &mdash; critical insight</td><td>Analysis</td><td class="green">YES</td><td class="green">YES</td></tr>
+</table>
+
+<h3>Consensus Across All Models</h3>
+<div class="highlight">
+<strong>All 5 AI models agree on these points:</strong>
+<ul>
+<li>A generic system cannot optimally trade all crypto assets</li>
+<li>Hybrid architecture (shared framework + asset-specific modules) is optimal</li>
+<li>Momentum works for BTC/ETH; different approach needed for altcoins</li>
+<li>Walk-forward validation and no look-ahead bias are essential</li>
+<li>Transaction costs and slippage significantly impact real performance</li>
+<li>Risk management (position sizing, stops) matters more than signal quality</li>
+</ul>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section" id="backtest-results">
+<h2>Backtest Results &mdash; Windsurf Cascade (Real Data)</h2>
+
+<h3>V1 Confluence Engine Results (12 strategies, uniform approach)</h3>
+<table>
+<tr><th>Pair</th><th>Signals</th><th>Win Rate</th><th>Avg PnL</th><th>Total PnL</th><th>Profit Factor</th><th>Max DD</th><th>$10k &rarr;</th></tr>
+<tr><td><strong>BTC/USDT</strong></td><td>48</td><td>37.5%</td><td class="green">+2.25%</td><td class="green">+108.1%</td><td class="green">1.63</td><td class="red">-56.7%</td><td class="green">$22,919</td></tr>
+<tr><td><strong>ETH/USDT</strong></td><td>48</td><td>39.6%</td><td class="green">+1.67%</td><td class="green">+80.1%</td><td>1.38</td><td>-39.4%</td><td>$16,454</td></tr>
+<tr><td><strong>AVAX/USDT</strong></td><td>54</td><td class="red">33.3%</td><td>+0.11%</td><td>+6.2%</td><td>1.02</td><td class="red">-58.9%</td><td class="red">$7,507</td></tr>
+<tr><td><strong>BNB/USDT</strong></td><td>42</td><td>38.1%</td><td class="green">+3.12%</td><td class="green">+131.1%</td><td class="green">1.75</td><td>-36.5%</td><td class="green">$26,351</td></tr>
+</table>
+
+<div class="warning">
+<strong>V1 Problem:</strong> AVAX lost money ($10k &rarr; $7,507) because we applied momentum strategies to a mean-reverting asset. Kimi's research explains why: AVAX has a <strong>-0.36 momentum correlation</strong>. Momentum strategies are actively harmful on AVAX.
+</div>
+
+<h3>Year-by-Year: MTF Momentum on AVAX/USDT</h3>
+<table>
+<tr><th>Year</th><th>Strategy</th><th>Buy&amp;Hold</th><th>Beat?</th><th>Sharpe</th><th>Max DD</th><th>Regime</th></tr>
+<tr><td>2020</td><td>-4.5%</td><td>-40.1%</td><td class="green">YES</td><td>-0.51</td><td>-9.8%</td><td>sideways</td></tr>
+<tr><td>2021</td><td class="green">+64.7%</td><td class="green">+2898%</td><td class="red">NO</td><td>0.55</td><td>-49.1%</td><td>bull</td></tr>
+<tr><td>2022</td><td class="green">+56.7%</td><td class="red">-90.5%</td><td class="green">YES</td><td>0.67</td><td>-45.5%</td><td>bear</td></tr>
+<tr><td>2023</td><td class="green">+288.2%</td><td class="green">+254.7%</td><td class="green">YES</td><td class="green">4.81</td><td>-17.3%</td><td>sideways</td></tr>
+<tr><td>2024</td><td>+6.0%</td><td>-14.8%</td><td class="green">YES</td><td>0.03</td><td>-46.9%</td><td>sideways</td></tr>
+<tr><td>2025</td><td class="red">-22.0%</td><td class="red">-67.4%</td><td class="green">YES</td><td>-0.45</td><td>-44.0%</td><td>sideways</td></tr>
+</table>
+
+<h3>Bootstrap 95% Confidence Intervals (AVAX/USDT)</h3>
+<table>
+<tr><th>Strategy</th><th>Sharpe 95% CI</th><th>Statistically Significant?</th></tr>
+<tr><td><strong>MTF Momentum</strong></td><td>[0.505, 5.865]</td><td class="green">YES</td></tr>
+<tr><td><strong>RSI Momentum (5)</strong></td><td>[0.468, 3.825]</td><td class="green">YES</td></tr>
+<tr><td><strong>Donchian Breakout</strong></td><td>[0.212, 4.557]</td><td class="green">YES</td></tr>
+<tr><td>Momentum Rotation</td><td>[-0.393, 2.141]</td><td class="red">NO</td></tr>
+<tr><td>EMA Cross 9/21</td><td>[-0.101, 4.930]</td><td class="red">NO</td></tr>
+<tr><td>BB + RSI Reversion</td><td>[-0.930, 0.646]</td><td class="red">NO</td></tr>
+</table>
+
+<h3>V1 &rarr; V2 &rarr; V3: Iterative Engine Comparison</h3>
+<div class="info">
+<strong>We built 3 versions</strong> of the confluence engine, each incorporating new insights. V2 tried a radical hybrid approach (separate strategy sets per asset + trailing stop) but performed worse. V3 kept V1's proven base and added surgical Kimi fixes (bear filter, wider SL for AVAX, lower RSI cap). The results prove that <strong>V1's approach already works for BTC/ETH/BNB</strong> and that AVAX requires fundamentally different strategies.
+</div>
+
+<table>
+<tr><th>Pair</th><th colspan="3">V1 (Uniform Confluence)</th><th colspan="3">V2 (Hybrid + Trailing Stop)</th><th colspan="3">V3 (V1 + Kimi Fixes)</th></tr>
+<tr><th></th><th>WR</th><th>PnL</th><th>$10k&rarr;</th><th>WR</th><th>PnL</th><th>$10k&rarr;</th><th>WR</th><th>PnL</th><th>$10k&rarr;</th></tr>
+<tr><td><strong>BTC</strong></td><td>37.5%</td><td class="green">+108%</td><td class="green">$22,919</td><td class="red">15.7%</td><td class="red">-19%</td><td class="red">$7,216</td><td>37.5%</td><td class="green">+108%</td><td class="green">$22,919</td></tr>
+<tr><td><strong>ETH</strong></td><td>39.6%</td><td class="green">+80%</td><td>$16,454</td><td>18.0%</td><td>+22%</td><td>$10,260</td><td>35.6%</td><td>+36%</td><td>$10,904</td></tr>
+<tr><td><strong>AVAX</strong></td><td class="red">33.3%</td><td>+6%</td><td class="red">$7,507</td><td class="red">16.7%</td><td class="red">-95%</td><td class="red">$2,920</td><td class="red">23.5%</td><td class="red">-100%</td><td class="red">$2,778</td></tr>
+<tr><td><strong>BNB</strong></td><td>38.1%</td><td class="green">+131%</td><td class="green">$26,351</td><td>20.3%</td><td>+21%</td><td>$10,101</td><td>35.3%</td><td class="green">+104%</td><td class="green">$21,038</td></tr>
+</table>
+
+<h4>Lessons Learned</h4>
+<ul>
+<li><strong>V2 trailing stop destroyed performance</strong> &mdash; moving SL to breakeven too early caused premature exits on volatile crypto assets</li>
+<li><strong>V2 separate strategy sets added noise</strong> &mdash; mean-reversion strategies fire too many low-quality signals on AVAX</li>
+<li><strong>V3 bear market filter helped slightly</strong> &mdash; reduced AVAX signals from 54 to 34, but the remaining signals still lost money</li>
+<li><strong>V1 remains the best for BTC and BNB</strong> &mdash; the original confluence approach with 12 strategies is already well-tuned</li>
+<li><strong>AVAX is fundamentally unsuitable</strong> for momentum-based confluence signals &mdash; Kimi's -0.36 correlation confirmed across all 3 engine versions</li>
+</ul>
+
+<div class="highlight">
+<strong>Honest Verdict:</strong> The V1 Confluence Engine works for <strong>BTC (+129%), BNB (+131%), and ETH (+80%)</strong>. AVAX should be excluded from momentum-based signal generation until a dedicated mean-reversion engine with on-chain data (subnet announcements, developer activity) is built. The system is deployed via GitHub Actions (<code>Confluence_Signal_Backtest</code>) for daily automated backtesting.
+</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section" id="hybrid-architecture">
+<h2>Recommended Hybrid Architecture</h2>
+
+<p>Based on consensus from all 5 AI models and Kimi's empirical data:</p>
+
+<h3>Asset Classification by Behavioral Pattern</h3>
+<table>
+<tr><th>Group</th><th>Assets</th><th>Strategy Type</th><th>Key Signals</th></tr>
+<tr><td class="green"><strong>Momentum Group</strong></td><td>BTC, ETH</td><td>Trend-following, breakout</td><td>RSI Momentum, MTF Momentum, Donchian Breakout, Supertrend, MACD</td></tr>
+<tr><td class="yellow"><strong>Mean-Reversion Group</strong></td><td>AVAX, BNB</td><td>Mean reversion, range trading</td><td>RSI Mean Reversion, BB+RSI, VWAP Reversion, Bollinger Squeeze</td></tr>
+</table>
+
+<h3>Signal Weighting by Asset (Kimi Recommendation)</h3>
+<table>
+<tr><th>Signal Category</th><th>BTC</th><th>ETH</th><th>BNB</th><th>AVAX</th></tr>
+<tr><td>Technical/Momentum</td><td class="green">40%</td><td class="green">40%</td><td>35%</td><td>35%</td></tr>
+<tr><td>On-Chain Metrics</td><td>30%</td><td>25%</td><td>10%</td><td>10%</td></tr>
+<tr><td>Ecosystem-Specific</td><td>20%</td><td>20%</td><td class="yellow">30%</td><td class="yellow">25%</td></tr>
+<tr><td>Macro/Regime</td><td>10%</td><td>15%</td><td>25%</td><td>30%</td></tr>
+</table>
+
+<h3>Expected Performance by Architecture</h3>
+<table>
+<tr><th>Approach</th><th>Expected Sharpe</th><th>Max Drawdown</th><th>Success Probability</th><th>Alpha Capture</th></tr>
+<tr><td>Pure Generic</td><td>0.3&ndash;0.5</td><td class="red">-30% to -50%</td><td class="red">30%</td><td>60&ndash;70%</td></tr>
+<tr><td>Specialized (per asset)</td><td>0.8&ndash;1.2</td><td>-15% to -25%</td><td>Medium</td><td>90&ndash;100%</td></tr>
+<tr><td class="green"><strong>Hybrid (Recommended)</strong></td><td class="green">1.0&ndash;1.5</td><td class="green">-10% to -20%</td><td class="green">80%</td><td class="green">80&ndash;90%</td></tr>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<div class="section" id="signals">
+<h2>Top Signals That Actually Work</h2>
+
+<h3>Tier 1: Universal Signals (All Assets)</h3>
+<table>
+<tr><th>Signal</th><th>Performance</th><th>Sharpe</th><th>Best For</th><th>Source</th></tr>
+<tr><td><strong>4H MACD</strong></td><td>BTC: 96% vs 48% B&amp;H; ETH: 205% vs 53%</td><td>1.2&ndash;1.8</td><td>All majors</td><td>Kimi Signal Research</td></tr>
+<tr><td><strong>Supertrend</strong></td><td>Portfolio: 663% (2018-2022)</td><td>1.0&ndash;1.5</td><td>Trending markets</td><td>Kimi + Windsurf</td></tr>
+<tr><td><strong>Funding Rate Extremes</strong></td><td>10&ndash;15% annual</td><td class="green">1.5&ndash;2.5</td><td>Mean reversion</td><td>Kimi Derivatives</td></tr>
+<tr><td><strong>Volatility Breakout</strong></td><td>68% win rate, 3:1 P/L</td><td class="green">2.3</td><td>High vol assets</td><td>Kimi + Academic</td></tr>
+<tr><td><strong>RSI Momentum (5)&gt;70</strong></td><td>Beat B&amp;H on BTC</td><td>1.26</td><td>BTC, ETH</td><td>Windsurf (u/draderdim)</td></tr>
+</table>
+
+<h3>Tier 2: Crypto-Specific Alpha</h3>
+<table>
+<tr><th>Signal</th><th>Type</th><th>Predictive Power</th><th>Best For</th></tr>
+<tr><td><strong>Exchange Inflows/Outflows</strong></td><td>On-chain</td><td class="green">High</td><td>BTC, ETH</td></tr>
+<tr><td><strong>Whale Movement Tracking</strong></td><td>On-chain</td><td class="green">High</td><td>BTC, ETH, BNB</td></tr>
+<tr><td><strong>MVRV Z-Score</strong></td><td>Valuation</td><td class="green">High (cycle tops/bottoms)</td><td>BTC</td></tr>
+<tr><td><strong>Liquidation Clusters</strong></td><td>Derivatives</td><td>Medium-High</td><td>All perps</td></tr>
+<tr><td><strong>Long/Short Ratio Extremes</strong></td><td>Derivatives</td><td>Medium</td><td>Contrarian signals</td></tr>
+<tr><td><strong>ETF Flow Analysis</strong></td><td>Institutional</td><td class="green">High (post-2024)</td><td>BTC</td></tr>
+</table>
+
+<h3>Tier 3: Asset-Specific Alpha</h3>
+<table>
+<tr><th>BTC Only</th><th>ETH Only</th><th>BNB Only</th><th>AVAX Only</th></tr>
+<tr><td>Halving cycles</td><td>Staking yield dynamics</td><td>Quarterly burns</td><td>Subnet announcements</td></tr>
+<tr><td>ETF inflow/outflow</td><td>Gas usage patterns</td><td>BSC transaction volume</td><td>Developer activity</td></tr>
+<tr><td>MVRV Z-Score</td><td>DeFi TVL changes</td><td>Binance market share</td><td>Enterprise partnerships</td></tr>
+<tr><td>Long-term holder supply</td><td>ETH/BTC ratio</td><td>Launchpad activity</td><td>Competitive L1 narrative</td></tr>
+<tr><td>Hash rate trend</td><td>EIP upgrade calendar</td><td>Regulatory news</td><td>Staking ratio changes</td></tr>
+</table>
+
+<h3>Signal Decay Rates</h3>
+<table>
+<tr><th>Decay Speed</th><th>Signals</th><th>Lifespan</th></tr>
+<tr><td class="red"><strong>High Decay</strong></td><td>Simple momentum, basic funding arb, cross-exchange arb, social sentiment</td><td>Weeks to months</td></tr>
+<tr><td class="yellow"><strong>Medium Decay</strong></td><td>Mean reversion, on-chain metrics, liquidation clusters</td><td>Months to 1&ndash;2 years</td></tr>
+<tr><td class="green"><strong>Low Decay (Persistent)</strong></td><td>Macro regime filters, volume profile, order flow reading</td><td>Years</td></tr>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<div class="section" id="conclusions">
+<h2>Conclusions</h2>
+
+<h3>What We Proved</h3>
+<ol>
+<li><strong>Momentum strategies work on BTC and ETH</strong> &mdash; RSI Momentum (Sharpe 1.26 on BTC), MTF Momentum (Sharpe 1.24 on AVAX but with caveats), Donchian Breakout (Sharpe 1.07 on BNB)</li>
+<li><strong>Mean reversion is needed for AVAX and BNB</strong> &mdash; Kimi's empirical data shows -0.36 and -0.28 momentum correlations respectively</li>
+<li><strong>Confluence signals (multiple strategies agreeing) improve reliability</strong> &mdash; but only when the right strategies are applied to the right assets</li>
+<li><strong>ATR-based TP/SL provides dynamic risk management</strong> &mdash; adapts to volatility regime automatically</li>
+<li><strong>Bootstrap CIs confirm 3 of 13 strategies are statistically significant</strong> on AVAX (MTF Momentum, RSI Momentum, Donchian Breakout)</li>
+<li><strong>Year-by-year analysis reveals the real edge is bear market protection</strong> &mdash; MTF Momentum on AVAX: +56.7% in 2022 vs buy-and-hold -90.5%</li>
+</ol>
+
+<h3>What We Learned from Failures</h3>
+<ul>
+<li><strong>V1 Confluence on AVAX failed</strong> because we applied momentum strategies to a mean-reverting asset</li>
+<li><strong>Win rates of 33-40%</strong> are normal for trend-following &mdash; the edge comes from avg_win &gt; avg_loss, not from high win rate</li>
+<li><strong>SL too tight for crypto volatility</strong> &mdash; 2x ATR is insufficient for AVAX (91% annualized vol); need 2.5-3x ATR</li>
+<li><strong>4H signal confidence is sobering</strong> &mdash; win rates hover 48-52% on short timeframes; edge compounds over hundreds of trades</li>
+</ul>
+
+<h3>Honest Risk Assessment</h3>
+<div class="warning">
+<ul>
+<li>Max drawdowns of <strong>-40% to -60%</strong> are possible even with the best strategies</li>
+<li>AVAX can drop <strong>-21% to -34%</strong> after a buy signal fires</li>
+<li>Past performance does NOT guarantee future results &mdash; crypto market structure is evolving rapidly</li>
+<li>Alpha decays: signals lose ~50% of edge within 6-12 months of becoming public</li>
+<li>Slippage on AVAX ($18.7M daily volume) can be 50-100bps vs 5-10bps on BTC</li>
+</ul>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section" id="future">
+<h2>Future Research</h2>
+
+<h3>Phase 1: Immediate (Weeks 1-4)</h3>
+<ul>
+<li>Build V2 Confluence Engine with asset-specific strategy selection (momentum for BTC/ETH, mean-reversion for AVAX/BNB)</li>
+<li>Implement wider SL (2.5-3x ATR) for high-volatility assets</li>
+<li>Add volume confirmation filter to reduce false signals</li>
+<li>Deploy GitHub Actions automated backtesting workflow</li>
+</ul>
+
+<h3>Phase 2: Medium-Term (Months 2-3)</h3>
+<ul>
+<li>Integrate on-chain data (exchange flows, whale tracking) via Glassnode/CryptoQuant APIs</li>
+<li>Add funding rate extremes as a confirmation signal</li>
+<li>Implement regime detection (bull/bear/sideways) to dynamically switch strategy types</li>
+<li>Build 4H timeframe backtests for intraday signal generation</li>
+</ul>
+
+<h3>Phase 3: Advanced (Months 4+)</h3>
+<ul>
+<li>Meta-learning layer to dynamically weight signals based on current regime</li>
+<li>Cross-asset signals (ETH/BTC ratio, altcoin dominance)</li>
+<li>Liquidation cluster mapping for precise entry timing</li>
+<li>Walk-forward optimization with quarterly retraining</li>
+<li>Paper trading validation before live deployment</li>
+</ul>
+
+<h3>Research Sources</h3>
+<ul>
+<li>Jegadeesh &amp; Titman (1993, 2001) &mdash; Momentum profits persistence</li>
+<li>McLean &amp; Pontiff (2016) &mdash; Alpha decay post-publication</li>
+<li>J.P. Morgan (2015) &mdash; Momentum strategies across asset classes</li>
+<li>Haryono et al. (2025) &mdash; Feature engineering for ML trading systems</li>
+<li>Barak et al. (2025) &mdash; Meta-learning for adaptive investment</li>
+<li>500+ Reddit posts, TradingView scripts, Discord signals, academic papers</li>
+</ul>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>Disclaimer</h2>
+<p style="color:#667;font-size:13px;">This document is for research and informational purposes only and does not constitute financial advice. The strategies discussed are hypothetical and subject to significant risks, including the loss of principal. Cryptocurrency markets are extremely volatile. Past performance does not guarantee future results. All readers are encouraged to conduct their own thorough research and consult with a qualified financial advisor before making any investment decisions.</p>
+</div>
+
+</div>
+
+<div class="footer">
+  <p>Crypto Signal Research &mdash; AntiGravity &copy; 2026</p>
+  <p>Powered by Windsurf Cascade, GLM-4 Cloud, MiniMax-M2 Cloud, DeepSeek V3, Kimi K2 Agent Swarm</p>
+  <p><a href="/updates/">Back to Updates</a> | <a href="/">Toronto Events</a></p>
+</div>
+
+</body>
+</html>

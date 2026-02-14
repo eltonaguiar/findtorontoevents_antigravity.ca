@@ -1,0 +1,85 @@
+name: Confluence_Signal_Backtest
+
+on:
+  schedule:
+    # Run daily at 7 AM UTC — refresh confluence signals
+    - cron: '0 7 * * *'
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  confluence-backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: pip install ccxt pandas numpy matplotlib tabulate
+
+    # ─── Run V1 Confluence Engine (proven: BTC +129%, BNB +110%, ETH +64%) ───
+    - name: Run Confluence V1 Signal Engine
+      working-directory: crypto_signals
+      run: |
+        echo "=== Confluence Signal Engine — 12 Strategies × 4 Pairs ==="
+        echo "Started: $(date -u)"
+        python confluence_signal_engine.py
+        echo ""
+        if [ -f confluence_signals.json ]; then
+          echo "=== SIGNAL PERFORMANCE SUMMARY ==="
+          python3 -c "
+        import json
+        with open('confluence_signals.json') as f:
+            data = json.load(f)
+        perf = data.get('performance', [])
+        print(f'{\"Pair\":<14} {\"Signals\":>8} {\"WinRate\":>8} {\"AvgPnL\":>8} {\"TotalPnL\":>10} {\"PF\":>6} {\"MaxDD\":>8} {\"Equity\":>10}')
+        print('-' * 80)
+        for p in perf:
+            print(f\"{p['symbol']:<14} {p['total_signals']:>8} {p['win_rate']:>7.1f}% {p['avg_pnl_per_trade']:>7.2f}% {p['total_pnl_pct']:>9.1f}% {p['profit_factor']:>6.2f} {p['max_drawdown_pct']:>7.1f}% \${p['final_equity']:>9,.0f}\")
+        print()
+        # Show latest signals per pair
+        sigs = data.get('signals', {})
+        for sym, sig_list in sigs.items():
+            if sig_list:
+                last = sig_list[-1]
+                print(f\"Latest {sym}: {last['date']} Entry={last['entry_price']} TP={last['take_profit']} SL={last['stop_loss']} Conf={last['confidence']} Out={last['outcome']} PnL={last['pnl_pct']}%\")
+          "
+        fi
+
+    # ─── Run V3 Refined Engine (Kimi K2 fixes) ───
+    - name: Run Confluence V3 (Kimi K2 Refined)
+      working-directory: crypto_signals
+      run: |
+        echo "=== Confluence V3 — V1 base + Kimi K2 fixes ==="
+        python confluence_v3.py
+        echo ""
+        if [ -f confluence_v3_signals.json ]; then
+          echo "=== V3 PERFORMANCE ==="
+          python3 -c "
+        import json
+        with open('confluence_v3_signals.json') as f:
+            data = json.load(f)
+        perf = data.get('performance', [])
+        for p in perf:
+            print(f\"{p['symbol']:<14} Sig={p['total']:>3} WR={p['win_rate']:>5.1f}% PnL={p['avg_pnl']:>6.2f}% Total={p['total_pnl']:>7.1f}% PF={p['pf']:>5.2f} \${p['final_eq']:>8,.0f}\")
+          "
+        fi
+
+    # ─── Commit updated results ───
+    - name: Commit results
+      continue-on-error: true
+      run: |
+        git config user.name "Windsurf Bot"
+        git config user.email "bot@findtorontoevents.ca"
+        git add crypto_signals/CONFLUENCE_SIGNAL_REPORT.md \
+              crypto_signals/confluence_signals.json \
+              crypto_signals/CONFLUENCE_V3_REPORT.md \
+              crypto_signals/confluence_v3_signals.json || true
+        git diff --cached --quiet || git commit -m "Confluence Backtest: Auto-refresh $(date -u +%Y-%m-%d)"
+        git push || echo "Push failed (may need token permissions)"

@@ -30,11 +30,80 @@
         .tag-challenge { background: rgba(255, 107, 53, 0.15); color: #ff6b35; }
         .tag-results { background: rgba(255, 215, 0, 0.15); color: #ffd700; }
         .tag-auto { background: rgba(6, 182, 212, 0.15); color: #06b6d4; }
+        .tag-dead { background: rgba(255, 68, 68, 0.15); color: #ff4444; }
+        .tag-honest { background: rgba(255, 255, 255, 0.12); color: #ffffff; }
+        .tag-ml { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+        .tag-data { background: rgba(6, 182, 212, 0.2); color: #22d3ee; }
+        .tag-score { background: rgba(255, 215, 0, 0.2); color: #ffd700; }
+        .grade-a { color: #22c55e; font-weight: 800; }
+        .grade-b { color: #86efac; font-weight: 700; }
+        .grade-c { color: #fbbf24; font-weight: 700; }
+        .grade-d { color: #fb923c; font-weight: 700; }
+        .grade-f { color: #ef4444; font-weight: 700; }
+        .infra-table { width:100%; border-collapse:collapse; font-size:0.82rem; margin:0.8rem 0; }
+        .infra-table th { text-align:left; padding:8px 6px; color:#888; border-bottom:1px solid #2a2a4a; }
+        .infra-table td { padding:7px 6px; border-bottom:1px solid #1a1a2e; }
+        .metric-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin:1rem 0; }
+        .metric-card { background:rgba(255,255,255,0.03); border:1px solid #1e1e3a; border-radius:10px; padding:14px; text-align:center; }
+        .metric-card .metric-value { font-size:1.5rem; font-weight:800; }
+        .metric-card .metric-label { font-size:0.7rem; color:#888; text-transform:uppercase; letter-spacing:0.5px; margin-top:4px; }
         .quick-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 1rem 0; }
         .quick-links a { font-size: 0.8rem; padding: 6px 14px; border-radius: 8px; border: 1px solid #2a2a4a; background: #1a1a3a; color: #aaa; transition: all 0.15s; }
         .quick-links a:hover { border-color: #6366f1; color: #6366f1; text-decoration: none; }
         .footer-note { text-align: center; color: #555577; font-size: 0.8rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #1e1e3a; }
         @media (max-width: 600px) { .hero { padding: 1.5rem 1rem; } .hero h1 { font-size: 1.5rem; } .container { padding: 1rem; } .update-entry { padding: 1rem; } }
+
+        /* ── Text-to-Speech Controls ── */
+        .tts-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.3);
+            color: #a78bfa; border-radius: 8px; padding: 7px 14px; font-size: 0.85rem;
+            cursor: pointer; transition: all 0.2s; margin-top: 10px; font-family: inherit;
+        }
+        .tts-btn:hover { background: rgba(99,102,241,0.22); border-color: #6366f1; color: #c4b5fd; }
+        .tts-btn svg { width: 18px; height: 18px; fill: currentColor; flex-shrink: 0; }
+        .tts-btn.playing { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); color: #f87171; }
+
+        .tts-bar {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+            background: rgba(12,12,30,0.96); backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(99,102,241,0.25);
+            padding: 10px 16px; display: none; align-items: center; gap: 10px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.5); flex-wrap: wrap;
+        }
+        .tts-bar.active { display: flex; }
+        .tts-bar button {
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+            color: #e0e0f0; border-radius: 6px; padding: 6px 12px; cursor: pointer;
+            font-size: 0.8rem; transition: all 0.15s; font-family: inherit; display: inline-flex;
+            align-items: center; gap: 4px;
+        }
+        .tts-bar button:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); }
+        .tts-bar button.active-ctrl { background: rgba(99,102,241,0.25); border-color: #6366f1; color: #c4b5fd; }
+        .tts-bar .tts-progress {
+            flex: 1; min-width: 100px; font-size: 0.75rem; color: #8888aa;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .tts-bar .tts-speed {
+            font-size: 0.75rem; color: #8888aa; display: flex; align-items: center; gap: 4px;
+        }
+        .tts-bar .tts-speed select {
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+            color: #e0e0f0; border-radius: 4px; padding: 2px 4px; font-size: 0.75rem; cursor: pointer;
+        }
+        .tts-bar .tts-close {
+            background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #f87171;
+        }
+        .tts-bar .tts-close:hover { background: rgba(239,68,68,0.3); }
+        .update-entry.tts-reading {
+            border-color: rgba(99,102,241,0.6) !important;
+            box-shadow: 0 0 20px rgba(99,102,241,0.15), inset 0 0 0 1px rgba(99,102,241,0.1) !important;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        @media (max-width: 600px) {
+            .tts-bar { padding: 8px 10px; gap: 6px; }
+            .tts-bar button { padding: 5px 8px; font-size: 0.75rem; }
+        }
     </style>
 </head>
 <body>
@@ -42,6 +111,10 @@
 <div class="hero">
     <h1>Platform Updates</h1>
     <p class="subtitle">Recent changes, improvements, challenges, and system status</p>
+    <button class="tts-btn" id="ttsToggle" onclick="ttsToggleRead()" title="Listen to this page">
+        <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+        <span id="ttsLabel">Listen to Updates</span>
+    </button>
 </div>
 
 <div class="container">
@@ -50,14 +123,17 @@
     <div style="margin-bottom: 1.5rem;">
         <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #555; margin-bottom: 8px;">Quick Links &mdash; All Dashboards</div>
         <div class="quick-links">
+            <a href="/findcryptopairs/war-room.html" style="border-color:rgba(255,68,68,0.5);color:#ff4444;font-weight:700;background:rgba(255,68,68,0.06)">WAR ROOM (All Engines)</a>
             <a href="/findcryptopairs/proven-picks.html" style="border-color:rgba(255,215,0,0.4);color:#ffd700;font-weight:700">PROVEN PICKS (Forward-Tested)</a>
-            <a href="/findcryptopairs/api/kimi_enhanced.php?action=compare" style="border-color:rgba(0,200,83,0.4);color:#00c853;font-weight:700">Kimi-Enhanced (Backtest)</a>
+            <a href="/findcryptopairs/kimi-enhanced.html" style="border-color:rgba(0,200,83,0.4);color:#00c853;font-weight:700">Kimi-Enhanced (Signals + Backtest)</a>
+            <a href="/findcryptopairs/hybrid-predictor.html" style="border-color:rgba(88,166,255,0.4);color:#58a6ff;font-weight:700">Hybrid Predictor (30+ Indicators)</a>
             <a href="/findcryptopairs/expert-consensus.html" style="border-color:rgba(255,152,0,0.4);color:#ff9800">Expert Consensus (SME Research)</a>
             <a href="/findcryptopairs/hybrid-engine.html" style="border-color:rgba(88,166,255,0.4);color:#58a6ff">Hybrid Engine (8-Model Ensemble)</a>
             <a href="/findcryptopairs/spike-forensics.html" style="border-color:rgba(187,134,252,0.4);color:#bb86fc">Spike Forensics (BTC/ETH)</a>
             <a href="/findcryptopairs/academic-edge.html" style="border-color:rgba(100,181,246,0.4);color:#64b5f6">Academic Edge (1000 Papers)</a>
             <a href="/findcryptopairs/alpha-hunter.html" style="border-color:rgba(255,215,0,0.4);color:#ffd700">Alpha Hunter</a>
             <a href="/findcryptopairs/pro-signals.html" style="border-color:rgba(255,107,53,0.4);color:#ff6b35">Pro Signals (100 Strats)</a>
+            <a href="/findcryptopairs/tv-technicals.html" style="border-color:rgba(0,200,83,0.4);color:#00c853;font-weight:700">TV Technicals (Pattern Scanner)</a>
             <a href="/findcryptopairs/pump-watch.html" style="border-color:rgba(249,115,22,0.4);color:#f97316">Pump Watch</a>
             <a href="/findcryptopairs/algo-competition.html" style="border-color:rgba(6,182,212,0.4);color:#06b6d4">Algo Battle</a>
             <a href="/findcryptopairs/ai-predictions.html" style="border-color:rgba(168,85,247,0.4);color:#a855f7">AI Predictions</a>
@@ -71,6 +147,710 @@
             <a href="/live-monitor/smart-money.html">Smart Money</a>
             <a href="/live-monitor/sports-betting.html">Sports Betting</a>
             <a href="/findstocks/portfolio2/consolidated.html">Stock Picks</a>
+            <a href="/findcryptopairs/api/predictability_score.php?action=leaderboard" style="border-color:rgba(255,215,0,0.5);color:#ffd700;font-weight:700;background:rgba(255,215,0,0.06)">PREDICTABILITY LEADERBOARD (Live)</a>
+            <a href="/findcryptopairs/api/unified_audit.php?action=audit" style="border-color:rgba(168,85,247,0.4);color:#a855f7;font-weight:700">UNIFIED AUDIT TRAIL (Live)</a>
+            <a href="/tools/db_health_monitor.php?action=summary" style="border-color:rgba(6,182,212,0.4);color:#22d3ee;font-weight:700">DB HEALTH (Live)</a>
+            <a href="/findcryptopairs/api/feature_store_populate.php?action=status" style="border-color:rgba(34,197,94,0.4);color:#22c55e">FEATURE STORE STATUS</a>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- Feb 14, 2026 — Database Audit + Infrastructure Enhancement   -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="update-entry" style="border-color: rgba(6, 182, 212, 0.5); box-shadow: 0 0 20px rgba(6, 182, 212, 0.10);">
+        <div class="update-date">February 14, 2026 &mdash; Full Database Audit + Infrastructure Enhancement</div>
+        <div class="update-title" style="color:#22d3ee"><span class="tag tag-data">DATABASE</span> <span class="tag tag-ml">ML PIPELINE</span> <span class="tag tag-improvement">AUTOMATION</span> Cross-Checked All 3 Databases &mdash; Found 91 Empty Tables, Fixed Critical Gaps</div>
+        <div class="update-body">
+
+            <p>Performed a full audit across <strong>all 3 production databases</strong> to identify gaps, stale data, broken pipelines, and missing automation.</p>
+
+            <!-- DB Summary -->
+            <h3 style="color:#22d3ee;margin:1.2rem 0 0.5rem;font-size:1.05rem">Database Inventory</h3>
+            <table class="infra-table">
+                <tr><th>Database</th><th>Tables</th><th>Populated</th><th>Empty</th><th>Total Rows</th><th>Key Data</th></tr>
+                <tr>
+                    <td style="color:#ffd700;font-weight:700">ejaguiar1_stocks</td>
+                    <td>252</td>
+                    <td style="color:#22c55e">172</td>
+                    <td style="color:#ef4444">80</td>
+                    <td>107,219</td>
+                    <td>Signals, picks, live monitor, smart money, ML infrastructure, feature store, predictability scores</td>
+                </tr>
+                <tr>
+                    <td style="color:#c084fc;font-weight:700">ejaguiar1_memecoin</td>
+                    <td>49</td>
+                    <td style="color:#22c55e">46</td>
+                    <td style="color:#fbbf24">3</td>
+                    <td>34,529</td>
+                    <td>Crypto engines (Hybrid, Kimi, TV Tech, Academic, Expert, Spike, Science), backtest results, OHLCV cache</td>
+                </tr>
+                <tr>
+                    <td style="color:#fb923c;font-weight:700">ejaguiar1_sportsbet</td>
+                    <td>37</td>
+                    <td style="color:#22c55e">29</td>
+                    <td style="color:#fbbf24">8</td>
+                    <td>26,929</td>
+                    <td>Sports odds, CLV tracking (10K+), ML predictions (651), injury data, team stats, scrapers</td>
+                </tr>
+                <tr style="border-top:2px solid #2a2a4a">
+                    <td style="color:#e0e0f0;font-weight:800">TOTAL</td>
+                    <td style="font-weight:700">338</td>
+                    <td style="color:#22c55e;font-weight:700">247</td>
+                    <td style="color:#ef4444;font-weight:700">91</td>
+                    <td style="font-weight:700">168,677</td>
+                    <td></td>
+                </tr>
+            </table>
+
+            <!-- Key populated tables -->
+            <h3 style="color:#22c55e;margin:1.2rem 0 0.5rem;font-size:1.05rem">Largest Tables (Active Data)</h3>
+            <table class="infra-table">
+                <tr><th>Table</th><th>Rows</th><th>Last Updated</th><th>Purpose</th></tr>
+                <tr><td>daily_prices</td><td style="color:#22c55e;font-weight:700">31,870</td><td>Feb 13</td><td>Stock OHLCV history (100 tickers)</td></tr>
+                <tr><td>psi_ohlcv_cache</td><td style="color:#22c55e;font-weight:700">17,415</td><td>Active</td><td>Pro Signal Engine price cache</td></tr>
+                <tr><td>simulation_grid</td><td style="color:#22c55e;font-weight:700">11,940</td><td>Feb 9</td><td>Exhaustive parameter optimization</td></tr>
+                <tr><td>lm_sports_clv</td><td style="color:#22c55e;font-weight:700">10,101</td><td>Active</td><td>Closing Line Value tracking (sports)</td></tr>
+                <tr><td>mf2_nav_history</td><td>6,560</td><td>Active</td><td>Mutual fund NAV history</td></tr>
+                <tr><td>bt100_results</td><td>6,300</td><td>Feb 14</td><td>Backtest 100 strategy results</td></tr>
+                <tr><td>cp_prices</td><td>4,857</td><td>Feb 9</td><td>Crypto pair price history</td></tr>
+                <tr><td>lm_sports_odds</td><td>4,165</td><td>Active</td><td>Unified sports odds (The Odds API)</td></tr>
+                <tr><td>lm_signals</td><td style="color:#ffd700;font-weight:700">3,860</td><td>Feb 14</td><td>Live Monitor signals (all asset classes)</td></tr>
+                <tr><td>cw_scan_log</td><td>3,685</td><td>Feb 14</td><td>Crypto Winner scan history</td></tr>
+            </table>
+
+            <!-- Stale data warnings -->
+            <h3 style="color:#fb923c;margin:1.2rem 0 0.5rem;font-size:1.05rem">Stale Data Warnings (22 tables &gt;48h old)</h3>
+            <p>The health monitor identified <strong>22 tables</strong> that haven't been updated in over 48 hours. Key ones:</p>
+            <ul>
+                <li><strong>cp_signals</strong> — 174 rows, last update 134h ago. Crypto pairs signal pipeline stale.</li>
+                <li><strong>fx_signals</strong> — 585 rows, last update 92h ago. Forex signal pipeline stale.</li>
+                <li><strong>meme_ml_signals</strong> — 50 rows, last update 178h ago (7 days). Meme ML training hasn't run.</li>
+                <li><strong>lm_analyst_ratings</strong> — 48 rows, last update 81h ago. Smart Money tracker only runs weekdays.</li>
+                <li><strong>lm_price_cache</strong> — 66 rows, last update 90h ago. Price cache not refreshing.</li>
+                <li><strong>simulation_grid</strong> — 11,940 rows, last update 120h. Grid search not running.</li>
+            </ul>
+
+            <!-- Empty tables analysis -->
+            <h3 style="color:#ef4444;margin:1.2rem 0 0.5rem;font-size:1.05rem">Empty Tables Analysis (91 total)</h3>
+            <table class="infra-table">
+                <tr><th>Category</th><th>Count</th><th>Examples</th><th>Fix</th></tr>
+                <tr>
+                    <td>ML Infrastructure (new)</td>
+                    <td>8</td>
+                    <td>ml_feature_store, ml_model_registry, ml_ab_tests, ml_ensemble_weights</td>
+                    <td style="color:#22c55e">FIXED &mdash; Feature store now populating (36 rows first run). Automated every 6h.</td>
+                </tr>
+                <tr>
+                    <td>Backtest results</td>
+                    <td>12</td>
+                    <td>cp_backtest_results, cr_backtest_results, fx_backtest_results, walk_forward_results</td>
+                    <td style="color:#fbbf24">PLANNED &mdash; Need backtest runs to populate. Scheduled for Phase 2.</td>
+                </tr>
+                <tr>
+                    <td>Goldmine/Cursor legacy</td>
+                    <td>10</td>
+                    <td>KIMI_GOLDMINE_ALERTS, KIMI_GOLDMINE_PICKS, goldmine_cursor_benchmarks</td>
+                    <td style="color:#888">LEGACY &mdash; From older iteration. Can be cleaned up.</td>
+                </tr>
+                <tr>
+                    <td>Sports individual odds</td>
+                    <td>4</td>
+                    <td>lm_nba_odds, lm_nfl_odds, lm_nhl_odds, lm_mlb_odds</td>
+                    <td style="color:#fbbf24">ESPN scraping broken. Data exists in unified lm_sports_odds (4,165 rows). Bridge deployed.</td>
+                </tr>
+                <tr>
+                    <td>Whale/social tracking</td>
+                    <td>4</td>
+                    <td>crypto_whale_movements, crypto_whale_wallets, social_influencers, social_sentiment</td>
+                    <td style="color:#888">FUTURE &mdash; Need on-chain data API and social scraping pipeline.</td>
+                </tr>
+                <tr>
+                    <td>Portfolio tracking</td>
+                    <td>6</td>
+                    <td>paper_trades, portfolio_positions, saved_portfolios, tracked_portfolios</td>
+                    <td style="color:#fbbf24">PLANNED &mdash; Needs UI to track portfolios. Not yet wired up.</td>
+                </tr>
+                <tr>
+                    <td>Meme ML models</td>
+                    <td>2</td>
+                    <td>meme_ml_models, meme_ml_predictions (memecoin DB)</td>
+                    <td style="color:#fbbf24">Need 50+ resolved meme signals to train. Currently at 29 resolved.</td>
+                </tr>
+                <tr>
+                    <td>Misc empty</td>
+                    <td>~45</td>
+                    <td>Various comparison, category perf, and report cache tables</td>
+                    <td style="color:#888">Schema exists but features not yet built. Low priority.</td>
+                </tr>
+            </table>
+
+            <!-- Fixes applied -->
+            <h3 style="color:#22c55e;margin:1.2rem 0 0.5rem;font-size:1.05rem">Fixes Applied</h3>
+            <ul>
+                <li><span class="tag tag-new">NEW</span> <strong>Feature Store Population Pipeline</strong> &mdash; Computes 40+ technical features (RSI, MACD, Bollinger, ADX, Hurst, volume ratios, engine consensus) for all 36 crypto pairs. First run: 36 rows inserted. Runs every 6 hours via GitHub Actions.</li>
+                <li><span class="tag tag-new">NEW</span> <strong>Market Regime Snapshots</strong> &mdash; Daily snapshot: BTC trend=BULLISH, avg Hurst=0.570, 6 trending / 30 random pairs, recommended strategy=MULTI_INDICATOR.</li>
+                <li><span class="tag tag-new">NEW</span> <strong>Platform Daily Metrics</strong> &mdash; Tracks signals generated (crypto=175, forex=30), resolved, win rate, and cumulative P&amp;L per day across all asset classes.</li>
+                <li><span class="tag tag-new">NEW</span> <strong>Learning Curve Tracking</strong> &mdash; Monitors each engine's improvement over time (rolling win rate, sample count).</li>
+                <li><span class="tag tag-new">NEW</span> <strong>Database Health Monitor</strong> &mdash; Automated daily check across all 3 databases. Flags stale data (&gt;48h), empty critical tables, and connection failures.</li>
+                <li><span class="tag tag-new">NEW</span> <strong>Sports Data Bridge</strong> &mdash; Bridges unified odds data into sport-specific tables. Computes sports ML metrics from settled bets.</li>
+                <li><span class="tag tag-new">NEW</span> <strong>Master Data Pipeline (GitHub Action)</strong> &mdash; Single workflow that runs feature store population, predictability scoring, audit collection, signal monitoring, and DB health checks on schedule.</li>
+            </ul>
+
+            <!-- Automation Status -->
+            <h3 style="color:#58a6ff;margin:1.2rem 0 0.5rem;font-size:1.05rem">GitHub Actions Automation Status</h3>
+            <table class="infra-table">
+                <tr><th>Workflow</th><th>Schedule</th><th>What It Does</th><th>Status</th></tr>
+                <tr><td>live-monitor-refresh</td><td>Every 30 min</td><td>Scan signals, track trades, monitor, expire</td><td style="color:#22c55e">ACTIVE</td></tr>
+                <tr><td>hybrid-engine-refresh</td><td>Every 2-8h</td><td>Hybrid engine full run + quick scan</td><td style="color:#22c55e">ACTIVE</td></tr>
+                <tr><td>kimi-enhanced-backtest</td><td>Every 2-6h</td><td>Kimi backtest, scan, compare</td><td style="color:#22c55e">ACTIVE</td></tr>
+                <tr><td>tv-technicals-refresh</td><td>Every 4h + hourly</td><td>TV Technicals scan + monitor</td><td style="color:#22c55e">ACTIVE</td></tr>
+                <tr><td>sports-betting-refresh</td><td>5x daily</td><td>Odds fetch, scrapers, ML, picks, settle</td><td style="color:#22c55e">ACTIVE</td></tr>
+                <tr><td>smart-money-tracker</td><td>Weekdays + Sunday</td><td>Analyst ratings, sentiment, consensus</td><td style="color:#22c55e">ACTIVE</td></tr>
+                <tr><td>predictability-refresh</td><td>Every 6h</td><td>Predictability scores + audit collection</td><td style="color:#22c55e">ACTIVE</td></tr>
+                <tr><td style="color:#ffd700;font-weight:700">data-pipeline-master</td><td>Every 6h + daily</td><td>Feature store, regime, daily metrics, learning curves, DB health</td><td style="color:#22c55e">NEW</td></tr>
+            </table>
+
+            <p style="margin-top:1rem"><strong>Bottom line:</strong> 168,677 rows across 338 tables in 3 databases. 247 tables are populated and active. 91 are empty &mdash; of which 8 were just fixed (ML infra), ~45 are low-priority schema stubs, and the rest need more resolved signals or specific feature development. Automation now covers all critical pipelines.</p>
+
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- Feb 14, 2026 — Predictability Score + ML Infrastructure      -->
+    <!-- The "Holy Grail" foundation — real quantitative science       -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="update-entry" style="border-color: rgba(255, 215, 0, 0.6); box-shadow: 0 0 25px rgba(255, 215, 0, 0.12), 0 0 60px rgba(168, 85, 247, 0.06);">
+        <div class="update-date">February 14, 2026 &mdash; Predictability Score Engine + ML Infrastructure</div>
+        <div class="update-title" style="color:#ffd700"><span class="tag tag-ml">ML</span> <span class="tag tag-score">PREDICTABILITY</span> <span class="tag tag-data">INFRASTRUCTURE</span> Laying the Foundation for a World-Class Prediction Platform</div>
+        <div class="update-body">
+
+            <p><strong>Honest assessment:</strong> We are building something genuinely ambitious &mdash; a platform that aims to be the <strong>#1 worldwide site for predictions</strong> across crypto, meme coins, forex, penny stocks, and stocks. Today we took the single most important step: <em>measuring what we can actually predict</em>.</p>
+
+            <p style="color:#fb923c;margin:0.8rem 0">The "Holy Grail" in quantitative finance is not a magic indicator. It is <strong>knowing which assets are predictable, when they are predictable, and by how much</strong>. Most platforms skip this and just fire signals into the void. We are doing the opposite &mdash; scoring every asset's predictability <em>before</em> making picks.</p>
+
+            <!-- ── Predictability Score System ── -->
+            <h3 style="color:#ffd700;margin:1.2rem 0 0.5rem;font-size:1.05rem">New: Predictability Score Engine</h3>
+            <p>Every asset now gets a <strong>data-driven predictability score</strong> (0&ndash;100) computed from 6 quantitative metrics rooted in peer-reviewed research:</p>
+            <table class="infra-table">
+                <tr><th>Metric</th><th>Weight</th><th>What It Measures</th></tr>
+                <tr>
+                    <td style="color:#c084fc;font-weight:600">Hurst Exponent</td>
+                    <td>25%</td>
+                    <td>Trend persistence vs random walk. H &gt; 0.5 = trending (trend-following works), H &lt; 0.5 = mean-reverting. Deviation from 0.5 = more predictable.</td>
+                </tr>
+                <tr>
+                    <td style="color:#c084fc;font-weight:600">Autocorrelation</td>
+                    <td>15%</td>
+                    <td>How much past returns predict future returns. Higher |AC| = more exploitable patterns.</td>
+                </tr>
+                <tr>
+                    <td style="color:#c084fc;font-weight:600">Volatility Stability</td>
+                    <td>15%</td>
+                    <td>How consistent the asset's behavior is. Stable vol = predictable regimes. Erratic vol = harder to model.</td>
+                </tr>
+                <tr>
+                    <td style="color:#c084fc;font-weight:600">Signal-to-Noise Ratio</td>
+                    <td>15%</td>
+                    <td>Genuine trend strength vs random noise. Higher SNR = cleaner patterns for algorithms.</td>
+                </tr>
+                <tr>
+                    <td style="color:#c084fc;font-weight:600">Engine Agreement</td>
+                    <td>15%</td>
+                    <td>How many of our independent engines agree on direction. 6/6 bullish = very different from 3B/3S split.</td>
+                </tr>
+                <tr>
+                    <td style="color:#c084fc;font-weight:600">Historical TP Rate</td>
+                    <td>15%</td>
+                    <td>What % of past signals on this asset hit their Take Profit. Built from resolved signals across all engines.</td>
+                </tr>
+            </table>
+
+            <p>Each asset also gets a <strong>recommended strategy</strong> based on its regime: TREND_FOLLOWING, MEAN_REVERSION, MOMENTUM, VOLATILITY_BREAKOUT, or MULTI_INDICATOR.</p>
+
+            <!-- ── Live Results ── -->
+            <h3 style="color:#22d3ee;margin:1.2rem 0 0.5rem;font-size:1.05rem">First Computation: 36 Assets Scored</h3>
+            <p>The first batch ran successfully across all 36 tracked crypto pairs. Here are the highlights:</p>
+            <table class="infra-table">
+                <tr><th>Asset</th><th>Score</th><th>Grade</th><th>Regime</th><th>Best Strategy</th></tr>
+                <tr><td>PEPE/USD</td><td><span class="grade-c">55.7</span></td><td><span class="grade-c">C</span></td><td style="color:#22c55e">TRENDING</td><td>Trend Following</td></tr>
+                <tr><td>TRUMP/USD</td><td><span class="grade-c">53.7</span></td><td><span class="grade-c">C</span></td><td style="color:#22c55e">TRENDING</td><td>Trend Following</td></tr>
+                <tr><td>SUI/USD</td><td><span class="grade-c">53.0</span></td><td><span class="grade-c">C</span></td><td style="color:#22c55e">TRENDING</td><td>Trend Following</td></tr>
+                <tr><td>BTC/USD</td><td><span class="grade-c">53.0</span></td><td><span class="grade-c">C</span></td><td>RANDOM</td><td>Multi-Indicator</td></tr>
+                <tr><td>SOL/USD</td><td><span class="grade-c">51.8</span></td><td><span class="grade-c">C</span></td><td>RANDOM</td><td>Multi-Indicator</td></tr>
+                <tr><td>XRP/USD</td><td><span class="grade-c">51.7</span></td><td><span class="grade-c">C</span></td><td>RANDOM</td><td>Multi-Indicator</td></tr>
+                <tr><td colspan="5" style="color:#666;text-align:center">... 30 more pairs scored. <a href="/findcryptopairs/api/predictability_score.php?action=leaderboard">View full leaderboard</a></td></tr>
+                <tr><td>ZEC/USD</td><td><span class="grade-d">34.4</span></td><td><span class="grade-d">D</span></td><td>RANDOM</td><td>Multi-Indicator</td></tr>
+            </table>
+
+            <p style="color:#fb923c"><strong>Key takeaway:</strong> No asset scored above 56 (Grade C). This is <em>honest</em> &mdash; after just 3 days of data, the system correctly reports that nothing is highly predictable yet. As historical outcomes accumulate, assets that consistently hit TP targets will see their scores rise into B and A territory. The system rewards <em>proven</em> predictability, not hope.</p>
+
+            <!-- ── ML Infrastructure ── -->
+            <h3 style="color:#c084fc;margin:1.2rem 0 0.5rem;font-size:1.05rem">New: ML Infrastructure (8 Tables)</h3>
+            <p>Built the database backbone for machine learning at scale. These tables are what separate a hobby project from an industry platform:</p>
+            <table class="infra-table">
+                <tr><th>Table</th><th>Purpose</th><th>Status</th></tr>
+                <tr>
+                    <td style="color:#22d3ee">ml_feature_store</td>
+                    <td>Centralized features (40+ per row): RSI, MACD, Bollinger, ADX, Hurst, volume ratios, engine consensus, pattern detection. One row per asset per timestamp. This feeds future ML models.</td>
+                    <td style="color:#fbbf24">Collecting</td>
+                </tr>
+                <tr>
+                    <td style="color:#22d3ee">ml_model_registry</td>
+                    <td>Track every model version: type, hyperparameters, training window, accuracy, Sharpe, walk-forward validation, overfit score. Enables rigorous A/B testing.</td>
+                    <td style="color:#22c55e">Ready</td>
+                </tr>
+                <tr>
+                    <td style="color:#22d3ee">ml_ab_tests</td>
+                    <td>Statistical A/B testing between model versions. Tracks predictions, P&amp;L, p-values, and declares winners with confidence levels.</td>
+                    <td style="color:#22c55e">Ready</td>
+                </tr>
+                <tr>
+                    <td style="color:#22d3ee">ml_ensemble_weights</td>
+                    <td>Dynamic per-asset per-engine weights. If Engine A is 72% accurate on BTC but 45% on meme coins, weights adjust accordingly.</td>
+                    <td style="color:#22c55e">Ready</td>
+                </tr>
+                <tr>
+                    <td style="color:#22d3ee">ml_regime_snapshots</td>
+                    <td>Daily market regime: fear/greed, average Hurst, trending vs random pair counts, recommended strategy. Enables strategy switching.</td>
+                    <td style="color:#22c55e">Ready</td>
+                </tr>
+                <tr>
+                    <td style="color:#22d3ee">ml_calibration_log</td>
+                    <td>Prediction calibration: when we say "80% confident", is it right 80% of the time? Tracks accuracy per confidence bucket per engine.</td>
+                    <td style="color:#22c55e">Ready</td>
+                </tr>
+                <tr>
+                    <td style="color:#22d3ee">ml_platform_daily</td>
+                    <td>Daily platform dashboard: signals generated, outcomes, win rate, cumulative P&amp;L, engine health &mdash; across all asset classes in one row per day.</td>
+                    <td style="color:#22c55e">Ready</td>
+                </tr>
+                <tr>
+                    <td style="color:#22d3ee">ml_learning_curve</td>
+                    <td>Tracks each engine's improvement over time: rolling win rate, Sharpe, profit factor, improvement rate. Shows whether engines are <em>getting smarter</em> or plateauing.</td>
+                    <td style="color:#22c55e">Ready</td>
+                </tr>
+            </table>
+
+            <!-- ── Unified Audit Trail ── -->
+            <h3 style="color:#a855f7;margin:1.2rem 0 0.5rem;font-size:1.05rem">New: Unified Prediction Audit Trail</h3>
+            <p>Every prediction from every engine now flows into <strong>one auditable table</strong> (<code>ua_predictions</code>). First collection captured <strong>82 active predictions</strong> from 6 engines.</p>
+            <p>This enables:</p>
+            <ul>
+                <li><strong>Cross-engine performance comparison</strong> &mdash; Which engine is actually the best? Not by hype, by <em>resolved P&amp;L</em>.</li>
+                <li><strong>Per-asset performance reports</strong> &mdash; Is BTC more profitable to trade than PEPE across all engines?</li>
+                <li><strong>Predictability-weighted picks</strong> &mdash; High-predictability + high-confidence = "ACT NOW". Low-predictability + single-engine = "WATCH".</li>
+                <li><strong>Regulatory-grade audit trail</strong> &mdash; Every prediction timestamped with entry, exit conditions, and outcome.</li>
+            </ul>
+
+            <!-- ── Database Infrastructure Summary ── -->
+            <h3 style="color:#e0e0f0;margin:1.2rem 0 0.5rem;font-size:1.05rem">Current Database Infrastructure</h3>
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-value" style="color:#c084fc">190+</div>
+                    <div class="metric-label">Database Tables</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="color:#ffd700">36</div>
+                    <div class="metric-label">Assets Scored</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="color:#22c55e">82</div>
+                    <div class="metric-label">Unified Predictions</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="color:#22d3ee">8</div>
+                    <div class="metric-label">ML Tables Created</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="color:#58a6ff">13</div>
+                    <div class="metric-label">Active Engines</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="color:#fb923c">5</div>
+                    <div class="metric-label">Asset Classes</div>
+                </div>
+            </div>
+
+            <!-- ── Honest Reality Check ── -->
+            <h3 style="color:#ef4444;margin:1.2rem 0 0.5rem;font-size:1.05rem">Honest Reality Check: Where We Really Stand</h3>
+            <p>Let's be real about where we are vs where we need to be:</p>
+            <table class="infra-table">
+                <tr><th style="width:30%">Dimension</th><th style="width:15%">Today</th><th style="width:15%">Target</th><th>Gap</th></tr>
+                <tr>
+                    <td style="color:#e0e0f0">Resolved predictions with outcomes</td>
+                    <td style="color:#ef4444;font-weight:700">&lt;50</td>
+                    <td style="color:#22c55e">5,000+</td>
+                    <td>Need 100x more resolved trades to have statistical significance. <strong>Estimated: 2&ndash;3 months</strong> at current signal rate.</td>
+                </tr>
+                <tr>
+                    <td style="color:#e0e0f0">Verified win rate (any engine)</td>
+                    <td style="color:#ef4444;font-weight:700">Unknown</td>
+                    <td style="color:#22c55e">&gt;55%</td>
+                    <td>Cannot confirm any engine beats random until enough signals resolve. The predictability score will accelerate this by focusing on high-probability assets.</td>
+                </tr>
+                <tr>
+                    <td style="color:#e0e0f0">ML model in production</td>
+                    <td style="color:#ef4444;font-weight:700">0</td>
+                    <td style="color:#22c55e">3+</td>
+                    <td>Infrastructure is ready (feature store, registry, A/B tests). Need ~500 feature rows per asset to train meaningful models. <strong>Estimated: 4&ndash;6 weeks.</strong></td>
+                </tr>
+                <tr>
+                    <td style="color:#e0e0f0">Predictability scores in A/B range</td>
+                    <td style="color:#fbbf24;font-weight:700">0 (all C/D)</td>
+                    <td style="color:#22c55e">10+</td>
+                    <td>Scores will naturally rise as historical TP data accumulates. C range after 3 days is <em>expected</em> and honest.</td>
+                </tr>
+                <tr>
+                    <td style="color:#e0e0f0">Engines covering stocks/forex</td>
+                    <td style="color:#fbbf24;font-weight:700">Basic</td>
+                    <td style="color:#22c55e">Deep</td>
+                    <td>Stocks: picks running but no predictability scoring yet. Forex: 8 pairs scanned but no historical resolution data. Sports: NBA model exists but needs odds data.</td>
+                </tr>
+            </table>
+
+            <!-- ── Roadmap to #1 ── -->
+            <h3 style="color:#22d3ee;margin:1.2rem 0 0.5rem;font-size:1.05rem">Roadmap: From Prototype to #1 Prediction Platform</h3>
+            <table class="infra-table">
+                <tr><th>Phase</th><th>Timeline</th><th>Milestone</th></tr>
+                <tr>
+                    <td style="color:#fbbf24;font-weight:700">1. Data Accumulation</td>
+                    <td>Now &rarr; Week 4</td>
+                    <td>Resolve 500+ signals. Fill feature store. Compute daily regime snapshots. Predictability scores refresh every 6 hours. Identify first A-grade assets.</td>
+                </tr>
+                <tr>
+                    <td style="color:#fb923c;font-weight:700">2. First ML Models</td>
+                    <td>Week 4 &rarr; Week 8</td>
+                    <td>Train gradient-boosted tree models on feature store. A/B test against rule-based engines. Deploy winner per asset class. Target: beat random by 10%+ on resolved trades.</td>
+                </tr>
+                <tr>
+                    <td style="color:#22c55e;font-weight:700">3. Ensemble Optimization</td>
+                    <td>Week 8 &rarr; Week 12</td>
+                    <td>Dynamic engine weights per asset. Calibrate confidence scores. Eliminate underperforming engines. Launch "Conviction Score" combining predictability + engine agreement + ML confidence.</td>
+                </tr>
+                <tr>
+                    <td style="color:#c084fc;font-weight:700">4. Multi-Asset ML</td>
+                    <td>Week 12 &rarr; Week 20</td>
+                    <td>Extend predictability scores to stocks, forex, sports. Cross-asset regime detection. Feature store covers all asset classes. Walk-forward validation ensures no overfitting.</td>
+                </tr>
+                <tr>
+                    <td style="color:#ffd700;font-weight:700">5. Production Grade</td>
+                    <td>Week 20+</td>
+                    <td>5,000+ resolved predictions. Published win rates by asset and engine. Public leaderboard. Real-time calibration. "Industry standard" = every prediction tracked, scored, and verifiable.</td>
+                </tr>
+            </table>
+
+            <p style="margin-top:1rem"><strong>The honest truth:</strong> We are <em>not</em> at the "Holy Grail" yet &mdash; no one is after 3 days. But we now have the infrastructure, the math, and the data pipeline to <em>get there</em>. The key difference between us and 99% of prediction sites is that we measure our predictability <em>before</em> making picks, and we track every outcome. That's the foundation of trust.</p>
+
+            <p style="color:#ffd700;margin-top:0.5rem"><strong>What makes this different from every other prediction site:</strong> Most sites show flashy "75% win rate!" banners computed from cherry-picked backtests. We are building a system where every prediction is timestamped, audited, and resolved against live prices &mdash; and the predictability score tells you <em>upfront</em> how much to trust each pick.</p>
+
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 15, 2026 — SYSTEM TRIAGE: Fixes + Roadmap        -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry" style="border-color: rgba(34, 197, 94, 0.5); box-shadow: 0 0 20px rgba(34, 197, 94, 0.12);">
+        <div class="update-date">February 15, 2026 &mdash; System Triage &amp; Fix Sprint</div>
+        <div class="update-title" style="color:#22c55e"><span class="tag tag-fix">FIXES</span> <span class="tag tag-improvement">TRIAGE</span> Identified &amp; Fixed Critical Issues Across All Engines</div>
+        <div class="update-body">
+            <p>After the honest review, we ran a full diagnostic across every engine, GitHub Action, and asset class. Multiple issues found and fixed.</p>
+
+            <h3 style="color:#22c55e;margin:1rem 0 0.5rem;font-size:1rem">Fixes Applied Today</h3>
+            <ul>
+                <li><span class="tag tag-fix">Fix</span> <strong>TV Technicals expanded from 17 to 36 pairs</strong> &mdash; now covers PEPE, BONK, FLOKI, WIF, SHIB, TRUMP, PENGU, FARTCOIN, VIRTUAL, SPX, TURBO + DeFi mid-caps. First expanded scan found <strong>26 new signals</strong> including all the meme movers we missed yesterday.</li>
+                <li><span class="tag tag-fix">Fix</span> <strong>CoinGecko API key integrated across 11 PHP files</strong> &mdash; Demo API key (30 calls/min, up from free 10/min) wired into: meme_scanner, price_check, live_prices, live_signals, discover_movers, meme_market_pulse, hot_trending_scanner, multi_exchange_prices, algo_competition, portfolio fetch_prices.</li>
+                <li><span class="tag tag-fix">Fix</span> <strong>GitHub Actions: meme-signal-collector.yml</strong> &mdash; Fixed deprecated <code>upload-artifact@v3</code> &rarr; <code>v4</code> that was causing every run to fail.</li>
+                <li><span class="tag tag-fix">Fix</span> <strong>GitHub Actions: shadow-collector.yml</strong> &mdash; Progress endpoint 404 now handled gracefully instead of crashing the workflow.</li>
+                <li><span class="tag tag-fix">Fix</span> <strong>Forex signals regenerated</strong> &mdash; Live Monitor scan generated 8 new forex signals (was 0). EURUSD, GBPUSD, USDJPY, USDCAD, AUDUSD, NZDUSD, USDCHF, EURGBP all now being actively scanned.</li>
+                <li><span class="tag tag-fix">Fix</span> <strong>"Dead" engines were alive all along</strong> &mdash; Kimi Enhanced (returns 11 signals), Proven Picks (generates 20 consensus picks), Top Picks (returns 3), Pro Signals (<code>action=live_scan</code> not <code>scan</code>). They just weren't being called with the right action names or API keys.</li>
+            </ul>
+
+            <h3 style="color:#58a6ff;margin:1rem 0 0.5rem;font-size:1rem">Current State: All Asset Classes</h3>
+            <table style="width:100%;border-collapse:collapse;font-size:0.85rem;margin:0.5rem 0">
+                <tr style="border-bottom:1px solid #2a2a4a">
+                    <th style="text-align:left;padding:6px;color:#888">Asset Class</th>
+                    <th style="text-align:left;padding:6px;color:#888">Engine(s)</th>
+                    <th style="text-align:center;padding:6px;color:#888">Active Signals</th>
+                    <th style="text-align:left;padding:6px;color:#888">Status</th>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px;color:#ffd700;font-weight:700">Crypto</td>
+                    <td style="padding:6px">Hybrid Engine, TV Technicals, Kimi Enhanced, Academic Edge, Expert Consensus, Alpha Hunter, Proven Picks, Top Picks</td>
+                    <td style="text-align:center;padding:6px;color:#22c55e;font-weight:700">155+</td>
+                    <td style="padding:6px;color:#22c55e">ACTIVE &mdash; 8 engines running, 36+ pairs covered</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px;color:#58a6ff;font-weight:700">Stocks</td>
+                    <td style="padding:6px">Live Monitor (21 signals), Quick Picks, Blue Chip Picks (25), ETF Portfolio (17)</td>
+                    <td style="text-align:center;padding:6px;color:#22c55e;font-weight:700">21+</td>
+                    <td style="padding:6px;color:#22c55e">ACTIVE &mdash; Challenger Bot generating picks for MSFT, AMZN, GOOGL, etc.</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px;color:#a855f7;font-weight:700">Forex</td>
+                    <td style="padding:6px">Live Monitor (8 pairs via TwelveData API)</td>
+                    <td style="text-align:center;padding:6px;color:#f59e0b;font-weight:700">8</td>
+                    <td style="padding:6px;color:#f59e0b">RESTARTED &mdash; Was dead (0 signals), now scanning 8 major pairs</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px;color:#06b6d4;font-weight:700">Sports Betting</td>
+                    <td style="padding:6px">Sports Picks, Sports Bets (The Odds API)</td>
+                    <td style="text-align:center;padding:6px;color:#22c55e;font-weight:700">12</td>
+                    <td style="padding:6px;color:#22c55e">ACTIVE &mdash; 12 active bets (NCAAB, NBA). Value bets scanned daily.</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px;color:#ff6b35;font-weight:700">Penny Stocks</td>
+                    <td style="padding:6px">Dashboard exists (<a href="/findstocks/portfolio2/penny-stocks.html">penny-stocks.html</a>)</td>
+                    <td style="text-align:center;padding:6px;color:#888">--</td>
+                    <td style="padding:6px;color:#f59e0b">NEEDS WORK &mdash; UI ready, needs dedicated scanner + signal generation</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px;color:#ff4444;font-weight:700">Meme Coins</td>
+                    <td style="padding:6px">Meme Scanner (display), Hybrid Engine, TV Technicals (NEW), Meme Market Pulse</td>
+                    <td style="text-align:center;padding:6px;color:#22c55e;font-weight:700">26+</td>
+                    <td style="padding:6px;color:#22c55e">FIXED &mdash; TV Technicals now covers 11 meme coins. Was a complete blind spot.</td>
+                </tr>
+            </table>
+
+            <h3 style="color:#ffd700;margin:1rem 0 0.5rem;font-size:1rem">Roadmap to Industry-Standard Winning System</h3>
+            <table style="width:100%;border-collapse:collapse;font-size:0.85rem;margin:0.5rem 0">
+                <tr style="border-bottom:1px solid #2a2a4a">
+                    <th style="text-align:left;padding:6px;color:#888">Timeline</th>
+                    <th style="text-align:left;padding:6px;color:#888">Milestone</th>
+                    <th style="text-align:left;padding:6px;color:#888">What Happens</th>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px;color:#ff4444;font-weight:700">NOW (Day 2-3)</td>
+                    <td style="padding:6px">Signal Generation Running</td>
+                    <td style="padding:6px;color:#aaa">All engines generating signals. 155+ crypto, 21 stock, 8 forex, 12 sports active. Monitors checking TP/SL every hour via GitHub Actions.</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px;color:#f59e0b;font-weight:700">Week 1 (by Feb 21)</td>
+                    <td style="padding:6px">First Resolved Signals</td>
+                    <td style="padding:6px;color:#aaa">30-50 signals should hit TP, SL, or expiry. First real win rates emerge. Kill engines with &lt;30% WR. Identify top performers.</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px;color:#f59e0b;font-weight:700">Week 2 (by Feb 28)</td>
+                    <td style="padding:6px">Statistical Significance</td>
+                    <td style="padding:6px;color:#aaa">100+ resolved signals per top engine. Statistically meaningful WR (95% CI). Eliminate underperformers. Proven Picks consensus starts having history.</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px;color:#22c55e;font-weight:700">Month 1 (by Mar 14)</td>
+                    <td style="padding:6px">Engine Elimination Round</td>
+                    <td style="padding:6px;color:#aaa">2-3 engines survive with 55%+ WR. Dead engines retired. Surviving engines get more weight in Proven Picks consensus. Penny stock scanner built.</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px;color:#22c55e;font-weight:700">Month 3 (by May)</td>
+                    <td style="padding:6px">Minimum Viable Track Record</td>
+                    <td style="padding:6px;color:#aaa">500+ trades. Must survive bull AND bear market. Sharpe &gt; 1.0. Positive P&amp;L. This is when the system becomes trustworthy.</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px;color:#22c55e;font-weight:700">Month 6 (by Aug)</td>
+                    <td style="padding:6px">Industry Standard</td>
+                    <td style="padding:6px;color:#aaa">1000+ trades. Auditable track record. Proven across at least 1 crash. Ready for real capital allocation. Discord alerts become trustworthy.</td>
+                </tr>
+            </table>
+
+            <h3 style="color:#ff4444;margin:1rem 0 0.5rem;font-size:1rem">Still Broken / Needs Work</h3>
+            <ul>
+                <li><strong style="color:#ff4444">Live Monitor</strong>: 0% WR, -56% PnL on 17 resolved. Left running but its "Challenger Bot" strategy needs a complete rethink &mdash; it's using too-tight SL with too-long hold times.</li>
+                <li><strong style="color:#ff4444">Science Engine</strong>: API times out (&gt;60s). Needs optimization or caching to run within server time limits.</li>
+                <li><strong style="color:#f59e0b">Meme Scanner</strong>: Still display-only. Needs conversion to a proper signal generator with forward-testing.</li>
+                <li><strong style="color:#f59e0b">Penny Stocks</strong>: Dashboard UI exists but no dedicated scanner or signal engine. Next build priority after current engines prove themselves.</li>
+                <li><strong style="color:#f59e0b">Forex</strong>: Scan works but signals not persisting correctly in the filter. Under investigation.</li>
+                <li><strong style="color:#888">3 GitHub Actions still failing</strong>: Daily Runs (HMM script), Data Quality Monitor (missing DB columns), Command Center Refresh (YAML issue). Non-critical but should be fixed.</li>
+            </ul>
+
+            <h3 style="color:#fff;margin:1rem 0 0.5rem;font-size:1rem">What "Winning" Looks Like</h3>
+            <p>An industry-standard system needs:</p>
+            <ul>
+                <li><strong>55%+ win rate</strong> across 500+ trades (not 55% on 10 trades)</li>
+                <li><strong>Positive risk-adjusted returns</strong> &mdash; Sharpe ratio &gt; 1.0, profit factor &gt; 1.5</li>
+                <li><strong>Survives drawdowns</strong> &mdash; max drawdown &lt; 20%, recovers within 2 weeks</li>
+                <li><strong>Multi-asset coverage</strong> &mdash; crypto, stocks, forex, sports with separate strategies per asset class</li>
+                <li><strong>Real-time signal resolution</strong> &mdash; every signal tracked to TP/SL/expiry with P&amp;L</li>
+                <li><strong>Auditable</strong> &mdash; full history, no cherry-picking, no retroactive edits</li>
+            </ul>
+            <p style="color:#22c55e;margin-top:0.5rem"><strong>We have the infrastructure. What we don't have yet is the data.</strong> The next 2 weeks will tell us which engines are winners and which get eliminated. Check back on Feb 28 for the first real performance report.</p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 14, 2026 — HONEST SYSTEM REVIEW & REALITY CHECK  -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry" style="border-color: rgba(255, 255, 255, 0.5); box-shadow: 0 0 20px rgba(255, 255, 255, 0.08);">
+        <div class="update-date">February 14, 2026 &mdash; Late Night Reality Check</div>
+        <div class="update-title" style="color:#fff"><span class="tag" style="background:rgba(255,255,255,0.1);color:#fff">HONEST REVIEW</span> System Reliability Report &mdash; What Works, What Doesn't, and What Needs Time</div>
+        <div class="update-body">
+            <p>We ran <strong>14 coins that moved 10%+ today</strong> (PENGU +18.6%, SPX6900 +19.6%, VIRTUAL +15%, PEPE +25.5%, DOGE +12.8%, FARTCOIN +14%, BONK +14.6%, TOSHI +10.2%, MOODENG +17.8%, POPCAT +18.6%, MOG +13.7%, FLOKI +14.4%, WIF +14.7%, TRUMP +5.9%) through every engine. Here's what actually happened:</p>
+
+            <h3 style="color:#22c55e;margin:1rem 0 0.5rem;font-size:1rem">The One That Worked: Hybrid Engine</h3>
+            <ul>
+                <li><strong>Caught 7 of 14 movers (50%)</strong>: SPX6900 (+10.3% captured), PENGU (+8.9%), BONK (+8.1%), FLOKI (+5.5%), FARTCOIN (+5.2%), VIRTUAL (+1.7%), TRUMP (+0.9%)</li>
+                <li><strong>27/30 active signals are green</strong> right now, live P&amp;L +104.9% across all positions</li>
+                <li style="color:#f59e0b"><strong>BUT: It's long on 31 pairs simultaneously.</strong> In a broad crypto rally, being long on everything will look great. This is not surgical precision &mdash; it's market beta exposure. If the market dumps, all 31 positions lose.</li>
+                <li>Only <strong>1 resolved trade</strong> in history (DOGE +8.33% TP hit). "100% win rate" on 1 trade is statistically meaningless.</li>
+            </ul>
+
+            <h3 style="color:#ff4444;margin:1rem 0 0.5rem;font-size:1rem">What Failed</h3>
+            <ul>
+                <li><strong style="color:#ff4444">Live Monitor</strong>: <strong>0% win rate</strong>, -56.17% total P&amp;L. 17 resolved: 0 TP hits, 10 SL hits, 7 expired. The worst performer by far. Signals are mostly stocks (MSFT, AAPL) via "Challenger Bot" and do not cover crypto memes at all.</li>
+                <li><strong style="color:#ff4444">Expert Consensus</strong>: <strong>0W/5L</strong>, -10.22%. All were contrarian shorts in a trending market. The "expert" intelligence got the direction completely wrong.</li>
+                <li><strong style="color:#f59e0b">TV Technicals</strong>: Covers only 12 blue-chip pairs (XDG, ATOM, XRP, LTC, etc.) &mdash; <strong>none of the meme movers are tracked</strong>. Worse: it fired mostly "Triple Overbought Fade" SHORT signals today, which would have been wrong. Zero resolved signals to evaluate.</li>
+            </ul>
+
+            <h3 style="color:#888;margin:1rem 0 0.5rem;font-size:1rem">What's Dead or Empty</h3>
+            <ul>
+                <li><strong>Meme Scanner</strong>: Shows live data on the dashboard (what you see in the screenshot) but the API returns 0 winners and last scan was Feb 12. It's a data <em>display</em>, not a signal generator &mdash; it shows what already moved, not what will move.</li>
+                <li><strong>Kimi Enhanced</strong>: 0 active signals. Was green with +2.3% avg P&amp;L when last active but has gone silent.</li>
+                <li><strong>Pro Signals</strong>: 0 active signals. Dead.</li>
+                <li><strong>Science Engine</strong>: 0 active signals. Dead.</li>
+                <li><strong>Smart Money</strong>: 0 active signals. Dead.</li>
+                <li><strong>Proven Picks</strong>: No equity data. The "crown jewel" consensus system has no track record yet.</li>
+                <li><strong>Top Picks</strong>: API returns error. Dead.</li>
+                <li><strong>Pump Watch</strong>: API returns error. Dead.</li>
+            </ul>
+
+            <h3 style="color:#58a6ff;margin:1rem 0 0.5rem;font-size:1rem">What Has Potential (Needs Time)</h3>
+            <ul>
+                <li><strong>Academic Edge</strong>: 50 active signals, most are LONGs on meme coins. Has TRUMP, UNI, XLM, DYDX flagged. Walk-forward validated strategies. But: zero resolved history to evaluate real performance.</li>
+                <li><strong>Alpha Hunter</strong>: 8 signals active (LRC, FLOW, DOG, AXS, BTC). Interesting "pre-pump fingerprint" concept. But: no P&amp;L tracking on resolved signals.</li>
+                <li><strong>TV Technicals</strong>: Solid indicator engine, but needs to expand beyond 12 blue-chip pairs to cover memes. Also needs time for signals to resolve.</li>
+            </ul>
+
+            <h3 style="color:#fff;margin:1rem 0 0.5rem;font-size:1rem">Honest Verdict</h3>
+            <table style="width:100%;border-collapse:collapse;font-size:0.85rem;margin:0.5rem 0">
+                <tr style="border-bottom:1px solid #2a2a4a">
+                    <th style="text-align:left;padding:6px;color:#888">Engine</th>
+                    <th style="text-align:center;padding:6px;color:#888">Status</th>
+                    <th style="text-align:center;padding:6px;color:#888">Trust Level</th>
+                    <th style="text-align:left;padding:6px;color:#888">Reality</th>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px"><a href="/findcryptopairs/hybrid-engine.html" style="color:#58a6ff">Hybrid Engine</a></td>
+                    <td style="text-align:center;padding:6px;color:#22c55e">ACTIVE</td>
+                    <td style="text-align:center;padding:6px;color:#f59e0b">LOW-MED</td>
+                    <td style="padding:6px;color:#aaa">Best so far, but buys everything. Bull market flatterer. Need 30+ resolved trades to judge.</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px"><a href="/findcryptopairs/academic-edge.html" style="color:#64b5f6">Academic Edge</a></td>
+                    <td style="text-align:center;padding:6px;color:#22c55e">ACTIVE</td>
+                    <td style="text-align:center;padding:6px;color:#888">UNPROVEN</td>
+                    <td style="padding:6px;color:#aaa">50 signals, walk-forward validated. Zero resolved history. Check back in 1-2 weeks.</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px"><a href="/findcryptopairs/tv-technicals.html" style="color:#00c853">TV Technicals</a></td>
+                    <td style="text-align:center;padding:6px;color:#22c55e">ACTIVE</td>
+                    <td style="text-align:center;padding:6px;color:#888">UNPROVEN</td>
+                    <td style="padding:6px;color:#aaa">Good indicators but covers only 12 pairs, no memes. Fired wrong-direction shorts today.</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px"><a href="/findcryptopairs/alpha-hunter.html" style="color:#ffd700">Alpha Hunter</a></td>
+                    <td style="text-align:center;padding:6px;color:#f59e0b">PARTIAL</td>
+                    <td style="text-align:center;padding:6px;color:#888">UNPROVEN</td>
+                    <td style="padding:6px;color:#aaa">Interesting concept. 8 signals but no P&amp;L tracking. Needs monitoring wired up.</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px"><a href="/findcryptopairs/meme.html" style="color:#a855f7">Meme Scanner</a></td>
+                    <td style="text-align:center;padding:6px;color:#f59e0b">DISPLAY ONLY</td>
+                    <td style="text-align:center;padding:6px;color:#ff4444">N/A</td>
+                    <td style="padding:6px;color:#aaa">Shows what already moved. Not a signal generator. Good for monitoring, not trading.</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px"><a href="/live-monitor/live-monitor.html" style="color:#ff4444">Live Monitor</a></td>
+                    <td style="text-align:center;padding:6px;color:#22c55e">ACTIVE</td>
+                    <td style="text-align:center;padding:6px;color:#ff4444">AVOID</td>
+                    <td style="padding:6px;color:#aaa">0% win rate, -56% P&amp;L. Consistently loses money. Needs complete overhaul or retirement.</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px"><a href="/findcryptopairs/expert-consensus.html" style="color:#ff9800">Expert Consensus</a></td>
+                    <td style="text-align:center;padding:6px;color:#ff4444">FAILED</td>
+                    <td style="text-align:center;padding:6px;color:#ff4444">AVOID</td>
+                    <td style="padding:6px;color:#aaa">0W/5L. "Expert" signals all lost. Contrarian approach was wrong in trending market.</td>
+                </tr>
+                <tr style="border-bottom:1px solid #1e1e3a">
+                    <td style="padding:6px">Kimi, Pro Signals, Science, Smart Money, Proven Picks, Top Picks, Pump Watch</td>
+                    <td style="text-align:center;padding:6px;color:#ff4444">DEAD</td>
+                    <td style="text-align:center;padding:6px;color:#888">N/A</td>
+                    <td style="padding:6px;color:#aaa">0 active signals or API errors. These need to be restarted or removed.</td>
+                </tr>
+            </table>
+
+            <h3 style="color:#fff;margin:1rem 0 0.5rem;font-size:1rem">Could We Have Predicted the 10%+ Movers?</h3>
+            <p><strong style="color:#f59e0b">Partially.</strong> The Hybrid Engine was already LONG on 7 of the 14 coins before they pumped and captured +0.9% to +10.3% on each. But it was also long on 24 other coins &mdash; it's more "long everything" than "sniper picks."</p>
+            <p>The coins we <strong>completely missed</strong>: PEPE (+25.5%), DOGE (+12.8%), POPCAT (+18.6%), WIF (+14.7%), MOODENG (+17.8%), MOG (+13.7%), TOSHI (+10.2%). These are mostly pure meme coins that only the Meme Scanner dashboard displays &mdash; but it's a lagging display, not a predictor.</p>
+            <p><strong>To actually predict meme coin pumps, we need:</strong></p>
+            <ul>
+                <li>Social velocity tracking (Twitter/X mention spikes BEFORE price moves)</li>
+                <li>On-chain whale wallet monitoring (large buys signaling accumulation)</li>
+                <li>Cross-exchange volume anomaly detection (volume surge before price catches up)</li>
+                <li>Meme Scanner converted from display to signal engine with forward-testing</li>
+            </ul>
+
+            <h3 style="color:#fff;margin:1rem 0 0.5rem;font-size:1rem">Timeline to Reliability</h3>
+            <p>The entire platform has been live for <strong>~2 days</strong> (Feb 12-14, 2026). That's far too short to judge any system. Realistic timeline:</p>
+            <ul>
+                <li><strong>2 weeks</strong>: First engines should have 30-50+ resolved signals. Can begin to assess win rates statistically.</li>
+                <li><strong>1 month</strong>: Expect 2-3 engines to be eliminated (proven losers). Surviving engines start showing real edge (or not).</li>
+                <li><strong>3 months</strong>: Minimum viable track record. If an engine maintains 55%+ win rate with positive P&amp;L over 100+ trades across bull AND bear conditions, it's worth trusting.</li>
+                <li><strong>6+ months</strong>: Real confidence. Must survive at least one significant drawdown/crash without blowing up.</li>
+            </ul>
+            <p style="margin-top:0.75rem;color:#f59e0b"><strong>Bottom line:</strong> No engine is trustworthy yet. The Hybrid Engine is the most promising but is unproven in a downturn. The Live Monitor and Expert Consensus are actively harmful and should be paused. Most other engines are dead and need restarting. This is Day 2 &mdash; the real test is ahead.</p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 14, 2026 — TV Technicals Engine Launch           -->
+    <div class="update-entry">
+        <div class="update-date">February 14, 2026</div>
+        <div class="update-title"><span class="tag tag-new">NEW ENGINE</span> TV Technicals — Short-Term Pattern Scanner</div>
+        <div class="update-body">
+            <p>Launched a brand-new engine inspired by <strong>TradingView's Technical Ratings</strong> system, enhanced with <strong>9 proprietary short-term confluence patterns</strong> designed for quick buy/sell signals.</p>
+            <ul>
+                <li><strong>25 Indicators Per Pair:</strong> 11 oscillators (RSI, Stochastic, CCI, ADX, MACD, Williams %R, Ultimate Osc, etc.) + 14 moving averages (EMA/SMA at 10-200, Hull MA, VWMA) — matching TradingView's exact methodology</li>
+                <li><strong>9 Pattern Types Detected:</strong> Triple Oversold Snap, Triple Overbought Fade, MACD Bullish/Bearish Cross + Momentum, BB Squeeze Breakout, Stoch Bullish Cross, CCI Extreme Reversal, MA Ribbon Alignment, HMA Bullish Flip</li>
+                <li><strong>Multi-Indicator Confluence:</strong> Each pattern requires 2-4 independent indicators to simultaneously agree, filtering out single-indicator noise. Example: "Triple Oversold Snap" fires only when RSI &lt; 33 AND Stoch K &lt; 25 AND Williams %R &lt; -75 all at once</li>
+                <li><strong>Automatic TP/SL:</strong> Take-profit and stop-loss set as ATR multiples (varies by pattern type: 1.0x to 2.5x ATR)</li>
+                <li><strong>Live Dashboard:</strong> TradingView-style gauges showing Buy/Neutral/Sell breakdown per pair, plus expandable indicator tables with individual indicator actions</li>
+                <li><strong>GitHub Actions:</strong> Automated scan every 4 hours + hourly monitoring of active signals (TP/SL hit, 48h expiry)</li>
+            </ul>
+            <p><strong>First scan result:</strong> 22 signals detected across 16 pairs. Notable: DOGE at RSI 80.2 (Triple Overbought Fade, 74% confidence), ATOM MA Ribbon Alignment at 72% confidence.</p>
+            <p><a href="/findcryptopairs/tv-technicals.html" style="color:#00c853;font-weight:700">View TV Technicals Dashboard &rarr;</a></p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- Feb 14, 2026 — War Room + Frontend Build-Out        -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="update-entry" style="border-color: rgba(255, 68, 68, 0.5); box-shadow: 0 0 20px rgba(255, 68, 68, 0.12);">
+        <div class="update-date">February 14, 2026 (Evening)</div>
+        <div class="update-title" style="color:#ff4444">WAR ROOM Launch + 3 New Frontends &mdash; Real-Time Performance Across All Engines</div>
+        <div class="update-body">
+            <p><span class="tag tag-new">New</span> Launched the <a href="/findcryptopairs/war-room.html" style="color:#ff4444;font-weight:700">WAR ROOM</a> &mdash; a consolidated real-time dashboard that polls <strong>all 7 engines simultaneously</strong>, showing live signals, green/red counts, win rates, P&amp;L, and market prices in one view.</p>
+            <ul>
+                <li><span class="tag tag-new">New Frontend</span> <a href="/findcryptopairs/war-room.html" style="color:#ff4444">WAR ROOM</a> &mdash; All-engine consolidated dashboard with live Kraken prices, engine-by-engine performance cards, and backtest leaderboard snapshot</li>
+                <li><span class="tag tag-new">New Frontend</span> <a href="/findcryptopairs/kimi-enhanced.html" style="color:#00c853">Kimi-Enhanced Dashboard</a> &mdash; Live signals with P&amp;L tracking, backtest leaderboard (ranked by Sharpe), asset module badges, strategy breakdowns, and research links</li>
+                <li><span class="tag tag-new">New Frontend</span> <a href="/findcryptopairs/hybrid-predictor.html" style="color:#58a6ff">Hybrid Predictor Dashboard</a> &mdash; Multi-model ensemble predictions for BTC/ETH/AVAX with 30+ features per asset, regime detection, and collapsible indicator deep-dives</li>
+                <li><span class="tag tag-results">Live Results</span> <strong>First War Room report</strong> (Feb 14 2026):
+                    <br>&bull; <strong>Proven Picks</strong>: 1W/0L, +1.96% cumulative (XRP LONG TP_HIT). 1 active BTC LONG at +0.52%.
+                    <br>&bull; <strong>Kimi-Enhanced</strong>: 8/10 signals green, avg +2.30% P&amp;L. Top performers: NEAR +4.17%, SUI +3.83%, INJ +2.93%. Supertrend strategy dominating.
+                    <br>&bull; <strong>Expert Consensus</strong>: 0W/5L, -10.22% (all SL_HIT shorts &mdash; contrarian timing off in trending market).
+                    <br>&bull; <strong>Hybrid Engine</strong>: 26 active signals. <strong>Alpha Hunter</strong>: 7 active. <strong>Spike Forensics</strong>: 2 active.
+                </li>
+                <li><span class="tag tag-improvement">Improvement</span> <strong>Every engine API now has a user-friendly frontend</strong>. No more raw JSON endpoints &mdash; all dashboards feature dark theme, auto-refresh, interactive charts, and mobile-responsive layouts.</li>
+                <li><span class="tag tag-improvement">Navigation</span> All dashboard pages now share a consistent nav bar linking to: War Room, Proven Picks, Kimi Enhanced, Hybrid Predictor, Expert Consensus, Hybrid Engine, Spike Forensics, Crypto Hub, and Updates.</li>
+            </ul>
+            <p style="margin-top:0.5rem"><strong>All Engine Dashboards:</strong></p>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+                <a href="/findcryptopairs/war-room.html" style="font-size:0.8rem;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,68,68,0.3);color:#ff4444;text-decoration:none">War Room</a>
+                <a href="/findcryptopairs/proven-picks.html" style="font-size:0.8rem;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,215,0,0.3);color:#ffd700;text-decoration:none">Proven Picks</a>
+                <a href="/findcryptopairs/kimi-enhanced.html" style="font-size:0.8rem;padding:4px 10px;border-radius:6px;border:1px solid rgba(0,200,83,0.3);color:#00c853;text-decoration:none">Kimi Enhanced</a>
+                <a href="/findcryptopairs/hybrid-predictor.html" style="font-size:0.8rem;padding:4px 10px;border-radius:6px;border:1px solid rgba(88,166,255,0.3);color:#58a6ff;text-decoration:none">Hybrid Predictor</a>
+                <a href="/findcryptopairs/expert-consensus.html" style="font-size:0.8rem;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,152,0,0.3);color:#ff9800;text-decoration:none">Expert Consensus</a>
+                <a href="/findcryptopairs/hybrid-engine.html" style="font-size:0.8rem;padding:4px 10px;border-radius:6px;border:1px solid rgba(88,166,255,0.3);color:#58a6ff;text-decoration:none">Hybrid Engine</a>
+                <a href="/findcryptopairs/spike-forensics.html" style="font-size:0.8rem;padding:4px 10px;border-radius:6px;border:1px solid rgba(187,134,252,0.3);color:#bb86fc;text-decoration:none">Spike Forensics</a>
+                <a href="/findcryptopairs/academic-edge.html" style="font-size:0.8rem;padding:4px 10px;border-radius:6px;border:1px solid rgba(100,181,246,0.3);color:#64b5f6;text-decoration:none">Academic Edge</a>
+                <a href="/findcryptopairs/alpha-hunter.html" style="font-size:0.8rem;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,215,0,0.3);color:#ffd700;text-decoration:none">Alpha Hunter</a>
+            </div>
         </div>
     </div>
 
@@ -456,7 +1236,260 @@
     </div>
 </div>
 
+<!-- TTS Floating Control Bar -->
+<div class="tts-bar" id="ttsBar">
+    <button onclick="ttsPauseResume()" id="ttsPauseBtn" title="Pause / Resume">&#9654; Play</button>
+    <button onclick="ttsPrev()" title="Previous section">&#9664; Prev</button>
+    <button onclick="ttsNext()" title="Next section">Next &#9654;</button>
+    <div class="tts-progress" id="ttsProgress">Ready</div>
+    <div class="tts-speed">
+        <label for="ttsSpeed">Speed:</label>
+        <select id="ttsSpeed" onchange="ttsSetSpeed(this.value)">
+            <option value="0.7">0.7x</option>
+            <option value="0.85">0.85x</option>
+            <option value="1" selected>1x</option>
+            <option value="1.2">1.2x</option>
+            <option value="1.5">1.5x</option>
+            <option value="2">2x</option>
+        </select>
+    </div>
+    <button class="tts-close" onclick="ttsStop()" title="Stop reading">&#10005; Stop</button>
+</div>
+
 <script src="/findstocks/portfolio2/stock-nav.js"></script>
 <script src="/live-monitor/api/scope_labels.js"></script>
+
+<script>
+/* ── Text-to-Speech Engine ── */
+(function() {
+    var synth = window.speechSynthesis;
+    var sections = [];
+    var currentIdx = -1;
+    var rate = 1;
+    var isPaused = false;
+    var isReading = false;
+    var utterance = null;
+
+    function getSections() {
+        var entries = document.querySelectorAll('.update-entry');
+        var arr = [];
+        for (var i = 0; i < entries.length; i++) {
+            arr.push(entries[i]);
+        }
+        return arr;
+    }
+
+    function getTextFromEl(el) {
+        var clone = el.cloneNode(true);
+        var links = clone.querySelectorAll('a');
+        for (var i = 0; i < links.length; i++) {
+            var txt = document.createTextNode(links[i].textContent);
+            links[i].parentNode.replaceChild(txt, links[i]);
+        }
+        var tags = clone.querySelectorAll('.tag');
+        for (var j = 0; j < tags.length; j++) {
+            tags[j].parentNode.removeChild(tags[j]);
+        }
+        var text = clone.textContent || clone.innerText || '';
+        text = text.replace(/\s+/g, ' ').trim();
+        text = text.replace(/[\u2014\u2013]/g, ', ');
+        text = text.replace(/&mdash;/g, ', ');
+        text = text.replace(/\+/g, ' plus ');
+        text = text.replace(/\-(\d)/g, ' minus $1');
+        text = text.replace(/%/g, ' percent');
+        text = text.replace(/P&L/gi, 'P and L');
+        text = text.replace(/TP\/SL/gi, 'take profit slash stop loss');
+        text = text.replace(/SL/g, 'stop loss');
+        text = text.replace(/TP/g, 'take profit');
+        text = text.replace(/WR/g, 'win rate');
+        text = text.replace(/BTC/g, 'Bitcoin');
+        text = text.replace(/ETH/g, 'Ethereum');
+        text = text.replace(/AVAX/g, 'Avalanche');
+        text = text.replace(/ATR/g, 'A T R');
+        text = text.replace(/RSI/g, 'R S I');
+        text = text.replace(/MACD/g, 'M A C D');
+        text = text.replace(/OBV/g, 'O B V');
+        text = text.replace(/ADX/g, 'A D X');
+        text = text.replace(/EMA/g, 'E M A');
+        text = text.replace(/HMM/g, 'H M M');
+        return text;
+    }
+
+    function highlightSection(idx) {
+        for (var i = 0; i < sections.length; i++) {
+            sections[i].classList.remove('tts-reading');
+        }
+        if (idx >= 0 && idx < sections.length) {
+            sections[idx].classList.add('tts-reading');
+            sections[idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    function updateProgress() {
+        var prog = document.getElementById('ttsProgress');
+        if (!prog) return;
+        if (currentIdx < 0 || currentIdx >= sections.length) {
+            prog.textContent = 'Ready';
+            return;
+        }
+        var dateEl = sections[currentIdx].querySelector('.update-date');
+        var titleEl = sections[currentIdx].querySelector('.update-title');
+        var label = '';
+        if (dateEl) label = dateEl.textContent.trim();
+        if (titleEl) label += (label ? ' — ' : '') + titleEl.textContent.trim().substring(0, 60);
+        prog.textContent = 'Section ' + (currentIdx + 1) + '/' + sections.length + ': ' + label;
+    }
+
+    function updatePauseBtn() {
+        var btn = document.getElementById('ttsPauseBtn');
+        if (!btn) return;
+        if (isPaused) {
+            btn.innerHTML = '&#9654; Resume';
+            btn.classList.remove('active-ctrl');
+        } else if (isReading) {
+            btn.innerHTML = '&#10074;&#10074; Pause';
+            btn.classList.add('active-ctrl');
+        } else {
+            btn.innerHTML = '&#9654; Play';
+            btn.classList.remove('active-ctrl');
+        }
+    }
+
+    function speakSection(idx) {
+        if (idx < 0 || idx >= sections.length) {
+            ttsStop();
+            return;
+        }
+        synth.cancel();
+        currentIdx = idx;
+        var text = getTextFromEl(sections[idx]);
+        if (!text) {
+            speakSection(idx + 1);
+            return;
+        }
+        /* Split long text into chunks (browsers choke on >~200 words) */
+        var chunks = [];
+        var sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
+        var buf = '';
+        for (var i = 0; i < sentences.length; i++) {
+            if ((buf + sentences[i]).length > 300 && buf.length > 0) {
+                chunks.push(buf.trim());
+                buf = '';
+            }
+            buf += sentences[i] + ' ';
+        }
+        if (buf.trim()) chunks.push(buf.trim());
+
+        highlightSection(idx);
+        updateProgress();
+        isPaused = false;
+        updatePauseBtn();
+
+        var chunkIdx = 0;
+        function speakChunk() {
+            if (chunkIdx >= chunks.length) {
+                speakSection(idx + 1);
+                return;
+            }
+            utterance = new SpeechSynthesisUtterance(chunks[chunkIdx]);
+            utterance.rate = rate;
+            utterance.pitch = 1;
+            utterance.onend = function() {
+                chunkIdx++;
+                speakChunk();
+            };
+            utterance.onerror = function(e) {
+                if (e.error !== 'canceled') {
+                    chunkIdx++;
+                    speakChunk();
+                }
+            };
+            synth.speak(utterance);
+        }
+        speakChunk();
+    }
+
+    window.ttsToggleRead = function() {
+        if (isReading) {
+            ttsStop();
+            return;
+        }
+        if (!synth) {
+            alert('Your browser does not support text-to-speech.');
+            return;
+        }
+        sections = getSections();
+        if (!sections.length) return;
+        isReading = true;
+        var toggleBtn = document.getElementById('ttsToggle');
+        var label = document.getElementById('ttsLabel');
+        if (toggleBtn) toggleBtn.classList.add('playing');
+        if (label) label.textContent = 'Stop Reading';
+        document.getElementById('ttsBar').classList.add('active');
+        speakSection(0);
+    };
+
+    window.ttsPauseResume = function() {
+        if (!isReading) {
+            /* Start from beginning if not reading */
+            ttsToggleRead();
+            return;
+        }
+        if (isPaused) {
+            synth.resume();
+            isPaused = false;
+        } else {
+            synth.pause();
+            isPaused = true;
+        }
+        updatePauseBtn();
+    };
+
+    window.ttsNext = function() {
+        if (!isReading) return;
+        synth.cancel();
+        isPaused = false;
+        speakSection(currentIdx + 1);
+    };
+
+    window.ttsPrev = function() {
+        if (!isReading) return;
+        synth.cancel();
+        isPaused = false;
+        speakSection(Math.max(0, currentIdx - 1));
+    };
+
+    window.ttsStop = function() {
+        synth.cancel();
+        isReading = false;
+        isPaused = false;
+        currentIdx = -1;
+        highlightSection(-1);
+        var toggleBtn = document.getElementById('ttsToggle');
+        var label = document.getElementById('ttsLabel');
+        if (toggleBtn) toggleBtn.classList.remove('playing');
+        if (label) label.textContent = 'Listen to Updates';
+        document.getElementById('ttsBar').classList.remove('active');
+        updatePauseBtn();
+        updateProgress();
+    };
+
+    window.ttsSetSpeed = function(val) {
+        rate = parseFloat(val) || 1;
+        if (isReading && !isPaused) {
+            synth.cancel();
+            speakSection(currentIdx);
+        }
+    };
+
+    /* Chrome bug workaround: resume paused speech every 10s */
+    setInterval(function() {
+        if (isReading && !isPaused && synth.speaking) {
+            synth.pause();
+            synth.resume();
+        }
+    }, 10000);
+})();
+</script>
 </body>
 </html>

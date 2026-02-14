@@ -96,6 +96,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'status';
 switch ($action) {
     case 'scan': _require_key(); _scan_all($conn); break;
     case 'scan_batch': _require_key(); _scan_batch($conn); break;
+    case 'scan_extra': _require_key(); _scan_extra($conn); break;
     case 'watchlist': _watchlist($conn); break;
     case 'audit': _audit($conn); break;
     case 'status': _status($conn); break;
@@ -404,10 +405,15 @@ function _scan_all($conn) {
 
 function _watchlist($conn) {
     $scan_id = isset($_GET['scan_id']) ? $_GET['scan_id'] : '';
-    $where = $scan_id ? " AND scan_id='" . $conn->real_escape_string($scan_id) . "'" : '';
     $min = isset($_GET['min_score']) ? intval($_GET['min_score']) : 30;
 
-    $res = $conn->query("SELECT * FROM pump_forensics_scans WHERE pump_score >= " . $min . $where . " ORDER BY pump_score DESC LIMIT 50");
+    if ($scan_id) {
+        // Specific scan: no dedup needed
+        $res = $conn->query("SELECT * FROM pump_forensics_scans WHERE pump_score >= " . $min . " AND scan_id='" . $conn->real_escape_string($scan_id) . "' ORDER BY pump_score DESC LIMIT 50");
+    } else {
+        // Latest per pair only — deduplicate by keeping highest id (most recent scan) per pair
+        $res = $conn->query("SELECT s.* FROM pump_forensics_scans s INNER JOIN (SELECT pair, MAX(id) as max_id FROM pump_forensics_scans GROUP BY pair) latest ON s.id = latest.max_id WHERE s.pump_score >= " . $min . " ORDER BY s.pump_score DESC LIMIT 100");
+    }
     $picks = array();
     if ($res) while ($r = $res->fetch_assoc()) $picks[] = $r;
 
@@ -474,6 +480,190 @@ function _monitor($conn) {
 }
 
 function _cmp_vol_desc($a, $b) { return $b['vol'] > $a['vol'] ? 1 : -1; }
+
+// ── KuCoin data fetchers (for pairs not on Kraken, e.g. ORDI) ──
+// Binance is blocked (HTTP 451) from this server. KuCoin works fine.
+function _kucoin_fetch($url) {
+    $r = false;
+    if (function_exists('curl_init')) {
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 12);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0');
+        $r = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        if ($r && $httpCode == 200) return $r;
+    }
+    $ctx = stream_context_create(array('http' => array('timeout' => 12, 'header' => 'User-Agent: Mozilla/5.0')));
+    $r = @file_get_contents($url, false, $ctx);
+    return $r;
+}
+
+function _kucoin_klines($symbol, $interval) {
+    // KuCoin klines: symbol=ORDI-USDT, type=4hour, startAt=unix
+    // Returns newest first: [time, open, close, high, low, volume, turnover]
+    $start = time() - (35 * 86400); // Last 35 days
+    $url = 'https://api.kucoin.com/api/v1/market/candles?type=' . $interval . '&symbol=' . $symbol . '&startAt=' . $start;
+    $r = _kucoin_fetch($url);
+    if (!$r) return array();
+    $d = json_decode($r, true);
+    if (!$d || !isset($d['data']) || !is_array($d['data'])) return array();
+    $out = array();
+    // KuCoin returns newest first, reverse to oldest first
+    $rows = array_reverse($d['data']);
+    foreach ($rows as $c) {
+        $out[] = array(
+            't' => intval($c[0]),
+            'o' => floatval($c[1]),
+            'c' => floatval($c[2]),
+            'h' => floatval($c[3]),
+            'l' => floatval($c[4]),
+            'v' => floatval($c[5]),
+            'vw' => 0
+        );
+    }
+    return $out;
+}
+
+function _kucoin_ticker($symbol) {
+    $url = 'https://api.kucoin.com/api/v1/market/stats?symbol=' . $symbol;
+    $r = _kucoin_fetch($url);
+    if (!$r) return null;
+    $d = json_decode($r, true);
+    if (!$d || !isset($d['data'])) return null;
+    $t = $d['data'];
+    $changeRate = isset($t['changeRate']) ? floatval($t['changeRate']) * 100 : 0;
+    return array(
+        'price' => floatval($t['last']),
+        'change_pct' => round($changeRate, 2),
+        'high' => floatval($t['high']),
+        'low' => floatval($t['low']),
+        'volume' => floatval($t['vol']),
+        'quote_volume' => floatval($t['volValue'])
+    );
+}
+
+// ── Extra pair scan (Binance-sourced: ORDI, ZKP, etc.) ──
+function _scan_extra($conn) {
+    $start = microtime(true);
+    $scan_id = 'pextra_' . date('Y-m-d_H-i');
+
+    // Priority pairs to scan via KuCoin (Binance blocked HTTP 451 from this server)
+    // ORDI = key requested pair; rest = high-interest alts with pump potential
+    $all_extra = array(
+        array('kucoin' => 'ORDI-USDT',  'label' => 'ORDI/USDT',  'store_as' => 'ORDIUSDT'),
+        array('kucoin' => 'SATS-USDT',  'label' => 'SATS/USDT',  'store_as' => 'SATSUSDT'),
+        array('kucoin' => 'WIF-USDT',   'label' => 'WIF/USDT',   'store_as' => 'WIFUSDT'),
+        array('kucoin' => 'BONK-USDT',  'label' => 'BONK/USDT',  'store_as' => 'BONKUSDT'),
+        array('kucoin' => 'FLOKI-USDT', 'label' => 'FLOKI/USDT', 'store_as' => 'FLOKIUSDT'),
+        array('kucoin' => 'PENDLE-USDT','label' => 'PENDLE/USDT','store_as' => 'PENDLEUSDT'),
+        array('kucoin' => 'JUP-USDT',   'label' => 'JUP/USDT',   'store_as' => 'JUPUSDT'),
+        array('kucoin' => 'STX-USDT',   'label' => 'STX/USDT',   'store_as' => 'STXUSDT'),
+        array('kucoin' => 'INJ-USDT',   'label' => 'INJ/USDT',   'store_as' => 'INJUSDT'),
+        array('kucoin' => 'TIA-USDT',   'label' => 'TIA/USDT',   'store_as' => 'TIAUSDT')
+    );
+
+    // Server has 30s max_execution_time. Batch 3 pairs per call.
+    $page = isset($_GET['page']) ? intval($_GET['page']) : 0;
+    $per_page = 3;
+    $extra_pairs = array_slice($all_extra, $page * $per_page, $per_page);
+    $total_pages = ceil(count($all_extra) / $per_page);
+
+    // Quick connectivity test to KuCoin
+    $ping = _kucoin_fetch('https://api.kucoin.com/api/v1/timestamp');
+    if ($ping === false) {
+        _log($conn, $scan_id, 'ERROR', 'Cannot reach KuCoin API from server.');
+        echo json_encode(array('ok' => false, 'error' => 'Server cannot reach KuCoin API.'));
+        return;
+    }
+
+    _log($conn, $scan_id, 'EXTRA_SCAN', 'Page ' . $page . '/' . ($total_pages - 1) . ': scanning ' . count($extra_pairs) . ' pairs via KuCoin API.');
+
+    $results = array();
+    $processed = 0;
+
+    foreach ($extra_pairs as $idx => $ep) {
+        if ($idx > 0) usleep(300000); // Rate limit: 0.3s between pairs
+
+        // Fetch 4h klines from KuCoin (~35 days of data)
+        $candles_4h = _kucoin_klines($ep['kucoin'], '4hour');
+        usleep(200000);
+        // Fetch 1d klines from KuCoin
+        $candles_1d = _kucoin_klines($ep['kucoin'], '1day');
+        usleep(200000);
+        // Fetch current ticker from KuCoin
+        $ticker_data = _kucoin_ticker($ep['kucoin']);
+
+        if (count($candles_4h) < 60) {
+            _log($conn, $scan_id, 'SKIP', $ep['label'] . ': got ' . count($candles_4h) . ' 4h candles. May not be listed on KuCoin.');
+            continue;
+        }
+
+        $ticker = $ticker_data ? $ticker_data : array('price' => $candles_4h[count($candles_4h) - 1]['c']);
+        $result = _score_pair($candles_4h, $candles_1d, $ticker);
+
+        $price = isset($ticker['price']) ? $ticker['price'] : 0;
+
+        // Build enhanced thesis with KuCoin real-time data
+        $thesis = $result['thesis'];
+        if ($ticker_data) {
+            $thesis .= ' [LIVE via KuCoin: $' . number_format($ticker_data['price'], 6) . ', 24h ' . ($ticker_data['change_pct'] >= 0 ? '+' : '') . round($ticker_data['change_pct'], 2) . '%, Vol $' . number_format($ticker_data['quote_volume'], 0) . ']';
+        }
+
+        if ($result['score'] >= 15) { // Lower threshold for extra pairs (we specifically want these)
+            $conn->query(sprintf("INSERT INTO pump_forensics_scans(scan_id,pair,price,pump_score,pump_grade,vol_trend_score,range_comp_score,dip_buy_score,obv_accum_score,rsi_setup_score,vol_spike_score,momentum_score,consolidation_score,vol_trend_detail,range_comp_detail,dip_detail,obv_detail,rsi_detail,direction,thesis,tp_pct,sl_pct,status,created_at) VALUES('%s','%s','%.10f','%.4f','%s','%.4f','%.4f','%.4f','%.4f','%.4f','%.4f','%.4f','%.4f','%s','%s','%s','%s','%s','LONG','%s','%.4f','%.4f','WATCHING','%s')",
+                $conn->real_escape_string($scan_id),
+                $conn->real_escape_string($ep['store_as']),
+                $price, $result['score'], $conn->real_escape_string($result['grade']),
+                $result['scores']['vol_trend'], $result['scores']['range_comp'],
+                $result['scores']['dip_buy'], $result['scores']['obv_accum'],
+                $result['scores']['rsi_setup'], $result['scores']['vol_spike'],
+                $result['scores']['momentum'], $result['scores']['consolidation'],
+                $conn->real_escape_string($result['details']['vol_trend']),
+                $conn->real_escape_string($result['details']['range_comp']),
+                $conn->real_escape_string($result['details']['dip']),
+                $conn->real_escape_string($result['details']['obv']),
+                $conn->real_escape_string($result['details']['rsi']),
+                $conn->real_escape_string($thesis),
+                $result['tp_pct'], $result['sl_pct'], date('Y-m-d H:i:s')));
+            $processed++;
+        }
+
+        $r = array(
+            'pair' => $ep['label'],
+            'score' => $result['score'],
+            'grade' => $result['grade'],
+            'rsi' => $result['rsi'],
+            'drawdown' => $result['drawdown'],
+            'vol_ratio' => $result['vol_ratio'],
+            'source' => 'KuCoin'
+        );
+        if ($ticker_data) {
+            $r['live_price'] = $ticker_data['price'];
+            $r['change_24h'] = $ticker_data['change_pct'];
+            $r['volume_24h'] = $ticker_data['quote_volume'];
+        }
+        $results[] = $r;
+    }
+
+    $elapsed = round((microtime(true) - $start) * 1000, 1);
+    _log($conn, $scan_id, 'EXTRA_DONE', 'Processed ' . count($results) . ' KuCoin pairs (' . $processed . ' stored) in ' . $elapsed . 'ms. Page ' . $page);
+
+    echo json_encode(array(
+        'ok' => true,
+        'scan_id' => $scan_id,
+        'processed' => $processed,
+        'total_checked' => count($results),
+        'source' => 'KuCoin REST API',
+        'page' => $page,
+        'total_pages' => $total_pages,
+        'results' => $results,
+        'latency_ms' => $elapsed
+    ));
+}
 
 // ── Latest scan info (for dashboard auto-refresh) ──
 function _latest_scan($conn) {

@@ -141,13 +141,15 @@ function fetch_crypto_coingecko($symbol, $range) {
     $days_map = array('1mo' => 30, '3mo' => 90, '6mo' => 180, '1y' => 365, '2y' => 730, '5y' => 1825);
     $days = isset($days_map[$range]) ? $days_map[$range] : 365;
 
+    @include_once(dirname(__FILE__) . '/../../api/cg_config.php');
+    $cg_key_header = defined('CG_DEMO_API_KEY') ? 'x-cg-demo-api-key: ' . CG_DEMO_API_KEY . "\r\n" : '';
     $url = 'https://api.coingecko.com/api/v3/coins/' . $coin_id
          . '/market_chart?vs_currency=usd&days=' . $days . '&interval=daily';
 
     $ctx = stream_context_create(array(
         'http' => array(
             'method' => 'GET',
-            'header' => "User-Agent: CryptoPairsPortfolio/1.0\r\n",
+            'header' => "User-Agent: CryptoPairsPortfolio/1.0\r\n" . $cg_key_header,
             'timeout' => 10
         )
     ));

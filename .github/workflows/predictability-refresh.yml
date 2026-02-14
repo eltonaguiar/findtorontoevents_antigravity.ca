@@ -1,0 +1,58 @@
+name: Predictability Score + Unified Audit
+
+on:
+  schedule:
+    # Recompute predictability scores every 6 hours
+    - cron: '15 0,6,12,18 * * *'
+  workflow_dispatch:
+
+jobs:
+  predictability:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Compute predictability scores (36 assets)
+        run: |
+          echo "=== Computing Predictability Scores ==="
+          RESP=$(curl -sf --max-time 120 \
+            "https://findtorontoevents.ca/findcryptopairs/api/predictability_score.php?action=compute" || echo '{"ok":false}')
+          echo "$RESP" | python3 -c "
+          import json,sys
+          try:
+            d=json.load(sys.stdin)
+            print('Pairs computed:', d.get('pairs_computed',0))
+            print('Elapsed:', d.get('elapsed_ms',0), 'ms')
+            for r in d.get('results',[])[:5]:
+              print(f\"  {r['pair']:14s} Score={r['score']:5.1f} Grade={r['grade']} Regime={r['regime']}\")
+            if d.get('pairs_computed',0) > 0: print('OK')
+            else: print('WARN: No pairs computed')
+          except: print('ERROR: Bad response')
+          "
+
+      - name: Collect unified audit trail
+        run: |
+          echo "=== Collecting Unified Audit ==="
+          RESP=$(curl -sf --max-time 60 \
+            "https://findtorontoevents.ca/findcryptopairs/api/unified_audit.php?action=collect" || echo '{"ok":false}')
+          echo "$RESP" | python3 -c "
+          import json,sys
+          try:
+            d=json.load(sys.stdin)
+            print('Collected:', d.get('collected',0), 'new predictions')
+            print('Skipped:', d.get('skipped_duplicates',0), 'duplicates')
+          except: print('ERROR: Bad response')
+          "
+
+      - name: Audit summary
+        run: |
+          echo "=== Audit Trail Summary ==="
+          RESP=$(curl -sf --max-time 30 \
+            "https://findtorontoevents.ca/findcryptopairs/api/unified_audit.php?action=performance" || echo '{"ok":false}')
+          echo "$RESP" | python3 -c "
+          import json,sys
+          try:
+            d=json.load(sys.stdin)
+            for e in d.get('engines',[]):
+              print(f\"  {e['engine_name']:20s} Total={e['total']:3s} Resolved={e['resolved']:3s} WinRate={e['win_rate']}%\")
+          except: print('No performance data yet')
+          "

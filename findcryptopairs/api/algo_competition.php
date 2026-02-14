@@ -1103,12 +1103,16 @@ function _fetch_ohlcv_parallel($coins)
 
 function _fetch_cg_trending()
 {
+    @include_once(dirname(__FILE__) . '/cg_config.php');
     $url = 'https://api.coingecko.com/api/v3/search/trending';
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 5);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_USERAGENT, 'AlgoCompetition/1.0');
+    if (function_exists('cg_auth_headers')) {
+        curl_setopt($ch, CURLOPT_HTTPHEADER, cg_auth_headers());
+    }
     $resp = curl_exec($ch);
     curl_close($ch);
 

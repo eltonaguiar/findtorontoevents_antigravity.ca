@@ -681,13 +681,23 @@ function action_signals($conn)
     foreach ($history as $h) { $p = floatval($h['pnl_pct']); $pnl += $p; $rets[] = $p; if ($p > 0) $wins++; else $losses++; }
     $wr = ($wins+$losses > 0) ? round($wins/($wins+$losses)*100,1) : 0;
     $sharpe = calc_sharpe($rets);
+    // Live unrealized stats from active signals
+    $live_pnl = 0; $live_green = 0; $live_red = 0;
+    foreach ($active as $a) {
+        $lp = floatval(isset($a['pnl_pct']) ? $a['pnl_pct'] : 0);
+        $live_pnl += $lp;
+        if ($lp > 0) $live_green++;
+        elseif ($lp < 0) $live_red++;
+    }
+    $live_avg = (count($active) > 0) ? round($live_pnl / count($active), 2) : 0;
     // Load weights
     $wts = array();
     $res3 = $conn->query("SELECT * FROM he_weights ORDER BY weight DESC");
     if ($res3) { while ($r = $res3->fetch_assoc()) { $wts[] = $r; } }
     echo json_encode(array('ok'=>true,'active'=>$active,'history'=>$history,
         'weights'=>$wts,
-        'stats'=>array('win_rate'=>$wr,'total_pnl'=>round($pnl,2),'sharpe_live'=>$sharpe,'wins'=>$wins,'losses'=>$losses)));
+        'stats'=>array('win_rate'=>$wr,'total_pnl'=>round($pnl,2),'sharpe_live'=>$sharpe,'wins'=>$wins,'losses'=>$losses,
+            'live_pnl'=>round($live_pnl,2),'live_avg'=>$live_avg,'live_green'=>$live_green,'live_red'=>$live_red,'active_count'=>count($active))));
 }
 
 function action_monitor($conn)
@@ -721,25 +731,44 @@ function action_monitor($conn)
 
 function action_compare($conn)
 {
-    // Compare Hybrid Engine Sharpe vs other engines
+    // Compare engines: both resolved stats and live unrealized
+    $tables = array(
+        array('name'=>'Hybrid Engine','tbl'=>'he_signals'),
+        array('name'=>'Alpha Hunter','tbl'=>'ah_signals'),
+        array('name'=>'Academic Edge','tbl'=>'ae_signals'),
+        array('name'=>'Spike Forensics','tbl'=>'sf_signals')
+    );
     $engines = array();
-    // Hybrid Engine
-    $rets_h = array(); $h_res = $conn->query("SELECT pnl_pct FROM he_signals WHERE status='RESOLVED'");
-    if ($h_res) { while ($r = $h_res->fetch_assoc()) { $rets_h[] = floatval($r['pnl_pct']); } }
-    $engines[] = array('name'=>'Hybrid Engine','sharpe'=>calc_sharpe($rets_h),'trades'=>count($rets_h),'wr'=>win_rate($rets_h),'pnl'=>round(array_sum($rets_h),2));
-    // Alpha Hunter
-    $rets_a = array(); $a_res = $conn->query("SELECT pnl_pct FROM ah_signals WHERE status='RESOLVED'");
-    if ($a_res) { while ($r = $a_res->fetch_assoc()) { $rets_a[] = floatval($r['pnl_pct']); } }
-    $engines[] = array('name'=>'Alpha Hunter','sharpe'=>calc_sharpe($rets_a),'trades'=>count($rets_a),'wr'=>win_rate($rets_a),'pnl'=>round(array_sum($rets_a),2));
-    // Academic Edge
-    $rets_ae = array(); $ae_res = $conn->query("SELECT pnl_pct FROM ae_signals WHERE status='RESOLVED'");
-    if ($ae_res) { while ($r = $ae_res->fetch_assoc()) { $rets_ae[] = floatval($r['pnl_pct']); } }
-    $engines[] = array('name'=>'Academic Edge','sharpe'=>calc_sharpe($rets_ae),'trades'=>count($rets_ae),'wr'=>win_rate($rets_ae),'pnl'=>round(array_sum($rets_ae),2));
-    // Spike Forensics
-    $rets_sf = array(); $sf_res = $conn->query("SELECT pnl_pct FROM sf_signals WHERE status='RESOLVED'");
-    if ($sf_res) { while ($r = $sf_res->fetch_assoc()) { $rets_sf[] = floatval($r['pnl_pct']); } }
-    $engines[] = array('name'=>'Spike Forensics','sharpe'=>calc_sharpe($rets_sf),'trades'=>count($rets_sf),'wr'=>win_rate($rets_sf),'pnl'=>round(array_sum($rets_sf),2));
-
+    foreach ($tables as $eng) {
+        $rets = array();
+        $r_res = $conn->query("SELECT pnl_pct FROM " . $eng['tbl'] . " WHERE status='RESOLVED'");
+        if ($r_res) { while ($r = $r_res->fetch_assoc()) { $rets[] = floatval($r['pnl_pct']); } }
+        // Live unrealized from active signals
+        $live_pnl = 0; $live_count = 0; $live_green = 0; $live_red = 0;
+        $a_res = $conn->query("SELECT pnl_pct FROM " . $eng['tbl'] . " WHERE status='ACTIVE'");
+        if ($a_res) {
+            while ($r = $a_res->fetch_assoc()) {
+                $p = floatval(isset($r['pnl_pct']) ? $r['pnl_pct'] : 0);
+                $live_pnl += $p;
+                $live_count++;
+                if ($p > 0) $live_green++;
+                elseif ($p < 0) $live_red++;
+            }
+        }
+        $live_avg = ($live_count > 0) ? round($live_pnl / $live_count, 2) : 0;
+        $engines[] = array(
+            'name'=>$eng['name'],
+            'sharpe'=>calc_sharpe($rets),
+            'trades'=>count($rets),
+            'wr'=>win_rate($rets),
+            'pnl'=>round(array_sum($rets),2),
+            'live_pnl'=>round($live_pnl,2),
+            'live_avg'=>$live_avg,
+            'live_count'=>$live_count,
+            'live_green'=>$live_green,
+            'live_red'=>$live_red
+        );
+    }
     echo json_encode(array('ok'=>true,'comparison'=>$engines));
 }
 

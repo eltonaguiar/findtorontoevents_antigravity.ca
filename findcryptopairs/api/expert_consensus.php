@@ -339,10 +339,28 @@ function action_analyze($conn)
         $confidence = min(95, max(0, abs($net_score) / $max_possible * 100));
         $direction = ($net_score > 0) ? 'LONG' : (($net_score < 0) ? 'SHORT' : 'NEUTRAL');
 
+        // === TREND FILTER: Block SHORT in uptrends (audit fix Feb 14 2026) ===
+        // Root cause of 0% WR: all 5 losses were contrarian SHORTs in trending-up markets.
+        // Fix: Only allow SHORT in confirmed downtrends or extreme conditions.
+        if ($direction === 'SHORT') {
+            $trend_up = ($state === 'STRONG_TREND_UP' || $state === 'NORMAL');
+            $ema_bullish = ($ind['ema9'][$i] > $ind['ema21'][$i] && $ind['ema21'][$i] > $ind['ema50'][$i]);
+            if ($trend_up || $ema_bullish) {
+                // Block SHORT unless net_score is extremely negative (strong conviction)
+                if ($net_score > -60) {
+                    $direction = 'NEUTRAL'; // suppress weak contrarian shorts
+                    $expert_sigs[] = 'TREND_FILTER: SHORT blocked in uptrend (state=' . $state . ')';
+                }
+            }
+        }
+
+        // Raise confidence threshold: LONG >= 20, SHORT >= 35 (was 15 for both)
+        $min_confidence = ($direction === 'SHORT') ? 35 : 20;
+
         // Microstructure adjustment
         $micro = microstructure_adjust($pair, $f['vol_ratio'], $confidence);
 
-        if ($micro['confidence'] >= 15 && $direction !== 'NEUTRAL') {
+        if ($micro['confidence'] >= $min_confidence && $direction !== 'NEUTRAL') {
             $entry = $c[$i];
             $atr = $ind['atr'][$i]; if ($atr <= 0) $atr = $entry * 0.02;
             // Slippage-adjusted TP/SL (wider for memecoins)

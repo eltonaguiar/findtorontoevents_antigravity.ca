@@ -7,6 +7,8 @@
  *   ?action=scan&key=livetrader2026   — Run all 23 algorithms, generate signals (admin only)
  *   ?action=list[&asset_class=CRYPTO] — Show active (non-expired) signals (public)
  *   ?action=expire                    — Mark expired signals
+ *   ?action=monitor                   — Check TP/SL vs live prices, resolve signals, track P&L
+ *   ?action=performance               — Show algorithm performance stats (win rates, P&L)
  *
  * Algorithms (Original 8):
  *   1. Momentum Burst       — 1h candle > 2% move
@@ -66,6 +68,30 @@ $conn->query("CREATE TABLE IF NOT EXISTS lm_signals (
     KEY idx_symbol (symbol),
     KEY idx_status (status),
     KEY idx_time (signal_time)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+
+// Add performance tracking columns (safe: ALTER IGNORE skips if column exists)
+$conn->query("ALTER TABLE lm_signals ADD COLUMN exit_price DECIMAL(18,8) DEFAULT 0");
+$conn->query("ALTER TABLE lm_signals ADD COLUMN pnl_pct DECIMAL(8,4) DEFAULT 0");
+$conn->query("ALTER TABLE lm_signals ADD COLUMN exit_reason VARCHAR(30) DEFAULT ''");
+$conn->query("ALTER TABLE lm_signals ADD COLUMN resolved_at DATETIME DEFAULT NULL");
+$conn->query("ALTER TABLE lm_signals ADD COLUMN current_price DECIMAL(18,8) DEFAULT 0");
+
+// Algorithm performance summary table
+$conn->query("CREATE TABLE IF NOT EXISTS lm_algo_performance (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    algorithm_name VARCHAR(100) NOT NULL,
+    asset_class VARCHAR(10) NOT NULL DEFAULT 'ALL',
+    total_signals INT NOT NULL DEFAULT 0,
+    tp_hits INT NOT NULL DEFAULT 0,
+    sl_hits INT NOT NULL DEFAULT 0,
+    expired INT NOT NULL DEFAULT 0,
+    win_rate DECIMAL(5,2) NOT NULL DEFAULT 0,
+    avg_pnl DECIMAL(8,4) NOT NULL DEFAULT 0,
+    total_pnl DECIMAL(10,4) NOT NULL DEFAULT 0,
+    avg_strength DECIMAL(5,2) NOT NULL DEFAULT 0,
+    last_updated DATETIME NOT NULL,
+    UNIQUE KEY uq_algo_asset (algorithm_name, asset_class)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8");
 
 // ────────────────────────────────────────────────────────────
@@ -200,17 +226,24 @@ function _ls_to_twelvedata($s) {
 //  HTTP helper
 // ────────────────────────────────────────────────────────────
 
-function _ls_http_get($url) {
+function _ls_http_get($url, $extra_headers = null) {
+    if (!is_array($extra_headers)) $extra_headers = array();
     // Try cURL first (more reliable on shared hosting)
     if (function_exists('curl_init')) {
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        $headers = array(
             'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
             'Accept: application/json'
-        ));
+        );
+        if (is_array($extra_headers) && count($extra_headers) > 0) {
+            foreach ($extra_headers as $eh) {
+                $headers[] = $eh;
+            }
+        }
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         $body = curl_exec($ch);
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
@@ -436,10 +469,12 @@ function _ls_fetch_coingecko_ohlc($symbol, $limit) {
         }
     }
 
-    // days=2 gives ~48 hourly candles
+    // days=2 gives ~48 hourly candles (CoinGecko Demo API key for higher rate limits)
+    @include_once(dirname(__FILE__) . '/../../findcryptopairs/api/cg_config.php');
+    $cg_h = function_exists('cg_auth_headers') ? cg_auth_headers() : array();
     $url = 'https://api.coingecko.com/api/v3/coins/' . urlencode($cg_id)
          . '/ohlc?vs_currency=usd&days=2';
-    $body = _ls_http_get($url);
+    $body = _ls_http_get($url, $cg_h);
     if ($body === null) return array();
 
     $raw = json_decode($body, true);
@@ -3997,9 +4032,18 @@ function _ls_discord_alert($strong_signals, $total_generated, $symbols_scanned) 
     }
     if (!$webhook_url) return;
 
+    // ── Load algorithm performance for trust badges ──
+    $algo_perf = array();
+    $pres = $conn->query("SELECT algorithm_name, win_rate, total_signals, total_pnl FROM lm_algo_performance WHERE total_signals >= 5");
+    if ($pres) {
+        while ($pr = $pres->fetch_assoc()) {
+            $algo_perf[$pr['algorithm_name']] = $pr;
+        }
+    }
+
     $lines = array();
     foreach (array_slice($strong_signals, 0, 10) as $s) {
-        $emoji = (intval($s['signal_strength']) >= 90) ? '🔴' : '🟠';
+        $str = intval($s['signal_strength']);
         $entry = floatval($s['entry_price']);
         $tp_pct = floatval($s['target_tp_pct']);
         $sl_pct = floatval($s['target_sl_pct']);
@@ -4014,30 +4058,63 @@ function _ls_discord_alert($strong_signals, $total_generated, $symbols_scanned) 
             $sl_price = $entry * (1 - ($sl_pct / 100));
         }
 
-        // Format prices — use more decimals for small-value assets (crypto pairs under $1, forex)
+        // Format prices
         $decimals = ($entry < 1) ? 6 : (($entry < 100) ? 4 : 2);
         $entry_fmt = number_format($entry, $decimals);
         $tp_fmt = number_format($tp_price, $decimals);
         $sl_fmt = number_format($sl_price, $decimals);
 
-        $dir_label = ($direction === 'SHORT') ? ' 🔻SHORT' : '';
+        $dir_label = ($direction === 'SHORT') ? ' ' . "\xF0\x9F\x94\xBB" . ' SHORT' : '';
 
-        $lines[] = $emoji . ' **' . $s['symbol'] . '**' . $dir_label . ' — ' . $s['algorithm_name']
-            . ' | Str: ' . $s['signal_strength']
+        // ── Trust badge based on algorithm track record ──
+        $trust_badge = '';
+        $algo_name = $s['algorithm_name'];
+        if (isset($algo_perf[$algo_name])) {
+            $wr = floatval($algo_perf[$algo_name]['win_rate']);
+            $trades = intval($algo_perf[$algo_name]['total_signals']);
+            $pnl = floatval($algo_perf[$algo_name]['total_pnl']);
+            if ($trades >= 20 && $wr >= 60 && $pnl > 0) {
+                $trust_badge = "\xE2\x9C\x85 PROVEN (" . $wr . '% WR, ' . $trades . ' trades)';
+            } elseif ($trades >= 10 && $wr >= 50) {
+                $trust_badge = "\xF0\x9F\x9F\xA1 TRACKING (" . $wr . '% WR, ' . $trades . ' trades)';
+            } elseif ($trades >= 5) {
+                $trust_badge = "\xE2\x9A\xA0\xEF\xB8\x8F UNPROVEN (" . $wr . '% WR, ' . $trades . ' trades)';
+            }
+        }
+        if ($trust_badge === '') {
+            $trust_badge = "\xF0\x9F\x86\x95 NEW (no track record yet)";
+        }
+
+        // ── Action tier based on strength + trust ──
+        $tier = 'WATCH';
+        if (isset($algo_perf[$algo_name]) && floatval($algo_perf[$algo_name]['win_rate']) >= 55 && $str >= 85) {
+            $tier = 'ACT NOW';
+        } elseif ($str >= 80) {
+            $tier = 'WATCH CLOSELY';
+        }
+
+        $tier_emoji = ($tier === 'ACT NOW') ? "\xF0\x9F\x9F\xA2" : (($tier === 'WATCH CLOSELY') ? "\xF0\x9F\x9F\xA1" : "\xE2\x9A\xAA");
+
+        $emoji = ($str >= 90) ? "\xF0\x9F\x94\xB4" : "\xF0\x9F\x9F\xA0";
+
+        $lines[] = $emoji . ' **' . $s['symbol'] . '**' . $dir_label . ' ' . "\xE2\x80\x94" . ' ' . $s['algorithm_name']
+            . ' | Str: ' . $str
             . "\n"
-            . '  📍 Entry: $' . $entry_fmt
-            . ' | 🎯 TP: $' . $tp_fmt . ' (+' . $tp_pct . '%)'
-            . ' | 🛡️ SL: $' . $sl_fmt . ' (-' . $sl_pct . '%)';
+            . '  ' . "\xF0\x9F\x93\x8D" . ' Entry: $' . $entry_fmt
+            . ' | ' . "\xF0\x9F\x8E\xAF" . ' TP: $' . $tp_fmt . ' (+' . $tp_pct . '%)'
+            . ' | ' . "\xF0\x9F\x9B\xA1\xEF\xB8\x8F" . ' SL: $' . $sl_fmt . ' (-' . $sl_pct . '%)'
+            . "\n"
+            . '  ' . $tier_emoji . ' **' . $tier . '** | ' . $trust_badge;
     }
     if (count($strong_signals) > 10) {
         $lines[] = '... and ' . (count($strong_signals) - 10) . ' more';
     }
 
     $embed = array(
-        'title' => '⚡ Live Monitor: ' . count($strong_signals) . ' strong signal' . (count($strong_signals) > 1 ? 's' : '') . ' (of ' . $total_generated . ' total)',
+        'title' => "\xE2\x9A\xA1 Live Monitor: " . count($strong_signals) . ' strong signal' . (count($strong_signals) > 1 ? 's' : '') . ' (of ' . $total_generated . ' total)',
         'description' => implode("\n", $lines),
         'color' => 15105570,
-        'footer' => array('text' => $symbols_scanned . ' symbols scanned | ' . date('H:i:s') . ' UTC'),
+        'footer' => array('text' => $symbols_scanned . ' symbols scanned | ' . date('H:i:s') . ' UTC | Tiers: ACT NOW = proven+strong, WATCH = unvalidated'),
         'url' => 'https://findtorontoevents.ca/live-monitor/live-monitor.html'
     );
 
@@ -4219,13 +4296,37 @@ function _ls_check_extraordinary_alerts($conn, $strong_signals, $env_file) {
     }
 
     if (count($ultra_crypto) > 0) {
+        // ── Load algo performance for trust assessment ──
+        $algo_perf = array();
+        $pres = $conn->query("SELECT algorithm_name, win_rate, total_signals, total_pnl FROM lm_algo_performance WHERE total_signals >= 5");
+        if ($pres) {
+            while ($pr = $pres->fetch_assoc()) {
+                $algo_perf[$pr['algorithm_name']] = $pr;
+            }
+        }
+
         $alert_lines = array();
+        $has_proven = false;
         foreach (array_slice($ultra_crypto, 0, 3) as $s) {
-            $alert_lines[] = _ls_format_signal_line($s);
+            $line = _ls_format_signal_line($s);
+            // Add trust context
+            $algo_name = $s['algorithm_name'];
+            if (isset($algo_perf[$algo_name]) && intval($algo_perf[$algo_name]['total_signals']) >= 10) {
+                $wr = floatval($algo_perf[$algo_name]['win_rate']);
+                $trades = intval($algo_perf[$algo_name]['total_signals']);
+                if ($wr >= 55) {
+                    $line .= "\n" . "\xE2\x9C\x85" . ' Track record: ' . $wr . '% win rate over ' . $trades . ' trades';
+                    $has_proven = true;
+                } else {
+                    $line .= "\n" . "\xE2\x9A\xA0\xEF\xB8\x8F" . ' Track record: ' . $wr . '% win rate over ' . $trades . ' trades (below target)';
+                }
+            } else {
+                $line .= "\n" . "\xF0\x9F\x86\x95" . ' No track record yet ' . "\xE2\x80\x94" . ' strength is high but unvalidated. Use caution.';
+            }
+            $alert_lines[] = $line;
         }
 
         $asset_label = 'signal';
-        // Check what asset classes are present
         $classes = array();
         foreach ($ultra_crypto as $s) {
             $cls = isset($s['asset_class']) ? $s['asset_class'] : 'CRYPTO';
@@ -4235,17 +4336,25 @@ function _ls_check_extraordinary_alerts($conn, $strong_signals, $env_file) {
         elseif (isset($classes['STOCK']) && count($classes) === 1) $asset_label = 'stock signal';
         elseif (isset($classes['FOREX']) && count($classes) === 1) $asset_label = 'forex signal';
 
+        // Add tier classification
+        $tier_line = $has_proven
+            ? "\n\n\xF0\x9F\x9F\xA2 **ACT NOW** \xE2\x80\x94 High strength + validated track record"
+            : "\n\n\xF0\x9F\x9F\xA1 **WATCH CLOSELY** \xE2\x80\x94 High strength but no proven track record yet. Wait for validation.";
+
         $embed = array(
             'title' => "\xF0\x9F\x94\xA5" . ' Ultra-High Conviction ' . ucfirst($asset_label) . (count($ultra_crypto) > 1 ? 's' : ''),
             'description' => '**' . count($ultra_crypto) . ' ' . $asset_label . (count($ultra_crypto) > 1 ? 's' : '') . '** with strength 92+/100'
+                . $tier_line
                 . "\n\n" . implode("\n\n", $alert_lines),
-            'color' => 15158332,  // Red
-            'footer' => array('text' => 'Ultra-High Conviction | ' . date('H:i:s') . ' UTC'),
+            'color' => $has_proven ? 3066993 : 15158332,  // Green if proven, Red if not
+            'footer' => array('text' => 'Ultra-High Conviction | ' . date('H:i:s') . ' UTC | Strength = indicator reading, NOT win probability'),
             'url' => 'https://findtorontoevents.ca/live-monitor/live-monitor.html'
         );
 
         $payload = json_encode(array(
-            'content' => "\xF0\x9F\x94\xA5" . ' **ULTRA-HIGH CONVICTION** ' . "\xE2\x80\x94" . ' Strength 92+/100!',
+            'content' => $has_proven
+                ? "\xF0\x9F\x9F\xA2" . ' **ULTRA-HIGH CONVICTION (PROVEN)** ' . "\xE2\x80\x94" . ' Strength 92+/100 with validated track record!'
+                : "\xF0\x9F\x94\xA5" . ' **ULTRA-HIGH CONVICTION** ' . "\xE2\x80\x94" . ' Strength 92+/100 (track record building...)',
             'embeds' => array($embed)
         ));
         _ls_send_discord_webhook($webhook, $payload);
@@ -4683,6 +4792,329 @@ function _ls_algo_contrarian_fg($conn, $candles, $price, $symbol, $asset) {
 }
 
 // ────────────────────────────────────────────────────────────
+//  ACTION: monitor — Check live prices vs TP/SL, resolve signals, track P&L
+// ────────────────────────────────────────────────────────────
+
+function _ls_action_monitor($conn) {
+    $now = date('Y-m-d H:i:s');
+    $res = $conn->query("SELECT * FROM lm_signals WHERE status='active'");
+    if (!$res || $res->num_rows == 0) {
+        echo json_encode(array('ok' => true, 'action' => 'monitor', 'checked' => 0, 'resolved' => 0, 'expired' => 0));
+        return;
+    }
+
+    $signals = array();
+    $symbols_needed = array();
+    while ($r = $res->fetch_assoc()) {
+        $signals[] = $r;
+        $symbols_needed[$r['symbol']] = $r['asset_class'];
+    }
+
+    // Fetch live prices by asset class
+    $live_prices = array();
+    $crypto_syms = array();
+    $forex_syms = array();
+    $stock_syms = array();
+    foreach ($symbols_needed as $sym => $cls) {
+        if ($cls === 'CRYPTO') $crypto_syms[] = $sym;
+        elseif ($cls === 'FOREX') $forex_syms[] = $sym;
+        else $stock_syms[] = $sym;
+    }
+
+    // Fetch crypto from Kraken
+    if (count($crypto_syms) > 0) {
+        $pair_map = array();
+        foreach ($crypto_syms as $cs) {
+            // Map common symbols to Kraken format
+            $kp = $cs;
+            if ($cs === 'BTCUSD') $kp = 'XXBTZUSD';
+            elseif ($cs === 'ETHUSD') $kp = 'XETHZUSD';
+            elseif ($cs === 'XRPUSD') $kp = 'XXRPZUSD';
+            elseif ($cs === 'XLMUSD') $kp = 'XXLMZUSD';
+            $pair_map[$cs] = $kp;
+        }
+        $ch = curl_init('https://api.kraken.com/0/public/Ticker?pair=' . implode(',', array_values($pair_map)));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'LiveMonitor/1.0');
+        $resp = curl_exec($ch);
+        curl_close($ch);
+        if ($resp) {
+            $data = json_decode($resp, true);
+            if ($data && isset($data['result'])) {
+                foreach ($pair_map as $orig => $kpair) {
+                    // Kraken returns various key formats
+                    foreach ($data['result'] as $k => $v) {
+                        if ($k === $kpair || strpos($k, str_replace('USD', '', $orig)) !== false) {
+                            $live_prices[$orig] = floatval($v['c'][0]);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Fetch forex from exchangerate-api (free)
+    if (count($forex_syms) > 0) {
+        foreach ($forex_syms as $fs) {
+            $base = substr($fs, 0, 3);
+            $quote = substr($fs, 3, 3);
+            $ch = curl_init('https://open.er-api.com/v6/latest/' . $base);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            $resp = curl_exec($ch);
+            curl_close($ch);
+            if ($resp) {
+                $data = json_decode($resp, true);
+                if ($data && isset($data['rates'][$quote])) {
+                    $live_prices[$fs] = floatval($data['rates'][$quote]);
+                }
+            }
+        }
+    }
+
+    // Stocks: use a simple Yahoo Finance quote
+    if (count($stock_syms) > 0) {
+        foreach ($stock_syms as $ss) {
+            $ch = curl_init('https://query1.finance.yahoo.com/v8/finance/chart/' . $ss . '?range=1d&interval=1m');
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0');
+            $resp = curl_exec($ch);
+            curl_close($ch);
+            if ($resp) {
+                $data = json_decode($resp, true);
+                if ($data && isset($data['chart']['result'][0]['meta']['regularMarketPrice'])) {
+                    $live_prices[$ss] = floatval($data['chart']['result'][0]['meta']['regularMarketPrice']);
+                }
+            }
+        }
+    }
+
+    $resolved = 0;
+    $expired = 0;
+    $updated = 0;
+    $results = array();
+
+    foreach ($signals as $sig) {
+        $sym = $sig['symbol'];
+        $cur = isset($live_prices[$sym]) ? $live_prices[$sym] : 0;
+
+        // Expire by time first
+        if (strtotime($sig['expires_at']) <= time()) {
+            $pnl = 0;
+            if ($cur > 0 && floatval($sig['entry_price']) > 0) {
+                $entry = floatval($sig['entry_price']);
+                $dir = (isset($sig['signal_type']) && $sig['signal_type'] === 'SHORT') ? 'SHORT' : 'LONG';
+                $pnl = ($dir === 'LONG') ? (($cur - $entry) / $entry * 100) : (($entry - $cur) / $entry * 100);
+            }
+            $conn->query(sprintf(
+                "UPDATE lm_signals SET status='expired', exit_price='%.8f', pnl_pct='%.4f', exit_reason='TIME_EXPIRED', resolved_at='%s', current_price='%.8f' WHERE id=%d",
+                $cur, $pnl, $now, $cur, intval($sig['id'])
+            ));
+            $expired++;
+            $results[] = array('id' => intval($sig['id']), 'symbol' => $sym, 'action' => 'expired', 'pnl' => round($pnl, 4));
+            continue;
+        }
+
+        if ($cur <= 0) continue;  // No price available
+
+        $entry = floatval($sig['entry_price']);
+        if ($entry <= 0) continue;
+        $tp_pct = floatval($sig['target_tp_pct']);
+        $sl_pct = floatval($sig['target_sl_pct']);
+        $dir = (isset($sig['signal_type']) && $sig['signal_type'] === 'SHORT') ? 'SHORT' : 'LONG';
+
+        // Calculate current P&L
+        $pnl = ($dir === 'LONG') ? (($cur - $entry) / $entry * 100) : (($entry - $cur) / $entry * 100);
+
+        // Check TP/SL hit
+        $done = false;
+        $reason = '';
+        if ($dir === 'LONG') {
+            $tp_price = $entry * (1 + ($tp_pct / 100));
+            $sl_price = $entry * (1 - ($sl_pct / 100));
+            if ($cur >= $tp_price) { $done = true; $reason = 'TP_HIT'; }
+            elseif ($cur <= $sl_price) { $done = true; $reason = 'SL_HIT'; }
+        } else {
+            $tp_price = $entry * (1 - ($tp_pct / 100));
+            $sl_price = $entry * (1 + ($sl_pct / 100));
+            if ($cur <= $tp_price) { $done = true; $reason = 'TP_HIT'; }
+            elseif ($cur >= $sl_price) { $done = true; $reason = 'SL_HIT'; }
+        }
+
+        if ($done) {
+            $conn->query(sprintf(
+                "UPDATE lm_signals SET status='resolved', exit_price='%.8f', pnl_pct='%.4f', exit_reason='%s', resolved_at='%s', current_price='%.8f' WHERE id=%d",
+                $cur, $pnl, $conn->real_escape_string($reason), $now, $cur, intval($sig['id'])
+            ));
+            $resolved++;
+            $results[] = array('id' => intval($sig['id']), 'symbol' => $sym, 'action' => $reason, 'pnl' => round($pnl, 4), 'direction' => $dir);
+        } else {
+            // Update current price and unrealized P&L
+            $conn->query(sprintf(
+                "UPDATE lm_signals SET current_price='%.8f', pnl_pct='%.4f' WHERE id=%d",
+                $cur, $pnl, intval($sig['id'])
+            ));
+            $updated++;
+        }
+    }
+
+    // ── Update algorithm performance table ──
+    _ls_update_algo_performance($conn);
+
+    echo json_encode(array(
+        'ok' => true,
+        'action' => 'monitor',
+        'checked' => count($signals),
+        'resolved' => $resolved,
+        'expired' => $expired,
+        'prices_updated' => $updated,
+        'live_prices_found' => count($live_prices),
+        'results' => $results
+    ));
+}
+
+// ────────────────────────────────────────────────────────────
+//  Update algorithm performance summary
+// ────────────────────────────────────────────────────────────
+function _ls_update_algo_performance($conn) {
+    $now = date('Y-m-d H:i:s');
+    // Get all resolved/expired signals grouped by algorithm
+    $res = $conn->query("SELECT algorithm_name, asset_class,
+        COUNT(*) as total,
+        SUM(CASE WHEN exit_reason='TP_HIT' THEN 1 ELSE 0 END) as tp_hits,
+        SUM(CASE WHEN exit_reason='SL_HIT' THEN 1 ELSE 0 END) as sl_hits,
+        SUM(CASE WHEN exit_reason='TIME_EXPIRED' THEN 1 ELSE 0 END) as time_expired,
+        AVG(pnl_pct) as avg_pnl,
+        SUM(pnl_pct) as total_pnl,
+        AVG(signal_strength) as avg_str
+        FROM lm_signals WHERE status IN ('resolved','expired') AND exit_reason != ''
+        GROUP BY algorithm_name, asset_class");
+    if (!$res) return;
+
+    while ($r = $res->fetch_assoc()) {
+        $wins = intval($r['tp_hits']);
+        $losses = intval($r['sl_hits']);
+        $total_decided = $wins + $losses;
+        $wr = ($total_decided > 0) ? round($wins / $total_decided * 100, 2) : 0;
+
+        $conn->query(sprintf(
+            "REPLACE INTO lm_algo_performance (algorithm_name, asset_class, total_signals, tp_hits, sl_hits, expired, win_rate, avg_pnl, total_pnl, avg_strength, last_updated) VALUES('%s','%s',%d,%d,%d,%d,%.2f,%.4f,%.4f,%.2f,'%s')",
+            $conn->real_escape_string($r['algorithm_name']),
+            $conn->real_escape_string($r['asset_class']),
+            intval($r['total']),
+            $wins,
+            $losses,
+            intval($r['time_expired']),
+            $wr,
+            floatval($r['avg_pnl']),
+            floatval($r['total_pnl']),
+            floatval($r['avg_str']),
+            $now
+        ));
+    }
+}
+
+// ────────────────────────────────────────────────────────────
+//  ACTION: performance — Algorithm performance stats
+// ────────────────────────────────────────────────────────────
+function _ls_action_performance($conn) {
+    // Per-algorithm stats
+    $algos = array();
+    $res = $conn->query("SELECT * FROM lm_algo_performance ORDER BY win_rate DESC, total_pnl DESC");
+    if ($res) {
+        while ($r = $res->fetch_assoc()) {
+            $algos[] = array(
+                'algorithm' => $r['algorithm_name'],
+                'asset_class' => $r['asset_class'],
+                'total_signals' => intval($r['total_signals']),
+                'tp_hits' => intval($r['tp_hits']),
+                'sl_hits' => intval($r['sl_hits']),
+                'expired' => intval($r['expired']),
+                'win_rate' => floatval($r['win_rate']),
+                'avg_pnl' => floatval($r['avg_pnl']),
+                'total_pnl' => floatval($r['total_pnl']),
+                'avg_strength' => floatval($r['avg_strength']),
+                'last_updated' => $r['last_updated']
+            );
+        }
+    }
+
+    // Overall stats
+    $overall = array('total' => 0, 'tp' => 0, 'sl' => 0, 'expired' => 0, 'pnl' => 0);
+    $res2 = $conn->query("SELECT COUNT(*) as total,
+        SUM(CASE WHEN exit_reason='TP_HIT' THEN 1 ELSE 0 END) as tp,
+        SUM(CASE WHEN exit_reason='SL_HIT' THEN 1 ELSE 0 END) as sl,
+        SUM(CASE WHEN exit_reason='TIME_EXPIRED' THEN 1 ELSE 0 END) as exp,
+        SUM(pnl_pct) as pnl
+        FROM lm_signals WHERE status IN ('resolved','expired') AND exit_reason != ''");
+    if ($res2 && $r = $res2->fetch_assoc()) {
+        $overall['total'] = intval($r['total']);
+        $overall['tp'] = intval($r['tp']);
+        $overall['sl'] = intval($r['sl']);
+        $overall['expired'] = intval($r['exp']);
+        $overall['pnl'] = round(floatval($r['pnl']), 2);
+        $decided = $overall['tp'] + $overall['sl'];
+        $overall['win_rate'] = ($decided > 0) ? round($overall['tp'] / $decided * 100, 1) : 0;
+    }
+
+    // Strength bucket analysis
+    $buckets = array();
+    $res3 = $conn->query("SELECT
+        CASE
+            WHEN signal_strength >= 90 THEN '90-100'
+            WHEN signal_strength >= 80 THEN '80-89'
+            WHEN signal_strength >= 70 THEN '70-79'
+            ELSE 'below-70'
+        END as bucket,
+        COUNT(*) as total,
+        SUM(CASE WHEN exit_reason='TP_HIT' THEN 1 ELSE 0 END) as tp,
+        SUM(CASE WHEN exit_reason='SL_HIT' THEN 1 ELSE 0 END) as sl,
+        AVG(pnl_pct) as avg_pnl
+        FROM lm_signals WHERE status IN ('resolved','expired') AND exit_reason != ''
+        GROUP BY bucket
+        ORDER BY bucket DESC");
+    if ($res3) {
+        while ($r = $res3->fetch_assoc()) {
+            $decided = intval($r['tp']) + intval($r['sl']);
+            $buckets[] = array(
+                'strength_range' => $r['bucket'],
+                'total' => intval($r['total']),
+                'tp_hits' => intval($r['tp']),
+                'sl_hits' => intval($r['sl']),
+                'win_rate' => ($decided > 0) ? round(intval($r['tp']) / $decided * 100, 1) : 0,
+                'avg_pnl' => round(floatval($r['avg_pnl']), 4)
+            );
+        }
+    }
+
+    // Trust assessment
+    $min_signals_for_trust = 20;
+    $trust_assessment = 'INSUFFICIENT_DATA';
+    if ($overall['total'] >= $min_signals_for_trust) {
+        if ($overall['win_rate'] >= 60 && $overall['pnl'] > 0) $trust_assessment = 'HIGH_TRUST';
+        elseif ($overall['win_rate'] >= 50 && $overall['pnl'] > 0) $trust_assessment = 'MODERATE_TRUST';
+        elseif ($overall['win_rate'] >= 45) $trust_assessment = 'LOW_TRUST';
+        else $trust_assessment = 'NOT_RELIABLE';
+    }
+
+    echo json_encode(array(
+        'ok' => true,
+        'action' => 'performance',
+        'trust_assessment' => $trust_assessment,
+        'min_signals_needed' => $min_signals_for_trust,
+        'overall' => $overall,
+        'by_strength' => $buckets,
+        'by_algorithm' => $algos
+    ));
+}
+
+// ────────────────────────────────────────────────────────────
 //  Router
 // ────────────────────────────────────────────────────────────
 
@@ -4701,10 +5133,16 @@ switch ($action) {
     case 'regime':
         _ls_action_regime($conn);
         break;
+    case 'monitor':
+        _ls_action_monitor($conn);
+        break;
+    case 'performance':
+        _ls_action_performance($conn);
+        break;
     default:
         echo json_encode(array(
             'ok'    => false,
-            'error' => 'Unknown action: ' . $action . '. Valid actions: scan, list, expire, regime'
+            'error' => 'Unknown action: ' . $action . '. Valid actions: scan, list, expire, regime, monitor, performance'
         ));
         break;
 }

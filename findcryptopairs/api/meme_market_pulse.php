@@ -709,6 +709,8 @@ function _mp_scan_kraken_memes()
 function _mp_fetch_cg_trending()
 {
     global $CACHE_DIR;
+    @include_once(dirname(__FILE__) . '/cg_config.php');
+    $cg_h = function_exists('cg_auth_headers') ? cg_auth_headers() : array();
 
     $cache_file = $CACHE_DIR . '/mp_cg_trending.json';
     if (file_exists($cache_file)) {
@@ -721,7 +723,7 @@ function _mp_fetch_cg_trending()
     }
 
     $url = 'https://api.coingecko.com/api/v3/search/trending';
-    $resp = _mp_curl($url, 8);
+    $resp = _mp_curl($url, 8, $cg_h);
     if (!$resp)
         return array();
 
@@ -788,6 +790,8 @@ function _mp_fetch_cg_trending()
 function _mp_fetch_cg_meme_gainers()
 {
     global $CACHE_DIR;
+    @include_once(dirname(__FILE__) . '/cg_config.php');
+    $cg_h = function_exists('cg_auth_headers') ? cg_auth_headers() : array();
 
     $cache_file = $CACHE_DIR . '/mp_cg_meme_gainers.json';
     if (file_exists($cache_file)) {
@@ -800,7 +804,7 @@ function _mp_fetch_cg_meme_gainers()
     }
 
     $url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=meme-token&order=volume_desc&per_page=30&page=1&sparkline=false&price_change_percentage=24h';
-    $resp = _mp_curl($url, 10);
+    $resp = _mp_curl($url, 10, $cg_h);
     if (!$resp)
         return array();
 
@@ -1310,14 +1314,18 @@ function _mp_get_valid_kraken_pairs()
     return $lookup;
 }
 
-function _mp_curl($url, $timeout)
+function _mp_curl($url, $timeout, $extra_headers = null)
 {
+    if (!is_array($extra_headers)) $extra_headers = array();
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_USERAGENT, 'MemeMarketPulse/1.0');
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    if (count($extra_headers) > 0) {
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $extra_headers);
+    }
     $resp = curl_exec($ch);
     $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);

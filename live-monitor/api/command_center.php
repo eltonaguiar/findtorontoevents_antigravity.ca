@@ -32,6 +32,11 @@ $sports_conn = @new mysqli($sports_servername, $sports_username, $sports_passwor
 $sports_ok = ($sports_conn && !$sports_conn->connect_error);
 if ($sports_ok) $sports_conn->set_charset('utf8');
 
+// Crypto Engines DB connection (proven_picks, kimi_enhanced, top_picks, etc.)
+$crypto_conn = @new mysqli('mysql.50webs.com', 'ejaguiar1_memecoin', 'testing123', 'ejaguiar1_memecoin');
+$crypto_ok = ($crypto_conn && !$crypto_conn->connect_error);
+if ($crypto_ok) $crypto_conn->set_charset('utf8');
+
 $action = isset($_GET['action']) ? $_GET['action'] : 'stats';
 $key    = isset($_GET['key'])    ? $_GET['key']    : '';
 $admin  = ($key === 'livetrader2026');
@@ -299,6 +304,112 @@ function _cc_get_meme_stats($conn) {
 }
 
 /**
+ * Advanced Crypto Engine stats (Proven Picks, Kimi Enhanced, Top Picks)
+ * These are the newer engines with real forward-tested results.
+ */
+function _cc_get_crypto_engines($crypto_conn, $crypto_ok) {
+    $defaults = array(
+        'proven_picks' => array('total' => 0, 'active' => 0, 'resolved' => 0, 'wins' => 0, 'losses' => 0, 'win_rate' => 0, 'cumulative_pnl' => 0, 'avg_pnl' => 0),
+        'kimi_enhanced' => array('total' => 0, 'active' => 0, 'resolved' => 0, 'wins' => 0, 'losses' => 0, 'win_rate' => 0, 'avg_pnl' => 0),
+        'top_picks'     => array('total' => 0, 'open' => 0, 'resolved' => 0, 'wins' => 0, 'losses' => 0, 'win_rate' => 0, 'avg_pnl' => 0),
+        'combined'      => array('total_closed' => 0, 'total_wins' => 0, 'win_rate' => 0, 'total_pnl' => 0, 'active_signals' => 0)
+    );
+    if (!$crypto_ok) return $defaults;
+
+    // ── Proven Picks (pp_picks) ──
+    $pp = $defaults['proven_picks'];
+    $r = @$crypto_conn->query("SELECT
+        COUNT(*) as total,
+        SUM(CASE WHEN status='ACTIVE' THEN 1 ELSE 0 END) as active,
+        SUM(CASE WHEN status='RESOLVED' THEN 1 ELSE 0 END) as resolved,
+        SUM(CASE WHEN status='RESOLVED' AND exit_reason='TP_HIT' THEN 1 ELSE 0 END) as wins,
+        SUM(CASE WHEN status='RESOLVED' AND exit_reason='SL_HIT' THEN 1 ELSE 0 END) as losses,
+        SUM(CASE WHEN status='RESOLVED' THEN pnl_after_slip ELSE 0 END) as cum_pnl,
+        AVG(CASE WHEN status='RESOLVED' THEN pnl_after_slip ELSE NULL END) as avg_pnl
+        FROM pp_picks");
+    if ($r && ($row = $r->fetch_assoc())) {
+        $resolved = _cc_int($row, 'resolved');
+        $wins     = _cc_int($row, 'wins');
+        $pp = array(
+            'total'          => _cc_int($row, 'total'),
+            'active'         => _cc_int($row, 'active'),
+            'resolved'       => $resolved,
+            'wins'           => $wins,
+            'losses'         => _cc_int($row, 'losses'),
+            'win_rate'       => ($resolved > 0) ? round(($wins / $resolved) * 100, 1) : 0,
+            'cumulative_pnl' => _cc_float($row, 'cum_pnl', 2),
+            'avg_pnl'        => _cc_float($row, 'avg_pnl', 2)
+        );
+    }
+
+    // ── Kimi Enhanced (ke_signals) ──
+    $ke = $defaults['kimi_enhanced'];
+    $r = @$crypto_conn->query("SELECT
+        COUNT(*) as total,
+        SUM(CASE WHEN status='ACTIVE' THEN 1 ELSE 0 END) as active,
+        SUM(CASE WHEN status='RESOLVED' THEN 1 ELSE 0 END) as resolved,
+        SUM(CASE WHEN status='RESOLVED' AND exit_reason='TP_HIT' THEN 1 ELSE 0 END) as wins,
+        SUM(CASE WHEN status='RESOLVED' AND exit_reason='SL_HIT' THEN 1 ELSE 0 END) as losses,
+        AVG(CASE WHEN status='RESOLVED' THEN pnl_pct ELSE NULL END) as avg_pnl
+        FROM ke_signals");
+    if ($r && ($row = $r->fetch_assoc())) {
+        $resolved = _cc_int($row, 'resolved');
+        $wins     = _cc_int($row, 'wins');
+        $ke = array(
+            'total'    => _cc_int($row, 'total'),
+            'active'   => _cc_int($row, 'active'),
+            'resolved' => $resolved,
+            'wins'     => $wins,
+            'losses'   => _cc_int($row, 'losses'),
+            'win_rate' => ($resolved > 0) ? round(($wins / $resolved) * 100, 1) : 0,
+            'avg_pnl'  => _cc_float($row, 'avg_pnl', 2)
+        );
+    }
+
+    // ── Top Picks (tp_picks) ──
+    $tp = $defaults['top_picks'];
+    $r = @$crypto_conn->query("SELECT
+        COUNT(*) as total,
+        SUM(CASE WHEN status='OPEN' THEN 1 ELSE 0 END) as open_pos,
+        SUM(CASE WHEN status IN ('WIN','LOSS','EXPIRED') THEN 1 ELSE 0 END) as resolved,
+        SUM(CASE WHEN status='WIN' THEN 1 ELSE 0 END) as wins,
+        SUM(CASE WHEN status='LOSS' THEN 1 ELSE 0 END) as losses,
+        AVG(CASE WHEN status IN ('WIN','LOSS','EXPIRED') THEN pnl_pct ELSE NULL END) as avg_pnl
+        FROM tp_picks WHERE grade != 'WAIT'");
+    if ($r && ($row = $r->fetch_assoc())) {
+        $resolved = _cc_int($row, 'resolved');
+        $wins     = _cc_int($row, 'wins');
+        $tp = array(
+            'total'    => _cc_int($row, 'total'),
+            'open'     => _cc_int($row, 'open_pos'),
+            'resolved' => $resolved,
+            'wins'     => $wins,
+            'losses'   => _cc_int($row, 'losses'),
+            'win_rate' => ($resolved > 0) ? round(($wins / $resolved) * 100, 1) : 0,
+            'avg_pnl'  => _cc_float($row, 'avg_pnl', 2)
+        );
+    }
+
+    // ── Combined totals ──
+    $total_closed = $pp['resolved'] + $ke['resolved'] + $tp['resolved'];
+    $total_wins   = $pp['wins'] + $ke['wins'] + $tp['wins'];
+    $total_active = $pp['active'] + $ke['active'] + $tp['open'];
+
+    return array(
+        'proven_picks'  => $pp,
+        'kimi_enhanced' => $ke,
+        'top_picks'     => $tp,
+        'combined' => array(
+            'total_closed'   => $total_closed,
+            'total_wins'     => $total_wins,
+            'win_rate'       => ($total_closed > 0) ? round(($total_wins / $total_closed) * 100, 1) : 0,
+            'total_pnl'      => $pp['cumulative_pnl'],
+            'active_signals' => $total_active
+        )
+    );
+}
+
+/**
  * Recent activity — last 10 events across trades, signals, and sports bets
  * Merges from multiple sources and sorts by timestamp
  */
@@ -449,14 +560,25 @@ if ($action === 'refresh') {
     $penny      = _cc_get_penny_stats($conn);
     $meme       = _cc_get_meme_stats($conn);
     $activity   = _cc_get_recent_activity($conn, $sports_conn, $sports_ok);
+    $crypto_eng = _cc_get_crypto_engines($crypto_conn, $crypto_ok);
 
     $total_signals = 0;
     foreach ($signals as $cnt) { $total_signals += $cnt; }
+    $total_signals += $crypto_eng['combined']['active_signals'];
 
     $overall = _cc_calc_overall($stocks_pt, $crypto_pt, $forex_pt, $consensus, $sports, $penny, $meme);
+    $overall['total_closed_trades'] += $crypto_eng['combined']['total_closed'];
+    $overall['total_wins']          += $crypto_eng['combined']['total_wins'];
+    if ($overall['total_closed_trades'] > 0) {
+        $overall['overall_win_rate'] = round(($overall['total_wins'] / $overall['total_closed_trades']) * 100, 1);
+    }
+    $overall['total_pnl_usd'] += $crypto_eng['combined']['total_pnl'];
     $overall['active_signals'] = $total_signals;
     $overall['active_alerts']  = $alerts;
     $overall['active_positions'] = $stocks_pt['open_positions'] + $crypto_pt['open_positions'] + $forex_pt['open_positions'];
+    if ($crypto_eng['combined']['total_pnl'] > 0) {
+        $overall['asset_classes_positive'] += 1;
+    }
 
     $data = array(
         'ok'           => true,
@@ -474,7 +596,14 @@ if ($action === 'refresh') {
             'crypto' => array(
                 'scope' => 'CRYPTO', 'label' => 'Cryptocurrency',
                 'paper_trading' => $crypto_pt,
-                'active_signals' => isset($signals['CRYPTO']) ? $signals['CRYPTO'] : 0
+                'crypto_engines' => $crypto_eng,
+                'active_signals' => (isset($signals['CRYPTO']) ? $signals['CRYPTO'] : 0) + $crypto_eng['combined']['active_signals'],
+                'links' => array(
+                    array('text' => 'War Room', 'href' => '/findcryptopairs/war-room.html'),
+                    array('text' => 'Top Picks', 'href' => '/findcryptopairs/top-picks.html'),
+                    array('text' => 'Proven Picks', 'href' => '/findcryptopairs/proven-picks.html'),
+                    array('text' => 'Kimi Enhanced', 'href' => '/findcryptopairs/kimi-enhanced.html')
+                )
             ),
             'meme_coins' => array(
                 'scope' => 'MEME', 'label' => 'Meme Coins',
@@ -495,12 +624,14 @@ if ($action === 'refresh') {
             )
         ),
         'goldmine'        => $goldmine,
+        'crypto_engines'  => $crypto_eng,
         'recent_activity' => $activity
     );
     _cc_cache_set('stats', $data);
     echo json_encode($data);
     $conn->close();
     if ($sports_ok) $sports_conn->close();
+    if ($crypto_ok) $crypto_conn->close();
     exit;
 }
 
@@ -515,6 +646,7 @@ if ($action === 'stats') {
         echo json_encode($cached);
         $conn->close();
         if ($sports_ok) $sports_conn->close();
+        if ($crypto_ok) $crypto_conn->close();
         exit;
     }
 
@@ -530,15 +662,29 @@ if ($action === 'stats') {
     $penny      = _cc_get_penny_stats($conn);
     $meme       = _cc_get_meme_stats($conn);
     $activity   = _cc_get_recent_activity($conn, $sports_conn, $sports_ok);
+    $crypto_eng = _cc_get_crypto_engines($crypto_conn, $crypto_ok);
 
-    // Total active signals
+    // Total active signals (include crypto engine signals)
     $total_signals = 0;
     foreach ($signals as $cnt) { $total_signals += $cnt; }
+    $total_signals += $crypto_eng['combined']['active_signals'];
 
     // Overall aggregates
     $overall = _cc_calc_overall($stocks_pt, $crypto_pt, $forex_pt, $consensus, $sports, $penny, $meme);
+    // Add crypto engine closed trades/wins to overall
+    $overall['total_closed_trades'] += $crypto_eng['combined']['total_closed'];
+    $overall['total_wins']          += $crypto_eng['combined']['total_wins'];
+    // Recalculate overall win rate with crypto engines included
+    if ($overall['total_closed_trades'] > 0) {
+        $overall['overall_win_rate'] = round(($overall['total_wins'] / $overall['total_closed_trades']) * 100, 1);
+    }
+    $overall['total_pnl_usd'] += $crypto_eng['combined']['total_pnl'];
     $overall['active_signals'] = $total_signals;
     $overall['active_alerts']  = $alerts;
+    // Recalculate positive asset classes (include crypto engines)
+    if ($crypto_eng['combined']['total_pnl'] > 0) {
+        $overall['asset_classes_positive'] += 1;
+    }
 
     $data = array(
         'ok'           => true,
@@ -564,9 +710,13 @@ if ($action === 'stats') {
                 'scope' => 'CRYPTO',
                 'label' => 'Cryptocurrency',
                 'paper_trading'  => $crypto_pt,
-                'active_signals' => isset($signals['CRYPTO']) ? $signals['CRYPTO'] : 0,
+                'crypto_engines' => $crypto_eng,
+                'active_signals' => (isset($signals['CRYPTO']) ? $signals['CRYPTO'] : 0) + $crypto_eng['combined']['active_signals'],
                 'links' => array(
-                    array('text' => 'Crypto Winners', 'href' => '/findcryptopairs/winners.html')
+                    array('text' => 'War Room', 'href' => '/findcryptopairs/war-room.html'),
+                    array('text' => 'Top Picks', 'href' => '/findcryptopairs/top-picks.html'),
+                    array('text' => 'Proven Picks', 'href' => '/findcryptopairs/proven-picks.html'),
+                    array('text' => 'Kimi Enhanced', 'href' => '/findcryptopairs/kimi-enhanced.html')
                 )
             ),
             'meme_coins' => array(
@@ -604,13 +754,56 @@ if ($action === 'stats') {
             )
         ),
         'goldmine'        => $goldmine,
+        'crypto_engines'  => $crypto_eng,
         'recent_activity' => $activity
     );
+
+    // Add crypto engines to goldmine chart if they have resolved trades
+    if ($crypto_eng['proven_picks']['resolved'] > 0) {
+        $data['goldmine'][] = array(
+            'source_system' => 'proven_picks',
+            'name'          => 'Proven Picks',
+            'total_picks'   => $crypto_eng['proven_picks']['total'],
+            'closed'        => $crypto_eng['proven_picks']['resolved'],
+            'wins'          => $crypto_eng['proven_picks']['wins'],
+            'losses'        => $crypto_eng['proven_picks']['losses'],
+            'win_rate'      => $crypto_eng['proven_picks']['win_rate'],
+            'avg_return'    => $crypto_eng['proven_picks']['avg_pnl'],
+            'total_return'  => $crypto_eng['proven_picks']['cumulative_pnl']
+        );
+    }
+    if ($crypto_eng['kimi_enhanced']['resolved'] > 0) {
+        $data['goldmine'][] = array(
+            'source_system' => 'kimi_enhanced',
+            'name'          => 'Kimi Enhanced',
+            'total_picks'   => $crypto_eng['kimi_enhanced']['total'],
+            'closed'        => $crypto_eng['kimi_enhanced']['resolved'],
+            'wins'          => $crypto_eng['kimi_enhanced']['wins'],
+            'losses'        => $crypto_eng['kimi_enhanced']['losses'],
+            'win_rate'      => $crypto_eng['kimi_enhanced']['win_rate'],
+            'avg_return'    => $crypto_eng['kimi_enhanced']['avg_pnl'],
+            'total_return'  => 0
+        );
+    }
+    if ($crypto_eng['top_picks']['resolved'] > 0) {
+        $data['goldmine'][] = array(
+            'source_system' => 'top_picks',
+            'name'          => 'Top Picks',
+            'total_picks'   => $crypto_eng['top_picks']['total'],
+            'closed'        => $crypto_eng['top_picks']['resolved'],
+            'wins'          => $crypto_eng['top_picks']['wins'],
+            'losses'        => $crypto_eng['top_picks']['losses'],
+            'win_rate'      => $crypto_eng['top_picks']['win_rate'],
+            'avg_return'    => $crypto_eng['top_picks']['avg_pnl'],
+            'total_return'  => 0
+        );
+    }
 
     _cc_cache_set('stats', $data);
     echo json_encode($data);
     $conn->close();
     if ($sports_ok) $sports_conn->close();
+    if ($crypto_ok) $crypto_conn->close();
     exit;
 }
 
@@ -693,6 +886,7 @@ if ($action === 'summary') {
     echo json_encode($data);
     $conn->close();
     if ($sports_ok) $sports_conn->close();
+    if ($crypto_ok) $crypto_conn->close();
     exit;
 }
 
@@ -708,4 +902,5 @@ echo json_encode(array(
 ));
 $conn->close();
 if ($sports_ok) $sports_conn->close();
+if ($crypto_ok) $crypto_conn->close();
 ?>

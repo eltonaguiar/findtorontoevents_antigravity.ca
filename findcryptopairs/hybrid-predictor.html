@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hybrid Predictor — Multi-Model Crypto Analysis</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#080c14;color:#c9d1d9;min-height:100vh}
+
+.hero{background:linear-gradient(135deg,#0a0f1c 0%,#0f1a2e 30%,#1a1040 70%,#0a0f1c 100%);padding:32px 20px;text-align:center;border-bottom:2px solid rgba(88,166,255,0.25);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at center,rgba(88,166,255,0.04) 0%,transparent 50%);animation:pulse 8s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:0.3}50%{opacity:1}}
+.hero h1{font-size:2.2em;font-weight:900;background:linear-gradient(135deg,#58a6ff,#79c0ff,#a5d6ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;position:relative;z-index:1}
+.hero .sub{color:#8b949e;font-size:0.95em;max-width:750px;margin:0 auto;position:relative;z-index:1}
+.hero .badge{display:inline-block;margin-top:10px;padding:4px 14px;border-radius:20px;font-size:0.75em;font-weight:700;background:rgba(88,166,255,0.1);color:#58a6ff;border:1px solid rgba(88,166,255,0.3);position:relative;z-index:1}
+
+.nav{display:flex;gap:8px;justify-content:center;padding:10px;flex-wrap:wrap;background:#0d1117;border-bottom:1px solid #21262d}
+.nav a{padding:5px 12px;border-radius:6px;font-size:0.8em;text-decoration:none;border:1px solid #21262d;color:#8b949e;transition:all .2s}
+.nav a:hover,.nav a.active{background:rgba(88,166,255,0.08);color:#58a6ff;border-color:rgba(88,166,255,0.3)}
+
+.container{max-width:1400px;margin:0 auto;padding:16px}
+
+.signal-banner{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;padding:16px;background:#0d1117;border:1px solid #21262d;border-radius:12px}
+.signal-item{text-align:center;min-width:140px}
+.signal-item .asset-name{font-size:1.1em;font-weight:800;margin-bottom:4px}
+.signal-item .signal-val{font-size:1.5em;font-weight:900;padding:4px 16px;border-radius:6px;display:inline-block}
+.signal-LONG{background:rgba(63,185,80,0.12);color:#3fb950;border:1px solid rgba(63,185,80,0.25)}
+.signal-SHORT{background:rgba(248,81,73,0.12);color:#f85149;border:1px solid rgba(248,81,73,0.25)}
+.signal-WAIT{background:rgba(139,148,158,0.12);color:#8b949e;border:1px solid rgba(139,148,158,0.25)}
+
+.asset-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:16px;margin-bottom:16px}
+
+.card{background:#0d1117;border:1px solid #21262d;border-radius:12px;padding:16px;margin-bottom:16px}
+.card h3{color:#e6edf3;font-size:1.05em;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #161b22}
+.card.highlight-long{border-color:rgba(63,185,80,0.3);box-shadow:0 0 12px rgba(63,185,80,0.06)}
+.card.highlight-short{border-color:rgba(248,81,73,0.3);box-shadow:0 0 12px rgba(248,81,73,0.06)}
+.card.highlight-wait{border-color:rgba(139,148,158,0.15)}
+
+.indicator-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.ind{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:10px;text-align:center;transition:border-color .3s}
+.ind:hover{border-color:rgba(88,166,255,0.2)}
+.ind .ind-label{font-size:0.65em;color:#484f58;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px}
+.ind .ind-val{font-size:1.2em;font-weight:700}
+.val-green{color:#3fb950!important} .val-red{color:#f85149!important} .val-gold{color:#ffd700!important}
+.val-blue{color:#58a6ff!important} .val-amber{color:#ff9800!important} .val-neutral{color:#8b949e!important}
+
+.regime-badge{display:inline-block;padding:4px 12px;border-radius:6px;font-size:0.8em;font-weight:700;margin-bottom:8px}
+.regime-TRENDING_UP{background:rgba(63,185,80,0.12);color:#3fb950;border:1px solid rgba(63,185,80,0.25)}
+.regime-TRENDING_DOWN{background:rgba(248,81,73,0.12);color:#f85149;border:1px solid rgba(248,81,73,0.25)}
+.regime-RANGING{background:rgba(255,152,0,0.12);color:#ff9800;border:1px solid rgba(255,152,0,0.25)}
+.regime-VOLATILE{background:rgba(187,134,252,0.12);color:#bb86fc;border:1px solid rgba(187,134,252,0.25)}
+
+.feat-table{width:100%;border-collapse:collapse;font-size:0.8em;margin-top:10px}
+.feat-table th{text-align:left;color:#484f58;padding:6px 8px;border-bottom:1px solid #21262d;font-size:0.75em;text-transform:uppercase}
+.feat-table td{padding:6px 8px;border-bottom:1px solid #161b22}
+.feat-table tr:hover td{background:rgba(88,166,255,0.02)}
+
+.loading{text-align:center;padding:30px;color:#484f58}
+.spinner{display:inline-block;width:20px;height:20px;border:3px solid #21262d;border-top-color:#58a6ff;border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.timestamp{text-align:center;color:#30363d;font-size:0.75em;padding:10px}
+.btn{padding:8px 18px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:#c9d1d9;cursor:pointer;font-size:0.85em;font-weight:600;transition:all .2s;margin:0 4px}
+.btn:hover{background:#21262d;border-color:#58a6ff}
+.btn-blue{background:linear-gradient(135deg,rgba(88,166,255,0.15),rgba(121,192,255,0.1));border-color:rgba(88,166,255,0.4);color:#58a6ff}
+.collapsible{display:none;margin-top:10px}
+.collapsible.open{display:block}
+
+@media(max-width:600px){.asset-grid{grid-template-columns:1fr}.indicator-grid{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="hero">
+    <h1>HYBRID PREDICTOR</h1>
+    <p class="sub">Multi-model ensemble analysis for BTC, ETH, and top alts. Real-time indicators from Kraken — RSI, MACD, Bollinger Bands, Money Flow, Stochastic, On-Balance Volume, and 30+ features per asset.</p>
+    <span class="badge">MULTI-MODEL ENSEMBLE &bull; 30+ FEATURES &bull; REAL-TIME KRAKEN DATA &bull; REGIME DETECTION</span>
+</div>
+<div class="nav">
+    <a href="/findcryptopairs/war-room.html">War Room</a>
+    <a href="/findcryptopairs/proven-picks.html">Proven Picks</a>
+    <a href="/findcryptopairs/kimi-enhanced.html">Kimi Enhanced</a>
+    <a href="/findcryptopairs/hybrid-predictor.html" class="active">Hybrid Predictor</a>
+    <a href="/findcryptopairs/expert-consensus.html">Expert Consensus</a>
+    <a href="/findcryptopairs/hybrid-engine.html">Hybrid Engine</a>
+    <a href="/findcryptopairs/spike-forensics.html">Spike Forensics</a>
+    <a href="/findcryptopairs/index.html">Crypto Hub</a>
+    <a href="/findstocks/updates.html">Updates</a>
+</div>
+<div class="container">
+    <div class="signal-banner" id="signal-banner">
+        <div class="loading"><span class="spinner"></span> Loading predictions...</div>
+    </div>
+    <div style="text-align:center;margin-bottom:16px">
+        <button class="btn btn-blue" onclick="loadData()">Refresh</button>
+        <button class="btn" onclick="toggleAllFeatures()">Show/Hide All Features</button>
+    </div>
+    <div class="asset-grid" id="asset-grid"></div>
+    <div class="timestamp" id="last-updated"></div>
+</div>
+
+<script>
+var API = '/findcryptopairs/api/hybrid_predictor.php';
+var showFeatures = false;
+
+function loadData() {
+    document.getElementById('signal-banner').innerHTML = '<div class="loading"><span class="spinner"></span> Loading predictions...</div>';
+    document.getElementById('asset-grid').innerHTML = '';
+    fetch(API + '?action=predict_all').then(function(r){return r.json()}).then(function(d){
+        if (!d.ok) { document.getElementById('signal-banner').innerHTML = '<div class="loading">Error loading data</div>'; return; }
+        renderBanner(d.predictions);
+        renderAssets(d.predictions);
+        document.getElementById('last-updated').textContent = 'Updated: ' + new Date().toLocaleString();
+    }).catch(function(e){
+        document.getElementById('signal-banner').innerHTML = '<div class="loading">Error: ' + e.message + '</div>';
+    });
+}
+
+function renderBanner(preds) {
+    var html = '';
+    var keys = [];
+    for (var k in preds) keys.push(k);
+    for (var i = 0; i < keys.length; i++) {
+        var p = preds[keys[i]];
+        var sig = p.hybrid_signal || 'WAIT';
+        html += '<div class="signal-item">';
+        html += '<div class="asset-name">' + p.asset + '</div>';
+        html += '<div class="signal-val signal-' + sig + '">' + sig + '</div>';
+        html += '<div style="font-size:0.8em;color:#8b949e;margin-top:4px">$' + parseFloat(p.price).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) + '</div>';
+        html += '</div>';
+    }
+    document.getElementById('signal-banner').innerHTML = html;
+}
+
+function renderAssets(preds) {
+    var html = '';
+    var keys = [];
+    for (var k in preds) keys.push(k);
+    for (var i = 0; i < keys.length; i++) {
+        var p = preds[keys[i]];
+        var sig = p.hybrid_signal || 'WAIT';
+        var ind = p.indicators || {};
+        var feat = p.features_snapshot || {};
+        var cardClass = sig === 'LONG' ? 'highlight-long' : (sig === 'SHORT' ? 'highlight-short' : 'highlight-wait');
+        html += '<div class="card ' + cardClass + '">';
+        html += '<h3>' + p.asset + ' — $' + parseFloat(p.price).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) + '</h3>';
+        html += '<span class="regime-badge regime-' + (p.regime || 'RANGING') + '">' + (p.regime || 'Unknown') + '</span>';
+        html += ' <span style="font-size:0.8em;color:#484f58">Score: ' + (p.hybrid_score || 0) + ' | Confidence: ' + (p.confidence || 0) + '% | Active signals: ' + (p.active_signals || 0) + ' | Position: ' + (p.position_size || 0) + '%</span>';
+
+        // Key Indicators
+        html += '<div style="margin-top:12px"><div style="font-size:0.75em;color:#484f58;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Key Indicators</div></div>';
+        html += '<div class="indicator-grid">';
+        html += indCard('RSI (14)', ind.rsi_14, rsiColor(ind.rsi_14));
+        html += indCard('Price vs 200MA', ind.price_vs_200ma, parseFloat(ind.price_vs_200ma) >= 0 ? 'val-green' : 'val-red');
+        html += indCard('SMA 50', '$' + fmtNum(ind.sma_50), 'val-neutral');
+        html += indCard('SMA 200', '$' + fmtNum(ind.sma_200), 'val-neutral');
+        html += indCard('EMA 50', '$' + fmtNum(ind.ema_50), 'val-neutral');
+        html += indCard('ATR (14)', fmtNum(ind.atr_14), 'val-amber');
+        html += indCard('BB Width', fmtNum(ind.bb_width), 'val-blue');
+        html += indCard('MFI (14)', fmtNum(ind.mfi_14), mfiColor(ind.mfi_14));
+        html += indCard('Stoch K', fmtNum(ind.stoch_k), stochColor(ind.stoch_k));
+        html += indCard('Vol Ratio', fmtNum(ind.vol_ratio), parseFloat(ind.vol_ratio) > 1.5 ? 'val-amber' : 'val-neutral');
+        html += indCard('Hist Vol 20', fmtNum(ind.hist_vol_20) + '%', 'val-amber');
+        html += '</div>';
+
+        // Features (collapsible)
+        html += '<div style="margin-top:12px">';
+        html += '<button class="btn" style="font-size:0.75em;padding:4px 12px" onclick="toggleFeatures(\'' + p.asset + '\')">Show 30+ Features</button>';
+        html += '<div class="collapsible" id="feat-' + p.asset + '">';
+        html += renderFeatures(feat);
+        html += '</div></div>';
+
+        // Signals detail
+        if (p.signals_detail && p.signals_detail.length > 0) {
+            html += '<div style="margin-top:12px;border-top:1px solid #21262d;padding-top:10px">';
+            html += '<div style="font-size:0.75em;color:#484f58;text-transform:uppercase;margin-bottom:6px">Active Signals</div>';
+            for (var j = 0; j < p.signals_detail.length; j++) {
+                var sd = p.signals_detail[j];
+                html += '<div style="font-size:0.82em;padding:4px 0;border-bottom:1px solid #161b22">';
+                html += '<strong style="color:#e6edf3">' + sd.name + '</strong>';
+                html += ' <span class="signal-val signal-' + sd.direction + '" style="font-size:0.7em;padding:2px 8px">' + sd.direction + '</span>';
+                html += ' <span style="color:#484f58">Score: ' + sd.score + ' | Conf: ' + sd.confidence + '%</span>';
+                html += '</div>';
+            }
+            html += '</div>';
+        }
+
+        html += '</div>';
+    }
+    document.getElementById('asset-grid').innerHTML = html;
+}
+
+function indCard(label, value, colorClass) {
+    return '<div class="ind"><div class="ind-label">' + label + '</div><div class="ind-val ' + (colorClass || '') + '">' + (value !== null && value !== undefined ? value : '--') + '</div></div>';
+}
+
+function fmtNum(v) {
+    if (v === null || v === undefined) return '--';
+    var n = parseFloat(v);
+    if (isNaN(n)) return v;
+    if (Math.abs(n) >= 1000) return n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    if (Math.abs(n) >= 1) return n.toFixed(2);
+    return n.toFixed(4);
+}
+
+function rsiColor(v) { var n = parseFloat(v); if (n <= 30) return 'val-green'; if (n >= 70) return 'val-red'; return 'val-neutral'; }
+function mfiColor(v) { var n = parseFloat(v); if (n <= 20) return 'val-green'; if (n >= 80) return 'val-red'; return 'val-neutral'; }
+function stochColor(v) { var n = parseFloat(v); if (n <= 20) return 'val-green'; if (n >= 80) return 'val-red'; return 'val-neutral'; }
+
+function renderFeatures(feat) {
+    var html = '<table class="feat-table"><tr><th>Feature</th><th>Value</th><th>Interpretation</th></tr>';
+    var feats = [
+        ['ret_1d', '1-Day Return', '%'],
+        ['ret_3d', '3-Day Return', '%'],
+        ['ret_5d', '5-Day Return', '%'],
+        ['ret_10d', '10-Day Return', '%'],
+        ['ret_20d', '20-Day Return', '%'],
+        ['pct_sma20', '% vs SMA20', '%'],
+        ['pct_sma50', '% vs SMA50', '%'],
+        ['pct_sma200', '% vs SMA200', '%'],
+        ['rsi_14', 'RSI (14)', ''],
+        ['roc_5', 'ROC 5', '%'],
+        ['roc_10', 'ROC 10', '%'],
+        ['roc_20', 'ROC 20', '%'],
+        ['stoch_k', 'Stochastic K', ''],
+        ['williams_r', 'Williams %R', ''],
+        ['cci_20', 'CCI (20)', ''],
+        ['trix', 'TRIX', ''],
+        ['vol_ratio', 'Volume Ratio', 'x'],
+        ['obv_val', 'OBV', ''],
+        ['obv_slope_10', 'OBV Slope (10)', ''],
+        ['ad_line', 'A/D Line', ''],
+        ['mfi_14', 'MFI (14)', ''],
+        ['vol_trend_5', 'Vol Trend 5', '%'],
+        ['vol_zscore', 'Vol Z-Score', ''],
+        ['vol_climax', 'Vol Climax', ''],
+        ['atr_14', 'ATR (14)', ''],
+        ['bb_width', 'BB Width', '%'],
+        ['atr_ratio', 'ATR Ratio', 'x'],
+        ['hist_vol_20', 'Hist Vol 20', '%'],
+        ['higher_highs_10', 'Higher Highs (10)', ''],
+        ['support_proximity', 'Support Proximity', '%'],
+        ['resistance_proximity', 'Resistance Proximity', '%'],
+        ['candle_score', 'Candle Score', '']
+    ];
+    for (var i = 0; i < feats.length; i++) {
+        var key = feats[i][0], label = feats[i][1], unit = feats[i][2];
+        var val = feat[key];
+        if (val === undefined || val === null) continue;
+        var numVal = parseFloat(val);
+        var interp = '';
+        if (key === 'rsi_14') interp = numVal <= 30 ? 'Oversold' : (numVal >= 70 ? 'Overbought' : 'Neutral');
+        else if (key === 'mfi_14') interp = numVal <= 20 ? 'Oversold' : (numVal >= 80 ? 'Overbought' : 'Neutral');
+        else if (key === 'stoch_k') interp = numVal <= 20 ? 'Oversold' : (numVal >= 80 ? 'Overbought' : 'Neutral');
+        else if (key === 'williams_r') interp = numVal <= -80 ? 'Oversold' : (numVal >= -20 ? 'Overbought' : 'Neutral');
+        else if (key === 'vol_zscore') interp = numVal > 2 ? 'Extreme volume' : (numVal < -1 ? 'Low volume' : 'Normal');
+        else if (key === 'vol_climax') interp = numVal > 0 ? 'CLIMAX' : 'Normal';
+        else if (key.indexOf('ret_') === 0 || key.indexOf('pct_') === 0 || key.indexOf('roc_') === 0) interp = numVal > 0 ? 'Bullish' : 'Bearish';
+        var valColor = '';
+        if (interp === 'Oversold' || interp === 'Bullish') valColor = 'val-green';
+        else if (interp === 'Overbought' || interp === 'Bearish') valColor = 'val-red';
+        else if (interp === 'CLIMAX' || interp === 'Extreme volume') valColor = 'val-amber';
+        html += '<tr><td>' + label + '</td><td class="' + valColor + '" style="font-weight:600">' + numVal.toFixed(2) + (unit ? ' ' + unit : '') + '</td><td style="color:#484f58">' + interp + '</td></tr>';
+    }
+    html += '</table>';
+    return html;
+}
+
+function toggleFeatures(asset) {
+    var el = document.getElementById('feat-' + asset);
+    if (el) el.className = el.className.indexOf('open') >= 0 ? 'collapsible' : 'collapsible open';
+}
+function toggleAllFeatures() {
+    showFeatures = !showFeatures;
+    var els = document.querySelectorAll('.collapsible');
+    for (var i = 0; i < els.length; i++) els[i].className = showFeatures ? 'collapsible open' : 'collapsible';
+}
+
+loadData();
+setInterval(function(){ loadData(); }, 120000);
+</script>
+</body>
+</html>

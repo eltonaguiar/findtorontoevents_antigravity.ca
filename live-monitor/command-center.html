@@ -749,8 +749,12 @@
                     <span class="ac-secondary-item">Open: <strong id="crypto-open">--</strong></span>
                     <span class="ac-secondary-item">Signals: <strong id="crypto-signals">--</strong></span>
                 </div>
+                <div id="crypto-engines-row" class="ac-secondary" style="display:none;">
+                    <span class="ac-secondary-item" style="font-size:0.72rem;">Engines: <strong id="crypto-eng-summary" style="color:var(--green);">--</strong></span>
+                </div>
                 <div class="ac-footer">
-                    <a class="ac-link" href="/findcryptopairs/winners.html">View Details &rarr;</a>
+                    <a class="ac-link" href="/findcryptopairs/war-room.html">War Room &rarr;</a>
+                    <a class="ac-link" href="/findcryptopairs/top-picks.html" style="margin-left:0.6rem;font-size:0.78rem;">Top Picks</a>
                     <div class="ac-health" id="crypto-health">
                         <span class="health-dot yellow"></span>
                         <span>Loading</span>
@@ -1220,6 +1224,30 @@ function renderAssetCards(assetClasses) {
         if (healthEl) {
             var h = healthStatus(wr, closedTrades > 0, hasRecent);
             healthEl.innerHTML = '<span class="health-dot ' + h.cls + '"></span><span>' + h.label + '</span>';
+        }
+
+        // Special: Crypto engines summary
+        if (apiKey === 'crypto' && ac.crypto_engines) {
+            var ce = ac.crypto_engines;
+            var engRow = document.getElementById('crypto-engines-row');
+            var engSummary = document.getElementById('crypto-eng-summary');
+            if (engRow && engSummary && ce.combined) {
+                engRow.style.display = '';
+                var parts = [];
+                if (ce.proven_picks && ce.proven_picks.total > 0) {
+                    parts.push('PP: ' + ce.proven_picks.wins + 'W/' + ce.proven_picks.losses + 'L');
+                }
+                if (ce.kimi_enhanced && ce.kimi_enhanced.active > 0) {
+                    parts.push('Kimi: ' + ce.kimi_enhanced.active + ' active');
+                }
+                if (ce.top_picks && ce.top_picks.total > 0) {
+                    parts.push('TP: ' + ce.top_picks.open + ' open');
+                }
+                if (parts.length > 0) {
+                    engSummary.textContent = parts.join(' | ');
+                    engSummary.style.color = ce.combined.total_pnl >= 0 ? 'var(--green)' : 'var(--red)';
+                }
+            }
         }
     }
 }
