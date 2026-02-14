@@ -1,0 +1,201 @@
+name: Pump Watch — Forensics Refresh
+
+on:
+  schedule:
+    # Every 30 minutes — monitor live prices on active picks (TP/SL resolution)
+    - cron: '*/30 * * * *'
+    # Every 4 hours — full rescan: re-score all 231 pairs against pump fingerprint
+    - cron: '0 */4 * * *'
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  pump-forensics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+    # ─── Step 1: Monitor active picks (runs every 30 min) ───
+    - name: Monitor active picks
+      continue-on-error: true
+      run: |
+        echo "=== Pump Watch — Monitor Active Picks ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/api/pump_forensics.php?action=monitor") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Checked: {d.get(\"checked\",0)} active picks')
+                print(f'Resolved: {d.get(\"resolved\",0)} (TP/SL hit or expired)')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Parse error or no response')
+        " || echo "Monitor: $RESULT"
+
+    # ─── Step 2: Full rescan (only on 4-hourly schedule or manual) ───
+    - name: Full rescan — Batch 1 (pairs 0-20)
+      continue-on-error: true
+      if: github.event.schedule == '0 */4 * * *' || github.event_name == 'workflow_dispatch'
+      run: |
+        SCAN_ID="pscan_$(date -u +%Y-%m-%d_%H)"
+        echo "=== Pump Watch — Full Rescan (scan_id=$SCAN_ID) Batch 1 ==="
+        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findcryptopairs/api/pump_forensics.php?action=scan_batch&key=pump_forensics_2026&offset=0&limit=20&scan_id=$SCAN_ID") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Processed: {d.get(\"processed\",0)} pairs')
+                print(f'Total pairs: {d.get(\"total_pairs\",0)}')
+                print(f'Latency: {d.get(\"latency_ms\",0)}ms')
+                for r in d.get('results', []):
+                    if r.get('score', 0) >= 40:
+                        print(f'  HOT: {r[\"pair\"]:16s} Score:{r[\"score\"]:3d} [{r[\"grade\"]}] RSI:{r[\"rsi\"]} DD:{r[\"drawdown\"]}%')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Parse error')
+        " || echo "Batch 1: $RESULT"
+        echo "SCAN_ID=$SCAN_ID" >> $GITHUB_ENV
+
+    - name: Full rescan — Batch 2 (pairs 20-50)
+      continue-on-error: true
+      if: github.event.schedule == '0 */4 * * *' || github.event_name == 'workflow_dispatch'
+      run: |
+        SCAN_ID="${SCAN_ID:-pscan_$(date -u +%Y-%m-%d_%H)}"
+        echo "=== Batch 2 (offset 20) ==="
+        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findcryptopairs/api/pump_forensics.php?action=scan_batch&key=pump_forensics_2026&offset=20&limit=30&scan_id=$SCAN_ID") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Processed: {d.get(\"processed\",0)} pairs | Latency: {d.get(\"latency_ms\",0)}ms')
+                for r in d.get('results', []):
+                    if r.get('score', 0) >= 40:
+                        print(f'  HOT: {r[\"pair\"]:16s} Score:{r[\"score\"]:3d} [{r[\"grade\"]}]')
+        except: print('Parse error')
+        " || echo "Batch 2: $RESULT"
+
+    - name: Full rescan — Batch 3 (pairs 50-90)
+      continue-on-error: true
+      if: github.event.schedule == '0 */4 * * *' || github.event_name == 'workflow_dispatch'
+      run: |
+        SCAN_ID="${SCAN_ID:-pscan_$(date -u +%Y-%m-%d_%H)}"
+        echo "=== Batch 3 (offset 50) ==="
+        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findcryptopairs/api/pump_forensics.php?action=scan_batch&key=pump_forensics_2026&offset=50&limit=40&scan_id=$SCAN_ID") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Processed: {d.get(\"processed\",0)} pairs | Latency: {d.get(\"latency_ms\",0)}ms')
+                for r in d.get('results', []):
+                    if r.get('score', 0) >= 45:
+                        print(f'  HOT: {r[\"pair\"]:16s} Score:{r[\"score\"]:3d} [{r[\"grade\"]}]')
+        except: print('Parse error')
+        " || echo "Batch 3: $RESULT"
+
+    - name: Full rescan — Batch 4 (pairs 90-140)
+      continue-on-error: true
+      if: github.event.schedule == '0 */4 * * *' || github.event_name == 'workflow_dispatch'
+      run: |
+        SCAN_ID="${SCAN_ID:-pscan_$(date -u +%Y-%m-%d_%H)}"
+        echo "=== Batch 4 (offset 90) ==="
+        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findcryptopairs/api/pump_forensics.php?action=scan_batch&key=pump_forensics_2026&offset=90&limit=50&scan_id=$SCAN_ID") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Processed: {d.get(\"processed\",0)} pairs | Latency: {d.get(\"latency_ms\",0)}ms')
+                for r in d.get('results', []):
+                    if r.get('score', 0) >= 45:
+                        print(f'  HOT: {r[\"pair\"]:16s} Score:{r[\"score\"]:3d} [{r[\"grade\"]}]')
+        except: print('Parse error')
+        " || echo "Batch 4: $RESULT"
+
+    - name: Full rescan — Batch 5 (pairs 140-190)
+      continue-on-error: true
+      if: github.event.schedule == '0 */4 * * *' || github.event_name == 'workflow_dispatch'
+      run: |
+        SCAN_ID="${SCAN_ID:-pscan_$(date -u +%Y-%m-%d_%H)}"
+        echo "=== Batch 5 (offset 140) ==="
+        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findcryptopairs/api/pump_forensics.php?action=scan_batch&key=pump_forensics_2026&offset=140&limit=50&scan_id=$SCAN_ID") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Processed: {d.get(\"processed\",0)} pairs | Latency: {d.get(\"latency_ms\",0)}ms')
+                for r in d.get('results', []):
+                    if r.get('score', 0) >= 45:
+                        print(f'  HOT: {r[\"pair\"]:16s} Score:{r[\"score\"]:3d} [{r[\"grade\"]}]')
+        except: print('Parse error')
+        " || echo "Batch 5: $RESULT"
+
+    - name: Full rescan — Batch 6 (pairs 190-240)
+      continue-on-error: true
+      if: github.event.schedule == '0 */4 * * *' || github.event_name == 'workflow_dispatch'
+      run: |
+        SCAN_ID="${SCAN_ID:-pscan_$(date -u +%Y-%m-%d_%H)}"
+        echo "=== Batch 6 (offset 190) — Final ==="
+        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findcryptopairs/api/pump_forensics.php?action=scan_batch&key=pump_forensics_2026&offset=190&limit=50&scan_id=$SCAN_ID") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Processed: {d.get(\"processed\",0)} pairs | Latency: {d.get(\"latency_ms\",0)}ms')
+                print(f'SCAN COMPLETE — all {d.get(\"total_pairs\",0)} pairs processed')
+                for r in d.get('results', []):
+                    if r.get('score', 0) >= 45:
+                        print(f'  HOT: {r[\"pair\"]:16s} Score:{r[\"score\"]:3d} [{r[\"grade\"]}]')
+        except: print('Parse error')
+        " || echo "Batch 6: $RESULT"
+
+    # ─── Step 3: Print top watchlist ───
+    - name: Print top pump candidates
+      continue-on-error: true
+      run: |
+        echo "=== Pump Watch — Top Candidates ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/findcryptopairs/api/pump_forensics.php?action=watchlist&min_score=45") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                picks = d.get('picks', [])
+                print(f'Total HIGH+ candidates: {len(picks)}')
+                print()
+                for p in picks[:20]:
+                    sc = float(p.get('pump_score', 0))
+                    pnl = float(p.get('pnl_pct') or 0)
+                    pnl_s = f' PnL:{pnl:+.1f}%' if pnl != 0 else ''
+                    grade = p.get('pump_grade', 'LOW')
+                    print(f'  {p[\"pair\"]:16s} Score:{sc:5.0f} [{grade:10s}]{pnl_s}')
+                    print(f'    Vol:{float(p.get(\"vol_trend_score\",0)):4.0f}/15  Rng:{float(p.get(\"range_comp_score\",0)):4.0f}/15  Dip:{float(p.get(\"dip_buy_score\",0)):4.0f}/15  OBV:{float(p.get(\"obv_accum_score\",0)):4.0f}/15  RSI:{float(p.get(\"rsi_setup_score\",0)):4.0f}/10  Spk:{float(p.get(\"vol_spike_score\",0)):4.0f}/10  Mom:{float(p.get(\"momentum_score\",0)):4.0f}/10  Con:{float(p.get(\"consolidation_score\",0)):4.0f}/10')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Parse error')
+        " || echo "Watchlist: $RESULT"
+
+    # ─── Step 4: Overall stats ───
+    - name: Print system stats
+      continue-on-error: true
+      run: |
+        echo "=== Pump Watch — System Status ==="
+        RESULT=$(curl -s --max-time 10 "https://findtorontoevents.ca/findcryptopairs/api/pump_forensics.php?action=status") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Total scans in DB: {d.get(\"total_scans\",0)}')
+                print(f'HIGH+ (score 45+): {d.get(\"high_score\",0)}')
+                print(f'EXTREME (score 60+): {d.get(\"extreme_score\",0)}')
+        except:
+            print('Parse error')
+        " || echo "Status: $RESULT"
