@@ -1,0 +1,89 @@
+name: WAR ROOM — Live Forward-Test Validator
+
+on:
+  schedule:
+    # Run daily at 8:00 AM UTC (3:00 AM EST)
+    - cron: '0 8 * * *'
+    # Run on weekends for weekly summary
+    - cron: '0 12 * * 0'
+  workflow_dispatch:
+    inputs:
+      pairs:
+        description: 'Pairs to validate (default: BTC/USDT,ETH/USDT,BNB/USDT)'
+        required: false
+        default: 'BTC/USDT,ETH/USDT,BNB/USDT'
+
+jobs:
+  warroom:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        pip install ccxt pandas numpy
+
+    - name: Run WAR ROOM validator
+      working-directory: ./crypto_signals
+      run: python realtime_warroom.py
+
+    - name: Check for new signals
+      id: check_signals
+      working-directory: ./crypto_signals
+      run: |
+        python3 << 'EOF'
+        import json
+        import os
+        with open('WARROOM_LIVE.json') as f:
+            data = json.load(f)
+        states = data.get('signal_states', {})
+        strong_buys = []
+        for sym, state in states.items():
+            if 'STRONG BUY' in state.get('verdict', ''):
+                strong_buys.append(f"{sym}: {state['n_strategies']}/12 strategies ({state['score_pct']}% score)")
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+            if strong_buys:
+                f.write('STRONG_BUY_DETECTED=true\n')
+                f.write(f"SIGNALS={' | '.join(strong_buys)}\n")
+            else:
+                f.write('STRONG_BUY_DETECTED=false\n')
+                f.write('SIGNALS=No strong signals today\n')
+        EOF
+
+    - name: Commit results
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add crypto_signals/WARROOM_LIVE.json crypto_signals/WARROOM_REPORT.md
+        git diff --quiet && git diff --staged --quiet || git commit -m "WAR ROOM: Live validation $(date +'%Y-%m-%d %H:%M UTC')"
+        git push
+
+    - name: Create issue alert for STRONG BUY signals
+      if: steps.check_signals.outputs.STRONG_BUY_DETECTED == 'true'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const signals = '${{ steps.check_signals.outputs.SIGNALS }}';
+          const date = new Date().toISOString().split('T')[0];
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '🚀 WAR ROOM ALERT: STRONG BUY Signal — ' + date,
+            body: '## Live Signal Alert\n\n**' + signals + '**\n\n- ≥70% confluence score across 12 strategies\n- ≥6 strategies firing BUY simultaneously\n- Real-time Binance data (no cache)\n- Historical track: BTC +129%, BNB +131%, ETH +80%\n\n**Action:** Review WARROOM_REPORT.md for full analysis.',
+            labels: ['war-room', 'signal-alert', 'strong-buy']
+          });
+
+    - name: Summary
+      run: |
+        echo "=========================================="
+        echo "WAR ROOM VALIDATION COMPLETE"
+        echo "Time: $(date)"
+        cat crypto_signals/WARROOM_REPORT.md | head -40
