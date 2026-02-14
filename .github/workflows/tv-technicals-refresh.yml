@@ -1,0 +1,54 @@
+name: TV Technicals — Scan & Monitor
+on:
+  schedule:
+    # Full scan every 4 hours (aligned with 4H candles)
+    - cron: '15 */4 * * *'
+    # Monitor active signals every hour
+    - cron: '45 * * * *'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to run'
+        required: false
+        default: 'full_run'
+        type: choice
+        options:
+          - full_run
+          - scan
+          - monitor
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Determine action
+        id: action
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "action=${{ github.event.inputs.action }}" >> $GITHUB_OUTPUT
+          elif [ "$(date +%M)" = "15" ]; then
+            echo "action=full_run" >> $GITHUB_OUTPUT
+          else
+            echo "action=monitor" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run full pipeline (scan + monitor)
+        if: steps.action.outputs.action == 'full_run' || steps.action.outputs.action == 'scan'
+        run: |
+          echo "=== TV Technicals: Full Scan ==="
+          echo "Step 1: Monitor existing signals (TP/SL/expiry check)..."
+          curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/api/tv_technicals.php?action=monitor"
+          echo ""
+          echo "Step 2: Full scan — calculate ratings + detect patterns..."
+          curl -s --max-time 120 "https://findtorontoevents.ca/findcryptopairs/api/tv_technicals.php?action=scan"
+          echo ""
+          echo "Done."
+
+      - name: Monitor active signals
+        if: steps.action.outputs.action == 'monitor'
+        run: |
+          echo "=== TV Technicals: Monitor ==="
+          curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/api/tv_technicals.php?action=monitor"
+          echo ""
+          echo "Done."
