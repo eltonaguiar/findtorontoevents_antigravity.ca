@@ -41,7 +41,9 @@ jobs:
       - name: Get Progress Report
         id: progress
         run: |
-          PROGRESS=$(curl -s "https://findtorontoevents.ca/findcryptopairs/ml/shadow_collector.php?action=progress")
+          PROGRESS=$(curl -s -f "https://findtorontoevents.ca/findcryptopairs/ml/shadow_collector.php?action=progress" || echo '{"progress":{"current_signals":0,"target_signals":350,"percent_complete":0,"current_win_rate":0,"is_statistically_valid":false}}')
+          # Validate it's JSON (not HTML 404)
+          echo "$PROGRESS" | jq . > /dev/null 2>&1 || PROGRESS='{"progress":{"current_signals":0,"target_signals":350,"percent_complete":0,"current_win_rate":0,"is_statistically_valid":false}}'
           echo "progress=$PROGRESS" >> $GITHUB_OUTPUT
           echo "Progress: $PROGRESS"
       
