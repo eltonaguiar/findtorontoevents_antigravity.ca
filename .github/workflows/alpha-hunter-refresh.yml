@@ -1,0 +1,136 @@
+name: Alpha Hunter — Reverse-Engineer Winners Scan
+
+on:
+  schedule:
+    # Every 4 hours — full pipeline: analyze pumps, extract fingerprint, scan for matches
+    - cron: '0 */4 * * *'
+    # Every 30 minutes — quick scan only (reuse existing fingerprint)
+    - cron: '15,45 * * * *'
+    # Every 6 hours — monitor active signals (check TP/SL/expiry)
+    - cron: '30 */6 * * *'
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  alpha-hunt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    # ─── Step 1: Full pipeline every 4 hours ───
+    - name: Full pipeline (analyze + fingerprint + scan)
+      if: github.event.schedule == '0 */4 * * *' || github.event_name == 'workflow_dispatch'
+      continue-on-error: true
+      run: |
+        echo "=== Alpha Hunter Full Pipeline ==="
+        echo "Step 1/3: Analyzing past pump events..."
+        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findcryptopairs/api/alpha_hunter.php?action=analyze_pumps") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Pump events analyzed: {d.get(\"pump_events_analyzed\",0)}')
+                print(f'Elapsed: {d.get(\"elapsed_ms\",0)}ms')
+                for p in d.get('top_pumps', [])[:5]:
+                    print(f'  {p[\"pair\"]:14s} +{p[\"pump_pct\"]}%  RSI={p.get(\"pre_rsi\",\"?\")} BB={p.get(\"pre_bb_position\",\"?\")} ADX={p.get(\"pre_adx\",\"?\")}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Parse error')
+        " || echo "Analyze: $RESULT"
+
+    - name: Extract fingerprint
+      if: github.event.schedule == '0 */4 * * *' || github.event_name == 'workflow_dispatch'
+      continue-on-error: true
+      run: |
+        echo "Step 2/3: Extracting pre-pump fingerprint..."
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/findcryptopairs/api/alpha_hunter.php?action=fingerprint") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                fp = d.get('fingerprint', {})
+                print(f'Sample size: {fp.get(\"sample_size\",0)} pump events')
+                print(f'Avg RSI: {fp.get(\"avg_pre_rsi\",\"--\")} | Avg BB: {fp.get(\"avg_pre_bb_position\",\"--\")} | Avg ADX: {fp.get(\"avg_pre_adx\",\"--\")}')
+                print(f'BB Squeeze: {fp.get(\"pct_in_squeeze\",\"--\")}% | Higher Lows: {fp.get(\"pct_higher_lows\",\"--\")}% | Near Support: {fp.get(\"pct_near_support\",\"--\")}%')
+                for i in fp.get('interpretation', []):
+                    print(f'  > {i}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Parse error')
+        " || echo "Fingerprint: $RESULT"
+
+    # ─── Step 2: Scan for matching pairs (runs every 30 min + every 4h) ───
+    - name: Scan all pairs for pre-pump fingerprint
+      continue-on-error: true
+      run: |
+        echo "=== Scanning 55+ Kraken pairs for alpha fingerprint ==="
+        RESULT=$(curl -s --max-time 120 "https://findtorontoevents.ca/findcryptopairs/api/alpha_hunter.php?action=scan") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Pairs scanned: {d.get(\"pairs_scanned\",0)}')
+                print(f'Matches found: {d.get(\"matches_found\",0)}')
+                print(f'Elapsed: {d.get(\"elapsed_ms\",0)}ms')
+                for s in d.get('signals', []):
+                    pair = s['pair'].replace('USD','')
+                    print(f'  SIGNAL: {pair+\"/USD\":14s} Score={s[\"score\"]:3d}  \${s[\"price\"]:.6f}  TP=+{s[\"tp_pct\"]:.1f}%  SL=-{s[\"sl_pct\"]:.1f}%  ({s[\"trait_count\"]} traits)')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Parse error')
+        " || echo "Scan: $RESULT"
+
+    # ─── Step 3: Monitor active signals ───
+    - name: Monitor active signals
+      continue-on-error: true
+      run: |
+        echo "=== Monitoring active alpha signals ==="
+        RESULT=$(curl -s --max-time 30 "https://findtorontoevents.ca/findcryptopairs/api/alpha_hunter.php?action=monitor") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                print(f'Signals checked: {d.get(\"checked\",0)}')
+                print(f'Resolved this run: {d.get(\"resolved\",0)}')
+                if d.get('message'):
+                    print(d['message'])
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Parse error')
+        " || echo "Monitor: $RESULT"
+
+    # ─── Step 4: Print summary ───
+    - name: Print signal summary
+      continue-on-error: true
+      run: |
+        echo "=== Alpha Hunter Signal Summary ==="
+        RESULT=$(curl -s --max-time 15 "https://findtorontoevents.ca/findcryptopairs/api/alpha_hunter.php?action=signals") || true
+        echo "$RESULT" | python3 -c "
+        import sys, json
+        try:
+            d = json.load(sys.stdin)
+            if d.get('ok'):
+                active = d.get('active', [])
+                history = d.get('history', [])
+                wins = sum(1 for h in history if float(h.get('pnl_pct',0)) > 0)
+                losses = len(history) - wins
+                wr = (wins / len(history) * 100) if history else 0
+                print(f'Active signals: {len(active)}')
+                print(f'Historical: {len(history)} ({wins}W / {losses}L = {wr:.1f}% WR)')
+                for a in active:
+                    pair = a['pair'].replace('USD','')
+                    pnl = float(a.get('pnl_pct',0))
+                    pnl_str = f'{pnl:+.2f}%' if a.get('pnl_pct') else '--'
+                    print(f'  ACTIVE: {pair+\"/USD\":14s} Score={a[\"fingerprint_score\"]}  Entry=\${float(a[\"price\"]):.6f}  PnL={pnl_str}')
+            else:
+                print(f'Error: {d.get(\"error\",\"unknown\")}')
+        except:
+            print('Parse error')
+        " || echo "Signals: $RESULT"

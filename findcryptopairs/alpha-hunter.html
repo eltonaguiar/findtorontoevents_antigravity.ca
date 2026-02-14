@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha Hunter — Reverse-Engineer Winners</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0e17;color:#e0e0e0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh}
+.header{background:linear-gradient(135deg,#1a1025 0%,#0d1b2a 50%,#1a0a2a 100%);padding:24px 32px;border-bottom:1px solid rgba(255,215,0,.15)}
+.header h1{font-size:28px;font-weight:700;background:linear-gradient(90deg,#ffd700,#ff6b35,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px}
+.header p{color:#888;font-size:14px;margin-top:4px}
+.tabs{display:flex;gap:4px;padding:0 32px;background:#0d1117;border-bottom:1px solid #222}
+.tab{padding:12px 20px;cursor:pointer;color:#777;font-size:13px;font-weight:600;border-bottom:2px solid transparent;transition:.2s}
+.tab:hover{color:#ddd}
+.tab.active{color:#ffd700;border-bottom-color:#ffd700}
+.panel{display:none;padding:24px 32px;max-width:1600px;margin:0 auto}
+.panel.active{display:block}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:linear-gradient(135deg,#141a2e,#0d1117);border:1px solid #222;border-radius:12px;padding:20px}
+.stat-card .label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:4px}
+.stat-card .value{font-size:28px;font-weight:700;color:#ffd700}
+.stat-card .sub{font-size:12px;color:#888;margin-top:4px}
+.btn{padding:10px 20px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:.3s}
+.btn-gold{background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(255,215,0,.3)}
+.btn-dark{background:#1a1e2e;color:#ffd700;border:1px solid #333}
+.btn-dark:hover{background:#252a3e}
+.signal-card{background:linear-gradient(135deg,#0d1a0d 0%,#0d1117 100%);border:1px solid #1a3a1a;border-radius:12px;padding:20px;margin-bottom:16px;position:relative;overflow:hidden}
+.signal-card.high{border-color:#ffd700;box-shadow:0 0 20px rgba(255,215,0,.1)}
+.signal-card.medium{border-color:#ff6b35}
+.signal-pair{font-size:22px;font-weight:700;color:#fff}
+.signal-score{position:absolute;right:20px;top:20px;font-size:32px;font-weight:800;color:#ffd700}
+.signal-price{font-size:14px;color:#4ecdc4;margin:4px 0}
+.signal-targets{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.signal-targets .tp{background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.3);border-radius:8px;padding:10px;text-align:center}
+.signal-targets .sl{background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);border-radius:8px;padding:10px;text-align:center}
+.signal-targets .label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#888}
+.signal-targets .val{font-size:18px;font-weight:700;margin-top:2px}
+.signal-targets .tp .val{color:#2ecc71}
+.signal-targets .sl .val{color:#e74c3c}
+.traits{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.trait{background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.2);border-radius:6px;padding:4px 10px;font-size:11px;color:#ccc}
+.trait.key{background:rgba(255,107,53,.15);border-color:rgba(255,107,53,.4);color:#ff6b35}
+.fp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.fp-card{background:#141a2e;border:1px solid #222;border-radius:12px;padding:16px}
+.fp-card h3{font-size:14px;color:#ffd700;margin-bottom:8px}
+.fp-bar{height:6px;background:#1a1e2e;border-radius:3px;overflow:hidden;margin:6px 0}
+.fp-bar-fill{height:100%;border-radius:3px;transition:.5s}
+.fp-metric{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:13px}
+.fp-metric .k{color:#888}
+.fp-metric .v{color:#ffd700;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #222}
+td{padding:10px 12px;border-bottom:1px solid #1a1e2e}
+tr:hover td{background:rgba(255,215,0,.03)}
+.win{color:#2ecc71}
+.loss{color:#e74c3c}
+.op-log{background:#0d1117;border:1px solid #222;border-radius:8px;padding:16px;font-family:'JetBrains Mono',monospace;font-size:12px;max-height:400px;overflow-y:auto;white-space:pre-wrap}
+.op-log .line{padding:2px 0}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.badge-active{background:rgba(46,204,113,.2);color:#2ecc71}
+.badge-resolved{background:rgba(130,130,130,.2);color:#888}
+.interp{background:rgba(255,215,0,.05);border-left:3px solid #ffd700;padding:12px 16px;border-radius:0 8px 8px 0;margin-top:16px;font-size:13px;color:#ccc;line-height:1.8}
+.interp strong{color:#ffd700}
+.flow{display:flex;gap:8px;align-items:center;margin:16px 0}
+.flow-step{background:#141a2e;border:1px solid #222;border-radius:8px;padding:12px 16px;font-size:12px;color:#888;text-align:center;flex:1}
+.flow-step.done{border-color:#2ecc71;color:#2ecc71}
+.flow-step.running{border-color:#ffd700;color:#ffd700;animation:pulse 1.5s infinite}
+.flow-arrow{color:#444;font-size:20px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.empty{text-align:center;padding:60px 20px;color:#555}
+.empty h3{font-size:20px;margin-bottom:8px;color:#777}
+.pump-card{background:#141a2e;border:1px solid #222;border-radius:10px;padding:16px;margin-bottom:12px}
+.pump-pair{font-size:18px;font-weight:700;color:#fff}
+.pump-pct{color:#2ecc71;font-size:24px;font-weight:800;float:right}
+.pump-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:8px;font-size:12px}
+.pump-metric{background:rgba(255,255,255,.03);border-radius:6px;padding:8px;text-align:center}
+.pump-metric .k{color:#666;font-size:10px;text-transform:uppercase}
+.pump-metric .v{color:#e0e0e0;font-weight:600;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="header">
+    <h1>Alpha Hunter — Reverse-Engineer Winners</h1>
+    <p>Find extreme gainers, study what happened BEFORE the pump, extract the pattern, find the NEXT one</p>
+</div>
+<div class="tabs">
+    <div class="tab active" data-tab="signals">Alpha Signals</div>
+    <div class="tab" data-tab="fingerprint">The Pattern</div>
+    <div class="tab" data-tab="pumps">Past Pumps</div>
+    <div class="tab" data-tab="audit">Audit Trail</div>
+    <div class="tab" data-tab="ops">Run Engine</div>
+</div>
+
+<!-- SIGNALS TAB -->
+<div class="panel active" id="tab-signals">
+    <div class="stats-row" id="signal-stats"></div>
+    <div style="display:flex;gap:12px;margin-bottom:20px">
+        <button class="btn btn-gold" onclick="runScan()">Scan Now</button>
+        <button class="btn btn-dark" onclick="monitorSignals()">Monitor Active</button>
+    </div>
+    <div id="signal-list"></div>
+</div>
+
+<!-- FINGERPRINT TAB -->
+<div class="panel" id="tab-fingerprint">
+    <h2 style="margin-bottom:16px;color:#ffd700">The Pre-Pump Fingerprint</h2>
+    <p style="color:#888;margin-bottom:20px;font-size:14px">By analyzing dozens of past pump events, we extract the common traits that appeared BEFORE each pump. This is the "alpha fingerprint" we scan for.</p>
+    <div id="fp-content"></div>
+</div>
+
+<!-- PUMPS TAB -->
+<div class="panel" id="tab-pumps">
+    <h2 style="margin-bottom:16px;color:#ffd700">Reverse-Engineered Pump Events</h2>
+    <p style="color:#888;margin-bottom:20px;font-size:14px">These are real pump events from Kraken OHLCV data. We analyzed what indicators looked like 5 candles BEFORE each pump.</p>
+    <div id="pump-list"></div>
+</div>
+
+<!-- AUDIT TAB -->
+<div class="panel" id="tab-audit">
+    <h2 style="margin-bottom:16px;color:#ffd700">Full Audit Trail</h2>
+    <div id="audit-content"></div>
+</div>
+
+<!-- OPS TAB -->
+<div class="panel" id="tab-ops">
+    <h2 style="margin-bottom:16px;color:#ffd700">Engine Operations</h2>
+    <p style="color:#888;margin-bottom:16px;font-size:14px">Run the full pipeline: Analyze past pumps → Extract fingerprint → Scan for matches</p>
+    <div class="flow" id="flow-steps">
+        <div class="flow-step" id="step-analyze">1. Analyze Pumps</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" id="step-fp">2. Extract Fingerprint</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" id="step-scan">3. Scan for Matches</div>
+    </div>
+    <div style="display:flex;gap:12px;margin:20px 0">
+        <button class="btn btn-gold" onclick="fullRun()">Run Full Pipeline</button>
+        <button class="btn btn-dark" onclick="stepAnalyze()">Step 1: Analyze</button>
+        <button class="btn btn-dark" onclick="stepFingerprint()">Step 2: Fingerprint</button>
+        <button class="btn btn-dark" onclick="stepScan()">Step 3: Scan</button>
+    </div>
+    <div class="op-log" id="op-log">Ready. Click "Run Full Pipeline" to start the engine.\n</div>
+</div>
+
+<script>
+var API = '/findcryptopairs/api/alpha_hunter.php';
+// If local
+if(location.hostname==='localhost'||location.hostname==='127.0.0.1'){
+    API = '/findcryptopairs/api/alpha_hunter.php';
+}
+
+// Tabs
+document.querySelectorAll('.tab').forEach(function(t){
+    t.addEventListener('click',function(){
+        document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active')});
+        document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('active')});
+        t.classList.add('active');
+        document.getElementById('tab-'+t.getAttribute('data-tab')).classList.add('active');
+    });
+});
+
+function log(msg){
+    var el=document.getElementById('op-log');
+    var ts=new Date().toLocaleTimeString();
+    el.innerHTML+='<div class="line">['+ts+'] '+msg+'</div>';
+    el.scrollTop=el.scrollHeight;
+}
+
+function apiFetch(action, cb){
+    var url=API+'?action='+action;
+    log('Calling '+action+'...');
+    fetch(url).then(function(r){return r.json()}).then(function(d){
+        if(d.ok){log(action+' completed' + (d.elapsed_ms?' in '+d.elapsed_ms+'ms':''));cb(d);}
+        else{log('ERROR: '+(d.error||'Unknown'));}
+    }).catch(function(e){log('FETCH ERROR: '+e.message);});
+}
+
+// FULL RUN
+function fullRun(){
+    log('=== FULL PIPELINE ===');
+    document.getElementById('step-analyze').className='flow-step running';
+    apiFetch('full_run',function(d){
+        document.getElementById('step-analyze').className='flow-step done';
+        document.getElementById('step-fp').className='flow-step done';
+        document.getElementById('step-scan').className='flow-step done';
+        log('Pump events analyzed: '+(d.pump_events||0));
+        log('Matches found: '+(d.matches||0));
+        if(d.signals && d.signals.length>0){
+            d.signals.forEach(function(s){
+                log('SIGNAL: '+s.pair+' score='+s.score+' ('+s.trait_count+' traits)');
+            });
+        }
+        loadSignals();
+        loadFingerprint();
+    });
+}
+
+function stepAnalyze(){ apiFetch('analyze_pumps',function(d){ log('Analyzed '+d.pump_events_analyzed+' pumps'); document.getElementById('step-analyze').className='flow-step done'; });}
+function stepFingerprint(){ apiFetch('fingerprint',function(d){ log('Fingerprint extracted from '+d.fingerprint.sample_size+' samples'); document.getElementById('step-fp').className='flow-step done'; loadFingerprint(); });}
+function stepScan(){ apiFetch('scan',function(d){ log('Found '+d.matches_found+' matches'); document.getElementById('step-scan').className='flow-step done'; loadSignals(); });}
+function runScan(){ apiFetch('scan',function(d){ loadSignals(); });}
+function monitorSignals(){ apiFetch('monitor',function(d){ log('Monitored '+d.checked+' signals, resolved '+d.resolved); loadSignals(); });}
+
+// LOAD SIGNALS
+function loadSignals(){
+    apiFetch('signals',function(d){
+        var el=document.getElementById('signal-list');
+        var stats=document.getElementById('signal-stats');
+
+        var active=d.active||[];
+        var hist=d.history||[];
+        var wins=0,losses=0;
+        hist.forEach(function(h){
+            if(parseFloat(h.pnl_pct)>0) wins++;
+            else losses++;
+        });
+
+        stats.innerHTML='<div class="stat-card"><div class="label">Active Signals</div><div class="value">'+active.length+'</div></div>'
+            +'<div class="stat-card"><div class="label">Historical Wins</div><div class="value win">'+wins+'</div></div>'
+            +'<div class="stat-card"><div class="label">Historical Losses</div><div class="value loss">'+losses+'</div></div>'
+            +'<div class="stat-card"><div class="label">Win Rate</div><div class="value">'+(hist.length>0?((wins/(wins+losses))*100).toFixed(1):'--')+'%</div></div>';
+
+        if(active.length===0){
+            el.innerHTML='<div class="empty"><h3>No Active Signals</h3><p>Run the engine to scan for pre-pump patterns</p></div>';
+            return;
+        }
+
+        var html='';
+        active.forEach(function(s){
+            var score=parseFloat(s.fingerprint_score);
+            var cls=score>=70?'high':score>=50?'medium':'';
+            var traits=(s.matching_traits||'').split(' | ');
+            html+='<div class="signal-card '+cls+'">';
+            html+='<div class="signal-score">'+score+'</div>';
+            html+='<div class="signal-pair">'+s.pair.replace('USD','')+'<span style="color:#666;font-size:14px;margin-left:4px">/USD</span></div>';
+            html+='<div class="signal-price">Entry: $'+parseFloat(s.price).toFixed(6)+'</div>';
+            if(s.current_price && parseFloat(s.current_price)>0){
+                var pnl=parseFloat(s.pnl_pct);
+                html+='<div style="font-size:13px;color:'+(pnl>=0?'#2ecc71':'#e74c3c')+'">Current: $'+parseFloat(s.current_price).toFixed(6)+' ('+pnl.toFixed(2)+'%)</div>';
+            }
+            html+='<div class="signal-targets">';
+            html+='<div class="tp"><div class="label">Take Profit</div><div class="val">$'+parseFloat(s.tp_price).toFixed(6)+'</div><div style="font-size:11px;color:#666">+'+parseFloat(s.tp_pct).toFixed(1)+'%</div></div>';
+            html+='<div class="sl"><div class="label">Stop Loss</div><div class="val">$'+parseFloat(s.sl_price).toFixed(6)+'</div><div style="font-size:11px;color:#666">-'+parseFloat(s.sl_pct).toFixed(1)+'%</div></div>';
+            html+='</div>';
+            html+='<div class="traits">';
+            traits.forEach(function(t){
+                var key=t.indexOf('SQUEEZE')>-1||t.indexOf('DIVERGENCE')>-1||t.indexOf('accumulation')>-1;
+                html+='<span class="trait'+(key?' key':'')+'">'+t+'</span>';
+            });
+            html+='</div>';
+            html+='<div style="font-size:11px;color:#555;margin-top:8px">'+s.created_at+'</div>';
+            html+='</div>';
+        });
+
+        if(hist.length>0){
+            html+='<h3 style="margin:24px 0 12px;color:#888">Resolved Signals</h3>';
+            html+='<table><thead><tr><th>Pair</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Reason</th><th>Score</th><th>Date</th></tr></thead><tbody>';
+            hist.forEach(function(h){
+                var pnl=parseFloat(h.pnl_pct);
+                html+='<tr><td style="font-weight:600">'+h.pair+'</td>';
+                html+='<td>$'+parseFloat(h.price).toFixed(4)+'</td>';
+                html+='<td>$'+(h.current_price?parseFloat(h.current_price).toFixed(4):'--')+'</td>';
+                html+='<td class="'+(pnl>=0?'win':'loss')+'">'+pnl.toFixed(2)+'%</td>';
+                html+='<td>'+h.exit_reason+'</td>';
+                html+='<td>'+h.fingerprint_score+'</td>';
+                html+='<td>'+h.created_at+'</td></tr>';
+            });
+            html+='</tbody></table>';
+        }
+
+        el.innerHTML=html;
+    });
+}
+
+// LOAD FINGERPRINT
+function loadFingerprint(){
+    apiFetch('fingerprint',function(d){
+        var el=document.getElementById('fp-content');
+        if(!d.fingerprint){el.innerHTML='<div class="empty"><h3>No Fingerprint Yet</h3><p>Run analyze_pumps first</p></div>';return;}
+        var fp=d.fingerprint;
+
+        var html='<div class="stats-row">';
+        html+='<div class="stat-card"><div class="label">Sample Size</div><div class="value">'+fp.sample_size+'</div><div class="sub">pump events analyzed</div></div>';
+        html+='<div class="stat-card"><div class="label">Avg Pre-Pump RSI</div><div class="value">'+fp.avg_pre_rsi+'</div><div class="sub">'+(fp.avg_pre_rsi<45?'Neutral/Oversold':'Neutral/Bullish')+'</div></div>';
+        html+='<div class="stat-card"><div class="label">Avg BB Position</div><div class="value">'+fp.avg_pre_bb_position+'</div><div class="sub">'+(fp.avg_pre_bb_position<0.4?'Lower half (value zone)':'Middle-upper')+'</div></div>';
+        html+='<div class="stat-card"><div class="label">Avg ADX</div><div class="value">'+fp.avg_pre_adx+'</div><div class="sub">'+(fp.avg_pre_adx<25?'Consolidation (low trend)':'Trending')+'</div></div>';
+        html+='</div>';
+
+        html+='<h3 style="margin:20px 0 12px;color:#ffd700">Pattern Traits (% of pump events that showed this trait)</h3>';
+        html+='<div class="fp-grid">';
+
+        var items=[
+            {k:'BB Squeeze',v:fp.pct_in_squeeze,c:'#ff6b35'},
+            {k:'Higher Lows',v:fp.pct_higher_lows,c:'#2ecc71'},
+            {k:'Volume Accumulation',v:fp.pct_vol_accumulation,c:'#4ecdc4'},
+            {k:'Near Support',v:fp.pct_near_support,c:'#9b59b6'},
+            {k:'Bullish EMA',v:fp.pct_bullish_ema,c:'#ffd700'},
+            {k:'Bearish EMA',v:fp.pct_bearish_ema,c:'#e74c3c'},
+            {k:'MACD Negative',v:fp.pct_macd_negative,c:'#3498db'}
+        ];
+        items.forEach(function(it){
+            html+='<div class="fp-card"><h3>'+it.k+'</h3>';
+            html+='<div class="fp-bar"><div class="fp-bar-fill" style="width:'+it.v+'%;background:'+it.c+'"></div></div>';
+            html+='<div class="fp-metric"><span class="k">Occurrence</span><span class="v">'+it.v+'%</span></div>';
+            html+='</div>';
+        });
+        html+='</div>';
+
+        html+='<h3 style="margin:20px 0 12px;color:#ffd700">Detailed Averages</h3>';
+        html+='<div class="fp-grid">';
+        var metrics=[
+            {k:'Avg Stochastic',v:fp.avg_pre_stoch},
+            {k:'Avg MFI',v:fp.avg_pre_mfi},
+            {k:'Avg Vol Ratio',v:fp.avg_pre_vol_ratio},
+            {k:'Avg ATR %',v:fp.avg_pre_atr_pct},
+            {k:'Avg OBV Trend',v:fp.avg_pre_obv_trend}
+        ];
+        metrics.forEach(function(m){
+            html+='<div class="fp-card"><div class="fp-metric"><span class="k">'+m.k+'</span><span class="v">'+m.v+'</span></div></div>';
+        });
+        html+='</div>';
+
+        if(fp.interpretation && fp.interpretation.length>0){
+            html+='<div class="interp"><strong>Key Insights:</strong><br>';
+            fp.interpretation.forEach(function(i){html+='• '+i+'<br>';});
+            html+='</div>';
+        }
+
+        el.innerHTML=html;
+    });
+}
+
+// LOAD AUDIT
+function loadAudit(){
+    apiFetch('audit',function(d){
+        var el=document.getElementById('audit-content');
+        var html='';
+
+        if(d.pump_analyses && d.pump_analyses.length>0){
+            html+='<h3 style="margin-bottom:12px;color:#ffd700">Top Pump Events (Pre-Pump Indicators)</h3>';
+            html+='<div style="overflow-x:auto"><table><thead><tr><th>Pair</th><th>Pump %</th><th>RSI</th><th>BB Pos</th><th>Vol Ratio</th><th>ADX</th><th>ATR%</th><th>Squeeze</th><th>Higher Lows</th><th>Vol Acc</th><th>Support</th><th>EMA</th><th>Stoch</th><th>MFI</th></tr></thead><tbody>';
+            d.pump_analyses.forEach(function(p){
+                html+='<tr><td style="font-weight:600">'+p.pair+'</td>';
+                html+='<td class="win">+'+parseFloat(p.pump_pct).toFixed(1)+'%</td>';
+                html+='<td>'+p.pre_rsi+'</td>';
+                html+='<td>'+p.pre_bb_position+'</td>';
+                html+='<td>'+p.pre_vol_ratio+'</td>';
+                html+='<td>'+p.pre_adx+'</td>';
+                html+='<td>'+p.pre_atr_pct+'</td>';
+                html+='<td>'+(parseInt(p.pre_squeeze)?'YES':'no')+'</td>';
+                html+='<td>'+(parseInt(p.pre_higher_lows)?'YES':'no')+'</td>';
+                html+='<td>'+(parseInt(p.pre_vol_accumulation)?'YES':'no')+'</td>';
+                html+='<td>'+(parseInt(p.pre_price_near_support)?'YES':'no')+'</td>';
+                html+='<td>'+p.pre_ema_alignment+'</td>';
+                html+='<td>'+p.pre_stoch+'</td>';
+                html+='<td>'+p.pre_mfi+'</td></tr>';
+            });
+            html+='</tbody></table></div>';
+        }
+
+        if(d.signals && d.signals.length>0){
+            html+='<h3 style="margin:24px 0 12px;color:#ffd700">Signal History</h3>';
+            html+='<table><thead><tr><th>Pair</th><th>Entry</th><th>Score</th><th>Status</th><th>P&L</th><th>Exit</th><th>Date</th></tr></thead><tbody>';
+            d.signals.forEach(function(s){
+                var pnl=parseFloat(s.pnl_pct||0);
+                html+='<tr><td style="font-weight:600">'+s.pair+'</td>';
+                html+='<td>$'+parseFloat(s.price).toFixed(4)+'</td>';
+                html+='<td>'+s.fingerprint_score+'</td>';
+                html+='<td><span class="badge badge-'+s.status.toLowerCase()+'">'+s.status+'</span></td>';
+                html+='<td class="'+(pnl>=0?'win':'loss')+'">'+(s.pnl_pct?pnl.toFixed(2)+'%':'--')+'</td>';
+                html+='<td>'+(s.exit_reason||'--')+'</td>';
+                html+='<td>'+s.created_at+'</td></tr>';
+            });
+            html+='</tbody></table>';
+        }
+
+        if(!html) html='<div class="empty"><h3>No Audit Data Yet</h3><p>Run the engine first</p></div>';
+        el.innerHTML=html;
+    });
+}
+
+// Load on start
+loadSignals();
+setTimeout(function(){loadFingerprint();},500);
+setTimeout(function(){loadAudit();},1000);
+
+// ─── Auto-Refresh ───
+var REFRESH_SEC = 120; // 2 minutes
+var countdown = REFRESH_SEC;
+var refreshTimer = null;
+var countdownEl = null;
+
+function startAutoRefresh(){
+    if(refreshTimer) clearInterval(refreshTimer);
+    countdown = REFRESH_SEC;
+    refreshTimer = setInterval(function(){
+        countdown--;
+        if(countdownEl) countdownEl.textContent = countdown + 's';
+        if(countdown <= 0){
+            countdown = REFRESH_SEC;
+            loadSignals();
+        }
+    }, 1000);
+}
+
+// Add refresh bar to header
+(function(){
+    var hdr = document.querySelector('.header');
+    var bar = document.createElement('div');
+    bar.style.cssText = 'display:flex;align-items:center;gap:12px;margin-top:10px;font-size:12px;color:#666';
+    bar.innerHTML = '<span>Auto-refresh in <strong id="ah-countdown" style="color:#ffd700">'+REFRESH_SEC+'s</strong></span>'
+        + '<a href="/findcryptopairs/pro-signals.html" style="color:#ff6b35;border:1px solid #333;padding:4px 12px;border-radius:6px;text-decoration:none;font-size:11px">Pro Signals (100 Strategies)</a>'
+        + '<a href="/findcryptopairs/index.html" style="color:#6366f1;border:1px solid #333;padding:4px 12px;border-radius:6px;text-decoration:none;font-size:11px">Crypto Hub</a>'
+        + '<a href="/live-monitor/live-monitor.html" style="color:#4ecdc4;border:1px solid #333;padding:4px 12px;border-radius:6px;text-decoration:none;font-size:11px">Live Monitor</a>';
+    hdr.appendChild(bar);
+    countdownEl = document.getElementById('ah-countdown');
+    startAutoRefresh();
+})();
+</script>
+</body>
+</html>
