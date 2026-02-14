@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pro Signal Engine — 100 Strategy Tournament</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a1a;color:#e0e0e0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh}
+.header{background:linear-gradient(135deg,#1a0a2e,#0d1b2a);padding:20px;border-bottom:2px solid #ff6b35;text-align:center}
+.header h1{font-size:1.8em;background:linear-gradient(90deg,#ff6b35,#ffd700,#ff6b35);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:5px}
+.header .subtitle{color:#888;font-size:.9em}
+.tabs{display:flex;gap:0;background:#111;border-bottom:2px solid #222;overflow-x:auto}
+.tab{padding:12px 20px;cursor:pointer;color:#888;border-bottom:3px solid transparent;transition:all .2s;font-weight:500;white-space:nowrap}
+.tab:hover{color:#ddd;background:#1a1a2e}
+.tab.active{color:#ff6b35;border-bottom-color:#ff6b35;background:#1a1a2e}
+.content{padding:15px;max-width:1400px;margin:0 auto}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:#12121f;border:1px solid #2a2a3a;border-radius:10px;padding:15px;margin-bottom:12px}
+.card h3{color:#ff6b35;margin-bottom:10px;font-size:1.1em}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+.stat-box{background:#1a1a2e;border:1px solid #2a2a3a;border-radius:8px;padding:12px;text-align:center}
+.stat-box .label{color:#888;font-size:.75em;text-transform:uppercase;letter-spacing:1px}
+.stat-box .value{font-size:1.6em;font-weight:700;margin-top:4px}
+.green{color:#00ff88}.red{color:#ff4444}.orange{color:#ff6b35}.gold{color:#ffd700}.blue{color:#4488ff}.gray{color:#666}
+table{width:100%;border-collapse:collapse;font-size:.85em}
+th{background:#1a1a2e;color:#ff6b35;padding:8px 6px;text-align:left;border-bottom:2px solid #333;position:sticky;top:0}
+td{padding:7px 6px;border-bottom:1px solid #1a1a2e}
+tr:hover td{background:#1a1a2e}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.75em;font-weight:600}
+.badge-win{background:#00ff8830;color:#00ff88;border:1px solid #00ff8850}
+.badge-loss{background:#ff444430;color:#ff4444;border:1px solid #ff444450}
+.badge-active{background:#4488ff30;color:#4488ff;border:1px solid #4488ff50}
+.badge-pro{background:#ffd70030;color:#ffd700;border:1px solid #ffd70050}
+.badge-trend{background:#ff6b3530;color:#ff6b35}
+.badge-mean_rev{background:#00ff8830;color:#00ff88}
+.badge-momentum{background:#4488ff30;color:#4488ff}
+.badge-breakout{background:#ff444430;color:#ff8844}
+.badge-volume{background:#88ff8830;color:#88ff88}
+.badge-smart_money{background:#ffd70030;color:#ffd700}
+.badge-regime{background:#ff88ff30;color:#ff88ff}
+.badge-confluence{background:#ffffff20;color:#fff}
+.btn{padding:8px 20px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:.85em;transition:all .2s}
+.btn-primary{background:#ff6b35;color:#fff}.btn-primary:hover{background:#ff8855}
+.btn-secondary{background:#2a2a4a;color:#ddd;border:1px solid #444}.btn-secondary:hover{background:#3a3a5a}
+.btn-sm{padding:5px 12px;font-size:.8em}
+.controls{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.progress-bar{width:100%;height:8px;background:#222;border-radius:4px;overflow:hidden;margin:10px 0}
+.progress-fill{height:100%;background:linear-gradient(90deg,#ff6b35,#ffd700);border-radius:4px;transition:width .5s}
+.signal-card{background:linear-gradient(135deg,#1a0a2e,#0d1b3a);border:2px solid #ffd700;border-radius:12px;padding:20px;margin-bottom:15px}
+.signal-card .pair{font-size:1.4em;font-weight:700;color:#ffd700}
+.signal-card .confidence{font-size:2em;font-weight:800}
+.signal-card .strategies{color:#888;font-size:.8em;margin-top:8px;line-height:1.4}
+.round-card{border-left:4px solid #ff6b35;padding:10px 15px;margin-bottom:10px;background:#12121f}
+.round-card h4{color:#ff6b35}
+.round-card .survivors{color:#00ff88;font-weight:600}
+.round-card .eliminated{color:#ff4444;font-weight:600}
+.loading{text-align:center;padding:40px;color:#666}
+.loading .spinner{display:inline-block;width:30px;height:30px;border:3px solid #333;border-top-color:#ff6b35;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tooltip{position:relative;cursor:help}.tooltip:hover::after{content:attr(data-tip);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:5px 10px;border-radius:4px;font-size:.75em;white-space:nowrap;z-index:10}
+@media(max-width:768px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.header h1{font-size:1.3em}.tab{padding:8px 12px;font-size:.85em}}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>⚡ PRO SIGNAL ENGINE</h1>
+    <div class="subtitle">100 Strategies • Tournament Elimination • Confluence Scanner</div>
+    <div id="systemStatus" style="margin-top:8px;font-size:.8em;color:#666">Loading system status...</div>
+</div>
+
+<div class="tabs" id="tabs">
+    <div class="tab active" data-tab="signals">🎯 Pro Signals</div>
+    <div class="tab" data-tab="tournament">🏆 Tournament</div>
+    <div class="tab" data-tab="strategies">📊 All Strategies</div>
+    <div class="tab" data-tab="audit">📋 Audit Trail</div>
+    <div class="tab" data-tab="operations">⚙️ Operations</div>
+</div>
+
+<div class="content">
+
+<!-- PRO SIGNALS TAB -->
+<div class="panel active" id="panel-signals">
+    <div class="controls">
+        <button class="btn btn-primary" onclick="runLiveScan()">🔍 Run Live Scan</button>
+        <button class="btn btn-secondary" onclick="monitorSignals()">📡 Monitor Active</button>
+        <button class="btn btn-secondary" onclick="loadSignals()">🔄 Refresh</button>
+    </div>
+    <div class="grid3" id="signalStats">
+        <div class="stat-box"><div class="label">Active Signals</div><div class="value blue" id="sActive">--</div></div>
+        <div class="stat-box"><div class="label">Win Rate</div><div class="value green" id="sWinRate">--</div></div>
+        <div class="stat-box"><div class="label">Avg P&L</div><div class="value" id="sAvgPnl">--</div></div>
+    </div>
+    <div id="signalList"><div class="loading"><div class="spinner"></div><br>Loading signals...</div></div>
+    <div class="card" style="margin-top:15px">
+        <h3>📜 Signal History</h3>
+        <div id="signalHistory" style="max-height:400px;overflow-y:auto"></div>
+    </div>
+</div>
+
+<!-- TOURNAMENT TAB -->
+<div class="panel" id="panel-tournament">
+    <div class="controls">
+        <button class="btn btn-primary" onclick="runTournament()">🏆 Run Tournament</button>
+        <button class="btn btn-secondary" onclick="loadAudit()">🔄 Refresh</button>
+    </div>
+    <div id="tournamentRounds"><div class="loading"><div class="spinner"></div><br>Loading tournament data...</div></div>
+    <div class="card" style="margin-top:15px">
+        <h3>🥇 Top 15 Winners</h3>
+        <div id="top15" style="overflow-x:auto"></div>
+    </div>
+</div>
+
+<!-- ALL STRATEGIES TAB -->
+<div class="panel" id="panel-strategies">
+    <div class="controls">
+        <select id="catFilter" onchange="filterStrategies()" style="padding:6px;background:#1a1a2e;color:#ddd;border:1px solid #444;border-radius:4px">
+            <option value="">All Categories</option>
+            <option value="trend">Trend Following</option>
+            <option value="mean_rev">Mean Reversion</option>
+            <option value="momentum">Momentum</option>
+            <option value="breakout">Breakout</option>
+            <option value="volume">Volume</option>
+            <option value="smart_money">Smart Money</option>
+            <option value="regime">Regime-Based</option>
+            <option value="confluence">Confluence</option>
+        </select>
+        <select id="sortBy" onchange="filterStrategies()" style="padding:6px;background:#1a1a2e;color:#ddd;border:1px solid #444;border-radius:4px">
+            <option value="win_rate">Sort: Win Rate</option>
+            <option value="profit_factor">Sort: Profit Factor</option>
+            <option value="sharpe">Sort: Sharpe Ratio</option>
+            <option value="total_ret">Sort: Total Return</option>
+            <option value="trades">Sort: Trade Count</option>
+        </select>
+    </div>
+    <div id="strategyTable" style="overflow-x:auto"><div class="loading"><div class="spinner"></div><br>Loading strategies...</div></div>
+</div>
+
+<!-- AUDIT TRAIL TAB -->
+<div class="panel" id="panel-audit">
+    <div class="controls">
+        <button class="btn btn-secondary" onclick="loadAudit()">🔄 Refresh Audit</button>
+    </div>
+    <div id="auditContent"><div class="loading"><div class="spinner"></div><br>Loading audit trail...</div></div>
+</div>
+
+<!-- OPERATIONS TAB -->
+<div class="panel" id="panel-operations">
+    <div class="card">
+        <h3>🔧 System Operations</h3>
+        <p style="color:#888;margin-bottom:15px">Run these in order to set up or refresh the engine.</p>
+        <div class="grid2">
+            <div>
+                <h4 style="color:#4488ff;margin-bottom:8px">Step 1: Fetch Data</h4>
+                <p style="color:#888;font-size:.85em;margin-bottom:8px">Download OHLCV data from Kraken for all volatile pairs.</p>
+                <button class="btn btn-primary" onclick="fetchData(240)">📥 Fetch 4h OHLCV</button>
+                <button class="btn btn-secondary btn-sm" onclick="fetchData(60)" style="margin-left:5px">1h</button>
+            </div>
+            <div>
+                <h4 style="color:#4488ff;margin-bottom:8px">Step 2: Run All Backtests</h4>
+                <p style="color:#888;font-size:.85em;margin-bottom:8px">Run all 100 strategies on cached data (takes ~60s).</p>
+                <button class="btn btn-primary" onclick="runAllBacktests()">▶️ Run All 100 Strategies</button>
+            </div>
+            <div>
+                <h4 style="color:#4488ff;margin-bottom:8px">Step 3: Tournament</h4>
+                <p style="color:#888;font-size:.85em;margin-bottom:8px">Eliminate losers, rank winners by composite score.</p>
+                <button class="btn btn-primary" onclick="runTournament()">🏆 Run Tournament</button>
+            </div>
+            <div>
+                <h4 style="color:#4488ff;margin-bottom:8px">Step 4: Live Scan</h4>
+                <p style="color:#888;font-size:.85em;margin-bottom:8px">Run winning strategies on current data → Pro Signals.</p>
+                <button class="btn btn-primary" onclick="runLiveScan()">🎯 Live Scan → Signals</button>
+            </div>
+        </div>
+    </div>
+    <div class="card" style="margin-top:12px">
+        <h3>📊 Run Individual Batches</h3>
+        <div id="batchButtons" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+        <h3>📝 Operation Log</h3>
+        <div id="opLog" style="max-height:400px;overflow-y:auto;font-family:monospace;font-size:.8em;color:#888;background:#0a0a15;padding:10px;border-radius:6px"></div>
+    </div>
+</div>
+
+</div>
+
+<script>
+var API = '/findcryptopairs/api/pro_signal_engine.php';
+// Detect if running on localhost
+if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+    API = '/findcryptopairs/api/pro_signal_engine.php';
+}
+var allStrategyResults = [];
+
+// Tab switching
+document.querySelectorAll('.tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+        document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active')});
+        tab.classList.add('active');
+        document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    });
+});
+
+function log(msg) {
+    var el = document.getElementById('opLog');
+    var ts = new Date().toLocaleTimeString();
+    el.innerHTML = '<div>[' + ts + '] ' + msg + '</div>' + el.innerHTML;
+}
+
+function apiFetch(action, params, cb) {
+    var url = API + '?action=' + action;
+    if (params) url += '&' + params;
+    log('Calling: ' + action + (params ? ' (' + params + ')' : ''));
+    fetch(url).then(function(r){return r.json()}).then(function(data){
+        if (!data.ok) log('❌ Error: ' + (data.error || 'Unknown'));
+        else log('✅ ' + action + ' completed' + (data.elapsed_ms ? ' in ' + data.elapsed_ms + 'ms' : ''));
+        cb(data);
+    }).catch(function(err){
+        log('❌ Fetch error: ' + err.message);
+        cb({ok:false, error:err.message});
+    });
+}
+
+// Status
+function loadStatus() {
+    apiFetch('status', '', function(d) {
+        if (!d.ok) return;
+        var ci = d.cached_data || [];
+        var bt = d.backtest_info || {};
+        var ti = d.tournament_info || {};
+        var si = d.active_signals || {};
+        document.getElementById('systemStatus').innerHTML =
+            'Cached: ' + ci.length + ' pair/tf combos | ' +
+            'Backtests: ' + (bt.total_runs||0) + ' runs across ' + (bt.strats||0) + ' strategies | ' +
+            'Signals: ' + (si.active||0) + ' active';
+    });
+}
+
+// Signals
+function loadSignals() {
+    apiFetch('signals', '', function(d) {
+        if (!d.ok) return;
+        var s = d.active_signals || [];
+        var h = d.history || [];
+        var st = d.stats || {};
+
+        document.getElementById('sActive').textContent = s.length;
+        document.getElementById('sWinRate').textContent = (st.win_rate||0) + '%';
+        var avgPnl = parseFloat(st.avg_pnl||0);
+        var pnlEl = document.getElementById('sAvgPnl');
+        pnlEl.textContent = (avgPnl >= 0 ? '+' : '') + avgPnl.toFixed(2) + '%';
+        pnlEl.className = 'value ' + (avgPnl >= 0 ? 'green' : 'red');
+
+        // Active signals
+        var html = '';
+        if (s.length === 0) {
+            html = '<div class="card" style="text-align:center;color:#666;padding:40px">No active signals. Run a Live Scan to generate signals from winning strategies.</div>';
+        }
+        s.forEach(function(sig) {
+            var pnl = parseFloat(sig.pnl_pct||0);
+            html += '<div class="signal-card">' +
+                '<div style="display:flex;justify-content:space-between;align-items:center">' +
+                    '<div><span class="pair">' + sig.pair + '</span> <span class="badge badge-pro">PRO SIGNAL</span></div>' +
+                    '<div class="confidence ' + (sig.confidence >= 70 ? 'gold' : 'orange') + '">' + sig.confidence + '%</div>' +
+                '</div>' +
+                '<div class="grid4" style="margin-top:12px">' +
+                    '<div><span style="color:#888;font-size:.75em">ENTRY</span><br><b>' + fmtPrice(sig.entry_price) + '</b></div>' +
+                    '<div><span style="color:#888;font-size:.75em">TARGET</span><br><b class="green">' + fmtPrice(sig.tp_price) + ' (+' + parseFloat(sig.tp_pct).toFixed(1) + '%)</b></div>' +
+                    '<div><span style="color:#888;font-size:.75em">STOP</span><br><b class="red">' + fmtPrice(sig.sl_price) + ' (-' + parseFloat(sig.sl_pct).toFixed(1) + '%)</b></div>' +
+                    '<div><span style="color:#888;font-size:.75em">P&L</span><br><b class="' + (pnl>=0?'green':'red') + '">' + (pnl>=0?'+':'') + pnl.toFixed(2) + '%</b></div>' +
+                '</div>' +
+                '<div style="margin-top:8px"><span style="color:#888;font-size:.75em">CONFLUENCE</span>: <b>' + sig.confluence + ' strategies agree</b></div>' +
+                '<div class="strategies">' + sig.reasoning + '</div>' +
+                '<div style="color:#555;font-size:.75em;margin-top:5px">Created: ' + sig.created_at + '</div>' +
+            '</div>';
+        });
+        document.getElementById('signalList').innerHTML = html;
+
+        // History
+        var hhtml = '<table><tr><th>Pair</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Confidence</th><th>Reason</th><th>Date</th></tr>';
+        h.forEach(function(r) {
+            var pnl = parseFloat(r.pnl_pct||0);
+            hhtml += '<tr><td>' + r.pair + '</td><td>' + fmtPrice(r.entry_price) + '</td><td>' + fmtPrice(r.exit_price) + '</td>' +
+                '<td class="' + (pnl>=0?'green':'red') + '">' + (pnl>=0?'+':'') + pnl.toFixed(2) + '%</td>' +
+                '<td>' + r.confidence + '%</td>' +
+                '<td><span class="badge ' + (r.exit_reason==='TP_HIT'?'badge-win':'badge-loss') + '">' + r.exit_reason + '</span></td>' +
+                '<td>' + r.created_at + '</td></tr>';
+        });
+        hhtml += '</table>';
+        document.getElementById('signalHistory').innerHTML = hhtml;
+    });
+}
+
+function runLiveScan() {
+    log('🔍 Running live scan with winning strategies...');
+    apiFetch('live_scan', '', function(d) {
+        if (!d.ok) { log('❌ Live scan failed'); return; }
+        log('🎯 Found ' + d.pro_signals + ' pro signals from ' + d.pairs_scanned + ' pairs');
+        loadSignals();
+    });
+}
+
+function monitorSignals() {
+    apiFetch('monitor', '', function(d) {
+        if (!d.ok) return;
+        log('📡 Checked ' + d.checked + ' signals: ' + d.resolved + ' resolved, ' + d.still_open + ' still open');
+        loadSignals();
+    });
+}
+
+// Operations
+function fetchData(tf) {
+    log('📥 Fetching OHLCV data (tf=' + tf + ')...');
+    apiFetch('fetch_data', 'tf=' + tf, function(d) {
+        if (!d.ok) return;
+        log('📥 Fetched data for ' + d.pairs_fetched + ' pairs');
+        loadStatus();
+    });
+}
+
+function runAllBacktests() {
+    log('▶️ Running all 100 strategies across all pairs...');
+    document.getElementById('opLog').innerHTML = '<div style="color:#ffd700">⏳ Running all backtests... this may take 60-90 seconds...</div>' + document.getElementById('opLog').innerHTML;
+    apiFetch('run_all', '', function(d) {
+        if (!d.ok) { log('❌ Backtest run failed'); return; }
+        log('✅ Completed ' + d.total_backtests + ' backtests across ' + d.total_pairs + ' pairs');
+        loadStatus();
+        loadStrategies();
+    });
+}
+
+function runBatch(b) {
+    apiFetch('run_batch', 'batch=' + b, function(d) {
+        if (!d.ok) return;
+        log('✅ Batch ' + b + ': ' + d.results_count + ' results');
+    });
+}
+
+function runTournament() {
+    log('🏆 Running tournament elimination...');
+    apiFetch('tournament', '', function(d) {
+        if (!d.ok) return;
+        log('🏆 Tournament complete: ' + d.final_survivors + ' survivors from ' + d.total_strategies + ' strategies');
+        displayTournament(d);
+    });
+}
+
+function displayTournament(d) {
+    var html = '';
+    (d.rounds || []).forEach(function(r) {
+        html += '<div class="round-card">' +
+            '<h4>Round ' + r.round + ': ' + r.name + '</h4>' +
+            '<div style="margin-top:5px">' +
+                '<span class="survivors">✅ ' + r.survivors + ' survived</span>' +
+                (r.eliminated !== undefined ? ' | <span class="eliminated">❌ ' + r.eliminated + ' eliminated</span>' : '') +
+            '</div>';
+        if (r.top_15) {
+            html += '<table style="margin-top:8px"><tr><th>Rank</th><th>Strategy</th><th>Category</th><th>Score</th><th>Win Rate</th><th>PF</th><th>Sharpe</th><th>DD</th><th>Trades</th></tr>';
+            r.top_15.forEach(function(s) {
+                html += '<tr><td><b class="gold">#' + s.rank + '</b></td><td>' + s.sname + '</td><td><span class="badge badge-' + s.scat + '">' + s.scat + '</span></td>' +
+                    '<td class="gold">' + s.composite_score + '</td>' +
+                    '<td class="' + (parseFloat(s.avg_wr)>=50?'green':'orange') + '">' + parseFloat(s.avg_wr).toFixed(1) + '%</td>' +
+                    '<td>' + parseFloat(s.avg_pf).toFixed(2) + '</td>' +
+                    '<td>' + parseFloat(s.avg_sharpe).toFixed(2) + '</td>' +
+                    '<td class="' + (parseFloat(s.avg_dd)>20?'red':'green') + '">' + parseFloat(s.avg_dd).toFixed(1) + '%</td>' +
+                    '<td>' + s.total_trades + '</td></tr>';
+            });
+            html += '</table>';
+        }
+        html += '</div>';
+    });
+    document.getElementById('tournamentRounds').innerHTML = html;
+
+    // Top 15
+    if (d.top_15 && d.top_15.length > 0) {
+        var t15 = '<table><tr><th>#</th><th>Strategy</th><th>Category</th><th>Composite</th><th>WR%</th><th>PF</th><th>Sharpe</th><th>Return</th><th>MaxDD</th><th>Trades</th></tr>';
+        d.top_15.forEach(function(s) {
+            t15 += '<tr><td class="gold"><b>' + s.rank + '</b></td><td><b>' + s.sname + '</b></td><td><span class="badge badge-' + s.scat + '">' + s.scat + '</span></td>' +
+                '<td class="gold"><b>' + s.composite_score + '</b></td>' +
+                '<td class="' + (parseFloat(s.avg_wr)>=50?'green':'orange') + '">' + parseFloat(s.avg_wr).toFixed(1) + '%</td>' +
+                '<td>' + parseFloat(s.avg_pf).toFixed(2) + '</td>' +
+                '<td>' + parseFloat(s.avg_sharpe).toFixed(2) + '</td>' +
+                '<td class="' + (parseFloat(s.avg_ret)>=0?'green':'red') + '">' + parseFloat(s.avg_ret).toFixed(2) + '%</td>' +
+                '<td class="' + (parseFloat(s.avg_dd)>20?'red':'green') + '">' + parseFloat(s.avg_dd).toFixed(1) + '%</td>' +
+                '<td>' + s.total_trades + '</td></tr>';
+        });
+        t15 += '</table>';
+        document.getElementById('top15').innerHTML = t15;
+    }
+}
+
+// Strategies
+function loadStrategies() {
+    apiFetch('audit', '', function(d) {
+        if (!d.ok) return;
+        allStrategyResults = d.strategy_detail || [];
+        filterStrategies();
+    });
+}
+
+function filterStrategies() {
+    var cat = document.getElementById('catFilter').value;
+    var sort = document.getElementById('sortBy').value;
+    var data = allStrategyResults.slice();
+
+    if (cat) data = data.filter(function(s){ return s.scat === cat; });
+    data.sort(function(a,b){ return parseFloat(b[sort]||0) - parseFloat(a[sort]||0); });
+
+    var html = '<table><tr><th>ID</th><th>Strategy</th><th>Category</th><th>Pair</th><th>Win%</th><th>PF</th><th>Sharpe</th><th>Return</th><th>MaxDD</th><th>Trades</th></tr>';
+    data.forEach(function(s) {
+        var wr = parseFloat(s.win_rate||0);
+        var pf = parseFloat(s.profit_factor||0);
+        html += '<tr><td>' + s.sid + '</td><td>' + s.sname + '</td>' +
+            '<td><span class="badge badge-' + s.scat + '">' + s.scat + '</span></td>' +
+            '<td>' + s.pair + '</td>' +
+            '<td class="' + (wr>=50?'green':wr>=40?'orange':'red') + '">' + wr.toFixed(1) + '%</td>' +
+            '<td class="' + (pf>=1.5?'green':pf>=1?'orange':'red') + '">' + pf.toFixed(2) + '</td>' +
+            '<td>' + parseFloat(s.sharpe||0).toFixed(2) + '</td>' +
+            '<td class="' + (parseFloat(s.total_ret||0)>=0?'green':'red') + '">' + parseFloat(s.total_ret||0).toFixed(2) + '%</td>' +
+            '<td class="' + (parseFloat(s.max_dd||0)>20?'red':'green') + '">' + parseFloat(s.max_dd||0).toFixed(1) + '%</td>' +
+            '<td>' + s.trades + '</td></tr>';
+    });
+    html += '</table>';
+    document.getElementById('strategyTable').innerHTML = html;
+}
+
+// Audit
+function loadAudit() {
+    apiFetch('audit', '', function(d) {
+        if (!d.ok) return;
+        allStrategyResults = d.strategy_detail || [];
+        filterStrategies();
+
+        var html = '';
+        if (d.tournament_id) {
+            html += '<div class="card"><h3>Tournament: ' + d.tournament_id + '</h3>';
+            for (var rnd = 1; rnd <= 5; rnd++) {
+                var entries = d.rounds[rnd] || [];
+                if (entries.length === 0) continue;
+                var survived = entries.filter(function(e){return e.action==='SURVIVED'||e.action==='WINNER'||e.action==='RANKED'});
+                var eliminated = entries.filter(function(e){return e.action==='ELIMINATED'});
+                html += '<div class="round-card"><h4>Round ' + rnd + '</h4>' +
+                    '<div class="survivors">Survived: ' + survived.length + '</div>' +
+                    '<div class="eliminated">Eliminated: ' + eliminated.length + '</div>';
+                if (eliminated.length > 0) {
+                    html += '<details style="margin-top:5px"><summary style="cursor:pointer;color:#888">Show eliminated</summary><ul style="margin:5px 0 0 15px;font-size:.8em">';
+                    eliminated.forEach(function(e){ html += '<li style="color:#ff4444">' + e.sname + ' — ' + e.reason + '</li>'; });
+                    html += '</ul></details>';
+                }
+                if (rnd === 5) {
+                    var winners = entries.filter(function(e){return e.action==='WINNER'});
+                    if (winners.length > 0) {
+                        html += '<div style="margin-top:8px"><b class="gold">Winners:</b><ul style="margin:5px 0 0 15px;font-size:.85em">';
+                        winners.forEach(function(e){ html += '<li class="green"><b>' + e.sname + '</b> — Score: ' + parseFloat(e.score).toFixed(2) + ' — ' + e.reason + '</li>'; });
+                        html += '</ul></div>';
+                    }
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+        }
+
+        // Signal audit
+        var sigs = d.signal_audit || [];
+        if (sigs.length > 0) {
+            html += '<div class="card"><h3>Signal Audit Trail</h3><table><tr><th>ID</th><th>Pair</th><th>Type</th><th>Entry</th><th>TP</th><th>SL</th><th>Conf%</th><th>Confl</th><th>Status</th><th>P&L</th><th>Reason</th><th>Created</th></tr>';
+            sigs.forEach(function(s) {
+                var pnl = parseFloat(s.pnl_pct||0);
+                html += '<tr><td>' + s.id + '</td><td>' + s.pair + '</td><td>' + s.sig_type + '</td>' +
+                    '<td>' + fmtPrice(s.entry_price) + '</td><td>' + fmtPrice(s.tp_price) + '</td><td>' + fmtPrice(s.sl_price) + '</td>' +
+                    '<td>' + s.confidence + '</td><td>' + s.confluence + '</td>' +
+                    '<td><span class="badge ' + (s.status==='ACTIVE'?'badge-active':'') + (s.exit_reason==='TP_HIT'?'badge-win':'') + (s.exit_reason==='SL_HIT'?'badge-loss':'') + '">' + s.status + '</span></td>' +
+                    '<td class="' + (pnl>=0?'green':'red') + '">' + (pnl>=0?'+':'') + pnl.toFixed(2) + '%</td>' +
+                    '<td>' + (s.exit_reason||'—') + '</td><td>' + s.created_at + '</td></tr>';
+            });
+            html += '</table></div>';
+        }
+
+        document.getElementById('auditContent').innerHTML = html || '<div style="text-align:center;color:#666;padding:40px">No audit data yet. Run the tournament first.</div>';
+    });
+}
+
+function fmtPrice(p) {
+    var v = parseFloat(p);
+    if (v === 0) return '--';
+    if (v < 0.001) return v.toExponential(4);
+    if (v < 1) return v.toFixed(6);
+    if (v < 100) return v.toFixed(4);
+    return v.toFixed(2);
+}
+
+// Init batch buttons
+(function(){
+    var html = '';
+    for (var i = 1; i <= 10; i++) {
+        html += '<button class="btn btn-secondary btn-sm" onclick="runBatch(' + i + ')">Batch ' + i + ' (Strats ' + ((i-1)*10+1) + '-' + (i*10) + ')</button>';
+    }
+    document.getElementById('batchButtons').innerHTML = html;
+})();
+
+// Load on init
+loadStatus();
+loadSignals();
+loadStrategies();
+</script>
+</body>
+</html>

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crypto Pairs Scanner | Multi-Asset Intelligence</title>
+  <title>Crypto Intelligence Hub | Multi-Engine Scanner</title>
   <style>
     :root {
       --bg: #0a0a12;
@@ -17,306 +17,238 @@
       --gold: #f59e0b;
       --accent: #6366f1;
       --cyan: #06b6d4;
+      --purple: #a855f7;
+      --orange: #f97316;
       --radius: 12px
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh }
+    a { color: #88aaff; text-decoration: none }
+    a:hover { text-decoration: underline }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh
-    }
+    .header { text-align: center; padding: 36px 20px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.06) }
+    .header h1 { font-size: 28px; font-weight: 200; letter-spacing: 4px; text-transform: uppercase; color: #fff; margin-bottom: 6px }
+    .header .sub { color: var(--dim); font-size: 13px; margin-top: 6px }
+    .live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--green); margin-right: 4px; animation: pulse 2s infinite }
+    @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
+    .live-bar { font-size: 11px; color: var(--dim); margin-top: 8px }
 
-    a {
-      color: #88aaff;
-      text-decoration: none
-    }
+    .nav { display: flex; gap: 6px; justify-content: center; padding: 14px 12px; flex-wrap: wrap }
+    .nav a { font-size: 11px; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); color: var(--dim); transition: all 0.15s; background: var(--card) }
+    .nav a:hover, .nav a.active { border-color: var(--accent); color: var(--accent); text-decoration: none; background: rgba(99, 102, 241, 0.08) }
 
-    a:hover {
-      text-decoration: underline
-    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px }
 
-    .header {
-      text-align: center;
-      padding: 40px 20px 24px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06)
-    }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 22px }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; text-align: center }
+    .stat-card .label { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px }
+    .stat-card .value { font-size: 24px; font-weight: 700 }
 
-    .header h1 {
-      font-size: 32px;
-      font-weight: 200;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: #fff;
-      margin-bottom: 8px
-    }
+    .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--dim); margin-bottom: 12px; margin-top: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border) }
 
-    .header .sub {
-      color: var(--dim);
-      font-size: 14px;
-      margin-top: 6px
-    }
-
-    .nav {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      padding: 20px;
-      flex-wrap: wrap
-    }
-
-    .nav a {
-      font-size: 13px;
-      padding: 8px 18px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      color: var(--dim);
-      transition: all 0.15s;
-      background: var(--card)
-    }
-
-    .nav a:hover,
-    .nav a.active {
-      border-color: var(--accent);
-      color: var(--accent);
-      text-decoration: none;
-      background: rgba(99, 102, 241, 0.08)
-    }
-
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 30px 20px
-    }
-
-    .intro {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 30px;
-      margin-bottom: 30px;
-      line-height: 1.7
-    }
-
-    .intro h2 {
-      font-size: 22px;
-      font-weight: 600;
-      margin-bottom: 16px;
-      color: #fff
-    }
-
-    .intro p {
-      font-size: 14px;
-      color: var(--text);
-      margin-bottom: 12px
-    }
-
-    .intro p:last-child {
-      margin-bottom: 0
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 30px
-    }
-
-    .stat-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      text-align: center
-    }
-
-    .stat-card .label {
-      font-size: 12px;
-      color: var(--dim);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 8px
-    }
-
-    .stat-card .value {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--accent)
-    }
-
-    .links-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px
-    }
-
-    .link-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      transition: all 0.2s;
-      cursor: pointer
-    }
-
-    .link-card:hover {
-      border-color: var(--accent);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15)
-    }
-
-    .link-card h3 {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: #fff
-    }
-
-    .link-card p {
-      font-size: 13px;
-      color: var(--dim);
-      margin-bottom: 12px;
-      line-height: 1.6
-    }
-
-    .link-card .link-btn {
-      display: inline-block;
-      padding: 8px 16px;
-      background: var(--accent);
-      color: #fff;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px
-    }
-
-    .link-card .link-btn:hover {
-      background: #4f46e5;
-      text-decoration: none
-    }
+    .links-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 28px }
+    .link-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; transition: all 0.2s; cursor: pointer; position: relative; overflow: hidden }
+    .link-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 20px rgba(99, 102, 241, 0.12) }
+    .link-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: #fff }
+    .link-card p { font-size: 12px; color: var(--dim); margin-bottom: 10px; line-height: 1.6 }
+    .link-card .link-btn { display: inline-block; padding: 6px 14px; background: var(--accent); color: #fff; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px }
+    .link-card .link-btn:hover { background: #4f46e5; text-decoration: none }
+    .link-card .live-stat { font-size: 11px; margin-top: 8px; padding: 6px 10px; background: rgba(255,255,255,0.03); border-radius: 8px; line-height: 1.6 }
+    .link-card .live-stat .k { color: var(--dim) }
+    .link-card .live-stat .v { font-weight: 700 }
+    .badge { font-size: 9px; padding: 2px 7px; border-radius: 4px; font-weight: 700; margin-left: 6px; display: inline-block; vertical-align: middle }
+    .badge-new { background: var(--green); color: #000 }
+    .badge-hot { background: var(--gold); color: #000 }
+    .badge-live { background: var(--orange); color: #fff }
+    .badge-ai { background: var(--purple); color: #fff }
 
     @media(max-width:600px) {
-      .header h1 {
-        font-size: 24px
-      }
-
-      .stats-grid,
-      .links-grid {
-        grid-template-columns: 1fr
-      }
+      .header h1 { font-size: 22px }
+      .stats-grid { grid-template-columns: repeat(2, 1fr) }
+      .links-grid { grid-template-columns: 1fr }
     }
   </style>
 </head>
 
 <body>
   <div class="header">
-    <h1>Crypto Pairs Scanner</h1>
-    <div class="sub">Multi-factor momentum scanner across 600+ crypto pairs</div>
+    <h1>Crypto Intelligence Hub</h1>
+    <div class="sub">Multi-engine scanner across 600+ crypto pairs &bull; 100+ strategies &bull; 10 competing algorithms</div>
+    <div class="live-bar"><span class="live-dot"></span> Systems active &mdash; <span id="systemBar">Loading live stats...</span></div>
   </div>
   <div class="nav">
+    <a href="/findcryptopairs/" class="active">Hub</a>
+    <a href="/findcryptopairs/pump-watch.html" style="border-color:rgba(249,115,22,0.4);color:var(--orange)">Pump Watch</a>
+    <a href="/findcryptopairs/backtest-arena.html">Backtest Arena</a>
+    <a href="/findcryptopairs/algo-competition.html">Algo Battle</a>
+    <a href="/findcryptopairs/ai-predictions.html">AI Predictions</a>
+    <a href="/findcryptopairs/predictions.html">Prediction Log</a>
     <a href="/findcryptopairs/winners.html">Winner Scanner</a>
     <a href="/findcryptopairs/meme.html">Meme Scanner</a>
-    <a href="/findcryptopairs/btcc-scanner.html">⚡ BTCC Scanner</a>
-    <a href="/findcryptopairs/pro-signals.html" style="border-color:rgba(255,107,53,0.4);color:#ff6b35">Pro Signals</a>
-    <a href="/findcryptopairs/alpha-hunter.html" style="border-color:rgba(255,215,0,0.4);color:#ffd700">Alpha Hunter</a>
-    <a href="/findcryptopairs/portfolio/">Portfolio Analysis</a>
-    <a href="/findcryptopairs/portfolio/stats/">Portfolio Stats</a>
+    <a href="/findcryptopairs/btcc-scanner.html">BTCC Scanner</a>
+    <a href="/findcryptopairs/pro-signals.html">Pro Signals</a>
+    <a href="/findcryptopairs/alpha-hunter.html">Alpha Hunter</a>
     <a href="/live-monitor/live-monitor.html">Live Monitor</a>
-    <a href="/investments/">Investment Hub</a>
     <a href="/">&larr; Home</a>
   </div>
-  <div class="container">
-    <div class="intro">
-      <h2>About the Crypto Pairs Scanner</h2>
-      <p>The Crypto Pairs Scanner analyzes <strong>15 major cryptocurrency pairs</strong> using <strong>10 independent
-          trading strategies</strong> to identify high-probability momentum setups.</p>
-      <p>Each strategy combines multiple technical indicators including momentum, volume, RSI, moving averages, MACD,
-        price patterns, and breakout proximity. Only pairs scoring 70+ out of 100 across multiple indicators are flagged
-        as winners.</p>
-      <p>All signals are tracked and outcomes are publicly verifiable. The scanner runs every 15 minutes, 24/7,
-        providing real-time opportunities across the crypto market.</p>
-    </div>
 
+  <div class="container">
+    <!-- Live Stats Row -->
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="label">Crypto Pairs</div>
-        <div class="value">55+</div>
+        <div class="label">Pairs Scanned</div>
+        <div class="value" style="color:var(--accent)">600+</div>
       </div>
       <div class="stat-card">
-        <div class="label">Trading Strategies</div>
-        <div class="value">100+</div>
+        <div class="label">Strategies</div>
+        <div class="value" style="color:var(--accent)">100+</div>
       </div>
       <div class="stat-card">
-        <div class="label">Scan Frequency</div>
-        <div class="value">15min</div>
+        <div class="label">Pump Watch WR</div>
+        <div class="value" style="color:var(--green)" id="pumpWR">--</div>
       </div>
       <div class="stat-card">
-        <div class="label">Pump Events Studied</div>
-        <div class="value">405</div>
+        <div class="label">Pump Watch PnL</div>
+        <div class="value" id="pumpPnL">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Active Picks</div>
+        <div class="value" style="color:var(--cyan)" id="activePicks">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Pumps Studied</div>
+        <div class="value" style="color:var(--gold)">3,375</div>
       </div>
     </div>
 
+    <!-- FEATURED: Pump Watch -->
+    <div class="section-title">Featured Engine</div>
     <div class="links-grid">
-      <div class="link-card" onclick="window.location.href='/findcryptopairs/btcc-scanner.html'"
-        style="border-color:rgba(59,130,246,0.3)">
-        <h3>⚡ BTCC Volatility Scanner <span
-            style="font-size:11px;background:#3b82f6;color:#fff;padding:2px 8px;border-radius:4px;margin-left:6px">NEW</span>
-        </h3>
-        <p>Real-time volatility ranking for 90+ BTCC futures pairs with automated TP/SL targets, R:R ratios, and
-          AI-scored trading signals. Auto-refreshes every 60s.</p>
-        <a href="/findcryptopairs/btcc-scanner.html" class="link-btn">Launch Scanner →</a>
+      <div class="link-card" onclick="window.location.href='/findcryptopairs/pump-watch.html'" style="border-color:rgba(249,115,22,0.4);grid-column:1/-1">
+        <h3>Pump Watch &mdash; Reverse-Engineered Signals <span class="badge badge-new">NEW</span> <span class="badge badge-live">LIVE</span></h3>
+        <p>Scanned 616 Kraken pairs across 2 years. Found <strong>3,375 verified pump episodes</strong> (50%+ in 7 days). Filtered out 59 rug pulls. Extracted the pre-pump fingerprint and built an 8-component scoring model. Currently scoring 231 live pairs every 4 hours via GitHub Actions.</p>
+        <div class="live-stat" id="pumpLiveStat">
+          <span class="k">Loading live data...</span>
+        </div>
+        <br>
+        <a href="/findcryptopairs/pump-watch.html" class="link-btn" style="background:var(--orange)">Open Pump Watch &rarr;</a>
       </div>
-      <div class="link-card" onclick="window.location.href='/findcryptopairs/alpha-hunter.html'"
-        style="border-color:rgba(255,215,0,0.3)">
-        <h3>Alpha Hunter <span
-            style="font-size:11px;background:#ffd700;color:#000;padding:2px 8px;border-radius:4px;margin-left:6px">NEW</span>
-        </h3>
-        <p>Reverse-engineers past pump winners to extract the common pre-pump fingerprint, then scans 55+ Kraken pairs
-          for that exact pattern. Refreshed every 30 min by GitHub Actions.</p>
-        <a href="/findcryptopairs/alpha-hunter.html" class="link-btn" style="background:#ffd700;color:#000">Launch Hunter →</a>
+    </div>
+
+    <!-- RESEARCH & STRATEGY ENGINES -->
+    <div class="section-title">Research &amp; Strategy Engines</div>
+    <div class="links-grid">
+      <div class="link-card" onclick="window.location.href='/findcryptopairs/backtest-arena.html'" style="border-color:rgba(168,85,247,0.3)">
+        <h3>Backtest Arena <span class="badge badge-hot">100 STRATS</span></h3>
+        <p>100 strategies backtested across volatile Kraken pairs on multiple timeframes. Tournament elimination to find top performers. High-certainty picks from multi-strategy confluence.</p>
+        <a href="/findcryptopairs/backtest-arena.html" class="link-btn" style="background:var(--purple)">View Arena &rarr;</a>
       </div>
-      <div class="link-card" onclick="window.location.href='/findcryptopairs/pro-signals.html'"
-        style="border-color:rgba(255,107,53,0.3)">
-        <h3>Pro Signal Engine <span
-            style="font-size:11px;background:#ff6b35;color:#fff;padding:2px 8px;border-radius:4px;margin-left:6px">100 Strategies</span>
-        </h3>
-        <p>Backtests 100 strategies across volatile Kraken pairs, runs tournament elimination, and generates confluence
-          signals from winning strategies. Full audit trail.</p>
-        <a href="/findcryptopairs/pro-signals.html" class="link-btn" style="background:#ff6b35">Launch Engine →</a>
+      <div class="link-card" onclick="window.location.href='/findcryptopairs/algo-competition.html'" style="border-color:rgba(6,182,212,0.3)">
+        <h3>Algorithm Battle Royale <span class="badge badge-ai">10 ALGOS</span></h3>
+        <p>10 algorithms (5 academic, 5 social media) competing head-to-head on live predictions. Includes RSI Mean Reversion, MACD Crossover, Bollinger Breakout, Ichimoku Cloud, Multi-Confluence, and more. Full leaderboard &amp; consensus analysis.</p>
+        <a href="/findcryptopairs/algo-competition.html" class="link-btn" style="background:var(--cyan)">View Battle &rarr;</a>
+      </div>
+      <div class="link-card" onclick="window.location.href='/findcryptopairs/pro-signals.html'" style="border-color:rgba(255,107,53,0.3)">
+        <h3>Pro Signal Engine <span class="badge" style="background:#ff6b35;color:#fff">SIGNALS</span></h3>
+        <p>Tournament-style strategy elimination with full audit trail. Generates confluence signals from winning strategies that survived backtesting.</p>
+        <a href="/findcryptopairs/pro-signals.html" class="link-btn" style="background:#ff6b35">Launch Engine &rarr;</a>
+      </div>
+      <div class="link-card" onclick="window.location.href='/findcryptopairs/alpha-hunter.html'" style="border-color:rgba(255,215,0,0.3)">
+        <h3>Alpha Hunter</h3>
+        <p>Reverse-engineers past pump winners to extract the common pre-pump fingerprint, then scans 55+ Kraken pairs for that exact pattern. Auto-refreshed by GitHub Actions.</p>
+        <a href="/findcryptopairs/alpha-hunter.html" class="link-btn" style="background:#ffd700;color:#000">Launch Hunter &rarr;</a>
+      </div>
+    </div>
+
+    <!-- AI PREDICTIONS -->
+    <div class="section-title">AI Predictions &amp; Tracking</div>
+    <div class="links-grid">
+      <div class="link-card" onclick="window.location.href='/findcryptopairs/ai-predictions.html'">
+        <h3>AI Personal Predictions <span class="badge badge-ai">AI</span></h3>
+        <p>AI-generated price predictions with confidence scores, TP/SL targets, and thesis. Tracked and scored automatically against real market outcomes.</p>
+        <a href="/findcryptopairs/ai-predictions.html" class="link-btn">View Predictions &rarr;</a>
+      </div>
+      <div class="link-card" onclick="window.location.href='/findcryptopairs/predictions.html'">
+        <h3>Prediction Tracker</h3>
+        <p>Full prediction log with entry/exit tracking, outcome verification, and historical performance stats.</p>
+        <a href="/findcryptopairs/predictions.html" class="link-btn">View Log &rarr;</a>
+      </div>
+    </div>
+
+    <!-- SCANNERS -->
+    <div class="section-title">Live Scanners</div>
+    <div class="links-grid">
+      <div class="link-card" onclick="window.location.href='/findcryptopairs/btcc-scanner.html'" style="border-color:rgba(59,130,246,0.3)">
+        <h3>BTCC Volatility Scanner</h3>
+        <p>Real-time volatility ranking for 90+ BTCC futures pairs with automated TP/SL targets, R:R ratios, and AI-scored signals. Auto-refreshes every 60s.</p>
+        <a href="/findcryptopairs/btcc-scanner.html" class="link-btn">Launch Scanner &rarr;</a>
       </div>
       <div class="link-card" onclick="window.location.href='/findcryptopairs/winners.html'">
         <h3>Winner Scanner</h3>
-        <p>Multi-factor momentum scanner identifying crypto pairs with strong bullish confluence across 7 technical
-          indicators.</p>
-        <a href="/findcryptopairs/winners.html" class="link-btn">View Winners →</a>
+        <p>Multi-factor momentum scanner identifying crypto pairs with strong bullish confluence across 7 technical indicators.</p>
+        <a href="/findcryptopairs/winners.html" class="link-btn">View Winners &rarr;</a>
       </div>
       <div class="link-card" onclick="window.location.href='/findcryptopairs/meme.html'">
         <h3>Meme Coin Scanner</h3>
-        <p>Specialized scanner for meme coins (DOGE, SHIB, PEPE, FLOKI) with meme-specific indicators tuned for high
-          volatility.</p>
-        <a href="/findcryptopairs/meme.html" class="link-btn">View Memes →</a>
+        <p>Specialized scanner for meme coins (DOGE, SHIB, PEPE, FLOKI, BONK) with meme-specific indicators tuned for high volatility.</p>
+        <a href="/findcryptopairs/meme.html" class="link-btn">View Memes &rarr;</a>
       </div>
       <div class="link-card" onclick="window.location.href='/findcryptopairs/portfolio/'">
         <h3>Portfolio Analysis</h3>
-        <p>Backtest trading strategies, compare scenarios, find optimal parameters, and analyze historical performance.
-        </p>
-        <a href="/findcryptopairs/portfolio/" class="link-btn">View Portfolio →</a>
-      </div>
-      <div class="link-card" onclick="window.location.href='/findcryptopairs/portfolio/stats/'">
-        <h3>Portfolio Statistics</h3>
-        <p>Detailed statistics, win rates, performance metrics, and strategy breakdowns for all crypto trading signals.
-        </p>
-        <a href="/findcryptopairs/portfolio/stats/" class="link-btn">View Stats →</a>
+        <p>Backtest strategies, compare scenarios, find optimal parameters, and analyze historical performance.</p>
+        <a href="/findcryptopairs/portfolio/" class="link-btn">View Portfolio &rarr;</a>
       </div>
     </div>
   </div>
+
+  <script>
+    var PUMP_API = '/findcryptopairs/api/pump_forensics.php';
+
+    function loadLiveStats() {
+      // Pump Watch performance
+      fetch(PUMP_API + '?action=performance')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (!d.ok) return;
+          var wr = d.win_rate || 0;
+          var pnl = d.avg_pnl || 0;
+          document.getElementById('pumpWR').textContent = wr + '%';
+          document.getElementById('pumpPnL').textContent = (pnl >= 0 ? '+' : '') + pnl + '%';
+          document.getElementById('pumpPnL').style.color = pnl >= 0 ? 'var(--green)' : 'var(--red)';
+          document.getElementById('activePicks').textContent = d.open_picks || 0;
+
+          var bar = 'Pump Watch: ' + wr + '% win rate, ' + (pnl >= 0 ? '+' : '') + pnl + '% avg PnL, ' + (d.open_picks || 0) + ' active picks';
+          if (d.best_trade && d.best_trade.pair) bar += ' | Best: ' + d.best_trade.pair.replace('USD','') + ' +' + d.best_trade.pnl_pct + '%';
+          document.getElementById('systemBar').textContent = bar;
+        }).catch(function() {});
+
+      // Pump Watch top picks
+      fetch(PUMP_API + '?action=watchlist&min_score=50')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (!d.ok || !d.picks) return;
+          var picks = d.picks;
+          var html = '';
+          var count = Math.min(picks.length, 8);
+          for (var i = 0; i < count; i++) {
+            var p = picks[i];
+            var score = parseFloat(p.pump_score) || 0;
+            var pnl = parseFloat(p.pnl_pct || 0);
+            var pnlColor = pnl > 0 ? 'var(--green)' : pnl < 0 ? 'var(--red)' : 'var(--dim)';
+            var pnlStr = pnl !== 0 ? ' <span class="v" style="color:' + pnlColor + '">' + (pnl > 0 ? '+' : '') + pnl.toFixed(1) + '%</span>' : '';
+            var pair = p.pair.replace(/^X+/,'').replace(/ZUSD$/,'').replace(/USD$/,'');
+            html += '<span class="k">' + pair + '</span> <span class="v" style="color:' + (score >= 60 ? 'var(--gold)' : 'var(--orange)') + '">' + Math.round(score) + '</span>' + pnlStr;
+            if (i < count - 1) html += ' &nbsp;&bull;&nbsp; ';
+          }
+          html += '<br><span class="k" style="font-size:10px">Showing top ' + count + ' of ' + picks.length + ' HIGH+ candidates. Updated every 4h via GitHub Actions.</span>';
+          document.getElementById('pumpLiveStat').innerHTML = html;
+        }).catch(function() {});
+    }
+
+    loadLiveStats();
+    setInterval(loadLiveStats, 300000);
+  </script>
   <script src="/findstocks/portfolio2/stock-nav.js"></script>
   <script src="/live-monitor/api/scope_labels.js"></script>
 </body>

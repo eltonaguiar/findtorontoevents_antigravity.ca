@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Algorithm Arena | 11 Algos Compete Head-to-Head</title>
+  <style>
+    :root{--bg:#0a0a1a;--card:#12122a;--border:#2a2a4a;--text:#e0e0f0;--dim:#8888aa;--green:#22c55e;--red:#ef4444;--gold:#f59e0b;--accent:#e879f9;--cyan:#06b6d4;--radius:12px}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .header{text-align:center;padding:28px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.06)}
+    .header h1{font-size:24px;font-weight:200;letter-spacing:4px;text-transform:uppercase;color:#fff}
+    .header .sub{color:var(--dim);font-size:12px;margin-top:6px}
+    .nav{display:flex;gap:8px;justify-content:center;padding:12px;flex-wrap:wrap}
+    .nav a{font-size:12px;padding:4px 14px;border-radius:20px;border:1px solid var(--border);color:var(--dim);text-decoration:none;transition:all .15s}
+    .nav a:hover,.nav a.active{border-color:var(--accent);color:var(--accent);background:rgba(232,121,249,0.08)}
+    .container{max-width:1200px;margin:0 auto;padding:16px}
+    .tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
+    .tab{padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--dim);cursor:pointer;font-size:13px;transition:all .15s}
+    .tab.active{background:rgba(232,121,249,0.12);border-color:var(--accent);color:var(--accent)}
+    .tab:hover{border-color:rgba(255,255,255,0.2)}
+    .section{display:none}
+    .section.active{display:block}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{text-align:left;padding:10px 12px;color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border)}
+    td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.04)}
+    tr:hover td{background:rgba(255,255,255,0.02)}
+    .tbl-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow-x:auto;margin-bottom:20px}
+    .algo-tag{font-size:10px;padding:2px 6px;border-radius:6px;font-weight:600;display:inline-block}
+    .tag-academic{background:rgba(6,182,212,0.15);color:var(--cyan)}
+    .tag-reddit{background:rgba(245,158,11,0.15);color:var(--gold)}
+    .tag-baseline{background:rgba(232,121,249,0.15);color:var(--accent)}
+    .pnl-pos{color:var(--green);font-weight:600}
+    .pnl-neg{color:var(--red);font-weight:600}
+    .pnl-zero{color:var(--dim)}
+    .wr-good{color:var(--green)}
+    .wr-bad{color:var(--red)}
+    .wr-none{color:var(--dim)}
+    .cons-strong{background:rgba(34,197,94,0.15);color:var(--green);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700}
+    .cons-moderate{background:rgba(245,158,11,0.15);color:var(--gold);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700}
+    .cons-weak{background:rgba(136,136,170,0.15);color:var(--dim);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700}
+    .cons-solo{background:rgba(239,68,68,0.1);color:#f87171;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700}
+    .insight-box{background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);border-radius:var(--radius);padding:16px;margin-bottom:20px;font-size:13px;line-height:1.6}
+    .insight-box strong{color:var(--cyan)}
+    .refresh-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--card);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:16px;font-size:12px}
+    .live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px;animation:pulse-dot 2s infinite}
+    @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
+    .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:20px}
+    .stat-mini{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+    .stat-mini .lbl{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+    .stat-mini .val{font-size:22px;font-weight:700;margin-top:2px}
+    .empty{text-align:center;padding:40px;color:var(--dim)}
+    .rank-1{color:var(--gold);font-weight:700}
+    .rank-2{color:#c0c0c0;font-weight:600}
+    .rank-3{color:#cd7f32;font-weight:600}
+    @media(max-width:700px){.stat-row{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Algorithm Arena</h1>
+    <div class="sub">11 algorithms. Same coins. Same market. Who wins? | Auto-refreshes every 45s</div>
+  </div>
+  <div class="nav">
+    <a href="meme.html">Meme Scanner</a>
+    <a href="predictions.html">Predictions</a>
+    <a href="competition.html" class="active">Algo Arena</a>
+  </div>
+  <div class="container">
+    <div class="refresh-bar">
+      <div><span class="live-dot"></span><span id="statusText">Loading...</span></div>
+      <div style="color:var(--dim)" id="lastUpdate">--</div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('leaderboard')">Leaderboard</div>
+      <div class="tab" onclick="switchTab('consensus')">Consensus</div>
+      <div class="tab" onclick="switchTab('current')">Current Picks</div>
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div id="leaderboard" class="section active">
+      <div class="stat-row" id="topStats"></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>Algorithm</th><th>Type</th><th>Picks</th><th>Open</th><th>W</th><th>L</th><th>Win Rate</th><th>Avg P&L</th><th>Best</th><th>Worst</th><th>Open P&L</th>
+          </tr></thead>
+          <tbody id="lbBody"><tr><td colspan="12" class="empty">Loading leaderboard...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CONSENSUS -->
+    <div id="consensus" class="section">
+      <div class="insight-box">
+        <strong>Key Question:</strong> Do coins picked by many algorithms outperform coins picked by just one?
+        If strong consensus coins (6+ algos agree) win more often, multi-algo agreement is a real signal — not noise.
+      </div>
+      <h3 style="margin-bottom:12px;font-size:15px">Performance by Consensus Level</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Consensus</th><th># Algos Agreed</th><th>Total Picks</th><th>Wins</th><th>Losses</th><th>Win Rate</th><th>Avg P&L</th><th>Open</th></tr></thead>
+          <tbody id="consTierBody"><tr><td colspan="8" class="empty">Loading...</td></tr></tbody>
+        </table>
+      </div>
+      <h3 style="margin:20px 0 12px;font-size:15px">Current Coins by Agreement</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Coin</th><th># Algos</th><th>Level</th><th>Which Algorithms</th><th>Avg P&L</th></tr></thead>
+          <tbody id="consCoinBody"><tr><td colspan="5" class="empty">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CURRENT PICKS -->
+    <div id="current" class="section">
+      <div id="currentContent"><div class="empty">Loading current picks...</div></div>
+    </div>
+  </div>
+
+  <script>
+    var API = '/findcryptopairs/api/algo_competition.php';
+    var REFRESH = 45;
+
+    function switchTab(name) {
+      var tabs = document.querySelectorAll('.tab');
+      var sections = document.querySelectorAll('.section');
+      for (var i = 0; i < tabs.length; i++) tabs[i].className = 'tab';
+      for (var j = 0; j < sections.length; j++) sections[j].className = 'section';
+      document.getElementById(name).className = 'section active';
+      var tabNames = ['leaderboard','consensus','current'];
+      for (var k = 0; k < tabNames.length; k++) {
+        if (tabNames[k] === name) tabs[k].className = 'tab active';
+      }
+    }
+
+    function pnlClass(v) {
+      v = parseFloat(v);
+      if (isNaN(v)) return 'pnl-zero';
+      return v > 0 ? 'pnl-pos' : (v < 0 ? 'pnl-neg' : 'pnl-zero');
+    }
+    function pnlFmt(v) {
+      v = parseFloat(v);
+      if (isNaN(v)) return '--';
+      return (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+    }
+    function typeTag(t) {
+      var cls = 'tag-' + (t || 'baseline');
+      return '<span class="algo-tag ' + cls + '">' + (t || '?').toUpperCase() + '</span>';
+    }
+    function wrClass(wr) {
+      wr = parseFloat(wr);
+      if (isNaN(wr) || wr === 0) return 'wr-none';
+      return wr >= 50 ? 'wr-good' : 'wr-bad';
+    }
+    function consClass(cnt) {
+      cnt = parseInt(cnt);
+      if (cnt >= 6) return 'cons-strong';
+      if (cnt >= 4) return 'cons-moderate';
+      if (cnt >= 2) return 'cons-weak';
+      return 'cons-solo';
+    }
+    function consLabel(cnt) {
+      cnt = parseInt(cnt);
+      if (cnt >= 6) return 'STRONG';
+      if (cnt >= 4) return 'MODERATE';
+      if (cnt >= 2) return 'WEAK';
+      return 'SOLO';
+    }
+    function rankClass(i) {
+      if (i === 0) return 'rank-1';
+      if (i === 1) return 'rank-2';
+      if (i === 2) return 'rank-3';
+      return '';
+    }
+
+    function loadLeaderboard() {
+      fetch(API + '?action=leaderboard').then(function(r){return r.json()}).then(function(d) {
+        if (!d.ok) return;
+        var lb = d.leaderboard || [];
+        var html = '';
+        var totalPicks = 0, totalWins = 0, totalLosses = 0;
+        for (var i = 0; i < lb.length; i++) {
+          var a = lb[i];
+          totalPicks += parseInt(a.total);
+          totalWins += parseInt(a.wins || 0);
+          totalLosses += parseInt(a.losses || 0);
+          html += '<tr>' +
+            '<td class="' + rankClass(i) + '">#' + (i+1) + '</td>' +
+            '<td style="font-weight:600">' + a.algo_name.replace(/_/g,' ') + '</td>' +
+            '<td>' + typeTag(a.algo_type) + '</td>' +
+            '<td>' + a.total + '</td>' +
+            '<td>' + (a.open_count || 0) + '</td>' +
+            '<td style="color:var(--green)">' + (a.wins || 0) + '</td>' +
+            '<td style="color:var(--red)">' + (a.losses || 0) + '</td>' +
+            '<td class="' + wrClass(a.win_rate) + '">' + a.win_rate + '%</td>' +
+            '<td class="' + pnlClass(a.avg_pnl) + '">' + pnlFmt(a.avg_pnl) + '</td>' +
+            '<td class="pnl-pos">' + pnlFmt(a.best) + '</td>' +
+            '<td class="pnl-neg">' + pnlFmt(a.worst) + '</td>' +
+            '<td class="' + pnlClass(a.avg_open_pnl) + '">' + pnlFmt(a.avg_open_pnl) + '</td>' +
+          '</tr>';
+        }
+        document.getElementById('lbBody').innerHTML = html || '<tr><td colspan="12" class="empty">No data yet. Run a round first.</td></tr>';
+
+        var topHtml = '<div class="stat-mini"><div class="lbl">Algorithms</div><div class="val" style="color:var(--accent)">11</div></div>' +
+          '<div class="stat-mini"><div class="lbl">Total Picks</div><div class="val" style="color:var(--cyan)">' + totalPicks + '</div></div>' +
+          '<div class="stat-mini"><div class="lbl">Total Wins</div><div class="val" style="color:var(--green)">' + totalWins + '</div></div>' +
+          '<div class="stat-mini"><div class="lbl">Total Losses</div><div class="val" style="color:var(--red)">' + totalLosses + '</div></div>';
+        document.getElementById('topStats').innerHTML = topHtml;
+      }).catch(function(){});
+    }
+
+    function loadConsensus() {
+      fetch(API + '?action=consensus').then(function(r){return r.json()}).then(function(d) {
+        if (!d.ok) return;
+
+        var tiers = d.by_consensus_count || [];
+        var html = '';
+        for (var i = 0; i < tiers.length; i++) {
+          var t = tiers[i];
+          html += '<tr>' +
+            '<td><span class="' + consClass(t.consensus_count) + '">' + consLabel(t.consensus_count) + '</span></td>' +
+            '<td>' + t.consensus_count + '</td>' +
+            '<td>' + t.total + '</td>' +
+            '<td style="color:var(--green)">' + (t.wins || 0) + '</td>' +
+            '<td style="color:var(--red)">' + (t.losses || 0) + '</td>' +
+            '<td class="' + wrClass(t.win_rate) + '">' + t.win_rate + '%</td>' +
+            '<td class="' + pnlClass(t.avg_pnl) + '">' + pnlFmt(t.avg_pnl) + '</td>' +
+            '<td>' + (t.still_open || 0) + '</td>' +
+          '</tr>';
+        }
+        document.getElementById('consTierBody').innerHTML = html || '<tr><td colspan="8" class="empty">No data</td></tr>';
+
+        var coins = d.current_coins || [];
+        var chtml = '';
+        for (var j = 0; j < coins.length; j++) {
+          var c = coins[j];
+          var algos = (c.algos || '').split(',');
+          var algoTags = '';
+          for (var k = 0; k < algos.length; k++) {
+            algoTags += '<span style="font-size:10px;background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;margin:2px;display:inline-block">' + algos[k].replace(/_/g,' ') + '</span> ';
+          }
+          chtml += '<tr>' +
+            '<td style="font-weight:700;font-size:15px">' + c.symbol + '</td>' +
+            '<td><span class="' + consClass(c.consensus_count) + '">' + c.consensus_count + '/11</span></td>' +
+            '<td><span class="' + consClass(c.consensus_count) + '">' + consLabel(c.consensus_count) + '</span></td>' +
+            '<td>' + algoTags + '</td>' +
+            '<td class="' + pnlClass(c.avg_pnl) + '">' + pnlFmt(c.avg_pnl) + '</td>' +
+          '</tr>';
+        }
+        document.getElementById('consCoinBody').innerHTML = chtml || '<tr><td colspan="5" class="empty">No data</td></tr>';
+      }).catch(function(){});
+    }
+
+    function loadCurrent() {
+      fetch(API + '?action=current').then(function(r){return r.json()}).then(function(d) {
+        if (!d.ok || d.open_count === 0) {
+          document.getElementById('currentContent').innerHTML = '<div class="empty">No open picks. Run a competition round to start.</div>';
+          return;
+        }
+        var byAlgo = d.by_algo || {};
+        var html = '';
+        for (var algo in byAlgo) {
+          if (!byAlgo.hasOwnProperty(algo)) continue;
+          var picks = byAlgo[algo];
+          html += '<h3 style="margin:16px 0 8px;font-size:14px">' + algo.replace(/_/g,' ').toUpperCase() + ' <span style="color:var(--dim);font-size:12px">(' + picks.length + ' picks)</span></h3>';
+          html += '<div class="tbl-wrap"><table><thead><tr><th>Coin</th><th>Entry</th><th>Current</th><th>P&L</th><th>TP</th><th>SL</th><th>Consensus</th><th>Reason</th></tr></thead><tbody>';
+          for (var i = 0; i < picks.length; i++) {
+            var p = picks[i];
+            var pnl = parseFloat(p.pnl_pct || 0);
+            html += '<tr>' +
+              '<td style="font-weight:700">' + p.symbol + '</td>' +
+              '<td>' + parseFloat(p.entry_price).toPrecision(6) + '</td>' +
+              '<td class="' + pnlClass(pnl) + '">' + (p.current_price ? parseFloat(p.current_price).toPrecision(6) : '--') + '</td>' +
+              '<td class="' + pnlClass(pnl) + '">' + pnlFmt(pnl) + '</td>' +
+              '<td style="color:var(--green)">+' + p.tp_pct + '%</td>' +
+              '<td style="color:var(--red)">-' + p.sl_pct + '%</td>' +
+              '<td><span class="' + consClass(p.consensus_count) + '">' + p.consensus_count + '/11</span></td>' +
+              '<td style="font-size:11px;color:var(--dim);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (p.reason || '') + '</td>' +
+            '</tr>';
+          }
+          html += '</tbody></table></div>';
+        }
+        document.getElementById('currentContent').innerHTML = html;
+      }).catch(function(){});
+    }
+
+    function monitorAndRefresh() {
+      document.getElementById('statusText').textContent = 'Checking prices...';
+      fetch(API + '?action=monitor').then(function(r){return r.json()}).then(function(d) {
+        if (d.ok) {
+          document.getElementById('statusText').textContent = 'Live — ' + (d.still_open || 0) + ' predictions tracked';
+          if (d.just_resolved > 0) {
+            document.getElementById('statusText').textContent += ' (' + d.just_resolved + ' just resolved!)';
+          }
+        }
+        document.getElementById('lastUpdate').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+        loadLeaderboard();
+        loadConsensus();
+        loadCurrent();
+      }).catch(function(e) {
+        document.getElementById('statusText').textContent = 'Error: ' + e.message;
+        loadLeaderboard();
+        loadConsensus();
+        loadCurrent();
+      });
+    }
+
+    monitorAndRefresh();
+    setInterval(monitorAndRefresh, REFRESH * 1000);
+  </script>
+</body>
+</html>

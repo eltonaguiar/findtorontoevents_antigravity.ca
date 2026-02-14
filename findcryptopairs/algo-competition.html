@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Algorithm Competition | 10 Algos Battle Royale</title>
+  <style>
+    :root{--bg:#0a0a1a;--card:#12122a;--border:#2a2a4a;--text:#e0e0f0;--dim:#8888aa;--green:#22c55e;--red:#ef4444;--gold:#f59e0b;--accent:#e879f9;--cyan:#06b6d4;--purple:#a855f7;--blue:#3b82f6;--radius:12px}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .header{text-align:center;padding:32px 20px 20px;border-bottom:1px solid rgba(255,255,255,0.06)}
+    .header h1{font-size:24px;font-weight:200;letter-spacing:4px;text-transform:uppercase;color:#fff}
+    .header .sub{color:var(--dim);font-size:13px;margin-top:6px}
+    .tabs{display:flex;gap:4px;justify-content:center;padding:14px;flex-wrap:wrap}
+    .tabs button{font-size:12px;padding:6px 16px;border-radius:20px;border:1px solid var(--border);color:var(--dim);background:transparent;cursor:pointer;transition:all 0.15s}
+    .tabs button:hover,.tabs button.active{border-color:var(--purple);color:var(--purple);background:rgba(168,85,247,0.08)}
+    .nav{display:flex;gap:8px;justify-content:center;padding:0 14px 10px;flex-wrap:wrap}
+    .nav a{font-size:12px;padding:4px 14px;border-radius:20px;border:1px solid var(--border);color:var(--dim);text-decoration:none;transition:all 0.15s}
+    .nav a:hover,.nav a.active{border-color:var(--purple);color:var(--purple);background:rgba(168,85,247,0.08)}
+    .container{max-width:1200px;margin:0 auto;padding:20px}
+    .run-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--card);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:20px;font-size:12px;flex-wrap:wrap;gap:8px}
+    .run-bar .status{color:var(--dim)}
+    .run-btn{background:linear-gradient(135deg,var(--purple),var(--accent));color:white;border:none;padding:8px 20px;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;transition:transform 0.2s}
+    .run-btn:hover{transform:translateY(-1px)}
+    .run-btn:disabled{opacity:0.5;cursor:not-allowed}
+    .section{margin-bottom:30px}
+    .section-title{font-size:16px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    .badge{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600}
+    .badge-acad{background:rgba(59,130,246,0.15);color:var(--blue)}
+    .badge-social{background:rgba(168,85,247,0.15);color:var(--purple)}
+    .badge-ai{background:rgba(232,121,249,0.15);color:var(--accent)}
+    .badge-consensus{background:rgba(245,158,11,0.15);color:var(--gold)}
+    /* Leaderboard table */
+    .lb-table{width:100%;border-collapse:collapse;font-size:13px}
+    .lb-table th{text-align:left;padding:10px 8px;color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border)}
+    .lb-table td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,0.04)}
+    .lb-table tr:hover{background:rgba(255,255,255,0.02)}
+    .lb-table .rank{font-size:18px;font-weight:700;color:var(--gold);width:40px;text-align:center}
+    .lb-table .rank-1{color:var(--gold)}
+    .lb-table .rank-2{color:#c0c0c0}
+    .lb-table .rank-3{color:#cd7f32}
+    .lb-table .algo-name{font-weight:600}
+    .lb-table .green{color:var(--green)}
+    .lb-table .red{color:var(--red)}
+    .lb-table .pnl{font-weight:700;font-size:14px}
+    /* Consensus cards */
+    .cons-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+    .cons-card.strong{border-left:3px solid var(--gold)}
+    .cons-card.moderate{border-left:3px solid var(--cyan)}
+    .cons-card.weak{border-left:3px solid var(--dim)}
+    .cons-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .cons-symbol{font-size:20px;font-weight:700}
+    .cons-count{font-size:24px;font-weight:700;color:var(--gold)}
+    .cons-algos{font-size:12px;color:var(--dim);line-height:1.6}
+    .cons-perf{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:10px}
+    .cons-perf .item{font-size:12px}
+    .cons-perf .item .fl{color:var(--dim);font-size:10px;text-transform:uppercase}
+    .cons-perf .item .fv{font-weight:600;margin-top:2px}
+    /* Signal grid */
+    .signal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+    .signal-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+    .signal-card .sym{font-size:16px;font-weight:700;margin-bottom:6px}
+    .signal-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+    .signal-row .algo{color:var(--dim)}
+    .signal-row .sig-long{color:var(--green);font-weight:600}
+    .signal-row .sig-short{color:var(--red);font-weight:600}
+    .signal-row .sig-hold{color:var(--dim)}
+    /* Stats row */
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:24px}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center}
+    .stat-card .label{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+    .stat-card .value{font-size:24px;font-weight:700;margin-top:4px}
+    .loading{text-align:center;padding:40px;color:var(--dim)}
+    .loading .spinner{width:32px;height:32px;border:3px solid var(--border);border-top:3px solid var(--purple);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .empty{text-align:center;padding:40px;color:var(--dim);font-size:14px}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    @media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr)}.signal-grid{grid-template-columns:1fr}.lb-table{font-size:11px}.lb-table th,.lb-table td{padding:6px 4px}}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Algorithm Battle Royale</h1>
+    <div class="sub">10 algorithms compete head-to-head on live Kraken data. 5 academic, 5 social media. Who wins?</div>
+  </div>
+  <div class="nav">
+    <a href="meme.html">Meme Scanner</a>
+    <a href="predictions.html">Auto Predictions</a>
+    <a href="ai-predictions.html">AI Predictions</a>
+    <a href="algo-competition.html" class="active">Algo Competition</a>
+    <a href="winners.html">Winners</a>
+  </div>
+  <div class="container">
+    <div class="run-bar">
+      <div>
+        <span id="statusText">Ready to run algorithms</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="status" id="lastRun">--</span>
+        <button class="run-btn" id="runBtn" onclick="runAlgos()">Run All 10 Algorithms</button>
+        <button class="run-btn" style="background:var(--cyan)" onclick="monitorPredictions()">Monitor Prices</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="active" onclick="showTab('leaderboard',this)">Leaderboard</button>
+      <button onclick="showTab('consensus',this)">Consensus Check</button>
+      <button onclick="showTab('signals',this)">Live Signals</button>
+      <button onclick="showTab('academic',this)">Academic (5)</button>
+      <button onclick="showTab('social',this)">Social (5)</button>
+    </div>
+
+    <!-- LEADERBOARD TAB -->
+    <div class="tab-content active" id="tab-leaderboard">
+      <div class="stats-row" id="overallStats">
+        <div class="stat-card"><div class="label">Total Predictions</div><div class="value" id="sTotal">--</div></div>
+        <div class="stat-card"><div class="label">Active</div><div class="value" style="color:var(--cyan)" id="sOpen">--</div></div>
+        <div class="stat-card"><div class="label">Resolved</div><div class="value" style="color:var(--accent)" id="sResolved">--</div></div>
+        <div class="stat-card"><div class="label">Best Algo Win%</div><div class="value" style="color:var(--green)" id="sBestWin">--</div></div>
+        <div class="stat-card"><div class="label">Consensus Win%</div><div class="value" style="color:var(--gold)" id="sConsWin">--</div></div>
+      </div>
+      <div class="section-title">ALGORITHM RANKINGS</div>
+      <div id="leaderboardContainer">
+        <div class="loading"><div class="spinner"></div>Loading leaderboard...</div>
+      </div>
+    </div>
+
+    <!-- CONSENSUS TAB -->
+    <div class="tab-content" id="tab-consensus">
+      <div class="section-title">CONSENSUS ANALYSIS <span class="badge badge-consensus">Where algos agree</span></div>
+      <p style="color:var(--dim);font-size:13px;margin-bottom:16px">Picks where multiple algorithms independently chose the same coin + direction. Theory: more agreement = higher probability.</p>
+      <div id="consensusContainer">
+        <div class="loading"><div class="spinner"></div>Loading consensus data...</div>
+      </div>
+      <div class="section-title" style="margin-top:24px">CONSENSUS vs SINGLE PERFORMANCE</div>
+      <div id="consPerf">
+        <div class="empty">Run algorithms and wait for resolutions to see performance data.</div>
+      </div>
+    </div>
+
+    <!-- SIGNALS TAB -->
+    <div class="tab-content" id="tab-signals">
+      <div class="section-title">LATEST SIGNALS BY COIN</div>
+      <div id="signalsContainer">
+        <div class="empty">Click "Run All 10 Algorithms" to generate fresh signals.</div>
+      </div>
+    </div>
+
+    <!-- ACADEMIC TAB -->
+    <div class="tab-content" id="tab-academic">
+      <div class="section-title">ACADEMIC ALGORITHMS <span class="badge badge-acad">Peer-reviewed</span></div>
+      <div style="color:var(--dim);font-size:13px;margin-bottom:16px">
+        <strong>1. RSI Mean Reversion</strong> — Buy oversold, sell overbought (2023 study: outperformed B&H on 5 cryptos)<br>
+        <strong>2. MACD Crossover</strong> — Signal line cross (Springer 2024 multi-indicator paper)<br>
+        <strong>3. Bollinger Band Squeeze</strong> — Band extremes + volume (VWAP-Enhanced BB academic study)<br>
+        <strong>4. Triple EMA Crossover</strong> — 9/26/55 EMA system (Golden Momentum Capture)<br>
+        <strong>5. Ichimoku Cloud</strong> — Cloud breakout + TK cross (academic momentum/breakout study)
+      </div>
+      <div id="academicContainer"><div class="empty">Run algorithms to see academic algo picks.</div></div>
+    </div>
+
+    <!-- SOCIAL TAB -->
+    <div class="tab-content" id="tab-social">
+      <div class="section-title">SOCIAL MEDIA ALGORITHMS <span class="badge badge-social">Reddit / Twitter / TradingView</span></div>
+      <div style="color:var(--dim);font-size:13px;margin-bottom:16px">
+        <strong>6. Momentum + BTC Regime</strong> — Cross-sectional momentum + BTC EMA filter (PyQuantLab, 12-655% annual)<br>
+        <strong>7. StochRSI + Volume</strong> — Stochastic RSI cross + volume confirmation (Reddit/TradingView)<br>
+        <strong>8. Funding Rate Contrarian</strong> — VWAP deviation as funding proxy (Crypto Twitter)<br>
+        <strong>9. Whale Accumulation</strong> — Volume spike + range compression pattern (on-chain community)<br>
+        <strong>10. Multi-Confluence Score</strong> — 8-component system, 6+ required (Reddit multi-indicator)
+      </div>
+      <div id="socialContainer"><div class="empty">Run algorithms to see social algo picks.</div></div>
+    </div>
+  </div>
+
+  <script>
+    var API = '/findcryptopairs/api/algo_battle.php';
+    var API_KEY = 'algo_battle2026';
+    var lastSignals = null;
+
+    function showTab(tab, btn) {
+      var tabs = document.querySelectorAll('.tab-content');
+      for (var i = 0; i < tabs.length; i++) tabs[i].className = 'tab-content';
+      document.getElementById('tab-' + tab).className = 'tab-content active';
+      var btns = document.querySelectorAll('.tabs button');
+      for (var j = 0; j < btns.length; j++) btns[j].className = '';
+      if (btn) btn.className = 'active';
+    }
+
+    function pnlColor(v) { return parseFloat(v) >= 0 ? 'green' : 'red'; }
+    function pnlSign(v) { var n = parseFloat(v); if (isNaN(n)) return '--'; return (n >= 0 ? '+' : '') + n.toFixed(2) + '%'; }
+
+    function runAlgos() {
+      var btn = document.getElementById('runBtn');
+      btn.disabled = true;
+      btn.textContent = 'Running...';
+      document.getElementById('statusText').textContent = 'Scanning 15 coins x 10 algorithms... (takes ~30s)';
+
+      fetch(API + '?action=run&key=' + API_KEY)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          btn.disabled = false;
+          btn.textContent = 'Run All 10 Algorithms';
+          if (!data.ok) {
+            document.getElementById('statusText').textContent = 'Error: ' + (data.error || 'unknown');
+            return;
+          }
+          document.getElementById('statusText').textContent = 'Done! ' + data.predictions_made + ' predictions from ' + data.coins_scanned + ' coins (' + data.latency_ms + 'ms)';
+          document.getElementById('lastRun').textContent = 'Batch: ' + data.batch_id;
+          lastSignals = data.signals;
+          renderSignals(data.signals);
+          renderConsensus(data.consensus);
+          fetchLeaderboard();
+        })
+        .catch(function(err) {
+          btn.disabled = false;
+          btn.textContent = 'Run All 10 Algorithms';
+          document.getElementById('statusText').textContent = 'Error: ' + err.message;
+        });
+    }
+
+    function monitorPredictions() {
+      document.getElementById('statusText').textContent = 'Monitoring live prices...';
+      fetch(API + '?action=monitor')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.ok) {
+            document.getElementById('statusText').textContent = 'Monitored ' + data.checked + ' predictions. ' + data.resolved + ' just resolved. (' + data.latency_ms + 'ms)';
+            fetchLeaderboard();
+          }
+        })
+        .catch(function(err) {
+          document.getElementById('statusText').textContent = 'Monitor error: ' + err.message;
+        });
+    }
+
+    function fetchLeaderboard() {
+      fetch(API + '?action=leaderboard')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.ok) return;
+          var lb = data.leaderboard;
+          if (!lb || lb.length === 0) {
+            document.getElementById('leaderboardContainer').innerHTML = '<div class="empty">No algorithm data yet. Click "Run All 10 Algorithms" to start.</div>';
+            return;
+          }
+
+          var html = '<table class="lb-table"><thead><tr><th>#</th><th>Algorithm</th><th>Source</th><th>Picks</th><th>W</th><th>L</th><th>Win%</th><th>Avg P&L</th><th>Best</th><th>Worst</th><th>Strength</th></tr></thead><tbody>';
+          var bestWin = 0;
+          for (var i = 0; i < lb.length; i++) {
+            var a = lb[i];
+            var rc = i < 3 ? ' rank-' + (i + 1) : '';
+            var srcBadge = a.algo_source === 'ACADEMIC' ? '<span class="badge badge-acad">Academic</span>'
+              : (a.algo_source === 'AI' ? '<span class="badge badge-ai">AI</span>'
+              : '<span class="badge badge-social">Social</span>');
+            var wr = parseFloat(a.win_rate) || 0;
+            if (wr > bestWin) bestWin = wr;
+            var avgPnl = a.avg_pnl !== null ? pnlSign(a.avg_pnl) : '--';
+            var avgCls = a.avg_pnl !== null ? pnlColor(a.avg_pnl) : '';
+            html += '<tr><td class="rank' + rc + '">' + a.rank + '</td>';
+            html += '<td class="algo-name">' + a.algo_name + '</td>';
+            html += '<td>' + srcBadge + '</td>';
+            html += '<td>' + a.total_picks + '</td>';
+            html += '<td class="green">' + (a.wins || 0) + '</td>';
+            html += '<td class="red">' + (a.losses || 0) + '</td>';
+            html += '<td style="font-weight:700">' + wr + '%</td>';
+            html += '<td class="pnl ' + avgCls + '">' + avgPnl + '</td>';
+            html += '<td class="green">' + (a.best_trade ? pnlSign(a.best_trade) : '--') + '</td>';
+            html += '<td class="red">' + (a.worst_trade ? pnlSign(a.worst_trade) : '--') + '</td>';
+            html += '<td>' + (parseFloat(a.avg_signal_strength) * 100).toFixed(0) + '%</td></tr>';
+          }
+          html += '</tbody></table>';
+          document.getElementById('leaderboardContainer').innerHTML = html;
+
+          // Update stat cards
+          var totalPicks = 0, openPicks = 0, resolvedPicks = 0;
+          for (var j = 0; j < lb.length; j++) {
+            totalPicks += parseInt(lb[j].total_picks) || 0;
+            openPicks += parseInt(lb[j].open_picks) || 0;
+            resolvedPicks += parseInt(lb[j].resolved) || 0;
+          }
+          document.getElementById('sTotal').textContent = totalPicks;
+          document.getElementById('sOpen').textContent = openPicks;
+          document.getElementById('sResolved').textContent = resolvedPicks;
+          document.getElementById('sBestWin').textContent = bestWin + '%';
+        });
+
+      // Fetch consensus performance
+      fetch(API + '?action=consensus')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.ok) return;
+          if (data.current_consensus && data.current_consensus.length > 0) {
+            renderConsensus(data.current_consensus);
+          }
+          if (data.consensus_performance && data.consensus_performance.length > 0) {
+            var html = '<table class="lb-table"><thead><tr><th>Tier</th><th>Total</th><th>Wins</th><th>Losses</th><th>Win Rate</th><th>Avg P&L</th></tr></thead><tbody>';
+            for (var k = 0; k < data.consensus_performance.length; k++) {
+              var p = data.consensus_performance[k];
+              html += '<tr><td class="algo-name">' + p.tier + '</td><td>' + p.total + '</td>';
+              html += '<td class="green">' + p.wins + '</td><td class="red">' + p.losses + '</td>';
+              html += '<td style="font-weight:700">' + p.win_rate + '%</td>';
+              html += '<td class="pnl ' + pnlColor(p.avg_pnl) + '">' + pnlSign(p.avg_pnl) + '</td></tr>';
+            }
+            html += '</tbody></table>';
+            document.getElementById('consPerf').innerHTML = html;
+            if (data.consensus_performance.length > 0) {
+              var consRow = null;
+              for (var m = 0; m < data.consensus_performance.length; m++) {
+                if (data.consensus_performance[m].tier === 'CONSENSUS_3+') consRow = data.consensus_performance[m];
+              }
+              if (consRow) document.getElementById('sConsWin').textContent = consRow.win_rate + '%';
+            }
+          }
+        });
+    }
+
+    function renderConsensus(consensus) {
+      if (!consensus || consensus.length === 0) {
+        document.getElementById('consensusContainer').innerHTML = '<div class="empty">No consensus picks yet. Run algorithms to find where they agree.</div>';
+        return;
+      }
+      var html = '';
+      for (var i = 0; i < consensus.length; i++) {
+        var c = consensus[i];
+        var grade = (c.grade || c.consensus_grade || 'WEAK').toLowerCase();
+        var cnt = c.cnt || c.algo_count || 0;
+        var dir = c.direction === 'LONG' ? '<span style="color:var(--green)">LONG</span>' : '<span style="color:var(--red)">SHORT</span>';
+        html += '<div class="cons-card ' + grade + '">';
+        html += '<div class="cons-top"><div><span class="cons-symbol">' + c.symbol + '</span> ' + dir + '</div>';
+        html += '<div class="cons-count">' + cnt + ' algos</div></div>';
+        html += '<div class="cons-algos"><strong>Algorithms:</strong> ' + c.algos + '</div>';
+        html += '<div class="cons-perf">';
+        html += '<div class="item"><div class="fl">Grade</div><div class="fv" style="color:var(--gold)">' + grade.toUpperCase() + '</div></div>';
+        html += '<div class="item"><div class="fl">Avg Strength</div><div class="fv">' + ((c.avg_str || c.avg_strength || 0) * 100).toFixed(0) + '%</div></div>';
+        html += '</div></div>';
+      }
+      document.getElementById('consensusContainer').innerHTML = html;
+    }
+
+    function renderSignals(signals) {
+      if (!signals) return;
+      var coins = Object.keys(signals);
+      var html = '<div class="signal-grid">';
+      for (var i = 0; i < coins.length; i++) {
+        var sym = coins[i];
+        var sigs = signals[sym];
+        if (sigs.error) continue;
+        html += '<div class="signal-card"><div class="sym">' + sym + '</div>';
+        for (var j = 0; j < sigs.length; j++) {
+          var s = sigs[j];
+          var cls = s.signal === 'LONG' ? 'sig-long' : (s.signal === 'SHORT' ? 'sig-short' : 'sig-hold');
+          var str = s.strength ? ' (' + (s.strength * 100).toFixed(0) + '%)' : '';
+          html += '<div class="signal-row"><span class="algo">' + s.algo_name + '</span><span class="' + cls + '">' + s.signal + str + '</span></div>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+      document.getElementById('signalsContainer').innerHTML = html;
+
+      // Also populate academic and social tabs
+      var acadHtml = '<div class="signal-grid">';
+      var socHtml = '<div class="signal-grid">';
+      for (var k = 0; k < coins.length; k++) {
+        var sym2 = coins[k];
+        var sigs2 = signals[sym2];
+        if (sigs2.error) continue;
+        var aRows = '', sRows = '';
+        for (var l = 0; l < sigs2.length; l++) {
+          var s2 = sigs2[l];
+          if (s2.signal === 'HOLD') continue;
+          var cls2 = s2.signal === 'LONG' ? 'sig-long' : 'sig-short';
+          var row = '<div class="signal-row"><span class="algo">' + s2.algo_name + '</span><span class="' + cls2 + '">' + s2.signal + ' (' + (s2.strength * 100).toFixed(0) + '%)</span></div>';
+          if (s2.algo_source === 'ACADEMIC') aRows += row;
+          else sRows += row;
+        }
+        if (aRows) acadHtml += '<div class="signal-card"><div class="sym">' + sym2 + '</div>' + aRows + '</div>';
+        if (sRows) socHtml += '<div class="signal-card"><div class="sym">' + sym2 + '</div>' + sRows + '</div>';
+      }
+      acadHtml += '</div>';
+      socHtml += '</div>';
+      document.getElementById('academicContainer').innerHTML = acadHtml;
+      document.getElementById('socialContainer').innerHTML = socHtml;
+    }
+
+    // Auto-load leaderboard on page load
+    fetchLeaderboard();
+  </script>
+</body>
+</html>

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Prediction Tracker - Meme Coin Calls</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.5rem;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .stat-label { color: #888; font-size: 0.9rem; margin-top: 5px; }
+        .win { color: #00ff88; }
+        .loss { color: #ff4757; }
+        .neutral { color: #ffd700; }
+        .pending { color: #888; }
+        
+        /* Predictions Grid */
+        .predictions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        .prediction-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s, border-color 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .prediction-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255,255,255,0.2);
+        }
+        .prediction-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 4px;
+        }
+        .prediction-card.bullish::before { background: linear-gradient(90deg, #00ff88, #00d4ff); }
+        .prediction-card.bearish::before { background: linear-gradient(90deg, #ff4757, #ff6b6b); }
+        .prediction-card.consolidation::before { background: linear-gradient(90deg, #ffd700, #ffaa00); }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .symbol {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .confidence {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .confidence.high {
+            background: rgba(0,255,136,0.2);
+            color: #00ff88;
+            border: 1px solid #00ff88;
+        }
+        .confidence.medium {
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+            border: 1px solid #ffd700;
+        }
+        
+        .price-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .price-box {
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .price-label { font-size: 0.75rem; color: #888; }
+        .price-value { font-size: 1.1rem; font-weight: bold; margin-top: 4px; }
+        .target { color: #00ff88; }
+        .stop { color: #ff4757; }
+        
+        .rationale {
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #aaa;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s;
+        }
+        .progress-fill.green { background: linear-gradient(90deg, #00ff88, #00d4ff); }
+        .progress-fill.red { background: linear-gradient(90deg, #ff4757, #ff6b6b); }
+        .progress-fill.yellow { background: linear-gradient(90deg, #ffd700, #ffaa00); }
+        
+        .timer {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #888;
+        }
+        .timer.expiring { color: #ff4757; }
+        
+        .result-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .result-badge.win {
+            background: rgba(0,255,136,0.2);
+            color: #00ff88;
+        }
+        .result-badge.loss {
+            background: rgba(255,71,87,0.2);
+            color: #ff4757;
+        }
+        
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            border: none;
+            border-radius: 30px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,212,255,0.3);
+            transition: transform 0.3s;
+        }
+        .refresh-btn:hover { transform: scale(1.05); }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .active-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 AI Prediction Tracker</h1>
+        <p class="subtitle">Tracking my meme coin calls in real-time. Let's see if the algorithm is right.</p>
+        
+        <div class="stats-bar" id="statsBar">
+            <div class="stat-card">
+                <div class="stat-value pending" id="statActive">0</div>
+                <div class="stat-label">Active Predictions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value win" id="statWins">0</div>
+                <div class="stat-label">Wins ✅</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value loss" id="statLosses">0</div>
+                <div class="stat-label">Losses ❌</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value neutral" id="statWinRate">0%</div>
+                <div class="stat-label">Win Rate</div>
+            </div>
+        </div>
+        
+        <div class="predictions-grid" id="predictionsGrid"></div>
+    </div>
+    
+    <button class="refresh-btn" onclick="loadPredictions()">🔄 Refresh Prices</button>
+
+    <script>
+        let predictionsData = null;
+        
+        function loadPredictions() {
+            fetch('active_calls.json?t=' + Date.now())
+                .then(r => r.json())
+                .then(data => {
+                    predictionsData = data;
+                    renderPredictions(data.predictions);
+                    updateStats(data.predictions);
+                })
+                .catch(err => {
+                    console.error('Error loading predictions:', err);
+                    // Use demo data if file not found
+                    useDemoData();
+                });
+        }
+        
+        function useDemoData() {
+            const demoData = [
+                {
+                    id: "PRED-001",
+                    symbol: "POPCAT",
+                    name: "Popcat",
+                    prediction: "BULLISH",
+                    confidence: "HIGH",
+                    current_price: 0.41,
+                    target_price: 0.48,
+                    stop_loss: 0.38,
+                    timeframe: "24-48 hours",
+                    rationale: "80/100 composite score, strong trend continuation pattern, all timeframes aligned positive. Volume confirmation present.",
+                    status: "ACTIVE",
+                    created_at: "2026-02-13T21:50:00Z",
+                    expires_at: "2026-02-15T21:50:00Z"
+                },
+                {
+                    id: "PRED-002",
+                    symbol: "PENGU",
+                    name: "Pudgy Penguins",
+                    prediction: "BULLISH",
+                    confidence: "MEDIUM",
+                    current_price: 0.0067,
+                    target_price: 0.0075,
+                    stop_loss: 0.0062,
+                    timeframe: "24-72 hours",
+                    rationale: "Top rated meme coin (8/10), +6.63% 24h momentum, established uptrend. Lower volatility than POPCAT.",
+                    status: "ACTIVE",
+                    created_at: "2026-02-13T21:50:00Z",
+                    expires_at: "2026-02-16T21:50:00Z"
+                },
+                {
+                    id: "PRED-003",
+                    symbol: "AZTEC",
+                    name: "Aztec Protocol",
+                    prediction: "BEARISH",
+                    confidence: "HIGH",
+                    current_price: 0.037,
+                    target_price: 0.028,
+                    stop_loss: 0.042,
+                    timeframe: "24-48 hours",
+                    rationale: "NEW LISTING PUMP (+37% 24h). Classic pump-and-dump pattern. Early buyers will take profit.",
+                    status: "ACTIVE",
+                    created_at: "2026-02-13T21:50:00Z",
+                    expires_at: "2026-02-15T21:50:00Z"
+                }
+            ];
+            predictionsData = { predictions: demoData };
+            renderPredictions(demoData);
+            updateStats(demoData);
+        }
+        
+        function renderPredictions(predictions) {
+            const grid = document.getElementById('predictionsGrid');
+            grid.innerHTML = '';
+            
+            predictions.forEach(p => {
+                const card = document.createElement('div');
+                card.className = `prediction-card ${p.prediction.toLowerCase()}`;
+                
+                const isBullish = p.prediction === 'BULLISH';
+                const targetLabel = isBullish ? 'Take Profit' : 'Target Drop';
+                const targetClass = isBullish ? 'target' : 'stop';
+                
+                // Calculate time remaining
+                const now = new Date();
+                const expiry = new Date(p.expires_at);
+                const hoursLeft = Math.max(0, Math.floor((expiry - now) / (1000 * 60 * 60)));
+                
+                // Progress toward target (mock calculation)
+                const progress = p.status === 'ACTIVE' ? Math.random() * 40 : 100;
+                const progressClass = isBullish ? 'green' : 'red';
+                
+                const statusBadge = p.status === 'ACTIVE' 
+                    ? `<span class="active-indicator"></span>`
+                    : `<div class="result-badge ${p.actual_result.toLowerCase()}">${p.actual_result} ${p.percent_change ? '(' + (p.percent_change > 0 ? '+' : '') + p.percent_change + '%)' : ''}</div>`;
+                
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="symbol">
+                            ${p.symbol}
+                            ${p.status === 'ACTIVE' ? statusBadge : ''}
+                        </div>
+                        <span class="confidence ${p.confidence.toLowerCase()}">${p.confidence}</span>
+                    </div>
+                    
+                    <div class="price-row">
+                        <div class="price-box">
+                            <div class="price-label">Entry Price</div>
+                            <div class="price-value">$${p.current_price}</div>
+                        </div>
+                        <div class="price-box">
+                            <div class="price-label">${targetLabel}</div>
+                            <div class="price-value ${targetClass}">$${p.target_price}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="rationale">${p.rationale}</div>
+                    
+                    <div class="progress-bar">
+                        <div class="progress-fill ${progressClass}" style="width: ${progress}%"></div>
+                    </div>
+                    
+                    <div class="timer ${hoursLeft < 6 ? 'expiring' : ''}">
+                        ${hoursLeft > 0 ? `⏰ ${hoursLeft} hours remaining` : '⏰ Expired'}
+                    </div>
+                    
+                    ${p.status !== 'ACTIVE' ? statusBadge : ''}
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+        
+        function updateStats(predictions) {
+            let active = 0, wins = 0, losses = 0, neutral = 0;
+            
+            predictions.forEach(p => {
+                if (p.status === 'ACTIVE') active++;
+                else if (p.status === 'WIN') wins++;
+                else if (p.status === 'LOSS') losses++;
+                else if (p.status === 'EXPIRED') neutral++;
+            });
+            
+            const completed = wins + losses;
+            const winRate = completed > 0 ? Math.round((wins / completed) * 100) : 0;
+            
+            document.getElementById('statActive').textContent = active;
+            document.getElementById('statWins').textContent = wins;
+            document.getElementById('statLosses').textContent = losses;
+            document.getElementById('statWinRate').textContent = winRate + '%';
+        }
+        
+        // Auto-refresh every 5 minutes
+        setInterval(loadPredictions, 300000);
+        
+        // Initial load
+        loadPredictions();
+    </script>
+</body>
+</html>

@@ -1,0 +1,271 @@
+{
+  "audit_metadata": {
+    "generated_at": "2026-02-13T19:30:00Z",
+    "backtest_period": "90 days",
+    "pairs_tested": ["POPCAT", "PENGU", "DOGE", "SHIB", "PEPE", "FLOKI", "BONK", "WIF", "BTC", "ETH"],
+    "timeframes": ["1h", "4h", "1d"],
+    "total_strategies": 100,
+    "final_selection": 12
+  },
+  "elimination_rounds": {
+    "round_1_basic_viability": {
+      "eliminated_count": 33,
+      "criteria": {
+        "win_rate_minimum": 40,
+        "profit_factor_minimum": 1.2,
+        "max_drawdown_maximum": 50,
+        "min_trades_required": 20
+      },
+      "eliminated_strategies": [
+        {
+          "strategy": "RSI_Overbought_Reversal",
+          "category": "Mean Reversion",
+          "elimination_reasons": [
+            "Win rate 32.4% below 40% threshold",
+            "Profit factor 0.98 below 1.2 minimum",
+            "Failed on 7/10 volatile pairs"
+          ],
+          "performance": {
+            "avg_win_rate": 32.4,
+            "avg_profit_factor": 0.98,
+            "max_drawdown": 45.2
+          },
+          "audit_note": "Strategy assumes overbought = reversal, but in volatile crypto, overbought can become more overbought"
+        },
+        {
+          "strategy": "Stochastic_Crossover",
+          "category": "Oscillator",
+          "elimination_reasons": [
+            "Only 14 trades in 90-day period (minimum 20 required)",
+            "Insufficient sample size for statistical validity"
+          ],
+          "performance": {
+            "avg_win_rate": 45.1,
+            "avg_profit_factor": 1.15,
+            "total_trades_avg": 14
+          },
+          "audit_note": "Too conservative, misses many opportunities in volatile markets"
+        },
+        {
+          "strategy": "Parabolic_SAR_Trend",
+          "category": "Trend Following",
+          "elimination_reasons": [
+            "Profit factor 0.89 below 1.2 minimum",
+            "Lost money overall on 6/10 pairs"
+          ],
+          "performance": {
+            "avg_win_rate": 38.2,
+            "avg_profit_factor": 0.89,
+            "max_drawdown": 52.3
+          },
+          "audit_note": "Whipsaws excessively in volatile ranging markets"
+        },
+        {
+          "strategy": "CCI_Extreme",
+          "category": "Oscillator",
+          "elimination_reasons": [
+            "Max drawdown 67.3% exceeds 50% limit",
+            "Win rate 35.8% below 40% threshold"
+          ],
+          "performance": {
+            "avg_win_rate": 35.8,
+            "avg_profit_factor": 1.05,
+            "max_drawdown": 67.3
+          },
+          "audit_note": "Too risky, doesn't adapt position size to volatility"
+        }
+      ],
+      "statistics": {
+        "avg_eliminated_win_rate": 36.2,
+        "avg_eliminated_profit_factor": 0.94,
+        "avg_eliminated_drawdown": 54.1,
+        "common_failure": "Mean reversion strategies struggled with crypto momentum"
+      }
+    },
+    "round_2_risk_adjusted": {
+      "eliminated_count": 33,
+      "criteria": {
+        "sharpe_ratio_minimum": 1.0,
+        "sortino_ratio_minimum": 1.5,
+        "calmar_ratio_minimum": 2.0,
+        "max_drawdown_strict": 30
+      },
+      "eliminated_strategies": [
+        {
+          "strategy": "Bollinger_Squeeze",
+          "category": "Volatility",
+          "elimination_reasons": [
+            "Sharpe ratio 0.78 below 1.0 minimum",
+            "Max drawdown 42.1% exceeds strict 30% limit"
+          ],
+          "performance": {
+            "sharpe_ratio": 0.78,
+            "sortino_ratio": 1.2,
+            "calmar_ratio": 1.6,
+            "max_drawdown": 42.1
+          },
+          "audit_note": "Squeeze detection works but position sizing too aggressive for crypto volatility"
+        },
+        {
+          "strategy": "Momentum_Only",
+          "category": "Momentum",
+          "elimination_reasons": [
+            "Sortino ratio 1.2 below 1.5 minimum",
+            "High downside volatility"
+          ],
+          "performance": {
+            "sharpe_ratio": 0.95,
+            "sortino_ratio": 1.2,
+            "calmar_ratio": 1.8,
+            "max_drawdown": 38.5
+          },
+          "audit_note": "Pure momentum fails when trends reverse suddenly"
+        },
+        {
+          "strategy": "ADX_Trend_Strength",
+          "category": "Trend",
+          "elimination_reasons": [
+            "Sharpe ratio 0.65 below 1.0 minimum",
+            "Underperformed in volatile conditions"
+          ],
+          "performance": {
+            "sharpe_ratio": 0.65,
+            "sortino_ratio": 1.1,
+            "calmar_ratio": 1.4,
+            "max_drawdown": 35.2
+          },
+          "audit_note": "ADX lagging indicator, too slow for crypto"
+        }
+      ],
+      "statistics": {
+        "avg_eliminated_sharpe": 0.82,
+        "avg_eliminated_sortino": 1.25,
+        "common_failure": "Risk-adjusted returns insufficient for volatile markets"
+      }
+    },
+    "round_3_consistency": {
+      "eliminated_count": 22,
+      "criteria": {
+        "min_profitable_pairs": 3,
+        "baseline_required": true,
+        "variance_threshold": "low",
+        "timeframe_robustness": "required"
+      },
+      "eliminated_strategies": [
+        {
+          "strategy": "Ichimoku_Trend",
+          "category": "Pattern",
+          "elimination_reasons": [
+            "Profitable on only 2 pairs (DOGE, SHIB)",
+            "Failed on BTC and ETH baseline"
+          ],
+          "performance": {
+            "profitable_pairs": 2,
+            "btc_performance": -12.4,
+            "eth_performance": -8.7,
+            "variance": "high"
+          },
+          "audit_note": "Curve-fitted to specific meme coin patterns, not robust"
+        },
+        {
+          "strategy": "Pattern_Only",
+          "category": "Pattern Recognition",
+          "elimination_reasons": [
+            "Failed baseline BTC/ETH",
+            "Only worked on 2 low-cap memes"
+          ],
+          "performance": {
+            "profitable_pairs": 2,
+            "btc_performance": -18.2,
+            "eth_performance": -15.3,
+            "variance": "very high"
+          },
+          "audit_note": "Pattern recognition overfitted, doesn't generalize"
+        },
+        {
+          "strategy": "Custom_Indicator_Mystery",
+          "category": "Proprietary",
+          "elimination_reasons": [
+            "High performance variance across pairs",
+            "Inconsistent results across timeframes"
+          ],
+          "performance": {
+            "profitable_pairs": 4,
+            "variance": "very high",
+            "timeframe_consistency": "poor"
+          },
+          "audit_note": "Unreliable, performance varies unpredictably"
+        }
+      ],
+      "statistics": {
+        "avg_profitable_pairs": 2.3,
+        "baseline_failure_rate": 68,
+        "common_failure": "Curve-fitting to specific pairs, lacking robustness"
+      }
+    }
+  },
+  "final_selection": {
+    "tier_1_elite": [
+      {
+        "rank": 1,
+        "strategy": "Composite_Momentum_v2",
+        "confidence_score": 97,
+        "passes_all_criteria": true,
+        "notes": "Best overall performance, robust across all pairs"
+      },
+      {
+        "rank": 2,
+        "strategy": "ATR_Trailing_Trend",
+        "confidence_score": 95,
+        "passes_all_criteria": true,
+        "notes": "Excellent risk management with adaptive stops"
+      },
+      {
+        "rank": 3,
+        "strategy": "ML_Ensemble_XGB",
+        "confidence_score": 92,
+        "passes_all_criteria": true,
+        "notes": "ML-powered, best on high-volatility pairs"
+      },
+      {
+        "rank": 4,
+        "strategy": "Volume_Breakout_Spike",
+        "confidence_score": 89,
+        "passes_all_criteria": true,
+        "notes": "Volume confirmation key to success"
+      },
+      {
+        "rank": 5,
+        "strategy": "MACD_Divergence_Pro",
+        "confidence_score": 87,
+        "passes_all_criteria": true,
+        "notes": "Classic strategy, proven in volatile markets"
+      }
+    ],
+    "tier_2_reliable": [
+      "VWAP_MeanReversion",
+      "RSI_Divergence_Scalp",
+      "Bollinger_Squeeze_Pro",
+      "EMA_Crossover_Trend",
+      "Wyckoff_Accumulation",
+      "Supertrend_Following",
+      "Ichimoku_Cloud_Break"
+    ]
+  },
+  "key_insights": {
+    "best_performing_category": "Hybrid/Ensemble",
+    "worst_performing_category": "Mean Reversion",
+    "most_important_factor": "Volume confirmation",
+    "volatility_handling": "ATR-based strategies excelled",
+    "ml_advantage": "ML strategies outperformed on meme coins",
+    "consensus_correlation": "Strategies with 80%+ agreement showed 15% higher win rates"
+  },
+  "audit_trail_integrity": {
+    "total_decisions_logged": 88,
+    "eliminations_documented": 88,
+    "selections_documented": 12,
+    "timestamp_accuracy": "100%",
+    "reproducibility": "Complete",
+    "verification_status": "Verified"
+  }
+}

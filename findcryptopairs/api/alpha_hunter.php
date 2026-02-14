@@ -451,8 +451,10 @@ function action_scan($conn)
     $all_ohlcv = fetch_ohlcv_batch($ALL_PAIRS, 240);
     $now = date('Y-m-d H:i:s');
 
-    // Clear old signals
-    $conn->query("DELETE FROM ah_signals WHERE status='ACTIVE' AND created_at < DATE_SUB(NOW(), INTERVAL 24 HOUR)");
+    // Clear old signals (>48h) and deduplicate (keep oldest per pair)
+    $conn->query("DELETE FROM ah_signals WHERE status='ACTIVE' AND created_at < DATE_SUB(NOW(), INTERVAL 48 HOUR)");
+    // Remove duplicate active signals (keep the one with lowest id per pair)
+    $conn->query("DELETE s1 FROM ah_signals s1 INNER JOIN ah_signals s2 ON s1.pair = s2.pair AND s1.status = 'ACTIVE' AND s2.status = 'ACTIVE' AND s1.id > s2.id");
 
     $matches = array();
 
@@ -567,14 +569,20 @@ function action_scan($conn)
                 'sl_pct' => round($sl_pct, 2)
             );
 
-            // Store signal
-            $sql = sprintf(
-                "INSERT INTO ah_signals (pair,price,fingerprint_score,matching_traits,tp_price,sl_price,tp_pct,sl_pct,status,created_at) VALUES ('%s','%.10f','%.4f','%s','%.10f','%.10f','%.4f','%.4f','ACTIVE','%s')",
-                $conn->real_escape_string($pair), $closes[$idx], $score,
-                $conn->real_escape_string(implode(' | ', $traits)),
-                $tp_price, $sl_price, $tp_pct, $sl_pct, $now
-            );
-            $conn->query($sql);
+            // Store signal — only if no active signal already exists for this pair
+            $chk = $conn->query(sprintf(
+                "SELECT id FROM ah_signals WHERE pair='%s' AND status='ACTIVE'",
+                $conn->real_escape_string($pair)
+            ));
+            if (!$chk || $chk->num_rows == 0) {
+                $sql = sprintf(
+                    "INSERT INTO ah_signals (pair,price,fingerprint_score,matching_traits,tp_price,sl_price,tp_pct,sl_pct,status,created_at) VALUES ('%s','%.10f','%.4f','%s','%.10f','%.10f','%.4f','%.4f','ACTIVE','%s')",
+                    $conn->real_escape_string($pair), $closes[$idx], $score,
+                    $conn->real_escape_string(implode(' | ', $traits)),
+                    $tp_price, $sl_price, $tp_pct, $sl_pct, $now
+                );
+                $conn->query($sql);
+            }
         }
     }
 

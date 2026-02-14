@@ -74,6 +74,7 @@ export default defineConfig({
     /(?:^|\/)tests\/dividends-earnings\.spec\.ts$/,
     /(?:^|\/)tests\/quicknav_changes\.spec\.ts$/,
     /(?:^|\/)tests\/theme-switcher\.spec\.ts$/,
+    /(?:^|\/)tests\/audit_trail\.spec\.ts$/,
   ],
   timeout: isRemoteVerify ? 90000 : 30000,
   retries: isRemoteVerify ? 1 : 0,

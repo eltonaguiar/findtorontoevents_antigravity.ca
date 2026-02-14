@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pump Watch | Reverse-Engineered Signals</title>
+  <style>
+    :root{--bg:#0a0a1a;--card:#12122a;--border:#2a2a4a;--text:#e0e0f0;--dim:#8888aa;--green:#22c55e;--red:#ef4444;--gold:#f59e0b;--accent:#e879f9;--cyan:#06b6d4;--purple:#a855f7;--blue:#3b82f6;--orange:#f97316;--radius:12px}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .header{text-align:center;padding:28px 20px 14px;border-bottom:1px solid rgba(255,255,255,0.06)}
+    .header h1{font-size:22px;font-weight:200;letter-spacing:3px;text-transform:uppercase}
+    .header .sub{color:var(--dim);font-size:12px;margin-top:4px;max-width:700px;margin-left:auto;margin-right:auto}
+    .refresh-info{font-size:10px;color:var(--purple);margin-top:6px}
+    .refresh-info .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:4px;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+    .method{max-width:800px;margin:0 auto;padding:16px;font-size:12px;color:var(--dim);background:rgba(168,85,247,0.04);border:1px solid rgba(168,85,247,0.1);border-radius:var(--radius);margin-top:14px}
+    .method h3{color:var(--purple);font-size:13px;margin-bottom:6px}
+    .method .stat{display:inline-block;margin-right:16px;color:var(--gold);font-weight:600}
+    .nav{display:flex;gap:6px;justify-content:center;padding:12px;flex-wrap:wrap}
+    .nav a{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);color:var(--dim);text-decoration:none;transition:all 0.15s}
+    .nav a:hover,.nav a.active{border-color:var(--orange);color:var(--orange);background:rgba(249,115,22,0.08)}
+    .container{max-width:1200px;margin:0 auto;padding:16px}
+    .ctrl{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;flex-wrap:wrap;font-size:12px}
+    .btn{padding:6px 16px;border-radius:var(--radius);border:none;font-size:12px;font-weight:600;cursor:pointer;color:#fff}
+    .btn:disabled{opacity:0.4;cursor:not-allowed}
+    .btn-scan{background:linear-gradient(135deg,var(--orange),var(--gold))}
+    .btn-mon{background:var(--green)}
+    .btn-perf{background:var(--purple)}
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:18px}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center}
+    .stat-card .lb{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+    .stat-card .vl{font-size:22px;font-weight:700;margin-top:2px}
+    .tabs{display:flex;gap:0;margin-bottom:14px;border-bottom:1px solid var(--border)}
+    .tab{padding:8px 18px;font-size:12px;font-weight:600;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s}
+    .tab:hover{color:var(--text)}
+    .tab.active{color:var(--orange);border-bottom-color:var(--orange)}
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
+    .pick-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;transition:border-color 0.2s}
+    .pick-card:hover{border-color:var(--orange)}
+    .pick-card.extreme{border-left:4px solid var(--gold)}
+    .pick-card.very_high{border-left:4px solid var(--orange)}
+    .pick-card.high{border-left:4px solid var(--cyan)}
+    .pick-card.moderate{border-left:4px solid var(--dim)}
+    .pick-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+    .pick-pair{font-size:20px;font-weight:700}
+    .pick-score{font-size:32px;font-weight:700}
+    .score-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin:8px 0}
+    .score-bar-fill{height:100%;border-radius:3px;transition:width 0.3s}
+    .component-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;margin-top:8px}
+    .comp{background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:8px;font-size:11px}
+    .comp .comp-name{color:var(--dim);font-size:9px;text-transform:uppercase}
+    .comp .comp-bar{height:4px;background:var(--border);border-radius:2px;margin-top:3px;overflow:hidden}
+    .comp .comp-fill{height:100%;border-radius:2px}
+    .thesis{font-size:11px;color:var(--dim);margin-top:8px;line-height:1.5;padding:8px;background:rgba(255,255,255,0.02);border-radius:8px}
+    .empty{text-align:center;padding:30px;color:var(--dim);font-size:13px}
+    .badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;display:inline-block}
+    .badge-extreme{background:rgba(245,158,11,0.2);color:var(--gold)}
+    .badge-very_high{background:rgba(249,115,22,0.2);color:var(--orange)}
+    .badge-high{background:rgba(6,182,212,0.2);color:var(--cyan)}
+    .badge-moderate{background:rgba(136,136,170,0.15);color:var(--dim)}
+    .perf-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+    .perf-card h4{font-size:13px;margin-bottom:8px;color:var(--gold)}
+    .mover-row{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-radius:8px;font-size:12px;margin-bottom:4px;background:rgba(255,255,255,0.02)}
+    .mover-row .delta{font-weight:700;min-width:50px;text-align:right}
+    .audit-entry{padding:6px 10px;font-size:11px;color:var(--dim);border-left:2px solid var(--border);margin-bottom:4px;margin-left:8px}
+    .audit-entry .phase{color:var(--cyan);font-weight:600}
+    @media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr)}.component-grid{grid-template-columns:1fr 1fr}.pick-pair{font-size:16px}.pick-score{font-size:24px}}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Pump Watch</h1>
+    <div class="sub">Reverse-engineered from 3,375 verified pump episodes. Scores current pairs on how closely they match pre-pump fingerprints.</div>
+    <div class="refresh-info"><span class="dot"></span> Auto-refresh: Full rescan every 4h via GitHub Actions | Price monitoring every 30min | <span id="lastScan">Loading...</span></div>
+  </div>
+  <div class="nav">
+    <a href="meme.html">Meme Scanner</a>
+    <a href="predictions.html">Predictions</a>
+    <a href="algo-competition.html">Algo Battle</a>
+    <a href="backtest-arena.html">Backtest Arena</a>
+    <a href="pump-watch.html" class="active">Pump Watch</a>
+  </div>
+  <div class="container">
+    <div class="method">
+      <h3>Methodology: How "Pro Discord" Signals Actually Work</h3>
+      Scanned 616 Kraken pairs across 2 years. Found <span class="stat">3,375 verified pumps</span> (50%+ in 7 days).
+      Filtered out <span class="stat">59 rug pulls</span>. Extracted the pre-pump fingerprint:
+      <span class="stat">71% preceded by a dip</span> |
+      <span class="stat">35% showed rising volume</span> |
+      <span class="stat">32% had 2x+ volume spike at start</span> |
+      <span class="stat">RSI 30-45 sweet spot</span>
+    </div>
+    <div class="ctrl" style="margin-top:14px">
+      <div><span id="statusMsg">Loading data...</span></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="color:var(--dim);font-size:11px" id="scanInfo">--</span>
+        <button class="btn btn-scan" id="scanBtn" onclick="runScan()">Scan Top Pairs</button>
+        <button class="btn btn-mon" onclick="monitor()">Monitor</button>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="lb">Total Scanned</div><div class="vl" id="sTotal">--</div></div>
+      <div class="stat-card"><div class="lb">High (45+)</div><div class="vl" style="color:var(--cyan)" id="sHigh">--</div></div>
+      <div class="stat-card"><div class="lb">Extreme (60+)</div><div class="vl" style="color:var(--gold)" id="sExtreme">--</div></div>
+      <div class="stat-card"><div class="lb">Win Rate</div><div class="vl" style="color:var(--green)" id="sWinRate">--</div></div>
+      <div class="stat-card"><div class="lb">Avg P&L</div><div class="vl" id="sAvgPnl">--</div></div>
+      <div class="stat-card"><div class="lb">Resolved</div><div class="vl" id="sResolved">--</div></div>
+    </div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('picks')">Pump Candidates</div>
+      <div class="tab" onclick="switchTab('movers')">Score Movers</div>
+      <div class="tab" onclick="switchTab('performance')">Performance</div>
+      <div class="tab" onclick="switchTab('audit')">Audit Log</div>
+    </div>
+    <div id="tab-picks" class="tab-panel active">
+      <div style="font-size:14px;font-weight:600;margin-bottom:10px">PUMP-READY CANDIDATES <span style="font-size:11px;color:var(--dim);font-weight:400">Ranked by pump score. Higher = more pre-pump fingerprint matches.</span></div>
+      <div id="picksContainer"><div class="empty">Loading latest scan data...</div></div>
+    </div>
+    <div id="tab-movers" class="tab-panel">
+      <div style="font-size:14px;font-weight:600;margin-bottom:10px">SCORE MOVERS <span style="font-size:11px;color:var(--dim);font-weight:400">Pairs whose pump score changed most between scans.</span></div>
+      <div id="moversContainer"><div class="empty">Loading...</div></div>
+    </div>
+    <div id="tab-performance" class="tab-panel">
+      <div style="font-size:14px;font-weight:600;margin-bottom:10px">TRACK RECORD <span style="font-size:11px;color:var(--dim);font-weight:400">How picks performed after being flagged.</span></div>
+      <div id="perfContainer"><div class="empty">Loading performance...</div></div>
+    </div>
+    <div id="tab-audit" class="tab-panel">
+      <div style="font-size:14px;font-weight:600;margin-bottom:10px">AUDIT LOG <span style="font-size:11px;color:var(--dim);font-weight:400">Full transparency of every scan and decision.</span></div>
+      <div id="auditContainer"><div class="empty">Loading...</div></div>
+    </div>
+  </div>
+  <script>
+    var API = '/findcryptopairs/api/pump_forensics.php';
+    var KEY = 'pump_forensics_2026';
+    var scanOffset = 0;
+    var scanId = '';
+
+    function setStatus(m) { document.getElementById('statusMsg').textContent = m; }
+
+    function switchTab(name) {
+      var tabs = document.querySelectorAll('.tab');
+      var panels = document.querySelectorAll('.tab-panel');
+      for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+      for (var i = 0; i < panels.length; i++) panels[i].classList.remove('active');
+      event.target.classList.add('active');
+      document.getElementById('tab-' + name).classList.add('active');
+      if (name === 'movers') loadMovers();
+      if (name === 'performance') loadPerformance();
+      if (name === 'audit') loadAudit();
+    }
+
+    function runScan() {
+      if (!scanId) scanId = 'pscan_' + new Date().toISOString().slice(0, 16).replace(/[T:]/g, '-');
+      var btn = document.getElementById('scanBtn');
+      btn.disabled = true; btn.textContent = 'Scanning...';
+      setStatus('Scanning pairs against pump fingerprint model... (may take 30s+)');
+      fetch(API + '?action=scan_batch&key=' + KEY + '&offset=' + scanOffset + '&limit=10&scan_id=' + scanId)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          btn.disabled = false;
+          if (!data.ok) { setStatus('Error: ' + (data.error || '')); btn.textContent = 'Scan'; return; }
+          scanOffset = data.next_offset;
+          setStatus('Done! Scanned ' + data.processed + ' pairs. ' + data.latency_ms + 'ms');
+          document.getElementById('scanInfo').textContent = 'Offset: ' + scanOffset + '/' + data.total_pairs;
+          btn.textContent = 'Scan Next 10 (offset ' + scanOffset + ')';
+          loadWatchlist();
+          loadStatus();
+        })
+        .catch(function(e) { btn.disabled = false; btn.textContent = 'Scan'; setStatus('Error: ' + e.message); });
+    }
+
+    function loadWatchlist() {
+      var url = API + '?action=watchlist&min_score=20';
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.ok || !data.picks || data.picks.length === 0) {
+            document.getElementById('picksContainer').innerHTML = '<div class="empty">No pump candidates found yet. Waiting for next automated scan...</div>';
+            return;
+          }
+          var html = '';
+          for (var i = 0; i < data.picks.length; i++) {
+            var p = data.picks[i];
+            var score = parseFloat(p.pump_score) || 0;
+            var grade = (p.pump_grade || 'LOW').toLowerCase();
+            var gradeBadge = '';
+            if (grade === 'extreme') gradeBadge = '<span class="badge badge-extreme">EXTREME</span>';
+            else if (grade === 'very_high') gradeBadge = '<span class="badge badge-very_high">VERY HIGH</span>';
+            else if (grade === 'high') gradeBadge = '<span class="badge badge-high">HIGH</span>';
+            else gradeBadge = '<span class="badge badge-moderate">MODERATE</span>';
+            var scoreColor = score >= 60 ? 'var(--gold)' : score >= 45 ? 'var(--orange)' : score >= 30 ? 'var(--cyan)' : 'var(--dim)';
+            var pnl = p.pnl_pct ? parseFloat(p.pnl_pct) : null;
+            var pnlStr = pnl !== null && pnl !== 0 ? '<span style="color:' + (pnl >= 0 ? 'var(--green)' : 'var(--red)') + ';font-weight:700;margin-left:8px">' + (pnl >= 0 ? '+' : '') + pnl.toFixed(2) + '%</span>' : '';
+            var statusBadge = p.status === 'RESOLVED' ? '<span class="badge" style="background:rgba(34,197,94,0.15);color:var(--green);margin-left:6px">' + (p.exit_reason || 'RESOLVED') + '</span>' : '';
+
+            html += '<div class="pick-card ' + grade + '">';
+            html += '<div class="pick-top"><div><span class="pick-pair">' + cleanPair(p.pair) + '</span> ' + gradeBadge + statusBadge + pnlStr + '</div>';
+            html += '<div class="pick-score" style="color:' + scoreColor + '">' + Math.round(score) + '</div></div>';
+            html += '<div class="score-bar"><div class="score-bar-fill" style="width:' + score + '%;background:' + scoreColor + '"></div></div>';
+
+            var comps = [
+              {name: 'Volume Trend', val: parseFloat(p.vol_trend_score)||0, max: 15},
+              {name: 'Range Compression', val: parseFloat(p.range_comp_score)||0, max: 15},
+              {name: 'Dip Buy Setup', val: parseFloat(p.dip_buy_score)||0, max: 15},
+              {name: 'OBV Accumulation', val: parseFloat(p.obv_accum_score)||0, max: 15},
+              {name: 'RSI Setup', val: parseFloat(p.rsi_setup_score)||0, max: 10},
+              {name: 'Volume Spike', val: parseFloat(p.vol_spike_score)||0, max: 10},
+              {name: 'Momentum Shift', val: parseFloat(p.momentum_score)||0, max: 10},
+              {name: 'Consolidation', val: parseFloat(p.consolidation_score)||0, max: 10}
+            ];
+            html += '<div class="component-grid">';
+            for (var j = 0; j < comps.length; j++) {
+              var cc = comps[j];
+              var pct = cc.max > 0 ? (cc.val / cc.max) * 100 : 0;
+              var cColor = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--gold)' : pct > 0 ? 'var(--dim)' : 'var(--border)';
+              html += '<div class="comp"><div class="comp-name">' + cc.name + ' <span style="color:' + cColor + '">' + cc.val + '/' + cc.max + '</span></div>';
+              html += '<div class="comp-bar"><div class="comp-fill" style="width:' + pct + '%;background:' + cColor + '"></div></div></div>';
+            }
+            html += '</div>';
+            if (p.thesis) html += '<div class="thesis">' + p.thesis + '</div>';
+            html += '</div>';
+          }
+          document.getElementById('picksContainer').innerHTML = html;
+          setStatus(data.picks.length + ' candidates loaded. Auto-refreshes via GitHub Actions.');
+        });
+    }
+
+    function loadStatus() {
+      fetch(API + '?action=status')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.ok) return;
+          document.getElementById('sTotal').textContent = data.total_scans || 0;
+          document.getElementById('sHigh').textContent = data.high_score || 0;
+          document.getElementById('sExtreme').textContent = data.extreme_score || 0;
+        });
+      fetch(API + '?action=performance')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.ok) return;
+          document.getElementById('sWinRate').textContent = data.win_rate ? data.win_rate + '%' : '--';
+          var avgP = data.avg_pnl || 0;
+          document.getElementById('sAvgPnl').textContent = (avgP >= 0 ? '+' : '') + avgP + '%';
+          document.getElementById('sAvgPnl').style.color = avgP >= 0 ? 'var(--green)' : 'var(--red)';
+          document.getElementById('sResolved').textContent = data.total_resolved || 0;
+        });
+      fetch(API + '?action=latest_scan')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.ok) return;
+          var ls = data.latest;
+          document.getElementById('lastScan').textContent = 'Last scan: ' + (ls.last_scan || 'never') + ' (' + (ls.pairs_scanned || 0) + ' pairs)';
+        });
+    }
+
+    function loadMovers() {
+      fetch(API + '?action=top_movers')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.ok || !data.movers || data.movers.length === 0) {
+            document.getElementById('moversContainer').innerHTML = '<div class="empty">Need at least 2 scan cycles to compare. GitHub Actions runs every 4 hours.</div>';
+            return;
+          }
+          var html = '<div style="font-size:11px;color:var(--dim);margin-bottom:8px">Comparing scan ' + data.scan_now + ' vs ' + data.scan_prev + '</div>';
+          for (var i = 0; i < data.movers.length; i++) {
+            var m = data.movers[i];
+            var delta = parseFloat(m.delta);
+            var color = delta > 0 ? 'var(--green)' : 'var(--red)';
+            var arrow = delta > 0 ? '+' : '';
+            html += '<div class="mover-row"><div>' + cleanPair(m.pair) + ' <span style="color:var(--dim)">' + m.score_prev + ' &rarr; ' + m.score_now + '</span></div>';
+            html += '<div class="delta" style="color:' + color + '">' + arrow + delta + '</div></div>';
+          }
+          document.getElementById('moversContainer').innerHTML = html;
+        });
+    }
+
+    function loadPerformance() {
+      fetch(API + '?action=performance')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.ok) { document.getElementById('perfContainer').innerHTML = '<div class="empty">Error loading performance</div>'; return; }
+          var html = '<div class="perf-card"><h4>Overall Performance</h4>';
+          html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;font-size:13px">';
+          html += '<div><span style="color:var(--dim)">Win Rate</span><br><strong style="font-size:20px;color:var(--green)">' + (data.win_rate || 0) + '%</strong></div>';
+          html += '<div><span style="color:var(--dim)">Wins</span><br><strong style="font-size:20px;color:var(--green)">' + (data.wins || 0) + '</strong></div>';
+          html += '<div><span style="color:var(--dim)">Losses</span><br><strong style="font-size:20px;color:var(--red)">' + (data.losses || 0) + '</strong></div>';
+          html += '<div><span style="color:var(--dim)">Expired</span><br><strong style="font-size:20px;color:var(--dim)">' + (data.expired || 0) + '</strong></div>';
+          html += '<div><span style="color:var(--dim)">Avg PnL</span><br><strong style="font-size:20px;color:' + (data.avg_pnl >= 0 ? 'var(--green)' : 'var(--red)') + '">' + (data.avg_pnl >= 0 ? '+' : '') + (data.avg_pnl || 0) + '%</strong></div>';
+          html += '<div><span style="color:var(--dim)">Active Picks</span><br><strong style="font-size:20px">' + (data.open_picks || 0) + '</strong></div>';
+          html += '</div>';
+          if (data.best_trade) html += '<div style="margin-top:8px;font-size:11px;color:var(--dim)">Best trade: ' + cleanPair(data.best_trade.pair || '') + ' <span style="color:var(--green)">+' + (data.best_trade.pnl_pct || 0) + '%</span></div>';
+          if (data.worst_trade) html += '<div style="font-size:11px;color:var(--dim)">Worst trade: ' + cleanPair(data.worst_trade.pair || '') + ' <span style="color:var(--red)">' + (data.worst_trade.pnl_pct || 0) + '%</span></div>';
+          html += '</div>';
+          html += '<div class="perf-card"><h4>How Data Updates</h4>';
+          html += '<div style="font-size:12px;color:var(--dim);line-height:1.6">';
+          html += '<strong style="color:var(--cyan)">GitHub Actions Automated Pipeline:</strong><br>';
+          html += '&bull; <strong>Every 30 minutes</strong> &mdash; Monitor action checks live Kraken prices against all active picks. Resolves TP/SL/expired picks automatically.<br>';
+          html += '&bull; <strong>Every 4 hours</strong> &mdash; Full rescan of all 231 Kraken USD pairs. Re-scores each pair against the 8-component pump fingerprint model. Stores results with unique scan_id for comparison.<br>';
+          html += '&bull; <strong>Manual trigger</strong> &mdash; "Scan Top Pairs" button on this page also runs live scans on demand.<br>';
+          html += '&bull; <strong>Dashboard auto-refresh</strong> &mdash; This page auto-refreshes data every 5 minutes from the latest scan stored in the database.<br>';
+          html += '</div></div>';
+          document.getElementById('perfContainer').innerHTML = html;
+        });
+    }
+
+    function loadAudit() {
+      fetch(API + '?action=audit')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.ok || !data.logs || data.logs.length === 0) {
+            document.getElementById('auditContainer').innerHTML = '<div class="empty">No audit logs yet.</div>';
+            return;
+          }
+          var html = '';
+          for (var i = 0; i < data.logs.length; i++) {
+            var l = data.logs[i];
+            html += '<div class="audit-entry"><span class="phase">[' + l.phase + ']</span> <span style="color:var(--gold)">' + l.scan_id + '</span> &mdash; ' + l.detail + ' <span style="color:var(--dim);font-size:10px">' + l.created_at + '</span></div>';
+          }
+          document.getElementById('auditContainer').innerHTML = html;
+        });
+    }
+
+    function monitor() {
+      setStatus('Monitoring active picks...');
+      fetch(API + '?action=monitor')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.ok) { setStatus('Monitored ' + (data.checked || 0) + ' picks, ' + (data.resolved || 0) + ' resolved.'); loadWatchlist(); loadStatus(); }
+        });
+    }
+
+    function cleanPair(p) {
+      return p.replace(/^X+/, '').replace(/^Z+(?=USD)/, '').replace('ZUSD', '/USD').replace('USD', '/USD');
+    }
+
+    // Initial load
+    loadStatus();
+    loadWatchlist();
+
+    // Auto-refresh every 5 minutes
+    setInterval(function() {
+      loadStatus();
+      loadWatchlist();
+    }, 300000);
+  </script>
+</body>
+</html>

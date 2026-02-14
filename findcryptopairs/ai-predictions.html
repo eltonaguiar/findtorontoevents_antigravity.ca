@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Prediction Tracker | My Personal Calls</title>
+  <style>
+    :root {
+      --bg: #0a0a1a;
+      --card: #12122a;
+      --border: #2a2a4a;
+      --text: #e0e0f0;
+      --dim: #8888aa;
+      --green: #22c55e;
+      --red: #ef4444;
+      --gold: #f59e0b;
+      --accent: #e879f9;
+      --cyan: #06b6d4;
+      --purple: #a855f7;
+      --radius: 12px
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh
+    }
+
+    .header {
+      text-align: center;
+      padding: 32px 20px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06)
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 200;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #fff;
+      margin-bottom: 8px
+    }
+
+    .header .sub {
+      color: var(--dim);
+      font-size: 14px;
+      margin-bottom: 4px
+    }
+
+    .header .ai-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--purple), var(--accent));
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 8px
+    }
+
+    .nav {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      padding: 14px;
+      flex-wrap: wrap
+    }
+
+    .nav a {
+      font-size: 12px;
+      padding: 4px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      color: var(--dim);
+      text-decoration: none;
+      transition: all 0.15s
+    }
+
+    .nav a:hover,
+    .nav a.active {
+      border-color: var(--purple);
+      color: var(--purple);
+      background: rgba(168, 85, 247, 0.08)
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px
+    }
+
+    .refresh-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+      font-size: 12px
+    }
+
+    .refresh-bar .status {
+      color: var(--dim)
+    }
+
+    .refresh-bar .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--purple);
+      display: inline-block;
+      margin-right: 6px;
+      animation: pulse-dot 2s infinite
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1 }
+      50% { opacity: 0.3 }
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center
+    }
+
+    .stat-card .label {
+      font-size: 11px;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 1px
+    }
+
+    .stat-card .value {
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 4px
+    }
+
+    .stat-card .value.green { color: var(--green) }
+    .stat-card .value.red { color: var(--red) }
+    .stat-card .value.gold { color: var(--gold) }
+    .stat-card .value.cyan { color: var(--cyan) }
+    .stat-card .value.accent { color: var(--accent) }
+    .stat-card .value.purple { color: var(--purple) }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .section-title .ai-icon {
+      color: var(--purple);
+      font-size: 18px
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600
+    }
+
+    .badge-open {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--cyan)
+    }
+
+    .badge-win {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--green)
+    }
+
+    .badge-loss {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--red)
+    }
+
+    .badge-expired {
+      background: rgba(136, 136, 170, 0.15);
+      color: var(--dim)
+    }
+
+    .pred-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: border-color 0.2s
+    }
+
+    .pred-card:hover {
+      border-color: rgba(255, 255, 255, 0.15)
+    }
+
+    .pred-card.winning { border-left: 3px solid var(--green) }
+    .pred-card.losing { border-left: 3px solid var(--red) }
+    .pred-card.resolved-win { border-left: 3px solid var(--green); opacity: 0.85 }
+    .pred-card.resolved-loss { border-left: 3px solid var(--red); opacity: 0.85 }
+
+    .pred-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px
+    }
+
+    .pred-symbol {
+      font-size: 20px;
+      font-weight: 700
+    }
+
+    .pred-ai-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--dim);
+      margin-bottom: 6px
+    }
+
+    .ai-brain {
+      color: var(--purple)
+    }
+
+    .pred-confidence {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 10px;
+      font-weight: 700;
+      text-transform: uppercase
+    }
+
+    .conf-high {
+      background: rgba(34, 197, 94, 0.2);
+      color: var(--green)
+    }
+
+    .conf-medium {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--gold)
+    }
+
+    .conf-lean {
+      background: rgba(6, 182, 212, 0.2);
+      color: var(--cyan)
+    }
+
+    .pred-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 8px;
+      margin-bottom: 10px
+    }
+
+    .pred-field {
+      font-size: 12px
+    }
+
+    .pred-field .fl {
+      color: var(--dim);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px
+    }
+
+    .pred-field .fv {
+      font-weight: 600;
+      margin-top: 2px
+    }
+
+    .pred-thesis {
+      font-size: 12px;
+      color: var(--dim);
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      margin-top: 8px;
+      line-height: 1.5
+    }
+
+    .pred-thesis strong {
+      color: var(--text)
+    }
+
+    .pnl-bar {
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.05);
+      margin-top: 10px;
+      position: relative;
+      overflow: hidden
+    }
+
+    .pnl-bar .fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.5s ease
+    }
+
+    .pnl-bar .fill.green { background: var(--green) }
+    .pnl-bar .fill.red { background: var(--red) }
+
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--dim);
+      margin-top: 4px
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--dim)
+    }
+
+    .empty-state .big {
+      font-size: 48px;
+      margin-bottom: 12px
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--dim);
+      font-size: 14px
+    }
+
+    .loading .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top: 3px solid var(--purple);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px
+    }
+
+    @keyframes spin { to { transform: rotate(360deg) } }
+
+    .make-prediction {
+      background: linear-gradient(135deg, var(--purple), var(--accent));
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: transform 0.2s, box-shadow 0.2s
+    }
+
+    .make-prediction:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(168, 85, 247, 0.3)
+    }
+
+    .prediction-form {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column
+    }
+
+    .form-group label {
+      font-size: 12px;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: var(--text);
+      font-size: 14px
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--purple);
+      box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2)
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--dim);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer
+    }
+
+    .btn-primary {
+      background: var(--purple);
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600
+    }
+
+    @media (max-width: 600px) {
+      .pred-grid { grid-template-columns: repeat(2, 1fr) }
+      .stats-row { grid-template-columns: repeat(2, 1fr) }
+      .stat-card .value { font-size: 22px }
+      .form-grid { grid-template-columns: 1fr }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <h1>AI Prediction Tracker</h1>
+    <div class="sub">My Personal Crypto Predictions & Market Calls</div>
+    <div class="ai-badge">🤖 Powered by Grok AI</div>
+  </div>
+
+  <div class="nav">
+    <a href="meme.html">Meme Scanner</a>
+    <a href="predictions.html">Auto Predictions</a>
+    <a href="ai-predictions.html" class="active">AI Predictions</a>
+    <a href="winners.html">Winners</a>
+  </div>
+
+  <div class="container">
+    <!-- Make Prediction Button -->
+    <button class="make-prediction" onclick="togglePredictionForm()">
+      🤖 Make New AI Prediction
+    </button>
+
+    <!-- Prediction Form -->
+    <div class="prediction-form" id="predictionForm">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="symbol">Symbol</label>
+          <input type="text" id="symbol" placeholder="BTC, ETH, DOGE..." required>
+        </div>
+        <div class="form-group">
+          <label for="direction">Direction</label>
+          <select id="direction">
+            <option value="LONG">LONG (Bullish)</option>
+            <option value="SHORT">SHORT (Bearish)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="entry">Entry Price ($)</label>
+          <input type="number" id="entry" step="0.00000001" placeholder="0.00" required>
+        </div>
+        <div class="form-group">
+          <label for="tp_pct">Take Profit (%)</label>
+          <input type="number" id="tp_pct" step="0.1" value="6.0" required>
+        </div>
+        <div class="form-group">
+          <label for="sl_pct">Stop Loss (%)</label>
+          <input type="number" id="sl_pct" step="0.1" value="3.0" required>
+        </div>
+        <div class="form-group">
+          <label for="confidence">Confidence</label>
+          <select id="confidence">
+            <option value="HIGH">HIGH</option>
+            <option value="MEDIUM" selected>MEDIUM</option>
+            <option value="LEAN">LEAN</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="timeframe">Timeframe</label>
+          <select id="timeframe">
+            <option value="24h" selected>24 hours</option>
+            <option value="48h">48 hours</option>
+            <option value="72h">72 hours</option>
+            <option value="1w">1 week</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="thesis">AI Analysis & Thesis</label>
+        <textarea id="thesis" placeholder="Explain your prediction reasoning, technical analysis, market context, and expected outcome..." required></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn-secondary" onclick="togglePredictionForm()">Cancel</button>
+        <button class="btn-primary" onclick="submitPrediction()">Submit Prediction</button>
+      </div>
+    </div>
+
+    <!-- Refresh bar -->
+    <div class="refresh-bar">
+      <div>
+        <span class="live-dot"></span>
+        <span id="statusText">Connecting to Kraken...</span>
+      </div>
+      <div class="status" id="lastUpdate">--</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card">
+        <div class="label">Total Predictions</div>
+        <div class="value cyan" id="statTotal">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Active</div>
+        <div class="value accent" id="statOpen">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Win Rate</div>
+        <div class="value green" id="statWinRate">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Wins</div>
+        <div class="value green" id="statWins">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Losses</div>
+        <div class="value red" id="statLosses">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Avg P&L</div>
+        <div class="value" id="statAvgPnl">--</div>
+      </div>
+    </div>
+
+    <!-- Open Predictions -->
+    <div class="section-title">
+      <span class="ai-icon">🤖</span> ACTIVE AI PREDICTIONS <span class="badge badge-open" id="openBadge">0 active</span>
+    </div>
+    <div id="openPredictions">
+      <div class="loading">
+        <div class="spinner"></div>
+        Fetching live prices from Kraken...
+      </div>
+    </div>
+
+    <!-- Resolved Predictions -->
+    <div class="section-title" style="margin-top: 30px">
+      RESOLVED <span class="badge badge-win" id="resolvedBadge">--</span>
+    </div>
+    <div id="resolvedPredictions">
+      <div class="loading">
+        <div class="spinner"></div>
+        Loading prediction history...
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var API_BASE = '/findcryptopairs/api/ai_prediction_tracker.php';
+    var API_KEY = 'ai_predict2026';
+    var REFRESH_SECONDS = 30;
+    var refreshTimer = null;
+
+    function formatPrice(p) {
+      p = parseFloat(p);
+      if (isNaN(p)) return '--';
+      if (p >= 1) return '$' + p.toFixed(4);
+      if (p >= 0.01) return '$' + p.toFixed(6);
+      if (p >= 0.0001) return '$' + p.toFixed(8);
+      return '$' + p.toFixed(10);
+    }
+
+    function pnlColor(pnl) {
+      return parseFloat(pnl) >= 0 ? 'green' : 'red';
+    }
+
+    function pnlSign(pnl) {
+      var v = parseFloat(pnl);
+      if (isNaN(v)) return '--';
+      return (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+    }
+
+    function confClass(conf) {
+      conf = (conf || '').toUpperCase();
+      if (conf === 'HIGH' || conf === 'STRONG') return 'conf-high';
+      if (conf === 'MEDIUM' || conf === 'BUY') return 'conf-medium';
+      return 'conf-lean';
+    }
+
+    function timeSince(dateStr) {
+      if (!dateStr) return '--';
+      var created = new Date(dateStr + ' UTC');
+      var now = new Date();
+      var diff = (now - created) / 1000;
+      if (diff < 60) return Math.floor(diff) + 's ago';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h ' + Math.floor((diff % 3600) / 60) + 'm ago';
+      return Math.floor(diff / 86400) + 'd ago';
+    }
+
+    function togglePredictionForm() {
+      var form = document.getElementById('predictionForm');
+      form.style.display = form.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function submitPrediction() {
+      var symbol = document.getElementById('symbol').value.trim().toUpperCase();
+      var direction = document.getElementById('direction').value;
+      var entry = parseFloat(document.getElementById('entry').value);
+      var tp_pct = parseFloat(document.getElementById('tp_pct').value);
+      var sl_pct = parseFloat(document.getElementById('sl_pct').value);
+      var confidence = document.getElementById('confidence').value;
+      var timeframe = document.getElementById('timeframe').value;
+      var thesis = document.getElementById('thesis').value.trim();
+
+      if (!symbol || isNaN(entry) || !thesis) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      var params = new URLSearchParams({
+        action: 'predict',
+        key: API_KEY,
+        symbol: symbol,
+        direction: direction,
+        entry: entry,
+        tp_pct: tp_pct,
+        sl_pct: sl_pct,
+        confidence: confidence,
+        timeframe: timeframe,
+        thesis: thesis,
+        ai_model: 'Grok'
+      });
+
+      fetch(API_BASE + '?' + params)
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.ok) {
+            alert('AI Prediction recorded! Will be monitored live.');
+            togglePredictionForm();
+            // Clear form
+            document.getElementById('symbol').value = '';
+            document.getElementById('entry').value = '';
+            document.getElementById('thesis').value = '';
+            // Refresh data
+            fetchAndRender();
+          } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+          }
+        })
+        .catch(function (err) {
+          alert('Network error: ' + err.message);
+        });
+    }
+
+    function renderOpenCard(p) {
+      var pnl = parseFloat(p.live_pnl_pct || p.pnl_pct || 0);
+      var cardClass = pnl >= 0 ? 'winning' : 'losing';
+      var tp = parseFloat(p.tp_pct);
+      var sl = parseFloat(p.sl_pct);
+      var totalRange = tp + sl;
+      var barPct = Math.min(Math.max(((pnl + sl) / totalRange) * 100, 0), 100);
+      var barColor = pnl >= 0 ? 'green' : 'red';
+
+      var distTp = p.dist_to_tp_pct !== undefined ? p.dist_to_tp_pct + '% to TP' : '';
+      var distSl = p.dist_to_sl_pct !== undefined ? p.dist_to_sl_pct + '% to SL' : '';
+
+      return '<div class="pred-card ' + cardClass + '">' +
+        '<div class="pred-top">' +
+          '<div><span class="pred-symbol">' + p.symbol + '</span> ' +
+          '<span style="color:var(--dim);font-size:12px">' + p.direction + ' / ' + p.timeframe + '</span></div>' +
+          '<div><span class="pred-confidence ' + confClass(p.confidence) + '">' + p.confidence + '</span>' +
+          ' <span style="font-size:20px;font-weight:700;color:var(--' + pnlColor(pnl) + ')">' + pnlSign(pnl) + '</span></div>' +
+        '</div>' +
+        '<div class="pred-ai-info">' +
+          '<span class="ai-brain">🤖</span> <span>' + (p.ai_model || 'Grok') + ' AI Prediction</span>' +
+        '</div>' +
+        '<div class="pred-grid">' +
+          '<div class="pred-field"><div class="fl">Entry</div><div class="fv">' + formatPrice(p.entry_price) + '</div></div>' +
+          '<div class="pred-field"><div class="fl">Live Price</div><div class="fv" style="color:var(--' + pnlColor(pnl) + ')">' + formatPrice(p.live_price || p.current_price) + '</div></div>' +
+          '<div class="pred-field"><div class="fl">Take Profit</div><div class="fv" style="color:var(--green)">' + formatPrice(p.tp_price) + ' (+' + tp + '%)</div></div>' +
+          '<div class="pred-field"><div class="fl">Stop Loss</div><div class="fv" style="color:var(--red)">' + formatPrice(p.sl_price) + ' (-' + sl + '%)</div></div>' +
+          '<div class="pred-field"><div class="fl">Peak P&L</div><div class="fv">' + pnlSign(p.peak_pnl_pct) + '</div></div>' +
+          '<div class="pred-field"><div class="fl">Open For</div><div class="fv">' + (p.hours_open ? p.hours_open + 'h' : timeSince(p.created_at)) + '</div></div>' +
+        '</div>' +
+        '<div class="pnl-bar"><div class="fill ' + barColor + '" style="width:' + barPct + '%"></div></div>' +
+        '<div class="progress-labels"><span>SL -' + sl + '%</span><span>Entry</span><span>TP +' + tp + '%</span></div>' +
+        (p.thesis ? '<div class="pred-thesis"><strong>AI Analysis:</strong> ' + p.thesis + '</div>' : '') +
+      '</div>';
+    }
+
+    function renderResolvedCard(p) {
+      var pnl = parseFloat(p.pnl_pct || 0);
+      var isWin = p.exit_reason === 'TP_HIT';
+      var isExpired = p.exit_reason === 'EXPIRED_48H';
+      var cardClass = isWin ? 'resolved-win' : 'resolved-loss';
+
+      var badgeClass = isWin ? 'badge-win' : (isExpired ? 'badge-expired' : 'badge-loss');
+      var badgeText = isWin ? 'WIN' : (isExpired ? 'EXPIRED' : 'LOSS');
+      var icon = isWin ? '&#10004;' : (isExpired ? '&#8987;' : '&#10008;');
+
+      return '<div class="pred-card ' + cardClass + '">' +
+        '<div class="pred-top">' +
+          '<div><span class="pred-symbol">' + p.symbol + '</span> ' +
+          '<span class="badge ' + badgeClass + '">' + icon + ' ' + badgeText + '</span></div>' +
+          '<div style="font-size:20px;font-weight:700;color:var(--' + pnlColor(pnl) + ')">' + pnlSign(pnl) + '</div>' +
+        '</div>' +
+        '<div class="pred-ai-info">' +
+          '<span class="ai-brain">🤖</span> <span>' + (p.ai_model || 'Grok') + ' AI Prediction</span>' +
+        '</div>' +
+        '<div class="pred-grid">' +
+          '<div class="pred-field"><div class="fl">Entry</div><div class="fv">' + formatPrice(p.entry_price) + '</div></div>' +
+          '<div class="pred-field"><div class="fl">Exit</div><div class="fv" style="color:var(--' + pnlColor(pnl) + ')">' + formatPrice(p.exit_price) + '</div></div>' +
+          '<div class="pred-field"><div class="fl">Peak P&L</div><div class="fv">' + pnlSign(p.peak_pnl_pct) + '</div></div>' +
+          '<div class="pred-field"><div class="fl">Trough P&L</div><div class="fv">' + pnlSign(p.trough_pnl_pct) + '</div></div>' +
+          '<div class="pred-field"><div class="fl">Confidence</div><div class="fv">' + p.confidence + '</div></div>' +
+          '<div class="pred-field"><div class="fl">Resolved</div><div class="fv">' + timeSince(p.resolved_at) + '</div></div>' +
+        '</div>' +
+        (p.thesis ? '<div class="pred-thesis"><strong>AI Analysis:</strong> ' + p.thesis + '</div>' : '') +
+      '</div>';
+    }
+
+    function fetchAndRender() {
+      document.getElementById('statusText').textContent = 'Checking live prices...';
+
+      // Fetch monitor (open predictions with live prices)
+      fetch(API_BASE + '?action=monitor')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data.ok) {
+            document.getElementById('statusText').textContent = 'Error: ' + (data.error || 'unknown');
+            return;
+          }
+
+          var openEl = document.getElementById('openPredictions');
+          var resolvedEl = document.getElementById('resolvedPredictions');
+
+          // Render open predictions
+          var openList = data.open_predictions || [];
+          if (openList.length === 0) {
+            openEl.innerHTML = '<div class="empty-state"><div class="big">&#129302;</div>No active AI predictions right now.<br>Make your first prediction above!</div>';
+          } else {
+            var html = '';
+            for (var i = 0; i < openList.length; i++) {
+              html += renderOpenCard(openList[i]);
+            }
+            openEl.innerHTML = html;
+          }
+          document.getElementById('openBadge').textContent = openList.length + ' active';
+
+          // Render resolved
+          var resolvedList = (data.just_resolved || []).concat(data.recent_resolved || []);
+          // Deduplicate by id
+          var seen = {};
+          var unique = [];
+          for (var j = 0; j < resolvedList.length; j++) {
+            if (!seen[resolvedList[j].id]) {
+              seen[resolvedList[j].id] = true;
+              unique.push(resolvedList[j]);
+            }
+          }
+
+          if (unique.length === 0) {
+            resolvedEl.innerHTML = '<div class="empty-state"><div class="big">&#9203;</div>No resolved predictions yet.<br>Waiting for TP or SL to be hit...</div>';
+          } else {
+            var rhtml = '';
+            for (var k = 0; k < unique.length; k++) {
+              rhtml += renderResolvedCard(unique[k]);
+            }
+            resolvedEl.innerHTML = rhtml;
+          }
+
+          var wins = 0, losses = 0;
+          for (var m = 0; m < unique.length; m++) {
+            if (unique[m].exit_reason === 'TP_HIT') wins++;
+            else if (unique[m].exit_reason === 'SL_HIT') losses++;
+          }
+          document.getElementById('resolvedBadge').textContent = unique.length + ' resolved';
+
+          document.getElementById('statusText').textContent = 'Live — ' + openList.length + ' predictions being tracked';
+          document.getElementById('lastUpdate').textContent = 'Updated: ' + new Date().toLocaleTimeString() + ' (every ' + REFRESH_SECONDS + 's)';
+        })
+        .catch(function (err) {
+          document.getElementById('statusText').textContent = 'Fetch error: ' + err.message;
+        });
+
+      // Fetch stats
+      fetch(API_BASE + '?action=stats')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data.ok) return;
+          var s = data.overall;
+          document.getElementById('statTotal').textContent = s.total_predictions;
+          document.getElementById('statOpen').textContent = s.open;
+          document.getElementById('statWinRate').textContent = s.win_rate + '%';
+          document.getElementById('statWins').textContent = s.wins;
+          document.getElementById('statLosses').textContent = s.losses;
+
+          var avgEl = document.getElementById('statAvgPnl');
+          if (s.avg_pnl !== null) {
+            avgEl.textContent = (s.avg_pnl >= 0 ? '+' : '') + s.avg_pnl + '%';
+            avgEl.className = 'value ' + (s.avg_pnl >= 0 ? 'green' : 'red');
+          } else {
+            avgEl.textContent = '--';
+            avgEl.className = 'value';
+          }
+        })
+        .catch(function () {});
+    }
+
+    // Initial load
+    fetchAndRender();
+
+    // Auto-refresh
+    refreshTimer = setInterval(fetchAndRender, REFRESH_SECONDS * 1000);
+  </script>
+</body>
+
+</html>

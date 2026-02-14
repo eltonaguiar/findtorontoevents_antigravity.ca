@@ -1,0 +1,136 @@
+// DOGE Final Optimized v2.2 - Tweaked for Profitability
+//@version=5
+strategy("DOGE Final v2.2", shorttitle="DOGE v2.2", overlay=true, initial_capital=10000, default_qty_type=strategy.percent_of_equity, default_qty_value=10, commission_type=strategy.commission.percent, commission_value=0.1, slippage=1)
+
+// INPUTS
+tf1 = input.timeframe("60", "Primary TF")
+tf2 = input.timeframe("240", "Secondary TF") 
+tf3 = input.timeframe("D", "Daily TF")
+min1hChange = input.float(1.0, "Min 1h Momentum %", minval=0.5, maxval=5.0, step=0.5)
+min4hChange = input.float(1.5, "Min 4h Momentum %", minval=1.0, maxval=10.0, step=0.5)
+compositeThreshold = input.int(65, "Composite Score Threshold", minval=50, maxval=90, step=5)
+minVolumeUSD = input.float(400000, "Min 24h Volume (USD)", minval=100000, maxval=5000000, step=100000)
+rsiLength = input.int(14, "RSI Length")
+rsiOverbought = input.int(85, "RSI Overbought")
+rsiMin = input.int(30, "RSI Minimum")
+stopLossPct = input.float(3.5, "Stop Loss %", minval=2.0, maxval=10.0, step=0.5)
+takeProfitPct = input.float(25.0, "Take Profit %", minval=10.0, maxval=50.0, step=1.0)
+trailingStop = input.bool(true, "Use Trailing Stop")
+trailingStopPct = input.float(15.0, "Trailing Stop %", minval=5.0, maxval=25.0, step=1.0)
+tradeCooldownBars = input.int(2, "Trade Cooldown (bars)", minval=1, maxval=10)
+
+// DATA
+currentClose = request.security(syminfo.tickerid, tf1, close)
+currentOpen = request.security(syminfo.tickerid, tf1, open)
+currentVolume = request.security(syminfo.tickerid, tf1, volume)
+tf2Close = request.security(syminfo.tickerid, tf2, close)
+tf2Open = request.security(syminfo.tickerid, tf2, open)
+tf2Change = ((tf2Close - tf2Open) / tf2Open) * 100
+tf3Close = request.security(syminfo.tickerid, tf3, close)
+tf3Open = request.security(syminfo.tickerid, tf3, open)
+tf3Change = ((tf3Close - tf3Open) / tf3Open) * 100
+
+// INDICATORS
+rsi = ta.rsi(close, rsiLength)
+volumeSMA = ta.sma(volume, 20)
+volumeSpike = currentVolume > (volumeSMA * 1.2)
+volume24h = volumeSMA * 24 * close
+change1h = ((currentClose - currentOpen) / currentOpen) * 100
+ema12 = ta.ema(close, 12)
+ema26 = ta.ema(close, 26)
+trendBullish = ema12 > ema26
+
+// SCORING
+score1h = change1h >= min1hChange ? 25 : (change1h > 0 ? (change1h / min1hChange) * 20 : 0)
+score4h = tf2Change >= min4hChange ? 25 : (tf2Change > 0 ? (tf2Change / min4hChange) * 20 : 0)
+scoreDaily = tf3Change > 0 ? 25 : math.max(0, 15 + (tf3Change / 2))
+rsiScore = rsi >= rsiMin and rsi <= 60 ? 25 : (rsi > 60 and rsi <= rsiOverbought ? 20 : (rsi > rsiOverbought ? 5 : (rsi < rsiMin ? 10 : 0)))
+volumeScore = volumeSpike and volume24h > minVolumeUSD ? 15 : (volume24h > minVolumeUSD ? 10 : 0)
+trendBonus = trendBullish ? 10 : 0
+compositeScore = score1h + score4h + scoreDaily + rsiScore + volumeScore + trendBonus
+
+// PATTERNS
+breakoutPattern = change1h > min1hChange and tf2Change > 0 and tf3Change > -3
+continuationPattern = change1h > 0.5 and tf2Change > 1.5 and tf3Change > 4
+dipRecovery = change1h > 0.8 and tf2Change < 0 and tf2Change > -6 and tf3Change > 2
+earlyMomentum = change1h > min1hChange * 1.3 and tf2Change < min4hChange and tf3Change > -4
+patternLabel = breakoutPattern ? "BREAKOUT" : (continuationPattern ? "CONTINUATION" : (dipRecovery ? "DIP" : (earlyMomentum ? "EARLY" : "NONE")))
+
+// RISK
+parabolicWarning = tf3Change > 120 or (tf2Change > 60 and change1h < 1)
+lowVolumeWarning = volume24h < (minVolumeUSD * 0.4)
+chasingWarning = tf3Change > 35 and change1h < 1.5
+
+// COOLDOWN
+var int barsSinceLastTrade = 999
+cooldownMet = barsSinceLastTrade >= tradeCooldownBars
+barsSinceLastTrade := strategy.position_size > 0 ? 0 : barsSinceLastTrade + 1
+
+// ENTRY
+noPosition = strategy.position_size == 0
+hasPosition = strategy.position_size > 0
+
+longCondition = compositeScore >= compositeThreshold and not parabolicWarning and not lowVolumeWarning and not chasingWarning and trendBullish and rsi >= rsiMin and rsi <= rsiOverbought and volume24h >= minVolumeUSD and (breakoutPattern or continuationPattern or earlyMomentum or dipRecovery) and cooldownMet
+
+canEnterLong = longCondition and noPosition
+
+// EXIT
+longStopLoss = strategy.position_avg_price * (1 - stopLossPct / 100)
+longTakeProfit = strategy.position_avg_price * (1 + takeProfitPct / 100)
+var float trailStopPrice = na
+if hasPosition
+    trailStopPrice := na(trailStopPrice) ? close * (1 - trailingStopPct / 100) : math.max(trailStopPrice, close * (1 - trailingStopPct / 100))
+momentumReversal = change1h < -2.5 and tf2Change < -0.5
+rsiExit = rsi > 88
+trailHit = not na(trailStopPrice) and close < trailStopPrice
+
+// EXECUTION
+if canEnterLong
+    strategy.entry("Long", strategy.long, comment=patternLabel)
+    barsSinceLastTrade := 0
+
+if hasPosition
+    strategy.exit("TP/SL", "Long", limit=longTakeProfit, stop=longStopLoss)
+    if trailingStop and trailHit
+        strategy.close("Long", comment="Trail")
+    if momentumReversal
+        strategy.close("Long", comment="Reversal")
+    if rsiExit
+        strategy.close("Long", comment="RSI")
+
+// VISUALIZATION
+bgColor = compositeScore >= 75 ? color.new(color.green, 85) : (compositeScore >= compositeThreshold ? color.new(color.lime, 90) : (compositeScore >= 50 ? color.new(color.yellow, 90) : color.new(color.red, 95)))
+bgcolor(bgColor)
+plot(ema12, "EMA 12", color.blue, 2)
+plot(ema26, "EMA 26", color.orange, 1)
+plotshape(longCondition and noPosition, title="BUY", location=location.belowbar, color=color.green, style=shape.triangleup, size=size.normal, text="BUY", textcolor=color.white)
+plotshape(parabolicWarning and noPosition, title="PARABOLIC", location=location.abovebar, color=color.red, style=shape.triangledown, size=size.tiny, text="⚠")
+
+// TABLE
+var table infoTable = table.new(position.top_right, 2, 10, bgcolor=color.new(color.black, 15), frame_color=color.gray, frame_width=1)
+if barstate.islast
+    table.cell(infoTable, 0, 0, "🐕 DOGE v2.2", text_color=color.yellow)
+    table.cell(infoTable, 1, 0, "")
+    table.cell(infoTable, 0, 1, "Score", text_color=color.gray)
+    table.cell(infoTable, 1, 1, str.tostring(compositeScore, "#.") + "/100", text_color=compositeScore >= compositeThreshold ? color.green : (compositeScore >= 50 ? color.yellow : color.red))
+    table.cell(infoTable, 0, 2, "1h Chg", text_color=color.gray)
+    table.cell(infoTable, 1, 2, str.tostring(change1h, "#.##") + "%", text_color=change1h > 0 ? color.green : color.red)
+    table.cell(infoTable, 0, 3, "4h Chg", text_color=color.gray)
+    table.cell(infoTable, 1, 3, str.tostring(tf2Change, "#.##") + "%", text_color=tf2Change > 0 ? color.green : color.red)
+    table.cell(infoTable, 0, 4, "24h Chg", text_color=color.gray)
+    table.cell(infoTable, 1, 4, str.tostring(tf3Change, "#.##") + "%", text_color=tf3Change > 0 ? color.green : color.red)
+    table.cell(infoTable, 0, 5, "RSI", text_color=color.gray)
+    table.cell(infoTable, 1, 5, str.tostring(rsi, "#."), text_color=rsi > 75 ? color.red : (rsi < 35 ? color.yellow : color.green))
+    table.cell(infoTable, 0, 6, "Vol 24h", text_color=color.gray)
+    volText = volume24h > 1000000 ? "$" + str.tostring(volume24h/1000000, "#.") + "M" : "$" + str.tostring(volume24h/1000, "#.") + "K"
+    table.cell(infoTable, 1, 6, volText, text_color=volume24h >= minVolumeUSD ? color.green : color.red)
+    table.cell(infoTable, 0, 7, "Pattern", text_color=color.gray)
+    table.cell(infoTable, 1, 7, patternLabel, text_color=breakoutPattern ? color.green : (continuationPattern ? color.lime : color.gray))
+    table.cell(infoTable, 0, 8, "Cooldown", text_color=color.gray)
+    cdText = cooldownMet ? "READY" : str.tostring(tradeCooldownBars - barsSinceLastTrade) + " bars"
+    table.cell(infoTable, 1, 8, cdText, text_color=cooldownMet ? color.green : color.yellow)
+    table.cell(infoTable, 0, 9, "Position", text_color=color.gray)
+    table.cell(infoTable, 1, 9, hasPosition ? "LONG" : "NONE", text_color=hasPosition ? color.green : color.gray)
+
+alertcondition(longCondition and noPosition, title="DOGE Buy", message="🐕 DOGE Buy @ {{close}}")
+alertcondition(momentumReversal and hasPosition, title="DOGE Sell", message="🐕 DOGE Sell @ {{close}}")

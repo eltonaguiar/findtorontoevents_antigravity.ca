@@ -160,33 +160,6 @@ foreach ($universe as $stock) {
         if ($conn->query($sql)) {
             $seeded++;
             $ticker_seeded++;
-
-            // Audit Trail Logging
-            $audit_reasons = $stock['why'] . '. Tier ' . $stock['tier'] . ' (' . $stock['tier_name'] . ') in diversified ETF portfolio.';
-            $audit_supporting_data = json_encode(array(
-                'tier' =&gt; $stock['tier'],
-                'tier_name' =&gt; $stock['tier_name'],
-                'strategy' =&gt; 'etf_monthly_dca'
-            ));
-            $audit_pick_details = json_encode(array(
-                'entry_price' =&gt; $entry_price,
-                'score' =&gt; $score,
-                'rating' =&gt; $rating,
-                'risk_level' =&gt; $risk,
-                'timeframe' =&gt; '90d'
-            ));
-            $audit_formatted_for_ai = "Analyze this ETF pick:\nSymbol: " . $ticker . "\nStrategy: ETF Masters\nRationale: " . $audit_reasons . "\nSupporting Data: " . $audit_supporting_data . "\n\nQuestions:\n1. Is this ETF a good fit for diversification?\n2. What are its long-term prospects?";
-
-            $safe_reasons = $conn->real_escape_string($audit_reasons);
-            $safe_supporting = $conn->real_escape_string($audit_supporting_data);
-            $safe_details = $conn->real_escape_string($audit_pick_details);
-            $safe_formatted = $conn->real_escape_string($audit_formatted_for_ai);
-            $pick_timestamp = $pick_time;
-
-            $audit_sql = "INSERT INTO audit_trails 
-                          (asset_class, symbol, pick_timestamp, generation_source, reasons, supporting_data, pick_details, formatted_for_ai)
-                          VALUES ('STOCKS', '$safe_ticker', '$pick_timestamp', 'etf_portfolio.php', '$safe_reasons', '$safe_supporting', '$safe_details', '$safe_formatted')";
-            $conn->query($audit_sql);
         }
     }
     $per_ticker[$ticker] = array('tier' => $stock['tier'], 'tier_name' => $stock['tier_name'], 'seeded' => $ticker_seeded);

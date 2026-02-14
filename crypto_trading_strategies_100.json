@@ -1,0 +1,2935 @@
+{
+  "metadata": {
+    "total_strategies": 100,
+    "categories": 11,
+    "optimized_for": "High volatility cryptocurrency markets (meme coins, altcoins)",
+    "last_updated": "2026-02-13",
+    "version": "1.0"
+  },
+  "strategies": [
+    {
+      "id": 1,
+      "name": "RSI Momentum Divergence",
+      "category": "Momentum",
+      "entry_conditions": [
+        "Price makes lower low while RSI(14) makes higher low (bullish divergence)",
+        "RSI crosses above 40 from oversold territory",
+        "Volume increases 20% above 20-period average"
+      ],
+      "exit_conditions": [
+        "RSI reaches 70 (overbought)",
+        "Price closes below entry candle low",
+        "Trailing stop at 3 ATR(14) distance"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "2.5% below entry",
+        "take_profit": "1:2 risk-reward minimum",
+        "max_concurrent": 5
+      },
+      "why_works_volatile": "Divergences in high volatility often signal exhaustion of irrational selling, allowing traders to capture sharp reversals before the crowd recognizes the shift.",
+      "expected_performance": {
+        "win_rate": "55-60%",
+        "profit_factor": "1.8-2.2",
+        "max_drawdown": "15-20%",
+        "sharpe_ratio": "1.4-1.8"
+      }
+    },
+    {
+      "id": 2,
+      "name": "MACD Histogram Acceleration",
+      "category": "Momentum",
+      "entry_conditions": [
+        "MACD(12,26,9) histogram turns positive and expanding",
+        "Signal line crossed above zero within last 3 candles",
+        "Price above EMA(20)"
+      ],
+      "exit_conditions": [
+        "MACD histogram contracts for 2 consecutive bars",
+        "Price closes below EMA(20)",
+        "MACD line crosses below signal line"
+      ],
+      "timeframe": "30M, 1H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "ATR(14) * 2",
+        "take_profit": "1:2.5 risk-reward",
+        "breakeven_trigger": "1% profit"
+      },
+      "why_works_volatile": "Accelerating histogram momentum in volatile markets captures explosive moves early, as crypto assets often exhibit strong momentum persistence once initiated.",
+      "expected_performance": {
+        "win_rate": "52-58%",
+        "profit_factor": "1.9-2.4",
+        "max_drawdown": "12-18%",
+        "sharpe_ratio": "1.5-2.0"
+      }
+    },
+    {
+      "id": 3,
+      "name": "Stochastic Momentum Burst",
+      "category": "Momentum",
+      "entry_conditions": [
+        "Stochastic(14,3,3) %K crosses above %D below 20 level",
+        "Both lines turn upward with slope > 5 degrees",
+        "Price breaks above 5-period high"
+      ],
+      "exit_conditions": [
+        "Stochastic reaches 80 and turns down",
+        "%K crosses below %D",
+        "3 consecutive lower closes"
+      ],
+      "timeframe": "15M, 30M",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "1.8% fixed",
+        "take_profit": "Scale out at 1:1.5 and 1:3",
+        "time_stop": "Exit after 8 periods if no profit"
+      },
+      "why_works_volatile": "Stochastic crossovers from extreme levels in volatile crypto markets frequently precede rapid price expansions as momentum traders pile in.",
+      "expected_performance": {
+        "win_rate": "50-55%",
+        "profit_factor": "1.7-2.1",
+        "max_drawdown": "18-22%",
+        "sharpe_ratio": "1.2-1.6"
+      }
+    },
+    {
+      "id": 4,
+      "name": "Rate of Change (ROC) Surge",
+      "category": "Momentum",
+      "entry_conditions": [
+        "ROC(12) crosses above zero with value > 5%",
+        "Volume(24) > 1.5x average",
+        "Price above VWAP"
+      ],
+      "exit_conditions": [
+        "ROC turns negative",
+        "Price closes below VWAP",
+        "Trailing stop 2.5 ATR"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "3% of portfolio per trade",
+        "stop_loss": "Recent swing low",
+        "take_profit": "1:2 risk-reward",
+        "pyramid": "Add 50% on 2% additional gain"
+      },
+      "why_works_volatile": "ROC measures velocity directly; in crypto's explosive moves, early ROC surges identify breakouts before they become obvious to retail traders.",
+      "expected_performance": {
+        "win_rate": "48-54%",
+        "profit_factor": "1.8-2.3",
+        "max_drawdown": "20-25%",
+        "sharpe_ratio": "1.3-1.7"
+      }
+    },
+    {
+      "id": 5,
+      "name": "Awesome Oscillator Saucer",
+      "category": "Momentum",
+      "entry_conditions": [
+        "Awesome Oscillator histogram forms saucer pattern (3 bars: negative, less negative, positive)",
+        "AO value crosses above zero",
+        "Price above EMA(50)"
+      ],
+      "exit_conditions": [
+        "AO prints red bar after 3+ consecutive green bars",
+        "Price breaks below last swing low",
+        "Opposite saucer pattern forms"
+      ],
+      "timeframe": "2H, 4H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "Low of saucer formation bar",
+        "take_profit": "1:2.5 risk-reward",
+        "partial_exit": "50% at 1:1, remainder at 1:3"
+      },
+      "why_works_volatile": "The saucer pattern identifies momentum accumulation periods; in volatile crypto markets, these often precede violent upward moves as buying pressure builds.",
+      "expected_performance": {
+        "win_rate": "53-58%",
+        "profit_factor": "2.0-2.5",
+        "max_drawdown": "14-18%",
+        "sharpe_ratio": "1.6-2.1"
+      }
+    },
+    {
+      "id": 6,
+      "name": "CMO Zero Line Cross",
+      "category": "Momentum",
+      "entry_conditions": [
+        "Chande Momentum Oscillator(14) crosses above zero",
+        "CMO was below -20 within last 5 periods",
+        "Volume spike confirms (>2x average)"
+      ],
+      "exit_conditions": [
+        "CMO crosses below +50 overbought level",
+        "CMO crosses back below zero",
+        "Time-based exit after 12 periods"
+      ],
+      "timeframe": "1H, 2H",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "1.5% fixed",
+        "take_profit": "Scale out 1/3 at +3%, +6%, +10%",
+        "max_daily_loss": "6% of portfolio"
+      },
+      "why_works_volatile": "CMO's calculation using up/down days makes it responsive to crypto's violent swings, catching trend changes faster than RSI in volatile conditions.",
+      "expected_performance": {
+        "win_rate": "51-56%",
+        "profit_factor": "1.7-2.2",
+        "max_drawdown": "16-20%",
+        "sharpe_ratio": "1.4-1.8"
+      }
+    },
+    {
+      "id": 7,
+      "name": "Price Momentum Cross",
+      "category": "Momentum",
+      "entry_conditions": [
+        "Price closes above highest high of last 10 periods",
+        "Momentum(10) > 100 and increasing",
+        "Volume(20) > 1.5x average"
+      ],
+      "exit_conditions": [
+        "Momentum drops below 100",
+        "Price closes below EMA(10)",
+        "New 5-period low formed"
+      ],
+      "timeframe": "30M, 1H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "Entry price - (1.5 * ATR(10))",
+        "take_profit": "1:2 risk-reward",
+        "trailing_stop": "Activate at +2%, trail at 1.5 ATR"
+      },
+      "why_works_volatile": "Pure price momentum strategies excel in crypto as breakouts tend to run further than traditional markets due to FOMO and limited liquidity.",
+      "expected_performance": {
+        "win_rate": "45-52%",
+        "profit_factor": "1.9-2.6",
+        "max_drawdown": "22-28%",
+        "sharpe_ratio": "1.2-1.7"
+      }
+    },
+    {
+      "id": 8,
+      "name": "Williams %R Reversal Burst",
+      "category": "Momentum",
+      "entry_conditions": [
+        "Williams %R(14) crosses above -80 from oversold",
+        "Fast %R(7) already above -50",
+        "Price closes above open of entry candle"
+      ],
+      "exit_conditions": [
+        "Williams %R reaches -20 and turns down",
+        "Price makes lower low than entry candle",
+        "2 consecutive closes below EMA(5)"
+      ],
+      "timeframe": "15M, 30M",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "Low of entry candle",
+        "take_profit": "1:1.8 risk-reward",
+        "max_trades_per_hour": 3
+      },
+      "why_works_volatile": "Williams %R's sensitivity to closing prices captures crypto's rapid intraday reversals, ideal for scalping volatile meme coins.",
+      "expected_performance": {
+        "win_rate": "54-59%",
+        "profit_factor": "1.6-2.0",
+        "max_drawdown": "15-20%",
+        "sharpe_ratio": "1.3-1.7"
+      }
+    },
+    {
+      "id": 9,
+      "name": "TRIX Momentum Filter",
+      "category": "Momentum",
+      "entry_conditions": [
+        "TRIX(15,9) crosses above signal line",
+        "TRIX value turns positive from negative territory",
+        "Price above EMA(30) for trend confirmation"
+      ],
+      "exit_conditions": [
+        "TRIX crosses below signal line",
+        "TRIX histogram turns negative",
+        "Price closes below EMA(30)"
+      ],
+      "timeframe": "4H, Daily",
+      "risk_management": {
+        "position_size": "3% of portfolio per trade",
+        "stop_loss": "4% fixed",
+        "take_profit": "1:2.5 risk-reward",
+        "position_scale": "Add 50% after 5% gain"
+      },
+      "why_works_volatile": "TRIX's triple smoothing reduces noise while maintaining responsiveness, perfect for filtering genuine momentum from crypto's choppy price action.",
+      "expected_performance": {
+        "win_rate": "52-57%",
+        "profit_factor": "1.9-2.4",
+        "max_drawdown": "16-21%",
+        "sharpe_ratio": "1.5-2.0"
+      }
+    },
+    {
+      "id": 10,
+      "name": "Ultimate Oscillator Combo",
+      "category": "Momentum",
+      "entry_conditions": [
+        "Ultimate Oscillator(7,14,28) < 35 and rising",
+        "UO crosses above 45",
+        "Bullish divergence confirmed on 2+ timeframes"
+      ],
+      "exit_conditions": [
+        "UO reaches 70 (overbought)",
+        "UO turns down while price makes new high",
+        "Price breaks below support"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "Recent swing low - 1%",
+        "take_profit": "1:2 risk-reward",
+        "breakeven": "Move to BE at +1.5%"
+      },
+      "why_works_volatile": "UO's multi-timeframe construction reduces false signals in volatile crypto markets where single-period oscillators frequently whipsaw.",
+      "expected_performance": {
+        "win_rate": "50-55%",
+        "profit_factor": "1.8-2.2",
+        "max_drawdown": "17-22%",
+        "sharpe_ratio": "1.4-1.8"
+      }
+    },
+    {
+      "id": 11,
+      "name": "Bollinger Band Mean Reversion",
+      "category": "Mean Reversion",
+      "entry_conditions": [
+        "Price touches or closes below lower Bollinger Band(20,2)",
+        "RSI(14) < 30",
+        "Volume declining from recent peak"
+      ],
+      "exit_conditions": [
+        "Price reaches middle Bollinger Band (20-period SMA)",
+        "Price touches upper Bollinger Band",
+        "Stop loss at 1.5x band width below entry"
+      ],
+      "timeframe": "15M, 30M, 1H",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "Close below 2.5 standard deviations",
+        "take_profit": "At middle band (50%) and upper band (50%)",
+        "max_band_expansion": "Skip if bands expanding >10%"
+      },
+      "why_works_volatile": "Crypto's extreme volatility frequently pushes prices to statistical extremes; Bollinger Bands identify these overextensions that tend to revert quickly.",
+      "expected_performance": {
+        "win_rate": "58-65%",
+        "profit_factor": "1.5-1.9",
+        "max_drawdown": "12-16%",
+        "sharpe_ratio": "1.3-1.7"
+      }
+    },
+    {
+      "id": 12,
+      "name": "RSI Extreme Reversal",
+      "category": "Mean Reversion",
+      "entry_conditions": [
+        "RSI(14) drops below 20 (oversold)",
+        "RSI forms higher low while price makes lower low",
+        "Bullish engulfing or hammer candlestick pattern"
+      ],
+      "exit_conditions": [
+        "RSI reaches 50 (neutral)",
+        "RSI touches 70 (overbought)",
+        "Price closes below entry candle low"
+      ],
+      "timeframe": "30M, 1H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "Low of reversal candle - 1%",
+        "take_profit": "Scale 50% at RSI 50, 50% at RSI 65",
+        "max_concurrent": 3
+      },
+      "why_works_volatile": "RSI extremes below 20 occur frequently in crypto selloffs; these panic-driven drops create high-probability mean reversion opportunities.",
+      "expected_performance": {
+        "win_rate": "60-68%",
+        "profit_factor": "1.4-1.8",
+        "max_drawdown": "10-15%",
+        "sharpe_ratio": "1.2-1.6"
+      }
+    },
+    {
+      "id": 13,
+      "name": "Percent Price Oscillator (PPO) Reversion",
+      "category": "Mean Reversion",
+      "entry_conditions": [
+        "PPO(12,26,9) drops below -3% (oversold threshold)",
+        "Histogram turns positive (momentum shift)",
+        "Price below lower Keltner Channel"
+      ],
+      "exit_conditions": [
+        "PPO crosses above zero line",
+        "PPO reaches +2%",
+        "Price closes below recent swing low"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "Entry - (2 * ATR(14))",
+        "take_profit": "1:1.8 risk-reward",
+        "time_exit": "Close after 6 periods if target not hit"
+      },
+      "why_works_volatile": "PPO's percentage-based calculation adapts to crypto's varying price scales, effectively identifying oversold conditions across all market caps.",
+      "expected_performance": {
+        "win_rate": "55-62%",
+        "profit_factor": "1.5-1.9",
+        "max_drawdown": "14-18%",
+        "sharpe_ratio": "1.3-1.7"
+      }
+    },
+    {
+      "id": 14,
+      "name": "Commodity Channel Index (CCI) Oversold Bounce",
+      "category": "Mean Reversion",
+      "entry_conditions": [
+        "CCI(20) drops below -200 (extremely oversold)",
+        "CCI turns upward (higher low formed)",
+        "Price shows bullish hammer or doji at support"
+      ],
+      "exit_conditions": [
+        "CCI reaches 0 (neutral)",
+        "CCI touches +100",
+        "Price fails to make new high for 3 periods"
+      ],
+      "timeframe": "30M, 1H",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "Low of hammer/doji - 0.5%",
+        "take_profit": "50% at CCI 0, 50% at CCI +100",
+        "skip_if": "Price below 200 SMA"
+      },
+      "why_works_volatile": "CCI's unbounded nature makes it ideal for crypto's extreme moves; readings below -200 capture true panic selling with high reversal probability.",
+      "expected_performance": {
+        "win_rate": "57-64%",
+        "profit_factor": "1.4-1.8",
+        "max_drawdown": "13-17%",
+        "sharpe_ratio": "1.2-1.6"
+      }
+    },
+    {
+      "id": 15,
+      "name": "Linear Regression Channel Reversion",
+      "category": "Mean Reversion",
+      "entry_conditions": [
+        "Price touches or breaks below lower regression channel (2 std dev)",
+        "RSI(14) < 35 confirming oversold",
+        "Volume spike indicating climax selling"
+      ],
+      "exit_conditions": [
+        "Price reaches linear regression line (middle)",
+        "Price touches upper regression channel",
+        "Close below lower channel (invalidation)"
+      ],
+      "timeframe": "2H, 4H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "Below 2.5 standard deviations from regression line",
+        "take_profit": "Middle channel (60%), upper channel (40%)",
+        "channel_period": "Use 50-period regression"
+      },
+      "why_works_volatile": "Linear regression channels adapt to crypto's trending nature while identifying statistical extremes; prices rarely stay beyond 2 standard deviations for long.",
+      "expected_performance": {
+        "win_rate": "56-63%",
+        "profit_factor": "1.5-2.0",
+        "max_drawdown": "12-16%",
+        "sharpe_ratio": "1.4-1.8"
+      }
+    },
+    {
+      "id": 16,
+      "name": "Detrended Price Oscillator (DPO) Cycle",
+      "category": "Mean Reversion",
+      "entry_conditions": [
+        "DPO(20) below -2% and turning up",
+        "Price below displaced moving average",
+        "Cycle low identified in last 5 periods"
+      ],
+      "exit_conditions": [
+        "DPO crosses above zero",
+        "DPO reaches +2%",
+        "New cycle high formed"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "Entry - 2%",
+        "take_profit": "1:1.5 risk-reward",
+        "cycle_confirmation": "Use at least 3 cycle periods for validation"
+      },
+      "why_works_volatile": "DPO removes trend to expose cycles; crypto's volatile nature creates pronounced short-term cycles perfect for this oscillator-based approach.",
+      "expected_performance": {
+        "win_rate": "54-60%",
+        "profit_factor": "1.4-1.8",
+        "max_drawdown": "14-18%",
+        "sharpe_ratio": "1.2-1.6"
+      }
+    },
+    {
+      "id": 17,
+      "name": "Relative Vigor Index (RVI) Reversion",
+      "category": "Mean Reversion",
+      "entry_conditions": [
+        "RVI(10) below 0.3 (oversold)",
+        "RVI signal line crosses above RVI",
+        "Price at support level with bullish candlestick"
+      ],
+      "exit_conditions": [
+        "RVI reaches 0.7 (overbought)",
+        "RVI crosses below signal line",
+        "Price breaks support"
+      ],
+      "timeframe": "30M, 1H",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "Support level - 1% buffer",
+        "take_profit": "50% at RVI 0.5, 50% at RVI 0.7",
+        "max_daily": "Limit to 4 trades per day"
+      },
+      "why_works_volatile": "RVI measures conviction of closes relative to opens; extreme readings in volatile crypto markets signal exhaustion of buying/selling pressure.",
+      "expected_performance": {
+        "win_rate": "53-59%",
+        "profit_factor": "1.5-1.9",
+        "max_drawdown": "15-19%",
+        "sharpe_ratio": "1.3-1.7"
+      }
+    },
+    {
+      "id": 18,
+      "name": "Money Flow Index (MFI) Divergence",
+      "category": "Mean Reversion",
+      "entry_conditions": [
+        "MFI(14) < 20 (oversold)",
+        "Bullish divergence: price lower low, MFI higher low",
+        "Volume-weighted confirming accumulation"
+      ],
+      "exit_conditions": [
+        "MFI reaches 50",
+        "MFI touches 80 (overbought)",
+        "Price closes below entry candle"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "2% below entry",
+        "take_profit": "Scale out 1/3 at MFI 40, 50, 60",
+        "volume_filter": "Require 1.2x average volume on entry"
+      },
+      "why_works_volatile": "MFI incorporates volume with RSI calculation; in crypto where volume precedes price, MFI divergences signal true accumulation before price reversal.",
+      "expected_performance": {
+        "win_rate": "55-62%",
+        "profit_factor": "1.6-2.0",
+        "max_drawdown": "13-17%",
+        "sharpe_ratio": "1.4-1.8"
+      }
+    },
+    {
+      "id": 19,
+      "name": "Envelope Band Snap Back",
+      "category": "Mean Reversion",
+      "entry_conditions": [
+        "Price closes below lower envelope (SMA 20, 2.5% offset)",
+        "RSI(14) < 25 confirming extreme",
+        "Volume declining from panic spike"
+      ],
+      "exit_conditions": [
+        "Price returns to SMA (middle band)",
+        "Price touches upper envelope",
+        "Close below 3.5% envelope (stop out)"
+      ],
+      "timeframe": "15M, 30M",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "3.5% envelope level",
+        "take_profit": "Middle band (70%), upper band (30%)",
+        "re_entry": "Allow one re-entry if stopped but RSI still <20"
+      },
+      "why_works_volatile": "Envelope bands use percentage offsets perfect for crypto's varying prices; wide 2.5% settings capture meme coin washouts with high snap-back probability.",
+      "expected_performance": {
+        "win_rate": "59-66%",
+        "profit_factor": "1.4-1.8",
+        "max_drawdown": "15-20%",
+        "sharpe_ratio": "1.2-1.6"
+      }
+    },
+    {
+      "id": 20,
+      "name": "Standard Error Channel Reversion",
+      "category": "Mean Reversion",
+      "entry_conditions": [
+        "Price at or below -2 standard error channel",
+        "Stochastic(14) < 20",
+        "At least 3 touches of lower channel in last 20 periods"
+      ],
+      "exit_conditions": [
+        "Price reaches regression line (middle)",
+        "Price touches +1 standard error",
+        "Channel slope turns negative (trend change)"
+      ],
+      "timeframe": "2H, 4H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "Beyond -2.5 standard error",
+        "take_profit": "Middle line (60%), +1 SE (40%)",
+        "channel_validity": "Require R-squared > 0.6"
+      },
+      "why_works_volatile": "Standard error channels measure trend reliability; prices outside 2 SE represent extreme deviations that statistically revert in volatile crypto markets.",
+      "expected_performance": {
+        "win_rate": "57-63%",
+        "profit_factor": "1.5-1.9",
+        "max_drawdown": "14-18%",
+        "sharpe_ratio": "1.3-1.7"
+      }
+    },
+    {
+      "id": 21,
+      "name": "Donchian Channel Breakout",
+      "category": "Breakout",
+      "entry_conditions": [
+        "Price closes above upper Donchian Channel(20)",
+        "Volume > 2x 20-period average",
+        "ADX(14) > 25 confirming trend strength"
+      ],
+      "exit_conditions": [
+        "Price closes below middle Donchian line (10-period average)",
+        "Price breaks below lower Donchian Channel",
+        "Trailing stop at 2 ATR"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "Middle Donchian line or 3% fixed",
+        "take_profit": "1:3 risk-reward minimum",
+        "add_position": "Add 50% on new 20-period high"
+      },
+      "why_works_volatile": "Donchian channels capture the essence of volatility breakouts; in crypto, 20-period highs often signal continuation of explosive moves driven by momentum.",
+      "expected_performance": {
+        "win_rate": "42-48%",
+        "profit_factor": "2.2-2.8",
+        "max_drawdown": "18-24%",
+        "sharpe_ratio": "1.3-1.8"
+      }
+    },
+    {
+      "id": 22,
+      "name": "Bollinger Squeeze Breakout",
+      "category": "Breakout",
+      "entry_conditions": [
+        "Bollinger Bandwidth < 6% (squeeze)",
+        "Bands begin expanding (current width > previous width)",
+        "Price breaks above upper band with volume > 1.5x average"
+      ],
+      "exit_conditions": [
+        "Bandwidth contracts below 4%",
+        "Price closes below middle band",
+        "Trailing stop 2.5 ATR from peak"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "3% of portfolio per trade",
+        "stop_loss": "Middle Bollinger Band",
+        "take_profit": "Scale 50% at 1:2, hold 50% with trailing stop",
+        "squeeze_duration": "Require minimum 6 periods of squeeze"
+      },
+      "why_works_volatile": "Bollinger squeezes precede volatility explosions; in crypto, these consolidation periods often resolve with 10-20% moves perfect for capture.",
+      "expected_performance": {
+        "win_rate": "45-52%",
+        "profit_factor": "2.0-2.6",
+        "max_drawdown": "20-26%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 23,
+      "name": "Keltner Channel Breakout",
+      "category": "Breakout",
+      "entry_conditions": [
+        "Price closes above upper Keltner Channel(20,2)",
+        "EMA(20) slope > 0 (uptrend)",
+        "Volume(24) > 1.8x average confirming participation"
+      ],
+      "exit_conditions": [
+        "Price closes below EMA(20)",
+        "Price touches lower Keltner Channel",
+        "ATR trailing stop activated"
+      ],
+      "timeframe": "30M, 1H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "Entry - (1.8 * ATR(14))",
+        "take_profit": "1:2.5 risk-reward",
+        "pyramid_rule": "Add on each new ATR(14) increment above entry"
+      },
+      "why_works_volatile": "Keltner Channels use ATR for band calculation, dynamically adapting to crypto's changing volatility and capturing true breakouts from noise.",
+      "expected_performance": {
+        "win_rate": "46-53%",
+        "profit_factor": "1.9-2.5",
+        "max_drawdown": "19-24%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 24,
+      "name": "Aroon Breakout System",
+      "category": "Breakout",
+      "entry_conditions": [
+        "Aroon Up(14) crosses above 70",
+        "Aroon Down(14) below 30",
+        "Price at new 14-period high"
+      ],
+      "exit_conditions": [
+        "Aroon Up crosses below Aroon Down",
+        "Aroon Up drops below 50",
+        "Price closes below 7-period low"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "14-period low - 1%",
+        "take_profit": "1:2 risk-reward",
+        "breakeven": "Move stop to entry at +1.5%"
+      },
+      "why_works_volatile": "Aroon measures time since highs/lows, making it responsive to crypto's rapid trend changes and early in detecting breakout initiation.",
+      "expected_performance": {
+        "win_rate": "48-55%",
+        "profit_factor": "1.8-2.3",
+        "max_drawdown": "17-22%",
+        "sharpe_ratio": "1.3-1.8"
+      }
+    },
+    {
+      "id": 25,
+      "name": "Volume Profile Breakout",
+      "category": "Breakout",
+      "entry_conditions": [
+        "Price breaks above Volume POC (Point of Control) with volume",
+        "Price clears high volume node resistance",
+        "Volume > 2x average on breakout candle"
+      ],
+      "exit_conditions": [
+        "Price returns to POC (failed breakout)",
+        "Price reaches next high volume node above",
+        "Trailing stop below developing POC"
+      ],
+      "timeframe": "15M, 30M, 1H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "POC level or 2% fixed",
+        "take_profit": "Scale at 1:1.5, 1:3, trail remainder",
+        "volume_confirmation": "Require 2x average volume for valid breakout"
+      },
+      "why_works_volatile": "Volume Profile reveals where substantial positions were built; breaking from these zones in volatile crypto markets triggers cascading moves.",
+      "expected_performance": {
+        "win_rate": "44-51%",
+        "profit_factor": "2.1-2.7",
+        "max_drawdown": "20-26%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 26,
+      "name": "Rectangle Consolidation Break",
+      "category": "Breakout",
+      "entry_conditions": [
+        "Price in horizontal range for 10+ periods",
+        "Range height < 5% of price",
+        "Break above range high with volume confirmation"
+      ],
+      "exit_conditions": [
+        "Price returns to breakout level (failed)",
+        "Price reaches 1.5x range height above breakout",
+        "Trailing stop at range high"
+      ],
+      "timeframe": "30M, 1H",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "Range low - 0.5%",
+        "take_profit": "Range height * 2 above breakout",
+        "false_breakout_filter": "Require close above, not just wick"
+      },
+      "why_works_volatile": "Crypto's volatile nature creates sharp, brief consolidations; rectangle breaks often lead to measured moves that exceed traditional market expectations.",
+      "expected_performance": {
+        "win_rate": "47-54%",
+        "profit_factor": "1.9-2.5",
+        "max_drawdown": "18-23%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 27,
+      "name": "ATR Volatility Breakout",
+      "category": "Breakout",
+      "entry_conditions": [
+        "Current candle range > 1.5x ATR(14)",
+        "Close in upper 25% of candle range",
+        "Volume > 1.5x average confirming participation"
+      ],
+      "exit_conditions": [
+        "2 consecutive candles with range < ATR",
+        "Price closes below entry candle midpoint",
+        "Trailing stop at 1.5 ATR from high"
+      ],
+      "timeframe": "15M, 30M",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "Entry candle low",
+        "take_profit": "1:2 risk-reward minimum",
+        "max_daily_volatility": "Skip if daily ATR > 15%"
+      },
+      "why_works_volatile": "ATR-based entries adapt to crypto's changing volatility; large range candles signal institutional participation and likely trend continuation.",
+      "expected_performance": {
+        "win_rate": "45-52%",
+        "profit_factor": "1.9-2.4",
+        "max_drawdown": "21-27%",
+        "sharpe_ratio": "1.3-1.8"
+      }
+    },
+    {
+      "id": 28,
+      "name": "Parabolic SAR Acceleration",
+      "category": "Breakout",
+      "entry_conditions": [
+        "Parabolic SAR(0.02, 0.2) flips below price",
+        "Price above EMA(50) for trend alignment",
+        "SAR dots accelerating (increasing gap between dots)"
+      ],
+      "exit_conditions": [
+        "Parabolic SAR flips above price",
+        "Price closes below EMA(20)",
+        "SAR acceleration slows (decreasing gap)"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "First SAR dot below entry",
+        "take_profit": "1:2.5 risk-reward",
+        "trend_filter": "Only trade when EMA(50) slope > 0"
+      },
+      "why_works_volatile": "Parabolic SAR's acceleration factor captures crypto's parabolic moves; the indicator adapts to speed of price change, ideal for explosive breakouts.",
+      "expected_performance": {
+        "win_rate": "44-51%",
+        "profit_factor": "1.8-2.4",
+        "max_drawdown": "19-25%",
+        "sharpe_ratio": "1.3-1.8"
+      }
+    },
+    {
+      "id": 29,
+      "name": "Ascending Triangle Break",
+      "category": "Breakout",
+      "entry_conditions": [
+        "Flat top resistance tested 2+ times",
+        "Rising trendline support (higher lows)",
+        "Break above horizontal resistance with volume > 1.5x"
+      ],
+      "exit_conditions": [
+        "Price returns below breakout level",
+        "Price reaches measured move target (triangle height + breakout)",
+        "Time exit after 10 periods if no momentum"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "Recent swing low within triangle",
+        "take_profit": "Triangle height projected above breakout",
+        "partial_exit": "50% at 1:1, 50% at measured move"
+      },
+      "why_works_volatile": "Ascending triangles show accumulation; in crypto, these patterns have high completion rates and often produce explosive upside when volume confirms.",
+      "expected_performance": {
+        "win_rate": "52-59%",
+        "profit_factor": "1.9-2.4",
+        "max_drawdown": "16-21%",
+        "sharpe_ratio": "1.5-2.0"
+      }
+    },
+    {
+      "id": 30,
+      "name": "Chandelier Exit Breakout",
+      "category": "Breakout",
+      "entry_conditions": [
+        "Price breaks above Chandelier Exit(22,3) line",
+        "Aroon Up > 70 confirming strength",
+        "Volume confirms with 2x average"
+      ],
+      "exit_conditions": [
+        "Price closes below Chandelier Exit line",
+        "Price breaks below 22-period high - (3 * ATR)",
+        "Opposite signal generated"
+      ],
+      "timeframe": "30M, 1H",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "Chandelier Exit line acts as dynamic stop",
+        "take_profit": "Scale 50% at 1:2, trail 50%",
+        "multiplier_adjustment": "Use 2.5 ATR for less volatile pairs"
+      },
+      "why_works_volatile": "Chandelier Exit combines highest high with ATR; perfect for crypto breakouts where volatility-based stops adapt to rapid price expansions.",
+      "expected_performance": {
+        "win_rate": "46-53%",
+        "profit_factor": "1.9-2.5",
+        "max_drawdown": "18-23%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 31,
+      "name": "1-Minute VWAP Scalp",
+      "category": "Scalping",
+      "entry_conditions": [
+        "Price crosses above VWAP on 1M chart",
+        "RSI(7) between 45-65 (not overbought)",
+        "Volume > 1.3x average for last 5 minutes"
+      ],
+      "exit_conditions": [
+        "Price touches upper Bollinger Band(20,2)",
+        "RSI exceeds 75",
+        "Price closes below VWAP (failed breakout)"
+      ],
+      "timeframe": "1M",
+      "risk_management": {
+        "position_size": "1% of portfolio per trade",
+        "stop_loss": "0.3% fixed",
+        "take_profit": "0.5-0.8% scalp target",
+        "max_daily_scalps": 20,
+        "time_exit": "Close after 3 minutes if target not hit"
+      },
+      "why_works_volatile": "1-minute VWAP scalping exploits crypto's micro-volatility; rapid price oscillations around VWAP create frequent 0.5-1% profit opportunities.",
+      "expected_performance": {
+        "win_rate": "62-68%",
+        "profit_factor": "1.4-1.7",
+        "max_drawdown": "8-12%",
+        "sharpe_ratio": "1.5-2.0"
+      }
+    },
+    {
+      "id": 32,
+      "name": "EMA Cross Scalping",
+      "category": "Scalping",
+      "entry_conditions": [
+        "EMA(8) crosses above EMA(21) on 5M chart",
+        "Price above VWAP",
+        "MACD histogram turning positive"
+      ],
+      "exit_conditions": [
+        "EMA(8) crosses below EMA(13) (early warning)",
+        "Price hits 1.5% profit target",
+        "Time-based exit after 10 minutes"
+      ],
+      "timeframe": "5M",
+      "risk_management": {
+        "position_size": "1.5% of portfolio per trade",
+        "stop_loss": "EMA(21) level or 0.5% fixed",
+        "take_profit": "1:1.2 risk-reward minimum",
+        "max_loss_per_hour": "2% of portfolio"
+      },
+      "why_works_volatile": "Fast EMA crosses on low timeframes capture crypto's rapid intraday momentum shifts; volatility creates more crossover signals with sufficient follow-through.",
+      "expected_performance": {
+        "win_rate": "55-62%",
+        "profit_factor": "1.5-1.9",
+        "max_drawdown": "12-16%",
+        "sharpe_ratio": "1.4-1.8"
+      }
+    },
+    {
+      "id": 33,
+      "name": "RSI Micro-Reversal",
+      "category": "Scalping",
+      "entry_conditions": [
+        "RSI(5) drops below 15 on 1M or 5M chart",
+        "RSI turns up with bullish candle",
+        "Price at local support level"
+      ],
+      "exit_conditions": [
+        "RSI reaches 50",
+        "Price makes 0.8% profit",
+        "New 3-period low forms"
+      ],
+      "timeframe": "1M, 5M",
+      "risk_management": {
+        "position_size": "1% of portfolio per trade",
+        "stop_loss": "Low of entry candle - 0.2%",
+        "take_profit": "0.6-1.0%",
+        "max_concurrent": 3,
+        "volatility_filter": "Skip if ATR > 2% on 5M"
+      },
+      "why_works_volatile": "Ultra-short RSI periods capture crypto's micro-fluctuations; extreme readings below 15 occur frequently in volatile conditions offering quick reversals.",
+      "expected_performance": {
+        "win_rate": "60-67%",
+        "profit_factor": "1.3-1.6",
+        "max_drawdown": "10-14%",
+        "sharpe_ratio": "1.4-1.8"
+      }
+    },
+    {
+      "id": 34,
+      "name": "Order Block Scalping",
+      "category": "Scalping",
+      "entry_conditions": [
+        "Price returns to bullish order block (3+ consecutive up candles)",
+        "Price within upper 50% of order block range",
+        "Momentum shift candle (engulfing or pin bar)"
+      ],
+      "exit_conditions": [
+        "Price reaches next resistance/order block",
+        "Price breaks below order block low",
+        "1% profit target achieved"
+      ],
+      "timeframe": "5M, 15M",
+      "risk_management": {
+        "position_size": "1.5% of portfolio per trade",
+        "stop_loss": "Below order block low",
+        "take_profit": "1:1.5 risk-reward",
+        "partial_exit": "50% at 0.5%, 50% at target"
+      },
+      "why_works_volatile": "Order blocks represent institutional accumulation zones; in crypto's volatile markets, these zones act as magnets for price and offer high-probability scalping setups.",
+      "expected_performance": {
+        "win_rate": "58-64%",
+        "profit_factor": "1.5-1.9",
+        "max_drawdown": "12-16%",
+        "sharpe_ratio": "1.5-1.9"
+      }
+    },
+    {
+      "id": 35,
+      "name": "Range Scalping",
+      "category": "Scalping",
+      "entry_conditions": [
+        "Price at lower end of established 1-2% range",
+        "RSI(9) < 30",
+        "Stochastic(8,3,3) %K crosses above %D"
+      ],
+      "exit_conditions": [
+        "Price reaches middle of range",
+        "Price touches upper range boundary",
+        "Range breaks (close outside boundaries)"
+      ],
+      "timeframe": "5M, 15M",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "Below range low",
+        "take_profit": "Middle range (60%), upper range (40%)",
+        "range_validation": "Require 3+ touches of each boundary"
+      },
+      "why_works_volatile": "Crypto's volatile periods are interspersed with brief consolidation ranges; scalping these ranges captures predictable oscillations before next expansion.",
+      "expected_performance": {
+        "win_rate": "65-72%",
+        "profit_factor": "1.4-1.7",
+        "max_drawdown": "10-14%",
+        "sharpe_ratio": "1.6-2.0"
+      }
+    },
+    {
+      "id": 36,
+      "name": "Bid-Ask Imbalance Scalp",
+      "category": "Scalping",
+      "entry_conditions": [
+        "Order book shows 2:1 bid/ask ratio at support",
+        "Large limit orders appear on bid side (>5x average)",
+        "Price bouncing off visible liquidity wall"
+      ],
+      "exit_conditions": [
+        "Bid/ask ratio inverts to favor asks",
+        "Large liquidity wall gets eaten through",
+        "0.3-0.5% profit captured"
+      ],
+      "timeframe": "Tick, 1M",
+      "risk_management": {
+        "position_size": "1% of portfolio per trade",
+        "stop_loss": "Below visible liquidity wall",
+        "take_profit": "Next resistance level or 0.5%",
+        "latency_requirement": "<50ms execution required"
+      },
+      "why_works_volatile": "Order book imbalances reveal immediate buying/selling pressure; in crypto's volatile markets, these imbalances create predictable 0.3-0.5% moves.",
+      "expected_performance": {
+        "win_rate": "68-75%",
+        "profit_factor": "1.3-1.6",
+        "max_drawdown": "6-10%",
+        "sharpe_ratio": "1.8-2.3"
+      }
+    },
+    {
+      "id": 37,
+      "name": "Heikin Ashi Trend Scalp",
+      "category": "Scalping",
+      "entry_conditions": [
+        "Heikin Ashi candle turns green after 3+ red candles",
+        "HA close above EMA(8)",
+        "No lower wick on HA candle (strong buying)"
+      ],
+      "exit_conditions": [
+        "HA candle turns red",
+        "HA candle with upper wick appears",
+        "Price closes below EMA(8)"
+      ],
+      "timeframe": "3M, 5M",
+      "risk_management": {
+        "position_size": "1.5% of portfolio per trade",
+        "stop_loss": "Low of HA candle body",
+        "take_profit": "0.8-1.2%",
+        "max_scalps_per_hour": 8
+      },
+      "why_works_volatile": "Heikin Ashi smooths price action, filtering noise in crypto's volatile markets; clear color changes signal micro-trend shifts ideal for scalping.",
+      "expected_performance": {
+        "win_rate": "56-63%",
+        "profit_factor": "1.5-1.9",
+        "max_drawdown": "11-15%",
+        "sharpe_ratio": "1.5-1.9"
+      }
+    },
+    {
+      "id": 38,
+      "name": "ATR Trailing Scalp",
+      "category": "Scalping",
+      "entry_conditions": [
+        "Price breaks above 5-period high",
+        "ATR(10) expanding (>1.2x average)",
+        "Volume confirms with 1.5x average"
+      ],
+      "exit_conditions": [
+        "Trailing stop hit (1.5 ATR from peak)",
+        "Price closes below 5-period low",
+        "ATR contracts (<0.8x average)"
+      ],
+      "timeframe": "1M, 3M",
+      "risk_management": {
+        "position_size": "1.5% of portfolio per trade",
+        "stop_loss": "1 ATR below entry",
+        "take_profit": "Let winners run with 1.5 ATR trail",
+        "profit_floor": "Move to breakeven at +0.5%"
+      },
+      "why_works_volatile": "ATR trailing stops adapt dynamically to crypto's changing volatility, capturing extended moves while protecting profits during sudden reversals.",
+      "expected_performance": {
+        "win_rate": "48-55%",
+        "profit_factor": "1.6-2.0",
+        "max_drawdown": "13-17%",
+        "sharpe_ratio": "1.4-1.8"
+      }
+    },
+    {
+      "id": 39,
+      "name": "CVD (Cumulative Volume Delta) Scalp",
+      "category": "Scalping",
+      "entry_conditions": [
+        "CVD rising while price flat or rising (buying pressure)",
+        "CVD histogram turns positive",
+        "Price at support with bullish candlestick"
+      ],
+      "exit_conditions": [
+        "CVD turns negative (selling pressure)",
+        "CVD divergence (price up, CVD down)",
+        "0.5-0.8% profit captured"
+      ],
+      "timeframe": "1M, 5M",
+      "risk_management": {
+        "position_size": "1.5% of portfolio per trade",
+        "stop_loss": "Recent swing low",
+        "take_profit": "1:1.2 risk-reward",
+        "session_limit": "Stop after 3 consecutive losses"
+      },
+      "why_works_volatile": "CVD reveals aggressive buyers vs sellers; in crypto's volatile environment, volume delta divergences predict price moves before they appear on charts.",
+      "expected_performance": {
+        "win_rate": "54-61%",
+        "profit_factor": "1.5-1.9",
+        "max_drawdown": "12-16%",
+        "sharpe_ratio": "1.5-1.9"
+      }
+    },
+    {
+      "id": 40,
+      "name": "Pivot Point Scalping",
+      "category": "Scalping",
+      "entry_conditions": [
+        "Price bounces off S1 or S2 pivot level",
+        "RSI(7) > 30 and rising from oversold",
+        "Bullish engulfing at pivot support"
+      ],
+      "exit_conditions": [
+        "Price reaches Pivot Point (PP)",
+        "Price touches R1 resistance",
+        "Price closes below entry pivot level"
+      ],
+      "timeframe": "5M, 15M",
+      "risk_management": {
+        "position_size": "1.5% of portfolio per trade",
+        "stop_loss": "Below S2 or S1 level",
+        "take_profit": "50% at PP, 50% at R1",
+        "pivot_type": "Use Fibonacci or Camarilla pivots"
+      },
+      "why_works_volatile": "Pivot points create predictable support/resistance zones; in crypto's intraday volatility, these levels attract price action offering structured scalp setups.",
+      "expected_performance": {
+        "win_rate": "60-66%",
+        "profit_factor": "1.4-1.8",
+        "max_drawdown": "10-14%",
+        "sharpe_ratio": "1.6-2.0"
+      }
+    },
+    {
+      "id": 41,
+      "name": "Golden Cross Trend Following",
+      "category": "Trend Following",
+      "entry_conditions": [
+        "EMA(50) crosses above EMA(200) (Golden Cross)",
+        "Price above both EMAs",
+        "Volume > 1.5x average confirming trend change"
+      ],
+      "exit_conditions": [
+        "Death Cross (EMA 50 crosses below EMA 200)",
+        "Price closes below EMA(200)",
+        "MACD histogram turns negative for 3+ periods"
+      ],
+      "timeframe": "Daily, 4H",
+      "risk_management": {
+        "position_size": "4% of portfolio per trade",
+        "stop_loss": "EMA(200) or 8% fixed",
+        "take_profit": "Trailing stop at 3 ATR",
+        "add_to_winner": "Add 25% on each 10% gain"
+      },
+      "why_works_volatile": "Golden Crosses in crypto often signal major trend shifts lasting weeks; the strategy captures the explosive early phase of trending markets.",
+      "expected_performance": {
+        "win_rate": "38-45%",
+        "profit_factor": "2.5-3.2",
+        "max_drawdown": "25-35%",
+        "sharpe_ratio": "1.2-1.7"
+      }
+    },
+    {
+      "id": 42,
+      "name": "Supertrend Following",
+      "category": "Trend Following",
+      "entry_conditions": [
+        "Supertrend(10,3) flips to bullish (green)",
+        "Close above Supertrend line",
+        "ADX(14) > 20 confirming trend strength"
+      ],
+      "exit_conditions": [
+        "Supertrend flips to bearish (red)",
+        "Price closes below Supertrend line",
+        "ADX drops below 15 (trend exhaustion)"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "3% of portfolio per trade",
+        "stop_loss": "Supertrend line level",
+        "take_profit": "Trail with Supertrend line",
+        "pyramid": "Add 50% on each new Supertrend confirmation"
+      },
+      "why_works_volatile": "Supertrend adapts ATR-based stops to volatility; perfect for crypto's trending periods where prices can move 20-50% in days.",
+      "expected_performance": {
+        "win_rate": "42-50%",
+        "profit_factor": "2.2-2.8",
+        "max_drawdown": "20-28%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 43,
+      "name": "ADX Trend Strength",
+      "category": "Trend Following",
+      "entry_conditions": [
+        "ADX(14) rises above 25 from below",
+        "+DI crosses above -DI",
+        "Price above EMA(20)"
+      ],
+      "exit_conditions": [
+        "ADX drops below 20",
+        "-DI crosses above +DI",
+        "Price closes below EMA(50)"
+      ],
+      "timeframe": "4H, Daily",
+      "risk_management": {
+        "position_size": "3% of portfolio per trade",
+        "stop_loss": "Recent swing low or 5%",
+        "take_profit": "1:3 risk-reward",
+        "position_add": "Add 50% when ADX > 40"
+      },
+      "why_works_volatile": "ADX measures trend strength independent of direction; in crypto, ADX > 25 often precedes violent directional moves worth following.",
+      "expected_performance": {
+        "win_rate": "40-48%",
+        "profit_factor": "2.4-3.0",
+        "max_drawdown": "22-30%",
+        "sharpe_ratio": "1.3-1.8"
+      }
+    },
+    {
+      "id": 44,
+      "name": "Ichimoku Cloud Trend",
+      "category": "Trend Following",
+      "entry_conditions": [
+        "Price above Kumo (cloud)",
+        "Tenkan-sen(9) crosses above Kijun-sen(26)",
+        "Chikou span(26) above price from 26 periods ago",
+        "Future Kumo bullish (Senkou Span A > B)"
+      ],
+      "exit_conditions": [
+        "Price closes below Kumo",
+        "Tenkan-sen crosses below Kijun-sen",
+        "Chikou span crosses below price"
+      ],
+      "timeframe": "4H, Daily",
+      "risk_management": {
+        "position_size": "3.5% of portfolio per trade",
+        "stop_loss": "Kijun-sen level or bottom of Kumo",
+        "take_profit": "Trail with Kijun-sen",
+        "cloud_filter": "Only enter when price > 10% above Kumo for strong trend"
+      },
+      "why_works_volatile": "Ichimoku filters noise by requiring multiple confirmations; in crypto's volatile markets, this prevents whipsaws while capturing major trends.",
+      "expected_performance": {
+        "win_rate": "45-52%",
+        "profit_factor": "2.0-2.6",
+        "max_drawdown": "18-25%",
+        "sharpe_ratio": "1.5-2.0"
+      }
+    },
+    {
+      "id": 45,
+      "name": "Moving Average Ribbon",
+      "category": "Trend Following",
+      "entry_conditions": [
+        "All EMAs aligned: EMA(8) > EMA(13) > EMA(21) > EMA(55)",
+        "Price pulls back to EMA(21) and bounces",
+        "MACD above zero line"
+      ],
+      "exit_conditions": [
+        "EMA(8) crosses below EMA(13)",
+        "Price closes below EMA(55)",
+        "Ribbon compresses (convergence)"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "3% of portfolio per trade",
+        "stop_loss": "EMA(55) level",
+        "take_profit": "Trailing stop at EMA(21)",
+        "entry_zones": "Enter on pullbacks to EMA(13) or EMA(21)"
+      },
+      "why_works_volatile": "MA ribbons visualize trend strength through alignment; crypto's strong trending periods show clear ribbon expansion, offering multiple entry opportunities.",
+      "expected_performance": {
+        "win_rate": "44-51%",
+        "profit_factor": "2.1-2.7",
+        "max_drawdown": "19-26%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 46,
+      "name": "Guppy Multiple Moving Average",
+      "category": "Trend Following",
+      "entry_conditions": [
+        "Short-term GMMA (3,5,8,10,12,15 EMAs) crosses above long-term GMMA (30,35,40,45,50,60)",
+        "All short EMAs expanding (separating)",
+        "Long-term EMAs turning up"
+      ],
+      "exit_conditions": [
+        "Short-term GMMA crosses below long-term GMMA",
+        "Compression in short-term EMAs",
+        "Price closes below all long-term EMAs"
+      ],
+      "timeframe": "4H, Daily",
+      "risk_management": {
+        "position_size": "3% of portfolio per trade",
+        "stop_loss": "Long-term GMMA average or 6%",
+        "take_profit": "Trail with long-term GMMA",
+        "add_position": "Add on each short-term EMA retest"
+      },
+      "why_works_volatile": "GMMA captures trader and investor sentiment simultaneously; in crypto, GMMA crossovers signal major trend changes with high conviction.",
+      "expected_performance": {
+        "win_rate": "42-49%",
+        "profit_factor": "2.3-2.9",
+        "max_drawdown": "21-29%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 47,
+      "name": "MACD Trend Continuation",
+      "category": "Trend Following",
+      "entry_conditions": [
+        "MACD line above signal line and both above zero",
+        "Histogram expanding for 3+ periods",
+        "Price above EMA(50)"
+      ],
+      "exit_conditions": [
+        "MACD line crosses below signal line",
+        "Histogram contracts for 2 periods",
+        "MACD drops below zero"
+      ],
+      "timeframe": "2H, 4H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "EMA(50) or recent swing low",
+        "take_profit": "1:2.5 risk-reward",
+        "add_to_position": "Add 25% on each new histogram high"
+      },
+      "why_works_volatile": "MACD trend continuation captures crypto's tendency for extended moves; histogram expansion confirms momentum persistence ideal for riding trends.",
+      "expected_performance": {
+        "win_rate": "46-53%",
+        "profit_factor": "1.9-2.5",
+        "max_drawdown": "17-23%",
+        "sharpe_ratio": "1.5-2.0"
+      }
+    },
+    {
+      "id": 48,
+      "name": "ZigZag Trend Following",
+      "category": "Trend Following",
+      "entry_conditions": [
+        "ZigZag(5%) identifies new swing low",
+        "Price breaks above previous swing high",
+        "Higher high, higher low pattern confirmed"
+      ],
+      "exit_conditions": [
+        "ZigZag identifies new swing high (reversal)",
+        "Price breaks below last swing low",
+        "Lower low formed (trend change)"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "3% of portfolio per trade",
+        "stop_loss": "Last swing low - 1%",
+        "take_profit": "Trail with 5% ZigZag reversal",
+        "deviation_setting": "Use 3% for crypto, 5% for Bitcoin"
+      },
+      "why_works_volatile": "ZigZag filters noise to show true swing points; in crypto's volatile markets, this helps distinguish meaningful breakouts from random wicks.",
+      "expected_performance": {
+        "win_rate": "43-50%",
+        "profit_factor": "2.2-2.8",
+        "max_drawdown": "20-28%",
+        "sharpe_ratio": "1.3-1.8"
+      }
+    },
+    {
+      "id": 49,
+      "name": "Alligator Trend System",
+      "category": "Trend Following",
+      "entry_conditions": [
+        "Alligator(13,8,5) jaws, teeth, lips aligned and expanding",
+        "Lips (5) > Teeth (8) > Jaws (13)",
+        "Price above all three lines"
+      ],
+      "exit_conditions": [
+        "Lips cross below teeth",
+        "Alligator lines converge (sleeping)",
+        "Price closes below jaws"
+      ],
+      "timeframe": "4H, Daily",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "Jaws line (13-period smoothed)",
+        "take_profit": "Trail with teeth line",
+        "eating_phase": "Only trade when lines clearly separated"
+      },
+      "why_works_volatile": "Alligator's three-line system adapts to different trend phases; crypto's volatile trends create clear 'eating' phases with aligned, expanding lines.",
+      "expected_performance": {
+        "win_rate": "44-51%",
+        "profit_factor": "2.0-2.6",
+        "max_drawdown": "19-26%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 50,
+      "name": "Hull Moving Average Trend",
+      "category": "Trend Following",
+      "entry_conditions": [
+        "HMA(21) slope turns positive",
+        "Price crosses above HMA(21)",
+        "HMA(9) > HMA(21) (fast above slow)"
+      ],
+      "exit_conditions": [
+        "HMA(21) slope turns negative",
+        "Price closes below HMA(21)",
+        "HMA(9) crosses below HMA(21)"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "HMA(21) level",
+        "take_profit": "Trailing stop at 2 ATR",
+        "slope_confirmation": "Require 3 consecutive bars of same slope direction"
+      },
+      "why_works_volatile": "Hull MA reduces lag while maintaining smoothness; in crypto's fast markets, HMA responds quicker than traditional MAs to trend changes.",
+      "expected_performance": {
+        "win_rate": "47-54%",
+        "profit_factor": "1.9-2.5",
+        "max_drawdown": "17-24%",
+        "sharpe_ratio": "1.5-2.0"
+      }
+    },
+    {
+      "id": 51,
+      "name": "Long Straddle Volatility",
+      "category": "Volatility",
+      "entry_conditions": [
+        "Bollinger Bandwidth at 6-month low",
+        "ATR(14) < 50th percentile of last 100 days",
+        "IV (Implied Volatility) < 30th percentile"
+      ],
+      "exit_conditions": [
+        "Volatility expands (bandwidth doubles)",
+        "50% profit on either leg",
+        "30 days to expiration (time decay acceleration)"
+      ],
+      "timeframe": "Daily",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "max_loss": "Premium paid for straddle",
+        "profit_target": "100% of premium paid",
+        "delta_hedge": "Hedge at +/- 0.3 delta"
+      },
+      "why_works_volatile": "Long straddles profit from volatility expansion regardless of direction; crypto's cyclical volatility creates predictable compression-expansion cycles.",
+      "expected_performance": {
+        "win_rate": "35-42%",
+        "profit_factor": "2.0-2.8",
+        "max_drawdown": "15-20% (defined risk)",
+        "sharpe_ratio": "1.2-1.6"
+      }
+    },
+    {
+      "id": 52,
+      "name": "Short Strangle Range",
+      "category": "Volatility",
+      "entry_conditions": [
+        "Bollinger Bandwidth at 6-month high",
+        "IV > 70th percentile",
+        "Price in established 10%+ range for 20+ days"
+      ],
+      "exit_conditions": [
+        "50% of maximum profit achieved",
+        "21 days to expiration",
+        "Price breaks range (stop loss)"
+      ],
+      "timeframe": "Daily",
+      "risk_management": {
+        "position_size": "3% of portfolio per trade",
+        "stop_loss": "Close beyond short strike",
+        "adjustment": "Roll untested side when delta exceeds 0.3",
+        "profit_target": "50% of credit received"
+      },
+      "why_works_volatile": "Short strangles capture time decay and volatility contraction; crypto's range-bound periods after violent moves offer high-premium selling opportunities.",
+      "expected_performance": {
+        "win_rate": "70-78%",
+        "profit_factor": "1.4-1.8",
+        "max_drawdown": "25-40% (tail risk)",
+        "sharpe_ratio": "1.3-1.7"
+      }
+    },
+    {
+      "id": 53,
+      "name": "Volatility Expansion Break",
+      "category": "Volatility",
+      "entry_conditions": [
+        "ATR(14) < 20th percentile (low vol regime)",
+        "Bollinger Bandwidth < 5%",
+        "Current candle range > 1.5x ATR with volume > 2x"
+      ],
+      "exit_conditions": [
+        "ATR returns to 50th percentile",
+        "3 consecutive lower ATR readings",
+        "Price returns to breakout level"
+      ],
+      "timeframe": "4H, Daily",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "Opposite side of breakout candle",
+        "take_profit": "2x ATR expansion target",
+        "trailing": "1.5 ATR trail once 1 ATR profit achieved"
+      },
+      "why_works_volatile": "Volatility mean reversion is powerful in crypto; periods of low volatility almost always resolve with explosive moves as pent-up energy releases.",
+      "expected_performance": {
+        "win_rate": "48-55%",
+        "profit_factor": "1.9-2.5",
+        "max_drawdown": "18-24%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 54,
+      "name": "Keltner Volatility Squeeze",
+      "category": "Volatility",
+      "entry_conditions": [
+        "Keltner Channel width < 10th percentile of 50 periods",
+        "Price within 20% of channel middle",
+        "Volume declining for 5+ periods"
+      ],
+      "exit_conditions": [
+        "Price breaks above upper Keltner + volume",
+        "Channel width expands > 50%",
+        "Opposite breakout occurs (stop)"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "Opposite Keltner band",
+        "take_profit": "2x channel width projected from breakout",
+        "straddle": "Enter both directions, close loser on breakout"
+      },
+      "why_works_volatile": "Keltner squeezes using ATR adapt to crypto's changing volatility; breakouts from tight Keltner channels often lead to sustained trends.",
+      "expected_performance": {
+        "win_rate": "45-52%",
+        "profit_factor": "2.0-2.6",
+        "max_drawdown": "19-25%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 55,
+      "name": "GARCH Volatility Forecast",
+      "category": "Volatility",
+      "entry_conditions": [
+        "GARCH(1,1) forecast predicts >20% increase in volatility",
+        "Current volatility < forecast by >15%",
+        "Volume profile showing accumulation"
+      ],
+      "exit_conditions": [
+        "Realized volatility > GARCH forecast",
+        "Volatility drops below 30th percentile",
+        "3 days after volatility peak"
+      ],
+      "timeframe": "Daily",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "2x ATR(14)",
+        "take_profit": "When realized vol matches forecast",
+        "correlation_check": "Ensure portfolio vol not concentrated"
+      },
+      "why_works_volatile": "GARCH models predict volatility clustering; in crypto, GARCH forecasts capture the persistence of volatility shocks better than historical measures.",
+      "expected_performance": {
+        "win_rate": "52-59%",
+        "profit_factor": "1.7-2.2",
+        "max_drawdown": "16-22%",
+        "sharpe_ratio": "1.3-1.8"
+      }
+    },
+    {
+      "id": 56,
+      "name": "Volatility Risk Premium",
+      "category": "Volatility",
+      "entry_conditions": [
+        "Implied volatility > realized volatility by >10%",
+        "VIX-style crypto fear index > 60",
+        "Term structure in contango (upward sloping)"
+      ],
+      "exit_conditions": [
+        "IV-RV spread narrows to <5%",
+        "Realized volatility exceeds implied",
+        "25% profit achieved"
+      ],
+      "timeframe": "Daily",
+      "risk_management": {
+        "position_size": "3% of portfolio per trade",
+        "max_loss": "Vega exposure capped at 2% portfolio",
+        "delta_neutral": "Hedge directional exposure",
+        "roll_strategy": "Roll to next month at 21 DTE"
+      },
+      "why_works_volatile": "Crypto options typically trade with high implied volatility that exceeds realized; selling this premium captures consistent edge in volatile markets.",
+      "expected_performance": {
+        "win_rate": "65-72%",
+        "profit_factor": "1.5-1.9",
+        "max_drawdown": "20-30%",
+        "sharpe_ratio": "1.4-1.8"
+      }
+    },
+    {
+      "id": 57,
+      "name": "ATR Position Sizing Trend",
+      "category": "Volatility",
+      "entry_conditions": [
+        "Trend following signal (e.g., EMA cross)",
+        "ATR(14) used for dynamic position sizing",
+        "Risk per trade fixed at 1% of portfolio"
+      ],
+      "exit_conditions": [
+        "Trend signal reverses",
+        "2x ATR stop loss hit",
+        "Trailing stop at 1.5x ATR from peak"
+      ],
+      "timeframe": "4H, Daily",
+      "risk_management": {
+        "position_size_formula": "(1% of portfolio) / (2 * ATR)",
+        "max_position": "5% of portfolio",
+        "min_position": "0.5% of portfolio",
+        "volatility_cap": "Reduce size 50% if ATR > 10%"
+      },
+      "why_works_volatile": "ATR-based sizing reduces exposure during crypto's violent periods while increasing it during calm trends, optimizing risk-adjusted returns.",
+      "expected_performance": {
+        "win_rate": "40-48%",
+        "profit_factor": "2.0-2.6",
+        "max_drawdown": "18-24%",
+        "sharpe_ratio": "1.5-2.0"
+      }
+    },
+    {
+      "id": 58,
+      "name": "Volatility Stop Trend",
+      "category": "Volatility",
+      "entry_conditions": [
+        "Price above EMA(20) with positive slope",
+        "ATR(10) < ATR(30) (decreasing volatility in uptrend)",
+        "Volume > 1.2x average"
+      ],
+      "exit_conditions": [
+        "Price closes below EMA(20) - (1.5 * ATR(14))",
+        "ATR expands >50% (volatility spike)",
+        "Price breaks below swing low"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "Dynamic at 1.5x ATR from EMA",
+        "take_profit": "3x ATR from entry",
+        "volatility_filter": "Skip if daily ATR > 15%"
+      },
+      "why_works_volatile": "Volatility stops adapt to crypto's changing conditions; widening stops during high volatility prevents premature exits while tightening in calm trends.",
+      "expected_performance": {
+        "win_rate": "44-51%",
+        "profit_factor": "1.9-2.5",
+        "max_drawdown": "17-23%",
+        "sharpe_ratio": "1.5-2.0"
+      }
+    },
+    {
+      "id": 59,
+      "name": "Bollinger %B Reversal",
+      "category": "Volatility",
+      "entry_conditions": [
+        "%B indicator below 0.05 (extreme low)",
+        "%B turns up with bullish candle",
+        "Bandwidth > 10% (sufficient volatility)"
+      ],
+      "exit_conditions": [
+        "%B reaches 0.5 (middle band)",
+        "%B exceeds 0.95 (overbought)",
+        "%B turns down before reaching 0.5"
+      ],
+      "timeframe": "30M, 1H",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "%B new low below 0",
+        "take_profit": "50% at %B 0.5, 50% at %B 0.9",
+        "trend_filter": "Only against trend if ADX < 20"
+      },
+      "why_works_volatile": "%B normalizes price within Bollinger Bands; extreme readings below 0.05 in volatile crypto markets often signal washout bottoms with quick reversals.",
+      "expected_performance": {
+        "win_rate": "58-65%",
+        "profit_factor": "1.5-1.9",
+        "max_drawdown": "14-18%",
+        "sharpe_ratio": "1.4-1.8"
+      }
+    },
+    {
+      "id": 60,
+      "name": "Chaikin Volatility Expansion",
+      "category": "Volatility",
+      "entry_conditions": [
+        "Chaikin Volatility(10) crosses above EMA(10) of CV",
+        "CV < 20th percentile (low base)",
+        "Accumulation/Distribution rising"
+      ],
+      "exit_conditions": [
+        "CV peaks and turns down",
+        "Price returns to breakout level",
+        "CV drops below its EMA"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "Recent range low",
+        "take_profit": "1:2 risk-reward",
+        "direction_filter": "Trade in direction of A/D trend"
+      },
+      "why_works_volatile": "Chaikin Volatility measures volatility expansion from accumulation; crypto breakouts often confirmed by rising volatility during smart money accumulation.",
+      "expected_performance": {
+        "win_rate": "50-57%",
+        "profit_factor": "1.7-2.2",
+        "max_drawdown": "16-21%",
+        "sharpe_ratio": "1.4-1.8"
+      }
+    },
+    {
+      "id": 61,
+      "name": "LSTM Price Prediction",
+      "category": "Machine Learning",
+      "entry_conditions": [
+        "LSTM model predicts >2% price increase in next 4 hours",
+        "Prediction confidence > 75%",
+        "Features: OHLCV, RSI, MACD, order book imbalance"
+      ],
+      "exit_conditions": [
+        "Model predicts reversal or <0.5% gain",
+        "Prediction horizon reached (4 hours)",
+        "Stop loss triggered at -1.5%"
+      ],
+      "timeframe": "15M, 1H",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "1.5% fixed",
+        "take_profit": "Model target or 2%, whichever first",
+        "model_retrain": "Weekly retraining on rolling 90-day window"
+      },
+      "why_works_volatile": "LSTM networks capture temporal dependencies in crypto's volatile price action, learning patterns invisible to traditional indicators during rapid moves.",
+      "expected_performance": {
+        "win_rate": "54-61%",
+        "profit_factor": "1.6-2.1",
+        "max_drawdown": "15-20%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 62,
+      "name": "Random Forest Ensemble",
+      "category": "Machine Learning",
+      "entry_conditions": [
+        "Random Forest (100 estimators) predicts upward move",
+        "Feature importance: RSI, Volume, MACD, Bollinger Position",
+        "Out-of-bag score > 0.65"
+      ],
+      "exit_conditions": [
+        "Model probability drops below 50%",
+        "Feature importance shifts dramatically",
+        "Time-based exit after 6 hours"
+      ],
+      "timeframe": "1H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "2% or model prediction changes",
+        "take_profit": "1:2 risk-reward or probability < 40%",
+        "feature_engineering": "Include on-chain metrics and funding rates"
+      },
+      "why_works_volatile": "Random Forests handle crypto's non-linear relationships and feature interactions better than linear models, capturing complex volatility patterns.",
+      "expected_performance": {
+        "win_rate": "52-59%",
+        "profit_factor": "1.7-2.2",
+        "max_drawdown": "16-21%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 63,
+      "name": "XGBoost Gradient Boosting",
+      "category": "Machine Learning",
+      "entry_conditions": [
+        "XGBoost model probability > 0.65 for long",
+        "SHAP values confirm positive contribution from momentum features",
+        "No conflicting prediction from RF ensemble"
+      ],
+      "exit_conditions": [
+        "XGBoost probability drops below 0.5",
+        "SHAP analysis shows negative feature contributions",
+        "Model disagreement with LSTM"
+      ],
+      "timeframe": "30M, 1H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "1.8% fixed",
+        "take_profit": "Model confidence-based scaling",
+        "hyperparameters": "max_depth=6, learning_rate=0.1, n_estimators=200"
+      },
+      "why_works_volatile": "XGBoost's regularization prevents overfitting to crypto's noise while capturing genuine predictive signals in high-volatility regimes.",
+      "expected_performance": {
+        "win_rate": "55-62%",
+        "profit_factor": "1.7-2.3",
+        "max_drawdown": "14-19%",
+        "sharpe_ratio": "1.5-2.0"
+      }
+    },
+    {
+      "id": 64,
+      "name": "Reinforcement Learning DQN",
+      "category": "Machine Learning",
+      "entry_conditions": [
+        "DQN agent Q-value for BUY action > threshold (0.7)",
+        "Agent state: price history, position, volatility, P&L",
+        "Exploration rate epsilon < 0.1 (exploitation phase)"
+      ],
+      "exit_conditions": [
+        "DQN Q-value for SELL > BUY Q-value",
+        "Maximum position holding time reached",
+        "Stop loss environment variable triggered"
+      ],
+      "timeframe": "5M, 15M",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "Environment reward function includes -2% penalty",
+        "take_profit": "Agent learns optimal exit through rewards",
+        "replay_buffer": "100k experiences, batch size 64"
+      },
+      "why_works_volatile": "DQN agents learn optimal policies through trial-and-error in simulated crypto environments, adapting to volatility without explicit feature engineering.",
+      "expected_performance": {
+        "win_rate": "48-56%",
+        "profit_factor": "1.8-2.4",
+        "max_drawdown": "18-25%",
+        "sharpe_ratio": "1.3-1.9"
+      }
+    },
+    {
+      "id": 65,
+      "name": "ARIMA-GARCH Hybrid",
+      "category": "Machine Learning",
+      "entry_conditions": [
+        "ARIMA(5,1,0) forecast > current price by 1.5%",
+        "GARCH(1,1) predicts increasing volatility",
+        "Residuals show no significant autocorrelation"
+      ],
+      "exit_conditions": [
+        "Forecast error exceeds 2 standard deviations",
+        "GARCH volatility forecast declines",
+        "Next ARIMA prediction < current price"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "2% fixed or GARCH volatility spike",
+        "take_profit": "ARIMA forecast target",
+        "model_diagnostics": "Check ACF/PACF of residuals daily"
+      },
+      "why_works_volatile": "ARIMA captures linear dependencies while GARCH models volatility clustering; the combination addresses both mean and variance in crypto returns.",
+      "expected_performance": {
+        "win_rate": "50-57%",
+        "profit_factor": "1.6-2.1",
+        "max_drawdown": "17-23%",
+        "sharpe_ratio": "1.3-1.8"
+      }
+    },
+    {
+      "id": 66,
+      "name": "Support Vector Machine (SVM)",
+      "category": "Machine Learning",
+      "entry_conditions": [
+        "SVM with RBF kernel classifies as UP",
+        "Decision function value > 0.5 (distance from hyperplane)",
+        "Support vectors include recent volatile periods"
+      ],
+      "exit_conditions": [
+        "SVM classification changes to DOWN",
+        "Decision function value drops below 0",
+        "Time-based exit after 8 hours"
+      ],
+      "timeframe": "1H",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "2.5%",
+        "take_profit": "1:2 risk-reward",
+        "kernel_params": "C=1.0, gamma='scale', retrain weekly"
+      },
+      "why_works_volatile": "SVM's kernel trick maps crypto's non-linear patterns to higher dimensions where they become separable, capturing complex volatility structures.",
+      "expected_performance": {
+        "win_rate": "51-58%",
+        "profit_factor": "1.5-2.0",
+        "max_drawdown": "16-22%",
+        "sharpe_ratio": "1.3-1.8"
+      }
+    },
+    {
+      "id": 67,
+      "name": "K-Means Regime Detection",
+      "category": "Machine Learning",
+      "entry_conditions": [
+        "K-Means (k=3) identifies TRENDING UP regime",
+        "Current cluster: high volatility + positive returns",
+        "Regime persistence > 70% probability"
+      ],
+      "exit_conditions": [
+        "Cluster assignment changes to MEAN REVERTING or DOWN",
+        "Regime probability drops below 50%",
+        "New cluster centroid significantly different"
+      ],
+      "timeframe": "4H, Daily",
+      "risk_management": {
+        "position_size": "3% of portfolio per trade",
+        "stop_loss": "Cluster boundary",
+        "take_profit": "Next cluster centroid",
+        "features": "Returns, volatility, volume, RSI"
+      },
+      "why_works_volatile": "K-Means identifies distinct market regimes (trending, ranging, volatile); trading only in favorable regimes improves crypto performance significantly.",
+      "expected_performance": {
+        "win_rate": "53-60%",
+        "profit_factor": "1.8-2.3",
+        "max_drawdown": "15-20%",
+        "sharpe_ratio": "1.5-2.0"
+      }
+    },
+    {
+      "id": 68,
+      "name": "Neural Network Pattern Recognition",
+      "category": "Machine Learning",
+      "entry_conditions": [
+        "CNN identifies bullish chart pattern (flag, triangle, cup)",
+        "Pattern confidence > 80%",
+        "Volume profile matches pattern template"
+      ],
+      "exit_conditions": [
+        "Pattern target reached",
+        "Pattern invalidated (break of key level)",
+        "CNN confidence drops below 50%"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio per trade",
+        "stop_loss": "Pattern invalidation level",
+        "take_profit": "Pattern measured move target",
+        "architecture": "Conv2D layers for image-like chart input"
+      },
+      "why_works_volatile": "CNNs recognize visual chart patterns with human-like accuracy but without fatigue; in crypto, this captures patterns forming in volatile price action.",
+      "expected_performance": {
+        "win_rate": "48-55%",
+        "profit_factor": "1.9-2.5",
+        "max_drawdown": "18-24%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 69,
+      "name": "PCA Factor Model",
+      "category": "Machine Learning",
+      "entry_conditions": [
+        "First principal component (market factor) positive and increasing",
+        "Residual from PCA model > 1.5 standard deviations (underpriced)",
+        "Crypto-specific factors (BTC dominance, funding) favorable"
+      ],
+      "exit_conditions": [
+        "First PC turns negative",
+        "Residual normalizes to < 0.5 SD",
+        "Factor loadings shift significantly"
+      ],
+      "timeframe": "Daily",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "Residual exceeds -2 SD",
+        "take_profit": "Residual at 0 (fair value)",
+        "components": "Use 5-7 principal components"
+      },
+      "why_works_volatile": "PCA isolates systematic vs idiosyncratic risk; in crypto, this separates market-wide moves from coin-specific opportunities during volatility.",
+      "expected_performance": {
+        "win_rate": "52-59%",
+        "profit_factor": "1.6-2.1",
+        "max_drawdown": "16-21%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 70,
+      "name": "Isolation Forest Anomaly",
+      "category": "Machine Learning",
+      "entry_conditions": [
+        "Price action classified as anomaly (isolation depth < 5)",
+        "Anomaly type: positive price shock",
+        "Historical similar anomalies led to 3%+ moves"
+      ],
+      "exit_conditions": [
+        "Anomaly score normalizes (no longer outlier)",
+        "Next 3 periods fail to confirm move",
+        "Opposite anomaly detected"
+      ],
+      "timeframe": "15M, 1H",
+      "risk_management": {
+        "position_size": "1.5% of portfolio per trade",
+        "stop_loss": "Anomaly detection threshold",
+        "take_profit": "Historical average move from similar anomalies",
+        "contamination": "Set 5% contamination parameter"
+      },
+      "why_works_volatile": "Isolation Forests detect outliers in real-time; crypto's volatile moves often start as anomalies, providing early entry signals before trends develop.",
+      "expected_performance": {
+        "win_rate": "46-53%",
+        "profit_factor": "1.8-2.4",
+        "max_drawdown": "19-26%",
+        "sharpe_ratio": "1.3-1.8"
+      }
+    },
+    {
+      "id": 71,
+      "name": "Spatial Arbitrage",
+      "category": "Arbitrage",
+      "entry_conditions": [
+        "Price on Exchange A > Price on Exchange B by > 0.5%",
+        "Both exchanges have sufficient liquidity (>100k depth)",
+        "Withdrawal/deposit enabled on both platforms"
+      ],
+      "exit_conditions": [
+        "Price converges (spread < 0.1%)",
+        "Transfer completed and positions closed",
+        "Maximum hold time: 30 minutes"
+      ],
+      "timeframe": "Real-time",
+      "risk_management": {
+        "position_size": "10% of portfolio per exchange",
+        "max_exposure": "Simultaneous positions on 2 exchanges",
+        "fees_calculation": "Include trading, withdrawal, network fees",
+        "min_profit": "0.3% after all fees"
+      },
+      "why_works_volatile": "Spatial arbitrage exploits exchange pricing inefficiencies; crypto volatility creates temporary dislocations as exchanges adjust at different speeds.",
+      "expected_performance": {
+        "win_rate": "85-92%",
+        "profit_factor": "1.1-1.3",
+        "max_drawdown": "2-5%",
+        "sharpe_ratio": "2.0-2.8"
+      }
+    },
+    {
+      "id": 72,
+      "name": "Triangular Arbitrage",
+      "category": "Arbitrage",
+      "entry_conditions": [
+        "Implied cross rate differs from actual by > 0.3%",
+        "Path: BTC->ETH->USDT->BTC forms profitable loop",
+        "All three pairs have sufficient liquidity"
+      ],
+      "exit_conditions": [
+        "All three trades executed (atomic ideally)",
+        "Profit realized or loss exceeds -0.1%",
+        "Arbitrage opportunity disappears"
+      ],
+      "timeframe": "Real-time",
+      "risk_management": {
+        "position_size": "5% of portfolio per triangle",
+        "execution_speed": "<100ms for all three legs",
+        "slippage_buffer": "Account for 0.05% slippage per leg",
+        "api_limits": "Respect exchange rate limits"
+      },
+      "why_works_volatile": "Triangular arbitrage captures mispricing between related pairs; crypto's fragmented liquidity creates frequent circular arbitrage opportunities.",
+      "expected_performance": {
+        "win_rate": "80-88%",
+        "profit_factor": "1.05-1.15",
+        "max_drawdown": "1-3%",
+        "sharpe_ratio": "1.8-2.5"
+      }
+    },
+    {
+      "id": 73,
+      "name": "Funding Rate Arbitrage",
+      "category": "Arbitrage",
+      "entry_conditions": [
+        "Perpetual funding rate > 0.1% (8-hour period)",
+        "Spot price approximately equal to perpetual",
+        "Sufficient margin available for short perpetual"
+      ],
+      "exit_conditions": [
+        "Funding rate turns negative or near zero",
+        "Basis converges significantly",
+        "3 funding periods elapsed"
+      ],
+      "timeframe": "8H (funding intervals)",
+      "risk_management": {
+        "position_size": "4% of portfolio",
+        "hedge_ratio": "1:1 spot vs perpetual",
+        "liquidation_buffer": "Maintain 3x maintenance margin",
+        "funding_schedule": "Enter 1 hour before funding"
+      },
+      "why_works_volatile": "Funding rate arbitrage collects premium from perpetual holders; crypto's volatile sentiment creates extreme funding rates offering risk-free yield.",
+      "expected_performance": {
+        "win_rate": "75-85%",
+        "profit_factor": "1.2-1.5",
+        "max_drawdown": "5-10%",
+        "sharpe_ratio": "1.5-2.2"
+      }
+    },
+    {
+      "id": 74,
+      "name": "Statistical Arbitrage (Pairs Trading)",
+      "category": "Arbitrage",
+      "entry_conditions": [
+        "Z-score of price ratio > 2 or < -2",
+        "Cointegration test p-value < 0.05",
+        "Correlation > 0.8 over 30-day lookback"
+      ],
+      "exit_conditions": [
+        "Z-score returns to 0.5 (mean reversion)",
+        "Z-score exceeds 3 (stop loss)",
+        "Correlation breaks below 0.5"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "3% per pair",
+        "hedge_ratio": "Beta-adjusted (from regression)",
+        "max_pairs": "5 simultaneous pairs",
+        "correlation_monitor": "Recalculate correlation daily"
+      },
+      "why_works_volatile": "Pairs trading exploits temporary divergence between correlated assets; crypto sector rotation creates frequent mispricings within categories.",
+      "expected_performance": {
+        "win_rate": "60-70%",
+        "profit_factor": "1.4-1.8",
+        "max_drawdown": "10-15%",
+        "sharpe_ratio": "1.3-1.8"
+      }
+    },
+    {
+      "id": 75,
+      "name": "Futures Basis Arbitrage",
+      "category": "Arbitrage",
+      "entry_conditions": [
+        "Quarterly futures premium > 2% over spot",
+        "Time to expiration > 30 days",
+        "Borrow rate < futures premium annualized"
+      ],
+      "exit_conditions": [
+        "Basis converges to < 0.5%",
+        "7 days to expiration",
+        "Borrowing cost exceeds remaining basis"
+      ],
+      "timeframe": "Daily",
+      "risk_management": {
+        "position_size": "5% of portfolio",
+        "leverage": "Use 2-3x on futures leg",
+        "rollover_plan": "Roll to next quarter 2 weeks before expiry",
+        "borrow_cost": "Lock in borrowing rate if possible"
+      },
+      "why_works_volatile": "Basis arbitrage captures contango yield; crypto's bullish bias maintains persistent backwardation/contango offering low-risk returns.",
+      "expected_performance": {
+        "win_rate": "82-90%",
+        "profit_factor": "1.15-1.35",
+        "max_drawdown": "3-8%",
+        "sharpe_ratio": "1.8-2.5"
+      }
+    },
+    {
+      "id": 76,
+      "name": "Twitter Sentiment Momentum",
+      "category": "Sentiment/Social",
+      "entry_conditions": [
+        "Twitter sentiment score > 0.7 (bullish) for 6+ hours",
+        "Tweet volume > 2x 7-day average",
+        "Price above VWAP confirming positive sentiment"
+      ],
+      "exit_conditions": [
+        "Sentiment drops below 0.3 (bearish)",
+        "Tweet volume normalizes",
+        "Price closes below EMA(20)"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2% of portfolio per trade",
+        "stop_loss": "2% fixed",
+        "take_profit": "1:2 risk-reward",
+        "sentiment_source": "Use multiple NLP models for consensus"
+      },
+      "why_works_volatile": "Social sentiment leads crypto price action; viral Twitter trends can drive 20%+ moves in hours, offering early signals before technical confirmation.",
+      "expected_performance": {
+        "win_rate": "48-56%",
+        "profit_factor": "1.7-2.3",
+        "max_drawdown": "18-25%",
+        "sharpe_ratio": "1.3-1.8"
+      }
+    },
+    {
+      "id": 77,
+      "name": "Reddit Mention Surge",
+      "category": "Sentiment/Social",
+      "entry_conditions": [
+        "Reddit mentions increase > 300% vs 7-day average",
+        "Sentiment analysis of comments > 0.6 positive",
+        "Upvote ratio > 75% on top posts"
+      ],
+      "exit_conditions": [
+        "Mentions drop below 150% of baseline",
+        "24-hour momentum wanes",
+        "Negative sentiment emerges (< 0.4)"
+      ],
+      "timeframe": "4H, Daily",
+      "risk_management": {
+        "position_size": "2.5% of portfolio",
+        "stop_loss": "Recent support - 2%",
+        "take_profit": "Scale 50% at +10%, trail 50%",
+        "subreddit_weight": "Weight r/CryptoCurrency, r/SatoshiStreetBets higher"
+      },
+      "why_works_volatile": "Reddit drives retail crypto FOMO; sudden mention surges often precede viral pumps, especially in meme coins and low-cap alts.",
+      "expected_performance": {
+        "win_rate": "45-55%",
+        "profit_factor": "1.8-2.5",
+        "max_drawdown": "20-30%",
+        "sharpe_ratio": "1.2-1.7"
+      }
+    },
+    {
+      "id": 78,
+      "name": "Fear & Greed Contrarian",
+      "category": "Sentiment/Social",
+      "entry_conditions": [
+        "Crypto Fear & Greed Index < 20 (Extreme Fear)",
+        "Index declining for 3+ consecutive days",
+        "Price at key technical support"
+      ],
+      "exit_conditions": [
+        "Index rises above 50 (Neutral)",
+        "Index reaches 75 (Greed)",
+        "Technical target achieved"
+      ],
+      "timeframe": "Daily",
+      "risk_management": {
+        "position_size": "3% of portfolio",
+        "stop_loss": "Below recent swing low",
+        "take_profit": "Scale out 1/3 at index 40, 60, 80",
+        "dca_strategy": "Add 25% every 5 points below 20"
+      },
+      "why_works_volatile": "Extreme fear signals capitulation in crypto; when fear is maximum, volatility has likely peaked and reversal becomes probable.",
+      "expected_performance": {
+        "win_rate": "65-75%",
+        "profit_factor": "1.6-2.1",
+        "max_drawdown": "15-22%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 79,
+      "name": "Whale Alert Following",
+      "category": "Sentiment/Social",
+      "entry_conditions": [
+        "Large wallet moves > $10M to exchange detected",
+        "On-chain data shows accumulation pattern",
+        "Exchange inflow precedes price by 1-4 hours"
+      ],
+      "exit_conditions": [
+        "Whale moves assets off exchange",
+        "24 hours elapsed since signal",
+        "Price reaches 5% profit target"
+      ],
+      "timeframe": "Event-driven",
+      "risk_management": {
+        "position_size": "2% of portfolio",
+        "stop_loss": "Entry - 1.5%",
+        "take_profit": "3-5% quick profit",
+        "confirmation": "Wait for 2+ whale alerts within 1 hour"
+      },
+      "why_works_volatile": "Whale movements predict volatility; large exchange deposits often precede dumps while withdrawals signal accumulation in crypto markets.",
+      "expected_performance": {
+        "win_rate": "52-62%",
+        "profit_factor": "1.5-2.0",
+        "max_drawdown": "12-18%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 80,
+      "name": "Google Trends Momentum",
+      "category": "Sentiment/Social",
+      "entry_conditions": [
+        "Google Trends interest > 2x 30-day average",
+        "Trending searches include coin name + 'buy'",
+        "YouTube search volume increasing correlated"
+      ],
+      "exit_conditions": [
+        "Interest peaks and declines for 2 days",
+        "Search volume returns to baseline",
+        "Price divergence from trend strength"
+      ],
+      "timeframe": "Daily",
+      "risk_management": {
+        "position_size": "2% of portfolio",
+        "stop_loss": "Recent low - 2%",
+        "take_profit": "1:2 risk-reward",
+        "lag_adjustment": "Account for 1-2 day data lag"
+      },
+      "why_works_volatile": "Google Trends captures retail interest before price moves; crypto's viral nature creates explosive search interest that precedes buying pressure.",
+      "expected_performance": {
+        "win_rate": "50-60%",
+        "profit_factor": "1.6-2.2",
+        "max_drawdown": "16-24%",
+        "sharpe_ratio": "1.3-1.8"
+      }
+    },
+    {
+      "id": 81,
+      "name": "Head and Shoulders",
+      "category": "Pattern Recognition",
+      "entry_conditions": [
+        "Classic H&S pattern: left shoulder, head, higher right shoulder",
+        "Neckline support tested at least 2 times",
+        "Break below neckline with volume > 1.5x"
+      ],
+      "exit_conditions": [
+        "Price reaches measured move target (head to neckline distance)",
+        "Price returns to neckline (failed breakdown)",
+        "RSI divergence at right shoulder resolves"
+      ],
+      "timeframe": "4H, Daily",
+      "risk_management": {
+        "position_size": "2.5% of portfolio",
+        "stop_loss": "Right shoulder high",
+        "take_profit": "Measured move from neckline",
+        "volume_confirmation": "Require breakdown volume confirmation"
+      },
+      "why_works_volatile": "Head and shoulders patterns in crypto have high completion rates; the pattern reflects distribution psychology that plays out rapidly in volatile markets.",
+      "expected_performance": {
+        "win_rate": "58-66%",
+        "profit_factor": "1.7-2.2",
+        "max_drawdown": "14-20%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 82,
+      "name": "Bull Flag Continuation",
+      "category": "Pattern Recognition",
+      "entry_conditions": [
+        "Sharp upward move (flagpole) > 10%",
+        "Consolidation in downward sloping channel (flag)",
+        "Volume declining during flag formation",
+        "Break above flag resistance with volume"
+      ],
+      "exit_conditions": [
+        "Price reaches measured move (flagpole height + breakout)",
+        "Price returns to flag support (failed)",
+        "3 lower closes after breakout"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "3% of portfolio",
+        "stop_loss": "Flag support or 3%",
+        "take_profit": "100% of flagpole projected",
+        "entry_timing": "Enter on breakout, not anticipation"
+      },
+      "why_works_volatile": "Bull flags represent healthy consolidation after explosive moves; in crypto, these patterns resolve quickly with continued momentum.",
+      "expected_performance": {
+        "win_rate": "55-65%",
+        "profit_factor": "1.8-2.4",
+        "max_drawdown": "16-22%",
+        "sharpe_ratio": "1.5-2.0"
+      }
+    },
+    {
+      "id": 83,
+      "name": "Double Bottom Reversal",
+      "category": "Pattern Recognition",
+      "entry_conditions": [
+        "Two distinct lows at approximately same price level",
+        "Second low with bullish divergence on RSI/MACD",
+        "Volume higher on second low (climax)",
+        "Break above middle peak with volume > 2x"
+      ],
+      "exit_conditions": [
+        "Price reaches measured move (height + breakout)",
+        "Price returns below neckline",
+        "Time exit after 20 periods if no momentum"
+      ],
+      "timeframe": "4H, Daily",
+      "risk_management": {
+        "position_size": "2.5% of portfolio",
+        "stop_loss": "Second low - 1%",
+        "take_profit": "100% pattern height projected",
+        "w_pattern": "Require W shape, not just two lows"
+      },
+      "why_works_volatile": "Double bottoms capture exhaustion of sellers; in crypto's volatile markets, these patterns mark significant trend reversals with strong follow-through.",
+      "expected_performance": {
+        "win_rate": "60-68%",
+        "profit_factor": "1.6-2.1",
+        "max_drawdown": "12-18%",
+        "sharpe_ratio": "1.5-2.0"
+      }
+    },
+    {
+      "id": 84,
+      "name": "Cup and Handle",
+      "category": "Pattern Recognition",
+      "entry_conditions": [
+        "Rounded bottom (cup) over 20+ periods",
+        "Handle retracement < 50% of cup depth",
+        "Handle in upper half of cup",
+        "Break above handle resistance with volume"
+      ],
+      "exit_conditions": [
+        "Price reaches cup depth projected from breakout",
+        "Price returns to handle support",
+        "Time exit after 30 periods"
+      ],
+      "timeframe": "Daily",
+      "risk_management": {
+        "position_size": "3% of portfolio",
+        "stop_loss": "Handle low",
+        "take_profit": "Cup depth measured move",
+        "volume_profile": "Cup should show declining volume, handle lower"
+      },
+      "why_works_volatile": "Cup and handle patterns reflect accumulation psychology; crypto's round-number resistance creates natural cup formations before explosive breakouts.",
+      "expected_performance": {
+        "win_rate": "62-70%",
+        "profit_factor": "1.9-2.5",
+        "max_drawdown": "14-20%",
+        "sharpe_ratio": "1.6-2.1"
+      }
+    },
+    {
+      "id": 85,
+      "name": "Falling Wedge",
+      "category": "Pattern Recognition",
+      "entry_conditions": [
+        "Converging trendlines sloping downward",
+        "At least 5 touches of each trendline",
+        "Volume declining during formation",
+        "Break above upper trendline with volume > 1.5x"
+      ],
+      "exit_conditions": [
+        "Price reaches pattern height + breakout",
+        "Price returns below breakout level",
+        "Time exit after 15 periods"
+      ],
+      "timeframe": "4H, Daily",
+      "risk_management": {
+        "position_size": "2.5% of portfolio",
+        "stop_loss": "Recent swing low within wedge",
+        "take_profit": "Pattern height at widest point",
+        "retest": "Allow for retest of broken trendline"
+      },
+      "why_works_volatile": "Falling wedges are bullish consolidation patterns; in crypto, they often form during volatile corrections before resuming explosive uptrends.",
+      "expected_performance": {
+        "win_rate": "58-66%",
+        "profit_factor": "1.7-2.3",
+        "max_drawdown": "15-21%",
+        "sharpe_ratio": "1.5-2.0"
+      }
+    },
+    {
+      "id": 86,
+      "name": "Symmetrical Triangle",
+      "category": "Pattern Recognition",
+      "entry_conditions": [
+        "Converging upper and lower trendlines",
+        "At least 4 touches of each trendline",
+        "Volume declining 50%+ from pre-pattern",
+        "Break with volume expansion > 2x"
+      ],
+      "exit_conditions": [
+        "Price reaches measured move (triangle height + breakout)",
+        "Price returns to apex area",
+        "Time exit: 75% of pattern duration"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio",
+        "stop_loss": "Opposite side of triangle",
+        "take_profit": "100% of triangle base",
+        "direction_bias": "Trade in direction of prior trend"
+      },
+      "why_works_volatile": "Symmetrical triangles represent indecision resolution; crypto's volatility creates compressed energy that releases powerfully on triangle breakouts.",
+      "expected_performance": {
+        "win_rate": "50-60%",
+        "profit_factor": "1.8-2.4",
+        "max_drawdown": "17-23%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 87,
+      "name": "Rounding Bottom",
+      "category": "Pattern Recognition",
+      "entry_conditions": [
+        "Gradual curved bottom over 15+ periods",
+        "RSI showing bullish divergence",
+        "Volume highest at lows (accumulation)",
+        "Break above resistance with increasing volume"
+      ],
+      "exit_conditions": [
+        "Price reaches depth + breakout",
+        "Price fails to hold above resistance",
+        "Volume dries up on rally"
+      ],
+      "timeframe": "Daily",
+      "risk_management": {
+        "position_size": "3% of portfolio",
+        "stop_loss": "Pattern low - 2%",
+        "take_profit": "Pattern depth projected",
+        "confirmation": "Wait for close above resistance"
+      },
+      "why_works_volatile": "Rounding bottoms show gradual accumulation; crypto's sharp bottoms often round quickly before violent reversals as smart money completes accumulation.",
+      "expected_performance": {
+        "win_rate": "55-65%",
+        "profit_factor": "1.8-2.4",
+        "max_drawdown": "15-22%",
+        "sharpe_ratio": "1.5-2.0"
+      }
+    },
+    {
+      "id": 88,
+      "name": "Pennant Continuation",
+      "category": "Pattern Recognition",
+      "entry_conditions": [
+        "Strong flagpole move > 8%",
+        "Small symmetrical triangle (pennant) forms",
+        "Pennant duration < 50% of flagpole",
+        "Break in direction of flagpole with volume"
+      ],
+      "exit_conditions": [
+        "Price reaches flagpole height + breakout",
+        "Price breaks opposite side of pennant",
+        "Time exit after 10 periods"
+      ],
+      "timeframe": "30M, 1H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio",
+        "stop_loss": "Pennant low",
+        "take_profit": "Flagpole length projected",
+        "aggressive_entry": "Enter on first pullback after breakout"
+      },
+      "why_works_volatile": "Pennants represent brief pauses in explosive moves; crypto's momentum persistence makes pennant breakouts high-probability continuation signals.",
+      "expected_performance": {
+        "win_rate": "52-62%",
+        "profit_factor": "1.7-2.3",
+        "max_drawdown": "18-25%",
+        "sharpe_ratio": "1.4-1.9"
+      }
+    },
+    {
+      "id": 89,
+      "name": "Inverse Head and Shoulders",
+      "category": "Pattern Recognition",
+      "entry_conditions": [
+        "Three lows: left shoulder, lower head, right shoulder",
+        "Head shows extreme bearish sentiment/volume",
+        "Right shoulder higher than head",
+        "Break above neckline with volume > 2x"
+      ],
+      "exit_conditions": [
+        "Price reaches measured move (head to neckline)",
+        "Price returns below neckline (false breakout)",
+        "RSI reaches overbought on rally"
+      ],
+      "timeframe": "4H, Daily",
+      "risk_management": {
+        "position_size": "3% of portfolio",
+        "stop_loss": "Right shoulder low",
+        "take_profit": "Pattern height projected",
+        "neckline": "Must be clearly defined with 2+ touches"
+      },
+      "why_works_volatile": "Inverse H&S marks major bottoms in crypto; the pattern captures final capitulation followed by aggressive buying as trend reverses.",
+      "expected_performance": {
+        "win_rate": "60-68%",
+        "profit_factor": "1.8-2.4",
+        "max_drawdown": "14-20%",
+        "sharpe_ratio": "1.6-2.1"
+      }
+    },
+    {
+      "id": 90,
+      "name": "Wyckoff Accumulation",
+      "category": "Pattern Recognition",
+      "entry_conditions": [
+        "Phase C (Spring): false breakdown below support",
+        "Volume spike on spring (climax selling)",
+        "Phase D: LPS (Last Point of Support) holds",
+        "Sign of Strength (SOS) with volume > 2x average"
+      ],
+      "exit_conditions": [
+        "Phase E (Markup) target reached",
+        "Price returns below LPS",
+        "Distribution phase signs appear"
+      ],
+      "timeframe": "Daily",
+      "risk_management": {
+        "position_size": "4% of portfolio",
+        "stop_loss": "Spring low - 1%",
+        "take_profit": "100-150% of accumulation range",
+        "wyckoff_schematic": "Verify all phases present"
+      },
+      "why_works_volatile": "Wyckoff captures institutional accumulation; crypto's volatile springs shake out weak holders before smart money drives significant rallies.",
+      "expected_performance": {
+        "win_rate": "55-65%",
+        "profit_factor": "2.0-2.8",
+        "max_drawdown": "16-24%",
+        "sharpe_ratio": "1.5-2.2"
+      }
+    },
+    {
+      "id": 91,
+      "name": "Triple Indicator Confluence",
+      "category": "Hybrid/Ensemble",
+      "entry_conditions": [
+        "RSI(14) > 50 and rising",
+        "MACD histogram expanding above zero",
+        "Price above EMA(20) with positive slope",
+        "All three signals within 3 periods"
+      ],
+      "exit_conditions": [
+        "Any 2 of 3 indicators turn bearish",
+        "RSI drops below 40",
+        "Price closes below EMA(20)"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "3% of portfolio",
+        "stop_loss": "2% or EMA(20)",
+        "take_profit": "1:2.5 risk-reward",
+        "confluence_weight": "All indicators must agree"
+      },
+      "why_works_volatile": "Multiple indicator confirmation filters false signals; in crypto's noisy environment, confluence significantly improves win rates.",
+      "expected_performance": {
+        "win_rate": "58-66%",
+        "profit_factor": "1.8-2.4",
+        "max_drawdown": "14-20%",
+        "sharpe_ratio": "1.6-2.1"
+      }
+    },
+    {
+      "id": 92,
+      "name": "Multi-Timeframe Alignment",
+      "category": "Hybrid/Ensemble",
+      "entry_conditions": [
+        "Daily: Price above EMA(50), bullish trend",
+        "4H: MACD histogram turning positive",
+        "1H: RSI(14) crosses above 50 from oversold",
+        "15M: Volume spike > 2x average"
+      ],
+      "exit_conditions": [
+        "1H RSI reaches overbought > 70",
+        "4H MACD histogram contracts",
+        "Daily candle closes below EMA(20)"
+      ],
+      "timeframe": "Multi (15M-1H-4H-Daily)",
+      "risk_management": {
+        "position_size": "2.5% of portfolio",
+        "stop_loss": "1H swing low",
+        "take_profit": "Daily resistance or 1:3 RR",
+        "timeframe_hierarchy": "Higher TF direction, lower TF execution"
+      },
+      "why_works_volatile": "Multi-timeframe analysis ensures alignment across scales; crypto's fractal volatility requires confirmation from multiple time horizons.",
+      "expected_performance": {
+        "win_rate": "60-68%",
+        "profit_factor": "1.9-2.5",
+        "max_drawdown": "12-18%",
+        "sharpe_ratio": "1.7-2.2"
+      }
+    },
+    {
+      "id": 93,
+      "name": "Volume-Price Confirmation",
+      "category": "Hybrid/Ensemble",
+      "entry_conditions": [
+        "Price breaks above resistance with volume > 2.5x average",
+        "OBV (On Balance Volume) at new high",
+        "Volume profile shows no major supply above",
+        "Accumulation/Distribution rising"
+      ],
+      "exit_conditions": [
+        "Price up but OBV flat (divergence)",
+        "Volume drops below average on rally",
+        "Distribution detected in volume profile"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "3% of portfolio",
+        "stop_loss": "Breakout level or 2%",
+        "take_profit": "1:2.5 risk-reward",
+        "volume_filter": "Skip if volume < 1.5x on breakout"
+      },
+      "why_works_volatile": "Volume confirmation validates price moves; in crypto where fake breakouts are common, volume-price confluence separates genuine moves from traps.",
+      "expected_performance": {
+        "win_rate": "55-63%",
+        "profit_factor": "1.9-2.5",
+        "max_drawdown": "15-21%",
+        "sharpe_ratio": "1.6-2.1"
+      }
+    },
+    {
+      "id": 94,
+      "name": "ML + Technical Ensemble",
+      "category": "Hybrid/Ensemble",
+      "entry_conditions": [
+        "Random Forest predicts UP with > 65% confidence",
+        "Technical: Price above EMA(20) + RSI > 50",
+        "On-chain: Exchange outflows increasing",
+        "Sentiment: Fear & Greed < 40 (contrarian)"
+      ],
+      "exit_conditions": [
+        "ML confidence drops below 50%",
+        "Technical trend breaks (price < EMA(50))",
+        "2 of 4 factors turn bearish"
+      ],
+      "timeframe": "4H, Daily",
+      "risk_management": {
+        "position_size": "3% of portfolio",
+        "stop_loss": "3% or technical invalidation",
+        "take_profit": "Scale 50% at ML target, trail 50%",
+        "factor_weight": "ML 40%, Technical 30%, On-chain 20%, Sentiment 10%"
+      },
+      "why_works_volatile": "Combining ML predictions with traditional technicals and alternative data creates robust signals resilient to crypto's volatility shocks.",
+      "expected_performance": {
+        "win_rate": "58-66%",
+        "profit_factor": "2.0-2.6",
+        "max_drawdown": "14-20%",
+        "sharpe_ratio": "1.7-2.2"
+      }
+    },
+    {
+      "id": 95,
+      "name": "Divergence + Support Confluence",
+      "category": "Hybrid/Ensemble",
+      "entry_conditions": [
+        "Bullish divergence on RSI(14) and MACD",
+        "Price at key support (pivot, Fibonacci, volume node)",
+        "Divergence confirmed on 2+ timeframes",
+        "Volume declining (selling exhaustion)"
+      ],
+      "exit_conditions": [
+        "Divergence resolves (price makes higher high)",
+        "Support breaks with volume",
+        "RSI reaches 60+"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio",
+        "stop_loss": "Below support - 1%",
+        "take_profit": "Previous resistance or 1:2 RR",
+        "divergence_quality": "Require 3+ price bars divergence"
+      },
+      "why_works_volatile": "Divergence at support represents maximum confluence; in crypto's volatile selloffs, these zones offer the highest probability reversal setups.",
+      "expected_performance": {
+        "win_rate": "62-70%",
+        "profit_factor": "1.7-2.3",
+        "max_drawdown": "12-18%",
+        "sharpe_ratio": "1.6-2.1"
+      }
+    },
+    {
+      "id": 96,
+      "name": "VWAP + Order Flow Ensemble",
+      "category": "Hybrid/Ensemble",
+      "entry_conditions": [
+        "Price crosses above VWAP with volume > 1.5x",
+        "Order book: Bid depth > Ask depth by 20%+",
+        "CVD (Cumulative Volume Delta) rising",
+        "Large market buy orders (>5 BTC) detected"
+      ],
+      "exit_conditions": [
+        "Price closes below VWAP",
+        "CVD turns negative",
+        "Ask depth exceeds bid depth significantly"
+      ],
+      "timeframe": "5M, 15M",
+      "risk_management": {
+        "position_size": "2% of portfolio",
+        "stop_loss": "VWAP level",
+        "take_profit": "1:1.8 risk-reward",
+        "latency": "Require <100ms data feed"
+      },
+      "why_works_volatile": "VWAP with order flow creates institutional-grade signals; crypto's fragmented liquidity makes this ensemble particularly effective.",
+      "expected_performance": {
+        "win_rate": "56-64%",
+        "profit_factor": "1.6-2.2",
+        "max_drawdown": "14-20%",
+        "sharpe_ratio": "1.5-2.0"
+      }
+    },
+    {
+      "id": 97,
+      "name": "Momentum + Mean Reversion Hybrid",
+      "category": "Hybrid/Ensemble",
+      "entry_conditions": [
+        "Long-term trend: Price above EMA(50) and rising",
+        "Short-term pullback: RSI(14) < 35",
+        "Pullback to EMA(20) or 0.618 Fibonacci",
+        "Bullish engulfing or hammer at support"
+      ],
+      "exit_conditions": [
+        "RSI reaches 55 (mean reversion complete)",
+        "Price reaches prior high",
+        "Trend breaks (price < EMA(50))"
+      ],
+      "timeframe": "4H, Daily",
+      "risk_management": {
+        "position_size": "3% of portfolio",
+        "stop_loss": "Below Fibonacci 0.786 or 3%",
+        "take_profit": "Previous high or 1:2.5 RR",
+        "trend_filter": "Only trade pullbacks in established uptrends"
+      },
+      "why_works_volatile": "Combining trend following with mean reversion captures optimal entry points; crypto's volatile trends create frequent high-probability pullback opportunities.",
+      "expected_performance": {
+        "win_rate": "60-68%",
+        "profit_factor": "1.9-2.5",
+        "max_drawdown": "13-19%",
+        "sharpe_ratio": "1.7-2.2"
+      }
+    },
+    {
+      "id": 98,
+      "name": "Volatility Regime Adaptive",
+      "category": "Hybrid/Ensemble",
+      "entry_conditions": [
+        "GARCH detects shift to high volatility regime",
+        "ATR(14) > 50th percentile (volatility rising)",
+        "Strategy switches to momentum mode",
+        "Breakout from 20-period range with volume"
+      ],
+      "exit_conditions": [
+        "GARCH signals volatility regime change",
+        "ATR drops below 30th percentile",
+        "Strategy switches to mean reversion mode"
+      ],
+      "timeframe": "1H, 4H",
+      "risk_management": {
+        "position_size": "2.5% of portfolio, scaled by volatility",
+        "stop_loss": "2x ATR in high vol, 1x ATR in low vol",
+        "take_profit": "Regime-dependent: 1:3 in high vol, 1:1.5 in low",
+        "regime_confirmation": "Require 3 days in new regime before switching"
+      },
+      "why_works_volatile": "Adaptive strategies switch between momentum and mean reversion based on volatility regime; essential for crypto's shifting volatility clusters.",
+      "expected_performance": {
+        "win_rate": "55-63%",
+        "profit_factor": "1.8-2.4",
+        "max_drawdown": "15-21%",
+        "sharpe_ratio": "1.6-2.1"
+      }
+    },
+    {
+      "id": 99,
+      "name": "Sentiment-Technical Fusion",
+      "category": "Hybrid/Ensemble",
+      "entry_conditions": [
+        "Fear & Greed Index < 25 (extreme fear)",
+        "RSI(14) < 30 (oversold)",
+        "Price at major support with bullish candle",
+        "Social sentiment turning positive (NLP based)"
+      ],
+      "exit_conditions": [
+        "Fear & Greed > 50 (neutral)",
+        "RSI reaches 60",
+        "Technical target achieved"
+      ],
+      "timeframe": "Daily",
+      "risk_management": {
+        "position_size": "3% of portfolio",
+        "stop_loss": "Support - 2%",
+        "take_profit": "Scale 1/3 at Fear&Greed 40, 60, 80",
+        "sentiment_confirmation": "Require 2-day positive sentiment trend"
+      },
+      "why_works_volatile": "Sentiment extremes combined with technical oversold conditions capture major turning points; crypto's emotional trading amplifies these signals.",
+      "expected_performance": {
+        "win_rate": "63-72%",
+        "profit_factor": "1.8-2.4",
+        "max_drawdown": "12-18%",
+        "sharpe_ratio": "1.7-2.2"
+      }
+    },
+    {
+      "id": 100,
+      "name": "Ultimate Crypto Ensemble",
+      "category": "Hybrid/Ensemble",
+      "entry_conditions": [
+        "Technical: Price above EMA(50), RSI > 50, MACD bullish",
+        "ML: LSTM predicts > 3% move with > 70% confidence",
+        "On-chain: Exchange reserves declining",
+        "Sentiment: Fear & Greed recovering from extreme",
+        "Volume: > 2x average, OBV rising"
+      ],
+      "exit_conditions": [
+        "3 of 5 factors turn bearish",
+        "ML prediction invalidated",
+        "Price closes below EMA(50)",
+        "On-chain shows distribution"
+      ],
+      "timeframe": "4H, Daily",
+      "risk_management": {
+        "position_size": "4% of portfolio (highest conviction)",
+        "stop_loss": "EMA(50) or 5%",
+        "take_profit": "Scale 50% at 1:2, trail 50% with EMA(20)",
+        "factor_monitoring": "Daily recalculation of all factors"
+      },
+      "why_works_volatile": "The ultimate ensemble combines all signal types for maximum edge; in crypto's complex volatility, multi-factor confirmation provides the highest win rates.",
+      "expected_performance": {
+        "win_rate": "65-75%",
+        "profit_factor": "2.2-3.0",
+        "max_drawdown": "12-18%",
+        "sharpe_ratio": "1.9-2.5"
+      }
+    }
+  ]
+}

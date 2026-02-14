@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backtest Arena | 100 Strategies x Volatile Pairs</title>
+  <style>
+    :root{--bg:#0a0a1a;--card:#12122a;--border:#2a2a4a;--text:#e0e0f0;--dim:#8888aa;--green:#22c55e;--red:#ef4444;--gold:#f59e0b;--accent:#e879f9;--cyan:#06b6d4;--purple:#a855f7;--blue:#3b82f6;--radius:12px}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .header{text-align:center;padding:28px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.06)}
+    .header h1{font-size:22px;font-weight:200;letter-spacing:3px;text-transform:uppercase}
+    .header .sub{color:var(--dim);font-size:12px;margin-top:4px}
+    .nav{display:flex;gap:6px;justify-content:center;padding:12px;flex-wrap:wrap}
+    .nav a{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);color:var(--dim);text-decoration:none;transition:all 0.15s}
+    .nav a:hover,.nav a.active{border-color:var(--purple);color:var(--purple);background:rgba(168,85,247,0.08)}
+    .container{max-width:1200px;margin:0 auto;padding:16px}
+    .tabs{display:flex;gap:4px;justify-content:center;padding:10px 0;flex-wrap:wrap}
+    .tabs button{font-size:11px;padding:5px 14px;border-radius:20px;border:1px solid var(--border);color:var(--dim);background:transparent;cursor:pointer;transition:all 0.15s}
+    .tabs button:hover,.tabs button.active{border-color:var(--gold);color:var(--gold);background:rgba(245,158,11,0.08)}
+    .ctrl{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;flex-wrap:wrap;font-size:12px}
+    .ctrl .st{color:var(--dim)}
+    .btn{padding:6px 16px;border-radius:var(--radius);border:none;font-size:12px;font-weight:600;cursor:pointer;transition:transform 0.1s;color:#fff}
+    .btn:hover{transform:translateY(-1px)}
+    .btn:disabled{opacity:0.4;cursor:not-allowed}
+    .btn-run{background:linear-gradient(135deg,var(--purple),var(--accent))}
+    .btn-pick{background:linear-gradient(135deg,var(--gold),#f97316)}
+    .btn-rank{background:var(--cyan)}
+    .btn-mon{background:var(--green)}
+    .tab-content{display:none}.tab-content.active{display:block}
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:18px}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center}
+    .stat-card .lb{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+    .stat-card .vl{font-size:22px;font-weight:700;margin-top:2px}
+    table{width:100%;border-collapse:collapse;font-size:12px}
+    th{text-align:left;padding:8px 6px;color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border)}
+    td{padding:8px 6px;border-bottom:1px solid rgba(255,255,255,0.03)}
+    tr:hover{background:rgba(255,255,255,0.02)}
+    .green{color:var(--green)}.red{color:var(--red)}.gold{color:var(--gold)}.cyan{color:var(--cyan)}
+    .badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;display:inline-block}
+    .badge-elite{background:rgba(245,158,11,0.2);color:var(--gold)}
+    .badge-strong{background:rgba(34,197,94,0.2);color:var(--green)}
+    .badge-viable{background:rgba(6,182,212,0.2);color:var(--cyan)}
+    .badge-marginal{background:rgba(136,136,170,0.15);color:var(--dim)}
+    .badge-elim{background:rgba(239,68,68,0.15);color:var(--red)}
+    .badge-high{background:rgba(245,158,11,0.2);color:var(--gold)}
+    .badge-mod{background:rgba(6,182,212,0.2);color:var(--cyan)}
+    .badge-low{background:rgba(136,136,170,0.15);color:var(--dim)}
+    .pick-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px}
+    .pick-card.very_high{border-left:3px solid var(--gold)}
+    .pick-card.high{border-left:3px solid var(--green)}
+    .pick-card.moderate{border-left:3px solid var(--cyan)}
+    .pick-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+    .pick-pair{font-size:20px;font-weight:700}
+    .pick-cert{font-size:28px;font-weight:700}
+    .pick-strats{font-size:11px;color:var(--dim);margin-top:6px;line-height:1.5}
+    .pick-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px;margin-top:8px}
+    .pick-metrics .m{font-size:11px}.pick-metrics .m .ml{color:var(--dim);font-size:9px;text-transform:uppercase}.pick-metrics .m .mv{font-weight:600;margin-top:1px}
+    .audit-entry{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.03);font-size:11px}
+    .audit-entry .phase{color:var(--cyan);font-weight:600;font-size:10px;text-transform:uppercase}
+    .audit-entry .action{color:var(--gold)}
+    .audit-entry .detail{color:var(--dim);margin-top:2px}
+    .audit-entry .time{color:var(--dim);font-size:10px}
+    .empty{text-align:center;padding:30px;color:var(--dim);font-size:13px}
+    .loading .spinner{width:28px;height:28px;border:3px solid var(--border);border-top:3px solid var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr)}table{font-size:10px}th,td{padding:5px 3px}.pick-pair{font-size:16px}.pick-cert{font-size:22px}}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Backtest Arena</h1>
+    <div class="sub">100 strategies x volatile pairs x multiple timeframes. Find the highest certainty signals.</div>
+  </div>
+  <div class="nav">
+    <a href="meme.html">Meme Scanner</a>
+    <a href="predictions.html">Auto Predictions</a>
+    <a href="ai-predictions.html">AI Predictions</a>
+    <a href="algo-competition.html">Algo Battle</a>
+    <a href="backtest-arena.html" class="active">Backtest Arena</a>
+  </div>
+  <div class="container">
+    <div class="ctrl">
+      <div><span id="statusMsg">Ready</span></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <span class="st" id="runInfo">--</span>
+        <button class="btn btn-run" id="batchBtn" onclick="runBatch()">Run Batch (3 pairs)</button>
+        <button class="btn btn-rank" onclick="loadRankings()">Rankings</button>
+        <button class="btn btn-pick" onclick="generatePicks()">Generate Picks</button>
+        <button class="btn btn-mon" onclick="monitorPicks()">Monitor</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="active" onclick="showTab('picks',this)">Top Picks</button>
+      <button onclick="showTab('rankings',this)">Strategy Rankings</button>
+      <button onclick="showTab('volatile',this)">Volatile Pairs</button>
+      <button onclick="showTab('audit',this)">Audit Log</button>
+    </div>
+
+    <div class="tab-content active" id="tab-picks">
+      <div class="stats-row">
+        <div class="stat-card"><div class="lb">Total Tests</div><div class="vl" id="sTotalTests">--</div></div>
+        <div class="stat-card"><div class="lb">Pairs Tested</div><div class="vl" style="color:var(--cyan)" id="sPairs">--</div></div>
+        <div class="stat-card"><div class="lb">Strategies</div><div class="vl" style="color:var(--purple)" id="sStrats">--</div></div>
+        <div class="stat-card"><div class="lb">Active Picks</div><div class="vl" style="color:var(--gold)" id="sPicks">--</div></div>
+      </div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:10px">HIGH-CERTAINTY PICKS <span style="font-size:11px;color:var(--dim);font-weight:400">Where top backtested strategies agree on direction</span></div>
+      <div id="picksContainer"><div class="empty">Click "Run Batch" to backtest volatile pairs, then "Generate Picks" to find high-certainty signals.</div></div>
+    </div>
+
+    <div class="tab-content" id="tab-rankings">
+      <div style="font-size:14px;font-weight:600;margin-bottom:10px">STRATEGY RANKINGS <span style="font-size:11px;color:var(--dim);font-weight:400">100 strategies ranked by backtest performance. Eliminated strategies shown in red.</span></div>
+      <div id="rankingsContainer"><div class="empty">Click "Rankings" to load.</div></div>
+    </div>
+
+    <div class="tab-content" id="tab-volatile">
+      <div style="font-size:14px;font-weight:600;margin-bottom:10px">MOST VOLATILE KRAKEN PAIRS <span style="font-size:11px;color:var(--dim);font-weight:400">Ranked by 24h price range. Min $50k volume.</span></div>
+      <div id="volatileContainer"><div class="loading"><div class="spinner"></div>Scanning Kraken...</div></div>
+    </div>
+
+    <div class="tab-content" id="tab-audit">
+      <div style="font-size:14px;font-weight:600;margin-bottom:10px">FULL AUDIT LOG <span style="font-size:11px;color:var(--dim);font-weight:400">Every decision, elimination, and methodology step</span></div>
+      <div id="auditContainer"><div class="empty">Audit entries will appear as backtests run.</div></div>
+    </div>
+  </div>
+
+  <script>
+    var API = '/findcryptopairs/api/backtest100.php';
+    var KEY = 'bt100_2026';
+    var currentRunId = '';
+    var batchOffset = 0;
+
+    function showTab(t, btn) {
+      var tabs = document.querySelectorAll('.tab-content');
+      for (var i = 0; i < tabs.length; i++) tabs[i].className = 'tab-content';
+      document.getElementById('tab-' + t).className = 'tab-content active';
+      var bs = document.querySelectorAll('.tabs button');
+      for (var j = 0; j < bs.length; j++) bs[j].className = '';
+      if (btn) btn.className = 'active';
+    }
+
+    function setStatus(msg) { document.getElementById('statusMsg').textContent = msg; }
+
+    function runBatch() {
+      if (!currentRunId) currentRunId = 'run_' + new Date().toISOString().slice(0, 16).replace(/[T:]/g, '-');
+      var btn = document.getElementById('batchBtn');
+      btn.disabled = true;
+      btn.textContent = 'Running...';
+      setStatus('Backtesting 3 pairs x 100 strategies x 2 timeframes... (may take 60s+)');
+      fetch(API + '?action=backtest_batch&key=' + KEY + '&offset=' + batchOffset + '&limit=3&run_id=' + currentRunId)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          btn.disabled = false;
+          if (!data.ok) { setStatus('Error: ' + (data.error || 'unknown')); btn.textContent = 'Run Batch'; return; }
+          batchOffset = data.next_offset;
+          var pairs = [];
+          for (var i = 0; i < data.processed.length; i++) pairs.push(data.processed[i].pair + '(' + data.processed[i].tests + ')');
+          setStatus('Done! Pairs: ' + pairs.join(', ') + '. Total volatile: ' + data.total_volatile);
+          document.getElementById('runInfo').textContent = 'Offset: ' + batchOffset + '/' + data.total_volatile;
+          btn.textContent = 'Run Next 3 (offset ' + batchOffset + ')';
+          loadStatus();
+          loadAudit();
+        })
+        .catch(function(e) { btn.disabled = false; btn.textContent = 'Run Batch'; setStatus('Error: ' + e.message); });
+    }
+
+    function loadRankings() {
+      setStatus('Loading rankings...');
+      var url = API + '?action=rank';
+      if (currentRunId) url += '&run_id=' + currentRunId;
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.ok) { setStatus('Error'); return; }
+          var rk = data.rankings;
+          setStatus('Rankings loaded. Elite: ' + data.elite + ', Strong: ' + data.strong + ', Eliminated: ' + data.eliminated);
+          var html = '<table><thead><tr><th>#</th><th>Strategy</th><th>Category</th><th>Tier</th><th>Pairs/TF</th><th>Trades</th><th>Win%</th><th>Avg P&L</th><th>PF</th><th>Sharpe</th><th>MDD</th></tr></thead><tbody>';
+          for (var i = 0; i < rk.length; i++) {
+            var r = rk[i];
+            var tierBadge = '';
+            if (r.tier === 'ELITE') tierBadge = '<span class="badge badge-elite">ELITE</span>';
+            else if (r.tier === 'STRONG') tierBadge = '<span class="badge badge-strong">STRONG</span>';
+            else if (r.tier === 'VIABLE') tierBadge = '<span class="badge badge-viable">VIABLE</span>';
+            else if (r.tier === 'MARGINAL') tierBadge = '<span class="badge badge-marginal">MARGINAL</span>';
+            else tierBadge = '<span class="badge badge-elim">ELIM</span>';
+            var wr = parseFloat(r.avg_win_rate) || 0;
+            var pnl = parseFloat(r.avg_total_pnl) || 0;
+            html += '<tr' + (r.eliminated ? ' style="opacity:0.4"' : '') + '>';
+            html += '<td>' + r.rank + '</td><td style="font-weight:600">' + r.strat_name + '</td>';
+            html += '<td>' + r.strat_category + '</td><td>' + tierBadge + '</td>';
+            html += '<td>' + r.pair_tf_combos + '</td><td>' + r.total_trades + '</td>';
+            html += '<td class="' + (wr >= 50 ? 'green' : wr < 40 ? 'red' : '') + '" style="font-weight:700">' + wr.toFixed(1) + '%</td>';
+            html += '<td class="' + (pnl >= 0 ? 'green' : 'red') + '" style="font-weight:700">' + (pnl >= 0 ? '+' : '') + pnl.toFixed(2) + '%</td>';
+            html += '<td>' + (parseFloat(r.avg_pf) || 0).toFixed(2) + '</td>';
+            html += '<td>' + (parseFloat(r.avg_sharpe) || 0).toFixed(2) + '</td>';
+            html += '<td class="red">' + (parseFloat(r.avg_mdd) || 0).toFixed(1) + '%</td>';
+            html += '</tr>';
+            if (r.eliminated) {
+              html += '<tr style="opacity:0.3"><td></td><td colspan="10" style="font-size:10px;color:var(--red)">ELIMINATED: ' + (r.elim_reason || '') + '</td></tr>';
+            }
+          }
+          html += '</tbody></table>';
+          document.getElementById('rankingsContainer').innerHTML = html;
+          showTab('rankings', document.querySelectorAll('.tabs button')[1]);
+        });
+    }
+
+    function generatePicks() {
+      setStatus('Generating high-certainty picks...');
+      var url = API + '?action=top_picks';
+      if (currentRunId) url += '&run_id=' + currentRunId;
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.ok) { setStatus('Error'); return; }
+          var picks = data.picks;
+          if (!picks || picks.length === 0) {
+            document.getElementById('picksContainer').innerHTML = '<div class="empty">No high-certainty picks found yet. Need more backtested data — run more batches.</div>';
+            setStatus('No picks found. Run more batches first.');
+            return;
+          }
+          setStatus(picks.length + ' high-certainty picks generated!');
+          var html = '';
+          for (var i = 0; i < picks.length; i++) {
+            var p = picks[i];
+            var gc = (p.grade || 'low').toLowerCase().replace('very_high', 'very_high');
+            var dirColor = p.direction === 'LONG' ? 'var(--green)' : 'var(--red)';
+            var gradeBadge = '';
+            if (p.grade === 'VERY_HIGH') gradeBadge = '<span class="badge badge-elite">VERY HIGH</span>';
+            else if (p.grade === 'HIGH') gradeBadge = '<span class="badge badge-high">HIGH</span>';
+            else if (p.grade === 'MODERATE') gradeBadge = '<span class="badge badge-mod">MODERATE</span>';
+            else gradeBadge = '<span class="badge badge-low">LOW</span>';
+            html += '<div class="pick-card ' + gc + '">';
+            html += '<div class="pick-top"><div><span class="pick-pair">' + p.pair + '</span> <span style="color:' + dirColor + ';font-weight:700">' + p.direction + '</span> ' + gradeBadge + '</div>';
+            html += '<div class="pick-cert" style="color:var(--gold)">' + p.certainty + '%</div></div>';
+            html += '<div class="pick-metrics">';
+            html += '<div class="m"><div class="ml">Price</div><div class="mv">$' + (p.price || 0).toFixed(6) + '</div></div>';
+            html += '<div class="m"><div class="ml">TP</div><div class="mv green">$' + (p.tp || 0).toFixed(6) + '</div></div>';
+            html += '<div class="m"><div class="ml">SL</div><div class="mv red">$' + (p.sl || 0).toFixed(6) + '</div></div>';
+            html += '<div class="m"><div class="ml">Algos Agree</div><div class="mv gold">' + p.strategies_agreeing + '</div></div>';
+            html += '<div class="m"><div class="ml">Avg WR</div><div class="mv">' + p.avg_wr + '%</div></div>';
+            html += '<div class="m"><div class="ml">Avg PF</div><div class="mv">' + p.avg_pf + '</div></div>';
+            html += '</div>';
+            html += '<div class="pick-strats"><strong>Strategies:</strong> ' + (p.strategy_names || []).join(', ') + '</div>';
+            html += '</div>';
+          }
+          document.getElementById('picksContainer').innerHTML = html;
+          showTab('picks', document.querySelectorAll('.tabs button')[0]);
+        });
+    }
+
+    function monitorPicks() {
+      setStatus('Monitoring picks...');
+      fetch(API + '?action=monitor')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.ok) setStatus('Monitored ' + (data.checked || 0) + ' picks, ' + (data.resolved || 0) + ' resolved.');
+        });
+    }
+
+    function loadVolatile() {
+      fetch(API + '?action=scan_volatile')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.ok) return;
+          var v = data.top30;
+          var html = '<table><thead><tr><th>#</th><th>Pair</th><th>Price</th><th>24h Range%</th><th>24h Change%</th><th>Volume USD</th></tr></thead><tbody>';
+          for (var i = 0; i < v.length; i++) {
+            html += '<tr><td>' + (i + 1) + '</td><td style="font-weight:600">' + v[i].pair + '</td>';
+            html += '<td>$' + v[i].price.toFixed(6) + '</td>';
+            html += '<td class="gold" style="font-weight:700">' + v[i].range + '%</td>';
+            html += '<td class="' + (v[i].chg >= 0 ? 'green' : 'red') + '">' + (v[i].chg >= 0 ? '+' : '') + v[i].chg + '%</td>';
+            html += '<td>$' + v[i].vol_usd.toLocaleString() + '</td></tr>';
+          }
+          html += '</tbody></table>';
+          document.getElementById('volatileContainer').innerHTML = html;
+        })
+        .catch(function() {
+          document.getElementById('volatileContainer').innerHTML = '<div class="empty">Could not load volatile pairs.</div>';
+        });
+    }
+
+    function loadAudit() {
+      var url = API + '?action=audit';
+      if (currentRunId) url += '&run_id=' + currentRunId;
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.ok || !data.logs || data.logs.length === 0) return;
+          var html = '';
+          for (var i = 0; i < data.logs.length; i++) {
+            var l = data.logs[i];
+            html += '<div class="audit-entry">';
+            html += '<span class="phase">' + l.phase + '</span> ';
+            html += '<span class="action">' + l.action + '</span> ';
+            html += '<span class="time">' + l.created_at + '</span>';
+            html += '<div class="detail">' + l.detail + '</div>';
+            html += '</div>';
+          }
+          document.getElementById('auditContainer').innerHTML = html;
+        });
+    }
+
+    function loadStatus() {
+      fetch(API + '?action=status')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.ok) return;
+          document.getElementById('sTotalTests').textContent = data.total_tests || 0;
+          document.getElementById('sPairs').textContent = data.pairs_tested || 0;
+          document.getElementById('sStrats').textContent = data.strategies_tested || 0;
+          document.getElementById('sPicks').textContent = data.picks || 0;
+        });
+    }
+
+    // Init
+    loadStatus();
+    loadVolatile();
+    loadAudit();
+  </script>
+</body>
+</html>

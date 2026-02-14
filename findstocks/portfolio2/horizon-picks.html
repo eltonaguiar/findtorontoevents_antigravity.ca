@@ -470,8 +470,8 @@ function buildPickCard(pick) {
             '<span class="return-pct ' + retClass + '">' + retSign + fmtPct(returnPct) + '</span>' +
         '</div>' +
         (pick.pick_date ? '<div style="font-size:0.65rem;color:#8888aa;margin-top:0.3rem;">Picked: ' + pick.pick_date + '</div>' : '') +
-        '<button onclick="openAuditModal(\'' + pick.ticker + '\', \'' + pick.pick_date + '\')" style="margin-top:8px;padding:6px 12px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.8rem;">View Audit Trail</button>'
-        + '</div>';
+        '<button onclick="openAuditModal(\'' + (pick.ticker || '') + '\', \'' + (pick.pick_date || '') + '\')" style="margin-top:8px;padding:6px 12px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.8rem;">View Audit Trail</button>' +
+        '</div>';
 }
 
 function buildHorizonSection(key, data) {
@@ -672,59 +672,9 @@ document.getElementById('saveModal').addEventListener('click', function(e) {
     if (e.target === this) closeModal();
 });
 
-/* Audit Modal */
-function openAuditModal(symbol, date) {
-    apiGet('audit_view.php?symbol=' + encodeURIComponent(symbol) + '&date=' + encodeURIComponent(date), function(data) {
-        var modal = document.getElementById('auditModal');
-        if (!modal) {
-            var overlay = document.createElement('div');
-            overlay.className = 'modal-overlay';
-            overlay.id = 'auditModal';
-            overlay.innerHTML = '<div class="modal"><h3>Audit Trail for ' + symbol + '</h3><div id="auditContent"></div><button onclick="closeAuditModal()">Close</button><button onclick="exportAudit(\'' + symbol + '\', \'' + date + '\')">Export for AI</button></div>';
-            document.body.appendChild(overlay);
-            modal = overlay;
-        }
-        modal.classList.add('active');
-        
-        var content = document.getElementById('auditContent');
-        if (!data || !data.ok || data.count === 0) {
-            content.innerHTML = '<p>No audit trail available.</p>';
-            return;
-        }
-        
-        var html = '<ul>';
-        for (var i = 0; i < data.audits.length; i++) {
-            var a = data.audits[i];
-            html += '<li><strong>Source:</strong> ' + a.generation_source + '<br><strong>Reasons:</strong> ' + a.reasons + '<br><strong>Details:</strong> ' + a.pick_details + '</li>';
-        }
-        html += '</ul>';
-        content.innerHTML = html;
-    });
-}
-
-function closeAuditModal() {
-    var modal = document.getElementById('auditModal');
-    if (modal) modal.classList.remove('active');
-}
-
-function exportAudit(symbol, date) {
-    apiGet('audit_view.php?symbol=' + encodeURIComponent(symbol) + '&date=' + encodeURIComponent(date) + '&export=1', function(data) {
-        if (data && data.ok) {
-            navigator.clipboard.writeText(data.formatted_for_ai).then(function() {
-                alert('AI-formatted audit copied to clipboard!');
-            });
-        } else {
-            alert('Export failed.');
-        }
-    });
-}
-
 /* Close modal on Escape */
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeModal();
-        closeAuditModal();
-    }
+    if (e.key === 'Escape') closeModal();
 });
 
 /* Init */
@@ -736,6 +686,55 @@ apiGet('horizon_picks.php', function(data) {
     }
     render(data);
 });
+
+/* ── Audit Trail Modal ── */
+function openAuditModal(symbol, date) {
+    var url = API + 'audit_view.php?symbol=' + encodeURIComponent(symbol);
+    if (date && date !== 'undefined' && date !== 'null') url += '&date=' + encodeURIComponent(date);
+    var modal = document.getElementById('auditModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'auditModal';
+        modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;justify-content:center;align-items:center;';
+        modal.innerHTML = '<div style="background:#12122a;border:1px solid #2a2a4a;border-radius:14px;padding:28px;width:90%;max-width:520px;max-height:80vh;overflow-y:auto;color:#e0e0f0;"><h3 id="auditTitle" style="margin-bottom:16px;font-size:1.2rem;"></h3><div id="auditContent"></div><div style="display:flex;gap:10px;margin-top:16px;"><button onclick="closeAuditModal()" style="flex:1;padding:10px;background:#2a2a4a;color:#e0e0f0;border:none;border-radius:6px;cursor:pointer;">Close</button><button id="auditExportBtn" style="flex:1;padding:10px;background:#6366f1;color:white;border:none;border-radius:6px;cursor:pointer;">Export for AI</button></div></div>';
+        document.body.appendChild(modal);
+        modal.addEventListener('click', function(e) { if (e.target === modal) closeAuditModal(); });
+    }
+    document.getElementById('auditTitle').textContent = 'Audit Trail: ' + symbol;
+    document.getElementById('auditContent').innerHTML = '<p style="color:#8888aa;">Loading...</p>';
+    modal.style.display = 'flex';
+    document.getElementById('auditExportBtn').onclick = function() { exportAudit(symbol, date); };
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onload = function() {
+        var content = document.getElementById('auditContent');
+        if (xhr.status !== 200) { content.innerHTML = '<p style="color:#ef4444;">Failed to load.</p>'; return; }
+        try {
+            var data = JSON.parse(xhr.responseText);
+            if (!data || !data.ok || !data.audits || data.audits.length === 0) { content.innerHTML = '<p style="color:#8888aa;">No audit trail found for this pick yet.</p>'; return; }
+            var html = '';
+            for (var i = 0; i < data.audits.length; i++) {
+                var a = data.audits[i];
+                html += '<div style="margin-bottom:12px;padding:10px;background:rgba(255,255,255,0.03);border:1px solid #2a2a4a;border-radius:8px;"><div style="font-size:0.75rem;color:#6366f1;font-weight:700;margin-bottom:4px;">' + (a.generation_source || '') + '</div><div style="font-size:0.85rem;margin-bottom:6px;">' + (a.reasons || '') + '</div><div style="font-size:0.7rem;color:#8888aa;">' + (a.pick_timestamp || '') + '</div></div>';
+            }
+            content.innerHTML = html;
+        } catch(e) { content.innerHTML = '<p style="color:#ef4444;">Error parsing audit data.</p>'; }
+    };
+    xhr.onerror = function() { document.getElementById('auditContent').innerHTML = '<p style="color:#ef4444;">Network error.</p>'; };
+    xhr.send();
+}
+function closeAuditModal() { var m = document.getElementById('auditModal'); if (m) m.style.display = 'none'; }
+function exportAudit(symbol, date) {
+    var url = API + 'audit_view.php?symbol=' + encodeURIComponent(symbol) + '&export=1';
+    if (date && date !== 'undefined' && date !== 'null') url += '&date=' + encodeURIComponent(date);
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onload = function() {
+        try { var d = JSON.parse(xhr.responseText); if (d && d.ok && d.formatted_for_ai) { navigator.clipboard.writeText(d.formatted_for_ai).then(function() { alert('Audit trail copied to clipboard! Paste into ChatGPT/Claude/Gemini for AI review.'); }); } else { alert('No audit data to export.'); } } catch(e) { alert('Export failed.'); }
+    };
+    xhr.send();
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeAuditModal(); });
 </script>
 
 <div style="text-align:center;font-size:0.7rem;color:#8888aa;padding:2rem 1.5rem;border-top:1px solid #2a2a4a;margin-top:2rem;max-width:900px;margin-left:auto;margin-right:auto;line-height:1.6;">

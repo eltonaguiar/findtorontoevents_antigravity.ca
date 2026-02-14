@@ -672,6 +672,33 @@ if ($action === 'generate_challenger') {
             if ($conn->query($sql_sig)) {
                 $challenger_signals++;
                 $signals_detail[] = array('ticker' => $c_ticker, 'type' => 'STRONG_BUY', 'score' => $c_score, 'tp' => round($target_tp_pct, 2), 'sl' => round($target_sl_pct, 2));
+
+                // Audit Trail Logging
+                $audit_reasons = $rationale;
+                $audit_supporting_data = json_encode(array(
+                    'consensus_score' => $c_score,
+                    'confidence' => $crow['confidence'],
+                    'regime' => $regime,
+                    'strategy' => 'challenger_bot'
+                ));
+                $audit_pick_details = json_encode(array(
+                    'entry_price' => $entry_price,
+                    'target_tp_pct' => round($target_tp_pct, 2),
+                    'target_sl_pct' => round($target_sl_pct, 2),
+                    'max_hold_hours' => $max_hold,
+                    'signal_strength' => $signal_strength
+                ));
+                $audit_formatted_for_ai = "Analyze this Challenger Bot pick:\nSymbol: " . $c_ticker . "\nStrategy: Smart Money Consensus\nRationale: " . $audit_reasons . "\nSupporting Data: " . $audit_supporting_data . "\n\nQuestions:\n1. Is the consensus score reliable?\n2. Given the regime, is this a good signal?\n3. Would you take this trade?";
+
+                $safe_reasons = $conn->real_escape_string($audit_reasons);
+                $safe_supporting = $conn->real_escape_string($audit_supporting_data);
+                $safe_details = $conn->real_escape_string($audit_pick_details);
+                $safe_formatted = $conn->real_escape_string($audit_formatted_for_ai);
+
+                $audit_sql = "INSERT INTO audit_trails 
+                              (asset_class, symbol, pick_timestamp, generation_source, reasons, supporting_data, pick_details, formatted_for_ai)
+                              VALUES ('STOCKS', '" . _sm_esc($c_ticker) . "', '" . _sm_esc($now) . "', 'smart_money.php - Challenger Bot', '$safe_reasons', '$safe_supporting', '$safe_details', '$safe_formatted')";
+                $conn->query($audit_sql);
             }
         }
 
@@ -703,6 +730,33 @@ if ($action === 'generate_challenger') {
             if ($conn->query($sql_sig2)) {
                 $challenger_signals++;
                 $signals_detail[] = array('ticker' => $c_ticker, 'type' => 'SHORT', 'score' => $c_score, 'tp' => round($target_tp_pct2, 2), 'sl' => round($target_sl_pct2, 2));
+
+                // Audit Trail Logging for SHORT
+                $audit_reasons = $rationale2;
+                $audit_supporting_data = json_encode(array(
+                    'consensus_score' => $c_score,
+                    'confidence' => $crow['confidence'],
+                    'regime' => $regime,
+                    'strategy' => 'challenger_bot_short'
+                ));
+                $audit_pick_details = json_encode(array(
+                    'entry_price' => $entry_price2,
+                    'target_tp_pct' => round($target_tp_pct2, 2),
+                    'target_sl_pct' => round($target_sl_pct2, 2),
+                    'max_hold_hours' => $max_hold2,
+                    'signal_strength' => $signal_strength2
+                ));
+                $audit_formatted_for_ai = "Analyze this Challenger Bot short signal:\nSymbol: " . $c_ticker . "\nStrategy: Smart Money Consensus (Short)\nRationale: " . $audit_reasons . "\nSupporting Data: " . $audit_supporting_data . "\n\nQuestions:\n1. Is the bearish consensus valid?\n2. In this regime, is shorting advisable?\n3. Potential upside risks?";
+
+                $safe_reasons = $conn->real_escape_string($audit_reasons);
+                $safe_supporting = $conn->real_escape_string($audit_supporting_data);
+                $safe_details = $conn->real_escape_string($audit_pick_details);
+                $safe_formatted = $conn->real_escape_string($audit_formatted_for_ai);
+
+                $audit_sql = "INSERT INTO audit_trails 
+                              (asset_class, symbol, pick_timestamp, generation_source, reasons, supporting_data, pick_details, formatted_for_ai)
+                              VALUES ('STOCKS', '" . _sm_esc($c_ticker) . "', '" . _sm_esc($now) . "', 'smart_money.php - Challenger Bot Short', '$safe_reasons', '$safe_supporting', '$safe_details', '$safe_formatted')";
+                $conn->query($audit_sql);
             }
         }
     }
