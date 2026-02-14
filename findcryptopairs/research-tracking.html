@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research Tracking | Historical Signal Analysis & Validation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg-card: #12121a;
+  --bg-hover: #1a1a24;
+  --border: #2a2a3a;
+  --text: #e0e0f0;
+  --muted: #8888a0;
+  --green: #22c55e;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+  --yellow: #f59e0b;
+  --cyan: #06b6d4;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+.header {
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 40px 32px;
+  text-align: center;
+}
+.header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, var(--text), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.header p { color: var(--muted); font-size: 15px; }
+.nav {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.nav-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+.nav-btn:hover, .nav-btn.active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
+}
+.container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 32px;
+}
+.section { display: none; }
+.section.active { display: block; }
+
+/* Cards */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card h2 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card h3 {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 16px 0 8px;
+}
+
+/* Stats */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+.stat-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+/* Event Cards */
+.event-card {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(168, 85, 247, 0.05));
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.event-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--blue);
+}
+.event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.event-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+.event-profit {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--green);
+}
+.event-meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.signal-table {
+  width: 100%;
+  font-size: 12px;
+  margin-top: 12px;
+}
+.signal-table th {
+  text-align: left;
+  padding: 8px;
+  color: var(--muted);
+  font-weight: 500;
+  border-bottom: 1px solid var(--border);
+}
+.signal-table td {
+  padding: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.reliability-high { color: var(--green); font-weight: 600; }
+.reliability-medium { color: var(--yellow); }
+.reliability-low { color: var(--red); }
+
+/* Tables */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.data-table th {
+  text-align: left;
+  padding: 12px;
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+.data-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.data-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--blue);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+.badge-green {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--green);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+.badge-yellow {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--yellow);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+.badge-red {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--red);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Pattern Cards */
+.pattern-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--blue);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.pattern-card h4 {
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.pattern-card .meta {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.pattern-card .description {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+/* Source Attribution */
+.source-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: var(--bg-hover);
+  color: var(--muted);
+  margin-left: 8px;
+}
+
+/* Alerts */
+.alert-box {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.alert-box h4 {
+  color: var(--yellow);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.alert-box p {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Research Notes */
+.research-note {
+  background: var(--bg-hover);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--muted);
+  border-left: 3px solid var(--purple);
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 Research Tracking</h1>
+  <p>Historical Signal Analysis & Real-World Validation</p>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showSection('summary')">Summary</button>
+  <button class="nav-btn" onclick="showSection('qwen3')">Qwen3 Analysis</button>
+  <button class="nav-btn" onclick="showSection('grok')">Grok Analysis</button>
+  <button class="nav-btn" onclick="showSection('patterns')">Cross-Asset Patterns</button>
+  <button class="nav-btn" onclick="showSection('implementation')">Implementation</button>
+</div>
+
+<div class="container">
+
+  <!-- SUMMARY SECTION -->
+  <div id="summary" class="section active">
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--blue);">11</div>
+        <div class="stat-label">Major Bull Runs</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--green);">+600%</div>
+        <div class="stat-label">Best Gain (ETH DeFi)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--purple);">24</div>
+        <div class="stat-label">Precursor Signals</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--cyan);">2</div>
+        <div class="stat-label">AI Sources</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--yellow);">2020-25</div>
+        <div class="stat-label">Analysis Period</div>
+      </div>
+    </div>
+
+    <div class="alert-box">
+      <h4>⚠️ Research Limitations</h4>
+      <p>Analysis based on historical data up to 2023 training cutoff. No access to real-time social media, forums, or live feeds. Past performance does not guarantee future results. Crypto markets remain highly volatile with substantial risk of loss.</p>
+    </div>
+
+    <div class="card">
+      <h2>🏆 Top Performers by Source</h2>
+      
+      <h3>Qwen3 Research (2024-2025)</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Signal</th>
+            <th>Entry</th>
+            <th>Peak</th>
+            <th>Gain</th>
+            <th>Key Catalyst</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Bitcoin Halving</strong></td>
+            <td>$63,851</td>
+            <td>$126,000+</td>
+            <td style="color: var(--green); font-weight: 600;">+98%</td>
+            <td>Supply shock (April 2024)</td>
+          </tr>
+          <tr>
+            <td><strong>ETF Approval</strong></td>
+            <td>$45,000-50,000</td>
+            <td>$126,000</td>
+            <td style="color: var(--green); font-weight: 600;">+150%</td>
+            <td>SEC spot ETF (Jan 2024)</td>
+          </tr>
+          <tr>
+            <td><strong>Trump Election</strong></td>
+            <td>$80,000</td>
+            <td>$126,000+</td>
+            <td style="color: var(--green); font-weight: 600;">+50%</td>
+            <td>Pro-crypto policy (Nov 2024)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Grok Research (2020-2022)</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th>Asset</th>
+            <th>Gain</th>
+            <th>Primary Signal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>DeFi Boom</strong></td>
+            <td>ETH</td>
+            <td style="color: var(--green); font-weight: 600;">+600%</td>
+            <td>TVL surge + ETH 2.0</td>
+          </tr>
+          <tr>
+            <td><strong>Bull Run 2021</strong></td>
+            <td>BTC</td>
+            <td style="color: var(--green); font-weight: 600;">+452%</td>
+            <td>Institutional accumulation</td>
+          </tr>
+          <tr>
+            <td><strong>COVID Bottom</strong></td>
+            <td>BTC</td>
+            <td style="color: var(--green); font-weight: 600;">+198%</td>
+            <td>Capitulation + Fed QE</td>
+          </tr>
+          <tr>
+            <td><strong>Summer Dip</strong></td>
+            <td>ETH</td>
+            <td style="color: var(--green); font-weight: 600;">+182%</td>
+            <td>200-MA retest + EIP-1559</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>🔑 Key Insights</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+          <h3>Most Reliable Signals</h3>
+          <ul style="font-size: 13px; line-height: 2; color: var(--muted);">
+            <li><span style="color: var(--green);">Halving events</span> - 100% hit rate (4/4)</li>
+            <li><span style="color: var(--green);">Institutional accumulation</span> - Precedes major moves</li>
+            <li><span style="color: var(--green);">Golden Cross</span> - High reliability trend change</li>
+            <li><span style="color: var(--yellow);">RSI oversold</span> - Short-term bounces</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Red Flags to Avoid</h3>
+          <ul style="font-size: 13px; line-height: 2; color: var(--muted);">
+            <li><span style="color: var(--red);">Extreme leverage</span> >$2B liquidations</li>
+            <li><span style="color: var(--red);">ETF outflows</span> during accumulation</li>
+            <li><span style="color: var(--red);">Weekend illiquidity</span> + geo tension</li>
+            <li><span style="color: var(--red);">Fed hawkishness</span> affecting risk</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- QWEN3 SECTION -->
+  <div id="qwen3" class="section">
+    
+    <div class="card">
+      <h2>Qwen3 Research: Major Profitable Buy Signals (2024-2025)</h2>
+      <p style="font-size: 13px; color: var(--muted); margin-bottom: 20px;">
+        Analysis of Bitcoin and Ethereum price movements from 2024-2025 bull run, 
+        identifying clear entry signals that preceded massive gains.
+        <span class="source-tag">Source: Qwen3 Coder</span>
+      </p>
+
+      <div class="event-card">
+        <div class="event-header">
+          <span class="event-title">🚀 Bitcoin Halving Buy</span>
+          <span class="event-profit">+98%</span>
+        </div>
+        <div class="event-meta">April 19, 2024 → October 2025 | $63,851 → $126,000+</div>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">
+          Bitcoin's 4th halving event reduced supply issuance. Classic supply shock 
+          driving price appreciation over 18 months.
+        </p>
+        <div class="signals">
+          <span class="badge badge-green">Halving Event</span>
+          <span class="badge">Supply Shock</span>
+          <span class="badge">18 Month Hold</span>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-header">
+          <span class="event-title">📈 Post-ETF Approval</span>
+          <span class="event-profit">+150%</span>
+        </div>
+        <div class="event-meta">January 2024 → ATH | $45-50K → $126,000</div>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">
+          First spot Bitcoin ETFs approved by SEC. Consolidation phase entry before 
+          institutional floodgates opened.
+        </p>
+        <div class="signals">
+          <span class="badge badge-green">ETF Approval</span>
+          <span class="badge">Institutional Entry</span>
+          <span class="badge">Regulatory Clarity</span>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-header">
+          <span class="event-title">🗳️ Trump Re-Election</span>
+          <span class="event-profit">+50%</span>
+        </div>
+        <div class="event-meta">November 7, 2024 | $80K → $126K+ (weeks)</div>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">
+          Pro-crypto political catalyst. Pre-election entry captured rapid policy 
+          optimism surge.
+        </p>
+        <div class="signals">
+          <span class="badge badge-green">Political Catalyst</span>
+          <span class="badge">Policy Shift</span>
+          <span class="badge">Rapid Gains</span>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-header">
+          <span class="event-title">⚡ Ethereum Pectra</span>
+          <span class="event-profit">Significant</span>
+        </div>
+        <div class="event-meta">Early 2025 | $2,800-3,000 entry</div>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">
+          Pre-Pectra upgrade anticipation. Network efficiency improvements and 
+          staking yield enhancements drove demand.
+        </p>
+        <div class="signals">
+          <span class="badge">Network Upgrade</span>
+          <span class="badge">Scalability</span>
+          <span class="badge">Staking Yields</span>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-header">
+          <span class="event-title">📉 Post-Crash Accumulation</span>
+          <span class="event-profit">Strong Recovery</span>
+        </div>
+        <div class="event-meta">October 2025 | $126K → $110K dip</div>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">
+          15% correction buying opportunity. Whale accumulation during retail fear 
+          preceded recovery to new highs.
+        </p>
+        <div class="signals">
+          <span class="badge badge-green">Whale Accumulation</span>
+          <span class="badge">Retail Fear</span>
+          <span class="badge">Correction Buy</span>
+        </div>
+      </div>
+
+      <div class="research-note">
+        <strong>Qwen3 Key Finding:</strong> The most reliable pattern has been buying during 
+        institutional accumulation phases when retail is fearful. This happened during ETF 
+        rollout consolidation, October 2025's 15% correction, and whale accumulation events 
+        identified through on-chain data.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- GROK SECTION -->
+  <div id="grok" class="section">
+    
+    <div class="card">
+      <h2>Grok Analysis: Major Bull Run Precursors (2020-2022)</h2>
+      <p style="font-size: 13px; color: var(--muted); margin-bottom: 20px;">
+        Deep analysis of 6 major crypto spikes with detailed precursor signals, 
+        timing, and reliability ratings.
+        <span class="source-tag">Source: Grok (xAI)</span>
+      </p>
+
+      <div class="event-card">
+        <div class="event-header">
+          <span class="event-title">💎 DeFi Boom</span>
+          <span class="event-profit">+600%</span>
+        </div>
+        <div class="event-meta">June - Dec 2020 | ETH: $200 → $1,400</div>
+        
+        <table class="signal-table">
+          <thead>
+            <tr>
+              <th>Signal</th>
+              <th>Indicator</th>
+              <th>Lead Time</th>
+              <th>Reliability</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>DeFi TVL Surge</td>
+              <td>Total Value Locked rising exponentially</td>
+              <td>4-6 weeks</td>
+              <td class="reliability-high">HIGH</td>
+            </tr>
+            <tr>
+              <td>Breakout Pattern</td>
+              <td>Ascending triangle on weekly</td>
+              <td>2 weeks</td>
+              <td class="reliability-medium">MEDIUM</td>
+            </tr>
+            <tr>
+              <td>ETH 2.0 Phase 0</td>
+              <td>Beacon Chain deposit contract</td>
+              <td>1-3 months</td>
+              <td class="reliability-high">HIGH</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div class="research-note">
+          <strong>Rationale:</strong> DeFi growth drove ETH demand for gas and staking. 
+          Locked supply created scarcity effect.
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-header">
+          <span class="event-title">🚀 Bull Run 2021</span>
+          <span class="event-profit">+452%</span>
+        </div>
+        <div class="event-meta">Sept 2020 - March 2021 | BTC: $10,500 → $58,000</div>
+        
+        <table class="signal-table">
+          <thead>
+            <tr>
+              <th>Signal</th>
+              <th>Indicator</th>
+              <th>Lead Time</th>
+              <th>Reliability</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Institutional Accumulation</td>
+              <td>Grayscale/whale wallet inflows</td>
+              <td>4-6 weeks</td>
+              <td class="reliability-medium">MEDIUM</td>
+            </tr>
+            <tr>
+              <td>Range Breakout</td>
+              <td>Above $12K resistance with volume</td>
+              <td>1 week</td>
+              <td class="reliability-high">HIGH</td>
+            </tr>
+            <tr>
+              <td>PayPal Integration</td>
+              <td>Mainstream adoption announcement</td>
+              <td>Concurrent</td>
+              <td class="reliability-medium">MEDIUM</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div class="research-note">
+          <strong>Rationale:</strong> On-chain metrics showed smart money entry before retail. 
+          Technical breakout confirmed trend reversal.
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-header">
+          <span class="event-title">📉 COVID Bottom</span>
+          <span class="event-profit">+198%</span>
+        </div>
+        <div class="event-meta">March 2020 | BTC: $3,850 → $11,500</div>
+        
+        <table class="signal-table">
+          <thead>
+            <tr>
+              <th>Signal</th>
+              <th>Indicator</th>
+              <th>Lead Time</th>
+              <th>Reliability</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Volatility Spike</td>
+              <td>Extreme VIX analog + high volume</td>
+              <td>1-2 weeks</td>
+              <td class="reliability-high">HIGH</td>
+            </tr>
+            <tr>
+              <td>Negative Funding</td>
+              <td>Perpetual futures deeply negative</td>
+              <td>Days</td>
+              <td class="reliability-medium">MEDIUM</td>
+            </tr>
+            <tr>
+              <td>Macro Policy Shift</td>
+              <td>Fed emergency cuts + QE</td>
+              <td>Concurrent</td>
+              <td class="reliability-high">HIGH</td>
+            </tr>
+            <tr>
+              <td>RSI Oversold</td>
+              <td>Daily RSI below 30</td>
+              <td>1-3 days</td>
+              <td class="reliability-medium">MEDIUM</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div class="research-note">
+          <strong>Rationale:</strong> Capitulation indicators (oversold, forced selling, negative funding) 
+          created perfect contrarian setup.
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-header">
+          <span class="event-title">☀️ Summer Dip Recovery</span>
+          <span class="event-profit">+182%</span>
+        </div>
+        <div class="event-meta">June 2021 | ETH: $1,700 → $4,800</div>
+        
+        <table class="signal-table">
+          <thead>
+            <tr>
+              <th>Signal</th>
+              <th>Indicator</th>
+              <th>Lead Time</th>
+              <th>Reliability</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>200-Week MA Retest</td>
+              <td>Price touching strong support</td>
+              <td>1-2 weeks</td>
+              <td class="reliability-high">HIGH</td>
+            </tr>
+            <tr>
+              <td>FUD Digestion</td>
+              <td>China mining ban stabilized</td>
+              <td>2-4 weeks</td>
+              <td class="reliability-medium">MEDIUM</td>
+            </tr>
+            <tr>
+              <td>EIP-1559 Anticipation</td>
+              <td>London hard fork discussions</td>
+              <td>4-6 weeks</td>
+              <td class="reliability-high">HIGH</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div class="research-note">
+          <strong>Rationale:</strong> Technical support held while deflationary upgrade 
+          created fundamental demand catalyst.
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-header">
+          <span class="event-title">⚡ Merge Anticipation</span>
+          <span class="event-profit">+100%</span>
+        </div>
+        <div class="event-meta">July - Sept 2022 | ETH: $1,000 → $2,000</div>
+        
+        <table class="signal-table">
+          <thead>
+            <tr>
+              <th>Signal</th>
+              <th>Indicator</th>
+              <th>Lead Time</th>
+              <th>Reliability</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Merge Testnet Success</td>
+              <th>I'll complete the research tracking HTML file by adding the Merge Anticipation event card and then create the patterns and implementation sections to finish the file.</th>
+              <td>2-4 weeks</td>
+              <td class="reliability-medium">MEDIUM</td>
+            </tr>
+            <tr>
+              <td>Volume Rebound</td>
+              <td>Rising from yearly lows</td>
+              <td>1 week</td>
+              <td class="reliability-high">HIGH</td>
+            </tr>
+            <tr>
+              <td>RSI Divergence</td>
+              <td>Bullish on daily charts</td>
+              <td>1-2 weeks</td>
+              <td class="reliability-medium">MEDIUM</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div class="research-note">
+          <strong>Rationale:</strong> Successful testnets reduced upgrade risk while 
+          volume/RSI showed renewed interest post-bear market.
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- PATTERNS SECTION -->
+  <div id="patterns" class="section">
+    
+    <div class="card">
+      <h2>🔗 Cross-Asset Patterns</h2>
+      <p style="font-size: 13px; color: var(--muted); margin-bottom: 20px;">
+        Common patterns that preceded rallies in BOTH Bitcoin and Ethereum across multiple events.
+      </p>
+
+      <div class="pattern-card">
+        <h4>1. Capitulation + V Bottom</h4>
+        <div class="meta">Reliability: HIGH | Lead Time: 1-3 days | Assets: BTC, ETH</div>
+        <div class="description">
+          Extreme volatility spike with RSI &lt;30, negative funding rates, and high volume. 
+          Sellers exhausted, creating reversal setup. Preceded COVID bottom and multiple 20%+ bounces.
+        </div>
+        <div style="margin-top: 12px;">
+          <span class="badge badge-yellow">RSI &lt;30</span>
+          <span class="badge">Negative Funding</span>
+          <span class="badge">Volume Spike</span>
+          <span class="badge badge-green">Contrarian Buy</span>
+        </div>
+      </div>
+
+      <div class="pattern-card">
+        <h4>2. Institutional Accumulation Phase</h4>
+        <div class="meta">Reliability: HIGH | Lead Time: 4-6 weeks | Assets: BTC, ETH</div>
+        <div class="description">
+          On-chain data shows whale wallets increasing while price consolidates or slowly rises. 
+          Retail sentiment fearful. Preceded 2020-2021 bull run and 100%+ moves.
+        </div>
+        <div style="margin-top: 12px;">
+          <span class="badge badge-green">Whale Inflows</span>
+          <span class="badge">Low Sentiment</span>
+          <span class="badge">Consolidation</span>
+          <span class="badge">Smart Money</span>
+        </div>
+      </div>
+
+      <div class="pattern-card">
+        <h4>3. Golden Cross Confirmation</h4>
+        <div class="meta">Reliability: HIGH | Lead Time: 2-3 weeks | Assets: BTC, ETH</div>
+        <div class="description">
+          50-day MA crosses above 200-day MA with volume confirmation. Classic trend reversal 
+          signal that preceded post-halving rally and sustained uptrends.
+        </div>
+        <div style="margin-top: 12px;">
+          <span class="badge">50/200 MA Cross</span>
+          <span class="badge badge-green">Volume Confirm</span>
+          <span class="badge">Trend Reversal</span>
+        </div>
+      </div>
+
+      <div class="pattern-card">
+        <h4>4. Network Upgrade Catalyst</h4>
+        <div class="meta">Reliability: MEDIUM-HIGH | Lead Time: 1-3 months | Assets: ETH</div>
+        <div class="description">
+          Major protocol upgrades (EIP-1559, Merge) create supply/demand shifts. Price typically 
+          rallies into event, then "sell the news" or continue if successful.
+        </div>
+        <div style="margin-top: 12px;">
+          <span class="badge">Testnet Success</span>
+          <span class="badge">Community Hype</span>
+          <span class="badge badge-yellow">Pre-Event</span>
+          <span class="badge">Supply Shift</span>
+        </div>
+      </div>
+
+      <div class="pattern-card">
+        <h4>5. Regulatory Clarity Events</h4>
+        <div class="meta">Reliability: HIGH | Lead Time: Immediate | Assets: BTC</div>
+        <div class="description">
+          ETF approvals, favorable court rulings, or regulatory clarity create step-function 
+          price increases. ETF approval (Jan 2024) preceded 150%+ gains.
+        </div>
+        <div style="margin-top: 12px;">
+          <span class="badge badge-green">ETF Approval</span>
+          <span class="badge">Court Ruling</span>
+          <span class="badge">Policy Shift</span>
+          <span class="badge">Step Function</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="card">
+      <h2>📊 Pattern Reliability Matrix</h2>
+      
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Pattern</th>
+            <th>BTC Reliability</th>
+            <th>ETH Reliability</th>
+            <th>Avg Lead Time</th>
+            <th>Best Use Case</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>RSI Oversold (&lt;30)</strong></td>
+            <td class="reliability-medium">MEDIUM</td>
+            <td class="reliability-medium">MEDIUM</td>
+            <td>1-3 days</td>
+            <td>Short-term bounces</td>
+          </tr>
+          <tr>
+            <td><strong>Negative Funding</strong></td>
+            <td class="reliability-high">HIGH</td>
+            <td class="reliability-medium">MEDIUM</td>
+            <td>Days</td>
+            <td>Liquidation cascades</td>
+          </tr>
+          <tr>
+            <td><strong>Golden Cross</strong></td>
+            <td class="reliability-high">HIGH</td>
+            <td class="reliability-high">HIGH</td>
+            <td>2-3 weeks</td>
+            <td>Trend reversals</td>
+          </tr>
+          <tr>
+            <td><strong>Whale Accumulation</strong></td>
+            <td class="reliability-high">HIGH</td>
+            <td class="reliability-high">HIGH</td>
+            <td>4-6 weeks</td>
+            <td>Major bull runs</td>
+          </tr>
+          <tr>
+            <td><strong>Volume + Breakout</strong></td>
+            <td class="reliability-high">HIGH</td>
+            <td class="reliability-high">HIGH</td>
+            <td>1-4 weeks</td>
+            <td>Momentum entries</td>
+          </tr>
+          <tr>
+            <td><strong>Network Upgrade</strong></td>
+            <td>Halving only</td>
+            <td class="reliability-high">HIGH</td>
+            <td>1-3 months</td>
+            <td>Position building</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- IMPLEMENTATION SECTION -->
+  <div id="implementation" class="section">
+    
+    <div class="card">
+      <h2>🛠️ Implementation Roadmap</h2>
+      
+      <h3>Phase 1: Signal Detection (Week 1-2)</h3>
+      <div style="background: var(--bg-hover); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+        <ul style="font-size: 13px; line-height: 2; color: var(--muted);">
+          <li>Build RSI tracker with &lt;30 alerts</li>
+          <li>Implement funding rate monitor</li>
+          <li>Create whale wallet watcher</li>
+          <li>Set up Golden Cross detector</li>
+          <li>Integrate volume anomaly detection</li>
+        </ul>
+      </div>
+
+      <h3>Phase 2: Validation Engine (Week 3-4)</h3>
+      <div style="background: var(--bg-hover); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+        <ul style="font-size: 13px; line-height: 2; color: var(--muted);">
+          <li>Backtest signals on 2020-2025 data</li>
+          <li>Calculate win rates by pattern type</li>
+          <li>Optimize entry/exit timing</li>
+          <li>Add risk management (position sizing)</li>
+          <li>Build paper trading simulator</li>
+        </ul>
+      </div>
+
+      <h3>Phase 3: Live Deployment (Week 5-8)</h3>
+      <div style="background: var(--bg-hover); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+        <ul style="font-size: 13px; line-height: 2; color: var(--muted);">
+          <li>Paper trade with $1000 virtual portfolio</li>
+          <li>Compare to buy-and-hold benchmark</li>
+          <li>Track signal accuracy in real-time</li>
+          <li>Iterate on false positive reduction</li>
+          <li>30-day validation period</li>
+        </ul>
+      </div>
+
+      <h3>Phase 4: Scaling (Week 9+)</h3>
+      <div style="background: var(--bg-hover); padding: 16px; border-radius: 8px;">
+        <ul style="font-size: 13px; line-height: 2; color: var(--muted);">
+          <li>Deploy with small live capital ($100)</li>
+          <li>Gradual scale based on performance</li>
+          <li>Continuous model refinement</li>
+          <li>Expand to additional assets</li>
+          <li>Build automated alert system</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🎯 Success Metrics</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Target</th>
+            <th>Current</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Signal Win Rate</td>
+            <td>&gt;60%</td>
+            <td>--</td>
+            <td><span class="badge">Pending</span></td>
+          </tr>
+          <tr>
+            <td>Avg ROI per Trade</td>
+            <td>&gt;5%</td>
+            <td>--</td>
+            <td><span class="badge">Pending</span></td>
+          </tr>
+          <tr>
+            <td>Sharpe Ratio</td>
+            <td>&gt;1.5</td>
+            <td>--</td>
+            <td><span class="badge">Pending</span></td>
+          </tr>
+          <tr>
+            <td>Max Drawdown</td>
+            <td>&lt;20%</td>
+            <td>--</td>
+            <td><span class="badge">Pending</span></td>
+          </tr>
+          <tr>
+            <td>Sample Size</td>
+            <td>30+ trades</td>
+            <td>4 active</td>
+            <td><span class="badge badge-yellow">In Progress</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert-box">
+      <h4>⚠️ Risk Management Rules</h4>
+      <p style="font-size: 13px; line-height: 1.8;">
+        1. <strong>Position Size:</strong> Max 2% risk per trade<br>
+        2. <strong>Stop Loss:</strong> 5-8% based on ATR<br>
+        3. <strong>Take Profit:</strong> 12-20% targets<br>
+        4. <strong>Max Positions:</strong> 5 simultaneous<br>
+        5. <strong>Correlated Limit:</strong> Max 2 meme coins
+      </p>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>
