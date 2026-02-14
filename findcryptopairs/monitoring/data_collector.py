@@ -72,6 +72,7 @@ def generate_sample_alpha_signals():
     """Generate sample alpha signals for demonstration"""
     return {
         "count": 4,
+        "timestamp": datetime.now().isoformat(),  # Always update timestamp
         "signals": [
             {
                 "symbol": "BTC/USD",
@@ -172,6 +173,7 @@ def generate_sample_goldmine_candidates():
     """Generate sample gem candidates"""
     return {
         "count": 3,
+        "timestamp": datetime.now().isoformat(),  # Always update timestamp
         "candidates": [
             {
                 "symbol": "HYPERAI",
@@ -281,6 +283,7 @@ def generate_sample_predictions():
     """Generate sample predictions"""
     return {
         "count": 4,
+        "timestamp": datetime.now().isoformat(),  # Always update timestamp
         "predictions": [
             {
                 "symbol": "POPCAT",
@@ -384,6 +387,7 @@ def process_algorithm_data(data):
 def generate_sample_algorithm_standings():
     """Generate sample algorithm standings"""
     return {
+        "timestamp": datetime.now().isoformat(),  # Always update timestamp
         "standings": [
             {"name": "Composite_Momentum_v2", "type": "Academic", "trades": 156, "win_rate": 68, "return": 156.3, "sharpe": 2.8},
             {"name": "KIMI-MTF", "type": "Mine", "trades": 203, "win_rate": 64, "return": 142.7, "sharpe": 2.5},
