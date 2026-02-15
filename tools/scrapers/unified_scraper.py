@@ -18,10 +18,18 @@ try:
     from .sankofa_square import SankofaSquareScraper
     from .city_of_toronto import CityOfTorontoEventsScraper
     from .unity_maps import UnityMapsScraper
-    # Direct platform scrapers (NEW)
+    # Direct platform scrapers
     from .eventbrite_scraper import EventbriteScraper
     from .ticketmaster_scraper import TicketmasterScraper
     from .meetup_scraper import MeetupScraper
+    # Toronto media & aggregators (NEW)
+    from .blogto_scraper import BlogTOScraper
+    from .nowtoronto_scraper import NOWTorontoScraper
+    from .torontocom_scraper import TorontoComScraper
+    # Major venues (NEW)
+    from .harbourfront_scraper import HarbourfrontCentreScraper
+    from .major_venues_scraper import MajorVenuesScraper
+    from .tpl_scraper import TorontoPublicLibraryScraper
     # Community calendars
     from .toronto_events_weekly import TorontoEventsWeeklyScraper
     from .american_arenas import AmericanArenasScraper
@@ -37,10 +45,18 @@ except ImportError:
     from sankofa_square import SankofaSquareScraper
     from city_of_toronto import CityOfTorontoEventsScraper
     from unity_maps import UnityMapsScraper
-    # Direct platform scrapers (NEW)
+    # Direct platform scrapers
     from eventbrite_scraper import EventbriteScraper
     from ticketmaster_scraper import TicketmasterScraper
     from meetup_scraper import MeetupScraper
+    # Toronto media & aggregators (NEW)
+    from blogto_scraper import BlogTOScraper
+    from nowtoronto_scraper import NOWTorontoScraper
+    from torontocom_scraper import TorontoComScraper
+    # Major venues (NEW)
+    from harbourfront_scraper import HarbourfrontCentreScraper
+    from major_venues_scraper import MajorVenuesScraper
+    from tpl_scraper import TorontoPublicLibraryScraper
     # Community calendars
     from toronto_events_weekly import TorontoEventsWeeklyScraper
     from american_arenas import AmericanArenasScraper
@@ -63,10 +79,20 @@ class UnifiedTorontoScraper:
             CityOfTorontoEventsScraper(),
             SofiaAdelGiudiceNotionScraper(),
 
-            # Direct platform scrapers (NEW - replaces AllEvents aggregator)
+            # Direct platform scrapers
             EventbriteScraper(),
             TicketmasterScraper(),
             MeetupScraper(),
+
+            # Toronto media & aggregators (fills major gap)
+            BlogTOScraper(),
+            NOWTorontoScraper(),
+            TorontoComScraper(),
+
+            # Major venues (fills cultural/arts gap)
+            HarbourfrontCentreScraper(),
+            MajorVenuesScraper(),  # ROM, AGO, TIFF, Bentway, Evergreen
+            TorontoPublicLibraryScraper(),
 
             # Community calendars
             UnityMapsScraper(),
@@ -131,51 +157,85 @@ class UnifiedTorontoScraper:
         
         return event
     
+    # Multi-day title keywords (must match UI logic in index.html isMultiDayEvent())
+    MULTI_DAY_KEYWORDS = [
+        'festival', 'exhibition', 'exhibit', 'runs until', 'conference',
+        'ongoing', 'all month', 'all week', 'multiple dates', 'series',
+    ]
+
     def detect_multi_day(self, event: Dict) -> Dict:
-        """Detect and categorize multi-day events with duration classification"""
+        """Detect and categorize multi-day events with duration classification.
+
+        Sets BOTH snake_case and camelCase field names so the data is
+        compatible with:
+          - Python scraper pipeline (is_multi_day, end_date, duration_category)
+          - React UI / JS (isMultiDay, endDate, durationCategory)
+          - detect_multiday.js post-processor (isMultiDay)
+        """
         if not event.get("date"):
             return event
 
         start_date = event.get("date", "")
-        end_date = event.get("end_date")
+        # Accept both field name conventions
+        end_date = event.get("end_date") or event.get("endDate")
 
-        # Calculate duration if both dates exist
+        is_multi = False
+        duration_cat = "single"
+
+        # 1) Date-range detection
         if start_date and end_date:
             try:
                 start = datetime.fromisoformat(start_date.replace("Z", ""))
                 end = datetime.fromisoformat(end_date.replace("Z", ""))
                 days = (end - start).days
+                hours = (end - start).total_seconds() / 3600
 
-                event["is_multi_day"] = days > 0
+                # Match UI threshold: >=18 hours = multi-day
+                if hours >= 18:
+                    is_multi = True
 
-                # Categorize by duration
                 if days == 0:
-                    event["duration_category"] = "single"
+                    duration_cat = "single"
                 elif days <= 7:
-                    event["duration_category"] = "short"
+                    duration_cat = "short"
                 elif days <= 30:
-                    event["duration_category"] = "medium"
+                    duration_cat = "medium"
                 else:
-                    event["duration_category"] = "long"
-
-            except ValueError:
+                    duration_cat = "long"
+            except (ValueError, TypeError):
                 pass
-        else:
-            # No end_date, assume single day
-            event["duration_category"] = "single"
 
-        # Keyword-based recurring detection
+        # 2) Title/description keyword detection (matches UI isMultiDayEvent())
+        if not is_multi:
+            text = f"{event.get('title', '')} {event.get('description', '')}".lower()
+            if any(kw in text for kw in self.MULTI_DAY_KEYWORDS):
+                is_multi = True
+
+        # Set both snake_case and camelCase
+        event["is_multi_day"] = is_multi
+        event["isMultiDay"] = is_multi
+        event["duration_category"] = duration_cat
+        event["durationCategory"] = duration_cat
+
+        # Sync end_date / endDate
+        if end_date:
+            event["end_date"] = end_date
+            event["endDate"] = end_date
+
+        # 3) Keyword-based recurring detection
         text = f"{event.get('title', '')} {event.get('description', '')}".lower()
         recurring_keywords = ['recurring', 'weekly', 'monthly', 'every week', 'every month', 'series event']
 
         if any(kw in text for kw in recurring_keywords):
             event["is_recurring"] = True
+            event["isRecurring"] = True
 
-            # Extract pattern
             if 'weekly' in text or 'every week' in text:
                 event["recurrence_pattern"] = "weekly"
+                event["recurrencePattern"] = "weekly"
             elif 'monthly' in text or 'every month' in text:
                 event["recurrence_pattern"] = "monthly"
+                event["recurrencePattern"] = "monthly"
 
         return event
     

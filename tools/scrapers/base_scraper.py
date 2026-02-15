@@ -308,11 +308,93 @@ class ScrapedEvent:
         if not self.last_updated:
             self.last_updated = datetime.utcnow().isoformat() + "Z"
     
+    # Title keywords that indicate a multi-day event (matches UI logic in index.html)
+    MULTI_DAY_KEYWORDS = [
+        'festival', 'exhibition', 'exhibit', 'runs until', 'conference',
+        'ongoing', 'all month', 'all week', 'multiple dates', 'series',
+    ]
+
+    def compute_multi_day(self):
+        """
+        Ensure is_multi_day and duration_category are set correctly.
+        Called automatically by to_dict() so every scraper benefits.
+        """
+        # 1) Date-range detection
+        if self.end_date and self.date:
+            try:
+                start = datetime.fromisoformat(self.date.replace("Z", ""))
+                end = datetime.fromisoformat(self.end_date.replace("Z", ""))
+                days = (end - start).days
+                hours = (end - start).total_seconds() / 3600
+
+                # Only flag multi-day if >=18 h (matches UI threshold)
+                if hours >= 18:
+                    self.is_multi_day = True
+
+                if days == 0:
+                    self.duration_category = self.duration_category or "single"
+                elif days <= 7:
+                    self.duration_category = "short"
+                elif days <= 30:
+                    self.duration_category = "medium"
+                else:
+                    self.duration_category = "long"
+            except (ValueError, TypeError):
+                pass
+
+        # 2) Title/description keyword detection
+        text = f"{self.title} {self.description}".lower()
+        if not self.is_multi_day:
+            if any(kw in text for kw in self.MULTI_DAY_KEYWORDS):
+                self.is_multi_day = True
+
+        # 3) Recurring keyword detection
+        if not self.is_recurring:
+            recurring_keywords = ['recurring', 'weekly', 'monthly', 'every week',
+                                  'every month', 'series event']
+            if any(kw in text for kw in recurring_keywords):
+                self.is_recurring = True
+                if 'weekly' in text or 'every week' in text:
+                    self.recurrence_pattern = "weekly"
+                elif 'monthly' in text or 'every month' in text:
+                    self.recurrence_pattern = "monthly"
+
+        # 4) Default duration_category
+        if not self.duration_category:
+            self.duration_category = "single"
+
     def to_dict(self) -> Dict:
-        """Convert to dictionary for JSON serialization"""
+        """Convert to dictionary for JSON serialization.
+
+        Outputs BOTH snake_case (Python-native) and camelCase (JS/UI-expected)
+        field names so that the data works with:
+          - The React UI (reads isMultiDay, endDate, isFree, etc.)
+          - The detect_multiday.js post-processor
+          - The Python scraper pipeline (reads is_multi_day, end_date, etc.)
+        """
+        # Ensure multi-day fields are computed before serialization
+        self.compute_multi_day()
+
         d = asdict(self)
-        # Remove None values and internal fields
-        return {k: v for k, v in d.items() if v is not None}
+        # Remove None values
+        d = {k: v for k, v in d.items() if v is not None}
+
+        # Add camelCase aliases for fields the UI expects
+        camel_map = {
+            "is_multi_day": "isMultiDay",
+            "end_date": "endDate",
+            "is_free": "isFree",
+            "is_recurring": "isRecurring",
+            "price_amount": "priceAmount",
+            "last_updated": "lastUpdated",
+            "duration_category": "durationCategory",
+            "recurrence_pattern": "recurrencePattern",
+        }
+        for snake, camel in camel_map.items():
+            if snake in d:
+                d[camel] = d[snake]
+
+        return d
 
 
 class BaseScraper:
