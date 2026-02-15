@@ -185,6 +185,13 @@ function handle_interaction($interaction) {
                 handle_nearme_command($nm_query, $nm_location, $nm_filter, $nm_dietary, $nm_radius);
                 break;
                 
+            // Resources command
+            case 'resources':
+                $res_category = get_option_value($options, 'category');
+                $res_today = get_option_value($options, 'today');
+                handle_resources_command($res_category, $res_today);
+                break;
+                
             // Daily Picks commands (crypto, forex, realtime wins, momentum, unified picks)
             case 'crypto':
                 handle_crypto_picks_command($options);

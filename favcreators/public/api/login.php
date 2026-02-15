@@ -73,5 +73,23 @@ if ($result && $result->num_rows > 0) {
     echo json_encode(array('error' => 'User not found'));
 }
 
+// Log the login attempt
+require_once dirname(__FILE__) . '/log_action.php';
+$user_id_for_log = isset($userObj) ? $userObj['id'] : null;
+$user_email_for_log = isset($data['email']) ? $data['email'] : null;
+
+if (isset($userObj)) {
+    log_success('user_login', 'login.php', 
+        "User logged in: " . $userObj['email'], 
+        json_encode(['role' => $userObj['role'], 'provider' => $userObj['provider']]),
+        $user_id_for_log, $user_email_for_log);
+} else {
+    $error_msg = isset($user) ? 'Invalid password' : 'User not found';
+    log_error('user_login', 'login.php', 
+        "Login failed: " . $error_msg,
+        json_encode(['email_attempted' => $user_email_for_log]),
+        null, $user_email_for_log);
+}
+
 $conn->close();
 ?>

@@ -86,6 +86,21 @@ if ($user_id === 0) {
 
 ob_end_clean();
 if ($conn->query($query) === TRUE) {
+    // Log the note save
+    require_once dirname(__FILE__) . '/log_action.php';
+    $user_email = null;
+    if (function_exists('get_session_user')) {
+        $session_user = get_session_user();
+        if ($session_user) {
+            $user_email = isset($session_user['email']) ? $session_user['email'] : null;
+        }
+    }
+    $note_type = ($user_id === 0) ? 'global_default' : 'user_note';
+    log_success('save_note', 'save_note.php',
+        "Note saved for creator: $creator_id ($note_type)",
+        json_encode(['creator_id' => $creator_id, 'user_id' => $user_id, 'note_type' => $note_type, 'note_length' => strlen($note)]),
+        $session_id, $user_email);
+    
     echo json_encode(array('status' => 'success', 'message' => 'Note saved'));
 } else {
     echo json_encode(array('error' => 'Failed to save note: ' . $conn->error));

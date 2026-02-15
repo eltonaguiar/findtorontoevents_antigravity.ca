@@ -1,0 +1,74 @@
+name: Verify favcreatorslogs Population
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * *'  # Daily at 9 AM UTC
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check log count
+        run: |
+          echo "=== Checking favcreatorslogs Table ==="
+          
+          RESP=$(curl -sf --max-time 30 \
+            "https://findtorontoevents.ca/fc/api/get_logs.php?limit=1" \
+            -H "User-Agent: GitHub-Actions-Verify/1.0" || echo '{"total":0}')
+          
+          echo "Raw response:"
+          echo "$RESP" | python3 -m json.tool 2>/dev/null || echo "$RESP"
+          echo ""
+          
+          TOTAL=$(echo "$RESP" | python3 -c "import json,sys; print(json.load(sys.stdin).get('total',0))" 2>/dev/null || echo "0")
+          echo "Total log entries: $TOTAL"
+          
+          if [ "$TOTAL" -eq 0 ]; then
+            echo "❌ WARNING: favcreatorslogs table is empty!"
+            echo ""
+            echo "Action Required:"
+            echo "1. Ensure log_action.php is included in API endpoints"
+            echo "2. Check that login.php, save_creators.php, save_note.php are calling log_action()"
+            echo "3. Verify database permissions allow INSERT into favcreatorslogs"
+            exit 1
+          else
+            echo "✅ favcreatorslogs table has $TOTAL entries"
+          fi
+      
+      - name: Check recent log activity
+        run: |
+          echo "=== Recent Log Activity (Last 24 Hours) ==="
+          
+          # Get last 5 logs to show sample
+          RESP=$(curl -sf --max-time 30 \
+            "https://findtorontoevents.ca/fc/api/get_logs.php?limit=5" \
+            -H "User-Agent: GitHub-Actions-Verify/1.0" || echo '{"logs":[]}')
+          
+          echo "$RESP" | python3 -c "
+import json,sys
+try:
+    d=json.load(sys.stdin)
+    logs = d.get('logs',[])
+    if logs:
+        print('Recent log entries:')
+        for log in logs:
+            print(f\"  [{log.get('created_at','?')}] {log.get('action','?')} - {log.get('status','?')}\")
+            print(f\"    Endpoint: {log.get('endpoint','?')}\")
+            print(f\"    Message: {log.get('message','N/A')[:80]}...\")
+            print()
+    else:
+        print('No recent log entries found')
+except Exception as e:
+    print(f'Error parsing: {e}')
+"
+      
+      - name: Summary
+        if: always()
+        run: |
+          echo "=== Verification Complete ==="
+          echo "If the table is empty, check:"
+          echo "1. log_action.php exists and is readable"
+          echo "2. API endpoints include log_action.php"
+          echo "3. Database user has INSERT permissions"
+          echo "4. PHP error logs for any issues"

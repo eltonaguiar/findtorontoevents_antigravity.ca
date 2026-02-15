@@ -1,0 +1,72 @@
+# Resolve AllEvents.in URLs to their original source (Eventbrite, Meetup, etc.)
+# in events.json. Runs daily and on manual trigger.
+name: Resolve event links
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 13 * * *'  # daily 13:30 UTC (08:30 EST) — after scrape at 12:00 UTC
+
+permissions:
+  contents: write
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fix broken submodule entry
+        run: |
+          if [ -f .gitmodules ]; then
+            git config -f .gitmodules --remove-section submodule.STOCKSUNIFY 2>/dev/null || true
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Resolve AllEvents.in links
+        run: node tools/resolve_allevents_links.js
+
+      - name: Commit and push if changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add next/events.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: resolve AllEvents.in links to original sources"
+            git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" HEAD:main
+          fi
+
+      # Trigger the server to re-sync its database with the updated URLs
+      - name: Trigger database sync
+        run: |
+          echo "Triggering server-side database sync..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -A "Mozilla/5.0 (compatible; FindTorontoEvents-Sync/1.0)" \
+            "https://findtorontoevents.ca/fc/api/events_sync.php" \
+            --max-time 120)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          echo "HTTP $HTTP_CODE"
+
+      # Deploy updated events.json to FTP
+      - name: Deploy updated events.json to server
+        run: |
+          echo "Deploying updated events.json to server..."
+          curl -s -w "\n%{http_code}" \
+            -A "Mozilla/5.0 (compatible; FindTorontoEvents-Deploy/1.0)" \
+            "https://findtorontoevents.ca/api/events/cleanup_events.php" \
+            --max-time 60 || echo "cleanup trigger failed (non-fatal)"
+
+      - name: Restore workspace for checkout post
+        if: always()
+        run: |
+          git checkout --detach ${{ github.sha }}
+          git reset --hard ${{ github.sha }}

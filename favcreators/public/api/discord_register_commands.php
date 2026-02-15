@@ -473,6 +473,37 @@ $commands = array(
             )
         )
     ),
+    // ─── Toronto Event Resources Command ────────────────────
+    array(
+        'name' => 'fc-resources',
+        'description' => 'Browse 50+ Toronto event resources by category, with today\'s events',
+        'type' => 1,
+        'options' => array(
+            array(
+                'name' => 'category',
+                'description' => 'Filter by category',
+                'type' => 3,
+                'required' => false,
+                'choices' => array(
+                    array('name' => 'Event Platforms (Eventbrite, Meetup, etc.)', 'value' => 'platforms'),
+                    array('name' => 'Event Calendars (BlogTO, City of TO, etc.)', 'value' => 'calendars'),
+                    array('name' => 'Music & Concerts (10 venues)', 'value' => 'music'),
+                    array('name' => 'Arts & Culture (TIFF, AGO, ROM, etc.)', 'value' => 'arts'),
+                    array('name' => 'Theatre & Comedy (Mirvish, Second City)', 'value' => 'theatre'),
+                    array('name' => 'Sports (Leafs, Raptors, Jays, etc.)', 'value' => 'sports'),
+                    array('name' => 'Festivals & Fairs (CNE, Pride, etc.)', 'value' => 'festivals'),
+                    array('name' => 'Food & Drink Events', 'value' => 'food'),
+                    array('name' => 'Media & News Sources', 'value' => 'media')
+                )
+            ),
+            array(
+                'name' => 'today',
+                'description' => 'Show only events happening today',
+                'type' => 5,
+                'required' => false
+            )
+        )
+    ),
     // ─── Penny Stock Picks Commands ──────────────────────────
     array(
         'name' => 'fc-penny',

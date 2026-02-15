@@ -1,0 +1,2074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toronto Event Resources - Top 50 Sources | Find Toronto Events</title>
+    <meta name="description" content="Discover the best 50+ sources for Toronto events. Filter by category: Music, Arts, Sports, Food & Drink, Business, and more.">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .back-link:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateX(-5px);
+        }
+        
+        @media (max-width: 768px) {
+            .back-link {
+                position: static;
+                display: inline-block;
+                margin-bottom: 20px;
+            }
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .stat-item {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        /* Date Notice Banner */
+        .date-notice {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+        }
+        
+        .date-notice strong {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Filter Controls */
+        .filter-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .filter-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin: 0;
+        }
+        
+        .search-box {
+            position: relative;
+            flex: 1;
+            max-width: 300px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .filter-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .filter-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .filter-btn .count {
+            background: rgba(0,0,0,0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+        
+        .filter-btn.active .count {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        /* Resource Sections */
+        .resource-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .resource-section.hidden {
+            display: none;
+        }
+        
+        .resource-section.highlighted {
+            border: 2px solid #667eea;
+            box-shadow: 0 5px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+        
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        
+        .resource-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .resource-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-left-color: #764ba2;
+        }
+        
+        .resource-card.featured {
+            background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
+            border-left-color: #ff6b6b;
+        }
+        
+        .resource-card.featured:hover {
+            border-left-color: #ee5a5a;
+        }
+        
+        .resource-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        
+        .resource-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+        }
+        
+        .resource-badge {
+            background: #667eea;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        
+        .resource-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        /* Example Events */
+        .example-events {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .example-header {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .example-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .example-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+        
+        .example-item:hover {
+            background: #e9ecef;
+        }
+        
+        .example-title {
+            color: #333;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .example-meta {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        .example-date {
+            color: #666;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+        
+        .example-price {
+            background: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .example-price.paid {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .example-price.ongoing {
+            background: #6c757d;
+            color: white;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            color: white;
+            padding: 30px;
+            margin-top: 40px;
+        }
+        
+        footer a {
+            color: #ffd700;
+            text-decoration: none;
+        }
+        
+        /* No Results */
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            display: none;
+        }
+        
+        .no-results.show {
+            display: block;
+        }
+        
+        .no-results-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .resource-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-buttons {
+                justify-content: flex-start;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 10px;
+            }
+            
+            .stats-bar {
+                gap: 15px;
+            }
+            
+            .example-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            
+            .example-title {
+                white-space: normal;
+                margin-right: 0;
+            }
+            
+            .date-notice {
+                font-size: 0.85rem;
+                padding: 12px 15px;
+            }
+        }
+        
+        /* Loading Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .resource-section {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        .resource-section:nth-child(1) { animation-delay: 0.1s; }
+        .resource-section:nth-child(2) { animation-delay: 0.2s; }
+        .resource-section:nth-child(3) { animation-delay: 0.3s; }
+        .resource-section:nth-child(4) { animation-delay: 0.4s; }
+        .resource-section:nth-child(5) { animation-delay: 0.5s; }
+        .resource-section:nth-child(6) { animation-delay: 0.6s; }
+        .resource-section:nth-child(7) { animation-delay: 0.7s; }
+        .resource-section:nth-child(8) { animation-delay: 0.8s; }
+        .resource-section:nth-child(9) { animation-delay: 0.9s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="https://findtorontoevents.ca" class="back-link">← Back to Events</a>
+            <h1>🎯 Toronto Event Resources</h1>
+            <p class="subtitle">Your complete guide to finding events in the 6ix</p>
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-number">50+</div>
+                    <div>Sources</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">9</div>
+                    <div>Categories</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">1000+</div>
+                    <div>Events/Month</div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Date Notice Banner -->
+        <div class="date-notice">
+            <strong>📅 Event Dates Change Frequently!</strong> 
+            Check the source websites for the most current schedules and ticket availability. 
+            <br>Examples below are from actual upcoming events as of February 15, 2026.
+        </div>
+        
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-header">
+                <h2 class="filter-title">🔍 Filter by Category</h2>
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search resources...">
+                </div>
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-category="all">
+                    🌟 All <span class="count">50</span>
+                </button>
+                <button class="filter-btn" data-category="platforms">
+                    🎫 Platforms <span class="count">5</span>
+                </button>
+                <button class="filter-btn" data-category="calendars">
+                    📅 Calendars <span class="count">6</span>
+                </button>
+                <button class="filter-btn" data-category="music">
+                    🎵 Music <span class="count">10</span>
+                </button>
+                <button class="filter-btn" data-category="arts">
+                    🎭 Arts & Culture <span class="count">7</span>
+                </button>
+                <button class="filter-btn" data-category="theatre">
+                    🎪 Theatre & Comedy <span class="count">6</span>
+                </button>
+                <button class="filter-btn" data-category="sports">
+                    🏟️ Sports <span class="count">6</span>
+                </button>
+                <button class="filter-btn" data-category="festivals">
+                    🎪 Festivals <span class="count">6</span>
+                </button>
+                <button class="filter-btn" data-category="food">
+                    🍽️ Food & Drink <span class="count">4</span>
+                </button>
+                <button class="filter-btn" data-category="media">
+                    📰 Media <span class="count">5</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- No Results Message -->
+        <div class="no-results" id="noResults">
+            <div class="no-results-icon">🔍</div>
+            <h3>No resources found</h3>
+            <p>Try adjusting your search or filter criteria</p>
+        </div>
+        
+        <!-- Major Event Platforms -->
+        <div class="resource-section" data-category="platforms">
+            <div class="section-header">
+                <h2 class="section-title">🎫 Major Event Platforms</h2>
+                <span class="section-badge">Featured</span>
+            </div>
+            <div class="resource-grid">
+                <a href="https://www.eventbrite.ca/d/canada--toronto/events/" class="resource-card featured" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Eventbrite.ca</h3>
+                        <span class="resource-badge">TOP PICK</span>
+                    </div>
+                    <p class="resource-description">Discover and create local events in Toronto. From workshops to concerts, find it all on Canada's largest event platform.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Upcoming Events (Check for Updates)</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">WordPress for Beginners Workshop</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 17</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Python for Data Science Course</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 17</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Business Networking Mixers</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Weekly</span>
+                                    <span class="example-price">Free-$</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.meetup.com/find/?locationSlug=Toronto%2C%20ON" class="resource-card featured" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Meetup.com</h3>
+                        <span class="resource-badge">TOP PICK</span>
+                    </div>
+                    <p class="resource-description">Find local groups and events in Toronto. Connect with people who share your interests, from tech to hiking.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Regular Meetups</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Tech Toronto Meetups</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Weekly</span>
+                                    <span class="example-price">Free</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Game Business Masterclass</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 16</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Photography Walks</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Monthly</span>
+                                    <span class="example-price">Free</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.ticketmaster.ca/toronto-events" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Ticketmaster</h3>
+                    </div>
+                    <p class="resource-description">Concerts, sports, and major entertainment events. The go-to source for high-profile Toronto happenings.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Upcoming Shows (Dates Vary)</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Brandi Carlile at Scotiabank</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 18</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Jo Koy Live</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 17-18</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Steve Aoki Concert</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 16</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.stubhub.ca/toronto-tickets/category/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">StubHub</h3>
+                    </div>
+                    <p class="resource-description">Buy and sell event tickets. Great for last-minute tickets to sold-out shows.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Popular Events (Resale)</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Maple Leafs Games</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Ongoing</span>
+                                    <span class="example-price paid">Varies</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Raptors Tickets</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Ongoing</span>
+                                    <span class="example-price paid">Varies</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://feverup.com/toronto" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Fever</h3>
+                    </div>
+                    <p class="resource-description">Curated experiences and events in Toronto. Discover unique pop-ups, candlelight concerts, and immersive experiences.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Trending Experiences</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Candlelight Concerts</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Weekly</span>
+                                    <span class="example-price paid">$35+</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Immersive Exhibits</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Ongoing</span>
+                                    <span class="example-price paid">$40+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Toronto Event Calendars -->
+        <div class="resource-section" data-category="calendars">
+            <div class="section-header">
+                <h2 class="section-title">📅 Toronto Event Calendars</h2>
+                <span class="section-badge">Local Favorites</span>
+            </div>
+            <div class="resource-grid">
+                <a href="https://www.destinationtoronto.com/events" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Destination Toronto Events</h3>
+                    </div>
+                    <p class="resource-description">Official tourism events calendar. Perfect for visitors and locals looking for the best of Toronto.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Featured Experiences</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Winter Activities Guide</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Seasonal</span>
+                                    <span class="example-price ongoing">Check Site</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Tourist Attractions</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Daily</span>
+                                    <span class="example-price ongoing">Check Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.toronto.com/events/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Toronto.com Events</h3>
+                    </div>
+                    <p class="resource-description">Comprehensive event listings covering everything from community gatherings to major concerts.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 This Week's Highlights</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Community Festivals</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Weekends</span>
+                                    <span class="example-price ongoing">Check Site</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Live Performances</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Daily</span>
+                                    <span class="example-price ongoing">Check Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.blogto.com/events/" class="resource-card featured" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">BlogTO Events</h3>
+                        <span class="resource-badge">POPULAR</span>
+                    </div>
+                    <p class="resource-description">Popular local blog event listings. The pulse of what's happening in Toronto right now.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Trending Now</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">CHOCOLATE Kintsugi Art</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 15</span>
+                                    <span class="example-price">Free</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">New Restaurant Openings</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Weekly</span>
+                                    <span class="example-price ongoing">Check Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://torevent.ca/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">TOREVENT.ca</h3>
+                    </div>
+                    <p class="resource-description">Independent Toronto events calendar. Community-driven event discovery.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Community Picks</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Local Gatherings</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Daily</span>
+                                    <span class="example-price ongoing">Check Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.toronto.ca/explore-enjoy/festivals-events/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">City of Toronto Events</h3>
+                    </div>
+                    <p class="resource-description">Official city events and festivals. Free and family-friendly events across the city.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 City Programs</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Winter Stations</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb-Mar</span>
+                                    <span class="example-price">Free</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Public Skating</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Daily</span>
+                                    <span class="example-price">Free</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://nowtoronto.com/events" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">NOW Toronto</h3>
+                    </div>
+                    <p class="resource-description">Events and entertainment guide. Toronto's alternative voice for arts and culture.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Arts Focus</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Indie Concerts</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Weekly</span>
+                                    <span class="example-price ongoing">Check Site</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Gallery Openings</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Monthly</span>
+                                    <span class="example-price ongoing">Check Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Music & Concerts -->
+        <div class="resource-section" data-category="music">
+            <div class="section-header">
+                <h2 class="section-title">🎵 Music & Concerts</h2>
+                <span class="section-badge">10 Venues</span>
+            </div>
+            <div class="resource-grid">
+                <a href="https://www.torontojazz.com/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Toronto Jazz Festival</h3>
+                    </div>
+                    <p class="resource-description">Annual jazz festival and year-round events. World-class jazz in the heart of the city.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 2026 Festival Schedule</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">TD Toronto Jazz Festival</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Jun 2026</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.masseyhall.com/" class="resource-card featured" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Massey Hall</h3>
+                        <span class="resource-badge">ICONIC</span>
+                    </div>
+                    <p class="resource-description">Historic concert venue. Legendary performances since 1894. Recently restored to its former glory.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Coming to Massey Hall</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Gregory Porter</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 15</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Acoustic Sessions</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Spring 2026</span>
+                                    <span class="example-price paid">$60+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.roythomsonhall.com/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Roy Thomson Hall</h3>
+                    </div>
+                    <p class="resource-description">Premier concert venue. Home to the Toronto Symphony Orchestra and international acts.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 TSO Performances</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Mahler's Ninth Symphony</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 18</span>
+                                    <span class="example-price paid">$40+</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Death & Transfiguration</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 21</span>
+                                    <span class="example-price paid">$40+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.scotiabankarena.com/events" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Scotiabank Arena</h3>
+                    </div>
+                    <p class="resource-description">Major concerts and events. Toronto's largest indoor venue for superstar performances.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Big Shows (Check Dates)</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Brandi Carlile</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 18</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Major Concerts</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Year-round</span>
+                                    <span class="example-price paid">Varies</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.budweisergardens.com/events" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Budweiser Stage</h3>
+                    </div>
+                    <p class="resource-description">Outdoor concert venue. Summer concerts with the beautiful Ontario Place backdrop.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Summer 2026 Lineup</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Martin Garrix</span>
+                                <div class="example-meta">
+                                    <span class="example-date">May 29</span>
+                                    <span class="example-price paid">$50+</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Evanescence</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Jun 29</span>
+                                    <span class="example-price paid">$50+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.thedanforthmusichall.com/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Danforth Music Hall</h3>
+                    </div>
+                    <p class="resource-description">Live music venue. Intimate setting for indie and established artists.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Indie Scene</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">STAR POWER TWO DJ Series</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 21</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Mademoiselle Events</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 26</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.phoenixconcerttheatre.com/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">The Phoenix</h3>
+                    </div>
+                    <p class="resource-description">Concert venue for rock, indie, and electronic music. Historic venue with great sound.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Rock & Indie</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">The Early November</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Mar 3</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.thedrake.ca/events" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">The Drake Hotel</h3>
+                    </div>
+                    <p class="resource-description">Live music and events. Underground acts in a hip setting.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Underground Scene</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Indie Music Nights</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Weekly</span>
+                                    <span class="example-price ongoing">Check Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.historytoronto.com/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">History Toronto</h3>
+                    </div>
+                    <p class="resource-description">New music venue. Modern space for contemporary acts.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Contemporary Acts</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Modern Music Shows</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Check Schedule</span>
+                                    <span class="example-price ongoing">Check Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.rogerscentre.com/events" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Rogers Centre</h3>
+                    </div>
+                    <p class="resource-description">Stadium concerts and major events. Home to massive stadium shows.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Stadium Shows</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Major Stadium Concerts</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Seasonal</span>
+                                    <span class="example-price paid">$60+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Arts & Culture -->
+        <div class="resource-section" data-category="arts">
+            <div class="section-header">
+                <h2 class="section-title">🎭 Arts & Culture</h2>
+                <span class="section-badge">7 Venues</span>
+            </div>
+            <div class="resource-grid">
+                <a href="https://www.tiff.net/" class="resource-card featured" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">TIFF (Toronto International Film Festival)</h3>
+                        <span class="resource-badge">WORLD CLASS</span>
+                    </div>
+                    <p class="resource-description">Major film festival and year-round screenings. One of the world's most prestigious film events.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Film Events</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Film "Oh, Mom" Screening</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 15</span>
+                                    <span class="example-price">Free</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">TIFF 2026 Festival</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Sep 2026</span>
+                                    <span class="example-price paid">Passes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.ago.ca/events" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Art Gallery of Ontario</h3>
+                    </div>
+                    <p class="resource-description">Art exhibitions and events. World-class collection with rotating special exhibitions.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Exhibitions</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Current Exhibitions</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Ongoing</span>
+                                    <span class="example-price paid">$25</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Free Wednesday Nights</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Wed 6-9pm</span>
+                                    <span class="example-price">Free</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.rom.on.ca/events" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Royal Ontario Museum</h3>
+                    </div>
+                    <p class="resource-description">Museum events and exhibitions. Dinosaurs, world cultures, and special exhibitions.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 ROM Events</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Friday Night Live</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Fri Evenings</span>
+                                    <span class="example-price paid">$20</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.hotdocs.ca/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Hot Docs</h3>
+                    </div>
+                    <p class="resource-description">Documentary film festival. North America's largest documentary festival.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Documentaries</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Hot Docs 2026</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Apr-May</span>
+                                    <span class="example-price paid">Passes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.luminato.org/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Luminato Festival</h3>
+                    </div>
+                    <p class="resource-description">Arts and culture festival. Multi-disciplinary arts festival transforming the city.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Festival 2026</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Luminato Festival</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Jun 2026</span>
+                                    <span class="example-price">Mixed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.nuitblanchetoronto.ca/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Nuit Blanche</h3>
+                    </div>
+                    <p class="resource-description">All-night contemporary art event. Free art installations across the city overnight.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Annual Event</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Nuit Blanche 2026</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Oct 2026</span>
+                                    <span class="example-price">Free</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.thecanadianencyclopedia.ca/en/article/toronto-arts-calendar" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Toronto Arts Council</h3>
+                    </div>
+                    <p class="resource-description">Arts and cultural events calendar. Supporting the local arts community.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Arts Scene</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Community Arts Events</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Year-round</span>
+                                    <span class="example-price ongoing">Check Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Theatre & Comedy -->
+        <div class="resource-section" data-category="theatre">
+            <div class="section-header">
+                <h2 class="section-title">🎪 Theatre & Comedy</h2>
+                <span class="section-badge">6 Venues</span>
+            </div>
+            <div class="resource-grid">
+                <a href="https://www.mirvish.com/" class="resource-card featured" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Mirvish Productions</h3>
+                        <span class="resource-badge">BROADWAY</span>
+                    </div>
+                    <p class="resource-description">Broadway shows and theatre. The best of Broadway comes to Toronto through Mirvish.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Now Playing (Check Dates)</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">& Juliet at Royal Alexandra</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Ongoing</span>
+                                    <span class="example-price paid">$80+</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Hamilton (Returning)</span>
+                                <div class="example-meta">
+                                    <span class="example-date">2026</span>
+                                    <span class="example-price paid">$100+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.tapa.ca/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">TAPA</h3>
+                    </div>
+                    <p class="resource-description">Toronto Alliance for the Performing Arts. Theatre information and hipTIX for students.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Theatre Scene</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Canadian Opera - Rigoletto</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Check Schedule</span>
+                                    <span class="example-price paid">$50+</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Student hipTIX Discounts</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Year-round</span>
+                                    <span class="example-price paid">$15</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.secondcity.com/toronto/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Second City Toronto</h3>
+                    </div>
+                    <p class="resource-description">Comedy shows and improv. Where many SNL stars got their start.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Comedy Shows</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Improv Nights</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Thu-Sun</span>
+                                    <span class="example-price paid">$25</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Sketch Comedy Shows</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Weekly</span>
+                                    <span class="example-price paid">$20+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://comedybar.ca/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Comedy Bar</h3>
+                    </div>
+                    <p class="resource-description">Stand-up comedy venue. Local and touring comedians in an intimate setting.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Stand-Up Nights</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Childish (Mo Sitta)</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 15</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">East End Comedy Night</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 26</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.yukyuks.com/toronto" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Yuk Yuk's Toronto</h3>
+                    </div>
+                    <p class="resource-description">Comedy club. Canada's premier comedy chain featuring top talent.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Touring Comics</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Zoltan Kaszas: WORLDWIDE</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Apr 11</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Open Mic Nights</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Weekly</span>
+                                    <span class="example-price paid">$10+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.youngpeoplestheatre.org/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Young People's Theatre</h3>
+                    </div>
+                    <p class="resource-description">Family-friendly theatre. Professional theatre for young audiences.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Family Shows</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Children's Theatre Season</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Year-round</span>
+                                    <span class="example-price paid">$20+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Sports Events -->
+        <div class="resource-section" data-category="sports">
+            <div class="section-header">
+                <h2 class="section-title">🏟️ Sports Events</h2>
+                <span class="section-badge">6 Teams</span>
+            </div>
+            <div class="resource-grid">
+                <a href="https://www.mlb.com/bluejays" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Toronto Blue Jays</h3>
+                    </div>
+                    <p class="resource-description">Baseball games at Rogers Centre. Canada's team in the MLB.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 2026 Season</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Spring Training</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb-Mar</span>
+                                    <span class="example-price paid">Varies</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Home Opener</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Mar/Apr</span>
+                                    <span class="example-price paid">$30+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.nba.com/raptors/" class="resource-card featured" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Toronto Raptors</h3>
+                        <span class="resource-badge">NBA</span>
+                    </div>
+                    <p class="resource-description">Basketball games at Scotiabank Arena. 2019 NBA Champions.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Upcoming Games</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">vs Oklahoma City Thunder</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 24</span>
+                                    <span class="example-price paid">$50+</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Regular Season Games</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Ongoing</span>
+                                    <span class="example-price paid">$40+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.nhl.com/mapleleafs/" class="resource-card featured" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Toronto Maple Leafs</h3>
+                        <span class="resource-badge">NHL</span>
+                    </div>
+                    <p class="resource-description">Hockey games at Scotiabank Arena. One of the NHL's Original Six teams.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 This Season</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Regular Season Games</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Ongoing</span>
+                                    <span class="example-price paid">$100+</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Home Games</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Check Schedule</span>
+                                    <span class="example-price paid">$80+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.torontofc.ca/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Toronto FC</h3>
+                    </div>
+                    <p class="resource-description">Soccer matches at BMO Field. MLS Cup champions bringing the beautiful game.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 2026 Season</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">MLS Regular Season</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb-Oct</span>
+                                    <span class="example-price paid">$30+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.argonauts.ca/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Toronto Argonauts</h3>
+                    </div>
+                    <p class="resource-description">CFL football games. The oldest professional football team in North America.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 2026 Season</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">CFL Regular Season</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Jun-Oct</span>
+                                    <span class="example-price paid">$25+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.marlies.ca/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Toronto Marlies</h3>
+                    </div>
+                    <p class="resource-description">AHL hockey games. Maple Leafs' development team with affordable family fun.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 AHL Season</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Home Games at Coca-Cola Coliseum</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Ongoing</span>
+                                    <span class="example-price paid">$20+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Festivals & Fairs -->
+        <div class="resource-section" data-category="festivals">
+            <div class="section-header">
+                <h2 class="section-title">🎪 Festivals & Fairs</h2>
+                <span class="section-badge">6 Annual Events</span>
+            </div>
+            <div class="resource-grid">
+                <a href="https://www.theex.com/" class="resource-card featured" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">CNE (Canadian National Exhibition)</h3>
+                        <span class="resource-badge">SUMMER</span>
+                    </div>
+                    <p class="resource-description">Annual summer fair. Rides, food, concerts, and exhibitions at Exhibition Place.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 CNE 2026</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">The Ex 2026</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Aug 2026</span>
+                                    <span class="example-price paid">$25</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Air Show</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Labour Day</span>
+                                    <span class="example-price">Free</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.torontopride.ca/" class="resource-card featured" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Toronto Pride</h3>
+                        <span class="resource-badge">CELEBRATION</span>
+                    </div>
+                    <p class="resource-description">Pride festival and parade. One of the world's largest Pride celebrations.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Pride 2026</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Pride Parade</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Jun 2026</span>
+                                    <span class="example-price">Free</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Pride Month Events</span>
+                                <div class="example-meta">
+                                    <span class="example-date">All June</span>
+                                    <span class="example-price">Mixed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.torontocaribbeancarnival.com/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Toronto Caribbean Carnival</h3>
+                    </div>
+                    <p class="resource-description">Caribbean cultural celebration. Vibrant parade and festivities celebrating Caribbean culture.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Carnival 2026</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Grand Parade</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Jul-Aug 2026</span>
+                                    <span class="example-price">Free</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Island Events</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Jul-Aug</span>
+                                    <span class="example-price">Mixed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.tasteofthedanforth.com/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Taste of the Danforth</h3>
+                    </div>
+                    <p class="resource-description">Greek food festival. Canada's largest street festival celebrating Greek culture and cuisine.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 2026 Festival</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Taste of the Danforth</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Aug 2026</span>
+                                    <span class="example-price">Free Entry</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.royalfair.org/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Royal Agricultural Winter Fair</h3>
+                    </div>
+                    <p class="resource-description">Agricultural fair and horse show. The world's largest combined indoor agricultural fair.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 2026 Fair</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Royal Winter Fair</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Nov 2026</span>
+                                    <span class="example-price paid">$25</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.dufferinmall.com/events" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Various Community Festivals</h3>
+                    </div>
+                    <p class="resource-description">Local community events. Neighborhood festivals and celebrations throughout the year.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Community Events</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Neighborhood Festivals</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Year-round</span>
+                                    <span class="example-price ongoing">Check Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Food & Drink -->
+        <div class="resource-section" data-category="food">
+            <div class="section-header">
+                <h2 class="section-title">🍽️ Food & Drink Events</h2>
+                <span class="section-badge">4 Sources</span>
+            </div>
+            <div class="resource-grid">
+                <a href="https://www.torontorestaurants.com/events" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Toronto Restaurants Events</h3>
+                    </div>
+                    <p class="resource-description">Food events and dining. Special dining experiences and restaurant happenings.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Dining Experiences</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Culinary Events</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Year-round</span>
+                                    <span class="example-price ongoing">Check Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.torontocraftbeer.ca/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Toronto Craft Beer</h3>
+                    </div>
+                    <p class="resource-description">Beer festivals and events. Celebrating Ontario's craft brewing scene.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Beer Events</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Craft Beer Festivals</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Seasonal</span>
+                                    <span class="example-price paid">$40+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.tasteoftoronto.ca/" class="resource-card featured" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Taste of Toronto</h3>
+                        <span class="resource-badge">FOODIE</span>
+                    </div>
+                    <p class="resource-description">Premier food festival. Sample dishes from Toronto's best restaurants.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Culinary Events</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Evening of Hope & Culinary Excellence</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 17</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Wine Glass Painting Workshop</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 19</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Alumni Dinner & Social</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 18</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">JIM CUDDY: Country Classics Benefit</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Feb 22</span>
+                                    <span class="example-price paid">See Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.blogto.com/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">BlogTO</h3>
+                    </div>
+                    <p class="resource-description">Toronto news, events, and guides. The go-to source for new restaurants and food trends.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Food News</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">New Restaurant Openings</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Weekly</span>
+                                    <span class="example-price ongoing">Check Site</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">Food Events & Pop-ups</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Daily Updates</span>
+                                    <span class="example-price ongoing">Check Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Media & News -->
+        <div class="resource-section" data-category="media">
+            <div class="section-header">
+                <h2 class="section-title">📰 Media & News</h2>
+                <span class="section-badge">5 Sources</span>
+            </div>
+            <div class="resource-grid">
+                <a href="https://www.thestar.com/entertainment" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Toronto Star Entertainment</h3>
+                    </div>
+                    <p class="resource-description">Local entertainment news. Canada's largest daily newspaper covering Toronto events.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Latest News</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Entertainment Stories</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Daily</span>
+                                    <span class="example-price ongoing">Read Online</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.cp24.com/" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">CP24</h3>
+                    </div>
+                    <p class="resource-description">Local news and events. Toronto's breaking news source with event coverage.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Breaking News</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Event Coverage</span>
+                                <div class="example-meta">
+                                    <span class="example-date">24/7</span>
+                                    <span class="example-price ongoing">Watch/Read</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://nowtoronto.com/events" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">NOW Toronto</h3>
+                    </div>
+                    <p class="resource-description">Events and entertainment guide. Alternative weekly with comprehensive listings.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Arts Focus</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Weekly Listings</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Every Thu</span>
+                                    <span class="example-price ongoing">Check Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.narcity.com/toronto" class="resource-card featured" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">Narcity Toronto</h3>
+                        <span class="resource-badge">TRENDING</span>
+                    </div>
+                    <p class="resource-description">Local events and things to do. Millennial-focused guide to Toronto life.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Trending Now</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">What to Do This Weekend</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Weekly</span>
+                                    <span class="example-price ongoing">Check Site</span>
+                                </div>
+                            </div>
+                            <div class="example-item">
+                                <span class="example-title">New Openings & Experiences</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Daily</span>
+                                    <span class="example-price ongoing">Check Site</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="https://www.tiktok.com/@unitymaps" class="resource-card" target="_blank" rel="noopener">
+                    <div class="resource-header">
+                        <h3 class="resource-title">UnityMaps on TikTok</h3>
+                    </div>
+                    <p class="resource-description">Follow for interesting map content and visualizations of Toronto events and locations.</p>
+                    <div class="example-events">
+                        <div class="example-header">📌 Social Content</div>
+                        <div class="example-list">
+                            <div class="example-item">
+                                <span class="example-title">Toronto Event Maps</span>
+                                <div class="example-meta">
+                                    <span class="example-date">Regular</span>
+                                    <span class="example-price ongoing">Follow</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Made with ❤️ in Toronto | <a href="/">Back to Find Toronto Events</a></p>
+            <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">Last updated: February 15, 2026 | Event dates subject to change - always verify with source websites</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Filter functionality
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const sections = document.querySelectorAll('.resource-section');
+        const searchInput = document.getElementById('searchInput');
+        const noResults = document.getElementById('noResults');
+        
+        // Filter by category
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Update active button
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                const category = button.dataset.category;
+                filterSections(category);
+            });
+        });
+        
+        function filterSections(category) {
+            let visibleCount = 0;
+            
+            sections.forEach(section => {
+                if (category === 'all' || section.dataset.category === category) {
+                    section.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    section.classList.add('hidden');
+                }
+            });
+            
+            // Show/hide no results message
+            if (visibleCount === 0) {
+                noResults.classList.add('show');
+            } else {
+                noResults.classList.remove('show');
+            }
+        }
+        
+        // Search functionality
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            if (searchTerm === '') {
+                // Reset to current filter
+                const activeCategory = document.querySelector('.filter-btn.active').dataset.category;
+                filterSections(activeCategory);
+                return;
+            }
+            
+            let visibleCount = 0;
+            
+            sections.forEach(section => {
+                const cards = section.querySelectorAll('.resource-card');
+                let hasVisibleCard = false;
+                
+                cards.forEach(card => {
+                    const title = card.querySelector('.resource-title').textContent.toLowerCase();
+                    const description = card.querySelector('.resource-description').textContent.toLowerCase();
+                    
+                    if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                        card.style.display = 'block';
+                        hasVisibleCard = true;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                if (hasVisibleCard) {
+                    section.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    section.classList.add('hidden');
+                }
+            });
+            
+            // Show/hide no results message
+            if (visibleCount === 0) {
+                noResults.classList.add('show');
+            } else {
+                noResults.classList.remove('show');
+            }
+        });
+        
+        // Track outbound clicks
+        document.querySelectorAll('.resource-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const title = card.querySelector('.resource-title').textContent;
+                console.log('Resource clicked:', title);
+                // Could add analytics tracking here
+            });
+        });
+        
+        // Smooth scroll to section when filtering
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const category = button.dataset.category;
+                if (category !== 'all') {
+                    const section = document.querySelector(`[data-category="${category}"]`);
+                    if (section) {
+                        setTimeout(() => {
+                            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 100);
+                    }
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

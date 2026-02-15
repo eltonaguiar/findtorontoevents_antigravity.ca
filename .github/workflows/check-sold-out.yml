@@ -1,0 +1,63 @@
+# Check ticketing-source events for sold-out / sales-ended / cancelled status
+# and remove them from events.json (archived to events_sold_out.json).
+# Runs every 6 hours and on manual trigger.
+name: Check sold-out events
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6,12,18,0 * * *'  # every 6 hours UTC
+
+permissions:
+  contents: write
+
+jobs:
+  check-sold-out:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fix broken submodule entry
+        run: |
+          if [ -f .gitmodules ]; then
+            git config -f .gitmodules --remove-section submodule.STOCKSUNIFY 2>/dev/null || true
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check for sold-out events
+        run: node tools/check_sold_out.js
+
+      - name: Commit and push if changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add next/events.json next/events_sold_out.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            REMOVED=$(git diff --staged --stat next/events.json | grep -oP '\d+ insertion|\d+ deletion' || echo "changes")
+            git commit -m "chore: remove sold-out/ended events from listings"
+            git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" HEAD:main
+          fi
+
+      # Trigger server to re-sync database with cleaned data
+      - name: Trigger database sync
+        run: |
+          echo "Triggering server-side database sync..."
+          curl -s -w "\nHTTP %{http_code}" \
+            -A "Mozilla/5.0 (compatible; FindTorontoEvents-SoldOutCheck/1.0)" \
+            "https://findtorontoevents.ca/fc/api/events_sync.php" \
+            --max-time 120 || echo "sync trigger failed (non-fatal)"
+
+      - name: Restore workspace for checkout post
+        if: always()
+        run: |
+          git checkout --detach ${{ github.sha }}
+          git reset --hard ${{ github.sha }}

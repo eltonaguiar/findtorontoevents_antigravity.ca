@@ -156,5 +156,21 @@ if ($user_id === 0) {
 }
 
 echo json_encode(array('status' => 'success'));
+
+// Log the save operation
+require_once dirname(__FILE__) . '/log_action.php';
+$user_email = null;
+if (function_exists('get_session_user')) {
+    $session_user = get_session_user();
+    if ($session_user) {
+        $user_email = isset($session_user['email']) ? $session_user['email'] : null;
+    }
+}
+
+log_success('save_creators', 'save_creators.php',
+    "Saved " . count($creators) . " creators for user $user_id",
+    json_encode(['user_id' => $user_id, 'creator_count' => count($creators), 'previous_count' => $current_count]),
+    $user_id, $user_email);
+
 $conn->close();
 ?>

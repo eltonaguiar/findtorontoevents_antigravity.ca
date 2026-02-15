@@ -245,6 +245,55 @@ def get_streamers_from_guest_list() -> List[Dict[str, Any]]:
         log_message(f"Fallback error: {str(e)}, using default list")
         return DEFAULT_STREAMERS
 
+def verify_api_endpoints():
+    """Verify all required API endpoints are accessible before starting."""
+    log_message("=" * 60)
+    log_message("Verifying API endpoints...")
+    
+    endpoints = [
+        (f"{API_BASE}/api/get_all_streamers_to_check.php?limit=1", "GET", "Get Streamers"),
+        (f"{API_BASE}/api/update_streamer_last_seen.php", "POST", "Update Last Seen"),
+    ]
+    
+    all_ok = True
+    for url, method, name in endpoints:
+        try:
+            if method == "GET":
+                result = _http_get(url, timeout=10)
+                if result["status"] == 200:
+                    log_message(f"  ✅ {name}: OK")
+                else:
+                    log_message(f"  ❌ {name}: HTTP {result['status']}")
+                    all_ok = False
+            else:
+                # For POST, just check if endpoint exists (will get 400 for missing body)
+                result = _http_post_json(url, {"test": "data"}, timeout=10)
+                # 400 is expected (missing required fields), 404 means endpoint not found
+                if result["status"] == 400:
+                    log_message(f"  ✅ {name}: OK (endpoint exists)")
+                elif result["status"] == 403:
+                    log_message(f"  ❌ {name}: FORBIDDEN - Check ModSecurity/auth")
+                    all_ok = False
+                elif result["status"] == 404:
+                    log_message(f"  ❌ {name}: NOT FOUND - Check URL")
+                    all_ok = False
+                else:
+                    log_message(f"  ⚠️ {name}: HTTP {result['status']}")
+        except urllib.error.HTTPError as e:
+            if e.code == 400:
+                log_message(f"  ✅ {name}: OK (endpoint exists)")
+            elif e.code == 403:
+                log_message(f"  ❌ {name}: FORBIDDEN - Check ModSecurity/auth")
+                all_ok = False
+            else:
+                log_message(f"  ❌ {name}: HTTP {e.code}")
+                all_ok = False
+        except Exception as e:
+            log_message(f"  ❌ {name}: FAILED - {str(e)}")
+            all_ok = False
+    
+    return all_ok
+
 def main():
     log_file = open("streamer_check_log.txt", "w")
     
@@ -252,6 +301,14 @@ def main():
     log_message("Starting streamer status check", log_file)
     log_message(f"API Base: {API_BASE}", log_file)
     log_message(f"Checker: {CHECKER_EMAIL}", log_file)
+    log_message("=" * 60, log_file)
+    
+    # Verify API endpoints first
+    api_ok = verify_api_endpoints()
+    if not api_ok:
+        log_message("WARNING: Some API endpoints failed verification", log_file)
+        log_message("Check server logs for ModSecurity blocks or authentication issues", log_file)
+    
     log_message("=" * 60, log_file)
     
     # Get streamers to check

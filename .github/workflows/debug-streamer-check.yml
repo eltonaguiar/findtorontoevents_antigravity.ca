@@ -1,0 +1,110 @@
+name: Debug Streamer Check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Test API Connectivity
+        run: |
+          echo "=== Testing API Endpoints ==="
+          
+          # Test 1: Check if base URL is reachable
+          echo "Test 1: Base URL reachability"
+          curl -sfI --max-time 30 \
+            "https://findtorontoevents.ca/fc/" \
+            -H "User-Agent: GitHub-Actions-Diagnostic/1.0" || echo "BASE_URL_FAILED"
+          
+          # Test 2: Check if API endpoints exist
+          echo ""
+          echo "Test 2: API endpoint existence"
+          curl -sf --max-time 30 \
+            "https://findtorontoevents.ca/fc/api/get_all_streamers_to_check.php?limit=1" \
+            -H "User-Agent: GitHub-Actions-Diagnostic/1.0" -w "\nHTTP_CODE: %{http_code}\n" | tail -20
+          
+          # Test 3: Check public endpoint
+          echo ""
+          echo "Test 3: Public endpoint"
+          curl -sf --max-time 30 \
+            "https://findtorontoevents.ca/fc/api/get_streamer_last_seen_public.php?limit=1" \
+            -H "User-Agent: GitHub-Actions-Diagnostic/1.0" -w "\nHTTP_CODE: %{http_code}\n" | tail -20
+      
+      - name: Test POST to update endpoint
+        run: |
+          echo "=== Testing POST to update_streamer_last_seen.php ==="
+          
+          # Test POST with minimal data
+          RESP=$(curl -sf --max-time 30 -X POST \
+            "https://findtorontoevents.ca/fc/api/update_streamer_last_seen.php" \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: GitHub-Actions-Diagnostic/1.0" \
+            -d '{
+              "creator_id": "github_actions_test",
+              "creator_name": "GitHub Actions Test",
+              "platform": "test",
+              "username": "test_user",
+              "is_live": false,
+              "checked_by": "github-actions@findtorontoevents.ca"
+            }' -w "\nHTTP_CODE: %{http_code}\n" 2>&1)
+          
+          echo "Response:"
+          echo "$RESP"
+          
+          # Extract HTTP code
+          HTTP_CODE=$(echo "$RESP" | grep "HTTP_CODE:" | cut -d: -f2 | tr -d ' ')
+          echo ""
+          echo "HTTP Status: $HTTP_CODE"
+          
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ POST endpoint is accessible"
+          elif [ "$HTTP_CODE" = "403" ]; then
+            echo "❌ POST blocked - likely ModSecurity or auth issue"
+          elif [ "$HTTP_CODE" = "404" ]; then
+            echo "❌ Endpoint not found - check URL"
+          else
+            echo "⚠️ Unexpected status: $HTTP_CODE"
+          fi
+      
+      - name: Check table status
+        run: |
+          echo "=== Checking Table Status via API ==="
+          
+          # Try to get row counts via public endpoints
+          echo "Checking streamer_last_seen..."
+          curl -sf --max-time 30 \
+            "https://findtorontoevents.ca/fc/api/get_streamer_last_seen_public.php?limit=1000" \
+            -H "User-Agent: GitHub-Actions-Diagnostic/1.0" | \
+            python3 -c "
+import json,sys
+try:
+    d=json.load(sys.stdin)
+    streamers = d.get('streamers',[])
+    print(f'Total streamers in response: {len(streamers)}')
+    live_count = sum(1 for s in streamers if s.get('is_live'))
+    print(f'Currently live: {live_count}')
+    if streamers:
+        print(f'Sample: {streamers[0].get(\"creator_name\")} ({streamers[0].get(\"platform\")})')
+except Exception as e:
+    print(f'Error parsing: {e}')
+" || echo "Failed to query streamer status"
+      
+      - name: Summary
+        if: always()
+        run: |
+          echo "=== Diagnostic Summary ==="
+          echo "If POST is returning 403, the issue is likely:"
+          echo "1. ModSecurity blocking GitHub Actions IP ranges"
+          echo "2. Missing authentication token"
+          echo "3. CORS restrictions"
+          echo ""
+          echo "Next steps:"
+          echo "1. Check server logs for blocked requests from GitHub Actions"
+          echo "2. Whitelist GitHub Actions IP ranges in ModSecurity"
+          echo "3. Or implement API key authentication"
