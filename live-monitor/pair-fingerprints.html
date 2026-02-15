@@ -61,7 +61,30 @@ tr:hover { background: var(--surface2); }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 .spark { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
 .spark.urgent { background: var(--red); } .spark.alert { background: var(--orange); } .spark.watch { background: var(--yellow); }
-@media (max-width: 768px) { .container { padding: 12px; } .header h1 { font-size: 1.4rem; } .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+.status-bar { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 20px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; font-size: 0.8rem; }
+.status-item { display: flex; align-items: center; gap: 6px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.status-dot.live { background: var(--green); animation: pulse 2s infinite; }
+.status-dot.stale { background: var(--yellow); }
+.status-dot.never { background: var(--red); }
+.status-label { color: var(--muted); }
+.status-value { color: var(--text); font-weight: 600; }
+.status-value.stale { color: var(--yellow); }
+.status-value.never { color: var(--red); }
+.refresh-btn { position: relative; }
+.refresh-btn.spinning .refresh-icon { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.refresh-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+.tooltip-wrap { position: relative; display: inline-block; }
+.tooltip-wrap .tooltip-text { visibility: hidden; background: #222; color: #ddd; font-size: 0.72rem; text-align: center; padding: 6px 10px; border-radius: 6px; position: absolute; z-index: 10; bottom: 125%; left: 50%; transform: translateX(-50%); white-space: nowrap; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+.tooltip-wrap:hover .tooltip-text { visibility: visible; opacity: 1; }
+.empty-state { text-align: center; padding: 40px 20px; }
+.empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+.empty-state h4 { color: var(--text); font-size: 1rem; margin-bottom: 8px; }
+.empty-state p { color: var(--muted); font-size: 0.85rem; max-width: 500px; margin: 0 auto 8px; }
+.empty-state .empty-hint { background: var(--surface2); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 8px 8px 0; text-align: left; display: inline-block; margin-top: 12px; font-size: 0.8rem; color: var(--muted); }
+.empty-state .empty-hint strong { color: var(--text); }
+@media (max-width: 768px) { .container { padding: 12px; } .header h1 { font-size: 1.4rem; } .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } .status-bar { flex-direction: column; align-items: flex-start; gap: 8px; } }
 </style>
 </head>
 <body>
@@ -70,6 +93,33 @@ tr:hover { background: var(--surface2); }
         <h1>Pair Fingerprints & Spike Scanner</h1>
         <p class="subtitle">Per-asset behavioral intelligence — the strategy commercial alert services use</p>
         <p style="font-size:0.7rem;color:var(--muted);margin-top:4px">CURSORCODE_Feb152026</p>
+    </div>
+
+    <!-- STATUS BAR — Last Scan Times + System Health -->
+    <div class="status-bar" id="status-bar">
+        <div class="status-item">
+            <span class="status-dot never" id="dot-spike"></span>
+            <span class="status-label">Spike Scanner:</span>
+            <span class="status-value never" id="val-spike-scan">Loading...</span>
+        </div>
+        <div class="status-item">
+            <span class="status-dot never" id="dot-fp"></span>
+            <span class="status-label">Fingerprints Built:</span>
+            <span class="status-value never" id="val-fp-build">Loading...</span>
+        </div>
+        <div class="status-item">
+            <span class="status-dot never" id="dot-pattern"></span>
+            <span class="status-label">Pattern Scan:</span>
+            <span class="status-value never" id="val-pattern-scan">Loading...</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Fingerprints:</span>
+            <span class="status-value cyan" id="val-fp-count">—</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Baselines:</span>
+            <span class="status-value cyan" id="val-baselines">—</span>
+        </div>
     </div>
 
     <div class="tabs">
@@ -97,7 +147,10 @@ tr:hover { background: var(--surface2); }
                 <option value="ALERT">Alert</option>
                 <option value="WATCH">Watch</option>
             </select>
-            <button class="refresh-btn" onclick="loadSpikes()">Refresh</button>
+            <div class="tooltip-wrap">
+                <button class="refresh-btn" id="spike-refresh-btn" onclick="refreshSpikesUI()"><span class="refresh-icon" style="display:inline-block">&#x21bb;</span> Refresh Data</button>
+                <span class="tooltip-text">Re-fetches the latest spike data from the database.<br>Scans run automatically every 30 min via GitHub Actions.</span>
+            </div>
         </div>
         <div class="card"><table id="spike-table"><thead><tr>
             <th>Severity</th><th>Pair</th><th>Asset</th><th>Type</th><th>Change</th><th>Vol Ratio</th>
@@ -195,6 +248,91 @@ function fetchJSON(url, cb) {
     x.send();
 }
 
+// ── STATUS BAR ──────────────────────────────────────────────
+function timeAgo(dateStr) {
+    if (!dateStr || dateStr === 'never') return null;
+    var d;
+    if (dateStr.indexOf('T') === -1 && dateStr.indexOf('Z') === -1) {
+        d = new Date(dateStr.replace(' ', 'T') + 'Z');
+    } else {
+        d = new Date(dateStr);
+    }
+    if (isNaN(d.getTime())) return null;
+    var now = new Date();
+    var diffMs = now - d;
+    var diffMin = Math.floor(diffMs / 60000);
+    var diffHr = Math.floor(diffMin / 60);
+    var diffDay = Math.floor(diffHr / 24);
+    if (diffMin < 1) return 'just now';
+    if (diffMin < 60) return diffMin + 'm ago';
+    if (diffHr < 24) return diffHr + 'h ' + (diffMin % 60) + 'm ago';
+    return diffDay + 'd ' + (diffHr % 24) + 'h ago';
+}
+function statusClass(dateStr) {
+    if (!dateStr || dateStr === 'never') return 'never';
+    var d;
+    if (dateStr.indexOf('T') === -1 && dateStr.indexOf('Z') === -1) {
+        d = new Date(dateStr.replace(' ', 'T') + 'Z');
+    } else {
+        d = new Date(dateStr);
+    }
+    if (isNaN(d.getTime())) return 'never';
+    var diffMin = (new Date() - d) / 60000;
+    if (diffMin < 60) return 'live';
+    if (diffMin < 360) return 'stale';
+    return 'never';
+}
+function updateStatusDot(dotId, valId, dateStr, label) {
+    var dot = document.getElementById(dotId);
+    var val = document.getElementById(valId);
+    if (!dot || !val) return;
+    var cls = statusClass(dateStr);
+    dot.className = 'status-dot ' + cls;
+    val.className = 'status-value ' + cls;
+    if (!dateStr || dateStr === 'never') {
+        val.textContent = 'Never — awaiting first scan';
+    } else {
+        var ago = timeAgo(dateStr);
+        var d;
+        if (dateStr.indexOf('T') === -1 && dateStr.indexOf('Z') === -1) {
+            d = new Date(dateStr.replace(' ', 'T') + 'Z');
+        } else {
+            d = new Date(dateStr);
+        }
+        val.textContent = (ago || '') + ' (' + d.toLocaleString() + ')';
+    }
+}
+function loadStatusBar() {
+    fetchJSON(SS_BASE + '?action=status', function(d) {
+        if (!d.ok) return;
+        updateStatusDot('dot-spike', 'val-spike-scan', d.last_scan, 'Spike Scanner');
+        var bEl = document.getElementById('val-baselines');
+        if (bEl) bEl.textContent = (d.baselines || 0) + ' pairs';
+    });
+    fetchJSON(PF_BASE + '?action=status', function(d) {
+        if (!d.ok) return;
+        updateStatusDot('dot-fp', 'val-fp-build', d.last_build, 'Fingerprints');
+        updateStatusDot('dot-pattern', 'val-pattern-scan', d.last_scan, 'Pattern Scan');
+        var cEl = document.getElementById('val-fp-count');
+        if (cEl) cEl.textContent = (d.fingerprints || 0) + ' pairs';
+    });
+}
+
+// ── REFRESH BUTTON FEEDBACK ─────────────────────────────────
+function refreshSpikesUI() {
+    var btn = document.getElementById('spike-refresh-btn');
+    btn.classList.add('spinning');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="refresh-icon" style="display:inline-block">&#x21bb;</span> Fetching...';
+    loadSpikes();
+    loadStatusBar();
+    setTimeout(function() {
+        btn.classList.remove('spinning');
+        btn.disabled = false;
+        btn.innerHTML = '<span class="refresh-icon" style="display:inline-block">&#x21bb;</span> Refresh Data';
+    }, 1500);
+}
+
 function sevBadge(s) {
     var cls = (s==='URGENT'?'urgent':(s==='ALERT'?'alert':'watch'));
     return '<span class="spark '+cls+'"></span><span class="badge badge-'+cls+'">'+s+'</span>';
@@ -245,7 +383,23 @@ function loadSpikes() {
                 '<td>'+(s.fingerprint_behavior?behaviorBadge(s.fingerprint_behavior):'-')+'</td>'+
                 '<td style="font-size:0.75rem;color:var(--muted)">'+fmtTime(s.created_at)+'</td></tr>';
         });
-        document.getElementById('spike-body').innerHTML = html || '<tr><td colspan="12" style="text-align:center;color:var(--muted)">No active spikes. Run a scan first.</td></tr>';
+        if (!html) {
+            var emptyHtml = '<tr><td colspan="12">' +
+                '<div class="empty-state">' +
+                '<div class="empty-icon">&#x1F50D;</div>' +
+                '<h4>No Active Spikes Detected</h4>' +
+                '<p>The spike scanner monitors 100+ crypto pairs, 30+ stocks, and 17 forex pairs for unusual volume and price movements.</p>' +
+                '<p>Spikes are ephemeral &mdash; they appear when unusual activity is detected and expire after a few hours.</p>' +
+                '<div class="empty-hint">' +
+                '<strong>Why might there be none right now?</strong><br>' +
+                '&bull; <strong>Weekend / off-hours:</strong> Stock & forex markets are closed on weekends. Crypto is 24/7 but often quieter on Sundays.<br>' +
+                '&bull; <strong>Low volatility:</strong> All markets are calm right now &mdash; no unusual moves detected.<br>' +
+                '&bull; <strong>First run:</strong> Baselines need 2-3 scan cycles to calibrate before spikes can be reliably detected.<br>' +
+                '&bull; <strong>Scan schedule:</strong> Spikes are scanned every 30 minutes via GitHub Actions.' +
+                '</div></div></td></tr>';
+            html = emptyHtml;
+        }
+        document.getElementById('spike-body').innerHTML = html;
     });
 }
 
@@ -279,7 +433,11 @@ function loadFingerprints() {
                 '<td>'+fmt(p.optimal_sl_pct)+'%</td>'+
                 '<td>'+(p.best_session||'-')+'</td></tr>';
         });
-        document.getElementById('fp-body').innerHTML = html || '<tr><td colspan="11" style="text-align:center;color:var(--muted)">No fingerprints yet. Run build first.</td></tr>';
+        if (!html) {
+            html = '<tr><td colspan="11"><div class="empty-state"><div class="empty-icon">&#x1F9EC;</div><h4>No Fingerprints Yet</h4>' +
+                '<p>Fingerprints are built daily at midnight UTC from historical signal data. Each pair needs resolved signals before a behavioral profile can be computed.</p></div></td></tr>';
+        }
+        document.getElementById('fp-body').innerHTML = html;
     });
 }
 
@@ -308,7 +466,12 @@ function loadAlerts() {
                 '<td class="'+pnlClass(a.pnl_pct)+'">'+fmt(a.pnl_pct)+'%</td>'+
                 '<td style="font-size:0.75rem;color:var(--muted)">'+fmtTime(a.created_at)+'</td></tr>';
         });
-        document.getElementById('alert-body').innerHTML = html || '<tr><td colspan="11" style="text-align:center;color:var(--muted)">No active pattern alerts.</td></tr>';
+        if (!html) {
+            html = '<tr><td colspan="11"><div class="empty-state"><div class="empty-icon">&#x1F514;</div><h4>No Active Pattern Alerts</h4>' +
+                '<p>Pattern alerts fire when a pair enters its historically profitable behavioral pattern (e.g. a mean-reverting pair reaches an extreme, or a trending pair breaks out on volume).</p>' +
+                '<p>The pattern scanner runs every 30 minutes. Alerts will appear here when conditions match.</p></div></td></tr>';
+        }
+        document.getElementById('alert-body').innerHTML = html;
     });
 }
 
@@ -443,7 +606,10 @@ function loadPairDetail() {
 }
 
 // Initial load
+loadStatusBar();
 loadSpikes();
+// Auto-refresh status bar every 60 seconds
+setInterval(loadStatusBar, 60000);
 </script>
 </body>
 </html>
