@@ -1,6 +1,5 @@
-<!-- CACHE:1770272741.9578552 -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" suppressHydrationWarning>
 
 <head>
   <meta charset="utf-8" />
@@ -116,6 +115,63 @@
     .nav-glow-invhub > summary { animation: navGlow 2.5s ease-in-out infinite; border-radius: 0.75rem; }
     .nav-glow-favcreators { animation: favCreatorsGlow 2.5s ease-in-out infinite; border-color: rgba(236,72,153,0.3) !important; }
     .otherstuff-glow { animation: otherStuffGlow 3s ease-in-out infinite; border-radius: 1rem; }
+
+    /* ── Thumbnail View Toggle (bottom-right, above bell/AI icons) ── */
+    #fte-thumb-toggle {
+      position: fixed; bottom: 14rem; right: 1.25rem; z-index: 250;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 44px; height: 44px;
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 50%;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      cursor: pointer; transition: all 0.3s ease;
+      padding: 0; margin: 0;
+      font-family: inherit; color: #fff; line-height: 1;
+    }
+    #fte-thumb-toggle:hover { background: rgba(0,0,0,0.7); border-color: rgba(147,51,234,0.5); transform: scale(1.1); }
+    #fte-thumb-toggle.active { background: rgba(147,51,234,0.3); border-color: rgba(147,51,234,0.6); box-shadow: 0 0 16px rgba(147,51,234,0.3); }
+    #fte-thumb-toggle .toggle-icon { font-size: 1.2rem; pointer-events: none; }
+    #fte-thumb-toggle .toggle-dot {
+      position: absolute; top: 3px; right: 3px;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: transparent; transition: background 0.3s;
+    }
+    #fte-thumb-toggle.active .toggle-dot { background: #a855f7; box-shadow: 0 0 6px rgba(168,85,247,0.8); }
+
+    /* ── Thumbnail injection into event cards ── */
+    .fte-thumb-img {
+      width: 100%; height: 140px; object-fit: cover; border-radius: 0.5rem 0.5rem 0 0;
+      display: block; background: rgba(255,255,255,0.05);
+    }
+    .fte-thumb-wrap {
+      position: relative; overflow: hidden;
+      border-radius: 0.5rem 0.5rem 0 0;
+      background: linear-gradient(135deg, rgba(147,51,234,0.1) 0%, rgba(0,0,0,0.2) 100%);
+      min-height: 140px;
+    }
+    .fte-thumb-wrap .fte-thumb-placeholder {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; height: 140px;
+      font-size: 3rem; opacity: 0.3;
+      background: linear-gradient(135deg, rgba(147,51,234,0.15) 0%, rgba(0,0,0,0.1) 100%);
+    }
+    /* Hide thumbnails by default — shown when .fte-thumbnails-on is on <html> */
+    .fte-thumb-wrap { display: none; }
+    html.fte-thumbnails-on .fte-thumb-wrap { display: block; }
+
+    @media (max-width: 640px) {
+      #fte-thumb-toggle { width: 40px; height: 40px; bottom: 13.5rem; right: 1rem; }
+      .fte-thumb-img, .fte-thumb-wrap .fte-thumb-placeholder { height: 120px; }
+    }
+
+    /* ── GPU compositing hint for event cards ── */
+    .glass-panel:not(.animate-pulse):not(.event-card-hidden) {
+      transform: translateZ(0);
+    }
+    /* ── Hide the ENTIRE wrapper (h-[400px] parent) when its card is filtered out ── */
+    .event-wrapper-hidden {
+      display: none !important;
+    }
   </style>
   <link as="font" crossorigin="" href="/next/_next/static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2" rel="preload"
     type="font/woff2" />
@@ -701,7 +757,9 @@
 
 </head>
 
-<body class="inter_5972bc34-module__OU16Qa__className">
+<body class="inter_5972bc34-module__OU16Qa__className" suppressHydrationWarning>
+<!-- Thumbnail View Toggle: inline HTML for instant render (JS hooks into it) -->
+<button id="fte-thumb-toggle" type="button" title="Show event thumbnails" style="position:fixed;bottom:14rem;right:1.25rem;z-index:250;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:rgba(0,0,0,0.5);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.12);border-radius:50%;box-shadow:0 4px 20px rgba(0,0,0,0.4);cursor:pointer;padding:0;margin:0;color:#fff;line-height:1;transition:all 0.3s ease;"><span class="toggle-icon">🖼️</span><span class="toggle-dot" style="position:absolute;top:3px;right:3px;width:8px;height:8px;border-radius:50%;background:transparent;transition:background 0.3s;"></span></button>
   <div hidden=""><!--$--><!--/$--></div>
   <div class="app-bg-wrapper bg-nebula"></div>
   <div class="fixed-ui-layer relative z-[200]"><button
@@ -895,7 +953,7 @@
         </div>
       </div>
     </div>
-    <div class="fixed top-6 right-6 z-[200] flex gap-3 pointer-events-none"><button
+    <div id="top-right-buttons" class="fixed top-6 right-6 z-[200] flex gap-3 items-center pointer-events-none"><button
         class="pointer-events-auto px-4 py-3 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl hover:bg-[var(--pk-500)] text-white transition-all group overflow-hidden flex items-center gap-2"
         title="System Configuration (Top Right)">
         <div class="flex items-center gap-2 px-1"><span
@@ -2593,164 +2651,7 @@
 
 <!-- Multi-Day Filter and Near Me Feature -->
 <style id="event-filter-styles">
-  /* Filter Controls Container */
-  .custom-filter-controls {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 300;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    align-items: flex-end;
-  }
-  
-  /* Filter Toggle Button */
-  .filter-toggle-btn {
-    background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    border-radius: 50px;
-    padding: 12px 20px;
-    color: white;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-  }
-  .filter-toggle-btn:hover {
-    background: linear-gradient(135deg, #2d2d44 0%, #3d3d5c 100%);
-    border-color: rgba(99, 102, 241, 0.6);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(99, 102, 241, 0.3);
-  }
-  .filter-toggle-btn.active {
-    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-    border-color: #818cf8;
-  }
-  
-  /* Near Me Panel */
-  .near-me-panel {
-    background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    border-radius: 16px;
-    padding: 16px;
-    color: white;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(20px);
-    min-width: 280px;
-    display: none;
-  }
-  .near-me-panel.visible {
-    display: block;
-    animation: slideIn 0.3s ease;
-  }
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
-  .near-me-title {
-    font-size: 14px;
-    font-weight: 700;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .near-me-input-group {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  .near-me-input {
-    flex: 1;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px;
-    padding: 10px 12px;
-    color: white;
-    font-size: 14px;
-    outline: none;
-  }
-  .near-me-input:focus {
-    border-color: #6366f1;
-  }
-  .near-me-input::placeholder {
-    color: rgba(255,255,255,0.4);
-  }
-  
-  .near-me-btn {
-    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-    border: none;
-    border-radius: 8px;
-    padding: 10px 16px;
-    color: white;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-  }
-  .near-me-btn:hover {
-    transform: scale(1.02);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-  }
-  .near-me-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-  }
-  
-  .near-me-location-btn {
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 8px;
-    padding: 10px;
-    color: white;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .near-me-location-btn:hover {
-    background: rgba(255,255,255,0.2);
-  }
-  
-  .near-me-status {
-    font-size: 12px;
-    color: rgba(255,255,255,0.6);
-    margin-top: 8px;
-  }
-  .near-me-status.active {
-    color: #22c55e;
-  }
-  .near-me-status.error {
-    color: #ef4444;
-  }
-  
-  .distance-select {
-    background: rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px;
-    padding: 10px 12px;
-    color: white;
-    font-size: 14px;
-    outline: none;
-    width: 100%;
-    margin-top: 8px;
-    cursor: pointer;
-  }
-  .distance-select option {
-    background: #1e1e2e;
-    color: white;
-  }
+  /* Floating filter buttons removed — filters live in the top bar only */
   
   /* Multi-day filter indicator */
   .multi-day-indicator {
@@ -2793,9 +2694,16 @@
   console.log('[FILTERS] Initializing multi-day filter and near me features');
   
   // State
-  let showMultiDayEvents = false;
+  let showMultiDayEvents = true; // Show all events by default; user can toggle off
+  let showEventRouterEvents = false; // Hide aggregator-only events by default
   let userLocation = null;
   let maxDistance = 10; // km
+
+  // Load event router preference from localStorage
+  try {
+    var _erPref = localStorage.getItem('fte_show_event_router');
+    if (_erPref === 'true') showEventRouterEvents = true;
+  } catch(e) {}
   let filterActive = false;
   
   // Toronto postal code to coordinate mapping (approximate centers)
@@ -2908,159 +2816,36 @@
     return null;
   }
   
-  // Check if event is multi-day
+  // Check if event is truly multi-day (spans 18+ hours, not just overnight)
   function isMultiDayEvent(event) {
-    // Check is_multi_day flag
+    // Check explicit flag
     if (event.is_multi_day || event.isMultiDay) return true;
     
-    // Check if end_date exists and is different from start date
+    // Check duration — only flag as multi-day if event spans 18+ hours
     if (event.end_date || event.endDate) {
-      const start = new Date(event.date).toDateString();
-      const end = new Date(event.end_date || event.endDate).toDateString();
-      return start !== end;
+      const start = new Date(event.date);
+      const end = new Date(event.end_date || event.endDate);
+      const durationHours = (end - start) / (1000 * 60 * 60);
+      // Overnight events (e.g. 8PM-2AM = 6 hours) are NOT multi-day
+      // Festivals, exhibitions (24+ hours) ARE multi-day
+      if (durationHours >= 18) return true;
     }
     
-    // Check title for multi-day indicators
+    // Check title for multi-day indicators (conservative list)
     const title = (event.title || '').toLowerCase();
-    const multiDayKeywords = ['festival', 'week', 'weekend', 'days', 'exhibition', 'exhibit', 'runs until', 'through'];
-    return multiDayKeywords.some(keyword => title.includes(keyword));
+    const multiDayKeywords = ['festival', 'exhibition', 'exhibit', 'runs until', 'conference'];
+    return multiDayKeywords.some(function(keyword) { return title.includes(keyword); });
   }
   
-  // Create filter controls UI
+  // Floating filter controls removed — "Near Me" and "Multi-Day" live in the top filter bar only.
+  // This function is kept as a no-op so init() doesn't break.
   function createFilterControls() {
-    const container = document.createElement('div');
-    container.className = 'custom-filter-controls';
-    container.id = 'custom-filter-controls';
-    
-    // Near Me Panel
-    const nearMePanel = document.createElement('div');
-    nearMePanel.className = 'near-me-panel';
-    nearMePanel.innerHTML = `
-      <div class="near-me-title">📍 Find Events Near Me</div>
-      <div class="near-me-input-group">
-        <input type="text" class="near-me-input" id="postal-code-input" placeholder="Enter postal code (e.g., M5V)" />
-        <button class="near-me-location-btn" id="use-location-btn" title="Use my current location">📍</button>
-      </div>
-      <button class="near-me-btn" id="apply-location-btn" style="width: 100%">Apply Location Filter</button>
-      <select class="distance-select" id="distance-select">
-        <option value="2">Within 2 km</option>
-        <option value="5">Within 5 km</option>
-        <option value="10" selected>Within 10 km</option>
-        <option value="25">Within 25 km</option>
-        <option value="50">Within 50 km</option>
-        <option value="0">Any distance</option>
-      </select>
-      <div class="near-me-status" id="near-me-status"></div>
-    `;
-    
-    // Near Me Toggle Button
-    const nearMeBtn = document.createElement('button');
-    nearMeBtn.className = 'filter-toggle-btn';
-    nearMeBtn.id = 'near-me-toggle';
-    nearMeBtn.innerHTML = '📍 Near Me';
-    
-    // Multi-Day Toggle Button
-    const multiDayBtn = document.createElement('button');
-    multiDayBtn.className = 'filter-toggle-btn';
-    multiDayBtn.id = 'multiday-toggle';
-    multiDayBtn.innerHTML = '📅 Show Multi-Day Events';
-    
-    container.appendChild(nearMePanel);
-    container.appendChild(nearMeBtn);
-    container.appendChild(multiDayBtn);
-    
-    document.body.appendChild(container);
-    
-    // Event listeners
-    nearMeBtn.addEventListener('click', function() {
-      nearMePanel.classList.toggle('visible');
-    });
-    
-    multiDayBtn.addEventListener('click', function() {
-      showMultiDayEvents = !showMultiDayEvents;
-      multiDayBtn.classList.toggle('active', showMultiDayEvents);
-      multiDayBtn.innerHTML = showMultiDayEvents ? '📅 Hide Multi-Day Events' : '📅 Show Multi-Day Events';
-      applyFilters();
-    });
-    
-    document.getElementById('use-location-btn').addEventListener('click', function() {
-      const statusEl = document.getElementById('near-me-status');
-      statusEl.textContent = 'Getting your location...';
-      statusEl.className = 'near-me-status';
-      
-      if (!navigator.geolocation) {
-        statusEl.textContent = 'Geolocation not supported by your browser';
-        statusEl.className = 'near-me-status error';
-        return;
-      }
-      
-      navigator.geolocation.getCurrentPosition(
-        function(position) {
-          userLocation = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-          statusEl.textContent = '✓ Location detected';
-          statusEl.className = 'near-me-status active';
-          document.getElementById('postal-code-input').value = '';
-          console.log('[FILTERS] User location:', userLocation);
-        },
-        function(error) {
-          statusEl.textContent = 'Could not get location: ' + error.message;
-          statusEl.className = 'near-me-status error';
-        },
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
-    });
-    
-    document.getElementById('apply-location-btn').addEventListener('click', function() {
-      const postalInput = document.getElementById('postal-code-input').value.trim();
-      const statusEl = document.getElementById('near-me-status');
-      
-      if (postalInput) {
-        const coords = parsePostalCode(postalInput);
-        if (coords) {
-          userLocation = coords;
-          statusEl.textContent = '✓ Using ' + (coords.name || 'postal code area');
-          statusEl.className = 'near-me-status active';
-        } else {
-          statusEl.textContent = 'Invalid postal code. Try M5V, L4K, etc.';
-          statusEl.className = 'near-me-status error';
-          return;
-        }
-      }
-      
-      if (!userLocation) {
-        statusEl.textContent = 'Please enter a postal code or use your location';
-        statusEl.className = 'near-me-status error';
-        return;
-      }
-      
-      maxDistance = parseInt(document.getElementById('distance-select').value) || 0;
-      filterActive = true;
-      nearMeBtn.classList.add('active');
-      nearMePanel.classList.remove('visible');
-      applyFilters();
-    });
-    
-    document.getElementById('distance-select').addEventListener('change', function() {
-      maxDistance = parseInt(this.value) || 0;
-      if (filterActive && userLocation) {
-        applyFilters();
-      }
-    });
-    
-    // Close panel when clicking outside
-    document.addEventListener('click', function(e) {
-      if (!container.contains(e.target)) {
-        nearMePanel.classList.remove('visible');
-      }
-    });
+    // No floating buttons to create
   }
   
   // Apply all filters to event cards
   function applyFilters() {
-    console.log('[FILTERS] Applying filters - showMultiDay:', showMultiDayEvents, 'location:', userLocation, 'maxDistance:', maxDistance);
+    console.log('[FILTERS] Applying filters - showMultiDay:', showMultiDayEvents, 'showEventRouter:', showEventRouterEvents, 'location:', userLocation, 'maxDistance:', maxDistance);
     
     const cards = document.querySelectorAll('[class*="glass-panel"]:not(.animate-pulse), [class*="event-card"], [class*="EventCard"]');
     let hiddenCount = 0;
@@ -3073,7 +2858,9 @@
       
       if (!titleEl) return;
       
-      const title = titleEl.textContent || '';
+      // Strip injected indicators (multi-day badge, distance) before matching
+      var rawTitle = titleEl.textContent || '';
+      const title = rawTitle.replace(/📅\s*Multi-Day/g, '').replace(/📍\s*[\d.]+\s*km/g, '').trim();
       const location = locationEl ? locationEl.textContent : '';
       
       // Try to find event in raw events data
@@ -3089,9 +2876,20 @@
       }
       
       let shouldShow = true;
-      
+
+      // ── Past-event filter: hide events whose START date is before today ──
+      // A Feb 14 event should not show on Feb 15, even if endDate bleeds into the next day
+      if (eventData) {
+        var eventStart = new Date(eventData.date);
+        var now = new Date();
+        var todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        if (eventStart < todayStart) {
+          shouldShow = false;
+        }
+      }
+
       // Multi-day filter
-      if (!showMultiDayEvents) {
+      if (shouldShow && !showMultiDayEvents) {
         const isMultiDay = eventData ? isMultiDayEvent(eventData) : false;
         if (isMultiDay) {
           shouldShow = false;
@@ -3103,6 +2901,14 @@
             indicator.innerHTML = '📅 Multi-Day';
             titleEl.appendChild(indicator);
           }
+        }
+      }
+
+      // Event router filter: hide aggregator-only events (AllEvents.in with no original source)
+      var _showRouter = (typeof window.showEventRouterEvents !== 'undefined') ? window.showEventRouterEvents : showEventRouterEvents;
+      if (shouldShow && !_showRouter && eventData) {
+        if (eventData.isEventRouter === true) {
+          shouldShow = false;
         }
       }
       
@@ -3132,12 +2938,25 @@
         }
       }
       
-      // Apply visibility
+      // Apply visibility — also hide/show the PARENT wrapper (h-[400px] div)
+      // Walk up the DOM to find the actual h-[400px] wrapper (may not be immediate parent)
+      var wrapper = card.parentElement;
+      var maxUp = 3;
+      while (wrapper && maxUp > 0) {
+        if (wrapper.className && wrapper.className.indexOf('h-[400px]') >= 0) break;
+        wrapper = wrapper.parentElement;
+        maxUp--;
+      }
+      if (!wrapper || (wrapper.className && wrapper.className.indexOf('h-[400px]') < 0)) {
+        wrapper = card.parentElement; // fallback to immediate parent
+      }
       if (shouldShow) {
         card.classList.remove('event-card-hidden');
+        if (wrapper) wrapper.classList.remove('event-wrapper-hidden');
         shownCount++;
       } else {
         card.classList.add('event-card-hidden');
+        if (wrapper) wrapper.classList.add('event-wrapper-hidden');
         hiddenCount++;
       }
     });
@@ -3145,6 +2964,10 @@
     console.log('[FILTERS] Shown:', shownCount, 'Hidden:', hiddenCount);
   }
   
+  // Expose filter state and function to global scope for theme-switcher.js
+  window.showEventRouterEvents = showEventRouterEvents;
+  window.applyFilters = applyFilters;
+
   // Initialize
   function init() {
     createFilterControls();
@@ -3172,6 +2995,98 @@
   }
   
   // Start when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+
+// Multi-Day Event Badge Injector
+(function() {
+  'use strict';
+
+  function addMultiDayBadges() {
+    // Find all event cards
+    const cards = document.querySelectorAll('article, [class*="EventCard"], [class*="card"]');
+
+    cards.forEach(function(card) {
+      // Skip if already processed
+      if (card.dataset.multiDayProcessed) return;
+      card.dataset.multiDayProcessed = 'true';
+
+      // Try to find event data
+      const eventDataEl = card.querySelector('[data-event-id]');
+      if (!eventDataEl) return;
+
+      // Try to get event data from window.eventsData or card attributes
+      let eventData = null;
+      const eventId = eventDataEl.getAttribute('data-event-id');
+
+      if (window.eventsData && eventId) {
+        eventData = window.eventsData.find(function(e) { return e.id === eventId; });
+      }
+
+      if (!eventData) return;
+
+      // Check if event is multi-day
+      const isMultiDay = eventData.isMultiDay || eventData.is_multi_day || eventData.duration_category !== 'single';
+      if (!isMultiDay && !eventData.end_date && !eventData.endDate) return;
+
+      // Find title element to append badge to
+      let titleElement = card.querySelector('h2, h3, h4, [class*="title"], [class*="Title"]');
+      if (!titleElement) return;
+
+      // Calculate duration
+      let durationText = '📅 Multi-Day';
+      if (eventData.end_date || eventData.endDate) {
+        try {
+          const startDate = new Date(eventData.date);
+          const endDate = new Date(eventData.end_date || eventData.endDate);
+          const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+          if (days > 0) {
+            durationText = '📅 ' + days + '-Day Event';
+          }
+        } catch(e) {
+          // Keep default text
+        }
+      }
+
+      // Create badge element
+      const badge = document.createElement('span');
+      badge.className = 'badge-multiday';
+      badge.textContent = durationText;
+      badge.style.cssText = 'background: rgba(139,92,246,0.2); color: #a78bfa; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px; white-space: nowrap; display: inline-block;';
+
+      // Append badge to title
+      titleElement.appendChild(badge);
+    });
+  }
+
+  // Run on load
+  function init() {
+    setTimeout(addMultiDayBadges, 2000);
+    setTimeout(addMultiDayBadges, 4000);
+    setTimeout(addMultiDayBadges, 6000);
+
+    // Re-run when new cards are added
+    const observer = new MutationObserver(function(mutations) {
+      let shouldRun = false;
+      mutations.forEach(function(mutation) {
+        if (mutation.addedNodes.length > 0) {
+          shouldRun = true;
+        }
+      });
+      if (shouldRun) {
+        clearTimeout(window._badgeTimeout);
+        window._badgeTimeout = setTimeout(addMultiDayBadges, 500);
+      }
+    });
+
+    const main = document.querySelector('main') || document.body;
+    observer.observe(main, { childList: true, subtree: true });
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
@@ -3309,13 +3224,12 @@
 <script>
 (function(){
   var fcApi = 'https://findtorontoevents.ca/fc/api';
-  var baseIslandStyle = 'position:fixed;top:1.5rem;right:calc(1.5rem + 120px);z-index:9999;display:flex !important;align-items:center;pointer-events:none;visibility:visible !important;opacity:1 !important;';
   var btnStyle = 'pointer-events:auto;display:inline-flex;align-items:center;gap:0.5rem;padding:0.75rem 1rem;background:rgba(0,0,0,0.4);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.1);border-radius:1rem;color:#fff;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);cursor:pointer;font-family:inherit;text-decoration:none;';
-  function getIslandHtml() {
+  function getButtonHtml() {
     if (window.__fc_logged_in_user__) {
-      return '<div id="signin-island" style="' + baseIslandStyle + '"><a href="https://findtorontoevents.ca/fc/" style="' + btnStyle + '"><span style="font-size:1.25rem">\uD83D\uDD12</span><span>Account</span></a></div>';
+      return '<a href="https://findtorontoevents.ca/fc/" style="' + btnStyle + '"><span style="font-size:1.25rem">\uD83D\uDD12</span><span>Account</span></a>';
     }
-    return '<div id="signin-island" style="' + baseIslandStyle + '"><button type="button" style="' + btnStyle + '"><span style="font-size:1.25rem">\uD83D\uDD12</span><span>Sign in</span></button></div>';
+    return '<button type="button" style="' + btnStyle + '"><span style="font-size:1.25rem">\uD83D\uDD12</span><span>Sign in</span></button>';
   }
   function ensureSignInIsland() {
     var existing = document.getElementById('signin-island');
@@ -3328,17 +3242,25 @@
         existing.parentNode.removeChild(existing);
       } else return;
     }
-    var wrap = document.createElement('div');
-    wrap.innerHTML = getIslandHtml();
-    var island = wrap.firstElementChild;
-    if (island) {
+    var island = document.createElement('div');
+    island.id = 'signin-island';
+    island.innerHTML = getButtonHtml();
+    /* Find the config button's flex container and insert sign-in next to it */
+    var configBtn = document.querySelector('button[title*="System Configuration"]');
+    var topBar = configBtn ? configBtn.parentElement : null;
+    if (topBar && topBar.style && /fixed/.test(window.getComputedStyle(topBar).position)) {
+      island.style.cssText = 'display:inline-flex;align-items:center;';
+      topBar.insertBefore(island, topBar.firstChild);
+    } else {
+      /* Fallback: standalone fixed positioning matching config button area */
+      island.style.cssText = 'position:fixed;top:1.5rem;right:calc(1.5rem + 120px);z-index:9999;display:flex;align-items:center;pointer-events:none;visibility:visible !important;opacity:1 !important;';
       document.body.appendChild(island);
-      var btn = island.querySelector('button');
-      if (btn) {
-        btn.onclick = function() { window.openSignInModal && window.openSignInModal(); };
-        btn.onmouseover = function() { this.style.background = '#6366f1'; };
-        btn.onmouseout = function() { this.style.background = 'rgba(0,0,0,0.4)'; };
-      }
+    }
+    var btn = island.querySelector('button');
+    if (btn) {
+      btn.onclick = function() { window.openSignInModal && window.openSignInModal(); };
+      btn.onmouseover = function() { this.style.background = '#6366f1'; };
+      btn.onmouseout = function() { this.style.background = 'rgba(0,0,0,0.4)'; };
     }
   }
   function run() {
@@ -4157,6 +4079,288 @@
     setTimeout(fixMovieLinks,100);
     setTimeout(fixMovieLinks,1000);
   });
+})();
+</script>
+
+<!-- Thumbnail View Toggle: icon button bottom-right above bell/AI -->
+<script>
+(function(){
+  var PREF_KEY = 'fte_view_mode';
+  var FC_API = 'https://findtorontoevents.ca/fc/api';
+  var eventsImageMap = null;
+  var _debounce = null;
+  var _scrollTimer = null;
+
+  function getLocalPref() {
+    try { return localStorage.getItem(PREF_KEY) || 'thumbnails'; } catch(e) { return 'thumbnails'; }
+  }
+  function setLocalPref(val) {
+    try { localStorage.setItem(PREF_KEY, val); } catch(e) {}
+  }
+  function isThumbMode() { return getLocalPref() === 'thumbnails'; }
+
+  function applyMode(mode) {
+    if (mode === 'thumbnails') document.documentElement.classList.add('fte-thumbnails-on');
+    else document.documentElement.classList.remove('fte-thumbnails-on');
+  }
+
+  function updateToggleUI() {
+    var btn = document.getElementById('fte-thumb-toggle');
+    if (!btn) return;
+    var on = isThumbMode();
+    if (on) { btn.classList.add('active'); btn.title = 'Thumbnails ON \u2014 click to turn off'; }
+    else { btn.classList.remove('active'); btn.title = 'Show event thumbnails'; }
+  }
+
+  function handleToggleClick() {
+    console.log('[THUMBNAILS] Toggle clicked, current mode:', getLocalPref());
+    var next = isThumbMode() ? 'original' : 'thumbnails';
+    setLocalPref(next);
+    applyMode(next);
+    updateToggleUI();
+    // Save to server if user has opted in via gear panel "Remember my choice"
+    if (window.__fc_logged_in_user__) {
+      try {
+        var s = JSON.parse(localStorage.getItem('toronto-events-settings') || '{}');
+        if (s.saveThumbPref) {
+          fetch(FC_API + '/user_preferences.php', { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({preferences:{viewMode:next}}) }).catch(function(){});
+        }
+      } catch(e) {}
+    }
+    // Sync the gear panel toggle if it exists
+    var gearCb = document.getElementById('gear-thumb-toggle');
+    if (gearCb) {
+      gearCb.checked = next === 'thumbnails';
+      var sl = document.getElementById('gear-thumb-slider');
+      var dt = document.getElementById('gear-thumb-dot');
+      var on = gearCb.checked;
+      if (sl) sl.style.background = on ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.15)';
+      if (dt) {
+        dt.style.transform = on ? 'translateX(20px)' : 'translateX(0)';
+        dt.style.background = on ? '#22c55e' : '#888';
+      }
+    }
+    if (next === 'thumbnails') scheduleInject();
+  }
+
+  function createToggle() {
+    var btn = document.getElementById('fte-thumb-toggle');
+    if (!btn) {
+      // Fallback: create button if inline HTML wasn't present
+      btn = document.createElement('button');
+      btn.id = 'fte-thumb-toggle';
+      btn.type = 'button';
+      btn.title = 'Show event thumbnails';
+      btn.innerHTML = '<span class="toggle-icon">\uD83D\uDDBC\uFE0F</span><span class="toggle-dot"></span>';
+      document.body.appendChild(btn);
+    }
+    // Ensure click handler is attached (idempotent)
+    btn.removeEventListener('click', handleToggleClick);
+    btn.addEventListener('click', handleToggleClick);
+    updateToggleUI();
+  }
+
+  function loadImageMap(cb) {
+    if (eventsImageMap) { if (cb) cb(); return; }
+    var jsonPath = window.__EVENTS_JSON_PATH__ || '/next/events.json';
+    fetch(jsonPath).then(function(r) { return r.json(); }).then(function(events) {
+      eventsImageMap = {};
+      if (Array.isArray(events)) {
+        for (var i = 0; i < events.length; i++) {
+          var ev = events[i];
+          if (ev.image && ev.image.trim() !== '' && ev.title) {
+            eventsImageMap[normTitle(ev.title)] = ev.image;
+          }
+        }
+      }
+      console.log('[THUMBNAILS] Loaded image map: ' + Object.keys(eventsImageMap).length + ' events with images');
+      if (cb) cb();
+    }).catch(function() { eventsImageMap = {}; if (cb) cb(); });
+  }
+
+  function normTitle(t) { return (t || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+
+  function scheduleInject() {
+    if (_debounce) clearTimeout(_debounce);
+    _debounce = setTimeout(doInject, 300);
+  }
+
+  function doInject() {
+    if (!isThumbMode()) return;
+    if (!eventsImageMap) { loadImageMap(doInject); return; }
+    // Select ALL glass-panel cards in the page (not just in #events-grid)
+    var cards = document.querySelectorAll('[class*="glass-panel"]:not(.animate-pulse)');
+    var injected = 0;
+    for (var i = 0; i < cards.length; i++) {
+      var card = cards[i];
+      if (card.querySelector('.fte-thumb-wrap')) continue;
+      var titleEl = card.querySelector('h2, h3');
+      if (!titleEl) titleEl = card.querySelector('[class*="title"], [class*="Title"]');
+      if (!titleEl || !titleEl.textContent || titleEl.textContent.trim().length < 3) continue;
+
+      var titleText = normTitle(titleEl.textContent);
+      var imgUrl = eventsImageMap[titleText];
+      var wrap = document.createElement('div');
+      wrap.className = 'fte-thumb-wrap';
+      if (imgUrl) {
+        var img = document.createElement('img');
+        img.className = 'fte-thumb-img';
+        img.alt = (titleEl.textContent || 'Event').substring(0, 80);
+        img.loading = 'lazy';
+        img.src = imgUrl;
+        img.onerror = function() { if (this.parentNode) this.parentNode.innerHTML = '<div class="fte-thumb-placeholder">\uD83C\uDFAD</div>'; };
+        wrap.appendChild(img);
+      } else {
+        wrap.innerHTML = '<div class="fte-thumb-placeholder">\uD83C\uDFAD</div>';
+      }
+      if (card.firstChild) card.insertBefore(wrap, card.firstChild);
+      else card.appendChild(wrap);
+      injected++;
+    }
+    if (injected > 0) console.log('[THUMBNAILS] Injected ' + injected + ' thumbnails');
+  }
+
+  // ── Find the React-rendered event grid (not the static skeleton #events-grid) ──
+  function findReactGrid() {
+    // React grid has h-[400px] children (real event cards)
+    // Static skeleton grid has h-[320px] children
+    var grids = document.querySelectorAll('[class*="grid-cols-1"][class*="md\\:grid-cols-2"][class*="lg\\:grid-cols-3"]');
+    for (var i = 0; i < grids.length; i++) {
+      var g = grids[i];
+      if (g.id === 'events-grid') continue; // skip static skeleton grid
+      if (g.children.length > 0 && g.firstElementChild &&
+          g.firstElementChild.className && g.firstElementChild.className.indexOf('h-[400px]') >= 0) {
+        return g;
+      }
+    }
+    // Fallback: any grid with many children that has real event cards
+    for (var i = 0; i < grids.length; i++) {
+      if (grids[i].children.length > 10) return grids[i];
+    }
+    return null;
+  }
+
+  // ── MutationObserver: watches React grid subtree for new cards from infinite scroll ──
+  function startObserver() {
+    if (typeof MutationObserver === 'undefined') return;
+    var grid = findReactGrid();
+    if (!grid) { setTimeout(startObserver, 1000); return; }
+    console.log('[THUMBNAILS] MutationObserver watching React grid with', grid.children.length, 'children');
+    var timer = null;
+    var obs = new MutationObserver(function(mutations) {
+      if (!isThumbMode()) return;
+      var hasNewNodes = false;
+      for (var i = 0; i < mutations.length; i++) {
+        if (mutations[i].addedNodes && mutations[i].addedNodes.length > 0) { hasNewNodes = true; break; }
+      }
+      if (!hasNewNodes) return;
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(function() { timer = null; doInject(); }, 200);
+    });
+    obs.observe(grid, { childList: true, subtree: true });
+  }
+
+  // ── Scroll listener: catches cards loaded by infinite scroll on user scroll ──
+  function startScrollListener() {
+    window.addEventListener('scroll', function() {
+      if (!isThumbMode()) return;
+      if (_scrollTimer) return; // throttle
+      _scrollTimer = setTimeout(function() {
+        _scrollTimer = null;
+        doInject();
+      }, 250);
+    }, { passive: true });
+  }
+
+  function loadPrefFromServer() {
+    if (!window.__fc_logged_in_user__) return;
+    try {
+      fetch(FC_API + '/user_preferences.php', { credentials: 'include' })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data && data.preferences) {
+            // ── Restore viewMode if user opted to save it ──
+            var serverMode = data.preferences.viewMode;
+            if (serverMode && serverMode !== getLocalPref()) {
+              setLocalPref(serverMode);
+              applyMode(serverMode);
+              updateToggleUI();
+              if (serverMode === 'thumbnails') scheduleInject();
+              console.log('[PREFS] Restored viewMode from server:', serverMode);
+              // Also enable the "save thumb pref" flag since server had a saved value
+              try {
+                var s = JSON.parse(localStorage.getItem('toronto-events-settings') || '{}');
+                s.saveThumbPref = true;
+                localStorage.setItem('toronto-events-settings', JSON.stringify(s));
+              } catch(e2) {}
+            }
+            // ── Restore theme ──
+            var serverTheme = data.preferences.selectedTheme;
+            if (serverTheme && window.__fte_applyThemeById) {
+              // Only restore if user had "permanent theme" enabled or server has a saved theme
+              var applied = window.__fte_applyThemeById(serverTheme);
+              if (applied) {
+                console.log('[PREFS] Restored theme from server:', serverTheme);
+                // Also mark permanentTheme in localStorage so the checkbox reflects it
+                try {
+                  var s = JSON.parse(localStorage.getItem('toronto-events-settings') || '{}');
+                  s.permanentTheme = true;
+                  s.selectedTheme = serverTheme;
+                  localStorage.setItem('toronto-events-settings', JSON.stringify(s));
+                } catch(e2) {}
+              }
+            }
+          }
+        }).catch(function(){});
+    } catch(e) {}
+  }
+
+  // ── Init ──
+  applyMode(getLocalPref());
+  // Create toggle button immediately (no delay)
+  createToggle();
+
+  function boot() {
+    createToggle(); // safe no-op if already exists
+    // Re-apply mode in case React hydration stripped the class from <html>
+    applyMode(getLocalPref());
+    updateToggleUI();
+    loadImageMap(function() {
+      if (isThumbMode()) {
+        setTimeout(doInject, 500);
+        setTimeout(doInject, 2000);
+        setTimeout(doInject, 5000);
+      }
+      startObserver();
+      startScrollListener();
+    });
+    setTimeout(loadPrefFromServer, 2000);
+  }
+
+  // ── Cleanup: hide static skeleton grid after React renders ──
+  function cleanupSkeletons() {
+    var reactGrid = findReactGrid();
+    if (!reactGrid || reactGrid.children.length < 5) {
+      setTimeout(cleanupSkeletons, 1000);
+      return;
+    }
+    // React grid has rendered; hide the static skeleton grid
+    var skelGrid = document.getElementById('events-grid');
+    if (skelGrid && skelGrid !== reactGrid) {
+      skelGrid.style.display = 'none';
+      console.log('[THUMBNAILS] Hid static skeleton grid (#events-grid)');
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+  window.addEventListener('load', function() { setTimeout(boot, 500); });
+  // Re-apply thumbnail mode periodically to survive late React hydration
+  setTimeout(function() { applyMode(getLocalPref()); updateToggleUI(); }, 1000);
+  setTimeout(function() { applyMode(getLocalPref()); updateToggleUI(); }, 3000);
+  // Cleanup skeletons after React renders
+  setTimeout(cleanupSkeletons, 2000);
+  setTimeout(cleanupSkeletons, 5000);
 })();
 </script>
 </body>

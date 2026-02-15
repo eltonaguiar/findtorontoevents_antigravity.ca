@@ -333,9 +333,7 @@ a:hover { text-decoration: underline; }
   <div class="subtitle">New features, improvements, and bug fixes across all our apps</div>
   <div class="back-link">
     <a href="/">&larr; Back to Toronto Events</a> &nbsp;|&nbsp;
-    <a href="/findstocks/updates.html" style="color:#ffd700;">Platform Updates (FTE Invest)</a> &nbsp;|&nbsp;
-    <a href="/updates/STUPID_KIMI_UPDATES.HTML" style="color:#f87171;">Kimi Code Updates</a> &nbsp;|&nbsp;
-    <a href="https://tdotevent.ca/" target="_blank" rel="noopener">Sister site: tdotevent.ca &rarr;</a>
+    <a href="https://tdotevent.ca/" target="_blank" rel="noopener">Visit our sister site: tdotevent.ca &rarr;</a>
   </div>
   <button class="tts-btn" id="ttsToggle" onclick="ttsToggleRead()" title="Listen to this page">
     <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
@@ -381,84 +379,6 @@ a:hover { text-decoration: underline; }
 <div class="container" id="updatesContainer">
 
 <div class="section-year">February 2026</div>
-
-<!-- Feb 15, 2026 — EVENT DATA ENRICHMENT: Link Resolution, Sold-Out Detection, Multi-Day Tagging, Aggregator Filtering -->
-<div class="update-entry" style="--dot-color: #22c55e;" data-tags="events,enrichment,link-resolution,sold-out,multi-day,aggregator,filtering,github-actions,automation,data-quality,user-settings" data-category="events" data-types="feature,improvement">
-  <div class="update-date">Feb 15, 2026</div>
-  <div class="update-title">
-    <span class="tag tag-feature">Major</span>
-    <span class="tag tag-automation">Automation</span>
-    Event Data Enrichment Pipeline &mdash; Link Resolution, Sold-Out Detection, Multi-Day Tagging &amp; Aggregator Filtering
-  </div>
-  <div class="update-body">
-    <p>Built a complete background enrichment pipeline that cleans, resolves, and categorizes events in the database &mdash; so users only see high-quality, actionable listings with direct links to original event pages.</p>
-
-    <h4 style="color:#22c55e;margin-top:14px;">Link Resolution &mdash; Event Router URLs &rarr; Original Source</h4>
-    <p>Events sourced from aggregator/router sites previously linked back to the aggregator instead of the actual event page. A new resolver fetches each aggregator page, follows redirects, and extracts the real ticketing URL.</p>
-    <table style="width:100%;font-size:12px;border-collapse:collapse;margin:8px 0;">
-      <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
-        <th style="text-align:left;padding:4px 8px;color:#88aaff;">Resolved Source</th>
-        <th style="text-align:right;padding:4px 8px;color:#88aaff;">Events</th>
-      </tr>
-      <tr><td style="padding:3px 8px;">Eventbrite</td><td style="text-align:right;padding:3px 8px;">232</td></tr>
-      <tr><td style="padding:3px 8px;">SeatGeek</td><td style="text-align:right;padding:3px 8px;">68</td></tr>
-      <tr><td style="padding:3px 8px;">Ticketmaster</td><td style="text-align:right;padding:3px 8px;">22</td></tr>
-      <tr><td style="padding:3px 8px;">Bandsintown</td><td style="text-align:right;padding:3px 8px;">7</td></tr>
-      <tr><td style="padding:3px 8px;">StubHub</td><td style="text-align:right;padding:3px 8px;">5</td></tr>
-      <tr><td style="padding:3px 8px;">Other (Luma, Dice.fm, TicketWeb)</td><td style="text-align:right;padding:3px 8px;">3</td></tr>
-      <tr style="border-top:1px solid rgba(255,255,255,0.15);font-weight:700;color:#22c55e;">
-        <td style="padding:4px 8px;">Total resolved to original source</td>
-        <td style="text-align:right;padding:4px 8px;">337</td>
-      </tr>
-    </table>
-    <p style="font-size:12px;color:#889;">21 ticketing platforms recognized including SeatGeek, StubHub, AXS, Bandsintown, TodayTix, TicketWeb, Tixr, and Rotate. Users now click directly to the real event page instead of going through an aggregator middleman.</p>
-
-    <h4 style="color:#ef4444;margin-top:14px;">Sold-Out / Sales-Ended Detection</h4>
-    <p>A new checker scans all events with ticketing-source URLs and detects unavailable events using 3 methods:</p>
-    <ul>
-      <li><strong>JSON-LD structured data</strong> &mdash; reads <code>offers.availability</code> and <code>eventStatus</code> from page schema (most reliable)</li>
-      <li><strong>HTTP status codes</strong> &mdash; 404/410 = event page removed</li>
-      <li><strong>HTML pattern matching</strong> &mdash; detects &ldquo;Sales ended&rdquo;, &ldquo;Sold out&rdquo;, &ldquo;Registration closed&rdquo;, &ldquo;Event cancelled&rdquo;</li>
-    </ul>
-    <p><strong>First run:</strong> 84 events removed (67 sold out, 14 unavailable, 3 cancelled). Archived to <code>events_sold_out.json</code> for reference.</p>
-    <p style="font-size:12px;color:#889;">Runs every 6 hours via GitHub Actions + integrated into the daily scrape pipeline. Users no longer see dead listings.</p>
-
-    <h4 style="color:#fbbf24;margin-top:14px;">Multi-Day Event Detection</h4>
-    <p>Events with multiple dates are now automatically tagged as multi-day using:</p>
-    <ul>
-      <li>Date range analysis (endDate &minus; startDate &gt; 1 day)</li>
-      <li>Eventbrite page scraping for &ldquo;Multiple dates&rdquo; indicator</li>
-      <li>Title/description keyword matching</li>
-    </ul>
-    <p><strong>134 events</strong> tagged as multi-day. The existing multi-day filter in the top bar now works with enriched data.</p>
-
-    <h4 style="color:#88aaff;margin-top:14px;">Aggregator Event Filtering &amp; User Setting</h4>
-    <p>185 events that only link to an aggregator (no original event page found) are now <strong>hidden by default</strong>. These &ldquo;event router&rdquo; events don&rsquo;t provide direct ticketing links and often have lower data quality.</p>
-    <ul>
-      <li><strong>New gear icon toggle:</strong> &ldquo;Show Aggregator Events&rdquo; &mdash; users can opt in to see all events including aggregator-only listings</li>
-      <li>Setting persists in localStorage across sessions</li>
-      <li>379 direct-source events shown by default from 14 verified sources</li>
-    </ul>
-
-    <h4 style="color:#a78bfa;margin-top:14px;">Text Encoding Cleanup</h4>
-    <p>5 events with garbled mojibake text (UTF-8 misinterpreted as Windows-1251) were detected and fixed. A sanitizer now runs automatically in the scrape pipeline to prevent future encoding issues.</p>
-
-    <h4 style="color:#06b6d4;margin-top:14px;">Complete Scrape Pipeline (GitHub Actions)</h4>
-    <p style="font-size:12px;color:#aab;font-family:monospace;background:rgba(0,0,0,0.3);padding:8px 12px;border-radius:6px;overflow-x:auto;">
-      Scrape &rarr; Cleanup past &rarr; Sanitize text &rarr; Resolve links + tag routers &rarr; Detect multi-day &rarr; Check sold-out &rarr; Commit &rarr; Deploy &rarr; Sync DB
-    </p>
-    <p style="font-size:12px;color:#889;margin-top:6px;">Plus standalone workflows: <code>check-sold-out.yml</code> (every 6h), <code>resolve-event-links.yml</code> (daily), <code>detect-multiday</code> (in scrape pipeline).</p>
-
-    <div style="margin-top:10px;font-size:12px;">
-      <span class="tag" style="background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);">Link Resolution</span>
-      <span class="tag" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);">Sold-Out Detection</span>
-      <span class="tag" style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);">Multi-Day</span>
-      <span class="tag" style="background:rgba(136,170,255,0.15);color:#88aaff;border:1px solid rgba(136,170,255,0.3);">Aggregator Filter</span>
-      <span class="tag" style="background:rgba(6,182,212,0.15);color:#06b6d4;border:1px solid rgba(6,182,212,0.3);">GitHub Actions</span>
-      <span class="tag" style="background:rgba(167,139,250,0.15);color:#a78bfa;border:1px solid rgba(167,139,250,0.3);">Data Quality</span>
-    </div>
-  </div>
-</div>
 
 <!-- Feb 14, 2026 — CROSS-VALIDATED PREDICTION SYSTEMS AUDIT -->
 <div class="update-entry" style="--dot-color: #ef4444;" data-tags="audit,cross-validation,prediction,systems,ml,database,performance,win-rate,meme-scanner,hybrid-engine,sports,crypto,stocks" data-category="crypto,trading,infrastructure" data-types="feature,improvement">

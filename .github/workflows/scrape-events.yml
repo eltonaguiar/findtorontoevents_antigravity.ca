@@ -32,6 +32,14 @@ jobs:
       - name: Install dependencies
         run: pip install requests beautifulsoup4 lxml
 
+      - name: Set up environment variables
+        env:
+          TICKETMAST_CONSUMER_KEY: ${{ secrets.TICKETMAST_CONSUMER_KEY }}
+          TICKETMAST_CONSUMER_SEC: ${{ secrets.TICKETMAST_CONSUMER_SEC }}
+        run: |
+          echo "TICKETMAST_CONSUMER_KEY=${TICKETMAST_CONSUMER_KEY}" >> $GITHUB_ENV
+          echo "TICKETMAST_CONSUMER_SEC=${TICKETMAST_CONSUMER_SEC}" >> $GITHUB_ENV
+
       - name: Verify scraper imports
         run: python -c "import sys; sys.path.insert(0, 'tools'); from scrapers.unified_scraper import UnifiedTorontoScraper; print('imports OK')"
 
@@ -43,11 +51,30 @@ jobs:
           EVENTS_UPDATE_SOURCE: github_actions
         run: python tools/scrape_and_sync_events.py --sync
 
+      - name: Setup Node for cleanup
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cleanup past events from scraped data
+        run: node tools/cleanup_past_events.js
+
+      - name: Sanitize garbled event text (encoding fixes)
+        run: node tools/sanitize_event_text.js
+
+      # NOTE: AllEvents resolution step removed - now scraping directly from sources
+
+      - name: Detect multi-day / recurring events
+        run: node tools/detect_multiday.js
+
+      - name: Check for sold-out / ended events
+        run: node tools/check_sold_out.js
+
       - name: Verify calendar source (sofiaadelgiudice) in events.json
         run: |
           count=$(python -c "
           import json
-          with open('events.json') as f:
+          with open('next/events.json') as f:
               data = json.load(f)
           events = data if isinstance(data, list) else data.get('events', [])
           n = sum(1 for e in events if (e.get('source') or '').strip() == 'sofiaadelgiudice')
@@ -57,6 +84,21 @@ jobs:
           if [ "$count" -lt 1 ]; then
             echo "::error::events.json has no sofiaadelgiudice events; scraper or merge may have failed."
             exit 1
+          fi
+
+      - name: Verify Eventbrite scraper is working
+        run: |
+          count=$(python -c "
+          import json
+          with open('next/events.json') as f:
+              data = json.load(f)
+          events = data if isinstance(data, list) else data.get('events', [])
+          n = sum(1 for e in events if (e.get('source') or '').strip() == 'Eventbrite')
+          print(n)
+          ")
+          echo "Eventbrite events in events.json: $count"
+          if [ "$count" -lt 50 ]; then
+            echo "::warning::Eventbrite scraper returned fewer than 50 events; check for API issues."
           fi
 
       - name: Commit and push if changed
@@ -92,6 +134,18 @@ jobs:
           else
             echo "::warning::Database sync returned HTTP $HTTP_CODE (non-fatal)"
           fi
+
+      - name: Trigger server-side past events cleanup
+        run: |
+          echo "Cleaning up past events on server..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -A "Mozilla/5.0 (compatible; FindTorontoEvents-Cleanup/1.0)" \
+            "https://findtorontoevents.ca/api/events/cleanup_events.php" \
+            --max-time 60)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          echo "HTTP $HTTP_CODE"
+          echo "$BODY" | python -m json.tool 2>/dev/null || echo "$BODY"
 
       # Reset workspace so checkout action's post step doesn't fail with git 128
       - name: Restore workspace for checkout post

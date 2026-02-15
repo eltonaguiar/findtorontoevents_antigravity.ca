@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Toronto Events Gallery | Find Toronto Events</title>
+  <meta name="description" content="Browse Toronto events with photos — a visual gallery of upcoming events in Toronto, Ontario." />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <style>
+    :root {
+      --pk-200:#e9d5ff;--pk-300:#c084fc;--pk-400:#a855f7;--pk-500:#9333ea;--pk-500-rgb:147,51,234;--pk-600:#7e22ce;--pk-900:#3b0764;
+      --surface-0:#0a0a0f;--surface-1:#12121a;--surface-2:#1a1a25;
+      --text-1:#f0f0f5;--text-2:#a0a0b5;--text-3:#606075;
+      --card-radius: 16px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--surface-0);
+      color: var(--text-1);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* Background */
+    .bg-gradient {
+      position: fixed; inset: 0; z-index: -1;
+      background: radial-gradient(ellipse at 20% 0%, rgba(147,51,234,0.15) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 100%, rgba(147,51,234,0.08) 0%, transparent 50%),
+                  var(--surface-0);
+    }
+
+    /* Header */
+    .site-header {
+      padding: 24px 24px 0;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .header-top h1 {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #fff 0%, var(--pk-300) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header-top h1 span {
+      font-size: 14px;
+      font-weight: 600;
+      -webkit-text-fill-color: var(--pk-400);
+    }
+    .header-links {
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    .header-links a {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-3);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+    .header-links a:hover {
+      color: var(--text-1);
+      border-color: rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+    }
+
+    /* Filters bar */
+    .filters-bar {
+      max-width: 1440px;
+      margin: 20px auto 0;
+      padding: 0 24px;
+    }
+    .filters-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+    }
+    .search-wrap {
+      position: relative;
+      flex: 1 1 200px;
+      min-width: 180px;
+    }
+    .search-wrap svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: var(--text-3);
+      pointer-events: none;
+    }
+    .search-wrap input {
+      width: 100%;
+      padding: 9px 12px 9px 36px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      color: var(--text-1);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-wrap input::placeholder { color: var(--text-3); }
+    .search-wrap input:focus { border-color: var(--pk-500); }
+    .filter-select {
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      color: var(--text-1);
+      font-size: 13px;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .filter-select:focus { border-color: var(--pk-500); }
+    .filter-select option { background: #1a1a25; color: #f0f0f5; }
+    .filter-check {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-2);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .filter-check input[type="checkbox"] {
+      accent-color: var(--pk-500);
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+    }
+
+    /* View toggle */
+    .view-toggle-group {
+      display: flex;
+      gap: 4px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 3px;
+    }
+    .view-toggle-btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-3);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .view-toggle-btn.active {
+      background: var(--pk-500);
+      color: #fff;
+    }
+    .view-toggle-btn:not(.active):hover {
+      color: var(--text-1);
+      background: rgba(255,255,255,0.06);
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      max-width: 1440px;
+      margin: 12px auto 0;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .stats-text {
+      font-size: 12px;
+      color: var(--text-3);
+    }
+    .stats-text strong { color: var(--text-2); font-weight: 600; }
+    .photo-only-toggle {
+      font-size: 11px;
+      color: var(--pk-300);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .photo-only-toggle input { accent-color: var(--pk-500); cursor: pointer; }
+
+    /* === GALLERY GRID === */
+    .gallery-container {
+      max-width: 1440px;
+      margin: 16px auto 0;
+      padding: 0 24px 80px;
+    }
+
+    /* Grid view (default) */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    /* Masonry view */
+    .gallery-grid.masonry {
+      columns: 4;
+      column-gap: 20px;
+      display: block;
+    }
+    .gallery-grid.masonry .event-card {
+      break-inside: avoid;
+      margin-bottom: 20px;
+    }
+
+    /* List view */
+    .gallery-grid.list-view {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .gallery-grid.list-view .event-card {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      height: auto;
+    }
+    .gallery-grid.list-view .event-card .card-image {
+      height: 140px;
+      border-radius: var(--card-radius) 0 0 var(--card-radius);
+    }
+    .gallery-grid.list-view .event-card .card-body {
+      border-radius: 0 var(--card-radius) var(--card-radius) 0;
+    }
+
+    /* === EVENT CARD === */
+    .event-card {
+      border-radius: var(--card-radius);
+      overflow: hidden;
+      background: var(--surface-1);
+      border: 1px solid rgba(255,255,255,0.06);
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+      cursor: pointer;
+      position: relative;
+    }
+    .event-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(147,51,234,0.2);
+      border-color: rgba(147,51,234,0.3);
+    }
+
+    /* Card image */
+    .card-image {
+      width: 100%;
+      height: 200px;
+      overflow: hidden;
+      position: relative;
+      background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface-1) 100%);
+    }
+    .card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .event-card:hover .card-image img {
+      transform: scale(1.06);
+    }
+    .card-image .no-image {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      opacity: 0.15;
+      user-select: none;
+    }
+    .card-image .source-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      backdrop-filter: blur(4px);
+    }
+    .card-image .free-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .card-image .category-badge {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(147,51,234,0.85);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Card body */
+    .card-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-1);
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .card-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-2);
+    }
+    .card-meta-row svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      color: var(--pk-400);
+    }
+    .card-meta-row span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .card-description {
+      font-size: 12px;
+      color: var(--text-3);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .card-price {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--pk-300);
+    }
+    .card-btn {
+      padding: 7px 16px;
+      border-radius: 10px;
+      background: var(--pk-500);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+      border: none;
+      cursor: pointer;
+    }
+    .card-btn:hover {
+      background: var(--pk-400);
+      transform: scale(1.04);
+    }
+
+    /* Quick View Modal */
+    .qv-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      backdrop-filter: blur(6px);
+    }
+    .qv-overlay.open {
+      display: flex;
+    }
+    .qv-modal {
+      background: var(--surface-1);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      max-width: 720px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      animation: qvSlideUp 0.3s ease;
+    }
+    @keyframes qvSlideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .qv-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .qv-close:hover { background: rgba(147,51,234,0.6); }
+    .qv-image {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+      border-radius: 20px 20px 0 0;
+    }
+    .qv-no-image {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(135deg, var(--surface-2), var(--pk-900));
+      border-radius: 20px 20px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 64px;
+      opacity: 0.2;
+    }
+    .qv-body {
+      padding: 24px;
+    }
+    .qv-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-1);
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+    .qv-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .qv-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-2);
+    }
+    .qv-meta-item svg {
+      width: 16px;
+      height: 16px;
+      color: var(--pk-400);
+    }
+    .qv-desc {
+      font-size: 14px;
+      color: var(--text-2);
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+    .qv-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    .qv-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: rgba(147,51,234,0.15);
+      color: var(--pk-300);
+    }
+    .qv-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .qv-actions a {
+      flex: 1;
+      text-align: center;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .qv-actions .qv-primary {
+      background: var(--pk-500);
+      color: #fff;
+    }
+    .qv-actions .qv-primary:hover { background: var(--pk-400); }
+    .qv-actions .qv-secondary {
+      background: rgba(255,255,255,0.06);
+      color: var(--text-1);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .qv-actions .qv-secondary:hover { border-color: var(--pk-500); color: var(--pk-300); }
+
+    /* Load more */
+    .load-more-wrap {
+      text-align: center;
+      padding: 40px 0;
+    }
+    .load-more-btn {
+      padding: 12px 32px;
+      border-radius: 12px;
+      border: 1px solid rgba(147,51,234,0.3);
+      background: rgba(147,51,234,0.1);
+      color: var(--pk-300);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .load-more-btn:hover {
+      background: var(--pk-500);
+      color: #fff;
+      border-color: var(--pk-500);
+    }
+
+    /* Loading skeleton */
+    .skeleton-card {
+      border-radius: var(--card-radius);
+      overflow: hidden;
+      background: var(--surface-1);
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .skeleton-img {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(90deg, var(--surface-2) 25%, rgba(255,255,255,0.05) 50%, var(--surface-2) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    .skeleton-body { padding: 16px; }
+    .skeleton-line {
+      height: 14px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--surface-2) 25%, rgba(255,255,255,0.05) 50%, var(--surface-2) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      margin-bottom: 10px;
+    }
+    .skeleton-line.short { width: 60%; }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-3);
+    }
+    .empty-state svg {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 16px;
+      opacity: 0.4;
+    }
+    .empty-state h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-2);
+      margin-bottom: 8px;
+    }
+
+    /* Footer */
+    .site-footer {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 40px 24px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      text-align: center;
+    }
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .footer-links a {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-3);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--text-1); }
+    .footer-copy {
+      font-size: 10px;
+      color: var(--text-3);
+      opacity: 0.5;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .gallery-grid.masonry { columns: 3; }
+    }
+    @media (max-width: 768px) {
+      .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+      .gallery-grid.masonry { columns: 2; }
+      .gallery-grid.list-view .event-card {
+        grid-template-columns: 140px 1fr;
+      }
+      .gallery-grid.list-view .event-card .card-image { height: 120px; }
+      .header-top h1 { font-size: 22px; }
+      .qv-modal { max-width: 95vw; }
+      .qv-image { height: 220px; }
+    }
+    @media (max-width: 480px) {
+      .gallery-grid { grid-template-columns: 1fr; }
+      .gallery-grid.masonry { columns: 1; }
+      .gallery-grid.list-view .event-card {
+        grid-template-columns: 1fr;
+      }
+      .gallery-grid.list-view .event-card .card-image {
+        height: 160px;
+        border-radius: var(--card-radius) var(--card-radius) 0 0;
+      }
+      .gallery-grid.list-view .event-card .card-body {
+        border-radius: 0 0 var(--card-radius) var(--card-radius);
+      }
+      .filters-inner { flex-direction: column; }
+      .search-wrap { min-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-gradient"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-top">
+      <h1>Toronto Events <span>Gallery</span></h1>
+      <nav class="header-links">
+        <a href="/">Classic View</a>
+        <a href="/index4.html">Backup</a>
+        <a href="/fc/#/guest">FavCreators</a>
+        <a href="/vr/">VR Hub</a>
+        <a href="/stats/">Stats</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <div class="filters-inner">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="f-search" placeholder="Search events, venues, descriptions..." />
+      </div>
+      <select id="f-category" class="filter-select">
+        <option value="">All categories</option>
+      </select>
+      <select id="f-date" class="filter-select">
+        <option value="">Any date</option>
+        <option value="today">Today</option>
+        <option value="tomorrow">Tomorrow</option>
+        <option value="weekend">This weekend</option>
+        <option value="week">This week</option>
+        <option value="month">This month</option>
+      </select>
+      <select id="f-sort" class="filter-select">
+        <option value="date">Sort by date</option>
+        <option value="title">Sort by title</option>
+        <option value="newest">Newest first</option>
+      </select>
+      <label class="filter-check">
+        <input type="checkbox" id="f-free" />
+        Free only
+      </label>
+      <div class="view-toggle-group">
+        <button type="button" class="view-toggle-btn active" data-view="grid" title="Grid view">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          Grid
+        </button>
+        <button type="button" class="view-toggle-btn" data-view="masonry" title="Masonry view">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="10" rx="1.5"/><rect x="14" y="3" width="7" height="6" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/></svg>
+          Masonry
+        </button>
+        <button type="button" class="view-toggle-btn" data-view="list" title="List view">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="18" height="3" rx="1.5"/><rect x="3" y="10.5" width="18" height="3" rx="1.5"/><rect x="3" y="17" width="18" height="3" rx="1.5"/></svg>
+          List
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stats-text" id="stats-text">Loading events...</div>
+    <label class="photo-only-toggle">
+      <input type="checkbox" id="f-photos-only" />
+      Photos only
+    </label>
+  </div>
+
+  <!-- Gallery -->
+  <div class="gallery-container">
+    <div id="gallery-grid" class="gallery-grid">
+      <!-- Skeleton loaders -->
+      <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div></div>
+    </div>
+    <div id="load-more-wrap" class="load-more-wrap" style="display:none;">
+      <button type="button" id="load-more-btn" class="load-more-btn">Load more events</button>
+    </div>
+  </div>
+
+  <!-- Quick View Modal -->
+  <div id="qv-overlay" class="qv-overlay">
+    <div class="qv-modal" id="qv-modal">
+      <button type="button" class="qv-close" id="qv-close">&times;</button>
+      <div id="qv-content"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="/">Event Discovery</a>
+      <a href="/findstocks">Stock Analysis</a>
+      <a href="/fc/#/guest">FavCreators</a>
+      <a href="/vr/">VR Hub</a>
+      <a href="/vr/game-arena/">Game Arena</a>
+      <a href="/WINDOWSFIXER/">Boot Fixer</a>
+    </div>
+    <p class="footer-copy">Gallery View &bull; Antigravity Systems &bull; Find Toronto Events</p>
+  </footer>
+
+  <script>
+(function () {
+  /* ── Helpers ── */
+  function escapeHtml(s) {
+    if (s == null) return '';
+    var d = document.createElement('div');
+    d.textContent = String(s);
+    return d.innerHTML;
+  }
+
+  function formatDate(str) {
+    if (!str) return '';
+    try {
+      var d = new Date(str);
+      if (isNaN(d.getTime())) return str;
+      return d.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    } catch (e) { return str; }
+  }
+
+  function formatTime(str) {
+    if (!str) return '';
+    try {
+      var d = new Date(str);
+      if (isNaN(d.getTime())) return '';
+      var h = d.getHours();
+      var m = d.getMinutes();
+      if (h === 0 && m === 0) return '';
+      var ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12;
+      if (h === 0) h = 12;
+      return h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+    } catch (e) { return ''; }
+  }
+
+  function isSameDay(a, b) {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+
+  function isTomorrow(d, now) {
+    var tom = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    return isSameDay(d, tom);
+  }
+
+  function isWeekend(d) {
+    var day = d.getDay();
+    return day === 0 || day === 6;
+  }
+
+  function isThisWeek(d, now) {
+    var start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+    var end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6, 23, 59, 59);
+    return d >= start && d <= end;
+  }
+
+  function isThisMonth(d, now) {
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }
+
+  /* Map categories to emoji for placeholder images */
+  var catEmoji = {
+    'Music': '🎵', 'Arts': '🎨', 'Sports': '⚽', 'Food': '🍽', 'Tech': '💻',
+    'Dating': '💕', 'Comedy': '😂', 'Theatre': '🎭', 'Film': '🎬', 'Dance': '💃',
+    'Workshop': '🔧', 'Networking': '🤝', 'Community': '🏘', 'Holiday': '🎉',
+    'Wellness': '🧘', 'Family': '👨‍👩‍👧‍👦', 'Nightlife': '🌃', 'Festival': '🎪',
+    'General': '📅'
+  };
+
+  function getCategoryEmoji(ev) {
+    var cats = [].concat(ev.categories || [], ev.tags || []);
+    for (var i = 0; i < cats.length; i++) {
+      if (catEmoji[cats[i]]) return catEmoji[cats[i]];
+    }
+    return '📅';
+  }
+
+  /* ── State ── */
+  var allEvents = [];
+  var filteredEvents = [];
+  var displayCount = 24;
+  var BATCH_SIZE = 24;
+  var currentView = 'grid';
+
+  /* ── DOM refs ── */
+  var gridEl = document.getElementById('gallery-grid');
+  var statsEl = document.getElementById('stats-text');
+  var loadMoreWrap = document.getElementById('load-more-wrap');
+  var loadMoreBtn = document.getElementById('load-more-btn');
+  var qvOverlay = document.getElementById('qv-overlay');
+  var qvContent = document.getElementById('qv-content');
+  var qvCloseBtn = document.getElementById('qv-close');
+
+  /* ── Data loading ── */
+  var pathBase = (function () {
+    var p = window.location.pathname;
+    return (p.replace(/\/[^/]*$/, '/') || '/');
+  })();
+
+  var SOURCES = [
+    pathBase + 'next/events.json',
+    pathBase + 'events.json',
+    pathBase + 'data/events.json',
+    'https://raw.githubusercontent.com/eltonaguiar/findtorontoevents.ca/main/next/events.json'
+  ];
+
+  function loadEvents() {
+    function trySource(idx) {
+      if (idx >= SOURCES.length) {
+        gridEl.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg><h3>Could not load events</h3><p>Please try refreshing the page.</p></div>';
+        return;
+      }
+      fetch(SOURCES[idx]).then(function (r) {
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      }).then(function (data) {
+        var list = Array.isArray(data) ? data : (data.events || data.items || []);
+        allEvents = list;
+        populateCategories(list);
+        applyFilters();
+      }).catch(function () {
+        trySource(idx + 1);
+      });
+    }
+    trySource(0);
+  }
+
+  /* ── Categories ── */
+  function populateCategories(list) {
+    var set = {};
+    list.forEach(function (ev) {
+      var cats = [].concat(ev.categories || [], ev.tags || []);
+      cats.forEach(function (c) {
+        var n = String(c || '').trim();
+        if (n) set[n] = true;
+      });
+    });
+    var catEl = document.getElementById('f-category');
+    if (!catEl) return;
+    var keys = Object.keys(set).sort();
+    catEl.innerHTML = '<option value="">All categories</option>';
+    keys.forEach(function (k) {
+      var opt = document.createElement('option');
+      opt.value = k;
+      opt.textContent = k;
+      catEl.appendChild(opt);
+    });
+  }
+
+  /* ── Filtering ── */
+  function applyFilters() {
+    var search = (document.getElementById('f-search').value || '').toLowerCase().trim();
+    var category = document.getElementById('f-category').value;
+    var dateFilter = document.getElementById('f-date').value;
+    var freeOnly = document.getElementById('f-free').checked;
+    var photosOnly = document.getElementById('f-photos-only').checked;
+    var sortBy = document.getElementById('f-sort').value;
+
+    var out = allEvents.slice();
+
+    /* Filter future/today events only */
+    var now = new Date();
+    var todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    out = out.filter(function (ev) {
+      if (!ev.date) return true;
+      var d = new Date(ev.date);
+      if (isNaN(d.getTime())) return true;
+      return d >= todayStart;
+    });
+
+    if (search) {
+      out = out.filter(function (ev) {
+        var t = (ev.title || '').toLowerCase();
+        var d = (ev.description || '').toLowerCase();
+        var loc = (ev.location || '').toLowerCase();
+        var src = (ev.source || '').toLowerCase();
+        return t.indexOf(search) !== -1 || d.indexOf(search) !== -1 || loc.indexOf(search) !== -1 || src.indexOf(search) !== -1;
+      });
+    }
+    if (category) {
+      out = out.filter(function (ev) {
+        var cats = [].concat(ev.categories || [], ev.tags || []).map(function (c) { return String(c || '').trim(); });
+        return cats.indexOf(category) !== -1;
+      });
+    }
+    if (dateFilter) {
+      out = out.filter(function (ev) {
+        if (!ev.date) return false;
+        var d = new Date(ev.date);
+        if (isNaN(d.getTime())) return false;
+        if (dateFilter === 'today') return isSameDay(d, now);
+        if (dateFilter === 'tomorrow') return isTomorrow(d, now);
+        if (dateFilter === 'weekend') return isWeekend(d) && d >= now;
+        if (dateFilter === 'week') return isThisWeek(d, now) && d >= now;
+        if (dateFilter === 'month') return isThisMonth(d, now) && d >= now;
+        return true;
+      });
+    }
+    if (freeOnly) {
+      out = out.filter(function (ev) { return ev.isFree === true; });
+    }
+    if (photosOnly) {
+      out = out.filter(function (ev) { return ev.image && ev.image.trim() !== ''; });
+    }
+
+    /* Sort */
+    if (sortBy === 'title') {
+      out.sort(function (a, b) { return (a.title || '').localeCompare(b.title || ''); });
+    } else if (sortBy === 'newest') {
+      out.sort(function (a, b) {
+        return new Date(b.lastUpdated || b.date || 0).getTime() - new Date(a.lastUpdated || a.date || 0).getTime();
+      });
+    } else {
+      out.sort(function (a, b) {
+        return new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime();
+      });
+    }
+
+    filteredEvents = out;
+    displayCount = BATCH_SIZE;
+    renderGallery();
+  }
+
+  /* ── Render ── */
+  function renderGallery() {
+    gridEl.innerHTML = '';
+    var totalWithPhotos = filteredEvents.filter(function (ev) { return ev.image && ev.image.trim() !== ''; }).length;
+
+    if (filteredEvents.length === 0) {
+      gridEl.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><h3>No events found</h3><p>Try adjusting your search or filters.</p></div>';
+      statsEl.textContent = 'No events match your filters';
+      loadMoreWrap.style.display = 'none';
+      return;
+    }
+
+    statsEl.innerHTML = 'Showing <strong>' + Math.min(displayCount, filteredEvents.length) + '</strong> of <strong>' + filteredEvents.length + '</strong> events &bull; <strong>' + totalWithPhotos + '</strong> with photos';
+
+    var count = Math.min(displayCount, filteredEvents.length);
+    for (var i = 0; i < count; i++) {
+      gridEl.appendChild(createCard(filteredEvents[i], i));
+    }
+
+    /* Load more */
+    if (count < filteredEvents.length) {
+      loadMoreWrap.style.display = 'block';
+      loadMoreBtn.textContent = 'Load more (' + (filteredEvents.length - count) + ' remaining)';
+    } else {
+      loadMoreWrap.style.display = 'none';
+    }
+
+    /* Apply view class */
+    gridEl.className = 'gallery-grid';
+    if (currentView === 'masonry') gridEl.classList.add('masonry');
+    if (currentView === 'list') gridEl.classList.add('list-view');
+  }
+
+  /* ── Create card ── */
+  function createCard(ev, index) {
+    var card = document.createElement('div');
+    card.className = 'event-card';
+    card.setAttribute('data-index', index);
+
+    var hasImage = ev.image && ev.image.trim() !== '';
+    var cat = (ev.categories && ev.categories[0]) ? ev.categories[0] : 'General';
+    var emoji = getCategoryEmoji(ev);
+    var dateStr = formatDate(ev.date);
+    var timeStr = formatTime(ev.date);
+    var price = escapeHtml(ev.price || '');
+    var desc = (ev.description || '').trim();
+    if (desc.length > 100) desc = desc.slice(0, 97) + '...';
+
+    var imageHtml = '';
+    if (hasImage) {
+      imageHtml = '<div class="card-image">' +
+        '<img src="' + escapeHtml(ev.image) + '" alt="' + escapeHtml(ev.title) + '" loading="lazy" onerror="this.parentNode.innerHTML=\'<div class=\\\'no-image\\\'>' + emoji + '</div>\'" />' +
+        '<span class="source-badge">' + escapeHtml(ev.source || '') + '</span>' +
+        (ev.isFree ? '<span class="free-badge">Free</span>' : '') +
+        '<span class="category-badge">' + escapeHtml(cat) + '</span>' +
+        '</div>';
+    } else {
+      imageHtml = '<div class="card-image">' +
+        '<div class="no-image">' + emoji + '</div>' +
+        '<span class="source-badge">' + escapeHtml(ev.source || '') + '</span>' +
+        (ev.isFree ? '<span class="free-badge">Free</span>' : '') +
+        '<span class="category-badge">' + escapeHtml(cat) + '</span>' +
+        '</div>';
+    }
+
+    card.innerHTML = imageHtml +
+      '<div class="card-body">' +
+      '  <div class="card-title">' + escapeHtml(ev.title || 'Event') + '</div>' +
+      '  <div class="card-meta">' +
+      (dateStr ? '    <div class="card-meta-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>' + escapeHtml(dateStr) + (timeStr ? ' &bull; ' + escapeHtml(timeStr) : '') + '</span></div>' : '') +
+      (ev.location ? '    <div class="card-meta-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg><span>' + escapeHtml(ev.location) + '</span></div>' : '') +
+      '  </div>' +
+      (desc ? '  <div class="card-description">' + escapeHtml(desc) + '</div>' : '') +
+      '  <div class="card-footer">' +
+      (price ? '    <span class="card-price">' + price + '</span>' : '<span></span>') +
+      '    <button type="button" class="card-btn" data-action="quickview">Quick View</button>' +
+      '  </div>' +
+      '</div>';
+
+    card.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-action="quickview"]');
+      if (btn) {
+        e.stopPropagation();
+        openQuickView(ev);
+        return;
+      }
+      /* Click anywhere on card opens quick view */
+      openQuickView(ev);
+    });
+
+    return card;
+  }
+
+  /* ── Quick View ── */
+  function openQuickView(ev) {
+    var hasImage = ev.image && ev.image.trim() !== '';
+    var emoji = getCategoryEmoji(ev);
+    var dateStr = formatDate(ev.date);
+    var timeStr = formatTime(ev.date);
+    var cats = [].concat(ev.categories || [], ev.tags || []);
+    var url = (ev.url || '').trim() || '#';
+
+    var html = '';
+    if (hasImage) {
+      html += '<img class="qv-image" src="' + escapeHtml(ev.image) + '" alt="' + escapeHtml(ev.title) + '" onerror="this.outerHTML=\'<div class=\\\'qv-no-image\\\'>' + emoji + '</div>\'" />';
+    } else {
+      html += '<div class="qv-no-image">' + emoji + '</div>';
+    }
+
+    html += '<div class="qv-body">';
+    html += '<h2 class="qv-title">' + escapeHtml(ev.title || 'Event') + '</h2>';
+    html += '<div class="qv-meta">';
+    if (dateStr) {
+      html += '<div class="qv-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>' + escapeHtml(dateStr) + (timeStr ? ' at ' + escapeHtml(timeStr) : '') + '</div>';
+    }
+    if (ev.location) {
+      html += '<div class="qv-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>' + escapeHtml(ev.location) + '</div>';
+    }
+    if (ev.source) {
+      html += '<div class="qv-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>via ' + escapeHtml(ev.source) + '</div>';
+    }
+    if (ev.price) {
+      html += '<div class="qv-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' + escapeHtml(ev.price) + (ev.isFree ? ' (Free!)' : '') + '</div>';
+    }
+    html += '</div>';
+
+    if (ev.description && ev.description.trim()) {
+      html += '<p class="qv-desc">' + escapeHtml(ev.description) + '</p>';
+    }
+
+    if (cats.length > 0) {
+      html += '<div class="qv-tags">';
+      var seen = {};
+      cats.forEach(function (c) {
+        var n = String(c || '').trim();
+        if (n && !seen[n]) {
+          seen[n] = true;
+          html += '<span class="qv-tag">' + escapeHtml(n) + '</span>';
+        }
+      });
+      html += '</div>';
+    }
+
+    html += '<div class="qv-actions">';
+    html += '<a class="qv-primary" href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer">View Event Page</a>';
+    html += '<a class="qv-secondary" href="https://www.google.com/maps/search/' + encodeURIComponent(ev.location || 'Toronto') + '" target="_blank" rel="noopener noreferrer">View on Map</a>';
+    html += '</div>';
+    html += '</div>';
+
+    qvContent.innerHTML = html;
+    qvOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeQuickView() {
+    qvOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  qvCloseBtn.addEventListener('click', closeQuickView);
+  qvOverlay.addEventListener('click', function (e) {
+    if (e.target === qvOverlay) closeQuickView();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && qvOverlay.classList.contains('open')) closeQuickView();
+  });
+
+  /* ── View toggle ── */
+  var viewBtns = document.querySelectorAll('.view-toggle-btn');
+  viewBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      viewBtns.forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentView = btn.getAttribute('data-view');
+      gridEl.className = 'gallery-grid';
+      if (currentView === 'masonry') gridEl.classList.add('masonry');
+      if (currentView === 'list') gridEl.classList.add('list-view');
+    });
+  });
+
+  /* ── Load more ── */
+  loadMoreBtn.addEventListener('click', function () {
+    displayCount += BATCH_SIZE;
+    renderGallery();
+    /* Scroll to where new cards start */
+  });
+
+  /* ── Bind filters ── */
+  var debounceTimer;
+  document.getElementById('f-search').addEventListener('input', function () {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(applyFilters, 250);
+  });
+  ['f-category', 'f-date', 'f-sort'].forEach(function (id) {
+    document.getElementById(id).addEventListener('change', applyFilters);
+  });
+  ['f-free', 'f-photos-only'].forEach(function (id) {
+    document.getElementById(id).addEventListener('change', applyFilters);
+  });
+
+  /* ── Init ── */
+  loadEvents();
+})();
+  </script>
+</body>
+</html>
