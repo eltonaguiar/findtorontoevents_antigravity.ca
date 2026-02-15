@@ -199,7 +199,9 @@ class UnifiedTorontoScraper:
                     if not self.is_duplicate(event, all_events):
                         all_events.append(event)
                     else:
-                        print(f"  [Duplicate] Skipping: {event.get('title', 'Unknown')[:50]}")
+                        # Use ASCII encoding to avoid Windows terminal Unicode errors
+                        title = event.get('title', 'Unknown')[:50].encode('ascii', 'replace').decode('ascii')
+                        print(f"  [Duplicate] Skipping: {title}")
                 
                 print(f"Added {len(events)} events from {scraper.SOURCE_NAME}")
                 

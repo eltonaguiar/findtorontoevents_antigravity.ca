@@ -1,0 +1,168 @@
+# Refresh Toronto Event Resources — scrape fresh events from 50+ sources daily
+# Updates resources/resources.json with real event data, commits, and deploys.
+name: Refresh event resources
+
+on:
+  workflow_dispatch:  # Manual trigger
+  schedule:
+    - cron: '30 11 * * *'  # Daily at 11:30 UTC (6:30 AM EST / 7:30 AM EDT)
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Fix broken submodule entry (same as scrape-events.yml)
+      - name: Fix broken submodule entry
+        run: |
+          if [ -f .gitmodules ]; then
+            git config -f .gitmodules --remove-section submodule.STOCKSUNIFY 2>/dev/null || true
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 lxml
+
+      - name: Verify resources.json exists
+        run: |
+          if [ ! -f resources/resources.json ]; then
+            echo "::error::resources/resources.json not found"
+            exit 1
+          fi
+          echo "Current resources.json:"
+          python -c "
+          import json
+          with open('resources/resources.json') as f:
+              d = json.load(f)
+          print(f'  Last updated: {d.get(\"last_updated\", \"unknown\")}')
+          total = sum(len(c.get('sources',[])) for c in d.get('categories',[]))
+          print(f'  Categories: {len(d.get(\"categories\",[]))}')
+          print(f'  Total sources: {total}')
+          "
+
+      - name: Run resource refresh scraper
+        env:
+          TICKETMAST_CONSUMER_KEY: ${{ secrets.TICKETMAST_CONSUMER_KEY }}
+          TICKETMAST_CONSUMER_SEC: ${{ secrets.TICKETMAST_CONSUMER_SEC }}
+        run: python tools/refresh_resources.py
+
+      - name: Validate updated resources.json
+        run: |
+          python -c "
+          import json, sys
+          with open('resources/resources.json') as f:
+              d = json.load(f)
+          cats = d.get('categories', [])
+          if not cats:
+              print('ERROR: No categories in resources.json')
+              sys.exit(1)
+          total_events = 0
+          for cat in cats:
+              for src in cat.get('sources', []):
+                  evts = src.get('events', [])
+                  total_events += len(evts)
+                  for e in evts:
+                      if not e.get('title'):
+                          print(f'WARNING: Empty title in {src[\"name\"]}')
+          print(f'Validation OK: {len(cats)} categories, {total_events} total sample events')
+          print(f'Last updated: {d.get(\"last_updated\", \"unknown\")}')
+          if total_events < 20:
+              print('WARNING: Fewer than 20 total events — some scrapers may have failed')
+          "
+
+      - name: Commit and push if changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add resources/resources.json resources/resources.html
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: refresh event resources data ($(date -u '+%Y-%m-%d'))"
+            git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" HEAD:main
+          fi
+
+      - name: Deploy updated resources to live site
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+        run: |
+          python -c "
+          import os, sys
+          host = os.environ.get('FTP_SERVER', '')
+          user = os.environ.get('FTP_USER', '')
+          pw = os.environ.get('FTP_PASS', '')
+          if not all([host, user, pw]):
+              print('FTP credentials not set, skipping deploy')
+              sys.exit(0)
+          from ftplib import FTP
+          ftp = FTP(host)
+          ftp.login(user, pw)
+          base = '/findtorontoevents.ca/resources'
+          try:
+              ftp.cwd(base)
+          except:
+              ftp.mkd(base)
+              ftp.cwd(base)
+          with open('resources/resources.json', 'rb') as f:
+              ftp.storbinary('STOR resources.json', f)
+          print('Uploaded resources.json')
+          with open('resources/resources.html', 'rb') as f:
+              ftp.storbinary('STOR resources.html', f)
+          print('Uploaded resources.html')
+          # Also upload the API endpoint
+          api_dir = '/findtorontoevents.ca/api/events'
+          try:
+              ftp.cwd(api_dir)
+          except:
+              ftp.mkd(api_dir)
+              ftp.cwd(api_dir)
+          with open('api/events/resources.php', 'rb') as f:
+              ftp.storbinary('STOR resources.php', f)
+          print('Uploaded resources.php API')
+          ftp.quit()
+          print('FTP deploy complete')
+          "
+
+      - name: Verify live API responds
+        continue-on-error: true
+        run: |
+          echo "Waiting 5s for FTP to sync..."
+          sleep 5
+          echo "=== Checking live API ==="
+          RESPONSE=$(curl -s --max-time 15 "https://findtorontoevents.ca/api/events/resources.php?today=1") || true
+          echo "$RESPONSE" | python -c "
+          import sys, json
+          try:
+              d = json.load(sys.stdin)
+              if d.get('ok'):
+                  cats = len(d.get('categories', []))
+                  today = d.get('todays_count', 0)
+                  print(f'API OK: {cats} categories, {today} events today')
+                  print(f'Date: {d.get(\"today_date\", \"unknown\")}')
+              else:
+                  print(f'API error: {d.get(\"error\", \"unknown\")}')
+          except:
+              print('Could not parse API response (may not be deployed yet)')
+          " || echo "API check: $RESPONSE"
+
+      # Reset workspace so checkout action's post step doesn't fail
+      - name: Restore workspace for checkout post
+        if: always()
+        run: |
+          git checkout --detach ${{ github.sha }} 2>/dev/null || true
+          git reset --hard ${{ github.sha }} 2>/dev/null || true
