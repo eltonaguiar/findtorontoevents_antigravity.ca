@@ -114,7 +114,7 @@ async function main() {
     if (ev.isMultiDay) return false;
     if (!ev.url) return false;
     if (!forceCheck && ev.multiDayChecked) return false;
-    return /eventbrite\.\w+/i.test(ev.url);
+    return /eventbrite\.\w+/i.test(ev.url) || /meetup\.com/i.test(ev.url);
   });
 
   console.log('Eventbrite events to check for multi-date:', toCheck.length);

@@ -101,6 +101,21 @@ jobs:
             echo "::warning::Eventbrite scraper returned fewer than 50 events; check for API issues."
           fi
 
+      - name: Verify Meetup scraper is working
+        run: |
+          count=$(python -c "
+          import json
+          with open('next/events.json') as f:
+              data = json.load(f)
+          events = data if isinstance(data, list) else data.get('events', [])
+          n = sum(1 for e in events if (e.get('source') or '').strip() == 'Meetup')
+          print(n)
+          ")
+          echo "Meetup events in events.json: $count"
+          if [ "$count" -lt 5 ]; then
+            echo "::warning::Meetup scraper returned fewer than 5 events; check if page structure changed."
+          fi
+
       - name: Commit and push if changed
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

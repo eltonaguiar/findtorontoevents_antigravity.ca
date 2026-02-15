@@ -76,6 +76,7 @@ var GENERIC_PATTERNS = [
 function getPatternsForUrl(eventUrl) {
   if (/eventbrite\.\w+/i.test(eventUrl)) return EVENTBRITE_PATTERNS;
   if (/ticketmaster\.\w+/i.test(eventUrl)) return TICKETMASTER_PATTERNS;
+  if (/meetup\.com/i.test(eventUrl)) return GENERIC_PATTERNS;
   if (/seatgeek\.\w+/i.test(eventUrl)) return GENERIC_PATTERNS;
   if (/stubhub\.\w+/i.test(eventUrl)) return GENERIC_PATTERNS;
   if (/axs\.com/i.test(eventUrl)) return GENERIC_PATTERNS;

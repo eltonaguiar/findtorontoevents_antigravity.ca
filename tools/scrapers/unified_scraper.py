@@ -40,6 +40,7 @@ except ImportError:
     # Direct platform scrapers (NEW)
     from eventbrite_scraper import EventbriteScraper
     from ticketmaster_scraper import TicketmasterScraper
+    from meetup_scraper import MeetupScraper
     # Community calendars
     from toronto_events_weekly import TorontoEventsWeeklyScraper
     from american_arenas import AmericanArenasScraper
@@ -65,6 +66,7 @@ class UnifiedTorontoScraper:
             # Direct platform scrapers (NEW - replaces AllEvents aggregator)
             EventbriteScraper(),
             TicketmasterScraper(),
+            MeetupScraper(),
 
             # Community calendars
             UnityMapsScraper(),
