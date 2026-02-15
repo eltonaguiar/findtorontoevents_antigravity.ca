@@ -1,0 +1,106 @@
+# CURSORCODE_Feb152026 — Pair Fingerprint + Spike Scanner Automation
+name: Pair Fingerprint & Spike Scanner (CURSORCODE_Feb152026)
+
+on:
+  schedule:
+    # Spike scan: every 30 minutes (catches fast-moving opportunities)
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to run'
+        required: true
+        default: 'full_cycle'
+        type: choice
+        options:
+          - full_cycle
+          - build_fingerprints
+          - scan_spikes
+          - scan_patterns
+          - resolve_all
+
+jobs:
+  fingerprint-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Determine action
+        id: action
+        run: |
+          ACTION="${{ github.event.inputs.action || 'full_cycle' }}"
+          echo "action=$ACTION" >> $GITHUB_OUTPUT
+          # Build fingerprints only once per day (at midnight UTC)
+          HOUR=$(date -u +%H)
+          MINUTE=$(date -u +%M)
+          if [ "$HOUR" = "00" ] && [ "$MINUTE" -lt "30" ]; then
+            echo "should_build=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_build=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Step 1: Build fingerprints (daily or on-demand)
+      - name: Build Fingerprints
+        if: steps.action.outputs.action == 'full_cycle' && steps.action.outputs.should_build == 'true' || steps.action.outputs.action == 'build_fingerprints'
+        run: |
+          echo "=== Building Pair Fingerprints ==="
+          RESP=$(curl -s -m 120 "https://findtorontoevents.ca/live-monitor/api/pair_fingerprint.php?action=build&key=livetrader2026")
+          echo "$RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Built: {d.get(\"built\",0)} fingerprints from {d.get(\"pairs_analyzed\",0)} pairs ({d.get(\"elapsed\",\"?\")})')" 2>/dev/null || echo "$RESP"
+
+      # Step 2: Spike scan (every 30 min)
+      - name: Scan for Spikes (All Assets)
+        if: steps.action.outputs.action == 'full_cycle' || steps.action.outputs.action == 'scan_spikes'
+        run: |
+          echo "=== Scanning for Spikes ==="
+          RESP=$(curl -s -m 90 "https://findtorontoevents.ca/live-monitor/api/spike_scanner.php?action=scan&key=livetrader2026")
+          echo "$RESP" | python3 -c "
+          import sys,json
+          d=json.load(sys.stdin)
+          c=d.get('crypto',{})
+          s=d.get('stocks',{})
+          f=d.get('forex',{})
+          print(f'Crypto: {c.get(\"count\",0)} spikes from {c.get(\"scanned\",0)} pairs')
+          print(f'Stocks: {s.get(\"count\",0)} spikes from {s.get(\"scanned\",0)} tickers')
+          print(f'Forex:  {f.get(\"count\",0)} spikes from {f.get(\"scanned\",0)} pairs')
+          print(f'Total:  {d.get(\"total_spikes\",0)} new spikes ({d.get(\"elapsed\",\"?\")})')
+          for asset in ['crypto','stocks','forex']:
+            spks = d.get(asset,{}).get('spikes',[])
+            for sp in spks[:5]:
+              sev = sp.get('severity','?')
+              pair = sp.get('pair','?')
+              typ = sp.get('type','?')
+              chg = sp.get('change_1h',sp.get('change','?'))
+              print(f'  [{sev}] {pair}: {typ} ({chg}%)')
+          " 2>/dev/null || echo "$RESP"
+
+      # Step 3: Pattern alerts (every 30 min)
+      - name: Scan for Pattern Matches
+        if: steps.action.outputs.action == 'full_cycle' || steps.action.outputs.action == 'scan_patterns'
+        run: |
+          echo "=== Scanning for Pattern Matches ==="
+          RESP=$(curl -s -m 90 "https://findtorontoevents.ca/live-monitor/api/pair_fingerprint.php?action=scan&key=livetrader2026")
+          echo "$RESP" | python3 -c "
+          import sys,json
+          d=json.load(sys.stdin)
+          print(f'Scanned: {d.get(\"scanned\",0)} fingerprinted pairs')
+          print(f'New alerts: {d.get(\"alerts_generated\",0)}')
+          for a in d.get('alerts',[])[:10]:
+            print(f'  [{a.get(\"confidence\",0):.0f}%] {a[\"pair\"]} ({a[\"class\"]}): {a[\"pattern\"]} -> {a[\"direction\"]} (TP:{a[\"tp\"]} SL:{a[\"sl\"]})')
+          " 2>/dev/null || echo "$RESP"
+
+      # Step 4: Resolve open alerts and spikes
+      - name: Resolve Open Alerts
+        if: steps.action.outputs.action == 'full_cycle' || steps.action.outputs.action == 'resolve_all'
+        run: |
+          echo "=== Resolving Spike Alerts ==="
+          curl -s -m 60 "https://findtorontoevents.ca/live-monitor/api/spike_scanner.php?action=resolve&key=livetrader2026" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Settled: {d.get(\"settled\",0)}, Expired: {d.get(\"expired\",0)}')" 2>/dev/null || true
+          
+          echo "=== Resolving Fingerprint Alerts ==="
+          curl -s -m 60 "https://findtorontoevents.ca/live-monitor/api/pair_fingerprint.php?action=resolve&key=livetrader2026" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Settled: {d.get(\"settled\",0)}, Expired: {d.get(\"expired\",0)}')" 2>/dev/null || true
+
+      - name: Summary
+        run: |
+          echo "=== Pair Fingerprint & Spike Scanner Cycle Complete ==="
+          echo "Dashboard: https://findtorontoevents.ca/live-monitor/pair-fingerprints.html"
+          echo "Spike API: https://findtorontoevents.ca/live-monitor/api/spike_scanner.php?action=active"
+          echo "Alert API: https://findtorontoevents.ca/live-monitor/api/pair_fingerprint.php?action=alerts"
+          echo "Tag: CURSORCODE_Feb152026"

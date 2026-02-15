@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pair Fingerprints & Spike Scanner — Per-Asset Pattern Intelligence | CURSORCODE_Feb152026</title>
+<!-- CURSORCODE_Feb152026 — Created by Cursor AI, Feb 15 2026 -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root {
+    --bg: #0a0a0f; --surface: #12121a; --surface2: #1a1a25; --border: #2a2a3a;
+    --text: #e0e0f0; --muted: #8888aa; --accent: #6366f1; --green: #22c55e;
+    --red: #ef4444; --yellow: #eab308; --orange: #f97316; --cyan: #06b6d4;
+    --purple: #a855f7; --pink: #ec4899;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, system-ui, sans-serif; line-height: 1.5; }
+.container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+.header { text-align: center; margin-bottom: 30px; }
+.header h1 { font-size: 2rem; background: linear-gradient(135deg, var(--cyan), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.header .subtitle { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+.tabs { display: flex; gap: 4px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+.tab { padding: 8px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--muted); font-size: 0.85rem; transition: all 0.2s; }
+.tab:hover { color: var(--text); border-color: var(--accent); }
+.tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+.grid { display: grid; gap: 16px; }
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.card h3 { font-size: 0.9rem; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.metric { font-size: 2rem; font-weight: 700; }
+.metric.green { color: var(--green); } .metric.red { color: var(--red); } .metric.yellow { color: var(--yellow); }
+.metric.cyan { color: var(--cyan); } .metric.purple { color: var(--purple); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+.badge-urgent { background: rgba(239,68,68,0.2); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.badge-alert { background: rgba(249,115,22,0.2); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+.badge-watch { background: rgba(234,179,8,0.2); color: var(--yellow); border: 1px solid rgba(234,179,8,0.3); }
+.badge-buy { background: rgba(34,197,94,0.2); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+.badge-short { background: rgba(239,68,68,0.2); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.badge-crypto { background: rgba(6,182,212,0.15); color: var(--cyan); } .badge-stock { background: rgba(99,102,241,0.15); color: var(--accent); }
+.badge-forex { background: rgba(168,85,247,0.15); color: var(--purple); } .badge-meme { background: rgba(236,72,153,0.15); color: var(--pink); }
+.badge-mean { background: rgba(34,197,94,0.15); color: var(--green); } .badge-trend { background: rgba(6,182,212,0.15); color: var(--cyan); }
+.badge-breakout { background: rgba(249,115,22,0.15); color: var(--orange); } .badge-pump { background: rgba(236,72,153,0.15); color: var(--pink); }
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+th { text-align: left; padding: 10px 8px; border-bottom: 2px solid var(--border); color: var(--muted); font-size: 0.75rem; text-transform: uppercase; }
+td { padding: 8px; border-bottom: 1px solid var(--border); }
+tr:hover { background: var(--surface2); }
+.pnl-pos { color: var(--green); } .pnl-neg { color: var(--red); }
+.section { display: none; } .section.active { display: block; }
+.loading { text-align: center; padding: 40px; color: var(--muted); }
+.refresh-btn { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; }
+.refresh-btn:hover { opacity: 0.9; }
+.pair-detail { margin-top: 16px; }
+.rec-box { background: var(--surface2); border-left: 3px solid var(--accent); padding: 12px; border-radius: 0 8px 8px 0; margin-top: 12px; font-size: 0.85rem; }
+.rec-box h4 { color: var(--accent); margin-bottom: 6px; }
+.chart-container { position: relative; height: 200px; margin-top: 12px; }
+.filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+.filter-bar select { background: var(--surface); color: var(--text); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; }
+.pulse { animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.spark { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.spark.urgent { background: var(--red); } .spark.alert { background: var(--orange); } .spark.watch { background: var(--yellow); }
+@media (max-width: 768px) { .container { padding: 12px; } .header h1 { font-size: 1.4rem; } .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Pair Fingerprints & Spike Scanner</h1>
+        <p class="subtitle">Per-asset behavioral intelligence — the strategy commercial alert services use</p>
+        <p style="font-size:0.7rem;color:var(--muted);margin-top:4px">CURSORCODE_Feb152026</p>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="showSection('spikes')">Live Spikes</div>
+        <div class="tab" onclick="showSection('fingerprints')">Pair Fingerprints</div>
+        <div class="tab" onclick="showSection('alerts')">Pattern Alerts</div>
+        <div class="tab" onclick="showSection('leaderboard')">Leaderboard</div>
+        <div class="tab" onclick="showSection('performance')">Performance</div>
+        <div class="tab" onclick="showSection('detail')">Pair Detail</div>
+    </div>
+
+    <!-- LIVE SPIKES -->
+    <div id="sec-spikes" class="section active">
+        <div class="grid grid-4" id="spike-summary" style="margin-bottom:16px"></div>
+        <div class="filter-bar">
+            <select id="spike-class-filter" onchange="loadSpikes()">
+                <option value="">All Assets</option>
+                <option value="CRYPTO">Crypto</option>
+                <option value="STOCK">Stocks</option>
+                <option value="FOREX">Forex</option>
+            </select>
+            <select id="spike-severity-filter" onchange="loadSpikes()">
+                <option value="">All Severities</option>
+                <option value="URGENT">Urgent</option>
+                <option value="ALERT">Alert</option>
+                <option value="WATCH">Watch</option>
+            </select>
+            <button class="refresh-btn" onclick="loadSpikes()">Refresh</button>
+        </div>
+        <div class="card"><table id="spike-table"><thead><tr>
+            <th>Severity</th><th>Pair</th><th>Asset</th><th>Type</th><th>Change</th><th>Vol Ratio</th>
+            <th>Direction</th><th>Entry</th><th>TP/SL</th><th>Hold</th><th>Fingerprint</th><th>Time</th>
+        </tr></thead><tbody id="spike-body"></tbody></table></div>
+    </div>
+
+    <!-- PAIR FINGERPRINTS -->
+    <div id="sec-fingerprints" class="section">
+        <div class="grid grid-4" id="fp-summary" style="margin-bottom:16px"></div>
+        <div class="filter-bar">
+            <select id="fp-class-filter" onchange="loadFingerprints()">
+                <option value="">All Assets</option>
+                <option value="CRYPTO">Crypto</option><option value="STOCK">Stocks</option>
+                <option value="FOREX">Forex</option><option value="MEME">Meme Coins</option>
+            </select>
+            <select id="fp-sort" onchange="loadFingerprints()">
+                <option value="win_rate">Win Rate</option><option value="avg_pnl_pct">Avg PnL</option>
+                <option value="total_signals">Signals</option><option value="breakout_score">Breakout Score</option>
+            </select>
+        </div>
+        <div class="card"><table id="fp-table"><thead><tr>
+            <th>Pair</th><th>Asset</th><th>Behavior</th><th>Win Rate</th><th>Avg PnL</th><th>Signals</th>
+            <th>Best Algo</th><th>Best Algo WR</th><th>Optimal TP</th><th>Optimal SL</th><th>Session</th>
+        </tr></thead><tbody id="fp-body"></tbody></table></div>
+    </div>
+
+    <!-- PATTERN ALERTS -->
+    <div id="sec-alerts" class="section">
+        <div class="grid grid-3" id="alert-summary" style="margin-bottom:16px"></div>
+        <div class="card"><table id="alert-table"><thead><tr>
+            <th>Pair</th><th>Asset</th><th>Pattern</th><th>Confidence</th><th>Direction</th>
+            <th>Entry</th><th>TP/SL</th><th>Hold</th><th>Status</th><th>PnL</th><th>Time</th>
+        </tr></thead><tbody id="alert-body"></tbody></table></div>
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div id="sec-leaderboard" class="section">
+        <div class="grid grid-3" id="lb-categories" style="margin-bottom:16px"></div>
+        <div class="card"><table id="lb-table"><thead><tr>
+            <th>#</th><th>Pair</th><th>Asset</th><th>Behavior</th><th>Win Rate</th><th>Avg PnL</th>
+            <th>Signals</th><th>Best Algo</th><th>Momentum Corr</th><th>TP/SL</th>
+        </tr></thead><tbody id="lb-body"></tbody></table></div>
+    </div>
+
+    <!-- PERFORMANCE -->
+    <div id="sec-performance" class="section">
+        <div class="grid grid-2" style="margin-bottom:16px">
+            <div class="card"><h3>Coverage by Asset Class</h3><div class="chart-container"><canvas id="chart-coverage"></canvas></div></div>
+            <div class="card"><h3>Behavior Distribution</h3><div class="chart-container"><canvas id="chart-behaviors"></canvas></div></div>
+        </div>
+        <div class="grid grid-2">
+            <div class="card"><h3>Top Patterns by Win Rate</h3><div id="top-patterns"></div></div>
+            <div class="card"><h3>Spike Scanner Performance</h3><div id="spike-perf"></div></div>
+        </div>
+    </div>
+
+    <!-- PAIR DETAIL -->
+    <div id="sec-detail" class="section">
+        <div class="filter-bar">
+            <input type="text" id="detail-pair" placeholder="Enter pair (e.g. BTC_USDT, AAPL, EURUSD)" style="background:var(--surface);color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:6px;width:300px;">
+            <button class="refresh-btn" onclick="loadPairDetail()">Lookup</button>
+        </div>
+        <div id="detail-content"></div>
+    </div>
+</div>
+
+<script>
+var API_BASE = '/live-monitor/api';
+var SS_BASE  = API_BASE + '/spike_scanner.php';
+var PF_BASE  = API_BASE + '/pair_fingerprint.php';
+
+function showSection(name) {
+    document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+    document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+    document.getElementById('sec-' + name).classList.add('active');
+    var tabs = document.querySelectorAll('.tab');
+    var map = {spikes:0,fingerprints:1,alerts:2,leaderboard:3,performance:4,detail:5};
+    if (tabs[map[name]]) tabs[map[name]].classList.add('active');
+    if (name === 'spikes') loadSpikes();
+    if (name === 'fingerprints') loadFingerprints();
+    if (name === 'alerts') loadAlerts();
+    if (name === 'leaderboard') loadLeaderboard();
+    if (name === 'performance') loadPerformance();
+}
+
+function fetchJSON(url, cb) {
+    var x = new XMLHttpRequest();
+    x.open('GET', url, true);
+    x.onreadystatechange = function() {
+        if (x.readyState === 4) {
+            try { cb(JSON.parse(x.responseText)); } catch(e) { cb({ok:false,error:e.message}); }
+        }
+    };
+    x.send();
+}
+
+function sevBadge(s) {
+    var cls = (s==='URGENT'?'urgent':(s==='ALERT'?'alert':'watch'));
+    return '<span class="spark '+cls+'"></span><span class="badge badge-'+cls+'">'+s+'</span>';
+}
+function classBadge(c) {
+    var m = {CRYPTO:'crypto',STOCK:'stock',FOREX:'forex',MEME:'meme'};
+    return '<span class="badge badge-'+(m[c]||'crypto')+'">'+c+'</span>';
+}
+function behaviorBadge(b) {
+    var m = {MEAN_REVERTING:'mean',TRENDING:'trend',BREAKOUT_PRONE:'breakout',PUMP_SUSCEPTIBLE:'pump'};
+    return '<span class="badge badge-'+(m[b]||'mean')+'">'+b+'</span>';
+}
+function pnlClass(v) { return parseFloat(v)>0?'pnl-pos':'pnl-neg'; }
+function fmt(v,d) { return parseFloat(v||0).toFixed(d||2); }
+function fmtTime(t) { if(!t) return '-'; var d=new Date(t+'Z'); return d.toLocaleString(); }
+
+// ── LIVE SPIKES ──────────────────────────────────────────────
+function loadSpikes() {
+    var cls = document.getElementById('spike-class-filter').value;
+    var sev = document.getElementById('spike-severity-filter').value;
+    var url = SS_BASE + '?action=active';
+    if (cls) url += '&asset_class=' + cls;
+    if (sev) url += '&severity=' + sev;
+    fetchJSON(url, function(d) {
+        if (!d.ok) return;
+        var spikes = d.spikes || [];
+        var urgent=0, alert=0, watch=0;
+        spikes.forEach(function(s) { if(s.severity==='URGENT')urgent++; else if(s.severity==='ALERT')alert++; else watch++; });
+        document.getElementById('spike-summary').innerHTML =
+            '<div class="card"><h3>Active Spikes</h3><div class="metric cyan">'+d.active+'</div></div>'+
+            '<div class="card"><h3>Urgent</h3><div class="metric red pulse">'+urgent+'</div></div>'+
+            '<div class="card"><h3>Alerts</h3><div class="metric yellow">'+alert+'</div></div>'+
+            '<div class="card"><h3>Watch</h3><div class="metric purple">'+watch+'</div></div>';
+        var html = '';
+        spikes.forEach(function(s) {
+            var change = parseFloat(s.price_change_pct||0);
+            html += '<tr>'+
+                '<td>'+sevBadge(s.severity)+'</td>'+
+                '<td><strong>'+s.pair+'</strong></td>'+
+                '<td>'+classBadge(s.asset_class)+'</td>'+
+                '<td>'+s.spike_type+'</td>'+
+                '<td class="'+pnlClass(change)+'">'+fmt(change)+'%</td>'+
+                '<td>'+fmt(s.volume_ratio)+'x</td>'+
+                '<td><span class="badge badge-'+(s.signal_type==='BUY'?'buy':'short')+'">'+s.signal_type+'</span></td>'+
+                '<td>$'+fmt(s.entry_price,4)+'</td>'+
+                '<td>'+fmt(s.target_tp_pct)+'% / '+fmt(s.target_sl_pct)+'%</td>'+
+                '<td>'+s.max_hold_hours+'h</td>'+
+                '<td>'+(s.fingerprint_behavior?behaviorBadge(s.fingerprint_behavior):'-')+'</td>'+
+                '<td style="font-size:0.75rem;color:var(--muted)">'+fmtTime(s.created_at)+'</td></tr>';
+        });
+        document.getElementById('spike-body').innerHTML = html || '<tr><td colspan="12" style="text-align:center;color:var(--muted)">No active spikes. Run a scan first.</td></tr>';
+    });
+}
+
+// ── FINGERPRINTS ─────────────────────────────────────────────
+function loadFingerprints() {
+    var cls = document.getElementById('fp-class-filter').value;
+    var sort = document.getElementById('fp-sort').value;
+    var url = PF_BASE + '?action=leaderboard&sort='+sort+'&limit=100';
+    if (cls) url += '&asset_class='+cls;
+    fetchJSON(url, function(d) {
+        if (!d.ok) return;
+        var pairs = d.pairs || [];
+        var cats = d.categories || [];
+        var sumHtml = '';
+        cats.forEach(function(c) {
+            sumHtml += '<div class="card"><h3>'+c.asset_class+'</h3><div class="metric" style="font-size:1.5rem">'+c.pairs+' pairs</div><div style="color:var(--muted);font-size:0.8rem">Avg WR: '+c.avg_wr+'% | Avg PnL: '+fmt(c.avg_pnl)+'%</div></div>';
+        });
+        document.getElementById('fp-summary').innerHTML = sumHtml;
+        var html = '';
+        pairs.forEach(function(p) {
+            html += '<tr onclick="lookupPair(\''+p.pair+'\')" style="cursor:pointer">'+
+                '<td><strong>'+p.pair+'</strong></td>'+
+                '<td>'+classBadge(p.asset_class)+'</td>'+
+                '<td>'+behaviorBadge(p.behavior_type)+'</td>'+
+                '<td class="'+pnlClass(p.win_rate-50)+'">'+fmt(p.win_rate,1)+'%</td>'+
+                '<td class="'+pnlClass(p.avg_pnl_pct)+'">'+fmt(p.avg_pnl_pct)+'%</td>'+
+                '<td>'+p.total_signals+'</td>'+
+                '<td>'+(p.best_algorithm||'-')+'</td>'+
+                '<td>'+fmt(p.best_algo_wr,1)+'%</td>'+
+                '<td>'+fmt(p.optimal_tp_pct)+'%</td>'+
+                '<td>'+fmt(p.optimal_sl_pct)+'%</td>'+
+                '<td>'+(p.best_session||'-')+'</td></tr>';
+        });
+        document.getElementById('fp-body').innerHTML = html || '<tr><td colspan="11" style="text-align:center;color:var(--muted)">No fingerprints yet. Run build first.</td></tr>';
+    });
+}
+
+// ── PATTERN ALERTS ───────────────────────────────────────────
+function loadAlerts() {
+    fetchJSON(PF_BASE + '?action=alerts', function(d) {
+        if (!d.ok) return;
+        var alerts = d.alerts || [];
+        var perf = d.performance || {};
+        document.getElementById('alert-summary').innerHTML =
+            '<div class="card"><h3>Active Pattern Alerts</h3><div class="metric cyan">'+d.active_alerts+'</div></div>'+
+            '<div class="card"><h3>Historical Win Rate</h3><div class="metric '+(perf.win_rate>=50?'green':'red')+'">'+(perf.win_rate||0)+'%</div><div style="font-size:0.8rem;color:var(--muted)">'+perf.total_resolved+' resolved</div></div>'+
+            '<div class="card"><h3>Avg PnL</h3><div class="metric '+pnlClass(perf.avg_pnl)+'">'+fmt(perf.avg_pnl)+'%</div></div>';
+        var html = '';
+        alerts.forEach(function(a) {
+            html += '<tr>'+
+                '<td><strong>'+a.pair+'</strong></td>'+
+                '<td>'+classBadge(a.asset_class)+'</td>'+
+                '<td>'+a.pattern_name+'</td>'+
+                '<td>'+fmt(a.confidence_pct,1)+'%</td>'+
+                '<td><span class="badge badge-'+(a.signal_type==='BUY'?'buy':'short')+'">'+a.signal_type+'</span></td>'+
+                '<td>$'+fmt(a.entry_price,4)+'</td>'+
+                '<td>'+fmt(a.target_tp_pct)+'% / '+fmt(a.target_sl_pct)+'%</td>'+
+                '<td>'+a.max_hold_hours+'h</td>'+
+                '<td><span class="badge">'+(a.status||'active')+'</span></td>'+
+                '<td class="'+pnlClass(a.pnl_pct)+'">'+fmt(a.pnl_pct)+'%</td>'+
+                '<td style="font-size:0.75rem;color:var(--muted)">'+fmtTime(a.created_at)+'</td></tr>';
+        });
+        document.getElementById('alert-body').innerHTML = html || '<tr><td colspan="11" style="text-align:center;color:var(--muted)">No active pattern alerts.</td></tr>';
+    });
+}
+
+// ── LEADERBOARD ──────────────────────────────────────────────
+function loadLeaderboard() {
+    fetchJSON(PF_BASE + '?action=leaderboard&sort=win_rate&limit=50', function(d) {
+        if (!d.ok) return;
+        var cats = d.categories || [];
+        var catHtml = '';
+        cats.forEach(function(c) {
+            catHtml += '<div class="card"><h3>'+c.asset_class+'</h3><div class="metric" style="font-size:1.3rem">'+c.avg_wr+'% WR</div><div style="font-size:0.8rem;color:var(--muted)">'+c.pairs+' pairs | '+c.total_signals+' signals</div></div>';
+        });
+        document.getElementById('lb-categories').innerHTML = catHtml;
+        var pairs = d.pairs || [];
+        var html = '';
+        pairs.forEach(function(p, i) {
+            html += '<tr onclick="lookupPair(\''+p.pair+'\')" style="cursor:pointer">'+
+                '<td>'+(i+1)+'</td>'+
+                '<td><strong>'+p.pair+'</strong></td>'+
+                '<td>'+classBadge(p.asset_class)+'</td>'+
+                '<td>'+behaviorBadge(p.behavior_type)+'</td>'+
+                '<td class="'+pnlClass(p.win_rate-50)+'"><strong>'+fmt(p.win_rate,1)+'%</strong></td>'+
+                '<td class="'+pnlClass(p.avg_pnl_pct)+'">'+fmt(p.avg_pnl_pct)+'%</td>'+
+                '<td>'+p.total_signals+'</td>'+
+                '<td>'+(p.best_algorithm||'-')+'</td>'+
+                '<td>'+fmt(p.momentum_corr,3)+'</td>'+
+                '<td>'+fmt(p.optimal_tp_pct)+'%/'+fmt(p.optimal_sl_pct)+'%</td></tr>';
+        });
+        document.getElementById('lb-body').innerHTML = html;
+    });
+}
+
+// ── PERFORMANCE ──────────────────────────────────────────────
+var coverageChart=null, behaviorChart=null;
+function loadPerformance() {
+    fetchJSON(PF_BASE + '?action=performance', function(d) {
+        if (!d.ok) return;
+        var cov = d.coverage||[], beh = d.behaviors||[], tp = d.top_patterns||[];
+        // Coverage chart
+        if(coverageChart) coverageChart.destroy();
+        var ctx = document.getElementById('chart-coverage').getContext('2d');
+        coverageChart = new Chart(ctx, {type:'bar',data:{labels:cov.map(function(c){return c.asset_class}),datasets:[
+            {label:'Pairs',data:cov.map(function(c){return c.pairs}),backgroundColor:'rgba(99,102,241,0.6)'},
+            {label:'Avg WR%',data:cov.map(function(c){return c.avg_wr}),backgroundColor:'rgba(34,197,94,0.6)'}
+        ]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}},plugins:{legend:{labels:{color:'#8888aa'}}}}});
+        // Behavior chart
+        if(behaviorChart) behaviorChart.destroy();
+        var ctx2 = document.getElementById('chart-behaviors').getContext('2d');
+        var colors = ['rgba(34,197,94,0.7)','rgba(6,182,212,0.7)','rgba(249,115,22,0.7)','rgba(236,72,153,0.7)','rgba(168,85,247,0.7)'];
+        behaviorChart = new Chart(ctx2, {type:'doughnut',data:{labels:beh.map(function(b){return b.behavior_type}),datasets:[{data:beh.map(function(b){return b.cnt}),backgroundColor:colors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8888aa'}}}}});
+        // Top patterns
+        var tpHtml = '<table><thead><tr><th>Pair</th><th>Pattern</th><th>Win Rate</th><th>Occurrences</th></tr></thead><tbody>';
+        tp.forEach(function(p) {
+            tpHtml += '<tr><td>'+p.pair+'</td><td>'+p.pattern_name+'</td><td class="'+pnlClass(p.win_rate-50)+'">'+fmt(p.win_rate,1)+'%</td><td>'+p.occurrences+'</td></tr>';
+        });
+        tpHtml += '</tbody></table>';
+        document.getElementById('top-patterns').innerHTML = tpHtml;
+    });
+    // Spike performance
+    fetchJSON(SS_BASE + '?action=performance', function(d) {
+        if (!d.ok) return;
+        var html = '<h4 style="color:var(--cyan);margin-bottom:8px">By Severity</h4><table><thead><tr><th>Severity</th><th>Total</th><th>Win Rate</th><th>Avg PnL</th></tr></thead><tbody>';
+        (d.by_severity||[]).forEach(function(s) { html += '<tr><td>'+sevBadge(s.severity)+'</td><td>'+s.total+'</td><td>'+s.win_rate+'%</td><td class="'+pnlClass(s.avg_pnl)+'">'+fmt(s.avg_pnl)+'%</td></tr>'; });
+        html += '</tbody></table>';
+        html += '<h4 style="color:var(--cyan);margin:12px 0 8px">By Asset Class</h4><table><thead><tr><th>Class</th><th>Total</th><th>Win Rate</th><th>Avg PnL</th></tr></thead><tbody>';
+        (d.by_class||[]).forEach(function(c) { html += '<tr><td>'+classBadge(c.asset_class)+'</td><td>'+c.total+'</td><td>'+c.win_rate+'%</td><td class="'+pnlClass(c.avg_pnl)+'">'+fmt(c.avg_pnl)+'%</td></tr>'; });
+        html += '</tbody></table>';
+        document.getElementById('spike-perf').innerHTML = html;
+    });
+}
+
+// ── PAIR DETAIL ──────────────────────────────────────────────
+function lookupPair(pair) {
+    document.getElementById('detail-pair').value = pair;
+    showSection('detail');
+    loadPairDetail();
+}
+function loadPairDetail() {
+    var pair = document.getElementById('detail-pair').value.trim();
+    if (!pair) return;
+    fetchJSON(PF_BASE + '?action=fingerprint&pair=' + encodeURIComponent(pair), function(d) {
+        if (!d.ok) {
+            document.getElementById('detail-content').innerHTML = '<div class="card" style="text-align:center;color:var(--muted)">No fingerprint found for '+pair+'. Run a build cycle first.</div>';
+            return;
+        }
+        var fp = d.fingerprint, rec = d.recommendation||{}, patterns = d.patterns||[], alerts = d.recent_alerts||[];
+        var html = '<div class="grid grid-4" style="margin-bottom:16px">'+
+            '<div class="card"><h3>Behavior</h3><div style="margin-top:8px">'+behaviorBadge(fp.behavior_type)+'</div></div>'+
+            '<div class="card"><h3>Win Rate</h3><div class="metric '+(fp.win_rate>=50?'green':'red')+'">'+fmt(fp.win_rate,1)+'%</div><div style="font-size:0.8rem;color:var(--muted)">'+fp.total_signals+' signals</div></div>'+
+            '<div class="card"><h3>Optimal TP/SL</h3><div class="metric cyan">'+fmt(fp.optimal_tp_pct)+'%/'+fmt(fp.optimal_sl_pct)+'%</div></div>'+
+            '<div class="card"><h3>Best Algorithm</h3><div style="font-size:1.1rem;font-weight:600;margin-top:8px">'+fp.best_algorithm+'</div><div style="font-size:0.8rem;color:var(--muted)">'+fmt(fp.best_algo_wr,1)+'% WR</div></div>'+
+        '</div>';
+        html += '<div class="grid grid-2" style="margin-bottom:16px">'+
+            '<div class="card"><h3>Behavioral Scores</h3><div style="margin-top:8px">'+
+            '<div>Momentum Correlation: <strong>'+fmt(fp.momentum_corr,4)+'</strong></div>'+
+            '<div>Mean Reversion Score: <strong>'+fmt(fp.mean_revert_score,1)+'</strong></div>'+
+            '<div>Trend Score: <strong>'+fmt(fp.trend_score,1)+'</strong></div>'+
+            '<div>Breakout Score: <strong>'+fmt(fp.breakout_score,1)+'</strong></div>'+
+            '<div>Pump Susceptibility: <strong>'+fmt(fp.pump_susceptibility,1)+'</strong></div>'+
+            '<div>Volatility: <strong>'+fmt(fp.avg_volatility_pct,2)+'%</strong></div>'+
+            '<div>Best Session: <strong>'+fp.best_session+'</strong></div>'+
+            '</div></div>';
+        if (rec.strategy) {
+            html += '<div class="card"><h3>Strategy Recommendation</h3>'+
+                '<div class="rec-box"><h4>'+rec.behavior+' — Confidence: '+rec.confidence+'</h4>'+
+                '<p>'+rec.strategy+'</p>'+
+                '<div style="margin-top:8px"><strong>Entry Rules:</strong><ul>';
+            (rec.entry_rules||[]).forEach(function(r) { html += '<li>'+r+'</li>'; });
+            html += '</ul></div><div style="margin-top:6px"><strong>Exit Rules:</strong><ul>';
+            (rec.exit_rules||[]).forEach(function(r) { html += '<li>'+r+'</li>'; });
+            html += '</ul></div></div></div>';
+        }
+        html += '</div>';
+        // Patterns
+        if (patterns.length > 0) {
+            html += '<div class="card" style="margin-bottom:16px"><h3>Known Patterns</h3><table><thead><tr><th>Pattern</th><th>Win Rate</th><th>Avg Return</th><th>Occurrences</th></tr></thead><tbody>';
+            patterns.forEach(function(p) {
+                html += '<tr><td>'+p.pattern_name+'</td><td class="'+pnlClass(p.win_rate-50)+'">'+fmt(p.win_rate,1)+'%</td><td class="'+pnlClass(p.avg_return_pct)+'">'+fmt(p.avg_return_pct)+'%</td><td>'+p.occurrences+'</td></tr>';
+            });
+            html += '</tbody></table></div>';
+        }
+        // Recent alerts
+        if (alerts.length > 0) {
+            html += '<div class="card"><h3>Recent Alerts</h3><table><thead><tr><th>Pattern</th><th>Confidence</th><th>Direction</th><th>PnL</th><th>Status</th><th>Time</th></tr></thead><tbody>';
+            alerts.forEach(function(a) {
+                html += '<tr><td>'+a.pattern_name+'</td><td>'+fmt(a.confidence_pct,1)+'%</td><td>'+a.signal_type+'</td><td class="'+pnlClass(a.pnl_pct)+'">'+fmt(a.pnl_pct)+'%</td><td>'+a.status+'</td><td>'+fmtTime(a.created_at)+'</td></tr>';
+            });
+            html += '</tbody></table></div>';
+        }
+        document.getElementById('detail-content').innerHTML = html;
+    });
+}
+
+// Initial load
+loadSpikes();
+</script>
+</body>
+</html>
