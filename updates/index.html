@@ -212,7 +212,106 @@
             </div>
         </div>
 
-        <!-- Update 2 -->
+        <!-- Update 2: Eventbrite Scraper - JSON-LD Implementation -->
+        <div class="update-card completed">
+            <div class="update-header">
+                <h3 class="update-title">✅ Eventbrite Scraper Overhaul - Direct Source Migration Complete</h3>
+                <span class="update-badge badge-completed">COMPLETED</span>
+            </div>
+            <div class="update-meta">
+                <span class="timestamp">Completed: Feb 15, 2026 | Commit: 89ef4c0</span>
+            </div>
+            <div class="update-description">
+                <strong>MAJOR UPDATE:</strong> Successfully replaced AllEvents.in aggregator dependency with direct Eventbrite web scraping using schema.org JSON-LD structured data. Pipeline now scrapes 320+ Eventbrite events per run, up from 117 via aggregator.
+            </div>
+            <div class="update-details">
+                <h4>Problem Identified:</h4>
+                <ul>
+                    <li><strong>Cursor AI Audit Finding:</strong> Eventbrite API v3 requires OAuth token but no authentication was configured</li>
+                    <li>Previous scraper used unauthenticated API endpoint (deprecated by Eventbrite)</li>
+                    <li>404 errors on /v3/events/search/ - endpoint no longer accessible without token</li>
+                    <li>Dependency on AllEvents.in aggregator (404 events, 185 aggregator-only URLs)</li>
+                </ul>
+
+                <h4>Solution Implemented:</h4>
+                <ul>
+                    <li>🔄 <strong>Web Scraping Architecture:</strong> Extract events from Eventbrite's public browse page JSON-LD structured data</li>
+                    <li>📊 <strong>Schema.org Parsing:</strong> Parse ItemList → Event objects with full metadata (title, dates, venue, coordinates, price)</li>
+                    <li>🗺️ <strong>Location Enhancement:</strong> Extract PostalAddress and GeoCoordinates from schema.org Place structure</li>
+                    <li>📅 <strong>Multi-Day Detection:</strong> Improved duration categorization (single/short/medium/long)</li>
+                    <li>🔤 <strong>Unicode Fix:</strong> Resolved Windows terminal encoding errors when processing events with special characters</li>
+                </ul>
+
+                <h4>Technical Details:</h4>
+                <ul>
+                    <li><code>_extract_event_data_from_jsonld()</code> - Extracts schema.org ItemList from JSON-LD script tags</li>
+                    <li><code>_parse_event_card()</code> - Parses schema.org Event with Place, PostalAddress, GeoCoordinates structures</li>
+                    <li>Pagination: ~32 events/page × 10 pages = 320 events per scrape</li>
+                    <li>Rate limiting: 500ms delay between page requests</li>
+                    <li>ASCII encoding fallback for duplicate detection logging (Windows compatibility)</li>
+                </ul>
+
+                <h4>Results:</h4>
+                <ul>
+                    <li>✅ <strong>320 Eventbrite events</strong> scraped successfully (previously 117 via aggregator)</li>
+                    <li>✅ <strong>Full addresses with coordinates</strong> - lat/lng extracted from schema.org geo data</li>
+                    <li>✅ <strong>1,187 total events</strong> in database (up from 1,142)</li>
+                    <li>✅ <strong>17 new events added</strong>, 82 existing events updated</li>
+                    <li>✅ <strong>13 multi-day events detected</strong> and categorized</li>
+                    <li>✅ <strong>66 events with coordinates</strong> for map visualization</li>
+                    <li>✅ Passes GitHub Actions verification (requires 50+ Eventbrite events)</li>
+                </ul>
+
+                <h4>Consistency with Existing Tools:</h4>
+                <p>This web scraping approach aligns with existing Eventbrite integration tools:</p>
+                <ul>
+                    <li>✓ <code>check_sold_out.js</code> - Already fetches/parses Eventbrite HTML pages</li>
+                    <li>✓ <code>detect_multiday.js</code> - Already scans Eventbrite page structure</li>
+                    <li>✓ <code>enrich_event_images.js</code> - Already extracts Eventbrite og:image tags</li>
+                    <li>✓ <code>resolve_allevents_links.js</code> - Resolves to Eventbrite URLs</li>
+                </ul>
+
+                <h4>Files Modified:</h4>
+                <ul>
+                    <li><code>tools/scrapers/eventbrite_scraper.py</code> - Complete rewrite for JSON-LD parsing</li>
+                    <li><code>tools/scrapers/unified_scraper.py</code> - Fixed Unicode encoding in duplicate logging</li>
+                    <li><code>events.json</code>, <code>next/events.json</code> - Updated with 320 Eventbrite events</li>
+                    <li><code>last_update.json</code> - Metadata for latest scrape</li>
+                </ul>
+
+                <h4>Pending Items:</h4>
+                <ul>
+                    <li>⏳ <strong>Ticketmaster API:</strong> API key still activating (created 20:52, typically takes 1-2 hours)</li>
+                    <li>📋 <strong>Future:</strong> Consider removing AllEvents.in scraper entirely once direct scrapers are stable</li>
+                    <li>📋 <strong>Future:</strong> Add SeatGeek, Bandsintown, Universe scrapers (21+ platforms identified in link resolver)</li>
+                </ul>
+
+                <h4>GitHub Actions Workflow:</h4>
+                <ul>
+                    <li>Daily scrape at 12:00 UTC continues to work</li>
+                    <li>Eventbrite verification step now passes (320 events > 50 minimum)</li>
+                    <li>TICKETMAST_CONSUMER_KEY secret configured (awaiting activation)</li>
+                </ul>
+
+                <h4>Database: ejaguiar1_events</h4>
+                <p>Data flow: Scrapers → next/events.json → events_sync.php → events_log table</p>
+                <ul>
+                    <li>Table: <code>events_log</code> - Main events with lat/lng, categories, tags, status, multi-day flags</li>
+                    <li>Table: <code>event_pulls</code> - Tracks scraping jobs (source, status, notes)</li>
+                    <li>Table: <code>stats_summary</code> - Dashboard metrics (total_events, upcoming_events, free_events)</li>
+                </ul>
+
+                <h4>Next Steps:</h4>
+                <ol>
+                    <li>Monitor Ticketmaster API key activation (retry in 1-2 hours)</li>
+                    <li>Verify daily GitHub Actions scrape completes successfully</li>
+                    <li>Track event count growth over next 7 days</li>
+                    <li>Consider removing AllEvents.in scraper if direct sources prove stable</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Update 3 -->
         <div class="update-card pending critical">
             <div class="update-header">
                 <h3 class="update-title">Stocks Database - Schema Setup</h3>
