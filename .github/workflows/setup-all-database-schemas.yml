@@ -1,0 +1,141 @@
+name: Setup All Database Schemas
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 0'  # Weekly on Sunday at 2 AM
+
+jobs:
+  setup-stocks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Stocks Database Schema
+        run: |
+          echo "=== Setting up Stocks Database ==="
+          RESP=$(curl -sf --max-time 60 \
+            "https://findtorontoevents.ca/findstocks/api/setup_schema.php?action=setup" \
+            -H "User-Agent: GitHub-Actions-Setup/1.0" \
+            || echo '{"ok":false,"error":"connection_failed"}')
+          
+          echo "Response:"
+          echo "$RESP" | python3 -m json.tool 2>/dev/null || echo "$RESP"
+          
+          # Check if successful
+          OK=$(echo "$RESP" | python3 -c "import json,sys; print(json.load(sys.stdin).get('ok',False))")
+          if [ "$OK" != "True" ]; then
+            echo "::warning::Stocks schema setup may have issues"
+          else
+            CREATED=$(echo "$RESP" | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('created',[])))")
+            echo "✅ Created $CREATED new tables"
+          fi
+
+  setup-memecoin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Memecoin Database Schema
+        run: |
+          echo "=== Setting up Memecoin Database ==="
+          RESP=$(curl -sf --max-time 120 \
+            "https://findtorontoevents.ca/findcryptopairs/api/setup_schema.php?action=setup" \
+            -H "User-Agent: GitHub-Actions-Setup/1.0" \
+            || echo '{"ok":false,"error":"connection_failed"}')
+          
+          echo "Response:"
+          echo "$RESP" | python3 -m json.tool 2>/dev/null || echo "$RESP"
+          
+          OK=$(echo "$RESP" | python3 -c "import json,sys; print(json.load(sys.stdin).get('ok',False))")
+          if [ "$OK" != "True" ]; then
+            echo "::warning::Memecoin schema setup may have issues"
+          else
+            CREATED=$(echo "$RESP" | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('created',[])))")
+            echo "✅ Created $CREATED new tables"
+          fi
+
+  setup-sportsbet:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Sportsbet Database Schema
+        run: |
+          echo "=== Setting up Sportsbet Database ==="
+          # TODO: Create sportsbet schema endpoint
+          echo "⚠️ Sportsbet schema endpoint not yet created"
+
+  setup-events:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Events Database Schema
+        run: |
+          echo "=== Setting up Events Database ==="
+          # Use existing events_setup_tables.php
+          RESP=$(curl -sf --max-time 60 \
+            "https://findtorontoevents.ca/fc/api/events_setup_tables.php" \
+            -H "User-Agent: GitHub-Actions-Setup/1.0" \
+            || echo '{"ok":false,"error":"connection_failed"}')
+          
+          echo "Response:"
+          echo "$RESP" | python3 -m json.tool 2>/dev/null || echo "$RESP"
+
+  setup-movies:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Movies Database Schema
+        run: |
+          echo "=== Setting up Movies Database ==="
+          # TODO: Create movies schema endpoint
+          echo "⚠️ Movies schema endpoint not yet created"
+
+  verify-all:
+    runs-on: ubuntu-latest
+    needs: [setup-stocks, setup-memecoin, setup-sportsbet, setup-events, setup-movies]
+    if: always()
+    steps:
+      - name: Verify All Databases
+        run: |
+          echo "=== Verifying All Database Schemas ==="
+          
+          # Check health monitor
+          RESP=$(curl -sf --max-time 60 \
+            "https://findtorontoevents.ca/tools/db_health_monitor.php?action=summary" \
+            || echo '{"ok":false}')
+          
+          echo "$RESP" | python3 -c "
+import json,sys
+try:
+    d=json.load(sys.stdin)
+    if d.get('ok'):
+        print('Database Health Summary:')
+        print('-' * 50)
+        for db in d.get('databases',[]):
+            name = db['database']
+            status = db.get('status','unknown')
+            tables = db.get('total_tables',0)
+            populated = db.get('populated',0)
+            empty = db.get('empty',0)
+            rows = db.get('total_rows',0)
+            print(f'{name}:')
+            print(f'  Status: {status}')
+            print(f'  Tables: {tables} ({populated} populated, {empty} empty)')
+            print(f'  Total Rows: {rows}')
+            print()
+    else:
+        print('ERROR: Could not get health summary')
+except Exception as e:
+    print(f'ERROR: {e}')
+"
+
+  summary:
+    runs-on: ubuntu-latest
+    needs: verify-all
+    if: always()
+    steps:
+      - name: Summary
+        run: |
+          echo "=== Schema Setup Complete ==="
+          echo ""
+          echo "Next steps:"
+          echo "1. Run diagnose-all-databases workflow to check for issues"
+          echo "2. Verify data population in existing workflows"
+          echo "3. Check for ModSecurity blocking issues"
+          echo ""
+          echo "To check status:"
+          echo "  curl https://findtorontoevents.ca/tools/db_health_monitor.php?action=summary"
