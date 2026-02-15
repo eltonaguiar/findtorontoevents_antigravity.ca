@@ -215,37 +215,49 @@
         ⚡ Auto-refreshes every 15 minutes | Next update: <span id="nextRefresh">...</span>
     </div>
 
+    <div style="max-width: 800px; margin: 20px auto; padding: 20px; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; text-align: center;">
+        <div style="font-size: 16px; font-weight: 600; color: #22c55e; margin-bottom: 10px;">🚀 System Status: INITIALIZING</div>
+        <div style="font-size: 14px; color: #9ca3af; line-height: 1.8;">
+            GitHub Actions is auto-running every 15 minutes. Signals are being generated and validated.<br>
+            <strong style="color: #22c55e;">First strategies will appear in 1-2 hours</strong> (need 10+ trades minimum).<br>
+            Promoted strategies appear in <strong style="color: #f59e0b;">2-3 weeks</strong> (need 100+ trades at 60%+ WR).
+        </div>
+        <div style="margin-top: 12px; font-size: 13px; color: #6b7280;">
+            Next GitHub Actions run: <strong id="nextGHRun" style="color: #22c55e;">Calculating...</strong>
+        </div>
+    </div>
+
     <div class="stats-grid" id="statsGrid">
-        <div class="stat-card">
-            <div class="label">Total Signals Generated</div>
+        <div class="stat-card" title="Total number of trading signals generated across all strategies and pairs. Updates every hour.">
+            <div class="label">Total Signals Generated ℹ️</div>
             <div class="value" id="totalSignals">0</div>
         </div>
-        <div class="stat-card">
-            <div class="label">Resolved Signals</div>
+        <div class="stat-card" title="Signals that have reached TP, SL, or time expiry. Checked every 15 minutes.">
+            <div class="label">Resolved Signals ℹ️</div>
             <div class="value" id="resolvedSignals">0</div>
         </div>
-        <div class="stat-card">
-            <div class="label">Overall Win Rate</div>
+        <div class="stat-card" title="Percentage of resolved signals that hit TP (wins) vs SL (losses). Need 50+ trades for accuracy.">
+            <div class="label">Overall Win Rate ℹ️</div>
             <div class="value" id="overallWR">0%</div>
         </div>
-        <div class="stat-card">
-            <div class="label">Total P&L (Paper)</div>
+        <div class="stat-card" title="Total paper trading profit/loss in USD. Assumes $100 per trade. Not real money!">
+            <div class="label">Total P&L (Paper) ℹ️</div>
             <div class="value" id="totalPNL">$0.00</div>
         </div>
-        <div class="stat-card">
-            <div class="label">Promoted Strategies</div>
+        <div class="stat-card" title="Strategies with 100+ trades, 60%+ WR, 1.5+ profit factor, and 1.2+ Sharpe ratio. Ready for real money.">
+            <div class="label">Promoted Strategies ℹ️</div>
             <div class="value" id="promotedCount">0</div>
         </div>
-        <div class="stat-card warning">
-            <div class="label">Testing Strategies</div>
+        <div class="stat-card warning" title="Strategies still collecting data. Need 100 trades minimum to be promoted or 50 trades to be eliminated.">
+            <div class="label">Testing Strategies ℹ️</div>
             <div class="value" id="testingCount">0</div>
         </div>
-        <div class="stat-card danger">
-            <div class="label">Eliminated Strategies</div>
+        <div class="stat-card danger" title="Strategies with 50+ trades and <40% WR or <0.8 profit factor. Automatically removed from testing.">
+            <div class="label">Eliminated Strategies ℹ️</div>
             <div class="value" id="eliminatedCount">0</div>
         </div>
-        <div class="stat-card">
-            <div class="label">Best Sharpe Ratio</div>
+        <div class="stat-card" title="Risk-adjusted returns. Higher is better. 1.0+ is good, 2.0+ is excellent. Measures consistency of profits.">
+            <div class="label">Best Sharpe Ratio ℹ️</div>
             <div class="value" id="bestSharpe">0.00</div>
         </div>
     </div>
@@ -277,6 +289,31 @@
         }
 
         setInterval(updateNextRefresh, 1000);
+
+        function updateNextGHRun() {
+            const now = new Date();
+            const minutes = now.getUTCMinutes();
+            const nextRunMinute = Math.ceil((minutes + 1) / 15) * 15;
+            const nextRun = new Date(now);
+            nextRun.setUTCMinutes(nextRunMinute, 0, 0);
+
+            if (nextRunMinute >= 60) {
+                nextRun.setUTCHours(nextRun.getUTCHours() + 1);
+                nextRun.setUTCMinutes(0, 0, 0);
+            }
+
+            const timeUntil = nextRun - now;
+            const minutesUntil = Math.floor(timeUntil / 60000);
+            const secondsUntil = Math.floor((timeUntil % 60000) / 1000);
+
+            const element = document.getElementById('nextGHRun');
+            if (element) {
+                element.textContent = `${minutesUntil}m ${secondsUntil}s (${nextRun.toLocaleTimeString()} UTC)`;
+            }
+        }
+
+        setInterval(updateNextGHRun, 1000);
+        updateNextGHRun();
 
         function loadData() {
             fetch('rankings_CLAUDECODE_Feb152026.json')
@@ -334,7 +371,44 @@
             const container = document.getElementById(elementId);
 
             if (strategies.length === 0) {
-                container.innerHTML = '<div class="empty-state">No strategies in this category yet</div>';
+                let emptyMessage = '';
+                if (elementId === 'promotedTable') {
+                    emptyMessage = `
+                        <div class="empty-state">
+                            <strong>No strategies promoted yet</strong><br><br>
+                            Promotion requires:<br>
+                            • 100+ completed trades<br>
+                            • 60%+ win rate<br>
+                            • 1.5+ profit factor<br>
+                            • 1.2+ Sharpe ratio<br><br>
+                            <span style="color:#f59e0b">Expected timeline: 2-3 weeks</span>
+                        </div>
+                    `;
+                } else if (elementId === 'testingTable') {
+                    emptyMessage = `
+                        <div class="empty-state">
+                            <strong>Strategies are being initialized...</strong><br><br>
+                            The system is currently:<br>
+                            • Generating signals every hour<br>
+                            • Validating outcomes every 15 minutes<br>
+                            • Tracking win/loss for each strategy<br><br>
+                            Strategies will appear here once they have <strong>10+ trades</strong>.<br>
+                            <span style="color:#22c55e">Check back in 1-2 hours!</span>
+                        </div>
+                    `;
+                } else if (elementId === 'eliminatedTable') {
+                    emptyMessage = `
+                        <div class="empty-state">
+                            <strong>No strategies eliminated yet</strong><br><br>
+                            Strategies are auto-eliminated after 50+ trades if:<br>
+                            • Win rate < 40% (losing more than winning)<br>
+                            • Profit factor < 0.8 (losing money)<br>
+                            • 15+ consecutive losses<br><br>
+                            <span style="color:#ef4444">Bad strategies will be removed automatically</span>
+                        </div>
+                    `;
+                }
+                container.innerHTML = emptyMessage;
                 return;
             }
 
