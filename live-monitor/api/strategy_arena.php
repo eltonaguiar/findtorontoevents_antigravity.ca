@@ -1,12 +1,17 @@
 <?php
 /**
  * strategy_arena.php — Rapid Strategy Tournament for Sports Betting
+ * CURSORCODE_Feb152026
+ *
  * PHP 5.2 compatible. No short arrays, no closures, no ?:, no ??, no __DIR__.
  *
  * Runs 25 distinct betting strategies in parallel, each with its own $1000
  * virtual bankroll. Filters the same value bets through different lenses,
  * auto-places virtual bets, auto-settles via scores, and produces a live
  * leaderboard so you can see within days/weeks which approach actually works.
+ *
+ * Created by: Cursor AI — CURSORCODE_Feb152026
+ * Version: 1.0.0-CURSORCODE_Feb152026
  *
  * Actions:
  *   ?action=init&key=...           — Initialize strategies + tables (admin, idempotent)
@@ -1005,7 +1010,8 @@ function _arena_leaderboard($conn) {
             'worst_roi' => $worst_roi,
             'sort' => $sort
         ),
-        'generated_at' => gmdate('Y-m-d H:i:s') . ' UTC'
+        'generated_at' => gmdate('Y-m-d H:i:s') . ' UTC',
+        'tool' => 'CURSORCODE_Feb152026'
     ));
 }
 
@@ -1278,7 +1284,9 @@ function _arena_status($conn) {
         'bets' => $bets,
         'latest_bet' => $latest_bet,
         'latest_settlement' => $latest_settle,
-        'initialized' => $strats['total'] > 0
+        'initialized' => $strats['total'] > 0,
+        'version' => '1.0.0-CURSORCODE_Feb152026',
+        'tool' => 'CURSORCODE_Feb152026'
     ));
 }
 
