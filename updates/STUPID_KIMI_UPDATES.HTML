@@ -710,6 +710,203 @@ footer {
     </table>
   </div>
 
+  <!-- Feb 16, 2026 — Quality-Gated Discord Alert Bot -->
+  <div class="section">
+    <h2>🤖 Quality-Gated Discord Alert Bot — "Are We Sure?" Edition</h2>
+    
+    <div class="highlight-box success">
+      <h4>NEW: Discord Bot with Statistical Validation Gates</h4>
+      <p>Only sends Discord alerts when we have sufficient evidence. Suppresses "early guesses" — only validated strategies (50+ trades, 55%+ WR) get alerts with clear "how sure" indicators.</p>
+    </div>
+
+    <h3>🎯 Core Principle</h3>
+    <table>
+      <tr>
+        <th>Tier</th>
+        <th>Requirements</th>
+        <th>Discord Action</th>
+      </tr>
+      <tr>
+        <td><span style="color:#FFD700;">🏆 Institutional</span></td>
+        <td>500+ trades, 70%+ WR</td>
+        <td><strong>@everyone</strong> ping</td>
+      </tr>
+      <tr>
+        <td><span style="color:#22c55e;">🎯 Certain</span></td>
+        <td>250+ trades, 65%+ WR</td>
+        <td><strong>@here</strong> ping</td>
+      </tr>
+      <tr>
+        <td><span style="color:#22c55e;">✅ Proven</span></td>
+        <td>100+ trades, 60%+ WR</td>
+        <td>Normal alert</td>
+      </tr>
+      <tr>
+        <td><span style="color:#f59e0b;">⚠️ Validated</span></td>
+        <td>50+ trades, 55%+ WR</td>
+        <td>Alert + caution note</td>
+      </tr>
+      <tr>
+        <td><span style="color:#667;">🔍 Emerging</span></td>
+        <td>30-50 trades</td>
+        <td><span class="badge badge-danger">SUPPRESSED</span></td>
+      </tr>
+      <tr>
+        <td><span style="color:#888;">❌ Early Guess</span></td>
+        <td>&lt;30 trades</td>
+        <td><span class="badge badge-danger">SUPPRESSED</span></td>
+      </tr>
+    </table>
+
+    <h3>🚫 Quality Gates (Suppress "Early Guesses")</h3>
+    <table>
+      <tr>
+        <th>Check</th>
+        <th>Threshold</th>
+        <th>Result</th>
+      </tr>
+      <tr>
+        <td>RSVE Week 1</td>
+        <td>&lt;30 trades</td>
+        <td>🚫 SUPPRESSED — "Early guess, accumulating"</td>
+      </tr>
+      <tr>
+        <td>Minimum Trades</td>
+        <td>&lt;50 trades</td>
+        <td>🚫 SUPPRESSED — "Still validating"</td>
+      </tr>
+      <tr>
+        <td>Win Rate</td>
+        <td>&lt;55%</td>
+        <td>🚫 SUPPRESSED — "Underperforming"</td>
+      </tr>
+      <tr>
+        <td>Consecutive Losses</td>
+        <td>5+ losses</td>
+        <td>🚫 SUPPRESSED — "Possible broken strategy"</td>
+      </tr>
+      <tr>
+        <td>Sharpe Ratio</td>
+        <td>&lt;0.5 (after 100 trades)</td>
+        <td>🚫 SUPPRESSED — "Poor risk-adjusted returns"</td>
+      </tr>
+    </table>
+
+    <h3>📊 Discord Alert Format</h3>
+    <p>Every alert includes:</p>
+    <ul style="margin:12px 0;padding-left:24px;color:#aab;">
+      <li><strong>Adjusted Confidence:</strong> Base confidence × tier multiplier</li>
+      <li><strong>"How Sure" Statement:</strong> Clear language on validation level</li>
+      <li><strong>Strategy Stats:</strong> Total trades, win rate, Sharpe ratio</li>
+      <li><strong>Position Sizing:</strong> Auto-recommended based on tier</li>
+    </ul>
+
+    <div class="highlight-box">
+      <h4>Example: Institutional Alert</h4>
+      <p style="font-size:13px;font-family:monospace;color:#22c55e;">
+        ✅ CERTAIN: 500+ trades, 70.0% WR, Sharpe 1.85.<br>
+        Institutional-grade signal with extensive validation.<br>
+        This is as sure as we get in trading.
+      </p>
+    </div>
+
+    <h3>🛡️ Position Sizing Auto-Recommended</h3>
+    <table>
+      <tr>
+        <th>Tier</th>
+        <th>Position Size</th>
+        <th>Guidance</th>
+      </tr>
+      <tr>
+        <td>🏆 Institutional</td>
+        <td>2-3% risk</td>
+        <td>Full size, standard stops</td>
+      </tr>
+      <tr>
+        <td>🎯 Certain</td>
+        <td>1.5-2% risk</td>
+        <td>Normal size</td>
+      </tr>
+      <tr>
+        <td>✅ Proven</td>
+        <td>1-1.5% risk</td>
+        <td>75% target</td>
+      </tr>
+      <tr>
+        <td>⚠️ Validated</td>
+        <td>0.5-1% risk</td>
+        <td>Tighter stops, 50% scale</td>
+      </tr>
+    </table>
+
+    <h3>🔄 RSVE Pipeline Integration</h3>
+    <div class="timeline">
+      <div class="timeline-item pending">
+        <div class="timeline-date">Week 1 (0-30 trades)</div>
+        <div class="timeline-title">RSVE Accumulating</div>
+        <div class="timeline-desc">🚫 Auto-suppressed — no Discord alerts</div>
+      </div>
+      <div class="timeline-item pending">
+        <div class="timeline-date">Week 2 (30-50 trades)</div>
+        <div class="timeline-title">Paper Trading</div>
+        <div class="timeline-desc">🚫 Auto-suppressed — monitoring only</div>
+      </div>
+      <div class="timeline-item active">
+        <div class="timeline-date">Week 3+ (50+ trades)</div>
+        <div class="timeline-title">Live Test $100-500</div>
+        <div class="timeline-desc">⚠️ Eligible for validated alerts (with caution)</div>
+      </div>
+      <div class="timeline-item completed">
+        <div class="timeline-date">Month 2-3 (100+ trades)</div>
+        <div class="timeline-title">Proven Strategy</div>
+        <div class="timeline-desc">✅ Normal alerts</div>
+      </div>
+      <div class="timeline-item completed">
+        <div class="timeline-date">Month 6+ (250+ trades)</div>
+        <div class="timeline-title">Certain Strategy</div>
+        <div class="timeline-desc">🎯 Boosted confidence, @here ping</div>
+      </div>
+      <div class="timeline-item completed">
+        <div class="timeline-date">Year 1+ (500+ trades)</div>
+        <div class="timeline-title">Institutional Grade</div>
+        <div class="timeline-desc">🏆 @everyone ping, full size</div>
+      </div>
+    </div>
+
+    <h3>📁 Files & Links</h3>
+    <div class="links-section">
+      <a href="/findcryptopairs/alpha_signals/alert_system_v2_quality_gates.py">🐍 Core Quality Gates (Python)</a>
+      <a href="/findcryptopairs/alpha_signals/discord_alerts_quality.py">💬 Discord Bot Integration</a>
+      <a href="/findcryptopairs/alpha_signals/QUALITY_ALERT_SETUP.md">📖 Setup Guide</a>
+      <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/tree/main/findcryptopairs/alpha_signals" target="_blank">💻 GitHub Repository</a>
+    </div>
+
+    <h3>🚀 Quick Integration</h3>
+    <pre style="background:rgba(0,0,0,0.3);padding:16px;border-radius:6px;font-size:12px;overflow-x:auto;"># Set webhook
+$env:DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/YOUR_URL"
+
+# Replace your alert call
+from discord_alerts_quality import send_quality_alert
+
+sent, msg = send_quality_alert(
+    symbol="BTCUSDT",
+    signal_type="buy",
+    entry=50000,
+    stop=49000,
+    target=52000,
+    strategy_id="BTC_CME_GAP_V2",  # Must have 50+ trades
+    base_confidence=85
+)
+
+if not sent:
+    print(f"Suppressed: {msg}")  # Logs why, no Discord spam</pre>
+
+    <div style="margin-top:16px;">
+      <span class="badge badge-success">Git Commit: 14bb66c</span>
+      <span class="badge badge-info">Feb 16, 2026</span>
+    </div>
+  </div>
+
 </div>
 
 <footer>
