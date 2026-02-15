@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strategy Arena — Rapid Betting Tournament</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root {
+    --bg: #0a0e17;
+    --surface: #111827;
+    --surface2: #1a2332;
+    --border: #2a3548;
+    --text: #e2e8f0;
+    --muted: #8892a4;
+    --green: #10b981;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --blue: #3b82f6;
+    --purple: #8b5cf6;
+    --cyan: #06b6d4;
+    --orange: #f97316;
+    --gold: #fbbf24;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.5; }
+.container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+/* Header */
+.header { text-align: center; padding: 30px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.header h1 { font-size: 2rem; background: linear-gradient(135deg, var(--gold), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
+.header .subtitle { color: var(--muted); font-size: 0.95rem; }
+
+/* Summary Cards */
+.summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+.stat-card .value { font-size: 1.6rem; font-weight: 700; }
+.stat-card .label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.stat-card.green .value { color: var(--green); }
+.stat-card.red .value { color: var(--red); }
+.stat-card.blue .value { color: var(--blue); }
+.stat-card.gold .value { color: var(--gold); }
+.stat-card.purple .value { color: var(--purple); }
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; }
+.tab { padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; background: var(--surface); border: 1px solid var(--border); color: var(--muted); transition: all 0.2s; white-space: nowrap; }
+.tab:hover { border-color: var(--blue); color: var(--text); }
+.tab.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+/* Filters */
+.filter-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+.filter-row label { font-size: 0.8rem; color: var(--muted); }
+.filter-row select, .filter-row input { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 0.85rem; }
+
+/* Table */
+.table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th { background: var(--surface2); color: var(--muted); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px; padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); cursor: pointer; white-space: nowrap; }
+th:hover { color: var(--text); }
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+tr:hover { background: rgba(59,130,246,0.06); }
+.rank { font-weight: 700; color: var(--gold); width: 40px; text-align: center; }
+.rank.top3 { font-size: 1.1rem; }
+.strat-name { font-weight: 600; }
+.category-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+.cat-ev_threshold { background: rgba(59,130,246,0.2); color: var(--blue); }
+.cat-market { background: rgba(139,92,246,0.2); color: var(--purple); }
+.cat-sport { background: rgba(6,182,212,0.2); color: var(--cyan); }
+.cat-consensus { background: rgba(249,115,22,0.2); color: var(--orange); }
+.cat-sizing { background: rgba(251,191,36,0.2); color: var(--gold); }
+.cat-rating { background: rgba(16,185,129,0.2); color: var(--green); }
+.cat-timing, .cat-situation { background: rgba(236,72,153,0.2); color: #ec4899; }
+.cat-combo { background: rgba(251,191,36,0.3); color: var(--gold); border: 1px solid var(--gold); }
+
+.pos { color: var(--green); }
+.neg { color: var(--red); }
+.neutral { color: var(--muted); }
+.eliminated { opacity: 0.5; text-decoration: line-through; }
+.confidence-badge { padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600; }
+.conf-statistically_winning { background: rgba(16,185,129,0.2); color: var(--green); }
+.conf-promising { background: rgba(59,130,246,0.2); color: var(--blue); }
+.conf-early_data { background: rgba(251,191,36,0.2); color: var(--gold); }
+.conf-collecting { background: rgba(136,146,164,0.2); color: var(--muted); }
+.conf-concerning { background: rgba(249,115,22,0.2); color: var(--orange); }
+.conf-statistically_losing { background: rgba(239,68,68,0.2); color: var(--red); }
+
+/* Strategy Detail Panel */
+.detail-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-top: 20px; display: none; }
+.detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.detail-header h2 { font-size: 1.3rem; }
+.close-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+.close-btn:hover { border-color: var(--red); color: var(--red); }
+
+.detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.detail-card { background: var(--surface2); border-radius: 8px; padding: 14px; }
+.detail-card h3 { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+.chart-container { position: relative; height: 250px; }
+
+/* Buttons */
+.btn { padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover { opacity: 0.9; }
+.btn-green { background: var(--green); color: #fff; }
+.btn-red { background: var(--red); color: #fff; }
+.btn-sm { padding: 4px 10px; font-size: 0.78rem; }
+
+/* Loading */
+.loading { text-align: center; padding: 40px; color: var(--muted); }
+.spinner { display: inline-block; width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Status Bar */
+.status-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; font-size: 0.8rem; }
+.status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.status-dot.green { background: var(--green); }
+.status-dot.red { background: var(--red); }
+.status-dot.yellow { background: var(--yellow); }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .summary-row { grid-template-columns: repeat(2, 1fr); }
+    .header h1 { font-size: 1.5rem; }
+    td, th { padding: 6px 8px; font-size: 0.78rem; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+    <h1>Strategy Arena</h1>
+    <p class="subtitle">25 betting strategies competing in real-time &mdash; find what works fast</p>
+</div>
+
+<div class="status-bar" id="statusBar">
+    <span><span class="status-dot yellow" id="statusDot"></span> <span id="statusText">Loading...</span></span>
+    <span id="lastUpdate" style="color:var(--muted)"></span>
+</div>
+
+<div class="summary-row" id="summaryCards">
+    <div class="stat-card blue"><div class="value" id="totalStrategies">--</div><div class="label">Strategies</div></div>
+    <div class="stat-card purple"><div class="value" id="totalBets">--</div><div class="label">Total Bets</div></div>
+    <div class="stat-card green"><div class="value" id="bestRoi">--</div><div class="label">Best ROI</div></div>
+    <div class="stat-card red"><div class="value" id="worstRoi">--</div><div class="label">Worst ROI</div></div>
+    <div class="stat-card gold"><div class="value" id="bestStrat">--</div><div class="label">Leading Strategy</div></div>
+</div>
+
+<div class="tabs">
+    <div class="tab active" data-tab="leaderboard">Leaderboard</div>
+    <div class="tab" data-tab="categories">By Category</div>
+    <div class="tab" data-tab="equity">Equity Curves</div>
+    <div class="tab" data-tab="bets">All Bets</div>
+    <div class="tab" data-tab="admin">Admin</div>
+</div>
+
+<!-- LEADERBOARD TAB -->
+<div id="tab-leaderboard" class="tab-content">
+    <div class="filter-row">
+        <label>Sort by:</label>
+        <select id="sortBy" onchange="loadLeaderboard()">
+            <option value="roi">ROI %</option>
+            <option value="winrate">Win Rate</option>
+            <option value="pnl">Total PnL</option>
+            <option value="bets">Total Bets</option>
+            <option value="bankroll">Bankroll</option>
+        </select>
+        <label>Category:</label>
+        <select id="filterCat" onchange="filterCategory()">
+            <option value="all">All Categories</option>
+            <option value="ev_threshold">EV Threshold</option>
+            <option value="market">Market</option>
+            <option value="sport">Sport</option>
+            <option value="consensus">Consensus</option>
+            <option value="sizing">Sizing</option>
+            <option value="rating">Rating</option>
+            <option value="timing">Timing</option>
+            <option value="situation">Situation</option>
+            <option value="combo">Combo</option>
+        </select>
+        <label><input type="checkbox" id="hideElim" onchange="filterCategory()"> Hide eliminated</label>
+    </div>
+    <div class="table-wrap">
+        <table id="leaderboardTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Strategy</th>
+                    <th>Category</th>
+                    <th>Bankroll</th>
+                    <th>ROI %</th>
+                    <th>Win Rate</th>
+                    <th>Bets (W/L/P)</th>
+                    <th>PnL</th>
+                    <th>Drawdown</th>
+                    <th>Streak</th>
+                    <th>Avg EV</th>
+                    <th>Confidence</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboardBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- CATEGORIES TAB -->
+<div id="tab-categories" class="tab-content" style="display:none">
+    <div id="categorySummary"></div>
+</div>
+
+<!-- EQUITY TAB -->
+<div id="tab-equity" class="tab-content" style="display:none">
+    <div class="detail-card">
+        <h3>Equity Curves (Top 10 vs Bottom 5)</h3>
+        <div class="chart-container"><canvas id="equityChart"></canvas></div>
+    </div>
+</div>
+
+<!-- BETS TAB -->
+<div id="tab-bets" class="tab-content" style="display:none">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Time</th><th>Strategy</th><th>Sport</th><th>Game</th><th>Pick</th><th>Odds</th><th>EV%</th><th>Bet</th><th>Result</th><th>PnL</th></tr>
+            </thead>
+            <tbody id="betsBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ADMIN TAB -->
+<div id="tab-admin" class="tab-content" style="display:none">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
+        <button class="btn btn-primary" onclick="adminAction('init')">Initialize Strategies</button>
+        <button class="btn btn-green" onclick="adminAction('run')">Run Cycle (Place + Settle)</button>
+        <button class="btn btn-primary" onclick="adminAction('snapshot')">Take Snapshot</button>
+        <button class="btn btn-primary" onclick="adminAction('eliminate')">Auto-Eliminate Losers</button>
+        <button class="btn btn-red" onclick="if(confirm('Reset everything?'))adminAction('reset','confirm=yes')">Reset Arena</button>
+    </div>
+    <div id="adminOutput" style="background:var(--surface2);border-radius:8px;padding:16px;font-family:monospace;font-size:0.82rem;white-space:pre-wrap;max-height:400px;overflow-y:auto;color:var(--cyan)">Admin actions will display here...</div>
+</div>
+
+<!-- Strategy Detail Panel -->
+<div class="detail-panel" id="detailPanel">
+    <div class="detail-header">
+        <h2 id="detailName">--</h2>
+        <button class="close-btn" onclick="closeDetail()">Close</button>
+    </div>
+    <p id="detailDesc" style="color:var(--muted);margin-bottom:16px;font-size:0.9rem"></p>
+    <div class="detail-grid">
+        <div class="detail-card">
+            <h3>Performance Metrics</h3>
+            <div id="detailMetrics"></div>
+        </div>
+        <div class="detail-card">
+            <h3>By Sport</h3>
+            <div id="detailSport"></div>
+        </div>
+        <div class="detail-card">
+            <h3>By Market</h3>
+            <div id="detailMarket"></div>
+        </div>
+        <div class="detail-card">
+            <h3>Recent Bets</h3>
+            <div id="detailBets" style="max-height:300px;overflow-y:auto"></div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script>
+const API = '/live-monitor/api/strategy_arena.php';
+const KEY = 'livetrader2026';
+let allStrategies = [];
+let equityChartInstance = null;
+
+// Tab switching
+document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(x => x.style.display = 'none');
+        t.classList.add('active');
+        document.getElementById('tab-' + t.dataset.tab).style.display = '';
+        if (t.dataset.tab === 'bets') loadBets();
+        if (t.dataset.tab === 'categories') renderCategories();
+    });
+});
+
+async function fetchAPI(action, extra) {
+    const sep = action.includes('?') ? '&' : '?';
+    const url = API + '?action=' + action + (extra ? '&' + extra : '');
+    try {
+        const r = await fetch(url);
+        return await r.json();
+    } catch (e) {
+        console.error('API error:', e);
+        return { ok: false, error: e.message };
+    }
+}
+
+// Load status
+async function loadStatus() {
+    const d = await fetchAPI('status');
+    if (!d.ok) {
+        document.getElementById('statusText').textContent = 'Arena not initialized';
+        document.getElementById('statusDot').className = 'status-dot red';
+        return;
+    }
+    const init = d.initialized;
+    document.getElementById('statusDot').className = 'status-dot ' + (init ? 'green' : 'yellow');
+    document.getElementById('statusText').textContent = init
+        ? d.strategies.active + ' active strategies | ' + d.bets.total + ' bets (' + d.bets.pending + ' pending)'
+        : 'Not initialized — go to Admin tab';
+    if (d.latest_bet) {
+        document.getElementById('lastUpdate').textContent = 'Last bet: ' + d.latest_bet + ' UTC';
+    }
+}
+
+// Load leaderboard
+async function loadLeaderboard() {
+    const sort = document.getElementById('sortBy').value;
+    const d = await fetchAPI('leaderboard', 'sort=' + sort);
+    if (!d.ok) return;
+
+    allStrategies = d.strategies;
+    document.getElementById('totalStrategies').textContent = d.summary.active + '/' + d.summary.total_strategies;
+    document.getElementById('totalBets').textContent = d.summary.total_bets_placed;
+    document.getElementById('bestRoi').textContent = d.summary.best_roi.toFixed(1) + '%';
+    document.getElementById('worstRoi').textContent = d.summary.worst_roi.toFixed(1) + '%';
+    document.getElementById('bestStrat').textContent = d.summary.best_strategy || '--';
+    document.getElementById('lastUpdate').textContent = d.generated_at;
+
+    filterCategory();
+}
+
+function filterCategory() {
+    const cat = document.getElementById('filterCat').value;
+    const hideElim = document.getElementById('hideElim').checked;
+    let filtered = allStrategies;
+    if (cat !== 'all') filtered = filtered.filter(s => s.category === cat);
+    if (hideElim) filtered = filtered.filter(s => s.status !== 'eliminated');
+    renderLeaderboard(filtered);
+}
+
+function renderLeaderboard(strategies) {
+    const tbody = document.getElementById('leaderboardBody');
+    if (!strategies || strategies.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--muted);padding:30px">No data yet. Initialize strategies from the Admin tab, then wait for the next cycle.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = strategies.map((s, i) => {
+        const roi = parseFloat(s.roi_pct);
+        const pnl = parseFloat(s.total_pnl);
+        const wr = parseFloat(s.win_rate);
+        const dd = parseFloat(s.max_drawdown_pct);
+        const br = parseFloat(s.bankroll);
+        const isElim = s.status === 'eliminated';
+        const medal = i === 0 ? '\u{1F947}' : i === 1 ? '\u{1F948}' : i === 2 ? '\u{1F949}' : '';
+        return '<tr class="' + (isElim ? 'eliminated' : '') + '" onclick="showDetail(' + s.strategy_id + ')" style="cursor:pointer">'
+            + '<td class="rank ' + (i < 3 ? 'top3' : '') + '">' + (medal || (i + 1)) + '</td>'
+            + '<td class="strat-name">' + esc(s.name) + '</td>'
+            + '<td><span class="category-badge cat-' + s.category + '">' + s.category + '</span></td>'
+            + '<td>$' + br.toFixed(0) + '</td>'
+            + '<td class="' + (roi > 0 ? 'pos' : roi < 0 ? 'neg' : 'neutral') + '">' + (roi > 0 ? '+' : '') + roi.toFixed(1) + '%</td>'
+            + '<td>' + wr.toFixed(1) + '%</td>'
+            + '<td>' + s.total_bets + ' (' + s.total_wins + '/' + s.total_losses + '/' + s.total_pushes + ')</td>'
+            + '<td class="' + (pnl > 0 ? 'pos' : pnl < 0 ? 'neg' : 'neutral') + '">$' + pnl.toFixed(2) + '</td>'
+            + '<td>' + dd.toFixed(1) + '%</td>'
+            + '<td>' + streakText(parseInt(s.current_streak)) + '</td>'
+            + '<td>' + parseFloat(s.avg_ev).toFixed(1) + '%</td>'
+            + '<td><span class="confidence-badge conf-' + s.confidence + '">' + s.confidence.replace(/_/g, ' ') + '</span></td>'
+            + '<td>' + (isElim ? '<span style="color:var(--red)">ELIM</span>' : '<span style="color:var(--green)">ACTIVE</span>') + '</td>'
+            + '</tr>';
+    }).join('');
+}
+
+function streakText(n) {
+    if (n > 0) return '<span class="pos">W' + n + '</span>';
+    if (n < 0) return '<span class="neg">L' + Math.abs(n) + '</span>';
+    return '--';
+}
+
+// Show strategy detail
+async function showDetail(id) {
+    const d = await fetchAPI('strategy', 'id=' + id);
+    if (!d.ok) return;
+    const s = d.strategy;
+    document.getElementById('detailName').textContent = s.name;
+    document.getElementById('detailDesc').textContent = s.description || '';
+
+    const br = parseFloat(s.bankroll);
+    const roi = parseFloat(s.roi_pct);
+    const wr = parseFloat(s.win_rate);
+    const decided = parseInt(s.total_wins) + parseInt(s.total_losses);
+    document.getElementById('detailMetrics').innerHTML =
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.85rem">'
+        + metric('Bankroll', '$' + br.toFixed(2), br >= 1000 ? 'green' : 'red')
+        + metric('ROI', roi.toFixed(1) + '%', roi > 0 ? 'green' : 'red')
+        + metric('Win Rate', wr.toFixed(1) + '%', wr >= 50 ? 'green' : 'red')
+        + metric('Bets (W/L/P)', s.total_wins + '/' + s.total_losses + '/' + s.total_pushes)
+        + metric('Max Drawdown', s.max_drawdown_pct + '%', 'red')
+        + metric('Best Streak', 'W' + s.best_streak, 'green')
+        + metric('Worst Streak', 'L' + Math.abs(parseInt(s.worst_streak)), 'red')
+        + metric('Avg EV', parseFloat(s.avg_ev).toFixed(1) + '%', 'blue')
+        + metric('Avg Odds', parseFloat(s.avg_odds).toFixed(2))
+        + metric('Avg Bet', '$' + parseFloat(s.avg_bet_size).toFixed(2))
+        + '</div>';
+
+    // By Sport
+    document.getElementById('detailSport').innerHTML = d.by_sport.length > 0
+        ? d.by_sport.map(sp => '<div style="margin-bottom:6px"><strong>' + sp.sport + '</strong>: '
+            + sp.wins + 'W/' + sp.losses + 'L (' + sp.win_rate + '%) PnL: $' + parseFloat(sp.pnl).toFixed(2) + '</div>').join('')
+        : '<span style="color:var(--muted)">No settled bets yet</span>';
+
+    // By Market
+    document.getElementById('detailMarket').innerHTML = d.by_market.length > 0
+        ? d.by_market.map(m => '<div style="margin-bottom:6px"><strong>' + m.market + '</strong>: '
+            + m.wins + 'W/' + m.losses + 'L (' + m.win_rate + '%) PnL: $' + parseFloat(m.pnl).toFixed(2) + '</div>').join('')
+        : '<span style="color:var(--muted)">No settled bets yet</span>';
+
+    // Recent Bets
+    document.getElementById('detailBets').innerHTML = d.recent_bets.length > 0
+        ? d.recent_bets.map(b => {
+            const res = b.result || b.status;
+            const cls = res === 'won' ? 'pos' : res === 'lost' ? 'neg' : 'neutral';
+            return '<div style="border-bottom:1px solid var(--border);padding:6px 0;font-size:0.82rem">'
+                + '<span class="' + cls + '" style="font-weight:600">' + res.toUpperCase() + '</span> '
+                + esc(b.away_team) + ' @ ' + esc(b.home_team) + '<br>'
+                + '<span style="color:var(--muted)">' + b.market + ' &bull; ' + esc(b.pick) + ' &bull; ' + b.odds + ' &bull; EV ' + b.ev_pct + '% &bull; $' + b.bet_amount
+                + (b.pnl != null ? ' &rarr; PnL $' + parseFloat(b.pnl).toFixed(2) : '') + '</span></div>';
+        }).join('')
+        : '<span style="color:var(--muted)">No bets yet</span>';
+
+    document.getElementById('detailPanel').style.display = 'block';
+    document.getElementById('detailPanel').scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeDetail() { document.getElementById('detailPanel').style.display = 'none'; }
+
+function metric(label, value, color) {
+    return '<div><span style="color:var(--muted);font-size:0.75rem">' + label + '</span><br><span style="font-weight:600;' + (color ? 'color:var(--' + color + ')' : '') + '">' + value + '</span></div>';
+}
+
+// Categories view
+function renderCategories() {
+    if (!allStrategies.length) {
+        document.getElementById('categorySummary').innerHTML = '<div class="loading">No data yet</div>';
+        return;
+    }
+    const cats = {};
+    allStrategies.forEach(s => {
+        if (!cats[s.category]) cats[s.category] = [];
+        cats[s.category].push(s);
+    });
+
+    let html = '';
+    for (const cat in cats) {
+        const group = cats[cat];
+        const best = group.reduce((a, b) => parseFloat(a.roi_pct) > parseFloat(b.roi_pct) ? a : b);
+        const avgRoi = group.reduce((sum, s) => sum + parseFloat(s.roi_pct), 0) / group.length;
+
+        html += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px">'
+            + '<h3><span class="category-badge cat-' + cat + '">' + cat + '</span> &mdash; ' + group.length + ' strategies</h3>'
+            + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:10px">'
+            + '<div><span style="color:var(--muted);font-size:0.75rem">AVG ROI</span><br><span style="font-weight:700;color:' + (avgRoi > 0 ? 'var(--green)' : 'var(--red)') + '">' + avgRoi.toFixed(1) + '%</span></div>'
+            + '<div><span style="color:var(--muted);font-size:0.75rem">BEST</span><br><span style="font-weight:700;color:var(--green)">' + best.name + ' (' + parseFloat(best.roi_pct).toFixed(1) + '%)</span></div>'
+            + '</div>'
+            + '<div style="margin-top:10px;font-size:0.82rem">' + group.map(s => {
+                const roi = parseFloat(s.roi_pct);
+                return '<span style="display:inline-block;margin:2px 4px;padding:2px 8px;border-radius:6px;background:var(--surface2);border:1px solid var(--border)">'
+                    + s.name + ': <span class="' + (roi > 0 ? 'pos' : roi < 0 ? 'neg' : 'neutral') + '">' + (roi > 0 ? '+' : '') + roi.toFixed(1) + '%</span></span>';
+            }).join('') + '</div></div>';
+    }
+    document.getElementById('categorySummary').innerHTML = html;
+}
+
+// Load all bets
+async function loadBets() {
+    const d = await fetchAPI('history', 'limit=100');
+    if (!d.ok) return;
+    document.getElementById('betsBody').innerHTML = d.bets.map(b => {
+        const res = b.result || b.status;
+        const cls = res === 'won' ? 'pos' : res === 'lost' ? 'neg' : 'neutral';
+        return '<tr>'
+            + '<td>' + (b.placed_at || '').substring(0, 16) + '</td>'
+            + '<td>' + esc(b.strategy_name) + '</td>'
+            + '<td>' + esc(b.sport) + '</td>'
+            + '<td style="white-space:normal">' + esc(b.away_team) + ' @ ' + esc(b.home_team) + '</td>'
+            + '<td>' + esc(b.pick) + '</td>'
+            + '<td>' + b.odds + '</td>'
+            + '<td>' + b.ev_pct + '</td>'
+            + '<td>$' + b.bet_amount + '</td>'
+            + '<td class="' + cls + '">' + res + '</td>'
+            + '<td class="' + (parseFloat(b.pnl || 0) > 0 ? 'pos' : parseFloat(b.pnl || 0) < 0 ? 'neg' : 'neutral') + '">$' + (b.pnl != null ? parseFloat(b.pnl).toFixed(2) : '--') + '</td>'
+            + '</tr>';
+    }).join('');
+}
+
+// Admin
+async function adminAction(action, extra) {
+    const out = document.getElementById('adminOutput');
+    out.textContent = 'Running ' + action + '...\n';
+    const params = 'key=' + KEY + (extra ? '&' + extra : '');
+    const d = await fetchAPI(action, params);
+    out.textContent += JSON.stringify(d, null, 2);
+    loadStatus();
+    loadLeaderboard();
+}
+
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// Boot
+loadStatus();
+loadLeaderboard();
+</script>
+</body>
+</html>
