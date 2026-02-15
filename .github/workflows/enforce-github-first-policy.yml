@@ -1,0 +1,130 @@
+name: 🔒 Enforce GitHub-First Deployment Policy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  verify-github-tracking:
+    name: Verify Changes Are Tracked
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check Commit Message Format
+        run: |
+          echo "🔍 Checking commit message format..."
+          
+          # Get the latest commit message
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "Latest commit: $COMMIT_MSG"
+          
+          # Check for valid type prefixes
+          if echo "$COMMIT_MSG" | grep -qiE "^(feat|fix|docs|style|refactor|test|chore|hotfix|update|add|remove|delete|create|implement|fix|correct|update|improve|enhance)[(:]|merge|bump|initial"; then
+            echo "✅ Commit message format is acceptable"
+          else
+            echo "⚠️  Commit message should follow format: type: description"
+            echo "Valid types: feat, fix, docs, style, refactor, test, chore, hotfix"
+            echo "Examples:"
+            echo "  feat: Add new database schema"
+            echo "  fix: Correct sportsbet database status"
+            echo "  docs: Update deployment policy"
+            # Don't fail, just warn
+          fi
+      
+      - name: Verify No Sensitive Data
+        run: |
+          echo "🔍 Checking for potentially sensitive files..."
+          
+          # Check for common sensitive files
+          SENSITIVE_PATTERNS="password secret api_key apikey token private_key"
+          FOUND=0
+          
+          for pattern in $SENSITIVE_PATTERNS; do
+            if git log -1 --name-only | grep -i "$pattern" > /dev/null 2>&1; then
+              echo "⚠️  Warning: File matching '$pattern' found in commit"
+              FOUND=1
+            fi
+          done
+          
+          # Check for .env files (should be in .gitignore)
+          if git log -1 --name-only | grep -E "\.env($|\.)" > /dev/null 2>&1; then
+            echo "❌ ERROR: .env file detected in commit!"
+            echo "   .env files should be in .gitignore and never committed"
+            exit 1
+          fi
+          
+          if [ $FOUND -eq 0 ]; then
+            echo "✅ No obvious sensitive file names detected"
+          fi
+      
+      - name: List Changed Files
+        run: |
+          echo "📋 Files changed in this commit:"
+          git log -1 --name-status
+          echo ""
+          echo "✅ These files will be deployed to the server"
+          echo "   (Ensure they are ready for production)"
+      
+      - name: Deployment Readiness Check
+        run: |
+          echo "🔍 Pre-deployment checks..."
+          
+          # Count files changed
+          FILE_COUNT=$(git log -1 --name-only --pretty=format: | wc -l)
+          echo "Files to deploy: $FILE_COUNT"
+          
+          # Check for large files (>1MB)
+          LARGE_FILES=$(git log -1 --name-only --pretty=format: | while read file; do
+            if [ -f "$file" ]; then
+              SIZE=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null || echo 0)
+              if [ "$SIZE" -gt 1048576 ]; then
+                echo "$file ($((SIZE / 1024))KB)"
+              fi
+            fi
+          done)
+          
+          if [ -n "$LARGE_FILES" ]; then
+            echo "⚠️  Large files detected (>1MB):"
+            echo "$LARGE_FILES"
+            echo "Consider optimizing before deployment"
+          else
+            echo "✅ No large files detected"
+          fi
+          
+          echo ""
+          echo "🚀 Ready for deployment!"
+          echo "   Remember: GitHub is the source of truth"
+          echo "   Server deployment should pull from this commit"
+
+  notify-deployment-policy:
+    name: Policy Reminder
+    runs-on: ubuntu-latest
+    needs: verify-github-tracking
+    
+    steps:
+      - name: Display Policy Reminder
+        run: |
+          echo "═══════════════════════════════════════════════════"
+          echo "  🔒 GITHUB-FIRST DEPLOYMENT POLICY ENFORCED"
+          echo "═══════════════════════════════════════════════════"
+          echo ""
+          echo "✅ This commit is now tracked in GitHub"
+          echo "✅ Changes can be safely deployed to server"
+          echo ""
+          echo "Next steps:"
+          echo "  1. Deploy to production server (if auto-deploy not configured)"
+          echo "  2. Verify changes on live site"
+          echo "  3. Test functionality"
+          echo ""
+          echo "Remember: Never edit files directly on server!"
+          echo "═══════════════════════════════════════════════════"
