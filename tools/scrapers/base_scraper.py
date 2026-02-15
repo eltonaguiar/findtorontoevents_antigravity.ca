@@ -147,6 +147,116 @@ TORONTO_VENUES = {
         "address": "Kensington Ave, Toronto, ON M5T 2K2",
         "lat": 43.6547,
         "lng": -79.4005
+    },
+    "the bentway": {
+        "address": "250 Fort York Blvd, Toronto, ON M5V 3K9",
+        "lat": 43.6389,
+        "lng": -79.4030
+    },
+    "stackt market": {
+        "address": "28 Bathurst St, Toronto, ON M5V 2P1",
+        "lat": 43.6401,
+        "lng": -79.4012
+    },
+    "tiff bell lightbox": {
+        "address": "350 King St W, Toronto, ON M5V 3X5",
+        "lat": 43.6466,
+        "lng": -79.3913
+    },
+    "toronto public library": {
+        "address": "789 Yonge St, Toronto, ON M4W 2G8",
+        "lat": 43.6722,
+        "lng": -79.3868
+    },
+    "woodbine beach": {
+        "address": "1675 Lake Shore Blvd E, Toronto, ON M4L 3W6",
+        "lat": 43.6625,
+        "lng": -79.3076
+    },
+    "evergreen brick works": {
+        "address": "550 Bayview Ave, Toronto, ON M4W 3X8",
+        "lat": 43.6847,
+        "lng": -79.3652
+    },
+    "queen's park": {
+        "address": "Queens Park, Toronto, ON M5S 2C6",
+        "lat": 43.6624,
+        "lng": -79.3913
+    },
+    "toronto botanical garden": {
+        "address": "777 Lawrence Ave E, Toronto, ON M3C 1P2",
+        "lat": 43.7333,
+        "lng": -79.3389
+    },
+    "coca-cola coliseum": {
+        "address": "45 Manitoba Dr, Toronto, ON M6K 3C3",
+        "lat": 43.6333,
+        "lng": -79.4180
+    },
+    "budweiser stage": {
+        "address": "909 Lake Shore Blvd W, Toronto, ON M6K 3L3",
+        "lat": 43.6287,
+        "lng": -79.4146
+    },
+    "history toronto": {
+        "address": "1 Eglinton Ave E, Toronto, ON M4P 3A1",
+        "lat": 43.7069,
+        "lng": -79.3983
+    },
+    "four seasons centre": {
+        "address": "145 Queen St W, Toronto, ON M5H 4G1",
+        "lat": 43.6512,
+        "lng": -79.3855
+    },
+    "meridian hall": {
+        "address": "1 Front St E, Toronto, ON M5E 1B2",
+        "lat": 43.6475,
+        "lng": -79.3761
+    },
+    "cbc broadcasting centre": {
+        "address": "250 Front St W, Toronto, ON M5V 3G7",
+        "lat": 43.6445,
+        "lng": -79.3877
+    },
+    "koerner hall": {
+        "address": "273 Bloor St W, Toronto, ON M5S 1W2",
+        "lat": 43.6681,
+        "lng": -79.3953
+    },
+    "danforth music hall": {
+        "address": "147 Danforth Ave, Toronto, ON M4K 1N2",
+        "lat": 43.6774,
+        "lng": -79.3527
+    },
+    "phoenix concert theatre": {
+        "address": "410 Sherbourne St, Toronto, ON M4X 1K2",
+        "lat": 43.6638,
+        "lng": -79.3716
+    },
+    "opera house toronto": {
+        "address": "735 Queen St E, Toronto, ON M4M 1H1",
+        "lat": 43.6597,
+        "lng": -79.3490
+    },
+    "lee's palace": {
+        "address": "529 Bloor St W, Toronto, ON M5S 1Y5",
+        "lat": 43.6653,
+        "lng": -79.4082
+    },
+    "rebel toronto": {
+        "address": "11 Polson St, Toronto, ON M5A 1A4",
+        "lat": 43.6414,
+        "lng": -79.3542
+    },
+    "mattamy athletic centre": {
+        "address": "50 Carlton St, Toronto, ON M5B 1J2",
+        "lat": 43.6620,
+        "lng": -79.3791
+    },
+    "roundhouse park": {
+        "address": "255 Bremner Blvd, Toronto, ON M5V 3M9",
+        "lat": 43.6405,
+        "lng": -79.3866
     }
 }
 
