@@ -392,6 +392,118 @@ GENERIC_JSONLD_SOURCES = {
 }
 
 
+def fetch_own_events():
+    """Fetch our own events.json for cross-referencing venue/source data."""
+    try:
+        resp = requests.get("https://findtorontoevents.ca/events.json", headers=HEADERS, timeout=15)
+        events = resp.json()
+        if isinstance(events, dict):
+            events = events.get("events", [])
+        print(f"  Loaded {len(events)} events from our own events.json")
+        return events
+    except Exception as e:
+        print(f"  [WARN] Could not fetch own events.json: {e}")
+        # Try local file
+        local = PROJECT_ROOT / "next" / "events.json"
+        if local.exists():
+            try:
+                with open(local, "r", encoding="utf-8") as f:
+                    events = json.load(f)
+                if isinstance(events, dict):
+                    events = events.get("events", [])
+                print(f"  Loaded {len(events)} events from local next/events.json")
+                return events
+            except Exception:
+                pass
+        return []
+
+
+def match_events_to_source(own_events, source_name, source_url, max_events=3):
+    """Match our scraped events to a specific resource source by venue/location/URL keywords."""
+    # Build keyword sets for matching
+    name_lower = source_name.lower()
+    url_lower = source_url.lower()
+    keywords = set()
+
+    # Source name keywords
+    for word in name_lower.split():
+        if len(word) > 2:
+            keywords.add(word)
+
+    # Known venue/source mappings
+    VENUE_MAP = {
+        "massey hall": ["massey hall"],
+        "roy thomson hall": ["roy thomson", "rth"],
+        "scotiabank arena": ["scotiabank arena", "scotia arena"],
+        "danforth music hall": ["danforth music", "the danforth"],
+        "comedy bar": ["comedy bar"],
+        "second city": ["second city"],
+        "yuk yuk": ["yuk yuk", "yukyuks"],
+        "mirvish": ["mirvish", "royal alexandra", "princess of wales", "ed mirvish"],
+        "tiff": ["tiff", "toronto international film"],
+        "art gallery of ontario": ["ago", "art gallery of ontario"],
+        "royal ontario museum": ["rom", "royal ontario museum"],
+        "blue jays": ["blue jays", "rogers centre", "jays"],
+        "raptors": ["raptors", "scotiabank arena"],
+        "maple leafs": ["maple leafs", "leafs", "scotiabank arena"],
+        "toronto fc": ["toronto fc", "tfc", "bmo field"],
+        "argonauts": ["argonauts", "argos", "bmo field"],
+        "marlies": ["marlies", "coca-cola coliseum"],
+        "cne": ["cne", "canadian national exhibition", "exhibition place", "the ex"],
+        "toronto pride": ["pride", "pride parade"],
+        "eventbrite": ["eventbrite"],
+        "budweiser stage": ["budweiser stage"],
+        "the phoenix": ["phoenix concert"],
+        "the drake": ["drake hotel"],
+        "history toronto": ["history toronto"],
+        "rogers centre": ["rogers centre"],
+    }
+
+    match_kw = []
+    for key, vals in VENUE_MAP.items():
+        if key in name_lower:
+            match_kw.extend(vals)
+            break
+
+    matched = []
+    for evt in own_events:
+        title = (evt.get("title") or "").lower()
+        location = (evt.get("location") or "").lower()
+        source = (evt.get("source") or "").lower()
+        link = (evt.get("link") or evt.get("url") or "").lower()
+        combined = f"{title} {location} {source} {link}"
+
+        # Check venue-specific keywords
+        found = False
+        for kw in match_kw:
+            if kw in combined:
+                found = True
+                break
+
+        # Check if event URL contains the source domain
+        if not found and url_lower:
+            domain = url_lower.split("//")[-1].split("/")[0].replace("www.", "")
+            if domain in link:
+                found = True
+
+        if found:
+            date_str = evt.get("date", "")
+            try:
+                dt = datetime.fromisoformat(date_str.replace("Z", "+00:00").split("+")[0])
+                date_str = dt.strftime("%b %d").replace(" 0", " ")
+            except Exception:
+                date_str = date_str[:10] if date_str else "See Site"
+
+            price = evt.get("price", "")
+            matched.append({
+                "title": (evt.get("title") or "Event")[:60],
+                "date": date_str or "See Site",
+                "price": fmt_price(price) if price else "See Site"
+            })
+
+    return matched[:max_events]
+
+
 def refresh_resources(dry_run=False):
     """Main refresh logic: load resources.json, scrape each source, update events."""
     print(f"{'='*60}")
@@ -406,9 +518,16 @@ def refresh_resources(dry_run=False):
     with open(RESOURCES_JSON, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    total_updated = 0
-    total_failed = 0
+    # Fetch our own events for fallback matching
+    print("Step 1: Fetching own events.json for cross-reference...")
+    own_events = fetch_own_events()
+
+    total_scraped = 0
+    total_fallback = 0
+    total_kept = 0
     total_skipped = 0
+
+    print("\nStep 2: Scraping resource sources...")
 
     for cat in data.get("categories", []):
         print(f"\n--- {cat['emoji']} {cat['name']} ---")
@@ -422,33 +541,49 @@ def refresh_resources(dry_run=False):
                 target_url = GENERIC_JSONLD_SOURCES[name]
                 scraper_fn = lambda u=target_url: scrape_generic_jsonld(u)
 
-            if not scraper_fn:
-                total_skipped += 1
-                continue
+            new_events = []
 
-            print(f"  Scraping {name}...", end=" ", flush=True)
-            time.sleep(0.3)  # Polite rate limiting
+            # Try dedicated/generic scraper first
+            if scraper_fn:
+                print(f"  Scraping {name}...", end=" ", flush=True)
+                time.sleep(0.3)
+                try:
+                    new_events = scraper_fn()
+                    if new_events:
+                        source["events"] = new_events
+                        total_scraped += 1
+                        titles = [e["title"][:40] for e in new_events]
+                        print(f"OK ({len(new_events)} events: {', '.join(titles)})")
+                        continue
+                except Exception as e:
+                    print(f"scrape failed ({e})", end=" ")
 
-            try:
-                new_events = scraper_fn()
-                if new_events:
-                    source["events"] = new_events
-                    total_updated += 1
-                    titles = [e["title"][:40] for e in new_events]
-                    print(f"OK ({len(new_events)} events: {', '.join(titles)})")
-                else:
-                    total_failed += 1
-                    print("no events found (keeping existing)")
-            except Exception as e:
-                total_failed += 1
-                print(f"ERROR: {e}")
-                traceback.print_exc()
+            # Fallback: match from our own events.json
+            if own_events:
+                fallback_events = match_events_to_source(own_events, name, url)
+                if fallback_events:
+                    source["events"] = fallback_events
+                    total_fallback += 1
+                    if scraper_fn:
+                        print(f"-> fallback OK ({len(fallback_events)} from events.json)")
+                    else:
+                        titles = [e["title"][:35] for e in fallback_events]
+                        print(f"  {name}: fallback OK ({len(fallback_events)} events: {', '.join(titles)})")
+                    continue
+
+            # Neither worked — keep existing events
+            if scraper_fn:
+                print("keeping existing")
+            total_kept += 1 if scraper_fn else 0
+            total_skipped += 0 if scraper_fn else 1
 
     # Update metadata
     data["last_updated"] = TODAY.strftime("%Y-%m-%d")
 
     print(f"\n{'='*60}")
-    print(f"Results: {total_updated} updated, {total_failed} failed, {total_skipped} skipped (no scraper)")
+    print(f"Results: {total_scraped} scraped, {total_fallback} from events.json fallback, "
+          f"{total_kept} kept existing, {total_skipped} skipped (no scraper)")
+    print(f"Total refreshed: {total_scraped + total_fallback}")
     print(f"{'='*60}")
 
     if dry_run:
