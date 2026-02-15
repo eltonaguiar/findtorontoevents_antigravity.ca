@@ -162,59 +162,105 @@ class MeetupScraper(BaseScraper):
         return None
 
     def _parse_next_data_events(self, next_data: Dict) -> List[Dict]:
-        """Walk __NEXT_DATA__ to pull out event objects"""
+        """
+        Extract events from __NEXT_DATA__'s Apollo Client cache.
+
+        Meetup uses Apollo GraphQL; the SSR cache is stored in
+        ``pageProps.__APOLLO_STATE__`` with normalised keys like
+        ``Event:313180867``, ``Group:38363755``, ``PhotoInfo:532561401``.
+        We resolve ``__ref`` pointers to denormalise into flat dicts.
+        """
         events: List[Dict] = []
         try:
             page_props = next_data.get("props", {}).get("pageProps", {})
+            apollo = page_props.get("__APOLLO_STATE__", {})
 
-            # Meetup's find page stores search results under several paths
-            edges = (
-                page_props.get("searchResults", {}).get("edges", [])
-                or page_props.get("results", {}).get("edges", [])
-                or page_props.get("events", [])
-            )
+            if not apollo:
+                return events
 
-            for edge in edges:
-                node = edge.get("node", edge) if isinstance(edge, dict) else {}
-                if not node or not node.get("title"):
+            # Helper: resolve a ``__ref`` pointer to an Apollo entity
+            def resolve(ref_obj):
+                if isinstance(ref_obj, dict) and "__ref" in ref_obj:
+                    return apollo.get(ref_obj["__ref"], {})
+                return ref_obj if isinstance(ref_obj, dict) else {}
+
+            # Find all Event entries
+            for key, node in apollo.items():
+                if not key.startswith("Event:"):
+                    continue
+
+                title = node.get("title", "")
+                if not title or len(title) < 3:
+                    continue
+
+                # Skip online-only events
+                if node.get("eventType") == "ONLINE":
                     continue
 
                 ev: Dict = {
-                    "title": node.get("title", ""),
+                    "title": title,
                     "date": node.get("dateTime", ""),
                     "end_date": node.get("endTime", ""),
                     "url": node.get("eventUrl", ""),
                     "description": (node.get("description") or "")[:500],
-                    "group": (node.get("group") or {}).get("name", ""),
-                    "is_online": node.get("isOnline", False),
+                    "meetup_id": node.get("id", ""),
+                    "is_online": node.get("eventType") == "ONLINE",
+                    "rsvp_count": 0,
                 }
 
-                # Venue
+                # RSVP count
+                rsvps = node.get("rsvps") or {}
+                if isinstance(rsvps, dict):
+                    ev["rsvp_count"] = rsvps.get("totalCount", 0)
+
+                # Venue (inline in Event, no separate Venue:* entry)
                 venue = node.get("venue") or {}
-                if venue:
+                if isinstance(venue, dict) and venue.get("__ref"):
+                    venue = resolve(venue)
+                if isinstance(venue, dict) and venue.get("name"):
                     ev["venue_name"] = venue.get("name", "")
                     ev["address"] = venue.get("address", "")
                     ev["city"] = venue.get("city", "")
+                    ev["state"] = venue.get("state", "")
+                    ev["country"] = venue.get("country", "")
                     ev["lat"] = venue.get("lat")
                     ev["lng"] = venue.get("lng")
 
-                # Fee
-                fee = node.get("feeSettings") or {}
-                if fee:
+                # Group (resolved via __ref)
+                group_ref = node.get("group")
+                if group_ref:
+                    group = resolve(group_ref)
+                    ev["group"] = group.get("name", "")
+                    ev["group_urlname"] = group.get("urlname", "")
+
+                # Fee settings (None = free)
+                fee = node.get("feeSettings")
+                if fee and isinstance(fee, dict):
                     ev["price_amount"] = fee.get("amount", 0)
                     ev["currency"] = fee.get("currency", "CAD")
+                    ev["is_free"] = False
+                else:
+                    ev["price_amount"] = 0
+                    ev["is_free"] = True
 
-                # Image
-                images = node.get("images") or node.get("featuredPhoto") or {}
-                if isinstance(images, list) and images:
-                    ev["image"] = images[0].get("baseUrl", "") or images[0].get("source", "")
-                elif isinstance(images, dict) and images:
-                    ev["image"] = images.get("baseUrl", "") or images.get("source", "")
+                # Featured photo (resolved via __ref)
+                photo_ref = node.get("featuredEventPhoto")
+                if photo_ref:
+                    photo = resolve(photo_ref)
+                    ev["image"] = (
+                        photo.get("highResUrl", "")
+                        or photo.get("baseUrl", "")
+                    )
+
+                # Series / recurring
+                series = node.get("series")
+                if series:
+                    ev["is_recurring"] = True
 
                 events.append(ev)
 
         except Exception as e:
-            print(f"[{self.SOURCE_NAME}] Error parsing __NEXT_DATA__: {e}")
+            print(f"[{self.SOURCE_NAME}] Error parsing __APOLLO_STATE__: {e}")
 
         return events
 

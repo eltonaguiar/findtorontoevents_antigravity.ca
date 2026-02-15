@@ -189,6 +189,51 @@
 
         <!-- Update Cards -->
 
+        <!-- NEW: Event Resources System - Feb 15, 2026 -->
+        <div class="update-card completed">
+            <div class="update-header">
+                <h3 class="update-title">Toronto Event Resources — 50+ Sources, Discord Bot, AI Chatbot & Daily Auto-Refresh</h3>
+                <span class="update-badge badge-completed">COMPLETED</span>
+            </div>
+            <div class="update-meta">
+                <span class="timestamp">Completed: Feb 15, 2026</span>
+            </div>
+            <div class="update-description">
+                Built a comprehensive event resources system with 50+ curated Toronto event sources across 9 categories — accessible through the website, Discord bot (<code>/fc-resources</code>), and AI chatbot ("show me event resources"). Includes a daily auto-refresh pipeline via GitHub Actions that scrapes real events from source websites and cross-references our own 1,100+ event database.
+            </div>
+            <div class="update-details">
+                <h4>New Components</h4>
+                <table>
+                    <tr><th>Component</th><th>Description</th><th>Link</th></tr>
+                    <tr><td>Resources Page</td><td>50+ sources across 9 categories with filtering, search, and sample events</td><td><a href="https://findtorontoevents.ca/resources/resources.html" target="_blank">View Resources</a></td></tr>
+                    <tr><td>Resources API</td><td>PHP REST API — category filtering + today's events auto-detection</td><td><a href="https://findtorontoevents.ca/api/events/resources.php?today=1" target="_blank">API (today)</a></td></tr>
+                    <tr><td>Discord: <code>/fc-resources</code></td><td>Slash command with 9 category choices + today filter</td><td>Discord Bot</td></tr>
+                    <tr><td>AI Chatbot</td><td>"where to find events", "music resources", "event platforms"</td><td>AI button on site</td></tr>
+                    <tr><td>Daily Refresh</td><td>GitHub Actions cron (6:30 AM EST) — scrapes + cross-references + deploys</td><td>GitHub Actions</td></tr>
+                </table>
+                <h4>9 Categories (55 sources)</h4>
+                <ul>
+                    <li><strong>Platforms (5)</strong> — Eventbrite, Meetup, Ticketmaster, StubHub, Fever</li>
+                    <li><strong>Calendars (6)</strong> — BlogTO, Destination Toronto, City of Toronto, NOW, TOREVENT</li>
+                    <li><strong>Music (10)</strong> — Massey Hall, Scotiabank Arena, Danforth, Phoenix, History, Budweiser Stage</li>
+                    <li><strong>Arts (7)</strong> — TIFF, AGO, ROM, Hot Docs, Luminato, Nuit Blanche</li>
+                    <li><strong>Theatre/Comedy (6)</strong> — Mirvish, Second City, Comedy Bar, Yuk Yuk's</li>
+                    <li><strong>Sports (6)</strong> — Blue Jays, Raptors, Maple Leafs, TFC, Argonauts, Marlies</li>
+                    <li><strong>Festivals (6)</strong> — CNE, Pride, Caribbean Carnival, Taste of the Danforth</li>
+                    <li><strong>Food (4)</strong> — Restaurant Events, Craft Beer, Taste of Toronto, BlogTO Food</li>
+                    <li><strong>Media (5)</strong> — Toronto Star, CP24, NOW Toronto, Narcity, UnityMaps</li>
+                </ul>
+                <h4>Refresh Pipeline: 2-Tier Data Strategy</h4>
+                <ol>
+                    <li><strong>Direct scraping</strong> — Eventbrite (JSON-LD), Meetup (JSON-LD), Ticketmaster (Discovery API), + 8 generic JSON-LD venue scrapers</li>
+                    <li><strong>Events.json fallback</strong> — Cross-references 1,100+ events by venue/team name for 24+ sources (all sports, concert venues, cultural institutions)</li>
+                </ol>
+                <p>Result: 26/55 sources refreshed with real data daily. Remaining keep curated editorial content.</p>
+                <h4>Files: 9 created/modified</h4>
+                <p><code>resources/resources.json</code> • <code>api/events/resources.php</code> • <code>ai-assistant.js</code> • <code>discord_interactions_full.php</code> • <code>discord_register_commands.php</code> • <code>discord_bot.py</code> • <code>tools/refresh_resources.py</code> • <code>.github/workflows/refresh-resources.yml</code></p>
+            </div>
+        </div>
+
         <!-- NEW: Eventbrite Scraper - Feb 15, 2026 -->
         <div class="update-card completed">
             <div class="update-header">
