@@ -2,12 +2,304 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0;url=live-monitor.html">
-<title>Live Trading Monitor | Find Toronto Events</title>
-<meta name="description" content="Real-time multi-asset paper trading monitor with 20 algorithms, regime detection, and smart money intelligence.">
-<link rel="canonical" href="https://findtorontoevents.ca/live-monitor/live-monitor.html">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Monitor Hub — All Trading Dashboards</title>
+<style>
+:root {
+    --bg: #0a0e17; --surface: #111827; --surface2: #1a2332; --border: #2a3548;
+    --text: #e2e8f0; --muted: #8892a4; --green: #10b981; --red: #ef4444;
+    --yellow: #f59e0b; --blue: #3b82f6; --purple: #8b5cf6; --cyan: #06b6d4;
+    --orange: #f97316; --gold: #fbbf24; --pink: #ec4899;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.5; }
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+.header { text-align: center; padding: 30px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.header h1 { font-size: 2.2rem; background: linear-gradient(135deg, var(--cyan), var(--purple), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
+.header .subtitle { color: var(--muted); font-size: 0.95rem; }
+.header .site-link { color: var(--blue); text-decoration: none; font-size: 0.82rem; }
+.header .site-link:hover { text-decoration: underline; }
+
+/* System health banner */
+.health-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: center; padding: 12px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 24px; font-size: 0.8rem; }
+.health-item { display: flex; align-items: center; gap: 6px; }
+.health-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.health-dot.ok { background: var(--green); animation: pulse 2s infinite; }
+.health-dot.warn { background: var(--yellow); }
+.health-dot.error { background: var(--red); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+/* Dashboard sections */
+.section-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 20px 0 12px; padding-left: 4px; font-weight: 600; }
+.dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-bottom: 28px; }
+.dash-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; text-decoration: none; color: inherit; transition: all 0.25s; display: block; position: relative; overflow: hidden; }
+.dash-card:hover { border-color: var(--cyan); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+.dash-card .card-icon { font-size: 2rem; margin-bottom: 8px; }
+.dash-card .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+.dash-card .card-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+.dash-card .card-status { position: absolute; top: 12px; right: 12px; font-size: 0.7rem; padding: 2px 8px; border-radius: 6px; font-weight: 600; }
+.card-status.live { background: rgba(16,185,129,0.15); color: var(--green); }
+.card-status.new { background: rgba(6,182,212,0.15); color: var(--cyan); }
+
+/* API section */
+.api-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; margin-bottom: 20px; }
+.api-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; font-size: 0.8rem; }
+.api-item .api-name { font-weight: 600; flex: 0 0 auto; }
+.api-item .api-desc { color: var(--muted); flex: 1; }
+.api-item .api-link { color: var(--blue); text-decoration: none; font-size: 0.75rem; flex: 0 0 auto; }
+.api-item .api-link:hover { text-decoration: underline; }
+.api-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.api-dot.ok { background: var(--green); }
+.api-dot.unknown { background: var(--muted); }
+
+/* Footer */
+.footer { text-align: center; padding: 20px 0; border-top: 1px solid var(--border); margin-top: 30px; font-size: 0.75rem; color: var(--muted); }
+
+@media (max-width: 768px) {
+    .dash-grid { grid-template-columns: 1fr; }
+    .api-grid { grid-template-columns: 1fr; }
+    .header h1 { font-size: 1.6rem; }
+}
+</style>
 </head>
 <body>
-<p>Redirecting to <a href="live-monitor.html">Live Trading Monitor</a>...</p>
+<div class="container">
+
+<div class="header">
+    <h1>Live Monitor Hub</h1>
+    <p class="subtitle">All trading dashboards, intelligence tools &amp; monitoring systems</p>
+    <p style="margin-top:8px"><a class="site-link" href="https://findtorontoevents.ca/">&larr; Back to main site</a></p>
+</div>
+
+<div class="health-bar" id="healthBar">
+    <div class="health-item"><span class="health-dot ok" id="hDotArena"></span> Strategy Arena</div>
+    <div class="health-item"><span class="health-dot ok" id="hDotTrade"></span> Trading</div>
+    <div class="health-item"><span class="health-dot ok" id="hDotFP"></span> Fingerprints</div>
+    <div class="health-item"><span class="health-dot ok" id="hDotSpike"></span> Spike Scanner</div>
+    <div class="health-item"><span class="health-dot ok" id="hDotBreaker"></span> Circuit Breakers</div>
+    <div class="health-item" style="margin-left:auto;gap:4px">
+        <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:none;font-size:0.78rem">GitHub Actions &rarr;</a>
+    </div>
+</div>
+
+<!-- CORE DASHBOARDS -->
+<div class="section-label">Core Dashboards</div>
+<div class="dash-grid">
+    <a class="dash-card" href="live-monitor.html">
+        <span class="card-status live">LIVE</span>
+        <div class="card-icon">&#x1F4CA;</div>
+        <div class="card-title">Live Trading Monitor</div>
+        <div class="card-desc">Real-time multi-asset signals from 20 algorithms with regime detection and smart money intelligence.</div>
+    </a>
+    <a class="dash-card" href="trading-dashboard.html">
+        <span class="card-status new">NEW</span>
+        <div class="card-icon">&#x1F4B0;</div>
+        <div class="card-title">Trading Dashboard</div>
+        <div class="card-desc">Paper portfolio with open positions, P&amp;L tracking, algorithm performance, and equity curve.</div>
+    </a>
+    <a class="dash-card" href="strategy-arena.html">
+        <span class="card-status live">LIVE</span>
+        <div class="card-icon">&#x1F3C6;</div>
+        <div class="card-title">Strategy Arena</div>
+        <div class="card-desc">25 betting strategies competing in real-time tournament. Leaderboard, categories, equity curves.</div>
+    </a>
+    <a class="dash-card" href="pair-fingerprints.html">
+        <span class="card-status live">LIVE</span>
+        <div class="card-icon">&#x1F9EC;</div>
+        <div class="card-title">Pair Fingerprints &amp; Spike Scanner</div>
+        <div class="card-desc">Per-asset behavioral profiling + real-time volume/price spike detection across crypto, stocks &amp; forex.</div>
+    </a>
+</div>
+
+<!-- INTELLIGENCE & ANALYSIS -->
+<div class="section-label">Intelligence &amp; Analysis</div>
+<div class="dash-grid">
+    <a class="dash-card" href="smart-money.html">
+        <div class="card-icon">&#x1F4A1;</div>
+        <div class="card-title">Smart Money Tracker</div>
+        <div class="card-desc">Tracks institutional-grade signals, whale movements, and smart money flow indicators.</div>
+    </a>
+    <a class="dash-card" href="conviction-alerts.html">
+        <div class="card-icon">&#x1F514;</div>
+        <div class="card-title">Conviction Alerts</div>
+        <div class="card-desc">Multi-dimensional high-conviction trade alerts combining multiple data sources.</div>
+    </a>
+    <a class="dash-card" href="multi-dimensional.html">
+        <div class="card-icon">&#x1F52E;</div>
+        <div class="card-title">Multi-Dimensional Analysis</div>
+        <div class="card-desc">Fear/greed index, data enrichment, and supplemental dimensional scoring.</div>
+    </a>
+    <a class="dash-card" href="edge-dashboard.html">
+        <div class="card-icon">&#x2694;&#xFE0F;</div>
+        <div class="card-title">Edge Finder</div>
+        <div class="card-desc">Identifies and quantifies trading edges across markets and strategies.</div>
+    </a>
+    <a class="dash-card" href="winning-patterns.html">
+        <div class="card-icon">&#x1F3AF;</div>
+        <div class="card-title">Winning Patterns</div>
+        <div class="card-desc">Historical pattern analysis showing which setups produce the highest win rates.</div>
+    </a>
+    <a class="dash-card" href="discover-movers.html">
+        <span class="card-status new">NEW</span>
+        <div class="card-icon">&#x1F680;</div>
+        <div class="card-title">Discover Movers</div>
+        <div class="card-desc">Top crypto gainers &amp; losers auto-discovered from Binance — high volume, unusual moves.</div>
+    </a>
+</div>
+
+<!-- PERFORMANCE & SAFETY -->
+<div class="section-label">Performance &amp; Safety</div>
+<div class="dash-grid">
+    <a class="dash-card" href="algo-performance.html">
+        <div class="card-icon">&#x1F4C8;</div>
+        <div class="card-title">Algorithm Performance</div>
+        <div class="card-desc">Detailed performance metrics per algorithm — win rates, returns, Sharpe ratios.</div>
+    </a>
+    <a class="dash-card" href="hour-learning.html">
+        <div class="card-icon">&#x23F0;</div>
+        <div class="card-title">Hour Learning</div>
+        <div class="card-desc">Time-of-day trading pattern analysis — when do signals perform best?</div>
+    </a>
+    <a class="dash-card" href="capital-efficiency.html">
+        <div class="card-icon">&#x1F3E6;</div>
+        <div class="card-title">Capital Efficiency &amp; Regime</div>
+        <div class="card-desc">Market regime detection and capital allocation optimization.</div>
+    </a>
+    <a class="dash-card" href="circuit-breakers.html">
+        <span class="card-status new">NEW</span>
+        <div class="card-icon">&#x1F6A8;</div>
+        <div class="card-title">Circuit Breakers</div>
+        <div class="card-desc">Trading safety system status — active breakers, history, and risk controls.</div>
+    </a>
+    <a class="dash-card" href="quant-bridge.html">
+        <div class="card-icon">&#x1F309;</div>
+        <div class="card-title">Quant Bridge</div>
+        <div class="card-desc">Bridges backtested algorithms to live execution with performance tracking.</div>
+    </a>
+</div>
+
+<!-- SPORTS & OPPORTUNITIES -->
+<div class="section-label">Sports &amp; Opportunities</div>
+<div class="dash-grid">
+    <a class="dash-card" href="sports-betting.html">
+        <div class="card-icon">&#x26BD;</div>
+        <div class="card-title">Sports Betting</div>
+        <div class="card-desc">Sports picks, odds analysis, and EV-based betting recommendations.</div>
+    </a>
+    <a class="dash-card" href="opportunity-scanner.html">
+        <div class="card-icon">&#x1F50D;</div>
+        <div class="card-title">Opportunity Scanner</div>
+        <div class="card-desc">Scans for mispriced odds, arbitrage, and high-value betting opportunities.</div>
+    </a>
+    <a class="dash-card" href="goldmine-dashboard.html">
+        <div class="card-icon">&#x2B50;</div>
+        <div class="card-title">Goldmine Dashboard</div>
+        <div class="card-desc">SEC EDGAR filings, insider trades, and institutional movement tracking.</div>
+    </a>
+    <a class="dash-card" href="goldmine-alerts.html">
+        <div class="card-icon">&#x1F4E2;</div>
+        <div class="card-title">Goldmine Alerts</div>
+        <div class="card-desc">Real-time alerts for significant insider buys, SEC filings, and unusual activity.</div>
+    </a>
+</div>
+
+<!-- MISC -->
+<div class="section-label">System &amp; Metrics</div>
+<div class="dash-grid">
+    <a class="dash-card" href="real_time_dashboard.html">
+        <div class="card-icon">&#x1F4BB;</div>
+        <div class="card-title">Real-Time Metrics</div>
+        <div class="card-desc">System metrics, API performance, and operational health monitoring.</div>
+    </a>
+    <a class="dash-card" href="command-center.html">
+        <div class="card-icon">&#x2699;&#xFE0F;</div>
+        <div class="card-title">Command Center</div>
+        <div class="card-desc">Admin command center for triggering scans, builds, and system operations.</div>
+    </a>
+</div>
+
+<!-- API ENDPOINTS -->
+<details style="margin-top:20px">
+    <summary style="cursor:pointer;color:var(--blue);font-size:0.9rem;font-weight:600;margin-bottom:12px">&#x1F50C; API Endpoints (for developers)</summary>
+    <p style="color:var(--muted);font-size:0.82rem;margin-bottom:12px">These endpoints return JSON. Each one powers one or more dashboards above.</p>
+    <div class="api-grid" id="apiGrid"></div>
+</details>
+
+<div class="footer">
+    <p>Live Monitor Hub &mdash; <a href="https://findtorontoevents.ca" style="color:var(--blue);text-decoration:none">findtorontoevents.ca</a></p>
+    <p style="margin-top:4px" id="footerTime"></p>
+</div>
+</div>
+
+<script>
+var BASE = '/live-monitor/api/';
+var APIs = [
+    {name:'strategy_arena.php', desc:'Strategy arena tournament', dash:'strategy-arena.html'},
+    {name:'pair_fingerprint.php', desc:'Per-pair behavioral fingerprints', dash:'pair-fingerprints.html'},
+    {name:'spike_scanner.php', desc:'Volume/price spike detection', dash:'pair-fingerprints.html'},
+    {name:'live_trade.php', desc:'Paper trading positions & P&L', dash:'trading-dashboard.html'},
+    {name:'live_signals.php', desc:'Live algorithm signals', dash:'live-monitor.html'},
+    {name:'live_prices.php', desc:'Current asset prices', dash:'live-monitor.html'},
+    {name:'smart_money.php', desc:'Smart money flow tracking', dash:'smart-money.html'},
+    {name:'multi_dimensional.php', desc:'Multi-dimensional scoring', dash:'multi-dimensional.html'},
+    {name:'edge_finder.php', desc:'Edge identification', dash:'edge-dashboard.html'},
+    {name:'winning_patterns.php', desc:'Historical pattern analysis', dash:'winning-patterns.html'},
+    {name:'discover_movers.php', desc:'Top crypto movers (Binance)', dash:'discover-movers.html'},
+    {name:'breaker_live.php', desc:'Circuit breaker safety', dash:'circuit-breakers.html'},
+    {name:'algo_performance.php', desc:'Algorithm performance metrics', dash:'algo-performance.html'},
+    {name:'hour_learning.php', desc:'Time-of-day patterns', dash:'hour-learning.html'},
+    {name:'regime.php', desc:'Market regime detection', dash:'capital-efficiency.html'},
+    {name:'sports_bets.php', desc:'Sports betting data', dash:'sports-betting.html'},
+    {name:'sports_odds.php', desc:'Live odds feeds', dash:'sports-betting.html'},
+    {name:'opportunity_scanner.php', desc:'Opportunity scanning', dash:'opportunity-scanner.html'},
+    {name:'goldmine_tracker.php', desc:'SEC/insider tracking', dash:'goldmine-dashboard.html'},
+    {name:'fear_greed.php', desc:'Fear & greed index', dash:'multi-dimensional.html'},
+    {name:'injury_intel.php', desc:'Player injury reports', dash:'(sports integrations)'},
+    {name:'quant_bridge.php', desc:'Backtest-to-live bridge', dash:'quant-bridge.html'},
+    {name:'metrics.php', desc:'System metrics', dash:'real_time_dashboard.html'},
+    {name:'command_center.php', desc:'Admin operations', dash:'command-center.html'}
+];
+
+// Render API list
+var apiHtml = '';
+APIs.forEach(function(a) {
+    apiHtml += '<div class="api-item">'
+        + '<span class="api-dot unknown" id="dot-' + a.name.replace('.php','') + '"></span>'
+        + '<span class="api-name">' + a.name + '</span>'
+        + '<span class="api-desc">' + a.desc + '</span>'
+        + '<a class="api-link" href="' + BASE + a.name + '?action=status" target="_blank">status</a>'
+        + '</div>';
+});
+document.getElementById('apiGrid').innerHTML = apiHtml;
+
+// Health checks
+var healthChecks = [
+    {endpoint:'strategy_arena.php?action=status', dotId:'hDotArena'},
+    {endpoint:'live_trade.php?action=dashboard', dotId:'hDotTrade'},
+    {endpoint:'pair_fingerprint.php?action=status', dotId:'hDotFP'},
+    {endpoint:'spike_scanner.php?action=status', dotId:'hDotSpike'},
+    {endpoint:'breaker_live.php?action=status', dotId:'hDotBreaker'}
+];
+
+function checkHealth() {
+    healthChecks.forEach(function(h) {
+        fetch(BASE + h.endpoint, {signal: AbortSignal.timeout(8000)})
+            .then(function(r){return r.json()})
+            .then(function(d) {
+                var dot = document.getElementById(h.dotId);
+                if (d.ok) { dot.className = 'health-dot ok'; }
+                else { dot.className = 'health-dot warn'; }
+            })
+            .catch(function() {
+                document.getElementById(h.dotId).className = 'health-dot error';
+            });
+    });
+}
+
+document.getElementById('footerTime').textContent = 'Loaded: ' + new Date().toLocaleString();
+checkHealth();
+setInterval(checkHealth, 120000);
+</script>
 </body>
 </html>

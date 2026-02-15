@@ -120,6 +120,13 @@ tr:hover { background: var(--surface2); }
             <span class="status-label">Baselines:</span>
             <span class="status-value cyan" id="val-baselines">—</span>
         </div>
+        <div class="status-item">
+            <span class="status-label">Next scan:</span>
+            <span class="status-value" id="val-next-scan" style="color:var(--cyan)">—</span>
+        </div>
+        <div class="status-item" id="fp-gh-actions" style="display:none">
+            <a id="fp-gh-link" href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/workflows/pair-fingerprint-scan.yml" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;background:rgba(99,102,241,0.1);color:var(--accent);padding:3px 10px;border-radius:6px;font-size:0.75rem;text-decoration:none;border:1px solid rgba(99,102,241,0.2);"><span id="fp-gh-icon">&#x2699;</span> GitHub Actions</a>
+        </div>
     </div>
 
     <div class="tabs">
@@ -605,11 +612,70 @@ function loadPairDetail() {
     });
 }
 
+// Next scheduled scan (every 30 min at :00 and :30)
+function updateNextScan() {
+    var now = new Date();
+    var m = now.getUTCMinutes();
+    var nextMin = m < 30 ? 30 : 60;
+    var diff = nextMin - m;
+    var el = document.getElementById('val-next-scan');
+    if (el) el.textContent = 'in ~' + diff + ' min';
+}
+
+// GitHub Actions data quality check for pair-fingerprint workflow
+function checkFPGitHubActions() {
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'https://api.github.com/repos/eltonaguiar/findtorontoevents_antigravity.ca/actions/workflows/pair-fingerprint-scan.yml/runs?per_page=3&status=completed', true);
+        xhr.onload = function() {
+            if (xhr.status !== 200) return;
+            var data = JSON.parse(xhr.responseText);
+            if (!data.workflow_runs || data.workflow_runs.length === 0) return;
+            var latest = data.workflow_runs[0];
+            var ghItem = document.getElementById('fp-gh-actions');
+            var ghLink = document.getElementById('fp-gh-link');
+            var ghIcon = document.getElementById('fp-gh-icon');
+            if (ghItem) ghItem.style.display = '';
+
+            if (latest.conclusion === 'success') {
+                ghIcon.innerHTML = '&#x2705;';
+                ghLink.style.borderColor = 'rgba(34,197,94,0.3)';
+                ghLink.style.background = 'rgba(34,197,94,0.1)';
+                ghLink.style.color = '#22c55e';
+                var ago = timeAgo(latest.updated_at);
+                ghLink.title = 'Last run: ' + (ago || '') + ' — SUCCESS';
+            } else if (latest.conclusion === 'failure') {
+                ghIcon.innerHTML = '&#x274C;';
+                ghLink.style.borderColor = 'rgba(239,68,68,0.3)';
+                ghLink.style.background = 'rgba(239,68,68,0.1)';
+                ghLink.style.color = '#ef4444';
+                ghLink.title = 'Last run FAILED — click to view details';
+            }
+            // Data quality: warn if last 3 runs all failed
+            var allFailed = true;
+            for (var i = 0; i < data.workflow_runs.length; i++) {
+                if (data.workflow_runs[i].conclusion !== 'failure') { allFailed = false; break; }
+            }
+            if (allFailed) {
+                var bar = document.getElementById('status-bar');
+                var warn = document.createElement('div');
+                warn.style.cssText = 'background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:0.82rem;color:#ef4444;';
+                warn.innerHTML = '<strong>&#x26A0; Data Quality Alert:</strong> Last 3 GitHub Actions runs failed. Data may be stale. <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/workflows/pair-fingerprint-scan.yml" target="_blank" style="color:#ef4444;text-decoration:underline">View details &rarr;</a>';
+                bar.parentNode.insertBefore(warn, bar.nextSibling);
+            }
+        };
+        xhr.send();
+    } catch (e) { /* silently fail */ }
+}
+
 // Initial load
 loadStatusBar();
 loadSpikes();
+updateNextScan();
+checkFPGitHubActions();
 // Auto-refresh status bar every 60 seconds
 setInterval(loadStatusBar, 60000);
+setInterval(updateNextScan, 30000);
 </script>
 </body>
 </html>

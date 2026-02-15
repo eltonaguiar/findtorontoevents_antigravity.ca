@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Circuit Breakers — Trading Safety Status</title>
+<style>
+:root {
+    --bg: #0a0e17; --surface: #111827; --surface2: #1a2332; --border: #2a3548;
+    --text: #e2e8f0; --muted: #8892a4; --green: #10b981; --red: #ef4444;
+    --yellow: #f59e0b; --blue: #3b82f6; --cyan: #06b6d4; --orange: #f97316;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.5; }
+.container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+.header { text-align: center; padding: 24px 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+.header h1 { font-size: 1.8rem; background: linear-gradient(135deg, var(--red), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.header .subtitle { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+.back-link { display: inline-block; color: var(--blue); text-decoration: none; font-size: 0.82rem; margin-bottom: 12px; }
+.back-link:hover { text-decoration: underline; }
+
+/* Main status */
+.main-status { text-align: center; padding: 30px; background: var(--surface); border: 2px solid var(--border); border-radius: 16px; margin-bottom: 24px; }
+.main-status.clear { border-color: rgba(16,185,129,0.3); }
+.main-status.active { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.05); }
+.main-status .icon { font-size: 3rem; margin-bottom: 8px; }
+.main-status .title { font-size: 1.4rem; font-weight: 700; }
+.main-status .desc { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+.main-status .time { font-size: 0.8rem; color: var(--muted); margin-top: 8px; }
+
+/* Breaker cards */
+.breaker-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.breaker-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.breaker-card.active-breaker { border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.05); }
+.breaker-card .type { font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; text-transform: capitalize; }
+.breaker-card .detail { font-size: 0.82rem; color: var(--muted); margin-bottom: 4px; }
+.breaker-card .detail span { color: var(--text); font-weight: 600; }
+.breaker-card .action { font-size: 0.8rem; color: var(--orange); margin-top: 8px; }
+
+/* History */
+.section-title { font-size: 1.1rem; font-weight: 700; margin: 20px 0 12px; }
+.table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+th { background: var(--surface2); color: var(--muted); text-transform: uppercase; font-size: 0.7rem; padding: 10px; text-align: left; border-bottom: 1px solid var(--border); }
+td { padding: 9px 10px; border-bottom: 1px solid var(--border); }
+tr:hover { background: rgba(59,130,246,0.06); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: 0.7rem; font-weight: 600; }
+.badge-active { background: rgba(239,68,68,0.2); color: var(--red); }
+.badge-resolved { background: rgba(16,185,129,0.2); color: var(--green); }
+
+/* Summary */
+.summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+.stat-card .value { font-size: 1.5rem; font-weight: 700; }
+.stat-card .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
+
+@media (max-width: 768px) {
+    .breaker-grid { grid-template-columns: 1fr; }
+    .header h1 { font-size: 1.4rem; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<a class="back-link" href="index.html">&larr; Back to All Dashboards</a>
+
+<div class="header">
+    <h1>Circuit Breakers</h1>
+    <p class="subtitle">Automated trading safety system — pauses trading on excessive losses or risk</p>
+</div>
+
+<div class="main-status" id="mainStatus">
+    <div class="icon" id="mainIcon">&#x23F3;</div>
+    <div class="title" id="mainTitle">Loading...</div>
+    <div class="desc" id="mainDesc">Checking circuit breaker status</div>
+    <div class="time" id="mainTime"></div>
+</div>
+
+<div class="summary-row" id="summaryRow">
+    <div class="stat-card"><div class="value" id="activeCount" style="color:var(--green)">—</div><div class="label">Active Breakers</div></div>
+    <div class="stat-card"><div class="value" id="totalTrips" style="color:var(--yellow)">—</div><div class="label">Total Activations</div></div>
+    <div class="stat-card"><div class="value" id="lastTrip" style="color:var(--muted)">—</div><div class="label">Last Triggered</div></div>
+</div>
+
+<div id="activeBreakers"></div>
+
+<div class="section-title">Breaker History</div>
+<div class="table-wrap">
+    <table>
+        <thead><tr><th>Type</th><th>Trigger</th><th>Threshold</th><th>Action</th><th>Status</th><th>Triggered</th><th>Resolved</th></tr></thead>
+        <tbody id="histBody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Loading...</td></tr></tbody>
+    </table>
+</div>
+</div>
+
+<script>
+var API = '/live-monitor/api/breaker_live.php';
+function fetchJSON(url, cb) {
+    fetch(url).then(function(r){return r.json()}).then(cb).catch(function(e){console.error(e)});
+}
+function esc(s) { if(!s)return''; var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function fmtTime(ds) {
+    if(!ds)return'—';
+    var d=new Date(ds.indexOf('T')===-1?ds.replace(' ','T')+'Z':ds);
+    return isNaN(d)?ds:d.toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function timeAgo(ds) {
+    if(!ds)return'never';
+    var d=new Date(ds.indexOf('T')===-1?ds.replace(' ','T')+'Z':ds);
+    if(isNaN(d))return ds;
+    var m=Math.floor((Date.now()-d.getTime())/60000);
+    if(m<1)return'just now';if(m<60)return m+'m ago';
+    var h=Math.floor(m/60);if(h<24)return h+'h ago';
+    return Math.floor(h/24)+'d ago';
+}
+
+function loadStatus() {
+    fetchJSON(API+'?action=status', function(d) {
+        if(!d.ok)return;
+        var ms=document.getElementById('mainStatus');
+        var icon=document.getElementById('mainIcon');
+        var title=document.getElementById('mainTitle');
+        var desc=document.getElementById('mainDesc');
+        var time=document.getElementById('mainTime');
+
+        if(d.all_clear){
+            ms.className='main-status clear';
+            icon.textContent='\u2705';
+            title.textContent='All Clear';
+            title.style.color='var(--green)';
+            desc.textContent='No active circuit breakers. Trading is operating normally.';
+        } else {
+            ms.className='main-status active';
+            icon.textContent='\u{1F6A8}';
+            title.textContent=d.active_count+' Breaker'+(d.active_count>1?'s':'')+' Active';
+            title.style.color='var(--red)';
+            desc.textContent='Trading is paused or restricted due to active circuit breakers.';
+        }
+        time.textContent='Server time: '+(d.server_time||'')+ ' UTC';
+        document.getElementById('activeCount').textContent=d.active_count||0;
+        document.getElementById('activeCount').style.color=d.active_count>0?'var(--red)':'var(--green)';
+
+        // Active breaker cards
+        var activeHtml='';
+        if(d.active_breakers&&d.active_breakers.length>0){
+            activeHtml='<div class="section-title" style="color:var(--red)">Active Breakers</div><div class="breaker-grid">';
+            d.active_breakers.forEach(function(b){
+                activeHtml+='<div class="breaker-card active-breaker">'
+                    +'<div class="type" style="color:var(--red)">'+esc(b.breaker_type.replace(/_/g,' '))+'</div>'
+                    +'<div class="detail">Trigger: <span>'+esc(b.trigger_value)+'</span></div>'
+                    +'<div class="detail">Threshold: <span>'+esc(b.threshold)+'</span></div>'
+                    +'<div class="action">Action: '+esc(b.action_taken)+'</div>'
+                    +'<div class="detail" style="margin-top:6px">Expires: <span>'+fmtTime(b.expires_at)+'</span></div>'
+                    +'</div>';
+            });
+            activeHtml+='</div>';
+        }
+        document.getElementById('activeBreakers').innerHTML=activeHtml;
+    });
+}
+
+function loadHistory() {
+    fetchJSON(API+'?action=history', function(d) {
+        if(!d.ok||!d.entries||d.entries.length===0){
+            document.getElementById('histBody').innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">No breaker history yet — system has been running cleanly.</td></tr>';
+            document.getElementById('totalTrips').textContent='0';
+            document.getElementById('lastTrip').textContent='Never';
+            return;
+        }
+        document.getElementById('totalTrips').textContent=d.total_entries;
+        document.getElementById('lastTrip').textContent=timeAgo(d.entries[0].trigger_time);
+
+        document.getElementById('histBody').innerHTML=d.entries.map(function(e){
+            var active=parseInt(e.is_active)===1;
+            return '<tr>'
+                +'<td style="font-weight:600;text-transform:capitalize">'+esc(e.breaker_type.replace(/_/g,' '))+'</td>'
+                +'<td>'+esc(e.trigger_value)+'</td>'
+                +'<td>'+esc(e.threshold)+'</td>'
+                +'<td>'+esc(e.action_taken)+'</td>'
+                +'<td><span class="badge '+(active?'badge-active':'badge-resolved')+'">'+(active?'ACTIVE':'RESOLVED')+'</span></td>'
+                +'<td>'+fmtTime(e.trigger_time)+'</td>'
+                +'<td>'+(e.resolved_at?fmtTime(e.resolved_at):'—')+'</td>'
+                +'</tr>';
+        }).join('');
+    });
+}
+
+loadStatus();
+loadHistory();
+setInterval(loadStatus, 30000);
+</script>
+</body>
+</html>

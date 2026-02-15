@@ -112,11 +112,20 @@ tr:hover { background: rgba(59,130,246,0.06); }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* Status Bar */
-.status-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; font-size: 0.8rem; }
-.status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
-.status-dot.green { background: var(--green); }
+.status-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; font-size: 0.8rem; }
+.status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; flex-shrink: 0; }
+.status-dot.green { background: var(--green); animation: pulse 2s infinite; }
 .status-dot.red { background: var(--red); }
 .status-dot.yellow { background: var(--yellow); }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.status-item { display: flex; align-items: center; gap: 4px; }
+.status-label { color: var(--muted); }
+.status-value { font-weight: 600; }
+.status-value.fresh { color: var(--green); }
+.status-value.stale { color: var(--yellow); }
+.status-value.old { color: var(--red); }
+.gh-link { display: inline-flex; align-items: center; gap: 4px; background: rgba(59,130,246,0.1); color: var(--blue); padding: 3px 10px; border-radius: 6px; font-size: 0.75rem; text-decoration: none; border: 1px solid rgba(59,130,246,0.2); }
+.gh-link:hover { background: rgba(59,130,246,0.2); text-decoration: none; }
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -128,6 +137,7 @@ tr:hover { background: rgba(59,130,246,0.06); }
 </head>
 <body>
 <div class="container">
+<a href="index.html" style="display:inline-block;color:#3b82f6;text-decoration:none;font-size:0.82rem;margin-bottom:12px">&larr; Back to All Dashboards</a>
 
 <div class="header">
     <h1>Strategy Arena</h1>
@@ -136,8 +146,27 @@ tr:hover { background: rgba(59,130,246,0.06); }
 </div>
 
 <div class="status-bar" id="statusBar">
-    <span><span class="status-dot yellow" id="statusDot"></span> <span id="statusText">Loading...</span></span>
-    <span id="lastUpdate" style="color:var(--muted)"></span>
+    <div class="status-item">
+        <span class="status-dot yellow" id="statusDot"></span>
+        <span id="statusText">Loading...</span>
+    </div>
+    <div class="status-item">
+        <span class="status-label">Last cycle:</span>
+        <span class="status-value" id="lastCycleTime">—</span>
+    </div>
+    <div class="status-item">
+        <span class="status-label">Next scheduled:</span>
+        <span class="status-value" id="nextScheduled" style="color:var(--cyan)">—</span>
+    </div>
+    <div class="status-item">
+        <span class="status-label">Bets pending:</span>
+        <span class="status-value" id="pendingCount" style="color:var(--yellow)">—</span>
+    </div>
+    <div class="status-item" id="ghActionsItem" style="display:none">
+        <a class="gh-link" href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/workflows/strategy-arena-refresh.yml" target="_blank" rel="noopener">
+            <span id="ghIcon">&#x2699;</span> GitHub Actions
+        </a>
+    </div>
 </div>
 
 <div class="summary-row" id="summaryCards">
@@ -302,6 +331,64 @@ async function fetchAPI(action, extra) {
     }
 }
 
+// Time helpers
+function timeAgo(dateStr) {
+    if (!dateStr) return null;
+    let d;
+    if (dateStr.indexOf('T') === -1 && dateStr.indexOf('Z') === -1) {
+        d = new Date(dateStr.replace(' ', 'T') + 'Z');
+    } else {
+        d = new Date(dateStr);
+    }
+    if (isNaN(d.getTime())) return null;
+    const diffMs = Date.now() - d.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    const diffHr = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHr / 24);
+    if (diffMin < 1) return 'just now';
+    if (diffMin < 60) return diffMin + 'm ago';
+    if (diffHr < 24) return diffHr + 'h ' + (diffMin % 60) + 'm ago';
+    return diffDay + 'd ' + (diffHr % 24) + 'h ago';
+}
+function freshClass(dateStr) {
+    if (!dateStr) return 'old';
+    let d;
+    if (dateStr.indexOf('T') === -1 && dateStr.indexOf('Z') === -1) {
+        d = new Date(dateStr.replace(' ', 'T') + 'Z');
+    } else {
+        d = new Date(dateStr);
+    }
+    if (isNaN(d.getTime())) return 'old';
+    const diffMin = (Date.now() - d.getTime()) / 60000;
+    if (diffMin < 150) return 'fresh'; // within 2.5h (schedule is every 2h)
+    if (diffMin < 360) return 'stale';
+    return 'old';
+}
+function nextScheduledRun(lastStr) {
+    // Schedule: every 2 hours at :15 — 1:15,3:15,13:15,15:15,17:15,19:15,21:15,23:15 UTC
+    const slots = [1,3,13,15,17,19,21,23]; // UTC hours
+    const now = new Date();
+    const utcH = now.getUTCHours();
+    const utcM = now.getUTCMinutes();
+    // Find next slot
+    for (let i = 0; i < slots.length; i++) {
+        if (slots[i] > utcH || (slots[i] === utcH && 15 > utcM)) {
+            const next = new Date(now);
+            next.setUTCHours(slots[i], 15, 0, 0);
+            const diffMin = Math.round((next - now) / 60000);
+            if (diffMin < 60) return 'in ~' + diffMin + ' min';
+            return 'in ~' + Math.round(diffMin / 60) + 'h ' + (diffMin % 60) + 'm';
+        }
+    }
+    // Wrap to next day first slot
+    const next = new Date(now);
+    next.setUTCDate(next.getUTCDate() + 1);
+    next.setUTCHours(slots[0], 15, 0, 0);
+    const diffMin = Math.round((next - now) / 60000);
+    if (diffMin < 60) return 'in ~' + diffMin + ' min';
+    return 'in ~' + Math.round(diffMin / 60) + 'h ' + (diffMin % 60) + 'm';
+}
+
 // Load status
 async function loadStatus() {
     const d = await fetchAPI('status');
@@ -313,11 +400,38 @@ async function loadStatus() {
     const init = d.initialized;
     document.getElementById('statusDot').className = 'status-dot ' + (init ? 'green' : 'yellow');
     document.getElementById('statusText').textContent = init
-        ? d.strategies.active + ' active strategies | ' + d.bets.total + ' bets (' + d.bets.pending + ' pending)'
+        ? d.strategies.active + ' active strategies | ' + d.bets.total + ' total bets'
         : 'Not initialized — go to Admin tab';
+
+    // Last cycle time
+    const lastEl = document.getElementById('lastCycleTime');
     if (d.latest_bet) {
-        document.getElementById('lastUpdate').textContent = 'Last bet: ' + d.latest_bet + ' UTC';
+        const ago = timeAgo(d.latest_bet);
+        const cls = freshClass(d.latest_bet);
+        lastEl.textContent = (ago || d.latest_bet) + (ago ? '' : ' UTC');
+        lastEl.className = 'status-value ' + cls;
+        // Also show full timestamp as tooltip
+        let dd;
+        if (d.latest_bet.indexOf('T') === -1) {
+            dd = new Date(d.latest_bet.replace(' ', 'T') + 'Z');
+        } else {
+            dd = new Date(d.latest_bet);
+        }
+        lastEl.title = dd.toLocaleString();
+    } else {
+        lastEl.textContent = 'Never';
+        lastEl.className = 'status-value old';
     }
+
+    // Pending bets
+    const pendEl = document.getElementById('pendingCount');
+    pendEl.textContent = (d.bets.pending || 0) + ' / ' + (d.bets.total || 0);
+
+    // Next scheduled run
+    document.getElementById('nextScheduled').textContent = nextScheduledRun(d.latest_bet);
+
+    // Show GitHub Actions link
+    document.getElementById('ghActionsItem').style.display = '';
 }
 
 // Load leaderboard
@@ -332,7 +446,6 @@ async function loadLeaderboard() {
     document.getElementById('bestRoi').textContent = d.summary.best_roi.toFixed(1) + '%';
     document.getElementById('worstRoi').textContent = d.summary.worst_roi.toFixed(1) + '%';
     document.getElementById('bestStrat').textContent = d.summary.best_strategy || '--';
-    document.getElementById('lastUpdate').textContent = d.generated_at;
 
     filterCategory();
 }
@@ -513,9 +626,53 @@ async function adminAction(action, extra) {
 
 function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
+// GitHub Actions data-quality check
+async function checkGitHubActions() {
+    // Use GitHub API to check the latest workflow run for strategy-arena
+    try {
+        const r = await fetch('https://api.github.com/repos/eltonaguiar/findtorontoevents_antigravity.ca/actions/workflows/strategy-arena-refresh.yml/runs?per_page=3&status=completed');
+        if (!r.ok) return;
+        const data = await r.json();
+        if (!data.workflow_runs || data.workflow_runs.length === 0) return;
+
+        const latest = data.workflow_runs[0];
+        const ghIcon = document.getElementById('ghIcon');
+        const ghLink = document.querySelector('.gh-link');
+        if (latest.conclusion === 'success') {
+            ghIcon.innerHTML = '&#x2705;'; // checkmark
+            ghLink.style.borderColor = 'rgba(16,185,129,0.3)';
+            ghLink.style.background = 'rgba(16,185,129,0.1)';
+            ghLink.style.color = '#10b981';
+            ghLink.title = 'Last run: ' + timeAgo(latest.updated_at) + ' — SUCCESS\n' + new Date(latest.updated_at).toLocaleString();
+        } else if (latest.conclusion === 'failure') {
+            ghIcon.innerHTML = '&#x274C;'; // X mark
+            ghLink.style.borderColor = 'rgba(239,68,68,0.3)';
+            ghLink.style.background = 'rgba(239,68,68,0.1)';
+            ghLink.style.color = '#ef4444';
+            ghLink.title = 'Last run: ' + timeAgo(latest.updated_at) + ' — FAILED\nClick to view details';
+        } else {
+            ghLink.title = 'Last run: ' + timeAgo(latest.updated_at) + ' — ' + (latest.conclusion || 'unknown');
+        }
+
+        // Data quality: check if last 3 runs are all failures
+        const allFailed = data.workflow_runs.every(function(r) { return r.conclusion === 'failure'; });
+        if (allFailed) {
+            const warn = document.createElement('div');
+            warn.style.cssText = 'background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:0.82rem;color:#ef4444;';
+            warn.innerHTML = '<strong>&#x26A0; Data Quality Alert:</strong> Last 3 GitHub Actions runs failed. Arena data may be stale. <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/workflows/strategy-arena-refresh.yml" target="_blank" style="color:#ef4444;text-decoration:underline">View details &rarr;</a>';
+            document.getElementById('statusBar').after(warn);
+        }
+    } catch (e) {
+        // Silently fail — GitHub API rate limit or CORS
+    }
+}
+
 // Boot
 loadStatus();
 loadLeaderboard();
+checkGitHubActions();
+// Auto-refresh status bar every 60s
+setInterval(loadStatus, 60000);
 </script>
 </body>
 </html>

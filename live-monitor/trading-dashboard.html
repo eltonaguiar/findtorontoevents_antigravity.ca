@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Trading Dashboard — Paper Portfolio &amp; Positions</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root {
+    --bg: #0a0e17; --surface: #111827; --surface2: #1a2332; --border: #2a3548;
+    --text: #e2e8f0; --muted: #8892a4; --green: #10b981; --red: #ef4444;
+    --yellow: #f59e0b; --blue: #3b82f6; --purple: #8b5cf6; --cyan: #06b6d4;
+    --orange: #f97316;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.5; }
+.container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+.header { text-align: center; padding: 24px 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+.header h1 { font-size: 1.8rem; background: linear-gradient(135deg, var(--green), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.header .subtitle { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+.back-link { display: inline-block; color: var(--blue); text-decoration: none; font-size: 0.82rem; margin-bottom: 12px; }
+.back-link:hover { text-decoration: underline; }
+
+/* Status bar */
+.status-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 10px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; font-size: 0.8rem; }
+.status-item { display: flex; align-items: center; gap: 4px; }
+.status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.status-dot.green { background: var(--green); animation: pulse 2s infinite; }
+.status-dot.red { background: var(--red); }
+.status-dot.yellow { background: var(--yellow); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+/* Summary cards */
+.summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+.stat-card .value { font-size: 1.5rem; font-weight: 700; }
+.stat-card .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+/* Tables */
+.section-title { font-size: 1.1rem; font-weight: 700; margin: 20px 0 12px; display: flex; align-items: center; gap: 8px; }
+.table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 20px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+th { background: var(--surface2); color: var(--muted); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px; padding: 10px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+td { padding: 9px 10px; border-bottom: 1px solid var(--border); }
+tr:hover { background: rgba(59,130,246,0.06); }
+.pos { color: var(--green); } .neg { color: var(--red); } .neutral { color: var(--muted); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+.badge-long { background: rgba(16,185,129,0.15); color: var(--green); }
+.badge-short { background: rgba(239,68,68,0.15); color: var(--red); }
+.badge-crypto { background: rgba(6,182,212,0.15); color: var(--cyan); }
+.badge-forex { background: rgba(139,92,246,0.15); color: var(--purple); }
+.badge-stock { background: rgba(59,130,246,0.15); color: var(--blue); }
+
+/* Chart */
+.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+.chart-container { position: relative; height: 250px; }
+
+/* Grid layout for algo cards */
+.algo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.algo-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+.algo-card .algo-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; }
+.algo-card .algo-stat { font-size: 0.8rem; color: var(--muted); }
+.algo-card .algo-stat span { color: var(--text); font-weight: 600; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .summary-row { grid-template-columns: repeat(2, 1fr); }
+    .header h1 { font-size: 1.4rem; }
+    td, th { padding: 6px 8px; font-size: 0.78rem; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<a class="back-link" href="index.html">&larr; Back to All Dashboards</a>
+
+<div class="header">
+    <h1>Live Trading Dashboard</h1>
+    <p class="subtitle">Paper portfolio — open positions, P&amp;L tracking, algorithm performance</p>
+</div>
+
+<div class="status-bar" id="statusBar">
+    <div class="status-item"><span class="status-dot yellow" id="statusDot"></span><span id="statusText">Loading...</span></div>
+    <div class="status-item"><span style="color:var(--muted)">Last snapshot:</span> <span id="lastSnap" style="font-weight:600">—</span></div>
+    <div class="status-item"><span style="color:var(--muted)">Trades:</span> <span id="tradeCount" style="font-weight:600">—</span></div>
+</div>
+
+<div class="summary-row" id="summaryCards">
+    <div class="stat-card"><div class="value" id="portfolioVal" style="color:var(--cyan)">—</div><div class="label">Portfolio Value</div></div>
+    <div class="stat-card"><div class="value" id="totalPnl">—</div><div class="label">Total P&amp;L</div></div>
+    <div class="stat-card"><div class="value" id="winRate">—</div><div class="label">Win Rate</div></div>
+    <div class="stat-card"><div class="value" id="openPos" style="color:var(--blue)">—</div><div class="label">Open Positions</div></div>
+    <div class="stat-card"><div class="value" id="unrealPnl">—</div><div class="label">Unrealized P&amp;L</div></div>
+    <div class="stat-card"><div class="value" id="drawdown" style="color:var(--red)">—</div><div class="label">Drawdown</div></div>
+</div>
+
+<!-- Equity chart -->
+<div class="chart-card">
+    <h3 style="font-size:0.85rem;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Portfolio Equity Curve</h3>
+    <div class="chart-container"><canvas id="equityChart"></canvas></div>
+</div>
+
+<!-- Open Positions -->
+<div class="section-title">Open Positions <span id="posCount" style="font-size:0.8rem;color:var(--muted)"></span></div>
+<div class="table-wrap">
+    <table>
+        <thead><tr><th>Symbol</th><th>Class</th><th>Direction</th><th>Algorithm</th><th>Entry Price</th><th>Current Price</th><th>Unreal. P&amp;L</th><th>Unreal. %</th><th>Entry Time</th></tr></thead>
+        <tbody id="posBody"><tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">Loading...</td></tr></tbody>
+    </table>
+</div>
+
+<!-- Algorithm Performance -->
+<div class="section-title">Algorithm Performance</div>
+<div class="algo-grid" id="algoGrid"></div>
+
+<!-- Trade History -->
+<div class="section-title">Recent Trade History</div>
+<div class="table-wrap">
+    <table>
+        <thead><tr><th>Symbol</th><th>Class</th><th>Direction</th><th>Algorithm</th><th>Entry</th><th>Exit</th><th>P&amp;L</th><th>Return %</th><th>Hold Time</th><th>Result</th></tr></thead>
+        <tbody id="histBody"><tr><td colspan="10" style="text-align:center;color:var(--muted);padding:20px">Loading...</td></tr></tbody>
+    </table>
+</div>
+</div>
+
+<script>
+var API = '/live-monitor/api/live_trade.php';
+var equityChartInst = null;
+
+function fetchJSON(url, cb) {
+    fetch(url).then(function(r){return r.json()}).then(cb).catch(function(e){console.error('API err:',e)});
+}
+function esc(s) { if(!s)return''; var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function pnlClass(v) { v=parseFloat(v); return v>0?'pos':v<0?'neg':'neutral'; }
+function fmt(v,d) { d=d||2; return parseFloat(v||0).toFixed(d); }
+function timeAgo(ds) {
+    if(!ds)return'—';
+    var d=new Date(ds.indexOf('T')===-1?ds.replace(' ','T')+'Z':ds);
+    if(isNaN(d))return ds;
+    var m=Math.floor((Date.now()-d.getTime())/60000);
+    if(m<1)return'just now';if(m<60)return m+'m ago';
+    var h=Math.floor(m/60);if(h<24)return h+'h '+m%60+'m ago';
+    return Math.floor(h/24)+'d ago';
+}
+function dirBadge(d) { return '<span class="badge badge-'+d.toLowerCase()+'">'+d+'</span>'; }
+function classBadge(c) {
+    var l=c.toLowerCase();
+    return '<span class="badge badge-'+(l==='crypto'?'crypto':l==='forex'?'forex':'stock')+'">'+c+'</span>';
+}
+
+function loadDashboard() {
+    fetchJSON(API+'?action=dashboard', function(d) {
+        if(!d.ok) {
+            document.getElementById('statusText').textContent='No data — run a trade cycle first';
+            document.getElementById('statusDot').className='status-dot red';
+            return;
+        }
+        var s=d.stats;
+        var snap=d.latest_snapshot;
+
+        // Status
+        document.getElementById('statusDot').className='status-dot green';
+        document.getElementById('statusText').textContent='Portfolio active — '+d.open_positions.length+' open positions';
+        if(snap) document.getElementById('lastSnap').textContent=timeAgo(snap.snapshot_time);
+        document.getElementById('tradeCount').textContent=s.total_trades+' total';
+
+        // Summary cards
+        document.getElementById('portfolioVal').textContent='$'+fmt(d.portfolio_value,2);
+        var pnl=parseFloat(s.total_pnl_usd);
+        var pnlEl=document.getElementById('totalPnl');
+        pnlEl.textContent=(pnl>=0?'+':'')+fmt(pnl,2);
+        pnlEl.style.color=pnl>=0?'var(--green)':'var(--red)';
+        var wr=parseFloat(s.win_rate);
+        var wrEl=document.getElementById('winRate');
+        wrEl.textContent=wr+'%';
+        wrEl.style.color=wr>=50?'var(--green)':wr>=40?'var(--yellow)':'var(--red)';
+        document.getElementById('openPos').textContent=d.open_positions.length;
+        if(snap){
+            var up=parseFloat(snap.unrealized_pnl_usd);
+            var upEl=document.getElementById('unrealPnl');
+            upEl.textContent=(up>=0?'+$':'-$')+fmt(Math.abs(up),2);
+            upEl.style.color=up>=0?'var(--green)':'var(--red)';
+            document.getElementById('drawdown').textContent=fmt(snap.drawdown_pct,1)+'%';
+        }
+
+        // Open positions
+        var ops=d.open_positions;
+        document.getElementById('posCount').textContent='('+ops.length+')';
+        if(ops.length===0){
+            document.getElementById('posBody').innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">No open positions</td></tr>';
+        } else {
+            document.getElementById('posBody').innerHTML=ops.map(function(p){
+                var upnl=parseFloat(p.unrealized_pnl_usd);
+                var upct=parseFloat(p.unrealized_pct);
+                return '<tr><td style="font-weight:600">'+esc(p.symbol)+'</td><td>'+classBadge(p.asset_class)+'</td><td>'+dirBadge(p.direction)+'</td><td>'+esc(p.algorithm_name)+'</td><td>$'+fmt(p.entry_price,p.asset_class==='FOREX'?5:2)+'</td><td>$'+fmt(p.current_price,p.asset_class==='FOREX'?5:2)+'</td><td class="'+pnlClass(upnl)+'">'+(upnl>=0?'+':'')+fmt(upnl,2)+'</td><td class="'+pnlClass(upct)+'">'+(upct>=0?'+':'')+fmt(upct,2)+'%</td><td>'+timeAgo(p.entry_time)+'</td></tr>';
+            }).join('');
+        }
+
+        // Algorithm performance
+        var algos=d.by_algorithm||[];
+        if(algos.length>0){
+            document.getElementById('algoGrid').innerHTML=algos.filter(function(a){return a.algorithm_name}).map(function(a){
+                var wr=parseFloat(a.win_rate);
+                var pnl=parseFloat(a.total_pnl_usd);
+                return '<div class="algo-card"><div class="algo-name">'+esc(a.algorithm_name)+'</div>'
+                    +'<div class="algo-stat">Win Rate: <span style="color:'+(wr>=50?'var(--green)':'var(--red)')+'">'+wr+'%</span> ('+a.wins+'W/'+a.losses+'L)</div>'
+                    +'<div class="algo-stat">P&L: <span class="'+(pnl>=0?'pos':'neg')+'">'+(pnl>=0?'+$':'-$')+fmt(Math.abs(pnl),2)+'</span></div>'
+                    +'<div class="algo-stat">Trades: <span>'+a.total_trades+'</span> | Avg Hold: <span>'+fmt(a.avg_hold_hours,1)+'h</span></div>'
+                    +'</div>';
+            }).join('');
+        } else {
+            document.getElementById('algoGrid').innerHTML='<div style="color:var(--muted)">No algorithm data yet</div>';
+        }
+    });
+}
+
+function loadHistory() {
+    fetchJSON(API+'?action=history&limit=50', function(d) {
+        if(!d.ok||!d.trades||d.trades.length===0){
+            document.getElementById('histBody').innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:20px">No closed trades yet</td></tr>';
+            return;
+        }
+        document.getElementById('histBody').innerHTML=d.trades.map(function(t){
+            var pnl=parseFloat(t.pnl_usd||0);
+            var ret=parseFloat(t.return_pct||0);
+            var hold=parseFloat(t.hold_hours||0);
+            var result=t.result||'closed';
+            return '<tr><td style="font-weight:600">'+esc(t.symbol)+'</td><td>'+classBadge(t.asset_class)+'</td><td>'+dirBadge(t.direction)+'</td><td>'+esc(t.algorithm_name)+'</td><td>$'+fmt(t.entry_price,2)+'</td><td>$'+fmt(t.exit_price,2)+'</td><td class="'+pnlClass(pnl)+'">'+(pnl>=0?'+$':'-$')+fmt(Math.abs(pnl),2)+'</td><td class="'+pnlClass(ret)+'">'+(ret>=0?'+':'')+fmt(ret,2)+'%</td><td>'+fmt(hold,1)+'h</td><td><span class="'+pnlClass(pnl)+'" style="font-weight:600">'+result.toUpperCase()+'</span></td></tr>';
+        }).join('');
+    });
+}
+
+function loadEquityCurve() {
+    // Use history to build equity curve from closed trades
+    fetchJSON(API+'?action=history&limit=100', function(d) {
+        if(!d.ok||!d.trades||d.trades.length===0) return;
+        var baseline = 10000;
+        var running = baseline;
+        var labels = [];
+        var values = [baseline];
+        labels.push('Start');
+        // Build equity from trade P&L
+        var trades = d.trades.slice().reverse(); // oldest first
+        trades.forEach(function(t){
+            running += parseFloat(t.pnl_usd||0);
+            var dt = new Date(t.exit_time ? (t.exit_time.indexOf('T')===-1 ? t.exit_time.replace(' ','T')+'Z' : t.exit_time) : Date.now());
+            labels.push(isNaN(dt)?'':dt.toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}));
+            values.push(running);
+        });
+        var ctx=document.getElementById('equityChart').getContext('2d');
+        if(equityChartInst) equityChartInst.destroy();
+        equityChartInst=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[{label:'Portfolio Value ($)',data:values,borderColor:'#06b6d4',backgroundColor:'rgba(6,182,212,0.1)',fill:true,tension:0.3,pointRadius:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8892a4',maxTicksLimit:10},grid:{color:'rgba(42,53,72,0.4)'}},y:{ticks:{color:'#8892a4',callback:function(v){return'$'+v.toLocaleString()}},grid:{color:'rgba(42,53,72,0.4)'}}}}});
+    });
+}
+
+// Boot
+loadDashboard();
+loadHistory();
+loadEquityCurve();
+setInterval(loadDashboard, 60000);
+</script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discover Movers — Top Crypto Gainers &amp; Losers</title>
+<style>
+:root {
+    --bg: #0a0e17; --surface: #111827; --surface2: #1a2332; --border: #2a3548;
+    --text: #e2e8f0; --muted: #8892a4; --green: #10b981; --red: #ef4444;
+    --yellow: #f59e0b; --blue: #3b82f6; --purple: #8b5cf6; --cyan: #06b6d4;
+    --orange: #f97316;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.5; }
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+.header { text-align: center; padding: 24px 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+.header h1 { font-size: 1.8rem; background: linear-gradient(135deg, var(--orange), var(--yellow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.header .subtitle { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+.back-link { display: inline-block; color: var(--blue); text-decoration: none; font-size: 0.82rem; margin-bottom: 12px; }
+.back-link:hover { text-decoration: underline; }
+
+.status-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 10px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; font-size: 0.8rem; }
+.status-item { display: flex; align-items: center; gap: 4px; }
+
+/* Cards grid */
+.movers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.mover-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; transition: border-color 0.2s; cursor: default; }
+.mover-card:hover { border-color: var(--cyan); }
+.mover-card .symbol { font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+.mover-card .price { font-size: 0.9rem; color: var(--muted); margin-bottom: 8px; }
+.mover-card .change { font-size: 1.4rem; font-weight: 700; }
+.mover-card .change.up { color: var(--green); }
+.mover-card .change.down { color: var(--red); }
+.mover-card .volume { font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+.mover-card .direction-badge { display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+.direction-badge.gainer { background: rgba(16,185,129,0.15); color: var(--green); }
+.direction-badge.loser { background: rgba(239,68,68,0.15); color: var(--red); }
+.mover-card .signals { margin-top: 10px; font-size: 0.78rem; }
+.mover-card .signals .signal { background: var(--surface2); padding: 4px 8px; border-radius: 6px; margin: 2px 0; display: flex; justify-content: space-between; }
+
+/* Filter */
+.filter-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+.filter-row select, .filter-row input { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 0.85rem; }
+.btn { padding: 8px 16px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: none; background: var(--blue); color: #fff; transition: opacity 0.2s; }
+.btn:hover { opacity: 0.85; }
+
+.empty-state { text-align: center; padding: 40px; color: var(--muted); }
+.empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+
+/* Table for detailed view */
+.table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 20px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+th { background: var(--surface2); color: var(--muted); text-transform: uppercase; font-size: 0.7rem; padding: 10px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+td { padding: 9px 10px; border-bottom: 1px solid var(--border); }
+tr:hover { background: rgba(59,130,246,0.06); }
+.pos { color: var(--green); } .neg { color: var(--red); }
+
+@media (max-width: 768px) {
+    .movers-grid { grid-template-columns: 1fr; }
+    .header h1 { font-size: 1.4rem; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<a class="back-link" href="index.html">&larr; Back to All Dashboards</a>
+
+<div class="header">
+    <h1>Discover Movers</h1>
+    <p class="subtitle">Top crypto gainers &amp; losers not in the static watchlist — auto-discovered from Binance</p>
+</div>
+
+<div class="status-bar">
+    <div class="status-item"><span style="font-weight:600;color:var(--cyan)" id="moverCount">—</span> <span style="color:var(--muted)">movers found</span></div>
+    <div class="status-item"><span style="color:var(--muted)">Filter: &gt;3% change, &gt;$500K volume</span></div>
+    <div class="status-item" style="margin-left:auto"><button class="btn" onclick="loadMovers()">&#x21bb; Refresh</button></div>
+</div>
+
+<div class="filter-row">
+    <label style="color:var(--muted);font-size:0.82rem">Direction:</label>
+    <select id="filterDir" onchange="renderMovers()">
+        <option value="all">All</option>
+        <option value="GAINER">Gainers Only</option>
+        <option value="LOSER">Losers Only</option>
+    </select>
+    <label style="color:var(--muted);font-size:0.82rem">Sort by:</label>
+    <select id="sortBy" onchange="renderMovers()">
+        <option value="change">% Change</option>
+        <option value="volume">Volume</option>
+    </select>
+</div>
+
+<div class="movers-grid" id="moversGrid">
+    <div class="empty-state"><div class="icon">&#x1F50D;</div><p>Loading movers...</p></div>
+</div>
+
+<!-- Table view toggle -->
+<details style="margin-top:16px">
+    <summary style="cursor:pointer;color:var(--blue);font-size:0.85rem;margin-bottom:8px">Show table view</summary>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Symbol</th><th>Price</th><th>24h Change</th><th>Volume (USD)</th><th>Direction</th><th>Signals</th><th>Discovered</th></tr></thead>
+            <tbody id="moversTableBody"></tbody>
+        </table>
+    </div>
+</details>
+</div>
+
+<script>
+var API = '/live-monitor/api/discover_movers.php';
+var allMovers = [];
+
+function fetchJSON(url, cb) {
+    fetch(url).then(function(r){return r.json()}).then(cb).catch(function(e){console.error('API err:',e)});
+}
+function esc(s) { if(!s)return''; var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function fmtVol(v) {
+    v = parseFloat(v);
+    if (v >= 1e9) return '$' + (v/1e9).toFixed(2) + 'B';
+    if (v >= 1e6) return '$' + (v/1e6).toFixed(2) + 'M';
+    if (v >= 1e3) return '$' + (v/1e3).toFixed(0) + 'K';
+    return '$' + v.toFixed(0);
+}
+function fmtPrice(v) {
+    v = parseFloat(v);
+    if (v < 0.0001) return '$' + v.toFixed(8);
+    if (v < 0.01) return '$' + v.toFixed(6);
+    if (v < 1) return '$' + v.toFixed(4);
+    return '$' + v.toFixed(2);
+}
+function fmtTime(ds) {
+    if (!ds) return '—';
+    var d = new Date(ds.indexOf('T') === -1 ? ds.replace(' ', 'T') + 'Z' : ds);
+    if (isNaN(d)) return ds;
+    return d.toLocaleDateString(undefined, {month:'short', day:'numeric'}) + ' ' + d.toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit'});
+}
+
+function loadMovers() {
+    fetchJSON(API + '?action=movers', function(d) {
+        if (!d.ok) {
+            document.getElementById('moversGrid').innerHTML = '<div class="empty-state"><div class="icon">&#x26A0;</div><p>Could not load movers. The discover scan may not have run yet.</p></div>';
+            return;
+        }
+        allMovers = d.movers || [];
+        document.getElementById('moverCount').textContent = allMovers.length;
+        renderMovers();
+    });
+}
+
+function renderMovers() {
+    var dir = document.getElementById('filterDir').value;
+    var sort = document.getElementById('sortBy').value;
+    var filtered = allMovers;
+    if (dir !== 'all') filtered = filtered.filter(function(m) { return m.direction === dir; });
+    filtered = filtered.slice().sort(function(a, b) {
+        if (sort === 'volume') return parseFloat(b.volume_usd) - parseFloat(a.volume_usd);
+        return Math.abs(parseFloat(b.change_24h_pct)) - Math.abs(parseFloat(a.change_24h_pct));
+    });
+
+    if (filtered.length === 0) {
+        document.getElementById('moversGrid').innerHTML = '<div class="empty-state"><div class="icon">&#x1F4AD;</div><p>No movers matching this filter.</p></div>';
+        document.getElementById('moversTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted)">No data</td></tr>';
+        return;
+    }
+
+    document.getElementById('moversGrid').innerHTML = filtered.map(function(m) {
+        var chg = parseFloat(m.change_24h_pct);
+        var isUp = chg >= 0;
+        var sigHtml = '';
+        if (m.signals && m.signals.length > 0) {
+            sigHtml = '<div class="signals">';
+            m.signals.slice(0, 3).forEach(function(s) {
+                sigHtml += '<div class="signal"><span>' + esc(s.algorithm || s.name || 'Signal') + '</span><span style="color:' + (s.direction === 'LONG' ? 'var(--green)' : 'var(--red)') + '">' + (s.direction || '') + '</span></div>';
+            });
+            if (m.signals.length > 3) sigHtml += '<div style="color:var(--muted);font-size:0.72rem;text-align:center;margin-top:4px">+' + (m.signals.length - 3) + ' more signals</div>';
+            sigHtml += '</div>';
+        }
+        return '<div class="mover-card">'
+            + '<div class="symbol">' + esc(m.symbol) + ' <span class="direction-badge ' + (isUp ? 'gainer' : 'loser') + '">' + m.direction + '</span></div>'
+            + '<div class="price">' + fmtPrice(m.price) + '</div>'
+            + '<div class="change ' + (isUp ? 'up' : 'down') + '">' + (isUp ? '+' : '') + chg.toFixed(2) + '%</div>'
+            + '<div class="volume">Vol: ' + fmtVol(m.volume_usd) + '</div>'
+            + (m.signal_count > 0 ? '<div style="margin-top:6px;font-size:0.75rem;color:var(--cyan)">' + m.signal_count + ' algorithm signals</div>' : '')
+            + sigHtml
+            + '</div>';
+    }).join('');
+
+    // Table view
+    document.getElementById('moversTableBody').innerHTML = filtered.map(function(m) {
+        var chg = parseFloat(m.change_24h_pct);
+        return '<tr><td style="font-weight:600">' + esc(m.symbol) + '</td><td>' + fmtPrice(m.price) + '</td><td class="' + (chg >= 0 ? 'pos' : 'neg') + '">' + (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%</td><td>' + fmtVol(m.volume_usd) + '</td><td><span class="direction-badge ' + (m.direction === 'GAINER' ? 'gainer' : 'loser') + '">' + m.direction + '</span></td><td>' + (m.signal_count || 0) + '</td><td>' + fmtTime(m.discovered_at) + '</td></tr>';
+    }).join('');
+}
+
+loadMovers();
+</script>
+</body>
+</html>
