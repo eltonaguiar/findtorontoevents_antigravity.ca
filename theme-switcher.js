@@ -110,6 +110,31 @@
     return getSettings().selectedTheme || null;
   }
 
+  // ── Save theme to server (for logged-in users with "permanent theme" enabled) ──
+  var FC_PREFS_API = 'https://findtorontoevents.ca/fc/api/user_preferences.php';
+
+  function _saveThemeToServer(themeId) {
+    if (!window.__fc_logged_in_user__) return;
+    try {
+      fetch(FC_PREFS_API, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preferences: { selectedTheme: themeId || null } })
+      }).catch(function () {});
+    } catch (e) {}
+  }
+
+  // Expose so login flow can trigger theme save/apply
+  window.__fte_saveThemeToServer = _saveThemeToServer;
+  window.__fte_applyThemeById = function (themeId) {
+    if (themeId && findTheme(themeId)) {
+      applyTheme(themeId);
+      return true;
+    }
+    return false;
+  };
+
   // Auto-apply: ON by default — clicking a card instantly applies it
   function getAutoApply() {
     var s = getSettings();
@@ -456,6 +481,12 @@
     // Save
     saveThemeId(themeId);
 
+    // If "permanent theme" is enabled, also save to server
+    var _ps = getSettings();
+    if (_ps.permanentTheme && window.__fc_logged_in_user__) {
+      _saveThemeToServer(themeId);
+    }
+
     // Update picker if open
     updateActiveIndicator(themeId);
 
@@ -759,6 +790,53 @@
     autoRow.appendChild(autoLabel);
     header.appendChild(autoRow);
 
+    // ── "Make this my permanent theme" row ──
+    var permRow = document.createElement('div');
+    permRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:8px;';
+
+    var permLabel = document.createElement('label');
+    permLabel.id = 'perm-theme-label';
+    permLabel.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:#aab;user-select:none;';
+
+    var permCheck = document.createElement('input');
+    permCheck.type = 'checkbox';
+    permCheck.id = 'perm-theme-check';
+    permCheck.style.cssText = 'accent-color:#88aaff;width:16px;height:16px;cursor:pointer;';
+
+    var permText = document.createElement('span');
+    permText.textContent = 'Make this my permanent theme';
+    permText.id = 'perm-theme-text';
+
+    // Grey out if not logged in
+    if (!window.__fc_logged_in_user__) {
+      permCheck.disabled = true;
+      permCheck.style.opacity = '0.4';
+      permCheck.style.cursor = 'not-allowed';
+      permLabel.style.cursor = 'not-allowed';
+      permText.textContent = 'Make this my permanent theme (logged in users only)';
+      permText.style.opacity = '0.4';
+    } else {
+      // Load saved state from localStorage
+      var _ps = getSettings();
+      permCheck.checked = !!_ps.permanentTheme;
+    }
+
+    permCheck.addEventListener('change', function () {
+      if (!window.__fc_logged_in_user__) { permCheck.checked = false; return; }
+      var s = getSettings();
+      s.permanentTheme = permCheck.checked;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+      if (permCheck.checked) {
+        // Save current theme to server immediately
+        _saveThemeToServer(getSavedThemeId());
+      }
+    });
+
+    permLabel.appendChild(permCheck);
+    permLabel.appendChild(permText);
+    permRow.appendChild(permLabel);
+    header.appendChild(permRow);
+
     // Category tabs
     var tabsRow = document.createElement('div');
     tabsRow.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;';
@@ -980,8 +1058,32 @@
   }
 
   // ── Open / Close ───────────────────────────────────────────────────
+  function refreshPermThemeCheckbox() {
+    var cb = document.getElementById('perm-theme-check');
+    var txt = document.getElementById('perm-theme-text');
+    var lbl = document.getElementById('perm-theme-label');
+    if (!cb) return;
+    if (window.__fc_logged_in_user__) {
+      cb.disabled = false;
+      cb.style.opacity = '1';
+      cb.style.cursor = 'pointer';
+      if (lbl) lbl.style.cursor = 'pointer';
+      if (txt) { txt.textContent = 'Make this my permanent theme'; txt.style.opacity = '1'; }
+      var _s = getSettings();
+      cb.checked = !!_s.permanentTheme;
+    } else {
+      cb.disabled = true;
+      cb.checked = false;
+      cb.style.opacity = '0.4';
+      cb.style.cursor = 'not-allowed';
+      if (lbl) lbl.style.cursor = 'not-allowed';
+      if (txt) { txt.textContent = 'Make this my permanent theme (logged in users only)'; txt.style.opacity = '0.4'; }
+    }
+  }
+
   function openPicker() {
     createPicker();
+    refreshPermThemeCheckbox(); // Update in case login state changed
     var overlay = document.getElementById('theme-picker-overlay');
     var panel = document.getElementById('theme-picker-panel');
     if (!overlay || !panel) return;

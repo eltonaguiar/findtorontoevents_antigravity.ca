@@ -15,6 +15,7 @@ from .mean_reversion_strategies import BollingerMeanReversionStrategy, ShortTerm
 from .earnings_drift import EarningsDriftStrategy, ConsecutiveBeatsStrategy
 from .quality_value import QualityCompoundersStrategy, ValueQualityStrategy, DividendAristocratsStrategy
 from .ml_ranker import MLRankerStrategy
+from .sector_rotation_strategy import SectorRotationStrategy
 
 logger = logging.getLogger(__name__)
 
