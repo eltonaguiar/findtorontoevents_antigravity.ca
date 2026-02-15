@@ -1,0 +1,80 @@
+# Rapid Validation Engine - Auto-run every 15 minutes
+# CLAUDECODE_Feb152026
+name: Rapid Validation Engine
+
+on:
+  schedule:
+    # Run every 15 minutes
+    - cron: '*/15 * * * *'
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  rapid-validation:
+    runs-on: ubuntu-latest
+    env:
+      TICKETMAST_CONSUMER_KEY: ${{ secrets.TICKETMAST_CONSUMER_KEY }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASS: ${{ secrets.DB_PASS }}
+      DB_NAME: rapid_validation
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install ccxt pandas numpy mysql-connector-python
+
+      - name: Generate rapid signals (every hour only)
+        if: github.event.schedule == '*/15 * * * *' && github.event.schedule == '0 * * * *'
+        run: |
+          python rapid_validation/rapid_signal_generator.py --mode live --timeframe 5m
+          echo "Generated signals at $(date)"
+
+      - name: Validate active signals (every 15 minutes)
+        run: |
+          python rapid_validation/fast_validator_CLAUDECODE_Feb152026.py
+          echo "Validated signals at $(date)"
+
+      - name: Update strategy rankings
+        run: |
+          python rapid_validation/strategy_ranker_CLAUDECODE_Feb152026.py
+          echo "Updated rankings at $(date)"
+
+      - name: Deploy dashboard to GitHub Pages
+        if: success()
+        run: |
+          mkdir -p gh-pages/rapid-validation
+          cp rapid_validation/dashboard_CLAUDECODE_Feb152026.html gh-pages/rapid-validation/index.html
+          cp rapid_validation/rankings_CLAUDECODE_Feb152026.json gh-pages/rapid-validation/ || true
+
+      - name: Commit updated rankings
+        if: success()
+        run: |
+          git config --local user.email "claude-code@anthropic.com"
+          git config --local user.name "Claude Code Bot"
+          git add rapid_validation/rankings_CLAUDECODE_Feb152026.json || true
+          git commit -m "chore: Update rapid validation rankings - $(date -u +%Y-%m-%d\ %H:%M:%S\ UTC)" || echo "No changes to commit"
+          git push || echo "No changes to push"
+
+      - name: Summary report
+        if: always()
+        run: |
+          echo "========================================"
+          echo "Rapid Validation Engine - Run Complete"
+          echo "========================================"
+          echo "Timestamp: $(date -u)"
+          if [ -f rapid_validation/rankings_CLAUDECODE_Feb152026.json ]; then
+            echo "Rankings file exists: YES"
+            jq -r '.promoted | length' rapid_validation/rankings_CLAUDECODE_Feb152026.json | xargs -I {} echo "Promoted strategies: {}"
+            jq -r '.testing | length' rapid_validation/rankings_CLAUDECODE_Feb152026.json | xargs -I {} echo "Testing strategies: {}"
+            jq -r '.eliminated | length' rapid_validation/rankings_CLAUDECODE_Feb152026.json | xargs -I {} echo "Eliminated strategies: {}"
+          else
+            echo "Rankings file: Not yet created"
+          fi
