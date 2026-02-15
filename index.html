@@ -758,6 +758,8 @@
 </head>
 
 <body class="inter_5972bc34-module__OU16Qa__className" suppressHydrationWarning>
+<!-- Thumbnail View Toggle: inline HTML for instant render (JS hooks into it) -->
+<button id="fte-thumb-toggle" type="button" title="Show event thumbnails" style="position:fixed;bottom:14rem;right:1.25rem;z-index:250;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:rgba(0,0,0,0.5);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.12);border-radius:50%;box-shadow:0 4px 20px rgba(0,0,0,0.4);cursor:pointer;padding:0;margin:0;color:#fff;line-height:1;transition:all 0.3s ease;"><span class="toggle-icon">🖼️</span><span class="toggle-dot" style="position:absolute;top:3px;right:3px;width:8px;height:8px;border-radius:50%;background:transparent;transition:background 0.3s;"></span></button>
   <div hidden=""><!--$--><!--/$--></div>
   <div class="app-bg-wrapper bg-nebula"></div>
   <div class="fixed-ui-layer relative z-[200]"><button
@@ -4012,14 +4014,19 @@
   }
 
   function createToggle() {
-    if (document.getElementById('fte-thumb-toggle')) return;
-    var btn = document.createElement('button');
-    btn.id = 'fte-thumb-toggle';
-    btn.type = 'button';
-    btn.title = 'Show event thumbnails';
-    btn.innerHTML = '<span class="toggle-icon">\uD83D\uDDBC\uFE0F</span><span class="toggle-dot"></span>';
+    var btn = document.getElementById('fte-thumb-toggle');
+    if (!btn) {
+      // Fallback: create button if inline HTML wasn't present
+      btn = document.createElement('button');
+      btn.id = 'fte-thumb-toggle';
+      btn.type = 'button';
+      btn.title = 'Show event thumbnails';
+      btn.innerHTML = '<span class="toggle-icon">\uD83D\uDDBC\uFE0F</span><span class="toggle-dot"></span>';
+      document.body.appendChild(btn);
+    }
+    // Ensure click handler is attached (idempotent)
+    btn.removeEventListener('click', handleToggleClick);
     btn.addEventListener('click', handleToggleClick);
-    document.body.appendChild(btn);
     updateToggleUI();
   }
 
