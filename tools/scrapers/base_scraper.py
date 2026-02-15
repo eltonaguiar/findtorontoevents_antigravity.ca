@@ -185,6 +185,9 @@ class ScrapedEvent:
     tags: List[str] = None
     status: str = "UPCOMING"
     is_multi_day: bool = False
+    duration_category: Optional[str] = None  # "single", "short" (2-7), "medium" (8-30), "long" (31+)
+    is_recurring: bool = False
+    recurrence_pattern: Optional[str] = None  # "weekly", "monthly", etc.
     last_updated: str = ""
     
     def __post_init__(self):

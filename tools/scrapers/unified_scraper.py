@@ -18,7 +18,10 @@ try:
     from .sankofa_square import SankofaSquareScraper
     from .city_of_toronto import CityOfTorontoEventsScraper
     from .unity_maps import UnityMapsScraper
-    from .allevents_calendar import AllEventsCalendarScraper
+    # Direct platform scrapers (NEW)
+    from .eventbrite_scraper import EventbriteScraper
+    from .ticketmaster_scraper import TicketmasterScraper
+    # Community calendars
     from .toronto_events_weekly import TorontoEventsWeeklyScraper
     from .american_arenas import AmericanArenasScraper
     from .creative_code_sheet import CreativeCodeSheetScraper
@@ -33,7 +36,10 @@ except ImportError:
     from sankofa_square import SankofaSquareScraper
     from city_of_toronto import CityOfTorontoEventsScraper
     from unity_maps import UnityMapsScraper
-    from allevents_calendar import AllEventsCalendarScraper
+    # Direct platform scrapers (NEW)
+    from eventbrite_scraper import EventbriteScraper
+    from ticketmaster_scraper import TicketmasterScraper
+    # Community calendars
     from toronto_events_weekly import TorontoEventsWeeklyScraper
     from american_arenas import AmericanArenasScraper
     from creative_code_sheet import CreativeCodeSheetScraper
@@ -49,16 +55,22 @@ class UnifiedTorontoScraper:
     
     def __init__(self):
         self.scrapers = [
+            # Official Toronto sources
             NathanPhillipsSquareScraper(),
             SankofaSquareScraper(),
             CityOfTorontoEventsScraper(),
+            SofiaAdelGiudiceNotionScraper(),
+
+            # Direct platform scrapers (NEW - replaces AllEvents aggregator)
+            EventbriteScraper(),
+            TicketmasterScraper(),
+
+            # Community calendars
             UnityMapsScraper(),
-            AllEventsCalendarScraper(),
             TorontoEventsWeeklyScraper(),
-            AmericanArenasScraper(),
             CreativeCodeSheetScraper(),
             LightMorningCalendarScraper(),
-            SofiaAdelGiudiceNotionScraper(),
+            AmericanArenasScraper(),
         ]
         self.seen_titles: Set[str] = set()
     
@@ -117,21 +129,51 @@ class UnifiedTorontoScraper:
         return event
     
     def detect_multi_day(self, event: Dict) -> Dict:
-        """Detect and mark multi-day events"""
-        if event.get("is_multi_day"):
+        """Detect and categorize multi-day events with duration classification"""
+        if not event.get("date"):
             return event
-        
+
         start_date = event.get("date", "")
         end_date = event.get("end_date")
-        
+
+        # Calculate duration if both dates exist
         if start_date and end_date:
             try:
                 start = datetime.fromisoformat(start_date.replace("Z", ""))
                 end = datetime.fromisoformat(end_date.replace("Z", ""))
-                event["is_multi_day"] = (end - start).days > 0
+                days = (end - start).days
+
+                event["is_multi_day"] = days > 0
+
+                # Categorize by duration
+                if days == 0:
+                    event["duration_category"] = "single"
+                elif days <= 7:
+                    event["duration_category"] = "short"
+                elif days <= 30:
+                    event["duration_category"] = "medium"
+                else:
+                    event["duration_category"] = "long"
+
             except ValueError:
                 pass
-        
+        else:
+            # No end_date, assume single day
+            event["duration_category"] = "single"
+
+        # Keyword-based recurring detection
+        text = f"{event.get('title', '')} {event.get('description', '')}".lower()
+        recurring_keywords = ['recurring', 'weekly', 'monthly', 'every week', 'every month', 'series event']
+
+        if any(kw in text for kw in recurring_keywords):
+            event["is_recurring"] = True
+
+            # Extract pattern
+            if 'weekly' in text or 'every week' in text:
+                event["recurrence_pattern"] = "weekly"
+            elif 'monthly' in text or 'every month' in text:
+                event["recurrence_pattern"] = "monthly"
+
         return event
     
     def scrape_all(self) -> List[Dict]:

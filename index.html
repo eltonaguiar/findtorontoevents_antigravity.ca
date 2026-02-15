@@ -2695,8 +2695,15 @@
   
   // State
   let showMultiDayEvents = true; // Show all events by default; user can toggle off
+  let showEventRouterEvents = false; // Hide aggregator-only events by default
   let userLocation = null;
   let maxDistance = 10; // km
+
+  // Load event router preference from localStorage
+  try {
+    var _erPref = localStorage.getItem('fte_show_event_router');
+    if (_erPref === 'true') showEventRouterEvents = true;
+  } catch(e) {}
   let filterActive = false;
   
   // Toronto postal code to coordinate mapping (approximate centers)
@@ -2838,7 +2845,7 @@
   
   // Apply all filters to event cards
   function applyFilters() {
-    console.log('[FILTERS] Applying filters - showMultiDay:', showMultiDayEvents, 'location:', userLocation, 'maxDistance:', maxDistance);
+    console.log('[FILTERS] Applying filters - showMultiDay:', showMultiDayEvents, 'showEventRouter:', showEventRouterEvents, 'location:', userLocation, 'maxDistance:', maxDistance);
     
     const cards = document.querySelectorAll('[class*="glass-panel"]:not(.animate-pulse), [class*="event-card"], [class*="EventCard"]');
     let hiddenCount = 0;
@@ -2896,6 +2903,14 @@
           }
         }
       }
+
+      // Event router filter: hide aggregator-only events (AllEvents.in with no original source)
+      var _showRouter = (typeof window.showEventRouterEvents !== 'undefined') ? window.showEventRouterEvents : showEventRouterEvents;
+      if (shouldShow && !_showRouter && eventData) {
+        if (eventData.isEventRouter === true) {
+          shouldShow = false;
+        }
+      }
       
       // Location filter
       if (shouldShow && filterActive && userLocation && maxDistance > 0) {
@@ -2949,6 +2964,10 @@
     console.log('[FILTERS] Shown:', shownCount, 'Hidden:', hiddenCount);
   }
   
+  // Expose filter state and function to global scope for theme-switcher.js
+  window.showEventRouterEvents = showEventRouterEvents;
+  window.applyFilters = applyFilters;
+
   // Initialize
   function init() {
     createFilterControls();
@@ -2976,6 +2995,98 @@
   }
   
   // Start when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+
+// Multi-Day Event Badge Injector
+(function() {
+  'use strict';
+
+  function addMultiDayBadges() {
+    // Find all event cards
+    const cards = document.querySelectorAll('article, [class*="EventCard"], [class*="card"]');
+
+    cards.forEach(function(card) {
+      // Skip if already processed
+      if (card.dataset.multiDayProcessed) return;
+      card.dataset.multiDayProcessed = 'true';
+
+      // Try to find event data
+      const eventDataEl = card.querySelector('[data-event-id]');
+      if (!eventDataEl) return;
+
+      // Try to get event data from window.eventsData or card attributes
+      let eventData = null;
+      const eventId = eventDataEl.getAttribute('data-event-id');
+
+      if (window.eventsData && eventId) {
+        eventData = window.eventsData.find(function(e) { return e.id === eventId; });
+      }
+
+      if (!eventData) return;
+
+      // Check if event is multi-day
+      const isMultiDay = eventData.isMultiDay || eventData.is_multi_day || eventData.duration_category !== 'single';
+      if (!isMultiDay && !eventData.end_date && !eventData.endDate) return;
+
+      // Find title element to append badge to
+      let titleElement = card.querySelector('h2, h3, h4, [class*="title"], [class*="Title"]');
+      if (!titleElement) return;
+
+      // Calculate duration
+      let durationText = '📅 Multi-Day';
+      if (eventData.end_date || eventData.endDate) {
+        try {
+          const startDate = new Date(eventData.date);
+          const endDate = new Date(eventData.end_date || eventData.endDate);
+          const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+          if (days > 0) {
+            durationText = '📅 ' + days + '-Day Event';
+          }
+        } catch(e) {
+          // Keep default text
+        }
+      }
+
+      // Create badge element
+      const badge = document.createElement('span');
+      badge.className = 'badge-multiday';
+      badge.textContent = durationText;
+      badge.style.cssText = 'background: rgba(139,92,246,0.2); color: #a78bfa; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px; white-space: nowrap; display: inline-block;';
+
+      // Append badge to title
+      titleElement.appendChild(badge);
+    });
+  }
+
+  // Run on load
+  function init() {
+    setTimeout(addMultiDayBadges, 2000);
+    setTimeout(addMultiDayBadges, 4000);
+    setTimeout(addMultiDayBadges, 6000);
+
+    // Re-run when new cards are added
+    const observer = new MutationObserver(function(mutations) {
+      let shouldRun = false;
+      mutations.forEach(function(mutation) {
+        if (mutation.addedNodes.length > 0) {
+          shouldRun = true;
+        }
+      });
+      if (shouldRun) {
+        clearTimeout(window._badgeTimeout);
+        window._badgeTimeout = setTimeout(addMultiDayBadges, 500);
+      }
+    });
+
+    const main = document.querySelector('main') || document.body;
+    observer.observe(main, { childList: true, subtree: true });
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
@@ -4007,8 +4118,27 @@
     setLocalPref(next);
     applyMode(next);
     updateToggleUI();
+    // Save to server if user has opted in via gear panel "Remember my choice"
     if (window.__fc_logged_in_user__) {
-      try { fetch(FC_API + '/user_preferences.php', { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({preferences:{viewMode:next}}) }).catch(function(){}); } catch(e) {}
+      try {
+        var s = JSON.parse(localStorage.getItem('toronto-events-settings') || '{}');
+        if (s.saveThumbPref) {
+          fetch(FC_API + '/user_preferences.php', { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({preferences:{viewMode:next}}) }).catch(function(){});
+        }
+      } catch(e) {}
+    }
+    // Sync the gear panel toggle if it exists
+    var gearCb = document.getElementById('gear-thumb-toggle');
+    if (gearCb) {
+      gearCb.checked = next === 'thumbnails';
+      var sl = document.getElementById('gear-thumb-slider');
+      var dt = document.getElementById('gear-thumb-dot');
+      var on = gearCb.checked;
+      if (sl) sl.style.background = on ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.15)';
+      if (dt) {
+        dt.style.transform = on ? 'translateX(20px)' : 'translateX(0)';
+        dt.style.background = on ? '#22c55e' : '#888';
+      }
     }
     if (next === 'thumbnails') scheduleInject();
   }
@@ -4149,7 +4279,7 @@
         .then(function(r) { return r.json(); })
         .then(function(data) {
           if (data && data.preferences) {
-            // ── Restore viewMode (bidirectional) ──
+            // ── Restore viewMode if user opted to save it ──
             var serverMode = data.preferences.viewMode;
             if (serverMode && serverMode !== getLocalPref()) {
               setLocalPref(serverMode);
@@ -4157,6 +4287,12 @@
               updateToggleUI();
               if (serverMode === 'thumbnails') scheduleInject();
               console.log('[PREFS] Restored viewMode from server:', serverMode);
+              // Also enable the "save thumb pref" flag since server had a saved value
+              try {
+                var s = JSON.parse(localStorage.getItem('toronto-events-settings') || '{}');
+                s.saveThumbPref = true;
+                localStorage.setItem('toronto-events-settings', JSON.stringify(s));
+              } catch(e2) {}
             }
             // ── Restore theme ──
             var serverTheme = data.preferences.selectedTheme;
