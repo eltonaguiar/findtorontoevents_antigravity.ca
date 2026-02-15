@@ -837,6 +837,241 @@
     permRow.appendChild(permLabel);
     header.appendChild(permRow);
 
+    // ── Event Thumbnails toggle row ──
+    var thumbSection = document.createElement('div');
+    thumbSection.style.cssText = 'margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06);';
+
+    var thumbRow = document.createElement('div');
+    thumbRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;';
+
+    var thumbLabelEl = document.createElement('span');
+    thumbLabelEl.style.cssText = 'font-size:12px;color:#aab;font-weight:600;';
+    thumbLabelEl.textContent = 'Event Thumbnails';
+
+    // Toggle switch
+    var thumbToggleWrap = document.createElement('label');
+    thumbToggleWrap.style.cssText = 'position:relative;display:inline-block;width:42px;height:22px;cursor:pointer;';
+
+    var thumbToggleInput = document.createElement('input');
+    thumbToggleInput.type = 'checkbox';
+    thumbToggleInput.id = 'gear-thumb-toggle';
+    thumbToggleInput.style.cssText = 'opacity:0;width:0;height:0;position:absolute;';
+
+    var thumbSlider = document.createElement('span');
+    thumbSlider.id = 'gear-thumb-slider';
+    thumbSlider.style.cssText = 'position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.15);border-radius:22px;transition:all 0.3s;';
+
+    var thumbDot = document.createElement('span');
+    thumbDot.id = 'gear-thumb-dot';
+    thumbDot.style.cssText = 'position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#888;border-radius:50%;transition:all 0.3s;';
+
+    thumbSlider.appendChild(thumbDot);
+    thumbToggleWrap.appendChild(thumbToggleInput);
+    thumbToggleWrap.appendChild(thumbSlider);
+
+    thumbRow.appendChild(thumbLabelEl);
+    thumbRow.appendChild(thumbToggleWrap);
+    thumbSection.appendChild(thumbRow);
+
+    // Sync initial state from localStorage
+    function _getThumbMode() {
+      try { return localStorage.getItem('fte_view_mode') || 'thumbnails'; } catch(e) { return 'thumbnails'; }
+    }
+    function _setThumbUI(on) {
+      var sl = document.getElementById('gear-thumb-slider');
+      var dt = document.getElementById('gear-thumb-dot');
+      var cb = document.getElementById('gear-thumb-toggle');
+      if (cb) cb.checked = on;
+      if (sl) sl.style.background = on ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.15)';
+      if (dt) {
+        dt.style.transform = on ? 'translateX(20px)' : 'translateX(0)';
+        dt.style.background = on ? '#22c55e' : '#888';
+      }
+    }
+
+    var isThumbOn = _getThumbMode() === 'thumbnails';
+    thumbToggleInput.checked = isThumbOn;
+    // Apply initial slider style after a tick (element needs to be in DOM)
+    setTimeout(function() { _setThumbUI(_getThumbMode() === 'thumbnails'); }, 50);
+
+    thumbToggleInput.addEventListener('change', function() {
+      var newMode = thumbToggleInput.checked ? 'thumbnails' : 'original';
+      try { localStorage.setItem('fte_view_mode', newMode); } catch(e) {}
+
+      // Apply to page
+      if (newMode === 'thumbnails') {
+        document.documentElement.classList.add('fte-thumbnails-on');
+      } else {
+        document.documentElement.classList.remove('fte-thumbnails-on');
+      }
+
+      // Update the floating button if it exists
+      var floatingBtn = document.getElementById('fte-thumb-toggle');
+      if (floatingBtn) {
+        if (newMode === 'thumbnails') {
+          floatingBtn.classList.add('active');
+          floatingBtn.title = 'Thumbnails ON \u2014 click to turn off';
+        } else {
+          floatingBtn.classList.remove('active');
+          floatingBtn.title = 'Show event thumbnails';
+        }
+      }
+
+      // Update slider appearance
+      _setThumbUI(thumbToggleInput.checked);
+
+      // Save to server if "Save preference" is checked
+      var saveCb = document.getElementById('gear-thumb-save');
+      if (saveCb && saveCb.checked && window.__fc_logged_in_user__) {
+        try {
+          fetch(FC_PREFS_API, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ preferences: { viewMode: newMode } })
+          }).catch(function(){});
+        } catch(e) {}
+      }
+
+      showToast(newMode === 'thumbnails' ? 'Thumbnails ON' : 'Thumbnails OFF');
+    });
+
+    // ── "Save thumbnail preference" row (logged-in only) ──
+    var thumbSaveRow = document.createElement('div');
+    thumbSaveRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:6px;';
+
+    var thumbSaveLabel = document.createElement('label');
+    thumbSaveLabel.id = 'gear-thumb-save-label';
+    thumbSaveLabel.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:pointer;font-size:11px;color:#889;user-select:none;';
+
+    var thumbSaveCheck = document.createElement('input');
+    thumbSaveCheck.type = 'checkbox';
+    thumbSaveCheck.id = 'gear-thumb-save';
+    thumbSaveCheck.style.cssText = 'accent-color:#22c55e;width:14px;height:14px;cursor:pointer;';
+
+    var thumbSaveText = document.createElement('span');
+    thumbSaveText.id = 'gear-thumb-save-text';
+    thumbSaveText.textContent = 'Remember my choice';
+
+    if (!window.__fc_logged_in_user__) {
+      thumbSaveCheck.disabled = true;
+      thumbSaveCheck.style.opacity = '0.4';
+      thumbSaveCheck.style.cursor = 'not-allowed';
+      thumbSaveLabel.style.cursor = 'not-allowed';
+      thumbSaveText.textContent = 'Remember my choice (login required)';
+      thumbSaveText.style.opacity = '0.4';
+    } else {
+      // Check if user has a saved viewMode on server
+      var _ts = getSettings();
+      thumbSaveCheck.checked = !!_ts.saveThumbPref;
+    }
+
+    thumbSaveCheck.addEventListener('change', function() {
+      if (!window.__fc_logged_in_user__) { thumbSaveCheck.checked = false; return; }
+      var s = getSettings();
+      s.saveThumbPref = thumbSaveCheck.checked;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+      if (thumbSaveCheck.checked) {
+        // Save current mode to server immediately
+        var currentMode = _getThumbMode();
+        try {
+          fetch(FC_PREFS_API, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ preferences: { viewMode: currentMode } })
+          }).catch(function(){});
+        } catch(e) {}
+        showToast('Thumbnail preference saved');
+      }
+    });
+
+    thumbSaveLabel.appendChild(thumbSaveCheck);
+    thumbSaveLabel.appendChild(thumbSaveText);
+    thumbSaveRow.appendChild(thumbSaveLabel);
+    thumbSection.appendChild(thumbSaveRow);
+
+    header.appendChild(thumbSection);
+
+    // ── Event Router toggle row ──
+    var routerSection = document.createElement('div');
+    routerSection.style.cssText = 'margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);';
+
+    var routerRow = document.createElement('div');
+    routerRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;';
+
+    var routerLabelEl = document.createElement('span');
+    routerLabelEl.style.cssText = 'font-size:12px;color:#aab;font-weight:600;';
+    routerLabelEl.textContent = 'Show Aggregator Events';
+
+    var routerHint = document.createElement('div');
+    routerHint.style.cssText = 'font-size:10px;color:#667;margin-top:3px;line-height:1.3;';
+    routerHint.textContent = 'Events from aggregator sites (AllEvents.in) that link to the aggregator instead of the original event page.';
+
+    // Toggle switch
+    var routerToggleWrap = document.createElement('label');
+    routerToggleWrap.style.cssText = 'position:relative;display:inline-block;width:42px;height:22px;cursor:pointer;flex-shrink:0;';
+
+    var routerToggleInput = document.createElement('input');
+    routerToggleInput.type = 'checkbox';
+    routerToggleInput.id = 'gear-router-toggle';
+    routerToggleInput.style.cssText = 'opacity:0;width:0;height:0;position:absolute;';
+
+    var routerSlider = document.createElement('span');
+    routerSlider.id = 'gear-router-slider';
+    routerSlider.style.cssText = 'position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.15);border-radius:22px;transition:all 0.3s;';
+
+    var routerDot = document.createElement('span');
+    routerDot.id = 'gear-router-dot';
+    routerDot.style.cssText = 'position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#888;border-radius:50%;transition:all 0.3s;';
+
+    routerSlider.appendChild(routerDot);
+    routerToggleWrap.appendChild(routerToggleInput);
+    routerToggleWrap.appendChild(routerSlider);
+
+    routerRow.appendChild(routerLabelEl);
+    routerRow.appendChild(routerToggleWrap);
+    routerSection.appendChild(routerRow);
+    routerSection.appendChild(routerHint);
+
+    // Sync initial state from localStorage
+    function _getRouterPref() {
+      try { return localStorage.getItem('fte_show_event_router') === 'true'; } catch(e) { return false; }
+    }
+    function _setRouterUI(on) {
+      var sl = document.getElementById('gear-router-slider');
+      var dt = document.getElementById('gear-router-dot');
+      var cb = document.getElementById('gear-router-toggle');
+      if (cb) cb.checked = on;
+      if (sl) sl.style.background = on ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.15)';
+      if (dt) {
+        dt.style.transform = on ? 'translateX(20px)' : 'translateX(0)';
+        dt.style.background = on ? '#22c55e' : '#888';
+      }
+    }
+
+    routerToggleInput.checked = _getRouterPref();
+    setTimeout(function() { _setRouterUI(_getRouterPref()); }, 50);
+
+    routerToggleInput.addEventListener('change', function() {
+      var show = routerToggleInput.checked;
+      try { localStorage.setItem('fte_show_event_router', show ? 'true' : 'false'); } catch(e) {}
+
+      // Update the global filter state and re-apply filters
+      if (typeof window.showEventRouterEvents !== 'undefined') {
+        window.showEventRouterEvents = show;
+      }
+      // Trigger re-filter
+      if (typeof window.applyFilters === 'function') {
+        window.applyFilters();
+      }
+
+      _setRouterUI(show);
+      showToast(show ? 'Aggregator events shown' : 'Aggregator events hidden');
+    });
+
+    header.appendChild(routerSection);
+
     // Category tabs
     var tabsRow = document.createElement('div');
     tabsRow.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;';
@@ -1078,6 +1313,52 @@
       cb.style.cursor = 'not-allowed';
       if (lbl) lbl.style.cursor = 'not-allowed';
       if (txt) { txt.textContent = 'Make this my permanent theme (logged in users only)'; txt.style.opacity = '0.4'; }
+    }
+
+    // Also refresh thumbnail toggle + save checkbox
+    _refreshThumbControls();
+  }
+
+  function _refreshThumbControls() {
+    var thumbCb = document.getElementById('gear-thumb-toggle');
+    var saveCb = document.getElementById('gear-thumb-save');
+    var saveTxt = document.getElementById('gear-thumb-save-text');
+    var saveLbl = document.getElementById('gear-thumb-save-label');
+
+    // Sync toggle state with current mode
+    if (thumbCb) {
+      var mode;
+      try { mode = localStorage.getItem('fte_view_mode') || 'thumbnails'; } catch(e) { mode = 'thumbnails'; }
+      thumbCb.checked = mode === 'thumbnails';
+      // Update slider visuals
+      var sl = document.getElementById('gear-thumb-slider');
+      var dt = document.getElementById('gear-thumb-dot');
+      var on = thumbCb.checked;
+      if (sl) sl.style.background = on ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.15)';
+      if (dt) {
+        dt.style.transform = on ? 'translateX(20px)' : 'translateX(0)';
+        dt.style.background = on ? '#22c55e' : '#888';
+      }
+    }
+
+    // Sync save checkbox with login state
+    if (saveCb) {
+      if (window.__fc_logged_in_user__) {
+        saveCb.disabled = false;
+        saveCb.style.opacity = '1';
+        saveCb.style.cursor = 'pointer';
+        if (saveLbl) saveLbl.style.cursor = 'pointer';
+        if (saveTxt) { saveTxt.textContent = 'Remember my choice'; saveTxt.style.opacity = '1'; }
+        var _ts = getSettings();
+        saveCb.checked = !!_ts.saveThumbPref;
+      } else {
+        saveCb.disabled = true;
+        saveCb.checked = false;
+        saveCb.style.opacity = '0.4';
+        saveCb.style.cursor = 'not-allowed';
+        if (saveLbl) saveLbl.style.cursor = 'not-allowed';
+        if (saveTxt) { saveTxt.textContent = 'Remember my choice (login required)'; saveTxt.style.opacity = '0.4'; }
+      }
     }
   }
 
