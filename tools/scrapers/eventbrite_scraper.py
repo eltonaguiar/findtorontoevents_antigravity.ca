@@ -20,58 +20,75 @@ class EventbriteScraper(BaseScraper):
         super().__init__()
         self.rate_limit_delay = 0.5  # 500ms between requests
 
-    def _extract_event_data_from_script(self, soup) -> List[Dict]:
-        """Extract event data from Next.js __NEXT_DATA__ script tag"""
+    def _extract_event_data_from_jsonld(self, soup) -> List[Dict]:
+        """Extract event data from JSON-LD structured data"""
         try:
-            # Find the __NEXT_DATA__ script tag
-            script_tag = soup.find("script", {"id": "__NEXT_DATA__"})
-            if not script_tag:
-                return []
-
             import json
-            data = json.loads(script_tag.string)
 
-            # Navigate through the Next.js data structure
-            # Structure: props > pageProps > __APOLLO_STATE__ > events
-            page_props = data.get("props", {}).get("pageProps", {})
-            apollo_state = page_props.get("__APOLLO_STATE__", {})
+            # Find JSON-LD script tags
+            scripts = soup.find_all("script", type="application/ld+json")
 
-            events = []
-            for key, value in apollo_state.items():
-                if key.startswith("Event:") and isinstance(value, dict):
-                    events.append(value)
+            for script in scripts:
+                try:
+                    data = json.loads(script.string)
 
-            return events
+                    # Look for ItemList containing events
+                    if data.get("@type") == "ItemList":
+                        items = data.get("itemListElement", [])
+                        events = []
+
+                        for item in items:
+                            event_data = item.get("item", {})
+                            if event_data.get("@type") == "Event":
+                                events.append(event_data)
+
+                        if events:
+                            return events
+
+                except json.JSONDecodeError:
+                    continue
+
+            return []
+
         except Exception as e:
-            print(f"[{self.SOURCE_NAME}] Error extracting script data: {e}")
+            print(f"[{self.SOURCE_NAME}] Error extracting JSON-LD data: {e}")
             return []
 
     def _parse_event_card(self, event_data: Dict) -> Optional[ScrapedEvent]:
-        """Parse individual event data from Apollo state"""
+        """Parse individual event data from JSON-LD schema.org Event"""
         try:
             # Extract basic info
             title = event_data.get("name", "")
             if not title or self.should_exclude(title):
                 return None
 
-            # Extract URL - might be in 'url' or need to construct from id
+            # Extract URL
             event_url = event_data.get("url", "")
-            if not event_url and "id" in event_data:
-                event_id_num = event_data["id"]
-                event_url = f"https://www.eventbrite.ca/e/{event_id_num}"
+            if not event_url:
+                return None
 
-            # Extract dates
+            # Extract dates (schema.org format: YYYY-MM-DD or ISO 8601)
             start_date = event_data.get("startDate", "")
             end_date = event_data.get("endDate", "")
 
             if not start_date:
                 return None
 
-            # Ensure ISO format
-            if not start_date.endswith("Z") and "+" not in start_date:
-                start_date += "Z"
-            if end_date and not end_date.endswith("Z") and "+" not in end_date:
-                end_date += "Z"
+            # Convert to ISO format with time
+            try:
+                # If date only (YYYY-MM-DD), add time
+                if len(start_date) == 10:
+                    start_date = f"{start_date}T00:00:00Z"
+                elif not start_date.endswith("Z") and "+" not in start_date and "-" not in start_date[-6:]:
+                    start_date += "Z"
+
+                if end_date:
+                    if len(end_date) == 10:
+                        end_date = f"{end_date}T23:59:59Z"
+                    elif not end_date.endswith("Z") and "+" not in end_date and "-" not in end_date[-6:]:
+                        end_date += "Z"
+            except:
+                pass
 
             # Multi-day detection
             is_multi = False
@@ -95,20 +112,39 @@ class EventbriteScraper(BaseScraper):
                     pass
 
             # Extract description
-            description = event_data.get("description", "") or event_data.get("summary", "")
+            description = event_data.get("description", "")
 
-            # Extract venue/location
-            venue_data = event_data.get("venue", {}) or event_data.get("location", {})
-            if venue_data:
-                venue_name = venue_data.get("name", "Toronto, ON")
-                address_data = venue_data.get("address", {})
-                address = address_data.get("localized_address_display", "") or address_data.get("address", "")
-                lat = venue_data.get("latitude")
-                lng = venue_data.get("longitude")
+            # Extract venue/location (schema.org Place structure)
+            location_data = event_data.get("location", {})
+            if location_data and isinstance(location_data, dict):
+                venue_name = location_data.get("name", "Toronto, ON")
+
+                # Extract address
+                address_data = location_data.get("address", {})
+                if isinstance(address_data, dict):
+                    street = address_data.get("streetAddress", "")
+                    city = address_data.get("addressLocality", "")
+                    region = address_data.get("addressRegion", "")
+                    postal = address_data.get("postalCode", "")
+
+                    # Build full address
+                    address_parts = [p for p in [street, city, region, postal] if p]
+                    full_address = ", ".join(address_parts) if address_parts else None
+                else:
+                    full_address = str(address_data) if address_data else None
+
+                # Extract coordinates
+                geo_data = location_data.get("geo", {})
+                if isinstance(geo_data, dict):
+                    lat = geo_data.get("latitude")
+                    lng = geo_data.get("longitude")
+                else:
+                    lat = None
+                    lng = None
 
                 location_info = {
                     "location": venue_name,
-                    "address": address if address else None,
+                    "address": full_address,
                     "lat": float(lat) if lat else None,
                     "lng": float(lng) if lng else None
                 }
@@ -118,28 +154,35 @@ class EventbriteScraper(BaseScraper):
             # Categorize event
             categories, tags = self.categorize_event(title, description)
 
-            # Extract price
-            is_free = event_data.get("isFree", False) or event_data.get("is_free", False)
-            if is_free:
-                price_display = "Free"
-                price_amount = 0.0
-            else:
-                # Look for price in various fields
-                ticket_price = event_data.get("ticketPrice", {})
-                if ticket_price:
-                    price_display = ticket_price.get("display", "See Tickets")
-                    price_amount = float(ticket_price.get("value", 0.0))
-                else:
-                    price_display = "See Tickets"
-                    price_amount = 0.0
+            # Extract price from offers (schema.org offers structure)
+            offers = event_data.get("offers", {})
+            is_free = False
+            price_display = "See Tickets"
+            price_amount = 0.0
+
+            if isinstance(offers, dict):
+                # Check if free
+                price = offers.get("price")
+                if price == "0" or price == 0 or offers.get("priceCurrency") == "Free":
+                    is_free = True
+                    price_display = "Free"
+                elif price:
+                    try:
+                        price_amount = float(price)
+                        currency = offers.get("priceCurrency", "CAD")
+                        price_display = f"{currency} ${price_amount:.2f}"
+                    except:
+                        pass
 
             # Extract image
-            image_data = event_data.get("image", {}) or event_data.get("logo", {})
-            image_url = image_data.get("url", "") if image_data else ""
+            image_url = event_data.get("image", "")
 
-            # Extract organizer
+            # Extract organizer (schema.org doesn't always have this)
             organizer_data = event_data.get("organizer", {})
-            organizer = organizer_data.get("name", self.SOURCE_NAME) if organizer_data else self.SOURCE_NAME
+            if isinstance(organizer_data, dict):
+                organizer = organizer_data.get("name", self.SOURCE_NAME)
+            else:
+                organizer = self.SOURCE_NAME
 
             # Generate event ID
             event_id = self.generate_event_id(title, start_date, self.SOURCE_NAME)
@@ -171,7 +214,9 @@ class EventbriteScraper(BaseScraper):
             return event
 
         except Exception as e:
-            print(f"[{self.SOURCE_NAME}] Error parsing event card: {e}")
+            print(f"[{self.SOURCE_NAME}] Error parsing event: {e}")
+            import traceback
+            traceback.print_exc()
             return None
 
     def scrape(self) -> List[ScrapedEvent]:
@@ -193,14 +238,11 @@ class EventbriteScraper(BaseScraper):
                 print(f"[{self.SOURCE_NAME}] Failed to fetch page {page}")
                 break
 
-            # Try to extract events from Next.js data
-            event_data_list = self._extract_event_data_from_script(soup)
+            # Extract events from JSON-LD structured data
+            event_data_list = self._extract_event_data_from_jsonld(soup)
 
             if not event_data_list:
-                # Fallback: try to scrape event cards from HTML
-                print(f"[{self.SOURCE_NAME}] No events found in script data, trying HTML scraping...")
-                # This would require analyzing the actual HTML structure
-                # For now, break if no script data
+                print(f"[{self.SOURCE_NAME}] No events found in JSON-LD data on page {page}")
                 break
 
             for event_data in event_data_list:
@@ -211,9 +253,10 @@ class EventbriteScraper(BaseScraper):
             # Rate limiting
             time.sleep(self.rate_limit_delay)
 
-            # Check if there are more pages (this is heuristic-based)
-            if len(event_data_list) < 20:  # If we got fewer events, likely no more pages
-                print(f"[{self.SOURCE_NAME}] Fewer events on page, assuming end")
+            # Check if there are more pages
+            # JSON-LD typically returns ~32 events per page
+            if len(event_data_list) < 10:  # If we got very few events, likely no more pages
+                print(f"[{self.SOURCE_NAME}] Only {len(event_data_list)} events on page, assuming end")
                 break
 
             page += 1

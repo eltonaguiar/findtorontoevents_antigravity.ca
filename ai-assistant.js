@@ -1728,6 +1728,12 @@
         return;
       }
 
+      // ── EVENT RESOURCES (must be before events so "resources" isn't caught by generic event matching) ──
+      if (_isResourcesQuery(lower)) {
+        await handleResources(lower);
+        return;
+      }
+
       // ── EVENTS (comprehensive conversational patterns) ──
       if (/event/i.test(lower) || /dating/i.test(lower) || /dancing/i.test(lower) || /concert/i.test(lower) ||
         /festival/i.test(lower) || /comedy/i.test(lower) || /networking/i.test(lower) ||
@@ -2184,6 +2190,173 @@
     }
     speakText(speechText);
     setStatus('Ready', '#64748b');
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // EVENT RESOURCES
+  // ═══════════════════════════════════════════════════════════
+
+  function _isResourcesQuery(lower) {
+    if (/\bresource/i.test(lower)) return true;
+    if (/\bwhere (can i|to|do i) find events/i.test(lower)) return true;
+    if (/\bevent (source|website|site|platform|calendar|listing|page|directory)/i.test(lower)) return true;
+    if (/\bwhere (are|do) (events|people) (get |find |list )?post/i.test(lower)) return true;
+    if (/\bbest (sites?|websites?|platforms?|places?) (for|to find) events/i.test(lower)) return true;
+    if (/\bwhere (should i|do people|can i) look for events/i.test(lower)) return true;
+    if (/\blist.*(event|toronto).*(source|site|platform|website)/i.test(lower)) return true;
+    if (/\b(show|give|list) me.*(resource|source|platform|site).*(event|toronto)/i.test(lower)) return true;
+    if (/\btop (event )?sources/i.test(lower)) return true;
+    if (/\b50.*(source|resource)/i.test(lower)) return true;
+    if (/\beventbrite|meetup\.com|blogto|ticketmaster/i.test(lower) && /\bresource|source|site|platform|where/i.test(lower)) return true;
+    return false;
+  }
+
+  async function handleResources(lower) {
+    addTypingIndicator();
+    setStatus('Loading resources...', '#a5b4fc');
+
+    var categoryFilter = '';
+    if (/\bmusic|concert|venue/i.test(lower)) categoryFilter = 'music';
+    else if (/\bart|culture|museum|gallery|tiff|ago|rom/i.test(lower)) categoryFilter = 'arts';
+    else if (/\btheatre|theater|comedy|improv|mirvish/i.test(lower)) categoryFilter = 'theatre';
+    else if (/\bsport|hockey|basketball|baseball|soccer|football|leafs|raptors|jays/i.test(lower)) categoryFilter = 'sports';
+    else if (/\bfestival|fair|cne|pride|caribana/i.test(lower)) categoryFilter = 'festivals';
+    else if (/\bfood|drink|restaurant|beer|wine|culinary/i.test(lower)) categoryFilter = 'food';
+    else if (/\bmedia|news|newspaper|blog/i.test(lower)) categoryFilter = 'media';
+    else if (/\bplatform|eventbrite|meetup|ticketmaster|stubhub|fever/i.test(lower)) categoryFilter = 'platforms';
+    else if (/\bcalendar|blogto|destination toronto/i.test(lower)) categoryFilter = 'calendars';
+
+    var apiUrl = '/api/events/resources.php?today=1';
+    if (categoryFilter) apiUrl += '&category=' + categoryFilter;
+
+    var data = null;
+    try {
+      var resp = await fetch(apiUrl);
+      data = await resp.json();
+    } catch (e) {
+      try {
+        var resp2 = await fetch('https://findtorontoevents.ca' + apiUrl);
+        data = await resp2.json();
+      } catch (e2) {}
+    }
+
+    if (!data) {
+      try {
+        var resp3 = await fetch('/resources/resources.json');
+        var rawData = await resp3.json();
+        data = { ok: true, categories: rawData.categories, total_sources: rawData.total_sources, todays_events: [], todays_count: 0 };
+      } catch (e3) {}
+    }
+
+    removeTypingIndicator();
+
+    if (!data || !data.ok) {
+      addMessage('ai', '<div class="fte-ai-summary">' +
+        '<b>Event Resources</b><br><br>' +
+        'I couldn\'t load the resources data right now. Visit the full page:<br><br>' +
+        '<a href="/resources/resources.html" target="_blank" style="color:#60a5fa;font-weight:600;">View All 50+ Toronto Event Resources</a></div>');
+      setStatus('Ready', '#64748b');
+      state.processing = false;
+      showStopBtn(false);
+      return;
+    }
+
+    var html = '<div class="fte-ai-summary">';
+
+    if (data.todays_events && data.todays_events.length > 0) {
+      html += '<div style="background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(168,85,247,0.12));padding:12px 14px;border-radius:10px;margin-bottom:14px;border-left:3px solid #6366f1;">';
+      html += '<b style="color:#a78bfa;">Happening Today</b>';
+      if (data.today_date) html += ' <span style="color:#94a3b8;font-size:0.85rem;">(' + escapeHtml(data.today_date) + ')</span>';
+      html += '<br><br>';
+      var maxToday = Math.min(data.todays_events.length, 10);
+      for (var ti = 0; ti < maxToday; ti++) {
+        var te = data.todays_events[ti];
+        var catEmoji = te.category_emoji || '';
+        html += '<div style="margin-bottom:6px;">';
+        html += catEmoji + ' <b>' + escapeHtml(te.title) + '</b>';
+        if (te.price && te.price !== 'Check Site') html += ' <span style="color:#34d399;font-size:0.85rem;">' + escapeHtml(te.price) + '</span>';
+        html += '<br>';
+        html += '<span style="color:#94a3b8;font-size:0.82rem;">';
+        if (te.source_url) {
+          html += '<a href="' + escapeHtml(te.source_url) + '" target="_blank" style="color:#60a5fa;text-decoration:none;">' + escapeHtml(te.source) + '</a>';
+        } else {
+          html += escapeHtml(te.source);
+        }
+        html += ' &bull; ' + escapeHtml(te.category) + '</span>';
+        html += '</div>';
+      }
+      if (data.todays_events.length > maxToday) {
+        html += '<div style="color:#94a3b8;font-size:0.82rem;margin-top:6px;">...and ' + (data.todays_events.length - maxToday) + ' more today</div>';
+      }
+      html += '</div>';
+    }
+
+    if (categoryFilter && data.categories && data.categories.length > 0) {
+      var cat = data.categories[0];
+      html += '<b>' + (cat.emoji || '') + ' ' + escapeHtml(cat.name) + '</b>';
+      if (cat.badge) html += ' <span style="color:#94a3b8;font-size:0.85rem;">' + escapeHtml(cat.badge) + '</span>';
+      html += '<br><br>';
+
+      for (var si = 0; si < cat.sources.length; si++) {
+        var src = cat.sources[si];
+        html += '<div style="margin-bottom:10px;padding:8px 10px;background:rgba(100,116,139,0.06);border-radius:8px;">';
+        html += '<a href="' + escapeHtml(src.url) + '" target="_blank" style="color:#60a5fa;font-weight:600;text-decoration:none;">' + escapeHtml(src.name) + '</a>';
+        if (src.badge) html += ' <span style="background:#6366f1;color:white;font-size:0.7rem;padding:1px 6px;border-radius:4px;">' + escapeHtml(src.badge) + '</span>';
+        html += '<br>';
+        html += '<span style="color:#cbd5e1;font-size:0.85rem;">' + escapeHtml(src.description) + '</span>';
+        if (src.events && src.events.length > 0) {
+          html += '<div style="margin-top:4px;">';
+          for (var ei = 0; ei < src.events.length; ei++) {
+            var evt = src.events[ei];
+            html += '<span style="color:#94a3b8;font-size:0.82rem;">&bull; ' + escapeHtml(evt.title) + ' &mdash; ' + escapeHtml(evt.date);
+            if (evt.price) html += ' (' + escapeHtml(evt.price) + ')';
+            html += '</span><br>';
+          }
+          html += '</div>';
+        }
+        html += '</div>';
+      }
+    } else if (data.categories) {
+      html += '<b>Toronto Event Resources &mdash; 50+ Sources</b><br><br>';
+      for (var ci = 0; ci < data.categories.length; ci++) {
+        var c = data.categories[ci];
+        var srcCount = c.sources ? c.sources.length : 0;
+        html += '<div style="margin-bottom:8px;">';
+        html += (c.emoji || '') + ' <b>' + escapeHtml(c.name) + '</b> <span style="color:#94a3b8;">(' + srcCount + ' sources)</span><br>';
+        var topSrcs = [];
+        for (var tsi = 0; tsi < Math.min(3, srcCount); tsi++) {
+          topSrcs.push('<a href="' + escapeHtml(c.sources[tsi].url) + '" target="_blank" style="color:#60a5fa;text-decoration:none;font-size:0.85rem;">' + escapeHtml(c.sources[tsi].name) + '</a>');
+        }
+        html += '<span style="font-size:0.85rem;">' + topSrcs.join(' &bull; ');
+        if (srcCount > 3) html += ' + ' + (srcCount - 3) + ' more';
+        html += '</span>';
+        html += '</div>';
+      }
+      html += '<br><span style="color:#94a3b8;font-size:0.85rem;">Ask about a specific category: "music resources", "sports event sources", "theatre resources", etc.</span>';
+    }
+
+    html += '<br><br><a href="/resources/resources.html" target="_blank" style="color:#a78bfa;font-weight:600;text-decoration:none;">View Full Resource Page (50+ sources)</a>';
+    html += '</div>';
+
+    addMessage('ai', html, false);
+
+    var speechText = 'Here are Toronto event resources.';
+    if (data.todays_events && data.todays_events.length > 0) {
+      speechText = 'I found ' + data.todays_events.length + ' events happening today from our resource sources. ';
+      if (data.todays_events.length > 0) {
+        speechText += 'Including ' + data.todays_events[0].title + ' at ' + data.todays_events[0].source + '. ';
+      }
+    }
+    if (categoryFilter && data.categories && data.categories.length > 0) {
+      speechText += 'Showing ' + data.categories[0].sources.length + ' sources for ' + data.categories[0].name + '.';
+    } else if (data.categories) {
+      speechText += 'There are ' + data.categories.length + ' categories with over 50 sources total.';
+    }
+    speechText += ' Ask about a specific category for more details.';
+    speakText(speechText);
+    setStatus('Ready', '#64748b');
+    state.processing = false;
+    showStopBtn(false);
   }
 
   async function handleEvents(lower) {
@@ -9082,6 +9255,9 @@
       'dashboard': '/fc/#/accountability',
       'windows fixer': '/WINDOWSFIXER/',
       'boot fixer': '/WINDOWSFIXER/',
+      'resources': '/resources/resources.html',
+      'event resources': '/resources/resources.html',
+      'event sources': '/resources/resources.html',
       'stats': '/stats/',
       'statistics': '/stats/',
       'movies v1': '/MOVIESHOWS/',
@@ -9294,6 +9470,12 @@
     html += '\u2022 "Salsa dancing tonight" / "Yoga this weekend"<br>';
     html += '\u2022 "TIFF events" / "Nuit Blanche" / "Pride events"<br>';
     html += '\u2022 "Networking events this week" / "Tech meetups"<br>';
+
+    html += '<br><b>Event Resources (50+ Sources):</b><br>';
+    html += '\u2022 "Show me event resources" / "Where can I find events?"<br>';
+    html += '\u2022 "Music resources" / "Sports event sources" / "Comedy venues"<br>';
+    html += '\u2022 "Best sites for Toronto events" / "Event platforms"<br>';
+    html += '\u2022 "Art resources" / "Festival sources" / "Food event sites"<br>';
 
     html += '<br><b>Weather & Clothing:</b><br>';
     html += '\u2022 "Will it rain today?" / "Will it snow?"<br>';

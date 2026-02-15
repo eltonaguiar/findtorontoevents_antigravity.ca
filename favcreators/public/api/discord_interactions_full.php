@@ -1889,6 +1889,151 @@ function handle_link_command($discord_id) {
     send_response("**Link your Discord to FavCreators:**\n\n1. Go to https://findtorontoevents.ca/fc/\n2. Log in or create an account\n3. Click 'Link Discord' in Account panel");
 }
 
+// ============================================================================
+// RESOURCES Command
+// ============================================================================
+
+function handle_resources_command($category, $show_today) {
+    $resources_url = 'https://findtorontoevents.ca/api/events/resources.php?today=1';
+    if (!empty($category)) {
+        $resources_url .= '&category=' . urlencode($category);
+    }
+    
+    $context = stream_context_create(array(
+        'http' => array(
+            'timeout' => 10,
+            'user_agent' => 'FavCreators-Bot/1.0'
+        )
+    ));
+    
+    $json = @file_get_contents($resources_url, false, $context);
+    
+    if (!$json) {
+        $json_path = dirname(dirname(dirname(dirname(__FILE__)))) . '/resources/resources.json';
+        $json_raw = @file_get_contents($json_path);
+        if ($json_raw) {
+            $data = json_decode($json_raw, true);
+            if ($data && isset($data['categories'])) {
+                $result = array(
+                    'ok' => true,
+                    'categories' => $data['categories'],
+                    'total_sources' => $data['total_sources'],
+                    'todays_events' => array(),
+                    'todays_count' => 0
+                );
+                _format_resources_response($result, $category, $show_today);
+                return;
+            }
+        }
+        send_response("Could not load resources. Visit:\nhttps://findtorontoevents.ca/resources/resources.html");
+        return;
+    }
+    
+    $result = json_decode($json, true);
+    if (!$result || !isset($result['ok']) || !$result['ok']) {
+        send_response("Error loading resources. Visit:\nhttps://findtorontoevents.ca/resources/resources.html");
+        return;
+    }
+    
+    _format_resources_response($result, $category, $show_today);
+}
+
+function _format_resources_response($result, $category, $show_today) {
+    $content = "";
+    
+    if ($show_today && isset($result['todays_events']) && count($result['todays_events']) > 0) {
+        $content .= "**🗓️ Happening Today in Toronto**\n";
+        if (isset($result['today_date'])) {
+            $content .= "*" . $result['today_date'] . "*\n\n";
+        }
+        
+        $shown = 0;
+        foreach ($result['todays_events'] as $evt) {
+            if ($shown >= 15) break;
+            $emoji = isset($evt['category_emoji']) ? $evt['category_emoji'] : '📌';
+            $content .= $emoji . " **" . $evt['title'] . "**";
+            if (!empty($evt['price']) && $evt['price'] !== 'Check Site') {
+                $content .= " — " . $evt['price'];
+            }
+            $content .= "\n";
+            $content .= "   📍 " . $evt['source'];
+            if (!empty($evt['source_url'])) {
+                $content .= " • [Visit](" . $evt['source_url'] . ")";
+            }
+            $content .= "\n";
+            $shown++;
+        }
+        
+        if (count($result['todays_events']) > 15) {
+            $content .= "\n*...and " . (count($result['todays_events']) - 15) . " more — see all at the link below*\n";
+        }
+        
+        $content .= "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+    }
+    
+    if (!empty($category)) {
+        $found = false;
+        foreach ($result['categories'] as $cat) {
+            if (strtolower($cat['id']) === strtolower($category)) {
+                $found = true;
+                $content .= $cat['emoji'] . " **" . $cat['name'] . "**";
+                if (isset($cat['badge'])) $content .= " — " . $cat['badge'];
+                $content .= "\n\n";
+                
+                foreach ($cat['sources'] as $src) {
+                    $label = "**" . $src['name'] . "**";
+                    if (isset($src['badge'])) $label .= " `" . $src['badge'] . "`";
+                    $content .= $label . "\n";
+                    $content .= $src['description'] . "\n";
+                    $content .= "🔗 " . $src['url'] . "\n";
+                    
+                    if (isset($src['events']) && count($src['events']) > 0) {
+                        foreach ($src['events'] as $evt) {
+                            $content .= "  • " . $evt['title'] . " — " . $evt['date'];
+                            if (!empty($evt['price'])) $content .= " (" . $evt['price'] . ")";
+                            $content .= "\n";
+                        }
+                    }
+                    $content .= "\n";
+                }
+                break;
+            }
+        }
+        if (!$found) {
+            $content .= "Category not found. Use `/fc-resources` without a category to see all.\n";
+        }
+    } else {
+        $content .= "**🎯 Toronto Event Resources — 50+ Sources**\n\n";
+        
+        foreach ($result['categories'] as $cat) {
+            $source_count = isset($cat['sources']) ? count($cat['sources']) : 0;
+            $content .= $cat['emoji'] . " **" . $cat['name'] . "** (" . $source_count . " sources)\n";
+            
+            $top_sources = array();
+            $limit = 3;
+            $idx = 0;
+            foreach ($cat['sources'] as $src) {
+                if ($idx >= $limit) break;
+                $top_sources[] = "[" . $src['name'] . "](" . $src['url'] . ")";
+                $idx++;
+            }
+            $content .= "   " . implode(' • ', $top_sources);
+            if ($source_count > $limit) {
+                $content .= " + " . ($source_count - $limit) . " more";
+            }
+            $content .= "\n\n";
+        }
+        
+        $content .= "─────────────────────\n";
+        $content .= "💡 Use `/fc-resources category:<name>` for detailed listings!\n";
+        $content .= "💡 Use `/fc-resources today:True` to see what's on today!\n";
+    }
+    
+    $content .= "\n🌐 **Full page:** https://findtorontoevents.ca/resources/resources.html";
+    
+    send_response($content);
+}
+
 function handle_help_command() {
     $content = "**FindTorontoEvents Bot — All Commands**\n";
     $content .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
@@ -1901,6 +2046,7 @@ function handle_help_command() {
     
     $content .= "**📅 Events**\n";
     $content .= "`/events <search> [when]` - Find Toronto events\n";
+    $content .= "`/resources [category] [today]` - Browse 50+ event sources & today's events\n";
     $content .= "`/myevents` - See your saved events\n";
     $content .= "`/subscribe <category> [frequency]` - Auto-notifications\n";
     $content .= "`/unsubscribe <category>` - Stop auto-notifications\n";
@@ -2022,6 +2168,13 @@ function handle_info_command($feature) {
             'url' => 'https://findtorontoevents.ca/fc/#/accountability',
             'short' => 'Track habits, streaks & goals',
             'long' => "**🎯 Accountability Coach**\nhttps://findtorontoevents.ca/fc/#/accountability\n\nYour personal habit-building system:\n• **📋 Templates** — Gym, mental health, self-care & more\n• **🔥 Streaks** — Bronze → Silver → Gold → Diamond → Savage\n• **🛡️ Shields** — Protect streaks from one-day misses\n• **⏱️ Timers** — Track time-based activities\n• **📊 Dashboard** — Visual progress & insights\n• **🤝 Partners** — Accountability buddies\n\n**Discord Commands:**\n`/fc-coach dashboard` — View all tasks\n`/fc-coach setup taskname:gym` — Create a task\n`/fc-gym` — Log workouts\n`/fc-stats` — Track personal stats"
+        ),
+        'resources' => array(
+            'emoji' => '🎯',
+            'name' => 'Event Resources',
+            'url' => 'https://findtorontoevents.ca/resources/resources.html',
+            'short' => '50+ sources for finding Toronto events',
+            'long' => "**🎯 Toronto Event Resources**\nhttps://findtorontoevents.ca/resources/resources.html\n\nYour complete guide to finding events in the 6ix:\n• **🎫 Platforms** — Eventbrite, Meetup, Ticketmaster, StubHub, Fever\n• **📅 Calendars** — BlogTO, Destination Toronto, City of Toronto, NOW\n• **🎵 Music** — Massey Hall, Scotiabank Arena, Danforth Music Hall + 7 more\n• **🎭 Arts** — TIFF, AGO, ROM, Hot Docs, Luminato, Nuit Blanche\n• **🎪 Theatre** — Mirvish, Second City, Comedy Bar, Yuk Yuk's\n• **🏟️ Sports** — Blue Jays, Raptors, Maple Leafs, TFC, Argonauts\n• **🎪 Festivals** — CNE, Pride, Caribbean Carnival, Taste of the Danforth\n• **🍽️ Food** — Restaurant events, Craft Beer, Taste of Toronto\n• **📰 Media** — Toronto Star, CP24, Narcity, NOW Toronto\n\nUse `/fc-resources` to browse by category or see what's on today!"
         )
     );
     

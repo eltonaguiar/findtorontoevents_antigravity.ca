@@ -1,0 +1,170 @@
+name: Diagnose All Databases
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */12 * * *'  # Every 12 hours
+
+jobs:
+  check-health-monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check db_health_monitor.php
+        run: |
+          echo "=== Database Health Monitor ==="
+          RESP=$(curl -sf --max-time 60 \
+            "https://findtorontoevents.ca/tools/db_health_monitor.php?action=summary" \
+            || echo '{"ok":false,"error":"connection_failed"}')
+          
+          echo "$RESP" | python3 -m json.tool 2>/dev/null || echo "$RESP"
+          
+          # Check if we got valid data
+          echo "$RESP" | python3 -c "
+import json,sys
+try:
+    d=json.load(sys.stdin)
+    if d.get('ok'):
+        for db in d.get('databases',[]):
+            print(f\"\n{db['database']}:\")
+            print(f\"  Status: {db.get('status', 'unknown')}\")
+            print(f\"  Tables: {db.get('total_tables', 0)}\")
+            print(f\"  Populated: {db.get('populated', 0)}\")
+            print(f\"  Empty: {db.get('empty', 0)}\")
+            print(f\"  Total Rows: {db.get('total_rows', 0)}\")
+    else:
+        print('ERROR: Health monitor returned error')
+        print(d.get('error', 'Unknown error'))
+except Exception as e:
+    print(f'ERROR parsing response: {e}')
+"
+
+  diagnose-stocks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Stocks Database
+        run: |
+          echo "=== Stocks Database ==="
+          
+          # Check if live-monitor API is accessible
+          echo "Testing live-monitor API..."
+          curl -sf --max-time 30 \
+            "https://findtorontoevents.ca/live-monitor/api/command_center.php?action=status" \
+            -H "User-Agent: GitHub-Actions-Diagnose/1.0" | head -c 500 || echo "API not accessible"
+          
+          echo ""
+          echo "Testing goldmine tracker..."
+          curl -sf --max-time 30 \
+            "https://findtorontoevents.ca/live-monitor/api/goldmine_tracker.php?action=status" \
+            -H "User-Agent: GitHub-Actions-Diagnose/1.0" | head -c 500 || echo "API not accessible"
+
+  diagnose-memecoin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Memecoin APIs
+        run: |
+          echo "=== Memecoin Database APIs ==="
+          
+          APIs=(
+            "https://findtorontoevents.ca/findcryptopairs/api/hybrid_engine.php?action=status"
+            "https://findtorontoevents.ca/findcryptopairs/api/meme_scanner.php?action=status"
+            "https://findtorontoevents.ca/findcryptopairs/api/tv_technicals.php?action=status"
+            "https://findtorontoevents.ca/findcryptopairs/api/expert_consensus.php?action=status"
+            "https://findtorontoevents.ca/findcryptopairs/api/kimi_enhanced.php?action=status"
+          )
+          
+          for API in "${APIs[@]}"; do
+            echo ""
+            echo "Testing: $API"
+            RESP=$(curl -sf --max-time 30 \
+              "$API" \
+              -H "User-Agent: GitHub-Actions-Diagnose/1.0" \
+              -w "\nHTTP_CODE: %{http_code}\n" 2>&1)
+            
+            HTTP_CODE=$(echo "$RESP" | grep "HTTP_CODE:" | cut -d: -f2 | tr -d ' ')
+            echo "HTTP Status: $HTTP_CODE"
+            
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "Response: $(echo "$RESP" | head -c 300)"
+            elif [ "$HTTP_CODE" = "403" ]; then
+              echo "❌ BLOCKED - ModSecurity may be blocking GitHub Actions"
+            elif [ "$HTTP_CODE" = "404" ]; then
+              echo "❌ NOT FOUND - Endpoint doesn't exist"
+            else
+              echo "⚠️ Status: $HTTP_CODE"
+            fi
+          done
+
+  diagnose-sportsbet:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Sports Betting Database
+        run: |
+          echo "=== Sports Betting Database ==="
+          
+          echo "Testing sports data bridge..."
+          curl -sf --max-time 30 \
+            "https://findtorontoevents.ca/live-monitor/api/sports_data_bridge.php?action=status" \
+            -H "User-Agent: GitHub-Actions-Diagnose/1.0" | head -c 500 || echo "API not accessible"
+          
+          echo ""
+          echo "Testing NBA stats..."
+          curl -sf --max-time 30 \
+            "https://findtorontoevents.ca/live-monitor/api/nba_stats.php?action=status" \
+            -H "User-Agent: GitHub-Actions-Diagnose/1.0" | head -c 500 || echo "API not accessible"
+
+  diagnose-events:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Events Database
+        run: |
+          echo "=== Events Database ==="
+          
+          echo "Testing events status..."
+          curl -sf --max-time 30 \
+            "https://findtorontoevents.ca/fc/api/events_status.php" \
+            -H "User-Agent: GitHub-Actions-Diagnose/1.0" | head -c 500 || echo "API not accessible"
+          
+          echo ""
+          echo "Testing events sync..."
+          curl -sf --max-time 30 \
+            "https://findtorontoevents.ca/fc/api/events_sync.php" \
+            -H "User-Agent: GitHub-Actions-Diagnose/1.0" | head -c 500 || echo "API not accessible"
+
+  diagnose-movies:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Movies/Trailers Database
+        run: |
+          echo "=== Movies/Trailers Database ==="
+          
+          echo "Testing movies API..."
+          curl -sf --max-time 30 \
+            "https://findtorontoevents.ca/TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS/api/movies.php?action=count" \
+            -H "User-Agent: GitHub-Actions-Diagnose/1.0" | head -c 500 || echo "API not accessible"
+          
+          echo ""
+          echo "Testing trailers API..."
+          curl -sf --max-time 30 \
+            "https://findtorontoevents.ca/TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS/api/trailers.php?action=count" \
+            -H "User-Agent: GitHub-Actions-Diagnose/1.0" | head -c 500 || echo "API not accessible"
+
+  summary:
+    runs-on: ubuntu-latest
+    needs: [check-health-monitor, diagnose-stocks, diagnose-memecoin, diagnose-sportsbet, diagnose-events, diagnose-movies]
+    if: always()
+    steps:
+      - name: Summary
+        run: |
+          echo "=== Diagnosis Complete ==="
+          echo ""
+          echo "Next Steps:"
+          echo "1. Check the logs above for each database"
+          echo "2. Look for HTTP 403 errors (ModSecurity blocking)"
+          echo "3. Look for HTTP 404 errors (missing endpoints)"
+          echo "4. Check server error logs for database connection issues"
+          echo ""
+          echo "Common fixes:"
+          echo "- Whitelist GitHub Actions IPs in ModSecurity"
+          echo "- Verify database credentials in db_config.php files"
+          echo "- Ensure API endpoints auto-create tables"
+          echo "- Check that database sync from JSON files is working"
