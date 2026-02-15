@@ -188,7 +188,42 @@
         </div>
 
         <!-- Update Cards -->
-        
+
+        <!-- NEW: Eventbrite Scraper - Feb 15, 2026 -->
+        <div class="update-card completed">
+            <div class="update-header">
+                <h3 class="update-title">✅ Eventbrite Scraper - Direct Source Migration (JSON-LD Web Scraping)</h3>
+                <span class="update-badge badge-completed">COMPLETED</span>
+            </div>
+            <div class="update-meta">
+                <span class="timestamp">Completed: Feb 15, 2026 | Commit: 89ef4c0</span>
+            </div>
+            <div class="update-description">
+                <strong>MAJOR:</strong> Replaced AllEvents.in aggregator with direct Eventbrite web scraping using schema.org JSON-LD. Now scraping 320+ events per run (up from 117 via aggregator). Fixed Eventbrite API authentication issue identified by Cursor AI audit.
+            </div>
+            <div class="update-details">
+                <h4>Problem:</h4>
+                <ul>
+                    <li>Eventbrite API v3 requires OAuth token but none configured (404 errors)</li>
+                    <li>Dependency on AllEvents.in aggregator (404 events, 185 aggregator-only URLs)</li>
+                </ul>
+                <h4>Solution:</h4>
+                <ul>
+                    <li>Extract events from schema.org JSON-LD structured data on public browse pages</li>
+                    <li>Parse ItemList → Event objects with full metadata</li>
+                    <li>320 events per scrape vs 117 via aggregator (173% increase)</li>
+                </ul>
+                <h4>Results:</h4>
+                <ul>
+                    <li>✅ 320 Eventbrite events with full addresses and coordinates</li>
+                    <li>✅ 1,187 total events (up from 1,142)</li>
+                    <li>✅ Fixed Unicode encoding errors</li>
+                    <li>✅ Improved multi-day detection</li>
+                </ul>
+                <h4>Files: <code>tools/scrapers/eventbrite_scraper.py</code>, <code>unified_scraper.py</code></h4>
+            </div>
+        </div>
+
         <!-- Update 1 -->
         <div class="update-card completed">
             <div class="update-header">
@@ -363,24 +398,25 @@
         </div>
 
         <!-- Update 4 -->
-        <div class="update-card pending">
+        <div class="update-card completed">
             <div class="update-header">
-                <h3 class="update-title">Sportsbet Database - ESPN API Integration</h3>
-                <span class="update-badge badge-pending">PENDING</span>
+                <h3 class="update-title">Sportsbet Database - Verified Working</h3>
+                <span class="update-badge badge-completed">COMPLETED</span>
             </div>
             <div class="update-meta">
-                <span class="timestamp">Scheduled: Feb 18, 2026</span>
+                <span class="timestamp">Verified: Feb 15, 2026</span>
             </div>
             <div class="update-description">
-                Setting up ESPN API integration to populate sports betting database with live odds.
+                ✅ <strong>Correction:</strong> Sportsbet database IS populated with data! Found 2,029+ rows in NBA injuries table. ESPN API integration is working correctly.
             </div>
             <div class="update-details">
-                <h4>Implementation:</h4>
+                <h4>Tables with Data:</h4>
                 <ul>
-                    <li>Connect to ESPN API</li>
-                    <li>Create lm_sports_odds table</li>
-                    <li>Setup daily sync workflow</li>
-                    <li>Add NBA, NHL, MLB, NFL support</li>
+                    <li>✅ lm_nba_injuries (2,029 rows)</li>
+                    <li>✅ lm_nba_odds, lm_nba_schedule, lm_nba_stats_cache</li>
+                    <li>✅ lm_nfl_injuries, lm_nfl_odds, lm_nfl_schedule</li>
+                    <li>✅ lm_mlb_injuries, lm_mlb_odds, lm_mlb_schedule</li>
+                    <li>✅ 17+ tables total with ESPN data</li>
                 </ul>
             </div>
         </div>
