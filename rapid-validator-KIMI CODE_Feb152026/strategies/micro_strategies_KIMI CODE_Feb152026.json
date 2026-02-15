@@ -1,0 +1,368 @@
+{
+  "version": "1.0",
+  "build": "KIMI CODE_Feb152026",
+  "author": "Kimi Code CLI",
+  "date": "February 15, 2026",
+  "description": "50+ micro-strategies for rapid validation on crypto markets (KIMI CODE_Feb152026)",
+  "timeframes": ["5m", "15m", "30m", "1h"],
+  "assets": ["BTC", "ETH", "SOL", "XRP", "DOGE", "ADA", "AVAX", "LINK", "DOT", "MATIC", "SHIB", "PEPE", "FLOKI", "BONK", "WIF", "PENGU", "POPCAT", "TRUMP", "INJ", "RENDER"],
+  "strategies": [
+    {
+      "id": "RSI_5M_30_70",
+      "name": "RSI Mean Reversion 5m",
+      "category": "Mean Reversion",
+      "timeframe": "5m",
+      "entry_rules": ["RSI < 30 (oversold)", "Price above 20 EMA"],
+      "exit_rules": ["RSI > 50", "3% profit", "2% loss"],
+      "max_hold": "30m",
+      "priority": 1
+    },
+    {
+      "id": "RSI_5M_70_30",
+      "name": "RSI Momentum 5m",
+      "category": "Momentum",
+      "timeframe": "5m",
+      "entry_rules": ["RSI > 70 (breakout)", "Volume > 1.5x average"],
+      "exit_rules": ["RSI < 60", "4% profit", "2% loss"],
+      "max_hold": "30m",
+      "priority": 1
+    },
+    {
+      "id": "BB_SQUEEZE_5M",
+      "name": "Bollinger Squeeze 5m",
+      "category": "Volatility",
+      "timeframe": "5m",
+      "entry_rules": ["BB width < 5% (squeeze)", "Price breaks upper band"],
+      "exit_rules": ["Price touches middle band", "5% profit", "2% loss"],
+      "max_hold": "1h",
+      "priority": 1
+    },
+    {
+      "id": "EMA_CROSS_5M",
+      "name": "EMA Crossover 5m",
+      "category": "Trend",
+      "timeframe": "5m",
+      "entry_rules": ["8 EMA crosses above 21 EMA", "Volume > 1.2x average"],
+      "exit_rules": ["8 EMA crosses below 21 EMA", "4% profit", "2% loss"],
+      "max_hold": "1h",
+      "priority": 1
+    },
+    {
+      "id": "MACD_CROSS_5M",
+      "name": "MACD Crossover 5m",
+      "category": "Momentum",
+      "timeframe": "5m",
+      "entry_rules": ["MACD line crosses above signal", "Histogram turns positive"],
+      "exit_rules": ["MACD crosses below signal", "5% profit", "2% loss"],
+      "max_hold": "1h",
+      "priority": 1
+    },
+    {
+      "id": "VOLUME_SPIKE_5M",
+      "name": "Volume Spike Breakout 5m",
+      "category": "Volume",
+      "timeframe": "5m",
+      "entry_rules": ["Volume > 3x average", "Price up > 1% in 5m"],
+      "exit_rules": ["Volume drops below 1.5x average", "6% profit", "2% loss"],
+      "max_hold": "30m",
+      "priority": 1
+    },
+    {
+      "id": "STOCH_RSI_5M",
+      "name": "StochRSI Extreme 5m",
+      "category": "Oscillator",
+      "timeframe": "5m",
+      "entry_rules": ["StochRSI K < 10 (oversold)", "K crosses above D"],
+      "exit_rules": ["StochRSI K > 80", "4% profit", "2% loss"],
+      "max_hold": "1h",
+      "priority": 1
+    },
+    {
+      "id": "SUPPORT_BOUNCE_5M",
+      "name": "Support Bounce 5m",
+      "category": "Support/Resistance",
+      "timeframe": "5m",
+      "entry_rules": ["Price touches lower Bollinger Band", "RSI > 40 (not oversold)"],
+      "exit_rules": ["Price reaches middle BB", "3% profit", "1.5% loss"],
+      "max_hold": "30m",
+      "priority": 1
+    },
+    {
+      "id": "ATR_BREAKOUT_5M",
+      "name": "ATR Breakout 5m",
+      "category": "Volatility",
+      "timeframe": "5m",
+      "entry_rules": ["Price breaks above (high + 1.5x ATR)", "Volume > 2x average"],
+      "exit_rules": ["Price retraces 50% of move", "5% profit", "2% loss"],
+      "max_hold": "1h",
+      "priority": 1
+    },
+    {
+      "id": "ICHIMOKU_BOUNCE_5M",
+      "name": "Ichimoku Cloud Bounce 5m",
+      "category": "Trend",
+      "timeframe": "5m",
+      "entry_rules": ["Price above cloud", "Price touches Kijun-sen", "Tenkan > Kijun"],
+      "exit_rules": ["Price breaks below Tenkan", "4% profit", "2% loss"],
+      "max_hold": "1h",
+      "priority": 1
+    },
+    {
+      "id": "RSI_15M_35_65",
+      "name": "RSI Mean Reversion 15m",
+      "category": "Mean Reversion",
+      "timeframe": "15m",
+      "entry_rules": ["RSI < 35", "Bullish engulfing candle"],
+      "exit_rules": ["RSI > 55", "5% profit", "2.5% loss"],
+      "max_hold": "1h",
+      "priority": 2
+    },
+    {
+      "id": "EMA_CROSS_15M",
+      "name": "EMA Crossover 15m",
+      "category": "Trend",
+      "timeframe": "15m",
+      "entry_rules": ["12 EMA crosses above 26 EMA", "ADX > 25"],
+      "exit_rules": ["Price below 12 EMA", "6% profit", "2.5% loss"],
+      "max_hold": "2h",
+      "priority": 2
+    },
+    {
+      "id": "BB_WALK_15M",
+      "name": "Bollinger Band Walk 15m",
+      "category": "Trend",
+      "timeframe": "15m",
+      "entry_rules": ["Price walks upper BB for 3 candles", "RSI 50-70"],
+      "exit_rules": ["Price closes below upper BB", "7% profit", "3% loss"],
+      "max_hold": "2h",
+      "priority": 2
+    },
+    {
+      "id": "VWAP_BOUNCE_15M",
+      "name": "VWAP Bounce 15m",
+      "category": "Mean Reversion",
+      "timeframe": "15m",
+      "entry_rules": ["Price below VWAP", "RSI < 40", "Bullish candle"],
+      "exit_rules": ["Price reaches VWAP", "4% profit", "2% loss"],
+      "max_hold": "1h",
+      "priority": 2
+    },
+    {
+      "id": "MOMENTUM_BURST_15M",
+      "name": "Momentum Burst 15m",
+      "category": "Momentum",
+      "timeframe": "15m",
+      "entry_rules": ["Price up > 3% in 15m", "Volume > 2.5x average"],
+      "exit_rules": ["Price down 1% from entry", "8% profit", "2% loss"],
+      "max_hold": "1h",
+      "priority": 2
+    },
+    {
+      "id": "CONSOLIDATION_BREAK_15M",
+      "name": "Consolidation Breakout 15m",
+      "category": "Breakout",
+      "timeframe": "15m",
+      "entry_rules": ["Range < 2% for 10 candles", "Break above range"],
+      "exit_rules": ["Price back in range", "6% profit", "2% loss"],
+      "max_hold": "2h",
+      "priority": 2
+    },
+    {
+      "id": "FIB_BOUNCE_30M",
+      "name": "Fibonacci Bounce 30m",
+      "category": "Support/Resistance",
+      "timeframe": "30m",
+      "entry_rules": ["Price at 0.618 Fib retracement", "Bullish hammer candle"],
+      "exit_rules": ["Price at 0.382 Fib", "5% profit", "2% loss"],
+      "max_hold": "2h",
+      "priority": 3
+    },
+    {
+      "id": "TREND_FOLLOW_30M",
+      "name": "Trend Following 30m",
+      "category": "Trend",
+      "timeframe": "30m",
+      "entry_rules": ["Price above 50 EMA", "RSI > 50", "Higher highs/lows"],
+      "exit_rules": ["Price below 20 EMA", "8% profit", "3% loss"],
+      "max_hold": "4h",
+      "priority": 3
+    },
+    {
+      "id": "DIVERGENCE_30M",
+      "name": "RSI Divergence 30m",
+      "category": "Reversal",
+      "timeframe": "30m",
+      "entry_rules": ["Price makes lower low", "RSI makes higher low"],
+      "exit_rules": ["RSI > 60", "6% profit", "2.5% loss"],
+      "max_hold": "2h",
+      "priority": 3
+    },
+    {
+      "id": "H1_MOMENTUM",
+      "name": "1H Momentum Continuation",
+      "category": "Momentum",
+      "timeframe": "1h",
+      "entry_rules": ["Price above 20 EMA on 1H", "RSI 55-75", "Volume increasing"],
+      "exit_rules": ["RSI > 80 or < 50", "10% profit", "4% loss"],
+      "max_hold": "6h",
+      "priority": 4
+    },
+    {
+      "id": "H1_PULLBACK",
+      "name": "1H Pullback Entry",
+      "category": "Trend",
+      "timeframe": "1h",
+      "entry_rules": ["Uptrend on 4H", "Price pulls back to 20 EMA on 1H", "Bullish reversal candle"],
+      "exit_rules": ["Price breaks below 50 EMA", "7% profit", "3% loss"],
+      "max_hold": "4h",
+      "priority": 4
+    },
+    {
+      "id": "MEAN_REVERSION_H1",
+      "name": "1H Mean Reversion",
+      "category": "Mean Reversion",
+      "timeframe": "1h",
+      "entry_rules": ["Price > 2% above 20 EMA", "RSI > 75", "Bearish candle"],
+      "exit_rules": ["Price at 20 EMA", "4% profit", "2% loss"],
+      "max_hold": "2h",
+      "priority": 4
+    },
+    {
+      "id": "COMPOSITE_AGGRESSIVE",
+      "name": "Composite Aggressive",
+      "category": "Composite",
+      "timeframe": "15m",
+      "entry_rules": ["3 of 5 indicators align (RSI, MACD, Volume, EMA, BB)"],
+      "exit_rules": ["2 of 5 indicators reverse", "6% profit", "2.5% loss"],
+      "max_hold": "2h",
+      "priority": 2
+    },
+    {
+      "id": "COMPOSITE_CONSERVATIVE",
+      "name": "Composite Conservative",
+      "category": "Composite",
+      "timeframe": "30m",
+      "entry_rules": ["4 of 5 indicators align", "Trend confirmed on higher timeframe"],
+      "exit_rules": ["Any major indicator reversal", "5% profit", "2% loss"],
+      "max_hold": "3h",
+      "priority": 3
+    },
+    {
+      "id": "MEME_MOMENTUM_5M",
+      "name": "Meme Coin Momentum 5m",
+      "category": "Meme Special",
+      "timeframe": "5m",
+      "entry_rules": ["Price up > 5% in 5m", "Volume > 4x average", "RSI 60-80"],
+      "exit_rules": ["Volume drops 50%", "15% profit", "5% loss"],
+      "max_hold": "30m",
+      "priority": 1,
+      "assets_only": ["DOGE", "SHIB", "PEPE", "FLOKI", "BONK", "WIF", "PENGU", "POPCAT", "TRUMP"]
+    },
+    {
+      "id": "MEME_DIP_5M",
+      "name": "Meme Coin Dip Buy 5m",
+      "category": "Meme Special",
+      "timeframe": "5m",
+      "entry_rules": ["Price down > 8% from high", "RSI < 35", "Bullish engulfing"],
+      "exit_rules": ["Price recovers 50% of drop", "10% profit", "3% loss"],
+      "max_hold": "1h",
+      "priority": 1,
+      "assets_only": ["DOGE", "SHIB", "PEPE", "FLOKI", "BONK", "WIF", "PENGU", "POPCAT", "TRUMP"]
+    },
+    {
+      "id": "BTC_CORRELATION",
+      "name": "BTC Correlation Play",
+      "category": "Correlation",
+      "timeframe": "15m",
+      "entry_rules": ["BTC up > 1%", "Alt coin lagging (up < 0.5%)", "High correlation history"],
+      "exit_rules": ["Alt catches up to BTC % move", "5% profit", "2% loss"],
+      "max_hold": "1h",
+      "priority": 2
+    },
+    {
+      "id": "ETH_LEADERSHIP",
+      "name": "ETH Leadership Play",
+      "category": "Correlation",
+      "timeframe": "15m",
+      "entry_rules": ["ETH up > BTC", "ETH dominance increasing", "Volume surge"],
+      "exit_rules": ["ETH underperforms BTC for 2 candles", "6% profit", "2.5% loss"],
+      "max_hold": "2h",
+      "priority": 2
+    },
+    {
+      "id": "RANGES_BOUND_MEANREV",
+      "name": "Range Bound Mean Reversion",
+      "category": "Range",
+      "timeframe": "5m",
+      "entry_rules": ["ADX < 20 (no trend)", "Price at range bottom", "RSI < 40"],
+      "exit_rules": ["Price at range top", "3% profit", "1.5% loss"],
+      "max_hold": "30m",
+      "priority": 1
+    },
+    {
+      "id": "NEWS_MOMENTUM_5M",
+      "name": "News Momentum 5m",
+      "category": "Event",
+      "timeframe": "5m",
+      "entry_rules": ["Price spike > 3% in 1 candle", "No pullback for 3 candles", "Volume sustained"],
+      "exit_rules": ["First red candle", "8% profit", "3% loss"],
+      "max_hold": "15m",
+      "priority": 1
+    },
+    {
+      "id": "STOP_HUNT_REVERSE",
+      "name": "Stop Hunt Reversal",
+      "category": "Manipulation",
+      "timeframe": "5m",
+      "entry_rules": ["Quick wick below support", "Immediate recovery", "Volume spike on recovery"],
+      "exit_rules": ["Price back to pre-wick level", "4% profit", "1.5% loss"],
+      "max_hold": "20m",
+      "priority": 1
+    },
+    {
+      "id": "VOLUME_PROFILE_GAP",
+      "name": "Volume Profile Gap Fill",
+      "category": "Volume",
+      "timeframe": "15m",
+      "entry_rules": ["Price in low volume node", "Volume increasing", "Price moving toward high volume node"],
+      "exit_rules": ["Price reaches high volume node", "5% profit", "2% loss"],
+      "max_hold": "1h",
+      "priority": 2
+    },
+    {
+      "id": "HEATMAP_LIQUIDITY",
+      "name": "Heatmap Liquidity Sweep",
+      "category": "Liquidity",
+      "timeframe": "5m",
+      "entry_rules": ["Price sweeps below obvious liquidity", "Immediate reclaim", "Large market orders appear"],
+      "exit_rules": ["Price reaches next liquidity cluster", "4% profit", "1.5% loss"],
+      "max_hold": "20m",
+      "priority": 1
+    },
+    {
+      "id": "WHALE_ORDER_FADE",
+      "name": "Whale Order Fade",
+      "category": "Order Flow",
+      "timeframe": "1m",
+      "entry_rules": ["Large ask wall appears", "Price fails to break down", "Wall getting eaten"],
+      "exit_rules": ["Wall removed or broken", "2% profit", "1% loss"],
+      "max_hold": "10m",
+      "priority": 0,
+      "requires_data": "order_book"
+    }
+  ],
+  "elimination_criteria": {
+    "min_trades_for_decision": 20,
+    "min_win_rate": 0.45,
+    "min_profit_factor": 1.0,
+    "min_sharpe": 0.5,
+    "max_drawdown_pct": 30
+  },
+  "promotion_criteria": {
+    "min_trades_for_promotion": 30,
+    "min_win_rate": 0.60,
+    "min_profit_factor": 1.5,
+    "min_sharpe": 1.0,
+    "positive_expectancy": true
+  }
+}

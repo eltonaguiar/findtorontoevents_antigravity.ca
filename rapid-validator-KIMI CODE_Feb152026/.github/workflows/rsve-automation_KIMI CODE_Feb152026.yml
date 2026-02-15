@@ -1,0 +1,83 @@
+# Rapid Strategy Validation Engine - GitHub Actions Automation
+# VERSION: KIMI CODE_Feb152026
+# AUTHOR: Kimi Code CLI
+# DATE: February 15, 2026
+#
+# This workflow automates signal generation and resolution
+# Runs every 5 minutes during market hours
+
+name: RSVE Automation - KIMI CODE_Feb152026
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  RSVE_VERSION: KIMI CODE_Feb152026
+
+jobs:
+  generate-signals:
+    runs-on: ubuntu-latest
+    name: Generate Signals (${{ env.RSVE_VERSION }})
+    
+    steps:
+      - name: Generate New Signals
+        run: |
+          curl -s "${{ secrets.RSVE_BASE_URL }}/rapid-validator-KIMI CODE_Feb152026/api/rapid_signal_engine_KIMI CODE_Feb152026.php?action=generate" \
+            -H "User-Agent: RSVE-Automation-KIMI-CODE-Feb152026" \
+            -H "X-RSVE-Version: KIMI CODE_Feb152026" \
+            --max-time 30
+        continue-on-error: true
+
+  scan-markets:
+    runs-on: ubuntu-latest
+    name: Scan & Resolve (${{ env.RSVE_VERSION }})
+    needs: generate-signals
+    
+    steps:
+      - name: Resolve Completed Signals
+        run: |
+          curl -s "${{ secrets.RSVE_BASE_URL }}/rapid-validator-KIMI CODE_Feb152026/api/rapid_signal_engine_KIMI CODE_Feb152026.php?action=scan" \
+            -H "User-Agent: RSVE-Automation-KIMI-CODE-Feb152026" \
+            -H "X-RSVE-Version: KIMI CODE_Feb152026" \
+            --max-time 30
+        continue-on-error: true
+
+  hourly-evaluation:
+    runs-on: ubuntu-latest
+    name: Strategy Evaluation (${{ env.RSVE_VERSION }})
+    
+    steps:
+      - name: Run Elimination Check
+        run: |
+          curl -s "${{ secrets.RSVE_BASE_URL }}/rapid-validator-KIMI CODE_Feb152026/api/auto_eliminator_KIMI CODE_Feb152026.php?action=evaluate" \
+            -H "User-Agent: RSVE-Automation-KIMI-CODE-Feb152026" \
+            -H "X-RSVE-Version: KIMI CODE_Feb152026" \
+            --max-time 60
+        continue-on-error: true
+
+  notify-results:
+    runs-on: ubuntu-latest
+    name: Send Daily Summary (${{ env.RSVE_VERSION }})
+    if: github.event.schedule == '0 0 * * *'  # Only at midnight UTC
+    
+    steps:
+      - name: Fetch Championship Round
+        id: championship
+        run: |
+          RESULT=$(curl -s "${{ secrets.RSVE_BASE_URL }}/rapid-validator-KIMI CODE_Feb152026/api/auto_eliminator_KIMI CODE_Feb152026.php?action=championship")
+          echo "result=$RESULT" >> $GITHUB_OUTPUT
+      
+      - name: Send Discord Notification
+        if: secrets.DISCORD_WEBHOOK != ''
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            🚀 RSVE Daily Summary (KIMI CODE_Feb152026)
+            
+            Championship Round Update:
+            ${{ steps.championship.outputs.result }}
+            
+            View full dashboard: ${{ secrets.RSVE_BASE_URL }}/rapid-validator-KIMI CODE_Feb152026/frontend/rapid_dashboard_KIMI CODE_Feb152026.html
