@@ -6436,6 +6436,98 @@ a:hover { text-decoration: underline; }
   </div>
 </div>
 
+<!-- Feb 16, 2026 — Quality-Gated Discord Alert Bot (KIMI CODE_Feb162026) -->
+<div class="update-entry" style="--dot-color: #22d3ee;" data-tags="discord,alerts,quality-gates,validation,trading,crypto,rsve,auto-suppress,confidence-tiers,position-sizing" data-category="crypto,trading,alerts" data-types="feature">
+  <div class="update-date">Feb 16, 2026</div>
+  <div class="update-title">
+    <span class="badge badge-feature">Major</span>
+    <span class="badge" style="background:rgba(34,211,238,0.15);color:#22d3ee;border:1px solid rgba(34,211,238,0.2)">SYSTEM</span>
+    Quality-Gated Discord Alert Bot — "Are We Sure?" Edition (KIMI CODE_Feb162026)
+  </div>
+  <div class="update-body">
+    <p style="margin-bottom:12px;color:#22d3ee;font-size:15px;"><strong>Only sends Discord alerts when we have statistical evidence. Suppresses "early guesses" — only validated strategies (50+ trades, 55%+ WR) get alerts with clear "how sure" indicators.</strong></p>
+
+    <h4 style="color:#22d3ee;margin:18px 0 8px;font-size:15px;">🎯 Core Principle: Quality Over Quantity</h4>
+    <p>Most Discord alert services spam every signal. We do the opposite — <strong>suppress early guesses, only alert when sure</strong>. Each alert passes 5 quality gates and includes position sizing based on validation level.</p>
+
+    <h4 style="color:#f59e0b;margin:18px 0 8px;font-size:15px;">🏆 Confidence Tiers</h4>
+    <table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:8px;">
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.15);"><th style="padding:4px;text-align:left;color:#888;">Tier</th><th style="padding:4px;text-align:left;color:#888;">Requirements</th><th style="padding:4px;text-align:left;color:#888;">Discord Action</th></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;color:#FFD700;">🏆 Institutional</td><td style="padding:3px;">500+ trades, 70%+ WR</td><td style="padding:3px;color:#22c55e;"><strong>@everyone</strong> ping</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;color:#22c55e;">🎯 Certain</td><td style="padding:3px;">250+ trades, 65%+ WR</td><td style="padding:3px;color:#22c55e;"><strong>@here</strong> ping</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;color:#22c55e;">✅ Proven</td><td style="padding:3px;">100+ trades, 60%+ WR</td><td style="padding:3px;">Normal alert</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;color:#f59e0b;">⚠️ Validated</td><td style="padding:3px;">50+ trades, 55%+ WR</td><td style="padding:3px;">Alert + caution note</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;color:#667;">🔍 Emerging</td><td style="padding:3px;">30-50 trades</td><td style="padding:3px;color:#ef4444;">SUPPRESSED</td></tr>
+      <tr><td style="padding:3px;font-weight:600;color:#888;">❌ Early Guess</td><td style="padding:3px;">&lt;30 trades</td><td style="padding:3px;color:#ef4444;">SUPPRESSED</td></tr>
+    </table>
+
+    <h4 style="color:#ef4444;margin:18px 0 8px;font-size:15px;">🚫 Quality Gates (Suppress "Early Guesses")</h4>
+    <table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:8px;">
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.15);"><th style="padding:4px;text-align:left;color:#888;">Check</th><th style="padding:4px;text-align:left;color:#888;">Threshold</th><th style="padding:4px;text-align:left;color:#888;">Result</th></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;">RSVE Week 1</td><td style="padding:3px;">&lt;30 trades</td><td style="padding:3px;color:#ef4444;">SUPPRESSED — "Early guess"</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;">Minimum Trades</td><td style="padding:3px;">&lt;50 trades</td><td style="padding:3px;color:#ef4444;">SUPPRESSED — "Still validating"</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;">Win Rate</td><td style="padding:3px;">&lt;55%</td><td style="padding:3px;color:#ef4444;">SUPPRESSED — "Underperforming"</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;font-weight:600;">Consecutive Losses</td><td style="padding:3px;">5+ losses</td><td style="padding:3px;color:#ef4444;">SUPPRESSED — "Possible broken strategy"</td></tr>
+      <tr><td style="padding:3px;font-weight:600;">Sharpe Ratio</td><td style="padding:3px;">&lt;0.5 (100+ trades)</td><td style="padding:3px;color:#ef4444;">SUPPRESSED — "Poor risk-adjusted returns"</td></tr>
+    </table>
+
+    <h4 style="color:#22c55e;margin:18px 0 8px;font-size:15px;">📊 Discord Alert Features</h4>
+    <ul style="margin-left:16px;">
+      <li><strong>Adjusted Confidence:</strong> Base confidence × tier multiplier</li>
+      <li><strong>"How Sure" Statement:</strong> Clear language on validation level</li>
+      <li><strong>Strategy Stats:</strong> Total trades, win rate, Sharpe ratio</li>
+      <li><strong>Position Sizing:</strong> Auto-recommended based on tier (0.5% to 3%)</li>
+      <li><strong>Role Mentions:</strong> @everyone for institutional, @here for certain</li>
+    </ul>
+
+    <h4 style="color:#a855f7;margin:18px 0 8px;font-size:15px;">🔄 RSVE Pipeline Integration</h4>
+    <table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:8px;">
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.15);"><th style="padding:4px;text-align:left;color:#888;">Phase</th><th style="padding:4px;text-align:left;color:#888;">Trades</th><th style="padding:4px;text-align:left;color:#888;">Discord Status</th></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;">Week 1 (RSVE)</td><td style="padding:3px;">0-30</td><td style="padding:3px;color:#ef4444;">🚫 Auto-suppressed</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;">Week 2 (RSVE)</td><td style="padding:3px;">30-50</td><td style="padding:3px;color:#ef4444;">🚫 Auto-suppressed</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;">Week 3+</td><td style="padding:3px;">50+</td><td style="padding:3px;color:#f59e0b;">⚠️ Validated alerts</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;">Month 2-3</td><td style="padding:3px;">100+</td><td style="padding:3px;color:#22c55e;">✅ Normal alerts</td></tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:3px;">Month 6+</td><td style="padding:3px;">250+</td><td style="padding:3px;color:#22c55e;">🎯 Boosted + @here</td></tr>
+      <tr><td style="padding:3px;">Year 1+</td><td style="padding:3px;">500+</td><td style="padding:3px;color:#FFD700;">🏆 @everyone ping</td></tr>
+    </table>
+
+    <h4 style="color:#22d3ee;margin:18px 0 8px;font-size:15px;">🚀 Quick Integration</h4>
+    <pre style="background:rgba(0,0,0,0.3);padding:12px;border-radius:6px;font-size:12px;overflow-x:auto;">from discord_alerts_quality import send_quality_alert
+
+sent, msg = send_quality_alert(
+    symbol="BTCUSDT",
+    signal_type="buy",
+    entry=50000,
+    stop=49000,
+    target=52000,
+    strategy_id="BTC_CME_GAP_V2",  # Must have 50+ trades
+    base_confidence=85
+)
+
+if not sent:
+    print(f"Suppressed: {msg}")  # Logs why, no Discord spam</pre>
+
+    <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+      <a href="/findcryptopairs/alpha_signals/alert_system_v2_quality_gates.py" style="display:inline-flex;align-items:center;gap:4px;background:rgba(34,211,238,0.12);color:#22d3ee;padding:6px 14px;border-radius:6px;font-size:13px;border:1px solid rgba(34,211,238,0.2);">🐍 Quality Gates Code</a>
+      <a href="/findcryptopairs/alpha_signals/discord_alerts_quality.py" style="display:inline-flex;align-items:center;gap:4px;background:rgba(34,211,238,0.12);color:#22d3ee;padding:6px 14px;border-radius:6px;font-size:13px;border:1px solid rgba(34,211,238,0.2);">💬 Discord Bot</a>
+      <a href="/findcryptopairs/alpha_signals/QUALITY_ALERT_SETUP.md" style="display:inline-flex;align-items:center;gap:4px;background:rgba(168,85,247,0.12);color:#a855f7;padding:6px 14px;border-radius:6px;font-size:13px;border:1px solid rgba(168,85,247,0.2);">📖 Setup Guide</a>
+      <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/tree/main/findcryptopairs/alpha_signals" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:rgba(34,197,94,0.12);color:#22c55e;padding:6px 14px;border-radius:6px;font-size:13px;border:1px solid rgba(34,197,94,0.2);">💻 GitHub</a>
+    </div>
+
+    <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
+      <span class="tag">Discord Alerts</span>
+      <span class="tag">Quality Gates</span>
+      <span class="tag">RSVE Integration</span>
+      <span class="tag">Auto-Suppress</span>
+      <span class="tag">Position Sizing</span>
+      <span class="tag">KIMI CODE_Feb162026</span>
+    </div>
+    <p style="margin-top:10px;font-size:12px;color:#556;">
+      <strong>Deployment:</strong> Commit 14bb66c &bull; Python 3.8+ &bull; aiohttp for async webhook delivery &bull; KIMI CODE_Feb162026
+    </p>
+  </div>
+</div>
+
 </div>
 
 <div class="footer">
