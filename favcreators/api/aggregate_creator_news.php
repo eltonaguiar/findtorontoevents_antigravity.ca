@@ -88,6 +88,12 @@ function fetch_google_news($creator_name)
     $items = array();
     $error_msg = '';
 
+    // Define creator-specific exclusion filters
+    // Keys are creator names (lowercase), values are arrays of terms to exclude
+    $exclusion_filters = array(
+        'ninja' => array('turtle', 'turtles', 'mutant', 'teenage', 'tmnt', 'splinter', 'shredder', 'donatello', 'leonardo', 'raphael', 'michelangelo')
+    );
+
     try {
         $search_query = urlencode($creator_name . " streamer OR " . $creator_name . " twitch OR " . $creator_name . " youtube");
         $rss_url = "https://news.google.com/rss/search?q=$search_query&hl=en-US&gl=US&ceid=US:en";
@@ -109,6 +115,28 @@ function fetch_google_news($creator_name)
                 foreach ($xml->channel->item as $rss_item) {
                     if ($count >= 3)
                         break; // Limit to 3 items per creator
+
+                    // Get title and description for filtering
+                    $title = (string) $rss_item->title;
+                    $description = strip_tags((string) $rss_item->description);
+                    $title_lower = strtolower($title);
+                    $desc_lower = strtolower($description);
+
+                    // Check if this creator has exclusion filters
+                    $creator_name_lower = strtolower(trim($creator_name));
+                    if (isset($exclusion_filters[$creator_name_lower])) {
+                        $should_exclude = false;
+                        foreach ($exclusion_filters[$creator_name_lower] as $exclude_term) {
+                            if (strpos($title_lower, $exclude_term) !== false ||
+                                strpos($desc_lower, $exclude_term) !== false) {
+                                $should_exclude = true;
+                                break;
+                            }
+                        }
+                        if ($should_exclude) {
+                            continue; // Skip this item
+                        }
+                    }
 
                     // Parse publication date with better fallback logic
                     $pub_date = (string) $rss_item->pubDate;
@@ -169,8 +197,8 @@ function fetch_google_news($creator_name)
                         'platform' => 'news',
                         'content_type' => 'article',
                         'content_url' => (string) $rss_item->link,
-                        'title' => (string) $rss_item->title,
-                        'description' => strip_tags((string) $rss_item->description),
+                        'title' => $title,
+                        'description' => $description,
                         'thumbnail_url' => $thumbnail_url,
                         'author' => 'Google News',
                         'engagement_count' => 0,
