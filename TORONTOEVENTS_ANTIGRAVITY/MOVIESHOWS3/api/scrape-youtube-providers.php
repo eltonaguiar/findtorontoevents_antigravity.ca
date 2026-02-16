@@ -11,7 +11,7 @@ header('Content-Type: text/plain; charset=utf-8');
 
 require_once 'db-config.php';
 
-define('YOUTUBE_API_KEY', 'AIzaSyDRaR8Q-vm7rG_Z5vK8yQxJ0kqJ8zYxVzQ'); // Public TMDB API key
+define('YOUTUBE_API_KEY', 'AIzaSyBjZruHqjPi2I5XEkpfoNMO5LY-8pzbvgs'); // YouTube Data API v3
 
 $PROVIDER_PATTERNS = array(
     '8' => array(
