@@ -10,6 +10,31 @@
     let scrollTimeout = null;
     const SCROLL_COOLDOWN = 500;
     
+    // ========== TMDB GENRE MAPPING ==========
+    const TMDB_GENRE_MAP = {
+        '28': 'Action', '12': 'Adventure', '16': 'Animation', '35': 'Comedy',
+        '80': 'Crime', '99': 'Documentary', '18': 'Drama', '10751': 'Family',
+        '14': 'Fantasy', '36': 'History', '27': 'Horror', '10402': 'Music',
+        '9648': 'Mystery', '10749': 'Romance', '878': 'Sci-Fi', '10770': 'TV Movie',
+        '53': 'Thriller', '10752': 'War', '37': 'Western',
+        '10759': 'Action & Adventure', '10762': 'Kids', '10763': 'News',
+        '10764': 'Reality', '10765': 'Sci-Fi & Fantasy', '10766': 'Soap',
+        '10767': 'Talk', '10768': 'War & Politics',
+        'Action': 'Action', 'Comedy': 'Comedy', 'Drama': 'Drama',
+        'Horror': 'Horror', 'Thriller': 'Thriller', 'Romance': 'Romance',
+        'Animation': 'Animation', 'Documentary': 'Documentary',
+        'Sci-Fi': 'Sci-Fi', 'Fantasy': 'Fantasy', 'Mystery': 'Mystery',
+        'Crime': 'Crime', 'Adventure': 'Adventure', 'Family': 'Family',
+        'Music': 'Music', 'War': 'War', 'Western': 'Western', 'History': 'History',
+        'Motivation': 'Motivation'
+    };
+    
+    function resolveGenreName(g) {
+        if (!g) return '';
+        const s = String(g).trim();
+        return TMDB_GENRE_MAP[s] || (isNaN(s) ? s : 'Genre');
+    }
+    
     // ========== NAVIGATION STATE ==========
     let currentFilter = 'all'; // all, movies, tv, nowplaying, motivation
     let currentProviderFilter = 'all'; // streaming service filter
@@ -1086,10 +1111,12 @@
         `;
         document.head.appendChild(style);
         
-        // Populate genres
+        // Populate genres - resolve TMDB IDs to names
         const genreContainer = content.querySelector("#genre-filters");
-        const genres = [...new Set(allMoviesData.flatMap(m => m.genres || []))].sort();
-        genreContainer.innerHTML = genres.slice(0, 15).map(g => 
+        const rawGenres = [...new Set(allMoviesData.flatMap(m => m.genres || []))];
+        // Map IDs to names, deduplicate resolved names, sort alphabetically
+        const resolvedGenres = [...new Set(rawGenres.map(g => resolveGenreName(g)).filter(g => g && g !== 'Genre'))].sort();
+        genreContainer.innerHTML = resolvedGenres.slice(0, 20).map(g => 
             `<button class="filter-btn" data-genre="${g}">${g}</button>`
         ).join("");
         
@@ -2211,6 +2238,32 @@
                             showToast("Showing now playing in theaters");
                         }
                     }, true);
+                    
+                    // Inject Motivation button after Now Playing if not already present
+                    if (!document.getElementById('ms2-motivation-nav-btn')) {
+                        const motivBtn = document.createElement('button');
+                        motivBtn.id = 'ms2-motivation-nav-btn';
+                        motivBtn.textContent = `💪 Motivation (${allMotivationalVideos.length})`;
+                        motivBtn.style.cssText = `
+                            padding: 6px 14px; border-radius: 9999px; font-size: 14px; font-weight: 600;
+                            border: 1px solid rgba(139,92,246,0.4); color: #c4b5fd;
+                            background: transparent; cursor: pointer; white-space: nowrap;
+                            transition: all 0.2s;
+                        `;
+                        motivBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            e.stopImmediatePropagation();
+                            if (currentFilter !== 'motivation') {
+                                currentFilter = 'motivation';
+                                updateCategoryButtons();
+                                repopulateFeedWithFilter();
+                                showToast("Showing motivational videos");
+                            }
+                        }, true);
+                        btn.parentNode.insertBefore(motivBtn, btn.nextSibling);
+                        console.log("[MovieShows] Injected Motivation nav button");
+                    }
                 }
                 
                 // List/Save button - check for various button text patterns
@@ -2349,6 +2402,21 @@
                 }
             }
         });
+        
+        // Update Motivation nav button
+        const motivNavBtn = document.getElementById('ms2-motivation-nav-btn');
+        if (motivNavBtn) {
+            motivNavBtn.textContent = `💪 Motivation (${allMotivationalVideos.length})`;
+            if (currentFilter === 'motivation') {
+                motivNavBtn.style.background = 'linear-gradient(135deg, #8b5cf6, #7c3aed)';
+                motivNavBtn.style.color = 'white';
+                motivNavBtn.style.borderColor = '#8b5cf6';
+            } else {
+                motivNavBtn.style.background = 'transparent';
+                motivNavBtn.style.color = '#c4b5fd';
+                motivNavBtn.style.borderColor = 'rgba(139,92,246,0.4)';
+            }
+        }
     }
 
     // ========== PLAYER SIZE CONTROL ==========
@@ -4620,7 +4688,7 @@
             type: m.type || 'movie',
             year: String(m.release_year || m.year || '2026'),
             rating: String(m.imdb_rating || m.rating || ''),
-            genres: m.genres || (m.genre ? m.genre.split(',').map(function(g){ return g.trim(); }).filter(Boolean) : []),
+            genres: (m.genres || (m.genre ? m.genre.split(',').map(function(g){ return g.trim(); }).filter(Boolean) : [])).map(resolveGenreName).filter(function(g){ return g && g !== 'Genre'; }),
             source: m.source || 'In Theatres',
             trailerUrl: trailerUrl,
             posterUrl: poster,
@@ -4932,6 +5000,57 @@
         return url;
     }
 
+    // Provider badge colors
+    const PROVIDER_BADGE_STYLES = {
+        '8':    { bg: '#e50914', name: 'Netflix' },
+        '9':    { bg: '#00a8e1', name: 'Prime Video' },
+        '337':  { bg: '#113ccf', name: 'Disney+' },
+        '15':   { bg: '#1ce783', color: '#000', name: 'Hulu' },
+        '350':  { bg: '#555', name: 'Apple TV+' },
+        '1899': { bg: '#b835f5', name: 'Max' },
+        '531':  { bg: '#0064ff', name: 'Paramount+' },
+        '386':  { bg: '#ffd700', color: '#000', name: 'Peacock' },
+        '230':  { bg: '#0033a1', name: 'Crave' },
+        '73':   { bg: '#fa382f', name: 'Tubi' }
+    };
+    
+    function buildSourceBadges(movie) {
+        let badges = '';
+        
+        // Show streaming platform badges if available
+        if (movie._providers && movie._providers.length > 0) {
+            movie._providers.slice(0, 3).forEach(p => {
+                const style = PROVIDER_BADGE_STYLES[p.id] || { bg: '#444', name: p.name };
+                const textColor = style.color || '#fff';
+                badges += `<div style="background:${style.bg};color:${textColor};font-size:10px;font-weight:800;padding:1px 8px;border-radius:4px;display:flex;align-items:center;gap:3px;">`;
+                if (p.logo) {
+                    badges += `<img src="${p.logo}" style="width:12px;height:12px;border-radius:2px;">`;
+                }
+                badges += `${style.name}</div>`;
+            });
+        }
+        
+        // Show motivation badge for motivation videos
+        if (movie._isMotivation) {
+            badges += `<div style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:white;font-size:10px;font-weight:800;padding:1px 8px;border-radius:4px;">MOTIVATION</div>`;
+            if (movie._channel) {
+                badges += `<div style="background:rgba(139,92,246,0.3);border:1px solid rgba(139,92,246,0.5);color:#c4b5fd;font-size:10px;font-weight:600;padding:1px 8px;border-radius:4px;">${movie._channel}</div>`;
+            }
+        }
+        
+        // Show content type badge if no streaming platform
+        if (!badges) {
+            const type = (movie.type || 'movie').toLowerCase();
+            if (type === 'tv' || type === 'series') {
+                badges += `<div style="background:#6366f1;color:white;font-size:10px;font-weight:800;padding:1px 8px;border-radius:4px;text-transform:uppercase;">TV Series</div>`;
+            } else {
+                badges += `<div style="background:#2563eb;color:white;font-size:10px;font-weight:800;padding:1px 8px;border-radius:4px;text-transform:uppercase;">Movie</div>`;
+            }
+        }
+        
+        return badges;
+    }
+    
     function createSlide(movie, loadImmediately = false) {
         const slide = document.createElement("div");
         slide.className = "h-full w-full snap-center";
@@ -4939,11 +5058,14 @@
 
         const embedUrl = getYouTubeEmbedUrl(movie.trailerUrl);
         const genresHtml = (movie.genres || []).map(g =>
-            `<span class="text-xs bg-white/10 backdrop-blur-sm px-2 py-1 rounded-full text-gray-100 border border-white/10">${g}</span>`
+            `<span class="text-xs bg-white/10 backdrop-blur-sm px-2 py-1 rounded-full text-gray-100 border border-white/10">${resolveGenreName(g)}</span>`
         ).join("");
 
         const rating = movie.rating ? `IMDb ${movie.rating}` : "TBD";
         const year = movie.year || "2026";
+        
+        // Build smart source/platform badges
+        const sourceBadges = buildSourceBadges(movie);
 
         // If loadImmediately is true, set src directly; otherwise use lazy loading
         const iframeSrc = loadImmediately ? embedUrl : "";
@@ -4988,10 +5110,10 @@
 
                 <!-- Bottom Info -->
                 <div class="absolute bottom-4 left-4 right-16 z-30 flex flex-col gap-2 pointer-events-none">
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
                          <div class="bg-yellow-500 text-black text-[10px] font-black px-2 py-0.5 rounded flex items-center gap-1 cursor-pointer pointer-events-auto hover:bg-yellow-400">${rating}</div>
                          <div class="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded">${year}</div>
-                         <div class="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">${movie.source || "In Theatres"}</div>
+                         ${sourceBadges}
                     </div>
                     <h2 class="text-2xl font-bold text-white drop-shadow-lg leading-tight pointer-events-auto w-full">${movie.title}</h2>
                     <div class="relative group/desc pointer-events-auto max-w-[90%]">
