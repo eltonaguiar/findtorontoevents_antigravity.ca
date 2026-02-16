@@ -11,57 +11,66 @@ on:
 jobs:
   rapid-validation:
     runs-on: ubuntu-latest
-    env:
-      TICKETMAST_CONSUMER_KEY: ${{ secrets.TICKETMAST_CONSUMER_KEY }}
-      DB_HOST: ${{ secrets.DB_HOST }}
-      DB_USER: ${{ secrets.DB_USER }}
-      DB_PASS: ${{ secrets.DB_PASS }}
-      DB_NAME: ${{ secrets.DB_NAME }}
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
+      - name: Check system status
+        id: status
         run: |
-          pip install ccxt pandas numpy mysql-connector-python
+          echo "=== Checking Rapid Validation Status ==="
+          RESP=$(curl -s -m 30 "https://findtorontoevents.ca/rapid_validation/api/rapid_signal_engine.php?action=status")
+          echo "$RESP" | python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)
+          init = d.get('initialized', False)
+          last = d.get('last_updated', 'Never')
+          ranks = d.get('rankings', {})
+          print(f'Initialized: {init}')
+          print(f'Last updated: {last}')
+          if ranks:
+              print(f'Promoted: {ranks.get(\"promoted\", 0)}')
+              print(f'Testing: {ranks.get(\"testing\", 0)}')
+              print(f'Eliminated: {ranks.get(\"eliminated\", 0)}')
+          " 2>/dev/null || echo "$RESP"
 
-      - name: Generate rapid signals (every hour only)
-        if: github.event.schedule == '*/15 * * * *' && github.event.schedule == '0 * * * *'
+      - name: Run validation cycle
+        id: cycle
         run: |
-          python rapid_validation/rapid_signal_generator.py --mode live --timeframe 5m
-          echo "Generated signals at $(date)"
+          echo "=== Running Validation + Ranking Cycle ==="
+          RESP=$(curl -s -m 120 "https://findtorontoevents.ca/rapid_validation/api/rapid_signal_engine.php?action=cycle&key=livetrader2026")
+          echo "$RESP" | python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)
+          ok = d.get('ok', False)
+          results = d.get('results', {})
+          ranks = d.get('rankings', {})
 
-      - name: Validate active signals (every 15 minutes)
-        run: |
-          python rapid_validation/fast_validator_CLAUDECODE_Feb152026.py
-          echo "Validated signals at $(date)"
+          print(f'Overall: {\"SUCCESS\" if ok else \"FAILED\"}')
+          print()
 
-      - name: Update strategy rankings
-        run: |
-          python rapid_validation/strategy_ranker_CLAUDECODE_Feb152026.py
-          echo "Updated rankings at $(date)"
+          # Validation results
+          val = results.get('validate', {})
+          print(f'Validation: {\"OK\" if val.get(\"ok\") else \"FAILED\"}')
+          if val.get('output'):
+              print(val['output'][:500])
 
-      - name: Deploy dashboard to GitHub Pages
-        if: success()
-        run: |
-          mkdir -p gh-pages/rapid-validation
-          cp rapid_validation/dashboard_CLAUDECODE_Feb152026.html gh-pages/rapid-validation/index.html
-          cp rapid_validation/rankings_CLAUDECODE_Feb152026.json gh-pages/rapid-validation/ || true
+          print()
 
-      - name: Commit updated rankings
-        if: success()
-        run: |
-          git config --local user.email "claude-code@anthropic.com"
-          git config --local user.name "Claude Code Bot"
-          git add rapid_validation/rankings_CLAUDECODE_Feb152026.json || true
-          git commit -m "chore: Update rapid validation rankings - $(date -u +%Y-%m-%d\ %H:%M:%S\ UTC)" || echo "No changes to commit"
-          git push || echo "No changes to push"
+          # Ranking results
+          rank = results.get('rank', {})
+          print(f'Ranking: {\"OK\" if rank.get(\"ok\") else \"FAILED\"}')
+          if rank.get('output'):
+              print(rank['output'][:500])
+
+          print()
+
+          # Rankings summary
+          if ranks:
+              print(f'Final Rankings:')
+              print(f'  Promoted: {ranks.get(\"promoted\", 0)}')
+              print(f'  Testing: {ranks.get(\"testing\", 0)}')
+              print(f'  Eliminated: {ranks.get(\"eliminated\", 0)}')
+
+          sys.exit(0 if ok else 1)
+          " 2>/dev/null || echo "$RESP"
 
       - name: Summary report
         if: always()
@@ -70,11 +79,5 @@ jobs:
           echo "Rapid Validation Engine - Run Complete"
           echo "========================================"
           echo "Timestamp: $(date -u)"
-          if [ -f rapid_validation/rankings_CLAUDECODE_Feb152026.json ]; then
-            echo "Rankings file exists: YES"
-            jq -r '.promoted | length' rapid_validation/rankings_CLAUDECODE_Feb152026.json | xargs -I {} echo "Promoted strategies: {}"
-            jq -r '.testing | length' rapid_validation/rankings_CLAUDECODE_Feb152026.json | xargs -I {} echo "Testing strategies: {}"
-            jq -r '.eliminated | length' rapid_validation/rankings_CLAUDECODE_Feb152026.json | xargs -I {} echo "Eliminated strategies: {}"
-          else
-            echo "Rankings file: Not yet created"
-          fi
+          echo "Dashboard: https://findtorontoevents.ca/rapid_validation/dashboard_CLAUDECODE_Feb152026.html"
+          echo "API Status: https://findtorontoevents.ca/rapid_validation/api/rapid_signal_engine.php?action=status"
