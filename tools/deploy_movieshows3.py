@@ -49,6 +49,12 @@ FILES_TO_DEPLOY = [
     "api/watch-history.php",
     "api/alt-content.php",
     "api/freestyle-search.php",
+    "api/setup-providers.php",
+    "api/check-and-migrate-providers.php",
+    "api/run-provider-update.php",
+    "api/execute-provider-setup.php",
+    "api/test-providers.php",
+    "api/manual-provider-insert.php",
     "index.html",
 ]
 

@@ -51,8 +51,11 @@ try {
     $movies = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Fetch streaming providers for all movies
-    $movieIds = array_column($movies, 'id');
-    $providers = [];
+    $movieIds = array();
+    foreach ($movies as $m) {
+        $movieIds[] = $m['id'];
+    }
+    $providers = array();
 
     if (!empty($movieIds)) {
         $placeholders = implode(',', array_fill(0, count($movieIds), '?'));
@@ -75,20 +78,20 @@ try {
             unset($provider['movie_id']);
 
             if (!isset($providers[$movieId])) {
-                $providers[$movieId] = [];
+                $providers[$movieId] = array();
             }
 
-            $providers[$movieId][] = [
+            $providers[$movieId][] = array(
                 'id' => $provider['provider_id'],
                 'name' => $provider['provider_name'],
                 'logo' => $provider['provider_logo']
-            ];
+            );
         }
     }
 
     // Attach providers to movies
     foreach ($movies as &$movie) {
-        $movie['providers'] = $providers[$movie['id']] ?? [];
+        $movie['providers'] = isset($providers[$movie['id']]) ? $providers[$movie['id']] : array();
     }
     unset($movie);
 

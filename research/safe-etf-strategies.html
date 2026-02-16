@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safe ETF Strategies - 4 Tiered Safety Levels</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a12 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            color: #a0a0a0;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        .level-card {
+            background: rgba(255,255,255,0.03);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border-left: 4px solid;
+        }
+        .level-1 { border-left-color: #22c55e; }
+        .level-2 { border-left-color: #3b82f6; }
+        .level-3 { border-left-color: #f59e0b; }
+        .level-4 { border-left-color: #ef4444; }
+        .level-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .level-badge {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .badge-ultra-safe { background: #22c55e; color: #000; }
+        .badge-conservative { background: #3b82f6; color: #fff; }
+        .badge-moderate { background: #f59e0b; color: #000; }
+        .badge-aggressive { background: #ef4444; color: #fff; }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .metric {
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #22c55e;
+        }
+        .metric-label {
+            font-size: 0.85rem;
+            color: #a0a0a0;
+            margin-top: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(0,0,0,0.2);
+        }
+        th {
+            background: rgba(102,126,234,0.2);
+            padding: 12px;
+            text-align: left;
+            color: #667eea;
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .portfolio-name {
+            font-size: 1.3rem;
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        .recommendation {
+            background: linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(16,185,129,0.1) 100%);
+            border: 1px solid rgba(34,197,94,0.3);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        .comparison-table {
+            margin-top: 40px;
+            background: rgba(255,255,255,0.03);
+            padding: 25px;
+            border-radius: 12px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #22c55e;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
+        code {
+            background: rgba(102,126,234,0.2);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/updates/" class="back-link">← Back to Updates</a>
+
+        <h1>Safe ETF Strategies</h1>
+        <div class="subtitle">4 tiered safety levels from ultra-safe bonds to balanced aggressive growth - Feb 15, 2026</div>
+
+        <div class="level-card level-1">
+            <div class="level-title">
+                <span>Level 1: Ultra-Safe</span>
+                <span class="level-badge badge-ultra-safe">90%+ Capital Preservation</span>
+            </div>
+
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-value">4-5%</div>
+                    <div class="metric-label">Expected Return</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">-3% to -5%</div>
+                    <div class="metric-label">Max Drawdown</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">3-4%</div>
+                    <div class="metric-label">Volatility</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">Annually</div>
+                    <div class="metric-label">Rebalancing</div>
+                </div>
+            </div>
+
+            <div class="portfolio-name">Short-Term Bond Portfolio</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ETF</th>
+                        <th>Allocation</th>
+                        <th>Expense Ratio</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>SCHO</code></td>
+                        <td>40%</td>
+                        <td>0.03%</td>
+                        <td>Schwab Short-Term U.S. Treasury (1-3yr)</td>
+                    </tr>
+                    <tr>
+                        <td><code>BIL</code></td>
+                        <td>30%</td>
+                        <td>0.14%</td>
+                        <td>SPDR 1-3 Month T-Bill</td>
+                    </tr>
+                    <tr>
+                        <td><code>VTIP</code></td>
+                        <td>20%</td>
+                        <td>0.04%</td>
+                        <td>Vanguard Short-Term TIPS</td>
+                    </tr>
+                    <tr>
+                        <td><code>SCHZ</code></td>
+                        <td>10%</td>
+                        <td>0.03%</td>
+                        <td>Schwab U.S. Aggregate Bond</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><strong>Crisis Performance:</strong> 2008: +5%, 2020: +3%, 2022: -3%</p>
+            <p><strong>Who it's for:</strong> Money you cannot afford to lose. Emergency fund alternative.</p>
+
+            <div class="portfolio-name">Buffer ETF Strategy (100% Downside Protection)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ETF</th>
+                        <th>Allocation</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>ZAUG</code></td>
+                        <td>50%</td>
+                        <td>Innovator 100% Buffer S&P 500 (upside capped at 7.28%)</td>
+                    </tr>
+                    <tr>
+                        <td><code>HEQT</code></td>
+                        <td>50%</td>
+                        <td>Simplify Hedged Equity (8.35% annualized, 8.8% volatility)</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><strong>Who it's for:</strong> Want stock market participation with a safety net.</p>
+        </div>
+
+        <div class="level-card level-2">
+            <div class="level-title">
+                <span>Level 2: Conservative Growth</span>
+                <span class="level-badge badge-conservative">80% Capital Preservation</span>
+            </div>
+
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-value">6-7.3%</div>
+                    <div class="metric-label">Expected Return</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">-12% to -20%</div>
+                    <div class="metric-label">Max Drawdown</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">7-8%</div>
+                    <div class="metric-label">Volatility</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">Annually</div>
+                    <div class="metric-label">Rebalancing</div>
+                </div>
+            </div>
+
+            <div class="portfolio-name">Ray Dalio All-Weather Portfolio ⭐ HIGHLY RECOMMENDED</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ETF</th>
+                        <th>Allocation</th>
+                        <th>Expense Ratio</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>VTI</code></td>
+                        <td>30%</td>
+                        <td>0.03%</td>
+                        <td>Vanguard Total Stock Market</td>
+                    </tr>
+                    <tr>
+                        <td><code>TLT</code></td>
+                        <td>40%</td>
+                        <td>0.15%</td>
+                        <td>iShares 20+ Year Treasury Bond</td>
+                    </tr>
+                    <tr>
+                        <td><code>IEI</code></td>
+                        <td>15%</td>
+                        <td>0.15%</td>
+                        <td>iShares 3-7 Year Treasury Bond</td>
+                    </tr>
+                    <tr>
+                        <td><code>GLD</code></td>
+                        <td>7.5%</td>
+                        <td>0.40%</td>
+                        <td>SPDR Gold Shares</td>
+                    </tr>
+                    <tr>
+                        <td><code>DBC</code></td>
+                        <td>7.5%</td>
+                        <td>0.87%</td>
+                        <td>Invesco DB Commodity Index</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><strong>30-year CAGR:</strong> 7.28% | <strong>Crisis Performance:</strong> 2008: -3.9% (vs S&P -37%), 2020: -6%, 2022: -12%</p>
+            <p><strong>Who it's for:</strong> Long-term investors who want to weather ANY economic environment. Set and forget.</p>
+
+            <div class="portfolio-name">Harry Browne Permanent Portfolio</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ETF</th>
+                        <th>Allocation</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>VTI</code></td>
+                        <td>25%</td>
+                        <td>Total Stock Market</td>
+                    </tr>
+                    <tr>
+                        <td><code>TLT</code></td>
+                        <td>25%</td>
+                        <td>20+ Year Treasury Bond</td>
+                    </tr>
+                    <tr>
+                        <td><code>GLD</code></td>
+                        <td>25%</td>
+                        <td>Gold</td>
+                    </tr>
+                    <tr>
+                        <td><code>BIL</code></td>
+                        <td>25%</td>
+                        <td>Cash (T-Bills)</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><strong>Who it's for:</strong> Simplest "all-weather" approach. 4 ETFs, equal weight, rebalance annually.</p>
+        </div>
+
+        <div class="level-card level-3">
+            <div class="level-title">
+                <span>Level 3: Moderate Growth</span>
+                <span class="level-badge badge-moderate">70% Capital Preservation</span>
+            </div>
+
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-value">8-10%</div>
+                    <div class="metric-label">Expected Return</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">-20% to -35%</div>
+                    <div class="metric-label">Max Drawdown</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">12%</div>
+                    <div class="metric-label">Volatility</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">Annually</div>
+                    <div class="metric-label">Rebalancing</div>
+                </div>
+            </div>
+
+            <div class="portfolio-name">Bogleheads Three-Fund Portfolio ⭐ GOLD STANDARD</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ETF</th>
+                        <th>Allocation</th>
+                        <th>Expense Ratio</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>VTI</code></td>
+                        <td>50%</td>
+                        <td>0.03%</td>
+                        <td>Vanguard Total Stock Market (US)</td>
+                    </tr>
+                    <tr>
+                        <td><code>VXUS</code></td>
+                        <td>30%</td>
+                        <td>0.07%</td>
+                        <td>Vanguard Total International Stock</td>
+                    </tr>
+                    <tr>
+                        <td><code>BND</code></td>
+                        <td>20%</td>
+                        <td>0.03%</td>
+                        <td>Vanguard Total Bond Market</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><strong>10-year annualized:</strong> 11.69% | <strong>Portfolio expense ratio:</strong> 0.04% (nearly free)</p>
+            <p><strong>Who it's for:</strong> The gold standard of passive investing. Recommended by virtually every financial advisor.</p>
+        </div>
+
+        <div class="level-card level-4">
+            <div class="level-title">
+                <span>Level 4: Balanced Aggressive</span>
+                <span class="level-badge badge-aggressive">60% Capital Preservation</span>
+            </div>
+
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-value">10-12%</div>
+                    <div class="metric-label">Expected Return</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">-25% to -35%</div>
+                    <div class="metric-label">Max Drawdown</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">13-15%</div>
+                    <div class="metric-label">Volatility</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">Quarterly</div>
+                    <div class="metric-label">Rebalancing</div>
+                </div>
+            </div>
+
+            <div class="portfolio-name">Core-Satellite with Dividend Income</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ETF</th>
+                        <th>Allocation</th>
+                        <th>Yield</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>VTI</code></td>
+                        <td>40%</td>
+                        <td>-</td>
+                        <td>Core: Total Stock Market</td>
+                    </tr>
+                    <tr>
+                        <td><code>SCHD</code></td>
+                        <td>20%</td>
+                        <td>3.82%</td>
+                        <td>Satellite: Dividend Quality</td>
+                    </tr>
+                    <tr>
+                        <td><code>JEPI</code></td>
+                        <td>10%</td>
+                        <td>8%+</td>
+                        <td>Satellite: Covered Call Income</td>
+                    </tr>
+                    <tr>
+                        <td><code>VXUS</code></td>
+                        <td>10%</td>
+                        <td>-</td>
+                        <td>Core: International</td>
+                    </tr>
+                    <tr>
+                        <td><code>BND</code></td>
+                        <td>15%</td>
+                        <td>-</td>
+                        <td>Core: Bonds</td>
+                    </tr>
+                    <tr>
+                        <td><code>VNQ</code></td>
+                        <td>5%</td>
+                        <td>-</td>
+                        <td>Satellite: REITs</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><strong>SCHD Performance:</strong> 12.49% CAGR, max drawdown -21.54% (recovered in 8 months)</p>
+            <p><strong>Who it's for:</strong> Want growth + income. Dividends provide psychological comfort during drawdowns.</p>
+        </div>
+
+        <div class="comparison-table">
+            <h2 style="color: #22c55e; margin-bottom: 20px;">Quick Comparison: All Strategies</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Strategy</th>
+                        <th>Level</th>
+                        <th>Return</th>
+                        <th>Max DD</th>
+                        <th># ETFs</th>
+                        <th>Complexity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: rgba(34,197,94,0.1);">
+                        <td>Short-Term Bond</td>
+                        <td>1</td>
+                        <td>4-5%</td>
+                        <td>-3 to -5%</td>
+                        <td>4</td>
+                        <td>Very Simple</td>
+                    </tr>
+                    <tr style="background: rgba(34,197,94,0.1);">
+                        <td>Buffer ETFs</td>
+                        <td>1</td>
+                        <td>5-7%</td>
+                        <td>0 to -2%</td>
+                        <td>2</td>
+                        <td>Simple</td>
+                    </tr>
+                    <tr style="background: rgba(59,130,246,0.1);">
+                        <td><strong>All-Weather</strong></td>
+                        <td>2</td>
+                        <td><strong>6-7.3%</strong></td>
+                        <td>-12 to -24%</td>
+                        <td>5</td>
+                        <td>Simple</td>
+                    </tr>
+                    <tr style="background: rgba(59,130,246,0.1);">
+                        <td>Permanent</td>
+                        <td>2</td>
+                        <td>6-7%</td>
+                        <td>-12 to -16%</td>
+                        <td>4</td>
+                        <td>Very Simple</td>
+                    </tr>
+                    <tr style="background: rgba(245,158,11,0.1);">
+                        <td><strong>Bogleheads 3-Fund</strong></td>
+                        <td>3</td>
+                        <td><strong>8-10%</strong></td>
+                        <td>-25 to -35%</td>
+                        <td>3</td>
+                        <td>Very Simple</td>
+                    </tr>
+                    <tr style="background: rgba(245,158,11,0.1);">
+                        <td>Low-Vol Factor</td>
+                        <td>3</td>
+                        <td>8-10%</td>
+                        <td>-20 to -25%</td>
+                        <td>4</td>
+                        <td>Simple</td>
+                    </tr>
+                    <tr style="background: rgba(239,68,68,0.1);">
+                        <td>Core-Satellite Div</td>
+                        <td>4</td>
+                        <td>10-12%</td>
+                        <td>-25 to -35%</td>
+                        <td>6</td>
+                        <td>Moderate</td>
+                    </tr>
+                    <tr style="background: rgba(239,68,68,0.1);">
+                        <td>Dual Momentum</td>
+                        <td>4</td>
+                        <td>10-12%</td>
+                        <td>-19%</td>
+                        <td>3</td>
+                        <td>Moderate</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="recommendation">
+            <h3 style="color: #22c55e; margin-bottom: 15px;">💡 Recommended Portfolio Mix</h3>
+            <p style="margin-bottom: 15px;">To balance your aggressive day trading strategies, allocate:</p>
+            <ul style="margin-left: 20px; line-height: 2;">
+                <li><strong>60%</strong> → Level 2 (All-Weather Portfolio) - Capital preservation + steady growth</li>
+                <li><strong>30%</strong> → Rapid Validation Testing - Controlled experimentation</li>
+                <li><strong>10%</strong> → Live Day Trading - High risk/high reward</li>
+            </ul>
+            <p style="margin-top: 15px;"><strong>Result:</strong> If day trading goes to zero, you still have 90% of capital safe and growing.</p>
+        </div>
+    </div>
+</body>
+</html>

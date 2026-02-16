@@ -9,21 +9,21 @@ header('Content-Type: text/plain');
 
 require_once 'db-config.php';
 
-define('TMDB_API_KEY', '9d4dc1f2ae8f51e0df753b5f5b6e2cd0');
+define('TMDB_API_KEY', 'b84ff7bfe35ffad8779b77bcbbda317f');
 define('TMDB_REGION', 'CA');
 
-$PROVIDER_MAP = [
-    '8' => ['name' => 'Netflix', 'priority' => 1],
-    '9' => ['name' => 'Prime Video', 'priority' => 2],
-    '337' => ['name' => 'Disney+', 'priority' => 3],
-    '15' => ['name' => 'Hulu', 'priority' => 4],
-    '350' => ['name' => 'Apple TV+', 'priority' => 5],
-    '1899' => ['name' => 'Max', 'priority' => 6],
-    '531' => ['name' => 'Paramount+', 'priority' => 7],
-    '386' => ['name' => 'Peacock', 'priority' => 8],
-    '230' => ['name' => 'Crave', 'priority' => 9],
-    '73' => ['name' => 'Tubi', 'priority' => 10],
-];
+$PROVIDER_MAP = array(
+    '8' => array('name' => 'Netflix', 'priority' => 1),
+    '9' => array('name' => 'Prime Video', 'priority' => 2),
+    '337' => array('name' => 'Disney+', 'priority' => 3),
+    '15' => array('name' => 'Hulu', 'priority' => 4),
+    '350' => array('name' => 'Apple TV+', 'priority' => 5),
+    '1899' => array('name' => 'Max', 'priority' => 6),
+    '531' => array('name' => 'Paramount+', 'priority' => 7),
+    '386' => array('name' => 'Peacock', 'priority' => 8),
+    '230' => array('name' => 'Crave', 'priority' => 9),
+    '73' => array('name' => 'Tubi', 'priority' => 10),
+);
 
 $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 50;
 $offset = isset($_GET['offset']) ? intval($_GET['offset']) : 0;
@@ -60,10 +60,17 @@ foreach ($movies as $movie) {
     echo "[{$movie['id']}] {$movie['title']} ({$mediaType})... ";
     flush();
 
-    $response = @file_get_contents($url);
+    // Use cURL instead of file_get_contents
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
 
-    if ($response === false) {
-        echo "FAILED\n";
+    if ($response === false || $httpCode !== 200) {
+        echo "FAILED (HTTP $httpCode)\n";
         $errors++;
         usleep(250000);
         continue;
@@ -79,21 +86,21 @@ foreach ($movies as $movie) {
     }
 
     $caData = $data['results'][TMDB_REGION];
-    $providers = [];
+    $providers = array();
 
-    $sources = ['flatrate', 'rent', 'buy'];
+    $sources = array('flatrate', 'rent', 'buy');
     foreach ($sources as $source) {
         if (isset($caData[$source]) && is_array($caData[$source])) {
             foreach ($caData[$source] as $provider) {
                 $providerId = strval($provider['provider_id']);
 
                 if (isset($PROVIDER_MAP[$providerId])) {
-                    $providers[$providerId] = [
+                    $providers[$providerId] = array(
                         'id' => $providerId,
                         'name' => $PROVIDER_MAP[$providerId]['name'],
                         'logo' => 'https://image.tmdb.org/t/p/original' . $provider['logo_path'],
                         'priority' => $PROVIDER_MAP[$providerId]['priority']
-                    ];
+                    );
                 }
             }
         }
@@ -116,13 +123,13 @@ foreach ($movies as $movie) {
                     last_checked = NOW()
             ");
 
-            $upsertStmt->execute([
+            $upsertStmt->execute(array(
                 'movie_id' => $movie['id'],
                 'provider_id' => $provider['id'],
                 'provider_name' => $provider['name'],
                 'provider_logo' => $provider['logo'],
                 'priority' => $provider['priority']
-            ]);
+            ));
 
             $added++;
         }

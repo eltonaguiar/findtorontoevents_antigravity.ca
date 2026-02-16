@@ -7,8 +7,19 @@
     <title>MovieShows - Discover Your Next Obsession</title>
     <link rel="icon" href="/MOVIESHOWS/favicon.ico">
     <script>
-        // Redirect to the TikTok-style MOVIESHOWS player
-        window.location.href = 'app.html';
+        // Detect Meta Quest browser and redirect to optimized version
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        const isQuestBrowser = /OculusBrowser|Quest|VR/i.test(userAgent) ||
+                               /Meta Quest/i.test(userAgent);
+
+        if (isQuestBrowser) {
+            // Store redirect reason for toast message
+            sessionStorage.setItem('questRedirect', 'true');
+            window.location.href = '/MOVIESHOWS3_QUEST/';
+        } else {
+            // Redirect to the TikTok-style MOVIESHOWS player
+            window.location.href = 'app.html';
+        }
     </script>
     <style>
         body {

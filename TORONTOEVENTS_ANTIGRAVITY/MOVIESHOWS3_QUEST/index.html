@@ -317,6 +317,95 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* Quest Toast Notification */
+        .quest-toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+            z-index: 300;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-width: 90%;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .quest-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .quest-toast.hide {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-100px);
+        }
+
+        /* Deprecation Banner */
+        .deprecation-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #b45309, #92400e);
+            color: white;
+            padding: 14px 20px;
+            z-index: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 14px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+            border-top: 1px solid rgba(255,255,255,0.15);
+            animation: slideUpBanner 0.5s ease-out 1s both;
+        }
+        @keyframes slideUpBanner {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .deprecation-banner .banner-text {
+            text-align: center;
+            line-height: 1.4;
+        }
+        .deprecation-banner .banner-link {
+            display: inline-block;
+            background: white;
+            color: #92400e;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 14px;
+            white-space: nowrap;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .deprecation-banner .banner-link:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .deprecation-banner .banner-dismiss {
+            position: absolute;
+            top: 6px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px 8px;
+            line-height: 1;
+        }
+        .deprecation-banner .banner-dismiss:hover {
+            color: white;
+        }
+
         /* Responsive - Quest 3 typically renders at ~1280px wide */
         @media (min-width: 600px) {
             .movie-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
@@ -327,6 +416,16 @@
     </style>
 </head>
 <body>
+
+<div class="quest-toast" id="questToast">
+    🥽 Optimized for Meta Quest detected! You've been redirected to the Quest-optimized version.
+</div>
+
+<div class="deprecation-banner" id="deprecationBanner">
+    <button class="banner-dismiss" onclick="dismissDeprecation()" title="Dismiss">&times;</button>
+    <span class="banner-text">This Quest Edition is <b>deprecated</b>. If you experience any issues, we recommend using MovieShows2 instead.</span>
+    <a class="banner-link" href="/MOVIESHOWS2/">Switch to MovieShows2</a>
+</div>
 
 <div class="header">
     <div class="header-top">
@@ -623,7 +722,7 @@
         return d.innerHTML;
     }
 
-    // Provider data loading via TMDB Discover API
+    // Provider data loading via TMDB Watch Providers API (per-title lookup)
     async function loadProviderData() {
         // Check cache
         if (Date.now() - providerCacheTs < 86400000 && Object.keys(providerCache).length > 0) {
@@ -631,34 +730,75 @@
             return;
         }
 
-        var ourMovieIds = new Set();
-        var ourTvIds = new Set();
+        console.log('Fetching streaming provider data via TMDB Watch Providers API (per-title)...');
+        var newCache = {};
+        var knownProviderIds = new Set(Object.keys(PROVIDERS));
+
+        // Collect all titles with a tmdb_id
+        var titlesToFetch = [];
         allMovies.forEach(function(m) {
             if (!m.tmdb_id) return;
-            if (m.type === 'tv') ourTvIds.add(String(m.tmdb_id));
-            else ourMovieIds.add(String(m.tmdb_id));
+            var mediaType = (m.type === 'tv') ? 'tv' : 'movie';
+            titlesToFetch.push({ tmdbId: String(m.tmdb_id), mediaType: mediaType });
         });
 
-        var newCache = {};
-        var pids = Object.keys(PROVIDERS);
+        console.log('Fetching watch providers for ' + titlesToFetch.length + ' titles...');
 
-        for (var i = 0; i < pids.length; i++) {
-            var pid = pids[i];
-            try {
-                var mMovies = await discoverPages('movie', pid, ourMovieIds, 5);
-                var mTv = await discoverPages('tv', pid, ourTvIds, 5);
-                mMovies.forEach(function(id) {
-                    var k = 'movie_' + id;
-                    if (!newCache[k]) newCache[k] = [];
-                    newCache[k].push({ id: pid, name: PROVIDERS[pid], logo: PROVIDER_LOGOS[pid] });
-                });
-                mTv.forEach(function(id) {
-                    var k = 'tv_' + id;
-                    if (!newCache[k]) newCache[k] = [];
-                    newCache[k].push({ id: pid, name: PROVIDERS[pid], logo: PROVIDER_LOGOS[pid] });
-                });
-            } catch(e) {}
-            await new Promise(function(r) { setTimeout(r, 200); });
+        // Process in batches of 8 with 300ms delay between batches
+        var BATCH_SIZE = 8;
+        var BATCH_DELAY = 300;
+        var fetched = 0;
+
+        for (var i = 0; i < titlesToFetch.length; i += BATCH_SIZE) {
+            var batch = titlesToFetch.slice(i, i + BATCH_SIZE);
+            var promises = batch.map(function(item) {
+                var url = TMDB_BASE + '/' + item.mediaType + '/' + item.tmdbId +
+                    '/watch/providers?api_key=' + TMDB_API_KEY;
+                return fetch(url).then(function(r) {
+                    if (!r.ok) return null;
+                    return r.json();
+                }).then(function(data) {
+                    if (!data || !data.results) return;
+                    var cacheKey = item.mediaType + '_' + item.tmdbId;
+                    var providers = [];
+                    var regions = ['CA', 'US'];
+                    for (var ri = 0; ri < regions.length; ri++) {
+                        var regionData = data.results[regions[ri]];
+                        if (!regionData) continue;
+                        var sources = [].concat(
+                            regionData.flatrate || [],
+                            regionData.free || [],
+                            regionData.ads || []
+                        );
+                        sources.forEach(function(s) {
+                            var pid = String(s.provider_id);
+                            if (knownProviderIds.has(pid)) {
+                                if (!providers.some(function(p) { return p.id === pid; })) {
+                                    providers.push({
+                                        id: pid,
+                                        name: PROVIDERS[pid] || s.provider_name,
+                                        logo: PROVIDER_LOGOS[pid] || ('https://image.tmdb.org/t/p/original' + s.logo_path)
+                                    });
+                                }
+                            }
+                        });
+                    }
+                    if (providers.length > 0) {
+                        newCache[cacheKey] = providers;
+                    }
+                }).catch(function() { /* skip failed title */ });
+            });
+
+            await Promise.all(promises);
+            fetched += batch.length;
+
+            if (fetched % 50 < BATCH_SIZE) {
+                console.log('  ... fetched providers for ' + fetched + '/' + titlesToFetch.length + ' titles');
+            }
+
+            if (i + BATCH_SIZE < titlesToFetch.length) {
+                await new Promise(function(r) { setTimeout(r, BATCH_DELAY); });
+            }
         }
 
         providerCache = newCache;
@@ -668,28 +808,7 @@
         } catch(e) {}
 
         applyProviders();
-    }
-
-    async function discoverPages(type, pid, ourIds, maxPages) {
-        var matched = [];
-        for (var pg = 1; pg <= maxPages; pg++) {
-            try {
-                var url = TMDB_BASE + '/discover/' + type +
-                    '?api_key=' + TMDB_API_KEY +
-                    '&with_watch_providers=' + pid +
-                    '&watch_region=US&with_watch_monetization_types=flatrate|free|ads' +
-                    '&sort_by=popularity.desc&page=' + pg;
-                var r = await fetch(url);
-                if (!r.ok) break;
-                var d = await r.json();
-                if (!d.results) break;
-                d.results.forEach(function(item) {
-                    if (ourIds.has(String(item.id))) matched.push(String(item.id));
-                });
-                if (pg >= d.total_pages) break;
-            } catch(e) { break; }
-        }
-        return matched;
+        console.log('Streaming provider data loaded for ' + Object.keys(providerCache).length + ' titles');
     }
 
     function applyProviders() {
@@ -718,8 +837,41 @@
         if (displayedMovies.length > 0) renderGrid(true);
     }
 
+    // Show Quest redirect toast if redirected from MOVIESHOWS2
+    function showQuestToast() {
+        var wasRedirected = sessionStorage.getItem('questRedirect');
+        if (wasRedirected === 'true') {
+            sessionStorage.removeItem('questRedirect');
+            var toast = document.getElementById('questToast');
+            if (toast) {
+                // Show toast after a short delay
+                setTimeout(function() {
+                    toast.classList.add('show');
+                    // Hide after 5 seconds
+                    setTimeout(function() {
+                        toast.classList.remove('show');
+                        toast.classList.add('hide');
+                    }, 5000);
+                }, 500);
+            }
+        }
+    }
+
+    // Deprecation banner dismiss (remembered for session)
+    function dismissDeprecation() {
+        var banner = document.getElementById('deprecationBanner');
+        if (banner) banner.style.display = 'none';
+        sessionStorage.setItem('ms3q_deprecation_dismissed', '1');
+    }
+    // Hide banner if previously dismissed this session
+    if (sessionStorage.getItem('ms3q_deprecation_dismissed') === '1') {
+        var db = document.getElementById('deprecationBanner');
+        if (db) db.style.display = 'none';
+    }
+
     // Start
     init();
+    showQuestToast();
 </script>
 </body>
 </html>
