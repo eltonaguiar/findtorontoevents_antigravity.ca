@@ -15,75 +15,49 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Install Python dependencies
-        run: |
-          pip install mysql-connector-python
-
-      - name: Run validation + ranking in GitHub Actions
-        env:
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASS: ${{ secrets.DB_PASS }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-        run: |
-          echo "=== Running Validation + Ranking in GitHub Actions ==="
-          cd rapid_validation
-
-          # Run validator
-          echo "Running fast validator..."
-          python3 fast_validator_CLAUDECODE_Feb152026.py || echo "Validator completed with warnings"
-
-          # Run ranker
-          echo "Running strategy ranker..."
-          python3 strategy_ranker_CLAUDECODE_Feb152026.py || echo "Ranker completed with warnings"
-
-          # Check outputs
-          if [ -f rankings_CLAUDECODE_Feb152026.json ]; then
-            echo "✅ Rankings file generated"
-            echo "Rankings summary:"
-            cat rankings_CLAUDECODE_Feb152026.json | python3 -c "
-            import sys, json
-            d = json.load(sys.stdin)
-            print(f'Promoted: {len(d.get(\"promoted\", []))}')
-            print(f'Testing: {len(d.get(\"testing\", []))}')
-            print(f'Eliminated: {len(d.get(\"eliminated\", []))}')
-            " || cat rankings_CLAUDECODE_Feb152026.json
-          else
-            echo "⚠️ No rankings file generated, creating empty one"
-            echo '{"promoted":[],"testing":[],"eliminated":[],"timestamp":"'$(date -u +"%Y-%m-%d %H:%M:%S")'"}' > rankings_CLAUDECODE_Feb152026.json
-          fi
-
-      - name: Deploy results to server
+      - name: Deploy PHP validation script to server
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASS: ${{ secrets.FTP_PASS }}
         run: |
-          echo "=== Deploying Results to Server ==="
+          echo "=== Deploying Validation Script to Server ==="
           # Upload dashboard
           curl -T rapid_validation/dashboard_CLAUDECODE_Feb152026.html \
             "ftp://$FTP_SERVER/findtorontoevents.ca/rapid_validation/" \
             --user "$FTP_USER:$FTP_PASS" \
             --ftp-create-dirs --insecure || true
 
-          # Upload API files
+          # Upload all API files
           for file in rapid_validation/api/*.php; do
             filename=$(basename "$file")
             curl -T "$file" "ftp://$FTP_SERVER/findtorontoevents.ca/rapid_validation/api/$filename" \
               --user "$FTP_USER:$FTP_PASS" --ftp-create-dirs --insecure || true
           done
 
-          # Upload rankings JSON (the actual data)
-          curl -T rapid_validation/rankings_CLAUDECODE_Feb152026.json \
-            "ftp://$FTP_SERVER/findtorontoevents.ca/rapid_validation/rankings_CLAUDECODE_Feb152026.json" \
-            --user "$FTP_USER:$FTP_PASS" --insecure || true
+          echo "✅ Files deployed"
 
-          echo "✅ Deployment complete"
+      - name: Trigger validation on server
+        run: |
+          echo "=== Triggering Validation on Server ==="
+          RESP=$(curl -s -m 120 "https://findtorontoevents.ca/rapid_validation/api/run_validation.php?key=livetrader2026")
+          echo "$RESP" | python3 -c "
+          import sys, json
+          try:
+              d = json.load(sys.stdin)
+              ok = d.get('ok', False)
+              ranks = d.get('rankings', {})
+              print(f'Status: {\"SUCCESS\" if ok else \"FAILED\"}')
+              if ranks:
+                  print(f'Promoted: {ranks.get(\"promoted\", 0)}')
+                  print(f'Testing: {ranks.get(\"testing\", 0)}')
+                  print(f'Eliminated: {ranks.get(\"eliminated\", 0)}')
+              if not ok and 'error' in d:
+                  print(f'Error: {d.get(\"error\")}')
+          except:
+              print('Response:', file=sys.stderr)
+              print(sys.stdin.read(), file=sys.stderr)
+          " || echo "$RESP"
 
       - name: Check deployed status
         run: |
@@ -112,3 +86,4 @@ jobs:
           echo "Timestamp: $(date -u)"
           echo "Dashboard: https://findtorontoevents.ca/rapid_validation/dashboard_CLAUDECODE_Feb152026.html"
           echo "API Status: https://findtorontoevents.ca/rapid_validation/api/rapid_signal_engine.php?action=status"
+          echo "Run Validation: https://findtorontoevents.ca/rapid_validation/api/run_validation.php?key=livetrader2026"
