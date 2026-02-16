@@ -22,12 +22,22 @@ jobs:
           FTP_PASS: ${{ secrets.FTP_PASS }}
         run: |
           echo "=== Deploying Rapid Validation API to Server ==="
-          curl -T rapid_validation/api/rapid_signal_engine.php \
-            "ftp://$FTP_SERVER/htdocs/rapid_validation/api/" \
+          # Upload dashboard
+          curl -T rapid_validation/dashboard_CLAUDECODE_Feb152026.html \
+            "ftp://$FTP_SERVER/htdocs/rapid_validation/" \
             --user "$FTP_USER:$FTP_PASS" \
-            --ftp-create-dirs \
-            --insecure \
-            || echo "⚠️  Upload may have failed, will check API status next"
+            --ftp-create-dirs --insecure || true
+          # Upload API
+          curl -T rapid_validation/api/rapid_signal_engine.php \
+            "ftp://$FTP_SERVER/htdocs/rapid_validation/api/rapid_signal_engine.php" \
+            --user "$FTP_USER:$FTP_PASS" \
+            --ftp-create-dirs --insecure || true
+          # Upload Python scripts
+          for file in rapid_validation/*.py; do
+            filename=$(basename "$file")
+            curl -T "$file" "ftp://$FTP_SERVER/htdocs/rapid_validation/$filename" \
+              --user "$FTP_USER:$FTP_PASS" --insecure || true
+          done
           echo "✅ Deployment attempted"
 
       - name: Check system status
