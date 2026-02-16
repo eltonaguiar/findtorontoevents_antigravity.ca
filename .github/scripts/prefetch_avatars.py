@@ -140,9 +140,25 @@ def resolve_unavatar(platform, username):
 # ── Main logic ───────────────────────────────────────────────────────────
 
 def fetch_all_creators():
-    """Fetch the guest creator list (user_id=0) to get all creators + accounts."""
+    """Fetch ALL unique creators across every user list (for full coverage)."""
+    # Try the dedicated all-creators endpoint first
+    token_param = f"?token={CACHE_TOKEN}" if CACHE_TOKEN else ""
+    url = f"{API_BASE}/api/get_all_creators_for_cache.php{token_param}"
+    log(f"Fetching all creators from {url.split('?')[0]}")
+    status, body = http_get(url, timeout=30)
+    if status == 200 and body:
+        try:
+            data = json.loads(body)
+            if data.get("ok") and "creators" in data:
+                creators = data["creators"]
+                log(f"Got {len(creators)} unique creators across all user lists")
+                return creators
+        except Exception as e:
+            log(f"JSON parse error from all-creators endpoint: {e}")
+
+    # Fallback: guest list only
+    log("Falling back to guest list (user_id=0)")
     url = f"{API_BASE}/api/get_my_creators.php?user_id=0"
-    log(f"Fetching creators from {url}")
     status, body = http_get(url, timeout=30)
     if status != 200 or not body:
         log(f"Failed to fetch creators: HTTP {status}")
@@ -150,7 +166,7 @@ def fetch_all_creators():
     try:
         data = json.loads(body)
         creators = data.get("creators", [])
-        log(f"Got {len(creators)} creators from API")
+        log(f"Got {len(creators)} creators from guest list")
         return creators
     except Exception as e:
         log(f"JSON parse error: {e}")
