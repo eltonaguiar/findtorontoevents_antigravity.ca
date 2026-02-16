@@ -35,6 +35,11 @@ jobs:
               --user "$FTP_USER:$FTP_PASS" --ftp-create-dirs --insecure || true
           done
 
+          # Upload Discord alert fix to live-monitor
+          curl -T live-monitor/api/live_signals.php \
+            "ftp://$FTP_SERVER/findtorontoevents.ca/live-monitor/api/live_signals.php" \
+            --user "$FTP_USER:$FTP_PASS" --insecure || true
+
           echo "✅ Files deployed"
 
       - name: Trigger validation on server
