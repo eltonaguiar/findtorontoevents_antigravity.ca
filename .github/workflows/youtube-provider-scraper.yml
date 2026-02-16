@@ -1,0 +1,53 @@
+name: YouTube Provider Scraper
+
+on:
+  schedule:
+    # Run daily at 3:00 AM UTC (10:00 PM EST)
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Number of movies to process'
+        required: false
+        default: '200'
+      offset:
+        description: 'Offset for pagination'
+        required: false
+        default: '0'
+
+jobs:
+  scrape-youtube-providers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install mysql-connector-python
+
+      - name: Run YouTube provider scraper
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+        run: |
+          LIMIT="${{ github.event.inputs.limit || '200' }}"
+          OFFSET="${{ github.event.inputs.offset || '0' }}"
+
+          echo "Scraping YouTube trailer descriptions for streaming providers..."
+          python tools/scrapers/youtube_provider_scraper.py $LIMIT $OFFSET
+
+      - name: Summary
+        run: |
+          echo "✅ YouTube provider scraper completed"
+          echo "Next steps:"
+          echo "  - Manually run TMDB provider update via run-provider-update.php"
+          echo "  - Verify provider data in database"

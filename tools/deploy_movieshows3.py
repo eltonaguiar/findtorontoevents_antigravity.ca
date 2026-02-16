@@ -55,6 +55,7 @@ FILES_TO_DEPLOY = [
     "api/execute-provider-setup.php",
     "api/test-providers.php",
     "api/manual-provider-insert.php",
+    "api/scrape-youtube-providers.php",
     "index.html",
 ]
 
