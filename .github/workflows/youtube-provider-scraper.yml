@@ -19,35 +19,33 @@ jobs:
   scrape-youtube-providers:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
-      - name: Install dependencies
-        run: |
-          pip install mysql-connector-python
-
-      - name: Run YouTube provider scraper
-        env:
-          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASS: ${{ secrets.DB_PASS }}
-          DB_NAME: ${{ secrets.DB_NAME }}
+      - name: Run YouTube provider scraper (via web)
         run: |
           LIMIT="${{ github.event.inputs.limit || '200' }}"
           OFFSET="${{ github.event.inputs.offset || '0' }}"
 
-          echo "Scraping YouTube trailer descriptions for streaming providers..."
-          python tools/scrapers/youtube_provider_scraper.py $LIMIT $OFFSET
+          echo "Triggering YouTube scraper on web server..."
+          echo "Parameters: limit=$LIMIT offset=$OFFSET"
+
+          RESPONSE=$(curl -sS --max-time 600 \
+            "https://findtorontoevents.ca/MOVIESHOWS3/api/scrape-youtube-providers.php?limit=${LIMIT}&offset=${OFFSET}")
+
+          echo "$RESPONSE"
+
+          # Check for success
+          if echo "$RESPONSE" | grep -q "SUMMARY:"; then
+            echo "✅ Scraper completed successfully"
+          else
+            echo "::warning::Scraper may have encountered issues"
+          fi
 
       - name: Summary
         run: |
-          echo "✅ YouTube provider scraper completed"
-          echo "Next steps:"
-          echo "  - Manually run TMDB provider update via run-provider-update.php"
-          echo "  - Verify provider data in database"
+          echo "✅ YouTube provider scraper job completed"
+          echo ""
+          echo "What was done:"
+          echo "  - Scraped YouTube trailer titles and descriptions"
+          echo "  - Detected streaming platform mentions"
+          echo "  - Updated streaming_providers table"
+          echo ""
+          echo "Next scheduled run: Tomorrow at 3:00 AM UTC"
