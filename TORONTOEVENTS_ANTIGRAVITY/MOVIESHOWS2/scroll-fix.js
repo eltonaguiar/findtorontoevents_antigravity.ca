@@ -733,6 +733,13 @@
                     closePanel(searchPanel);
                     showToast(`Playing: ${movie.title}`);
                     addMovieToFeed(movie, true, true);
+                    
+                    // If this movie belongs to a streaming platform and we're not already filtering,
+                    // show a "Keep watching [Provider]?" prompt that expires in 6 seconds
+                    if (movie._providers && movie._providers.length > 0 && currentProviderFilter === 'all') {
+                        const topProvider = movie._providers[0];
+                        showProviderPrompt(topProvider);
+                    }
                 }
             });
         });
@@ -899,7 +906,21 @@
         
         content.querySelector("#apply-filters").addEventListener("click", () => {
             closePanel(filterPanel);
-            showToast("Filters applied!");
+            
+            // Build a descriptive toast
+            const provName = currentProviderFilter !== 'all'
+                ? (PROVIDER_IDS[currentProviderFilter] || {}).name || 'provider'
+                : null;
+            const filterLabel = currentFilter !== 'all' ? currentFilter : null;
+            let msg = 'Filters applied!';
+            if (provName && filterLabel) msg = `Showing ${filterLabel} on ${provName}`;
+            else if (provName) msg = `Showing content on ${provName}`;
+            else if (filterLabel) msg = `Showing ${filterLabel}`;
+            showToast(msg);
+            
+            // Repopulate the main feed with new filters
+            repopulateFeedWithFilter();
+            
             // Refresh search if open
             if (searchPanel && searchPanel.style.right === "0px") {
                 const input = document.getElementById("movie-search-input");
@@ -3871,6 +3892,10 @@
                         console.log(`[MovieShows] Found movie: "${movie.title}"`);
                         showToast(`Playing: ${movie.title}`);
                         addMovieToFeed(movie, true);
+                        // Show provider prompt for card-link clicks too
+                        if (movie._providers && movie._providers.length > 0 && currentProviderFilter === 'all') {
+                            showProviderPrompt(movie._providers[0]);
+                        }
                     } else {
                         console.warn(`[MovieShows] Movie "${title}" not found in DB or Fallback.`);
                         showToast(`Could not find "${title}"`, true);
@@ -3919,6 +3944,118 @@
         toast.timeout = setTimeout(() => {
             toast.style.opacity = '0';
         }, 2000);
+    }
+
+    // "Keep watching [Provider]?" prompt with 6-second countdown
+    let providerPromptEl = null;
+    let providerPromptTimer = null;
+    function showProviderPrompt(provider) {
+        // Remove existing prompt
+        if (providerPromptEl) { providerPromptEl.remove(); providerPromptEl = null; }
+        if (providerPromptTimer) { clearInterval(providerPromptTimer); providerPromptTimer = null; }
+        
+        const provName = provider.name || 'this platform';
+        const provLogo = provider.logo || '';
+        let secondsLeft = 6;
+        
+        const el = document.createElement('div');
+        el.id = 'provider-prompt';
+        el.style.cssText = `
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.92);
+            color: white;
+            padding: 14px 20px;
+            border-radius: 16px;
+            z-index: 10001;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.15);
+            animation: promptSlideUp 0.3s ease;
+            max-width: 90vw;
+        `;
+        
+        const logoImg = provLogo
+            ? `<img src="${provLogo}" style="width:28px;height:28px;border-radius:6px;flex-shrink:0;">`
+            : '';
+        
+        el.innerHTML = `
+            ${logoImg}
+            <div style="flex:1;">
+                <div style="font-weight:800;font-size:14px;">Keep watching ${provName}?</div>
+                <div style="font-size:11px;color:#aaa;margin-top:2px;">Filter feed to show only ${provName} content</div>
+            </div>
+            <button id="provider-prompt-yes" style="
+                padding:8px 18px; background:#22c55e; color:black; border:none;
+                border-radius:10px; font-weight:800; font-size:13px; cursor:pointer;
+                white-space:nowrap;
+            ">Yes</button>
+            <button id="provider-prompt-no" style="
+                padding:8px 14px; background:rgba(255,255,255,0.1); color:#aaa; border:1px solid rgba(255,255,255,0.15);
+                border-radius:10px; font-weight:600; font-size:12px; cursor:pointer;
+                white-space:nowrap;
+            ">No <span id="provider-prompt-countdown">(6)</span></button>
+        `;
+        
+        // Inject slide-up animation if not present
+        if (!document.getElementById('provider-prompt-anim')) {
+            const animStyle = document.createElement('style');
+            animStyle.id = 'provider-prompt-anim';
+            animStyle.textContent = `
+                @keyframes promptSlideUp {
+                    from { transform: translateX(-50%) translateY(30px); opacity: 0; }
+                    to { transform: translateX(-50%) translateY(0); opacity: 1; }
+                }
+                @keyframes promptSlideDown {
+                    from { transform: translateX(-50%) translateY(0); opacity: 1; }
+                    to { transform: translateX(-50%) translateY(30px); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(animStyle);
+        }
+        
+        document.body.appendChild(el);
+        providerPromptEl = el;
+        
+        function dismissPrompt() {
+            if (providerPromptTimer) { clearInterval(providerPromptTimer); providerPromptTimer = null; }
+            el.style.animation = 'promptSlideDown 0.25s ease forwards';
+            setTimeout(() => { el.remove(); providerPromptEl = null; }, 260);
+        }
+        
+        // Yes button - apply provider filter and repopulate feed
+        el.querySelector('#provider-prompt-yes').addEventListener('click', () => {
+            currentProviderFilter = String(provider.id);
+            // Update filter panel buttons if they exist
+            if (filterPanel) {
+                filterPanel.querySelectorAll('.streaming-btn').forEach(b => b.classList.remove('active'));
+                const activeBtn = filterPanel.querySelector(`.streaming-btn[data-provider="${provider.id}"]`);
+                if (activeBtn) activeBtn.classList.add('active');
+            }
+            dismissPrompt();
+            showToast(`Showing ${provName} content`);
+            repopulateFeedWithFilter();
+        });
+        
+        // No button - dismiss
+        el.querySelector('#provider-prompt-no').addEventListener('click', () => {
+            dismissPrompt();
+        });
+        
+        // Countdown timer - auto-dismiss after 6 seconds
+        const countdownEl = el.querySelector('#provider-prompt-countdown');
+        providerPromptTimer = setInterval(() => {
+            secondsLeft--;
+            if (countdownEl) countdownEl.textContent = `(${secondsLeft})`;
+            if (secondsLeft <= 0) {
+                dismissPrompt();
+            }
+        }, 1000);
     }
 
     function injectStyles() {
@@ -5256,6 +5393,14 @@
                 m.nowPlaying === true ||
                 (m.badges && m.badges.includes('IN THEATRES'))
             );
+        }
+        
+        // Apply streaming provider filter
+        if (currentProviderFilter !== 'all') {
+            filtered = filtered.filter(m => {
+                if (!m._providers || m._providers.length === 0) return false;
+                return m._providers.some(p => String(p.id) === currentProviderFilter);
+            });
         }
         
         return filtered;
