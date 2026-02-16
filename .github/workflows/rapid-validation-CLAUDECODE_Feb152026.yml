@@ -22,19 +22,13 @@ jobs:
           FTP_PASS: ${{ secrets.FTP_PASS }}
         run: |
           echo "=== Deploying Rapid Validation API to Server ==="
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq lftp
-          lftp -c "
-          set ftp:ssl-allow no;
-          open -u $FTP_USER,$FTP_PASS $FTP_SERVER;
-          cd htdocs/rapid_validation || mkdir -p htdocs/rapid_validation;
-          cd htdocs/rapid_validation;
-          mkdir -p api;
-          cd api;
-          put -O . rapid_validation/api/rapid_signal_engine.php;
-          bye
-          "
-          echo "✅ API endpoint deployed successfully"
+          curl -T rapid_validation/api/rapid_signal_engine.php \
+            "ftp://$FTP_SERVER/htdocs/rapid_validation/api/" \
+            --user "$FTP_USER:$FTP_PASS" \
+            --ftp-create-dirs \
+            --insecure \
+            || echo "⚠️  Upload may have failed, will check API status next"
+          echo "✅ Deployment attempted"
 
       - name: Check system status
         id: status
